@@ -1,11 +1,15 @@
-import * as React from 'react';
-import { useState } from 'react';
-import styled from 'styled-components';
-import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
-import { CellValue, RawResultSet, ResultSetSchema } from '../../pure/bqrs-cli-types';
-import { tryGetRemoteLocation } from '../../pure/bqrs-utils';
-import TextButton from './TextButton';
-import { convertNonPrintableChars } from '../../text-utils';
+import * as React from "react";
+import { useState } from "react";
+import styled from "styled-components";
+import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
+import {
+  CellValue,
+  RawResultSet,
+  ResultSetSchema,
+} from "../../pure/bqrs-cli-types";
+import { tryGetRemoteLocation } from "../../pure/bqrs-utils";
+import TextButton from "./TextButton";
+import { convertNonPrintableChars } from "../../text-utils";
 
 const numOfResultsInContractedMode = 5;
 
@@ -20,14 +24,17 @@ const StyledRow = styled.div`
 
 type TableContainerProps = {
   columnCount: number;
-}
+};
 
 const TableContainer = styled.div<TableContainerProps>`
   display: grid;
   // Create n equal size columns. We use minmax(0, 1fr) because the
   // minimum width of 1fr is auto, not 0.
   // https://css-tricks.com/equal-width-columns-in-css-grid-are-kinda-weird/
-  grid-template-columns: repeat(${props => props.columnCount}, minmax(0, 1fr));
+  grid-template-columns: repeat(
+    ${(props) => props.columnCount},
+    minmax(0, 1fr)
+  );
   max-width: 45rem;
   padding: 0.4rem;
 `;
@@ -36,20 +43,20 @@ type CellProps = {
   value: CellValue;
   fileLinkPrefix: string;
   sourceLocationPrefix: string;
-}
+};
 
-const Cell = ({
-  value,
-  fileLinkPrefix,
-  sourceLocationPrefix
-}: CellProps) => {
+const Cell = ({ value, fileLinkPrefix, sourceLocationPrefix }: CellProps) => {
   switch (typeof value) {
-    case 'string':
-    case 'number':
-    case 'boolean':
+    case "string":
+    case "number":
+    case "boolean":
       return <span>{convertNonPrintableChars(value.toString())}</span>;
-    case 'object': {
-      const url = tryGetRemoteLocation(value.url, fileLinkPrefix, sourceLocationPrefix);
+    case "object": {
+      const url = tryGetRemoteLocation(
+        value.url,
+        fileLinkPrefix,
+        sourceLocationPrefix,
+      );
       const safeLabel = convertNonPrintableChars(value.label);
       if (url) {
         return <VSCodeLink href={url}>{safeLabel}</VSCodeLink>;
@@ -64,13 +71,9 @@ type RowProps = {
   row: CellValue[];
   fileLinkPrefix: string;
   sourceLocationPrefix: string;
-}
+};
 
-const Row = ({
-  row,
-  fileLinkPrefix,
-  sourceLocationPrefix
-}: RowProps) => (
+const Row = ({ row, fileLinkPrefix, sourceLocationPrefix }: RowProps) => (
   <>
     {row.map((cell, cellIndex) => (
       <StyledRow key={cellIndex}>
@@ -89,16 +92,18 @@ type RawResultsTableProps = {
   results: RawResultSet;
   fileLinkPrefix: string;
   sourceLocationPrefix: string;
-}
+};
 
 const RawResultsTable = ({
   schema,
   results,
   fileLinkPrefix,
-  sourceLocationPrefix
+  sourceLocationPrefix,
 }: RawResultsTableProps) => {
   const [tableExpanded, setTableExpanded] = useState(false);
-  const numOfResultsToShow = tableExpanded ? results.rows.length : numOfResultsInContractedMode;
+  const numOfResultsToShow = tableExpanded
+    ? results.rows.length
+    : numOfResultsInContractedMode;
   const showButton = results.rows.length > numOfResultsInContractedMode;
 
   return (
@@ -114,8 +119,11 @@ const RawResultsTable = ({
         ))}
       </TableContainer>
       {showButton && (
-        <TextButton size="x-small" onClick={() => setTableExpanded(!tableExpanded)}>
-          {tableExpanded ? (<span>View less</span>) : (<span>View all</span>)}
+        <TextButton
+          size="x-small"
+          onClick={() => setTableExpanded(!tableExpanded)}
+        >
+          {tableExpanded ? <span>View less</span> : <span>View all</span>}
         </TextButton>
       )}
     </>

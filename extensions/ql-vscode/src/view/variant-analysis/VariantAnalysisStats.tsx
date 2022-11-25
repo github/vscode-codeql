@@ -1,12 +1,12 @@
-import * as React from 'react';
-import { useMemo } from 'react';
-import styled from 'styled-components';
-import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
-import { StatItem } from './StatItem';
-import { formatDecimal } from '../../pure/number';
-import { humanizeUnit } from '../../pure/time';
-import { VariantAnalysisRepositoriesStats } from './VariantAnalysisRepositoriesStats';
-import { VariantAnalysisStatusStats } from './VariantAnalysisStatusStats';
+import * as React from "react";
+import { useMemo } from "react";
+import styled from "styled-components";
+import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
+import { StatItem } from "./StatItem";
+import { formatDecimal } from "../../pure/number";
+import { humanizeUnit } from "../../pure/time";
+import { VariantAnalysisRepositoriesStats } from "./VariantAnalysisRepositoriesStats";
+import { VariantAnalysisStatusStats } from "./VariantAnalysisStatusStats";
 
 export type VariantAnalysisStatsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
@@ -41,22 +41,25 @@ export const VariantAnalysisStats = ({
 }: VariantAnalysisStatsProps) => {
   const completionHeaderName = useMemo(() => {
     if (variantAnalysisStatus === VariantAnalysisStatus.InProgress) {
-      return 'Running';
+      return "Running";
     }
 
     if (variantAnalysisStatus === VariantAnalysisStatus.Failed) {
-      return 'Failed';
+      return "Failed";
     }
 
     if (variantAnalysisStatus === VariantAnalysisStatus.Canceled) {
-      return 'Stopped';
+      return "Stopped";
     }
 
-    if (variantAnalysisStatus === VariantAnalysisStatus.Succeeded && hasWarnings) {
-      return 'Succeeded warnings';
+    if (
+      variantAnalysisStatus === VariantAnalysisStatus.Succeeded &&
+      hasWarnings
+    ) {
+      return "Succeeded warnings";
     }
 
-    return 'Succeeded';
+    return "Succeeded";
   }, [variantAnalysisStatus, hasWarnings]);
 
   const duration = useMemo(() => {
@@ -70,7 +73,7 @@ export const VariantAnalysisStats = ({
   return (
     <Row>
       <StatItem title="Results">
-        {resultCount !== undefined ? formatDecimal(resultCount) : '-'}
+        {resultCount !== undefined ? formatDecimal(resultCount) : "-"}
       </StatItem>
       <StatItem title="Repositories">
         <VariantAnalysisRepositoriesStats
@@ -81,7 +84,7 @@ export const VariantAnalysisStats = ({
         />
       </StatItem>
       <StatItem title="Duration">
-        {duration !== undefined ? humanizeUnit(duration) : '-'}
+        {duration !== undefined ? humanizeUnit(duration) : "-"}
       </StatItem>
       <StatItem title={completionHeaderName}>
         <VariantAnalysisStatusStats

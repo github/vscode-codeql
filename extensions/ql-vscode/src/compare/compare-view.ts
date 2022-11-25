@@ -1,30 +1,34 @@
-import {
-  ExtensionContext,
-  ViewColumn,
-} from 'vscode';
+import { ExtensionContext, ViewColumn } from "vscode";
 
 import {
   FromCompareViewMessage,
   ToCompareViewMessage,
   QueryCompareResult,
-} from '../pure/interface-types';
-import { Logger } from '../logging';
-import { CodeQLCliServer } from '../cli';
-import { DatabaseManager } from '../databases';
-import { jumpToLocation } from '../interface-utils';
-import { transformBqrsResultSet, RawResultSet, BQRSInfo } from '../pure/bqrs-cli-types';
-import resultsDiff from './resultsDiff';
-import { CompletedLocalQueryInfo } from '../query-results';
-import { getErrorMessage } from '../pure/helpers-pure';
-import { HistoryItemLabelProvider } from '../history-item-label-provider';
-import { AbstractWebview, WebviewPanelConfig } from '../abstract-webview';
+} from "../pure/interface-types";
+import { Logger } from "../logging";
+import { CodeQLCliServer } from "../cli";
+import { DatabaseManager } from "../databases";
+import { jumpToLocation } from "../interface-utils";
+import {
+  transformBqrsResultSet,
+  RawResultSet,
+  BQRSInfo,
+} from "../pure/bqrs-cli-types";
+import resultsDiff from "./resultsDiff";
+import { CompletedLocalQueryInfo } from "../query-results";
+import { getErrorMessage } from "../pure/helpers-pure";
+import { HistoryItemLabelProvider } from "../history-item-label-provider";
+import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
   to: CompletedLocalQueryInfo;
 }
 
-export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompareViewMessage> {
+export class CompareView extends AbstractWebview<
+  ToCompareViewMessage,
+  FromCompareViewMessage
+> {
   private comparePair: ComparePair | undefined;
 
   constructor(
@@ -34,8 +38,8 @@ export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompa
     private logger: Logger,
     private labelProvider: HistoryItemLabelProvider,
     private showQueryResultsCallback: (
-      item: CompletedLocalQueryInfo
-    ) => Promise<void>
+      item: CompletedLocalQueryInfo,
+    ) => Promise<void>,
   ) {
     super(ctx);
   }
@@ -43,10 +47,11 @@ export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompa
   async showResults(
     from: CompletedLocalQueryInfo,
     to: CompletedLocalQueryInfo,
-    selectedResultSetName?: string
+    selectedResultSetName?: string,
   ) {
     this.comparePair = { from, to };
-    this.getPanel().reveal(undefined, true);
+    const panel = await this.getPanel();
+    panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
     const [
@@ -54,11 +59,7 @@ export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompa
       currentResultSetName,
       fromResultSet,
       toResultSet,
-    ] = await this.findCommonResultSetNames(
-      from,
-      to,
-      selectedResultSetName
-    );
+    ] = await this.findCommonResultSetNames(from, to, selectedResultSetName);
     if (currentResultSetName) {
       let rows: QueryCompareResult | undefined;
       let message: string | undefined;
@@ -69,7 +70,7 @@ export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompa
       }
 
       await this.postMessage({
-        t: 'setComparisons',
+        t: "setComparisons",
         stats: {
           fromQuery: {
             // since we split the description into several rows
@@ -97,11 +98,11 @@ export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompa
 
   protected getPanelConfig(): WebviewPanelConfig {
     return {
-      viewId: 'compareView',
-      title: 'Compare CodeQL Query Results',
+      viewId: "compareView",
+      title: "Compare CodeQL Query Results",
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
-      view: 'compare',
+      view: "compare",
     };
   }
 
@@ -111,19 +112,19 @@ export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompa
 
   protected async onMessage(msg: FromCompareViewMessage): Promise<void> {
     switch (msg.t) {
-      case 'viewLoaded':
+      case "viewLoaded":
         this.onWebViewLoaded();
         break;
 
-      case 'changeCompare':
+      case "changeCompare":
         await this.changeTable(msg.newResultSetName);
         break;
 
-      case 'viewSourceFile':
+      case "viewSourceFile":
         await jumpToLocation(msg, this.databaseManager, this.logger);
         break;
 
-      case 'openQuery':
+      case "openQuery":
         await this.openQuery(msg.kind);
         break;
     }
@@ -132,34 +133,32 @@ export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompa
   private async findCommonResultSetNames(
     from: CompletedLocalQueryInfo,
     to: CompletedLocalQueryInfo,
-    selectedResultSetName: string | undefined
+    selectedResultSetName: string | undefined,
   ): Promise<[string[], string, RawResultSet, RawResultSet]> {
     const fromSchemas = await this.cliServer.bqrsInfo(
-      from.completedQuery.query.resultsPaths.resultsPath
+      from.completedQuery.query.resultsPaths.resultsPath,
     );
     const toSchemas = await this.cliServer.bqrsInfo(
-      to.completedQuery.query.resultsPaths.resultsPath
+      to.completedQuery.query.resultsPaths.resultsPath,
     );
-    const fromSchemaNames = fromSchemas['result-sets'].map(
-      (schema) => schema.name
+    const fromSchemaNames = fromSchemas["result-sets"].map(
+      (schema) => schema.name,
     );
-    const toSchemaNames = toSchemas['result-sets'].map(
-      (schema) => schema.name
-    );
+    const toSchemaNames = toSchemas["result-sets"].map((schema) => schema.name);
     const commonResultSetNames = fromSchemaNames.filter((name) =>
-      toSchemaNames.includes(name)
+      toSchemaNames.includes(name),
     );
     const currentResultSetName =
       selectedResultSetName || commonResultSetNames[0];
     const fromResultSet = await this.getResultSet(
       fromSchemas,
       currentResultSetName,
-      from.completedQuery.query.resultsPaths.resultsPath
+      from.completedQuery.query.resultsPaths.resultsPath,
     );
     const toResultSet = await this.getResultSet(
       toSchemas,
       currentResultSetName,
-      to.completedQuery.query.resultsPaths.resultsPath
+      to.completedQuery.query.resultsPaths.resultsPath,
     );
     return [
       commonResultSetNames,
@@ -176,39 +175,36 @@ export class CompareView extends AbstractWebview<ToCompareViewMessage, FromCompa
     await this.showResults(
       this.comparePair.from,
       this.comparePair.to,
-      newResultSetName
+      newResultSetName,
     );
   }
 
   private async getResultSet(
     bqrsInfo: BQRSInfo,
     resultSetName: string,
-    resultsPath: string
+    resultsPath: string,
   ): Promise<RawResultSet> {
-    const schema = bqrsInfo['result-sets'].find(
-      (schema) => schema.name === resultSetName
+    const schema = bqrsInfo["result-sets"].find(
+      (schema) => schema.name === resultSetName,
     );
     if (!schema) {
       throw new Error(`Schema ${resultSetName} not found.`);
     }
-    const chunk = await this.cliServer.bqrsDecode(
-      resultsPath,
-      resultSetName
-    );
+    const chunk = await this.cliServer.bqrsDecode(resultsPath, resultSetName);
     return transformBqrsResultSet(schema, chunk);
   }
 
   private compareResults(
     fromResults: RawResultSet,
-    toResults: RawResultSet
+    toResults: RawResultSet,
   ): QueryCompareResult {
     // Only compare columns that have the same name
     return resultsDiff(fromResults, toResults);
   }
 
-  private async openQuery(kind: 'from' | 'to') {
+  private async openQuery(kind: "from" | "to") {
     const toOpen =
-      kind === 'from' ? this.comparePair?.from : this.comparePair?.to;
+      kind === "from" ? this.comparePair?.from : this.comparePair?.to;
     if (toOpen) {
       await this.showQueryResultsCallback(toOpen);
     }

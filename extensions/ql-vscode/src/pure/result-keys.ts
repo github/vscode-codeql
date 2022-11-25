@@ -1,4 +1,4 @@
-import * as sarif from 'sarif';
+import * as sarif from "sarif";
 
 /**
  * Identifies a result, a path, or one of the nodes on a path.
@@ -39,14 +39,20 @@ export type ResultKey = Result | Path | PathNode;
 /**
  * Looks up a specific result in a result set.
  */
-export function getResult(sarif: sarif.Log, key: Result | Path | PathNode): sarif.Result | undefined {
+export function getResult(
+  sarif: sarif.Log,
+  key: Result | Path | PathNode,
+): sarif.Result | undefined {
   return sarif.runs[0]?.results?.[key.resultIndex];
 }
 
 /**
  * Looks up a specific path in a result set.
  */
-export function getPath(sarif: sarif.Log, key: Path | PathNode): sarif.ThreadFlow | undefined {
+export function getPath(
+  sarif: sarif.Log,
+  key: Path | PathNode,
+): sarif.ThreadFlow | undefined {
   const result = getResult(sarif, key);
   if (result === undefined) return undefined;
   let index = -1;
@@ -54,8 +60,7 @@ export function getPath(sarif: sarif.Log, key: Path | PathNode): sarif.ThreadFlo
   for (const codeFlows of result.codeFlows) {
     for (const threadFlow of codeFlows.threadFlows) {
       ++index;
-      if (index == key.pathIndex)
-        return threadFlow;
+      if (index == key.pathIndex) return threadFlow;
     }
   }
   return undefined;
@@ -64,7 +69,10 @@ export function getPath(sarif: sarif.Log, key: Path | PathNode): sarif.ThreadFlo
 /**
  * Looks up a specific path node in a result set.
  */
-export function getPathNode(sarif: sarif.Log, key: PathNode): sarif.Location | undefined {
+export function getPathNode(
+  sarif: sarif.Log,
+  key: PathNode,
+): sarif.Location | undefined {
   const path = getPath(sarif, key);
   if (path === undefined) return undefined;
   return path.locations[key.pathNodeIndex]?.location;
@@ -73,9 +81,16 @@ export function getPathNode(sarif: sarif.Log, key: PathNode): sarif.Location | u
 /**
  * Returns true if the two keys contain the same set of indices and neither are `undefined`.
  */
-export function equalsNotUndefined(key1: Partial<PathNode> | undefined, key2: Partial<PathNode> | undefined): boolean {
+export function equalsNotUndefined(
+  key1: Partial<PathNode> | undefined,
+  key2: Partial<PathNode> | undefined,
+): boolean {
   if (key1 === undefined || key2 === undefined) return false;
-  return key1.resultIndex === key2.resultIndex && key1.pathIndex === key2.pathIndex && key1.pathNodeIndex === key2.pathNodeIndex;
+  return (
+    key1.resultIndex === key2.resultIndex &&
+    key1.pathIndex === key2.pathIndex &&
+    key1.pathNodeIndex === key2.pathNodeIndex
+  );
 }
 
 /**
@@ -99,5 +114,11 @@ export function getAllPaths(result: sarif.Result): sarif.ThreadFlow[] {
  * as the key in a map or set.
  */
 export function keyToString(key: ResultKey) {
-  return key.resultIndex + '-' + (key.pathIndex ?? '') + '-' + (key.pathNodeIndex ?? '');
+  return (
+    key.resultIndex +
+    "-" +
+    (key.pathIndex ?? "") +
+    "-" +
+    (key.pathNodeIndex ?? "")
+  );
 }

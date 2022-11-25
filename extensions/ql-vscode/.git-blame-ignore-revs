@@ -1,0 +1,5 @@
+# Run this command to always ignore formatting commits in `git blame`
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Formatted all code using Prettier instead of tsfmt
+ebcdf8ad0bb5bcb3efa679211709671716b892ba

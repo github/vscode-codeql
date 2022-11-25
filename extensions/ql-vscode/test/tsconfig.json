@@ -1,8 +1,10 @@
 {
-  "include": [
-    "**/*.ts"
-  ],
+  "extends": "../tsconfig.json",
+  "include": ["**/*.ts"],
+  "exclude": [],
   "compilerOptions": {
-    "noEmit": true
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "rootDir": ".."
   }
 }

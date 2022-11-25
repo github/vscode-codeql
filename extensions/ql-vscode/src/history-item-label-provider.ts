@@ -1,12 +1,17 @@
-import { env } from 'vscode';
-import * as path from 'path';
-import { QueryHistoryConfig } from './config';
-import { LocalQueryInfo } from './query-results';
-import { buildRepoLabel, getRawQueryName, QueryHistoryInfo } from './query-history-info';
-import { RemoteQueryHistoryItem } from './remote-queries/remote-query-history-item';
-import { VariantAnalysisHistoryItem } from './remote-queries/variant-analysis-history-item';
-import { assertNever } from './pure/helpers-pure';
-import { pluralize } from './pure/word';
+import { env } from "vscode";
+import * as path from "path";
+import { QueryHistoryConfig } from "./config";
+import { LocalQueryInfo } from "./query-results";
+import {
+  buildRepoLabel,
+  getRawQueryName,
+  QueryHistoryInfo,
+} from "./query-history-info";
+import { RemoteQueryHistoryItem } from "./remote-queries/remote-query-history-item";
+import { VariantAnalysisHistoryItem } from "./remote-queries/variant-analysis-history-item";
+import { assertNever } from "./pure/helpers-pure";
+import { pluralize } from "./pure/word";
+import { humanizeQueryStatus } from "./query-status";
 
 interface InterpolateReplacements {
   t: string; // Start time
@@ -15,7 +20,7 @@ interface InterpolateReplacements {
   r: string; // Result count/Empty
   s: string; // Status
   f: string; // Query file name
-  '%': '%'; // Percent sign
+  "%": "%"; // Percent sign
 }
 
 export class HistoryItemLabelProvider {
@@ -26,20 +31,20 @@ export class HistoryItemLabelProvider {
   getLabel(item: QueryHistoryInfo) {
     let replacements: InterpolateReplacements;
     switch (item.t) {
-      case 'local':
+      case "local":
         replacements = this.getLocalInterpolateReplacements(item);
         break;
-      case 'remote':
+      case "remote":
         replacements = this.getRemoteInterpolateReplacements(item);
         break;
-      case 'variant-analysis':
+      case "variant-analysis":
         replacements = this.getVariantAnalysisInterpolateReplacements(item);
         break;
       default:
         assertNever(item);
     }
 
-    const rawLabel = item.userSpecifiedLabel ?? (this.config.format || '%q');
+    const rawLabel = item.userSpecifiedLabel ?? (this.config.format || "%q");
 
     return this.interpolate(rawLabel, replacements);
   }
@@ -56,18 +61,26 @@ export class HistoryItemLabelProvider {
       : getRawQueryName(item);
   }
 
+  private interpolate(
+    rawLabel: string,
+    replacements: InterpolateReplacements,
+  ): string {
+    const label = rawLabel.replace(
+      /%(.)/g,
+      (match, key: keyof InterpolateReplacements) => {
+        const replacement = replacements[key];
+        return replacement !== undefined ? replacement : match;
+      },
+    );
 
-  private interpolate(rawLabel: string, replacements: InterpolateReplacements): string {
-    const label = rawLabel.replace(/%(.)/g, (match, key: keyof InterpolateReplacements) => {
-      const replacement = replacements[key];
-      return replacement !== undefined ? replacement : match;
-    });
-
-    return label.replace(/\s+/g, ' ');
+    return label.replace(/\s+/g, " ");
   }
 
-  private getLocalInterpolateReplacements(item: LocalQueryInfo): InterpolateReplacements {
-    const { resultCount = 0, statusString = 'in progress' } = item.completedQuery || {};
+  private getLocalInterpolateReplacements(
+    item: LocalQueryInfo,
+  ): InterpolateReplacements {
+    const { resultCount = 0, statusString = "in progress" } =
+      item.completedQuery || {};
     return {
       t: item.startTime,
       q: item.getQueryName(),
@@ -75,33 +88,45 @@ export class HistoryItemLabelProvider {
       r: `(${resultCount} results)`,
       s: statusString,
       f: item.getQueryFileName(),
-      '%': '%',
+      "%": "%",
     };
   }
 
-  private getRemoteInterpolateReplacements(item: RemoteQueryHistoryItem): InterpolateReplacements {
-    const resultCount = item.resultCount ? `(${pluralize(item.resultCount, 'result', 'results')})` : '';
+  private getRemoteInterpolateReplacements(
+    item: RemoteQueryHistoryItem,
+  ): InterpolateReplacements {
+    const resultCount = item.resultCount
+      ? `(${pluralize(item.resultCount, "result", "results")})`
+      : "";
     return {
-      t: new Date(item.remoteQuery.executionStartTime).toLocaleString(env.language),
+      t: new Date(item.remoteQuery.executionStartTime).toLocaleString(
+        env.language,
+      ),
       q: `${item.remoteQuery.queryName} (${item.remoteQuery.language})`,
       d: buildRepoLabel(item),
       r: resultCount,
-      s: item.status,
+      s: humanizeQueryStatus(item.status),
       f: path.basename(item.remoteQuery.queryFilePath),
-      '%': '%'
+      "%": "%",
     };
   }
 
-  private getVariantAnalysisInterpolateReplacements(item: VariantAnalysisHistoryItem): InterpolateReplacements {
-    const resultCount = item.resultCount ? `(${pluralize(item.resultCount, 'result', 'results')})` : '';
+  private getVariantAnalysisInterpolateReplacements(
+    item: VariantAnalysisHistoryItem,
+  ): InterpolateReplacements {
+    const resultCount = item.resultCount
+      ? `(${pluralize(item.resultCount, "result", "results")})`
+      : "";
     return {
-      t: new Date(item.variantAnalysis.executionStartTime).toLocaleString(env.language),
+      t: new Date(item.variantAnalysis.executionStartTime).toLocaleString(
+        env.language,
+      ),
       q: `${item.variantAnalysis.query.name} (${item.variantAnalysis.query.language})`,
       d: buildRepoLabel(item),
       r: resultCount,
-      s: item.status,
+      s: humanizeQueryStatus(item.status),
       f: path.basename(item.variantAnalysis.query.filePath),
-      '%': '%',
+      "%": "%",
     };
   }
 }

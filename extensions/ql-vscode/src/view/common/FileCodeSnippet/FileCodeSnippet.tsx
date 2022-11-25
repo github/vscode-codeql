@@ -1,19 +1,19 @@
-import * as React from 'react';
-import styled from 'styled-components';
-import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
+import * as React from "react";
+import styled from "styled-components";
+import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 
 import {
   AnalysisMessage,
   CodeSnippet,
   FileLink,
   HighlightedRegion,
-  ResultSeverity
-} from '../../../remote-queries/shared/analysis-result';
-import { createRemoteFileRef } from '../../../pure/location-link-utils';
-import { CodeSnippetMessage } from './CodeSnippetMessage';
-import { CodeSnippetLine } from './CodeSnippetLine';
+  ResultSeverity,
+} from "../../../remote-queries/shared/analysis-result";
+import { createRemoteFileRef } from "../../../pure/location-link-utils";
+import { CodeSnippetMessage } from "./CodeSnippetMessage";
+import { CodeSnippetLine } from "./CodeSnippetLine";
 
-const borderColor = 'var(--vscode-editor-snippetFinalTabstopHighlightBorder)';
+const borderColor = "var(--vscode-editor-snippetFinalTabstopHighlightBorder)";
 
 const Container = styled.div`
   font-family: var(--vscode-editor-font-family);
@@ -38,12 +38,12 @@ const CodeContainer = styled.div`
 `;
 
 type Props = {
-  fileLink: FileLink,
-  codeSnippet?: CodeSnippet,
-  highlightedRegion?: HighlightedRegion,
-  severity?: ResultSeverity,
-  message?: AnalysisMessage,
-  messageChildren?: React.ReactNode,
+  fileLink: FileLink;
+  codeSnippet?: CodeSnippet;
+  highlightedRegion?: HighlightedRegion;
+  severity?: ResultSeverity;
+  message?: AnalysisMessage;
+  messageChildren?: React.ReactNode;
 };
 
 export const FileCodeSnippet = ({
@@ -54,14 +54,14 @@ export const FileCodeSnippet = ({
   message,
   messageChildren,
 }: Props) => {
-
   const startingLine = codeSnippet?.startLine || 0;
   const endingLine = codeSnippet?.endLine || 0;
 
   const titleFileUri = createRemoteFileRef(
     fileLink,
     highlightedRegion?.startLine || startingLine,
-    highlightedRegion?.endLine || endingLine);
+    highlightedRegion?.endLine || endingLine,
+  );
 
   if (!codeSnippet) {
     return (
@@ -69,18 +69,16 @@ export const FileCodeSnippet = ({
         <TitleContainer>
           <VSCodeLink href={titleFileUri}>{fileLink.filePath}</VSCodeLink>
         </TitleContainer>
-        {message && severity &&
-          <CodeSnippetMessage
-            message={message}
-            severity={severity}
-          >
+        {message && severity && (
+          <CodeSnippetMessage message={message} severity={severity}>
             {messageChildren}
-          </CodeSnippetMessage>}
+          </CodeSnippetMessage>
+        )}
       </Container>
     );
   }
 
-  const code = codeSnippet.text.split('\n');
+  const code = codeSnippet.text.split("\n");
 
   return (
     <Container>

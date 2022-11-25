@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import LastUpdatedComponent from '../../view/remote-queries/LastUpdated';
+import LastUpdatedComponent from "../../view/remote-queries/LastUpdated";
 
 export default {
-  title: 'Last Updated',
+  title: "MRVA/Last Updated",
   component: LastUpdatedComponent,
 } as ComponentMeta<typeof LastUpdatedComponent>;
 

@@ -1,0 +1,11 @@
+{
+  "request": {
+    "kind": "getRepo"
+  },
+  "response": {
+    "status": 404,
+    "body": {
+      "message": "Repository not found"
+    }
+  }
+}

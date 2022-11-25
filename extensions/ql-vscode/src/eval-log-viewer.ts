@@ -1,7 +1,16 @@
-import { window, TreeDataProvider, TreeView, TreeItem, ProviderResult, Event, EventEmitter, TreeItemCollapsibleState } from 'vscode';
-import { commandRunner } from './commandRunner';
-import { DisposableObject } from './pure/disposable-object';
-import { showAndLogErrorMessage } from './helpers';
+import {
+  window,
+  TreeDataProvider,
+  TreeView,
+  TreeItem,
+  ProviderResult,
+  Event,
+  EventEmitter,
+  TreeItemCollapsibleState,
+} from "vscode";
+import { commandRunner } from "./commandRunner";
+import { DisposableObject } from "./pure/disposable-object";
+import { showAndLogErrorMessage } from "./helpers";
 
 export interface EvalLogTreeItem {
   label?: string;
@@ -13,11 +22,18 @@ export interface ChildEvalLogTreeItem extends EvalLogTreeItem {
 }
 
 /** Provides data from parsed CodeQL evaluator logs to be rendered in a tree view. */
-class EvalLogDataProvider extends DisposableObject implements TreeDataProvider<EvalLogTreeItem> {
+class EvalLogDataProvider
+  extends DisposableObject
+  implements TreeDataProvider<EvalLogTreeItem>
+{
   public roots: EvalLogTreeItem[] = [];
 
-  private _onDidChangeTreeData: EventEmitter<EvalLogTreeItem | undefined | null | void> = new EventEmitter<EvalLogTreeItem | undefined | null | void>();
-  readonly onDidChangeTreeData: Event<EvalLogTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
+  private _onDidChangeTreeData: EventEmitter<
+    EvalLogTreeItem | undefined | null | void
+  > = new EventEmitter<EvalLogTreeItem | undefined | null | void>();
+  readonly onDidChangeTreeData: Event<
+    EvalLogTreeItem | undefined | null | void
+  > = this._onDidChangeTreeData.event;
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
@@ -27,7 +43,7 @@ class EvalLogDataProvider extends DisposableObject implements TreeDataProvider<E
     const state = element.children.length
       ? TreeItemCollapsibleState.Collapsed
       : TreeItemCollapsibleState.None;
-    const treeItem = new TreeItem(element.label || '', state);
+    const treeItem = new TreeItem(element.label || "", state);
     treeItem.tooltip = `${treeItem.label} || ''}`;
     return treeItem;
   }
@@ -55,17 +71,17 @@ export class EvalLogViewer extends DisposableObject {
     super();
 
     this.treeDataProvider = new EvalLogDataProvider();
-    this.treeView = window.createTreeView('codeQLEvalLogViewer', {
+    this.treeView = window.createTreeView("codeQLEvalLogViewer", {
       treeDataProvider: this.treeDataProvider,
-      showCollapseAll: true
+      showCollapseAll: true,
     });
 
     this.push(this.treeView);
     this.push(this.treeDataProvider);
     this.push(
-      commandRunner('codeQLEvalLogViewer.clear', async () => {
+      commandRunner("codeQLEvalLogViewer.clear", async () => {
         this.clear();
-      })
+      }),
     );
   }
 
@@ -80,13 +96,15 @@ export class EvalLogViewer extends DisposableObject {
     this.treeDataProvider.roots = roots;
     this.treeDataProvider.refresh();
 
-    this.treeView.message = 'Viewer for query run:'; // Currently only one query supported at a time. 
+    this.treeView.message = "Viewer for query run:"; // Currently only one query supported at a time.
 
     // Handle error on reveal. This could happen if
     // the tree view is disposed during the reveal.
     this.treeView.reveal(roots[0], { focus: false })?.then(
-      () => { /**/ },
-      err => showAndLogErrorMessage(err)
+      () => {
+        /**/
+      },
+      (err) => showAndLogErrorMessage(err),
     );
   }
 }

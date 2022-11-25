@@ -1,6 +1,6 @@
-import { VSCodeProgressRing } from '@vscode/webview-ui-toolkit/react';
-import * as React from 'react';
-import styled from 'styled-components';
+import { VSCodeProgressRing } from "@vscode/webview-ui-toolkit/react";
+import * as React from "react";
+import styled from "styled-components";
 
 const SpinnerContainer = styled.span`
   vertical-align: middle;
@@ -9,7 +9,7 @@ const SpinnerContainer = styled.span`
 
 const DownloadSpinner = () => (
   <SpinnerContainer>
-    <VSCodeProgressRing style={{ height: '0.8em', width: '0.8em' }} />
+    <VSCodeProgressRing style={{ height: "0.8em", width: "0.8em" }} />
   </SpinnerContainer>
 );
 

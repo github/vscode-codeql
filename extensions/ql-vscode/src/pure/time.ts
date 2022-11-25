@@ -13,8 +13,8 @@ export const ONE_DAY_IN_MS = ONE_HOUR_IN_MS * 24;
 export const ONE_MONTH_IN_MS = ONE_DAY_IN_MS * 30;
 export const ONE_YEAR_IN_MS = ONE_DAY_IN_MS * 365;
 
-const durationFormatter = new Intl.RelativeTimeFormat('en', {
-  numeric: 'auto',
+const durationFormatter = new Intl.RelativeTimeFormat("en", {
+  numeric: "auto",
 });
 
 /**
@@ -26,19 +26,37 @@ const durationFormatter = new Intl.RelativeTimeFormat('en', {
  */
 export function humanizeRelativeTime(relativeTimeMillis?: number) {
   if (relativeTimeMillis === undefined) {
-    return '';
+    return "";
   }
 
+  // If the time is in the past, we need -3_600_035 to be formatted as "1 hour ago" instead of "2 hours ago"
+  const round = relativeTimeMillis < 0 ? Math.ceil : Math.floor;
+
   if (Math.abs(relativeTimeMillis) < ONE_HOUR_IN_MS) {
-    return durationFormatter.format(Math.floor(relativeTimeMillis / ONE_MINUTE_IN_MS), 'minute');
+    return durationFormatter.format(
+      round(relativeTimeMillis / ONE_MINUTE_IN_MS),
+      "minute",
+    );
   } else if (Math.abs(relativeTimeMillis) < ONE_DAY_IN_MS) {
-    return durationFormatter.format(Math.floor(relativeTimeMillis / ONE_HOUR_IN_MS), 'hour');
+    return durationFormatter.format(
+      round(relativeTimeMillis / ONE_HOUR_IN_MS),
+      "hour",
+    );
   } else if (Math.abs(relativeTimeMillis) < ONE_MONTH_IN_MS) {
-    return durationFormatter.format(Math.floor(relativeTimeMillis / ONE_DAY_IN_MS), 'day');
+    return durationFormatter.format(
+      round(relativeTimeMillis / ONE_DAY_IN_MS),
+      "day",
+    );
   } else if (Math.abs(relativeTimeMillis) < ONE_YEAR_IN_MS) {
-    return durationFormatter.format(Math.floor(relativeTimeMillis / ONE_MONTH_IN_MS), 'month');
+    return durationFormatter.format(
+      round(relativeTimeMillis / ONE_MONTH_IN_MS),
+      "month",
+    );
   } else {
-    return durationFormatter.format(Math.floor(relativeTimeMillis / ONE_YEAR_IN_MS), 'year');
+    return durationFormatter.format(
+      round(relativeTimeMillis / ONE_YEAR_IN_MS),
+      "year",
+    );
   }
 }
 
@@ -53,27 +71,27 @@ export function humanizeUnit(millis?: number): string {
   // assume a blank or empty string is a zero
   // assume anything less than 0 is a zero
   if (!millis || millis < ONE_SECOND_IN_MS) {
-    return 'Less than a second';
+    return "Less than a second";
   }
   let unit: string;
   let unitDiff: number;
   if (millis < ONE_MINUTE_IN_MS) {
-    unit = 'second';
+    unit = "second";
     unitDiff = Math.floor(millis / ONE_SECOND_IN_MS);
   } else if (millis < ONE_HOUR_IN_MS) {
-    unit = 'minute';
+    unit = "minute";
     unitDiff = Math.floor(millis / ONE_MINUTE_IN_MS);
   } else if (millis < ONE_DAY_IN_MS) {
-    unit = 'hour';
+    unit = "hour";
     unitDiff = Math.floor(millis / ONE_HOUR_IN_MS);
   } else if (millis < ONE_MONTH_IN_MS) {
-    unit = 'day';
+    unit = "day";
     unitDiff = Math.floor(millis / ONE_DAY_IN_MS);
   } else if (millis < ONE_YEAR_IN_MS) {
-    unit = 'month';
+    unit = "month";
     unitDiff = Math.floor(millis / ONE_MONTH_IN_MS);
   } else {
-    unit = 'year';
+    unit = "year";
     unitDiff = Math.floor(millis / ONE_YEAR_IN_MS);
   }
 
@@ -81,9 +99,13 @@ export function humanizeUnit(millis?: number): string {
 }
 
 function createFormatter(unit: string) {
-  return Intl.NumberFormat('en-US', {
-    style: 'unit',
+  return Intl.NumberFormat("en-US", {
+    style: "unit",
     unit,
-    unitDisplay: 'long'
+    unitDisplay: "long",
   });
+}
+
+export async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -2,6 +2,20 @@
 
 ## [UNRELEASED]
 
+## 1.7.6 - 21 November 2022
+
+- Warn users when their VS Code version is too old to support all features in the vscode-codeql extension. [#1674](https://github.com/github/vscode-codeql/pull/1674)
+
+## 1.7.5 - 8 November 2022
+
+- Fix a bug where the AST Viewer was not working unless the associated CodeQL library pack is in the workspace. [#1735](https://github.com/github/vscode-codeql/pull/1735)
+
+## 1.7.4 - 29 October 2022
+
+No user facing changes.
+
+## 1.7.3 - 28 October 2022
+
 - Fix a bug where databases may be lost if VS Code is restarted while the extension is being started up. [#1638](https://github.com/github/vscode-codeql/pull/1638)
 - Add commands for navigating up, down, left, or right in the result viewer. Previously there were only commands for moving up and down the currently-selected path. We suggest binding keyboard shortcuts to these commands, for navigating the result viewer using the keyboard. [#1568](https://github.com/github/vscode-codeql/pull/1568)
 

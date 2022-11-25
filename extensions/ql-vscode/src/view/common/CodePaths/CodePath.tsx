@@ -1,21 +1,21 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { AnalysisMessage, CodeFlow, ResultSeverity } from '../../../remote-queries/shared/analysis-result';
-import { ThreadPath } from './ThreadPath';
+import {
+  AnalysisMessage,
+  CodeFlow,
+  ResultSeverity,
+} from "../../../remote-queries/shared/analysis-result";
+import { ThreadPath } from "./ThreadPath";
 
 type CodePathProps = {
   codeFlow: CodeFlow;
   message: AnalysisMessage;
   severity: ResultSeverity;
-}
+};
 
-export const CodePath = ({
-  codeFlow,
-  message,
-  severity
-}: CodePathProps) => (
+export const CodePath = ({ codeFlow, message, severity }: CodePathProps) => (
   <>
-    {codeFlow.threadFlows.map((threadFlow, index) =>
+    {codeFlow.threadFlows.map((threadFlow, index) => (
       <ThreadPath
         key={index}
         threadFlow={threadFlow}
@@ -25,6 +25,6 @@ export const CodePath = ({
         isSource={index === 0}
         isSink={index === codeFlow.threadFlows.length - 1}
       />
-    )}
+    ))}
   </>
 );

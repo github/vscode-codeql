@@ -1,5 +1,5 @@
-import { withTheme } from './withTheme';
-import { VSCodeTheme } from './theme';
+import { withTheme } from "./withTheme";
+import { VSCodeTheme } from "./theme";
 
 export const decorators = [withTheme];
 

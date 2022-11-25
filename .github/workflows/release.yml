@@ -18,9 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: '16.14.2'
 
@@ -47,11 +47,11 @@ jobs:
           # Record the VSIX path as an output of this step.
           # This will be used later when uploading a release asset.
           VSIX_PATH="$(ls dist/*.vsix)"
-          echo "::set-output name=vsix_path::$VSIX_PATH"
+          echo "vsix_path=$VSIX_PATH" >> "$GITHUB_OUTPUT"
           # Transform the GitHub ref so it can be used in a filename.
           # The last sed invocation is used for testing branches that modify this workflow.
           REF_NAME="$(echo ${{ github.ref }} | sed -e 's:^refs/tags/::' | sed -e 's:/:-:g')"
-          echo "::set-output name=ref_name::$REF_NAME"
+          echo "ref_name=$REF_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
@@ -107,7 +107,7 @@ jobs:
           # Bump to the next patch version. Major or minor version bumps will have to be done manually.
           # Record the next version number as an output of this step.
           NEXT_VERSION="$(npm version patch)"
-          echo "::set-output name=next_version::$NEXT_VERSION"
+          echo "next_version=$NEXT_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Add changelog for next release
         if: success()
@@ -136,7 +136,7 @@ jobs:
       VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: vscode-codeql-extension
 
@@ -156,7 +156,7 @@ jobs:
       OPEN_VSX_TOKEN: ${{ secrets.OPEN_VSX_TOKEN }}
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: vscode-codeql-extension
 

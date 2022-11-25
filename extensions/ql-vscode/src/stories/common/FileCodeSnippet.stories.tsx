@@ -1,12 +1,12 @@
-import React from 'react';
+import React from "react";
 
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { FileCodeSnippet } from '../../view/common';
+import { FileCodeSnippet } from "../../view/common";
 
 export default {
-  title: 'File Code Snippet',
-  component: FileCodeSnippet
+  title: "File Code Snippet",
+  component: FileCodeSnippet,
 } as ComponentMeta<typeof FileCodeSnippet>;
 
 const Template: ComponentStory<typeof FileCodeSnippet> = (args) => (
@@ -16,13 +16,14 @@ const Template: ComponentStory<typeof FileCodeSnippet> = (args) => (
 export const WithCodeSnippet = Template.bind({});
 WithCodeSnippet.args = {
   fileLink: {
-    fileLinkPrefix: 'https://github.com/PowerShell/PowerShell/blob/450d884668ca477c6581ce597958f021fac30bff',
-    filePath: 'src/System.Management.Automation/help/UpdatableHelpSystem.cs'
+    fileLinkPrefix:
+      "https://github.com/PowerShell/PowerShell/blob/450d884668ca477c6581ce597958f021fac30bff",
+    filePath: "src/System.Management.Automation/help/UpdatableHelpSystem.cs",
   },
   codeSnippet: {
     startLine: 1261,
     endLine: 1261,
-    text: '                        entry.ExtractToFile(extractPath);'
+    text: "                        entry.ExtractToFile(extractPath);",
   },
   highlightedRegion: {
     startLine: 1261,
@@ -33,12 +34,12 @@ WithCodeSnippet.args = {
   message: {
     tokens: [
       {
-        t: 'text',
-        text: 'access to local variable extractPath'
-      }
-    ]
+        t: "text",
+        text: "access to local variable extractPath",
+      },
+    ],
   },
-  severity: 'Warning',
+  severity: "Warning",
 };
 
 export const WithoutCodeSnippet = Template.bind({});

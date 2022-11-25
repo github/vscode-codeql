@@ -1,0 +1,11 @@
+{
+  "request": {
+    "kind": "submitVariantAnalysis"
+  },
+  "response": {
+    "status": 422,
+    "body": {
+      "message": "No repositories could be queried."
+    }
+  }
+}

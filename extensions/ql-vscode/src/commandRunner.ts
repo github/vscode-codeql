@@ -4,12 +4,12 @@ import {
   window as Window,
   commands,
   Disposable,
-  ProgressLocation
-} from 'vscode';
-import { showAndLogErrorMessage, showAndLogWarningMessage } from './helpers';
-import { logger } from './logging';
-import { getErrorMessage, getErrorStack } from './pure/helpers-pure';
-import { telemetryListener } from './telemetry';
+  ProgressLocation,
+} from "vscode";
+import { showAndLogErrorMessage, showAndLogWarningMessage } from "./helpers";
+import { logger } from "./logging";
+import { getErrorMessage, getErrorStack } from "./pure/helpers-pure";
+import { telemetryListener } from "./telemetry";
 
 export class UserCancellationException extends Error {
   /**
@@ -67,7 +67,7 @@ export type ProgressTask<R> = (
  * @param args arguments passed to this task passed on from
  * `commands.registerCommand`.
  */
-type NoProgressTask = ((...args: any[]) => Promise<any>);
+type NoProgressTask = (...args: any[]) => Promise<any>;
 
 /**
  * This mediates between the kind of progress callbacks we want to
@@ -91,15 +91,18 @@ export function withProgress<R>(
   ...args: any[]
 ): Thenable<R> {
   let progressAchieved = 0;
-  return Window.withProgress(options,
-    (progress, token) => {
-      return task(p => {
+  return Window.withProgress(options, (progress, token) => {
+    return task(
+      (p) => {
         const { message, step, maxStep } = p;
-        const increment = 100 * (step - progressAchieved) / maxStep;
+        const increment = (100 * (step - progressAchieved)) / maxStep;
         progressAchieved = step;
         progress.report({ message, increment });
-      }, token, ...args);
-    });
+      },
+      token,
+      ...args,
+    );
+  });
 }
 
 /**
@@ -138,7 +141,7 @@ export function commandRunner(
           ? `${errorMessage}\n${errorStack}`
           : errorMessage;
         void showAndLogErrorMessage(errorMessage, {
-          fullMessage
+          fullMessage,
         });
       }
       return undefined;
@@ -163,14 +166,14 @@ export function commandRunnerWithProgress<R>(
   commandId: string,
   task: ProgressTask<R>,
   progressOptions: Partial<ProgressOptions>,
-  outputLogger = logger
+  outputLogger = logger,
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
     const startTime = Date.now();
     let error: Error | undefined;
     const progressOptionsWithDefaults = {
       location: ProgressLocation.Notification,
-      ...progressOptions
+      ...progressOptions,
     };
     try {
       return await withProgress(progressOptionsWithDefaults, task, ...args);
@@ -192,7 +195,7 @@ export function commandRunnerWithProgress<R>(
           : errorMessage;
         void showAndLogErrorMessage(errorMessage, {
           outputLogger,
-          fullMessage
+          fullMessage,
         });
       }
       return undefined;
@@ -216,23 +219,26 @@ export function reportStreamProgress(
   readable: NodeJS.ReadableStream,
   messagePrefix: string,
   totalNumBytes?: number,
-  progress?: ProgressCallback
+  progress?: ProgressCallback,
 ) {
   if (progress && totalNumBytes) {
     let numBytesDownloaded = 0;
-    const bytesToDisplayMB = (numBytes: number): string => `${(numBytes / (1024 * 1024)).toFixed(1)} MB`;
+    const bytesToDisplayMB = (numBytes: number): string =>
+      `${(numBytes / (1024 * 1024)).toFixed(1)} MB`;
     const updateProgress = () => {
       progress({
         step: numBytesDownloaded,
         maxStep: totalNumBytes,
-        message: `${messagePrefix} [${bytesToDisplayMB(numBytesDownloaded)} of ${bytesToDisplayMB(totalNumBytes)}]`,
+        message: `${messagePrefix} [${bytesToDisplayMB(
+          numBytesDownloaded,
+        )} of ${bytesToDisplayMB(totalNumBytes)}]`,
       });
     };
 
     // Display the progress straight away rather than waiting for the first chunk.
     updateProgress();
 
-    readable.on('data', data => {
+    readable.on("data", (data) => {
       numBytesDownloaded += data.length;
       updateProgress();
     });

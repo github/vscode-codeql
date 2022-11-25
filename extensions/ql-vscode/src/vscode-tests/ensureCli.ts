@@ -1,8 +1,12 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-import { DistributionManager, extractZipArchive, codeQlLauncherName } from '../distribution';
-import fetch from 'node-fetch';
-import { workspace } from 'vscode';
+import * as fs from "fs-extra";
+import * as path from "path";
+import {
+  DistributionManager,
+  extractZipArchive,
+  codeQlLauncherName,
+} from "../distribution";
+import fetch from "node-fetch";
+import { workspace } from "vscode";
 
 /**
  * This module ensures that the proper CLI is available for tests of the extension.
@@ -35,21 +39,23 @@ const _10MB = _1MB * 10;
 
 // CLI version to test. Hard code the latest as default. And be sure
 // to update the env if it is not otherwise set.
-const CLI_VERSION = process.env.CLI_VERSION || 'v2.11.2';
+const CLI_VERSION = process.env.CLI_VERSION || "v2.11.4";
 process.env.CLI_VERSION = CLI_VERSION;
 
 // Base dir where CLIs will be downloaded into
 // By default, put it in the `build` directory in the root of the extension.
-const CLI_BASE_DIR = process.env.CLI_DIR || path.normalize(path.join(__dirname, '../../build/cli'));
+const CLI_BASE_DIR =
+  process.env.CLI_DIR ||
+  path.normalize(path.join(__dirname, "../../build/cli"));
 
 export async function ensureCli(useCli: boolean) {
   try {
     if (!useCli) {
-      console.log('Not downloading CLI. It is not being used.');
+      console.log("Not downloading CLI. It is not being used.");
       return;
     }
 
-    if ('CLI_PATH' in process.env) {
+    if ("CLI_PATH" in process.env) {
       const executablePath = process.env.CLI_PATH;
       console.log(`Using existing CLI at ${executablePath}`);
 
@@ -62,53 +68,69 @@ export async function ensureCli(useCli: boolean) {
     const url = getCliDownloadUrl(assetName);
     const unzipDir = getCliUnzipDir();
     const downloadedFilePath = getDownloadFilePath(assetName);
-    const executablePath = path.join(getCliUnzipDir(), 'codeql', codeQlLauncherName());
+    const executablePath = path.join(
+      getCliUnzipDir(),
+      "codeql",
+      codeQlLauncherName(),
+    );
 
     // Use this environment variable to se to the `codeQL.cli.executablePath` in tests
     process.env.CLI_PATH = executablePath;
 
     if (fs.existsSync(executablePath)) {
-      console.log(`CLI version ${CLI_VERSION} is found ${executablePath}. Not going to download again.`);
+      console.log(
+        `CLI version ${CLI_VERSION} is found ${executablePath}. Not going to download again.`,
+      );
       return;
     }
 
     if (!fs.existsSync(downloadedFilePath)) {
-      console.log(`CLI version ${CLI_VERSION} zip file not found. Downloading from '${url}' into '${downloadedFilePath}'.`);
+      console.log(
+        `CLI version ${CLI_VERSION} zip file not found. Downloading from '${url}' into '${downloadedFilePath}'.`,
+      );
 
       const assetStream = await fetch(url);
-      const contentLength = Number(assetStream.headers.get('content-length') || 0);
-      console.log('Total content size', Math.round(contentLength / _1MB), 'MB');
+      const contentLength = Number(
+        assetStream.headers.get("content-length") || 0,
+      );
+      console.log("Total content size", Math.round(contentLength / _1MB), "MB");
       const archiveFile = fs.createWriteStream(downloadedFilePath);
       const body = assetStream.body;
       await new Promise<void>((resolve, reject) => {
         let numBytesDownloaded = 0;
         let lastMessage = 0;
-        body.on('data', (data) => {
+        body.on("data", (data) => {
           numBytesDownloaded += data.length;
           if (numBytesDownloaded - lastMessage > _10MB) {
-            console.log('Downloaded', Math.round(numBytesDownloaded / _1MB), 'MB');
+            console.log(
+              "Downloaded",
+              Math.round(numBytesDownloaded / _1MB),
+              "MB",
+            );
             lastMessage = numBytesDownloaded;
           }
           archiveFile.write(data);
         });
-        body.on('finish', () => {
+        body.on("finish", () => {
           archiveFile.end(() => {
-            console.log('Finished download into', downloadedFilePath);
+            console.log("Finished download into", downloadedFilePath);
             resolve();
           });
         });
-        body.on('error', reject);
+        body.on("error", reject);
       });
     } else {
-      console.log(`CLI version ${CLI_VERSION} zip file found at '${downloadedFilePath}'.`);
+      console.log(
+        `CLI version ${CLI_VERSION} zip file found at '${downloadedFilePath}'.`,
+      );
     }
 
     console.log(`Unzipping into '${unzipDir}'`);
     fs.mkdirpSync(unzipDir);
     await extractZipArchive(downloadedFilePath, unzipDir);
-    console.log('Done.');
+    console.log("Done.");
   } catch (e) {
-    console.error('Failed to download CLI.');
+    console.error("Failed to download CLI.");
     console.error(e);
     process.exit(-1);
   }
@@ -120,16 +142,18 @@ export async function ensureCli(useCli: boolean) {
  */
 function hasCodeQL() {
   const folders = workspace.workspaceFolders;
-  return !!folders?.some(folder => folder.uri.path.endsWith('/codeql'));
+  return !!folders?.some((folder) => folder.uri.path.endsWith("/codeql"));
 }
 
 export function skipIfNoCodeQL(context: Mocha.Context) {
   if (!hasCodeQL()) {
-    console.log([
-      'The CodeQL libraries are not available as a folder in this workspace.',
-      'To fix in CI: checkout the github/codeql repository and set the \'TEST_CODEQL_PATH\' environment variable to the checked out directory.',
-      'To fix when running from vs code, see the comment in the launch.json file in the \'Launch Integration Tests - With CLI\' section.'
-    ].join('\n\n'));
+    console.log(
+      [
+        "The CodeQL libraries are not available as a folder in this workspace.",
+        "To fix in CI: checkout the github/codeql repository and set the 'TEST_CODEQL_PATH' environment variable to the checked out directory.",
+        "To fix when running from vs code, see the comment in the launch.json file in the 'Launch Integration Tests - With CLI' section.",
+      ].join("\n\n"),
+    );
     context.skip();
   }
 }
@@ -138,9 +162,11 @@ export function skipIfNoCodeQL(context: Mocha.Context) {
  * Url to download from
  */
 function getCliDownloadUrl(assetName: string) {
-  if (CLI_VERSION === 'nightly') {
+  if (CLI_VERSION === "nightly") {
     if (!process.env.NIGHTLY_URL)
-      throw new Error('Nightly CLI was specified but no URL to download it from was given!');
+      throw new Error(
+        "Nightly CLI was specified but no URL to download it from was given!",
+      );
     return process.env.NIGHTLY_URL + `/${assetName}`;
   }
   return `https://github.com/github/codeql-cli-binaries/releases/download/${CLI_VERSION}/${assetName}`;
@@ -150,7 +176,7 @@ function getCliDownloadUrl(assetName: string) {
  * Directory to place the downloaded cli into
  */
 function getDownloadFilePath(assetName: string) {
-  const dir = path.join(CLI_BASE_DIR, 'assets', CLI_VERSION);
+  const dir = path.join(CLI_BASE_DIR, "assets", CLI_VERSION);
   fs.mkdirpSync(dir);
   return path.join(dir, assetName);
 }

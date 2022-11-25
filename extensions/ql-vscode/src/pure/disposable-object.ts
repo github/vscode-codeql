@@ -1,7 +1,6 @@
-
 // Avoid explicitly referencing Disposable type in vscode.
 // This file cannot have dependencies on the vscode API.
-interface Disposable {
+export interface Disposable {
   dispose(): any;
 }
 

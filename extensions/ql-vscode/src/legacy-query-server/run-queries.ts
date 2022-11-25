@@ -1,31 +1,31 @@
-import * as crypto from 'crypto';
-import * as fs from 'fs-extra';
-import * as tmp from 'tmp-promise';
-import * as path from 'path';
-import {
-  CancellationToken,
-  Uri,
-} from 'vscode';
-import { LSPErrorCodes, ResponseError } from 'vscode-languageclient';
+import * as crypto from "crypto";
+import * as fs from "fs-extra";
+import * as tmp from "tmp-promise";
+import * as path from "path";
+import { CancellationToken, Uri } from "vscode";
+import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 
-import * as cli from '../cli';
-import { DatabaseItem, } from '../databases';
+import * as cli from "../cli";
+import { DatabaseItem } from "../databases";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
   showAndLogWarningMessage,
   tryGetQueryMetadata,
-  upgradesTmpDir
-} from '../helpers';
-import { ProgressCallback } from '../commandRunner';
-import { QueryMetadata } from '../pure/interface-types';
-import { logger } from '../logging';
-import * as messages from '../pure/legacy-messages';
-import { InitialQueryInfo, LocalQueryInfo } from '../query-results';
-import * as qsClient from './queryserver-client';
-import { getErrorMessage } from '../pure/helpers-pure';
-import { compileDatabaseUpgradeSequence, upgradeDatabaseExplicit } from './upgrades';
-import { QueryEvaluationInfo, QueryWithResults } from '../run-queries-shared';
+  upgradesTmpDir,
+} from "../helpers";
+import { ProgressCallback } from "../commandRunner";
+import { QueryMetadata } from "../pure/interface-types";
+import { logger } from "../logging";
+import * as messages from "../pure/legacy-messages";
+import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
+import * as qsClient from "./queryserver-client";
+import { getErrorMessage } from "../pure/helpers-pure";
+import {
+  compileDatabaseUpgradeSequence,
+  upgradeDatabaseExplicit,
+} from "./upgrades";
+import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
 
 /**
  * A collection of evaluation-time information about a query,
@@ -34,7 +34,6 @@ import { QueryEvaluationInfo, QueryWithResults } from '../run-queries-shared';
  * output and results.
  */
 export class QueryInProgress {
-
   public queryEvalInfo: QueryEvaluationInfo;
   /**
    * Note that in the {@link slurpQueryHistory} method, we create a QueryEvaluationInfo instance
@@ -49,14 +48,19 @@ export class QueryInProgress {
     readonly metadata?: QueryMetadata,
     readonly templates?: Record<string, string>,
   ) {
-    this.queryEvalInfo = new QueryEvaluationInfo(querySaveDir, dbItemPath, databaseHasMetadataFile, quickEvalPosition, metadata);
+    this.queryEvalInfo = new QueryEvaluationInfo(
+      querySaveDir,
+      dbItemPath,
+      databaseHasMetadataFile,
+      quickEvalPosition,
+      metadata,
+    );
     /**/
   }
 
   get compiledQueryPath() {
     return this.queryEvalInfo.compileQueryPath;
   }
-
 
   async run(
     qs: qsClient.QueryServerClient,
@@ -68,19 +72,21 @@ export class QueryInProgress {
     queryInfo?: LocalQueryInfo,
   ): Promise<messages.EvaluationResult> {
     if (!dbItem.contents || dbItem.error) {
-      throw new Error('Can\'t run query on invalid database.');
+      throw new Error("Can't run query on invalid database.");
     }
 
     let result: messages.EvaluationResult | null = null;
 
-    const callbackId = qs.registerCallback(res => {
+    const callbackId = qs.registerCallback((res) => {
       result = {
         ...res,
-        logFileLocation: this.queryEvalInfo.logPath
+        logFileLocation: this.queryEvalInfo.logPath,
       };
     });
 
-    const availableMlModelUris: messages.MlModel[] = availableMlModels.map(model => ({ uri: Uri.file(model.path).toString(true) }));
+    const availableMlModelUris: messages.MlModel[] = availableMlModels.map(
+      (model) => ({ uri: Uri.file(model.path).toString(true) }),
+    );
 
     const queryToRun: messages.QueryToRun = {
       resultsPath: this.queryEvalInfo.resultsPaths.resultsPath,
@@ -95,50 +101,63 @@ export class QueryInProgress {
 
     const dataset: messages.Dataset = {
       dbDir: dbItem.contents.datasetUri.fsPath,
-      workingSet: 'default'
+      workingSet: "default",
     };
-    if (queryInfo && await qs.cliServer.cliConstraints.supportsPerQueryEvalLog()) {
+    if (
+      queryInfo &&
+      (await qs.cliServer.cliConstraints.supportsPerQueryEvalLog())
+    ) {
       await qs.sendRequest(messages.startLog, {
         db: dataset,
         logPath: this.queryEvalInfo.evalLogPath,
       });
-
     }
     const params: messages.EvaluateQueriesParams = {
       db: dataset,
       evaluateId: callbackId,
       queries: [queryToRun],
       stopOnError: false,
-      useSequenceHint: false
+      useSequenceHint: false,
     };
     try {
       await qs.sendRequest(messages.runQueries, params, token, progress);
       if (qs.config.customLogDirectory) {
         void showAndLogWarningMessage(
-          `Custom log directories are no longer supported. The "codeQL.runningQueries.customLogDirectory" setting is deprecated. Unset the setting to stop seeing this message. Query logs saved to ${this.queryEvalInfo.logPath}.`
+          `Custom log directories are no longer supported. The "codeQL.runningQueries.customLogDirectory" setting is deprecated. Unset the setting to stop seeing this message. Query logs saved to ${this.queryEvalInfo.logPath}.`,
         );
       }
     } finally {
       qs.unRegisterCallback(callbackId);
-      if (queryInfo && await qs.cliServer.cliConstraints.supportsPerQueryEvalLog()) {
+      if (
+        queryInfo &&
+        (await qs.cliServer.cliConstraints.supportsPerQueryEvalLog())
+      ) {
         await qs.sendRequest(messages.endLog, {
           db: dataset,
           logPath: this.queryEvalInfo.evalLogPath,
         });
         if (await this.queryEvalInfo.hasEvalLog()) {
-          await this.queryEvalInfo.addQueryLogs(queryInfo, qs.cliServer, qs.logger);
+          await this.queryEvalInfo.addQueryLogs(
+            queryInfo,
+            qs.cliServer,
+            qs.logger,
+          );
         } else {
-          void showAndLogWarningMessage(`Failed to write structured evaluator log to ${this.queryEvalInfo.evalLogPath}.`);
+          void showAndLogWarningMessage(
+            `Failed to write structured evaluator log to ${this.queryEvalInfo.evalLogPath}.`,
+          );
         }
       }
     }
-    return result || {
-      evaluationTime: 0,
-      message: 'No result from server',
-      queryId: -1,
-      runId: callbackId,
-      resultType: messages.QueryResultType.OTHER_ERROR
-    };
+    return (
+      result || {
+        evaluationTime: 0,
+        message: "No result from server",
+        queryId: -1,
+        runId: callbackId,
+        resultType: messages.QueryResultType.OTHER_ERROR,
+      }
+    );
   }
 
   async compile(
@@ -149,9 +168,11 @@ export class QueryInProgress {
   ): Promise<messages.CompilationMessage[]> {
     let compiled: messages.CheckQueryResult | undefined;
     try {
-      const target = this.quickEvalPosition ? {
-        quickEval: { quickEvalPos: this.quickEvalPosition }
-      } : { query: {} };
+      const target = this.quickEvalPosition
+        ? {
+            quickEval: { quickEvalPos: this.quickEvalPosition },
+          }
+        : { query: {} };
       const params: messages.CompileQueryParams = {
         compilationOptions: {
           computeNoLocationUrls: true,
@@ -162,21 +183,30 @@ export class QueryInProgress {
           noComputeGetUrl: false,
           noComputeToString: false,
           computeDefaultStrings: true,
-          emitDebugInfo: true
+          emitDebugInfo: true,
         },
         extraOptions: {
-          timeoutSecs: qs.config.timeoutSecs
+          timeoutSecs: qs.config.timeoutSecs,
         },
         queryToCheck: program,
         resultPath: this.compiledQueryPath,
         target,
       };
 
-      compiled = await qs.sendRequest(messages.compileQuery, params, token, progress);
+      compiled = await qs.sendRequest(
+        messages.compileQuery,
+        params,
+        token,
+        progress,
+      );
     } finally {
-      void qs.logger.log(' - - - COMPILATION DONE - - - ', { additionalLogLocation: this.queryEvalInfo.logPath });
+      void qs.logger.log(" - - - COMPILATION DONE - - - ", {
+        additionalLogLocation: this.queryEvalInfo.logPath,
+      });
     }
-    return (compiled?.messages || []).filter(msg => msg.severity === messages.Severity.ERROR);
+    return (compiled?.messages || []).filter(
+      (msg) => msg.severity === messages.Severity.ERROR,
+    );
   }
 }
 
@@ -187,12 +217,12 @@ export async function clearCacheInDatabase(
   token: CancellationToken,
 ): Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
-    throw new Error('Can\'t clear the cache in an invalid database.');
+    throw new Error("Can't clear the cache in an invalid database.");
   }
 
   const db: messages.Dataset = {
     dbDir: dbItem.contents.datasetUri.fsPath,
-    workingSet: 'default',
+    workingSet: "default",
   };
 
   const params: messages.ClearCacheParams = {
@@ -202,7 +232,6 @@ export async function clearCacheInDatabase(
 
   return qs.sendRequest(messages.clearCache, params, token, progress);
 }
-
 
 /**
  * Compare the dbscheme implied by the query `query` and that of the current database.
@@ -222,9 +251,16 @@ async function checkDbschemeCompatibility(
   const searchPath = getOnDiskWorkspaceFolders();
 
   if (dbItem.contents?.dbSchemeUri !== undefined) {
-    const { finalDbscheme } = await cliServer.resolveUpgrades(dbItem.contents.dbSchemeUri.fsPath, searchPath, false);
-    const hash = async function(filename: string): Promise<string> {
-      return crypto.createHash('sha256').update(await fs.readFile(filename)).digest('hex');
+    const { finalDbscheme } = await cliServer.resolveUpgrades(
+      dbItem.contents.dbSchemeUri.fsPath,
+      searchPath,
+      false,
+    );
+    const hash = async function (filename: string): Promise<string> {
+      return crypto
+        .createHash("sha256")
+        .update(await fs.readFile(filename))
+        .digest("hex");
     };
 
     // At this point, we have learned about three dbschemes:
@@ -242,22 +278,19 @@ async function checkDbschemeCompatibility(
       reportNoUpgradePath(qlProgram, query);
     }
 
-    if (upgradableTo == dbschemeOfLib &&
-      dbschemeOfDb != dbschemeOfLib) {
+    if (upgradableTo == dbschemeOfLib && dbschemeOfDb != dbschemeOfLib) {
       // Try to upgrade the database
-      await upgradeDatabaseExplicit(
-        qs,
-        dbItem,
-        progress,
-        token
-      );
+      await upgradeDatabaseExplicit(qs, dbItem, progress, token);
     }
   }
 }
 
-function reportNoUpgradePath(qlProgram: messages.QlProgram, query: QueryInProgress): void {
+function reportNoUpgradePath(
+  qlProgram: messages.QlProgram,
+  query: QueryInProgress,
+): void {
   throw new Error(
-    `Query ${qlProgram.queryPath} expects database scheme ${query.queryDbscheme}, but the current database has a different scheme, and no database upgrades are available. The current database scheme may be newer than the CodeQL query libraries in your workspace.\n\nPlease try using a newer version of the query libraries.`
+    `Query ${qlProgram.queryPath} expects database scheme ${query.queryDbscheme}, but the current database has a different scheme, and no database upgrades are available. The current database scheme may be newer than the CodeQL query libraries in your workspace.\n\nPlease try using a newer version of the query libraries.`,
   );
 }
 
@@ -273,9 +306,8 @@ async function compileNonDestructiveUpgrade(
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<string> {
-
   if (!dbItem?.contents?.dbSchemeUri) {
-    throw new Error('Database is invalid, and cannot be upgraded.');
+    throw new Error("Database is invalid, and cannot be upgraded.");
   }
 
   // When packaging is used, dependencies may exist outside of the workspace and they are always on the resolved search path.
@@ -288,15 +320,22 @@ async function compileNonDestructiveUpgrade(
     dbItem.contents.dbSchemeUri.fsPath,
     upgradesPath,
     true,
-    query.queryDbscheme
+    query.queryDbscheme,
   );
 
   if (!matchesTarget) {
     reportNoUpgradePath(qlProgram, query);
   }
-  const result = await compileDatabaseUpgradeSequence(qs, dbItem, scripts, upgradeTemp, progress, token);
+  const result = await compileDatabaseUpgradeSequence(
+    qs,
+    dbItem,
+    scripts,
+    upgradeTemp,
+    progress,
+    token,
+  );
   if (result.compiledUpgrade === undefined) {
-    const error = result.error || '[no error message available]';
+    const error = result.error || "[no error message available]";
     throw new Error(error);
   }
   // We can upgrade to the actual target
@@ -304,8 +343,6 @@ async function compileNonDestructiveUpgrade(
   // We are new enough that we will always support single file upgrades.
   return result.compiledUpgrade;
 }
-
-
 
 export async function compileAndRunQueryAgainstDatabase(
   cliServer: cli.CodeQLCliServer,
@@ -319,16 +356,23 @@ export async function compileAndRunQueryAgainstDatabase(
   queryInfo?: LocalQueryInfo, // May be omitted for queries not initiated by the user. If omitted we won't create a structured log for the query.
 ): Promise<QueryWithResults> {
   if (!dbItem.contents || !dbItem.contents.dbSchemeUri) {
-    throw new Error(`Database ${dbItem.databaseUri} does not have a CodeQL database scheme.`);
+    throw new Error(
+      `Database ${dbItem.databaseUri} does not have a CodeQL database scheme.`,
+    );
   }
 
   // Get the workspace folder paths.
   const diskWorkspaceFolders = getOnDiskWorkspaceFolders();
   // Figure out the library path for the query.
-  const packConfig = await cliServer.resolveLibraryPath(diskWorkspaceFolders, initialInfo.queryPath);
+  const packConfig = await cliServer.resolveLibraryPath(
+    diskWorkspaceFolders,
+    initialInfo.queryPath,
+  );
 
   if (!packConfig.dbscheme) {
-    throw new Error('Could not find a database scheme for this query. Please check that you have a valid qlpack.yml file for this query, which refers to a database scheme either in the `dbscheme` field or through one of its dependencies.');
+    throw new Error(
+      "Could not find a database scheme for this query. Please check that you have a valid qlpack.yml file for this query, which refers to a database scheme either in the `dbscheme` field or through one of its dependencies.",
+    );
   }
 
   // Check whether the query has an entirely different schema from the
@@ -338,8 +382,16 @@ export async function compileAndRunQueryAgainstDatabase(
   const querySchemaName = path.basename(packConfig.dbscheme);
   const dbSchemaName = path.basename(dbItem.contents.dbSchemeUri.fsPath);
   if (querySchemaName != dbSchemaName) {
-    void logger.log(`Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`);
-    throw new Error(`The query ${path.basename(initialInfo.queryPath)} cannot be run against the selected database (${dbItem.name}): their target languages are different. Please select a different database and try again.`);
+    void logger.log(
+      `Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`,
+    );
+    throw new Error(
+      `The query ${path.basename(
+        initialInfo.queryPath,
+      )} cannot be run against the selected database (${
+        dbItem.name
+      }): their target languages are different. Please select a different database and try again.`,
+    );
   }
 
   const qlProgram: messages.QlProgram = {
@@ -351,31 +403,43 @@ export async function compileAndRunQueryAgainstDatabase(
     // we use the database's DB scheme here instead of the DB scheme
     // from the current document's project.
     dbschemePath: dbItem.contents.dbSchemeUri.fsPath,
-    queryPath: initialInfo.queryPath
+    queryPath: initialInfo.queryPath,
   };
 
   // Read the query metadata if possible, to use in the UI.
   const metadata = await tryGetQueryMetadata(cliServer, qlProgram.queryPath);
 
   let availableMlModels: cli.MlModelInfo[] = [];
-  if (!await cliServer.cliConstraints.supportsResolveMlModels()) {
-    void logger.log('Resolving ML models is unsupported by this version of the CLI. Running the query without any ML models.');
+  if (!(await cliServer.cliConstraints.supportsResolveMlModels())) {
+    void logger.log(
+      "Resolving ML models is unsupported by this version of the CLI. Running the query without any ML models.",
+    );
   } else {
     try {
-      availableMlModels = (await cliServer.resolveMlModels(diskWorkspaceFolders, initialInfo.queryPath)).models;
+      availableMlModels = (
+        await cliServer.resolveMlModels(
+          diskWorkspaceFolders,
+          initialInfo.queryPath,
+        )
+      ).models;
       if (availableMlModels.length) {
-        void logger.log(`Found available ML models at the following paths: ${availableMlModels.map(x => `'${x.path}'`).join(', ')}.`);
+        void logger.log(
+          `Found available ML models at the following paths: ${availableMlModels
+            .map((x) => `'${x.path}'`)
+            .join(", ")}.`,
+        );
       } else {
-        void logger.log('Did not find any available ML models.');
+        void logger.log("Did not find any available ML models.");
       }
     } catch (e) {
-      const message = `Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the ` +
+      const message =
+        `Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the ` +
         `query without any ML models: ${e}.`;
       void showAndLogErrorMessage(message);
     }
   }
 
-  const hasMetadataFile = (await dbItem.hasMetadataFile());
+  const hasMetadataFile = await dbItem.hasMetadataFile();
   const query = new QueryInProgress(
     path.join(queryStorageDir, initialInfo.id),
     dbItem.databaseUri.fsPath,
@@ -383,7 +447,7 @@ export async function compileAndRunQueryAgainstDatabase(
     packConfig.dbscheme,
     initialInfo.quickEvalPosition,
     metadata,
-    templates
+    templates,
   );
   await query.queryEvalInfo.createTimestampFile();
 
@@ -392,25 +456,49 @@ export async function compileAndRunQueryAgainstDatabase(
     let upgradeQlo;
     if (await cliServer.cliConstraints.supportsNonDestructiveUpgrades()) {
       upgradeDir = await tmp.dir({ dir: upgradesTmpDir, unsafeCleanup: true });
-      upgradeQlo = await compileNonDestructiveUpgrade(qs, upgradeDir, query, qlProgram, dbItem, progress, token);
+      upgradeQlo = await compileNonDestructiveUpgrade(
+        qs,
+        upgradeDir,
+        query,
+        qlProgram,
+        dbItem,
+        progress,
+        token,
+      );
     } else {
-      await checkDbschemeCompatibility(cliServer, qs, query, qlProgram, dbItem, progress, token);
+      await checkDbschemeCompatibility(
+        cliServer,
+        qs,
+        query,
+        qlProgram,
+        dbItem,
+        progress,
+        token,
+      );
     }
     let errors;
     try {
       errors = await query.compile(qs, qlProgram, progress, token);
     } catch (e) {
       if (e instanceof ResponseError && e.code == LSPErrorCodes.RequestCancelled) {
-        return createSyntheticResult(query, 'Query cancelled');
+        return createSyntheticResult(query, "Query cancelled");
       } else {
         throw e;
       }
     }
 
     if (errors.length === 0) {
-      const result = await query.run(qs, upgradeQlo, availableMlModels, dbItem, progress, token, queryInfo);
+      const result = await query.run(
+        qs,
+        upgradeQlo,
+        availableMlModels,
+        dbItem,
+        progress,
+        token,
+        queryInfo,
+      );
       if (result.resultType !== messages.QueryResultType.SUCCESS) {
-        const message = result.message || 'Failed to run query';
+        const message = result.message || "Failed to run query";
         void logger.log(message);
         void showAndLogErrorMessage(message);
       }
@@ -424,7 +512,7 @@ export async function compileAndRunQueryAgainstDatabase(
         logFileLocation: result.logFileLocation,
         dispose: () => {
           qs.logger.removeAdditionalLogLocation(result.logFileLocation);
-        }
+        },
       };
     } else {
       // Error dialogs are limited in size and scrollability,
@@ -433,26 +521,34 @@ export async function compileAndRunQueryAgainstDatabase(
       // However we don't show quick eval errors there so we need to display them anyway.
       void qs.logger.log(
         `Failed to compile query ${initialInfo.queryPath} against database scheme ${qlProgram.dbschemePath}:`,
-        { additionalLogLocation: query.queryEvalInfo.logPath }
+        { additionalLogLocation: query.queryEvalInfo.logPath },
       );
 
       const formattedMessages: string[] = [];
 
       for (const error of errors) {
-        const message = error.message || '[no error message available]';
+        const message = error.message || "[no error message available]";
         const formatted = `ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`;
         formattedMessages.push(formatted);
-        void qs.logger.log(formatted, { additionalLogLocation: query.queryEvalInfo.logPath });
+        void qs.logger.log(formatted, {
+          additionalLogLocation: query.queryEvalInfo.logPath,
+        });
       }
       if (initialInfo.isQuickEval && formattedMessages.length <= 2) {
         // If there are more than 2 error messages, they will not be displayed well in a popup
         // and will be trimmed by the function displaying the error popup. Accordingly, we only
         // try to show the errors if there are 2 or less, otherwise we direct the user to the log.
-        void showAndLogErrorMessage('Quick evaluation compilation failed: ' + formattedMessages.join('\n'));
+        void showAndLogErrorMessage(
+          "Quick evaluation compilation failed: " +
+            formattedMessages.join("\n"),
+        );
       } else {
-        void showAndLogErrorMessage((initialInfo.isQuickEval ? 'Quick evaluation' : 'Query') + compilationFailedErrorTail);
+        void showAndLogErrorMessage(
+          (initialInfo.isQuickEval ? "Quick evaluation" : "Query") +
+            compilationFailedErrorTail,
+        );
       }
-      return createSyntheticResult(query, 'Query had compilation errors');
+      return createSyntheticResult(query, "Query had compilation errors");
     }
   } finally {
     try {
@@ -460,30 +556,34 @@ export async function compileAndRunQueryAgainstDatabase(
     } catch (e) {
       void qs.logger.log(
         `Could not clean up the upgrades dir. Reason: ${getErrorMessage(e)}`,
-        { additionalLogLocation: query.queryEvalInfo.logPath }
+        { additionalLogLocation: query.queryEvalInfo.logPath },
       );
     }
   }
 }
 
-
-const compilationFailedErrorTail = ' compilation failed. Please make sure there are no errors in the query, the database is up to date,' +
-  ' and the query and database use the same target language. For more details on the error, go to View > Output,' +
-  ' and choose CodeQL Query Server from the dropdown.';
+const compilationFailedErrorTail =
+  " compilation failed. Please make sure there are no errors in the query, the database is up to date," +
+  " and the query and database use the same target language. For more details on the error, go to View > Output," +
+  " and choose CodeQL Query Server from the dropdown.";
 
 export function formatLegacyMessage(result: messages.EvaluationResult) {
   switch (result.resultType) {
     case messages.QueryResultType.CANCELLATION:
-      return `cancelled after ${Math.round(result.evaluationTime / 1000)} seconds`;
+      return `cancelled after ${Math.round(
+        result.evaluationTime / 1000,
+      )} seconds`;
     case messages.QueryResultType.OOM:
-      return 'out of memory';
+      return "out of memory";
     case messages.QueryResultType.SUCCESS:
       return `finished in ${Math.round(result.evaluationTime / 1000)} seconds`;
     case messages.QueryResultType.TIMEOUT:
-      return `timed out after ${Math.round(result.evaluationTime / 1000)} seconds`;
+      return `timed out after ${Math.round(
+        result.evaluationTime / 1000,
+      )} seconds`;
     case messages.QueryResultType.OTHER_ERROR:
     default:
-      return result.message ? `failed: ${result.message}` : 'failed';
+      return result.message ? `failed: ${result.message}` : "failed";
   }
 }
 
@@ -505,12 +605,15 @@ function createSyntheticResult(
       runId: 0,
     },
     successful: false,
-    dispose: () => { /**/ },
+    dispose: () => {
+      /**/
+    },
   };
 }
 
-
-function createSimpleTemplates(templates: Record<string, string> | undefined): messages.TemplateDefinitions | undefined {
+function createSimpleTemplates(
+  templates: Record<string, string> | undefined,
+): messages.TemplateDefinitions | undefined {
   if (!templates) {
     return undefined;
   }
@@ -518,8 +621,8 @@ function createSimpleTemplates(templates: Record<string, string> | undefined): m
   for (const key of Object.keys(templates)) {
     result[key] = {
       values: {
-        tuples: [[{ stringValue: templates[key] }]]
-      }
+        tuples: [[{ stringValue: templates[key] }]],
+      },
     };
   }
   return result;

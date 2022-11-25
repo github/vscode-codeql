@@ -1,15 +1,16 @@
-import { faker } from '@faker-js/faker';
+import { faker } from "@faker-js/faker";
 import {
   VariantAnalysisSkippedRepositories,
-  VariantAnalysisSkippedRepositoryGroup
-} from '../../../../remote-queries/shared/variant-analysis';
+  VariantAnalysisSkippedRepositoryGroup,
+} from "../../../../remote-queries/shared/variant-analysis";
+import { createMockRepositoryWithMetadata } from "./repository";
 
 export function createMockSkippedRepos(): VariantAnalysisSkippedRepositories {
   return {
     accessMismatchRepos: createMockSkippedRepoGroup(),
     noCodeqlDbRepos: createMockSkippedRepoGroup(),
     notFoundRepos: createMockNotFoundRepoGroup(),
-    overLimitRepos: createMockSkippedRepoGroup()
+    overLimitRepos: createMockSkippedRepoGroup(),
   };
 }
 
@@ -17,15 +18,9 @@ export function createMockSkippedRepoGroup(): VariantAnalysisSkippedRepositoryGr
   return {
     repositoryCount: 2,
     repositories: [
-      {
-        id: faker.datatype.number(),
-        fullName: 'github/' + faker.random.word(),
-      },
-      {
-        id: faker.datatype.number(),
-        fullName: 'github/' + faker.random.word(),
-      }
-    ]
+      createMockRepositoryWithMetadata(),
+      createMockRepositoryWithMetadata(),
+    ],
   };
 }
 
@@ -34,11 +29,11 @@ export function createMockNotFoundRepoGroup(): VariantAnalysisSkippedRepositoryG
     repositoryCount: 2,
     repositories: [
       {
-        fullName: 'github/' + faker.random.word(),
+        fullName: "github/" + faker.random.word(),
       },
       {
-        fullName: 'github/' + faker.random.word(),
-      }
-    ]
+        fullName: "github/" + faker.random.word(),
+      },
+    ],
   };
 }

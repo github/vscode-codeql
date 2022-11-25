@@ -1,12 +1,16 @@
-import * as React from 'react';
-import { useState } from 'react';
-import styled from 'styled-components';
+import * as React from "react";
+import { useState } from "react";
+import styled from "styled-components";
 
-import { AnalysisMessage, CodeFlow, ResultSeverity } from '../../../remote-queries/shared/analysis-result';
-import { SectionTitle } from '../SectionTitle';
-import { VerticalSpace } from '../VerticalSpace';
-import { CodeFlowsDropdown } from './CodeFlowsDropdown';
-import { CodePath } from './CodePath';
+import {
+  AnalysisMessage,
+  CodeFlow,
+  ResultSeverity,
+} from "../../../remote-queries/shared/analysis-result";
+import { SectionTitle } from "../SectionTitle";
+import { VerticalSpace } from "../VerticalSpace";
+import { CodeFlowsDropdown } from "./CodeFlowsDropdown";
+import { CodePath } from "./CodePath";
 
 const StyledCloseButton = styled.button`
   position: absolute;
@@ -18,7 +22,7 @@ const StyledCloseButton = styled.button`
   cursor: pointer;
 
   &:focus-visible {
-    outline: none
+    outline: none;
   }
 `;
 
@@ -63,7 +67,7 @@ type CodePathsOverlayProps = {
   message: AnalysisMessage;
   severity: ResultSeverity;
   onClose: () => void;
-}
+};
 
 export const CodePathsOverlay = ({
   codeFlows,
@@ -83,10 +87,14 @@ export const CodePathsOverlay = ({
 
       <PathsContainer>
         <PathDetailsContainer>
-          {codeFlows.length} paths available: {selectedCodeFlow.threadFlows.length} steps in
+          {codeFlows.length} paths available:{" "}
+          {selectedCodeFlow.threadFlows.length} steps in
         </PathDetailsContainer>
         <PathDropdownContainer>
-          <CodeFlowsDropdown codeFlows={codeFlows} setSelectedCodeFlow={setSelectedCodeFlow} />
+          <CodeFlowsDropdown
+            codeFlows={codeFlows}
+            setSelectedCodeFlow={setSelectedCodeFlow}
+          />
         </PathDropdownContainer>
       </PathsContainer>
 

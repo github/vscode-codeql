@@ -1,8 +1,7 @@
-import { Logger } from './logging';
-import * as cp from 'child_process';
-import { Disposable } from 'vscode';
-import { MessageConnection } from 'vscode-jsonrpc';
-
+import { Logger } from "./logging";
+import * as cp from "child_process";
+import { Disposable } from "vscode";
+import { MessageConnection } from "vscode-jsonrpc";
 
 /** A running query server process and its associated message connection. */
 export class ServerProcess implements Disposable {
@@ -10,7 +9,12 @@ export class ServerProcess implements Disposable {
   connection: MessageConnection;
   logger: Logger;
 
-  constructor(child: cp.ChildProcess, connection: MessageConnection, private name: string, logger: Logger) {
+  constructor(
+    child: cp.ChildProcess,
+    connection: MessageConnection,
+    private name: string,
+    logger: Logger,
+  ) {
     this.child = child;
     this.connection = connection;
     this.logger = logger;

@@ -1,17 +1,29 @@
-import { decodeSourceArchiveUri, encodeArchiveBasePath } from '../archive-filesystem-provider';
-import { ColumnKindCode, EntityValue, getResultSetSchema, ResultSetSchema } from '../pure/bqrs-cli-types';
-import { CodeQLCliServer } from '../cli';
-import { DatabaseManager, DatabaseItem } from '../databases';
-import fileRangeFromURI from './fileRangeFromURI';
-import { ProgressCallback } from '../commandRunner';
-import { KeyType } from './keyType';
-import { qlpackOfDatabase, resolveQueries } from './queryResolver';
-import { CancellationToken, LocationLink, Uri } from 'vscode';
-import { createInitialQueryInfo, QueryWithResults } from '../run-queries-shared';
-import { QueryRunner } from '../queryRunner';
+import {
+  decodeSourceArchiveUri,
+  encodeArchiveBasePath,
+} from "../archive-filesystem-provider";
+import {
+  ColumnKindCode,
+  EntityValue,
+  getResultSetSchema,
+  ResultSetSchema,
+} from "../pure/bqrs-cli-types";
+import { CodeQLCliServer } from "../cli";
+import { DatabaseManager, DatabaseItem } from "../databases";
+import fileRangeFromURI from "./fileRangeFromURI";
+import { ProgressCallback } from "../commandRunner";
+import { KeyType } from "./keyType";
+import {
+  qlpackOfDatabase,
+  resolveQueries,
+  runContextualQuery,
+} from "./queryResolver";
+import { CancellationToken, LocationLink, Uri } from "vscode";
+import { QueryWithResults } from "../run-queries-shared";
+import { QueryRunner } from "../queryRunner";
 
-export const SELECT_QUERY_NAME = '#select';
-export const TEMPLATE_NAME = 'selectedSourceFile';
+export const SELECT_QUERY_NAME = "#select";
+export const TEMPLATE_NAME = "selectedSourceFile";
 
 export interface FullLocationLink extends LocationLink {
   originUri: Uri;
@@ -41,7 +53,7 @@ export async function getLocationsForUriString(
   queryStorageDir: string,
   progress: ProgressCallback,
   token: CancellationToken,
-  filter: (src: string, dest: string) => boolean
+  filter: (src: string, dest: string) => boolean,
 ): Promise<FullLocationLink[]> {
   const uri = decodeSourceArchiveUri(Uri.parse(uriString, true));
   const sourceArchiveUri = encodeArchiveBasePath(uri.sourceArchiveZipPath);
@@ -56,17 +68,18 @@ export async function getLocationsForUriString(
 
   const links: FullLocationLink[] = [];
   for (const query of await resolveQueries(cli, qlpack, keyType)) {
-    const initialInfo = await createInitialQueryInfo(
-      Uri.file(query),
-      {
-        name: db.name,
-        databaseUri: db.databaseUri.toString(),
-      },
-      false
+    const results = await runContextualQuery(
+      query,
+      db,
+      queryStorageDir,
+      qs,
+      cli,
+      progress,
+      token,
+      templates,
     );
-    const results = await qs.compileAndRunQueryAgainstDatabase(db, initialInfo, queryStorageDir, progress, token, templates);
     if (results.successful) {
-      links.push(...await getLinksFromResults(results, cli, db, filter));
+      links.push(...(await getLinksFromResults(results, cli, db, filter)));
     }
   }
   return links;
@@ -76,7 +89,7 @@ async function getLinksFromResults(
   results: QueryWithResults,
   cli: CodeQLCliServer,
   db: DatabaseItem,
-  filter: (srcFile: string, destFile: string) => boolean
+  filter: (srcFile: string, destFile: string) => boolean,
 ): Promise<FullLocationLink[]> {
   const localLinks: FullLocationLink[] = [];
   const bqrsPath = results.query.resultsPaths.resultsPath;
@@ -89,12 +102,16 @@ async function getLinksFromResults(
       const [src, dest] = tuple as [EntityValue, EntityValue];
       const srcFile = src.url && fileRangeFromURI(src.url, db);
       const destFile = dest.url && fileRangeFromURI(dest.url, db);
-      if (srcFile && destFile && filter(srcFile.uri.toString(), destFile.uri.toString())) {
+      if (
+        srcFile &&
+        destFile &&
+        filter(srcFile.uri.toString(), destFile.uri.toString())
+      ) {
         localLinks.push({
           targetRange: destFile.range,
           targetUri: destFile.uri,
           originSelectionRange: srcFile.range,
-          originUri: srcFile.uri
+          originUri: srcFile.uri,
         });
       }
     }
@@ -104,13 +121,16 @@ async function getLinksFromResults(
 
 function createTemplates(path: string): Record<string, string> {
   return {
-    [TEMPLATE_NAME]: path
+    [TEMPLATE_NAME]: path,
   };
 }
 
 function isValidSelect(selectInfo: ResultSetSchema | undefined) {
-  return selectInfo && selectInfo.columns.length == 3
-    && selectInfo.columns[0].kind == ColumnKindCode.ENTITY
-    && selectInfo.columns[1].kind == ColumnKindCode.ENTITY
-    && selectInfo.columns[2].kind == ColumnKindCode.STRING;
+  return (
+    selectInfo &&
+    selectInfo.columns.length == 3 &&
+    selectInfo.columns[0].kind == ColumnKindCode.ENTITY &&
+    selectInfo.columns[1].kind == ColumnKindCode.ENTITY &&
+    selectInfo.columns[2].kind == ColumnKindCode.STRING
+  );
 }

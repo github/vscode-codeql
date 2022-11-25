@@ -1,4 +1,4 @@
-import * as unzipper from 'unzipper';
+import * as unzipper from "unzipper";
 
 /**
  * Unzips a zip file to a directory.

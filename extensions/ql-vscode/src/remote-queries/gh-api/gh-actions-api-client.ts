@@ -1,16 +1,25 @@
-import * as path from 'path';
-import * as fs from 'fs-extra';
-import { showAndLogErrorMessage, showAndLogWarningMessage, tmpDir } from '../../helpers';
-import { Credentials } from '../../authentication';
-import { logger } from '../../logging';
-import { RemoteQueryWorkflowResult } from '../remote-query-workflow-result';
-import { DownloadLink, createDownloadPath } from '../download-link';
-import { RemoteQuery } from '../remote-query';
-import { RemoteQueryFailureIndexItem, RemoteQueryResultIndex, RemoteQuerySuccessIndexItem } from '../remote-query-result-index';
-import { getErrorMessage } from '../../pure/helpers-pure';
-import { unzipFile } from '../../pure/zip';
+import * as path from "path";
+import * as fs from "fs-extra";
+import {
+  showAndLogErrorMessage,
+  showAndLogWarningMessage,
+  tmpDir,
+} from "../../helpers";
+import { Credentials } from "../../authentication";
+import { logger } from "../../logging";
+import { RemoteQueryWorkflowResult } from "../remote-query-workflow-result";
+import { DownloadLink, createDownloadPath } from "../download-link";
+import { RemoteQuery } from "../remote-query";
+import {
+  RemoteQueryFailureIndexItem,
+  RemoteQueryResultIndex,
+  RemoteQuerySuccessIndexItem,
+} from "../remote-query-result-index";
+import { getErrorMessage } from "../../pure/helpers-pure";
+import { unzipFile } from "../../pure/zip";
+import { VariantAnalysis } from "../shared/variant-analysis";
 
-export const RESULT_INDEX_ARTIFACT_NAME = 'result-index';
+export const RESULT_INDEX_ARTIFACT_NAME = "result-index";
 
 interface ApiSuccessIndexItem {
   nwo: string;
@@ -35,7 +44,7 @@ interface ApiResultIndex {
 
 export async function getRemoteQueryIndex(
   credentials: Credentials,
-  remoteQuery: RemoteQuery
+  remoteQuery: RemoteQuery,
 ): Promise<RemoteQueryResultIndex | undefined> {
   const controllerRepo = remoteQuery.controllerRepository;
   const owner = controllerRepo.owner;
@@ -45,15 +54,32 @@ export async function getRemoteQueryIndex(
   const workflowUri = `https://github.com/${owner}/${repoName}/actions/runs/${workflowRunId}`;
   const artifactsUrlPath = `/repos/${owner}/${repoName}/actions/artifacts`;
 
-  const artifactList = await listWorkflowRunArtifacts(credentials, owner, repoName, workflowRunId);
-  const resultIndexArtifactId = tryGetArtifactIDfromName(RESULT_INDEX_ARTIFACT_NAME, artifactList);
+  const artifactList = await listWorkflowRunArtifacts(
+    credentials,
+    owner,
+    repoName,
+    workflowRunId,
+  );
+  const resultIndexArtifactId = tryGetArtifactIDfromName(
+    RESULT_INDEX_ARTIFACT_NAME,
+    artifactList,
+  );
   if (!resultIndexArtifactId) {
     return undefined;
   }
-  const resultIndex = await getResultIndex(credentials, owner, repoName, resultIndexArtifactId);
+  const resultIndex = await getResultIndex(
+    credentials,
+    owner,
+    repoName,
+    resultIndexArtifactId,
+  );
 
-  const successes = resultIndex?.successes.map(item => {
-    const artifactId = getArtifactIDfromName(item.id, workflowUri, artifactList);
+  const successes = resultIndex?.successes.map((item) => {
+    const artifactId = getArtifactIDfromName(
+      item.id,
+      workflowUri,
+      artifactList,
+    );
 
     return {
       id: item.id.toString(),
@@ -63,43 +89,72 @@ export async function getRemoteQueryIndex(
       resultCount: item.results_count,
       bqrsFileSize: item.bqrs_file_size,
       sarifFileSize: item.sarif_file_size,
-      sourceLocationPrefix: item.source_location_prefix
+      sourceLocationPrefix: item.source_location_prefix,
     } as RemoteQuerySuccessIndexItem;
   });
 
-  const failures = resultIndex?.failures.map(item => {
+  const failures = resultIndex?.failures.map((item) => {
     return {
       id: item.id.toString(),
       nwo: item.nwo,
-      error: item.error
+      error: item.error,
     } as RemoteQueryFailureIndexItem;
   });
 
   return {
     artifactsUrlPath,
     successes: successes || [],
-    failures: failures || []
+    failures: failures || [],
   };
 }
 
 export async function cancelRemoteQuery(
   credentials: Credentials,
-  remoteQuery: RemoteQuery
+  remoteQuery: RemoteQuery,
 ): Promise<void> {
   const octokit = await credentials.getOctokit();
-  const { actionsWorkflowRunId, controllerRepository: { owner, name } } = remoteQuery;
-  const response = await octokit.request(`POST /repos/${owner}/${name}/actions/runs/${actionsWorkflowRunId}/cancel`);
+  const {
+    actionsWorkflowRunId,
+    controllerRepository: { owner, name },
+  } = remoteQuery;
+  const response = await octokit.request(
+    `POST /repos/${owner}/${name}/actions/runs/${actionsWorkflowRunId}/cancel`,
+  );
   if (response.status >= 300) {
-    throw new Error(`Error cancelling variant analysis: ${response.status} ${response?.data?.message || ''}`);
+    throw new Error(
+      `Error cancelling variant analysis: ${response.status} ${
+        response?.data?.message || ""
+      }`,
+    );
+  }
+}
+
+export async function cancelVariantAnalysis(
+  credentials: Credentials,
+  variantAnalysis: VariantAnalysis,
+): Promise<void> {
+  const octokit = await credentials.getOctokit();
+  const {
+    actionsWorkflowRunId,
+    controllerRepo: { fullName },
+  } = variantAnalysis;
+  const response = await octokit.request(
+    `POST /repos/${fullName}/actions/runs/${actionsWorkflowRunId}/cancel`,
+  );
+  if (response.status >= 300) {
+    throw new Error(
+      `Error cancelling variant analysis: ${response.status} ${
+        response?.data?.message || ""
+      }`,
+    );
   }
 }
 
 export async function downloadArtifactFromLink(
   credentials: Credentials,
   storagePath: string,
-  downloadLink: DownloadLink
+  downloadLink: DownloadLink,
 ): Promise<string> {
-
   const octokit = await credentials.getOctokit();
 
   const extractedPath = createDownloadPath(storagePath, downloadLink);
@@ -107,13 +162,16 @@ export async function downloadArtifactFromLink(
   // first check if we already have the artifact
   if (!(await fs.pathExists(extractedPath))) {
     // Download the zipped artifact.
-    const response = await octokit.request(`GET ${downloadLink.urlPath}/zip`, {});
+    const response = await octokit.request(
+      `GET ${downloadLink.urlPath}/zip`,
+      {},
+    );
 
-    const zipFilePath = createDownloadPath(storagePath, downloadLink, 'zip');
+    const zipFilePath = createDownloadPath(storagePath, downloadLink, "zip");
 
     await unzipBuffer(response.data as ArrayBuffer, zipFilePath, extractedPath);
   }
-  return path.join(extractedPath, downloadLink.innerFilePath || '');
+  return path.join(extractedPath, downloadLink.innerFilePath || "");
 }
 
 /**
@@ -132,7 +190,12 @@ export async function isArtifactAvailable(
   workflowRunId: number,
   artifactName: string,
 ): Promise<boolean> {
-  const artifactList = await listWorkflowRunArtifacts(credentials, owner, repo, workflowRunId);
+  const artifactList = await listWorkflowRunArtifacts(
+    credentials,
+    owner,
+    repo,
+    workflowRunId,
+  );
 
   return tryGetArtifactIDfromName(artifactName, artifactList) !== undefined;
 }
@@ -149,15 +212,25 @@ async function getResultIndex(
   credentials: Credentials,
   owner: string,
   repo: string,
-  artifactId: number
+  artifactId: number,
 ): Promise<ApiResultIndex | undefined> {
-  const artifactPath = await downloadArtifact(credentials, owner, repo, artifactId);
-  const indexFilePath = path.join(artifactPath, 'index.json');
+  const artifactPath = await downloadArtifact(
+    credentials,
+    owner,
+    repo,
+    artifactId,
+  );
+  const indexFilePath = path.join(artifactPath, "index.json");
   if (!(await fs.pathExists(indexFilePath))) {
-    void showAndLogWarningMessage('Could not find an `index.json` file in the result artifact.');
+    void showAndLogWarningMessage(
+      "Could not find an `index.json` file in the result artifact.",
+    );
     return undefined;
   }
-  const resultIndex = await fs.readFile(path.join(artifactPath, 'index.json'), 'utf8');
+  const resultIndex = await fs.readFile(
+    path.join(artifactPath, "index.json"),
+    "utf8",
+  );
 
   try {
     return JSON.parse(resultIndex);
@@ -178,25 +251,26 @@ export async function getWorkflowStatus(
   credentials: Credentials,
   owner: string,
   repo: string,
-  workflowRunId: number): Promise<RemoteQueryWorkflowResult> {
+  workflowRunId: number,
+): Promise<RemoteQueryWorkflowResult> {
   const octokit = await credentials.getOctokit();
 
   const workflowRun = await octokit.rest.actions.getWorkflowRun({
     owner,
     repo,
-    run_id: workflowRunId
+    run_id: workflowRunId,
   });
 
-  if (workflowRun.data.status === 'completed') {
-    if (workflowRun.data.conclusion === 'success') {
-      return { status: 'CompletedSuccessfully' };
+  if (workflowRun.data.status === "completed") {
+    if (workflowRun.data.conclusion === "success") {
+      return { status: "CompletedSuccessfully" };
     } else {
       const error = getWorkflowError(workflowRun.data.conclusion);
-      return { status: 'CompletedUnsuccessfully', error };
+      return { status: "CompletedUnsuccessfully", error };
     }
   }
 
-  return { status: 'InProgress' };
+  return { status: "InProgress" };
 }
 
 /**
@@ -211,7 +285,7 @@ async function listWorkflowRunArtifacts(
   credentials: Credentials,
   owner: string,
   repo: string,
-  workflowRunId: number
+  workflowRunId: number,
 ) {
   const octokit = await credentials.getOctokit();
 
@@ -227,7 +301,7 @@ async function listWorkflowRunArtifacts(
       repo,
       run_id: workflowRunId,
       per_page: 100,
-      page: pageNum
+      page: pageNum,
     });
 
     allArtifacts.push(...response.data.artifacts);
@@ -248,13 +322,12 @@ async function listWorkflowRunArtifacts(
 function getArtifactIDfromName(
   artifactName: string,
   workflowUri: string,
-  artifacts: Array<{ id: number, name: string }>
+  artifacts: Array<{ id: number; name: string }>,
 ): number {
   const artifactId = tryGetArtifactIDfromName(artifactName, artifacts);
 
   if (!artifactId) {
-    const errorMessage =
-      `Could not find artifact with name ${artifactName} in workflow ${workflowUri}.
+    const errorMessage = `Could not find artifact with name ${artifactName} in workflow ${workflowUri}.
       Please check whether the workflow run has successfully completed.`;
     throw Error(errorMessage);
   }
@@ -269,9 +342,9 @@ function getArtifactIDfromName(
  */
 function tryGetArtifactIDfromName(
   artifactName: string,
-  artifacts: Array<{ id: number, name: string }>
+  artifacts: Array<{ id: number; name: string }>,
 ): number | undefined {
-  const artifact = artifacts.find(a => a.name === artifactName);
+  const artifact = artifacts.find((a) => a.name === artifactName);
 
   return artifact?.id;
 }
@@ -288,21 +361,29 @@ async function downloadArtifact(
   credentials: Credentials,
   owner: string,
   repo: string,
-  artifactId: number
+  artifactId: number,
 ): Promise<string> {
   const octokit = await credentials.getOctokit();
   const response = await octokit.rest.actions.downloadArtifact({
     owner,
     repo,
     artifact_id: artifactId,
-    archive_format: 'zip',
+    archive_format: "zip",
   });
   const artifactPath = path.join(tmpDir.name, `${artifactId}`);
-  await unzipBuffer(response.data as ArrayBuffer, `${artifactPath}.zip`, artifactPath);
+  await unzipBuffer(
+    response.data as ArrayBuffer,
+    `${artifactPath}.zip`,
+    artifactPath,
+  );
   return artifactPath;
 }
 
-async function unzipBuffer(data: ArrayBuffer, filePath: string, destinationPath: string): Promise<void> {
+async function unzipBuffer(
+  data: ArrayBuffer,
+  filePath: string,
+  destinationPath: string,
+): Promise<void> {
   void logger.log(`Saving file to ${filePath}`);
   await fs.writeFile(filePath, Buffer.from(data));
 
@@ -312,45 +393,24 @@ async function unzipBuffer(data: ArrayBuffer, filePath: string, destinationPath:
 
 function getWorkflowError(conclusion: string | null): string {
   if (!conclusion) {
-    return 'Workflow finished without a conclusion';
+    return "Workflow finished without a conclusion";
   }
 
-  if (conclusion === 'cancelled') {
-    return 'Variant analysis execution was cancelled.';
+  if (conclusion === "cancelled") {
+    return "Variant analysis execution was cancelled.";
   }
 
-  if (conclusion === 'timed_out') {
-    return 'Variant analysis execution timed out.';
+  if (conclusion === "timed_out") {
+    return "Variant analysis execution timed out.";
   }
 
-  if (conclusion === 'failure') {
+  if (conclusion === "failure") {
     // TODO: Get the actual error from the workflow or potentially
     // from an artifact from the action itself.
-    return 'Variant analysis execution has failed.';
+    return "Variant analysis execution has failed.";
   }
 
   return `Unexpected variant analysis execution conclusion: ${conclusion}`;
-}
-
-/**
- * Creates a gist with the given description and files.
- * Returns the URL of the created gist.
- */
-export async function createGist(
-  credentials: Credentials,
-  description: string,
-  files: { [key: string]: { content: string } }
-): Promise<string | undefined> {
-  const octokit = await credentials.getOctokit();
-  const response = await octokit.request('POST /gists', {
-    description,
-    files,
-    public: false,
-  });
-  if (response.status >= 300) {
-    throw new Error(`Error exporting variant analysis results: ${response.status} ${response?.data || ''}`);
-  }
-  return response.data.html_url;
 }
 
 const repositoriesMetadataQuery = `query Stars($repos: String!, $pageSize: Int!, $cursor: String) {
@@ -387,27 +447,39 @@ type RepositoriesMetadataQueryResponse = {
         };
         stargazerCount: number;
         updatedAt: string; // Actually a ISO Date string
-      }
-    }[]
-  }
+      };
+    }[];
+  };
 };
 
-export type RepositoriesMetadata = Record<string, { starCount: number, lastUpdated: number }>
+export type RepositoriesMetadata = Record<
+  string,
+  { starCount: number; lastUpdated: number }
+>;
 
-export async function getRepositoriesMetadata(credentials: Credentials, nwos: string[], pageSize = 100): Promise<RepositoriesMetadata> {
+export async function getRepositoriesMetadata(
+  credentials: Credentials,
+  nwos: string[],
+  pageSize = 100,
+): Promise<RepositoriesMetadata> {
   const octokit = await credentials.getOctokit();
-  const repos = `repo:${nwos.join(' repo:')} fork:true`;
+  const repos = `repo:${nwos.join(" repo:")} fork:true`;
   let cursor = null;
   const metadata: RepositoriesMetadata = {};
   try {
     do {
-      const response: RepositoriesMetadataQueryResponse = await octokit.graphql({
-        query: repositoriesMetadataQuery,
-        repos,
-        pageSize,
-        cursor
-      });
-      cursor = response.search.edges.length === pageSize ? response.search.edges[pageSize - 1].cursor : null;
+      const response: RepositoriesMetadataQueryResponse = await octokit.graphql(
+        {
+          query: repositoriesMetadataQuery,
+          repos,
+          pageSize,
+          cursor,
+        },
+      );
+      cursor =
+        response.search.edges.length === pageSize
+          ? response.search.edges[pageSize - 1].cursor
+          : null;
 
       for (const edge of response.search.edges) {
         const node = edge.node;
@@ -417,13 +489,17 @@ export async function getRepositoriesMetadata(credentials: Credentials, nwos: st
         // lastUpdated is always negative since it happened in the past.
         const lastUpdated = new Date(node.updatedAt).getTime() - Date.now();
         metadata[`${owner}/${name}`] = {
-          starCount, lastUpdated
+          starCount,
+          lastUpdated,
         };
       }
-
     } while (cursor);
   } catch (e) {
-    void showAndLogErrorMessage(`Error retrieving repository metadata for variant analysis: ${getErrorMessage(e)}`);
+    void showAndLogErrorMessage(
+      `Error retrieving repository metadata for variant analysis: ${getErrorMessage(
+        e,
+      )}`,
+    );
   }
 
   return metadata;

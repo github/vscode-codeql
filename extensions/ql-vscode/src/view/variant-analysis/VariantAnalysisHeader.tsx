@@ -1,16 +1,17 @@
-import * as path from 'path';
-import * as React from 'react';
-import { useMemo } from 'react';
-import styled from 'styled-components';
+import * as path from "path";
+import * as React from "react";
+import { useMemo } from "react";
+import styled from "styled-components";
 import {
-  getSkippedRepoCount, getTotalResultCount,
+  getSkippedRepoCount,
+  getTotalResultCount,
   hasRepoScanCompleted,
   VariantAnalysis,
-} from '../../remote-queries/shared/variant-analysis';
-import { QueryDetails } from './QueryDetails';
-import { VariantAnalysisActions } from './VariantAnalysisActions';
-import { VariantAnalysisStats } from './VariantAnalysisStats';
-import { parseDate } from '../../pure/date';
+} from "../../remote-queries/shared/variant-analysis";
+import { QueryDetails } from "./QueryDetails";
+import { VariantAnalysisActions } from "./VariantAnalysisActions";
+import { VariantAnalysisStats } from "./VariantAnalysisStats";
+import { parseDate } from "../../pure/date";
 
 export type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;
@@ -50,7 +51,10 @@ export const VariantAnalysisHeader = ({
     return variantAnalysis.scannedRepos?.length ?? 0;
   }, [variantAnalysis.scannedRepos]);
   const completedRepositoryCount = useMemo(() => {
-    return variantAnalysis.scannedRepos?.filter(repo => hasRepoScanCompleted(repo))?.length ?? 0;
+    return (
+      variantAnalysis.scannedRepos?.filter((repo) => hasRepoScanCompleted(repo))
+        ?.length ?? 0
+    );
   }, [variantAnalysis.scannedRepos]);
   const resultCount = useMemo(() => {
     return getTotalResultCount(variantAnalysis.scannedRepos);
@@ -73,6 +77,7 @@ export const VariantAnalysisHeader = ({
           onStopQueryClick={onStopQueryClick}
           onCopyRepositoryListClick={onCopyRepositoryListClick}
           onExportResultsClick={onExportResultsClick}
+          stopQueryDisabled={!variantAnalysis.actionsWorkflowRunId}
         />
       </Row>
       <VariantAnalysisStats

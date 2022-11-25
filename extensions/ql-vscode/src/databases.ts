@@ -1,24 +1,26 @@
-import * as fs from 'fs-extra';
-import * as glob from 'glob-promise';
-import * as path from 'path';
-import * as vscode from 'vscode';
-import * as cli from './cli';
-import { ExtensionContext } from 'vscode';
+import * as fs from "fs-extra";
+import * as glob from "glob-promise";
+import * as path from "path";
+import * as vscode from "vscode";
+import * as cli from "./cli";
+import { ExtensionContext } from "vscode";
 import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
   showAndLogInformationMessage,
-  isLikelyDatabaseRoot
-} from './helpers';
+  isLikelyDatabaseRoot,
+} from "./helpers";
+import { ProgressCallback, withProgress } from "./commandRunner";
 import {
-  ProgressCallback,
-  withProgress
-} from './commandRunner';
-import { zipArchiveScheme, encodeArchiveBasePath, decodeSourceArchiveUri, encodeSourceArchiveUri } from './archive-filesystem-provider';
-import { DisposableObject } from './pure/disposable-object';
-import { Logger, logger } from './logging';
-import { getErrorMessage } from './pure/helpers-pure';
-import { QueryRunner } from './queryRunner';
+  zipArchiveScheme,
+  encodeArchiveBasePath,
+  decodeSourceArchiveUri,
+  encodeSourceArchiveUri,
+} from "./archive-filesystem-provider";
+import { DisposableObject } from "./pure/disposable-object";
+import { Logger, logger } from "./logging";
+import { getErrorMessage } from "./pure/helpers-pure";
+import { QueryRunner } from "./queryRunner";
 
 /**
  * databases.ts
@@ -34,13 +36,13 @@ import { QueryRunner } from './queryRunner';
  * The name of the key in the workspaceState dictionary in which we
  * persist the current database across sessions.
  */
-const CURRENT_DB = 'currentDatabase';
+const CURRENT_DB = "currentDatabase";
 
 /**
  * The name of the key in the workspaceState dictionary in which we
  * persist the list of databases across sessions.
  */
-const DB_LIST = 'databaseList';
+const DB_LIST = "databaseList";
 
 export interface DatabaseOptions {
   displayName?: string;
@@ -67,7 +69,7 @@ export enum DatabaseKind {
   /** A CodeQL database */
   Database,
   /** A raw QL dataset */
-  RawDataset
+  RawDataset,
 }
 
 export interface DatabaseContents {
@@ -89,33 +91,35 @@ export interface DatabaseContents {
  * An error thrown when we cannot find a valid database in a putative
  * database directory.
  */
-class InvalidDatabaseError extends Error {
-}
-
+class InvalidDatabaseError extends Error {}
 
 async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
   /*
    * Look directly in the root
    */
-  let dbRelativePaths = await glob('db-*/', {
-    cwd: parentDirectory
+  let dbRelativePaths = await glob("db-*/", {
+    cwd: parentDirectory,
   });
 
   if (dbRelativePaths.length === 0) {
     /*
      * Check If they are in the old location
      */
-    dbRelativePaths = await glob('working/db-*/', {
-      cwd: parentDirectory
+    dbRelativePaths = await glob("working/db-*/", {
+      cwd: parentDirectory,
     });
   }
   if (dbRelativePaths.length === 0) {
-    throw new InvalidDatabaseError(`'${parentDirectory}' does not contain a dataset directory.`);
+    throw new InvalidDatabaseError(
+      `'${parentDirectory}' does not contain a dataset directory.`,
+    );
   }
 
   const dbAbsolutePath = path.join(parentDirectory, dbRelativePaths[0]);
   if (dbRelativePaths.length > 1) {
-    void showAndLogWarningMessage(`Found multiple dataset directories in database, using '${dbAbsolutePath}'.`);
+    void showAndLogWarningMessage(
+      `Found multiple dataset directories in database, using '${dbAbsolutePath}'.`,
+    );
   }
 
   return vscode.Uri.file(dbAbsolutePath);
@@ -123,13 +127,13 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
 
 // exported for testing
 export async function findSourceArchive(
-  databasePath: string, silent = false
+  databasePath: string,
 ): Promise<vscode.Uri | undefined> {
-  const relativePaths = ['src', 'output/src_archive'];
+  const relativePaths = ["src", "output/src_archive"];
 
   for (const relativePath of relativePaths) {
     const basePath = path.join(databasePath, relativePath);
-    const zipPath = basePath + '.zip';
+    const zipPath = basePath + ".zip";
 
     // Prefer using a zip archive over a directory.
     if (await fs.pathExists(zipPath)) {
@@ -138,18 +142,16 @@ export async function findSourceArchive(
       return vscode.Uri.file(basePath);
     }
   }
-  if (!silent) {
-    void showAndLogInformationMessage(
-      `Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`
-    );
-  }
+
+  void showAndLogInformationMessage(
+    `Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`,
+  );
   return undefined;
 }
 
 async function resolveDatabase(
   databasePath: string,
 ): Promise<DatabaseContents> {
-
   const name = path.basename(databasePath);
 
   // Look for dataset and source archive.
@@ -160,30 +162,36 @@ async function resolveDatabase(
     kind: DatabaseKind.Database,
     name,
     datasetUri,
-    sourceArchiveUri
+    sourceArchiveUri,
   };
 }
 
 /** Gets the relative paths of all `.dbscheme` files in the given directory. */
 async function getDbSchemeFiles(dbDirectory: string): Promise<string[]> {
-  return await glob('*.dbscheme', { cwd: dbDirectory });
+  return await glob("*.dbscheme", { cwd: dbDirectory });
 }
 
 async function resolveDatabaseContents(
   uri: vscode.Uri,
 ): Promise<DatabaseContents> {
-  if (uri.scheme !== 'file') {
-    throw new Error(`Database URI scheme '${uri.scheme}' not supported; only 'file' URIs are supported.`);
+  if (uri.scheme !== "file") {
+    throw new Error(
+      `Database URI scheme '${uri.scheme}' not supported; only 'file' URIs are supported.`,
+    );
   }
   const databasePath = uri.fsPath;
-  if (!await fs.pathExists(databasePath)) {
-    throw new InvalidDatabaseError(`Database '${databasePath}' does not exist.`);
+  if (!(await fs.pathExists(databasePath))) {
+    throw new InvalidDatabaseError(
+      `Database '${databasePath}' does not exist.`,
+    );
   }
 
   const contents = await resolveDatabase(databasePath);
 
   if (contents === undefined) {
-    throw new InvalidDatabaseError(`'${databasePath}' is not a valid database.`);
+    throw new InvalidDatabaseError(
+      `'${databasePath}' is not a valid database.`,
+    );
   }
 
   // Look for a single dbscheme file within the database.
@@ -191,12 +199,17 @@ async function resolveDatabaseContents(
   const dbPath = contents.datasetUri.fsPath;
   const dbSchemeFiles = await getDbSchemeFiles(dbPath);
   if (dbSchemeFiles.length === 0) {
-    throw new InvalidDatabaseError(`Database '${databasePath}' does not contain a CodeQL dbscheme under '${dbPath}'.`);
-  }
-  else if (dbSchemeFiles.length > 1) {
-    throw new InvalidDatabaseError(`Database '${databasePath}' contains multiple CodeQL dbschemes under '${dbPath}'.`);
+    throw new InvalidDatabaseError(
+      `Database '${databasePath}' does not contain a CodeQL dbscheme under '${dbPath}'.`,
+    );
+  } else if (dbSchemeFiles.length > 1) {
+    throw new InvalidDatabaseError(
+      `Database '${databasePath}' contains multiple CodeQL dbschemes under '${dbPath}'.`,
+    );
   } else {
-    contents.dbSchemeUri = vscode.Uri.file(path.resolve(dbPath, dbSchemeFiles[0]));
+    contents.dbSchemeUri = vscode.Uri.file(
+      path.resolve(dbPath, dbSchemeFiles[0]),
+    );
   }
   return contents;
 }
@@ -284,16 +297,16 @@ export interface DatabaseItem {
 }
 
 export enum DatabaseEventKind {
-  Add = 'Add',
-  Remove = 'Remove',
+  Add = "Add",
+  Remove = "Remove",
 
   // Fired when databases are refreshed from persisted state
-  Refresh = 'Refresh',
+  Refresh = "Refresh",
 
   // Fired when the current database changes
-  Change = 'Change',
+  Change = "Change",
 
-  Rename = 'Rename'
+  Rename = "Rename",
 }
 
 export interface DatabaseChangedEvent {
@@ -312,7 +325,7 @@ export class DatabaseItemImpl implements DatabaseItem {
     public readonly databaseUri: vscode.Uri,
     contents: DatabaseContents | undefined,
     private options: FullDatabaseOptions,
-    private readonly onChanged: (event: DatabaseChangedEvent) => void
+    private readonly onChanged: (event: DatabaseChangedEvent) => void,
   ) {
     this._contents = contents;
   }
@@ -320,11 +333,9 @@ export class DatabaseItemImpl implements DatabaseItem {
   public get name(): string {
     if (this.options.displayName) {
       return this.options.displayName;
-    }
-    else if (this._contents) {
+    } else if (this._contents) {
       return this._contents.name;
-    }
-    else {
+    } else {
       return path.basename(this.databaseUri.fsPath);
     }
   }
@@ -334,7 +345,7 @@ export class DatabaseItemImpl implements DatabaseItem {
   }
 
   public get sourceArchive(): vscode.Uri | undefined {
-    if (this.options.ignoreSourceArchive || (this._contents === undefined)) {
+    if (this.options.ignoreSourceArchive || this._contents === undefined) {
       return undefined;
     } else {
       return this._contents.sourceArchiveUri;
@@ -366,7 +377,7 @@ export class DatabaseItemImpl implements DatabaseItem {
     } finally {
       this.onChanged({
         kind: DatabaseEventKind.Refresh,
-        item: this
+        item: this,
       });
     }
   }
@@ -374,8 +385,10 @@ export class DatabaseItemImpl implements DatabaseItem {
   public resolveSourceFile(uriStr: string | undefined): vscode.Uri {
     const sourceArchive = this.sourceArchive;
     const uri = uriStr ? vscode.Uri.parse(uriStr, true) : undefined;
-    if (uri && uri.scheme !== 'file') {
-      throw new Error(`Invalid uri scheme in ${uriStr}. Only 'file' is allowed.`);
+    if (uri && uri.scheme !== "file") {
+      throw new Error(
+        `Invalid uri scheme in ${uriStr}. Only 'file' is allowed.`,
+      );
     }
     if (!sourceArchive) {
       if (uri) {
@@ -386,28 +399,29 @@ export class DatabaseItemImpl implements DatabaseItem {
     }
 
     if (uri) {
-      const relativeFilePath = decodeURI(uri.path).replace(':', '_').replace(/^\/*/, '');
+      const relativeFilePath = decodeURI(uri.path)
+        .replace(":", "_")
+        .replace(/^\/*/, "");
       if (sourceArchive.scheme === zipArchiveScheme) {
         const zipRef = decodeSourceArchiveUri(sourceArchive);
-        const pathWithinSourceArchive = zipRef.pathWithinSourceArchive === '/'
-          ? relativeFilePath
-          : zipRef.pathWithinSourceArchive + '/' + relativeFilePath;
+        const pathWithinSourceArchive =
+          zipRef.pathWithinSourceArchive === "/"
+            ? relativeFilePath
+            : zipRef.pathWithinSourceArchive + "/" + relativeFilePath;
         return encodeSourceArchiveUri({
           pathWithinSourceArchive,
           sourceArchiveZipPath: zipRef.sourceArchiveZipPath,
         });
-
       } else {
         let newPath = sourceArchive.path;
-        if (!newPath.endsWith('/')) {
+        if (!newPath.endsWith("/")) {
           // Ensure a trailing slash.
-          newPath += '/';
+          newPath += "/";
         }
         newPath += relativeFilePath;
 
         return sourceArchive.with({ path: newPath });
       }
-
     } else {
       return sourceArchive;
     }
@@ -419,7 +433,7 @@ export class DatabaseItemImpl implements DatabaseItem {
   public getPersistedState(): PersistedDatabaseItem {
     return {
       uri: this.databaseUri.toString(true),
-      options: this.options
+      options: this.options,
     };
   }
 
@@ -444,7 +458,9 @@ export class DatabaseItemImpl implements DatabaseItem {
    * Returns `sourceLocationPrefix` of database. Requires that the database
    * has a `.dbinfo` file, which is the source of the prefix.
    */
-  public async getSourceLocationPrefix(server: cli.CodeQLCliServer): Promise<string> {
+  public async getSourceLocationPrefix(
+    server: cli.CodeQLCliServer,
+  ): Promise<string> {
     const dbInfo = await this.getDbInfo(server);
     return dbInfo.sourceLocationPrefix;
   }
@@ -458,7 +474,7 @@ export class DatabaseItemImpl implements DatabaseItem {
   }
 
   public get language() {
-    return this.options.language || '';
+    return this.options.language || "";
   }
 
   /**
@@ -466,7 +482,7 @@ export class DatabaseItemImpl implements DatabaseItem {
    */
   public getSourceArchiveExplorerUri(): vscode.Uri {
     const sourceArchive = this.sourceArchive;
-    if (sourceArchive === undefined || !sourceArchive.fsPath.endsWith('.zip')) {
+    if (sourceArchive === undefined || !sourceArchive.fsPath.endsWith(".zip")) {
       throw new Error(this.verifyZippedSources());
     }
     return encodeArchiveBasePath(sourceArchive.fsPath);
@@ -478,7 +494,7 @@ export class DatabaseItemImpl implements DatabaseItem {
       return `${this.name} has no source archive.`;
     }
 
-    if (!sourceArchive.fsPath.endsWith('.zip')) {
+    if (!sourceArchive.fsPath.endsWith(".zip")) {
       return `${this.name} has a source folder that is unzipped.`;
     }
     return;
@@ -488,26 +504,28 @@ export class DatabaseItemImpl implements DatabaseItem {
    * Holds if `uri` belongs to this database's source archive.
    */
   public belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean {
-    if (this.sourceArchive === undefined)
-      return false;
-    return uri.scheme === zipArchiveScheme &&
-      decodeSourceArchiveUri(uri).sourceArchiveZipPath === this.sourceArchive.fsPath;
+    if (this.sourceArchive === undefined) return false;
+    return (
+      uri.scheme === zipArchiveScheme &&
+      decodeSourceArchiveUri(uri).sourceArchiveZipPath ===
+        this.sourceArchive.fsPath
+    );
   }
 
   public async isAffectedByTest(testPath: string): Promise<boolean> {
     const databasePath = this.databaseUri.fsPath;
-    if (!databasePath.endsWith('.testproj')) {
+    if (!databasePath.endsWith(".testproj")) {
       return false;
     }
     try {
       const stats = await fs.stat(testPath);
       if (stats.isDirectory()) {
-        return !path.relative(testPath, databasePath).startsWith('..');
+        return !path.relative(testPath, databasePath).startsWith("..");
       } else {
         // database for /one/two/three/test.ql is at /one/two/three/three.testproj
         const testdir = path.dirname(testPath);
         const testdirbase = path.basename(testdir);
-        return databasePath == path.join(testdir, testdirbase + '.testproj');
+        return databasePath == path.join(testdir, testdirbase + ".testproj");
       }
     } catch {
       // No information available for test path - assume database is unaffected.
@@ -521,14 +539,19 @@ export class DatabaseItemImpl implements DatabaseItem {
  * `event` fires. If waiting for the event takes too long (by default
  * >1000ms) log a warning, and resolve to undefined.
  */
-function eventFired<T>(event: vscode.Event<T>, timeoutMs = 1000): Promise<T | undefined> {
+function eventFired<T>(
+  event: vscode.Event<T>,
+  timeoutMs = 1000,
+): Promise<T | undefined> {
   return new Promise((res, _rej) => {
     const timeout = setTimeout(() => {
-      void logger.log(`Waiting for event ${event} timed out after ${timeoutMs}ms`);
+      void logger.log(
+        `Waiting for event ${event} timed out after ${timeoutMs}ms`,
+      );
       res(undefined);
       dispose();
     }, timeoutMs);
-    const disposable = event(e => {
+    const disposable = event((e) => {
       res(e);
       dispose();
     });
@@ -540,12 +563,17 @@ function eventFired<T>(event: vscode.Event<T>, timeoutMs = 1000): Promise<T | un
 }
 
 export class DatabaseManager extends DisposableObject {
-  private readonly _onDidChangeDatabaseItem = this.push(new vscode.EventEmitter<DatabaseChangedEvent>());
+  private readonly _onDidChangeDatabaseItem = this.push(
+    new vscode.EventEmitter<DatabaseChangedEvent>(),
+  );
 
   readonly onDidChangeDatabaseItem = this._onDidChangeDatabaseItem.event;
 
-  private readonly _onDidChangeCurrentDatabaseItem = this.push(new vscode.EventEmitter<DatabaseChangedEvent>());
-  readonly onDidChangeCurrentDatabaseItem = this._onDidChangeCurrentDatabaseItem.event;
+  private readonly _onDidChangeCurrentDatabaseItem = this.push(
+    new vscode.EventEmitter<DatabaseChangedEvent>(),
+  );
+  readonly onDidChangeCurrentDatabaseItem =
+    this._onDidChangeCurrentDatabaseItem.event;
 
   private readonly _databaseItems: DatabaseItem[] = [];
   private _currentDatabaseItem: DatabaseItem | undefined = undefined;
@@ -554,7 +582,7 @@ export class DatabaseManager extends DisposableObject {
     private readonly ctx: ExtensionContext,
     private readonly qs: QueryRunner,
     private readonly cli: cli.CodeQLCliServer,
-    public logger: Logger
+    public logger: Logger,
   ) {
     super();
 
@@ -565,21 +593,26 @@ export class DatabaseManager extends DisposableObject {
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     uri: vscode.Uri,
-    displayName?: string
+    displayName?: string,
   ): Promise<DatabaseItem> {
     const contents = await resolveDatabaseContents(uri);
     // Ignore the source archive for QLTest databases by default.
-    const isQLTestDatabase = path.extname(uri.fsPath) === '.testproj';
+    const isQLTestDatabase = path.extname(uri.fsPath) === ".testproj";
     const fullOptions: FullDatabaseOptions = {
       ignoreSourceArchive: isQLTestDatabase,
       // If a displayName is not passed in, the basename of folder containing the database is used.
       displayName,
       dateAdded: Date.now(),
-      language: await this.getPrimaryLanguage(uri.fsPath)
+      language: await this.getPrimaryLanguage(uri.fsPath),
     };
-    const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions, (event) => {
-      this._onDidChangeDatabaseItem.fire(event);
-    });
+    const databaseItem = new DatabaseItemImpl(
+      uri,
+      contents,
+      fullOptions,
+      (event) => {
+        this._onDidChangeDatabaseItem.fire(event);
+      },
+    );
 
     await this.addDatabaseItem(progress, token, databaseItem);
     await this.addDatabaseSourceArchiveFolder(databaseItem);
@@ -589,18 +622,20 @@ export class DatabaseManager extends DisposableObject {
 
   private async reregisterDatabases(
     progress: ProgressCallback,
-    token: vscode.CancellationToken
+    token: vscode.CancellationToken,
   ) {
     let completed = 0;
-    await Promise.all(this._databaseItems.map(async (databaseItem) => {
-      await this.registerDatabase(progress, token, databaseItem);
-      completed++;
-      progress({
-        maxStep: this._databaseItems.length,
-        step: completed,
-        message: 'Re-registering databases'
-      });
-    }));
+    await Promise.all(
+      this._databaseItems.map(async (databaseItem) => {
+        await this.registerDatabase(progress, token, databaseItem);
+        completed++;
+        progress({
+          maxStep: this._databaseItems.length,
+          step: completed,
+          message: "Re-registering databases",
+        });
+      }),
+    );
   }
 
   public async addDatabaseSourceArchiveFolder(item: DatabaseItem) {
@@ -627,12 +662,16 @@ export class DatabaseManager extends DisposableObject {
       }
 
       const uri = item.getSourceArchiveExplorerUri();
-      void logger.log(`Adding workspace folder for ${item.name} source archive at index ${end}`);
+      void logger.log(
+        `Adding workspace folder for ${item.name} source archive at index ${end}`,
+      );
       if ((vscode.workspace.workspaceFolders || []).length < 2) {
         // Adding this workspace folder makes the workspace
         // multi-root, which may surprise the user. Let them know
         // we're doing this.
-        void vscode.window.showInformationMessage(`Adding workspace folder for source archive of database ${item.name}.`);
+        void vscode.window.showInformationMessage(
+          `Adding workspace folder for source archive of database ${item.name}.`,
+        );
       }
       vscode.workspace.updateWorkspaceFolders(end, 0, {
         name: `[${item.name} source archive]`,
@@ -647,21 +686,20 @@ export class DatabaseManager extends DisposableObject {
   private async createDatabaseItemFromPersistedState(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
-    state: PersistedDatabaseItem
+    state: PersistedDatabaseItem,
   ): Promise<DatabaseItem> {
-
     let displayName: string | undefined = undefined;
     let ignoreSourceArchive = false;
     let dateAdded = undefined;
     let language = undefined;
     if (state.options) {
-      if (typeof state.options.displayName === 'string') {
+      if (typeof state.options.displayName === "string") {
         displayName = state.options.displayName;
       }
-      if (typeof state.options.ignoreSourceArchive === 'boolean') {
+      if (typeof state.options.ignoreSourceArchive === "boolean") {
         ignoreSourceArchive = state.options.ignoreSourceArchive;
       }
-      if (typeof state.options.dateAdded === 'number') {
+      if (typeof state.options.dateAdded === "number") {
         dateAdded = state.options.dateAdded;
       }
       language = state.options.language;
@@ -677,12 +715,16 @@ export class DatabaseManager extends DisposableObject {
       ignoreSourceArchive,
       displayName,
       dateAdded,
-      language
+      language,
     };
-    const item = new DatabaseItemImpl(dbBaseUri, undefined, fullOptions,
+    const item = new DatabaseItemImpl(
+      dbBaseUri,
+      undefined,
+      fullOptions,
       (event) => {
         this._onDidChangeDatabaseItem.fire(event);
-      });
+      },
+    );
 
     // Avoid persisting the database state after adding since that should happen only after
     // all databases have been added.
@@ -691,49 +733,72 @@ export class DatabaseManager extends DisposableObject {
   }
 
   public async loadPersistedState(): Promise<void> {
-    return withProgress({
-      location: vscode.ProgressLocation.Notification
-    },
+    return withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+      },
       async (progress, token) => {
-        const currentDatabaseUri = this.ctx.workspaceState.get<string>(CURRENT_DB);
-        const databases = this.ctx.workspaceState.get<PersistedDatabaseItem[]>(DB_LIST, []);
+        const currentDatabaseUri =
+          this.ctx.workspaceState.get<string>(CURRENT_DB);
+        const databases = this.ctx.workspaceState.get<PersistedDatabaseItem[]>(
+          DB_LIST,
+          [],
+        );
         let step = 0;
         progress({
           maxStep: databases.length,
-          message: 'Loading persisted databases',
-          step
+          message: "Loading persisted databases",
+          step,
         });
         try {
-          void this.logger.log(`Found ${databases.length} persisted databases: ${databases.map(db => db.uri).join(', ')}`);
+          void this.logger.log(
+            `Found ${databases.length} persisted databases: ${databases
+              .map((db) => db.uri)
+              .join(", ")}`,
+          );
           for (const database of databases) {
             progress({
               maxStep: databases.length,
-              message: `Loading ${database.options?.displayName || 'databases'}`,
-              step: ++step
+              message: `Loading ${
+                database.options?.displayName || "databases"
+              }`,
+              step: ++step,
             });
 
-            const databaseItem = await this.createDatabaseItemFromPersistedState(progress, token, database);
+            const databaseItem =
+              await this.createDatabaseItemFromPersistedState(
+                progress,
+                token,
+                database,
+              );
             try {
               await databaseItem.refresh();
               await this.registerDatabase(progress, token, databaseItem);
               if (currentDatabaseUri === database.uri) {
                 await this.setCurrentDatabaseItem(databaseItem, true);
               }
-              void this.logger.log(`Loaded database ${databaseItem.name} at URI ${database.uri}.`);
+              void this.logger.log(
+                `Loaded database ${databaseItem.name} at URI ${database.uri}.`,
+              );
             } catch (e) {
               // When loading from persisted state, leave invalid databases in the list. They will be
               // marked as invalid, and cannot be set as the current database.
-              void this.logger.log(`Error loading database ${database.uri}: ${e}.`);
+              void this.logger.log(
+                `Error loading database ${database.uri}: ${e}.`,
+              );
             }
           }
           await this.updatePersistedDatabaseList();
         } catch (e) {
           // database list had an unexpected type - nothing to be done?
-          void showAndLogErrorMessage(`Database list loading failed: ${getErrorMessage(e)}`);
+          void showAndLogErrorMessage(
+            `Database list loading failed: ${getErrorMessage(e)}`,
+          );
         }
 
-        void this.logger.log('Finished loading persisted databases.');
-      });
+        void this.logger.log("Finished loading persisted databases.");
+      },
+    );
   }
 
   public get databaseItems(): readonly DatabaseItem[] {
@@ -746,21 +811,24 @@ export class DatabaseManager extends DisposableObject {
 
   public async setCurrentDatabaseItem(
     item: DatabaseItem | undefined,
-    skipRefresh = false
+    skipRefresh = false,
   ): Promise<void> {
-
-    if (!skipRefresh && (item !== undefined)) {
-      await item.refresh();  // Will throw on invalid database.
+    if (!skipRefresh && item !== undefined) {
+      await item.refresh(); // Will throw on invalid database.
     }
     if (this._currentDatabaseItem !== item) {
       this._currentDatabaseItem = item;
       this.updatePersistedCurrentDatabaseItem();
 
-      await vscode.commands.executeCommand('setContext', 'codeQL.currentDatabaseItem', item?.name);
+      await vscode.commands.executeCommand(
+        "setContext",
+        "codeQL.currentDatabaseItem",
+        item?.name,
+      );
 
       this._onDidChangeCurrentDatabaseItem.fire({
         item,
-        kind: DatabaseEventKind.Change
+        kind: DatabaseEventKind.Change,
       });
     }
   }
@@ -770,25 +838,33 @@ export class DatabaseManager extends DisposableObject {
    * if there is one, and -1 otherwise.
    */
   private getDatabaseWorkspaceFolderIndex(item: DatabaseItem): number {
-    return (vscode.workspace.workspaceFolders || [])
-      .findIndex(folder => item.belongsToSourceArchiveExplorerUri(folder.uri));
+    return (vscode.workspace.workspaceFolders || []).findIndex((folder) =>
+      item.belongsToSourceArchiveExplorerUri(folder.uri),
+    );
   }
 
   public findDatabaseItem(uri: vscode.Uri): DatabaseItem | undefined {
     const uriString = uri.toString(true);
-    return this._databaseItems.find(item => item.databaseUri.toString(true) === uriString);
+    return this._databaseItems.find(
+      (item) => item.databaseUri.toString(true) === uriString,
+    );
   }
 
-  public findDatabaseItemBySourceArchive(uri: vscode.Uri): DatabaseItem | undefined {
+  public findDatabaseItemBySourceArchive(
+    uri: vscode.Uri,
+  ): DatabaseItem | undefined {
     const uriString = uri.toString(true);
-    return this._databaseItems.find(item => item.sourceArchive && item.sourceArchive.toString(true) === uriString);
+    return this._databaseItems.find(
+      (item) =>
+        item.sourceArchive && item.sourceArchive.toString(true) === uriString,
+    );
   }
 
   private async addDatabaseItem(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     item: DatabaseItem,
-    updatePersistedState = true
+    updatePersistedState = true,
   ) {
     this._databaseItems.push(item);
 
@@ -805,7 +881,7 @@ export class DatabaseManager extends DisposableObject {
     // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
       item: undefined,
-      kind: DatabaseEventKind.Add
+      kind: DatabaseEventKind.Add,
     });
   }
 
@@ -815,19 +891,21 @@ export class DatabaseManager extends DisposableObject {
     this._onDidChangeDatabaseItem.fire({
       // pass undefined so that the entire tree is rebuilt in order to re-sort
       item: undefined,
-      kind: DatabaseEventKind.Rename
+      kind: DatabaseEventKind.Rename,
     });
   }
 
   public async removeDatabaseItem(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
-    item: DatabaseItem
+    item: DatabaseItem,
   ) {
     if (this._currentDatabaseItem == item) {
       this._currentDatabaseItem = undefined;
     }
-    const index = this.databaseItems.findIndex(searchItem => searchItem === item);
+    const index = this.databaseItems.findIndex(
+      (searchItem) => searchItem === item,
+    );
     if (index >= 0) {
       this._databaseItems.splice(index, 1);
     }
@@ -835,7 +913,7 @@ export class DatabaseManager extends DisposableObject {
 
     // Delete folder from workspace, if it is still there
     const folderIndex = (vscode.workspace.workspaceFolders || []).findIndex(
-      folder => item.belongsToSourceArchiveExplorerUri(folder.uri)
+      (folder) => item.belongsToSourceArchiveExplorerUri(folder.uri),
     );
     if (folderIndex >= 0) {
       void logger.log(`Removing workspace folder at index ${folderIndex}`);
@@ -847,16 +925,22 @@ export class DatabaseManager extends DisposableObject {
 
     // Delete folder from file system only if it is controlled by the extension
     if (this.isExtensionControlledLocation(item.databaseUri)) {
-      void logger.log('Deleting database from filesystem.');
+      void logger.log("Deleting database from filesystem.");
       fs.remove(item.databaseUri.fsPath).then(
         () => void logger.log(`Deleted '${item.databaseUri.fsPath}'`),
-        e => void logger.log(`Failed to delete '${item.databaseUri.fsPath}'. Reason: ${getErrorMessage(e)}`));
+        (e) =>
+          void logger.log(
+            `Failed to delete '${
+              item.databaseUri.fsPath
+            }'. Reason: ${getErrorMessage(e)}`,
+          ),
+      );
     }
 
     // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
       item: undefined,
-      kind: DatabaseEventKind.Remove
+      kind: DatabaseEventKind.Remove,
     });
   }
 
@@ -876,12 +960,19 @@ export class DatabaseManager extends DisposableObject {
   }
 
   private updatePersistedCurrentDatabaseItem(): void {
-    void this.ctx.workspaceState.update(CURRENT_DB, this._currentDatabaseItem ?
-      this._currentDatabaseItem.databaseUri.toString(true) : undefined);
+    void this.ctx.workspaceState.update(
+      CURRENT_DB,
+      this._currentDatabaseItem
+        ? this._currentDatabaseItem.databaseUri.toString(true)
+        : undefined,
+    );
   }
 
   private async updatePersistedDatabaseList(): Promise<void> {
-    await this.ctx.workspaceState.update(DB_LIST, this._databaseItems.map(item => item.getPersistedState()));
+    await this.ctx.workspaceState.update(
+      DB_LIST,
+      this._databaseItems.map((item) => item.getPersistedState()),
+    );
   }
 
   private isExtensionControlledLocation(uri: vscode.Uri) {
@@ -903,7 +994,7 @@ export class DatabaseManager extends DisposableObject {
       return undefined;
     }
     const dbInfo = await this.cli.resolveDatabase(dbPath);
-    return dbInfo.languages?.[0] || '';
+    return dbInfo.languages?.[0] || "";
   }
 }
 
@@ -912,7 +1003,9 @@ export class DatabaseManager extends DisposableObject {
  * scripts returned by the cli's upgrade resolution.
  */
 export function getUpgradesDirectories(scripts: string[]): vscode.Uri[] {
-  const parentDirs = scripts.map(dir => path.dirname(dir));
+  const parentDirs = scripts.map((dir) => path.dirname(dir));
   const uniqueParentDirs = new Set(parentDirs);
-  return Array.from(uniqueParentDirs).map(filePath => vscode.Uri.file(filePath));
+  return Array.from(uniqueParentDirs).map((filePath) =>
+    vscode.Uri.file(filePath),
+  );
 }

@@ -1,16 +1,9 @@
-import { VariantAnalysis } from './variant-analysis';
+import { VariantAnalysis } from "./variant-analysis";
 
-export type VariantAnalysisMonitorStatus =
-  | 'InProgress'
-  | 'CompletedSuccessfully'
-  | 'CompletedUnsuccessfully'
-  | 'Failed'
-  | 'Cancelled'
-  | 'TimedOut';
+export type VariantAnalysisMonitorStatus = "Completed" | "Canceled";
 
 export interface VariantAnalysisMonitorResult {
   status: VariantAnalysisMonitorStatus;
-  error?: string;
-  scannedReposDownloaded?: number[],
-  variantAnalysis?: VariantAnalysis
+  scannedReposDownloaded?: number[];
+  variantAnalysis?: VariantAnalysis;
 }

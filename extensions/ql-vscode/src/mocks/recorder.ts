@@ -1,16 +1,20 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import * as fs from "fs-extra";
+import * as path from "path";
 
-import { MockedRequest } from 'msw';
-import { SetupServerApi } from 'msw/node';
-import { IsomorphicResponse } from '@mswjs/interceptors';
+import { MockedRequest } from "msw";
+import { SetupServerApi } from "msw/node";
+import { IsomorphicResponse } from "@mswjs/interceptors";
 
-import { Headers } from 'headers-polyfill';
-import fetch from 'node-fetch';
+import { Headers } from "headers-polyfill";
+import fetch from "node-fetch";
 
-import { DisposableObject } from '../pure/disposable-object';
+import { DisposableObject } from "../pure/disposable-object";
 
-import { GetVariantAnalysisRepoResultRequest, GitHubApiRequest, RequestKind } from './gh-api-request';
+import {
+  GetVariantAnalysisRepoResultRequest,
+  GitHubApiRequest,
+  RequestKind,
+} from "./gh-api-request";
 
 export class Recorder extends DisposableObject {
   private readonly allRequests = new Map<string, MockedRequest>();
@@ -18,9 +22,7 @@ export class Recorder extends DisposableObject {
 
   private _isRecording = false;
 
-  constructor(
-    private readonly server: SetupServerApi,
-  ) {
+  constructor(private readonly server: SetupServerApi) {
     super();
     this.onRequestStart = this.onRequestStart.bind(this);
     this.onResponseBypass = this.onResponseBypass.bind(this);
@@ -43,8 +45,8 @@ export class Recorder extends DisposableObject {
 
     this.clear();
 
-    this.server.events.on('request:start', this.onRequestStart);
-    this.server.events.on('response:bypass', this.onResponseBypass);
+    this.server.events.on("request:start", this.onRequestStart);
+    this.server.events.on("response:bypass", this.onResponseBypass);
   }
 
   public stop(): void {
@@ -54,8 +56,8 @@ export class Recorder extends DisposableObject {
 
     this._isRecording = false;
 
-    this.server.events.removeListener('request:start', this.onRequestStart);
-    this.server.events.removeListener('response:bypass', this.onResponseBypass);
+    this.server.events.removeListener("request:start", this.onRequestStart);
+    this.server.events.removeListener("response:bypass", this.onResponseBypass);
   }
 
   public clear() {
@@ -75,11 +77,14 @@ export class Recorder extends DisposableObject {
       const filePath = path.join(scenarioDirectory, fileName);
 
       let writtenRequest = {
-        ...request
+        ...request,
       };
 
       if (shouldWriteBodyToFile(writtenRequest)) {
-        const extension = writtenRequest.response.contentType === 'application/zip' ? 'zip' : 'bin';
+        const extension =
+          writtenRequest.response.contentType === "application/zip"
+            ? "zip"
+            : "bin";
 
         const bodyFileName = `${i}-${writtenRequest.request.kind}.body.${extension}`;
         const bodyFilePath = path.join(scenarioDirectory, bodyFileName);
@@ -103,14 +108,17 @@ export class Recorder extends DisposableObject {
   }
 
   private onRequestStart(request: MockedRequest): void {
-    if (request.headers.has('x-vscode-codeql-msw-bypass')) {
+    if (request.headers.has("x-vscode-codeql-msw-bypass")) {
       return;
     }
 
     this.allRequests.set(request.id, request);
   }
 
-  private async onResponseBypass(response: IsomorphicResponse, requestId: string): Promise<void> {
+  private async onResponseBypass(
+    response: IsomorphicResponse,
+    requestId: string,
+  ): Promise<void> {
     const request = this.allRequests.get(requestId);
     this.allRequests.delete(requestId);
     if (!request) {
@@ -121,7 +129,12 @@ export class Recorder extends DisposableObject {
       return;
     }
 
-    const gitHubApiRequest = await createGitHubApiRequest(request.url.toString(), response.status, response.body, response.headers);
+    const gitHubApiRequest = await createGitHubApiRequest(
+      request.url.toString(),
+      response.status,
+      response.body,
+      response.headers,
+    );
     if (!gitHubApiRequest) {
       return;
     }
@@ -130,7 +143,12 @@ export class Recorder extends DisposableObject {
   }
 }
 
-async function createGitHubApiRequest(url: string, status: number, body: string, headers: Headers): Promise<GitHubApiRequest | undefined> {
+async function createGitHubApiRequest(
+  url: string,
+  status: number,
+  body: string,
+  headers: Headers,
+): Promise<GitHubApiRequest | undefined> {
   if (!url) {
     return undefined;
   }
@@ -147,7 +165,9 @@ async function createGitHubApiRequest(url: string, status: number, body: string,
     };
   }
 
-  if (url.match(/\/repositories\/\d+\/code-scanning\/codeql\/variant-analyses$/)) {
+  if (
+    url.match(/\/repositories\/\d+\/code-scanning\/codeql\/variant-analyses$/)
+  ) {
     return {
       request: {
         kind: RequestKind.SubmitVariantAnalysis,
@@ -159,7 +179,11 @@ async function createGitHubApiRequest(url: string, status: number, body: string,
     };
   }
 
-  if (url.match(/\/repositories\/\d+\/code-scanning\/codeql\/variant-analyses\/\d+$/)) {
+  if (
+    url.match(
+      /\/repositories\/\d+\/code-scanning\/codeql\/variant-analyses\/\d+$/,
+    )
+  ) {
     return {
       request: {
         kind: RequestKind.GetVariantAnalysis,
@@ -171,7 +195,9 @@ async function createGitHubApiRequest(url: string, status: number, body: string,
     };
   }
 
-  const repoTaskMatch = url.match(/\/repositories\/\d+\/code-scanning\/codeql\/variant-analyses\/\d+\/repositories\/(?<repositoryId>\d+)$/);
+  const repoTaskMatch = url.match(
+    /\/repositories\/\d+\/code-scanning\/codeql\/variant-analyses\/\d+\/repositories\/(?<repositoryId>\d+)$/,
+  );
   if (repoTaskMatch?.groups?.repositoryId) {
     return {
       request: {
@@ -186,7 +212,9 @@ async function createGitHubApiRequest(url: string, status: number, body: string,
   }
 
   // if url is a download URL for a variant analysis result, then it's a get-variant-analysis-repoResult.
-  const repoDownloadMatch = url.match(/objects-origin\.githubusercontent\.com\/codeql-query-console\/codeql-variant-analysis-repo-tasks\/\d+\/(?<repositoryId>\d+)/);
+  const repoDownloadMatch = url.match(
+    /objects-origin\.githubusercontent\.com\/codeql-query-console\/codeql-variant-analysis-repo-tasks\/\d+\/(?<repositoryId>\d+)/,
+  );
   if (repoDownloadMatch?.groups?.repositoryId) {
     // msw currently doesn't support binary response bodies, so we need to download this separately
     // see https://github.com/mswjs/interceptors/blob/15eafa6215a328219999403e3ff110e71699b016/src/interceptors/ClientRequest/utils/getIncomingMessageBody.ts#L24-L33
@@ -194,7 +222,7 @@ async function createGitHubApiRequest(url: string, status: number, body: string,
     const response = await fetch(url, {
       headers: {
         // We need to ensure we don't end up in an infinite loop, since this request will also be intercepted
-        'x-vscode-codeql-msw-bypass': 'true',
+        "x-vscode-codeql-msw-bypass": "true",
       },
     });
     const responseBuffer = await response.buffer();
@@ -207,14 +235,16 @@ async function createGitHubApiRequest(url: string, status: number, body: string,
       response: {
         status,
         body: responseBuffer,
-        contentType: headers.get('content-type') ?? 'application/octet-stream',
-      }
+        contentType: headers.get("content-type") ?? "application/octet-stream",
+      },
     };
   }
 
   return undefined;
 }
 
-function shouldWriteBodyToFile(request: GitHubApiRequest): request is GetVariantAnalysisRepoResultRequest {
+function shouldWriteBodyToFile(
+  request: GitHubApiRequest,
+): request is GetVariantAnalysisRepoResultRequest {
   return request.response.body instanceof Buffer;
 }

@@ -1,13 +1,15 @@
-import { assertNever } from './pure/helpers-pure';
-import { VariantAnalysisStatus } from './remote-queries/shared/variant-analysis';
+import { assertNever } from "./pure/helpers-pure";
+import { VariantAnalysisStatus } from "./remote-queries/shared/variant-analysis";
 
 export enum QueryStatus {
-  InProgress = 'InProgress',
-  Completed = 'Completed',
-  Failed = 'Failed',
+  InProgress = "InProgress",
+  Completed = "Completed",
+  Failed = "Failed",
 }
 
-export function variantAnalysisStatusToQueryStatus(status: VariantAnalysisStatus): QueryStatus {
+export function variantAnalysisStatusToQueryStatus(
+  status: VariantAnalysisStatus,
+): QueryStatus {
   switch (status) {
     case VariantAnalysisStatus.Succeeded:
       return QueryStatus.Completed;
@@ -19,5 +21,18 @@ export function variantAnalysisStatusToQueryStatus(status: VariantAnalysisStatus
       return QueryStatus.Completed;
     default:
       assertNever(status);
+  }
+}
+
+export function humanizeQueryStatus(status: QueryStatus): string {
+  switch (status) {
+    case QueryStatus.InProgress:
+      return "in progress";
+    case QueryStatus.Completed:
+      return "completed";
+    case QueryStatus.Failed:
+      return "failed";
+    default:
+      return "unknown";
   }
 }

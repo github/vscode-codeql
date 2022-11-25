@@ -1,20 +1,20 @@
-import React from 'react';
+import React from "react";
 
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import TextButtonComponent from '../../view/remote-queries/TextButton';
+import TextButtonComponent from "../../view/remote-queries/TextButton";
 
 export default {
-  title: 'Text Button',
+  title: "Text Button",
   component: TextButtonComponent,
   argTypes: {
     onClick: {
-      action: 'clicked',
+      action: "clicked",
       table: {
         disable: true,
       },
     },
-  }
+  },
 } as ComponentMeta<typeof TextButtonComponent>;
 
 const Template: ComponentStory<typeof TextButtonComponent> = (args) => (
@@ -24,6 +24,6 @@ const Template: ComponentStory<typeof TextButtonComponent> = (args) => (
 export const TextButton = Template.bind({});
 
 TextButton.args = {
-  children: 'Show more',
-  size: 'x-small',
+  children: "Show more",
+  size: "x-small",
 };

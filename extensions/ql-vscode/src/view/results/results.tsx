@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { assertNever } from '../../pure/helpers-pure';
+import * as React from "react";
+import { assertNever } from "../../pure/helpers-pure";
 import {
   DatabaseInfo,
   Interpretation,
@@ -12,12 +12,12 @@ import {
   GRAPH_TABLE_NAME,
   ParsedResultSets,
   NavigateMsg,
-} from '../../pure/interface-types';
-import { EventHandlers as EventHandlerList } from './event-handler-list';
-import { ResultTables } from './result-tables';
-import { ResultSet } from '../../pure/interface-types';
+} from "../../pure/interface-types";
+import { EventHandlers as EventHandlerList } from "./event-handler-list";
+import { ResultTables } from "./result-tables";
+import { ResultSet } from "../../pure/interface-types";
 
-import './resultsView.css';
+import "./resultsView.css";
 
 /**
  * results.tsx
@@ -70,14 +70,17 @@ export const onNavigation = new EventHandlerList<NavigateMsg>();
 /**
  * A minimal state container for displaying results.
  */
-export class ResultsApp extends React.Component<Record<string, never>, ResultsViewState> {
+export class ResultsApp extends React.Component<
+  Record<string, never>,
+  ResultsViewState
+> {
   constructor(props: any) {
     super(props);
     this.state = {
       displayedResults: {
         resultsInfo: null,
         results: null,
-        errorMessage: '',
+        errorMessage: "",
       },
       nextResultsInfo: null,
       isExpectingResultsUpdate: true,
@@ -86,7 +89,7 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
 
   handleMessage(msg: IntoResultsViewMsg): void {
     switch (msg.t) {
-      case 'setState':
+      case "setState":
         this.updateStateWithNewResultsInfo({
           resultsPath: msg.resultsPath,
           parsedResultSets: msg.parsedResultSets,
@@ -103,11 +106,14 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
 
         void this.loadResults();
         break;
-      case 'showInterpretedPage': {
-        const tableName = msg.interpretation.data.t === 'GraphInterpretationData' ? GRAPH_TABLE_NAME : ALERTS_TABLE_NAME;
+      case "showInterpretedPage": {
+        const tableName =
+          msg.interpretation.data.t === "GraphInterpretationData"
+            ? GRAPH_TABLE_NAME
+            : ALERTS_TABLE_NAME;
 
         this.updateStateWithNewResultsInfo({
-          resultsPath: '', // FIXME: Not used for interpreted, refactor so this is not needed
+          resultsPath: "", // FIXME: Not used for interpreted, refactor so this is not needed
           parsedResultSets: {
             numPages: msg.numPages,
             pageSize: msg.pageSize,
@@ -115,12 +121,12 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
             resultSetNames: msg.resultSetNames,
             pageNumber: msg.pageNumber,
             resultSet: {
-              t: 'InterpretedResultSet',
+              t: "InterpretedResultSet",
               name: tableName,
               schema: {
                 name: tableName,
                 rows: 1,
-                columns: []
+                columns: [],
               },
               interpretation: msg.interpretation,
             },
@@ -138,16 +144,16 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
         void this.loadResults();
         break;
       }
-      case 'resultsUpdating':
+      case "resultsUpdating":
         this.setState({
           isExpectingResultsUpdate: true,
         });
         break;
-      case 'navigate':
+      case "navigate":
         onNavigation.fire(msg);
         break;
 
-      case 'untoggleShowProblems':
+      case "untoggleShowProblems":
         // noop
         break;
 
@@ -159,7 +165,7 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
   private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
     this.setState((prevState) => {
       const stateWithDisplayedResults = (
-        displayedResults: ResultsState
+        displayedResults: ResultsState,
       ): ResultsViewState => ({
         displayedResults,
         isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
@@ -171,7 +177,7 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
         return stateWithDisplayedResults({
           resultsInfo: null,
           results: null,
-          errorMessage: 'No results to display',
+          errorMessage: "No results to display",
         });
       }
       if (!resultsInfo || !resultsInfo.shouldKeepOldResultsWhileRendering) {
@@ -179,21 +185,19 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
         return stateWithDisplayedResults({
           resultsInfo: null,
           results: null,
-          errorMessage: 'Loading results…',
+          errorMessage: "Loading results…",
         });
       }
       return stateWithDisplayedResults(prevState.displayedResults);
     });
   }
 
-  private getResultSets(
-    resultsInfo: ResultsInfo
-  ): readonly ResultSet[] {
+  private getResultSets(resultsInfo: ResultsInfo): readonly ResultSet[] {
     const parsedResultSets = resultsInfo.parsedResultSets;
     const resultSet = parsedResultSets.resultSet;
     if (!resultSet.t) {
       throw new Error(
-        'Missing result set type. Should be either "InterpretedResultSet" or "RawResultSet".'
+        'Missing result set type. Should be either "InterpretedResultSet" or "RawResultSet".',
       );
     }
     return [resultSet];
@@ -206,7 +210,7 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
     }
 
     let results: Results | null = null;
-    let statusText = '';
+    let statusText = "";
     try {
       const resultSets = this.getResultSets(resultsInfo);
       results = {
@@ -219,7 +223,7 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
       if (e instanceof Error) {
         errorMessage = e.message;
       } else {
-        errorMessage = 'Unknown error';
+        errorMessage = "Unknown error";
       }
 
       statusText = `Error loading results: ${errorMessage}`;
@@ -243,14 +247,14 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
   }
 
   private getSortStates(
-    resultsInfo: ResultsInfo
+    resultsInfo: ResultsInfo,
   ): Map<string, RawResultsSortState> {
     const entries = Array.from(resultsInfo.sortedResultsMap.entries());
     return new Map(
       entries.map(([key, sortedResultSetInfo]) => [
         key,
         sortedResultSetInfo.sortState,
-      ])
+      ]),
     );
   }
 
@@ -261,7 +265,8 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
       displayedResults.resultsInfo !== null
     ) {
       const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
-      const key = (parsedResultSets.selectedTable || '') + parsedResultSets.pageNumber;
+      const key =
+        (parsedResultSets.selectedTable || "") + parsedResultSets.pageNumber;
       const data = displayedResults.resultsInfo.interpretation?.data;
 
       return (
@@ -283,7 +288,9 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
               : undefined
           }
           sortStates={displayedResults.results.sortStates}
-          interpretedSortState={data?.t == 'SarifInterpretationData' ? data.sortState : undefined}
+          interpretedSortState={
+            data?.t == "SarifInterpretationData" ? data.sortState : undefined
+          }
           isLoadingNewResults={
             this.state.isExpectingResultsUpdate ||
             this.state.nextResultsInfo !== null
@@ -299,18 +306,18 @@ export class ResultsApp extends React.Component<Record<string, never>, ResultsVi
 
   componentDidMount(): void {
     this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
-    window.addEventListener('message', this.vscodeMessageHandler);
+    window.addEventListener("message", this.vscodeMessageHandler);
   }
 
   componentWillUnmount(): void {
     if (this.vscodeMessageHandler) {
-      window.removeEventListener('message', this.vscodeMessageHandler);
+      window.removeEventListener("message", this.vscodeMessageHandler);
     }
   }
 
   private vscodeMessageHandler(evt: MessageEvent) {
     // sanitize origin
-    const origin = evt.origin.replace(/\n|\r/g, '');
+    const origin = evt.origin.replace(/\n|\r/g, "");
     evt.origin === window.origin
       ? this.handleMessage(evt.data as IntoResultsViewMsg)
       : console.error(`Invalid event origin ${origin}`);

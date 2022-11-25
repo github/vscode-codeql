@@ -1,29 +1,29 @@
-import React from 'react';
+import React from "react";
 
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
-import { VariantAnalysisStats } from '../../view/variant-analysis/VariantAnalysisStats';
-import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
+import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
+import { VariantAnalysisStats } from "../../view/variant-analysis/VariantAnalysisStats";
+import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
 
 export default {
-  title: 'Variant Analysis/Variant Analysis Stats',
+  title: "Variant Analysis/Variant Analysis Stats",
   component: VariantAnalysisStats,
   decorators: [
     (Story) => (
       <VariantAnalysisContainer>
         <Story />
       </VariantAnalysisContainer>
-    )
+    ),
   ],
   argTypes: {
     onViewLogsClick: {
-      action: 'view-logs-clicked',
+      action: "view-logs-clicked",
       table: {
         disable: true,
       },
     },
-  }
+  },
 } as ComponentMeta<typeof VariantAnalysisStats>;
 
 const Template: ComponentStory<typeof VariantAnalysisStats> = (args) => (
@@ -55,7 +55,7 @@ Succeeded.args = {
   totalRepositoryCount: 1000,
   completedRepositoryCount: 1000,
   variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
-  duration: 720_000,
+  createdAt: new Date(1661262726000),
   completedAt: new Date(1661263446000),
 };
 
@@ -71,7 +71,7 @@ export const Failed = Template.bind({});
 Failed.args = {
   ...Starting.args,
   variantAnalysisStatus: VariantAnalysisStatus.Failed,
-  duration: 10_000,
+  createdAt: new Date(1661263436000),
   completedAt: new Date(1661263446000),
 };
 

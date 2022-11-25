@@ -14,10 +14,8 @@
  * the fact that any unknown QueryResultType value counts as an error.
  */
 
-import * as rpc from 'vscode-jsonrpc';
-import * as shared from './messages-shared';
-
-
+import * as rpc from "vscode-jsonrpc";
+import * as shared from "./messages-shared";
 
 /**
  * Parameters to clear the cache
@@ -54,7 +52,6 @@ export interface ClearCacheResult {
   deletionMessage: string;
 }
 
-
 export type QueryResultType = number;
 /**
  * The result of running a query. This namespace is intentionally not
@@ -76,9 +73,9 @@ export namespace QueryResultType {
    */
   export const COMPILATION_ERROR = 2;
   /**
-    * The query failed due to running out of
-    * memory
-    */
+   * The query failed due to running out of
+   * memory
+   */
   export const OOM = 3;
   /**
    * The query failed because it was cancelled.
@@ -93,7 +90,6 @@ export namespace QueryResultType {
    */
   export const DBSCHEME_NO_UPGRADE = 6;
 }
-
 
 export interface RegisterDatabasesParams {
   databases: string[];
@@ -111,40 +107,37 @@ export type DeregisterDatabasesResult = {
   registeredDatabases: string[];
 };
 
-
 export interface RunQueryParams {
   /**
    * The path of the query
    */
-  queryPath: string,
+  queryPath: string;
   /**
    * The output path
    */
-  outputPath: string,
+  outputPath: string;
   /**
    * The database path
    */
-  db: string,
-  additionalPacks: string[],
-  target: CompilationTarget,
-  externalInputs: Record<string, string>,
-  singletonExternalInputs: Record<string, string>,
-  dilPath?: string,
-  logPath?: string
+  db: string;
+  additionalPacks: string[];
+  target: CompilationTarget;
+  externalInputs: Record<string, string>;
+  singletonExternalInputs: Record<string, string>;
+  dilPath?: string;
+  logPath?: string;
 }
 
 export interface RunQueryResult {
-  resultType: QueryResultType,
-  message?: string,
-  expectedDbschemeName?: string,
+  resultType: QueryResultType;
+  message?: string;
+  expectedDbschemeName?: string;
   evaluationTime: number;
 }
 
-
-
 export interface UpgradeParams {
-  db: string,
-  additionalPacks: string[],
+  db: string;
+  additionalPacks: string[];
 }
 
 export type UpgradeResult = Record<string, unknown>;
@@ -171,40 +164,55 @@ export type ProgressMessage = shared.ProgressMessage;
 /**
  * Clear the cache of a dataset
  */
-export const clearCache = new rpc.RequestType<WithProgressId<ClearCacheParams>, ClearCacheResult, void>('evaluation/clearCache');
+export const clearCache = new rpc.RequestType<
+  WithProgressId<ClearCacheParams>,
+  ClearCacheResult,
+  void
+>("evaluation/clearCache");
 /**
  * Trim the cache of a dataset
  */
-export const trimCache = new rpc.RequestType<WithProgressId<TrimCacheParams>, ClearCacheResult, void>('evaluation/trimCache');
+export const trimCache = new rpc.RequestType<
+  WithProgressId<TrimCacheParams>,
+  ClearCacheResult,
+  void
+>("evaluation/trimCache");
 
 /**
  * Clear the pack cache
  */
-export const clearPackCache = new rpc.RequestType<WithProgressId<ClearPackCacheParams>, ClearPackCacheResult, void>('evaluation/clearPackCache');
+export const clearPackCache = new rpc.RequestType<
+  WithProgressId<ClearPackCacheParams>,
+  ClearPackCacheResult,
+  void
+>("evaluation/clearPackCache");
 
 /**
  * Run a query on a database
  */
-export const runQuery = new rpc.RequestType<WithProgressId<RunQueryParams>, RunQueryResult, void>('evaluation/runQuery');
+export const runQuery = new rpc.RequestType<
+  WithProgressId<RunQueryParams>,
+  RunQueryResult,
+  void
+>("evaluation/runQuery");
 
 export const registerDatabases = new rpc.RequestType<
   WithProgressId<RegisterDatabasesParams>,
   RegisterDatabasesResult,
   void
->('evaluation/registerDatabases');
+>("evaluation/registerDatabases");
 
 export const deregisterDatabases = new rpc.RequestType<
   WithProgressId<DeregisterDatabasesParams>,
   DeregisterDatabasesResult,
   void
->('evaluation/deregisterDatabases');
-
+>("evaluation/deregisterDatabases");
 
 export const upgradeDatabase = new rpc.RequestType<
   WithProgressId<UpgradeParams>,
   UpgradeResult,
   void
->('evaluation/runUpgrade');
+>("evaluation/runUpgrade");
 
 /**
  * A notification that the progress has been changed.

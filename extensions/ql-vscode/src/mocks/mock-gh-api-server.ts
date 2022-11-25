@@ -1,224 +1,145 @@
-import * as path from 'path';
-import * as fs from 'fs-extra';
-import { commands, env, ExtensionContext, ExtensionMode, QuickPickItem, Uri, window } from 'vscode';
-import { setupServer, SetupServerApi } from 'msw/node';
+import * as path from "path";
+import * as fs from "fs-extra";
+import { setupServer, SetupServerApi } from "msw/node";
 
-import { getMockGitHubApiServerScenariosPath, MockGitHubApiConfigListener } from '../config';
-import { DisposableObject } from '../pure/disposable-object';
+import { DisposableObject } from "../pure/disposable-object";
 
-import { Recorder } from './recorder';
-import { createRequestHandlers } from './request-handlers';
-import { getDirectoryNamesInsidePath } from '../pure/files';
+import { Recorder } from "./recorder";
+import { createRequestHandlers } from "./request-handlers";
+import { getDirectoryNamesInsidePath } from "../pure/files";
 
 /**
  * Enables mocking of the GitHub API server via HTTP interception, using msw.
  */
 export class MockGitHubApiServer extends DisposableObject {
-  private isListening: boolean;
-  private config: MockGitHubApiConfigListener;
+  private _isListening: boolean;
 
   private readonly server: SetupServerApi;
   private readonly recorder: Recorder;
 
-  constructor(
-    private readonly ctx: ExtensionContext,
-  ) {
+  constructor() {
     super();
-    this.isListening = false;
-    this.config = new MockGitHubApiConfigListener();
+    this._isListening = false;
 
     this.server = setupServer();
     this.recorder = this.push(new Recorder(this.server));
-
-    this.setupConfigListener();
   }
 
   public startServer(): void {
-    if (this.isListening) {
+    if (this._isListening) {
       return;
     }
 
-    this.server.listen();
-    this.isListening = true;
+    this.server.listen({ onUnhandledRequest: "bypass" });
+    this._isListening = true;
   }
 
   public stopServer(): void {
     this.server.close();
-    this.isListening = false;
+    this._isListening = false;
   }
 
-  public async loadScenario(): Promise<void> {
-    const scenariosPath = await this.getScenariosPath();
+  public async loadScenario(
+    scenarioName: string,
+    scenariosPath?: string,
+  ): Promise<void> {
     if (!scenariosPath) {
-      return;
+      scenariosPath = await this.getDefaultScenariosPath();
+      if (!scenariosPath) {
+        return;
+      }
     }
 
-    const scenarioNames = await getDirectoryNamesInsidePath(scenariosPath);
-    const scenarioQuickPickItems = scenarioNames.map(s => ({ label: s }));
-    const quickPickOptions = {
-      placeHolder: 'Select a scenario to load',
-    };
-    const selectedScenario = await window.showQuickPick<QuickPickItem>(
-      scenarioQuickPickItems,
-      quickPickOptions);
-    if (!selectedScenario) {
-      return;
-    }
-
-    const scenarioName = selectedScenario.label;
     const scenarioPath = path.join(scenariosPath, scenarioName);
 
     const handlers = await createRequestHandlers(scenarioPath);
     this.server.resetHandlers();
     this.server.use(...handlers);
+  }
 
-    // Set a value in the context to track whether we have a scenario loaded. 
-    // This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.scenarioLoaded', true);
+  public async saveScenario(
+    scenarioName: string,
+    scenariosPath?: string,
+  ): Promise<string> {
+    if (!scenariosPath) {
+      scenariosPath = await this.getDefaultScenariosPath();
+      if (!scenariosPath) {
+        throw new Error("Could not find scenarios path");
+      }
+    }
 
-    await window.showInformationMessage(`Loaded scenario '${scenarioName}'`);
+    const filePath = await this.recorder.save(scenariosPath, scenarioName);
+
+    await this.stopRecording();
+
+    return filePath;
   }
 
   public async unloadScenario(): Promise<void> {
-    if (!this.isScenarioLoaded()) {
-      await window.showInformationMessage('No scenario currently loaded');
+    if (!this.isScenarioLoaded) {
+      return;
     }
-    else {
-      await this.unloadAllScenarios();
-      await window.showInformationMessage('Unloaded scenario');
-    }
+
+    await this.unloadAllScenarios();
   }
 
   public async startRecording(): Promise<void> {
     if (this.recorder.isRecording) {
-      void window.showErrorMessage('A scenario is already being recorded. Use the "Save Scenario" or "Cancel Scenario" commands to finish recording.');
       return;
     }
 
-    if (this.isScenarioLoaded()) {
+    if (this.isScenarioLoaded) {
       await this.unloadAllScenarios();
-      void window.showInformationMessage('A scenario was loaded so it has been unloaded');
     }
 
     this.recorder.start();
-    // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', true);
-
-    await window.showInformationMessage('Recording scenario. To save the scenario, use the "CodeQL Mock GitHub API Server: Save Scenario" command.');
   }
 
-  public async saveScenario(): Promise<void> {
-    const scenariosPath = await this.getScenariosPath();
-    if (!scenariosPath) {
-      return;
-    }
-
-    // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', false);
-
-    if (!this.recorder.isRecording) {
-      void window.showErrorMessage('No scenario is currently being recorded.');
-      return;
-    }
-    if (!this.recorder.anyRequestsRecorded) {
-      void window.showWarningMessage('No requests were recorded. Cancelling scenario.');
-
-      await this.stopRecording();
-
-      return;
-    }
-
-    const name = await window.showInputBox({
-      title: 'Save scenario',
-      prompt: 'Enter a name for the scenario.',
-      placeHolder: 'successful-run',
-    });
-    if (!name) {
-      return;
-    }
-
-    const filePath = await this.recorder.save(scenariosPath, name);
-
-    await this.stopRecording();
-
-    const action = await window.showInformationMessage(`Scenario saved to ${filePath}`, 'Open directory');
-    if (action === 'Open directory') {
-      await env.openExternal(Uri.file(filePath));
-    }
-  }
-
-  public async cancelRecording(): Promise<void> {
-    if (!this.recorder.isRecording) {
-      void window.showErrorMessage('No scenario is currently being recorded.');
-      return;
-    }
-
-    await this.stopRecording();
-
-    void window.showInformationMessage('Recording cancelled.');
-  }
-
-  private async stopRecording(): Promise<void> {
-    // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.recording', false);
-
+  public async stopRecording(): Promise<void> {
     await this.recorder.stop();
     await this.recorder.clear();
   }
 
-  private async getScenariosPath(): Promise<string | undefined> {
-    const scenariosPath = getMockGitHubApiServerScenariosPath();
-    if (scenariosPath) {
-      return scenariosPath;
-    }
-
-    if (this.ctx.extensionMode === ExtensionMode.Development) {
-      const developmentScenariosPath = Uri.joinPath(this.ctx.extensionUri, 'src/mocks/scenarios').fsPath.toString();
-      if (await fs.pathExists(developmentScenariosPath)) {
-        return developmentScenariosPath;
+  public async getScenarioNames(scenariosPath?: string): Promise<string[]> {
+    if (!scenariosPath) {
+      scenariosPath = await this.getDefaultScenariosPath();
+      if (!scenariosPath) {
+        return [];
       }
     }
 
-    const directories = await window.showOpenDialog({
-      canSelectFolders: true,
-      canSelectFiles: false,
-      canSelectMany: false,
-      openLabel: 'Select scenarios directory',
-      title: 'Select scenarios directory',
-    });
-    if (directories === undefined || directories.length === 0) {
-      void window.showErrorMessage('No scenarios directory selected.');
-      return undefined;
-    }
-
-    // Unfortunately, we cannot save the directory in the configuration because that requires
-    // the configuration to be registered. If we do that, it would be visible to all users; there
-    // is no "when" clause that would allow us to only show it to users who have enabled the feature flag.
-
-    return directories[0].fsPath;
+    return await getDirectoryNamesInsidePath(scenariosPath);
   }
 
-  private isScenarioLoaded(): boolean {
+  public get isListening(): boolean {
+    return this._isListening;
+  }
+
+  public get isRecording(): boolean {
+    return this.recorder.isRecording;
+  }
+
+  public get anyRequestsRecorded(): boolean {
+    return this.recorder.anyRequestsRecorded;
+  }
+
+  public get isScenarioLoaded(): boolean {
     return this.server.listHandlers().length > 0;
+  }
+
+  public async getDefaultScenariosPath(): Promise<string | undefined> {
+    // This should be the directory where package.json is located
+    const rootDirectory = path.resolve(__dirname, "../..");
+
+    const scenariosPath = path.resolve(rootDirectory, "src/mocks/scenarios");
+    if (await fs.pathExists(scenariosPath)) {
+      return scenariosPath;
+    }
+
+    return undefined;
   }
 
   private async unloadAllScenarios(): Promise<void> {
     this.server.resetHandlers();
-    await commands.executeCommand('setContext', 'codeQL.mockGitHubApiServer.scenarioLoaded', false);
-  }
-
-  private setupConfigListener(): void {
-    // The config "changes" from the default at startup, so we need to call onConfigChange() to ensure the server is
-    // started if required.
-    this.onConfigChange();
-    this.config.onDidChangeConfiguration(() => this.onConfigChange());
-  }
-
-  private onConfigChange(): void {
-    if (this.config.mockServerEnabled && !this.isListening) {
-      this.startServer();
-    } else if (!this.config.mockServerEnabled && this.isListening) {
-      this.stopServer();
-    }
   }
 }

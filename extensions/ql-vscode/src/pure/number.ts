@@ -2,7 +2,7 @@
  * Contains an assortment of helper constants and functions for working with numbers.
  */
 
-const numberFormatter = new Intl.NumberFormat('en-US');
+const numberFormatter = new Intl.NumberFormat("en-US");
 
 /**
  * Formats a number to be human-readable with decimal places and thousands separators.

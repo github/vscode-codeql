@@ -1,6 +1,5 @@
-import * as fs from 'fs-extra';
-import * as path from 'path';
-
+import * as fs from "fs-extra";
+import * as path from "path";
 
 /**
  * Recursively finds all .ql files in this set of Uris.
@@ -9,7 +8,9 @@ import * as path from 'path';
  *
  * @returns list of ql files and a boolean describing whether or not a directory was found/
  */
-export async function gatherQlFiles(paths: string[]): Promise<[string[], boolean]> {
+export async function gatherQlFiles(
+  paths: string[],
+): Promise<[string[], boolean]> {
   const gatheredUris: Set<string> = new Set();
   let dirFound = false;
   for (const nextPath of paths) {
@@ -19,10 +20,10 @@ export async function gatherQlFiles(paths: string[]): Promise<[string[], boolean
     ) {
       dirFound = true;
       const subPaths = await fs.readdir(nextPath);
-      const fullPaths = subPaths.map(p => path.join(nextPath, p));
+      const fullPaths = subPaths.map((p) => path.join(nextPath, p));
       const nestedFiles = (await gatherQlFiles(fullPaths))[0];
-      nestedFiles.forEach(nested => gatheredUris.add(nested));
-    } else if (nextPath.endsWith('.ql')) {
+      nestedFiles.forEach((nested) => gatheredUris.add(nested));
+    } else if (nextPath.endsWith(".ql")) {
       gatheredUris.add(nextPath);
     }
   }
@@ -34,7 +35,9 @@ export async function gatherQlFiles(paths: string[]): Promise<[string[], boolean
  * @param path The path to the directory to read.
  * @returns the names of the directories inside the given path.
  */
-export async function getDirectoryNamesInsidePath(path: string): Promise<string[]> {
+export async function getDirectoryNamesInsidePath(
+  path: string,
+): Promise<string[]> {
   if (!(await fs.pathExists(path))) {
     throw Error(`Path does not exist: ${path}`);
   }
@@ -45,8 +48,8 @@ export async function getDirectoryNamesInsidePath(path: string): Promise<string[
   const dirItems = await fs.readdir(path, { withFileTypes: true });
 
   const dirNames = dirItems
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name);
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
 
   return dirNames;
 }

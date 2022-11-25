@@ -1,8 +1,8 @@
-import * as gulp from 'gulp';
-import * as jsYaml from 'js-yaml';
-import * as through from 'through2';
-import * as PluginError from 'plugin-error';
-import * as Vinyl from 'vinyl';
+import * as gulp from "gulp";
+import * as jsYaml from "js-yaml";
+import * as through from "through2";
+import * as PluginError from "plugin-error";
+import * as Vinyl from "vinyl";
 
 /**
  * Replaces all rule references with the match pattern of the referenced rule.
@@ -11,7 +11,10 @@ import * as Vinyl from 'vinyl';
  * @param replacements Map from rule name to match text.
  * @returns The new regex after replacement.
  */
-function replaceReferencesWithStrings(value: string, replacements: Map<string, string>): string {
+function replaceReferencesWithStrings(
+  value: string,
+  replacements: Map<string, string>,
+): string {
   let result = value;
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -52,21 +55,19 @@ function getNodeMatchText(rule: any): string {
   if (rule.match !== undefined) {
     // For a match string, just use that string as the replacement.
     return rule.match;
-  }
-  else if (rule.patterns !== undefined) {
+  } else if (rule.patterns !== undefined) {
     const patterns: string[] = [];
     // For a list of patterns, use the disjunction of those patterns.
     for (const patternIndex in rule.patterns) {
       const pattern = rule.patterns[patternIndex];
       if (pattern.include !== null) {
-        patterns.push('(?' + pattern.include + ')');
+        patterns.push("(?" + pattern.include + ")");
       }
     }
 
-    return '(?:' + patterns.join('|') + ')';
-  }
-  else {
-    return '';
+    return "(?:" + patterns.join("|") + ")";
+  } else {
+    return "";
   }
 }
 
@@ -109,7 +110,7 @@ function visitAllRulesInFile(yaml: any, action: (rule: any) => void) {
 function visitAllRulesInRuleMap(ruleMap: any, action: (rule: any) => void) {
   for (const key in ruleMap) {
     const rule = ruleMap[key];
-    if ((typeof rule) === 'object') {
+    if (typeof rule === "object") {
       action(rule);
       if (rule.patterns !== undefined) {
         visitAllRulesInRuleMap(rule.patterns, action);
@@ -127,10 +128,10 @@ function visitAllRulesInRuleMap(ruleMap: any, action: (rule: any) => void) {
 function visitAllMatchesInRule(rule: any, action: (match: any) => any) {
   for (const key in rule) {
     switch (key) {
-      case 'begin':
-      case 'end':
-      case 'match':
-      case 'while':
+      case "begin":
+      case "end":
+      case "match":
+      case "while":
         rule[key] = action(rule[key]);
         break;
 
@@ -147,21 +148,21 @@ function visitAllMatchesInRule(rule: any, action: (match: any) => any) {
  * @param rule Rule to be transformed.
  * @param key Base key of the property to be transformed.
  */
-function expandPatternMatchProperties(rule: any, key: 'begin' | 'end') {
-  const patternKey = key + 'Pattern';
-  const capturesKey = key + 'Captures';
+function expandPatternMatchProperties(rule: any, key: "begin" | "end") {
+  const patternKey = key + "Pattern";
+  const capturesKey = key + "Captures";
   const pattern = rule[patternKey];
   if (pattern !== undefined) {
     const patterns: string[] = Array.isArray(pattern) ? pattern : [pattern];
-    rule[key] = patterns.map(p => `((?${p}))`).join('|');
+    rule[key] = patterns.map((p) => `((?${p}))`).join("|");
     const captures: { [index: string]: any } = {};
     for (const patternIndex in patterns) {
       captures[(Number(patternIndex) + 1).toString()] = {
         patterns: [
           {
-            include: patterns[patternIndex]
-          }
-        ]
+            include: patterns[patternIndex],
+          },
+        ],
       };
     }
     rule[capturesKey] = captures;
@@ -177,20 +178,19 @@ function expandPatternMatchProperties(rule: any, key: 'begin' | 'end') {
 function transformFile(yaml: any) {
   const macros = gatherMacros(yaml);
   visitAllRulesInFile(yaml, (rule) => {
-    expandPatternMatchProperties(rule, 'begin');
-    expandPatternMatchProperties(rule, 'end');
+    expandPatternMatchProperties(rule, "begin");
+    expandPatternMatchProperties(rule, "end");
   });
 
   // Expand macros in matches.
   visitAllRulesInFile(yaml, (rule) => {
     visitAllMatchesInRule(rule, (match) => {
-      if ((typeof match) === 'object') {
+      if (typeof match === "object") {
         for (const key in match) {
-          return macros.get(key)!.replace('(?#)', `(?:${match[key]})`);
+          return macros.get(key)!.replace("(?#)", `(?:${match[key]})`);
         }
-        throw new Error('No key in macro map.');
-      }
-      else {
+        throw new Error("No key in macro map.");
+      } else {
         return match;
       }
     });
@@ -207,7 +207,7 @@ function transformFile(yaml: any) {
   });
 
   if (yaml.regexOptions !== undefined) {
-    const regexOptions = '(?' + yaml.regexOptions + ')';
+    const regexOptions = "(?" + yaml.regexOptions + ")";
     visitAllRulesInFile(yaml, (rule) => {
       visitAllMatchesInRule(rule, (match) => {
         return regexOptions + match;
@@ -219,28 +219,36 @@ function transformFile(yaml: any) {
 }
 
 export function transpileTextMateGrammar() {
-  return through.obj((file: Vinyl, _encoding: string, callback: (err: string | null, file: Vinyl | PluginError) => void): void => {
-    if (file.isNull()) {
-      callback(null, file);
-    }
-    else if (file.isBuffer()) {
-      const buf: Buffer = file.contents;
-      const yamlText: string = buf.toString('utf8');
-      const jsonData: any = jsYaml.load(yamlText);
-      transformFile(jsonData);
+  return through.obj(
+    (
+      file: Vinyl,
+      _encoding: string,
+      callback: (err: string | null, file: Vinyl | PluginError) => void,
+    ): void => {
+      if (file.isNull()) {
+        callback(null, file);
+      } else if (file.isBuffer()) {
+        const buf: Buffer = file.contents;
+        const yamlText: string = buf.toString("utf8");
+        const jsonData: any = jsYaml.load(yamlText);
+        transformFile(jsonData);
 
-      file.contents = Buffer.from(JSON.stringify(jsonData, null, 2), 'utf8');
-      file.extname = '.json';
-      callback(null, file);
-    }
-    else {
-      callback('error', new PluginError('transpileTextMateGrammar', 'Format not supported.'));
-    }
-  });
+        file.contents = Buffer.from(JSON.stringify(jsonData, null, 2), "utf8");
+        file.extname = ".json";
+        callback(null, file);
+      } else {
+        callback(
+          "error",
+          new PluginError("transpileTextMateGrammar", "Format not supported."),
+        );
+      }
+    },
+  );
 }
 
 export function compileTextMateGrammar() {
-  return gulp.src('syntaxes/*.tmLanguage.yml')
+  return gulp
+    .src("syntaxes/*.tmLanguage.yml")
     .pipe(transpileTextMateGrammar())
-    .pipe(gulp.dest('out/syntaxes'));
+    .pipe(gulp.dest("out/syntaxes"));
 }

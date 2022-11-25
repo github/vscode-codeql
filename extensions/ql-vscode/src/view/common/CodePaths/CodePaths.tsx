@@ -1,29 +1,33 @@
-import * as React from 'react';
-import { useRef, useState } from 'react';
-import styled from 'styled-components';
-import { VSCodeLink } from '@vscode/webview-ui-toolkit/react';
+import * as React from "react";
+import { useRef, useState } from "react";
+import styled from "styled-components";
+import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 
-import { Overlay } from '@primer/react';
+import { Overlay } from "@primer/react";
 
-import { AnalysisMessage, CodeFlow, ResultSeverity } from '../../../remote-queries/shared/analysis-result';
-import { CodePathsOverlay } from './CodePathsOverlay';
+import {
+  AnalysisMessage,
+  CodeFlow,
+  ResultSeverity,
+} from "../../../remote-queries/shared/analysis-result";
+import { CodePathsOverlay } from "./CodePathsOverlay";
 
 const ShowPathsLink = styled(VSCodeLink)`
   cursor: pointer;
 `;
 
 type Props = {
-  codeFlows: CodeFlow[],
-  ruleDescription: string,
-  message: AnalysisMessage,
-  severity: ResultSeverity
+  codeFlows: CodeFlow[];
+  ruleDescription: string;
+  message: AnalysisMessage;
+  severity: ResultSeverity;
 };
 
 export const CodePaths = ({
   codeFlows,
   ruleDescription,
   message,
-  severity
+  severity,
 }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -33,10 +37,7 @@ export const CodePaths = ({
 
   return (
     <>
-      <ShowPathsLink
-        onClick={() => setIsOpen(true)}
-        ref={linkRef}
-      >
+      <ShowPathsLink onClick={() => setIsOpen(true)} ref={linkRef}>
         Show paths
       </ShowPathsLink>
       {isOpen && (

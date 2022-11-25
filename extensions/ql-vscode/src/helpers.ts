@@ -1,23 +1,27 @@
-import * as fs from 'fs-extra';
-import * as glob from 'glob-promise';
-import * as yaml from 'js-yaml';
-import * as path from 'path';
-import * as tmp from 'tmp-promise';
+import * as fs from "fs-extra";
+import * as glob from "glob-promise";
+import * as yaml from "js-yaml";
+import * as path from "path";
+import * as tmp from "tmp-promise";
 import {
   ExtensionContext,
   Uri,
   window as Window,
   workspace,
-  env
-} from 'vscode';
-import { CodeQLCliServer, QlpacksInfo } from './cli';
-import { UserCancellationException } from './commandRunner';
-import { logger } from './logging';
-import { QueryMetadata } from './pure/interface-types';
+  env,
+} from "vscode";
+import { CodeQLCliServer, QlpacksInfo } from "./cli";
+import { UserCancellationException } from "./commandRunner";
+import { logger } from "./logging";
+import { QueryMetadata } from "./pure/interface-types";
 
 // Shared temporary folder for the extension.
-export const tmpDir = tmp.dirSync({ prefix: 'queries_', keep: false, unsafeCleanup: true });
-export const upgradesTmpDir = path.join(tmpDir.name, 'upgrades');
+export const tmpDir = tmp.dirSync({
+  prefix: "queries_",
+  keep: false,
+  unsafeCleanup: true,
+});
+export const upgradesTmpDir = path.join(tmpDir.name, "upgrades");
 fs.ensureDirSync(upgradesTmpDir);
 
 export const tmpDirDisposal = {
@@ -25,9 +29,11 @@ export const tmpDirDisposal = {
     try {
       tmpDir.removeCallback();
     } catch (e) {
-      void logger.log(`Failed to remove temporary directory ${tmpDir.name}: ${e}`);
+      void logger.log(
+        `Failed to remove temporary directory ${tmpDir.name}: ${e}`,
+      );
     }
-  }
+  },
 };
 
 /**
@@ -42,16 +48,25 @@ export const tmpDirDisposal = {
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
-export async function showAndLogErrorMessage(message: string, {
-  outputLogger = logger,
-  items = [] as string[],
-  fullMessage = undefined as (string | undefined)
-} = {}): Promise<string | undefined> {
-  return internalShowAndLog(dropLinesExceptInitial(message), items, outputLogger, Window.showErrorMessage, fullMessage);
+export async function showAndLogErrorMessage(
+  message: string,
+  {
+    outputLogger = logger,
+    items = [] as string[],
+    fullMessage = undefined as string | undefined,
+  } = {},
+): Promise<string | undefined> {
+  return internalShowAndLog(
+    dropLinesExceptInitial(message),
+    items,
+    outputLogger,
+    Window.showErrorMessage,
+    fullMessage,
+  );
 }
 
 function dropLinesExceptInitial(message: string, n = 2) {
-  return message.toString().split(/\r?\n/).slice(0, n).join('\n');
+  return message.toString().split(/\r?\n/).slice(0, n).join("\n");
 }
 
 /**
@@ -63,11 +78,16 @@ function dropLinesExceptInitial(message: string, n = 2) {
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
-export async function showAndLogWarningMessage(message: string, {
-  outputLogger = logger,
-  items = [] as string[]
-} = {}): Promise<string | undefined> {
-  return internalShowAndLog(message, items, outputLogger, Window.showWarningMessage);
+export async function showAndLogWarningMessage(
+  message: string,
+  { outputLogger = logger, items = [] as string[] } = {},
+): Promise<string | undefined> {
+  return internalShowAndLog(
+    message,
+    items,
+    outputLogger,
+    Window.showWarningMessage,
+  );
 }
 /**
  * Show an information message and log it to the console
@@ -78,24 +98,32 @@ export async function showAndLogWarningMessage(message: string, {
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
-export async function showAndLogInformationMessage(message: string, {
-  outputLogger = logger,
-  items = [] as string[],
-  fullMessage = ''
-} = {}): Promise<string | undefined> {
-  return internalShowAndLog(message, items, outputLogger, Window.showInformationMessage, fullMessage);
+export async function showAndLogInformationMessage(
+  message: string,
+  { outputLogger = logger, items = [] as string[], fullMessage = "" } = {},
+): Promise<string | undefined> {
+  return internalShowAndLog(
+    message,
+    items,
+    outputLogger,
+    Window.showInformationMessage,
+    fullMessage,
+  );
 }
 
-type ShowMessageFn = (message: string, ...items: string[]) => Thenable<string | undefined>;
+type ShowMessageFn = (
+  message: string,
+  ...items: string[]
+) => Thenable<string | undefined>;
 
 async function internalShowAndLog(
   message: string,
   items: string[],
   outputLogger = logger,
   fn: ShowMessageFn,
-  fullMessage?: string
+  fullMessage?: string,
 ): Promise<string | undefined> {
-  const label = 'Show Log';
+  const label = "Show Log";
   void outputLogger.log(fullMessage || message);
   const result = await fn(message, label, ...items);
   if (result === label) {
@@ -110,16 +138,28 @@ async function internalShowAndLog(
  * @param message The message to show.
  * @param modal If true (the default), show a modal dialog box, otherwise dialog is non-modal and can
  *        be closed even if the user does not make a choice.
+ * @param yesTitle The text in the box indicating the affirmative choice.
+ * @param noTitle The text in the box indicating the negative choice.
  *
  * @return
  *  `true` if the user clicks 'Yes',
  *  `false` if the user clicks 'No' or cancels the dialog,
  *  `undefined` if the dialog is closed without the user making a choice.
  */
-export async function showBinaryChoiceDialog(message: string, modal = true): Promise<boolean | undefined> {
-  const yesItem = { title: 'Yes', isCloseAffordance: false };
-  const noItem = { title: 'No', isCloseAffordance: true };
-  const chosenItem = await Window.showInformationMessage(message, { modal }, yesItem, noItem);
+export async function showBinaryChoiceDialog(
+  message: string,
+  modal = true,
+  yesTitle = "Yes",
+  noTitle = "No",
+): Promise<boolean | undefined> {
+  const yesItem = { title: yesTitle, isCloseAffordance: false };
+  const noItem = { title: noTitle, isCloseAffordance: true };
+  const chosenItem = await Window.showInformationMessage(
+    message,
+    { modal },
+    yesItem,
+    noItem,
+  );
   if (!chosenItem) {
     return undefined;
   }
@@ -138,17 +178,26 @@ export async function showBinaryChoiceDialog(message: string, modal = true): Pro
  *  `false` if the user clicks 'No' or cancels the dialog,
  *  `undefined` if the dialog is closed without the user making a choice.
  */
-export async function showBinaryChoiceWithUrlDialog(message: string, url: string): Promise<boolean | undefined> {
-  const urlItem = { title: 'More Information', isCloseAffordance: false };
-  const yesItem = { title: 'Yes', isCloseAffordance: false };
-  const noItem = { title: 'No', isCloseAffordance: true };
+export async function showBinaryChoiceWithUrlDialog(
+  message: string,
+  url: string,
+): Promise<boolean | undefined> {
+  const urlItem = { title: "More Information", isCloseAffordance: false };
+  const yesItem = { title: "Yes", isCloseAffordance: false };
+  const noItem = { title: "No", isCloseAffordance: true };
   let chosenItem;
 
   // Keep the dialog open as long as the user is clicking the 'more information' option.
   // To prevent an infinite loop, if the user clicks 'more information' 5 times, close the dialog and return cancelled
   let count = 0;
   do {
-    chosenItem = await Window.showInformationMessage(message, { modal: true }, urlItem, yesItem, noItem);
+    chosenItem = await Window.showInformationMessage(
+      message,
+      { modal: true },
+      urlItem,
+      yesItem,
+      noItem,
+    );
     if (chosenItem === urlItem) {
       await env.openExternal(Uri.parse(url, true));
     }
@@ -168,7 +217,10 @@ export async function showBinaryChoiceWithUrlDialog(message: string, url: string
  *
  * @return `true` if the user clicks the action, `false` if the user cancels the dialog.
  */
-export async function showInformationMessageWithAction(message: string, actionMessage: string): Promise<boolean> {
+export async function showInformationMessageWithAction(
+  message: string,
+  actionMessage: string,
+): Promise<boolean> {
   const actionItem = { title: actionMessage, isCloseAffordance: false };
   const chosenItem = await Window.showInformationMessage(message, actionItem);
   return chosenItem === actionItem;
@@ -179,7 +231,7 @@ export function getOnDiskWorkspaceFolders() {
   const workspaceFolders = workspace.workspaceFolders || [];
   const diskWorkspaceFolders: string[] = [];
   for (const workspaceFolder of workspaceFolders) {
-    if (workspaceFolder.uri.scheme === 'file')
+    if (workspaceFolder.uri.scheme === "file")
       diskWorkspaceFolders.push(workspaceFolder.uri.fsPath);
   }
   return diskWorkspaceFolders;
@@ -194,7 +246,9 @@ export class InvocationRateLimiter<T> {
     extensionContext: ExtensionContext,
     funcIdentifier: string,
     func: () => Promise<T>,
-    createDate: (dateString?: string) => Date = s => s ? new Date(s) : new Date()) {
+    createDate: (dateString?: string) => Date = (s) =>
+      s ? new Date(s) : new Date(),
+  ) {
     this._createDate = createDate;
     this._extensionContext = extensionContext;
     this._func = func;
@@ -204,14 +258,17 @@ export class InvocationRateLimiter<T> {
   /**
    * Invoke the function if `minSecondsSinceLastInvocation` seconds have elapsed since the last invocation.
    */
-  public async invokeFunctionIfIntervalElapsed(minSecondsSinceLastInvocation: number): Promise<InvocationRateLimiterResult<T>> {
+  public async invokeFunctionIfIntervalElapsed(
+    minSecondsSinceLastInvocation: number,
+  ): Promise<InvocationRateLimiterResult<T>> {
     const updateCheckStartDate = this._createDate();
     const lastInvocationDate = this.getLastInvocationDate();
     if (
       minSecondsSinceLastInvocation &&
       lastInvocationDate &&
       lastInvocationDate <= updateCheckStartDate &&
-      lastInvocationDate.getTime() + minSecondsSinceLastInvocation * 1000 > updateCheckStartDate.getTime()
+      lastInvocationDate.getTime() + minSecondsSinceLastInvocation * 1000 >
+        updateCheckStartDate.getTime()
     ) {
       return createRateLimitedResult();
     }
@@ -222,12 +279,18 @@ export class InvocationRateLimiter<T> {
 
   private getLastInvocationDate(): Date | undefined {
     const maybeDateString: string | undefined =
-      this._extensionContext.globalState.get(InvocationRateLimiter._invocationRateLimiterPrefix + this._funcIdentifier);
+      this._extensionContext.globalState.get(
+        InvocationRateLimiter._invocationRateLimiterPrefix +
+          this._funcIdentifier,
+      );
     return maybeDateString ? this._createDate(maybeDateString) : undefined;
   }
 
   private async setLastInvocationDate(date: Date): Promise<void> {
-    return await this._extensionContext.globalState.update(InvocationRateLimiter._invocationRateLimiterPrefix + this._funcIdentifier, date);
+    return await this._extensionContext.globalState.update(
+      InvocationRateLimiter._invocationRateLimiterPrefix + this._funcIdentifier,
+      date,
+    );
   }
 
   private readonly _createDate: (dateString?: string) => Date;
@@ -235,12 +298,13 @@ export class InvocationRateLimiter<T> {
   private readonly _func: () => Promise<T>;
   private readonly _funcIdentifier: string;
 
-  private static readonly _invocationRateLimiterPrefix = 'invocationRateLimiter_lastInvocationDate_';
+  private static readonly _invocationRateLimiterPrefix =
+    "invocationRateLimiter_lastInvocationDate_";
 }
 
 export enum InvocationRateLimiterResultKind {
   Invoked,
-  RateLimited
+  RateLimited,
 }
 
 /**
@@ -263,13 +327,13 @@ type InvocationRateLimiterResult<T> = InvokedResult<T> | RateLimitedResult;
 function createInvokedResult<T>(result: T): InvokedResult<T> {
   return {
     kind: InvocationRateLimiterResultKind.Invoked,
-    result
+    result,
   };
 }
 
 function createRateLimitedResult(): RateLimitedResult {
   return {
-    kind: InvocationRateLimiterResultKind.RateLimited
+    kind: InvocationRateLimiterResultKind.RateLimited,
   };
 }
 
@@ -290,14 +354,22 @@ interface QlPackWithPath {
   packDir: string | undefined;
 }
 
-async function findDbschemePack(packs: QlPackWithPath[], dbschemePath: string): Promise<{ name: string; isLibraryPack: boolean; }> {
+async function findDbschemePack(
+  packs: QlPackWithPath[],
+  dbschemePath: string,
+): Promise<{ name: string; isLibraryPack: boolean }> {
   for (const { packDir, packName } of packs) {
     if (packDir !== undefined) {
-      const qlpack = yaml.load(await fs.readFile(path.join(packDir, 'qlpack.yml'), 'utf8')) as { dbscheme?: string; library?: boolean; };
-      if (qlpack.dbscheme !== undefined && path.basename(qlpack.dbscheme) === path.basename(dbschemePath)) {
+      const qlpack = yaml.load(
+        await fs.readFile(path.join(packDir, "qlpack.yml"), "utf8"),
+      ) as { dbscheme?: string; library?: boolean };
+      if (
+        qlpack.dbscheme !== undefined &&
+        path.basename(qlpack.dbscheme) === path.basename(dbschemePath)
+      ) {
         return {
           name: packName,
-          isLibraryPack: qlpack.library === true
+          isLibraryPack: qlpack.library === true,
         };
       }
     }
@@ -305,7 +377,10 @@ async function findDbschemePack(packs: QlPackWithPath[], dbschemePath: string): 
   throw new Error(`Could not find qlpack file for dbscheme ${dbschemePath}`);
 }
 
-function findStandardQueryPack(qlpacks: QlpacksInfo, dbschemePackName: string): string | undefined {
+function findStandardQueryPack(
+  qlpacks: QlpacksInfo,
+  dbschemePackName: string,
+): string | undefined {
   const matches = dbschemePackName.match(/^codeql\/(?<language>[a-z]+)-all$/);
   if (matches) {
     const queryPackName = `codeql/${matches.groups!.language}-queries`;
@@ -319,43 +394,59 @@ function findStandardQueryPack(qlpacks: QlpacksInfo, dbschemePackName: string): 
   return undefined;
 }
 
-export async function getQlPackForDbscheme(cliServer: CodeQLCliServer, dbschemePath: string): Promise<QlPacksForLanguage> {
+export async function getQlPackForDbscheme(
+  cliServer: CodeQLCliServer,
+  dbschemePath: string,
+): Promise<QlPacksForLanguage> {
   const qlpacks = await cliServer.resolveQlpacks(getOnDiskWorkspaceFolders());
-  const packs: QlPackWithPath[] =
-    Object.entries(qlpacks).map(([packName, dirs]) => {
+  const packs: QlPackWithPath[] = Object.entries(qlpacks).map(
+    ([packName, dirs]) => {
       if (dirs.length < 1) {
-        void logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`);
+        void logger.log(
+          `In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`,
+        );
         return { packName, packDir: undefined };
       }
       if (dirs.length > 1) {
-        void logger.log(`In getQlPackFor ${dbschemePath}, qlpack ${packName} has more than one directory; arbitrarily choosing the first`);
+        void logger.log(
+          `In getQlPackFor ${dbschemePath}, qlpack ${packName} has more than one directory; arbitrarily choosing the first`,
+        );
       }
       return {
         packName,
-        packDir: dirs[0]
+        packDir: dirs[0],
       };
-    });
+    },
+  );
   const dbschemePack = await findDbschemePack(packs, dbschemePath);
-  const queryPack = dbschemePack.isLibraryPack ? findStandardQueryPack(qlpacks, dbschemePack.name) : undefined;
+  const queryPack = dbschemePack.isLibraryPack
+    ? findStandardQueryPack(qlpacks, dbschemePack.name)
+    : undefined;
   return {
     dbschemePack: dbschemePack.name,
     dbschemePackIsLibraryPack: dbschemePack.isLibraryPack,
-    queryPack
+    queryPack,
   };
 }
 
-export async function getPrimaryDbscheme(datasetFolder: string): Promise<string> {
-  const dbschemes = await glob(path.join(datasetFolder, '*.dbscheme'));
+export async function getPrimaryDbscheme(
+  datasetFolder: string,
+): Promise<string> {
+  const dbschemes = await glob(path.join(datasetFolder, "*.dbscheme"));
 
   if (dbschemes.length < 1) {
-    throw new Error(`Can't find dbscheme for current database in ${datasetFolder}`);
+    throw new Error(
+      `Can't find dbscheme for current database in ${datasetFolder}`,
+    );
   }
 
   dbschemes.sort();
   const dbscheme = dbschemes[0];
 
   if (dbschemes.length > 1) {
-    void Window.showErrorMessage(`Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`);
+    void Window.showErrorMessage(
+      `Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`,
+    );
   }
   return dbscheme;
 }
@@ -367,12 +458,21 @@ export class CachedOperation<U> {
   private readonly operation: (t: string, ...args: any[]) => Promise<U>;
   private readonly cached: Map<string, U>;
   private readonly lru: string[];
-  private readonly inProgressCallbacks: Map<string, [(u: U) => void, (reason?: any) => void][]>;
+  private readonly inProgressCallbacks: Map<
+    string,
+    [(u: U) => void, (reason?: any) => void][]
+  >;
 
-  constructor(operation: (t: string, ...args: any[]) => Promise<U>, private cacheSize = 100) {
+  constructor(
+    operation: (t: string, ...args: any[]) => Promise<U>,
+    private cacheSize = 100,
+  ) {
     this.operation = operation;
     this.lru = [];
-    this.inProgressCallbacks = new Map<string, [(u: U) => void, (reason?: any) => void][]>();
+    this.inProgressCallbacks = new Map<
+      string,
+      [(u: U) => void, (reason?: any) => void][]
+    >();
     this.cached = new Map<string, U>();
   }
 
@@ -381,7 +481,12 @@ export class CachedOperation<U> {
     const fromCache = this.cached.get(t);
     if (fromCache !== undefined) {
       // Move to end of lru list
-      this.lru.push(this.lru.splice(this.lru.findIndex(v => v === t), 1)[0]);
+      this.lru.push(
+        this.lru.splice(
+          this.lru.findIndex((v) => v === t),
+          1,
+        )[0],
+      );
       return fromCache;
     }
     // Otherwise check if in progress
@@ -398,7 +503,7 @@ export class CachedOperation<U> {
     this.inProgressCallbacks.set(t, callbacks);
     try {
       const result = await this.operation(t, ...args);
-      callbacks.forEach(f => f[0](result));
+      callbacks.forEach((f) => f[0](result));
       this.inProgressCallbacks.delete(t);
       if (this.lru.length > this.cacheSize) {
         const toRemove = this.lru.shift()!;
@@ -409,15 +514,13 @@ export class CachedOperation<U> {
       return result;
     } catch (e) {
       // Rethrow error on all callbacks
-      callbacks.forEach(f => f[1](e));
+      callbacks.forEach((f) => f[1](e));
       throw e;
     } finally {
       this.inProgressCallbacks.delete(t);
     }
   }
 }
-
-
 
 /**
  * The following functions al heuristically determine metadata about databases.
@@ -434,20 +537,22 @@ export class CachedOperation<U> {
  * @see cli.CodeQLCliServer.resolveDatabase
  */
 export const dbSchemeToLanguage = {
-  'semmlecode.javascript.dbscheme': 'javascript',
-  'semmlecode.cpp.dbscheme': 'cpp',
-  'semmlecode.dbscheme': 'java',
-  'semmlecode.python.dbscheme': 'python',
-  'semmlecode.csharp.dbscheme': 'csharp',
-  'go.dbscheme': 'go',
-  'ruby.dbscheme': 'ruby'
+  "semmlecode.javascript.dbscheme": "javascript",
+  "semmlecode.cpp.dbscheme": "cpp",
+  "semmlecode.dbscheme": "java",
+  "semmlecode.python.dbscheme": "python",
+  "semmlecode.csharp.dbscheme": "csharp",
+  "go.dbscheme": "go",
+  "ruby.dbscheme": "ruby",
 };
 
-export const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce((acc, [k, v]) => {
-  acc[v] = k;
-  return acc;
-}, {} as { [k: string]: string });
-
+export const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce(
+  (acc, [k, v]) => {
+    acc[v] = k;
+    return acc;
+  },
+  {} as { [k: string]: string },
+);
 
 /**
  * Returns the initial contents for an empty query, based on the language of the selected
@@ -463,13 +568,13 @@ export const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce((acc
  */
 export function getInitialQueryContents(language: string, dbscheme: string) {
   if (!language) {
-    const dbschemeBase = path.basename(dbscheme) as keyof typeof dbSchemeToLanguage;
+    const dbschemeBase = path.basename(
+      dbscheme,
+    ) as keyof typeof dbSchemeToLanguage;
     language = dbSchemeToLanguage[dbschemeBase];
   }
 
-  return language
-    ? `import ${language}\n\nselect ""`
-    : 'select ""';
+  return language ? `import ${language}\n\nselect ""` : 'select ""';
 }
 
 /**
@@ -479,23 +584,26 @@ export function getInitialQueryContents(language: string, dbscheme: string) {
  * contains a folder starting with `db-`.
  */
 export async function isLikelyDatabaseRoot(maybeRoot: string) {
-  const [a, b, c] = (await Promise.all([
+  const [a, b, c] = await Promise.all([
     // databases can have either .dbinfo or codeql-database.yml.
-    fs.pathExists(path.join(maybeRoot, '.dbinfo')),
-    fs.pathExists(path.join(maybeRoot, 'codeql-database.yml')),
+    fs.pathExists(path.join(maybeRoot, ".dbinfo")),
+    fs.pathExists(path.join(maybeRoot, "codeql-database.yml")),
 
     // they *must* have a db-{language} folder
-    glob('db-*/', { cwd: maybeRoot })
-  ]));
+    glob("db-*/", { cwd: maybeRoot }),
+  ]);
 
-  return ((a || b) && c.length > 0);
+  return (a || b) && c.length > 0;
 }
 
 /**
  * A language folder is any folder starting with `db-` that is itself not a database root.
  */
 export async function isLikelyDbLanguageFolder(dbPath: string) {
-  return path.basename(dbPath).startsWith('db-') && !(await isLikelyDatabaseRoot(dbPath));
+  return (
+    path.basename(dbPath).startsWith("db-") &&
+    !(await isLikelyDatabaseRoot(dbPath))
+  );
 }
 
 /**
@@ -504,17 +612,22 @@ export async function isLikelyDbLanguageFolder(dbPath: string) {
  */
 export async function findLanguage(
   cliServer: CodeQLCliServer,
-  queryUri: Uri | undefined
+  queryUri: Uri | undefined,
 ): Promise<string | undefined> {
   const uri = queryUri || Window.activeTextEditor?.document.uri;
   if (uri !== undefined) {
     try {
-      const queryInfo = await cliServer.resolveQueryByLanguage(getOnDiskWorkspaceFolders(), uri);
-      const language = (Object.keys(queryInfo.byLanguage))[0];
+      const queryInfo = await cliServer.resolveQueryByLanguage(
+        getOnDiskWorkspaceFolders(),
+        uri,
+      );
+      const language = Object.keys(queryInfo.byLanguage)[0];
       void logger.log(`Detected query language: ${language}`);
       return language;
     } catch (e) {
-      void logger.log('Could not autodetect query language. Select language manually.');
+      void logger.log(
+        "Could not autodetect query language. Select language manually.",
+      );
     }
   }
 
@@ -522,17 +635,25 @@ export async function findLanguage(
   return await askForLanguage(cliServer, false);
 }
 
-export async function askForLanguage(cliServer: CodeQLCliServer, throwOnEmpty = true): Promise<string | undefined> {
+export async function askForLanguage(
+  cliServer: CodeQLCliServer,
+  throwOnEmpty = true,
+): Promise<string | undefined> {
   const language = await Window.showQuickPick(
     await cliServer.getSupportedLanguages(),
-    { placeHolder: 'Select target language for your query', ignoreFocusOut: true }
+    {
+      placeHolder: "Select target language for your query",
+      ignoreFocusOut: true,
+    },
   );
   if (!language) {
     // This only happens if the user cancels the quick pick.
     if (throwOnEmpty) {
-      throw new UserCancellationException('Cancelled.');
+      throw new UserCancellationException("Cancelled.");
     } else {
-      void showAndLogErrorMessage('Language not found. Language must be specified manually.');
+      void showAndLogErrorMessage(
+        "Language not found. Language must be specified manually.",
+      );
     }
   }
   return language;
@@ -544,7 +665,10 @@ export async function askForLanguage(cliServer: CodeQLCliServer, throwOnEmpty = 
  * @param queryPath The path to the query.
  * @returns A promise that resolves to the query metadata, if available.
  */
-export async function tryGetQueryMetadata(cliServer: CodeQLCliServer, queryPath: string): Promise<QueryMetadata | undefined> {
+export async function tryGetQueryMetadata(
+  cliServer: CodeQLCliServer,
+  queryPath: string,
+): Promise<QueryMetadata | undefined> {
   try {
     return await cliServer.resolveMetadata(queryPath);
   } catch (e) {
@@ -562,11 +686,10 @@ export async function tryGetQueryMetadata(cliServer: CodeQLCliServer, queryPath:
  * It does not need to exist.
  */
 export async function createTimestampFile(storagePath: string) {
-  const timestampPath = path.join(storagePath, 'timestamp');
+  const timestampPath = path.join(storagePath, "timestamp");
   await fs.ensureDir(storagePath);
-  await fs.writeFile(timestampPath, Date.now().toString(), 'utf8');
+  await fs.writeFile(timestampPath, Date.now().toString(), "utf8");
 }
-
 
 /**
  * Recursively walk a directory and return the full path to all files found.
@@ -576,7 +699,9 @@ export async function createTimestampFile(storagePath: string) {
  *
  * @return An iterator of the full path to all files recursively found in the directory.
  */
-export async function* walkDirectory(dir: string): AsyncIterableIterator<string> {
+export async function* walkDirectory(
+  dir: string,
+): AsyncIterableIterator<string> {
   const seenFiles = new Set<string>();
   for await (const d of await fs.opendir(dir)) {
     const entry = path.join(dir, d.name);

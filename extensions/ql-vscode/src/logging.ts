@@ -1,7 +1,7 @@
-import { window as Window, OutputChannel, Progress } from 'vscode';
-import { DisposableObject } from './pure/disposable-object';
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import { window as Window, OutputChannel, Progress } from "vscode";
+import { DisposableObject } from "./pure/disposable-object";
+import * as fs from "fs-extra";
+import * as path from "path";
 
 interface LogOptions {
   /** If false, don't output a trailing newline for the log entry. Default true. */
@@ -33,7 +33,10 @@ export type ProgressReporter = Progress<{ message: string }>;
 /** A logger that writes messages to an output channel in the Output tab. */
 export class OutputChannelLogger extends DisposableObject implements Logger {
   public readonly outputChannel: OutputChannel;
-  private readonly additionalLocations = new Map<string, AdditionalLogLocation>();
+  private readonly additionalLocations = new Map<
+    string,
+    AdditionalLogLocation
+  >();
   isCustomLogDirectory: boolean;
 
   constructor(title: string) {
@@ -62,13 +65,15 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
 
       if (options.additionalLogLocation) {
         if (!path.isAbsolute(options.additionalLogLocation)) {
-          throw new Error(`Additional Log Location must be an absolute path: ${options.additionalLogLocation}`);
+          throw new Error(
+            `Additional Log Location must be an absolute path: ${options.additionalLogLocation}`,
+          );
         }
         const logPath = options.additionalLogLocation;
         let additional = this.additionalLocations.get(logPath);
         if (!additional) {
           const msg = `| Log being saved to ${logPath} |`;
-          const separator = new Array(msg.length).fill('-').join('');
+          const separator = new Array(msg.length).fill("-").join("");
           this.outputChannel.appendLine(separator);
           this.outputChannel.appendLine(msg);
           this.outputChannel.appendLine(separator);
@@ -79,9 +84,12 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
         await additional.log(message, options);
       }
     } catch (e) {
-      if (e instanceof Error && e.message === 'Channel has been closed') {
+      if (e instanceof Error && e.message === "Channel has been closed") {
         // Output channel is closed logging to console instead
-        console.log('Output channel is closed logging to console instead:', message);
+        console.log(
+          "Output channel is closed logging to console instead:",
+          message,
+        );
       } else {
         throw e;
       }
@@ -110,22 +118,26 @@ class AdditionalLogLocation {
     }
     await fs.ensureFile(this.location);
 
-    await fs.appendFile(this.location, message + (options.trailingNewline ? '\n' : ''), {
-      encoding: 'utf8'
-    });
+    await fs.appendFile(
+      this.location,
+      message + (options.trailingNewline ? "\n" : ""),
+      {
+        encoding: "utf8",
+      },
+    );
   }
 }
 
 /** The global logger for the extension. */
-export const logger = new OutputChannelLogger('CodeQL Extension Log');
+export const logger = new OutputChannelLogger("CodeQL Extension Log");
 
 /** The logger for messages from the query server. */
-export const queryServerLogger = new OutputChannelLogger('CodeQL Query Server');
+export const queryServerLogger = new OutputChannelLogger("CodeQL Query Server");
 
 /** The logger for messages from the language server. */
 export const ideServerLogger = new OutputChannelLogger(
-  'CodeQL Language Server'
+  "CodeQL Language Server",
 );
 
 /** The logger for messages from tests. */
-export const testLogger = new OutputChannelLogger('CodeQL Tests');
+export const testLogger = new OutputChannelLogger("CodeQL Tests");

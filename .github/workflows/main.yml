@@ -16,18 +16,20 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: '16.14.2'
+          cache: 'npm'
+          cache-dependency-path: extensions/ql-vscode/package-lock.json
 
       - name: Install dependencies
         working-directory: extensions/ql-vscode
         run: |
-          npm install
+          npm ci
         shell: bash
 
       - name: Build
@@ -65,37 +67,27 @@ jobs:
         # This workflow step gets an unstable testing version of the CodeQL CLI. It should not be used outside of these tests.
         run: |
           LATEST=`gh api repos/dsp-testing/codeql-cli-nightlies/releases --jq '.[].tag_name' --method GET --raw-field 'per_page=1'`
-          echo "::set-output name=nightly-url::https://github.com/dsp-testing/codeql-cli-nightlies/releases/download/$LATEST"
+          echo "nightly-url=https://github.com/dsp-testing/codeql-cli-nightlies/releases/download/$LATEST" >> "$GITHUB_OUTPUT"
 
-  test:
-    name: Test
-    runs-on: ${{ matrix.os }}
-    needs: [find-nightly]
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
-          node-version: '16.14.0'
+          node-version: '16.14.2'
+          cache: 'npm'
+          cache-dependency-path: extensions/ql-vscode/package-lock.json
 
       - name: Install dependencies
         working-directory: extensions/ql-vscode
         run: |
-          npm install
-        shell: bash
-
-      - name: Build
-        working-directory: extensions/ql-vscode
-        env:
-          APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
-        run: |
-          npm run build
+          npm ci
         shell: bash
 
       - name: Lint
@@ -108,17 +100,66 @@ jobs:
         run: |
           npm run lint:scenarios
 
-      - name: Run unit tests (Linux)
+  unit-test:
+    name: Unit Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.14.2'
+          cache: 'npm'
+          cache-dependency-path: extensions/ql-vscode/package-lock.json
+
+      - name: Install dependencies
         working-directory: extensions/ql-vscode
-        if: matrix.os == 'ubuntu-latest'
+        run: |
+          npm ci
+        shell: bash
+
+      - name: Run unit tests
+        working-directory: extensions/ql-vscode
         run: |
           npm run test
 
-      - name: Run unit tests (Windows)
-        if: matrix.os == 'windows-latest'
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.14.2'
+          cache: 'npm'
+          cache-dependency-path: extensions/ql-vscode/package-lock.json
+
+      - name: Install dependencies
         working-directory: extensions/ql-vscode
         run: |
-          npm run test
+          npm ci
+        shell: bash
+
+      - name: Build
+        working-directory: extensions/ql-vscode
+        env:
+          APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
+        run: |
+          npm run build
+        shell: bash
 
       - name: Run integration tests (Linux)
         if: matrix.os == 'ubuntu-latest'
@@ -144,7 +185,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        version: ['v2.7.6', 'v2.8.5', 'v2.9.4', 'v2.10.5', 'v2.11.2', 'nightly']
+        version: ['v2.7.6', 'v2.8.5', 'v2.9.4', 'v2.10.5', 'v2.11.4', 'nightly']
     env:
       CLI_VERSION: ${{ matrix.version }}
       NIGHTLY_URL: ${{ needs.find-nightly.outputs.url }}
@@ -152,16 +193,18 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
-          node-version: '16.14.0'
+          node-version: '16.14.2'
+          cache: 'npm'
+          cache-dependency-path: extensions/ql-vscode/package-lock.json
 
       - name: Install dependencies
         working-directory: extensions/ql-vscode
         run: |
-          npm install
+          npm ci
         shell: bash
 
       - name: Build
@@ -180,10 +223,10 @@ jobs:
           else
             REF="codeql-cli/${{ matrix.version }}"
           fi
-          echo "::set-output name=ref::$REF"
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
 
       - name: Checkout QL
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: github/codeql
           ref: ${{ steps.choose-ref.outputs.ref }}

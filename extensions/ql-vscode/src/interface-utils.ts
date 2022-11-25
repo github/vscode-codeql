@@ -1,5 +1,5 @@
-import * as crypto from 'crypto';
-import * as os from 'os';
+import * as crypto from "crypto";
+import * as os from "os";
 import {
   Uri,
   Location,
@@ -13,20 +13,17 @@ import {
   Selection,
   TextEditorRevealType,
   ThemeColor,
-} from 'vscode';
-import {
-  tryGetResolvableLocation,
-  isLineColumnLoc
-} from './pure/bqrs-utils';
-import { DatabaseItem, DatabaseManager } from './databases';
-import { ViewSourceFileMsg } from './pure/interface-types';
-import { Logger } from './logging';
+} from "vscode";
+import { tryGetResolvableLocation, isLineColumnLoc } from "./pure/bqrs-utils";
+import { DatabaseItem, DatabaseManager } from "./databases";
+import { ViewSourceFileMsg } from "./pure/interface-types";
+import { Logger } from "./logging";
 import {
   LineColumnLocation,
   WholeFileLocation,
   UrlValue,
-  ResolvableLocationValue
-} from './pure/bqrs-cli-types';
+  ResolvableLocationValue,
+} from "./pure/bqrs-cli-types";
 
 /**
  * This module contains functions and types that are sharedd between
@@ -35,7 +32,7 @@ import {
 
 /** Gets a nonce string created with 128 bits of entropy. */
 export function getNonce(): string {
-  return crypto.randomBytes(16).toString('base64');
+  return crypto.randomBytes(16).toString("base64");
 }
 
 /**
@@ -52,7 +49,7 @@ export enum WebviewReveal {
  */
 export function fileUriToWebviewUri(
   panel: WebviewPanel,
-  fileUriOnDisk: Uri
+  fileUriOnDisk: Uri,
 ): string {
   return panel.webview.asWebviewUri(fileUriOnDisk).toString();
 }
@@ -64,7 +61,7 @@ export function fileUriToWebviewUri(
  */
 function resolveFivePartLocation(
   loc: LineColumnLocation,
-  databaseItem: DatabaseItem
+  databaseItem: DatabaseItem,
 ): Location {
   // `Range` is a half-open interval, and is zero-based. CodeQL locations are closed intervals, and
   // are one-based. Adjust accordingly.
@@ -72,7 +69,7 @@ function resolveFivePartLocation(
     Math.max(0, loc.startLine - 1),
     Math.max(0, loc.startColumn - 1),
     Math.max(0, loc.endLine - 1),
-    Math.max(1, loc.endColumn)
+    Math.max(1, loc.endColumn),
   );
 
   return new Location(databaseItem.resolveSourceFile(loc.uri), range);
@@ -85,7 +82,7 @@ function resolveFivePartLocation(
  */
 function resolveWholeFileLocation(
   loc: WholeFileLocation,
-  databaseItem: DatabaseItem
+  databaseItem: DatabaseItem,
 ): Location {
   // A location corresponding to the start of the file.
   const range = new Range(0, 0, 0, 0);
@@ -100,10 +97,10 @@ function resolveWholeFileLocation(
  */
 export function tryResolveLocation(
   loc: UrlValue | undefined,
-  databaseItem: DatabaseItem
+  databaseItem: DatabaseItem,
 ): Location | undefined {
   const resolvableLoc = tryGetResolvableLocation(loc);
-  if (!resolvableLoc || typeof resolvableLoc === 'string') {
+  if (!resolvableLoc || typeof resolvableLoc === "string") {
     return;
   } else if (isLineColumnLoc(resolvableLoc)) {
     return resolveFivePartLocation(resolvableLoc, databaseItem);
@@ -112,7 +109,11 @@ export function tryResolveLocation(
   }
 }
 
-export type WebviewView = 'results' | 'compare' | 'remote-queries' | 'variant-analysis';
+export type WebviewView =
+  | "results"
+  | "compare"
+  | "remote-queries"
+  | "variant-analysis";
 
 export interface WebviewMessage {
   t: string;
@@ -131,28 +132,27 @@ export function getHtmlForWebview(
   }: {
     allowInlineStyles?: boolean;
   } = {
-      allowInlineStyles: false,
-    }
+    allowInlineStyles: false,
+  },
 ): string {
-  const scriptUriOnDisk = Uri.file(
-    ctx.asAbsolutePath('out/webview.js')
-  );
+  const scriptUriOnDisk = Uri.file(ctx.asAbsolutePath("out/webview.js"));
 
   const stylesheetUrisOnDisk = [
-    Uri.file(ctx.asAbsolutePath('out/webview.css'))
+    Uri.file(ctx.asAbsolutePath("out/webview.css")),
   ];
 
   // Convert the on-disk URIs into webview URIs.
   const scriptWebviewUri = webview.asWebviewUri(scriptUriOnDisk);
-  const stylesheetWebviewUris = stylesheetUrisOnDisk.map(stylesheetUriOnDisk =>
-    webview.asWebviewUri(stylesheetUriOnDisk));
+  const stylesheetWebviewUris = stylesheetUrisOnDisk.map(
+    (stylesheetUriOnDisk) => webview.asWebviewUri(stylesheetUriOnDisk),
+  );
 
   // Use a nonce in the content security policy to uniquely identify the above resources.
   const nonce = getNonce();
 
   const stylesheetsHtmlLines = allowInlineStyles
-    ? stylesheetWebviewUris.map(uri => createStylesLinkWithoutNonce(uri))
-    : stylesheetWebviewUris.map(uri => createStylesLinkWithNonce(nonce, uri));
+    ? stylesheetWebviewUris.map((uri) => createStylesLinkWithoutNonce(uri))
+    : stylesheetWebviewUris.map((uri) => createStylesLinkWithNonce(nonce, uri));
 
   const styleSrc = allowInlineStyles
     ? `${webview.cspSource} vscode-file: 'unsafe-inline'`
@@ -172,7 +172,9 @@ export function getHtmlForWebview(
 <html>
   <head>
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'none'; script-src 'nonce-${nonce}'; font-src ${fontSrc}; style-src ${styleSrc}; connect-src ${webview.cspSource};">
+          content="default-src 'none'; script-src 'nonce-${nonce}'; font-src ${fontSrc}; style-src ${styleSrc}; connect-src ${
+    webview.cspSource
+  };">
         ${stylesheetsHtmlLines.join(`    ${os.EOL}`)}
   </head>
   <body>
@@ -186,7 +188,7 @@ export function getHtmlForWebview(
 
 export async function showResolvableLocation(
   loc: ResolvableLocationValue,
-  databaseItem: DatabaseItem
+  databaseItem: DatabaseItem,
 ): Promise<void> {
   await showLocation(tryResolveLocation(loc, databaseItem));
 }
@@ -198,17 +200,16 @@ export async function showLocation(location?: Location) {
 
   const doc = await workspace.openTextDocument(location.uri);
   const editorsWithDoc = Window.visibleTextEditors.filter(
-    (e) => e.document === doc
+    (e) => e.document === doc,
   );
   const editor =
     editorsWithDoc.length > 0
       ? editorsWithDoc[0]
-      : await Window.showTextDocument(
-        doc, {
-        // avoid preview mode so editor is sticky and will be added to navigation and search histories.
-        preview: false,
-        viewColumn: ViewColumn.One,
-      });
+      : await Window.showTextDocument(doc, {
+          // avoid preview mode so editor is sticky and will be added to navigation and search histories.
+          preview: false,
+          viewColumn: ViewColumn.One,
+        });
 
   const range = location.range;
   // When highlighting the range, vscode's occurrence-match and bracket-match highlighting will
@@ -229,30 +230,28 @@ export async function showLocation(location?: Location) {
   editor.setDecorations(shownLocationLineDecoration, [range]);
 }
 
-const findMatchBackground = new ThemeColor('editor.findMatchBackground');
+const findMatchBackground = new ThemeColor("editor.findMatchBackground");
 const findRangeHighlightBackground = new ThemeColor(
-  'editor.findRangeHighlightBackground'
+  "editor.findRangeHighlightBackground",
 );
-
 
 export const shownLocationDecoration = Window.createTextEditorDecorationType({
   backgroundColor: findMatchBackground,
 });
 
-export const shownLocationLineDecoration = Window.createTextEditorDecorationType(
-  {
+export const shownLocationLineDecoration =
+  Window.createTextEditorDecorationType({
     backgroundColor: findRangeHighlightBackground,
     isWholeLine: true,
-  }
-);
+  });
 
 export async function jumpToLocation(
   msg: ViewSourceFileMsg,
   databaseManager: DatabaseManager,
-  logger: Logger
+  logger: Logger,
 ) {
   const databaseItem = databaseManager.findDatabaseItem(
-    Uri.parse(msg.databaseUri)
+    Uri.parse(msg.databaseUri),
   );
   if (databaseItem !== undefined) {
     try {
@@ -261,7 +260,7 @@ export async function jumpToLocation(
       if (e instanceof Error) {
         if (e.message.match(/File not found/)) {
           void Window.showErrorMessage(
-            'Original file of this result is not in the database\'s source archive.'
+            "Original file of this result is not in the database's source archive.",
           );
         } else {
           void logger.log(`Unable to handleMsgFromView: ${e.message}`);

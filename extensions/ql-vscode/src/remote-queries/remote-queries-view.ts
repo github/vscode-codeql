@@ -5,65 +5,74 @@ import {
   Uri,
   workspace,
   commands,
-} from 'vscode';
-import * as path from 'path';
+} from "vscode";
+import * as path from "path";
 
 import {
   ToRemoteQueriesMessage,
   FromRemoteQueriesMessage,
   RemoteQueryDownloadAnalysisResultsMessage,
-  RemoteQueryDownloadAllAnalysesResultsMessage
-} from '../pure/interface-types';
-import { Logger } from '../logging';
-import { assertNever } from '../pure/helpers-pure';
+  RemoteQueryDownloadAllAnalysesResultsMessage,
+} from "../pure/interface-types";
+import { Logger } from "../logging";
+import { assertNever } from "../pure/helpers-pure";
 import {
   AnalysisSummary,
   RemoteQueryResult,
-  sumAnalysisSummariesResults
-} from './remote-query-result';
-import { RemoteQuery } from './remote-query';
+  sumAnalysisSummariesResults,
+} from "./remote-query-result";
+import { RemoteQuery } from "./remote-query";
 import {
   AnalysisSummary as AnalysisResultViewModel,
-  RemoteQueryResult as RemoteQueryResultViewModel
-} from './shared/remote-query-result';
-import { showAndLogWarningMessage } from '../helpers';
-import { URLSearchParams } from 'url';
-import { SHOW_QUERY_TEXT_MSG } from '../query-history';
-import { AnalysesResultsManager } from './analyses-results-manager';
-import { AnalysisResults } from './shared/analysis-result';
-import { humanizeUnit } from '../pure/time';
-import { AbstractWebview, WebviewPanelConfig } from '../abstract-webview';
+  RemoteQueryResult as RemoteQueryResultViewModel,
+} from "./shared/remote-query-result";
+import { showAndLogWarningMessage } from "../helpers";
+import { URLSearchParams } from "url";
+import { SHOW_QUERY_TEXT_MSG } from "../query-history";
+import { AnalysesResultsManager } from "./analyses-results-manager";
+import { AnalysisResults } from "./shared/analysis-result";
+import { humanizeUnit } from "../pure/time";
+import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 
-export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, FromRemoteQueriesMessage> {
+export class RemoteQueriesView extends AbstractWebview<
+  ToRemoteQueriesMessage,
+  FromRemoteQueriesMessage
+> {
   private currentQueryId: string | undefined;
 
   constructor(
     ctx: ExtensionContext,
     private readonly logger: Logger,
-    private readonly analysesResultsManager: AnalysesResultsManager
+    private readonly analysesResultsManager: AnalysesResultsManager,
   ) {
     super(ctx);
     this.panelLoadedCallBacks.push(() => {
-      void logger.log('Variant analysis results view loaded');
+      void logger.log("Variant analysis results view loaded");
     });
   }
 
   async showResults(query: RemoteQuery, queryResult: RemoteQueryResult) {
-    this.getPanel().reveal(undefined, true);
+    const panel = await this.getPanel();
+    panel.reveal(undefined, true);
 
     await this.waitForPanelLoaded();
     const model = this.buildViewModel(query, queryResult);
     this.currentQueryId = queryResult.queryId;
 
     await this.postMessage({
-      t: 'setRemoteQueryResult',
-      queryResult: model
+      t: "setRemoteQueryResult",
+      queryResult: model,
     });
 
     // Ensure all pre-downloaded artifacts are loaded into memory
-    await this.analysesResultsManager.loadDownloadedAnalyses(model.analysisSummaries);
+    await this.analysesResultsManager.loadDownloadedAnalyses(
+      model.analysisSummaries,
+    );
 
-    await this.setAnalysisResults(this.analysesResultsManager.getAnalysesResults(queryResult.queryId), queryResult.queryId);
+    await this.setAnalysisResults(
+      this.analysesResultsManager.getAnalysesResults(queryResult.queryId),
+      queryResult.queryId,
+    );
   }
 
   /**
@@ -74,13 +83,25 @@ export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, F
    * @param queryResult The result of the query.
    * @returns A fully created view model.
    */
-  private buildViewModel(query: RemoteQuery, queryResult: RemoteQueryResult): RemoteQueryResultViewModel {
+  private buildViewModel(
+    query: RemoteQuery,
+    queryResult: RemoteQueryResult,
+  ): RemoteQueryResultViewModel {
     const queryFileName = path.basename(query.queryFilePath);
-    const totalResultCount = sumAnalysisSummariesResults(queryResult.analysisSummaries);
-    const executionDuration = this.getDuration(queryResult.executionEndTime, query.executionStartTime);
-    const analysisSummaries = this.buildAnalysisSummaries(queryResult.analysisSummaries);
+    const totalResultCount = sumAnalysisSummariesResults(
+      queryResult.analysisSummaries,
+    );
+    const executionDuration = this.getDuration(
+      queryResult.executionEndTime,
+      query.executionStartTime,
+    );
+    const analysisSummaries = this.buildAnalysisSummaries(
+      queryResult.analysisSummaries,
+    );
     const totalRepositoryCount = queryResult.analysisSummaries.length;
-    const affectedRepositories = queryResult.analysisSummaries.filter(r => r.resultCount > 0);
+    const affectedRepositories = queryResult.analysisSummaries.filter(
+      (r) => r.resultCount > 0,
+    );
 
     return {
       queryId: queryResult.queryId,
@@ -102,16 +123,14 @@ export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, F
 
   protected getPanelConfig(): WebviewPanelConfig {
     return {
-      viewId: 'remoteQueriesView',
-      title: 'CodeQL Query Results',
+      viewId: "remoteQueriesView",
+      title: "CodeQL Query Results",
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
-      view: 'remote-queries',
+      view: "remote-queries",
       additionalOptions: {
-        localResourceRoots: [
-          Uri.file(this.analysesResultsManager.storagePath)
-        ]
-      }
+        localResourceRoots: [Uri.file(this.analysesResultsManager.storagePath)],
+      },
     };
   }
 
@@ -121,31 +140,32 @@ export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, F
 
   protected async onMessage(msg: FromRemoteQueriesMessage): Promise<void> {
     switch (msg.t) {
-      case 'viewLoaded':
+      case "viewLoaded":
         this.onWebViewLoaded();
         break;
-      case 'remoteQueryError':
-        void this.logger.log(
-          `Variant analysis error: ${msg.error}`
-        );
+      case "remoteQueryError":
+        void this.logger.log(`Variant analysis error: ${msg.error}`);
         break;
-      case 'openFile':
+      case "openFile":
         await this.openFile(msg.filePath);
         break;
-      case 'openVirtualFile':
+      case "openVirtualFile":
         await this.openVirtualFile(msg.queryText);
         break;
-      case 'copyRepoList':
-        await commands.executeCommand('codeQL.copyRepoList', msg.queryId);
+      case "copyRepoList":
+        await commands.executeCommand("codeQL.copyRepoList", msg.queryId);
         break;
-      case 'remoteQueryDownloadAnalysisResults':
+      case "remoteQueryDownloadAnalysisResults":
         await this.downloadAnalysisResults(msg);
         break;
-      case 'remoteQueryDownloadAllAnalysesResults':
+      case "remoteQueryDownloadAllAnalysesResults":
         await this.downloadAllAnalysesResults(msg);
         break;
-      case 'remoteQueryExportResults':
-        await commands.executeCommand('codeQL.exportVariantAnalysisResults', msg.queryId);
+      case "remoteQueryExportResults":
+        await commands.executeCommand(
+          "codeQL.exportRemoteQueryResults",
+          msg.queryId,
+        );
         break;
       default:
         assertNever(msg);
@@ -164,39 +184,48 @@ export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, F
   private async openVirtualFile(text: string) {
     try {
       const params = new URLSearchParams({
-        queryText: encodeURIComponent(SHOW_QUERY_TEXT_MSG + text)
+        queryText: encodeURIComponent(SHOW_QUERY_TEXT_MSG + text),
       });
       const uri = Uri.parse(
         `remote-query:query-text.ql?${params.toString()}`,
-        true
+        true,
       );
       const doc = await workspace.openTextDocument(uri);
       await Window.showTextDocument(doc, { preview: false });
     } catch (error) {
-      void showAndLogWarningMessage('Could not open query text');
+      void showAndLogWarningMessage("Could not open query text");
     }
   }
 
-  private async downloadAnalysisResults(msg: RemoteQueryDownloadAnalysisResultsMessage): Promise<void> {
+  private async downloadAnalysisResults(
+    msg: RemoteQueryDownloadAnalysisResultsMessage,
+  ): Promise<void> {
     const queryId = this.currentQueryId;
     await this.analysesResultsManager.downloadAnalysisResults(
       msg.analysisSummary,
-      results => this.setAnalysisResults(results, queryId));
+      (results) => this.setAnalysisResults(results, queryId),
+    );
   }
 
-  private async downloadAllAnalysesResults(msg: RemoteQueryDownloadAllAnalysesResultsMessage): Promise<void> {
+  private async downloadAllAnalysesResults(
+    msg: RemoteQueryDownloadAllAnalysesResultsMessage,
+  ): Promise<void> {
     const queryId = this.currentQueryId;
     await this.analysesResultsManager.loadAnalysesResults(
       msg.analysisSummaries,
       undefined,
-      results => this.setAnalysisResults(results, queryId));
+      (results) => this.setAnalysisResults(results, queryId),
+    );
   }
 
-  public async setAnalysisResults(analysesResults: AnalysisResults[], queryId: string | undefined): Promise<void> {
+  public async setAnalysisResults(
+    analysesResults: AnalysisResults[],
+    queryId: string | undefined,
+  ): Promise<void> {
     if (this.panel?.active && this.currentQueryId === queryId) {
       await this.postMessage({
-        t: 'setAnalysesResults',
-        analysesResults
+        t: "setAnalysesResults",
+        analysesResults,
       });
     }
   }
@@ -208,8 +237,15 @@ export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, F
 
   private formatDate = (millis: number): string => {
     const d = new Date(millis);
-    const datePart = d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
-    const timePart = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: 'numeric', hour12: true });
+    const datePart = d.toLocaleDateString(undefined, {
+      day: "numeric",
+      month: "short",
+    });
+    const timePart = d.toLocaleTimeString(undefined, {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+    });
     return `${datePart} at ${timePart}`;
   };
 
@@ -234,20 +270,26 @@ export class RemoteQueriesView extends AbstractWebview<ToRemoteQueriesMessage, F
    * @param analysisSummaries The summaries of a specific analyses.
    * @returns A fully created view model.
    */
-  private buildAnalysisSummaries(analysisSummaries: AnalysisSummary[]): AnalysisResultViewModel[] {
-    const filteredAnalysisSummaries = analysisSummaries.filter(r => r.resultCount > 0);
+  private buildAnalysisSummaries(
+    analysisSummaries: AnalysisSummary[],
+  ): AnalysisResultViewModel[] {
+    const filteredAnalysisSummaries = analysisSummaries.filter(
+      (r) => r.resultCount > 0,
+    );
 
-    const sortedAnalysisSummaries = filteredAnalysisSummaries.sort((a, b) => b.resultCount - a.resultCount);
+    const sortedAnalysisSummaries = filteredAnalysisSummaries.sort(
+      (a, b) => b.resultCount - a.resultCount,
+    );
 
     return sortedAnalysisSummaries.map((analysisResult) => ({
       nwo: analysisResult.nwo,
-      databaseSha: analysisResult.databaseSha || 'HEAD',
+      databaseSha: analysisResult.databaseSha || "HEAD",
       resultCount: analysisResult.resultCount,
       downloadLink: analysisResult.downloadLink,
       sourceLocationPrefix: analysisResult.sourceLocationPrefix,
       fileSize: this.formatFileSize(analysisResult.fileSizeInBytes),
       starCount: analysisResult.starCount,
-      lastUpdated: analysisResult.lastUpdated
+      lastUpdated: analysisResult.lastUpdated,
     }));
   }
 }

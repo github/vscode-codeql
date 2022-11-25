@@ -1,5 +1,5 @@
-import { DisposableObject } from '../pure/disposable-object';
-import { EventEmitter, Event, Uri, GlobPattern, workspace } from 'vscode';
+import { DisposableObject } from "../pure/disposable-object";
+import { EventEmitter, Event, Uri, GlobPattern, workspace } from "vscode";
 
 /**
  * A collection of `FileSystemWatcher` objects. Disposing this object disposes all of the individual
@@ -17,7 +17,11 @@ class WatcherCollection extends DisposableObject {
    *   deleted.
    * @param thisArgs The `this` argument for the event listener.
    */
-  public addWatcher(pattern: GlobPattern, listener: (e: Uri) => any, thisArgs: any): void {
+  public addWatcher(
+    pattern: GlobPattern,
+    listener: (e: Uri) => any,
+    thisArgs: any,
+  ): void {
     const watcher = workspace.createFileSystemWatcher(pattern);
     this.push(watcher.onDidCreate(listener, thisArgs));
     this.push(watcher.onDidChange(listener, thisArgs));
@@ -40,7 +44,9 @@ export class MultiFileSystemWatcher extends DisposableObject {
   /**
    * Event to be fired when any watched file is created, changed, or deleted.
    */
-  public get onDidChange(): Event<Uri> { return this._onDidChange.event; }
+  public get onDidChange(): Event<Uri> {
+    return this._onDidChange.event;
+  }
 
   /**
    * Adds a new pattern to watch.

@@ -1,15 +1,15 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 
-import { ComponentStory, ComponentMeta } from '@storybook/react';
+import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { RemoteQueries } from '../../view/remote-queries/RemoteQueries';
+import { RemoteQueries } from "../../view/remote-queries/RemoteQueries";
 
-import remoteQueryResult from './data/remoteQueryResultMessage.json';
-import analysesResults from './data/analysesResultsMessage.json';
+import remoteQueryResult from "./data/remoteQueryResultMessage.json";
+import analysesResults from "./data/analysesResultsMessage.json";
 
 export default {
-  title: 'MRVA/Remote Queries',
-  component: RemoteQueries
+  title: "MRVA/Remote Queries",
+  component: RemoteQueries,
 } as ComponentMeta<typeof RemoteQueries>;
 
 const Template: ComponentStory<typeof RemoteQueries> = () => {

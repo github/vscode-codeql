@@ -1,9 +1,9 @@
-import * as React from 'react';
+import * as React from "react";
 
-import { vscode } from '../vscode-api';
-import { RawResultsSortState, SortDirection } from '../../pure/interface-types';
-import { nextSortDirection } from './result-table-utils';
-import { Column } from '../../pure/bqrs-cli-types';
+import { vscode } from "../vscode-api";
+import { RawResultsSortState, SortDirection } from "../../pure/interface-types";
+import { nextSortDirection } from "./result-table-utils";
+import { Column } from "../../pure/bqrs-cli-types";
 
 interface Props {
   readonly columns: readonly Column[];
@@ -16,7 +16,7 @@ function toggleSortStateForColumn(
   index: number,
   schemaName: string,
   sortState: RawResultsSortState | undefined,
-  preventSort: boolean
+  preventSort: boolean,
 ): void {
   if (preventSort) {
     return;
@@ -31,11 +31,11 @@ function toggleSortStateForColumn(
     nextDirection === undefined
       ? undefined
       : {
-        columnIndex: index,
-        sortDirection: nextDirection,
-      };
+          columnIndex: index,
+          sortDirection: nextDirection,
+        };
   vscode.postMessage({
-    t: 'changeSort',
+    t: "changeSort",
     resultSetName: schemaName,
     sortState: nextSortState,
   });
@@ -46,11 +46,9 @@ export default function RawTableHeader(props: Props) {
     <thead>
       <tr>
         {[
-          (
-            <th key={-1}>
-              <b>#</b>
-            </th>
-          ),
+          <th key={-1}>
+            <b>#</b>
+          </th>,
           ...props.columns.map((col, index) => {
             const displayName = col.name || `[${index}]`;
             const sortDirection =
@@ -60,10 +58,10 @@ export default function RawTableHeader(props: Props) {
             return (
               <th
                 className={
-                  'sort-' +
+                  "sort-" +
                   (sortDirection !== undefined
                     ? SortDirection[sortDirection]
-                    : 'none')
+                    : "none")
                 }
                 key={index}
                 onClick={() =>
@@ -71,7 +69,7 @@ export default function RawTableHeader(props: Props) {
                     index,
                     props.schemaName,
                     props.sortState,
-                    !!props.preventSort
+                    !!props.preventSort,
                   )
                 }
               >

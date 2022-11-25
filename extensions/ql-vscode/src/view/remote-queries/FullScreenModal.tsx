@@ -1,7 +1,7 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import styled from 'styled-components';
-import { XCircleIcon } from '@primer/octicons-react';
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import styled from "styled-components";
+import { XCircleIcon } from "@primer/octicons-react";
 
 const Container = styled.div`
   position: fixed;
@@ -26,11 +26,11 @@ const CloseButton = styled.button`
 const FullScreenModal = ({
   setOpen,
   containerElementId,
-  children
+  children,
 }: {
   setOpen: (open: boolean) => void;
   containerElementId: string;
-  children: React.ReactNode
+  children: React.ReactNode;
 }) => {
   const containerElement = document.getElementById(containerElementId);
   if (!containerElement) {
@@ -46,7 +46,7 @@ const FullScreenModal = ({
         {children}
       </Container>
     </>,
-    containerElement
+    containerElement,
   );
 };
 

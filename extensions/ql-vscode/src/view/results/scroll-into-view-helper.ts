@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 
 /**
  * Some book-keeping needed to scroll a specific HTML element into view in a React component.
@@ -42,13 +42,13 @@ export class ScrollIntoViewHelper {
     const heightOfStickyHeader = 30;
     if (rect.top < heightOfStickyHeader || rect.bottom > window.innerHeight) {
       element.scrollIntoView({
-        block: 'center', // vertically align to center
+        block: "center", // vertically align to center
       });
     }
     if (rect.left < 0 || rect.right > window.innerWidth) {
       element.scrollIntoView({
-        block: 'nearest',
-        inline: 'nearest', // horizontally align as little as possible
+        block: "nearest",
+        inline: "nearest", // horizontally align as little as possible
       });
     }
   }

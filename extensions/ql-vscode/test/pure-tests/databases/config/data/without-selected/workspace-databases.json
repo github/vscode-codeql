@@ -1,0 +1,13 @@
+{
+  "databases": {
+    "remote": {
+      "repositoryLists": [],
+      "owners": [],
+      "repositories": []
+    },
+    "local": {
+      "lists": [],
+      "databases": []
+    }
+  }
+}

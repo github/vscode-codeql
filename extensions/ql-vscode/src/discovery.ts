@@ -1,5 +1,5 @@
-import { DisposableObject } from './pure/disposable-object';
-import { logger } from './logging';
+import { DisposableObject } from "./pure/disposable-object";
+import { logger } from "./logging";
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of
@@ -38,8 +38,7 @@ export abstract class Discovery<T> extends DisposableObject {
     if (this.discoveryInProgress) {
       // There's already a discovery operation in progress. Tell it to restart when it's done.
       this.retry = true;
-    }
-    else {
+    } else {
       // No discovery in progress, so start one now.
       this.discoveryInProgress = true;
       this.launchDiscovery();
@@ -53,15 +52,16 @@ export abstract class Discovery<T> extends DisposableObject {
    */
   private launchDiscovery(): void {
     const discoveryPromise = this.discover();
-    discoveryPromise.then(results => {
-      if (!this.retry) {
-        // Update any listeners with the results of the discovery.
-        this.discoveryInProgress = false;
-        this.update(results);
-      }
-    })
+    discoveryPromise
+      .then((results) => {
+        if (!this.retry) {
+          // Update any listeners with the results of the discovery.
+          this.discoveryInProgress = false;
+          this.update(results);
+        }
+      })
 
-      .catch(err => {
+      .catch((err) => {
         void logger.log(`${this.name} failed. Reason: ${err.message}`);
       })
 

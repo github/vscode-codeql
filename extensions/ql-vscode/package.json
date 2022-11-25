@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.7.3",
+  "version": "1.7.7",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -37,6 +37,7 @@
     "onLanguage:ql",
     "onLanguage:ql-summary",
     "onView:codeQLDatabases",
+    "onView:codeQLDatabasesExperimental",
     "onView:codeQLQueryHistory",
     "onView:codeQLAstViewer",
     "onView:codeQLEvalLogViewer",
@@ -83,6 +84,12 @@
         "editor.wordBasedSuggestions": false
       }
     },
+    "jsonValidation": [
+      {
+        "fileMatch": "workspace-databases.json",
+        "url": "./workspace-databases-schema.json"
+      }
+    ],
     "languages": [
       {
         "id": "ql",
@@ -318,12 +325,8 @@
         "title": "CodeQL: Run Variant Analysis"
       },
       {
-        "command": "codeQL.exportVariantAnalysisResults",
+        "command": "codeQL.exportSelectedVariantAnalysisResults",
         "title": "CodeQL: Export Variant Analysis Results"
-      },
-      {
-        "command": "codeQL.openVariantAnalysis",
-        "title": "CodeQL: Open Variant Analysis"
       },
       {
         "command": "codeQL.runQueries",
@@ -352,6 +355,14 @@
       {
         "command": "codeQL.copyVersion",
         "title": "CodeQL: Copy Version Information"
+      },
+      {
+        "command": "codeQLDatabasesExperimental.openConfigFile",
+        "title": "Open Database Configuration File",
+        "icon": {
+          "light": "media/light/edit.svg",
+          "dark": "media/dark/edit.svg"
+        }
       },
       {
         "command": "codeQLDatabases.chooseDatabaseFolder",
@@ -751,6 +762,11 @@
           "command": "codeQLEvalLogViewer.clear",
           "when": "view == codeQLEvalLogViewer",
           "group": "navigation"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.openConfigFile",
+          "when": "view == codeQLDatabasesExperimental",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -930,11 +946,7 @@
           "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.openVariantAnalysis",
-          "when": "config.codeQL.canary && config.codeQL.variantAnalysis.liveResults"
-        },
-        {
-          "command": "codeQL.exportVariantAnalysisResults",
+          "command": "codeQL.exportSelectedVariantAnalysisResults",
           "when": "config.codeQL.canary"
         },
         {
@@ -968,6 +980,10 @@
         {
           "command": "codeQL.chooseDatabaseLgtm",
           "when": "config.codeQL.canary"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.openConfigFile",
+          "when": "false"
         },
         {
           "command": "codeQLDatabases.setCurrentDatabase",
@@ -1209,6 +1225,11 @@
           "name": "Databases"
         },
         {
+          "id": "codeQLDatabasesExperimental",
+          "name": "Databases",
+          "when": "config.codeQL.canary && config.codeQL.newQueryRunExperience"
+        },
+        {
           "id": "codeQLQueryHistory",
           "name": "Query History"
         },
@@ -1247,15 +1268,17 @@
     "watch": "npm-run-all -p watch:*",
     "watch:extension": "tsc --watch",
     "watch:webpack": "gulp watchView",
+    "watch:files": "gulp watchTestData",
     "test": "npm-run-all -p test:*",
-    "test:unit": "mocha --exit -r ts-node/register -r test/mocha.setup.js test/pure-tests/**/*.ts",
-    "test:view": "jest",
-    "preintegration": "rm -rf ./out/vscode-tests && gulp",
+    "test:unit": "jest --projects test",
+    "test:view": "jest --projects src/view",
     "integration": "node ./out/vscode-tests/run-integration-tests.js no-workspace,minimal-workspace",
-    "cli-integration": "npm run preintegration && node ./out/vscode-tests/run-integration-tests.js cli-integration",
+    "integration:no-workspace": "node ./out/vscode-tests/run-integration-tests.js no-workspace",
+    "integration:minimal-workspace": "node ./out/vscode-tests/run-integration-tests.js minimal-workspace",
+    "cli-integration": "node ./out/vscode-tests/run-integration-tests.js cli-integration",
     "update-vscode": "node ./node_modules/vscode/bin/install",
-    "format": "tsfmt -r && eslint src test --ext .ts,.tsx --fix",
-    "lint": "eslint src test --ext .ts,.tsx --max-warnings=0",
+    "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
     "format-staged": "lint-staged",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
@@ -1268,7 +1291,9 @@
     "@primer/react": "^35.0.0",
     "@vscode/codicons": "^0.0.31",
     "@vscode/webview-ui-toolkit": "^1.0.1",
+    "ajv": "^8.11.0",
     "child-process-promise": "^2.2.1",
+    "chokidar": "^3.5.3",
     "classnames": "~2.2.6",
     "d3": "^7.6.1",
     "d3-graphviz": "^2.6.1",
@@ -1277,6 +1302,7 @@
     "immutable": "^4.0.0",
     "js-yaml": "^4.1.0",
     "minimist": "~1.2.6",
+    "msw": "^0.47.4",
     "nanoid": "^3.2.0",
     "node-fetch": "~2.6.7",
     "p-queue": "^6.0.0",
@@ -1305,6 +1331,7 @@
     "@babel/core": "^7.18.13",
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
     "@faker-js/faker": "^7.5.0",
+    "@octokit/plugin-throttling": "^4.3.2",
     "@storybook/addon-actions": "^6.5.10",
     "@storybook/addon-essentials": "^6.5.10",
     "@storybook/addon-interactions": "^6.5.10",
@@ -1345,6 +1372,7 @@
     "@types/sinon-chai": "~3.2.3",
     "@types/stream-chain": "~2.0.1",
     "@types/stream-json": "~1.7.1",
+    "@types/tar-stream": "^2.2.2",
     "@types/through2": "^2.0.36",
     "@types/tmp": "^0.1.0",
     "@types/unzipper": "~0.10.1",
@@ -1352,9 +1380,9 @@
     "@types/webpack": "^5.28.0",
     "@types/webpack-env": "^1.18.0",
     "@types/xml2js": "~0.4.4",
-    "@typescript-eslint/eslint-plugin": "^4.26.0",
-    "@typescript-eslint/parser": "^4.26.0",
-    "ajv": "^8.11.0",
+    "@typescript-eslint/eslint-plugin": "^5.38.0",
+    "@typescript-eslint/parser": "^5.38.0",
+    "@vscode/test-electron": "^2.2.0",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.3.5",
     "babel-loader": "^8.2.5",
@@ -1362,9 +1390,11 @@
     "chai-as-promised": "~7.1.1",
     "css-loader": "~3.1.0",
     "del": "^6.0.0",
-    "eslint": "~6.8.0",
+    "eslint": "^8.23.1",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-jest-dom": "^4.0.2",
-    "eslint-plugin-react": "~7.19.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.31.8",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-storybook": "^0.6.4",
     "file-loader": "^6.2.0",
@@ -1376,16 +1406,17 @@
     "husky": "~4.3.8",
     "jest": "^29.0.3",
     "jest-environment-jsdom": "^29.0.3",
+    "jest-runner-vscode": "^3.0.1",
     "lint-staged": "~10.2.2",
     "mini-css-extract-plugin": "^2.6.1",
     "mocha": "^10.0.0",
     "mocha-sinon": "~2.1.2",
-    "msw": "^0.47.4",
     "npm-run-all": "^4.1.5",
-    "prettier": "~2.0.5",
+    "prettier": "^2.7.1",
     "proxyquire": "~2.1.3",
     "sinon": "~14.0.0",
     "sinon-chai": "~3.5.0",
+    "tar-stream": "^2.2.0",
     "through2": "^4.0.2",
     "ts-jest": "^29.0.1",
     "ts-json-schema-generator": "^1.1.2",
@@ -1393,9 +1424,7 @@
     "ts-node": "^10.7.0",
     "ts-protoc-gen": "^0.9.0",
     "typescript": "^4.5.5",
-    "typescript-formatter": "^7.2.2",
     "vsce": "^2.7.0",
-    "vscode-test": "^1.4.0",
     "webpack": "^5.62.2",
     "webpack-cli": "^4.6.0"
   },
@@ -1410,7 +1439,7 @@
       "prettier --write"
     ],
     "./**/*.{ts,tsx}": [
-      "tsfmt -r",
+      "prettier --write",
       "eslint --fix"
     ]
   },

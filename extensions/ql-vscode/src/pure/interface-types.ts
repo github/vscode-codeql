@@ -1,31 +1,43 @@
-import * as sarif from 'sarif';
-import { AnalysisResults } from '../remote-queries/shared/analysis-result';
-import { AnalysisSummary, RemoteQueryResult } from '../remote-queries/shared/remote-query-result';
-import { RawResultSet, ResultRow, ResultSetSchema, Column, ResolvableLocationValue } from './bqrs-cli-types';
+import * as sarif from "sarif";
+import { AnalysisResults } from "../remote-queries/shared/analysis-result";
+import {
+  AnalysisSummary,
+  RemoteQueryResult,
+} from "../remote-queries/shared/remote-query-result";
+import {
+  RawResultSet,
+  ResultRow,
+  ResultSetSchema,
+  Column,
+  ResolvableLocationValue,
+} from "./bqrs-cli-types";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
-} from '../remote-queries/shared/variant-analysis';
+} from "../remote-queries/shared/variant-analysis";
+import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
 
 /**
  * This module contains types and code that are shared between
  * the webview and the extension.
  */
 
-export const SELECT_TABLE_NAME = '#select';
-export const ALERTS_TABLE_NAME = 'alerts';
-export const GRAPH_TABLE_NAME = 'graph';
+export const SELECT_TABLE_NAME = "#select";
+export const ALERTS_TABLE_NAME = "alerts";
+export const GRAPH_TABLE_NAME = "graph";
 
-export type RawTableResultSet = { t: 'RawResultSet' } & RawResultSet;
+export type RawTableResultSet = { t: "RawResultSet" } & RawResultSet;
 export type InterpretedResultSet<T> = {
-  t: 'InterpretedResultSet';
+  t: "InterpretedResultSet";
   readonly schema: ResultSetSchema;
   name: string;
   interpretation: InterpretationT<T>;
 };
 
-export type ResultSet = RawTableResultSet | InterpretedResultSet<InterpretationData>;
+export type ResultSet =
+  | RawTableResultSet
+  | InterpretedResultSet<InterpretationData>;
 
 /**
  * Only ever show this many rows in a raw result table.
@@ -54,7 +66,7 @@ export interface PreviousExecution {
 }
 
 export type SarifInterpretationData = {
-  t: 'SarifInterpretationData';
+  t: "SarifInterpretationData";
   /**
    * sortState being undefined means don't sort, just present results in the order
    * they appear in the sarif file.
@@ -63,11 +75,13 @@ export type SarifInterpretationData = {
 } & sarif.Log;
 
 export type GraphInterpretationData = {
-  t: 'GraphInterpretationData';
+  t: "GraphInterpretationData";
   dot: string[];
 };
 
-export type InterpretationData = SarifInterpretationData | GraphInterpretationData;
+export type InterpretationData =
+  | SarifInterpretationData
+  | GraphInterpretationData;
 
 export interface InterpretationT<T> {
   sourceLocationPrefix: string;
@@ -96,7 +110,7 @@ export type SortedResultsMap = { [resultSet: string]: SortedResultSetInfo };
  * As a result of receiving this message, listeners might want to display a loading indicator.
  */
 export interface ResultsUpdatingMsg {
-  t: 'resultsUpdating';
+  t: "resultsUpdating";
 }
 
 /**
@@ -104,7 +118,7 @@ export interface ResultsUpdatingMsg {
  * query.
  */
 export interface SetStateMsg {
-  t: 'setState';
+  t: "setState";
   resultsPath: string;
   origResultsPaths: ResultsPaths;
   sortedResultsMap: SortedResultsMap;
@@ -133,7 +147,7 @@ export interface SetStateMsg {
  * results.
  */
 export interface ShowInterpretedPageMsg {
-  t: 'showInterpretedPage';
+  t: "showInterpretedPage";
   interpretation: Interpretation;
   database: DatabaseInfo;
   metadata?: QueryMetadata;
@@ -146,15 +160,15 @@ export interface ShowInterpretedPageMsg {
 }
 
 export const enum NavigationDirection {
-  up = 'up',
-  down = 'down',
-  left = 'left',
-  right = 'right',
+  up = "up",
+  down = "down",
+  left = "left",
+  right = "right",
 }
 
 /** Move up, down, left, or right in the result viewer. */
 export interface NavigateMsg {
-  t: 'navigate';
+  t: "navigate";
   direction: NavigationDirection;
 }
 
@@ -163,7 +177,7 @@ export interface NavigateMsg {
  * "Show results in Problems view" checkbox.
  */
 export interface UntoggleShowProblemsMsg {
-  t: 'untoggleShowProblems';
+  t: "untoggleShowProblems";
 }
 
 /**
@@ -193,7 +207,7 @@ export type FromResultsViewMsg =
  * file at the provided location.
  */
 export interface ViewSourceFileMsg {
-  t: 'viewSourceFile';
+  t: "viewSourceFile";
   loc: ResolvableLocationValue;
   databaseUri: string;
 }
@@ -202,13 +216,13 @@ export interface ViewSourceFileMsg {
  * Message from the results view to open a file in an editor.
  */
 export interface OpenFileMsg {
-  t: 'openFile';
+  t: "openFile";
   /* Full path to the file to open. */
   filePath: string;
 }
 
 export interface OpenVirtualFileMsg {
-  t: 'openVirtualFile';
+  t: "openVirtualFile";
   queryText: string;
 }
 
@@ -217,7 +231,7 @@ export interface OpenVirtualFileMsg {
  * query diagnostics.
  */
 interface ToggleDiagnostics {
-  t: 'toggleDiagnostics';
+  t: "toggleDiagnostics";
   databaseUri: string;
   metadata?: QueryMetadata;
   origResultsPaths: ResultsPaths;
@@ -229,7 +243,7 @@ interface ToggleDiagnostics {
  * Message from a view signal that loading is complete.
  */
 interface ViewLoadedMsg {
-  t: 'viewLoaded';
+  t: "viewLoaded";
   viewName: string;
 }
 
@@ -238,7 +252,7 @@ interface ViewLoadedMsg {
  * page.
  */
 interface ChangePage {
-  t: 'changePage';
+  t: "changePage";
   pageNumber: number; // 0-indexed, displayed to the user as 1-indexed
   selectedTable: string;
 }
@@ -253,7 +267,7 @@ export interface RawResultsSortState {
   sortDirection: SortDirection;
 }
 
-export type InterpretedResultsSortColumn = 'alert-message';
+export type InterpretedResultsSortColumn = "alert-message";
 
 export interface InterpretedResultsSortState {
   sortBy: InterpretedResultsSortColumn;
@@ -264,7 +278,7 @@ export interface InterpretedResultsSortState {
  * Message from the results view to request a sorting change.
  */
 interface ChangeRawResultsSortMsg {
-  t: 'changeSort';
+  t: "changeSort";
   resultSetName: string;
   /**
    * sortState being undefined means don't sort, just present results in the order
@@ -277,7 +291,7 @@ interface ChangeRawResultsSortMsg {
  * Message from the results view to request a sorting change in interpreted results.
  */
 interface ChangeInterpretedResultsSortMsg {
-  t: 'changeInterpretedSort';
+  t: "changeInterpretedSort";
   /**
    * sortState being undefined means don't sort, just present results in the order
    * they appear in the sarif file.
@@ -298,15 +312,15 @@ export type FromCompareViewMessage =
  * Message from the compare view to request opening a query.
  */
 export interface OpenQueryMessage {
-  readonly t: 'openQuery';
-  readonly kind: 'from' | 'to';
+  readonly t: "openQuery";
+  readonly kind: "from" | "to";
 }
 
 /**
  * Message from the compare view to request changing the result set to compare.
  */
 interface ChangeCompareMessage {
-  t: 'changeCompare';
+  t: "changeCompare";
   newResultSetName: string;
 }
 
@@ -316,7 +330,7 @@ export type ToCompareViewMessage = SetComparisonsMessage;
  * Message to the compare view that specifies the query results to compare.
  */
 export interface SetComparisonsMessage {
-  readonly t: 'setComparisons';
+  readonly t: "setComparisons";
   readonly stats: {
     fromQuery?: {
       name: string;
@@ -338,9 +352,9 @@ export interface SetComparisonsMessage {
 }
 
 export enum DiffKind {
-  Add = 'Add',
-  Remove = 'Remove',
-  Change = 'Change',
+  Add = "Add",
+  Remove = "Remove",
+  Change = "Change",
 }
 
 /**
@@ -370,14 +384,14 @@ export type QueryCompareResult = {
  * @param resultSetNames
  */
 export function getDefaultResultSetName(
-  resultSetNames: readonly string[]
+  resultSetNames: readonly string[],
 ): string {
   // Choose first available result set from the array
   return [
     ALERTS_TABLE_NAME,
     GRAPH_TABLE_NAME,
     SELECT_TABLE_NAME,
-    resultSetNames[0]
+    resultSetNames[0],
   ].filter((resultSetName) => resultSetNames.includes(resultSetName))[0];
 }
 
@@ -406,75 +420,88 @@ export type ToRemoteQueriesMessage =
   | SetAnalysesResultsMessage;
 
 export interface SetRemoteQueryResultMessage {
-  t: 'setRemoteQueryResult';
-  queryResult: RemoteQueryResult
+  t: "setRemoteQueryResult";
+  queryResult: RemoteQueryResult;
 }
 
 export interface SetAnalysesResultsMessage {
-  t: 'setAnalysesResults';
+  t: "setAnalysesResults";
   analysesResults: AnalysisResults[];
 }
 
 export interface RemoteQueryErrorMessage {
-  t: 'remoteQueryError';
+  t: "remoteQueryError";
   error: string;
 }
 
 export interface RemoteQueryDownloadAnalysisResultsMessage {
-  t: 'remoteQueryDownloadAnalysisResults';
-  analysisSummary: AnalysisSummary
+  t: "remoteQueryDownloadAnalysisResults";
+  analysisSummary: AnalysisSummary;
 }
 
 export interface RemoteQueryDownloadAllAnalysesResultsMessage {
-  t: 'remoteQueryDownloadAllAnalysesResults';
+  t: "remoteQueryDownloadAllAnalysesResults";
   analysisSummaries: AnalysisSummary[];
 }
 
 export interface RemoteQueryExportResultsMessage {
-  t: 'remoteQueryExportResults';
+  t: "remoteQueryExportResults";
   queryId: string;
 }
 
 export interface CopyRepoListMessage {
-  t: 'copyRepoList';
+  t: "copyRepoList";
   queryId: string;
 }
 
 export interface SetVariantAnalysisMessage {
-  t: 'setVariantAnalysis';
+  t: "setVariantAnalysis";
   variantAnalysis: VariantAnalysis;
-}
-
-export type StopVariantAnalysisMessage = {
-  t: 'stopVariantAnalysis';
-  variantAnalysisId: number;
 }
 
 export type VariantAnalysisState = {
   variantAnalysisId: number;
-}
+};
 
 export interface SetRepoResultsMessage {
-  t: 'setRepoResults';
+  t: "setRepoResults";
   repoResults: VariantAnalysisScannedRepositoryResult[];
 }
 
 export interface SetRepoStatesMessage {
-  t: 'setRepoStates';
+  t: "setRepoStates";
   repoStates: VariantAnalysisScannedRepositoryState[];
 }
 
 export interface RequestRepositoryResultsMessage {
-  t: 'requestRepositoryResults';
+  t: "requestRepositoryResults";
   repositoryFullName: string;
 }
 
 export interface OpenQueryFileMessage {
-  t: 'openQueryFile';
+  t: "openQueryFile";
 }
 
 export interface OpenQueryTextMessage {
-  t: 'openQueryText';
+  t: "openQueryText";
+}
+
+export interface CopyRepositoryListMessage {
+  t: "copyRepositoryList";
+  filterSort?: RepositoriesFilterSortStateWithIds;
+}
+
+export interface ExportResultsMessage {
+  t: "exportResults";
+  filterSort?: RepositoriesFilterSortStateWithIds;
+}
+
+export interface OpenLogsMessage {
+  t: "openLogs";
+}
+
+export interface CancelVariantAnalysisMessage {
+  t: "cancelVariantAnalysis";
 }
 
 export type ToVariantAnalysisMessage =
@@ -484,7 +511,10 @@ export type ToVariantAnalysisMessage =
 
 export type FromVariantAnalysisMessage =
   | ViewLoadedMsg
-  | StopVariantAnalysisMessage
   | RequestRepositoryResultsMessage
   | OpenQueryFileMessage
-  | OpenQueryTextMessage;
+  | OpenQueryTextMessage
+  | CopyRepositoryListMessage
+  | ExportResultsMessage
+  | OpenLogsMessage
+  | CancelVariantAnalysisMessage;

@@ -1,27 +1,31 @@
-import React from 'react';
+import React from "react";
 
-import { ComponentMeta, ComponentStory } from '@storybook/react';
+import { ComponentMeta, ComponentStory } from "@storybook/react";
 
-import { VariantAnalysisContainer } from '../../view/variant-analysis/VariantAnalysisContainer';
+import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
-} from '../../remote-queries/shared/variant-analysis';
-import { AnalysisAlert, AnalysisRawResults } from '../../remote-queries/shared/analysis-result';
+} from "../../remote-queries/shared/variant-analysis";
+import {
+  AnalysisAlert,
+  AnalysisRawResults,
+} from "../../remote-queries/shared/analysis-result";
+import { createMockRepositoryWithMetadata } from "../../vscode-tests/factories/remote-queries/shared/repository";
 
-import analysesResults from '../remote-queries/data/analysesResultsMessage.json';
-import rawResults from '../remote-queries/data/rawResults.json';
-import { RepoRow } from '../../view/variant-analysis/RepoRow';
+import analysesResults from "../remote-queries/data/analysesResultsMessage.json";
+import rawResults from "../remote-queries/data/rawResults.json";
+import { RepoRow } from "../../view/variant-analysis/RepoRow";
 
 export default {
-  title: 'Variant Analysis/Repo Row',
+  title: "Variant Analysis/Repo Row",
   component: RepoRow,
   decorators: [
     (Story) => (
       <VariantAnalysisContainer>
         <Story />
       </VariantAnalysisContainer>
-    )
+    ),
   ],
 } as ComponentMeta<typeof RepoRow>;
 
@@ -32,9 +36,12 @@ const Template: ComponentStory<typeof RepoRow> = (args) => (
 export const Pending = Template.bind({});
 Pending.args = {
   repository: {
+    ...createMockRepositoryWithMetadata(),
     id: 63537249,
-    fullName: 'facebook/create-react-app',
+    fullName: "facebook/create-react-app",
     private: false,
+    stargazersCount: 97_761,
+    updatedAt: "2022-11-01T13:07:05Z",
   },
   status: VariantAnalysisRepoStatus.Pending,
 };
@@ -73,12 +80,30 @@ SucceededDownloading.args = {
   downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
 };
 
+export const SucceededSuccessfulDownload = Template.bind({});
+SucceededSuccessfulDownload.args = {
+  ...Pending.args,
+  status: VariantAnalysisRepoStatus.Succeeded,
+  resultCount: 198,
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+};
+
+export const SucceededFailedDownload = Template.bind({});
+SucceededFailedDownload.args = {
+  ...Pending.args,
+  status: VariantAnalysisRepoStatus.Succeeded,
+  resultCount: 198,
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Failed,
+};
+
 export const InterpretedResults = Template.bind({});
 InterpretedResults.args = {
   ...Pending.args,
   status: VariantAnalysisRepoStatus.Succeeded,
   resultCount: 198,
-  interpretedResults: analysesResults.analysesResults.find(v => v.nwo === 'facebook/create-react-app')?.interpretedResults as unknown as AnalysisAlert[],
+  interpretedResults: analysesResults.analysesResults.find(
+    (v) => v.nwo === "facebook/create-react-app",
+  )?.interpretedResults as unknown as AnalysisAlert[],
 };
 
 export const RawResults = Template.bind({});
@@ -92,22 +117,28 @@ RawResults.args = {
 export const SkippedOnlyFullName = Template.bind({});
 SkippedOnlyFullName.args = {
   repository: {
-    fullName: 'octodemo/hello-globe',
-  }
+    fullName: "octodemo/hello-globe",
+  },
 };
 
 export const SkippedPublic = Template.bind({});
 SkippedPublic.args = {
   repository: {
-    fullName: 'octodemo/hello-globe',
+    ...createMockRepositoryWithMetadata(),
+    fullName: "octodemo/hello-globe",
     private: false,
-  }
+    stargazersCount: 83_372,
+    updatedAt: "2022-10-28T14:10:35Z",
+  },
 };
 
 export const SkippedPrivate = Template.bind({});
 SkippedPrivate.args = {
   repository: {
-    fullName: 'octodemo/hello-globe',
+    ...createMockRepositoryWithMetadata(),
+    fullName: "octodemo/hello-globe",
     private: true,
-  }
+    stargazersCount: 83_372,
+    updatedAt: "2022-05-28T14:10:35Z",
+  },
 };

@@ -29,26 +29,16 @@
       "name": "Launch Unit Tests (vscode-codeql)",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/mocha/bin/_mocha",
+      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
-      "runtimeArgs": [
-        "--inspect=9229"
-      ],
       "env": {
-        "LANG": "en-US"
+        "LANG": "en-US",
+        "TZ": "UTC"
       },
       "args": [
-        "--exit",
-        "-u",
-        "bdd",
-        "--colors",
-        "--diff",
-        "-r",
-        "ts-node/register",
-        "-r",
-        "test/mocha.setup.js",
-        "test/pure-tests/**/*.ts"
+        "--projects",
+        "test"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,
@@ -62,6 +52,10 @@
       "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
+      "args": [
+        "--projects",
+        "src/view"
+      ],
       "stopOnEntry": false,
       "sourceMaps": true,
       "console": "integratedTerminal",
@@ -119,7 +113,7 @@
         "--disable-extension",
         "github.copilot",
         "${workspaceRoot}/extensions/ql-vscode/src/vscode-tests/cli-integration/data",
-        // Uncomment the last line and modify the path to a checked out 
+        // Uncomment the last line and modify the path to a checked out
         // instance of the codeql repository so the libraries are
         // available in the workspace for the tests.
         // "${workspaceRoot}/../codeql"

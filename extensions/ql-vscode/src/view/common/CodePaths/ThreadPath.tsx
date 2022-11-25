@@ -1,10 +1,14 @@
-import * as React from 'react';
-import styled from 'styled-components';
-import { VSCodeTag } from '@vscode/webview-ui-toolkit/react';
+import * as React from "react";
+import styled from "styled-components";
+import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 
-import { AnalysisMessage, ResultSeverity, ThreadFlow } from '../../../remote-queries/shared/analysis-result';
-import { SectionTitle } from '../SectionTitle';
-import { FileCodeSnippet } from '../FileCodeSnippet';
+import {
+  AnalysisMessage,
+  ResultSeverity,
+  ThreadFlow,
+} from "../../../remote-queries/shared/analysis-result";
+import { SectionTitle } from "../SectionTitle";
+import { FileCodeSnippet } from "../FileCodeSnippet";
 
 const Container = styled.div`
   max-width: 55em;
@@ -36,7 +40,7 @@ type ThreadPathProps = {
   severity: ResultSeverity;
   isSource?: boolean;
   isSink?: boolean;
-}
+};
 
 export const ThreadPath = ({
   threadFlow,
@@ -51,16 +55,16 @@ export const ThreadPath = ({
       <TitleContainer>
         <SectionTitle>Step {step}</SectionTitle>
       </TitleContainer>
-      {isSource &&
+      {isSource && (
         <TagContainer>
           <VSCodeTag>Source</VSCodeTag>
         </TagContainer>
-      }
-      {isSink &&
+      )}
+      {isSink && (
         <TagContainer>
           <VSCodeTag>Sink</VSCodeTag>
         </TagContainer>
-      }
+      )}
     </HeaderContainer>
 
     <FileCodeSnippet

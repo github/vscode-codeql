@@ -3,13 +3,12 @@ import {
   TextDocument,
   CodeLens,
   Command,
-  Range
-} from 'vscode';
-import { isQuickEvalCodelensEnabled } from './config';
+  Range,
+} from "vscode";
+import { isQuickEvalCodelensEnabled } from "./config";
 
 class QuickEvalCodeLensProvider implements CodeLensProvider {
   async provideCodeLenses(document: TextDocument): Promise<CodeLens[]> {
-
     const codeLenses: CodeLens[] = [];
 
     if (isQuickEvalCodelensEnabled()) {
@@ -23,16 +22,18 @@ class QuickEvalCodeLensProvider implements CodeLensProvider {
         const matches = textLine.text.match(regex);
 
         // Make sure that a code lens is not generated for any predicate that is commented out.
-        if (matches && !(/^\s*\/\//).test(textLine.text)) {
+        if (matches && !/^\s*\/\//.test(textLine.text)) {
           const range: Range = new Range(
-            textLine.range.start.line, matches.index!,
-            textLine.range.end.line, matches.index! + 1
+            textLine.range.start.line,
+            matches.index!,
+            textLine.range.end.line,
+            matches.index! + 1,
           );
 
           const command: Command = {
-            command: 'codeQL.codeLensQuickEval',
+            command: "codeQL.codeLensQuickEval",
             title: `Quick Evaluation: ${matches[1]}`,
-            arguments: [document.uri, range]
+            arguments: [document.uri, range],
           };
           const codeLens = new CodeLens(range, command);
           codeLenses.push(codeLens);

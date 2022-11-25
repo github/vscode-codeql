@@ -1,0 +1,39 @@
+import * as vscode from "vscode";
+import { commandRunner } from "../../commandRunner";
+import { DisposableObject } from "../../pure/disposable-object";
+import { DbManager } from "../db-manager";
+import { DbTreeDataProvider } from "./db-tree-data-provider";
+
+export class DbPanel extends DisposableObject {
+  private readonly dataProvider: DbTreeDataProvider;
+
+  public constructor(private readonly dbManager: DbManager) {
+    super();
+
+    this.dataProvider = new DbTreeDataProvider(dbManager);
+
+    const treeView = vscode.window.createTreeView(
+      "codeQLDatabasesExperimental",
+      {
+        treeDataProvider: this.dataProvider,
+        canSelectMany: false,
+      },
+    );
+
+    this.push(treeView);
+  }
+
+  public async initialize(): Promise<void> {
+    this.push(
+      commandRunner("codeQLDatabasesExperimental.openConfigFile", () =>
+        this.openConfigFile(),
+      ),
+    );
+  }
+
+  private async openConfigFile(): Promise<void> {
+    const configPath = this.dbManager.getConfigPath();
+    const document = await vscode.workspace.openTextDocument(configPath);
+    await vscode.window.showTextDocument(document);
+  }
+}

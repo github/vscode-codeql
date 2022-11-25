@@ -1,6 +1,6 @@
-import { TreeDataProvider, window } from 'vscode';
-import { DisposableObject } from '../pure/disposable-object';
-import { commandRunner } from '../commandRunner';
+import { TreeDataProvider, window } from "vscode";
+import { DisposableObject } from "../pure/disposable-object";
+import { commandRunner } from "../commandRunner";
 
 /**
  * A VS Code service that interacts with the UI, including handling commands.
@@ -16,13 +16,17 @@ export class UIService extends DisposableObject {
    * @param callback Callback function to implement the command.
    * @remarks The command handler is automatically unregistered when the service is disposed.
    */
-  protected registerCommand(command: string, callback: (...args: any[]) => any): void {
+  protected registerCommand(
+    command: string,
+    callback: (...args: any[]) => any,
+  ): void {
     this.push(commandRunner(command, callback.bind(this)));
   }
 
-  protected registerTreeDataProvider<T>(viewId: string, treeDataProvider: TreeDataProvider<T>):
-    void {
-
+  protected registerTreeDataProvider<T>(
+    viewId: string,
+    treeDataProvider: TreeDataProvider<T>,
+  ): void {
     this.push(window.registerTreeDataProvider<T>(viewId, treeDataProvider));
   }
 }

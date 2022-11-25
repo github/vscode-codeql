@@ -1,16 +1,22 @@
-import * as path from 'path';
-import { Discovery } from './discovery';
-import { EventEmitter, Event, Uri, RelativePattern, WorkspaceFolder, env } from 'vscode';
-import { MultiFileSystemWatcher } from './vscode-utils/multi-file-system-watcher';
-import { CodeQLCliServer } from './cli';
-import * as fs from 'fs-extra';
+import * as path from "path";
+import { Discovery } from "./discovery";
+import {
+  EventEmitter,
+  Event,
+  Uri,
+  RelativePattern,
+  WorkspaceFolder,
+  env,
+} from "vscode";
+import { MultiFileSystemWatcher } from "./vscode-utils/multi-file-system-watcher";
+import { CodeQLCliServer } from "./cli";
+import * as fs from "fs-extra";
 
 /**
  * A node in the tree of tests. This will be either a `QLTestDirectory` or a `QLTestFile`.
  */
 export abstract class QLTestNode {
-  constructor(private _path: string, private _name: string) {
-  }
+  constructor(private _path: string, private _name: string) {}
 
   public get path(): string {
     return this._path;
@@ -29,8 +35,11 @@ export abstract class QLTestNode {
  * A directory containing one or more QL tests or other test directories.
  */
 export class QLTestDirectory extends QLTestNode {
-
-  constructor(_path: string, _name: string, private _children: QLTestNode[] = []) {
+  constructor(
+    _path: string,
+    _name: string,
+    private _children: QLTestNode[] = [],
+  ) {
     super(_path, _name);
   }
 
@@ -44,10 +53,9 @@ export class QLTestDirectory extends QLTestNode {
 
   public createDirectory(relativePath: string): QLTestDirectory {
     const dirName = path.dirname(relativePath);
-    if (dirName === '.') {
+    if (dirName === ".") {
       return this.createChildDirectory(relativePath);
-    }
-    else {
+    } else {
       const parent = this.createDirectory(dirName);
       return parent.createDirectory(path.basename(relativePath));
     }
@@ -55,18 +63,21 @@ export class QLTestDirectory extends QLTestNode {
 
   public finish(): void {
     // remove empty directories
-    this._children.filter(child =>
-      child instanceof QLTestFile || child.children.length > 0
+    this._children.filter(
+      (child) => child instanceof QLTestFile || child.children.length > 0,
     );
     this._children.sort((a, b) => a.name.localeCompare(b.name, env.language));
     this._children.forEach((child, i) => {
       child.finish();
-      if (child.children?.length === 1 && child.children[0] instanceof QLTestDirectory) {
+      if (
+        child.children?.length === 1 &&
+        child.children[0] instanceof QLTestDirectory
+      ) {
         // collapse children
         const replacement = new QLTestDirectory(
           child.children[0].path,
-          child.name + ' / ' + child.children[0].name,
-          Array.from(child.children[0].children)
+          child.name + " / " + child.children[0].name,
+          Array.from(child.children[0].children),
         );
         this._children[i] = replacement;
       }
@@ -77,8 +88,7 @@ export class QLTestDirectory extends QLTestNode {
     const existingChild = this._children.find((child) => child.name === name);
     if (existingChild !== undefined) {
       return existingChild as QLTestDirectory;
-    }
-    else {
+    } else {
       const newChild = new QLTestDirectory(path.join(this.path, name), name);
       this.addChild(newChild);
       return newChild;
@@ -124,14 +134,16 @@ interface QLTestDiscoveryResults {
  */
 export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
   private readonly _onDidChangeTests = this.push(new EventEmitter<void>());
-  private readonly watcher: MultiFileSystemWatcher = this.push(new MultiFileSystemWatcher());
+  private readonly watcher: MultiFileSystemWatcher = this.push(
+    new MultiFileSystemWatcher(),
+  );
   private _testDirectory: QLTestDirectory | undefined;
 
   constructor(
     private readonly workspaceFolder: WorkspaceFolder,
-    private readonly cliServer: CodeQLCliServer
+    private readonly cliServer: CodeQLCliServer,
   ) {
-    super('QL Test Discovery');
+    super("QL Test Discovery");
 
     this.push(this.watcher.onDidChange(this.handleDidChange, this));
   }
@@ -160,7 +172,7 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
     const testDirectory = await this.discoverTests();
     return {
       testDirectory,
-      watchPath: this.workspaceFolder.uri.fsPath
+      watchPath: this.workspaceFolder.uri.fsPath,
     };
   }
 
@@ -169,9 +181,11 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
 
     this.watcher.clear();
     // Watch for changes to any `.ql` or `.qlref` file in any of the QL packs that contain tests.
-    this.watcher.addWatch(new RelativePattern(results.watchPath, '**/*.{ql,qlref}'));
+    this.watcher.addWatch(
+      new RelativePattern(results.watchPath, "**/*.{ql,qlref}"),
+    );
     // need to explicitly watch for changes to directories themselves.
-    this.watcher.addWatch(new RelativePattern(results.watchPath, '**/'));
+    this.watcher.addWatch(new RelativePattern(results.watchPath, "**/"));
     this._onDidChangeTests.fire(undefined);
   }
 
@@ -186,14 +200,17 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
     const rootDirectory = new QLTestDirectory(fullPath, name);
 
     // Don't try discovery on workspace folders that don't exist on the filesystem
-    if ((await fs.pathExists(fullPath))) {
-      const resolvedTests = (await this.cliServer.resolveTests(fullPath))
-        .filter((testPath) => !QLTestDiscovery.ignoreTestPath(testPath));
+    if (await fs.pathExists(fullPath)) {
+      const resolvedTests = (
+        await this.cliServer.resolveTests(fullPath)
+      ).filter((testPath) => !QLTestDiscovery.ignoreTestPath(testPath));
       for (const testPath of resolvedTests) {
         const relativePath = path.normalize(path.relative(fullPath, testPath));
         const dirName = path.dirname(relativePath);
         const parentDirectory = rootDirectory.createDirectory(dirName);
-        parentDirectory.addChild(new QLTestFile(testPath, path.basename(testPath)));
+        parentDirectory.addChild(
+          new QLTestFile(testPath, path.basename(testPath)),
+        );
       }
 
       rootDirectory.finish();
@@ -207,9 +224,9 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
    */
   private static ignoreTestPath(testPath: string): boolean {
     switch (path.extname(testPath).toLowerCase()) {
-      case '.ql':
-      case '.qlref':
-        return path.basename(testPath).startsWith('__');
+      case ".ql":
+      case ".qlref":
+        return path.basename(testPath).startsWith("__");
 
       default:
         return false;

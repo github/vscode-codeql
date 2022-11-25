@@ -1,7 +1,17 @@
-import { ConfigurationChangeEvent, StatusBarAlignment, StatusBarItem, window, workspace } from 'vscode';
-import { CodeQLCliServer } from './cli';
-import { CANARY_FEATURES, CUSTOM_CODEQL_PATH_SETTING, DistributionConfigListener } from './config';
-import { DisposableObject } from './pure/disposable-object';
+import {
+  ConfigurationChangeEvent,
+  StatusBarAlignment,
+  StatusBarItem,
+  window,
+  workspace,
+} from "vscode";
+import { CodeQLCliServer } from "./cli";
+import {
+  CANARY_FEATURES,
+  CUSTOM_CODEQL_PATH_SETTING,
+  DistributionConfigListener,
+} from "./config";
+import { DisposableObject } from "./pure/disposable-object";
 
 /**
  * Creates and manages a status bar item for codeql. THis item contains
@@ -10,16 +20,27 @@ import { DisposableObject } from './pure/disposable-object';
  *
  */
 export class CodeQlStatusBarHandler extends DisposableObject {
-
   private readonly item: StatusBarItem;
 
-  constructor(private cli: CodeQLCliServer, distributionConfigListener: DistributionConfigListener) {
+  constructor(
+    private cli: CodeQLCliServer,
+    distributionConfigListener: DistributionConfigListener,
+  ) {
     super();
     this.item = window.createStatusBarItem(StatusBarAlignment.Right);
     this.push(this.item);
-    this.push(workspace.onDidChangeConfiguration(this.handleDidChangeConfiguration, this));
-    this.push(distributionConfigListener.onDidChangeConfiguration(() => this.updateStatusItem()));
-    this.item.command = 'codeQL.copyVersion';
+    this.push(
+      workspace.onDidChangeConfiguration(
+        this.handleDidChangeConfiguration,
+        this,
+      ),
+    );
+    this.push(
+      distributionConfigListener.onDidChangeConfiguration(() =>
+        this.updateStatusItem(),
+      ),
+    );
+    this.item.command = "codeQL.copyVersion";
     void this.updateStatusItem();
   }
 
@@ -36,7 +57,7 @@ export class CodeQlStatusBarHandler extends DisposableObject {
   }
 
   private async updateStatusItem() {
-    const canary = CANARY_FEATURES.getValue() ? ' (Canary)' : '';
+    const canary = CANARY_FEATURES.getValue() ? " (Canary)" : "";
     // since getting the version may take a few seconds, initialize with some
     // meaningful text.
     this.item.text = `CodeQL${canary}`;

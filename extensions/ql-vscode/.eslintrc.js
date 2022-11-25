@@ -3,14 +3,19 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: "module",
-    project: ["tsconfig.json", "./src/**/tsconfig.json", "./gulpfile.ts/tsconfig.json"],
+    project: ["tsconfig.json", "./src/**/tsconfig.json", "./gulpfile.ts/tsconfig.json", "./scripts/tsconfig.json", "./.storybook/tsconfig.json"],
   },
   plugins: ["@typescript-eslint"],
   env: {
     node: true,
     es6: true,
   },
-  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:jest-dom/recommended"],
+  extends: [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:jest-dom/recommended",
+    "plugin:prettier/recommended"
+  ],
   rules: {
     "@typescript-eslint/no-use-before-define": 0,
     "@typescript-eslint/no-unused-vars": [
@@ -27,11 +32,7 @@ module.exports = {
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-floating-promises": [ "error", { ignoreVoid: true } ],
     "prefer-const": ["warn", { destructuring: "all" }],
-    indent: "off",
-    "@typescript-eslint/indent": "off",
     "@typescript-eslint/no-throw-literal": "error",
     "no-useless-escape": 0,
-    semi: 2,
-    quotes: ["warn", "single"]
   },
 };

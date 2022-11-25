@@ -1,15 +1,18 @@
-import { Repository } from '../remote-queries/gh-api/repository';
-import { VariantAnalysis, VariantAnalysisRepoTask } from '../remote-queries/gh-api/variant-analysis';
+import { Repository } from "../remote-queries/gh-api/repository";
+import {
+  VariantAnalysis,
+  VariantAnalysisRepoTask,
+} from "../remote-queries/gh-api/variant-analysis";
 
 // Types that represent requests/responses from the GitHub API
 // that we need to mock.
 
 export enum RequestKind {
-  GetRepo = 'getRepo',
-  SubmitVariantAnalysis = 'submitVariantAnalysis',
-  GetVariantAnalysis = 'getVariantAnalysis',
-  GetVariantAnalysisRepo = 'getVariantAnalysisRepo',
-  GetVariantAnalysisRepoResult = 'getVariantAnalysisRepoResult',
+  GetRepo = "getRepo",
+  SubmitVariantAnalysis = "submitVariantAnalysis",
+  GetVariantAnalysis = "getVariantAnalysis",
+  GetVariantAnalysisRepo = "getVariantAnalysisRepo",
+  GetVariantAnalysisRepoResult = "getVariantAnalysisRepoResult",
 }
 
 export interface BasicErorResponse {
@@ -18,55 +21,55 @@ export interface BasicErorResponse {
 
 export interface GetRepoRequest {
   request: {
-    kind: RequestKind.GetRepo
-  },
+    kind: RequestKind.GetRepo;
+  };
   response: {
-    status: number,
-    body: Repository | BasicErorResponse | undefined
-  }
+    status: number;
+    body: Repository | BasicErorResponse | undefined;
+  };
 }
 
 export interface SubmitVariantAnalysisRequest {
   request: {
-    kind: RequestKind.SubmitVariantAnalysis
-  },
+    kind: RequestKind.SubmitVariantAnalysis;
+  };
   response: {
-    status: number,
-    body?: VariantAnalysis | BasicErorResponse
-  }
+    status: number;
+    body?: VariantAnalysis | BasicErorResponse;
+  };
 }
 
 export interface GetVariantAnalysisRequest {
   request: {
-    kind: RequestKind.GetVariantAnalysis
-  },
+    kind: RequestKind.GetVariantAnalysis;
+  };
   response: {
-    status: number,
-    body?: VariantAnalysis | BasicErorResponse
-  }
+    status: number;
+    body?: VariantAnalysis | BasicErorResponse;
+  };
 }
 
 export interface GetVariantAnalysisRepoRequest {
   request: {
-    kind: RequestKind.GetVariantAnalysisRepo,
-    repositoryId: number
-  },
+    kind: RequestKind.GetVariantAnalysisRepo;
+    repositoryId: number;
+  };
   response: {
-    status: number,
-    body?: VariantAnalysisRepoTask | BasicErorResponse
-  }
+    status: number;
+    body?: VariantAnalysisRepoTask | BasicErorResponse;
+  };
 }
 
 export interface GetVariantAnalysisRepoResultRequest {
   request: {
-    kind: RequestKind.GetVariantAnalysisRepoResult,
-    repositoryId: number
-  },
+    kind: RequestKind.GetVariantAnalysisRepoResult;
+    repositoryId: number;
+  };
   response: {
-    status: number,
-    body?: Buffer | string,
-    contentType: string,
-  }
+    status: number;
+    body?: Buffer | string;
+    contentType: string;
+  };
 }
 
 export type GitHubApiRequest =
@@ -77,26 +80,25 @@ export type GitHubApiRequest =
   | GetVariantAnalysisRepoResultRequest;
 
 export const isGetRepoRequest = (
-  request: GitHubApiRequest
-): request is GetRepoRequest =>
-  request.request.kind === RequestKind.GetRepo;
+  request: GitHubApiRequest,
+): request is GetRepoRequest => request.request.kind === RequestKind.GetRepo;
 
 export const isSubmitVariantAnalysisRequest = (
-  request: GitHubApiRequest
+  request: GitHubApiRequest,
 ): request is SubmitVariantAnalysisRequest =>
   request.request.kind === RequestKind.SubmitVariantAnalysis;
 
 export const isGetVariantAnalysisRequest = (
-  request: GitHubApiRequest
+  request: GitHubApiRequest,
 ): request is GetVariantAnalysisRequest =>
   request.request.kind === RequestKind.GetVariantAnalysis;
 
 export const isGetVariantAnalysisRepoRequest = (
-  request: GitHubApiRequest
+  request: GitHubApiRequest,
 ): request is GetVariantAnalysisRepoRequest =>
   request.request.kind === RequestKind.GetVariantAnalysisRepo;
 
 export const isGetVariantAnalysisRepoResultRequest = (
-  request: GitHubApiRequest
+  request: GitHubApiRequest,
 ): request is GetVariantAnalysisRepoResultRequest =>
   request.request.kind === RequestKind.GetVariantAnalysisRepoResult;

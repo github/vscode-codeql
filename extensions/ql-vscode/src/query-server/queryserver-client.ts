@@ -1,25 +1,33 @@
-import * as path from 'path';
-import * as fs from 'fs-extra';
+import * as path from "path";
+import * as fs from "fs-extra";
 
-import { DisposableObject } from '../pure/disposable-object';
-import { CancellationToken, commands } from 'vscode';
-import { createMessageConnection, RequestType } from 'vscode-jsonrpc/node';
-import * as cli from '../cli';
-import { QueryServerConfig } from '../config';
-import { Logger, ProgressReporter } from '../logging';
-import { progress, ProgressMessage, WithProgressId } from '../pure/new-messages';
-import * as messages from '../pure/new-messages';
-import { ProgressCallback, ProgressTask } from '../commandRunner';
-import { findQueryLogFile } from '../run-queries-shared';
-import { ServerProcess } from '../json-rpc-server';
+import { DisposableObject } from "../pure/disposable-object";
+import { CancellationToken, commands } from "vscode";
+import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
+import * as cli from "../cli";
+import { QueryServerConfig } from "../config";
+import { Logger, ProgressReporter } from "../logging";
+import {
+  progress,
+  ProgressMessage,
+  WithProgressId,
+} from "../pure/new-messages";
+import * as messages from "../pure/new-messages";
+import { ProgressCallback, ProgressTask } from "../commandRunner";
+import { findQueryLogFile } from "../run-queries-shared";
+import { ServerProcess } from "../json-rpc-server";
 
 type ServerOpts = {
   logger: Logger;
   contextStoragePath: string;
-}
+};
 
-
-type WithProgressReporting = (task: (progress: ProgressReporter, token: CancellationToken) => Thenable<void>) => Thenable<void>;
+type WithProgressReporting = (
+  task: (
+    progress: ProgressReporter,
+    token: CancellationToken,
+  ) => Thenable<void>,
+) => Thenable<void>;
 
 /**
  * Client that manages a query server process.
@@ -28,9 +36,10 @@ type WithProgressReporting = (task: (progress: ProgressReporter, token: Cancella
  * to restart it (which disposes the existing process and starts a new one).
  */
 export class QueryServerClient extends DisposableObject {
-
   serverProcess?: ServerProcess;
-  progressCallbacks: { [key: number]: ((res: ProgressMessage) => void) | undefined };
+  progressCallbacks: {
+    [key: number]: ((res: ProgressMessage) => void) | undefined;
+  };
   nextCallback: number;
   nextProgress: number;
   withProgressReporting: WithProgressReporting;
@@ -42,7 +51,7 @@ export class QueryServerClient extends DisposableObject {
   // we need here.
   readonly onDidStartQueryServer = (e: ProgressTask<void>) => {
     this.queryServerStartListeners.push(e);
-  }
+  };
 
   public activeQueryLogFile: string | undefined;
 
@@ -50,13 +59,16 @@ export class QueryServerClient extends DisposableObject {
     readonly config: QueryServerConfig,
     readonly cliServer: cli.CodeQLCliServer,
     readonly opts: ServerOpts,
-    withProgressReporting: WithProgressReporting
+    withProgressReporting: WithProgressReporting,
   ) {
     super();
     // When the query server configuration changes, restart the query server.
     if (config.onDidChangeConfiguration !== undefined) {
-      this.push(config.onDidChangeConfiguration(() =>
-        commands.executeCommand('codeQL.restartQueryServer')));
+      this.push(
+        config.onDidChangeConfiguration(() =>
+          commands.executeCommand("codeQL.restartQueryServer"),
+        ),
+      );
     }
     this.withProgressReporting = withProgressReporting;
     this.nextCallback = 0;
@@ -73,24 +85,23 @@ export class QueryServerClient extends DisposableObject {
     if (this.serverProcess !== undefined) {
       this.disposeAndStopTracking(this.serverProcess);
     } else {
-      void this.logger.log('No server process to be stopped.');
+      void this.logger.log("No server process to be stopped.");
     }
   }
 
   /** Restarts the query server by disposing of the current server process and then starting a new one. */
   async restartQueryServer(
     progress: ProgressCallback,
-    token: CancellationToken
+    token: CancellationToken,
   ): Promise<void> {
     this.stopQueryServer();
     await this.startQueryServer();
 
     // Ensure we await all responses from event handlers so that
     // errors can be properly reported to the user.
-    await Promise.all(this.queryServerStartListeners.map(handler => handler(
-      progress,
-      token
-    )));
+    await Promise.all(
+      this.queryServerStartListeners.map((handler) => handler(progress, token)),
+    );
   }
 
   showLog(): void {
@@ -100,71 +111,87 @@ export class QueryServerClient extends DisposableObject {
   /** Starts a new query server process, sending progress messages to the status bar. */
   async startQueryServer(): Promise<void> {
     // Use an arrow function to preserve the value of `this`.
-    return this.withProgressReporting((progress, _) => this.startQueryServerImpl(progress));
+    return this.withProgressReporting((progress, _) =>
+      this.startQueryServerImpl(progress),
+    );
   }
 
   /** Starts a new query server process, sending progress messages to the given reporter. */
-  private async startQueryServerImpl(progressReporter: ProgressReporter): Promise<void> {
-    void this.logger.log('Starting NEW query server.');
+  private async startQueryServerImpl(
+    progressReporter: ProgressReporter,
+  ): Promise<void> {
+    void this.logger.log("Starting NEW query server.");
 
-    const ramArgs = await this.cliServer.resolveRam(this.config.queryMemoryMb, progressReporter);
-    const args = ['--threads', this.config.numThreads.toString()].concat(ramArgs);
+    const ramArgs = await this.cliServer.resolveRam(
+      this.config.queryMemoryMb,
+      progressReporter,
+    );
+    const args = ["--threads", this.config.numThreads.toString()].concat(
+      ramArgs,
+    );
 
     if (this.config.saveCache) {
-      args.push('--save-cache');
+      args.push("--save-cache");
     }
 
     if (this.config.cacheSize > 0) {
-      args.push('--max-disk-cache');
+      args.push("--max-disk-cache");
       args.push(this.config.cacheSize.toString());
     }
 
     const structuredLogFile = `${this.opts.contextStoragePath}/structured-evaluator-log.json`;
     await fs.ensureFile(structuredLogFile);
 
-    args.push('--evaluator-log');
+    args.push("--evaluator-log");
     args.push(structuredLogFile);
 
     // We hard-code the verbosity level to 5 and minify to false.
     // This will be the behavior of the per-query structured logging in the CLI after 2.8.3.
-    args.push('--evaluator-log-level');
-    args.push('5');
-
+    args.push("--evaluator-log-level");
+    args.push("5");
 
     if (this.config.debug) {
-      args.push('--debug', '--tuple-counting');
+      args.push("--debug", "--tuple-counting");
     }
 
     if (cli.shouldDebugQueryServer()) {
-      args.push('-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9010,server=y,suspend=y,quiet=y');
+      args.push(
+        "-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9010,server=y,suspend=y,quiet=y",
+      );
     }
 
     const child = cli.spawnServer(
       this.config.codeQlPath,
-      'CodeQL query server',
-      ['execute', 'query-server2'],
+      "CodeQL query server",
+      ["execute", "query-server2"],
       args,
       this.logger,
-      data => this.logger.log(data.toString(), {
-        trailingNewline: false,
-        additionalLogLocation: this.activeQueryLogFile
-      }),
+      (data) =>
+        this.logger.log(data.toString(), {
+          trailingNewline: false,
+          additionalLogLocation: this.activeQueryLogFile,
+        }),
       undefined, // no listener for stdout
-      progressReporter
+      progressReporter,
     );
-    progressReporter.report({ message: 'Connecting to CodeQL query server' });
+    progressReporter.report({ message: "Connecting to CodeQL query server" });
     const connection = createMessageConnection(child.stdout, child.stdin);
-    connection.onNotification(progress, res => {
+    connection.onNotification(progress, (res) => {
       const callback = this.progressCallbacks[res.id];
       if (callback) {
         callback(res);
       }
     });
-    this.serverProcess = new ServerProcess(child, connection, 'Query Server 2', this.logger);
+    this.serverProcess = new ServerProcess(
+      child,
+      connection,
+      "Query Server 2",
+      this.logger,
+    );
     // Ensure the server process is disposed together with this client.
     this.track(this.serverProcess);
     connection.listen();
-    progressReporter.report({ message: 'Connected to CodeQL query server v2' });
+    progressReporter.report({ message: "Connected to CodeQL query server v2" });
     this.nextCallback = 0;
     this.nextProgress = 0;
     this.progressCallbacks = {};
@@ -174,16 +201,25 @@ export class QueryServerClient extends DisposableObject {
     return this.serverProcess!.child.pid || 0;
   }
 
-  async sendRequest<P, R, E>(type: RequestType<WithProgressId<P>, R, E>, parameter: P, token?: CancellationToken, progress?: (res: ProgressMessage) => void): Promise<R> {
+  async sendRequest<P, R, E>(
+    type: RequestType<WithProgressId<P>, R, E>,
+    parameter: P,
+    token?: CancellationToken,
+    progress?: (res: ProgressMessage) => void,
+  ): Promise<R> {
     const id = this.nextProgress++;
     this.progressCallbacks[id] = progress;
 
     this.updateActiveQuery(type.method, parameter);
     try {
       if (this.serverProcess === undefined) {
-        throw new Error('No query server process found.');
+        throw new Error("No query server process found.");
       }
-      return await this.serverProcess.connection.sendRequest(type, { body: parameter, progressId: id }, token);
+      return await this.serverProcess.connection.sendRequest(
+        type,
+        { body: parameter, progressId: id },
+        token,
+      );
     } finally {
       delete this.progressCallbacks[id];
     }
@@ -199,7 +235,11 @@ export class QueryServerClient extends DisposableObject {
    */
   private updateActiveQuery(method: string, parameter: any): void {
     if (method === messages.runQuery.method) {
-      this.activeQueryLogFile = findQueryLogFile(path.dirname(path.dirname((parameter as messages.RunQueryParams).outputPath)));
+      this.activeQueryLogFile = findQueryLogFile(
+        path.dirname(
+          path.dirname((parameter as messages.RunQueryParams).outputPath),
+        ),
+      );
     }
   }
 }

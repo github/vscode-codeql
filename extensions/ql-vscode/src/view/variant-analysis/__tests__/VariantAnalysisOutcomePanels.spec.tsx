@@ -1,33 +1,42 @@
-import * as React from 'react';
-import { render as reactRender, screen } from '@testing-library/react';
+import * as React from "react";
+import { render as reactRender, screen } from "@testing-library/react";
 import {
   VariantAnalysis,
-  VariantAnalysisQueryLanguage, VariantAnalysisRepoStatus,
-  VariantAnalysisStatus
-} from '../../../remote-queries/shared/variant-analysis';
-import { VariantAnalysisOutcomePanelProps, VariantAnalysisOutcomePanels } from '../VariantAnalysisOutcomePanels';
+  VariantAnalysisRepoStatus,
+  VariantAnalysisStatus,
+} from "../../../remote-queries/shared/variant-analysis";
+import {
+  VariantAnalysisOutcomePanelProps,
+  VariantAnalysisOutcomePanels,
+} from "../VariantAnalysisOutcomePanels";
+import { createMockVariantAnalysis } from "../../../vscode-tests/factories/remote-queries/shared/variant-analysis";
+import { createMockRepositoryWithMetadata } from "../../../vscode-tests/factories/remote-queries/shared/repository";
+import {
+  createMockScannedRepo,
+  createMockScannedRepos,
+} from "../../../vscode-tests/factories/remote-queries/shared/scanned-repositories";
+import { defaultFilterSortState } from "../../../pure/variant-analysis-filter-sort";
 
 describe(VariantAnalysisOutcomePanels.name, () => {
   const defaultVariantAnalysis = {
-    id: 1,
-    controllerRepoId: 1,
-    actionsWorkflowRunId: 789263,
-    query: {
-      name: 'Example query',
-      filePath: 'example.ql',
-      language: VariantAnalysisQueryLanguage.Javascript,
-      text: 'import javascript\nselect 1',
+    ...createMockVariantAnalysis({ status: VariantAnalysisStatus.InProgress }),
+    controllerRepo: {
+      id: 1,
+      fullName: "octodemo/variant-analysis-controller",
+      private: false,
     },
-    databases: {},
+    actionsWorkflowRunId: 789263,
     executionStartTime: 1611234567890,
-    createdAt: '2021-01-21T13:09:27.890Z',
-    updatedAt: '2021-01-21T13:09:27.890Z',
+    createdAt: "2021-01-21T13:09:27.890Z",
+    updatedAt: "2021-01-21T13:09:27.890Z",
     status: VariantAnalysisStatus.InProgress,
     scannedRepos: [
       {
+        ...createMockScannedRepo(),
         repository: {
+          ...createMockRepositoryWithMetadata(),
           id: 1,
-          fullName: 'octodemo/hello-world-1',
+          fullName: "octodemo/hello-world-1",
           private: false,
         },
         analysisStatus: VariantAnalysisRepoStatus.Pending,
@@ -38,108 +47,91 @@ describe(VariantAnalysisOutcomePanels.name, () => {
         repositoryCount: 2,
         repositories: [
           {
-            fullName: 'octodemo/hello-globe'
+            fullName: "octodemo/hello-globe",
           },
           {
-            fullName: 'octodemo/hello-planet'
-          }
-        ]
+            fullName: "octodemo/hello-planet",
+          },
+        ],
       },
       noCodeqlDbRepos: {
         repositoryCount: 4,
         repositories: [
-          {
-            id: 100,
-            fullName: 'octodemo/no-db-1'
-          },
-          {
-            id: 101,
-            fullName: 'octodemo/no-db-2'
-          },
-          {
-            id: 102,
-            fullName: 'octodemo/no-db-3'
-          },
-          {
-            id: 103,
-            fullName: 'octodemo/no-db-4'
-          }
-        ]
+          createMockRepositoryWithMetadata(),
+          createMockRepositoryWithMetadata(),
+          createMockRepositoryWithMetadata(),
+          createMockRepositoryWithMetadata(),
+        ],
       },
       overLimitRepos: {
         repositoryCount: 1,
-        repositories: [
-          {
-            id: 201,
-            fullName: 'octodemo/over-limit-1'
-          }
-        ]
+        repositories: [createMockRepositoryWithMetadata()],
       },
       accessMismatchRepos: {
         repositoryCount: 1,
-        repositories: [
-          {
-            id: 205,
-            fullName: 'octodemo/private'
-          }
-        ]
-      }
+        repositories: [createMockRepositoryWithMetadata()],
+      },
     },
   };
 
-  const render = (variantAnalysis: Partial<VariantAnalysis> = {}, props: Partial<VariantAnalysisOutcomePanelProps> = {}) => {
+  const render = (
+    variantAnalysis: Partial<VariantAnalysis> = {},
+    props: Partial<VariantAnalysisOutcomePanelProps> = {},
+  ) => {
     return reactRender(
       <VariantAnalysisOutcomePanels
         variantAnalysis={{
           ...defaultVariantAnalysis,
           ...variantAnalysis,
         }}
+        filterSortState={defaultFilterSortState}
+        setFilterSortState={jest.fn()}
         {...props}
-      />
+      />,
     );
   };
 
-  it('renders correctly', () => {
+  it("renders correctly", () => {
     render();
 
-    expect(screen.getByText('Analyzed')).toBeInTheDocument();
+    expect(screen.getByText("Analyzed")).toBeInTheDocument();
   });
 
-  it('does not render panels without skipped repos', () => {
+  it("does not render panels without skipped repos", () => {
     render({
       skippedRepos: undefined,
     });
 
-    expect(screen.queryByText('Analyzed')).not.toBeInTheDocument();
-    expect(screen.queryByText('No access')).not.toBeInTheDocument();
-    expect(screen.queryByText('No database')).not.toBeInTheDocument();
+    expect(screen.queryByText("Analyzed")).not.toBeInTheDocument();
+    expect(screen.queryByText("No access")).not.toBeInTheDocument();
+    expect(screen.queryByText("No database")).not.toBeInTheDocument();
   });
 
-  it('renders panels with not found repos', () => {
+  it("renders panels with not found repos", () => {
     render({
       skippedRepos: {
         notFoundRepos: defaultVariantAnalysis.skippedRepos.notFoundRepos,
       },
     });
 
-    expect(screen.getByText('Analyzed')).toBeInTheDocument();
-    expect(screen.getByText('No access')).toBeInTheDocument();
-    expect(screen.queryByText('No database')).not.toBeInTheDocument();
+    expect(screen.getByText("Analyzed")).toBeInTheDocument();
+    expect(screen.getByText("No access")).toBeInTheDocument();
+    expect(screen.queryByText("No database")).not.toBeInTheDocument();
   });
 
-  it('renders panels with no database repos', () => {
+  it("renders panels with no database repos", () => {
     render({
       skippedRepos: {
         noCodeqlDbRepos: defaultVariantAnalysis.skippedRepos.noCodeqlDbRepos,
       },
     });
 
-    expect(screen.getByText('Analyzed')).toBeInTheDocument();
-    expect(screen.queryByText('No access')).not.toBeInTheDocument();
-    expect(screen.getByText('No database')).toBeInTheDocument();
+    expect(screen.getByText("Analyzed")).toBeInTheDocument();
+    expect(screen.queryByText("No access")).not.toBeInTheDocument();
+    expect(screen.getByText("No database")).toBeInTheDocument();
   });
 
-  it('renders panels with not found and no database repos', () => {
+  it("renders panels with not found and no database repos", () => {
     render({
       skippedRepos: {
         notFoundRepos: defaultVariantAnalysis.skippedRepos.notFoundRepos,
@@ -147,65 +139,96 @@ describe(VariantAnalysisOutcomePanels.name, () => {
       },
     });
 
-    expect(screen.getByText('Analyzed')).toBeInTheDocument();
-    expect(screen.getByText('No access')).toBeInTheDocument();
-    expect(screen.getByText('No database')).toBeInTheDocument();
+    expect(screen.getByText("Analyzed")).toBeInTheDocument();
+    expect(screen.getByText("No access")).toBeInTheDocument();
+    expect(screen.getByText("No database")).toBeInTheDocument();
   });
 
-  it('renders warning with access mismatch repos', () => {
+  it("renders warning with canceled variant analysis", () => {
+    render({
+      status: VariantAnalysisStatus.Canceled,
+    });
+
+    expect(
+      screen.getByText("Warning: Variant analysis canceled"),
+    ).toBeInTheDocument();
+  });
+
+  it("renders warning with access mismatch repos", () => {
     render({
       skippedRepos: {
         notFoundRepos: defaultVariantAnalysis.skippedRepos.notFoundRepos,
-        accessMismatchRepos: defaultVariantAnalysis.skippedRepos.accessMismatchRepos,
+        accessMismatchRepos:
+          defaultVariantAnalysis.skippedRepos.accessMismatchRepos,
       },
     });
 
-    expect(screen.getByText('Warning: Access mismatch')).toBeInTheDocument();
+    expect(
+      screen.getByText("Warning: Problem with controller repository"),
+    ).toBeInTheDocument();
   });
 
-  it('renders warning with over limit repos', () => {
+  it("renders warning with over limit repos", () => {
     render({
       skippedRepos: {
         overLimitRepos: defaultVariantAnalysis.skippedRepos.overLimitRepos,
       },
     });
 
-    expect(screen.getByText('Warning: Repository limit exceeded')).toBeInTheDocument();
+    expect(
+      screen.getByText("Warning: Repository list too large"),
+    ).toBeInTheDocument();
   });
 
-  it('renders singulars in warnings', () => {
+  it("renders singulars in warnings", () => {
     render({
       skippedRepos: {
         overLimitRepos: {
           repositoryCount: 1,
-          repositories: defaultVariantAnalysis.skippedRepos.overLimitRepos.repositories,
+          repositories:
+            defaultVariantAnalysis.skippedRepos.overLimitRepos.repositories,
         },
         accessMismatchRepos: {
           repositoryCount: 1,
-          repositories: defaultVariantAnalysis.skippedRepos.overLimitRepos.repositories,
-        }
+          repositories:
+            defaultVariantAnalysis.skippedRepos.overLimitRepos.repositories,
+        },
       },
     });
 
-    expect(screen.getByText('The number of requested repositories exceeds the maximum number of repositories supported by multi-repository variant analysis. 1 repository was skipped.')).toBeInTheDocument();
-    expect(screen.getByText('1 repository is private, while the controller repository is public. This repository was skipped.')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Publicly visible controller repository can't be used to analyze private repositories. 1 private repository was not analyzed.",
+      ),
+    ).toBeInTheDocument();
   });
 
-  it('renders plurals in warnings', () => {
+  it("renders plurals in warnings", () => {
     render({
+      scannedRepos: createMockScannedRepos(),
       skippedRepos: {
         overLimitRepos: {
           repositoryCount: 2,
-          repositories: defaultVariantAnalysis.skippedRepos.overLimitRepos.repositories,
+          repositories:
+            defaultVariantAnalysis.skippedRepos.overLimitRepos.repositories,
         },
         accessMismatchRepos: {
           repositoryCount: 2,
-          repositories: defaultVariantAnalysis.skippedRepos.overLimitRepos.repositories,
-        }
+          repositories:
+            defaultVariantAnalysis.skippedRepos.overLimitRepos.repositories,
+        },
       },
     });
 
-    expect(screen.getByText('The number of requested repositories exceeds the maximum number of repositories supported by multi-repository variant analysis. 2 repositories were skipped.')).toBeInTheDocument();
-    expect(screen.getByText('2 repositories are private, while the controller repository is public. These repositories were skipped.')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Repository list contains more than 3 entries. Only the first 3 repositories were processed.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Publicly visible controller repository can't be used to analyze private repositories. 2 private repositories were not analyzed.",
+      ),
+    ).toBeInTheDocument();
   });
 });

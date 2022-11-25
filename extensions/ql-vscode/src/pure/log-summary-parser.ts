@@ -1,4 +1,4 @@
-import { readJsonlFile } from '../log-insights/jsonl-reader';
+import { readJsonlFile } from "../log-insights/jsonl-reader";
 
 // TODO(angelapwen): Only load in necessary information and
 // location in bytes for this log to save memory.
@@ -14,17 +14,19 @@ export interface EvalLogData {
  * A pure method that parses a string of evaluator log summaries into
  * an array of EvalLogData objects.
  */
-export async function parseViewerData(jsonSummaryPath: string): Promise<EvalLogData[]> {
+export async function parseViewerData(
+  jsonSummaryPath: string,
+): Promise<EvalLogData[]> {
   const viewerData: EvalLogData[] = [];
 
-  await readJsonlFile(jsonSummaryPath, async jsonObj => {
+  await readJsonlFile(jsonSummaryPath, async (jsonObj) => {
     // Only convert log items that have an RA and millis field
     if (jsonObj.ra !== undefined && jsonObj.millis !== undefined) {
       const newLogData: EvalLogData = {
         predicateName: jsonObj.predicateName,
         millis: jsonObj.millis,
         resultSize: jsonObj.resultSize,
-        ra: jsonObj.ra
+        ra: jsonObj.ra,
       };
       viewerData.push(newLogData);
     }

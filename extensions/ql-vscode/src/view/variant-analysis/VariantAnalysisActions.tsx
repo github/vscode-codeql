@@ -1,12 +1,13 @@
-import * as React from 'react';
-import styled from 'styled-components';
-import { VSCodeButton } from '@vscode/webview-ui-toolkit/react';
-import { VariantAnalysisStatus } from '../../remote-queries/shared/variant-analysis';
+import * as React from "react";
+import styled from "styled-components";
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
+import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
 
 type Props = {
   variantAnalysisStatus: VariantAnalysisStatus;
 
   onStopQueryClick: () => void;
+  stopQueryDisabled?: boolean;
 
   onCopyRepositoryListClick: () => void;
   onExportResultsClick: () => void;
@@ -26,12 +27,17 @@ export const VariantAnalysisActions = ({
   variantAnalysisStatus,
   onStopQueryClick,
   onCopyRepositoryListClick,
-  onExportResultsClick
+  onExportResultsClick,
+  stopQueryDisabled,
 }: Props) => {
   return (
     <Container>
       {variantAnalysisStatus === VariantAnalysisStatus.InProgress && (
-        <Button appearance="secondary" onClick={onStopQueryClick}>
+        <Button
+          appearance="secondary"
+          onClick={onStopQueryClick}
+          disabled={stopQueryDisabled}
+        >
           Stop query
         </Button>
       )}

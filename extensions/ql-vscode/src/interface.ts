@@ -1,5 +1,5 @@
-import * as Sarif from 'sarif';
-import * as vscode from 'vscode';
+import * as Sarif from "sarif";
+import * as vscode from "vscode";
 import {
   Diagnostic,
   DiagnosticRelatedInformation,
@@ -7,13 +7,18 @@ import {
   languages,
   Uri,
   window as Window,
-  env
-} from 'vscode';
-import * as cli from './cli';
-import { CodeQLCliServer } from './cli';
-import { DatabaseEventKind, DatabaseItem, DatabaseManager } from './databases';
-import { showAndLogErrorMessage } from './helpers';
-import { assertNever, getErrorMessage, getErrorStack } from './pure/helpers-pure';
+  env,
+  WebviewPanel,
+} from "vscode";
+import * as cli from "./cli";
+import { CodeQLCliServer } from "./cli";
+import { DatabaseEventKind, DatabaseItem, DatabaseManager } from "./databases";
+import { showAndLogErrorMessage } from "./helpers";
+import {
+  assertNever,
+  getErrorMessage,
+  getErrorStack,
+} from "./pure/helpers-pure";
 import {
   FromResultsViewMsg,
   Interpretation,
@@ -28,12 +33,19 @@ import {
   GRAPH_TABLE_NAME,
   RawResultsSortState,
   NavigationDirection,
-} from './pure/interface-types';
-import { Logger } from './logging';
-import { commandRunner } from './commandRunner';
-import { CompletedQueryInfo, interpretResultsSarif, interpretGraphResults } from './query-results';
-import { QueryEvaluationInfo } from './run-queries-shared';
-import { parseSarifLocation, parseSarifPlainTextMessage } from './pure/sarif-utils';
+} from "./pure/interface-types";
+import { Logger } from "./logging";
+import { commandRunner } from "./commandRunner";
+import {
+  CompletedQueryInfo,
+  interpretResultsSarif,
+  interpretGraphResults,
+} from "./query-results";
+import { QueryEvaluationInfo } from "./run-queries-shared";
+import {
+  parseSarifLocation,
+  parseSarifPlainTextMessage,
+} from "./pure/sarif-utils";
 import {
   WebviewReveal,
   fileUriToWebviewUri,
@@ -41,13 +53,20 @@ import {
   shownLocationDecoration,
   shownLocationLineDecoration,
   jumpToLocation,
-} from './interface-utils';
-import { getDefaultResultSetName, ParsedResultSets } from './pure/interface-types';
-import { RawResultSet, transformBqrsResultSet, ResultSetSchema } from './pure/bqrs-cli-types';
-import { AbstractWebview, WebviewPanelConfig } from './abstract-webview';
-import { PAGE_SIZE } from './config';
-import { CompletedLocalQueryInfo } from './query-results';
-import { HistoryItemLabelProvider } from './history-item-label-provider';
+} from "./interface-utils";
+import {
+  getDefaultResultSetName,
+  ParsedResultSets,
+} from "./pure/interface-types";
+import {
+  RawResultSet,
+  transformBqrsResultSet,
+  ResultSetSchema,
+} from "./pure/bqrs-cli-types";
+import { AbstractWebview, WebviewPanelConfig } from "./abstract-webview";
+import { PAGE_SIZE } from "./config";
+import { CompletedLocalQueryInfo } from "./query-results";
+import { HistoryItemLabelProvider } from "./history-item-label-provider";
 
 /**
  * interface.ts
@@ -68,18 +87,19 @@ function sortMultiplier(sortDirection: SortDirection): number {
 
 function sortInterpretedResults(
   results: Sarif.Result[],
-  sortState: InterpretedResultsSortState | undefined
+  sortState: InterpretedResultsSortState | undefined,
 ): void {
   if (sortState !== undefined) {
     const multiplier = sortMultiplier(sortState.sortDirection);
     switch (sortState.sortBy) {
-      case 'alert-message':
+      case "alert-message":
         results.sort((a, b) =>
           a.message.text === undefined
             ? 0
             : b.message.text === undefined
-              ? 0
-              : multiplier * a.message.text?.localeCompare(b.message.text, env.language)
+            ? 0
+            : multiplier *
+              a.message.text?.localeCompare(b.message.text, env.language),
         );
         break;
       default:
@@ -88,44 +108,56 @@ function sortInterpretedResults(
   }
 }
 
-function interpretedPageSize(interpretation: Interpretation | undefined): number {
-  if (interpretation?.data.t == 'GraphInterpretationData') {
+function interpretedPageSize(
+  interpretation: Interpretation | undefined,
+): number {
+  if (interpretation?.data.t == "GraphInterpretationData") {
     // Graph views always have one result per page.
     return 1;
   }
   return PAGE_SIZE.getValue<number>();
 }
 
-function numPagesOfResultSet(resultSet: RawResultSet, interpretation?: Interpretation): number {
+function numPagesOfResultSet(
+  resultSet: RawResultSet,
+  interpretation?: Interpretation,
+): number {
   const pageSize = interpretedPageSize(interpretation);
 
-  const n = interpretation?.data.t == 'GraphInterpretationData'
-    ? interpretation.data.dot.length
-    : resultSet.schema.rows;
+  const n =
+    interpretation?.data.t == "GraphInterpretationData"
+      ? interpretation.data.dot.length
+      : resultSet.schema.rows;
 
   return Math.ceil(n / pageSize);
 }
 
-function numInterpretedPages(interpretation: Interpretation | undefined): number {
+function numInterpretedPages(
+  interpretation: Interpretation | undefined,
+): number {
   if (!interpretation) {
     return 0;
   }
 
   const pageSize = interpretedPageSize(interpretation);
 
-  const n = interpretation.data.t == 'GraphInterpretationData'
-    ? interpretation.data.dot.length
-    : interpretation.data.runs[0].results?.length || 0;
+  const n =
+    interpretation.data.t == "GraphInterpretationData"
+      ? interpretation.data.dot.length
+      : interpretation.data.runs[0].results?.length || 0;
 
   return Math.ceil(n / pageSize);
 }
 
-export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResultsViewMsg> {
+export class ResultsView extends AbstractWebview<
+  IntoResultsViewMsg,
+  FromResultsViewMsg
+> {
   private _displayedQuery?: CompletedLocalQueryInfo;
   private _interpretation?: Interpretation;
 
   private readonly _diagnosticCollection = languages.createDiagnosticCollection(
-    'codeql-query-results'
+    "codeql-query-results",
   );
 
   constructor(
@@ -133,31 +165,28 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     private databaseManager: DatabaseManager,
     public cliServer: CodeQLCliServer,
     public logger: Logger,
-    private labelProvider: HistoryItemLabelProvider
+    private labelProvider: HistoryItemLabelProvider,
   ) {
     super(ctx);
     this.push(this._diagnosticCollection);
     this.push(
       vscode.window.onDidChangeTextEditorSelection(
-        this.handleSelectionChange.bind(this)
-      )
+        this.handleSelectionChange.bind(this),
+      ),
     );
     const navigationCommands = {
-      'codeQLQueryResults.up': NavigationDirection.up,
-      'codeQLQueryResults.down': NavigationDirection.down,
-      'codeQLQueryResults.left': NavigationDirection.left,
-      'codeQLQueryResults.right': NavigationDirection.right,
+      "codeQLQueryResults.up": NavigationDirection.up,
+      "codeQLQueryResults.down": NavigationDirection.down,
+      "codeQLQueryResults.left": NavigationDirection.left,
+      "codeQLQueryResults.right": NavigationDirection.right,
       // For backwards compatibility with keybindings set using an earlier version of the extension.
-      'codeQLQueryResults.nextPathStep': NavigationDirection.down,
-      'codeQLQueryResults.previousPathStep': NavigationDirection.up,
+      "codeQLQueryResults.nextPathStep": NavigationDirection.down,
+      "codeQLQueryResults.previousPathStep": NavigationDirection.up,
     };
-    void logger.log('Registering result view navigation commands.');
+    void logger.log("Registering result view navigation commands.");
     for (const [commandId, direction] of Object.entries(navigationCommands)) {
       this.push(
-        commandRunner(
-          commandId,
-          this.navigateResultView.bind(this, direction)
-        )
+        commandRunner(commandId, this.navigateResultView.bind(this, direction)),
       );
     }
 
@@ -167,11 +196,11 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
           this._diagnosticCollection.clear();
           if (this.isShowingPanel) {
             void this.postMessage({
-              t: 'untoggleShowProblems'
+              t: "untoggleShowProblems",
             });
           }
         }
-      })
+      }),
     );
   }
 
@@ -181,16 +210,16 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     }
     // Reveal the panel now as the subsequent call to 'Window.showTextEditor' in 'showLocation' may destroy the webview otherwise.
     this.panel.reveal();
-    await this.postMessage({ t: 'navigate', direction });
+    await this.postMessage({ t: "navigate", direction });
   }
 
   protected getPanelConfig(): WebviewPanelConfig {
     return {
-      viewId: 'resultsView',
-      title: 'CodeQL Query Results',
+      viewId: "resultsView",
+      title: "CodeQL Query Results",
       viewColumn: this.chooseColumnForWebview(),
       preserveFocus: true,
-      view: 'results',
+      view: "results",
     };
   }
 
@@ -201,23 +230,23 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
   protected async onMessage(msg: FromResultsViewMsg): Promise<void> {
     try {
       switch (msg.t) {
-        case 'viewLoaded':
+        case "viewLoaded":
           this.onWebViewLoaded();
           break;
-        case 'viewSourceFile': {
+        case "viewSourceFile": {
           await jumpToLocation(msg, this.databaseManager, this.logger);
           break;
         }
-        case 'toggleDiagnostics': {
+        case "toggleDiagnostics": {
           if (msg.visible) {
             const databaseItem = this.databaseManager.findDatabaseItem(
-              Uri.parse(msg.databaseUri)
+              Uri.parse(msg.databaseUri),
             );
             if (databaseItem !== undefined) {
               await this.showResultsAsDiagnostics(
                 msg.origResultsPaths,
                 msg.metadata,
-                databaseItem
+                databaseItem,
               );
             }
           } else {
@@ -226,17 +255,19 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
           }
           break;
         }
-        case 'changeSort':
+        case "changeSort":
           await this.changeRawSortState(msg.resultSetName, msg.sortState);
           break;
-        case 'changeInterpretedSort':
+        case "changeInterpretedSort":
           await this.changeInterpretedSortState(msg.sortState);
           break;
-        case 'changePage':
-          if (msg.selectedTable === ALERTS_TABLE_NAME || msg.selectedTable === GRAPH_TABLE_NAME) {
+        case "changePage":
+          if (
+            msg.selectedTable === ALERTS_TABLE_NAME ||
+            msg.selectedTable === GRAPH_TABLE_NAME
+          ) {
             await this.showPageOfInterpretedResults(msg.pageNumber);
-          }
-          else {
+          } else {
             await this.showPageOfRawResults(
               msg.selectedTable,
               msg.pageNumber,
@@ -244,11 +275,13 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
               // sortedResultsInfo doesn't have an entry for the current
               // result set. Use this to determine whether or not we use
               // the sorted bqrs file.
-              !!this._displayedQuery?.completedQuery.sortedResultsInfo[msg.selectedTable]
+              !!this._displayedQuery?.completedQuery.sortedResultsInfo[
+                msg.selectedTable
+              ],
             );
           }
           break;
-        case 'openFile':
+        case "openFile":
           await this.openFile(msg.filePath);
           break;
         default:
@@ -256,7 +289,7 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       }
     } catch (e) {
       void showAndLogErrorMessage(getErrorMessage(e), {
-        fullMessage: getErrorStack(e)
+        fullMessage: getErrorStack(e),
       });
     }
   }
@@ -275,46 +308,59 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     // can't find a vscode API that does it any better.
     // Here, iterate through all the visible editors and determine the max view column.
     // This won't work if the largest view column is empty.
-    const colCount = Window.visibleTextEditors.reduce((maxVal, editor) =>
-      Math.max(maxVal, Number.parseInt(editor.viewColumn?.toFixed() || '0', 10)), 0);
+    const colCount = Window.visibleTextEditors.reduce(
+      (maxVal, editor) =>
+        Math.max(
+          maxVal,
+          Number.parseInt(editor.viewColumn?.toFixed() || "0", 10),
+        ),
+      0,
+    );
     if (colCount <= 1) {
       return vscode.ViewColumn.Beside;
     }
-    const activeViewColumnNum = Number.parseInt(Window.activeTextEditor?.viewColumn?.toFixed() || '0', 10);
-    return activeViewColumnNum === colCount ? vscode.ViewColumn.One : vscode.ViewColumn.Beside;
+    const activeViewColumnNum = Number.parseInt(
+      Window.activeTextEditor?.viewColumn?.toFixed() || "0",
+      10,
+    );
+    return activeViewColumnNum === colCount
+      ? vscode.ViewColumn.One
+      : vscode.ViewColumn.Beside;
   }
 
   private async changeInterpretedSortState(
-    sortState: InterpretedResultsSortState | undefined
+    sortState: InterpretedResultsSortState | undefined,
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
       void showAndLogErrorMessage(
-        'Failed to sort results since evaluation info was unknown.'
+        "Failed to sort results since evaluation info was unknown.",
       );
       return;
     }
     // Notify the webview that it should expect new results.
-    await this.postMessage({ t: 'resultsUpdating' });
-    await this._displayedQuery.completedQuery.updateInterpretedSortState(sortState);
+    await this.postMessage({ t: "resultsUpdating" });
+    await this._displayedQuery.completedQuery.updateInterpretedSortState(
+      sortState,
+    );
     await this.showResults(this._displayedQuery, WebviewReveal.NotForced, true);
   }
 
   private async changeRawSortState(
     resultSetName: string,
-    sortState: RawResultsSortState | undefined
+    sortState: RawResultsSortState | undefined,
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
       void showAndLogErrorMessage(
-        'Failed to sort results since evaluation info was unknown.'
+        "Failed to sort results since evaluation info was unknown.",
       );
       return;
     }
     // Notify the webview that it should expect new results.
-    await this.postMessage({ t: 'resultsUpdating' });
+    await this.postMessage({ t: "resultsUpdating" });
     await this._displayedQuery.completedQuery.updateSortState(
       this.cliServer,
       resultSetName,
-      sortState
+      sortState,
     );
     // Sorting resets to first page, as there is arguably no particular
     // correlation between the results on the nth page that the user
@@ -335,27 +381,31 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
   public async showResults(
     fullQuery: CompletedLocalQueryInfo,
     forceReveal: WebviewReveal,
-    shouldKeepOldResultsWhileRendering = false
+    shouldKeepOldResultsWhileRendering = false,
   ): Promise<void> {
     if (!fullQuery.completedQuery.successful) {
       return;
     }
 
+    const panel = await this.getPanel();
+
     this._interpretation = undefined;
     const interpretationPage = await this.interpretResultsInfo(
       fullQuery.completedQuery.query,
-      fullQuery.completedQuery.interpretedResultsSortState
+      fullQuery.completedQuery.interpretedResultsSortState,
     );
 
     const sortedResultsMap: SortedResultsMap = {};
     Object.entries(fullQuery.completedQuery.sortedResultsInfo).forEach(
       ([k, v]) =>
-        (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v))
+        (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(
+          panel,
+          v,
+        )),
     );
 
     this._displayedQuery = fullQuery;
 
-    const panel = this.getPanel();
     await this.waitForPanelLoaded();
     if (!panel.visible) {
       if (forceReveal === WebviewReveal.Forced) {
@@ -365,12 +415,13 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
         // is not visible; it's in a not-currently-viewed tab. Show a
         // more asynchronous message to not so abruptly interrupt
         // user's workflow by immediately revealing the panel.
-        const showButton = 'View Results';
+        const showButton = "View Results";
         const queryName = this.labelProvider.getShortLabel(fullQuery);
         const resultPromise = vscode.window.showInformationMessage(
-          `Finished running query ${queryName.length > 0 ? ` "${queryName}"` : ''
+          `Finished running query ${
+            queryName.length > 0 ? ` "${queryName}"` : ""
           }.`,
-          showButton
+          showButton,
         );
         // Address this click asynchronously so we still update the
         // query history immediately.
@@ -385,48 +436,49 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     // Note that the resultSetSchemas will return offsets for the default (unsorted) page,
     // which may not be correct. However, in this case, it doesn't matter since we only
     // need the first offset, which will be the same no matter which sorting we use.
-    const resultSetSchemas = await this.getResultSetSchemas(fullQuery.completedQuery);
-    const resultSetNames = resultSetSchemas.map(schema => schema.name);
+    const resultSetSchemas = await this.getResultSetSchemas(
+      fullQuery.completedQuery,
+    );
+    const resultSetNames = resultSetSchemas.map((schema) => schema.name);
 
     const selectedTable = getDefaultResultSetName(resultSetNames);
     const schema = resultSetSchemas.find(
-      (resultSet) => resultSet.name == selectedTable
+      (resultSet) => resultSet.name == selectedTable,
     )!;
 
     // Use sorted results path if it exists. This may happen if we are
     // reloading the results view after it has been sorted in the past.
     const resultsPath = fullQuery.completedQuery.getResultsPath(selectedTable);
     const pageSize = PAGE_SIZE.getValue<number>();
-    const chunk = await this.cliServer.bqrsDecode(
-      resultsPath,
-      schema.name,
-      {
-        // Always send the first page.
-        // It may not wind up being the page we actually show,
-        // if there are interpreted results, but speculatively
-        // send anyway.
-        offset: schema.pagination?.offsets[0],
-        pageSize
-      }
-    );
+    const chunk = await this.cliServer.bqrsDecode(resultsPath, schema.name, {
+      // Always send the first page.
+      // It may not wind up being the page we actually show,
+      // if there are interpreted results, but speculatively
+      // send anyway.
+      offset: schema.pagination?.offsets[0],
+      pageSize,
+    });
     const resultSet = transformBqrsResultSet(schema, chunk);
-    fullQuery.completedQuery.setResultCount(interpretationPage?.numTotalResults || resultSet.schema.rows);
+    fullQuery.completedQuery.setResultCount(
+      interpretationPage?.numTotalResults || resultSet.schema.rows,
+    );
     const parsedResultSets: ParsedResultSets = {
       pageNumber: 0,
       pageSize,
       numPages: numPagesOfResultSet(resultSet, this._interpretation),
       numInterpretedPages: numInterpretedPages(this._interpretation),
-      resultSet: { ...resultSet, t: 'RawResultSet' },
+      resultSet: { ...resultSet, t: "RawResultSet" },
       selectedTable: undefined,
       resultSetNames,
     };
 
     await this.postMessage({
-      t: 'setState',
+      t: "setState",
       interpretation: interpretationPage,
       origResultsPaths: fullQuery.completedQuery.query.resultsPaths,
       resultsPath: this.convertPathToWebviewUri(
-        fullQuery.completedQuery.query.resultsPaths.resultsPath
+        panel,
+        fullQuery.completedQuery.query.resultsPaths.resultsPath,
       ),
       parsedResultSets,
       sortedResultsMap,
@@ -434,31 +486,40 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       shouldKeepOldResultsWhileRendering,
       metadata: fullQuery.completedQuery.query.metadata,
       queryName: this.labelProvider.getLabel(fullQuery),
-      queryPath: fullQuery.initialInfo.queryPath
+      queryPath: fullQuery.initialInfo.queryPath,
     });
   }
 
   /**
    * Show a page of interpreted results
    */
-  public async showPageOfInterpretedResults(
-    pageNumber: number
-  ): Promise<void> {
+  public async showPageOfInterpretedResults(pageNumber: number): Promise<void> {
     if (this._displayedQuery === undefined) {
-      throw new Error('Trying to show interpreted results but displayed query was undefined');
+      throw new Error(
+        "Trying to show interpreted results but displayed query was undefined",
+      );
     }
     if (this._interpretation === undefined) {
-      throw new Error('Trying to show interpreted results but interpretation was undefined');
+      throw new Error(
+        "Trying to show interpreted results but interpretation was undefined",
+      );
     }
-    if (this._interpretation.data.t === 'SarifInterpretationData' && this._interpretation.data.runs[0].results === undefined) {
-      throw new Error('Trying to show interpreted results but results were undefined');
+    if (
+      this._interpretation.data.t === "SarifInterpretationData" &&
+      this._interpretation.data.runs[0].results === undefined
+    ) {
+      throw new Error(
+        "Trying to show interpreted results but results were undefined",
+      );
     }
 
-    const resultSetSchemas = await this.getResultSetSchemas(this._displayedQuery.completedQuery);
-    const resultSetNames = resultSetSchemas.map(schema => schema.name);
+    const resultSetSchemas = await this.getResultSetSchemas(
+      this._displayedQuery.completedQuery,
+    );
+    const resultSetNames = resultSetSchemas.map((schema) => schema.name);
 
     await this.postMessage({
-      t: 'showInterpretedPage',
+      t: "showInterpretedPage",
       interpretation: this.getPageOfInterpretedResults(pageNumber),
       database: this._displayedQuery.initialInfo.databaseInfo,
       metadata: this._displayedQuery.completedQuery.query.metadata,
@@ -467,17 +528,20 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       pageSize: interpretedPageSize(this._interpretation),
       numPages: numInterpretedPages(this._interpretation),
       queryName: this.labelProvider.getLabel(this._displayedQuery),
-      queryPath: this._displayedQuery.initialInfo.queryPath
+      queryPath: this._displayedQuery.initialInfo.queryPath,
     });
   }
 
-  private async getResultSetSchemas(completedQuery: CompletedQueryInfo, selectedTable = ''): Promise<ResultSetSchema[]> {
+  private async getResultSetSchemas(
+    completedQuery: CompletedQueryInfo,
+    selectedTable = "",
+  ): Promise<ResultSetSchema[]> {
     const resultsPath = completedQuery.getResultsPath(selectedTable);
     const schemas = await this.cliServer.bqrsInfo(
       resultsPath,
-      PAGE_SIZE.getValue()
+      PAGE_SIZE.getValue(),
     );
-    return schemas['result-sets'];
+    return schemas["result-sets"];
   }
 
   public async openFile(filePath: string) {
@@ -491,29 +555,39 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
   public async showPageOfRawResults(
     selectedTable: string,
     pageNumber: number,
-    sorted = false
+    sorted = false,
   ): Promise<void> {
     const results = this._displayedQuery;
     if (results === undefined) {
-      throw new Error('trying to view a page of a query that is not loaded');
+      throw new Error("trying to view a page of a query that is not loaded");
     }
+
+    const panel = await this.getPanel();
 
     const sortedResultsMap: SortedResultsMap = {};
     Object.entries(results.completedQuery.sortedResultsInfo).forEach(
       ([k, v]) =>
-        (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(v))
+        (sortedResultsMap[k] = this.convertPathPropertiesToWebviewUris(
+          panel,
+          v,
+        )),
     );
 
-    const resultSetSchemas = await this.getResultSetSchemas(results.completedQuery, sorted ? selectedTable : '');
+    const resultSetSchemas = await this.getResultSetSchemas(
+      results.completedQuery,
+      sorted ? selectedTable : "",
+    );
 
     // If there is a specific sorted table selected, a different bqrs file is loaded that doesn't have all the result set names.
     // Make sure that we load all result set names here.
     // See https://github.com/github/vscode-codeql/issues/1005
-    const allResultSetSchemas = sorted ? await this.getResultSetSchemas(results.completedQuery, '') : resultSetSchemas;
-    const resultSetNames = allResultSetSchemas.map(schema => schema.name);
+    const allResultSetSchemas = sorted
+      ? await this.getResultSetSchemas(results.completedQuery, "")
+      : resultSetSchemas;
+    const resultSetNames = allResultSetSchemas.map((schema) => schema.name);
 
     const schema = resultSetSchemas.find(
-      (resultSet) => resultSet.name == selectedTable
+      (resultSet) => resultSet.name == selectedTable,
     )!;
     if (schema === undefined)
       throw new Error(`Query result set '${selectedTable}' not found.`);
@@ -524,15 +598,15 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       schema.name,
       {
         offset: schema.pagination?.offsets[pageNumber],
-        pageSize
-      }
+        pageSize,
+      },
     );
     const resultSet = transformBqrsResultSet(schema, chunk);
 
     const parsedResultSets: ParsedResultSets = {
       pageNumber,
       pageSize,
-      resultSet: { t: 'RawResultSet', ...resultSet },
+      resultSet: { t: "RawResultSet", ...resultSet },
       numPages: numPagesOfResultSet(resultSet),
       numInterpretedPages: numInterpretedPages(this._interpretation),
       selectedTable: selectedTable,
@@ -540,11 +614,12 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     };
 
     await this.postMessage({
-      t: 'setState',
+      t: "setState",
       interpretation: this._interpretation,
       origResultsPaths: results.completedQuery.query.resultsPaths,
       resultsPath: this.convertPathToWebviewUri(
-        results.completedQuery.query.resultsPaths.resultsPath
+        panel,
+        results.completedQuery.query.resultsPaths.resultsPath,
       ),
       parsedResultSets,
       sortedResultsMap,
@@ -552,7 +627,7 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       shouldKeepOldResultsWhileRendering: false,
       metadata: results.completedQuery.query.metadata,
       queryName: this.labelProvider.getLabel(results),
-      queryPath: results.initialInfo.queryPath
+      queryPath: results.initialInfo.queryPath,
     });
   }
 
@@ -561,10 +636,12 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     resultsPaths: ResultsPaths,
     sourceInfo: cli.SourceInfo | undefined,
     sourceLocationPrefix: string,
-    sortState: InterpretedResultsSortState | undefined
+    sortState: InterpretedResultsSortState | undefined,
   ): Promise<Interpretation | undefined> {
     if (!resultsPaths) {
-      void this.logger.log('No results path. Cannot display interpreted results.');
+      void this.logger.log(
+        "No results path. Cannot display interpreted results.",
+      );
       return undefined;
     }
     let data;
@@ -574,7 +651,7 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
         this.cliServer,
         metadata,
         resultsPaths,
-        sourceInfo
+        sourceInfo,
       );
       numTotalResults = data.dot.length;
     } else {
@@ -582,10 +659,10 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
         this.cliServer,
         metadata,
         resultsPaths,
-        sourceInfo
+        sourceInfo,
       );
 
-      sarif.runs.forEach(run => {
+      sarif.runs.forEach((run) => {
         if (run.results) {
           sortInterpretedResults(run.results, sortState);
         }
@@ -595,9 +672,7 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       data = sarif;
 
       numTotalResults = (() => {
-        return sarif.runs?.[0]?.results
-          ? sarif.runs[0].results.length
-          : 0;
+        return sarif.runs?.[0]?.results ? sarif.runs[0].results.length : 0;
       })();
     }
 
@@ -605,81 +680,89 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       data,
       sourceLocationPrefix,
       numTruncatedResults: 0,
-      numTotalResults
+      numTotalResults,
     };
     this._interpretation = interpretation;
     return interpretation;
   }
 
-  private getPageOfInterpretedResults(
-    pageNumber: number
-  ): Interpretation {
+  private getPageOfInterpretedResults(pageNumber: number): Interpretation {
     function getPageOfRun(run: Sarif.Run): Sarif.Run {
       return {
-        ...run, results: run.results?.slice(
+        ...run,
+        results: run.results?.slice(
           PAGE_SIZE.getValue<number>() * pageNumber,
-          PAGE_SIZE.getValue<number>() * (pageNumber + 1)
-        )
+          PAGE_SIZE.getValue<number>() * (pageNumber + 1),
+        ),
       };
     }
 
     const interp = this._interpretation;
     if (interp === undefined) {
-      throw new Error('Tried to get interpreted results before interpretation finished');
+      throw new Error(
+        "Tried to get interpreted results before interpretation finished",
+      );
     }
 
-    if (interp.data.t !== 'SarifInterpretationData')
-      return interp;
+    if (interp.data.t !== "SarifInterpretationData") return interp;
 
     if (interp.data.runs.length !== 1) {
-      void this.logger.log(`Warning: SARIF file had ${interp.data.runs.length} runs, expected 1`);
+      void this.logger.log(
+        `Warning: SARIF file had ${interp.data.runs.length} runs, expected 1`,
+      );
     }
 
     return {
       ...interp,
       data: {
         ...interp.data,
-        runs: [getPageOfRun(interp.data.runs[0])]
-      }
+        runs: [getPageOfRun(interp.data.runs[0])],
+      },
     };
   }
 
   private async interpretResultsInfo(
     query: QueryEvaluationInfo,
-    sortState: InterpretedResultsSortState | undefined
+    sortState: InterpretedResultsSortState | undefined,
   ): Promise<Interpretation | undefined> {
     if (
       query.canHaveInterpretedResults() &&
       query.quickEvalPosition === undefined // never do results interpretation if quickEval
     ) {
       try {
-        const dbItem = this.databaseManager.findDatabaseItem(Uri.file(query.dbItemPath));
+        const dbItem = this.databaseManager.findDatabaseItem(
+          Uri.file(query.dbItemPath),
+        );
         if (!dbItem) {
-          throw new Error(`Could not find database item for ${query.dbItemPath}`);
+          throw new Error(
+            `Could not find database item for ${query.dbItemPath}`,
+          );
         }
         const sourceLocationPrefix = await dbItem.getSourceLocationPrefix(
-          this.cliServer
+          this.cliServer,
         );
         const sourceArchiveUri = dbItem.sourceArchive;
         const sourceInfo =
           sourceArchiveUri === undefined
             ? undefined
             : {
-              sourceArchive: sourceArchiveUri.fsPath,
-              sourceLocationPrefix,
-            };
+                sourceArchive: sourceArchiveUri.fsPath,
+                sourceLocationPrefix,
+              };
         await this._getInterpretedResults(
           query.metadata,
           query.resultsPaths,
           sourceInfo,
           sourceLocationPrefix,
-          sortState
+          sortState,
         );
       } catch (e) {
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
         void showAndLogErrorMessage(
-          `Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(e)}`
+          `Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
+            e,
+          )}`,
         );
       }
     }
@@ -689,26 +772,26 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
   private async showResultsAsDiagnostics(
     resultsInfo: ResultsPaths,
     metadata: QueryMetadata | undefined,
-    database: DatabaseItem
+    database: DatabaseItem,
   ): Promise<void> {
     const sourceLocationPrefix = await database.getSourceLocationPrefix(
-      this.cliServer
+      this.cliServer,
     );
     const sourceArchiveUri = database.sourceArchive;
     const sourceInfo =
       sourceArchiveUri === undefined
         ? undefined
         : {
-          sourceArchive: sourceArchiveUri.fsPath,
-          sourceLocationPrefix,
-        };
+            sourceArchive: sourceArchiveUri.fsPath,
+            sourceLocationPrefix,
+          };
     // TODO: Performance-testing to determine whether this truncation is necessary.
     const interpretation = await this._getInterpretedResults(
       metadata,
       resultsInfo,
       sourceInfo,
       sourceLocationPrefix,
-      undefined
+      undefined,
     );
 
     if (!interpretation) {
@@ -719,7 +802,9 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       await this.showProblemResultsAsDiagnostics(interpretation, database);
     } catch (e) {
       void this.logger.log(
-        `Exception while computing problem results as diagnostics: ${getErrorMessage(e)}`
+        `Exception while computing problem results as diagnostics: ${getErrorMessage(
+          e,
+        )}`,
       );
       this._diagnosticCollection.clear();
     }
@@ -727,16 +812,15 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
 
   private async showProblemResultsAsDiagnostics(
     interpretation: Interpretation,
-    databaseItem: DatabaseItem
+    databaseItem: DatabaseItem,
   ): Promise<void> {
     const { data, sourceLocationPrefix } = interpretation;
 
-    if (data.t !== 'SarifInterpretationData')
-      return;
+    if (data.t !== "SarifInterpretationData") return;
 
     if (!data.runs || !data.runs[0].results) {
       void this.logger.log(
-        'Didn\'t find a run in the sarif results. Error processing sarif?'
+        "Didn't find a run in the sarif results. Error processing sarif?",
       );
       return;
     }
@@ -746,24 +830,24 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     for (const result of data.runs[0].results) {
       const message = result.message.text;
       if (message === undefined) {
-        void this.logger.log('Sarif had result without plaintext message');
+        void this.logger.log("Sarif had result without plaintext message");
         continue;
       }
       if (!result.locations) {
-        void this.logger.log('Sarif had result without location');
+        void this.logger.log("Sarif had result without location");
         continue;
       }
 
       const sarifLoc = parseSarifLocation(
         result.locations[0],
-        sourceLocationPrefix
+        sourceLocationPrefix,
       );
-      if ('hint' in sarifLoc) {
+      if ("hint" in sarifLoc) {
         continue;
       }
       const resultLocation = tryResolveLocation(sarifLoc, databaseItem);
       if (!resultLocation) {
-        void this.logger.log('Sarif location was not resolvable ' + sarifLoc);
+        void this.logger.log("Sarif location was not resolvable " + sarifLoc);
         continue;
       }
       const parsedMessage = parseSarifPlainTextMessage(message);
@@ -775,26 +859,26 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       }
       const resultMessageChunks: string[] = [];
       for (const section of parsedMessage) {
-        if (typeof section === 'string') {
+        if (typeof section === "string") {
           resultMessageChunks.push(section);
         } else {
           resultMessageChunks.push(section.text);
           const sarifChunkLoc = parseSarifLocation(
             relatedLocationsById[section.dest],
-            sourceLocationPrefix
+            sourceLocationPrefix,
           );
-          if ('hint' in sarifChunkLoc) {
+          if ("hint" in sarifChunkLoc) {
             continue;
           }
           const referenceLocation = tryResolveLocation(
             sarifChunkLoc,
-            databaseItem
+            databaseItem,
           );
 
           if (referenceLocation) {
             const related = new DiagnosticRelatedInformation(
               referenceLocation,
-              section.text
+              section.text,
             );
             relatedInformation.push(related);
           }
@@ -802,8 +886,8 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
       }
       const diagnostic = new Diagnostic(
         resultLocation.range,
-        resultMessageChunks.join(''),
-        DiagnosticSeverity.Warning
+        resultMessageChunks.join(""),
+        DiagnosticSeverity.Warning,
       );
       diagnostic.relatedInformation = relatedInformation;
 
@@ -812,21 +896,22 @@ export class ResultsView extends AbstractWebview<IntoResultsViewMsg, FromResults
     this._diagnosticCollection.set(diagnostics);
   }
 
-  private convertPathToWebviewUri(path: string): string {
-    return fileUriToWebviewUri(this.getPanel(), Uri.file(path));
+  private convertPathToWebviewUri(panel: WebviewPanel, path: string): string {
+    return fileUriToWebviewUri(panel, Uri.file(path));
   }
 
   private convertPathPropertiesToWebviewUris(
-    info: SortedResultSetInfo
+    panel: WebviewPanel,
+    info: SortedResultSetInfo,
   ): SortedResultSetInfo {
     return {
-      resultsPath: this.convertPathToWebviewUri(info.resultsPath),
+      resultsPath: this.convertPathToWebviewUri(panel, info.resultsPath),
       sortState: info.sortState,
     };
   }
 
   private handleSelectionChange(
-    event: vscode.TextEditorSelectionChangeEvent
+    event: vscode.TextEditorSelectionChangeEvent,
   ): void {
     if (event.kind === vscode.TextEditorSelectionChangeKind.Command) {
       return; // Ignore selection events we caused ourselves.

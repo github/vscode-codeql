@@ -1,0 +1,181 @@
+{
+  "request": {
+    "kind": "getVariantAnalysis"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "id": 146,
+      "controller_repo": {
+        "id": 557804416,
+        "node_id": "R_kgDOIT9rgA",
+        "name": "mrva-demo-controller-repo",
+        "full_name": "github/mrva-demo-controller-repo",
+        "private": true,
+        "owner": {
+          "login": "github",
+          "id": 9919,
+          "node_id": "MDEyOk9yZ2FuaXphdGlvbjk5MTk=",
+          "avatar_url": "https://avatars.githubusercontent.com/u/9919?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/github",
+          "html_url": "https://github.com/github",
+          "followers_url": "https://api.github.com/users/github/followers",
+          "following_url": "https://api.github.com/users/github/following{/other_user}",
+          "gists_url": "https://api.github.com/users/github/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/github/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/github/subscriptions",
+          "organizations_url": "https://api.github.com/users/github/orgs",
+          "repos_url": "https://api.github.com/users/github/repos",
+          "events_url": "https://api.github.com/users/github/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/github/received_events",
+          "type": "Organization",
+          "site_admin": false
+        },
+        "html_url": "https://github.com/github/mrva-demo-controller-repo",
+        "description": null,
+        "fork": false,
+        "url": "https://api.github.com/repos/github/mrva-demo-controller-repo",
+        "forks_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/forks",
+        "keys_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/keys{/key_id}",
+        "collaborators_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/collaborators{/collaborator}",
+        "teams_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/teams",
+        "hooks_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/hooks",
+        "issue_events_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/issues/events{/number}",
+        "events_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/events",
+        "assignees_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/assignees{/user}",
+        "branches_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/branches{/branch}",
+        "tags_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/tags",
+        "blobs_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/git/blobs{/sha}",
+        "git_tags_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/git/tags{/sha}",
+        "git_refs_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/git/refs{/sha}",
+        "trees_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/git/trees{/sha}",
+        "statuses_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/statuses/{sha}",
+        "languages_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/languages",
+        "stargazers_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/stargazers",
+        "contributors_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/contributors",
+        "subscribers_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/subscribers",
+        "subscription_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/subscription",
+        "commits_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/commits{/sha}",
+        "git_commits_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/git/commits{/sha}",
+        "comments_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/comments{/number}",
+        "issue_comment_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/issues/comments{/number}",
+        "contents_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/contents/{+path}",
+        "compare_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/compare/{base}...{head}",
+        "merges_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/merges",
+        "archive_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/{archive_format}{/ref}",
+        "downloads_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/downloads",
+        "issues_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/issues{/number}",
+        "pulls_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/pulls{/number}",
+        "milestones_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/milestones{/number}",
+        "notifications_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/notifications{?since,all,participating}",
+        "labels_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/labels{/name}",
+        "releases_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/releases{/id}",
+        "deployments_url": "https://api.github.com/repos/github/mrva-demo-controller-repo/deployments"
+      },
+      "actor": {
+        "login": "charisk",
+        "id": 311693,
+        "node_id": "MDQ6VXNlcjMxMTY5Mw==",
+        "avatar_url": "https://avatars.githubusercontent.com/u/311693?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/charisk",
+        "html_url": "https://github.com/charisk",
+        "followers_url": "https://api.github.com/users/charisk/followers",
+        "following_url": "https://api.github.com/users/charisk/following{/other_user}",
+        "gists_url": "https://api.github.com/users/charisk/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/charisk/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/charisk/subscriptions",
+        "organizations_url": "https://api.github.com/users/charisk/orgs",
+        "repos_url": "https://api.github.com/users/charisk/repos",
+        "events_url": "https://api.github.com/users/charisk/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/charisk/received_events",
+        "type": "User",
+        "site_admin": true
+      },
+      "query_language": "javascript",
+      "query_pack_url": "https://objects-origin.githubusercontent.com/codeql-query-console/variant_analyses/146/query_pack?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=queryconsoleprod%2F20221026%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221026T124653Z&X-Amz-Expires=3600&X-Amz-Signature=2147ea8461603acdb32fc38544dffb62e74db12fbbe5a32f269420d4945841a1&X-Amz-SignedHeaders=host",
+      "created_at": "2022-10-26T12:45:12Z",
+      "updated_at": "2022-10-26T12:45:15Z",
+      "actions_workflow_run_id": 3329095282,
+      "status": "in_progress",
+      "scanned_repositories": [
+        {
+          "repository": {
+            "id": 206444,
+            "name": "hive",
+            "full_name": "apache/hive",
+            "private": false,
+            "stargazers_count": 4523,
+            "updated_at": "2022-11-02T10:04:02Z"
+          },
+          "analysis_status": "succeeded",
+          "artifact_size_in_bytes": 81841,
+          "result_count": 4
+        },
+        {
+          "repository": {
+            "id": 20753500,
+            "name": "ng-nice",
+            "full_name": "angular-cn/ng-nice",
+            "private": false,
+            "stargazers_count": 192,
+            "updated_at": "2022-03-17T08:34:30Z"
+          },
+          "analysis_status": "in_progress"
+        },
+        {
+          "repository": {
+            "id": 23418517,
+            "name": "hadoop",
+            "full_name": "apache/hadoop",
+            "private": false,
+            "stargazers_count": 13030,
+            "updated_at": "2022-11-02T08:23:58Z"
+          },
+          "analysis_status": "succeeded",
+          "artifact_size_in_bytes": 66895,
+          "result_count": 3
+        },
+        {
+          "repository": {
+            "id": 236095576,
+            "name": "backstage",
+            "full_name": "backstage/backstage",
+            "private": false,
+            "stargazers_count": 19033,
+            "updated_at": "2022-11-02T10:25:24Z"
+          },
+          "analysis_status": "in_progress"
+        },
+        {
+          "repository": {
+            "id": 257485422,
+            "name": "vite",
+            "full_name": "vitejs/vite",
+            "private": false,
+            "stargazers_count": 49064,
+            "updated_at": "2022-11-02T11:29:22Z"
+          },
+          "analysis_status": "succeeded",
+          "artifact_size_in_bytes": 702,
+          "result_count": 0
+        }
+      ],
+      "skipped_repositories": {
+        "access_mismatch_repos": {
+          "repository_count": 0,
+          "repositories": []
+        },
+        "no_codeql_db_repos": {
+          "repository_count": 0,
+          "repositories": []
+        },
+        "over_limit_repos": {
+          "repository_count": 0,
+          "repositories": []
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "databases": {
+      "type": "object",
+      "properties": {
+        "remote": {
+          "type": "object",
+          "properties": {
+            "repositoryLists": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "repositories": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-zA-Z0-9-_\\.]+/[a-zA-Z0-9-_\\.]+$"
+                    }
+                  }
+                },
+                "required": ["name", "repositories"],
+                "additionalProperties": false
+              }
+            },
+            "owners": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9-_\\.]+$"
+              }
+            },
+            "repositories": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^[a-zA-Z0-9-_\\.]+/[a-zA-Z0-9-_\\.]+$"
+              }
+            }
+          },
+          "required": ["repositoryLists", "owners", "repositories"],
+          "additionalProperties": false
+        },
+        "local": {
+          "type": "object",
+          "properties": {
+            "lists": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "databases": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        },
+                        "dateAdded": {
+                          "type": "number"
+                        },
+                        "language": {
+                          "type": "string"
+                        },
+                        "storagePath": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "dateAdded",
+                        "language",
+                        "storagePath"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": ["name", "databases"],
+                "additionalProperties": false
+              }
+            },
+            "databases": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "dateAdded": {
+                    "type": "number"
+                  },
+                  "language": {
+                    "type": "string"
+                  },
+                  "storagePath": {
+                    "type": "string"
+                  }
+                },
+                "required": ["name", "dateAdded", "language", "storagePath"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["lists", "databases"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["remote", "local"],
+      "additionalProperties": false
+    },
+    "selected": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["configDefined", "remoteSystemDefinedList"]
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": ["kind", "value"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["databases"],
+  "additionalProperties": false
+}

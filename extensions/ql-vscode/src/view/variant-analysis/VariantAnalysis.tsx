@@ -1,32 +1,48 @@
-import * as React from 'react';
-import { useEffect, useState } from 'react';
+import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   VariantAnalysis as VariantAnalysisDomainModel,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
-} from '../../remote-queries/shared/variant-analysis';
-import { VariantAnalysisHeader } from './VariantAnalysisHeader';
-import { VariantAnalysisOutcomePanels } from './VariantAnalysisOutcomePanels';
-import { VariantAnalysisLoading } from './VariantAnalysisLoading';
-import { ToVariantAnalysisMessage } from '../../pure/interface-types';
-import { vscode } from '../vscode-api';
+} from "../../remote-queries/shared/variant-analysis";
+import { VariantAnalysisHeader } from "./VariantAnalysisHeader";
+import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
+import { VariantAnalysisLoading } from "./VariantAnalysisLoading";
+import { ToVariantAnalysisMessage } from "../../pure/interface-types";
+import { vscode } from "../vscode-api";
+import {
+  defaultFilterSortState,
+  RepositoriesFilterSortState,
+} from "../../pure/variant-analysis-filter-sort";
 
 type Props = {
   variantAnalysis?: VariantAnalysisDomainModel;
   repoStates?: VariantAnalysisScannedRepositoryState[];
   repoResults?: VariantAnalysisScannedRepositoryResult[];
-}
+};
 
 const openQueryFile = () => {
   vscode.postMessage({
-    t: 'openQueryFile',
+    t: "openQueryFile",
   });
 };
 
 const openQueryText = () => {
   vscode.postMessage({
-    t: 'openQueryText',
+    t: "openQueryText",
+  });
+};
+
+const stopQuery = () => {
+  vscode.postMessage({
+    t: "cancelVariantAnalysis",
+  });
+};
+
+const openLogs = () => {
+  vscode.postMessage({
+    t: "openLogs",
   });
 };
 
@@ -35,42 +51,82 @@ export function VariantAnalysis({
   repoStates: initialRepoStates = [],
   repoResults: initialRepoResults = [],
 }: Props): JSX.Element {
-  const [variantAnalysis, setVariantAnalysis] = useState<VariantAnalysisDomainModel | undefined>(initialVariantAnalysis);
-  const [repoStates, setRepoStates] = useState<VariantAnalysisScannedRepositoryState[]>(initialRepoStates);
-  const [repoResults, setRepoResults] = useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
+  const [variantAnalysis, setVariantAnalysis] = useState<
+    VariantAnalysisDomainModel | undefined
+  >(initialVariantAnalysis);
+  const [repoStates, setRepoStates] =
+    useState<VariantAnalysisScannedRepositoryState[]>(initialRepoStates);
+  const [repoResults, setRepoResults] =
+    useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
+
+  const [selectedRepositoryIds, setSelectedRepositoryIds] = useState<number[]>(
+    [],
+  );
+  const [filterSortState, setFilterSortState] =
+    useState<RepositoriesFilterSortState>(defaultFilterSortState);
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
         const msg: ToVariantAnalysisMessage = evt.data;
-        if (msg.t === 'setVariantAnalysis') {
+        if (msg.t === "setVariantAnalysis") {
           setVariantAnalysis(msg.variantAnalysis);
           vscode.setState({
             variantAnalysisId: msg.variantAnalysis.id,
           });
-        } else if (msg.t === 'setRepoResults') {
-          setRepoResults(oldRepoResults => {
-            const newRepoIds = msg.repoResults.map(r => r.repositoryId);
-            return [...oldRepoResults.filter(v => !newRepoIds.includes(v.repositoryId)), ...msg.repoResults];
+        } else if (msg.t === "setRepoResults") {
+          setRepoResults((oldRepoResults) => {
+            const newRepoIds = msg.repoResults.map((r) => r.repositoryId);
+            return [
+              ...oldRepoResults.filter(
+                (v) => !newRepoIds.includes(v.repositoryId),
+              ),
+              ...msg.repoResults,
+            ];
           });
-        } else if (msg.t === 'setRepoStates') {
-          setRepoStates(oldRepoStates => {
-            const newRepoIds = msg.repoStates.map(r => r.repositoryId);
-            return [...oldRepoStates.filter(v => !newRepoIds.includes(v.repositoryId)), ...msg.repoStates];
+        } else if (msg.t === "setRepoStates") {
+          setRepoStates((oldRepoStates) => {
+            const newRepoIds = msg.repoStates.map((r) => r.repositoryId);
+            return [
+              ...oldRepoStates.filter(
+                (v) => !newRepoIds.includes(v.repositoryId),
+              ),
+              ...msg.repoStates,
+            ];
           });
         }
       } else {
         // sanitize origin
-        const origin = evt.origin.replace(/\n|\r/g, '');
+        const origin = evt.origin.replace(/\n|\r/g, "");
         console.error(`Invalid event origin ${origin}`);
       }
     };
-    window.addEventListener('message', listener);
+    window.addEventListener("message", listener);
 
     return () => {
-      window.removeEventListener('message', listener);
+      window.removeEventListener("message", listener);
     };
   }, []);
+
+  const copyRepositoryList = useCallback(() => {
+    vscode.postMessage({
+      t: "copyRepositoryList",
+      filterSort: {
+        ...filterSortState,
+        repositoryIds: selectedRepositoryIds,
+      },
+    });
+  }, [filterSortState, selectedRepositoryIds]);
+
+  const exportResults = useCallback(() => {
+    vscode.postMessage({
+      t: "exportResults",
+      filterSort: {
+        ...filterSortState,
+        repositoryIds: selectedRepositoryIds,
+      },
+    });
+  }, [filterSortState, selectedRepositoryIds]);
 
   if (variantAnalysis?.actionsWorkflowRunId === undefined) {
     return <VariantAnalysisLoading />;
@@ -82,15 +138,19 @@ export function VariantAnalysis({
         variantAnalysis={variantAnalysis}
         onOpenQueryFileClick={openQueryFile}
         onViewQueryTextClick={openQueryText}
-        onStopQueryClick={() => console.log('Stop query')}
-        onCopyRepositoryListClick={() => console.log('Copy repository list')}
-        onExportResultsClick={() => console.log('Export results')}
-        onViewLogsClick={() => console.log('View logs')}
+        onStopQueryClick={stopQuery}
+        onCopyRepositoryListClick={copyRepositoryList}
+        onExportResultsClick={exportResults}
+        onViewLogsClick={openLogs}
       />
       <VariantAnalysisOutcomePanels
         variantAnalysis={variantAnalysis}
         repositoryStates={repoStates}
         repositoryResults={repoResults}
+        selectedRepositoryIds={selectedRepositoryIds}
+        setSelectedRepositoryIds={setSelectedRepositoryIds}
+        filterSortState={filterSortState}
+        setFilterSortState={setFilterSortState}
       />
     </>
   );
