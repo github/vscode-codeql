@@ -6,7 +6,7 @@ import {
   writeFile,
   opendir,
 } from "fs-extra";
-import * as glob from "glob-promise";
+import { promise as glob } from "glob-promise";
 import { load } from "js-yaml";
 import { join, basename } from "path";
 import { dirSync } from "tmp-promise";

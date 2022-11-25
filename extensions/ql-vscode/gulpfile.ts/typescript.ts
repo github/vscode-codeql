@@ -1,8 +1,8 @@
 import { gray, red } from "ansi-colors";
-import { dest, watch } from "gulp";
-import { init, write } from "gulp-sourcemaps";
-import * as ts from "gulp-typescript";
-import * as del from "del";
+import { dest, src, watch } from "gulp";
+import esbuild from "gulp-esbuild";
+import ts from "gulp-typescript";
+import del from "del";
 
 function goodReporter(): ts.reporter.Reporter {
   return {
@@ -35,20 +35,35 @@ export function cleanOutput() {
     : Promise.resolve();
 }
 
-export function compileTypeScript() {
-  return tsProject
-    .src()
-    .pipe(init())
-    .pipe(tsProject(goodReporter()))
+export function compileEsbuild() {
+  return src("./src/extension.ts")
     .pipe(
-      write(".", {
-        includeContent: false,
-        sourceRoot: ".",
+      esbuild({
+        outfile: "extension.js",
+        bundle: true,
+        external: ["vscode", "fsevents"],
+        format: "cjs",
+        platform: "node",
+        target: "es2020",
+        sourcemap: "linked",
+        loader: {
+          ".node": "copy",
+        },
       }),
     )
     .pipe(dest("out"));
 }
 
-export function watchTypeScript() {
-  watch("src/**/*.ts", compileTypeScript);
+export function watchEsbuild() {
+  watch("src/**/*.ts", compileEsbuild);
+}
+
+export function checkTypeScript() {
+  // This doesn't actually output the TypeScript files, it just
+  // runs the TypeScript compiler and reports any errors.
+  return tsProject.src().pipe(tsProject(goodReporter()));
+}
+
+export function watchCheckTypeScript() {
+  watch("src/**/*.ts", checkTypeScript);
 }
