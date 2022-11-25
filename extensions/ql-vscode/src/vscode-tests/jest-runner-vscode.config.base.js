@@ -1,12 +1,12 @@
-import * as path from "path";
-import * as tmp from "tmp-promise";
-import { RunnerOptions } from "jest-runner-vscode";
+const path = require("path");
+const tmp = require("tmp-promise");
 
-export const tmpDir = tmp.dirSync({ unsafeCleanup: true });
+const tmpDir = tmp.dirSync({ unsafeCleanup: true });
 
-export const rootDir = path.resolve(__dirname, "../..");
+const rootDir = path.resolve(__dirname, "../..");
 
-const config: RunnerOptions = {
+/** @type import("jest-runner-vscode").RunnerOptions */
+const config = {
   version: "stable",
   launchArgs: [
     "--disable-gpu",
@@ -20,4 +20,8 @@ if (process.env.VSCODE_INSPECTOR_OPTIONS) {
   config.launchArgs?.push("--inspect-extensions", "9223");
 }
 
-export default config;
+module.exports = {
+  config,
+  tmpDir,
+  rootDir,
+};

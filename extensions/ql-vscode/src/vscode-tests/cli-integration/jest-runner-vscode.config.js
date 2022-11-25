@@ -1,10 +1,12 @@
-import * as path from "path";
+const path = require("path");
 
-import { RunnerOptions } from "jest-runner-vscode";
+const {
+  config: baseConfig,
+  rootDir,
+} = require("../jest-runner-vscode.config.base");
 
-import baseConfig, { rootDir } from "../jest-runner-vscode.config.base";
-
-const config: RunnerOptions = {
+/** @type import("jest-runner-vscode").RunnerOptions */
+const config = {
   ...baseConfig,
   launchArgs: [
     ...(baseConfig.launchArgs ?? []),
@@ -25,6 +27,4 @@ const config: RunnerOptions = {
   },
 };
 
-// We are purposefully not using export default here since that would result in an ESModule, which doesn't seem to be
-// supported properly by jest-runner-vscode (cosmiconfig doesn't really seem to support it).
 module.exports = config;
