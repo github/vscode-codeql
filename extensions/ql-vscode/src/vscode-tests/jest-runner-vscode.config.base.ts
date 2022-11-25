@@ -16,4 +16,8 @@ const config: RunnerOptions = {
   extensionDevelopmentPath: rootDir,
 };
 
+if (process.env.VSCODE_INSPECTOR_OPTIONS) {
+  config.launchArgs?.push("--inspect-extensions", "9223");
+}
+
 export default config;

@@ -72,13 +72,10 @@
         "--projects",
         "out/vscode-tests/no-workspace"
       ],
-      "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
-      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
+      "attachSimplePort": 9223,
     },
     {
       "name": "Launch Integration Tests - Minimal Workspace (vscode-codeql)",
@@ -91,13 +88,10 @@
         "--projects",
         "out/vscode-tests/minimal-workspace"
       ],
-      "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
-      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
+      "attachSimplePort": 9223,
     },
     {
       "name": "Launch Integration Tests - With CLI",
@@ -128,13 +122,10 @@
         // available in the workspace for the tests.
         // "TEST_CODEQL_PATH": "${workspaceRoot}/../codeql",
       },
-      "stopOnEntry": false,
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
-      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
+      "attachSimplePort": 9223,
     },
     {
       "name": "Launch Storybook",
