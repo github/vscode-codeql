@@ -26,9 +26,6 @@ import {
 import { EvaluationResult, QueryResultType } from "../../pure/legacy-messages";
 import { sleep } from "../../pure/time";
 
-// Temporary until Mocha is fully removed. This is necessary for passing timeouts to `it`.
-declare let it: jest.It;
-
 describe("query-results", () => {
   let queryPath: string;
   let cnt = 0;
