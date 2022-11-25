@@ -6,6 +6,7 @@
     "amodio.tsl-problem-matcher",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
+    "firsttris.vscode-jest-runner",
     "Orta.vscode-jest",
   ],
   // List of extensions recommended by VS Code that should not be recommended for users of this workspace.
