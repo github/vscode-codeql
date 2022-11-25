@@ -480,7 +480,10 @@ export async function compileAndRunQueryAgainstDatabase(
     try {
       errors = await query.compile(qs, qlProgram, progress, token);
     } catch (e) {
-      if (e instanceof ResponseError && e.code == LSPErrorCodes.RequestCancelled) {
+      if (
+        e instanceof ResponseError &&
+        e.code == LSPErrorCodes.RequestCancelled
+      ) {
         return createSyntheticResult(query, "Query cancelled");
       } else {
         throw e;

@@ -148,7 +148,10 @@ export async function displayQuickQuery(
 
     await Window.showTextDocument(await workspace.openTextDocument(qlFile));
   } catch (e) {
-    if (e instanceof ResponseError && e.code == LSPErrorCodes.RequestCancelled) {
+    if (
+      e instanceof ResponseError &&
+      e.code == LSPErrorCodes.RequestCancelled
+    ) {
       throw new UserCancellationException(getErrorMessage(e));
     } else {
       throw e;
