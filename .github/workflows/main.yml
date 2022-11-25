@@ -185,7 +185,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        version: ['v2.7.6', 'v2.8.5', 'v2.9.4', 'v2.10.5', 'v2.11.3', 'nightly']
+        version: ['v2.7.6', 'v2.8.5', 'v2.9.4', 'v2.10.5', 'v2.11.4', 'nightly']
     env:
       CLI_VERSION: ${{ matrix.version }}
       NIGHTLY_URL: ${{ needs.find-nightly.outputs.url }}
