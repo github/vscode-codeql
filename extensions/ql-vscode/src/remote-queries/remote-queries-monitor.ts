@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Credentials } from "../authentication";
-import { Logger } from "../logging";
+import { Logger } from "../common";
 import { sleep } from "../pure/time";
 import {
   getWorkflowStatus,

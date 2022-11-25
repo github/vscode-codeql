@@ -12,7 +12,7 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
 } from "./helpers";
-import { logger } from "./logging";
+import { logger } from "./common";
 import { getCodeQlCliVersion } from "./cli-version";
 import { ProgressCallback, reportStreamProgress } from "./commandRunner";
 import {

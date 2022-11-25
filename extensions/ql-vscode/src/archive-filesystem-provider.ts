@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import * as unzipper from "unzipper";
 import * as vscode from "vscode";
-import { logger } from "./logging";
+import { logger } from "./common";
 
 // All path operations in this file must be on paths *within* the zip
 // archive.

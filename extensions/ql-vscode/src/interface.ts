@@ -34,7 +34,7 @@ import {
   RawResultsSortState,
   NavigationDirection,
 } from "./pure/interface-types";
-import { Logger } from "./logging";
+import { Logger } from "./common";
 import { commandRunner } from "./commandRunner";
 import {
   CompletedQueryInfo,

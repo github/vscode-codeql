@@ -24,7 +24,7 @@ import {
   showAndLogWarningMessage,
   showBinaryChoiceDialog,
 } from "./helpers";
-import { logger } from "./logging";
+import { logger } from "./common";
 import { URLSearchParams } from "url";
 import { DisposableObject } from "./pure/disposable-object";
 import { commandRunner } from "./commandRunner";

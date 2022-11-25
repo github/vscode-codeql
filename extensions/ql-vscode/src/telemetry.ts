@@ -14,7 +14,7 @@ import {
   isIntegrationTestMode,
 } from "./config";
 import * as appInsights from "applicationinsights";
-import { logger } from "./logging";
+import { logger } from "./common";
 import { UserCancellationException } from "./commandRunner";
 import { showBinaryChoiceWithUrlDialog } from "./helpers";
 

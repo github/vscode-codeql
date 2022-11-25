@@ -6,7 +6,7 @@ import { CancellationToken, commands } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc";
 import * as cli from "../cli";
 import { QueryServerConfig } from "../config";
-import { Logger, ProgressReporter } from "../logging";
+import { Logger, ProgressReporter } from "../common";
 import {
   completeQuery,
   EvaluationResult,

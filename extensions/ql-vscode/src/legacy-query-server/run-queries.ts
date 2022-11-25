@@ -16,7 +16,7 @@ import {
 } from "../helpers";
 import { ProgressCallback } from "../commandRunner";
 import { QueryMetadata } from "../pure/interface-types";
-import { logger } from "../logging";
+import { logger } from "../common";
 import * as messages from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
 import * as qsClient from "./queryserver-client";

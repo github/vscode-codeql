@@ -1,5 +1,5 @@
 import { DisposableObject } from "./pure/disposable-object";
-import { logger } from "./logging";
+import { logger } from "./common";
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of

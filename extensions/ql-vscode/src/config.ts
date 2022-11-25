@@ -7,7 +7,7 @@ import {
   ConfigurationTarget,
 } from "vscode";
 import { DistributionManager } from "./distribution";
-import { logger } from "./logging";
+import { logger } from "./common";
 import { ONE_DAY_IN_MS } from "./pure/time";
 
 export const ALL_SETTINGS: Setting[] = [];

@@ -9,7 +9,7 @@ import {
   showAndLogWarningMessage,
   tryGetQueryMetadata,
 } from "../helpers";
-import { logger } from "../logging";
+import { logger } from "../common";
 import * as messages from "../pure/new-messages";
 import * as legacyMessages from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";

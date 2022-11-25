@@ -6,7 +6,7 @@ import {
   tmpDir,
 } from "../../helpers";
 import { Credentials } from "../../authentication";
-import { logger } from "../../logging";
+import { logger } from "../../common";
 import { RemoteQueryWorkflowResult } from "../remote-query-workflow-result";
 import { DownloadLink, createDownloadPath } from "../download-link";
 import { RemoteQuery } from "../remote-query";

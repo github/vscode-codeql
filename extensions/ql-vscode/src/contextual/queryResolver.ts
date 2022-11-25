@@ -8,7 +8,7 @@ import { KeyType, kindOfKeyType, nameOfKeyType, tagOfKeyType } from "./keyType";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseItem } from "../databases";
 import { QlPacksForLanguage } from "../helpers";
-import { logger } from "../logging";
+import { logger } from "../common";
 import { createInitialQueryInfo } from "../run-queries-shared";
 import { CancellationToken, Uri } from "vscode";
 import { ProgressCallback } from "../commandRunner";

@@ -12,7 +12,7 @@ import {
 } from "vscode";
 import { CodeQLCliServer, QlpacksInfo } from "./cli";
 import { UserCancellationException } from "./commandRunner";
-import { logger } from "./logging";
+import { logger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
 
 // Shared temporary folder for the extension.

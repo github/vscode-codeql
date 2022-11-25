@@ -27,7 +27,7 @@ import {
   isLikelyDbLanguageFolder,
   showAndLogErrorMessage,
 } from "./helpers";
-import { logger } from "./logging";
+import { logger } from "./common";
 import {
   importArchiveDatabase,
   promptImportGithubDatabase,

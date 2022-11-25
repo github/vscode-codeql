@@ -18,7 +18,7 @@ import {
   encodeSourceArchiveUri,
 } from "./archive-filesystem-provider";
 import { DisposableObject } from "./pure/disposable-object";
-import { Logger, logger } from "./logging";
+import { Logger, logger } from "./common";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./queryRunner";
 

@@ -3,7 +3,7 @@ import * as os from "os";
 import * as path from "path";
 
 import { Credentials } from "../authentication";
-import { Logger } from "../logging";
+import { Logger } from "../common";
 import { AnalysisAlert, AnalysisRawResults } from "./shared/analysis-result";
 import { sarifParser } from "../sarif-parser";
 import { extractAnalysisAlerts } from "./sarif-processing";

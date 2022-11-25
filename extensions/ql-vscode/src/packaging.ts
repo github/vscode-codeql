@@ -6,7 +6,7 @@ import {
 } from "./helpers";
 import { QuickPickItem, window } from "vscode";
 import { ProgressCallback, UserCancellationException } from "./commandRunner";
-import { logger } from "./logging";
+import { logger } from "./common";
 
 const QUERY_PACKS = [
   "codeql/cpp-queries",
