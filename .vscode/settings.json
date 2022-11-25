@@ -42,12 +42,13 @@
     "LANG": "en-US",
     "TZ": "UTC"
   },
-  "jestrunner.debugOptions": {
-    "attachSimplePort": 9223,
-    "env": {
-      "VSCODE_WAIT_FOR_DEBUGGER": "true",
-    }
-  },
+  // Uncomment to debug integration tests
+  // "jestrunner.debugOptions": {
+  //   "attachSimplePort": 9223,
+  //   "env": {
+  //     "VSCODE_WAIT_FOR_DEBUGGER": "true",
+  //   }
+  // },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
