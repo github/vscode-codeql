@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import * as webpack from "webpack";
-import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
 
 export const config: webpack.Configuration = {
   mode: "development",
