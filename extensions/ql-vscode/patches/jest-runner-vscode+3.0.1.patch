@@ -17,3 +17,89 @@ index 0663c5c..4991663 100644
          const options = JSON.parse(PARENT_JEST_OPTIONS);
          const jestOptions = [
              ...options.args,
+diff --git a/node_modules/jest-runner-vscode/dist/public-types.d.ts b/node_modules/jest-runner-vscode/dist/public-types.d.ts
+index 57716e5..d8614af 100644
+--- a/node_modules/jest-runner-vscode/dist/public-types.d.ts
++++ b/node_modules/jest-runner-vscode/dist/public-types.d.ts
+@@ -59,4 +59,5 @@ export interface RunnerOptions {
+      * code, or download progress. Defaults to `false`.
+      */
+     quiet?: boolean;
++    retries?: number;
+ }
+diff --git a/node_modules/jest-runner-vscode/dist/run-vscode.d.ts b/node_modules/jest-runner-vscode/dist/run-vscode.d.ts
+index 8657ace..4d35409 100644
+--- a/node_modules/jest-runner-vscode/dist/run-vscode.d.ts
++++ b/node_modules/jest-runner-vscode/dist/run-vscode.d.ts
+@@ -16,5 +16,7 @@ export declare type RunVSCodeOptions = {
+     onFailure: JestRunner.OnTestFailure;
+     ipc: InstanceType<typeof IPC>;
+     quiet?: boolean;
++    attempt?: number;
++    maxRetries?: number;
+ };
+-export default function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig, filterOutput, onStart, onResult, onFailure, ipc, quiet, }: RunVSCodeOptions): Promise<void>;
++export default function runVSCode(options: RunVSCodeOptions): Promise<void>;
+diff --git a/node_modules/jest-runner-vscode/dist/run-vscode.js b/node_modules/jest-runner-vscode/dist/run-vscode.js
+index 5d8e513..6edf99a 100644
+--- a/node_modules/jest-runner-vscode/dist/run-vscode.js
++++ b/node_modules/jest-runner-vscode/dist/run-vscode.js
+@@ -5,7 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
+ Object.defineProperty(exports, "__esModule", { value: true });
+ const child_process_1 = __importDefault(require("child_process"));
+ const console_1 = __importDefault(require("console"));
+-async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig, filterOutput, onStart, onResult, onFailure, ipc, quiet, }) {
++async function runVSCode(options) {
++    const { vscodePath, args, jestArgs, env, tests, globalConfig, filterOutput, onStart, onResult, onFailure, ipc, quiet, attempt, maxRetries, } = options;
+     return await new Promise(resolve => {
+         const useStdErr = globalConfig.json || globalConfig.useStderr;
+         const log = useStdErr
+@@ -101,11 +102,31 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
+             const message = `VS Code exited with exit code ${exit}`;
+             if (typeof code !== 'number' || code !== 0) {
+                 silent || quiet || console_1.default.error(message);
+-                const error = vscodeError ?? childError ?? new Error(message);
+-                for (const test of tests) {
+-                    const completed = completedTests.has(test);
+-                    if (!completed) {
+-                        await onFailure(test, error);
++                const currentAttempt = attempt ?? 0;
++                if (maxRetries && maxRetries > 0 && currentAttempt < maxRetries) {
++                    const newAttempt = currentAttempt + 1;
++                    const newTests = tests.filter(test => !completedTests.has(test));
++                    ipc.server.off('testFileResult', onTestFileResult);
++                    ipc.server.off('testStart', onTestStart);
++                    ipc.server.off('testFileStart', onTestStart);
++                    ipc.server.off('stdout', onStdout);
++                    ipc.server.off('stderr', onStderr);
++                    ipc.server.off('error', onError);
++                    await runVSCode({
++                        ...options,
++                        tests: newTests,
++                        attempt: newAttempt,
++                    });
++                    resolve();
++                    return;
++                }
++                else {
++                    const error = vscodeError ?? childError ?? new Error(message);
++                    for (const test of tests) {
++                        const completed = completedTests.has(test);
++                        if (!completed) {
++                            await onFailure(test, error);
++                        }
+                     }
+                 }
+             }
+diff --git a/node_modules/jest-runner-vscode/dist/runner.js b/node_modules/jest-runner-vscode/dist/runner.js
+index e24c976..c374022 100644
+--- a/node_modules/jest-runner-vscode/dist/runner.js
++++ b/node_modules/jest-runner-vscode/dist/runner.js
+@@ -107,6 +107,7 @@ class VSCodeTestRunner {
+                     onFailure,
+                     ipc,
+                     quiet: vscodeOptions.quiet,
++                    maxRetries: vscodeOptions.retries,
+                 });
+             }
+             catch (error) {

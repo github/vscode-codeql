@@ -25,6 +25,7 @@ const config = {
     ...baseConfig.extensionTestsEnv,
     INTEGRATION_TEST_MODE: "true",
   },
+  retries: 3,
 };
 
 module.exports = config;
