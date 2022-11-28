@@ -41,20 +41,44 @@ index 8657ace..4d35409 100644
 -export default function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig, filterOutput, onStart, onResult, onFailure, ipc, quiet, }: RunVSCodeOptions): Promise<void>;
 +export default function runVSCode(options: RunVSCodeOptions): Promise<void>;
 diff --git a/node_modules/jest-runner-vscode/dist/run-vscode.js b/node_modules/jest-runner-vscode/dist/run-vscode.js
-index 5d8e513..6edf99a 100644
+index 5d8e513..cacbc42 100644
 --- a/node_modules/jest-runner-vscode/dist/run-vscode.js
 +++ b/node_modules/jest-runner-vscode/dist/run-vscode.js
-@@ -5,7 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
+@@ -5,8 +5,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
  Object.defineProperty(exports, "__esModule", { value: true });
  const child_process_1 = __importDefault(require("child_process"));
  const console_1 = __importDefault(require("console"));
 -async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig, filterOutput, onStart, onResult, onFailure, ipc, quiet, }) {
+-    return await new Promise(resolve => {
++const fs_1 = __importDefault(require("fs"));
++const path_1 = __importDefault(require("path"));
++const os_1 = __importDefault(require("os"));
 +async function runVSCode(options) {
 +    const { vscodePath, args, jestArgs, env, tests, globalConfig, filterOutput, onStart, onResult, onFailure, ipc, quiet, attempt, maxRetries, } = options;
-     return await new Promise(resolve => {
++    const tempUserDir = await fs_1.default.promises.mkdtemp(path_1.default.resolve(os_1.default.tmpdir(), 'jest-runner-vscode-user-data-'));
++    return await new Promise(promiseResolve => {
++        const resolve = () => {
++            fs_1.default.rm(tempUserDir, { recursive: true }, () => {
++                promiseResolve();
++            });
++        };
          const useStdErr = globalConfig.json || globalConfig.useStderr;
          const log = useStdErr
-@@ -101,11 +102,31 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
+             ? console_1.default.error.bind(console_1.default)
+@@ -82,7 +92,11 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
+         ipc.server.on('stdout', onStdout);
+         ipc.server.on('stderr', onStderr);
+         ipc.server.on('error', onError);
+-        const vscode = child_process_1.default.spawn(vscodePath, args, { env: environment });
++        const launchArgs = args;
++        if (!hasArg('user-data-dir', launchArgs)) {
++            launchArgs.push(`--user-data-dir=${tempUserDir}`);
++        }
++        const vscode = child_process_1.default.spawn(vscodePath, launchArgs, { env: environment });
+         if (!silent && !filterOutput) {
+             vscode.stdout.pipe(process.stdout);
+             vscode.stderr.pipe(process.stderr);
+@@ -101,11 +115,31 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
              const message = `VS Code exited with exit code ${exit}`;
              if (typeof code !== 'number' || code !== 0) {
                  silent || quiet || console_1.default.error(message);
@@ -91,6 +115,13 @@ index 5d8e513..6edf99a 100644
                      }
                  }
              }
+@@ -138,3 +172,6 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
+     });
+ }
+ exports.default = runVSCode;
++function hasArg(argName, argList) {
++    return argList.some(a => a === `--${argName}` || a.startsWith(`--${argName}=`));
++}
 diff --git a/node_modules/jest-runner-vscode/dist/runner.js b/node_modules/jest-runner-vscode/dist/runner.js
 index e24c976..c374022 100644
 --- a/node_modules/jest-runner-vscode/dist/runner.js

@@ -11,7 +11,6 @@ const config = {
   launchArgs: [
     "--disable-gpu",
     "--extensions-dir=" + path.join(rootDir, ".vscode-test", "extensions"),
-    "--user-data-dir=" + path.join(tmpDir.name, "user-data"),
   ],
   extensionDevelopmentPath: rootDir,
 };
