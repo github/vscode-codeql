@@ -41,7 +41,7 @@ index 8657ace..4d35409 100644
 -export default function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig, filterOutput, onStart, onResult, onFailure, ipc, quiet, }: RunVSCodeOptions): Promise<void>;
 +export default function runVSCode(options: RunVSCodeOptions): Promise<void>;
 diff --git a/node_modules/jest-runner-vscode/dist/run-vscode.js b/node_modules/jest-runner-vscode/dist/run-vscode.js
-index 5d8e513..cacbc42 100644
+index 5d8e513..7e556ee 100644
 --- a/node_modules/jest-runner-vscode/dist/run-vscode.js
 +++ b/node_modules/jest-runner-vscode/dist/run-vscode.js
 @@ -5,8 +5,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
@@ -78,44 +78,37 @@ index 5d8e513..cacbc42 100644
          if (!silent && !filterOutput) {
              vscode.stdout.pipe(process.stdout);
              vscode.stderr.pipe(process.stderr);
-@@ -101,11 +115,31 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
+@@ -99,6 +113,29 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
+             exited = true;
+             const exit = code ?? signal ?? '<unknown>';
              const message = `VS Code exited with exit code ${exit}`;
++            const currentAttempt = attempt ?? 0;
++            const incompleteTests = tests.some(test => !completedTests.has(test));
++            if (maxRetries &&
++                maxRetries > 0 &&
++                currentAttempt < maxRetries &&
++                incompleteTests) {
++                silent || quiet || log(message);
++                const newAttempt = currentAttempt + 1;
++                const newTests = tests.filter(test => !completedTests.has(test));
++                ipc.server.off('testFileResult', onTestFileResult);
++                ipc.server.off('testStart', onTestStart);
++                ipc.server.off('testFileStart', onTestStart);
++                ipc.server.off('stdout', onStdout);
++                ipc.server.off('stderr', onStderr);
++                ipc.server.off('error', onError);
++                await runVSCode({
++                    ...options,
++                    tests: newTests,
++                    attempt: newAttempt,
++                });
++                resolve();
++                return;
++            }
              if (typeof code !== 'number' || code !== 0) {
                  silent || quiet || console_1.default.error(message);
--                const error = vscodeError ?? childError ?? new Error(message);
--                for (const test of tests) {
--                    const completed = completedTests.has(test);
--                    if (!completed) {
--                        await onFailure(test, error);
-+                const currentAttempt = attempt ?? 0;
-+                if (maxRetries && maxRetries > 0 && currentAttempt < maxRetries) {
-+                    const newAttempt = currentAttempt + 1;
-+                    const newTests = tests.filter(test => !completedTests.has(test));
-+                    ipc.server.off('testFileResult', onTestFileResult);
-+                    ipc.server.off('testStart', onTestStart);
-+                    ipc.server.off('testFileStart', onTestStart);
-+                    ipc.server.off('stdout', onStdout);
-+                    ipc.server.off('stderr', onStderr);
-+                    ipc.server.off('error', onError);
-+                    await runVSCode({
-+                        ...options,
-+                        tests: newTests,
-+                        attempt: newAttempt,
-+                    });
-+                    resolve();
-+                    return;
-+                }
-+                else {
-+                    const error = vscodeError ?? childError ?? new Error(message);
-+                    for (const test of tests) {
-+                        const completed = completedTests.has(test);
-+                        if (!completed) {
-+                            await onFailure(test, error);
-+                        }
-                     }
-                 }
-             }
-@@ -138,3 +172,6 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
+                 const error = vscodeError ?? childError ?? new Error(message);
+@@ -138,3 +175,6 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
      });
  }
  exports.default = runVSCode;

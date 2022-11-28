@@ -13,6 +13,7 @@ const config = {
     "--disable-extensions",
     path.resolve(rootDir, "test/data"),
   ],
+  retries: 1,
 };
 
 module.exports = config;

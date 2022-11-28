@@ -4,6 +4,7 @@ const { config: baseConfig } = require("../jest-runner-vscode.config.base");
 const config = {
   ...baseConfig,
   launchArgs: [...(baseConfig.launchArgs ?? []), "--disable-extensions"],
+  retries: 1,
 };
 
 module.exports = config;
