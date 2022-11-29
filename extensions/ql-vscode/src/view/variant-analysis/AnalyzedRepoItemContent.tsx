@@ -76,7 +76,7 @@ export const AnalyzedRepoItemContent = ({
           <Alert
             type="error"
             title="Canceled"
-            message="The variant analysis or this repository was canceled."
+            message="The variant analysis for this repository was canceled."
           />
         </AlertContainer>
       )}
