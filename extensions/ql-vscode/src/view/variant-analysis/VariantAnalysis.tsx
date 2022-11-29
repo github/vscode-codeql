@@ -5,6 +5,7 @@ import {
   VariantAnalysis as VariantAnalysisDomainModel,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
+  VariantAnalysisStatus,
 } from "../../remote-queries/shared/variant-analysis";
 import { VariantAnalysisHeader } from "./VariantAnalysisHeader";
 import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
@@ -128,7 +129,11 @@ export function VariantAnalysis({
     });
   }, [filterSortState, selectedRepositoryIds]);
 
-  if (variantAnalysis?.actionsWorkflowRunId === undefined) {
+  if (
+    variantAnalysis === undefined ||
+    (variantAnalysis.status === VariantAnalysisStatus.InProgress &&
+      variantAnalysis.actionsWorkflowRunId === undefined)
+  ) {
     return <VariantAnalysisLoading />;
   }
 
