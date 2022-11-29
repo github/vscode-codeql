@@ -780,7 +780,12 @@ describe("Variant Analysis Manager", async function () {
         });
 
         it("should remove variant analysis", async () => {
-          await variantAnalysisManager.onVariantAnalysisUpdated(
+          pathExistsStub
+            .withArgs(
+              path.join(storagePath, dummyVariantAnalysis.id.toString()),
+            )
+            .resolves(true);
+          await variantAnalysisManager.rehydrateVariantAnalysis(
             dummyVariantAnalysis,
           );
           expect(variantAnalysisManager.variantAnalysesSize).to.eq(1);
