@@ -16,6 +16,22 @@ const themeFiles: { [key in VSCodeTheme]: string } = {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     require("!file-loader?modules!../../src/stories/vscode-theme-light.css")
       .default,
+  [VSCodeTheme.LightHighContrast]:
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require("!file-loader?modules!../../src/stories/vscode-theme-light-high-contrast.css")
+      .default,
+  [VSCodeTheme.DarkHighContrast]:
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require("!file-loader?modules!../../src/stories/vscode-theme-dark-high-contrast.css")
+      .default,
+  [VSCodeTheme.GitHubLightDefault]:
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require("!file-loader?modules!../../src/stories/vscode-theme-github-light-default.css")
+      .default,
+  [VSCodeTheme.GitHubDarkDefault]:
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require("!file-loader?modules!../../src/stories/vscode-theme-github-dark-default.css")
+      .default,
 };
 
 export const withTheme = (

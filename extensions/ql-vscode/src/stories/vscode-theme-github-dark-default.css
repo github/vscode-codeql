@@ -1,0 +1,674 @@
+/*
+ * These were copied from VSCode GitHub Dark Default theme from the
+ * https://marketplace.visualstudio.com/items?itemName=GitHub.github-vscode-theme extension.
+ *
+ * To update these, open a webview in VSCode, open the webview developer tools and find the
+ * iframe hosting the webview. The <html> element will have a style attribute that contains
+ * the CSS variables. Copy these to this file.
+ */
+:root {
+  --vscode-font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  --vscode-font-weight: normal;
+  --vscode-font-size: 13px;
+  --vscode-editor-font-family: Menlo, Monaco, "Courier New", monospace;
+  --vscode-editor-font-weight: normal;
+  --vscode-editor-font-size: 12px;
+  --vscode-foreground: #c9d1d9;
+  --vscode-disabledForeground: rgba(204, 204, 204, 0.5);
+  --vscode-errorForeground: #f85149;
+  --vscode-descriptionForeground: #8b949e;
+  --vscode-icon-foreground: #8b949e;
+  --vscode-focusBorder: #1f6feb;
+  --vscode-textSeparator-foreground: #21262d;
+  --vscode-textLink-foreground: #58a6ff;
+  --vscode-textLink-activeForeground: #58a6ff;
+  --vscode-textPreformat-foreground: #8b949e;
+  --vscode-textBlockQuote-background: #010409;
+  --vscode-textBlockQuote-border: #30363d;
+  --vscode-textCodeBlock-background: rgba(110, 118, 129, 0.4);
+  --vscode-widget-shadow: rgba(0, 0, 0, 0.36);
+  --vscode-input-background: #0d1117;
+  --vscode-input-foreground: #c9d1d9;
+  --vscode-input-border: #30363d;
+  --vscode-inputOption-activeBorder: rgba(0, 122, 204, 0);
+  --vscode-inputOption-hoverBackground: rgba(90, 93, 94, 0.5);
+  --vscode-inputOption-activeBackground: rgba(31, 111, 235, 0.4);
+  --vscode-inputOption-activeForeground: #ffffff;
+  --vscode-input-placeholderForeground: #484f58;
+  --vscode-inputValidation-infoBackground: #063b49;
+  --vscode-inputValidation-infoBorder: #007acc;
+  --vscode-inputValidation-warningBackground: #352a05;
+  --vscode-inputValidation-warningBorder: #b89500;
+  --vscode-inputValidation-errorBackground: #5a1d1d;
+  --vscode-inputValidation-errorBorder: #be1100;
+  --vscode-dropdown-background: #161b22;
+  --vscode-dropdown-listBackground: #161b22;
+  --vscode-dropdown-foreground: #c9d1d9;
+  --vscode-dropdown-border: #30363d;
+  --vscode-button-foreground: #ffffff;
+  --vscode-button-separator: rgba(255, 255, 255, 0.4);
+  --vscode-button-background: #238636;
+  --vscode-button-hoverBackground: #2ea043;
+  --vscode-button-secondaryForeground: #c9d1d9;
+  --vscode-button-secondaryBackground: #282e33;
+  --vscode-button-secondaryHoverBackground: #30363d;
+  --vscode-badge-background: #1f6feb;
+  --vscode-badge-foreground: #f0f6fc;
+  --vscode-scrollbar-shadow: rgba(72, 79, 88, 0.2);
+  --vscode-scrollbarSlider-background: rgba(110, 118, 129, 0.2);
+  --vscode-scrollbarSlider-hoverBackground: rgba(110, 118, 129, 0.27);
+  --vscode-scrollbarSlider-activeBackground: rgba(110, 118, 129, 0.53);
+  --vscode-progressBar-background: #1f6feb;
+  --vscode-editorError-foreground: #f14c4c;
+  --vscode-editorWarning-foreground: #cca700;
+  --vscode-editorInfo-foreground: #3794ff;
+  --vscode-editorHint-foreground: rgba(238, 238, 238, 0.7);
+  --vscode-sash-hoverBorder: #1f6feb;
+  --vscode-editor-background: #0d1117;
+  --vscode-editor-foreground: #c9d1d9;
+  --vscode-editorStickyScroll-background: #0d1117;
+  --vscode-editorStickyScrollHover-background: #2a2d2e;
+  --vscode-editorWidget-background: #161b22;
+  --vscode-editorWidget-foreground: #c9d1d9;
+  --vscode-editorWidget-border: #454545;
+  --vscode-quickInput-background: #161b22;
+  --vscode-quickInput-foreground: #c9d1d9;
+  --vscode-quickInputTitle-background: rgba(255, 255, 255, 0.1);
+  --vscode-pickerGroup-foreground: #8b949e;
+  --vscode-pickerGroup-border: #30363d;
+  --vscode-keybindingLabel-background: rgba(128, 128, 128, 0.17);
+  --vscode-keybindingLabel-foreground: #c9d1d9;
+  --vscode-keybindingLabel-border: rgba(51, 51, 51, 0.6);
+  --vscode-keybindingLabel-bottomBorder: rgba(68, 68, 68, 0.6);
+  --vscode-editor-selectionBackground: #264f78;
+  --vscode-editor-inactiveSelectionBackground: rgba(38, 79, 120, 0.5);
+  --vscode-editor-selectionHighlightBackground: rgba(63, 185, 80, 0.25);
+  --vscode-editor-findMatchBackground: #9e6a03;
+  --vscode-editor-findMatchHighlightBackground: rgba(242, 204, 96, 0.5);
+  --vscode-editor-findRangeHighlightBackground: rgba(58, 61, 65, 0.4);
+  --vscode-searchEditor-findMatchBackground: rgba(242, 204, 96, 0.33);
+  --vscode-editor-hoverHighlightBackground: rgba(38, 79, 120, 0.25);
+  --vscode-editorHoverWidget-background: #161b22;
+  --vscode-editorHoverWidget-foreground: #c9d1d9;
+  --vscode-editorHoverWidget-border: #454545;
+  --vscode-editorHoverWidget-statusBarBackground: #1a2029;
+  --vscode-editorLink-activeForeground: #4e94ce;
+  --vscode-editorInlayHint-foreground: #8b949e;
+  --vscode-editorInlayHint-background: rgba(139, 148, 158, 0.2);
+  --vscode-editorInlayHint-typeForeground: #8b949e;
+  --vscode-editorInlayHint-typeBackground: rgba(139, 148, 158, 0.2);
+  --vscode-editorInlayHint-parameterForeground: #8b949e;
+  --vscode-editorInlayHint-parameterBackground: rgba(139, 148, 158, 0.2);
+  --vscode-editorLightBulb-foreground: #ffcc00;
+  --vscode-editorLightBulbAutoFix-foreground: #75beff;
+  --vscode-diffEditor-insertedTextBackground: rgba(35, 134, 54, 0.3);
+  --vscode-diffEditor-removedTextBackground: rgba(218, 54, 51, 0.3);
+  --vscode-diffEditor-insertedLineBackground: rgba(35, 134, 54, 0.2);
+  --vscode-diffEditor-removedLineBackground: rgba(218, 54, 51, 0.2);
+  --vscode-diffEditor-diagonalFill: rgba(204, 204, 204, 0.2);
+  --vscode-list-focusBackground: rgba(56, 139, 253, 0.15);
+  --vscode-list-focusForeground: #c9d1d9;
+  --vscode-list-focusOutline: #1f6feb;
+  --vscode-list-activeSelectionBackground: rgba(110, 118, 129, 0.4);
+  --vscode-list-activeSelectionForeground: #c9d1d9;
+  --vscode-list-inactiveSelectionBackground: rgba(110, 118, 129, 0.4);
+  --vscode-list-inactiveSelectionForeground: #c9d1d9;
+  --vscode-list-inactiveFocusBackground: rgba(56, 139, 253, 0.15);
+  --vscode-list-hoverBackground: rgba(110, 118, 129, 0.1);
+  --vscode-list-hoverForeground: #c9d1d9;
+  --vscode-list-dropBackground: #062f4a;
+  --vscode-list-highlightForeground: #58a6ff;
+  --vscode-list-focusHighlightForeground: #58a6ff;
+  --vscode-list-invalidItemForeground: #b89500;
+  --vscode-list-errorForeground: #f88070;
+  --vscode-list-warningForeground: #cca700;
+  --vscode-listFilterWidget-background: #161b22;
+  --vscode-listFilterWidget-outline: rgba(0, 0, 0, 0);
+  --vscode-listFilterWidget-noMatchesOutline: #be1100;
+  --vscode-listFilterWidget-shadow: rgba(0, 0, 0, 0.36);
+  --vscode-list-filterMatchBackground: rgba(242, 204, 96, 0.5);
+  --vscode-tree-indentGuidesStroke: #21262d;
+  --vscode-tree-tableColumnsBorder: rgba(204, 204, 204, 0.13);
+  --vscode-tree-tableOddRowsBackground: rgba(201, 209, 217, 0.04);
+  --vscode-list-deemphasizedForeground: #8c8c8c;
+  --vscode-checkbox-background: #161b22;
+  --vscode-checkbox-selectBackground: #161b22;
+  --vscode-checkbox-foreground: #c9d1d9;
+  --vscode-checkbox-border: #30363d;
+  --vscode-checkbox-selectBorder: #161b22;
+  --vscode-quickInputList-focusForeground: #c9d1d9;
+  --vscode-quickInputList-focusBackground: rgba(110, 118, 129, 0.4);
+  --vscode-menu-foreground: #c9d1d9;
+  --vscode-menu-background: #161b22;
+  --vscode-menu-selectionForeground: #c9d1d9;
+  --vscode-menu-selectionBackground: rgba(110, 118, 129, 0.4);
+  --vscode-menu-separatorBackground: #606060;
+  --vscode-toolbar-hoverBackground: rgba(90, 93, 94, 0.31);
+  --vscode-toolbar-activeBackground: rgba(99, 102, 103, 0.31);
+  --vscode-editor-snippetTabstopHighlightBackground: rgba(124, 124, 124, 0.3);
+  --vscode-editor-snippetFinalTabstopHighlightBorder: #525252;
+  --vscode-breadcrumb-foreground: #8b949e;
+  --vscode-breadcrumb-background: #0d1117;
+  --vscode-breadcrumb-focusForeground: #c9d1d9;
+  --vscode-breadcrumb-activeSelectionForeground: #8b949e;
+  --vscode-breadcrumbPicker-background: #161b22;
+  --vscode-merge-currentHeaderBackground: rgba(64, 200, 174, 0.5);
+  --vscode-merge-currentContentBackground: rgba(64, 200, 174, 0.2);
+  --vscode-merge-incomingHeaderBackground: rgba(64, 166, 255, 0.5);
+  --vscode-merge-incomingContentBackground: rgba(64, 166, 255, 0.2);
+  --vscode-merge-commonHeaderBackground: rgba(96, 96, 96, 0.4);
+  --vscode-merge-commonContentBackground: rgba(96, 96, 96, 0.16);
+  --vscode-editorOverviewRuler-currentContentForeground: rgba(
+    64,
+    200,
+    174,
+    0.5
+  );
+  --vscode-editorOverviewRuler-incomingContentForeground: rgba(
+    64,
+    166,
+    255,
+    0.5
+  );
+  --vscode-editorOverviewRuler-commonContentForeground: rgba(96, 96, 96, 0.4);
+  --vscode-editorOverviewRuler-findMatchForeground: rgba(209, 134, 22, 0.49);
+  --vscode-editorOverviewRuler-selectionHighlightForeground: rgba(
+    160,
+    160,
+    160,
+    0.8
+  );
+  --vscode-minimap-findMatchHighlight: #d18616;
+  --vscode-minimap-selectionOccurrenceHighlight: #676767;
+  --vscode-minimap-selectionHighlight: #264f78;
+  --vscode-minimap-errorHighlight: rgba(255, 18, 18, 0.7);
+  --vscode-minimap-warningHighlight: #cca700;
+  --vscode-minimap-foregroundOpacity: #000000;
+  --vscode-minimapSlider-background: rgba(110, 118, 129, 0.1);
+  --vscode-minimapSlider-hoverBackground: rgba(110, 118, 129, 0.14);
+  --vscode-minimapSlider-activeBackground: rgba(110, 118, 129, 0.27);
+  --vscode-problemsErrorIcon-foreground: #f14c4c;
+  --vscode-problemsWarningIcon-foreground: #cca700;
+  --vscode-problemsInfoIcon-foreground: #3794ff;
+  --vscode-charts-foreground: #c9d1d9;
+  --vscode-charts-lines: rgba(201, 209, 217, 0.5);
+  --vscode-charts-red: #f14c4c;
+  --vscode-charts-blue: #3794ff;
+  --vscode-charts-yellow: #cca700;
+  --vscode-charts-orange: #d18616;
+  --vscode-charts-green: #89d185;
+  --vscode-charts-purple: #b180d7;
+  --vscode-symbolIcon-arrayForeground: #f0883e;
+  --vscode-symbolIcon-booleanForeground: #58a6ff;
+  --vscode-symbolIcon-classForeground: #f0883e;
+  --vscode-symbolIcon-colorForeground: #79c0ff;
+  --vscode-symbolIcon-constantForeground: #c9d1d9;
+  --vscode-symbolIcon-constructorForeground: #d2a8ff;
+  --vscode-symbolIcon-enumeratorForeground: #f0883e;
+  --vscode-symbolIcon-enumeratorMemberForeground: #58a6ff;
+  --vscode-symbolIcon-eventForeground: #6e7681;
+  --vscode-symbolIcon-fieldForeground: #f0883e;
+  --vscode-symbolIcon-fileForeground: #d29922;
+  --vscode-symbolIcon-folderForeground: #d29922;
+  --vscode-symbolIcon-functionForeground: #bc8cff;
+  --vscode-symbolIcon-interfaceForeground: #f0883e;
+  --vscode-symbolIcon-keyForeground: #58a6ff;
+  --vscode-symbolIcon-keywordForeground: #ff7b72;
+  --vscode-symbolIcon-methodForeground: #bc8cff;
+  --vscode-symbolIcon-moduleForeground: #ff7b72;
+  --vscode-symbolIcon-namespaceForeground: #ff7b72;
+  --vscode-symbolIcon-nullForeground: #58a6ff;
+  --vscode-symbolIcon-numberForeground: #3fb950;
+  --vscode-symbolIcon-objectForeground: #f0883e;
+  --vscode-symbolIcon-operatorForeground: #79c0ff;
+  --vscode-symbolIcon-packageForeground: #f0883e;
+  --vscode-symbolIcon-propertyForeground: #f0883e;
+  --vscode-symbolIcon-referenceForeground: #58a6ff;
+  --vscode-symbolIcon-snippetForeground: #58a6ff;
+  --vscode-symbolIcon-stringForeground: #79c0ff;
+  --vscode-symbolIcon-structForeground: #f0883e;
+  --vscode-symbolIcon-textForeground: #79c0ff;
+  --vscode-symbolIcon-typeParameterForeground: #79c0ff;
+  --vscode-symbolIcon-unitForeground: #58a6ff;
+  --vscode-symbolIcon-variableForeground: #f0883e;
+  --vscode-editor-lineHighlightBackground: rgba(110, 118, 129, 0.1);
+  --vscode-editor-lineHighlightBorder: #282828;
+  --vscode-editor-rangeHighlightBackground: rgba(255, 255, 255, 0.04);
+  --vscode-editor-symbolHighlightBackground: rgba(242, 204, 96, 0.5);
+  --vscode-editorCursor-foreground: #58a6ff;
+  --vscode-editorWhitespace-foreground: #484f58;
+  --vscode-editorIndentGuide-background: rgba(201, 209, 217, 0.12);
+  --vscode-editorIndentGuide-activeBackground: rgba(201, 209, 217, 0.24);
+  --vscode-editorLineNumber-foreground: #6e7681;
+  --vscode-editorActiveLineNumber-foreground: #c6c6c6;
+  --vscode-editorLineNumber-activeForeground: #c9d1d9;
+  --vscode-editorRuler-foreground: #5a5a5a;
+  --vscode-editorCodeLens-foreground: #999999;
+  --vscode-editorBracketMatch-background: rgba(63, 185, 80, 0.25);
+  --vscode-editorBracketMatch-border: rgba(63, 185, 80, 0.6);
+  --vscode-editorOverviewRuler-border: #010409;
+  --vscode-editorGutter-background: #0d1117;
+  --vscode-editorUnnecessaryCode-opacity: rgba(0, 0, 0, 0.67);
+  --vscode-editorGhostText-foreground: rgba(255, 255, 255, 0.34);
+  --vscode-editorOverviewRuler-rangeHighlightForeground: rgba(0, 122, 204, 0.6);
+  --vscode-editorOverviewRuler-errorForeground: rgba(255, 18, 18, 0.7);
+  --vscode-editorOverviewRuler-warningForeground: #cca700;
+  --vscode-editorOverviewRuler-infoForeground: #3794ff;
+  --vscode-editorBracketHighlight-foreground1: #79c0ff;
+  --vscode-editorBracketHighlight-foreground2: #56d364;
+  --vscode-editorBracketHighlight-foreground3: #e3b341;
+  --vscode-editorBracketHighlight-foreground4: #ffa198;
+  --vscode-editorBracketHighlight-foreground5: #ff9bce;
+  --vscode-editorBracketHighlight-foreground6: #d2a8ff;
+  --vscode-editorBracketHighlight-unexpectedBracket\.foreground: #8b949e;
+  --vscode-editorBracketPairGuide-background1: rgba(0, 0, 0, 0);
+  --vscode-editorBracketPairGuide-background2: rgba(0, 0, 0, 0);
+  --vscode-editorBracketPairGuide-background3: rgba(0, 0, 0, 0);
+  --vscode-editorBracketPairGuide-background4: rgba(0, 0, 0, 0);
+  --vscode-editorBracketPairGuide-background5: rgba(0, 0, 0, 0);
+  --vscode-editorBracketPairGuide-background6: rgba(0, 0, 0, 0);
+  --vscode-editorBracketPairGuide-activeBackground1: rgba(0, 0, 0, 0);
+  --vscode-editorBracketPairGuide-activeBackground2: rgba(0, 0, 0, 0);
+  --vscode-editorBracketPairGuide-activeBackground3: rgba(0, 0, 0, 0);
+  --vscode-editorBracketPairGuide-activeBackground4: rgba(0, 0, 0, 0);
+  --vscode-editorBracketPairGuide-activeBackground5: rgba(0, 0, 0, 0);
+  --vscode-editorBracketPairGuide-activeBackground6: rgba(0, 0, 0, 0);
+  --vscode-editorUnicodeHighlight-border: #bd9b03;
+  --vscode-editorUnicodeHighlight-background: rgba(189, 155, 3, 0.15);
+  --vscode-editorHoverWidget-highlightForeground: #58a6ff;
+  --vscode-editorOverviewRuler-bracketMatchForeground: #a0a0a0;
+  --vscode-editor-foldBackground: rgba(110, 118, 129, 0.1);
+  --vscode-editorGutter-foldingControlForeground: #8b949e;
+  --vscode-editor-linkedEditingBackground: rgba(88, 166, 255, 0.07);
+  --vscode-editor-wordHighlightBackground: rgba(110, 118, 129, 0.5);
+  --vscode-editor-wordHighlightStrongBackground: rgba(110, 118, 129, 0.3);
+  --vscode-editor-wordHighlightBorder: rgba(110, 118, 129, 0.6);
+  --vscode-editor-wordHighlightStrongBorder: rgba(110, 118, 129, 0.6);
+  --vscode-editorOverviewRuler-wordHighlightForeground: rgba(
+    160,
+    160,
+    160,
+    0.8
+  );
+  --vscode-editorOverviewRuler-wordHighlightStrongForeground: rgba(
+    192,
+    160,
+    192,
+    0.8
+  );
+  --vscode-peekViewTitle-background: rgba(55, 148, 255, 0.1);
+  --vscode-peekViewTitleLabel-foreground: #ffffff;
+  --vscode-peekViewTitleDescription-foreground: rgba(204, 204, 204, 0.7);
+  --vscode-peekView-border: #3794ff;
+  --vscode-peekViewResult-background: #0d1117;
+  --vscode-peekViewResult-lineForeground: #bbbbbb;
+  --vscode-peekViewResult-fileForeground: #ffffff;
+  --vscode-peekViewResult-selectionBackground: rgba(51, 153, 255, 0.2);
+  --vscode-peekViewResult-selectionForeground: #ffffff;
+  --vscode-peekViewEditor-background: rgba(110, 118, 129, 0.1);
+  --vscode-peekViewEditorGutter-background: rgba(110, 118, 129, 0.1);
+  --vscode-peekViewResult-matchHighlightBackground: rgba(187, 128, 9, 0.4);
+  --vscode-peekViewEditor-matchHighlightBackground: rgba(187, 128, 9, 0.4);
+  --vscode-editorMarkerNavigationError-background: #f14c4c;
+  --vscode-editorMarkerNavigationError-headerBackground: rgba(241, 76, 76, 0.1);
+  --vscode-editorMarkerNavigationWarning-background: #cca700;
+  --vscode-editorMarkerNavigationWarning-headerBackground: rgba(
+    204,
+    167,
+    0,
+    0.1
+  );
+  --vscode-editorMarkerNavigationInfo-background: #3794ff;
+  --vscode-editorMarkerNavigationInfo-headerBackground: rgba(55, 148, 255, 0.1);
+  --vscode-editorMarkerNavigation-background: #0d1117;
+  --vscode-editorSuggestWidget-background: #161b22;
+  --vscode-editorSuggestWidget-border: #454545;
+  --vscode-editorSuggestWidget-foreground: #c9d1d9;
+  --vscode-editorSuggestWidget-selectedForeground: #c9d1d9;
+  --vscode-editorSuggestWidget-selectedBackground: rgba(110, 118, 129, 0.4);
+  --vscode-editorSuggestWidget-highlightForeground: #58a6ff;
+  --vscode-editorSuggestWidget-focusHighlightForeground: #58a6ff;
+  --vscode-editorSuggestWidgetStatus-foreground: rgba(201, 209, 217, 0.5);
+  --vscode-tab-activeBackground: #0d1117;
+  --vscode-tab-unfocusedActiveBackground: #0d1117;
+  --vscode-tab-inactiveBackground: #010409;
+  --vscode-tab-unfocusedInactiveBackground: #010409;
+  --vscode-tab-activeForeground: #c9d1d9;
+  --vscode-tab-inactiveForeground: #8b949e;
+  --vscode-tab-unfocusedActiveForeground: rgba(201, 209, 217, 0.5);
+  --vscode-tab-unfocusedInactiveForeground: rgba(139, 148, 158, 0.5);
+  --vscode-tab-hoverBackground: #0d1117;
+  --vscode-tab-unfocusedHoverBackground: rgba(110, 118, 129, 0.1);
+  --vscode-tab-border: #30363d;
+  --vscode-tab-lastPinnedBorder: #21262d;
+  --vscode-tab-activeBorder: #0d1117;
+  --vscode-tab-unfocusedActiveBorder: #0d1117;
+  --vscode-tab-activeBorderTop: #f78166;
+  --vscode-tab-unfocusedActiveBorderTop: #30363d;
+  --vscode-tab-activeModifiedBorder: #3399cc;
+  --vscode-tab-inactiveModifiedBorder: rgba(51, 153, 204, 0.5);
+  --vscode-tab-unfocusedActiveModifiedBorder: rgba(51, 153, 204, 0.5);
+  --vscode-tab-unfocusedInactiveModifiedBorder: rgba(51, 153, 204, 0.25);
+  --vscode-editorPane-background: #0d1117;
+  --vscode-editorGroupHeader-tabsBackground: #010409;
+  --vscode-editorGroupHeader-tabsBorder: #30363d;
+  --vscode-editorGroupHeader-noTabsBackground: #0d1117;
+  --vscode-editorGroup-border: #30363d;
+  --vscode-editorGroup-dropBackground: rgba(83, 89, 93, 0.5);
+  --vscode-editorGroup-dropIntoPromptForeground: #c9d1d9;
+  --vscode-editorGroup-dropIntoPromptBackground: #161b22;
+  --vscode-sideBySideEditor-horizontalBorder: #30363d;
+  --vscode-sideBySideEditor-verticalBorder: #30363d;
+  --vscode-panel-background: #010409;
+  --vscode-panel-border: #30363d;
+  --vscode-panelTitle-activeForeground: #c9d1d9;
+  --vscode-panelTitle-inactiveForeground: #8b949e;
+  --vscode-panelTitle-activeBorder: #f78166;
+  --vscode-panelInput-border: #30363d;
+  --vscode-panel-dropBorder: #c9d1d9;
+  --vscode-panelSection-dropBackground: rgba(83, 89, 93, 0.5);
+  --vscode-panelSectionHeader-background: rgba(128, 128, 128, 0.2);
+  --vscode-panelSection-border: #30363d;
+  --vscode-banner-background: rgba(110, 118, 129, 0.4);
+  --vscode-banner-foreground: #c9d1d9;
+  --vscode-banner-iconForeground: #3794ff;
+  --vscode-statusBar-foreground: #8b949e;
+  --vscode-statusBar-noFolderForeground: #8b949e;
+  --vscode-statusBar-background: #0d1117;
+  --vscode-statusBar-noFolderBackground: #0d1117;
+  --vscode-statusBar-border: #30363d;
+  --vscode-statusBar-focusBorder: rgba(31, 111, 235, 0.5);
+  --vscode-statusBar-noFolderBorder: #30363d;
+  --vscode-statusBarItem-activeBackground: rgba(201, 209, 217, 0.12);
+  --vscode-statusBarItem-focusBorder: #1f6feb;
+  --vscode-statusBarItem-hoverBackground: rgba(201, 209, 217, 0.08);
+  --vscode-statusBarItem-compactHoverBackground: rgba(255, 255, 255, 0.2);
+  --vscode-statusBarItem-prominentForeground: #8b949e;
+  --vscode-statusBarItem-prominentBackground: rgba(110, 118, 129, 0.4);
+  --vscode-statusBarItem-prominentHoverBackground: rgba(0, 0, 0, 0.3);
+  --vscode-statusBarItem-errorBackground: #b91007;
+  --vscode-statusBarItem-errorForeground: #ffffff;
+  --vscode-statusBarItem-warningBackground: #7a6400;
+  --vscode-statusBarItem-warningForeground: #ffffff;
+  --vscode-activityBar-background: #0d1117;
+  --vscode-activityBar-foreground: #c9d1d9;
+  --vscode-activityBar-inactiveForeground: #8b949e;
+  --vscode-activityBar-border: #30363d;
+  --vscode-activityBar-activeBorder: #f78166;
+  --vscode-activityBar-dropBorder: #c9d1d9;
+  --vscode-activityBarBadge-background: #1f6feb;
+  --vscode-activityBarBadge-foreground: #f0f6fc;
+  --vscode-activityBarItem-profilesForeground: #8b949e;
+  --vscode-activityBarItem-profilesHoverForeground: #c9d1d9;
+  --vscode-activityBarItem-profilesBackground: #141a23;
+  --vscode-statusBarItem-remoteBackground: #30363d;
+  --vscode-statusBarItem-remoteForeground: #c9d1d9;
+  --vscode-extensionBadge-remoteBackground: #1f6feb;
+  --vscode-extensionBadge-remoteForeground: #f0f6fc;
+  --vscode-sideBar-background: #010409;
+  --vscode-sideBar-foreground: #c9d1d9;
+  --vscode-sideBar-border: #30363d;
+  --vscode-sideBarTitle-foreground: #c9d1d9;
+  --vscode-sideBar-dropBackground: rgba(83, 89, 93, 0.5);
+  --vscode-sideBarSectionHeader-background: #010409;
+  --vscode-sideBarSectionHeader-foreground: #c9d1d9;
+  --vscode-sideBarSectionHeader-border: #30363d;
+  --vscode-titleBar-activeForeground: #8b949e;
+  --vscode-titleBar-inactiveForeground: #8b949e;
+  --vscode-titleBar-activeBackground: #0d1117;
+  --vscode-titleBar-inactiveBackground: #010409;
+  --vscode-titleBar-border: #30363d;
+  --vscode-menubar-selectionForeground: #8b949e;
+  --vscode-menubar-selectionBackground: rgba(90, 93, 94, 0.31);
+  --vscode-notifications-foreground: #c9d1d9;
+  --vscode-notifications-background: #161b22;
+  --vscode-notificationLink-foreground: #58a6ff;
+  --vscode-notificationCenterHeader-foreground: #8b949e;
+  --vscode-notificationCenterHeader-background: #161b22;
+  --vscode-notifications-border: #30363d;
+  --vscode-notificationsErrorIcon-foreground: #f85149;
+  --vscode-notificationsWarningIcon-foreground: #d29922;
+  --vscode-notificationsInfoIcon-foreground: #58a6ff;
+  --vscode-commandCenter-foreground: #8b949e;
+  --vscode-commandCenter-activeForeground: #8b949e;
+  --vscode-commandCenter-inactiveForeground: #8b949e;
+  --vscode-commandCenter-background: rgba(255, 255, 255, 0.05);
+  --vscode-commandCenter-activeBackground: rgba(255, 255, 255, 0.08);
+  --vscode-commandCenter-border: rgba(139, 148, 158, 0.2);
+  --vscode-commandCenter-activeBorder: rgba(139, 148, 158, 0.3);
+  --vscode-commandCenter-inactiveBorder: rgba(139, 148, 158, 0.25);
+  --vscode-editorCommentsWidget-resolvedBorder: rgba(204, 204, 204, 0.5);
+  --vscode-editorCommentsWidget-unresolvedBorder: #3794ff;
+  --vscode-editorCommentsWidget-rangeBackground: rgba(55, 148, 255, 0.1);
+  --vscode-editorCommentsWidget-rangeBorder: rgba(55, 148, 255, 0.4);
+  --vscode-editorCommentsWidget-rangeActiveBackground: rgba(55, 148, 255, 0.1);
+  --vscode-editorCommentsWidget-rangeActiveBorder: rgba(55, 148, 255, 0.4);
+  --vscode-editorGutter-commentRangeForeground: rgba(110, 118, 129, 0.4);
+  --vscode-debugToolBar-background: #161b22;
+  --vscode-debugIcon-startForeground: #89d185;
+  --vscode-editor-stackFrameHighlightBackground: rgba(187, 128, 9, 0.4);
+  --vscode-editor-focusedStackFrameHighlightBackground: rgba(46, 160, 67, 0.4);
+  --vscode-mergeEditor-change\.background: rgba(155, 185, 85, 0.2);
+  --vscode-mergeEditor-change\.word\.background: rgba(156, 204, 44, 0.2);
+  --vscode-mergeEditor-changeBase\.background: #4b1818;
+  --vscode-mergeEditor-changeBase\.word\.background: #6f1313;
+  --vscode-mergeEditor-conflict\.unhandledUnfocused\.border: rgba(
+    255,
+    166,
+    0,
+    0.48
+  );
+  --vscode-mergeEditor-conflict\.unhandledFocused\.border: #ffa600;
+  --vscode-mergeEditor-conflict\.handledUnfocused\.border: rgba(
+    134,
+    134,
+    134,
+    0.29
+  );
+  --vscode-mergeEditor-conflict\.handledFocused\.border: rgba(
+    193,
+    193,
+    193,
+    0.8
+  );
+  --vscode-mergeEditor-conflict\.handled\.minimapOverViewRuler: rgba(
+    173,
+    172,
+    168,
+    0.93
+  );
+  --vscode-mergeEditor-conflict\.unhandled\.minimapOverViewRuler: #fcba03;
+  --vscode-mergeEditor-conflictingLines\.background: rgba(255, 234, 0, 0.28);
+  --vscode-mergeEditor-conflict\.input1\.background: rgba(64, 200, 174, 0.2);
+  --vscode-mergeEditor-conflict\.input2\.background: rgba(64, 166, 255, 0.2);
+  --vscode-settings-headerForeground: #8b949e;
+  --vscode-settings-modifiedItemIndicator: rgba(187, 128, 9, 0.4);
+  --vscode-settings-headerBorder: #30363d;
+  --vscode-settings-sashBorder: #30363d;
+  --vscode-settings-dropdownBackground: #161b22;
+  --vscode-settings-dropdownForeground: #c9d1d9;
+  --vscode-settings-dropdownBorder: #30363d;
+  --vscode-settings-dropdownListBorder: #454545;
+  --vscode-settings-checkboxBackground: #161b22;
+  --vscode-settings-checkboxForeground: #c9d1d9;
+  --vscode-settings-checkboxBorder: #30363d;
+  --vscode-settings-textInputBackground: #0d1117;
+  --vscode-settings-textInputForeground: #c9d1d9;
+  --vscode-settings-textInputBorder: #30363d;
+  --vscode-settings-numberInputBackground: #0d1117;
+  --vscode-settings-numberInputForeground: #c9d1d9;
+  --vscode-settings-numberInputBorder: #30363d;
+  --vscode-settings-focusedRowBackground: rgba(110, 118, 129, 0.06);
+  --vscode-settings-rowHoverBackground: rgba(110, 118, 129, 0.03);
+  --vscode-settings-focusedRowBorder: #1f6feb;
+  --vscode-terminal-foreground: #c9d1d9;
+  --vscode-terminal-selectionBackground: #264f78;
+  --vscode-terminal-inactiveSelectionBackground: rgba(38, 79, 120, 0.5);
+  --vscode-terminalCommandDecoration-defaultBackground: rgba(
+    255,
+    255,
+    255,
+    0.25
+  );
+  --vscode-terminalCommandDecoration-successBackground: #1b81a8;
+  --vscode-terminalCommandDecoration-errorBackground: #f14c4c;
+  --vscode-terminalOverviewRuler-cursorForeground: rgba(160, 160, 160, 0.8);
+  --vscode-terminal-border: #30363d;
+  --vscode-terminal-findMatchBackground: #9e6a03;
+  --vscode-terminal-findMatchHighlightBackground: rgba(242, 204, 96, 0.5);
+  --vscode-terminalOverviewRuler-findMatchForeground: rgba(209, 134, 22, 0.49);
+  --vscode-terminal-dropBackground: rgba(83, 89, 93, 0.5);
+  --vscode-terminal-tab\.activeBorder: #0d1117;
+  --vscode-testing-iconFailed: #f14c4c;
+  --vscode-testing-iconErrored: #f14c4c;
+  --vscode-testing-iconPassed: #73c991;
+  --vscode-testing-runAction: #73c991;
+  --vscode-testing-iconQueued: #cca700;
+  --vscode-testing-iconUnset: #848484;
+  --vscode-testing-iconSkipped: #848484;
+  --vscode-testing-peekBorder: #f14c4c;
+  --vscode-testing-peekHeaderBackground: rgba(241, 76, 76, 0.1);
+  --vscode-testing-message\.error\.decorationForeground: #f14c4c;
+  --vscode-testing-message\.error\.lineBackground: rgba(255, 0, 0, 0.2);
+  --vscode-testing-message\.info\.decorationForeground: rgba(
+    201,
+    209,
+    217,
+    0.5
+  );
+  --vscode-welcomePage-tileBackground: #161b22;
+  --vscode-welcomePage-tileHoverBackground: #1a2029;
+  --vscode-welcomePage-tileBorder: rgba(255, 255, 255, 0.1);
+  --vscode-welcomePage-progress\.background: #0d1117;
+  --vscode-welcomePage-progress\.foreground: #58a6ff;
+  --vscode-walkthrough-stepTitle\.foreground: #ffffff;
+  --vscode-debugExceptionWidget-border: #a31515;
+  --vscode-debugExceptionWidget-background: #420b0d;
+  --vscode-ports-iconRunningProcessForeground: #30363d;
+  --vscode-statusBar-debuggingBackground: #da3633;
+  --vscode-statusBar-debuggingForeground: #f0f6fc;
+  --vscode-statusBar-debuggingBorder: #30363d;
+  --vscode-editor-inlineValuesForeground: rgba(255, 255, 255, 0.5);
+  --vscode-editor-inlineValuesBackground: rgba(255, 200, 0, 0.2);
+  --vscode-editorGutter-modifiedBackground: rgba(187, 128, 9, 0.4);
+  --vscode-editorGutter-addedBackground: rgba(46, 160, 67, 0.4);
+  --vscode-editorGutter-deletedBackground: rgba(248, 81, 73, 0.4);
+  --vscode-minimapGutter-modifiedBackground: rgba(187, 128, 9, 0.4);
+  --vscode-minimapGutter-addedBackground: rgba(46, 160, 67, 0.4);
+  --vscode-minimapGutter-deletedBackground: rgba(248, 81, 73, 0.4);
+  --vscode-editorOverviewRuler-modifiedForeground: rgba(187, 128, 9, 0.24);
+  --vscode-editorOverviewRuler-addedForeground: rgba(46, 160, 67, 0.24);
+  --vscode-editorOverviewRuler-deletedForeground: rgba(248, 81, 73, 0.24);
+  --vscode-debugIcon-breakpointForeground: #f85149;
+  --vscode-debugIcon-breakpointDisabledForeground: #848484;
+  --vscode-debugIcon-breakpointUnverifiedForeground: #848484;
+  --vscode-debugIcon-breakpointCurrentStackframeForeground: #ffcc00;
+  --vscode-debugIcon-breakpointStackframeForeground: #89d185;
+  --vscode-notebook-cellBorderColor: rgba(110, 118, 129, 0.4);
+  --vscode-notebook-focusedEditorBorder: #1f6feb;
+  --vscode-notebookStatusSuccessIcon-foreground: #89d185;
+  --vscode-notebookStatusErrorIcon-foreground: #f85149;
+  --vscode-notebookStatusRunningIcon-foreground: #c9d1d9;
+  --vscode-notebook-cellToolbarSeparator: rgba(128, 128, 128, 0.35);
+  --vscode-notebook-selectedCellBackground: rgba(110, 118, 129, 0.4);
+  --vscode-notebook-selectedCellBorder: rgba(110, 118, 129, 0.4);
+  --vscode-notebook-focusedCellBorder: #1f6feb;
+  --vscode-notebook-inactiveFocusedCellBorder: rgba(110, 118, 129, 0.4);
+  --vscode-notebook-cellStatusBarItemHoverBackground: rgba(255, 255, 255, 0.15);
+  --vscode-notebook-cellInsertionIndicator: #1f6feb;
+  --vscode-notebookScrollbarSlider-background: rgba(110, 118, 129, 0.2);
+  --vscode-notebookScrollbarSlider-hoverBackground: rgba(110, 118, 129, 0.27);
+  --vscode-notebookScrollbarSlider-activeBackground: rgba(110, 118, 129, 0.53);
+  --vscode-notebook-symbolHighlightBackground: rgba(255, 255, 255, 0.04);
+  --vscode-notebook-cellEditorBackground: #010409;
+  --vscode-notebook-editorBackground: #0d1117;
+  --vscode-keybindingTable-headerBackground: rgba(201, 209, 217, 0.04);
+  --vscode-keybindingTable-rowsBackground: rgba(201, 209, 217, 0.04);
+  --vscode-scm-providerBorder: #454545;
+  --vscode-searchEditor-textInputBorder: #30363d;
+  --vscode-debugTokenExpression-name: #79c0ff;
+  --vscode-debugTokenExpression-value: #a5d6ff;
+  --vscode-debugTokenExpression-string: #a5d6ff;
+  --vscode-debugTokenExpression-boolean: #56d364;
+  --vscode-debugTokenExpression-number: #56d364;
+  --vscode-debugTokenExpression-error: #ffa198;
+  --vscode-debugView-exceptionLabelForeground: #c9d1d9;
+  --vscode-debugView-exceptionLabelBackground: #6c2022;
+  --vscode-debugView-stateLabelForeground: #c9d1d9;
+  --vscode-debugView-stateLabelBackground: rgba(136, 136, 136, 0.27);
+  --vscode-debugView-valueChangedHighlight: #569cd6;
+  --vscode-debugConsole-infoForeground: #8b949e;
+  --vscode-debugConsole-warningForeground: #d29922;
+  --vscode-debugConsole-errorForeground: #ffa198;
+  --vscode-debugConsole-sourceForeground: #e3b341;
+  --vscode-debugConsoleInputIcon-foreground: #bc8cff;
+  --vscode-debugIcon-pauseForeground: #75beff;
+  --vscode-debugIcon-stopForeground: #f48771;
+  --vscode-debugIcon-disconnectForeground: #f48771;
+  --vscode-debugIcon-restartForeground: #89d185;
+  --vscode-debugIcon-stepOverForeground: #75beff;
+  --vscode-debugIcon-stepIntoForeground: #75beff;
+  --vscode-debugIcon-stepOutForeground: #75beff;
+  --vscode-debugIcon-continueForeground: #75beff;
+  --vscode-debugIcon-stepBackForeground: #75beff;
+  --vscode-extensionButton-background: #238636;
+  --vscode-extensionButton-foreground: #ffffff;
+  --vscode-extensionButton-hoverBackground: #2ea043;
+  --vscode-extensionButton-separator: rgba(255, 255, 255, 0.4);
+  --vscode-extensionButton-prominentBackground: #238636;
+  --vscode-extensionButton-prominentForeground: #ffffff;
+  --vscode-extensionButton-prominentHoverBackground: #2ea043;
+  --vscode-extensionIcon-starForeground: #ff8e00;
+  --vscode-extensionIcon-verifiedForeground: #58a6ff;
+  --vscode-extensionIcon-preReleaseForeground: #1d9271;
+  --vscode-extensionIcon-sponsorForeground: #d758b3;
+  --vscode-terminal-ansiBlack: #484f58;
+  --vscode-terminal-ansiRed: #ff7b72;
+  --vscode-terminal-ansiGreen: #3fb950;
+  --vscode-terminal-ansiYellow: #d29922;
+  --vscode-terminal-ansiBlue: #58a6ff;
+  --vscode-terminal-ansiMagenta: #bc8cff;
+  --vscode-terminal-ansiCyan: #39c5cf;
+  --vscode-terminal-ansiWhite: #b1bac4;
+  --vscode-terminal-ansiBrightBlack: #6e7681;
+  --vscode-terminal-ansiBrightRed: #ffa198;
+  --vscode-terminal-ansiBrightGreen: #56d364;
+  --vscode-terminal-ansiBrightYellow: #e3b341;
+  --vscode-terminal-ansiBrightBlue: #79c0ff;
+  --vscode-terminal-ansiBrightMagenta: #d2a8ff;
+  --vscode-terminal-ansiBrightCyan: #56d4dd;
+  --vscode-terminal-ansiBrightWhite: #f0f6fc;
+  --vscode-interactive-activeCodeBorder: #3794ff;
+  --vscode-interactive-inactiveCodeBorder: rgba(110, 118, 129, 0.4);
+  --vscode-gitDecoration-addedResourceForeground: #3fb950;
+  --vscode-gitDecoration-modifiedResourceForeground: #d29922;
+  --vscode-gitDecoration-deletedResourceForeground: #f85149;
+  --vscode-gitDecoration-renamedResourceForeground: #73c991;
+  --vscode-gitDecoration-untrackedResourceForeground: #3fb950;
+  --vscode-gitDecoration-ignoredResourceForeground: #484f58;
+  --vscode-gitDecoration-stageModifiedResourceForeground: #e2c08d;
+  --vscode-gitDecoration-stageDeletedResourceForeground: #c74e39;
+  --vscode-gitDecoration-conflictingResourceForeground: #db6d28;
+  --vscode-gitDecoration-submoduleResourceForeground: #8b949e;
+  --vscode-testExplorer-errorDecorationBackground: #5a1d1d;
+}
+
+/**
+ * This is copied in the same way, but from the <body> element
+ */
+body {
+  background-color: transparent;
+  color: var(--vscode-editor-foreground);
+  font-family: var(--vscode-font-family);
+  font-weight: var(--vscode-font-weight);
+  font-size: var(--vscode-font-size);
+  margin: 0;
+  padding: 0 20px;
+}
+
+/**
+ * This is used for setting the background on the Storybook preview.
+ */
+body {
+  background-color: var(--vscode-editor-background);
+}
