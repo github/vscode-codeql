@@ -37,6 +37,7 @@ describe("Variant Analysis Monitor", async function () {
   let mockGetVariantAnalysis: sinon.SinonStub;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
+  let shouldCancelMonitor: sinon.SinonStub;
   let variantAnalysis: VariantAnalysis;
   let variantAnalysisManager: VariantAnalysisManager;
   let mockGetDownloadResult: sinon.SinonStub;
@@ -44,6 +45,7 @@ describe("Variant Analysis Monitor", async function () {
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
     sandbox.stub(config, "isVariantAnalysisLiveResultsEnabled").returns(false);
+    shouldCancelMonitor = sinon.stub();
 
     cancellationTokenSource = new CancellationTokenSource();
 
@@ -55,7 +57,10 @@ describe("Variant Analysis Monitor", async function () {
           "GitHub.vscode-codeql",
         )!
         .activate();
-      variantAnalysisMonitor = new VariantAnalysisMonitor(extension.ctx);
+      variantAnalysisMonitor = new VariantAnalysisMonitor(
+        extension.ctx,
+        shouldCancelMonitor,
+      );
     } catch (e) {
       fail(e as Error);
     }
@@ -103,6 +108,17 @@ describe("Variant Analysis Monitor", async function () {
 
     it("should return early if variant analysis is cancelled", async () => {
       cancellationTokenSource.cancel();
+
+      const result = await variantAnalysisMonitor.monitorVariantAnalysis(
+        variantAnalysis,
+        cancellationTokenSource.token,
+      );
+
+      expect(result).to.eql({ status: "Canceled" });
+    });
+
+    it("should return early if variant analysis should be cancelled", async () => {
+      shouldCancelMonitor.resolves(true);
 
       const result = await variantAnalysisMonitor.monitorVariantAnalysis(
         variantAnalysis,

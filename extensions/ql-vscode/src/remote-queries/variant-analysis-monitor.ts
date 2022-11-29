@@ -29,7 +29,12 @@ export class VariantAnalysisMonitor extends DisposableObject {
   );
   readonly onVariantAnalysisChange = this._onVariantAnalysisChange.event;
 
-  constructor(private readonly extensionContext: ExtensionContext) {
+  constructor(
+    private readonly extensionContext: ExtensionContext,
+    private readonly shouldCancelMonitor: (
+      variantAnalysisId: number,
+    ) => Promise<boolean>,
+  ) {
     super();
   }
 
@@ -49,6 +54,10 @@ export class VariantAnalysisMonitor extends DisposableObject {
       await sleep(VariantAnalysisMonitor.sleepTime);
 
       if (cancellationToken && cancellationToken.isCancellationRequested) {
+        return { status: "Canceled" };
+      }
+
+      if (await this.shouldCancelMonitor(variantAnalysis.id)) {
         return { status: "Canceled" };
       }
 
