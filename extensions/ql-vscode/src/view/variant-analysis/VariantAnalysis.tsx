@@ -17,7 +17,7 @@ import {
   RepositoriesFilterSortState,
 } from "../../pure/variant-analysis-filter-sort";
 
-type Props = {
+export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;
   repoStates?: VariantAnalysisScannedRepositoryState[];
   repoResults?: VariantAnalysisScannedRepositoryResult[];
@@ -51,7 +51,7 @@ export function VariantAnalysis({
   variantAnalysis: initialVariantAnalysis,
   repoStates: initialRepoStates = [],
   repoResults: initialRepoResults = [],
-}: Props): JSX.Element {
+}: VariantAnalysisProps): JSX.Element {
   const [variantAnalysis, setVariantAnalysis] = useState<
     VariantAnalysisDomainModel | undefined
   >(initialVariantAnalysis);
