@@ -13,7 +13,7 @@
     "url": "https://github.com/github/vscode-codeql"
   },
   "engines": {
-    "vscode": "^1.59.0",
+    "vscode": "^1.67.0",
     "node": "^16.13.0",
     "npm": ">=7.20.6"
   },
@@ -1321,8 +1321,8 @@
     "tree-kill": "~1.2.2",
     "unzipper": "~0.10.5",
     "vscode-extension-telemetry": "^0.1.6",
-    "vscode-jsonrpc": "^5.0.1",
-    "vscode-languageclient": "^6.1.3",
+    "vscode-jsonrpc": "^8.0.2",
+    "vscode-languageclient": "^8.0.2",
     "vscode-test-adapter-api": "~1.7.0",
     "vscode-test-adapter-util": "~0.7.0",
     "zip-a-folder": "~1.1.3"

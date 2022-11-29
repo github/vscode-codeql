@@ -1,5 +1,5 @@
 import { ProgressLocation, window } from "vscode";
-import { StreamInfo } from "vscode-languageclient";
+import { StreamInfo } from "vscode-languageclient/node";
 import * as cli from "./cli";
 import { QueryServerConfig } from "./config";
 import { ideServerLogger } from "./logging";
