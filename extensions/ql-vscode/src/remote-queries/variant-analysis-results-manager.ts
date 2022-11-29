@@ -121,6 +121,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       createCacheKey(variantAnalysisId, repositoryFullName),
     );
     if (result) {
+      this._onResultLoaded.fire(result);
       return result;
     }
 
