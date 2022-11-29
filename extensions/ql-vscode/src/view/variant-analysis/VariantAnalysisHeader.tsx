@@ -1,4 +1,3 @@
-import * as path from "path";
 import * as React from "react";
 import { useMemo } from "react";
 import styled from "styled-components";
@@ -12,6 +11,7 @@ import { QueryDetails } from "./QueryDetails";
 import { VariantAnalysisActions } from "./VariantAnalysisActions";
 import { VariantAnalysisStats } from "./VariantAnalysisStats";
 import { parseDate } from "../../pure/date";
+import { basename } from "../common/path";
 
 export type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;
@@ -68,7 +68,7 @@ export const VariantAnalysisHeader = ({
       <Row>
         <QueryDetails
           queryName={variantAnalysis.query.name}
-          queryFileName={path.basename(variantAnalysis.query.filePath)}
+          queryFileName={basename(variantAnalysis.query.filePath)}
           onOpenQueryFileClick={onOpenQueryFileClick}
           onViewQueryTextClick={onViewQueryTextClick}
         />
