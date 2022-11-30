@@ -45,7 +45,6 @@ module.exports = {
     "camelcase": "off",
     "eqeqeq": "off",
     "escompat/no-regexp-lookbehind": "off",
-    "eslint-comments/no-unused-disable": "off",
     "filenames/match-regex": "off",
     "filenames/match-regexp": "off",
     "func-style": "off",

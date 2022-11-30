@@ -1241,7 +1241,7 @@ export class CodeQLCliServer implements Disposable {
     const distribution = await this.distributionProvider.getDistribution();
     switch (distribution.kind) {
       case FindDistributionResultKind.CompatibleDistribution:
-      // eslint-disable-next-line no-fallthrough
+
       case FindDistributionResultKind.IncompatibleDistribution:
         return distribution.version;
 
