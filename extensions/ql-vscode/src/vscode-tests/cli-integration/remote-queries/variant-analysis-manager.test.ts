@@ -8,7 +8,7 @@ import {
   window,
 } from "vscode";
 import { CodeQLExtensionInterface } from "../../../extension";
-import { logger } from "../../../common";
+import { extLogger } from "../../../common";
 import * as config from "../../../config";
 import {
   setRemoteControllerRepo,
@@ -75,7 +75,7 @@ describe("Variant Analysis Manager", () => {
     outputJsonStub = jest.spyOn(fs, "outputJson").mockReturnValue(undefined);
     writeFileStub = jest.spyOn(fs, "writeFile").mockReturnValue(undefined);
 
-    jest.spyOn(logger, "log").mockResolvedValue(undefined);
+    jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
     jest
       .spyOn(config, "isVariantAnalysisLiveResultsEnabled")
       .mockReturnValue(false);
@@ -97,7 +97,7 @@ describe("Variant Analysis Manager", () => {
     cli = extension.cliServer;
     variantAnalysisResultsManager = new VariantAnalysisResultsManager(
       cli,
-      logger,
+      extLogger,
     );
     variantAnalysisManager = new VariantAnalysisManager(
       extension.ctx,

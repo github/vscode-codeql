@@ -5,7 +5,7 @@ import {
   tmpDir,
 } from "../helpers";
 import { ProgressCallback, UserCancellationException } from "../commandRunner";
-import { logger } from "../common";
+import { extLogger } from "../common";
 import * as messages from "../pure/legacy-messages";
 import * as qsClient from "./queryserver-client";
 import * as tmp from "tmp-promise";
@@ -107,7 +107,7 @@ async function checkAndConfirmDatabaseUpgrade(
     descriptionMessage += `Would perform upgrade: ${script.description}\n`;
     descriptionMessage += `\t-> Compatibility: ${script.compatibility}\n`;
   }
-  void logger.log(descriptionMessage);
+  void extLogger.log(descriptionMessage);
 
   // If the quiet flag is set, do the upgrade without a popup.
   if (quiet) {
@@ -143,7 +143,7 @@ async function checkAndConfirmDatabaseUpgrade(
   );
 
   if (chosenItem === showLogItem) {
-    logger.outputChannel.show();
+    extLogger.outputChannel.show();
   }
 
   if (chosenItem !== yesItem) {

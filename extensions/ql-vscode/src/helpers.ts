@@ -12,7 +12,7 @@ import {
 } from "vscode";
 import { CodeQLCliServer, QlpacksInfo } from "./cli";
 import { UserCancellationException } from "./commandRunner";
-import { logger } from "./common";
+import { extLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
 
 // Shared temporary folder for the extension.
@@ -29,7 +29,7 @@ export const tmpDirDisposal = {
     try {
       tmpDir.removeCallback();
     } catch (e) {
-      void logger.log(
+      void extLogger.log(
         `Failed to remove temporary directory ${tmpDir.name}: ${e}`,
       );
     }
@@ -51,7 +51,7 @@ export const tmpDirDisposal = {
 export async function showAndLogErrorMessage(
   message: string,
   {
-    outputLogger = logger,
+    outputLogger = extLogger,
     items = [] as string[],
     fullMessage = undefined as string | undefined,
   } = {},
@@ -80,7 +80,7 @@ function dropLinesExceptInitial(message: string, n = 2) {
  */
 export async function showAndLogWarningMessage(
   message: string,
-  { outputLogger = logger, items = [] as string[] } = {},
+  { outputLogger = extLogger, items = [] as string[] } = {},
 ): Promise<string | undefined> {
   return internalShowAndLog(
     message,
@@ -100,7 +100,7 @@ export async function showAndLogWarningMessage(
  */
 export async function showAndLogInformationMessage(
   message: string,
-  { outputLogger = logger, items = [] as string[], fullMessage = "" } = {},
+  { outputLogger = extLogger, items = [] as string[], fullMessage = "" } = {},
 ): Promise<string | undefined> {
   return internalShowAndLog(
     message,
@@ -119,7 +119,7 @@ type ShowMessageFn = (
 async function internalShowAndLog(
   message: string,
   items: string[],
-  outputLogger = logger,
+  outputLogger = extLogger,
   fn: ShowMessageFn,
   fullMessage?: string,
 ): Promise<string | undefined> {
@@ -402,13 +402,13 @@ export async function getQlPackForDbscheme(
   const packs: QlPackWithPath[] = Object.entries(qlpacks).map(
     ([packName, dirs]) => {
       if (dirs.length < 1) {
-        void logger.log(
+        void extLogger.log(
           `In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`,
         );
         return { packName, packDir: undefined };
       }
       if (dirs.length > 1) {
-        void logger.log(
+        void extLogger.log(
           `In getQlPackFor ${dbschemePath}, qlpack ${packName} has more than one directory; arbitrarily choosing the first`,
         );
       }
@@ -622,10 +622,10 @@ export async function findLanguage(
         uri,
       );
       const language = Object.keys(queryInfo.byLanguage)[0];
-      void logger.log(`Detected query language: ${language}`);
+      void extLogger.log(`Detected query language: ${language}`);
       return language;
     } catch (e) {
-      void logger.log(
+      void extLogger.log(
         "Could not autodetect query language. Select language manually.",
       );
     }
@@ -673,7 +673,7 @@ export async function tryGetQueryMetadata(
     return await cliServer.resolveMetadata(queryPath);
   } catch (e) {
     // Ignore errors and provide no metadata.
-    void logger.log(`Couldn't resolve metadata for ${queryPath}: ${e}`);
+    void extLogger.log(`Couldn't resolve metadata for ${queryPath}: ${e}`);
     return;
   }
 }

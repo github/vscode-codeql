@@ -12,7 +12,7 @@ import {
 import { Credentials } from "../authentication";
 import { UserCancellationException } from "../commandRunner";
 import { showInformationMessageWithAction } from "../helpers";
-import { logger } from "../common";
+import { extLogger } from "../common";
 import { QueryHistoryManager } from "../query-history";
 import { createGist } from "./gh-api/gh-api-client";
 import { RemoteQueriesManager } from "./remote-queries-manager";
@@ -76,7 +76,7 @@ export async function exportRemoteQueryResults(
 ): Promise<void> {
   const queryHistoryItem = queryHistoryManager.getRemoteQueryById(queryId);
   if (!queryHistoryItem) {
-    void logger.log(`Could not find query with id ${queryId}`);
+    void extLogger.log(`Could not find query with id ${queryId}`);
     throw new Error(
       "There was an error when trying to retrieve variant analysis information",
     );
@@ -86,7 +86,7 @@ export async function exportRemoteQueryResults(
     throw new Error("Variant analysis results are not yet available.");
   }
 
-  void logger.log(
+  void extLogger.log(
     `Exporting variant analysis results for query: ${queryHistoryItem.queryId}`,
   );
   const query = queryHistoryItem.remoteQuery;
@@ -148,7 +148,7 @@ export async function exportVariantAnalysisResults(
     variantAnalysisId,
   );
   if (!variantAnalysis) {
-    void logger.log(
+    void extLogger.log(
       `Could not find variant analysis with id ${variantAnalysisId}`,
     );
     throw new Error(
@@ -156,7 +156,7 @@ export async function exportVariantAnalysisResults(
     );
   }
 
-  void logger.log(
+  void extLogger.log(
     `Exporting variant analysis results for variant analysis with id ${variantAnalysis.id}`,
   );
 

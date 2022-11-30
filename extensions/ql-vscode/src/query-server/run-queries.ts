@@ -9,7 +9,7 @@ import {
   showAndLogWarningMessage,
   tryGetQueryMetadata,
 } from "../helpers";
-import { logger } from "../common";
+import { extLogger } from "../common";
 import * as messages from "../pure/new-messages";
 import * as legacyMessages from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
@@ -110,7 +110,7 @@ export async function compileAndRunQueryAgainstDatabase(
 
   if (result.resultType !== messages.QueryResultType.SUCCESS) {
     const message = result.message || "Failed to run query";
-    void logger.log(message);
+    void extLogger.log(message);
     void showAndLogErrorMessage(message);
   }
   let message;
