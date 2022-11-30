@@ -67,7 +67,7 @@ export function generateMarkdown(
       resultsFileContent.push(...rawResultTable);
     }
     resultsFiles.push({
-      fileName: fileName,
+      fileName,
       content: resultsFileContent,
     });
   }
@@ -117,7 +117,7 @@ export async function generateVariantAnalysisMarkdown(
       resultsFileContent.push(...rawResultTable);
     }
     resultsFiles.push({
-      fileName: fileName,
+      fileName,
       content: resultsFileContent,
     });
   }

@@ -666,7 +666,7 @@ export async function createInitialQueryInfo(
     ...(isQuickEval
       ? {
           queryText: quickEvalText!, // if this query is quick eval, it must have quick eval text
-          quickEvalPosition: quickEvalPosition,
+          quickEvalPosition,
         }
       : {
           queryText: await readFile(queryPath, "utf8"),

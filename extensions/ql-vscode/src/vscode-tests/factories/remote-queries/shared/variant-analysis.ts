@@ -43,9 +43,9 @@ export function createMockVariantAnalysis({
     executionStartTime,
     createdAt: faker.date.recent().toISOString(),
     updatedAt: faker.date.recent().toISOString(),
-    status: status,
+    status,
     actionsWorkflowRunId: faker.datatype.number(),
-    scannedRepos: scannedRepos,
-    skippedRepos: skippedRepos,
+    scannedRepos,
+    skippedRepos,
   };
 }

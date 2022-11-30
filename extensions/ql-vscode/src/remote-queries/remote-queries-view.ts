@@ -106,17 +106,17 @@ export class RemoteQueriesView extends AbstractWebview<
     return {
       queryId: queryResult.queryId,
       queryTitle: query.queryName,
-      queryFileName: queryFileName,
+      queryFileName,
       queryFilePath: query.queryFilePath,
       queryText: query.queryText,
       language: query.language,
       workflowRunUrl: `https://github.com/${query.controllerRepository.owner}/${query.controllerRepository.name}/actions/runs/${query.actionsWorkflowRunId}`,
-      totalRepositoryCount: totalRepositoryCount,
+      totalRepositoryCount,
       affectedRepositoryCount: affectedRepositories.length,
-      totalResultCount: totalResultCount,
+      totalResultCount,
       executionTimestamp: this.formatDate(query.executionStartTime),
-      executionDuration: executionDuration,
-      analysisSummaries: analysisSummaries,
+      executionDuration,
+      analysisSummaries,
       analysisFailures: queryResult.analysisFailures,
     };
   }

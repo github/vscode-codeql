@@ -182,7 +182,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     return {
       type: "suite",
       id: testDirectory.path,
-      label: label,
+      label,
       children: QLTestAdapter.createTestOrSuiteInfos(testDirectory.children),
       tooltip: testDirectory.path,
     };
@@ -227,7 +227,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
     this._testStates.fire({
       type: "started",
-      tests: tests,
+      tests,
     } as TestRunStartedEvent);
 
     const currentDatabaseUri =
@@ -357,7 +357,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
       tests,
       workspacePaths,
       {
-        cancellationToken: cancellationToken,
+        cancellationToken,
         logger: testLogger,
       },
     )) {

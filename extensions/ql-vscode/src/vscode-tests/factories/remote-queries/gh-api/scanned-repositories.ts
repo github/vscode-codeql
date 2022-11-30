@@ -13,7 +13,7 @@ export function createMockScannedRepo(
   return {
     repository: {
       ...createMockRepositoryWithMetadata(),
-      name: name,
+      name,
       full_name: "github/" + name,
       private: isPrivate,
     },

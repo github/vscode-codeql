@@ -77,8 +77,8 @@ export function processUpdatedVariantAnalysis(
     status: processApiStatus(response.status),
     completedAt: response.completed_at,
     actionsWorkflowRunId: response.actions_workflow_run_id,
-    scannedRepos: scannedRepos,
-    skippedRepos: skippedRepos,
+    scannedRepos,
+    skippedRepos,
   };
 
   if (response.failure_reason) {

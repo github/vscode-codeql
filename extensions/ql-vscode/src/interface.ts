@@ -607,7 +607,7 @@ export class ResultsView extends AbstractWebview<
       resultSet: { t: "RawResultSet", ...resultSet },
       numPages: numPagesOfResultSet(resultSet),
       numInterpretedPages: numInterpretedPages(this._interpretation),
-      selectedTable: selectedTable,
+      selectedTable,
       resultSetNames,
     };
 

@@ -16,7 +16,7 @@ export function createMockScannedRepo(
       fullName: "github/" + name,
       private: isPrivate,
     },
-    analysisStatus: analysisStatus,
+    analysisStatus,
     resultCount: faker.datatype.number(),
     artifactSizeInBytes: faker.datatype.number(),
   };

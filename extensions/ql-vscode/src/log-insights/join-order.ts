@@ -360,7 +360,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
     const maxDependentPredicateSize = safeMax(dependentPredicateSizes);
     return {
       maxTupleCount: safeMax(pipelineRun.counts),
-      maxDependentPredicateSize: maxDependentPredicateSize,
+      maxDependentPredicateSize,
     };
   }
 
@@ -491,7 +491,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
         );
       orderTobucket.set(raReference, {
         tupleCounts: newTupleCounts,
-        resultSize: resultSize,
+        resultSize,
         dependentPredicateSizes: newDependentPredicateSizes,
       });
     });

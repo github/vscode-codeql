@@ -90,7 +90,7 @@ export async function deployPackage(
     await copyPackage(sourcePath, distPath);
 
     return {
-      distPath: distPath,
+      distPath,
       name: packageJson.name,
       version: packageJson.version,
     };

@@ -111,8 +111,8 @@ async function generateSummarySymbols(
         }
         symbol.iterations[iteration] = {
           startLine: lineNumber,
-          raStartLine: raStartLine,
-          raEndLine: raEndLine,
+          raStartLine,
+          raEndLine,
         };
       }
     }

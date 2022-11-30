@@ -66,7 +66,6 @@ module.exports = {
     "no-fallthrough": "off",
     "no-console": "off",
     "no-shadow": "off",
-    "object-shorthand": "off",
     "prefer-template": "off",
     "github/array-foreach": "off",
     "github/no-then": "off",

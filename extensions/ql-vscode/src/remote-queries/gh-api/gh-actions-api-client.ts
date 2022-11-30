@@ -83,7 +83,7 @@ export async function getRemoteQueryIndex(
 
     return {
       id: item.id.toString(),
-      artifactId: artifactId,
+      artifactId,
       nwo: item.nwo,
       sha: item.sha,
       resultCount: item.results_count,
