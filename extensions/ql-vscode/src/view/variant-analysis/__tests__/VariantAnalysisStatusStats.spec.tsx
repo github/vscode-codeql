@@ -8,12 +8,6 @@ import {
 import { formatDate } from "../../../pure/date";
 
 describe(VariantAnalysisStatusStats.name, () => {
-  const onViewLogsClick = jest.fn();
-
-  afterEach(() => {
-    onViewLogsClick.mockReset();
-  });
-
   const render = (props: Partial<VariantAnalysisStatusStatsProps> = {}) =>
     reactRender(
       <VariantAnalysisStatusStats
