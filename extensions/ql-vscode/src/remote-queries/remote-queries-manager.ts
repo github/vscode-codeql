@@ -20,7 +20,7 @@ import {
   showAndLogInformationMessage,
   showInformationMessageWithAction,
 } from "../helpers";
-import { Logger } from "../logging";
+import { Logger } from "../common";
 import { prepareRemoteQueryRun } from "./run-remote-query";
 import { RemoteQueriesView } from "./remote-queries-view";
 import { buildRemoteQueryEntity, RemoteQuery } from "./remote-query";

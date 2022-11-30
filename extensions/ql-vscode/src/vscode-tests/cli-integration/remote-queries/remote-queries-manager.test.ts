@@ -21,7 +21,7 @@ import { UserCancellationException } from "../../../commandRunner";
 import * as ghApiClient from "../../../remote-queries/gh-api/gh-api-client";
 import { Repository } from "../../../remote-queries/gh-api/repository";
 import { createMockExtensionContext } from "../../no-workspace";
-import { OutputChannelLogger } from "../../../logging";
+import { OutputChannelLogger } from "../../../common";
 import { RemoteQueriesSubmission } from "../../../remote-queries/shared/remote-queries";
 import { readBundledPack } from "../../utils/bundled-pack-helpers";
 import { RemoteQueriesManager } from "../../../remote-queries/remote-queries-manager";

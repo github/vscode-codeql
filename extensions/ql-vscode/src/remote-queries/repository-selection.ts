@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import { QuickPickItem, window } from "vscode";
-import { logger } from "../logging";
+import { logger } from "../common";
 import {
   getRemoteRepositoryLists,
   getRemoteRepositoryListsPath,

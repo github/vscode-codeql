@@ -8,7 +8,7 @@ import {
 } from "vscode";
 import { URLSearchParams } from "url";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
-import { logger } from "../logging";
+import { logger } from "../common";
 import {
   FromVariantAnalysisMessage,
   ToVariantAnalysisMessage,

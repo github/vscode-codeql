@@ -8,7 +8,7 @@ import {
   window,
 } from "vscode";
 import { CodeQLExtensionInterface } from "../../../extension";
-import { logger } from "../../../logging";
+import { logger } from "../../../common";
 import * as config from "../../../config";
 import {
   setRemoteControllerRepo,

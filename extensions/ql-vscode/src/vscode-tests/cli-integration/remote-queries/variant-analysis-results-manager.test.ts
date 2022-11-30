@@ -1,6 +1,6 @@
 import { extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../../extension";
-import { logger } from "../../../logging";
+import { logger } from "../../../common";
 import { Credentials } from "../../../authentication";
 import * as fs from "fs-extra";
 import * as path from "path";

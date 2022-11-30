@@ -79,7 +79,7 @@ import {
   logger,
   ProgressReporter,
   queryServerLogger,
-} from "./logging";
+} from "./common";
 import { QueryHistoryManager } from "./query-history";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
 import * as legacyQueryServer from "./legacy-query-server/queryserver-client";

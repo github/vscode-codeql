@@ -5,7 +5,7 @@ import {
   tmpDir,
 } from "../helpers";
 import { ProgressCallback, UserCancellationException } from "../commandRunner";
-import { logger } from "../logging";
+import { logger } from "../common";
 import * as messages from "../pure/legacy-messages";
 import * as qsClient from "./queryserver-client";
 import * as tmp from "tmp-promise";

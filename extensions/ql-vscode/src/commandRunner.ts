@@ -7,7 +7,7 @@ import {
   ProgressLocation,
 } from "vscode";
 import { showAndLogErrorMessage, showAndLogWarningMessage } from "./helpers";
-import { logger } from "./logging";
+import { logger } from "./common";
 import { getErrorMessage, getErrorStack } from "./pure/helpers-pure";
 import { telemetryListener } from "./telemetry";
 

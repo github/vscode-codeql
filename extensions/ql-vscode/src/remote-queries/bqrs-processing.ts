@@ -1,5 +1,5 @@
 import { CodeQLCliServer } from "../cli";
-import { Logger } from "../logging";
+import { Logger } from "../common";
 import { transformBqrsResultSet } from "../pure/bqrs-cli-types";
 import { AnalysisRawResults } from "./shared/analysis-result";
 import { MAX_RAW_RESULTS } from "./shared/result-limits";

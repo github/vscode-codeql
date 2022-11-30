@@ -14,7 +14,7 @@ import {
 } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
 import { commandRunner } from "../commandRunner";
-import { logger } from "../logging";
+import { logger } from "../common";
 import { getErrorMessage } from "../pure/helpers-pure";
 
 /** A `Position` within a specified file on disk. */

@@ -8,7 +8,7 @@ import {
 } from "./log-scanner";
 import { PipelineInfo, SummarySymbols } from "./summary-parser";
 import * as fs from "fs-extra";
-import { logger } from "../logging";
+import { logger } from "../common";
 
 /**
  * Compute the key used to find a predicate in the summary symbols.

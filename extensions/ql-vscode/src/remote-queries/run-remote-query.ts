@@ -12,7 +12,7 @@ import {
 } from "../helpers";
 import { Credentials } from "../authentication";
 import * as cli from "../cli";
-import { logger } from "../logging";
+import { logger } from "../common";
 import {
   getActionBranch,
   getRemoteControllerRepo,

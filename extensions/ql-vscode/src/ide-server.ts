@@ -2,7 +2,7 @@ import { ProgressLocation, window } from "vscode";
 import { StreamInfo } from "vscode-languageclient/node";
 import * as cli from "./cli";
 import { QueryServerConfig } from "./config";
-import { ideServerLogger } from "./logging";
+import { ideServerLogger } from "./common";
 
 /**
  * Managing the language server for CodeQL.

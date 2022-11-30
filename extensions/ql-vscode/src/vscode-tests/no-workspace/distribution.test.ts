@@ -3,7 +3,7 @@ import * as fetch from "node-fetch";
 import * as semver from "semver";
 
 import * as helpers from "../../helpers";
-import { logger } from "../../logging";
+import { logger } from "../../common";
 import * as fs from "fs-extra";
 import * as os from "os";
 import {

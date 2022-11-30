@@ -1,6 +1,6 @@
 import { App, AppMode } from "../common/app";
 import { isCanary, isNewQueryRunExperienceEnabled } from "../config";
-import { logger } from "../logging";
+import { logger } from "../common";
 import { DisposableObject } from "../pure/disposable-object";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbManager } from "./db-manager";

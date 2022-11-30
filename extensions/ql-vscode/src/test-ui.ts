@@ -16,7 +16,7 @@ import { TestTreeNode } from "./test-tree-node";
 import { DisposableObject } from "./pure/disposable-object";
 import { UIService } from "./vscode-utils/ui-service";
 import { QLTestAdapter, getExpectedFile, getActualFile } from "./test-adapter";
-import { logger } from "./logging";
+import { logger } from "./common";
 
 type VSCodeTestEvent =
   | TestRunStartedEvent

@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as tmp from "tmp";
-import { OutputChannelLogger } from "../../src/logging";
+import { OutputChannelLogger } from "../../../src/common";
 
 jest.setTimeout(999999);
 

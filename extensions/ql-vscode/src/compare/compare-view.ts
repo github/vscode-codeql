@@ -5,7 +5,7 @@ import {
   ToCompareViewMessage,
   QueryCompareResult,
 } from "../pure/interface-types";
-import { Logger } from "../logging";
+import { Logger } from "../common";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseManager } from "../databases";
 import { jumpToLocation } from "../interface-utils";

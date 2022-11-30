@@ -11,7 +11,7 @@ import { extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../extension";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../legacy-query-server/queryserver-client";
-import { logger, ProgressReporter } from "../../logging";
+import { logger, ProgressReporter } from "../../common";
 
 const baseDir = path.join(__dirname, "../../../test/data");
 

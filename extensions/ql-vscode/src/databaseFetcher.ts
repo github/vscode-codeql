@@ -11,7 +11,7 @@ import { retry } from "@octokit/plugin-retry";
 import { DatabaseManager, DatabaseItem } from "./databases";
 import { showAndLogInformationMessage } from "./helpers";
 import { reportStreamProgress, ProgressCallback } from "./commandRunner";
-import { logger } from "./logging";
+import { logger } from "./common";
 import { tmpDir } from "./helpers";
 import { Credentials } from "./authentication";
 import { REPO_REGEX, getErrorMessage } from "./pure/helpers-pure";

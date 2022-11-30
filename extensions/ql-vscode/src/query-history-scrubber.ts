@@ -2,7 +2,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { Disposable, ExtensionContext } from "vscode";
-import { logger } from "./logging";
+import { logger } from "./common";
 import { QueryHistoryManager } from "./query-history";
 
 const LAST_SCRUB_TIME_KEY = "lastScrubTime";

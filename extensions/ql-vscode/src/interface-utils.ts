@@ -17,7 +17,7 @@ import {
 import { tryGetResolvableLocation, isLineColumnLoc } from "./pure/bqrs-utils";
 import { DatabaseItem, DatabaseManager } from "./databases";
 import { ViewSourceFileMsg } from "./pure/interface-types";
-import { Logger } from "./logging";
+import { Logger } from "./common";
 import {
   LineColumnLocation,
   WholeFileLocation,

@@ -22,7 +22,7 @@ import {
   getErrorStack,
 } from "./pure/helpers-pure";
 import { QueryMetadata, SortDirection } from "./pure/interface-types";
-import { Logger, ProgressReporter } from "./logging";
+import { Logger, ProgressReporter } from "./common";
 import { CompilationMessage } from "./pure/legacy-messages";
 import { sarifParser } from "./sarif-parser";
 import { dbSchemeToLanguage, walkDirectory } from "./helpers";

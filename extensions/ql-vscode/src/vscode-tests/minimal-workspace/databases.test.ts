@@ -11,7 +11,7 @@ import {
   FullDatabaseOptions,
   findSourceArchive,
 } from "../../databases";
-import { Logger } from "../../logging";
+import { Logger } from "../../common";
 import { ProgressCallback } from "../../commandRunner";
 import { CodeQLCliServer, DbInfo } from "../../cli";
 import {

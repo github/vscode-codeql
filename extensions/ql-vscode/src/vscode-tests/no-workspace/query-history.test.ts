@@ -2,7 +2,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { logger } from "../../logging";
+import { logger } from "../../common";
 import { registerQueryHistoryScrubber } from "../../query-history-scrubber";
 import {
   HistoryTreeDataProvider,
