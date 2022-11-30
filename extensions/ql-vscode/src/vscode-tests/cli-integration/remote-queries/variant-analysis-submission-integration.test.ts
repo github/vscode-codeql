@@ -1,20 +1,27 @@
 import * as path from "path";
 
-import * as sinon from "sinon";
-
-import { commands, extensions, TextDocument, window, workspace } from "vscode";
+import {
+  authentication,
+  commands,
+  extensions,
+  QuickPickItem,
+  TextDocument,
+  window,
+  workspace,
+} from "vscode";
 import * as Octokit from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 
 import { CodeQLExtensionInterface } from "../../../extension";
-import * as config from "../../../config";
 import { Credentials } from "../../../authentication";
 import { MockGitHubApiServer } from "../../../mocks/mock-gh-api-server";
 
+jest.setTimeout(10_000);
+
 const mockServer = new MockGitHubApiServer();
-before(() => mockServer.startServer());
+beforeAll(() => mockServer.startServer());
 afterEach(() => mockServer.unloadScenario());
-after(() => mockServer.stopServer());
+afterAll(() => mockServer.stopServer());
 
 async function showQlDocument(name: string): Promise<TextDocument> {
   const folderPath = workspace.workspaceFolders![0].uri.fsPath;
@@ -24,49 +31,89 @@ async function showQlDocument(name: string): Promise<TextDocument> {
   return document;
 }
 
-describe("Variant Analysis Submission Integration", function () {
-  this.timeout(10_000);
-
-  let sandbox: sinon.SinonSandbox;
-  let quickPickSpy: sinon.SinonStub;
-  let inputBoxSpy: sinon.SinonStub;
-  let executeCommandSpy: sinon.SinonStub;
-  let showErrorMessageSpy: sinon.SinonStub;
+describe("Variant Analysis Submission Integration", () => {
+  let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
+  let inputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
+  let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
+  let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;
 
   beforeEach(async () => {
-    sandbox = sinon.createSandbox();
+    const originalGetConfiguration = workspace.getConfiguration;
 
-    sandbox.stub(config, "isCanary").returns(true);
-    sandbox.stub(config, "isVariantAnalysisLiveResultsEnabled").returns(true);
+    jest
+      .spyOn(workspace, "getConfiguration")
+      .mockImplementation((section, scope) => {
+        const configuration = originalGetConfiguration(section, scope);
+
+        return {
+          get(key: string, defaultValue?: unknown) {
+            if (section === "codeQL.variantAnalysis" && key === "liveResults") {
+              return true;
+            }
+            if (section === "codeQL" && key == "canary") {
+              return true;
+            }
+            if (
+              section === "codeQL.variantAnalysis" &&
+              key === "controllerRepo"
+            ) {
+              return "github/vscode-codeql";
+            }
+            return configuration.get(key, defaultValue);
+          },
+          has(key: string) {
+            return configuration.has(key);
+          },
+          inspect(key: string) {
+            return configuration.inspect(key);
+          },
+          update(
+            key: string,
+            value: unknown,
+            configurationTarget?: boolean,
+            overrideInLanguage?: boolean,
+          ) {
+            return configuration.update(
+              key,
+              value,
+              configurationTarget,
+              overrideInLanguage,
+            );
+          },
+        };
+      });
+
+    jest.spyOn(authentication, "getSession").mockResolvedValue({
+      id: "test",
+      accessToken: "test-token",
+      scopes: [],
+      account: {
+        id: "test",
+        label: "test",
+      },
+    });
 
     const mockCredentials = {
       getOctokit: () => Promise.resolve(new Octokit.Octokit({ retry })),
     } as unknown as Credentials;
-    sandbox.stub(Credentials, "initialize").resolves(mockCredentials);
+    jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
 
-    await config.setRemoteControllerRepo("github/vscode-codeql");
+    quickPickSpy = jest
+      .spyOn(window, "showQuickPick")
+      .mockResolvedValue(undefined);
+    inputBoxSpy = jest
+      .spyOn(window, "showInputBox")
+      .mockResolvedValue(undefined);
+    executeCommandSpy = jest.spyOn(commands, "executeCommand");
+    showErrorMessageSpy = jest
+      .spyOn(window, "showErrorMessage")
+      .mockResolvedValue(undefined);
 
-    quickPickSpy = sandbox.stub(window, "showQuickPick").resolves(undefined);
-    inputBoxSpy = sandbox.stub(window, "showInputBox").resolves(undefined);
-
-    executeCommandSpy = sandbox.stub(commands, "executeCommand").callThrough();
-    showErrorMessageSpy = sandbox
-      .stub(window, "showErrorMessage")
-      .resolves(undefined);
-
-    try {
-      await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-    } catch (e) {
-      fail(e as Error);
-    }
-  });
-
-  afterEach(() => {
-    sandbox.restore();
+    await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
   });
 
   describe("Successful scenario", () => {
@@ -78,18 +125,19 @@ describe("Variant Analysis Submission Integration", function () {
       await showQlDocument("query.ql");
 
       // Select a repository list
-      quickPickSpy.onFirstCall().resolves({
+      quickPickSpy.mockResolvedValueOnce({
         useCustomRepo: true,
-      });
+      } as unknown as QuickPickItem);
       // Enter a GitHub repository
-      inputBoxSpy.onFirstCall().resolves("github/codeql");
+      inputBoxSpy.mockResolvedValueOnce("github/codeql");
       // Select target language for your query
-      quickPickSpy.onSecondCall().resolves("javascript");
+      quickPickSpy.mockResolvedValueOnce(
+        "javascript" as unknown as QuickPickItem,
+      );
 
       await commands.executeCommand("codeQL.runVariantAnalysis");
 
-      sinon.assert.calledWith(
-        executeCommandSpy,
+      expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.openVariantAnalysisView",
         146,
       );
@@ -105,18 +153,19 @@ describe("Variant Analysis Submission Integration", function () {
       await showQlDocument("query.ql");
 
       // Select a repository list
-      quickPickSpy.onFirstCall().resolves({
+      quickPickSpy.mockResolvedValueOnce({
         useCustomRepo: true,
-      });
+      } as unknown as QuickPickItem);
       // Enter a GitHub repository
-      inputBoxSpy.onFirstCall().resolves("github/codeql");
+      inputBoxSpy.mockResolvedValueOnce("github/codeql");
 
       await commands.executeCommand("codeQL.runVariantAnalysis");
 
-      sinon.assert.calledWith(
-        showErrorMessageSpy,
-        sinon.match('Controller repository "github/vscode-codeql" not found'),
-        sinon.match.string,
+      expect(showErrorMessageSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Controller repository "github/vscode-codeql" not found',
+        ),
+        expect.any(String),
       );
     });
   });
@@ -130,20 +179,21 @@ describe("Variant Analysis Submission Integration", function () {
       await showQlDocument("query.ql");
 
       // Select a repository list
-      quickPickSpy.onFirstCall().resolves({
+      quickPickSpy.mockResolvedValueOnce({
         useCustomRepo: true,
-      });
+      } as unknown as QuickPickItem);
       // Enter a GitHub repository
-      inputBoxSpy.onFirstCall().resolves("github/codeql");
+      inputBoxSpy.mockResolvedValueOnce("github/codeql");
       // Select target language for your query
-      quickPickSpy.onSecondCall().resolves("javascript");
+      quickPickSpy.mockResolvedValueOnce(
+        "javascript" as unknown as QuickPickItem,
+      );
 
       await commands.executeCommand("codeQL.runVariantAnalysis");
 
-      sinon.assert.calledWith(
-        showErrorMessageSpy,
-        sinon.match("No repositories could be queried."),
-        sinon.match.string,
+      expect(showErrorMessageSpy).toHaveBeenCalledWith(
+        expect.stringContaining("No repositories could be queried."),
+        expect.any(String),
       );
     });
   });

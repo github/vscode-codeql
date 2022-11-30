@@ -1,96 +1,94 @@
-import * as sinon from "sinon";
-import { expect } from "chai";
-import { window } from "vscode";
-import * as pq from "proxyquire";
+import { QuickPickItem, window } from "vscode";
 import * as fs from "fs-extra";
 import { UserCancellationException } from "../../../commandRunner";
 
-const proxyquire = pq.noPreserveCache();
+import * as config from "../../../config";
+import { getRepositorySelection } from "../../../remote-queries/repository-selection";
 
-describe("repository selection", async () => {
-  let sandbox: sinon.SinonSandbox;
+describe("repository selection", () => {
+  let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
+  let showInputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
 
-  let quickPickSpy: sinon.SinonStub;
-  let showInputBoxSpy: sinon.SinonStub;
+  let getRemoteRepositoryListsSpy: jest.SpiedFunction<
+    typeof config.getRemoteRepositoryLists
+  >;
+  let getRemoteRepositoryListsPathSpy: jest.SpiedFunction<
+    typeof config.getRemoteRepositoryListsPath
+  >;
 
-  let getRemoteRepositoryListsSpy: sinon.SinonStub;
-  let getRemoteRepositoryListsPathSpy: sinon.SinonStub;
-
-  let pathExistsStub: sinon.SinonStub;
-  let fsStatStub: sinon.SinonStub;
-  let fsReadFileStub: sinon.SinonStub;
-
-  let mod: any;
+  let pathExistsStub: jest.SpiedFunction<typeof fs.pathExists>;
+  let fsStatStub: jest.SpiedFunction<typeof fs.stat>;
+  let fsReadFileStub: jest.SpiedFunction<typeof fs.readFile>;
 
   beforeEach(() => {
-    sandbox = sinon.createSandbox();
+    quickPickSpy = jest
+      .spyOn(window, "showQuickPick")
+      .mockResolvedValue(undefined);
+    showInputBoxSpy = jest
+      .spyOn(window, "showInputBox")
+      .mockResolvedValue(undefined);
 
-    quickPickSpy = sandbox.stub(window, "showQuickPick");
-    showInputBoxSpy = sandbox.stub(window, "showInputBox");
+    getRemoteRepositoryListsSpy = jest
+      .spyOn(config, "getRemoteRepositoryLists")
+      .mockReturnValue(undefined);
+    getRemoteRepositoryListsPathSpy = jest
+      .spyOn(config, "getRemoteRepositoryListsPath")
+      .mockReturnValue(undefined);
 
-    getRemoteRepositoryListsSpy = sandbox.stub();
-    getRemoteRepositoryListsPathSpy = sandbox.stub();
-
-    pathExistsStub = sandbox.stub(fs, "pathExists");
-    fsStatStub = sandbox.stub(fs, "stat");
-    fsReadFileStub = sandbox.stub(fs, "readFile");
-
-    mod = proxyquire("../../../remote-queries/repository-selection", {
-      "../config": {
-        getRemoteRepositoryLists: getRemoteRepositoryListsSpy,
-        getRemoteRepositoryListsPath: getRemoteRepositoryListsPathSpy,
-      },
-      "fs-extra": {
-        pathExists: pathExistsStub,
-        stat: fsStatStub,
-        readFile: fsReadFileStub,
-      },
-    });
+    pathExistsStub = jest
+      .spyOn(fs, "pathExists")
+      .mockImplementation(() => false);
+    fsStatStub = jest
+      .spyOn(fs, "stat")
+      .mockRejectedValue(new Error("not found"));
+    fsReadFileStub = jest
+      .spyOn(fs, "readFile")
+      .mockRejectedValue(new Error("not found"));
   });
 
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  describe("repo lists from settings", async () => {
+  describe("repo lists from settings", () => {
     it("should allow selection from repo lists from your pre-defined config", async () => {
       // Fake return values
-      quickPickSpy.resolves({ repositories: ["foo/bar", "foo/baz"] });
-      getRemoteRepositoryListsSpy.returns({
+      quickPickSpy.mockResolvedValue({
+        repositories: ["foo/bar", "foo/baz"],
+      } as unknown as QuickPickItem);
+      getRemoteRepositoryListsSpy.mockReturnValue({
         list1: ["foo/bar", "foo/baz"],
         list2: [],
       });
 
       // Make the function call
-      const repoSelection = await mod.getRepositorySelection();
+      const repoSelection = await getRepositorySelection();
 
       // Check that the return value is correct
-      expect(repoSelection.repositoryLists).to.be.undefined;
-      expect(repoSelection.owners).to.be.undefined;
-      expect(repoSelection.repositories).to.deep.eq(["foo/bar", "foo/baz"]);
+      expect(repoSelection.repositoryLists).toBeUndefined();
+      expect(repoSelection.owners).toBeUndefined();
+      expect(repoSelection.repositories).toEqual(["foo/bar", "foo/baz"]);
     });
   });
 
-  describe("system level repo lists", async () => {
+  describe("system level repo lists", () => {
     it("should allow selection from repo lists defined at the system level", async () => {
       // Fake return values
-      quickPickSpy.resolves({ repositoryList: "top_100" });
-      getRemoteRepositoryListsSpy.returns({
+      quickPickSpy.mockResolvedValue({
+        repositoryList: "top_100",
+      } as unknown as QuickPickItem);
+      getRemoteRepositoryListsSpy.mockReturnValue({
         list1: ["foo/bar", "foo/baz"],
         list2: [],
       });
 
       // Make the function call
-      const repoSelection = await mod.getRepositorySelection();
+      const repoSelection = await getRepositorySelection();
 
       // Check that the return value is correct
-      expect(repoSelection.repositories).to.be.undefined;
-      expect(repoSelection.owners).to.be.undefined;
-      expect(repoSelection.repositoryLists).to.deep.eq(["top_100"]);
+      expect(repoSelection.repositories).toBeUndefined();
+      expect(repoSelection.owners).toBeUndefined();
+      expect(repoSelection.repositoryLists).toEqual(["top_100"]);
     });
   });
 
-  describe("custom owner", async () => {
+  describe("custom owner", () => {
     // Test the owner regex in various "good" cases
     const goodOwners = [
       "owner",
@@ -102,17 +100,19 @@ describe("repository selection", async () => {
     goodOwners.forEach((owner) => {
       it(`should run on a valid owner that you enter in the text box: ${owner}`, async () => {
         // Fake return values
-        quickPickSpy.resolves({ useAllReposOfOwner: true });
-        getRemoteRepositoryListsSpy.returns({}); // no pre-defined repo lists
-        showInputBoxSpy.resolves(owner);
+        quickPickSpy.mockResolvedValue({
+          useAllReposOfOwner: true,
+        } as unknown as QuickPickItem);
+        getRemoteRepositoryListsSpy.mockReturnValue({}); // no pre-defined repo lists
+        showInputBoxSpy.mockResolvedValue(owner);
 
         // Make the function call
-        const repoSelection = await mod.getRepositorySelection();
+        const repoSelection = await getRepositorySelection();
 
         // Check that the return value is correct
-        expect(repoSelection.repositories).to.be.undefined;
-        expect(repoSelection.repositoryLists).to.be.undefined;
-        expect(repoSelection.owners).to.deep.eq([owner]);
+        expect(repoSelection.repositories).toBeUndefined();
+        expect(repoSelection.repositoryLists).toBeUndefined();
+        expect(repoSelection.owners).toEqual([owner]);
       });
     });
 
@@ -121,33 +121,38 @@ describe("repository selection", async () => {
     badOwners.forEach((owner) => {
       it(`should show an error message if you enter an invalid owner in the text box: ${owner}`, async () => {
         // Fake return values
-        quickPickSpy.resolves({ useAllReposOfOwner: true });
-        getRemoteRepositoryListsSpy.returns({}); // no pre-defined repo lists
-        showInputBoxSpy.resolves(owner);
+        quickPickSpy.mockResolvedValue({
+          useAllReposOfOwner: true,
+        } as unknown as QuickPickItem);
+        getRemoteRepositoryListsSpy.mockReturnValue({}); // no pre-defined repo lists
+        showInputBoxSpy.mockResolvedValue(owner);
 
         // Function call should throw a UserCancellationException
-        await expect(mod.getRepositorySelection()).to.be.rejectedWith(
-          Error,
+        await expect(getRepositorySelection()).rejects.toThrow(
           `Invalid user or organization: ${owner}`,
         );
       });
     });
 
     it("should be ok for the user to change their mind", async () => {
-      quickPickSpy.resolves({ useAllReposOfOwner: true });
-      getRemoteRepositoryListsSpy.returns({});
+      quickPickSpy.mockResolvedValue({
+        useAllReposOfOwner: true,
+      } as unknown as QuickPickItem);
+      getRemoteRepositoryListsSpy.mockReturnValue({});
 
       // The user pressed escape to cancel the operation
-      showInputBoxSpy.resolves(undefined);
+      showInputBoxSpy.mockResolvedValue(undefined);
 
-      await expect(mod.getRepositorySelection()).to.be.rejectedWith(
-        UserCancellationException,
+      await expect(getRepositorySelection()).rejects.toThrow(
         "No repositories selected",
+      );
+      await expect(getRepositorySelection()).rejects.toThrow(
+        UserCancellationException,
       );
     });
   });
 
-  describe("custom repo", async () => {
+  describe("custom repo", () => {
     // Test the repo regex in various "good" cases
     const goodRepos = [
       "owner/repo",
@@ -157,17 +162,19 @@ describe("repository selection", async () => {
     goodRepos.forEach((repo) => {
       it(`should run on a valid repo that you enter in the text box: ${repo}`, async () => {
         // Fake return values
-        quickPickSpy.resolves({ useCustomRepo: true });
-        getRemoteRepositoryListsSpy.returns({}); // no pre-defined repo lists
-        showInputBoxSpy.resolves(repo);
+        quickPickSpy.mockResolvedValue({
+          useCustomRepo: true,
+        } as unknown as QuickPickItem);
+        getRemoteRepositoryListsSpy.mockReturnValue({}); // no pre-defined repo lists
+        showInputBoxSpy.mockResolvedValue(repo);
 
         // Make the function call
-        const repoSelection = await mod.getRepositorySelection();
+        const repoSelection = await getRepositorySelection();
 
         // Check that the return value is correct
-        expect(repoSelection.repositoryLists).to.be.undefined;
-        expect(repoSelection.owners).to.be.undefined;
-        expect(repoSelection.repositories).to.deep.equal([repo]);
+        expect(repoSelection.repositoryLists).toBeUndefined();
+        expect(repoSelection.owners).toBeUndefined();
+        expect(repoSelection.repositories).toEqual([repo]);
       });
     });
 
@@ -181,120 +188,129 @@ describe("repository selection", async () => {
     badRepos.forEach((repo) => {
       it(`should show an error message if you enter an invalid repo in the text box: ${repo}`, async () => {
         // Fake return values
-        quickPickSpy.resolves({ useCustomRepo: true });
-        getRemoteRepositoryListsSpy.returns({}); // no pre-defined repo lists
-        showInputBoxSpy.resolves(repo);
+        quickPickSpy.mockResolvedValue({
+          useCustomRepo: true,
+        } as unknown as QuickPickItem);
+        getRemoteRepositoryListsSpy.mockReturnValue({}); // no pre-defined repo lists
+        showInputBoxSpy.mockResolvedValue(repo);
 
         // Function call should throw a UserCancellationException
-        await expect(mod.getRepositorySelection()).to.be.rejectedWith(
-          UserCancellationException,
+        await expect(getRepositorySelection()).rejects.toThrow(
           "Invalid repository format",
+        );
+        await expect(getRepositorySelection()).rejects.toThrow(
+          UserCancellationException,
         );
       });
     });
 
     it("should be ok for the user to change their mind", async () => {
-      quickPickSpy.resolves({ useCustomRepo: true });
-      getRemoteRepositoryListsSpy.returns({});
+      quickPickSpy.mockResolvedValue({
+        useCustomRepo: true,
+      } as unknown as QuickPickItem);
+      getRemoteRepositoryListsSpy.mockReturnValue({});
 
       // The user pressed escape to cancel the operation
-      showInputBoxSpy.resolves(undefined);
+      showInputBoxSpy.mockResolvedValue(undefined);
 
-      await expect(mod.getRepositorySelection()).to.be.rejectedWith(
-        UserCancellationException,
+      await expect(getRepositorySelection()).rejects.toThrow(
         "No repositories selected",
+      );
+      await expect(getRepositorySelection()).rejects.toThrow(
+        UserCancellationException,
       );
     });
   });
 
-  describe("external repository lists file", async () => {
+  describe("external repository lists file", () => {
     it("should fail if path does not exist", async () => {
       const fakeFilePath = "/path/that/does/not/exist.json";
-      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
-      pathExistsStub.resolves(false);
+      getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
+      pathExistsStub.mockImplementation(() => false);
 
-      await expect(mod.getRepositorySelection()).to.be.rejectedWith(
-        Error,
+      await expect(getRepositorySelection()).rejects.toThrow(
         `External repository lists file does not exist at ${fakeFilePath}`,
       );
     });
 
     it("should fail if path points to directory", async () => {
       const fakeFilePath = "/path/to/dir";
-      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
-      pathExistsStub.resolves(true);
-      fsStatStub.resolves({ isDirectory: () => true } as any);
+      getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
+      pathExistsStub.mockImplementation(() => true);
+      fsStatStub.mockResolvedValue({ isDirectory: () => true } as any);
 
-      await expect(mod.getRepositorySelection()).to.be.rejectedWith(
-        Error,
+      await expect(getRepositorySelection()).rejects.toThrow(
         "External repository lists path should not point to a directory",
       );
     });
 
     it("should fail if file does not have valid JSON", async () => {
       const fakeFilePath = "/path/to/file.json";
-      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
-      pathExistsStub.resolves(true);
-      fsStatStub.resolves({ isDirectory: () => false } as any);
-      fsReadFileStub.resolves("not-json" as any as Buffer);
+      getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
+      pathExistsStub.mockImplementation(() => true);
+      fsStatStub.mockResolvedValue({ isDirectory: () => false } as any);
+      fsReadFileStub.mockResolvedValue("not-json" as any as Buffer);
 
-      await expect(mod.getRepositorySelection()).to.be.rejectedWith(
-        Error,
+      await expect(getRepositorySelection()).rejects.toThrow(
         "Invalid repository lists file. It should contain valid JSON.",
       );
     });
 
     it("should fail if file contains array", async () => {
       const fakeFilePath = "/path/to/file.json";
-      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
-      pathExistsStub.resolves(true);
-      fsStatStub.resolves({ isDirectory: () => false } as any);
-      fsReadFileStub.resolves("[]" as any as Buffer);
+      getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
+      pathExistsStub.mockImplementation(() => true);
+      fsStatStub.mockResolvedValue({ isDirectory: () => false } as any);
+      fsReadFileStub.mockResolvedValue("[]" as any as Buffer);
 
-      await expect(mod.getRepositorySelection()).to.be.rejectedWith(
-        Error,
+      await expect(getRepositorySelection()).rejects.toThrow(
         "Invalid repository lists file. It should be an object mapping names to a list of repositories.",
       );
     });
 
     it("should fail if file does not contain repo lists in the right format", async () => {
       const fakeFilePath = "/path/to/file.json";
-      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
-      pathExistsStub.resolves(true);
-      fsStatStub.resolves({ isDirectory: () => false } as any);
+      getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
+      pathExistsStub.mockImplementation(() => true);
+      fsStatStub.mockResolvedValue({ isDirectory: () => false } as any);
       const repoLists = {
         list1: "owner1/repo1",
       };
-      fsReadFileStub.resolves(JSON.stringify(repoLists) as any as Buffer);
+      fsReadFileStub.mockResolvedValue(
+        JSON.stringify(repoLists) as any as Buffer,
+      );
 
-      await expect(mod.getRepositorySelection()).to.be.rejectedWith(
-        Error,
+      await expect(getRepositorySelection()).rejects.toThrow(
         "Invalid repository lists file. It should contain an array of repositories for each list.",
       );
     });
 
     it("should get repo lists from file", async () => {
       const fakeFilePath = "/path/to/file.json";
-      getRemoteRepositoryListsPathSpy.returns(fakeFilePath);
-      pathExistsStub.resolves(true);
-      fsStatStub.resolves({ isDirectory: () => false } as any);
+      getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
+      pathExistsStub.mockImplementation(() => true);
+      fsStatStub.mockResolvedValue({ isDirectory: () => false } as any);
       const repoLists = {
         list1: ["owner1/repo1", "owner2/repo2"],
         list2: ["owner3/repo3"],
       };
-      fsReadFileStub.resolves(JSON.stringify(repoLists) as any as Buffer);
-      getRemoteRepositoryListsSpy.returns({
+      fsReadFileStub.mockResolvedValue(
+        JSON.stringify(repoLists) as any as Buffer,
+      );
+      getRemoteRepositoryListsSpy.mockReturnValue({
         list3: ["onwer4/repo4"],
         list4: [],
       });
 
-      quickPickSpy.resolves({ repositories: ["owner3/repo3"] });
+      quickPickSpy.mockResolvedValue({
+        repositories: ["owner3/repo3"],
+      } as unknown as QuickPickItem);
 
-      const repoSelection = await mod.getRepositorySelection();
+      const repoSelection = await getRepositorySelection();
 
-      expect(repoSelection.repositoryLists).to.be.undefined;
-      expect(repoSelection.owners).to.be.undefined;
-      expect(repoSelection.repositories).to.deep.eq(["owner3/repo3"]);
+      expect(repoSelection.repositoryLists).toBeUndefined();
+      expect(repoSelection.owners).toBeUndefined();
+      expect(repoSelection.repositories).toEqual(["owner3/repo3"]);
     });
   });
 });

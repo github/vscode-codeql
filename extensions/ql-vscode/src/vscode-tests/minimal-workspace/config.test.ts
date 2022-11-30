@@ -1,28 +1,15 @@
-import * as Sinon from "sinon";
-import { expect } from "chai";
 import { workspace } from "vscode";
 
 import {
   CliConfigListener,
+  ConfigListener,
   QueryHistoryConfigListener,
   QueryServerConfigListener,
 } from "../../config";
 
-describe("config listeners", function () {
-  // Because we are adding some extra waiting, need to bump the test timeouts.
-  this.timeout(5000);
-
-  let sandbox: Sinon.SinonSandbox;
-  beforeEach(() => {
-    sandbox = Sinon.createSandbox();
-  });
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
+describe("config listeners", () => {
   interface TestConfig<T> {
-    clazz: new () => unknown;
+    clazz: new () => ConfigListener;
     settings: {
       name: string;
       property: string;
@@ -95,23 +82,14 @@ describe("config listeners", function () {
 
   testConfig.forEach((config) => {
     describe(config.clazz.name, () => {
-      let listener: any;
-      let spy: Sinon.SinonSpy;
-      beforeEach(() => {
-        listener = new config.clazz();
-        spy = Sinon.spy();
-        listener.onDidChangeConfiguration(spy);
-      });
-
       config.settings.forEach((setting) => {
-        let origValue: any;
+        let origValue: string | number | boolean | undefined;
         beforeEach(async () => {
           origValue = workspace.getConfiguration().get(setting.name);
           await workspace
             .getConfiguration()
             .update(setting.name, setting.values[0]);
           await wait();
-          spy.resetHistory();
         });
 
         afterEach(async () => {
@@ -120,12 +98,17 @@ describe("config listeners", function () {
         });
 
         it(`should listen for changes to '${setting.name}'`, async () => {
+          const listener = new config.clazz();
+          const onDidChangeConfiguration = jest.fn();
+          listener.onDidChangeConfiguration(onDidChangeConfiguration);
+
           await workspace
             .getConfiguration()
             .update(setting.name, setting.values[1]);
           await wait();
-          expect(listener[setting.property]).to.eq(setting.values[1]);
-          expect(spy).to.have.been.calledOnce;
+          const newValue = listener[setting.property as keyof typeof listener];
+          expect(newValue).toEqual(setting.values[1]);
+          expect(onDidChangeConfiguration).toHaveBeenCalledTimes(1);
         });
       });
     });

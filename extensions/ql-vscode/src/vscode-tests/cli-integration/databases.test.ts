@@ -1,7 +1,4 @@
-import * as sinon from "sinon";
 import * as path from "path";
-import { fail } from "assert";
-import { expect } from "chai";
 import { extensions, CancellationToken, Uri, window } from "vscode";
 
 import { CodeQLExtensionInterface } from "../../extension";
@@ -12,64 +9,51 @@ import {
   importArchiveDatabase,
   promptImportInternetDatabase,
 } from "../../databaseFetcher";
-import { ProgressCallback } from "../../commandRunner";
 import { cleanDatabases, dbLoc, DB_URL, storagePath } from "./global.helper";
+
+jest.setTimeout(60_000);
 
 /**
  * Run various integration tests for databases
  */
-describe("Databases", function () {
-  this.timeout(60000);
-
+describe("Databases", () => {
   const LGTM_URL =
     "https://lgtm.com/projects/g/aeisenberg/angular-bind-notifier/";
 
   let databaseManager: DatabaseManager;
-  let sandbox: sinon.SinonSandbox;
-  let inputBoxStub: sinon.SinonStub;
+  let inputBoxStub: jest.SpiedFunction<typeof window.showInputBox>;
   let cli: CodeQLCliServer;
-  let progressCallback: ProgressCallback;
+  const progressCallback = jest.fn();
 
   beforeEach(async () => {
-    try {
-      sandbox = sinon.createSandbox();
-      // the uri.fsPath function on windows returns a lowercase drive letter
-      // so, force the storage path string to be lowercase, too.
-      progressCallback = sandbox.spy();
-      inputBoxStub = sandbox.stub(window, "showInputBox");
-      sandbox.stub(window, "showErrorMessage");
-      sandbox.stub(window, "showInformationMessage");
+    inputBoxStub = jest
+      .spyOn(window, "showInputBox")
+      .mockResolvedValue(undefined);
 
-      const extension = await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-      if ("databaseManager" in extension) {
-        databaseManager = extension.databaseManager;
-      } else {
-        throw new Error(
-          "Extension not initialized. Make sure cli is downloaded and installed properly.",
-        );
-      }
+    jest.spyOn(window, "showErrorMessage").mockResolvedValue(undefined);
+    jest.spyOn(window, "showInformationMessage").mockResolvedValue(undefined);
 
-      await cleanDatabases(databaseManager);
-    } catch (e) {
-      fail(e as Error);
+    const extension = await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
+    if ("databaseManager" in extension) {
+      databaseManager = extension.databaseManager;
+    } else {
+      throw new Error(
+        "Extension not initialized. Make sure cli is downloaded and installed properly.",
+      );
     }
+
+    await cleanDatabases(databaseManager);
   });
 
   afterEach(async () => {
-    try {
-      sandbox.restore();
-      await cleanDatabases(databaseManager);
-    } catch (e) {
-      fail(e as Error);
-    }
+    await cleanDatabases(databaseManager);
   });
 
   it("should add a database from a folder", async () => {
-    const progressCallback = sandbox.spy() as ProgressCallback;
     const uri = Uri.file(dbLoc);
     let dbItem = await importArchiveDatabase(
       uri.toString(true),
@@ -79,16 +63,16 @@ describe("Databases", function () {
       {} as CancellationToken,
       cli,
     );
-    expect(dbItem).to.be.eq(databaseManager.currentDatabaseItem);
-    expect(dbItem).to.be.eq(databaseManager.databaseItems[0]);
-    expect(dbItem).not.to.be.undefined;
+    expect(dbItem).toBe(databaseManager.currentDatabaseItem);
+    expect(dbItem).toBe(databaseManager.databaseItems[0]);
+    expect(dbItem).toBeDefined();
     dbItem = dbItem!;
-    expect(dbItem.name).to.eq("db");
-    expect(dbItem.databaseUri.fsPath).to.eq(path.join(storagePath, "db", "db"));
+    expect(dbItem.name).toBe("db");
+    expect(dbItem.databaseUri.fsPath).toBe(path.join(storagePath, "db", "db"));
   });
 
   it("should add a database from lgtm with only one language", async () => {
-    inputBoxStub.resolves(LGTM_URL);
+    inputBoxStub.mockResolvedValue(LGTM_URL);
     let dbItem = await promptImportLgtmDatabase(
       databaseManager,
       storagePath,
@@ -96,10 +80,10 @@ describe("Databases", function () {
       {} as CancellationToken,
       cli,
     );
-    expect(dbItem).not.to.be.undefined;
+    expect(dbItem).toBeDefined();
     dbItem = dbItem!;
-    expect(dbItem.name).to.eq("aeisenberg_angular-bind-notifier_106179a");
-    expect(dbItem.databaseUri.fsPath).to.eq(
+    expect(dbItem.name).toBe("aeisenberg_angular-bind-notifier_106179a");
+    expect(dbItem.databaseUri.fsPath).toBe(
       path.join(
         storagePath,
         "javascript",
@@ -109,7 +93,7 @@ describe("Databases", function () {
   });
 
   it("should add a database from a url", async () => {
-    inputBoxStub.resolves(DB_URL);
+    inputBoxStub.mockResolvedValue(DB_URL);
 
     let dbItem = await promptImportInternetDatabase(
       databaseManager,
@@ -118,10 +102,10 @@ describe("Databases", function () {
       {} as CancellationToken,
       cli,
     );
-    expect(dbItem).not.to.be.undefined;
+    expect(dbItem).toBeDefined();
     dbItem = dbItem!;
-    expect(dbItem.name).to.eq("db");
-    expect(dbItem.databaseUri.fsPath).to.eq(
+    expect(dbItem.name).toBe("db");
+    expect(dbItem.databaseUri.fsPath).toBe(
       path.join(storagePath, "simple-db", "db"),
     );
   });

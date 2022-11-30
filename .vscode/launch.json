@@ -46,6 +46,30 @@
       "internalConsoleOptions": "neverOpen"
     },
     {
+      "name": "Launch Selected Unit Test (vscode-codeql)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "showAsyncStacks": true,
+      "cwd": "${workspaceFolder}/extensions/ql-vscode",
+      "env": {
+        "LANG": "en-US",
+        "TZ": "UTC"
+      },
+      "args": [
+        "--projects",
+        "test",
+        "-i",
+        "${relativeFile}",
+        "-t",
+        "${selectedText}"
+      ],
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
       "name": "Launch Unit Tests - React (vscode-codeql)",
       "type": "node",
       "request": "launch",
@@ -63,60 +87,46 @@
     },
     {
       "name": "Launch Integration Tests - No Workspace (vscode-codeql)",
-      "type": "extensionHost",
+      "type": "node",
       "request": "launch",
-      "runtimeExecutable": "${execPath}",
+      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "showAsyncStacks": true,
+      "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
-        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/no-workspace/index",
-        "--disable-workspace-trust",
-        "--disable-extensions",
-        "--disable-gpu"
+        "--projects",
+        "out/vscode-tests/no-workspace"
       ],
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
-      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "attachSimplePort": 9223,
     },
     {
       "name": "Launch Integration Tests - Minimal Workspace (vscode-codeql)",
-      "type": "extensionHost",
+      "type": "node",
       "request": "launch",
-      "runtimeExecutable": "${execPath}",
+      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "showAsyncStacks": true,
+      "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
-        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/minimal-workspace/index",
-        "--disable-workspace-trust",
-        "--disable-extensions",
-        "--disable-gpu",
-        "${workspaceRoot}/extensions/ql-vscode/test/data"
+        "--projects",
+        "out/vscode-tests/minimal-workspace"
       ],
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
-      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "attachSimplePort": 9223,
     },
     {
       "name": "Launch Integration Tests - With CLI",
-      "type": "extensionHost",
+      "type": "node",
       "request": "launch",
-      "runtimeExecutable": "${execPath}",
+      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "showAsyncStacks": true,
+      "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
-        "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
-        "--extensionTestsPath=${workspaceRoot}/extensions/ql-vscode/out/vscode-tests/cli-integration/index",
-        "--disable-workspace-trust",
-        "--disable-gpu",
-        "--disable-extension",
-        "eamodio.gitlens",
-        "--disable-extension",
-        "github.codespaces",
-        "--disable-extension",
-        "github.copilot",
-        "${workspaceRoot}/extensions/ql-vscode/src/vscode-tests/cli-integration/data",
-        // Uncomment the last line and modify the path to a checked out
-        // instance of the codeql repository so the libraries are
-        // available in the workspace for the tests.
-        // "${workspaceRoot}/../codeql"
+        "--projects",
+        "out/vscode-tests/cli-integration"
       ],
       "env": {
         // Optionally, set the version to use for the integration tests.
@@ -130,11 +140,16 @@
         // If not specified, one will be downloaded automatically.
         // This option overrides the CLI_VERSION option.
         // "CLI_PATH": "${workspaceRoot}/../semmle-code/target/intree/codeql/codeql",
+
+        // Uncomment the last line and modify the path to a checked out
+        // instance of the codeql repository so the libraries are
+        // available in the workspace for the tests.
+        // "TEST_CODEQL_PATH": "${workspaceRoot}/../codeql",
       },
       "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/extensions/ql-vscode/out/**/*.js",
-      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "attachSimplePort": 9223,
     },
     {
       "name": "Launch Storybook",
