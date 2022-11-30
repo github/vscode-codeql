@@ -2,7 +2,7 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { logger } from "../../common";
+import { extLogger } from "../../common";
 import { registerQueryHistoryScrubber } from "../../query-history-scrubber";
 import {
   HistoryTreeDataProvider,
@@ -88,7 +88,7 @@ describe("query-history", () => {
       .spyOn(vscode.commands, "executeCommand")
       .mockResolvedValue(undefined);
 
-    jest.spyOn(logger, "log").mockResolvedValue(undefined);
+    jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
     tryOpenExternalFile = (QueryHistoryManager.prototype as any)
       .tryOpenExternalFile;

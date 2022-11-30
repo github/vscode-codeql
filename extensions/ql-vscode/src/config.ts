@@ -7,7 +7,7 @@ import {
   ConfigurationTarget,
 } from "vscode";
 import { DistributionManager } from "./distribution";
-import { logger } from "./common";
+import { extLogger } from "./common";
 import { ONE_DAY_IN_MS } from "./pure/time";
 
 export const ALL_SETTINGS: Setting[] = [];
@@ -349,7 +349,7 @@ export class QueryServerConfigListener
       return undefined;
     }
     if (memory == 0 || typeof memory !== "number") {
-      void logger.log(
+      void extLogger.log(
         `Ignoring value '${memory}' for setting ${MEMORY_SETTING.qualifiedName}`,
       );
       return undefined;

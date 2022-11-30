@@ -8,7 +8,7 @@ import {
 } from "vscode";
 import { URLSearchParams } from "url";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
-import { logger } from "../common";
+import { extLogger } from "../common";
 import {
   FromVariantAnalysisMessage,
   ToVariantAnalysisMessage,
@@ -159,7 +159,7 @@ export class VariantAnalysisView
   protected async onWebViewLoaded() {
     super.onWebViewLoaded();
 
-    void logger.log("Variant analysis view loaded");
+    void extLogger.log("Variant analysis view loaded");
 
     const variantAnalysis = await this.manager.getVariantAnalysis(
       this.variantAnalysisId,

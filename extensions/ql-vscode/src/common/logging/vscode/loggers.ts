@@ -5,7 +5,7 @@
 import { OutputChannelLogger } from "./output-channel-logger";
 
 // Global logger for the extension.
-export const logger = new OutputChannelLogger("CodeQL Extension Log");
+export const extLogger = new OutputChannelLogger("CodeQL Extension Log");
 
 // Logger for messages from the query server.
 export const queryServerLogger = new OutputChannelLogger("CodeQL Query Server");

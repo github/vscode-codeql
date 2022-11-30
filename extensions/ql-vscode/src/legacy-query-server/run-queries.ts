@@ -16,7 +16,7 @@ import {
 } from "../helpers";
 import { ProgressCallback } from "../commandRunner";
 import { QueryMetadata } from "../pure/interface-types";
-import { logger } from "../common";
+import { extLogger } from "../common";
 import * as messages from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
 import * as qsClient from "./queryserver-client";
@@ -382,7 +382,7 @@ export async function compileAndRunQueryAgainstDatabase(
   const querySchemaName = path.basename(packConfig.dbscheme);
   const dbSchemaName = path.basename(dbItem.contents.dbSchemeUri.fsPath);
   if (querySchemaName != dbSchemaName) {
-    void logger.log(
+    void extLogger.log(
       `Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`,
     );
     throw new Error(
@@ -411,7 +411,7 @@ export async function compileAndRunQueryAgainstDatabase(
 
   let availableMlModels: cli.MlModelInfo[] = [];
   if (!(await cliServer.cliConstraints.supportsResolveMlModels())) {
-    void logger.log(
+    void extLogger.log(
       "Resolving ML models is unsupported by this version of the CLI. Running the query without any ML models.",
     );
   } else {
@@ -423,13 +423,13 @@ export async function compileAndRunQueryAgainstDatabase(
         )
       ).models;
       if (availableMlModels.length) {
-        void logger.log(
+        void extLogger.log(
           `Found available ML models at the following paths: ${availableMlModels
             .map((x) => `'${x.path}'`)
             .join(", ")}.`,
         );
       } else {
-        void logger.log("Did not find any available ML models.");
+        void extLogger.log("Did not find any available ML models.");
       }
     } catch (e) {
       const message =
@@ -502,7 +502,7 @@ export async function compileAndRunQueryAgainstDatabase(
       );
       if (result.resultType !== messages.QueryResultType.SUCCESS) {
         const message = result.message || "Failed to run query";
-        void logger.log(message);
+        void extLogger.log(message);
         void showAndLogErrorMessage(message);
       }
       const message = formatLegacyMessage(result);

@@ -1,6 +1,6 @@
 import { extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../../extension";
-import { logger } from "../../../common";
+import { extLogger } from "../../../common";
 import { Credentials } from "../../../authentication";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -21,7 +21,7 @@ describe(VariantAnalysisResultsManager.name, () => {
   let variantAnalysisResultsManager: VariantAnalysisResultsManager;
 
   beforeEach(async () => {
-    jest.spyOn(logger, "log").mockResolvedValue(undefined);
+    jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
     jest.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
     jest.spyOn(fs, "writeFile").mockReturnValue(undefined);
 
@@ -35,7 +35,7 @@ describe(VariantAnalysisResultsManager.name, () => {
     cli = extension.cliServer;
     variantAnalysisResultsManager = new VariantAnalysisResultsManager(
       cli,
-      logger,
+      extLogger,
     );
   });
 

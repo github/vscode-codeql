@@ -12,7 +12,7 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
 } from "./helpers";
-import { logger } from "./common";
+import { extLogger } from "./common";
 import { getCodeQlCliVersion } from "./cli-version";
 import { ProgressCallback, reportStreamProgress } from "./commandRunner";
 import {
@@ -90,7 +90,10 @@ export class DistributionManager implements DistributionProvider {
         kind: FindDistributionResultKind.NoDistribution,
       };
     }
-    const version = await getCodeQlCliVersion(distribution.codeQlPath, logger);
+    const version = await getCodeQlCliVersion(
+      distribution.codeQlPath,
+      extLogger,
+    );
     if (version === undefined) {
       return {
         distribution,
@@ -196,7 +199,7 @@ export class DistributionManager implements DistributionProvider {
           };
         }
       }
-      void logger.log("INFO: Could not find CodeQL on path.");
+      void extLogger.log("INFO: Could not find CodeQL on path.");
     }
 
     return undefined;
@@ -292,7 +295,7 @@ class ExtensionSpecificDistributionManager {
       try {
         await this.removeDistribution();
       } catch (e) {
-        void logger.log(
+        void extLogger.log(
           "WARNING: Tried to remove corrupted CodeQL CLI at " +
             `${this.getDistributionStoragePath()} but encountered an error: ${e}.`,
         );
@@ -343,7 +346,7 @@ class ExtensionSpecificDistributionManager {
     try {
       await this.removeDistribution();
     } catch (e) {
-      void logger.log(
+      void extLogger.log(
         `Tried to clean up old version of CLI at ${this.getDistributionStoragePath()} ` +
           `but encountered an error: ${e}.`,
       );
@@ -360,7 +363,7 @@ class ExtensionSpecificDistributionManager {
       );
     }
     if (assets.length > 1) {
-      void logger.log(
+      void extLogger.log(
         "WARNING: chose a release with more than one asset to install, found " +
           assets.map((asset) => asset.name).join(", "),
       );
@@ -398,7 +401,7 @@ class ExtensionSpecificDistributionManager {
 
       await this.bumpDistributionFolderIndex();
 
-      void logger.log(
+      void extLogger.log(
         `Extracting CodeQL CLI to ${this.getDistributionStoragePath()}`,
       );
       await extractZipArchive(archivePath, this.getDistributionStoragePath());
@@ -421,7 +424,7 @@ class ExtensionSpecificDistributionManager {
 
   private async getLatestRelease(): Promise<Release> {
     const requiredAssetName = getRequiredAssetName();
-    void logger.log(
+    void extLogger.log(
       `Searching for latest release including ${requiredAssetName}.`,
     );
     return this.createReleasesApiConsumer().getLatestRelease(
@@ -433,13 +436,13 @@ class ExtensionSpecificDistributionManager {
         );
         if (matchingAssets.length === 0) {
           // For example, this could be a release with no platform-specific assets.
-          void logger.log(
+          void extLogger.log(
             `INFO: Ignoring a release with no assets named ${requiredAssetName}`,
           );
           return false;
         }
         if (matchingAssets.length > 1) {
-          void logger.log(
+          void extLogger.log(
             `WARNING: Ignoring a release with more than one asset named ${requiredAssetName}`,
           );
           return false;
@@ -817,7 +820,7 @@ export async function getExecutableFromDirectory(
     return alternateExpectedLauncherPath;
   }
   if (warnWhenNotFound) {
-    void logger.log(
+    void extLogger.log(
       `WARNING: Expected to find a CodeQL CLI executable at ${expectedLauncherPath} but one was not found. ` +
         "Will try PATH.",
     );
