@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import styled from "styled-components";
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 
-import { Overlay } from "@primer/react";
+import { Overlay, ThemeProvider } from "@primer/react";
 
 import {
   AnalysisMessage,
@@ -16,7 +16,7 @@ const ShowPathsLink = styled(VSCodeLink)`
   cursor: pointer;
 `;
 
-type Props = {
+export type CodePathsProps = {
   codeFlows: CodeFlow[];
   ruleDescription: string;
   message: AnalysisMessage;
@@ -28,7 +28,7 @@ export const CodePaths = ({
   ruleDescription,
   message,
   severity,
-}: Props) => {
+}: CodePathsProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const linkRef = useRef<HTMLAnchorElement>(null);
@@ -41,20 +41,22 @@ export const CodePaths = ({
         Show paths
       </ShowPathsLink>
       {isOpen && (
-        <Overlay
-          returnFocusRef={linkRef}
-          onEscape={closeOverlay}
-          onClickOutside={closeOverlay}
-          anchorSide="outside-top"
-        >
-          <CodePathsOverlay
-            codeFlows={codeFlows}
-            ruleDescription={ruleDescription}
-            message={message}
-            severity={severity}
-            onClose={closeOverlay}
-          />
-        </Overlay>
+        <ThemeProvider colorMode="auto">
+          <Overlay
+            returnFocusRef={linkRef}
+            onEscape={closeOverlay}
+            onClickOutside={closeOverlay}
+            anchorSide="outside-top"
+          >
+            <CodePathsOverlay
+              codeFlows={codeFlows}
+              ruleDescription={ruleDescription}
+              message={message}
+              severity={severity}
+              onClose={closeOverlay}
+            />
+          </Overlay>
+        </ThemeProvider>
       )}
     </>
   );
