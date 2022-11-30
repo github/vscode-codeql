@@ -4,7 +4,7 @@ import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import { formatDate } from "../../pure/date";
 import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
 
-type Props = {
+export type VariantAnalysisStatusStatsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
   completedAt?: Date;
 
@@ -26,7 +26,7 @@ export const VariantAnalysisStatusStats = ({
   variantAnalysisStatus,
   completedAt,
   onViewLogsClick,
-}: Props) => {
+}: VariantAnalysisStatusStatsProps) => {
   if (variantAnalysisStatus === VariantAnalysisStatus.InProgress) {
     return <Icon className="codicon codicon-loading codicon-modifier-spin" />;
   }
