@@ -216,8 +216,8 @@ describe(VariantAnalysisResultsManager.name, () => {
     });
 
     afterEach(async () => {
-      if (fs.existsSync(variantAnalysisStoragePath)) {
-        fs.rmSync(variantAnalysisStoragePath, { recursive: true });
+      if (await fs.pathExists(variantAnalysisStoragePath)) {
+        await fs.remove(variantAnalysisStoragePath);
       }
     });
 
@@ -295,7 +295,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           onResultLoadedSpy.mockClear();
 
           // Delete the directory so it can't read from disk
-          fs.rmSync(variantAnalysisStoragePath, { recursive: true });
+          await fs.remove(variantAnalysisStoragePath);
 
           await expect(
             variantAnalysisResultsManager.loadResults(
@@ -325,7 +325,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           );
 
           // Delete the directory so it can't read from disk
-          fs.rmSync(variantAnalysisStoragePath, { recursive: true });
+          await fs.remove(variantAnalysisStoragePath);
 
           await expect(
             variantAnalysisResultsManager.loadResults(
@@ -347,7 +347,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           );
 
           // Delete the directory so it can't read from disk
-          fs.rmSync(variantAnalysisStoragePath, { recursive: true });
+          await fs.remove(variantAnalysisStoragePath);
 
           await expect(
             variantAnalysisResultsManager.loadResults(
