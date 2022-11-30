@@ -24,7 +24,7 @@ export type VariantAnalysisHeaderProps = {
   onCopyRepositoryListClick: () => void;
   onExportResultsClick: () => void;
 
-  onViewLogsClick: () => void;
+  onViewLogsClick?: () => void;
 };
 
 const Container = styled.div`

@@ -11,7 +11,7 @@ import { extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../extension";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../legacy-query-server/queryserver-client";
-import { logger, ProgressReporter } from "../../common";
+import { extLogger, ProgressReporter } from "../../common";
 
 const baseDir = path.join(__dirname, "../../../test/data");
 
@@ -134,7 +134,7 @@ describeWithCodeQL()("using the legacy query server", () => {
         cliServer,
         {
           contextStoragePath: tmpDir.name,
-          logger,
+          logger: extLogger,
         },
         (task) =>
           task(nullProgressReporter, new CancellationTokenSource().token),

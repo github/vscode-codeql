@@ -3,7 +3,7 @@ import * as fetch from "node-fetch";
 import * as semver from "semver";
 
 import * as helpers from "../../helpers";
-import { logger } from "../../common";
+import { extLogger } from "../../common";
 import * as fs from "fs-extra";
 import * as os from "os";
 import {
@@ -199,7 +199,7 @@ describe("Launcher path", () => {
 
   let warnSpy: jest.SpiedFunction<typeof helpers.showAndLogWarningMessage>;
   let errorSpy: jest.SpiedFunction<typeof helpers.showAndLogErrorMessage>;
-  let logSpy: jest.SpiedFunction<typeof logger.log>;
+  let logSpy: jest.SpiedFunction<typeof extLogger.log>;
   let pathExistsSpy: jest.SpiedFunction<typeof fs.pathExists>;
 
   let launcherThatExists = "";
@@ -211,7 +211,7 @@ describe("Launcher path", () => {
     errorSpy = jest
       .spyOn(helpers, "showAndLogErrorMessage")
       .mockResolvedValue(undefined);
-    logSpy = jest.spyOn(logger, "log").mockResolvedValue(undefined);
+    logSpy = jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
     pathExistsSpy = jest
       .spyOn(fs, "pathExists")
       .mockImplementation(async (path: string) => {

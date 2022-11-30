@@ -5,6 +5,7 @@ import {
   VariantAnalysis as VariantAnalysisDomainModel,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
+  VariantAnalysisStatus,
 } from "../../remote-queries/shared/variant-analysis";
 import { VariantAnalysisHeader } from "./VariantAnalysisHeader";
 import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
@@ -16,7 +17,7 @@ import {
   RepositoriesFilterSortState,
 } from "../../pure/variant-analysis-filter-sort";
 
-type Props = {
+export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;
   repoStates?: VariantAnalysisScannedRepositoryState[];
   repoResults?: VariantAnalysisScannedRepositoryResult[];
@@ -50,7 +51,7 @@ export function VariantAnalysis({
   variantAnalysis: initialVariantAnalysis,
   repoStates: initialRepoStates = [],
   repoResults: initialRepoResults = [],
-}: Props): JSX.Element {
+}: VariantAnalysisProps): JSX.Element {
   const [variantAnalysis, setVariantAnalysis] = useState<
     VariantAnalysisDomainModel | undefined
   >(initialVariantAnalysis);
@@ -128,9 +129,16 @@ export function VariantAnalysis({
     });
   }, [filterSortState, selectedRepositoryIds]);
 
-  if (variantAnalysis?.actionsWorkflowRunId === undefined) {
+  if (
+    variantAnalysis === undefined ||
+    (variantAnalysis.status === VariantAnalysisStatus.InProgress &&
+      variantAnalysis.actionsWorkflowRunId === undefined)
+  ) {
     return <VariantAnalysisLoading />;
   }
+
+  const onViewLogsClick =
+    variantAnalysis.actionsWorkflowRunId === undefined ? undefined : openLogs;
 
   return (
     <>
@@ -141,7 +149,7 @@ export function VariantAnalysis({
         onStopQueryClick={stopQuery}
         onCopyRepositoryListClick={copyRepositoryList}
         onExportResultsClick={exportResults}
-        onViewLogsClick={openLogs}
+        onViewLogsClick={onViewLogsClick}
       />
       <VariantAnalysisOutcomePanels
         variantAnalysis={variantAnalysis}

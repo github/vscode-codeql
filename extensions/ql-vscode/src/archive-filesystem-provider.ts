@@ -1,7 +1,7 @@
 import * as fs from "fs-extra";
 import * as unzipper from "unzipper";
 import * as vscode from "vscode";
-import { logger } from "./common";
+import { extLogger } from "./common";
 
 // All path operations in this file must be on paths *within* the zip
 // archive.
@@ -118,7 +118,7 @@ class InvalidSourceArchiveUriError extends Error {
 export function decodeSourceArchiveUri(uri: vscode.Uri): ZipFileReference {
   if (!uri.authority) {
     // Uri is malformed, but this is recoverable
-    void logger.log(
+    void extLogger.log(
       `Warning: ${new InvalidSourceArchiveUriError(uri).message}`,
     );
     return {
@@ -148,7 +148,7 @@ function ensureFile(map: DirectoryHierarchyMap, file: string) {
   const dirname = path.dirname(file);
   if (dirname === ".") {
     const error = `Ill-formed path ${file} in zip archive (expected absolute path)`;
-    void logger.log(error);
+    void extLogger.log(error);
     throw new Error(error);
   }
   ensureDir(map, dirname);

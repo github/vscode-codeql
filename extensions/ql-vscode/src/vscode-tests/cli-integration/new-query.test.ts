@@ -9,7 +9,7 @@ import { extensions, Uri } from "vscode";
 import { CodeQLExtensionInterface } from "../../extension";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../query-server/queryserver-client";
-import { logger, ProgressReporter } from "../../common";
+import { extLogger, ProgressReporter } from "../../common";
 import { QueryResultType } from "../../pure/new-messages";
 import { cleanDatabases, dbLoc, storagePath } from "./global.helper";
 import { importArchiveDatabase } from "../../databaseFetcher";
@@ -135,7 +135,7 @@ describeWithCodeQL()("using the new query server", () => {
         cliServer,
         {
           contextStoragePath: tmpDir.name,
-          logger,
+          logger: extLogger,
         },
         (task) =>
           task(nullProgressReporter, new CancellationTokenSource().token),
