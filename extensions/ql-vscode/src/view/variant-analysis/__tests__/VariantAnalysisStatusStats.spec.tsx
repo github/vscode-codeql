@@ -24,8 +24,8 @@ describe(VariantAnalysisStatusStats.name, () => {
     expect(
       container.getElementsByClassName(
         "codicon codicon-loading codicon-modifier-spin",
-      ).length,
-    ).toEqual(1);
+      )[0],
+    ).toBeInTheDocument();
   });
 
   it("renders when there is a completedAt date", () => {
