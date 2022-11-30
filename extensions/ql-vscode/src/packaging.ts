@@ -6,7 +6,7 @@ import {
 } from "./helpers";
 import { QuickPickItem, window } from "vscode";
 import { ProgressCallback, UserCancellationException } from "./commandRunner";
-import { logger } from "./logging";
+import { extLogger } from "./common";
 
 const QUERY_PACKS = [
   "codeql/cpp-queries",
@@ -139,7 +139,7 @@ export async function handleInstallPackDependencies(
       }
     }
     if (failedPacks.length > 0) {
-      void logger.log(`Errors:\n${errors.join("\n")}`);
+      void extLogger.log(`Errors:\n${errors.join("\n")}`);
       throw new Error(
         `Unable to install pack dependencies for: ${failedPacks.join(
           ", ",

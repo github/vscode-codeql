@@ -7,7 +7,7 @@ import {
   ProgressLocation,
 } from "vscode";
 import { showAndLogErrorMessage, showAndLogWarningMessage } from "./helpers";
-import { logger } from "./logging";
+import { extLogger } from "./common";
 import { getErrorMessage, getErrorStack } from "./pure/helpers-pure";
 import { telemetryListener } from "./telemetry";
 
@@ -131,7 +131,7 @@ export function commandRunner(
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
-          void logger.log(errorMessage);
+          void extLogger.log(errorMessage);
         } else {
           void showAndLogWarningMessage(errorMessage);
         }
@@ -166,7 +166,7 @@ export function commandRunnerWithProgress<R>(
   commandId: string,
   task: ProgressTask<R>,
   progressOptions: Partial<ProgressOptions>,
-  outputLogger = logger,
+  outputLogger = extLogger,
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
     const startTime = Date.now();

@@ -973,7 +973,6 @@ export type ProgressMessage = shared.ProgressMessage;
 export const checkQuery = new rpc.RequestType<
   WithProgressId<CheckQueryParams>,
   CheckQueryResult,
-  void,
   void
 >("compilation/checkQuery");
 /**
@@ -982,7 +981,6 @@ export const checkQuery = new rpc.RequestType<
 export const compileQuery = new rpc.RequestType<
   WithProgressId<CompileQueryParams>,
   CheckQueryResult,
-  void,
   void
 >("compilation/compileQuery");
 /**
@@ -991,7 +989,6 @@ export const compileQuery = new rpc.RequestType<
 export const compileDilQuery = new rpc.RequestType<
   WithProgressId<CompileDilParams>,
   CheckQueryResult,
-  void,
   void
 >("compilation/compileDilQuery");
 
@@ -1001,7 +998,6 @@ export const compileDilQuery = new rpc.RequestType<
 export const checkUpgrade = new rpc.RequestType<
   WithProgressId<UpgradeParams>,
   CheckUpgradeResult,
-  void,
   void
 >("compilation/checkUpgrade");
 /**
@@ -1010,7 +1006,6 @@ export const checkUpgrade = new rpc.RequestType<
 export const compileUpgrade = new rpc.RequestType<
   WithProgressId<CompileUpgradeParams>,
   CompileUpgradeResult,
-  void,
   void
 >("compilation/compileUpgrade");
 /**
@@ -1019,7 +1014,6 @@ export const compileUpgrade = new rpc.RequestType<
 export const compileUpgradeSequence = new rpc.RequestType<
   WithProgressId<CompileUpgradeSequenceParams>,
   CompileUpgradeSequenceResult,
-  void,
   void
 >("compilation/compileUpgradeSequence");
 
@@ -1029,7 +1023,6 @@ export const compileUpgradeSequence = new rpc.RequestType<
 export const startLog = new rpc.RequestType<
   WithProgressId<StartLogParams>,
   StartLogResult,
-  void,
   void
 >("evaluation/startLog");
 
@@ -1039,7 +1032,6 @@ export const startLog = new rpc.RequestType<
 export const endLog = new rpc.RequestType<
   WithProgressId<EndLogParams>,
   EndLogResult,
-  void,
   void
 >("evaluation/endLog");
 
@@ -1049,7 +1041,6 @@ export const endLog = new rpc.RequestType<
 export const clearCache = new rpc.RequestType<
   WithProgressId<ClearCacheParams>,
   ClearCacheResult,
-  void,
   void
 >("evaluation/clearCache");
 /**
@@ -1058,7 +1049,6 @@ export const clearCache = new rpc.RequestType<
 export const trimCache = new rpc.RequestType<
   WithProgressId<TrimCacheParams>,
   ClearCacheResult,
-  void,
   void
 >("evaluation/trimCache");
 
@@ -1068,7 +1058,6 @@ export const trimCache = new rpc.RequestType<
 export const runQueries = new rpc.RequestType<
   WithProgressId<EvaluateQueriesParams>,
   EvaluationComplete,
-  void,
   void
 >("evaluation/runQueries");
 
@@ -1078,21 +1067,18 @@ export const runQueries = new rpc.RequestType<
 export const runUpgrade = new rpc.RequestType<
   WithProgressId<RunUpgradeParams>,
   RunUpgradeResult,
-  void,
   void
 >("evaluation/runUpgrade");
 
 export const registerDatabases = new rpc.RequestType<
   WithProgressId<RegisterDatabasesParams>,
   RegisterDatabasesResult,
-  void,
   void
 >("evaluation/registerDatabases");
 
 export const deregisterDatabases = new rpc.RequestType<
   WithProgressId<DeregisterDatabasesParams>,
   DeregisterDatabasesResult,
-  void,
   void
 >("evaluation/deregisterDatabases");
 
@@ -1103,7 +1089,6 @@ export const deregisterDatabases = new rpc.RequestType<
 export const completeQuery = new rpc.RequestType<
   EvaluationResult,
   Record<string, any>,
-  void,
   void
 >("evaluation/queryCompleted");
 

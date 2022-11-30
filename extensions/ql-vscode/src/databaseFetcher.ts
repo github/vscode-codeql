@@ -11,7 +11,7 @@ import { retry } from "@octokit/plugin-retry";
 import { DatabaseManager, DatabaseItem } from "./databases";
 import { showAndLogInformationMessage } from "./helpers";
 import { reportStreamProgress, ProgressCallback } from "./commandRunner";
-import { logger } from "./logging";
+import { extLogger } from "./common";
 import { tmpDir } from "./helpers";
 import { Credentials } from "./authentication";
 import { REPO_REGEX, getErrorMessage } from "./pure/helpers-pure";
@@ -585,7 +585,7 @@ export async function convertGithubNwoToDatabaseUrl(
       name: repo,
     };
   } catch (e) {
-    void logger.log(`Error: ${getErrorMessage(e)}`);
+    void extLogger.log(`Error: ${getErrorMessage(e)}`);
     throw new Error(`Unable to get database for '${githubRepo}'`);
   }
 }
@@ -696,7 +696,7 @@ export async function convertLgtmUrlToDatabaseUrl(
       language,
     ].join("/")}`;
   } catch (e) {
-    void logger.log(`Error: ${getErrorMessage(e)}`);
+    void extLogger.log(`Error: ${getErrorMessage(e)}`);
     throw new Error(`Invalid LGTM URL: ${lgtmUrl}`);
   }
 }

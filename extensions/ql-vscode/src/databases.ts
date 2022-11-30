@@ -18,7 +18,7 @@ import {
   encodeSourceArchiveUri,
 } from "./archive-filesystem-provider";
 import { DisposableObject } from "./pure/disposable-object";
-import { Logger, logger } from "./logging";
+import { Logger, extLogger } from "./common";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./queryRunner";
 
@@ -545,7 +545,7 @@ function eventFired<T>(
 ): Promise<T | undefined> {
   return new Promise((res, _rej) => {
     const timeout = setTimeout(() => {
-      void logger.log(
+      void extLogger.log(
         `Waiting for event ${event} timed out after ${timeoutMs}ms`,
       );
       res(undefined);
@@ -657,12 +657,12 @@ export class DatabaseManager extends DisposableObject {
 
       const msg = item.verifyZippedSources();
       if (msg) {
-        void logger.log(`Could not add source folder because ${msg}`);
+        void extLogger.log(`Could not add source folder because ${msg}`);
         return;
       }
 
       const uri = item.getSourceArchiveExplorerUri();
-      void logger.log(
+      void extLogger.log(
         `Adding workspace folder for ${item.name} source archive at index ${end}`,
       );
       if ((vscode.workspace.workspaceFolders || []).length < 2) {
@@ -916,7 +916,7 @@ export class DatabaseManager extends DisposableObject {
       (folder) => item.belongsToSourceArchiveExplorerUri(folder.uri),
     );
     if (folderIndex >= 0) {
-      void logger.log(`Removing workspace folder at index ${folderIndex}`);
+      void extLogger.log(`Removing workspace folder at index ${folderIndex}`);
       vscode.workspace.updateWorkspaceFolders(folderIndex, 1);
     }
 
@@ -925,11 +925,11 @@ export class DatabaseManager extends DisposableObject {
 
     // Delete folder from file system only if it is controlled by the extension
     if (this.isExtensionControlledLocation(item.databaseUri)) {
-      void logger.log("Deleting database from filesystem.");
+      void extLogger.log("Deleting database from filesystem.");
       fs.remove(item.databaseUri.fsPath).then(
-        () => void logger.log(`Deleted '${item.databaseUri.fsPath}'`),
+        () => void extLogger.log(`Deleted '${item.databaseUri.fsPath}'`),
         (e) =>
-          void logger.log(
+          void extLogger.log(
             `Failed to delete '${
               item.databaseUri.fsPath
             }'. Reason: ${getErrorMessage(e)}`,

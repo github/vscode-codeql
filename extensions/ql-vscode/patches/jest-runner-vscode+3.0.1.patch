@@ -1,0 +1,129 @@
+diff --git a/node_modules/jest-runner-vscode/dist/child/runner.js b/node_modules/jest-runner-vscode/dist/child/runner.js
+index 0663c5c..4991663 100644
+--- a/node_modules/jest-runner-vscode/dist/child/runner.js
++++ b/node_modules/jest-runner-vscode/dist/child/runner.js
+@@ -18,10 +18,13 @@ async function run() {
+     const ipc = new ipc_client_1.default('child');
+     const disconnected = new Promise(resolve => ipc.on('disconnect', resolve));
+     try {
+-        const { PARENT_JEST_OPTIONS } = process_1.default.env;
++        const { PARENT_JEST_OPTIONS, PARENT_CWD } = process_1.default.env;
+         if (!PARENT_JEST_OPTIONS) {
+             throw new Error('PARENT_JEST_OPTIONS is not defined');
+         }
++        if (PARENT_CWD) {
++            process_1.default.chdir(PARENT_CWD);
++        }
+         const options = JSON.parse(PARENT_JEST_OPTIONS);
+         const jestOptions = [
+             ...options.args,
+diff --git a/node_modules/jest-runner-vscode/dist/public-types.d.ts b/node_modules/jest-runner-vscode/dist/public-types.d.ts
+index 57716e5..d8614af 100644
+--- a/node_modules/jest-runner-vscode/dist/public-types.d.ts
++++ b/node_modules/jest-runner-vscode/dist/public-types.d.ts
+@@ -59,4 +59,5 @@ export interface RunnerOptions {
+      * code, or download progress. Defaults to `false`.
+      */
+     quiet?: boolean;
++    retries?: number;
+ }
+diff --git a/node_modules/jest-runner-vscode/dist/run-vscode.d.ts b/node_modules/jest-runner-vscode/dist/run-vscode.d.ts
+index 8657ace..4d35409 100644
+--- a/node_modules/jest-runner-vscode/dist/run-vscode.d.ts
++++ b/node_modules/jest-runner-vscode/dist/run-vscode.d.ts
+@@ -16,5 +16,7 @@ export declare type RunVSCodeOptions = {
+     onFailure: JestRunner.OnTestFailure;
+     ipc: InstanceType<typeof IPC>;
+     quiet?: boolean;
++    attempt?: number;
++    maxRetries?: number;
+ };
+-export default function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig, filterOutput, onStart, onResult, onFailure, ipc, quiet, }: RunVSCodeOptions): Promise<void>;
++export default function runVSCode(options: RunVSCodeOptions): Promise<void>;
+diff --git a/node_modules/jest-runner-vscode/dist/run-vscode.js b/node_modules/jest-runner-vscode/dist/run-vscode.js
+index 5d8e513..7e556ee 100644
+--- a/node_modules/jest-runner-vscode/dist/run-vscode.js
++++ b/node_modules/jest-runner-vscode/dist/run-vscode.js
+@@ -5,8 +5,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
+ Object.defineProperty(exports, "__esModule", { value: true });
+ const child_process_1 = __importDefault(require("child_process"));
+ const console_1 = __importDefault(require("console"));
+-async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig, filterOutput, onStart, onResult, onFailure, ipc, quiet, }) {
+-    return await new Promise(resolve => {
++const fs_1 = __importDefault(require("fs"));
++const path_1 = __importDefault(require("path"));
++const os_1 = __importDefault(require("os"));
++async function runVSCode(options) {
++    const { vscodePath, args, jestArgs, env, tests, globalConfig, filterOutput, onStart, onResult, onFailure, ipc, quiet, attempt, maxRetries, } = options;
++    const tempUserDir = await fs_1.default.promises.mkdtemp(path_1.default.resolve(os_1.default.tmpdir(), 'jest-runner-vscode-user-data-'));
++    return await new Promise(promiseResolve => {
++        const resolve = () => {
++            fs_1.default.rm(tempUserDir, { recursive: true }, () => {
++                promiseResolve();
++            });
++        };
+         const useStdErr = globalConfig.json || globalConfig.useStderr;
+         const log = useStdErr
+             ? console_1.default.error.bind(console_1.default)
+@@ -82,7 +92,11 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
+         ipc.server.on('stdout', onStdout);
+         ipc.server.on('stderr', onStderr);
+         ipc.server.on('error', onError);
+-        const vscode = child_process_1.default.spawn(vscodePath, args, { env: environment });
++        const launchArgs = args;
++        if (!hasArg('user-data-dir', launchArgs)) {
++            launchArgs.push(`--user-data-dir=${tempUserDir}`);
++        }
++        const vscode = child_process_1.default.spawn(vscodePath, launchArgs, { env: environment });
+         if (!silent && !filterOutput) {
+             vscode.stdout.pipe(process.stdout);
+             vscode.stderr.pipe(process.stderr);
+@@ -99,6 +113,29 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
+             exited = true;
+             const exit = code ?? signal ?? '<unknown>';
+             const message = `VS Code exited with exit code ${exit}`;
++            const currentAttempt = attempt ?? 0;
++            const incompleteTests = tests.some(test => !completedTests.has(test));
++            if (maxRetries &&
++                maxRetries > 0 &&
++                currentAttempt < maxRetries &&
++                incompleteTests) {
++                silent || quiet || log(message);
++                const newAttempt = currentAttempt + 1;
++                const newTests = tests.filter(test => !completedTests.has(test));
++                ipc.server.off('testFileResult', onTestFileResult);
++                ipc.server.off('testStart', onTestStart);
++                ipc.server.off('testFileStart', onTestStart);
++                ipc.server.off('stdout', onStdout);
++                ipc.server.off('stderr', onStderr);
++                ipc.server.off('error', onError);
++                await runVSCode({
++                    ...options,
++                    tests: newTests,
++                    attempt: newAttempt,
++                });
++                resolve();
++                return;
++            }
+             if (typeof code !== 'number' || code !== 0) {
+                 silent || quiet || console_1.default.error(message);
+                 const error = vscodeError ?? childError ?? new Error(message);
+@@ -138,3 +175,6 @@ async function runVSCode({ vscodePath, args, jestArgs, env, tests, globalConfig,
+     });
+ }
+ exports.default = runVSCode;
++function hasArg(argName, argList) {
++    return argList.some(a => a === `--${argName}` || a.startsWith(`--${argName}=`));
++}
+diff --git a/node_modules/jest-runner-vscode/dist/runner.js b/node_modules/jest-runner-vscode/dist/runner.js
+index e24c976..c374022 100644
+--- a/node_modules/jest-runner-vscode/dist/runner.js
++++ b/node_modules/jest-runner-vscode/dist/runner.js
+@@ -107,6 +107,7 @@ class VSCodeTestRunner {
+                     onFailure,
+                     ipc,
+                     quiet: vscodeOptions.quiet,
++                    maxRetries: vscodeOptions.retries,
+                 });
+             }
+             catch (error) {

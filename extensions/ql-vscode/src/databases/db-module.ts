@@ -1,6 +1,6 @@
 import { App, AppMode } from "../common/app";
 import { isCanary, isNewQueryRunExperienceEnabled } from "../config";
-import { logger } from "../logging";
+import { extLogger } from "../common";
 import { DisposableObject } from "../pure/disposable-object";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbManager } from "./db-manager";
@@ -19,7 +19,7 @@ export class DbModule extends DisposableObject {
       return;
     }
 
-    void logger.log("Initializing database module");
+    void extLogger.log("Initializing database module");
 
     const dbConfigStore = new DbConfigStore(app);
     await dbConfigStore.initialize();

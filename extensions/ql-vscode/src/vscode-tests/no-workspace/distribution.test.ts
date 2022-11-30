@@ -1,17 +1,18 @@
-import { expect } from "chai";
 import * as path from "path";
 import * as fetch from "node-fetch";
 import * as semver from "semver";
-import * as sinon from "sinon";
-import * as pq from "proxyquire";
 
+import * as helpers from "../../helpers";
+import { extLogger } from "../../common";
+import * as fs from "fs-extra";
+import * as os from "os";
 import {
   GithubRelease,
   GithubReleaseAsset,
   ReleasesApiConsumer,
+  getExecutableFromDirectory,
+  DistributionManager,
 } from "../../distribution";
-
-const proxyquire = pq.noPreserveCache();
 
 describe("Releases API consumer", () => {
   const owner = "someowner";
@@ -87,7 +88,7 @@ describe("Releases API consumer", () => {
       const latestRelease = await consumer.getLatestRelease(
         unconstrainedVersionRange,
       );
-      expect(latestRelease.id).to.equal(2);
+      expect(latestRelease.id).toBe(2);
     });
 
     it("version of picked release is within the version range", async () => {
@@ -96,7 +97,7 @@ describe("Releases API consumer", () => {
       const latestRelease = await consumer.getLatestRelease(
         new semver.Range("2.*.*"),
       );
-      expect(latestRelease.id).to.equal(1);
+      expect(latestRelease.id).toBe(1);
     });
 
     it("fails if none of the releases are within the version range", async () => {
@@ -104,7 +105,7 @@ describe("Releases API consumer", () => {
 
       await expect(
         consumer.getLatestRelease(new semver.Range("5.*.*")),
-      ).to.be.rejectedWith(Error);
+      ).rejects.toThrowError();
     });
 
     it("picked release passes additional compatibility test if an additional compatibility test is specified", async () => {
@@ -116,7 +117,7 @@ describe("Releases API consumer", () => {
         (release) =>
           release.assets.some((asset) => asset.name === "exampleAsset.txt"),
       );
-      expect(latestRelease.id).to.equal(3);
+      expect(latestRelease.id).toBe(3);
     });
 
     it("fails if none of the releases pass the additional compatibility test", async () => {
@@ -128,7 +129,7 @@ describe("Releases API consumer", () => {
             (asset) => asset.name === "otherExampleAsset.txt",
           ),
         ),
-      ).to.be.rejectedWith(Error);
+      ).rejects.toThrowError();
     });
 
     it("picked release is the most recent prerelease when includePrereleases is set", async () => {
@@ -138,7 +139,7 @@ describe("Releases API consumer", () => {
         unconstrainedVersionRange,
         true,
       );
-      expect(latestRelease.id).to.equal(5);
+      expect(latestRelease.id).toBe(5);
     });
   });
 
@@ -183,11 +184,11 @@ describe("Releases API consumer", () => {
     const assets = (await consumer.getLatestRelease(unconstrainedVersionRange))
       .assets;
 
-    expect(assets.length).to.equal(expectedAssets.length);
+    expect(assets.length).toBe(expectedAssets.length);
     expectedAssets.map((expectedAsset, index) => {
-      expect(assets[index].id).to.equal(expectedAsset.id);
-      expect(assets[index].name).to.equal(expectedAsset.name);
-      expect(assets[index].size).to.equal(expectedAsset.size);
+      expect(assets[index].id).toBe(expectedAsset.id);
+      expect(assets[index].name).toBe(expectedAsset.name);
+      expect(assets[index].size).toBe(expectedAsset.size);
     });
   });
 });
@@ -196,82 +197,86 @@ describe("Launcher path", () => {
   const pathToCmd = `abc${path.sep}codeql.cmd`;
   const pathToExe = `abc${path.sep}codeql.exe`;
 
-  let sandbox: sinon.SinonSandbox;
-  let warnSpy: sinon.SinonSpy;
-  let errorSpy: sinon.SinonSpy;
-  let logSpy: sinon.SinonSpy;
-  let fsSpy: sinon.SinonSpy;
-  let platformSpy: sinon.SinonSpy;
-
-  let getExecutableFromDirectory: Function;
+  let warnSpy: jest.SpiedFunction<typeof helpers.showAndLogWarningMessage>;
+  let errorSpy: jest.SpiedFunction<typeof helpers.showAndLogErrorMessage>;
+  let logSpy: jest.SpiedFunction<typeof extLogger.log>;
+  let pathExistsSpy: jest.SpiedFunction<typeof fs.pathExists>;
 
   let launcherThatExists = "";
 
   beforeEach(() => {
-    sandbox = sinon.createSandbox();
-    getExecutableFromDirectory = createModule().getExecutableFromDirectory;
-  });
+    warnSpy = jest
+      .spyOn(helpers, "showAndLogWarningMessage")
+      .mockResolvedValue(undefined);
+    errorSpy = jest
+      .spyOn(helpers, "showAndLogErrorMessage")
+      .mockResolvedValue(undefined);
+    logSpy = jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
+    pathExistsSpy = jest
+      .spyOn(fs, "pathExists")
+      .mockImplementation(async (path: string) => {
+        return path.endsWith(launcherThatExists);
+      });
 
-  afterEach(() => {
-    sandbox.restore();
+    jest.spyOn(os, "platform").mockReturnValue("win32");
   });
 
   it("should not warn with proper launcher name", async () => {
     launcherThatExists = "codeql.exe";
     const result = await getExecutableFromDirectory("abc");
-    expect(fsSpy).to.have.been.calledWith(pathToExe);
+    expect(pathExistsSpy).toBeCalledWith(pathToExe);
 
     // correct launcher has been found, so alternate one not looked for
-    expect(fsSpy).not.to.have.been.calledWith(pathToCmd);
+    expect(pathExistsSpy).not.toBeCalledWith(pathToCmd);
 
     // no warning message
-    expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
+    expect(warnSpy).not.toHaveBeenCalled();
     // No log message
-    expect(logSpy).not.to.have.been.calledWith(sinon.match.string);
-    expect(result).to.equal(pathToExe);
+    expect(logSpy).not.toHaveBeenCalled();
+    expect(result).toBe(pathToExe);
   });
 
   it("should warn when using a hard-coded deprecated launcher name", async () => {
     launcherThatExists = "codeql.cmd";
     const result = await getExecutableFromDirectory("abc");
-    expect(fsSpy).to.have.been.calledWith(pathToExe);
-    expect(fsSpy).to.have.been.calledWith(pathToCmd);
+    expect(pathExistsSpy).toBeCalledWith(pathToExe);
+    expect(pathExistsSpy).toBeCalledWith(pathToCmd);
 
     // Should have opened a warning message
-    expect(warnSpy).to.have.been.calledWith(sinon.match.string);
+    expect(warnSpy).toHaveBeenCalled();
     // No log message
-    expect(logSpy).not.to.have.been.calledWith(sinon.match.string);
-    expect(result).to.equal(pathToCmd);
+    expect(logSpy).not.toHaveBeenCalled();
+    expect(result).toBe(pathToCmd);
   });
 
   it("should avoid warn when no launcher is found", async () => {
     launcherThatExists = "xxx";
     const result = await getExecutableFromDirectory("abc", false);
-    expect(fsSpy).to.have.been.calledWith(pathToExe);
-    expect(fsSpy).to.have.been.calledWith(pathToCmd);
+    expect(pathExistsSpy).toBeCalledWith(pathToExe);
+    expect(pathExistsSpy).toBeCalledWith(pathToCmd);
 
     // no warning message
-    expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
+    expect(warnSpy).not.toHaveBeenCalled();
     // log message sent out
-    expect(logSpy).not.to.have.been.calledWith(sinon.match.string);
-    expect(result).to.equal(undefined);
+    expect(logSpy).not.toHaveBeenCalled();
+    expect(result).toBeUndefined();
   });
 
   it("should warn when no launcher is found", async () => {
     launcherThatExists = "xxx";
     const result = await getExecutableFromDirectory("abc", true);
-    expect(fsSpy).to.have.been.calledWith(pathToExe);
-    expect(fsSpy).to.have.been.calledWith(pathToCmd);
+    expect(pathExistsSpy).toBeCalledWith(pathToExe);
+    expect(pathExistsSpy).toBeCalledWith(pathToCmd);
 
     // no warning message
-    expect(warnSpy).not.to.have.been.calledWith(sinon.match.string);
+    expect(warnSpy).not.toHaveBeenCalled();
     // log message sent out
-    expect(logSpy).to.have.been.calledWith(sinon.match.string);
-    expect(result).to.equal(undefined);
+    expect(logSpy).toHaveBeenCalled();
+    expect(result).toBeUndefined();
   });
 
   it("should not warn when deprecated launcher is used, but no new launcher is available", async function () {
-    const manager = new (createModule().DistributionManager)(
+    const manager = new DistributionManager(
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
       undefined as any,
@@ -279,15 +284,15 @@ describe("Launcher path", () => {
     launcherThatExists = "codeql.cmd";
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
-    expect(result).to.equal(pathToCmd);
+    expect(result).toBe(pathToCmd);
 
     // no warning or error message
-    expect(warnSpy).to.have.callCount(0);
-    expect(errorSpy).to.have.callCount(0);
+    expect(warnSpy).toBeCalledTimes(0);
+    expect(errorSpy).toBeCalledTimes(0);
   });
 
   it("should warn when deprecated launcher is used, and new launcher is available", async () => {
-    const manager = new (createModule().DistributionManager)(
+    const manager = new DistributionManager(
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
       undefined as any,
@@ -295,15 +300,15 @@ describe("Launcher path", () => {
     launcherThatExists = ""; // pretend both launchers exist
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
-    expect(result).to.equal(pathToCmd);
+    expect(result).toBe(pathToCmd);
 
     // has warning message
-    expect(warnSpy).to.have.callCount(1);
-    expect(errorSpy).to.have.callCount(0);
+    expect(warnSpy).toBeCalledTimes(1);
+    expect(errorSpy).toBeCalledTimes(0);
   });
 
   it("should warn when launcher path is incorrect", async () => {
-    const manager = new (createModule().DistributionManager)(
+    const manager = new DistributionManager(
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
       undefined as any,
@@ -311,39 +316,10 @@ describe("Launcher path", () => {
     launcherThatExists = "xxx"; // pretend neither launcher exists
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
-    expect(result).to.equal(undefined);
+    expect(result).toBeUndefined();
 
     // no error message
-    expect(warnSpy).to.have.callCount(0);
-    expect(errorSpy).to.have.callCount(1);
+    expect(warnSpy).toBeCalledTimes(0);
+    expect(errorSpy).toBeCalledTimes(1);
   });
-
-  function createModule() {
-    warnSpy = sandbox.spy();
-    errorSpy = sandbox.spy();
-    logSpy = sandbox.spy();
-    // pretend that only the .cmd file exists
-    fsSpy = sandbox
-      .stub()
-      .callsFake((arg) => (arg.endsWith(launcherThatExists) ? true : false));
-    platformSpy = sandbox.stub().returns("win32");
-
-    return proxyquire("../../distribution", {
-      "./helpers": {
-        showAndLogWarningMessage: warnSpy,
-        showAndLogErrorMessage: errorSpy,
-      },
-      "./logging": {
-        logger: {
-          log: logSpy,
-        },
-      },
-      "fs-extra": {
-        pathExists: fsSpy,
-      },
-      os: {
-        platform: platformSpy,
-      },
-    });
-  }
 });

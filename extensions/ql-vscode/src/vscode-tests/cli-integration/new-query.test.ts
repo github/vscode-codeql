@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import * as path from "path";
 import * as tmp from "tmp";
 import { CancellationTokenSource } from "vscode-jsonrpc";
@@ -8,10 +7,9 @@ import * as cli from "../../cli";
 import { CellValue } from "../../pure/bqrs-cli-types";
 import { extensions, Uri } from "vscode";
 import { CodeQLExtensionInterface } from "../../extension";
-import { fail } from "assert";
-import { skipIfNoCodeQL } from "../ensureCli";
+import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../query-server/queryserver-client";
-import { logger, ProgressReporter } from "../../logging";
+import { extLogger, ProgressReporter } from "../../common";
 import { QueryResultType } from "../../pure/new-messages";
 import { cleanDatabases, dbLoc, storagePath } from "./global.helper";
 import { importArchiveDatabase } from "../../databaseFetcher";
@@ -101,80 +99,71 @@ const nullProgressReporter: ProgressReporter = {
   },
 };
 
-describe("using the new query server", function () {
-  before(function () {
-    skipIfNoCodeQL(this);
-  });
+jest.setTimeout(20_000);
 
-  // Note this does not work with arrow functions as the test case bodies:
-  // ensure they are all written with standard anonymous functions.
-  this.timeout(20000);
-
+describeWithCodeQL()("using the new query server", () => {
   let qs: qsClient.QueryServerClient;
   let cliServer: cli.CodeQLCliServer;
   let db: string;
-  before(async () => {
-    try {
-      const extension = await extensions
-        .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-          "GitHub.vscode-codeql",
-        )!
-        .activate();
-      if ("cliServer" in extension && "databaseManager" in extension) {
-        cliServer = extension.cliServer;
 
-        cliServer.quiet = true;
-        if (
-          !(await cliServer.cliConstraints.supportsNewQueryServerForTests())
-        ) {
-          this.ctx.skip();
-        }
-        qs = new QueryServerClient(
-          {
-            codeQlPath:
-              (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
-              "",
-            debug: false,
-            cacheSize: 0,
-            numThreads: 1,
-            saveCache: false,
-            timeoutSecs: 0,
-          },
-          cliServer,
-          {
-            contextStoragePath: tmpDir.name,
-            logger,
-          },
-          (task) =>
-            task(nullProgressReporter, new CancellationTokenSource().token),
-        );
-        await qs.startQueryServer();
+  let supportNewQueryServer = true;
 
-        // Unlike the old query sevre the new one wants a database and the empty direcrtory is not valid.
-        // Add a database, but make sure the database manager is empty first
-        await cleanDatabases(extension.databaseManager);
-        const uri = Uri.file(dbLoc);
-        const maybeDbItem = await importArchiveDatabase(
-          uri.toString(true),
-          extension.databaseManager,
-          storagePath,
-          () => {
-            /**ignore progress */
-          },
-          token,
-        );
+  beforeAll(async () => {
+    const extension = await extensions
+      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
+        "GitHub.vscode-codeql",
+      )!
+      .activate();
+    if ("cliServer" in extension && "databaseManager" in extension) {
+      cliServer = extension.cliServer;
 
-        if (!maybeDbItem) {
-          throw new Error("Could not import database");
-        }
-        db = maybeDbItem.databaseUri.fsPath;
-      } else {
-        throw new Error(
-          "Extension not initialized. Make sure cli is downloaded and installed properly.",
-        );
+      cliServer.quiet = true;
+      if (!(await cliServer.cliConstraints.supportsNewQueryServerForTests())) {
+        supportNewQueryServer = false;
       }
-    } catch (e) {
-      fail(e as Error);
+      qs = new QueryServerClient(
+        {
+          codeQlPath:
+            (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
+            "",
+          debug: false,
+          cacheSize: 0,
+          numThreads: 1,
+          saveCache: false,
+          timeoutSecs: 0,
+        },
+        cliServer,
+        {
+          contextStoragePath: tmpDir.name,
+          logger: extLogger,
+        },
+        (task) =>
+          task(nullProgressReporter, new CancellationTokenSource().token),
+      );
+      await qs.startQueryServer();
+
+      // Unlike the old query sevre the new one wants a database and the empty direcrtory is not valid.
+      // Add a database, but make sure the database manager is empty first
+      await cleanDatabases(extension.databaseManager);
+      const uri = Uri.file(dbLoc);
+      const maybeDbItem = await importArchiveDatabase(
+        uri.toString(true),
+        extension.databaseManager,
+        storagePath,
+        () => {
+          /**ignore progress */
+        },
+        token,
+      );
+
+      if (!maybeDbItem) {
+        throw new Error("Could not import database");
+      }
+      db = maybeDbItem.databaseUri.fsPath;
+    } else {
+      throw new Error(
+        "Extension not initialized. Make sure cli is downloaded and installed properly.",
+      );
     }
   });
 
@@ -184,6 +173,10 @@ describe("using the new query server", function () {
     const parsedResults = new Checkpoint<void>();
 
     it("should register the database", async () => {
+      if (!supportNewQueryServer) {
+        return;
+      }
+
       await qs.sendRequest(
         messages.registerDatabases,
         { databases: [db] },
@@ -194,7 +187,11 @@ describe("using the new query server", function () {
       );
     });
 
-    it(`should be able to run query ${queryName}`, async function () {
+    it(`should be able to run query ${queryName}`, async () => {
+      if (!supportNewQueryServer) {
+        return;
+      }
+
       try {
         const params: messages.RunQueryParams = {
           db,
@@ -213,7 +210,7 @@ describe("using the new query server", function () {
             /**/
           },
         );
-        expect(result.resultType).to.equal(QueryResultType.SUCCESS);
+        expect(result.resultType).toBe(QueryResultType.SUCCESS);
         await evaluationSucceeded.resolve();
       } catch (e) {
         await evaluationSucceeded.reject(e as Error);
@@ -221,7 +218,11 @@ describe("using the new query server", function () {
     });
 
     const actualResultSets: ResultSets = {};
-    it(`should be able to parse results of query ${queryName}`, async function () {
+    it(`should be able to parse results of query ${queryName}`, async () => {
+      if (!supportNewQueryServer) {
+        return;
+      }
+
       await evaluationSucceeded.done();
       const info = await cliServer.bqrsInfo(RESULTS_PATH);
 
@@ -235,16 +236,19 @@ describe("using the new query server", function () {
       await parsedResults.resolve();
     });
 
-    it(`should have correct results for query ${queryName}`, async function () {
+    it(`should have correct results for query ${queryName}`, async () => {
+      if (!supportNewQueryServer) {
+        return;
+      }
+
       await parsedResults.done();
-      expect(actualResultSets!).not.to.be.empty;
-      expect(Object.keys(actualResultSets!).sort()).to.eql(
+      expect(actualResultSets).not.toEqual({});
+      expect(Object.keys(actualResultSets!).sort()).toEqual(
         Object.keys(queryTestCase.expectedResultSets).sort(),
       );
       for (const name in queryTestCase.expectedResultSets) {
-        expect(actualResultSets![name]).to.eql(
+        expect(actualResultSets![name]).toEqual(
           queryTestCase.expectedResultSets[name],
-          `Results for query predicate ${name} do not match`,
         );
       }
     });

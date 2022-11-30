@@ -1,6 +1,6 @@
 import * as fs from "fs-extra";
 import { QuickPickItem, window } from "vscode";
-import { logger } from "../logging";
+import { extLogger } from "../common";
 import {
   getRemoteRepositoryLists,
   getRemoteRepositoryListsPath,
@@ -50,12 +50,12 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
   );
 
   if (quickpick?.repositories?.length) {
-    void logger.log(
+    void extLogger.log(
       `Selected repositories: ${quickpick.repositories.join(", ")}`,
     );
     return { repositories: quickpick.repositories };
   } else if (quickpick?.repositoryList) {
-    void logger.log(`Selected repository list: ${quickpick.repositoryList}`);
+    void extLogger.log(`Selected repository list: ${quickpick.repositoryList}`);
     return { repositoryLists: [quickpick.repositoryList] };
   } else if (quickpick?.useCustomRepo) {
     const customRepo = await getCustomRepo();
@@ -68,7 +68,7 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
         "Invalid repository format. Please enter a valid repository in the format <owner>/<repo> (e.g. github/codeql)",
       );
     }
-    void logger.log(`Entered repository: ${customRepo}`);
+    void extLogger.log(`Entered repository: ${customRepo}`);
     return { repositories: [customRepo] };
   } else if (quickpick?.useAllReposOfOwner) {
     const owner = await getOwner();
@@ -79,7 +79,7 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     if (!owner || !OWNER_REGEX.test(owner)) {
       throw new Error(`Invalid user or organization: ${owner}`);
     }
-    void logger.log(`Entered owner: ${owner}`);
+    void extLogger.log(`Entered owner: ${owner}`);
     return { owners: [owner] };
   } else {
     // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.

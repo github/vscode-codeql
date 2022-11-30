@@ -12,7 +12,7 @@ import {
 } from "../helpers";
 import { Credentials } from "../authentication";
 import * as cli from "../cli";
-import { logger } from "../logging";
+import { extLogger } from "../common";
 import {
   getActionBranch,
   getRemoteControllerRepo,
@@ -97,7 +97,7 @@ async function generateQueryPack(
         }),
     });
 
-    void logger.log(`Copied ${copiedCount} files to ${queryPackDir}`);
+    void extLogger.log(`Copied ${copiedCount} files to ${queryPackDir}`);
 
     await fixPackFile(queryPackDir, packRelativePath);
 
@@ -108,9 +108,9 @@ async function generateQueryPack(
 
     // copy only the query file to the query pack directory
     // and generate a synthetic query pack
-    void logger.log(`Copying ${queryFile} to ${queryPackDir}`);
+    void extLogger.log(`Copying ${queryFile} to ${queryPackDir}`);
     await fs.copy(queryFile, targetQueryFileName);
-    void logger.log("Generating synthetic query pack");
+    void extLogger.log("Generating synthetic query pack");
     const syntheticQueryPack = {
       name: QUERY_PACK_NAME,
       version: "0.0.0",
@@ -144,7 +144,7 @@ async function generateQueryPack(
   }
 
   const bundlePath = await getPackedBundlePath(queryPackDir);
-  void logger.log(
+  void extLogger.log(
     `Compiling and bundling query pack from ${queryPackDir} to ${bundlePath}. (This may take a while.)`,
   );
   await cliServer.packInstall(queryPackDir);
@@ -359,7 +359,7 @@ export async function getControllerRepo(
   let controllerRepoNwo: string | undefined;
   controllerRepoNwo = getRemoteControllerRepo();
   if (!controllerRepoNwo || !REPO_REGEX.test(controllerRepoNwo)) {
-    void logger.log(
+    void extLogger.log(
       controllerRepoNwo
         ? "Invalid controller repository name."
         : "No controller repository defined.",
@@ -380,13 +380,13 @@ export async function getControllerRepo(
         "Invalid repository format. Must be a valid GitHub repository in the format <owner>/<repo>.",
       );
     }
-    void logger.log(
+    void extLogger.log(
       `Setting the controller repository as: ${controllerRepoNwo}`,
     );
     await setRemoteControllerRepo(controllerRepoNwo);
   }
 
-  void logger.log(`Using controller repository: ${controllerRepoNwo}`);
+  void extLogger.log(`Using controller repository: ${controllerRepoNwo}`);
   const [owner, repo] = controllerRepoNwo.split("/");
 
   try {
@@ -395,7 +395,7 @@ export async function getControllerRepo(
       owner,
       repo,
     );
-    void logger.log(`Controller repository ID: ${controllerRepo.id}`);
+    void extLogger.log(`Controller repository ID: ${controllerRepo.id}`);
     return {
       id: controllerRepo.id,
       fullName: controllerRepo.full_name,

@@ -2,7 +2,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import { Disposable, ExtensionContext } from "vscode";
-import { logger } from "./logging";
+import { extLogger } from "./common";
 import { QueryHistoryManager } from "./query-history";
 
 const LAST_SCRUB_TIME_KEY = "lastScrubTime";
@@ -74,9 +74,9 @@ async function scrubQueries(
     let scrubCount = 0; // total number of directories deleted
     try {
       counter?.increment();
-      void logger.log("Scrubbing query directory. Removing old queries.");
+      void extLogger.log("Scrubbing query directory. Removing old queries.");
       if (!(await fs.pathExists(queryDirectory))) {
-        void logger.log(
+        void extLogger.log(
           `Cannot scrub. Query directory does not exist: ${queryDirectory}`,
         );
         return;
@@ -99,9 +99,9 @@ async function scrubQueries(
         throw new Error(os.EOL + errors.join(os.EOL));
       }
     } catch (e) {
-      void logger.log(`Error while scrubbing queries: ${e}`);
+      void extLogger.log(`Error while scrubbing queries: ${e}`);
     } finally {
-      void logger.log(`Scrubbed ${scrubCount} old queries.`);
+      void extLogger.log(`Scrubbed ${scrubCount} old queries.`);
     }
     await qhm.removeDeletedQueries();
   }
@@ -119,30 +119,30 @@ async function scrubDirectory(
   try {
     let deleted = true;
     if (!(await fs.stat(dir)).isDirectory()) {
-      void logger.log(`  ${dir} is not a directory. Deleting.`);
+      void extLogger.log(`  ${dir} is not a directory. Deleting.`);
       await fs.remove(dir);
     } else if (!(await fs.pathExists(timestampFile))) {
-      void logger.log(`  ${dir} has no timestamp file. Deleting.`);
+      void extLogger.log(`  ${dir} has no timestamp file. Deleting.`);
       await fs.remove(dir);
     } else if (!(await fs.stat(timestampFile)).isFile()) {
-      void logger.log(`  ${timestampFile} is not a file. Deleting.`);
+      void extLogger.log(`  ${timestampFile} is not a file. Deleting.`);
       await fs.remove(dir);
     } else {
       const timestampText = await fs.readFile(timestampFile, "utf8");
       const timestamp = parseInt(timestampText, 10);
 
       if (Number.isNaN(timestamp)) {
-        void logger.log(
+        void extLogger.log(
           `  ${dir} has invalid timestamp '${timestampText}'. Deleting.`,
         );
         await fs.remove(dir);
       } else if (now - timestamp > maxQueryTime) {
-        void logger.log(
+        void extLogger.log(
           `  ${dir} is older than ${maxQueryTime / 1000} seconds. Deleting.`,
         );
         await fs.remove(dir);
       } else {
-        void logger.log(
+        void extLogger.log(
           `  ${dir} is not older than ${maxQueryTime / 1000} seconds. Keeping.`,
         );
         deleted = false;

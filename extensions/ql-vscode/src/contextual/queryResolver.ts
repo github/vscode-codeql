@@ -8,7 +8,7 @@ import { KeyType, kindOfKeyType, nameOfKeyType, tagOfKeyType } from "./keyType";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseItem } from "../databases";
 import { QlPacksForLanguage } from "../helpers";
-import { logger } from "../logging";
+import { extLogger } from "../common";
 import { createInitialQueryInfo } from "../run-queries-shared";
 import { CancellationToken, Uri } from "vscode";
 import { ProgressCallback } from "../commandRunner";
@@ -161,17 +161,17 @@ async function resolveContextualQuery(
     // No lock file, likely because this library pack is in the package cache.
     // Create a lock file so that we can resolve dependencies and library path
     // for the contextual query.
-    void logger.log(
+    void extLogger.log(
       `Library pack ${packPath} is missing a lock file; creating a temporary lock file`,
     );
     await cli.packResolveDependencies(packPath);
     createdTempLockFile = true;
     // Clear CLI server pack cache before installing dependencies,
     // so that it picks up the new lock file, not the previously cached pack.
-    void logger.log("Clearing the CodeQL CLI server's pack cache");
+    void extLogger.log("Clearing the CodeQL CLI server's pack cache");
     await cli.clearCache();
     // Install dependencies.
-    void logger.log(
+    void extLogger.log(
       `Installing package dependencies for library pack ${packPath}`,
     );
     await cli.packInstall(packPath);
@@ -181,7 +181,7 @@ async function resolveContextualQuery(
 
 async function removeTemporaryLockFile(packPath: string) {
   const tempLockFilePath = path.resolve(packPath, "codeql-pack.lock.yml");
-  void logger.log(
+  void extLogger.log(
     `Deleting temporary package lock file at ${tempLockFilePath}`,
   );
   // It's fine if the file doesn't exist.
@@ -212,7 +212,7 @@ export async function runContextualQuery(
     },
     false,
   );
-  void logger.log(
+  void extLogger.log(
     `Running contextual query ${query}; results will be stored in ${queryStorageDir}`,
   );
   const queryResult = await qs.compileAndRunQueryAgainstDatabase(

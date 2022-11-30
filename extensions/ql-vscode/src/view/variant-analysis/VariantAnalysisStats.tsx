@@ -20,7 +20,7 @@ export type VariantAnalysisStatsProps = {
   createdAt: Date;
   completedAt?: Date | undefined;
 
-  onViewLogsClick: () => void;
+  onViewLogsClick?: () => void;
 };
 
 const Row = styled.div`
@@ -88,6 +88,7 @@ export const VariantAnalysisStats = ({
       </StatItem>
       <StatItem title={completionHeaderName}>
         <VariantAnalysisStatusStats
+          variantAnalysisStatus={variantAnalysisStatus}
           completedAt={completedAt}
           onViewLogsClick={onViewLogsClick}
         />

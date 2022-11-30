@@ -8,7 +8,7 @@ import {
 } from "./log-scanner";
 import { PipelineInfo, SummarySymbols } from "./summary-parser";
 import * as fs from "fs-extra";
-import { logger } from "../logging";
+import { extLogger } from "../common";
 
 /**
  * Compute the key used to find a predicate in the summary symbols.
@@ -56,7 +56,7 @@ class ProblemReporter implements EvaluationLogProblemReporter {
   }
 
   public log(message: string): void {
-    void logger.log(message);
+    void extLogger.log(message);
   }
 }
 

@@ -24,7 +24,7 @@ import {
   showAndLogWarningMessage,
   showBinaryChoiceDialog,
 } from "./helpers";
-import { logger } from "./logging";
+import { extLogger } from "./common";
 import { URLSearchParams } from "url";
 import { DisposableObject } from "./pure/disposable-object";
 import { commandRunner } from "./commandRunner";
@@ -460,7 +460,7 @@ export class QueryHistoryManager extends DisposableObject {
       }),
     );
 
-    void logger.log("Registering query history panel commands.");
+    void extLogger.log("Registering query history panel commands.");
     this.push(
       commandRunner(
         "codeQLQueryHistory.openQuery",
@@ -705,7 +705,7 @@ export class QueryHistoryManager extends DisposableObject {
             });
             await this.refreshTreeView();
           } else {
-            void logger.log(
+            void extLogger.log(
               "Variant analysis status update event received for unknown variant analysis",
             );
           }
@@ -775,7 +775,7 @@ export class QueryHistoryManager extends DisposableObject {
           }
           await this.refreshTreeView();
         } else {
-          void logger.log(
+          void extLogger.log(
             "Variant analysis status update event received for unknown variant analysis",
           );
         }
@@ -787,7 +787,7 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async readQueryHistory(): Promise<void> {
-    void logger.log(
+    void extLogger.log(
       `Reading cached query history from '${this.queryMetadataStorageLocation}'.`,
     );
     const history = await slurpQueryHistory(this.queryMetadataStorageLocation);
@@ -929,9 +929,9 @@ export class QueryHistoryManager extends DisposableObject {
     // Remote queries can be removed locally, but not remotely.
     // The user must cancel the query on GitHub Actions explicitly.
     this.treeDataProvider.remove(item);
-    void logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
+    void extLogger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
     if (item.status === QueryStatus.InProgress) {
-      void logger.log(
+      void extLogger.log(
         "The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.",
       );
     }
@@ -945,9 +945,9 @@ export class QueryHistoryManager extends DisposableObject {
     // We can remove a Variant Analysis locally, but not remotely.
     // The user must cancel the query on GitHub Actions explicitly.
     this.treeDataProvider.remove(item);
-    void logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
+    void extLogger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
     if (item.status === QueryStatus.InProgress) {
-      void logger.log(
+      void extLogger.log(
         "The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.",
       );
     }
@@ -1604,8 +1604,8 @@ the file in the file explorer and dragging it into the workspace.`,
         }
       } else {
         void showAndLogErrorMessage(`Could not open file ${fileLocation}`);
-        void logger.log(getErrorMessage(e));
-        void logger.log(getErrorStack(e));
+        void extLogger.log(getErrorMessage(e));
+        void extLogger.log(getErrorStack(e));
       }
     }
   }

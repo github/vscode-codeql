@@ -19,7 +19,7 @@ import {
   ProviderResult,
   version as vscodeVersion,
 } from "vscode";
-import { LanguageClient } from "vscode-languageclient";
+import { LanguageClient } from "vscode-languageclient/node";
 import * as os from "os";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -76,10 +76,10 @@ import { ResultsView } from "./interface";
 import { WebviewReveal } from "./interface-utils";
 import {
   ideServerLogger,
-  logger,
+  extLogger,
   ProgressReporter,
   queryServerLogger,
-} from "./logging";
+} from "./common";
 import { QueryHistoryManager } from "./query-history";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
 import * as legacyQueryServer from "./legacy-query-server/queryserver-client";
@@ -230,7 +230,7 @@ const MIN_VERSION = "1.67.0";
 export async function activate(
   ctx: ExtensionContext,
 ): Promise<CodeQLExtensionInterface | Record<string, never>> {
-  void logger.log(`Starting ${extensionId} extension`);
+  void extLogger.log(`Starting ${extensionId} extension`);
   if (extension === undefined) {
     throw new Error(`Can't find extension ${extensionId}`);
   }
@@ -278,7 +278,7 @@ export async function activate(
     const minSecondsSinceLastUpdateCheck = config.isUserInitiated ? 0 : 86400;
     const noUpdatesLoggingFunc = config.shouldDisplayMessageWhenNoUpdates
       ? showAndLogInformationMessage
-      : async (message: string) => void logger.log(message);
+      : async (message: string) => void extLogger.log(message);
     const result =
       await distributionManager.checkForUpdatesToExtensionManagedDistribution(
         minSecondsSinceLastUpdateCheck,
@@ -291,7 +291,7 @@ export async function activate(
 
     switch (result.kind) {
       case DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult:
-        void logger.log(
+        void extLogger.log(
           "Didn't perform CodeQL CLI update check since a check was already performed within the previous " +
             `${minSecondsSinceLastUpdateCheck} seconds.`,
         );
@@ -400,7 +400,7 @@ export async function activate(
     const result = await distributionManager.getDistribution();
     switch (result.kind) {
       case FindDistributionResultKind.CompatibleDistribution:
-        void logger.log(
+        void extLogger.log(
           `Found compatible version of CodeQL CLI (version ${result.version.raw})`,
         );
         break;
@@ -543,18 +543,18 @@ async function activateWithInstalledDistribution(
   // of activation.
   errorStubs.forEach((stub) => stub.dispose());
 
-  void logger.log("Initializing configuration listener...");
+  void extLogger.log("Initializing configuration listener...");
   const qlConfigurationListener =
     await QueryServerConfigListener.createQueryServerConfigListener(
       distributionManager,
     );
   ctx.subscriptions.push(qlConfigurationListener);
 
-  void logger.log("Initializing CodeQL cli server...");
+  void extLogger.log("Initializing CodeQL cli server...");
   const cliServer = new CodeQLCliServer(
     distributionManager,
     new CliConfigListener(),
-    logger,
+    extLogger,
   );
   ctx.subscriptions.push(cliServer);
 
@@ -564,7 +564,7 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(statusBar);
 
-  void logger.log("Initializing query server client.");
+  void extLogger.log("Initializing query server client.");
   const qs = await createQueryServer(qlConfigurationListener, cliServer, ctx);
 
   for (const glob of PACK_GLOBS) {
@@ -575,14 +575,14 @@ async function activateWithInstalledDistribution(
     });
   }
 
-  void logger.log("Initializing database manager.");
-  const dbm = new DatabaseManager(ctx, qs, cliServer, logger);
+  void extLogger.log("Initializing database manager.");
+  const dbm = new DatabaseManager(ctx, qs, cliServer, extLogger);
 
   // Let this run async.
   void dbm.loadPersistedState();
 
   ctx.subscriptions.push(dbm);
-  void logger.log("Initializing database panel.");
+  void extLogger.log("Initializing database panel.");
   const databaseUI = new DatabaseUI(
     dbm,
     qs,
@@ -593,11 +593,11 @@ async function activateWithInstalledDistribution(
   databaseUI.init();
   ctx.subscriptions.push(databaseUI);
 
-  void logger.log("Initializing evaluator log viewer.");
+  void extLogger.log("Initializing evaluator log viewer.");
   const evalLogViewer = new EvalLogViewer();
   ctx.subscriptions.push(evalLogViewer);
 
-  void logger.log("Initializing query history manager.");
+  void extLogger.log("Initializing query history manager.");
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
   ctx.subscriptions.push(queryHistoryConfigurationListener);
   const showResults = async (item: CompletedLocalQueryInfo) =>
@@ -608,7 +608,7 @@ async function activateWithInstalledDistribution(
     queryHistoryConfigurationListener,
   );
 
-  void logger.log("Initializing results panel interface.");
+  void extLogger.log("Initializing results panel interface.");
   const localQueryResultsView = new ResultsView(
     ctx,
     dbm,
@@ -618,7 +618,7 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(localQueryResultsView);
 
-  void logger.log("Initializing variant analysis manager.");
+  void extLogger.log("Initializing variant analysis manager.");
   const variantAnalysisStorageDir = path.join(
     ctx.globalStorageUri.fsPath,
     "variant-analyses",
@@ -626,7 +626,7 @@ async function activateWithInstalledDistribution(
   await fs.ensureDir(variantAnalysisStorageDir);
   const variantAnalysisResultsManager = new VariantAnalysisResultsManager(
     cliServer,
-    logger,
+    extLogger,
   );
   const variantAnalysisManager = new VariantAnalysisManager(
     ctx,
@@ -643,11 +643,16 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  void logger.log("Initializing remote queries manager.");
-  const rqm = new RemoteQueriesManager(ctx, cliServer, queryStorageDir, logger);
+  void extLogger.log("Initializing remote queries manager.");
+  const rqm = new RemoteQueriesManager(
+    ctx,
+    cliServer,
+    queryStorageDir,
+    extLogger,
+  );
   ctx.subscriptions.push(rqm);
 
-  void logger.log("Initializing query history.");
+  void extLogger.log("Initializing query history.");
   const qhm = new QueryHistoryManager(
     qs,
     dbm,
@@ -665,7 +670,7 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(qhm);
 
-  void logger.log("Initializing evaluation log scanners.");
+  void extLogger.log("Initializing evaluation log scanners.");
   const logScannerService = new LogScannerService(qhm);
   ctx.subscriptions.push(logScannerService);
   ctx.subscriptions.push(
@@ -674,7 +679,7 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  void logger.log("Initializing compare view.");
+  void extLogger.log("Initializing compare view.");
   const compareView = new CompareView(
     ctx,
     dbm,
@@ -685,7 +690,7 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(compareView);
 
-  void logger.log("Initializing source archive filesystem provider.");
+  void extLogger.log("Initializing source archive filesystem provider.");
   archiveFilesystemProvider.activate(ctx);
 
   async function showResultsForComparison(
@@ -821,7 +826,7 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(tmpDirDisposal);
 
-  void logger.log("Initializing CodeQL language server.");
+  void extLogger.log("Initializing CodeQL language server.");
   const client = new LanguageClient(
     "CodeQL Language Server",
     () => spawnIdeServer(qlConfigurationListener),
@@ -839,7 +844,7 @@ async function activateWithInstalledDistribution(
     true,
   );
 
-  void logger.log("Initializing QLTest interface.");
+  void extLogger.log("Initializing QLTest interface.");
   const testExplorerExtension = extensions.getExtension<TestHub>(
     testExplorerExtensionId,
   );
@@ -856,7 +861,7 @@ async function activateWithInstalledDistribution(
     ctx.subscriptions.push(testUIService);
   }
 
-  void logger.log("Registering top-level command palette commands.");
+  void extLogger.log("Registering top-level command palette commands.");
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       "codeQL.runQuery",
@@ -938,7 +943,7 @@ async function activateWithInstalledDistribution(
             }
           }
           if (skippedDatabases.length > 0) {
-            void logger.log(`Errors:\n${errors.join("\n")}`);
+            void extLogger.log(`Errors:\n${errors.join("\n")}`);
             void showAndLogWarningMessage(
               `The following databases were skipped:\n${skippedDatabases.join(
                 "\n",
@@ -1415,17 +1420,21 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner("codeQL.showLogs", async () => {
-      logger.show();
+      extLogger.show();
     }),
   );
 
   ctx.subscriptions.push(new SummaryLanguageSupport());
 
-  void logger.log("Starting language server.");
-  ctx.subscriptions.push(client.start());
-
+  void extLogger.log("Starting language server.");
+  await client.start();
+  ctx.subscriptions.push({
+    dispose: () => {
+      void client.stop();
+    },
+  });
   // Jump-to-definition and find-references
-  void logger.log("Registering jump-to-definition handlers.");
+  void extLogger.log("Registering jump-to-definition handlers.");
 
   // Store contextual queries in a temporary folder so that they are removed
   // when the application closes. There is no need for the user to interact with them.
@@ -1541,14 +1550,14 @@ async function activateWithInstalledDistribution(
 
   await commands.executeCommand("codeQLDatabases.removeOrphanedDatabases");
 
-  void logger.log("Reading query history");
+  void extLogger.log("Reading query history");
   await qhm.readQueryHistory();
 
   const app = new ExtensionApp(ctx);
   const dbModule = await initializeDbModule(app);
   ctx.subscriptions.push(dbModule);
 
-  void logger.log("Successfully finished extension initialization.");
+  void extLogger.log("Successfully finished extension initialization.");
 
   return {
     ctx,
@@ -1611,7 +1620,7 @@ function getContextStoragePath(ctx: ExtensionContext) {
 }
 
 async function initializeLogging(ctx: ExtensionContext): Promise<void> {
-  ctx.subscriptions.push(logger);
+  ctx.subscriptions.push(extLogger);
   ctx.subscriptions.push(queryServerLogger);
   ctx.subscriptions.push(ideServerLogger);
 }

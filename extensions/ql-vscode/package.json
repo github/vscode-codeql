@@ -13,7 +13,7 @@
     "url": "https://github.com/github/vscode-codeql"
   },
   "engines": {
-    "vscode": "^1.59.0",
+    "vscode": "^1.67.0",
     "node": "^16.13.0",
     "npm": ">=7.20.6"
   },
@@ -1272,17 +1272,18 @@
     "test": "npm-run-all -p test:*",
     "test:unit": "jest --projects test",
     "test:view": "jest --projects src/view",
-    "integration": "node ./out/vscode-tests/run-integration-tests.js no-workspace,minimal-workspace",
-    "integration:no-workspace": "node ./out/vscode-tests/run-integration-tests.js no-workspace",
-    "integration:minimal-workspace": "node ./out/vscode-tests/run-integration-tests.js minimal-workspace",
-    "cli-integration": "node ./out/vscode-tests/run-integration-tests.js cli-integration",
+    "integration": "npm-run-all integration:*",
+    "integration:no-workspace": "jest --projects src/vscode-tests/no-workspace",
+    "integration:minimal-workspace": "jest --projects src/vscode-tests/minimal-workspace",
+    "cli-integration": "jest --projects src/vscode-tests/cli-integration",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
     "format-staged": "lint-staged",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "lint:scenarios": "ts-node scripts/lint-scenarios.ts"
+    "lint:scenarios": "ts-node scripts/lint-scenarios.ts",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@octokit/plugin-retry": "^3.0.9",
@@ -1321,8 +1322,8 @@
     "tree-kill": "~1.2.2",
     "unzipper": "~0.10.5",
     "vscode-extension-telemetry": "^0.1.6",
-    "vscode-jsonrpc": "^5.0.1",
-    "vscode-languageclient": "^6.1.3",
+    "vscode-jsonrpc": "^8.0.2",
+    "vscode-languageclient": "^8.0.2",
     "vscode-test-adapter-api": "~1.7.0",
     "vscode-test-adapter-util": "~0.7.0",
     "zip-a-folder": "~1.1.3"
@@ -1343,8 +1344,6 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^12.1.5",
     "@testing-library/user-event": "^14.4.3",
-    "@types/chai": "^4.1.7",
-    "@types/chai-as-promised": "~7.1.2",
     "@types/child-process-promise": "^2.2.1",
     "@types/classnames": "~2.2.9",
     "@types/d3": "^7.4.0",
@@ -1359,17 +1358,13 @@
     "@types/jest": "^29.0.2",
     "@types/js-yaml": "^3.12.5",
     "@types/jszip": "~3.1.6",
-    "@types/mocha": "^9.0.0",
     "@types/nanoid": "^3.0.0",
     "@types/node": "^16.11.25",
     "@types/node-fetch": "~2.5.2",
-    "@types/proxyquire": "~1.3.28",
     "@types/react": "^17.0.2",
     "@types/react-dom": "^17.0.2",
     "@types/sarif": "~2.1.2",
     "@types/semver": "~7.2.0",
-    "@types/sinon": "~7.5.2",
-    "@types/sinon-chai": "~3.2.3",
     "@types/stream-chain": "~2.0.1",
     "@types/stream-json": "~1.7.1",
     "@types/tar-stream": "^2.2.2",
@@ -1386,8 +1381,6 @@
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.3.5",
     "babel-loader": "^8.2.5",
-    "chai": "^4.2.0",
-    "chai-as-promised": "~7.1.1",
     "css-loader": "~3.1.0",
     "del": "^6.0.0",
     "eslint": "^8.23.1",
@@ -1409,13 +1402,9 @@
     "jest-runner-vscode": "^3.0.1",
     "lint-staged": "~10.2.2",
     "mini-css-extract-plugin": "^2.6.1",
-    "mocha": "^10.0.0",
-    "mocha-sinon": "~2.1.2",
     "npm-run-all": "^4.1.5",
+    "patch-package": "^6.5.0",
     "prettier": "^2.7.1",
-    "proxyquire": "~2.1.3",
-    "sinon": "~14.0.0",
-    "sinon-chai": "~3.5.0",
     "tar-stream": "^2.2.0",
     "through2": "^4.0.2",
     "ts-jest": "^29.0.1",
@@ -1431,7 +1420,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run format-staged",
-      "pre-push": "npm run lint && scripts/forbid-mocha-only"
+      "pre-push": "npm run lint && scripts/forbid-test-only"
     }
   },
   "lint-staged": {

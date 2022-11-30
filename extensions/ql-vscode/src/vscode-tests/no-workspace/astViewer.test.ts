@@ -1,6 +1,4 @@
 import * as fs from "fs-extra";
-import { expect } from "chai";
-import * as sinon from "sinon";
 import * as yaml from "js-yaml";
 
 import { AstViewer, AstItem } from "../../astViewer";
@@ -11,20 +9,21 @@ import { testDisposeHandler } from "../test-dispose-handler";
 describe("AstViewer", () => {
   let astRoots: AstItem[];
   let viewer: AstViewer | undefined;
-  let sandbox: sinon.SinonSandbox;
   beforeEach(async () => {
-    sandbox = sinon.createSandbox();
     // the ast is stored in yaml because there are back pointers
     // making a json representation impossible.
     // The complication here is that yaml files are not copied into the 'out' directory by tsc.
     astRoots = await buildAst();
 
-    sandbox.stub(commands, "registerCommand");
-    sandbox.stub(commands, "executeCommand");
+    jest.spyOn(commands, "registerCommand").mockImplementation(() => ({
+      dispose: jest.fn(),
+    }));
+    jest
+      .spyOn(commands, "executeCommand")
+      .mockImplementation(() => Promise.resolve());
   });
 
   afterEach(() => {
-    sandbox.restore();
     if (viewer) {
       viewer.dispose(testDisposeHandler);
       viewer = undefined;
@@ -36,9 +35,9 @@ describe("AstViewer", () => {
     viewer = new AstViewer();
     viewer.updateRoots(astRoots, item, Uri.file("def/abc"));
 
-    expect((viewer as any).treeDataProvider.roots).to.eq(astRoots);
-    expect((viewer as any).treeDataProvider.db).to.eq(item);
-    expect((viewer as any).treeView.message).to.eq("AST for abc");
+    expect((viewer as any).treeDataProvider.roots).toBe(astRoots);
+    expect((viewer as any).treeDataProvider.db).toBe(item);
+    expect((viewer as any).treeView.message).toBe("AST for abc");
   });
 
   it("should update the tree selection based on a change in the editor selection", () => {
@@ -49,7 +48,7 @@ describe("AstViewer", () => {
   it("should select an AssignExpr", () => {
     // this one is interesting because it spans a couple of other nodes
     const expr = findNodeById(300, astRoots);
-    expect(expr.label).to.eq("[AssignExpr] ... = ...");
+    expect(expr.label).toBe("[AssignExpr] ... = ...");
     doSelectionTest(expr, expr.fileLocation?.range);
   });
 
@@ -75,8 +74,10 @@ describe("AstViewer", () => {
     const item = {} as DatabaseItem;
     viewer = new AstViewer();
     viewer.updateRoots(astRoots, item, defaultUri);
-    const spy = sandbox.spy();
-    (viewer as any).treeView.reveal = spy;
+
+    const revealMock = jest.fn();
+
+    (viewer as any).treeView.reveal = revealMock;
     Object.defineProperty((viewer as any).treeView, "visible", {
       value: true,
     });
@@ -84,9 +85,9 @@ describe("AstViewer", () => {
     const mockEvent = createMockEvent(selectionRange, fileUri);
     (viewer as any).updateTreeSelection(mockEvent);
     if (expectedSelection) {
-      expect(spy).to.have.been.calledWith(expectedSelection);
+      expect(revealMock).toBeCalledWith(expectedSelection);
     } else {
-      expect(spy).not.to.have.been.called;
+      expect(revealMock).not.toBeCalled();
     }
   }
 

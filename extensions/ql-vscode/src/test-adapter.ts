@@ -33,7 +33,7 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
 } from "./helpers";
-import { testLogger } from "./logging";
+import { testLogger } from "./common";
 import { DatabaseItem, DatabaseManager } from "./databases";
 
 /**

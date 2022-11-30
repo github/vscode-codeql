@@ -1,5 +1,5 @@
 import { DisposableObject } from "./pure/disposable-object";
-import { logger } from "./logging";
+import { extLogger } from "./common";
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of
@@ -62,7 +62,7 @@ export abstract class Discovery<T> extends DisposableObject {
       })
 
       .catch((err) => {
-        void logger.log(`${this.name} failed. Reason: ${err.message}`);
+        void extLogger.log(`${this.name} failed. Reason: ${err.message}`);
       })
 
       .finally(() => {

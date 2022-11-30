@@ -1,12 +1,11 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import {
-  DistributionManager,
+  getRequiredAssetName,
   extractZipArchive,
   codeQlLauncherName,
-} from "../distribution";
+} from "../pure/distribution";
 import fetch from "node-fetch";
-import { workspace } from "vscode";
 
 /**
  * This module ensures that the proper CLI is available for tests of the extension.
@@ -64,7 +63,7 @@ export async function ensureCli(useCli: boolean) {
       return;
     }
 
-    const assetName = DistributionManager.getRequiredAssetName();
+    const assetName = getRequiredAssetName();
     const url = getCliDownloadUrl(assetName);
     const unzipDir = getCliUnzipDir();
     const downloadedFilePath = getDownloadFilePath(assetName);
@@ -133,28 +132,6 @@ export async function ensureCli(useCli: boolean) {
     console.error("Failed to download CLI.");
     console.error(e);
     process.exit(-1);
-  }
-}
-
-/**
- * Heuristically determines if the codeql libraries are installed in this
- * workspace. Looks for the existance of a folder whose path ends in `/codeql`
- */
-function hasCodeQL() {
-  const folders = workspace.workspaceFolders;
-  return !!folders?.some((folder) => folder.uri.path.endsWith("/codeql"));
-}
-
-export function skipIfNoCodeQL(context: Mocha.Context) {
-  if (!hasCodeQL()) {
-    console.log(
-      [
-        "The CodeQL libraries are not available as a folder in this workspace.",
-        "To fix in CI: checkout the github/codeql repository and set the 'TEST_CODEQL_PATH' environment variable to the checked out directory.",
-        "To fix when running from vs code, see the comment in the launch.json file in the 'Launch Integration Tests - With CLI' section.",
-      ].join("\n\n"),
-    );
-    context.skip();
   }
 }
 

@@ -1,8 +1,6 @@
-import * as sinon from "sinon";
 import * as tmp from "tmp";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { expect } from "chai";
 import { CancellationToken, ExtensionContext, Uri, workspace } from "vscode";
 
 import {
@@ -13,9 +11,9 @@ import {
   FullDatabaseOptions,
   findSourceArchive,
 } from "../../databases";
-import { Logger } from "../../logging";
+import { Logger } from "../../common";
 import { ProgressCallback } from "../../commandRunner";
-import { CodeQLCliServer } from "../../cli";
+import { CodeQLCliServer, DbInfo } from "../../cli";
 import {
   encodeArchiveBasePath,
   encodeSourceArchiveUri,
@@ -31,37 +29,29 @@ describe("databases", () => {
   };
 
   let databaseManager: DatabaseManager;
-  let updateSpy: sinon.SinonSpy;
-  let getSpy: sinon.SinonStub;
-  let dbChangedHandler: sinon.SinonSpy;
-  let registerSpy: sinon.SinonSpy;
-  let deregisterSpy: sinon.SinonSpy;
-  let supportsDatabaseRegistrationSpy: sinon.SinonStub;
-  let supportsLanguageNameSpy: sinon.SinonStub;
-  let resolveDatabaseSpy: sinon.SinonStub;
 
-  let sandbox: sinon.SinonSandbox;
+  let updateSpy: jest.Mock<Promise<void>, []>;
+  let registerSpy: jest.Mock<Promise<void>, []>;
+  let deregisterSpy: jest.Mock<Promise<void>, []>;
+  let supportsLanguageNameSpy: jest.Mock<Promise<boolean>, []>;
+  let resolveDatabaseSpy: jest.Mock<Promise<DbInfo>, []>;
+
   let dir: tmp.DirResult;
 
   beforeEach(() => {
     dir = tmp.dirSync();
 
-    sandbox = sinon.createSandbox();
-    updateSpy = sandbox.spy();
-    getSpy = sandbox.stub();
-    getSpy.returns([]);
-    registerSpy = sandbox.stub();
-    deregisterSpy = sandbox.stub();
-    dbChangedHandler = sandbox.spy();
-    supportsDatabaseRegistrationSpy = sandbox.stub();
-    supportsDatabaseRegistrationSpy.resolves(true);
-    supportsLanguageNameSpy = sandbox.stub();
-    resolveDatabaseSpy = sandbox.stub();
+    updateSpy = jest.fn(() => Promise.resolve(undefined));
+    registerSpy = jest.fn(() => Promise.resolve(undefined));
+    deregisterSpy = jest.fn(() => Promise.resolve(undefined));
+    supportsLanguageNameSpy = jest.fn(() => Promise.resolve(true));
+    resolveDatabaseSpy = jest.fn(() => Promise.resolve({} as DbInfo));
+
     databaseManager = new DatabaseManager(
       {
         workspaceState: {
           update: updateSpy,
-          get: getSpy,
+          get: () => [],
         },
         // pretend like databases added in the temp dir are controlled by the extension
         // so that they are deleted upon removal
@@ -77,7 +67,7 @@ describe("databases", () => {
       {
         cliConstraints: {
           supportsLanguageName: supportsLanguageNameSpy,
-          supportsDatabaseRegistration: supportsDatabaseRegistrationSpy,
+          supportsDatabaseRegistration: () => true,
         },
         resolveDatabase: resolveDatabaseSpy,
       } as unknown as CodeQLCliServer,
@@ -91,39 +81,38 @@ describe("databases", () => {
     // Unfortunately, during a test it is not possible to convert from
     // a single root workspace to multi-root, so must stub out relevant
     // functions
-    sandbox.stub(workspace, "updateWorkspaceFolders");
-    sandbox.spy(workspace, "onDidChangeWorkspaceFolders");
+    jest.spyOn(workspace, "updateWorkspaceFolders").mockReturnValue(true);
   });
 
   afterEach(async () => {
     dir.removeCallback();
     databaseManager.dispose(testDisposeHandler);
-    sandbox.restore();
   });
 
   it("should fire events when adding and removing a db item", async () => {
     const mockDbItem = createMockDB();
-    const spy = sinon.spy();
-    databaseManager.onDidChangeDatabaseItem(spy);
+    const onDidChangeDatabaseItem = jest.fn();
+    databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
     await (databaseManager as any).addDatabaseItem(
       {} as ProgressCallback,
       {} as CancellationToken,
       mockDbItem,
     );
 
-    expect((databaseManager as any)._databaseItems).to.deep.eq([mockDbItem]);
-    expect(updateSpy).to.have.been.calledWith("databaseList", [
+    expect((databaseManager as any)._databaseItems).toEqual([mockDbItem]);
+    expect(updateSpy).toBeCalledWith("databaseList", [
       {
         options: MOCK_DB_OPTIONS,
         uri: dbLocationUri().toString(true),
       },
     ]);
-    expect(spy).to.have.been.calledWith({
+    expect(onDidChangeDatabaseItem).toBeCalledWith({
       item: undefined,
       kind: DatabaseEventKind.Add,
     });
 
-    sinon.reset();
+    updateSpy.mockClear();
+    onDidChangeDatabaseItem.mockClear();
 
     // now remove the item
     await databaseManager.removeDatabaseItem(
@@ -131,9 +120,9 @@ describe("databases", () => {
       {} as CancellationToken,
       mockDbItem,
     );
-    expect((databaseManager as any)._databaseItems).to.deep.eq([]);
-    expect(updateSpy).to.have.been.calledWith("databaseList", []);
-    expect(spy).to.have.been.calledWith({
+    expect((databaseManager as any)._databaseItems).toEqual([]);
+    expect(updateSpy).toBeCalledWith("databaseList", []);
+    expect(onDidChangeDatabaseItem).toBeCalledWith({
       item: undefined,
       kind: DatabaseEventKind.Remove,
     });
@@ -141,27 +130,25 @@ describe("databases", () => {
 
   it("should rename a db item and emit an event", async () => {
     const mockDbItem = createMockDB();
-    const spy = sinon.spy();
-    databaseManager.onDidChangeDatabaseItem(spy);
+    const onDidChangeDatabaseItem = jest.fn();
+    databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
     await (databaseManager as any).addDatabaseItem(
       {} as ProgressCallback,
       {} as CancellationToken,
       mockDbItem,
     );
 
-    sinon.restore();
-
     await databaseManager.renameDatabaseItem(mockDbItem, "new name");
 
-    expect(mockDbItem.name).to.eq("new name");
-    expect(updateSpy).to.have.been.calledWith("databaseList", [
+    expect(mockDbItem.name).toBe("new name");
+    expect(updateSpy).toBeCalledWith("databaseList", [
       {
         options: { ...MOCK_DB_OPTIONS, displayName: "new name" },
         uri: dbLocationUri().toString(true),
       },
     ]);
 
-    expect(spy).to.have.been.calledWith({
+    expect(onDidChangeDatabaseItem).toBeCalledWith({
       item: undefined,
       kind: DatabaseEventKind.Rename,
     });
@@ -169,8 +156,8 @@ describe("databases", () => {
 
   describe("add / remove database items", () => {
     it("should add a database item", async () => {
-      const spy = sandbox.spy();
-      databaseManager.onDidChangeDatabaseItem(spy);
+      const onDidChangeDatabaseItem = jest.fn();
+      databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
       const mockDbItem = createMockDB();
 
       await (databaseManager as any).addDatabaseItem(
@@ -179,8 +166,8 @@ describe("databases", () => {
         mockDbItem,
       );
 
-      expect(databaseManager.databaseItems).to.deep.eq([mockDbItem]);
-      expect(updateSpy).to.have.been.calledWith("databaseList", [
+      expect(databaseManager.databaseItems).toEqual([mockDbItem]);
+      expect(updateSpy).toBeCalledWith("databaseList", [
         {
           uri: dbLocationUri().toString(true),
           options: MOCK_DB_OPTIONS,
@@ -191,35 +178,36 @@ describe("databases", () => {
         item: undefined,
         kind: DatabaseEventKind.Add,
       };
-      expect(spy).to.have.been.calledWith(mockEvent);
+      expect(onDidChangeDatabaseItem).toBeCalledWith(mockEvent);
     });
 
-    it("should add a database item source archive", async function () {
+    it("should add a database item source archive", async () => {
       const mockDbItem = createMockDB();
       mockDbItem.name = "xxx";
-      await (databaseManager as any).addDatabaseSourceArchiveFolder(mockDbItem);
+      await databaseManager.addDatabaseSourceArchiveFolder(mockDbItem);
 
       // workspace folders should be updated. We can only check the mocks since
       // when running as a test, we are not allowed to update the workspace folders
-      expect(workspace.updateWorkspaceFolders).to.have.been.calledWith(1, 0, {
+      expect(workspace.updateWorkspaceFolders).toHaveBeenCalledWith(1, 0, {
         name: "[xxx source archive]",
         // must use a matcher here since vscode URIs with the same path
         // are not always equal due to internal state.
-        uri: sinon.match.has(
-          "fsPath",
-          encodeArchiveBasePath(sourceLocationUri().fsPath).fsPath,
-        ),
+        uri: expect.objectContaining({
+          fsPath: encodeArchiveBasePath(sourceLocationUri().fsPath).fsPath,
+        }),
       });
     });
 
     it("should remove a database item", async () => {
       const mockDbItem = createMockDB();
-      sandbox.stub(fs, "remove").resolves();
+      const removeMock = jest
+        .spyOn(fs, "remove")
+        .mockImplementation(() => Promise.resolve());
 
       // pretend that this item is the first workspace folder in the list
-      sandbox
-        .stub(mockDbItem, "belongsToSourceArchiveExplorerUri")
-        .returns(true);
+      jest
+        .spyOn(mockDbItem, "belongsToSourceArchiveExplorerUri")
+        .mockReturnValue(true);
 
       await (databaseManager as any).addDatabaseItem(
         {} as ProgressCallback,
@@ -227,7 +215,7 @@ describe("databases", () => {
         mockDbItem,
       );
 
-      updateSpy.resetHistory();
+      updateSpy.mockClear();
 
       await databaseManager.removeDatabaseItem(
         {} as ProgressCallback,
@@ -235,30 +223,30 @@ describe("databases", () => {
         mockDbItem,
       );
 
-      expect(databaseManager.databaseItems).to.deep.eq([]);
-      expect(updateSpy).to.have.been.calledWith("databaseList", []);
+      expect(databaseManager.databaseItems).toEqual([]);
+      expect(updateSpy).toBeCalledWith("databaseList", []);
       // should remove the folder
-      expect(workspace.updateWorkspaceFolders).to.have.been.calledWith(0, 1);
+      expect(workspace.updateWorkspaceFolders).toBeCalledWith(0, 1);
 
       // should also delete the db contents
-      expect(fs.remove).to.have.been.calledWith(mockDbItem.databaseUri.fsPath);
+      expect(removeMock).toBeCalledWith(mockDbItem.databaseUri.fsPath);
     });
 
     it("should remove a database item outside of the extension controlled area", async () => {
       const mockDbItem = createMockDB();
-      sandbox.stub(fs, "remove").resolves();
+      const removeMock = jest.spyOn(fs, "remove");
+      removeMock.mockReset().mockImplementation(() => Promise.resolve());
 
       // pretend that this item is the first workspace folder in the list
-      sandbox
-        .stub(mockDbItem, "belongsToSourceArchiveExplorerUri")
-        .returns(true);
-
+      jest
+        .spyOn(mockDbItem, "belongsToSourceArchiveExplorerUri")
+        .mockReturnValue(true);
       await (databaseManager as any).addDatabaseItem(
         {} as ProgressCallback,
         {} as CancellationToken,
         mockDbItem,
       );
-      updateSpy.resetHistory();
+      updateSpy.mockClear();
 
       // pretend that the database location is not controlled by the extension
       (databaseManager as any).ctx.storagePath = "hucairz";
@@ -269,13 +257,13 @@ describe("databases", () => {
         mockDbItem,
       );
 
-      expect(databaseManager.databaseItems).to.deep.eq([]);
-      expect(updateSpy).to.have.been.calledWith("databaseList", []);
+      expect(databaseManager.databaseItems).toEqual([]);
+      expect(updateSpy).toBeCalledWith("databaseList", []);
       // should remove the folder
-      expect(workspace.updateWorkspaceFolders).to.have.been.calledWith(0, 1);
+      expect(workspace.updateWorkspaceFolders).toBeCalledWith(0, 1);
 
       // should NOT delete the db contents
-      expect(fs.remove).not.to.have.been.called;
+      expect(removeMock).not.toBeCalled();
     });
 
     it("should register and deregister a database when adding and removing it", async () => {
@@ -283,7 +271,7 @@ describe("databases", () => {
       // registration messages.
       const mockDbItem = createMockDB();
 
-      sandbox.stub(fs, "remove").resolves();
+      jest.spyOn(fs, "remove").mockImplementation(() => Promise.resolve());
 
       await (databaseManager as any).addDatabaseItem(
         {} as ProgressCallback,
@@ -291,7 +279,7 @@ describe("databases", () => {
         mockDbItem,
       );
       // Should have registered this database
-      expect(registerSpy).to.have.been.calledWith({}, {}, mockDbItem);
+      expect(registerSpy).toBeCalledWith({}, {}, mockDbItem);
 
       await databaseManager.removeDatabaseItem(
         {} as ProgressCallback,
@@ -300,7 +288,7 @@ describe("databases", () => {
       );
 
       // Should have deregistered this database
-      expect(deregisterSpy).to.have.been.calledWith({}, {}, mockDbItem);
+      expect(deregisterSpy).toBeCalledWith({}, {}, mockDbItem);
     });
   });
 
@@ -308,13 +296,15 @@ describe("databases", () => {
     it("should fail to resolve when not a uri", () => {
       const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
       (db as any)._contents.sourceArchiveUri = undefined;
-      expect(() => db.resolveSourceFile("abc")).to.throw("Scheme is missing");
+      expect(() => db.resolveSourceFile("abc")).toThrowError(
+        "Scheme is missing",
+      );
     });
 
     it("should fail to resolve when not a file uri", () => {
       const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
       (db as any)._contents.sourceArchiveUri = undefined;
-      expect(() => db.resolveSourceFile("http://abc")).to.throw(
+      expect(() => db.resolveSourceFile("http://abc")).toThrowError(
         "Invalid uri scheme",
       );
     });
@@ -324,14 +314,14 @@ describe("databases", () => {
         const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
         (db as any)._contents.sourceArchiveUri = undefined;
         const resolved = db.resolveSourceFile(undefined);
-        expect(resolved.toString(true)).to.eq(dbLocationUri().toString(true));
+        expect(resolved.toString(true)).toBe(dbLocationUri().toString(true));
       });
 
       it("should resolve an empty file", () => {
         const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
         (db as any)._contents.sourceArchiveUri = undefined;
         const resolved = db.resolveSourceFile("file:");
-        expect(resolved.toString()).to.eq("file:///");
+        expect(resolved.toString()).toBe("file:///");
       });
     });
 
@@ -347,7 +337,7 @@ describe("databases", () => {
 
         // must recreate an encoded archive uri instead of typing out the
         // text since the uris will be different on windows and ubuntu.
-        expect(resolved.toString()).to.eq(
+        expect(resolved.toString()).toBe(
           encodeSourceArchiveUri({
             sourceArchiveZipPath: "sourceArchive-uri",
             pathWithinSourceArchive: "def/abc",
@@ -366,7 +356,7 @@ describe("databases", () => {
 
         // must recreate an encoded archive uri instead of typing out the
         // text since the uris will be different on windows and ubuntu.
-        expect(resolved.toString()).to.eq(
+        expect(resolved.toString()).toBe(
           encodeSourceArchiveUri({
             sourceArchiveZipPath: "sourceArchive-uri",
             pathWithinSourceArchive: "def/abc",
@@ -382,7 +372,7 @@ describe("databases", () => {
           }),
         );
         const resolved = db.resolveSourceFile("file:");
-        expect(resolved.toString()).to.eq(
+        expect(resolved.toString()).toBe(
           "codeql-zip-archive://1-18/sourceArchive-uri/def/",
         );
       });
@@ -391,145 +381,145 @@ describe("databases", () => {
     it("should handle an empty file", () => {
       const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
       const resolved = db.resolveSourceFile("");
-      expect(resolved.toString()).to.eq("file:///sourceArchive-uri/");
+      expect(resolved.toString()).toBe("file:///sourceArchive-uri/");
     });
   });
 
   it("should not support the primary language", async () => {
-    supportsLanguageNameSpy.resolves(false);
+    supportsLanguageNameSpy.mockResolvedValue(false);
 
     const result = await (databaseManager as any).getPrimaryLanguage("hucairz");
-    expect(result).to.be.undefined;
+    expect(result).toBeUndefined();
   });
 
   it("should get the primary language", async () => {
-    supportsLanguageNameSpy.resolves(true);
-    resolveDatabaseSpy.resolves({
+    supportsLanguageNameSpy.mockResolvedValue(true);
+    resolveDatabaseSpy.mockResolvedValue({
       languages: ["python"],
-    });
+    } as unknown as DbInfo);
     const result = await (databaseManager as any).getPrimaryLanguage("hucairz");
-    expect(result).to.eq("python");
+    expect(result).toBe("python");
   });
 
   it("should handle missing the primary language", async () => {
-    supportsLanguageNameSpy.resolves(true);
-    resolveDatabaseSpy.resolves({
+    supportsLanguageNameSpy.mockResolvedValue(true);
+    resolveDatabaseSpy.mockResolvedValue({
       languages: [],
-    });
+    } as unknown as DbInfo);
     const result = await (databaseManager as any).getPrimaryLanguage("hucairz");
-    expect(result).to.eq("");
+    expect(result).toBe("");
   });
 
   describe("isAffectedByTest", () => {
     const directoryStats = new fs.Stats();
     const fileStats = new fs.Stats();
-
-    before(() => {
-      sinon.stub(directoryStats, "isDirectory").returns(true);
-      sinon.stub(fileStats, "isDirectory").returns(false);
+    beforeEach(() => {
+      jest.spyOn(directoryStats, "isDirectory").mockReturnValue(true);
+      jest.spyOn(fileStats, "isDirectory").mockReturnValue(false);
     });
 
     it("should return true for testproj database in test directory", async () => {
-      sandbox.stub(fs, "stat").resolves(directoryStats);
+      jest.spyOn(fs, "stat").mockResolvedValue(directoryStats);
       const db = createMockDB(
         sourceLocationUri(),
         Uri.file("/path/to/dir/dir.testproj"),
       );
-      expect(await db.isAffectedByTest("/path/to/dir")).to.true;
+      expect(await db.isAffectedByTest("/path/to/dir")).toBe(true);
     });
 
     it("should return false for non-existent test directory", async () => {
-      sandbox.stub(fs, "stat").throws("Simulated Error: ENOENT");
+      jest.spyOn(fs, "stat").mockImplementation(() => {
+        throw new Error("Simulated Error: ENOENT");
+      });
       const db = createMockDB(
         sourceLocationUri(),
         Uri.file("/path/to/dir/dir.testproj"),
       );
-      expect(await db.isAffectedByTest("/path/to/dir")).to.false;
+      expect(await db.isAffectedByTest("/path/to/dir")).toBe(false);
     });
 
     it("should return false for non-testproj database in test directory", async () => {
-      sandbox.stub(fs, "stat").resolves(directoryStats);
+      jest.spyOn(fs, "stat").mockResolvedValue(directoryStats);
       const db = createMockDB(
         sourceLocationUri(),
         Uri.file("/path/to/dir/dir.proj"),
       );
-      expect(await db.isAffectedByTest("/path/to/dir")).to.false;
+      expect(await db.isAffectedByTest("/path/to/dir")).toBe(false);
     });
 
     it("should return false for testproj database outside test directory", async () => {
-      sandbox.stub(fs, "stat").resolves(directoryStats);
+      jest.spyOn(fs, "stat").mockResolvedValue(directoryStats);
       const db = createMockDB(
         sourceLocationUri(),
         Uri.file("/path/to/other/dir.testproj"),
       );
-      expect(await db.isAffectedByTest("/path/to/dir")).to.false;
+      expect(await db.isAffectedByTest("/path/to/dir")).toBe(false);
     });
 
     it("should return false for testproj database for prefix directory", async () => {
-      sandbox.stub(fs, "stat").resolves(directoryStats);
+      jest.spyOn(fs, "stat").mockResolvedValue(directoryStats);
       const db = createMockDB(
         sourceLocationUri(),
         Uri.file("/path/to/dir/dir.testproj"),
       );
       // /path/to/d is a prefix of /path/to/dir/dir.testproj, but
       // /path/to/dir/dir.testproj is not under /path/to/d
-      expect(await db.isAffectedByTest("/path/to/d")).to.false;
+      expect(await db.isAffectedByTest("/path/to/d")).toBe(false);
     });
 
     it("should return true for testproj database for test file", async () => {
-      sandbox.stub(fs, "stat").resolves(fileStats);
+      jest.spyOn(fs, "stat").mockResolvedValue(fileStats);
       const db = createMockDB(
         sourceLocationUri(),
         Uri.file("/path/to/dir/dir.testproj"),
       );
-      expect(await db.isAffectedByTest("/path/to/dir/test.ql")).to.true;
+      expect(await db.isAffectedByTest("/path/to/dir/test.ql")).toBe(true);
     });
 
     it("should return false for non-existent test file", async () => {
-      sandbox.stub(fs, "stat").throws("Simulated Error: ENOENT");
+      jest.spyOn(fs, "stat").mockImplementation(() => {
+        throw new Error("Simulated Error: ENOENT");
+      });
       const db = createMockDB(
         sourceLocationUri(),
         Uri.file("/path/to/dir/dir.testproj"),
       );
-      expect(await db.isAffectedByTest("/path/to/dir/test.ql")).to.false;
+      expect(await db.isAffectedByTest("/path/to/dir/test.ql")).toBe(false);
     });
 
     it("should return false for non-testproj database for test file", async () => {
-      sandbox.stub(fs, "stat").resolves(fileStats);
+      jest.spyOn(fs, "stat").mockResolvedValue(fileStats);
       const db = createMockDB(
         sourceLocationUri(),
         Uri.file("/path/to/dir/dir.proj"),
       );
-      expect(await db.isAffectedByTest("/path/to/dir/test.ql")).to.false;
+      expect(await db.isAffectedByTest("/path/to/dir/test.ql")).toBe(false);
     });
 
     it("should return false for testproj database not matching test file", async () => {
-      sandbox.stub(fs, "stat").resolves(fileStats);
+      jest.spyOn(fs, "stat").mockResolvedValue(fileStats);
       const db = createMockDB(
         sourceLocationUri(),
         Uri.file("/path/to/dir/dir.testproj"),
       );
-      expect(await db.isAffectedByTest("/path/to/test.ql")).to.false;
+      expect(await db.isAffectedByTest("/path/to/test.ql")).toBe(false);
     });
   });
 
-  describe("findSourceArchive", function () {
-    // not sure why, but some of these tests take more than two seconds to run.
-    this.timeout(5000);
-
+  describe("findSourceArchive", () => {
     ["src", "output/src_archive"].forEach((name) => {
       it(`should find source folder in ${name}`, async () => {
         const uri = Uri.file(path.join(dir.name, name));
         fs.createFileSync(path.join(uri.fsPath, "hucairz.txt"));
         const srcUri = await findSourceArchive(dir.name);
-        expect(srcUri!.fsPath).to.eq(uri.fsPath);
+        expect(srcUri!.fsPath).toBe(uri.fsPath);
       });
 
       it(`should find source archive in ${name}.zip`, async () => {
         const uri = Uri.file(path.join(dir.name, name + ".zip"));
         fs.createFileSync(uri.fsPath);
         const srcUri = await findSourceArchive(dir.name);
-        expect(srcUri!.fsPath).to.eq(uri.fsPath);
+        expect(srcUri!.fsPath).toBe(uri.fsPath);
       });
 
       it(`should prioritize ${name}.zip over ${name}`, async () => {
@@ -540,7 +530,7 @@ describe("databases", () => {
         fs.createFileSync(path.join(uriFolder.fsPath, "hucairz.txt"));
 
         const srcUri = await findSourceArchive(dir.name);
-        expect(srcUri!.fsPath).to.eq(uri.fsPath);
+        expect(srcUri!.fsPath).toBe(uri.fsPath);
       });
     });
 
@@ -551,7 +541,7 @@ describe("databases", () => {
       fs.createFileSync(uriSrcArchive.fsPath);
 
       const resultUri = await findSourceArchive(dir.name);
-      expect(resultUri!.fsPath).to.eq(uriSrc.fsPath);
+      expect(resultUri!.fsPath).toBe(uriSrc.fsPath);
     });
   });
 
@@ -568,7 +558,7 @@ describe("databases", () => {
         datasetUri: databaseUri,
       } as DatabaseContents,
       MOCK_DB_OPTIONS,
-      dbChangedHandler,
+      () => void 0,
     );
   }
 

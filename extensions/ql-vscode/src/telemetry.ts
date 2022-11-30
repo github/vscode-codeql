@@ -14,7 +14,7 @@ import {
   isIntegrationTestMode,
 } from "./config";
 import * as appInsights from "applicationinsights";
-import { logger } from "./logging";
+import { extLogger } from "./common";
 import { UserCancellationException } from "./commandRunner";
 import { showBinaryChoiceWithUrlDialog } from "./helpers";
 
@@ -135,7 +135,7 @@ export class TelemetryListener extends ConfigListener {
         }
 
         if (LOG_TELEMETRY.getValue<boolean>()) {
-          void logger.log(`Telemetry: ${JSON.stringify(envelope)}`);
+          void extLogger.log(`Telemetry: ${JSON.stringify(envelope)}`);
         }
         return true;
       });

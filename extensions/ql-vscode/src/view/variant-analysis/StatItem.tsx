@@ -12,7 +12,7 @@ const Container = styled.div`
 `;
 
 const Header = styled.div`
-  color: var(--vscode-badge-foreground);
+  color: var(--vscode-editor-foreground);
   font-size: 0.85em;
   font-weight: 800;
   text-transform: uppercase;

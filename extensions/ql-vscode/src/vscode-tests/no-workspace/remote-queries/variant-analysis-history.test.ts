@@ -1,9 +1,14 @@
 import * as fs from "fs-extra";
 import * as path from "path";
-import * as sinon from "sinon";
-import { expect } from "chai";
 
-import { ExtensionContext, Uri, window, workspace } from "vscode";
+import {
+  ExtensionContext,
+  TextDocument,
+  TextEditor,
+  Uri,
+  window,
+  workspace,
+} from "vscode";
 import { QueryHistoryConfig } from "../../../config";
 import { DatabaseManager } from "../../../databases";
 import { tmpDir } from "../../../helpers";
@@ -18,11 +23,14 @@ import { EvalLogViewer } from "../../../eval-log-viewer";
 import { QueryRunner } from "../../../queryRunner";
 import { VariantAnalysisManager } from "../../../remote-queries/variant-analysis-manager";
 
+// set a higher timeout since recursive delete may take a while, expecially on Windows.
+jest.setTimeout(120000);
+
 /**
  * Tests for variant analyses and how they interact with the query history manager.
  */
 
-describe("Variant Analyses and QueryHistoryManager", function () {
+describe("Variant Analyses and QueryHistoryManager", () => {
   const EXTENSION_PATH = path.join(__dirname, "../../../../");
   const STORAGE_DIR = Uri.file(
     path.join(tmpDir.name, "variant-analysis"),
@@ -31,55 +39,45 @@ describe("Variant Analyses and QueryHistoryManager", function () {
     /** noop */
   };
 
-  let sandbox: sinon.SinonSandbox;
   let qhm: QueryHistoryManager;
-  let localQueriesResultsViewStub: ResultsView;
-  let remoteQueriesManagerStub: RemoteQueriesManager;
-  let variantAnalysisManagerStub: VariantAnalysisManager;
   let rawQueryHistory: any;
   let disposables: DisposableBucket;
-  let showTextDocumentSpy: sinon.SinonSpy;
-  let openTextDocumentSpy: sinon.SinonSpy;
 
-  let rehydrateVariantAnalysisStub: sinon.SinonStub;
-  let removeVariantAnalysisStub: sinon.SinonStub;
-  let showViewStub: sinon.SinonStub;
+  const rehydrateVariantAnalysisStub = jest.fn();
+  const removeVariantAnalysisStub = jest.fn();
+  const showViewStub = jest.fn();
 
-  beforeEach(async function () {
-    // set a higher timeout since recursive delete below may take a while, expecially on Windows.
-    this.timeout(120000);
+  const localQueriesResultsViewStub = {
+    showResults: jest.fn(),
+  } as any as ResultsView;
+  const remoteQueriesManagerStub = {
+    onRemoteQueryAdded: jest.fn(),
+    onRemoteQueryRemoved: jest.fn(),
+    onRemoteQueryStatusUpdate: jest.fn(),
+    rehydrateRemoteQuery: jest.fn(),
+    removeRemoteQuery: jest.fn(),
+    openRemoteQueryResults: jest.fn(),
+  } as any as RemoteQueriesManager;
+  const variantAnalysisManagerStub = {
+    onVariantAnalysisAdded: jest.fn(),
+    onVariantAnalysisRemoved: jest.fn(),
+    removeVariantAnalysis: removeVariantAnalysisStub,
+    rehydrateVariantAnalysis: rehydrateVariantAnalysisStub,
+    onVariantAnalysisStatusUpdated: jest.fn(),
+    showView: showViewStub,
+  } as any as VariantAnalysisManager;
 
+  let showTextDocumentSpy: jest.SpiedFunction<typeof window.showTextDocument>;
+  let openTextDocumentSpy: jest.SpiedFunction<
+    typeof workspace.openTextDocument
+  >;
+
+  beforeEach(async () => {
     // Since these tests change the state of the query history manager, we need to copy the original
     // to a temporary folder where we can manipulate it for tests
     await copyHistoryState();
 
-    sandbox = sinon.createSandbox();
     disposables = new DisposableBucket();
-
-    localQueriesResultsViewStub = {
-      showResults: sandbox.stub(),
-    } as any as ResultsView;
-
-    rehydrateVariantAnalysisStub = sandbox.stub();
-    removeVariantAnalysisStub = sandbox.stub();
-    showViewStub = sandbox.stub();
-
-    remoteQueriesManagerStub = {
-      onRemoteQueryAdded: sandbox.stub(),
-      onRemoteQueryRemoved: sandbox.stub(),
-      onRemoteQueryStatusUpdate: sandbox.stub(),
-      rehydrateRemoteQuery: sandbox.stub(),
-      openRemoteQueryResults: sandbox.stub(),
-    } as any as RemoteQueriesManager;
-
-    variantAnalysisManagerStub = {
-      onVariantAnalysisAdded: sandbox.stub(),
-      onVariantAnalysisRemoved: sandbox.stub(),
-      removeVariantAnalysis: removeVariantAnalysisStub,
-      rehydrateVariantAnalysis: rehydrateVariantAnalysisStub,
-      onVariantAnalysisStatusUpdated: sandbox.stub(),
-      showView: showViewStub,
-    } as any as VariantAnalysisManager;
 
     rawQueryHistory = fs.readJSONSync(
       path.join(STORAGE_DIR, "workspace-query-history.json"),
@@ -105,30 +103,35 @@ describe("Variant Analyses and QueryHistoryManager", function () {
     );
     disposables.push(qhm);
 
-    showTextDocumentSpy = sandbox.spy(window, "showTextDocument");
-    openTextDocumentSpy = sandbox.spy(workspace, "openTextDocument");
+    showTextDocumentSpy = jest
+      .spyOn(window, "showTextDocument")
+      .mockResolvedValue(undefined as unknown as TextEditor);
+    openTextDocumentSpy = jest
+      .spyOn(workspace, "openTextDocument")
+      .mockResolvedValue(undefined as unknown as TextDocument);
   });
 
-  afterEach(function () {
+  afterEach(() => {
     deleteHistoryState();
     disposables.dispose(testDisposeHandler);
-    sandbox.restore();
   });
 
   it("should read query history that has variant analysis history items", async () => {
     await qhm.readQueryHistory();
 
-    expect(rehydrateVariantAnalysisStub).to.have.callCount(2);
-    expect(rehydrateVariantAnalysisStub.getCall(0).args[0]).to.deep.eq(
+    expect(rehydrateVariantAnalysisStub).toBeCalledTimes(2);
+    expect(rehydrateVariantAnalysisStub).toHaveBeenNthCalledWith(
+      1,
       rawQueryHistory[0].variantAnalysis,
     );
-    expect(rehydrateVariantAnalysisStub.getCall(1).args[0]).to.deep.eq(
+    expect(rehydrateVariantAnalysisStub).toHaveBeenNthCalledWith(
+      2,
       rawQueryHistory[1].variantAnalysis,
     );
 
-    expect(qhm.treeDataProvider.allHistory[0]).to.deep.eq(rawQueryHistory[0]);
-    expect(qhm.treeDataProvider.allHistory[1]).to.deep.eq(rawQueryHistory[1]);
-    expect(qhm.treeDataProvider.allHistory.length).to.eq(2);
+    expect(qhm.treeDataProvider.allHistory[0]).toEqual(rawQueryHistory[0]);
+    expect(qhm.treeDataProvider.allHistory[1]).toEqual(rawQueryHistory[1]);
+    expect(qhm.treeDataProvider.allHistory.length).toBe(2);
   });
 
   it("should remove the variant analysis history item", async () => {
@@ -139,9 +142,9 @@ describe("Variant Analyses and QueryHistoryManager", function () {
 
     // Add it back to the history
     qhm.addQuery(rawQueryHistory[0]);
-    expect(removeVariantAnalysisStub).to.have.callCount(1);
-    expect(rehydrateVariantAnalysisStub).to.have.callCount(2);
-    expect(qhm.treeDataProvider.allHistory).to.deep.eq([
+    expect(removeVariantAnalysisStub).toBeCalledTimes(1);
+    expect(rehydrateVariantAnalysisStub).toBeCalledTimes(2);
+    expect(qhm.treeDataProvider.allHistory).toEqual([
       rawQueryHistory[1],
       rawQueryHistory[0],
     ]);
@@ -157,19 +160,21 @@ describe("Variant Analyses and QueryHistoryManager", function () {
       qhm.treeDataProvider.allHistory[0],
     ]);
 
-    expect(removeVariantAnalysisStub.callCount).to.eq(2);
-    expect(removeVariantAnalysisStub.getCall(0).args[0]).to.deep.eq(
+    expect(removeVariantAnalysisStub).toHaveBeenCalledTimes(2);
+    expect(removeVariantAnalysisStub).toHaveBeenNthCalledWith(
+      1,
       rawQueryHistory[1].variantAnalysis,
     );
-    expect(removeVariantAnalysisStub.getCall(1).args[0]).to.deep.eq(
+    expect(removeVariantAnalysisStub).toHaveBeenNthCalledWith(
+      2,
       rawQueryHistory[0].variantAnalysis,
     );
-    expect(qhm.treeDataProvider.allHistory).to.deep.eq([]);
+    expect(qhm.treeDataProvider.allHistory).toEqual([]);
 
     // also, both queries should be removed from disk storage
     expect(
       fs.readJSONSync(path.join(STORAGE_DIR, "workspace-query-history.json")),
-    ).to.deep.eq({
+    ).toEqual({
       version: 2,
       queries: [],
     });
@@ -179,23 +184,21 @@ describe("Variant Analyses and QueryHistoryManager", function () {
     await qhm.readQueryHistory();
 
     await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0], []);
-    expect(showViewStub).calledOnceWithExactly(
-      rawQueryHistory[0].variantAnalysis.id,
-    );
+    expect(showViewStub).toBeCalledWith(rawQueryHistory[0].variantAnalysis.id);
   });
 
   it("should get the query text", async () => {
     await qhm.readQueryHistory();
     await qhm.handleShowQueryText(qhm.treeDataProvider.allHistory[0], []);
 
-    expect(showTextDocumentSpy).to.have.been.calledOnce;
-    expect(openTextDocumentSpy).to.have.been.calledOnce;
+    expect(showTextDocumentSpy).toBeCalledTimes(1);
+    expect(openTextDocumentSpy).toBeCalledTimes(1);
 
-    const uri: Uri = openTextDocumentSpy.getCall(0).args[0];
-    expect(uri.scheme).to.eq("codeql");
+    const uri: Uri = openTextDocumentSpy.mock.calls[0][0] as Uri;
+    expect(uri.scheme).toBe("codeql");
     const params = new URLSearchParams(uri.query);
-    expect(params.get("isQuickEval")).to.eq("false");
-    expect(params.get("queryText")).to.eq(
+    expect(params.get("isQuickEval")).toBe("false");
+    expect(params.get("queryText")).toBe(
       rawQueryHistory[0].variantAnalysis.query.text,
     );
   });

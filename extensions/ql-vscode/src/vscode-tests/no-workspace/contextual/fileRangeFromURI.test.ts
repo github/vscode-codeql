@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import { Uri, Range } from "vscode";
 
 import fileRangeFromURI from "../../../contextual/fileRangeFromURI";
@@ -10,8 +9,9 @@ import {
 
 describe("fileRangeFromURI", () => {
   it("should return undefined when value is not a file URI", () => {
-    expect(fileRangeFromURI("hucairz", createMockDatabaseItem())).to.be
-      .undefined;
+    expect(
+      fileRangeFromURI("hucairz", createMockDatabaseItem()),
+    ).toBeUndefined();
   });
 
   it("should fail to find a location when not a file URI and a full 5 part location", () => {
@@ -26,7 +26,7 @@ describe("fileRangeFromURI", () => {
         } as LineColumnLocation,
         createMockDatabaseItem(),
       ),
-    ).to.be.undefined;
+    ).toBeUndefined();
   });
 
   it("should fail to find a location when there is a silly protocol", () => {
@@ -41,7 +41,7 @@ describe("fileRangeFromURI", () => {
         } as LineColumnLocation,
         createMockDatabaseItem(),
       ),
-    ).to.be.undefined;
+    ).toBeUndefined();
   });
 
   it("should return undefined when value is an empty uri", () => {
@@ -56,7 +56,7 @@ describe("fileRangeFromURI", () => {
         } as LineColumnLocation,
         createMockDatabaseItem(),
       ),
-    ).to.be.undefined;
+    ).toBeUndefined();
   });
 
   it("should return a range for a WholeFileLocation", () => {
@@ -67,7 +67,7 @@ describe("fileRangeFromURI", () => {
         } as WholeFileLocation,
         createMockDatabaseItem(),
       ),
-    ).to.deep.eq({
+    ).toEqual({
       uri: Uri.parse("file:///hucairz", true),
       range: new Range(0, 0, 0, 0),
     });
@@ -85,7 +85,7 @@ describe("fileRangeFromURI", () => {
         } as LineColumnLocation,
         createMockDatabaseItem(),
       ),
-    ).to.deep.eq({
+    ).toEqual({
       uri: Uri.parse("file:///hucairz", true),
       range: new Range(0, 1, 2, 4),
     });

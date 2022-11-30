@@ -1,21 +1,16 @@
 import * as vscode from "vscode";
-import { expect } from "chai";
 import * as path from "path";
 import * as fs from "fs-extra";
-import * as pq from "proxyquire";
 import { DbConfig } from "../../../databases/config/db-config";
 import { DbManager } from "../../../databases/db-manager";
 import { DbConfigStore } from "../../../databases/config/db-config-store";
 import { DbTreeDataProvider } from "../../../databases/ui/db-tree-data-provider";
-import { DbPanel } from "../../../databases/ui/db-panel";
 import { DbItemKind, LocalDatabaseDbItem } from "../../../databases/db-item";
 import { DbTreeViewItem } from "../../../databases/ui/db-tree-view-item";
 import { ExtensionApp } from "../../../common/vscode/vscode-app";
 import { createMockExtensionContext } from "../../factories/extension-context";
 
-const proxyquire = pq.noPreserveCache();
-
-describe("db panel", async () => {
+describe("db panel", () => {
   const workspaceStoragePath = path.join(__dirname, "test-workspace-storage");
   const globalStoragePath = path.join(__dirname, "test-global-storage");
   const extensionPath = path.join(__dirname, "../../../../");
@@ -26,9 +21,8 @@ describe("db panel", async () => {
   let dbTreeDataProvider: DbTreeDataProvider;
   let dbManager: DbManager;
   let dbConfigStore: DbConfigStore;
-  let dbPanel: DbPanel;
 
-  before(async () => {
+  beforeAll(async () => {
     const extensionContext = createMockExtensionContext({
       extensionPath,
       globalStoragePath,
@@ -40,22 +34,6 @@ describe("db panel", async () => {
 
     dbConfigStore = new DbConfigStore(app);
     dbManager = new DbManager(app, dbConfigStore);
-
-    // Create a modified version of the DbPanel module that allows
-    // us to override the creation of the DbTreeDataProvider
-    const mod = proxyquire("../../../databases/ui/db-panel", {
-      "./db-tree-data-provider": {
-        DbTreeDataProvider: class {
-          constructor() {
-            return dbTreeDataProvider;
-          }
-        },
-      },
-    });
-
-    // Initialize the panel using the modified module
-    dbPanel = new mod.DbPanel(dbManager) as DbPanel;
-    await dbPanel.initialize();
   });
 
   beforeEach(async () => {
@@ -85,39 +63,39 @@ describe("db panel", async () => {
 
     const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    expect(dbTreeItems).to.be.ok;
+    expect(dbTreeItems).toBeTruthy();
     const items = dbTreeItems!;
-    expect(items.length).to.equal(2);
+    expect(items.length).toBe(2);
 
     const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).to.be.ok;
-    expect(remoteRootNode.dbItem?.kind).to.equal(DbItemKind.RootRemote);
-    expect(remoteRootNode.label).to.equal("remote");
-    expect(remoteRootNode.tooltip).to.equal("Remote databases");
-    expect(remoteRootNode.collapsibleState).to.equal(
+    expect(remoteRootNode.dbItem).toBeTruthy();
+    expect(remoteRootNode.dbItem?.kind).toBe(DbItemKind.RootRemote);
+    expect(remoteRootNode.label).toBe("remote");
+    expect(remoteRootNode.tooltip).toBe("Remote databases");
+    expect(remoteRootNode.collapsibleState).toBe(
       vscode.TreeItemCollapsibleState.Collapsed,
     );
-    expect(remoteRootNode.children).to.be.ok;
-    expect(remoteRootNode.children.length).to.equal(3);
+    expect(remoteRootNode.children).toBeTruthy();
+    expect(remoteRootNode.children.length).toBe(3);
 
     const systemDefinedListItems = remoteRootNode.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.RemoteSystemDefinedList,
     );
-    expect(systemDefinedListItems.length).to.equal(3);
+    expect(systemDefinedListItems.length).toBe(3);
     checkRemoteSystemDefinedListItem(systemDefinedListItems[0], 10);
     checkRemoteSystemDefinedListItem(systemDefinedListItems[1], 100);
     checkRemoteSystemDefinedListItem(systemDefinedListItems[2], 1000);
 
     const localRootNode = items[1];
-    expect(localRootNode.dbItem).to.be.ok;
-    expect(localRootNode.dbItem?.kind).to.equal(DbItemKind.RootLocal);
-    expect(localRootNode.label).to.equal("local");
-    expect(localRootNode.tooltip).to.equal("Local databases");
-    expect(localRootNode.collapsibleState).to.equal(
+    expect(localRootNode.dbItem).toBeTruthy();
+    expect(localRootNode.dbItem?.kind).toBe(DbItemKind.RootLocal);
+    expect(localRootNode.label).toBe("local");
+    expect(localRootNode.tooltip).toBe("Local databases");
+    expect(localRootNode.collapsibleState).toBe(
       vscode.TreeItemCollapsibleState.Collapsed,
     );
-    expect(localRootNode.children).to.be.ok;
-    expect(localRootNode.children.length).to.equal(0);
+    expect(localRootNode.children).toBeTruthy();
+    expect(localRootNode.children.length).toBe(0);
   });
 
   it("should render remote repository list nodes", async () => {
@@ -148,27 +126,27 @@ describe("db panel", async () => {
 
     const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    expect(dbTreeItems).to.be.ok;
+    expect(dbTreeItems).toBeTruthy();
     const items = dbTreeItems!;
-    expect(items.length).to.equal(2);
+    expect(items.length).toBe(2);
 
     const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).to.be.ok;
-    expect(remoteRootNode.collapsibleState).to.equal(
+    expect(remoteRootNode.dbItem).toBeTruthy();
+    expect(remoteRootNode.collapsibleState).toBe(
       vscode.TreeItemCollapsibleState.Collapsed,
     );
-    expect(remoteRootNode.children).to.be.ok;
-    expect(remoteRootNode.children.length).to.equal(5);
+    expect(remoteRootNode.children).toBeTruthy();
+    expect(remoteRootNode.children.length).toBe(5);
 
     const systemDefinedListItems = remoteRootNode.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.RemoteSystemDefinedList,
     );
-    expect(systemDefinedListItems.length).to.equal(3);
+    expect(systemDefinedListItems.length).toBe(3);
 
     const userDefinedListItems = remoteRootNode.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.RemoteUserDefinedList,
     );
-    expect(userDefinedListItems.length).to.equal(2);
+    expect(userDefinedListItems.length).toBe(2);
     checkUserDefinedListItem(userDefinedListItems[0], "my-list-1", [
       "owner1/repo1",
       "owner1/repo2",
@@ -199,22 +177,22 @@ describe("db panel", async () => {
 
     const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    expect(dbTreeItems).to.be.ok;
+    expect(dbTreeItems).toBeTruthy();
     const items = dbTreeItems!;
-    expect(items.length).to.equal(2);
+    expect(items.length).toBe(2);
 
     const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).to.be.ok;
-    expect(remoteRootNode.collapsibleState).to.equal(
+    expect(remoteRootNode.dbItem).toBeTruthy();
+    expect(remoteRootNode.collapsibleState).toBe(
       vscode.TreeItemCollapsibleState.Collapsed,
     );
-    expect(remoteRootNode.children).to.be.ok;
-    expect(remoteRootNode.children.length).to.equal(5);
+    expect(remoteRootNode.children).toBeTruthy();
+    expect(remoteRootNode.children.length).toBe(5);
 
     const ownerListItems = remoteRootNode.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.RemoteOwner,
     );
-    expect(ownerListItems.length).to.equal(2);
+    expect(ownerListItems.length).toBe(2);
     checkOwnerItem(ownerListItems[0], "owner1");
     checkOwnerItem(ownerListItems[1], "owner2");
   });
@@ -238,22 +216,22 @@ describe("db panel", async () => {
 
     const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    expect(dbTreeItems).to.be.ok;
+    expect(dbTreeItems).toBeTruthy();
     const items = dbTreeItems!;
-    expect(items.length).to.equal(2);
+    expect(items.length).toBe(2);
 
     const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).to.be.ok;
-    expect(remoteRootNode.collapsibleState).to.equal(
+    expect(remoteRootNode.dbItem).toBeTruthy();
+    expect(remoteRootNode.collapsibleState).toBe(
       vscode.TreeItemCollapsibleState.Collapsed,
     );
-    expect(remoteRootNode.children).to.be.ok;
-    expect(remoteRootNode.children.length).to.equal(5);
+    expect(remoteRootNode.children).toBeTruthy();
+    expect(remoteRootNode.children.length).toBe(5);
 
     const repoItems = remoteRootNode.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.RemoteRepo,
     );
-    expect(repoItems.length).to.equal(2);
+    expect(repoItems.length).toBe(2);
     checkRemoteRepoItem(repoItems[0], "owner1/repo1");
     checkRemoteRepoItem(repoItems[1], "owner1/repo2");
   });
@@ -306,22 +284,22 @@ describe("db panel", async () => {
 
     const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    expect(dbTreeItems).to.be.ok;
+    expect(dbTreeItems).toBeTruthy();
     const items = dbTreeItems!;
-    expect(items.length).to.equal(2);
+    expect(items.length).toBe(2);
 
     const localRootNode = items[1];
-    expect(localRootNode.dbItem).to.be.ok;
-    expect(localRootNode.collapsibleState).to.equal(
+    expect(localRootNode.dbItem).toBeTruthy();
+    expect(localRootNode.collapsibleState).toBe(
       vscode.TreeItemCollapsibleState.Collapsed,
     );
-    expect(localRootNode.children).to.be.ok;
-    expect(localRootNode.children.length).to.equal(2);
+    expect(localRootNode.children).toBeTruthy();
+    expect(localRootNode.children.length).toBe(2);
 
     const localListItems = localRootNode.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.LocalList,
     );
-    expect(localListItems.length).to.equal(2);
+    expect(localListItems.length).toBe(2);
     checkLocalListItem(localListItems[0], "my-list-1", [
       {
         kind: DbItemKind.LocalDatabase,
@@ -381,22 +359,22 @@ describe("db panel", async () => {
 
     const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    expect(dbTreeItems).to.be.ok;
+    expect(dbTreeItems).toBeTruthy();
     const items = dbTreeItems!;
-    expect(items.length).to.equal(2);
+    expect(items.length).toBe(2);
 
     const localRootNode = items[1];
-    expect(localRootNode.dbItem).to.be.ok;
-    expect(localRootNode.collapsibleState).to.equal(
+    expect(localRootNode.dbItem).toBeTruthy();
+    expect(localRootNode.collapsibleState).toBe(
       vscode.TreeItemCollapsibleState.Collapsed,
     );
-    expect(localRootNode.children).to.be.ok;
-    expect(localRootNode.children.length).to.equal(2);
+    expect(localRootNode.children).toBeTruthy();
+    expect(localRootNode.children.length).toBe(2);
 
     const localDatabaseItems = localRootNode.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.LocalDatabase,
     );
-    expect(localDatabaseItems.length).to.equal(2);
+    expect(localDatabaseItems.length).toBe(2);
     checkLocalDatabaseItem(localDatabaseItems[0], {
       kind: DbItemKind.LocalDatabase,
       databaseName: "db1",
@@ -428,12 +406,10 @@ describe("db panel", async () => {
     item: DbTreeViewItem,
     n: number,
   ): void {
-    expect(item.label).to.equal(`Top ${n} repositories`);
-    expect(item.tooltip).to.equal(`Top ${n} repositories of a language`);
-    expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon("github"));
-    expect(item.collapsibleState).to.equal(
-      vscode.TreeItemCollapsibleState.None,
-    );
+    expect(item.label).toBe(`Top ${n} repositories`);
+    expect(item.tooltip).toBe(`Top ${n} repositories of a language`);
+    expect(item.iconPath).toEqual(new vscode.ThemeIcon("github"));
+    expect(item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.None);
   }
 
   function checkUserDefinedListItem(
@@ -441,14 +417,14 @@ describe("db panel", async () => {
     listName: string,
     repos: string[],
   ): void {
-    expect(item.label).to.equal(listName);
-    expect(item.tooltip).to.be.undefined;
-    expect(item.iconPath).to.be.undefined;
-    expect(item.collapsibleState).to.equal(
+    expect(item.label).toBe(listName);
+    expect(item.tooltip).toBeUndefined();
+    expect(item.iconPath).toBeUndefined();
+    expect(item.collapsibleState).toBe(
       vscode.TreeItemCollapsibleState.Collapsed,
     );
-    expect(item.children).to.be.ok;
-    expect(item.children.length).to.equal(repos.length);
+    expect(item.children).toBeTruthy();
+    expect(item.children.length).toBe(repos.length);
 
     for (let i = 0; i < repos.length; i++) {
       checkRemoteRepoItem(item.children[i], repos[i]);
@@ -456,23 +432,19 @@ describe("db panel", async () => {
   }
 
   function checkOwnerItem(item: DbTreeViewItem, ownerName: string): void {
-    expect(item.label).to.equal(ownerName);
-    expect(item.tooltip).to.be.undefined;
-    expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon("organization"));
-    expect(item.collapsibleState).to.equal(
-      vscode.TreeItemCollapsibleState.None,
-    );
-    expect(item.children).to.be.ok;
-    expect(item.children.length).to.equal(0);
+    expect(item.label).toBe(ownerName);
+    expect(item.tooltip).toBeUndefined();
+    expect(item.iconPath).toEqual(new vscode.ThemeIcon("organization"));
+    expect(item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.None);
+    expect(item.children).toBeTruthy();
+    expect(item.children.length).toBe(0);
   }
 
   function checkRemoteRepoItem(item: DbTreeViewItem, repoName: string): void {
-    expect(item.label).to.equal(repoName);
-    expect(item.tooltip).to.be.undefined;
-    expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon("database"));
-    expect(item.collapsibleState).to.equal(
-      vscode.TreeItemCollapsibleState.None,
-    );
+    expect(item.label).toBe(repoName);
+    expect(item.tooltip).toBeUndefined();
+    expect(item.iconPath).toEqual(new vscode.ThemeIcon("database"));
+    expect(item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.None);
   }
 
   function checkLocalListItem(
@@ -480,14 +452,14 @@ describe("db panel", async () => {
     listName: string,
     databases: LocalDatabaseDbItem[],
   ): void {
-    expect(item.label).to.equal(listName);
-    expect(item.tooltip).to.be.undefined;
-    expect(item.iconPath).to.be.undefined;
-    expect(item.collapsibleState).to.equal(
+    expect(item.label).toBe(listName);
+    expect(item.tooltip).toBeUndefined();
+    expect(item.iconPath).toBeUndefined();
+    expect(item.collapsibleState).toBe(
       vscode.TreeItemCollapsibleState.Collapsed,
     );
-    expect(item.children).to.be.ok;
-    expect(item.children.length).to.equal(databases.length);
+    expect(item.children).toBeTruthy();
+    expect(item.children.length).toBe(databases.length);
 
     for (let i = 0; i < databases.length; i++) {
       checkLocalDatabaseItem(item.children[i], databases[i]);
@@ -498,11 +470,9 @@ describe("db panel", async () => {
     item: DbTreeViewItem,
     database: LocalDatabaseDbItem,
   ): void {
-    expect(item.label).to.equal(database.databaseName);
-    expect(item.tooltip).to.equal(`Language: ${database.language}`);
-    expect(item.iconPath).to.deep.equal(new vscode.ThemeIcon("database"));
-    expect(item.collapsibleState).to.equal(
-      vscode.TreeItemCollapsibleState.None,
-    );
+    expect(item.label).toBe(database.databaseName);
+    expect(item.tooltip).toBe(`Language: ${database.language}`);
+    expect(item.iconPath).toEqual(new vscode.ThemeIcon("database"));
+    expect(item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.None);
   }
 });

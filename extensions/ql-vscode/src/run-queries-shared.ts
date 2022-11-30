@@ -25,7 +25,8 @@ import { CodeQLCliServer } from "./cli";
 import { SELECT_QUERY_NAME } from "./contextual/locationFinder";
 import { DatabaseManager } from "./databases";
 import { DecodedBqrsChunk } from "./pure/bqrs-cli-types";
-import { logger, Logger } from "./logging";
+import { extLogger } from "./common";
+import { Logger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { asError } from "./pure/helpers-pure";
 
@@ -142,7 +143,7 @@ export class QueryEvaluationInfo {
    */
   canHaveInterpretedResults(): boolean {
     if (!this.databaseHasMetadataFile) {
-      void logger.log(
+      void extLogger.log(
         "Cannot produce interpreted results since the database does not have a .dbinfo or codeql-database.yml file.",
       );
       return false;
@@ -151,7 +152,7 @@ export class QueryEvaluationInfo {
     const kind = this.metadata?.kind;
     const hasKind = !!kind;
     if (!hasKind) {
-      void logger.log(
+      void extLogger.log(
         "Cannot produce interpreted results since the query does not have @kind metadata.",
       );
       return false;

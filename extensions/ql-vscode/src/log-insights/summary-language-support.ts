@@ -14,7 +14,7 @@ import {
 } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
 import { commandRunner } from "../commandRunner";
-import { logger } from "../logging";
+import { extLogger } from "../common";
 import { getErrorMessage } from "../pure/helpers-pure";
 
 /** A `Position` within a specified file on disk. */
@@ -103,7 +103,7 @@ export class SummaryLanguageSupport extends DisposableObject {
         this.sourceMap = await new SourceMapConsumer(rawMap);
       } catch (e: unknown) {
         // Error reading sourcemap. Pretend there was no sourcemap.
-        void logger.log(
+        void extLogger.log(
           `Error reading sourcemap file '${mapPath}': ${getErrorMessage(e)}`,
         );
         this.sourceMap = undefined;

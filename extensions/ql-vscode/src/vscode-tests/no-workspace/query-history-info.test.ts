@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import { QueryStatus } from "../../query-status";
 import {
   buildRepoLabel,
@@ -40,19 +39,19 @@ describe("Query history info", () => {
     it("should get the name for local history items", () => {
       const queryName = getRawQueryName(localQueryHistoryItem);
 
-      expect(queryName).to.equal(localQueryHistoryItem.getQueryName());
+      expect(queryName).toBe(localQueryHistoryItem.getQueryName());
     });
 
     it("should get the name for remote query history items", () => {
       const queryName = getRawQueryName(remoteQueryHistoryItem);
 
-      expect(queryName).to.equal(remoteQueryHistoryItem.remoteQuery.queryName);
+      expect(queryName).toBe(remoteQueryHistoryItem.remoteQuery.queryName);
     });
 
     it("should get the name for variant analysis history items", () => {
       const queryName = getRawQueryName(variantAnalysisHistoryItem);
 
-      expect(queryName).to.equal(
+      expect(queryName).toBe(
         variantAnalysisHistoryItem.variantAnalysis.query.name,
       );
     });
@@ -62,19 +61,19 @@ describe("Query history info", () => {
     it("should get the ID for local history items", () => {
       const historyItemId = getQueryId(localQueryHistoryItem);
 
-      expect(historyItemId).to.equal(localQueryHistoryItem.initialInfo.id);
+      expect(historyItemId).toBe(localQueryHistoryItem.initialInfo.id);
     });
 
     it("should get the ID for remote query history items", () => {
       const historyItemId = getQueryId(remoteQueryHistoryItem);
 
-      expect(historyItemId).to.equal(remoteQueryHistoryItem.queryId);
+      expect(historyItemId).toBe(remoteQueryHistoryItem.queryId);
     });
 
     it("should get the ID for variant analysis history items", () => {
       const historyItemId = getQueryId(variantAnalysisHistoryItem);
 
-      expect(historyItemId).to.equal(
+      expect(historyItemId).toBe(
         variantAnalysisHistoryItem.variantAnalysis.id.toString(),
       );
     });
@@ -84,19 +83,19 @@ describe("Query history info", () => {
     it("should get the query text for local history items", () => {
       const queryText = getQueryText(localQueryHistoryItem);
 
-      expect(queryText).to.equal(localQueryHistoryItem.initialInfo.queryText);
+      expect(queryText).toBe(localQueryHistoryItem.initialInfo.queryText);
     });
 
     it("should get the query text for remote query history items", () => {
       const queryText = getQueryText(remoteQueryHistoryItem);
 
-      expect(queryText).to.equal(remoteQueryHistoryItem.remoteQuery.queryText);
+      expect(queryText).toBe(remoteQueryHistoryItem.remoteQuery.queryText);
     });
 
     it("should get the query text for variant analysis history items", () => {
       const queryText = getQueryText(variantAnalysisHistoryItem);
 
-      expect(queryText).to.equal(
+      expect(queryText).toBe(
         variantAnalysisHistoryItem.variantAnalysis.query.text,
       );
     });
@@ -108,7 +107,7 @@ describe("Query history info", () => {
         const repoLabel = buildRepoLabel(remoteQueryHistoryItem);
         const expectedRepoLabel = `${remoteQueryHistoryItem.remoteQuery.controllerRepository.owner}/${remoteQueryHistoryItem.remoteQuery.controllerRepository.name}`;
 
-        expect(repoLabel).to.equal(expectedRepoLabel);
+        expect(repoLabel).toBe(expectedRepoLabel);
       });
       it("should return number of repositories when `repositoryCount` is non-zero", () => {
         const remoteQueryHistoryItem2 = createMockRemoteQueryHistoryItem({
@@ -117,7 +116,7 @@ describe("Query history info", () => {
         const repoLabel2 = buildRepoLabel(remoteQueryHistoryItem2);
         const expectedRepoLabel2 = "3 repositories";
 
-        expect(repoLabel2).to.equal(expectedRepoLabel2);
+        expect(repoLabel2).toBe(expectedRepoLabel2);
       });
     });
     describe("repo label for variant analysis history items", () => {
@@ -133,7 +132,7 @@ describe("Query history info", () => {
         };
         const repoLabel0 = buildRepoLabel(variantAnalysisHistoryItem0);
 
-        expect(repoLabel0).to.equal("0/0 repositories");
+        expect(repoLabel0).toBe("0/0 repositories");
       });
       it("should return label when `totalScannedRepositoryCount` is 1", () => {
         const variantAnalysisHistoryItem1: VariantAnalysisHistoryItem = {
@@ -149,12 +148,12 @@ describe("Query history info", () => {
         };
 
         const repoLabel1 = buildRepoLabel(variantAnalysisHistoryItem1);
-        expect(repoLabel1).to.equal("0/1 repository");
+        expect(repoLabel1).toBe("0/1 repository");
       });
       it("should return label when `totalScannedRepositoryCount` is greater than 1", () => {
         const repoLabel = buildRepoLabel(variantAnalysisHistoryItem);
 
-        expect(repoLabel).to.equal("2/4 repositories");
+        expect(repoLabel).toBe("2/4 repositories");
       });
     });
   });
@@ -167,7 +166,7 @@ describe("Query history info", () => {
 
       const remoteQuery = remoteQueryHistoryItem.remoteQuery;
       const fullName = `${remoteQuery.controllerRepository.owner}/${remoteQuery.controllerRepository.name}`;
-      expect(actionsWorkflowRunUrl).to.equal(
+      expect(actionsWorkflowRunUrl).toBe(
         `https://github.com/${fullName}/actions/runs/${remoteQuery.actionsWorkflowRunId}`,
       );
     });
@@ -179,7 +178,7 @@ describe("Query history info", () => {
 
       const variantAnalysis = variantAnalysisHistoryItem.variantAnalysis;
       const fullName = variantAnalysis.controllerRepo.fullName;
-      expect(actionsWorkflowRunUrl).to.equal(
+      expect(actionsWorkflowRunUrl).toBe(
         `https://github.com/${fullName}/actions/runs/${variantAnalysis.actionsWorkflowRunId}`,
       );
     });

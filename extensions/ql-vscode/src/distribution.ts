@@ -3,7 +3,6 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
-import * as unzipper from "unzipper";
 import * as url from "url";
 import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "./config";
@@ -13,9 +12,15 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
 } from "./helpers";
-import { logger } from "./logging";
+import { extLogger } from "./common";
 import { getCodeQlCliVersion } from "./cli-version";
 import { ProgressCallback, reportStreamProgress } from "./commandRunner";
+import {
+  codeQlLauncherName,
+  deprecatedCodeQlLauncherName,
+  extractZipArchive,
+  getRequiredAssetName,
+} from "./pure/distribution";
 
 /**
  * distribution.ts
@@ -55,22 +60,6 @@ export interface DistributionProvider {
 }
 
 export class DistributionManager implements DistributionProvider {
-  /**
-   * Get the name of the codeql cli installation we prefer to install, based on our current platform.
-   */
-  public static getRequiredAssetName(): string {
-    switch (os.platform()) {
-      case "linux":
-        return "codeql-linux64.zip";
-      case "darwin":
-        return "codeql-osx64.zip";
-      case "win32":
-        return "codeql-win64.zip";
-      default:
-        return "codeql.zip";
-    }
-  }
-
   constructor(
     public readonly config: DistributionConfig,
     private readonly versionRange: semver.Range,
@@ -101,7 +90,10 @@ export class DistributionManager implements DistributionProvider {
         kind: FindDistributionResultKind.NoDistribution,
       };
     }
-    const version = await getCodeQlCliVersion(distribution.codeQlPath, logger);
+    const version = await getCodeQlCliVersion(
+      distribution.codeQlPath,
+      extLogger,
+    );
     if (version === undefined) {
       return {
         distribution,
@@ -207,7 +199,7 @@ export class DistributionManager implements DistributionProvider {
           };
         }
       }
-      void logger.log("INFO: Could not find CodeQL on path.");
+      void extLogger.log("INFO: Could not find CodeQL on path.");
     }
 
     return undefined;
@@ -303,7 +295,7 @@ class ExtensionSpecificDistributionManager {
       try {
         await this.removeDistribution();
       } catch (e) {
-        void logger.log(
+        void extLogger.log(
           "WARNING: Tried to remove corrupted CodeQL CLI at " +
             `${this.getDistributionStoragePath()} but encountered an error: ${e}.`,
         );
@@ -354,14 +346,14 @@ class ExtensionSpecificDistributionManager {
     try {
       await this.removeDistribution();
     } catch (e) {
-      void logger.log(
+      void extLogger.log(
         `Tried to clean up old version of CLI at ${this.getDistributionStoragePath()} ` +
           `but encountered an error: ${e}.`,
       );
     }
 
     // Filter assets to the unique one that we require.
-    const requiredAssetName = DistributionManager.getRequiredAssetName();
+    const requiredAssetName = getRequiredAssetName();
     const assets = release.assets.filter(
       (asset) => asset.name === requiredAssetName,
     );
@@ -371,7 +363,7 @@ class ExtensionSpecificDistributionManager {
       );
     }
     if (assets.length > 1) {
-      void logger.log(
+      void extLogger.log(
         "WARNING: chose a release with more than one asset to install, found " +
           assets.map((asset) => asset.name).join(", "),
       );
@@ -409,7 +401,7 @@ class ExtensionSpecificDistributionManager {
 
       await this.bumpDistributionFolderIndex();
 
-      void logger.log(
+      void extLogger.log(
         `Extracting CodeQL CLI to ${this.getDistributionStoragePath()}`,
       );
       await extractZipArchive(archivePath, this.getDistributionStoragePath());
@@ -431,8 +423,8 @@ class ExtensionSpecificDistributionManager {
   }
 
   private async getLatestRelease(): Promise<Release> {
-    const requiredAssetName = DistributionManager.getRequiredAssetName();
-    void logger.log(
+    const requiredAssetName = getRequiredAssetName();
+    void extLogger.log(
       `Searching for latest release including ${requiredAssetName}.`,
     );
     return this.createReleasesApiConsumer().getLatestRelease(
@@ -444,13 +436,13 @@ class ExtensionSpecificDistributionManager {
         );
         if (matchingAssets.length === 0) {
           // For example, this could be a release with no platform-specific assets.
-          void logger.log(
+          void extLogger.log(
             `INFO: Ignoring a release with no assets named ${requiredAssetName}`,
           );
           return false;
         }
         if (matchingAssets.length > 1) {
-          void logger.log(
+          void extLogger.log(
             `WARNING: Ignoring a release with more than one asset named ${requiredAssetName}`,
           );
           return false;
@@ -683,39 +675,6 @@ export class ReleasesApiConsumer {
   private static readonly _maxRedirects = 20;
 }
 
-export async function extractZipArchive(
-  archivePath: string,
-  outPath: string,
-): Promise<void> {
-  const archive = await unzipper.Open.file(archivePath);
-  await archive.extract({
-    concurrency: 4,
-    path: outPath,
-  });
-  // Set file permissions for extracted files
-  await Promise.all(
-    archive.files.map(async (file) => {
-      // Only change file permissions if within outPath (path.join normalises the path)
-      const extractedPath = path.join(outPath, file.path);
-      if (
-        extractedPath.indexOf(outPath) !== 0 ||
-        !(await fs.pathExists(extractedPath))
-      ) {
-        return Promise.resolve();
-      }
-      return fs.chmod(extractedPath, file.externalFileAttributes >>> 16);
-    }),
-  );
-}
-
-export function codeQlLauncherName(): string {
-  return os.platform() === "win32" ? "codeql.exe" : "codeql";
-}
-
-function deprecatedCodeQlLauncherName(): string | undefined {
-  return os.platform() === "win32" ? "codeql.cmd" : undefined;
-}
-
 function isRedirectStatusCode(statusCode: number): boolean {
   return (
     statusCode === 301 ||
@@ -861,7 +820,7 @@ export async function getExecutableFromDirectory(
     return alternateExpectedLauncherPath;
   }
   if (warnWhenNotFound) {
-    void logger.log(
+    void extLogger.log(
       `WARNING: Expected to find a CodeQL CLI executable at ${expectedLauncherPath} but one was not found. ` +
         "Will try PATH.",
     );

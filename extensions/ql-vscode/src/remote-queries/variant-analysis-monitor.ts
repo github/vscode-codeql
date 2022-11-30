@@ -13,7 +13,6 @@ import {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
 } from "./shared/variant-analysis";
-import { VariantAnalysisMonitorResult } from "./shared/variant-analysis-monitor-result";
 import { processUpdatedVariantAnalysis } from "./variant-analysis-processor";
 import { DisposableObject } from "../pure/disposable-object";
 import { sleep } from "../pure/time";
@@ -41,7 +40,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
   public async monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
     cancellationToken: CancellationToken,
-  ): Promise<VariantAnalysisMonitorResult> {
+  ): Promise<void> {
     const credentials = await Credentials.initialize(this.extensionContext);
     if (!credentials) {
       throw Error("Error authenticating with GitHub");
@@ -54,11 +53,11 @@ export class VariantAnalysisMonitor extends DisposableObject {
       await sleep(VariantAnalysisMonitor.sleepTime);
 
       if (cancellationToken && cancellationToken.isCancellationRequested) {
-        return { status: "Canceled" };
+        return;
       }
 
       if (await this.shouldCancelMonitor(variantAnalysis.id)) {
-        return { status: "Canceled" };
+        return;
       }
 
       const variantAnalysisSummary = await ghApiClient.getVariantAnalysis(
@@ -86,8 +85,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
       attemptCount++;
     }
-
-    return { status: "Completed", scannedReposDownloaded, variantAnalysis };
   }
 
   private scheduleForDownload(

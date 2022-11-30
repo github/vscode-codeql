@@ -14,7 +14,7 @@ import {
   RemoteQueryDownloadAnalysisResultsMessage,
   RemoteQueryDownloadAllAnalysesResultsMessage,
 } from "../pure/interface-types";
-import { Logger } from "../logging";
+import { Logger } from "../common";
 import { assertNever } from "../pure/helpers-pure";
 import {
   AnalysisSummary,

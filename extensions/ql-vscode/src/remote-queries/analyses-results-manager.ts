@@ -4,7 +4,7 @@ import * as path from "path";
 import { CancellationToken, ExtensionContext } from "vscode";
 
 import { Credentials } from "../authentication";
-import { Logger } from "../logging";
+import { Logger } from "../common";
 import { downloadArtifactFromLink } from "./gh-api/gh-actions-api-client";
 import { AnalysisSummary } from "./shared/remote-query-result";
 import {

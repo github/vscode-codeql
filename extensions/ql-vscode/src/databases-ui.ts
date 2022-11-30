@@ -27,7 +27,7 @@ import {
   isLikelyDbLanguageFolder,
   showAndLogErrorMessage,
 } from "./helpers";
-import { logger } from "./logging";
+import { extLogger } from "./common";
 import {
   importArchiveDatabase,
   promptImportGithubDatabase,
@@ -241,7 +241,7 @@ export class DatabaseUI extends DisposableObject {
   }
 
   init() {
-    void logger.log("Registering database panel commands.");
+    void extLogger.log("Registering database panel commands.");
     this.push(
       commandRunnerWithProgress(
         "codeQL.setCurrentDatabase",
@@ -393,14 +393,14 @@ export class DatabaseUI extends DisposableObject {
   };
 
   handleRemoveOrphanedDatabases = async (): Promise<void> => {
-    void logger.log("Removing orphaned databases from workspace storage.");
+    void extLogger.log("Removing orphaned databases from workspace storage.");
     let dbDirs = undefined;
 
     if (
       !(await fs.pathExists(this.storagePath)) ||
       !(await fs.stat(this.storagePath)).isDirectory()
     ) {
-      void logger.log(
+      void extLogger.log(
         "Missing or invalid storage directory. Not trying to remove orphaned databases.",
       );
       return;
@@ -425,7 +425,7 @@ export class DatabaseUI extends DisposableObject {
     dbDirs = await asyncFilter(dbDirs, isLikelyDatabaseRoot);
 
     if (!dbDirs.length) {
-      void logger.log("No orphaned databases found.");
+      void extLogger.log("No orphaned databases found.");
       return;
     }
 
@@ -434,7 +434,7 @@ export class DatabaseUI extends DisposableObject {
     await Promise.all(
       dbDirs.map(async (dbDir) => {
         try {
-          void logger.log(`Deleting orphaned database '${dbDir}'.`);
+          void extLogger.log(`Deleting orphaned database '${dbDir}'.`);
           await fs.remove(dbDir);
         } catch (e) {
           failures.push(`${path.basename(dbDir)}`);

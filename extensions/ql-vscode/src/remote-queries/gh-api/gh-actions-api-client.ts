@@ -6,7 +6,7 @@ import {
   tmpDir,
 } from "../../helpers";
 import { Credentials } from "../../authentication";
-import { logger } from "../../logging";
+import { extLogger } from "../../common";
 import { RemoteQueryWorkflowResult } from "../remote-query-workflow-result";
 import { DownloadLink, createDownloadPath } from "../download-link";
 import { RemoteQuery } from "../remote-query";
@@ -384,10 +384,10 @@ async function unzipBuffer(
   filePath: string,
   destinationPath: string,
 ): Promise<void> {
-  void logger.log(`Saving file to ${filePath}`);
+  void extLogger.log(`Saving file to ${filePath}`);
   await fs.writeFile(filePath, Buffer.from(data));
 
-  void logger.log(`Unzipping file to ${destinationPath}`);
+  void extLogger.log(`Unzipping file to ${destinationPath}`);
   await unzipFile(filePath, destinationPath);
 }
 
