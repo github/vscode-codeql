@@ -192,7 +192,9 @@ describe("Variant Analysis Submission Integration", () => {
       await commands.executeCommand("codeQL.runVariantAnalysis");
 
       expect(showErrorMessageSpy).toHaveBeenCalledWith(
-        expect.stringContaining("No repositories could be queried."),
+        expect.stringContaining(
+          "Unable to trigger a variant analysis. None of the requested repositories could be found.",
+        ),
         expect.any(String),
       );
     });
