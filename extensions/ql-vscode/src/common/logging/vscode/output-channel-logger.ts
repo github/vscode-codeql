@@ -4,7 +4,9 @@ import * as path from "path";
 import { Logger, LogOptions } from "../logger";
 import { DisposableObject } from "../../../pure/disposable-object";
 
-/** A logger that writes messages to an output channel in the Output tab. */
+/**
+ * A logger that writes messages to an output channel in the VS Code Output tab.
+ */
 export class OutputChannelLogger extends DisposableObject implements Logger {
   public readonly outputChannel: OutputChannel;
   private readonly additionalLocations = new Map<
@@ -20,12 +22,6 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
     this.isCustomLogDirectory = false;
   }
 
-  /**
-   * This function is asynchronous and will only resolve once the message is written
-   * to the side log (if required). It is not necessary to await the results of this
-   * function if you don't need to guarantee that the log writing is complete before
-   * continuing.
-   */
   async log(message: string, options = {} as LogOptions): Promise<void> {
     try {
       if (options.trailingNewline === undefined) {
@@ -82,9 +78,7 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
 }
 
 class AdditionalLogLocation {
-  constructor(private location: string) {
-    /**/
-  }
+  constructor(private location: string) {}
 
   async log(message: string, options = {} as LogOptions): Promise<void> {
     if (options.trailingNewline === undefined) {
