@@ -166,7 +166,7 @@ export class CodeQLCliServer implements Disposable {
   /** The process for the cli server, or undefined if one doesn't exist yet */
   process?: child_process.ChildProcessWithoutNullStreams;
   /** Queue of future commands*/
-  commandQueue: (() => void)[];
+  commandQueue: Array<() => void>;
   /** Whether a command is running */
   commandInProcess: boolean;
   /**  A buffer with a single null byte. */
@@ -915,7 +915,7 @@ export class CodeQLCliServer implements Disposable {
 
   // Warning: this function is untenable for large dot files,
   async readDotFiles(dir: string): Promise<string[]> {
-    const dotFiles: Promise<string>[] = [];
+    const dotFiles: Array<Promise<string>> = [];
     for await (const file of walkDirectory(dir)) {
       if (file.endsWith(".dot")) {
         dotFiles.push(fs.readFile(file, "utf8"));

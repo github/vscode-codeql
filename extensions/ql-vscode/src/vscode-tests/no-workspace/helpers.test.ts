@@ -236,7 +236,7 @@ describe("helpers", () => {
 
   class MockExtensionContext implements ExtensionContext {
     extensionMode: ExtensionMode = 3;
-    subscriptions: { dispose(): unknown }[] = [];
+    subscriptions: Array<{ dispose(): unknown }> = [];
     workspaceState: Memento = new MockMemento();
     globalState = new MockGlobalStorage();
     extensionPath = "";

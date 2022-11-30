@@ -34,7 +34,7 @@ export interface QlPack {
   name: string;
   version: string;
   dependencies: { [key: string]: string };
-  defaultSuite?: Record<string, unknown>[];
+  defaultSuite?: Array<Record<string, unknown>>;
   defaultSuiteFile?: string;
 }
 

@@ -10,14 +10,14 @@ import {
 describe("config listeners", () => {
   interface TestConfig<T> {
     clazz: new () => ConfigListener;
-    settings: {
+    settings: Array<{
       name: string;
       property: string;
       values: [T, T];
-    }[];
+    }>;
   }
 
-  const testConfig: TestConfig<string | number | boolean>[] = [
+  const testConfig: Array<TestConfig<string | number | boolean>> = [
     {
       clazz: CliConfigListener,
       settings: [

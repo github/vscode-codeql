@@ -147,7 +147,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
   private static createTestOrSuiteInfos(
     testNodes: readonly QLTestNode[],
-  ): (TestSuiteInfo | TestInfo)[] {
+  ): Array<TestSuiteInfo | TestInfo> {
     return testNodes.map((childNode) => {
       return QLTestAdapter.createTestOrSuiteInfo(childNode);
     });

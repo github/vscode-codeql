@@ -149,7 +149,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
   private readonly predicateSizes = new Map<string, number>();
   private readonly layerEvents = new Map<
     string,
-    (ComputeRecursive | InLayer)[]
+    Array<ComputeRecursive | InLayer>
   >();
   // Map a key of the form 'query-with-demand : predicate name' to its badness input.
   private readonly maxTupleCountMap = new Map<string, number[]>();

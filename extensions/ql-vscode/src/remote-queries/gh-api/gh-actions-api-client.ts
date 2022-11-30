@@ -438,7 +438,7 @@ const repositoriesMetadataQuery = `query Stars($repos: String!, $pageSize: Int!,
 
 type RepositoriesMetadataQueryResponse = {
   search: {
-    edges: {
+    edges: Array<{
       cursor: string;
       node: {
         name: string;
@@ -448,7 +448,7 @@ type RepositoriesMetadataQueryResponse = {
         stargazerCount: number;
         updatedAt: string; // Actually a ISO Date string
       };
-    }[];
+    }>;
   };
 };
 

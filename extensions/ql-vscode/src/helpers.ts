@@ -460,7 +460,7 @@ export class CachedOperation<U> {
   private readonly lru: string[];
   private readonly inProgressCallbacks: Map<
     string,
-    [(u: U) => void, (reason?: any) => void][]
+    Array<[(u: U) => void, (reason?: any) => void]>
   >;
 
   constructor(
@@ -471,7 +471,7 @@ export class CachedOperation<U> {
     this.lru = [];
     this.inProgressCallbacks = new Map<
       string,
-      [(u: U) => void, (reason?: any) => void][]
+      Array<[(u: U) => void, (reason?: any) => void]>
     >();
     this.cached = new Map<string, U>();
   }
@@ -499,7 +499,7 @@ export class CachedOperation<U> {
     }
 
     // Otherwise compute the new value, but leave a callback to allow sharing work
-    const callbacks: [(u: U) => void, (reason?: any) => void][] = [];
+    const callbacks: Array<[(u: U) => void, (reason?: any) => void]> = [];
     this.inProgressCallbacks.set(t, callbacks);
     try {
       const result = await this.operation(t, ...args);

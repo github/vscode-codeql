@@ -44,7 +44,7 @@ export class QueryServerClient extends DisposableObject {
   nextProgress: number;
   withProgressReporting: WithProgressReporting;
 
-  private readonly queryServerStartListeners = [] as ProgressTask<void>[];
+  private readonly queryServerStartListeners = [] as Array<ProgressTask<void>>;
 
   // Can't use standard vscode EventEmitter here since they do not cause the calling
   // function to fail if one of the event handlers fail. This is something that

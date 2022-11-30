@@ -112,7 +112,7 @@ export class AnalysesResultsManager {
       const taskResults = await Promise.allSettled(batchTasks);
       const failedTasks = taskResults.filter(
         (x) => x.status === "rejected",
-      ) as Array<PromiseRejectedResult>;
+      ) as PromiseRejectedResult[];
       if (failedTasks.length > 0) {
         const failures = failedTasks.map((t) => t.reason.message);
         failures.forEach((f) => void this.logger.log(f));

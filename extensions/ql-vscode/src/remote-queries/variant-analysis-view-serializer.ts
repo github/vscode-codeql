@@ -4,9 +4,9 @@ import { VariantAnalysisState } from "../pure/interface-types";
 import { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
 
 export class VariantAnalysisViewSerializer implements WebviewPanelSerializer {
-  private resolvePromises: ((
-    value: VariantAnalysisViewManager<VariantAnalysisView>,
-  ) => void)[] = [];
+  private resolvePromises: Array<
+    (value: VariantAnalysisViewManager<VariantAnalysisView>) => void
+  > = [];
 
   private manager?: VariantAnalysisViewManager<VariantAnalysisView>;
 

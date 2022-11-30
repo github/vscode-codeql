@@ -137,7 +137,7 @@ describe("archive-filesystem-provider", () => {
 });
 
 describe("source archive uri encoding", () => {
-  const testCases: { name: string; input: ZipFileReference }[] = [
+  const testCases: Array<{ name: string; input: ZipFileReference }> = [
     {
       name: "mixed case and unicode",
       input: {

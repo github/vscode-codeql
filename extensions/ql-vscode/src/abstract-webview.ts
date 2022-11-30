@@ -32,7 +32,7 @@ export abstract class AbstractWebview<
 > extends DisposableObject {
   protected panel: WebviewPanel | undefined;
   protected panelLoaded = false;
-  protected panelLoadedCallBacks: (() => void)[] = [];
+  protected panelLoadedCallBacks: Array<() => void> = [];
 
   private panelResolves?: Array<(panel: WebviewPanel) => void>;
 

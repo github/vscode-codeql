@@ -825,7 +825,7 @@ export class ResultsView extends AbstractWebview<
       return;
     }
 
-    const diagnostics: [Uri, ReadonlyArray<Diagnostic>][] = [];
+    const diagnostics: Array<[Uri, readonly Diagnostic[]]> = [];
 
     for (const result of data.runs[0].results) {
       const message = result.message.text;
