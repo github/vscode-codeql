@@ -54,7 +54,6 @@ module.exports = {
     "import/no-dynamic-required": "off",
     "import/no-anonymous-default-export": "off",
     "import/no-commonjs": "off",
-    "import/no-duplicates": "off",
     "import/no-mutable-exports": "off",
     "import/no-namespace": "off",
     "import/no-unresolved": "off",

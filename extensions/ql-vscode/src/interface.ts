@@ -33,6 +33,8 @@ import {
   GRAPH_TABLE_NAME,
   RawResultsSortState,
   NavigationDirection,
+  getDefaultResultSetName,
+  ParsedResultSets,
 } from "./pure/interface-types";
 import { Logger } from "./common";
 import { commandRunner } from "./commandRunner";
@@ -40,6 +42,7 @@ import {
   CompletedQueryInfo,
   interpretResultsSarif,
   interpretGraphResults,
+  CompletedLocalQueryInfo,
 } from "./query-results";
 import { QueryEvaluationInfo } from "./run-queries-shared";
 import {
@@ -55,17 +58,12 @@ import {
   jumpToLocation,
 } from "./interface-utils";
 import {
-  getDefaultResultSetName,
-  ParsedResultSets,
-} from "./pure/interface-types";
-import {
   RawResultSet,
   transformBqrsResultSet,
   ResultSetSchema,
 } from "./pure/bqrs-cli-types";
 import { AbstractWebview, WebviewPanelConfig } from "./abstract-webview";
 import { PAGE_SIZE } from "./config";
-import { CompletedLocalQueryInfo } from "./query-results";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
 
 /**

@@ -1,12 +1,11 @@
 import * as React from "react";
 import * as d3 from "d3";
-import { ResultTableProps } from "./result-table-utils";
+import { ResultTableProps, jumpToLocation } from "./result-table-utils";
 import {
   InterpretedResultSet,
   GraphInterpretationData,
 } from "../../pure/interface-types";
 import { graphviz } from "d3-graphviz";
-import { jumpToLocation } from "./result-table-utils";
 import { tryGetLocationFromString } from "../../pure/bqrs-utils";
 export type GraphProps = ResultTableProps & {
   resultSet: InterpretedResultSet<GraphInterpretationData>;

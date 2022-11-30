@@ -9,10 +9,9 @@ import * as Octokit from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 
 import { DatabaseManager, DatabaseItem } from "./databases";
-import { showAndLogInformationMessage } from "./helpers";
+import { showAndLogInformationMessage, tmpDir } from "./helpers";
 import { reportStreamProgress, ProgressCallback } from "./commandRunner";
 import { extLogger } from "./common";
-import { tmpDir } from "./helpers";
 import { Credentials } from "./authentication";
 import { REPO_REGEX, getErrorMessage } from "./pure/helpers-pure";
 

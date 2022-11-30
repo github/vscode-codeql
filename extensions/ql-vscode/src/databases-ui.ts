@@ -9,6 +9,7 @@ import {
   Uri,
   window,
   env,
+  CancellationToken,
 } from "vscode";
 import * as fs from "fs-extra";
 
@@ -34,7 +35,6 @@ import {
   promptImportInternetDatabase,
   promptImportLgtmDatabase,
 } from "./databaseFetcher";
-import { CancellationToken } from "vscode";
 import { asyncFilter, getErrorMessage } from "./pure/helpers-pure";
 import { Credentials } from "./authentication";
 import { QueryRunner } from "./queryRunner";

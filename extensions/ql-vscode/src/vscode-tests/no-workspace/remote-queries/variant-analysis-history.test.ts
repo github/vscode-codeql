@@ -11,11 +11,10 @@ import {
 } from "vscode";
 import { QueryHistoryConfig } from "../../../config";
 import { DatabaseManager } from "../../../databases";
-import { tmpDir } from "../../../helpers";
+import { tmpDir, walkDirectory } from "../../../helpers";
 import { QueryHistoryManager } from "../../../query-history";
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
-import { walkDirectory } from "../../../helpers";
 import { HistoryItemLabelProvider } from "../../../history-item-label-provider";
 import { RemoteQueriesManager } from "../../../remote-queries/remote-queries-manager";
 import { ResultsView } from "../../../interface";

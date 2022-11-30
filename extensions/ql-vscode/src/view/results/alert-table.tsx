@@ -18,17 +18,15 @@ import {
   NavigateMsg,
   NavigationDirection,
   SarifInterpretationData,
+  InterpretedResultsSortColumn,
+  SortDirection,
+  InterpretedResultsSortState,
 } from "../../pure/interface-types";
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
   isNoLocation,
 } from "../../pure/sarif-utils";
-import {
-  InterpretedResultsSortColumn,
-  SortDirection,
-  InterpretedResultsSortState,
-} from "../../pure/interface-types";
 import { vscode } from "../vscode-api";
 import { isWholeFileLoc, isLineColumnLoc } from "../../pure/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";

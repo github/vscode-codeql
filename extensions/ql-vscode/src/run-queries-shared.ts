@@ -25,8 +25,7 @@ import { CodeQLCliServer } from "./cli";
 import { SELECT_QUERY_NAME } from "./contextual/locationFinder";
 import { DatabaseManager } from "./databases";
 import { DecodedBqrsChunk } from "./pure/bqrs-cli-types";
-import { extLogger } from "./common";
-import { Logger } from "./common";
+import { extLogger, Logger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { asError } from "./pure/helpers-pure";
 

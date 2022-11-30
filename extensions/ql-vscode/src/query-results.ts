@@ -13,8 +13,8 @@ import {
   ResultsPaths,
   SarifInterpretationData,
   GraphInterpretationData,
+  DatabaseInfo,
 } from "./pure/interface-types";
-import { DatabaseInfo } from "./pure/interface-types";
 import { QueryStatus } from "./query-status";
 import { QueryEvaluationInfo, QueryWithResults } from "./run-queries-shared";
 import { formatLegacyMessage } from "./legacy-query-server/run-queries";
