@@ -541,8 +541,9 @@ export async function compileAndRunQueryAgainstDatabase(
         // and will be trimmed by the function displaying the error popup. Accordingly, we only
         // try to show the errors if there are 2 or less, otherwise we direct the user to the log.
         void showAndLogErrorMessage(
-          "Quick evaluation compilation failed: " +
-            formattedMessages.join("\n"),
+          `Quick evaluation compilation failed: ${formattedMessages.join(
+            "\n",
+          )}`,
         );
       } else {
         void showAndLogErrorMessage(

@@ -34,7 +34,7 @@ function makeKey(
       "queryCausingWork was not defined on an event we expected it to be defined for!",
     );
   }
-  return `${queryCausingWork}:${predicate}${suffix ? " " + suffix : ""}`;
+  return `${queryCausingWork}:${predicate}${suffix ? ` ${suffix}` : ""}`;
 }
 
 const DEPENDENT_PREDICATES_REGEXP = (() => {

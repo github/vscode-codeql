@@ -26,7 +26,7 @@ const scenarioDirectory = resolve(scenariosDirectory, scenarioName);
 async function fixScenarioFiles() {
   console.log(scenarioDirectory);
   if (!(await pathExists(scenarioDirectory))) {
-    console.error("Scenario directory does not exist: " + scenarioDirectory);
+    console.error(`Scenario directory does not exist: ${scenarioDirectory}`);
     return;
   }
 

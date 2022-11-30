@@ -921,7 +921,7 @@ describe("Variant Analysis Manager", () => {
           );
         } catch (error: any) {
           expect(error.message).toBe(
-            "No variant analysis with id: " + (variantAnalysis.id + 100),
+            `No variant analysis with id: ${variantAnalysis.id + 100}`,
           );
         }
       });
@@ -1069,7 +1069,7 @@ describe("Variant Analysis Manager", () => {
 
         const text = writeTextStub.mock.calls[0][0];
 
-        const parsed = JSON.parse("{" + text + "}");
+        const parsed = JSON.parse(`{${text}}`);
 
         expect(parsed).toEqual({
           "new-repo-list": [
@@ -1091,7 +1091,7 @@ describe("Variant Analysis Manager", () => {
 
         const text = writeTextStub.mock.calls[0][0];
 
-        const parsed = JSON.parse("{" + text + "}");
+        const parsed = JSON.parse(`{${text}}`);
 
         expect(parsed).toEqual({
           "new-repo-list": [
@@ -1113,7 +1113,7 @@ describe("Variant Analysis Manager", () => {
 
         const text = writeTextStub.mock.calls[0][0];
 
-        const parsed = JSON.parse("{" + text + "}");
+        const parsed = JSON.parse(`{${text}}`);
 
         expect(parsed).toEqual({
           "new-repo-list": [scannedRepos[4].repository.fullName],

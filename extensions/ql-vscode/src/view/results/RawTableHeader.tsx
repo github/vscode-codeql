@@ -57,12 +57,11 @@ export default function RawTableHeader(props: Props) {
                 : undefined;
             return (
               <th
-                className={
-                  "sort-" +
-                  (sortDirection !== undefined
+                className={`sort-${
+                  sortDirection !== undefined
                     ? SortDirection[sortDirection]
-                    : "none")
-                }
+                    : "none"
+                }`}
                 key={index}
                 onClick={() =>
                   toggleSortStateForColumn(

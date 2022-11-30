@@ -75,7 +75,7 @@ export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   if (encodedPath.startsWith("/")) {
     sourceArchiveZipPathStartIndex = 0;
   } else {
-    encodedPath = "/" + encodedPath;
+    encodedPath = `/${encodedPath}`;
     sourceArchiveZipPathStartIndex = 1;
   }
 
@@ -85,7 +85,7 @@ export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   const sourceArchiveZipPathEndIndex =
     sourceArchiveZipPathStartIndex + sourceArchiveZipPath.length;
   const authority = `${sourceArchiveZipPathStartIndex}-${sourceArchiveZipPathEndIndex}`;
-  return vscode.Uri.parse(zipArchiveScheme + ":/", true).with({
+  return vscode.Uri.parse(`${zipArchiveScheme}:/`, true).with({
     path: encodedPath,
     authority,
   });

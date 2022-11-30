@@ -25,7 +25,7 @@ async function lintScenarios() {
   const ajv = new Ajv();
 
   if (!ajv.validateSchema(schema)) {
-    throw new Error("Invalid schema: " + ajv.errorsText());
+    throw new Error(`Invalid schema: ${ajv.errorsText()}`);
   }
 
   const validate = await ajv.compile(schema);
@@ -33,7 +33,7 @@ async function lintScenarios() {
   let invalidFiles = 0;
 
   if (!(await pathExists(scenariosDirectory))) {
-    console.error("Scenarios directory does not exist: " + scenariosDirectory);
+    console.error(`Scenarios directory does not exist: ${scenariosDirectory}`);
     // Do not exit with a non-zero status code, as this is not a fatal error.
     return;
   }

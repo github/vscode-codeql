@@ -109,7 +109,7 @@ function createSystemDefinedRepoListsQuickPickItems(): RepoListQuickPickItem[] {
   return topNs.map(
     (n) =>
       ({
-        label: "$(star) Top " + n,
+        label: `$(star) Top ${n}`,
         repositoryList: `top_${n}`,
         alwaysShow: true,
       } as RepoListQuickPickItem),

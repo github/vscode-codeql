@@ -55,7 +55,7 @@ export async function deployPackage(
     if (isDevBuild) {
       // NOTE: rootPackage.name had better not have any regex metacharacters
       const oldDevBuildPattern = new RegExp(
-        "^" + packageJson.name + "[^/]+-dev[0-9.]+\\.vsix$",
+        `^${packageJson.name}[^/]+-dev[0-9.]+\\.vsix$`,
       );
       // Dev package filenames are of the form
       //    vscode-codeql-0.0.1-dev.2019.9.27.19.55.20.vsix
@@ -67,8 +67,7 @@ export async function deployPackage(
         });
       const now = new Date();
       packageJson.version =
-        packageJson.version +
-        `-dev.${now.getUTCFullYear()}.${
+        `${packageJson.version}-dev.${now.getUTCFullYear()}.${
           now.getUTCMonth() + 1
         }.${now.getUTCDate()}` +
         `.${now.getUTCHours()}.${now.getUTCMinutes()}.${now.getUTCSeconds()}`;

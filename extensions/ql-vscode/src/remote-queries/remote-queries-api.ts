@@ -59,17 +59,17 @@ export function parseResponse(
   const repositoriesQueried = response.repositories_queried;
   const repositoryCount = repositoriesQueried.length;
 
-  const popupMessage =
-    `Successfully scheduled runs on ${pluralize(
-      repositoryCount,
-      "repository",
-      "repositories",
-    )}. [Click here to see the progress](https://github.com/${
-      controllerRepo.fullName
-    }/actions/runs/${response.workflow_run_id}).` +
-    (response.errors
+  const popupMessage = `Successfully scheduled runs on ${pluralize(
+    repositoryCount,
+    "repository",
+    "repositories",
+  )}. [Click here to see the progress](https://github.com/${
+    controllerRepo.fullName
+  }/actions/runs/${response.workflow_run_id}).${
+    response.errors
       ? `${eol2}Some repositories could not be scheduled. See extension log for details.`
-      : "");
+      : ""
+  }`;
 
   let logMessage = `Successfully scheduled runs on ${pluralize(
     repositoryCount,

@@ -516,14 +516,14 @@ describe("databases", () => {
       });
 
       it(`should find source archive in ${name}.zip`, async () => {
-        const uri = Uri.file(join(dir.name, name + ".zip"));
+        const uri = Uri.file(join(dir.name, `${name}.zip`));
         fs.createFileSync(uri.fsPath);
         const srcUri = await findSourceArchive(dir.name);
         expect(srcUri!.fsPath).toBe(uri.fsPath);
       });
 
       it(`should prioritize ${name}.zip over ${name}`, async () => {
-        const uri = Uri.file(join(dir.name, name + ".zip"));
+        const uri = Uri.file(join(dir.name, `${name}.zip`));
         fs.createFileSync(uri.fsPath);
 
         const uriFolder = Uri.file(join(dir.name, name));

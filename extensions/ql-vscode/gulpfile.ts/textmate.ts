@@ -61,11 +61,11 @@ function getNodeMatchText(rule: any): string {
     for (const patternIndex in rule.patterns) {
       const pattern = rule.patterns[patternIndex];
       if (pattern.include !== null) {
-        patterns.push("(?" + pattern.include + ")");
+        patterns.push(`(?${pattern.include})`);
       }
     }
 
-    return "(?:" + patterns.join("|") + ")";
+    return `(?:${patterns.join("|")})`;
   } else {
     return "";
   }
@@ -149,8 +149,8 @@ function visitAllMatchesInRule(rule: any, action: (match: any) => any) {
  * @param key Base key of the property to be transformed.
  */
 function expandPatternMatchProperties(rule: any, key: "begin" | "end") {
-  const patternKey = key + "Pattern";
-  const capturesKey = key + "Captures";
+  const patternKey = `${key}Pattern`;
+  const capturesKey = `${key}Captures`;
   const pattern = rule[patternKey];
   if (pattern !== undefined) {
     const patterns: string[] = Array.isArray(pattern) ? pattern : [pattern];
@@ -207,7 +207,7 @@ function transformFile(yaml: any) {
   });
 
   if (yaml.regexOptions !== undefined) {
-    const regexOptions = "(?" + yaml.regexOptions + ")";
+    const regexOptions = `(?${yaml.regexOptions})`;
     visitAllRulesInFile(yaml, (rule) => {
       visitAllMatchesInRule(rule, (match) => {
         return regexOptions + match;

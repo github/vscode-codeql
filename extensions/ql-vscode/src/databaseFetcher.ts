@@ -753,7 +753,7 @@ async function promptForLanguage(
  */
 async function ensureZippedSourceLocation(databasePath: string): Promise<void> {
   const srcFolderPath = join(databasePath, "src");
-  const srcZipPath = srcFolderPath + ".zip";
+  const srcZipPath = `${srcFolderPath}.zip`;
 
   if ((await pathExists(srcFolderPath)) && !(await pathExists(srcZipPath))) {
     await zip(srcFolderPath, srcZipPath);

@@ -353,13 +353,13 @@ export class QueryEvaluationInfo {
       );
       chunk.tuples.forEach((tuple) => {
         out.write(
-          tuple
+          `${tuple
             .map((v, i) =>
               chunk.columns[i].kind === "String"
                 ? `"${typeof v === "string" ? v.replaceAll('"', '""') : v}"`
                 : v,
             )
-            .join(",") + "\n",
+            .join(",")}\n`,
         );
       });
       nextOffset = chunk.next;
@@ -630,7 +630,7 @@ async function convertToQlPath(filePath: string): Promise<string> {
         }
       }
     }
-    throw new Error("Can't convert path to form suitable for QL:" + filePath);
+    throw new Error(`Can't convert path to form suitable for QL:${filePath}`);
   } else {
     return filePath;
   }

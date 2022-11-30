@@ -930,9 +930,7 @@ export class CodeQLCliServer implements Disposable {
     const additionalArgs = sourceInfo
       ? [
           "--dot-location-url-format",
-          "file://" +
-            sourceInfo.sourceLocationPrefix +
-            "{path}:{start:line}:{start:column}:{end:line}:{end:column}",
+          `file://${sourceInfo.sourceLocationPrefix}{path}:{start:line}:{start:column}:{end:line}:{end:column}`,
         ]
       : [];
 

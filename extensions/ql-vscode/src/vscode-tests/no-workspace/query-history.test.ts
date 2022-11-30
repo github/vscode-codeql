@@ -1276,7 +1276,7 @@ describe("query-history", () => {
         expect(treeItem.label).toContain("query-file.ql");
         expect(treeItem.contextValue).toBe("rawResultsItem");
         expect(treeItem.iconPath).toEqual(
-          vscode.Uri.file(mockExtensionLocation + "/media/drive.svg").fsPath,
+          vscode.Uri.file(`${mockExtensionLocation}/media/drive.svg`).fsPath,
         );
       });
 
@@ -1294,7 +1294,7 @@ describe("query-history", () => {
         );
         expect(treeItem.contextValue).toBe("interpretedResultsItem");
         expect(treeItem.iconPath).toEqual(
-          vscode.Uri.file(mockExtensionLocation + "/media/drive.svg").fsPath,
+          vscode.Uri.file(`${mockExtensionLocation}/media/drive.svg`).fsPath,
         );
       });
 
@@ -1309,7 +1309,7 @@ describe("query-history", () => {
 
         const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
         expect(treeItem.iconPath).toBe(
-          vscode.Uri.file(mockExtensionLocation + "/media/red-x.svg").fsPath,
+          vscode.Uri.file(`${mockExtensionLocation}/media/red-x.svg`).fsPath,
         );
       });
 
@@ -1321,7 +1321,7 @@ describe("query-history", () => {
 
         const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
         expect(treeItem.iconPath).toBe(
-          vscode.Uri.file(mockExtensionLocation + "/media/red-x.svg").fsPath,
+          vscode.Uri.file(`${mockExtensionLocation}/media/red-x.svg`).fsPath,
         );
       });
 

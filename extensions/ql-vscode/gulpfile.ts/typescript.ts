@@ -9,24 +9,16 @@ function goodReporter(): ts.reporter.Reporter {
     error: (error, typescript) => {
       if (error.tsFile) {
         console.log(
-          "[" +
-            gray("gulp-typescript") +
-            "] " +
-            red(
-              error.fullFilename +
-                "(" +
-                (error.startPosition!.line + 1) +
-                "," +
-                error.startPosition!.character +
-                "): ",
-            ) +
-            "error TS" +
-            error.diagnostic.code +
-            ": " +
-            typescript.flattenDiagnosticMessageText(
-              error.diagnostic.messageText,
-              "\n",
-            ),
+          `[${gray("gulp-typescript")}] ${red(
+            `${error.fullFilename}(${error.startPosition!.line + 1},${
+              error.startPosition!.character
+            }): `,
+          )}error TS${
+            error.diagnostic.code
+          }: ${typescript.flattenDiagnosticMessageText(
+            error.diagnostic.messageText,
+            "\n",
+          )}`,
         );
       } else {
         console.log(error.message);
@@ -39,7 +31,7 @@ const tsProject = ts.createProject("tsconfig.json");
 
 export function cleanOutput() {
   return tsProject.projectDirectory
-    ? del(tsProject.projectDirectory + "/out/*")
+    ? del(`${tsProject.projectDirectory}/out/*`)
     : Promise.resolve();
 }
 

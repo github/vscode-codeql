@@ -76,7 +76,7 @@ export class QLTestDirectory extends QLTestNode {
         // collapse children
         const replacement = new QLTestDirectory(
           child.children[0].path,
-          child.name + " / " + child.children[0].name,
+          `${child.name} / ${child.children[0].name}`,
           Array.from(child.children[0].children),
         );
         this._children[i] = replacement;

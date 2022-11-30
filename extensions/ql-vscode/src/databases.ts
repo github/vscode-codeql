@@ -133,7 +133,7 @@ export async function findSourceArchive(
 
   for (const relativePath of relativePaths) {
     const basePath = join(databasePath, relativePath);
-    const zipPath = basePath + ".zip";
+    const zipPath = `${basePath}.zip`;
 
     // Prefer using a zip archive over a directory.
     if (await pathExists(zipPath)) {
@@ -405,7 +405,7 @@ export class DatabaseItemImpl implements DatabaseItem {
         const pathWithinSourceArchive =
           zipRef.pathWithinSourceArchive === "/"
             ? relativeFilePath
-            : zipRef.pathWithinSourceArchive + "/" + relativeFilePath;
+            : `${zipRef.pathWithinSourceArchive}/${relativeFilePath}`;
         return encodeSourceArchiveUri({
           pathWithinSourceArchive,
           sourceArchiveZipPath: zipRef.sourceArchiveZipPath,
@@ -523,7 +523,7 @@ export class DatabaseItemImpl implements DatabaseItem {
         // database for /one/two/three/test.ql is at /one/two/three/three.testproj
         const testdir = dirname(testPath);
         const testdirbase = basename(testdir);
-        return databasePath == join(testdir, testdirbase + ".testproj");
+        return databasePath == join(testdir, `${testdirbase}.testproj`);
       }
     } catch {
       // No information available for test path - assume database is unaffected.

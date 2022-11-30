@@ -143,7 +143,7 @@ function getCliDownloadUrl(assetName: string) {
       throw new Error(
         "Nightly CLI was specified but no URL to download it from was given!",
       );
-    return process.env.NIGHTLY_URL + `/${assetName}`;
+    return `${process.env.NIGHTLY_URL}/${assetName}`;
   }
   return `https://github.com/github/codeql-cli-binaries/releases/download/${CLI_VERSION}/${assetName}`;
 }

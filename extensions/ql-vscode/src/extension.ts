@@ -373,12 +373,13 @@ export async function activate(
         codeQlInstalled && !config.isUserInitiated
           ? showAndLogWarningMessage
           : showAndLogErrorMessage;
-      const taskDescription =
-        (willUpdateCodeQl
+      const taskDescription = `${
+        willUpdateCodeQl
           ? "update"
           : codeQlInstalled
           ? "check for updates to"
-          : "install") + " CodeQL CLI";
+          : "install"
+      } CodeQL CLI`;
 
       if (e instanceof GithubRateLimitedError) {
         void alertFunction(
@@ -389,11 +390,10 @@ export async function activate(
         );
       } else if (e instanceof GithubApiError) {
         void alertFunction(
-          `Encountered GitHub API error while trying to ${taskDescription}. ` +
-            e,
+          `Encountered GitHub API error while trying to ${taskDescription}. ${e}`,
         );
       }
-      void alertFunction(`Unable to ${taskDescription}. ` + e);
+      void alertFunction(`Unable to ${taskDescription}. ${e}`);
     } finally {
       isInstallingOrUpdatingDistribution = false;
     }
@@ -789,7 +789,7 @@ async function activateWithInstalledDistribution(
       : window.activeTextEditor?.document.uri.fsPath;
     if (pathToQhelp) {
       // Create temporary directory
-      const relativePathToMd = basename(pathToQhelp, ".qhelp") + ".md";
+      const relativePathToMd = `${basename(pathToQhelp, ".qhelp")}.md`;
       const absolutePathToMd = join(qhelpTmpDir.name, relativePathToMd);
       const uri = Uri.file(absolutePathToMd);
       try {

@@ -86,7 +86,7 @@ export class Graph extends React.Component<GraphProps> {
           if (loc !== undefined) {
             d.attributes["xlink:href"] = "#";
             d.attributes["href"] = "#";
-            loc.uri = "file://" + loc.uri;
+            loc.uri = `file://${loc.uri}`;
             select(this).on("click", function (e) {
               jumpToLocation(loc, databaseUri);
             });

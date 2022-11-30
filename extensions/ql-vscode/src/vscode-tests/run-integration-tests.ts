@@ -135,7 +135,7 @@ function getLaunchArgs(dir: TestDir) {
         "--disable-extensions",
         "--disable-gpu",
         "--disable-workspace-trust",
-        "--user-data-dir=" + join(tmpDir.name, dir, "user-data"),
+        `--user-data-dir=${join(tmpDir.name, dir, "user-data")}`,
       ];
 
     case TestDir.MinimalWorksspace:
@@ -143,7 +143,7 @@ function getLaunchArgs(dir: TestDir) {
         "--disable-extensions",
         "--disable-gpu",
         "--disable-workspace-trust",
-        "--user-data-dir=" + join(tmpDir.name, dir, "user-data"),
+        `--user-data-dir=${join(tmpDir.name, dir, "user-data")}`,
         resolve(__dirname, "../../test/data"),
       ];
 
@@ -161,7 +161,7 @@ function getLaunchArgs(dir: TestDir) {
         "github.codespaces",
         "--disable-extension",
         "github.copilot",
-        "--user-data-dir=" + join(tmpDir.name, dir, "user-data"),
+        `--user-data-dir=${join(tmpDir.name, dir, "user-data")}`,
       ].concat(
         process.env.TEST_CODEQL_PATH ? [process.env.TEST_CODEQL_PATH] : [],
       );

@@ -285,7 +285,7 @@ export class LocalQueryInfo {
    */
   getQueryName() {
     if (this.initialInfo.quickEvalPosition) {
-      return "Quick evaluation of " + this.getQueryFileName();
+      return `Quick evaluation of ${this.getQueryFileName()}`;
     } else if (this.completedQuery?.query.metadata?.name) {
       return this.completedQuery?.query.metadata?.name;
     } else {

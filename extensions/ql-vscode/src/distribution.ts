@@ -364,8 +364,9 @@ class ExtensionSpecificDistributionManager {
     }
     if (assets.length > 1) {
       void extLogger.log(
-        "WARNING: chose a release with more than one asset to install, found " +
-          assets.map((asset) => asset.name).join(", "),
+        `WARNING: chose a release with more than one asset to install, found ${assets
+          .map((asset) => asset.name)
+          .join(", ")}`,
       );
     }
 

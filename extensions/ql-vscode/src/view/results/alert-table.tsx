@@ -126,10 +126,9 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         <tr>
           <th colSpan={2}></th>
           <th
-            className={
-              this.sortClass("alert-message") +
-              " vscode-codeql__alert-message-cell"
-            }
+            className={`${this.sortClass(
+              "alert-message",
+            )} vscode-codeql__alert-message-cell`}
             colSpan={3}
             onClick={() => this.toggleSortStateForColumn("alert-message")}
           >

@@ -845,7 +845,7 @@ export class ResultsView extends AbstractWebview<
       }
       const resultLocation = tryResolveLocation(sarifLoc, databaseItem);
       if (!resultLocation) {
-        void this.logger.log("Sarif location was not resolvable " + sarifLoc);
+        void this.logger.log(`Sarif location was not resolvable ${sarifLoc}`);
         continue;
       }
       const parsedMessage = parseSarifPlainTextMessage(message);

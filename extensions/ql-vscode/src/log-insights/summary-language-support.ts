@@ -95,7 +95,7 @@ export class SummaryLanguageSupport extends DisposableObject {
     if (this.lastDocument !== document) {
       this.clearCache();
 
-      const mapPath = document.uri.fsPath + ".map";
+      const mapPath = `${document.uri.fsPath}.map`;
 
       try {
         const sourceMapText = await readFile(mapPath, "utf-8");

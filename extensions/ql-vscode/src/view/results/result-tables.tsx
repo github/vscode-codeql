@@ -130,7 +130,7 @@ export class ResultTables extends React.Component<
     const selectedTable =
       props.parsedResultSets.selectedTable ||
       getDefaultResultSet(this.getResultSets());
-    const selectedPage = props.parsedResultSets.pageNumber + 1 + "";
+    const selectedPage = `${props.parsedResultSets.pageNumber + 1}`;
     this.state = {
       selectedTable,
       selectedPage,

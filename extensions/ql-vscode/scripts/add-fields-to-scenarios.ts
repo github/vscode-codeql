@@ -82,7 +82,7 @@ async function addFieldsToRepository(repository: RepositoryWithMetadata) {
 
 async function addFieldsToScenarios() {
   if (!(await pathExists(scenariosDirectory))) {
-    console.error("Scenarios directory does not exist: " + scenariosDirectory);
+    console.error(`Scenarios directory does not exist: ${scenariosDirectory}`);
     return;
   }
 
