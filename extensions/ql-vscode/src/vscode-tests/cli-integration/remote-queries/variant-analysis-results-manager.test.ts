@@ -11,20 +11,18 @@ import { storagePath } from "../global.helper";
 import { faker } from "@faker-js/faker";
 import * as ghApiClient from "../../../remote-queries/gh-api/gh-api-client";
 import { createMockVariantAnalysisRepositoryTask } from "../../factories/remote-queries/shared/variant-analysis-repo-tasks";
-import { VariantAnalysisRepositoryTask } from "../../../remote-queries/shared/variant-analysis";
+import {
+  VariantAnalysisRepositoryTask,
+  VariantAnalysisScannedRepositoryResult,
+} from "../../../remote-queries/shared/variant-analysis";
 
 jest.setTimeout(10_000);
 
 describe(VariantAnalysisResultsManager.name, () => {
   let cli: CodeQLCliServer;
   let variantAnalysisId: number;
-  let variantAnalysisResultsManager: VariantAnalysisResultsManager;
 
   beforeEach(async () => {
-    jest.spyOn(logger, "log").mockResolvedValue(undefined);
-    jest.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
-    jest.spyOn(fs, "writeFile").mockReturnValue(undefined);
-
     variantAnalysisId = faker.datatype.number();
 
     const extension = await extensions
@@ -33,10 +31,6 @@ describe(VariantAnalysisResultsManager.name, () => {
       )!
       .activate();
     cli = extension.cliServer;
-    variantAnalysisResultsManager = new VariantAnalysisResultsManager(
-      cli,
-      logger,
-    );
   });
 
   describe("download", () => {
@@ -49,8 +43,18 @@ describe(VariantAnalysisResultsManager.name, () => {
     let dummyRepoTask: VariantAnalysisRepositoryTask;
     let variantAnalysisStoragePath: string;
     let repoTaskStorageDirectory: string;
+    let variantAnalysisResultsManager: VariantAnalysisResultsManager;
 
     beforeEach(async () => {
+      jest.spyOn(logger, "log").mockResolvedValue(undefined);
+      jest.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
+      jest.spyOn(fs, "writeFile").mockReturnValue(undefined);
+
+      variantAnalysisResultsManager = new VariantAnalysisResultsManager(
+        cli,
+        logger,
+      );
+
       dummyRepoTask = createMockVariantAnalysisRepositoryTask();
 
       variantAnalysisStoragePath = path.join(
@@ -175,6 +179,186 @@ describe(VariantAnalysisResultsManager.name, () => {
               dummyRepoTask.repository.fullName,
             ),
           ).toBe(true);
+        });
+      });
+    });
+  });
+
+  describe("loadResults", () => {
+    let dummyRepoTask: VariantAnalysisRepositoryTask;
+    let variantAnalysisStoragePath: string;
+    let repoTaskStorageDirectory: string;
+    let variantAnalysisResultsManager: VariantAnalysisResultsManager;
+    let onResultLoadedSpy: jest.Mock<
+      void,
+      [VariantAnalysisScannedRepositoryResult]
+    >;
+
+    beforeEach(() => {
+      variantAnalysisResultsManager = new VariantAnalysisResultsManager(
+        cli,
+        logger,
+      );
+      onResultLoadedSpy = jest.fn();
+      variantAnalysisResultsManager.onResultLoaded(onResultLoadedSpy);
+
+      dummyRepoTask = createMockVariantAnalysisRepositoryTask();
+
+      variantAnalysisStoragePath = path.join(
+        storagePath,
+        variantAnalysisId.toString(),
+      );
+      repoTaskStorageDirectory =
+        variantAnalysisResultsManager.getRepoStorageDirectory(
+          variantAnalysisStoragePath,
+          dummyRepoTask.repository.fullName,
+        );
+    });
+
+    afterEach(async () => {
+      if (fs.existsSync(variantAnalysisStoragePath)) {
+        fs.rmSync(variantAnalysisStoragePath, { recursive: true });
+      }
+    });
+
+    describe("when results are not downloaded", () => {
+      it("should reject when results are not cached", async () => {
+        await expect(
+          variantAnalysisResultsManager.loadResults(
+            variantAnalysisId,
+            variantAnalysisStoragePath,
+            dummyRepoTask.repository.fullName,
+          ),
+        ).rejects.toThrow("Variant analysis results not downloaded");
+      });
+    });
+
+    describe("when the repo task has been written to disk", () => {
+      beforeEach(async () => {
+        await fs.outputJson(
+          path.join(repoTaskStorageDirectory, "repo_task.json"),
+          dummyRepoTask,
+        );
+      });
+
+      describe("when the results are not downloaded", () => {
+        it("should reject when results are not cached", async () => {
+          await expect(
+            variantAnalysisResultsManager.loadResults(
+              variantAnalysisId,
+              variantAnalysisStoragePath,
+              dummyRepoTask.repository.fullName,
+            ),
+          ).rejects.toThrow("Missing results file");
+        });
+      });
+
+      describe("when the SARIF results are downloaded", () => {
+        beforeEach(async () => {
+          await fs.outputJson(
+            path.join(repoTaskStorageDirectory, "results/results.sarif"),
+            await fs.readJson(
+              path.resolve(
+                __dirname,
+                "../../no-workspace/data/sarif/validSarif.sarif",
+              ),
+            ),
+          );
+        });
+
+        it("should return the results when not cached", async () => {
+          await expect(
+            variantAnalysisResultsManager.loadResults(
+              variantAnalysisId,
+              variantAnalysisStoragePath,
+              dummyRepoTask.repository.fullName,
+            ),
+          ).resolves.toHaveProperty("interpretedResults");
+
+          expect(onResultLoadedSpy).toHaveBeenCalledTimes(1);
+          expect(onResultLoadedSpy).toHaveBeenCalledWith(
+            expect.objectContaining({
+              variantAnalysisId,
+              repositoryId: dummyRepoTask.repository.id,
+            }),
+          );
+        });
+
+        it("should return the results when cached", async () => {
+          // Load into cache
+          await variantAnalysisResultsManager.loadResults(
+            variantAnalysisId,
+            variantAnalysisStoragePath,
+            dummyRepoTask.repository.fullName,
+          );
+
+          onResultLoadedSpy.mockClear();
+
+          // Delete the directory so it can't read from disk
+          fs.rmSync(variantAnalysisStoragePath, { recursive: true });
+
+          await expect(
+            variantAnalysisResultsManager.loadResults(
+              variantAnalysisId,
+              variantAnalysisStoragePath,
+              dummyRepoTask.repository.fullName,
+            ),
+          ).resolves.toHaveProperty("interpretedResults");
+
+          expect(onResultLoadedSpy).toHaveBeenCalledTimes(1);
+          expect(onResultLoadedSpy).toHaveBeenCalledWith(
+            expect.objectContaining({
+              variantAnalysisId,
+              repositoryId: dummyRepoTask.repository.id,
+            }),
+          );
+        });
+
+        it("should not cache when skipCacheStore is given", async () => {
+          await variantAnalysisResultsManager.loadResults(
+            variantAnalysisId,
+            variantAnalysisStoragePath,
+            dummyRepoTask.repository.fullName,
+            {
+              skipCacheStore: true,
+            },
+          );
+
+          // Delete the directory so it can't read from disk
+          fs.rmSync(variantAnalysisStoragePath, { recursive: true });
+
+          await expect(
+            variantAnalysisResultsManager.loadResults(
+              variantAnalysisId,
+              variantAnalysisStoragePath,
+              dummyRepoTask.repository.fullName,
+            ),
+          ).rejects.toThrow("Variant analysis results not downloaded");
+
+          expect(onResultLoadedSpy).not.toHaveBeenCalled();
+        });
+
+        it("should use cache when skipCacheStore is given", async () => {
+          // Load into cache
+          await variantAnalysisResultsManager.loadResults(
+            variantAnalysisId,
+            variantAnalysisStoragePath,
+            dummyRepoTask.repository.fullName,
+          );
+
+          // Delete the directory so it can't read from disk
+          fs.rmSync(variantAnalysisStoragePath, { recursive: true });
+
+          await expect(
+            variantAnalysisResultsManager.loadResults(
+              variantAnalysisId,
+              variantAnalysisStoragePath,
+              dummyRepoTask.repository.fullName,
+              {
+                skipCacheStore: true,
+              },
+            ),
+          ).resolves.toHaveProperty("interpretedResults");
         });
       });
     });
