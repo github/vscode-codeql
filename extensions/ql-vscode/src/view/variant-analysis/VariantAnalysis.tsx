@@ -137,6 +137,9 @@ export function VariantAnalysis({
     return <VariantAnalysisLoading />;
   }
 
+  const onViewLogsClick =
+    variantAnalysis.actionsWorkflowRunId === undefined ? undefined : openLogs;
+
   return (
     <>
       <VariantAnalysisHeader
@@ -146,7 +149,7 @@ export function VariantAnalysis({
         onStopQueryClick={stopQuery}
         onCopyRepositoryListClick={copyRepositoryList}
         onExportResultsClick={exportResults}
-        onViewLogsClick={openLogs}
+        onViewLogsClick={onViewLogsClick}
       />
       <VariantAnalysisOutcomePanels
         variantAnalysis={variantAnalysis}
