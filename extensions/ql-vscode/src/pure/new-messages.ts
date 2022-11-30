@@ -167,7 +167,6 @@ export type ProgressMessage = shared.ProgressMessage;
 export const clearCache = new rpc.RequestType<
   WithProgressId<ClearCacheParams>,
   ClearCacheResult,
-  void,
   void
 >("evaluation/clearCache");
 /**
@@ -176,7 +175,6 @@ export const clearCache = new rpc.RequestType<
 export const trimCache = new rpc.RequestType<
   WithProgressId<TrimCacheParams>,
   ClearCacheResult,
-  void,
   void
 >("evaluation/trimCache");
 
@@ -186,7 +184,6 @@ export const trimCache = new rpc.RequestType<
 export const clearPackCache = new rpc.RequestType<
   WithProgressId<ClearPackCacheParams>,
   ClearPackCacheResult,
-  void,
   void
 >("evaluation/clearPackCache");
 
@@ -196,28 +193,24 @@ export const clearPackCache = new rpc.RequestType<
 export const runQuery = new rpc.RequestType<
   WithProgressId<RunQueryParams>,
   RunQueryResult,
-  void,
   void
 >("evaluation/runQuery");
 
 export const registerDatabases = new rpc.RequestType<
   WithProgressId<RegisterDatabasesParams>,
   RegisterDatabasesResult,
-  void,
   void
 >("evaluation/registerDatabases");
 
 export const deregisterDatabases = new rpc.RequestType<
   WithProgressId<DeregisterDatabasesParams>,
   DeregisterDatabasesResult,
-  void,
   void
 >("evaluation/deregisterDatabases");
 
 export const upgradeDatabase = new rpc.RequestType<
   WithProgressId<UpgradeParams>,
   UpgradeResult,
-  void,
   void
 >("evaluation/runUpgrade");
 

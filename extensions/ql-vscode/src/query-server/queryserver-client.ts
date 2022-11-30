@@ -3,7 +3,7 @@ import * as fs from "fs-extra";
 
 import { DisposableObject } from "../pure/disposable-object";
 import { CancellationToken, commands } from "vscode";
-import { createMessageConnection, RequestType } from "vscode-jsonrpc";
+import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
 import * as cli from "../cli";
 import { QueryServerConfig } from "../config";
 import { Logger, ProgressReporter } from "../logging";
@@ -201,8 +201,8 @@ export class QueryServerClient extends DisposableObject {
     return this.serverProcess!.child.pid || 0;
   }
 
-  async sendRequest<P, R, E, RO>(
-    type: RequestType<WithProgressId<P>, R, E, RO>,
+  async sendRequest<P, R, E>(
+    type: RequestType<WithProgressId<P>, R, E>,
     parameter: P,
     token?: CancellationToken,
     progress?: (res: ProgressMessage) => void,
