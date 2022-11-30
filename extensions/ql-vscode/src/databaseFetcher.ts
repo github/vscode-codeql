@@ -1,10 +1,18 @@
 import fetch, { Response } from "node-fetch";
 import { zip } from "zip-a-folder";
-import * as unzipper from "unzipper";
+import { Open } from "unzipper";
 import { Uri, CancellationToken, commands, window } from "vscode";
 import { CodeQLCliServer } from "./cli";
-import * as fs from "fs-extra";
-import * as path from "path";
+import {
+  ensureDir,
+  realpath as fs_realpath,
+  pathExists,
+  createWriteStream,
+  remove,
+  stat,
+  readdir,
+} from "fs-extra";
+import { basename, join } from "path";
 import * as Octokit from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 
@@ -284,7 +292,7 @@ async function databaseArchiveFetcher(
   if (!storagePath) {
     throw new Error("No storage path specified.");
   }
-  await fs.ensureDir(storagePath);
+  await ensureDir(storagePath);
   const unzipPath = await getStorageFolder(storagePath, databaseUrl);
 
   if (isFile(databaseUrl)) {
@@ -333,19 +341,19 @@ async function getStorageFolder(storagePath: string, urlStr: string) {
   const url = Uri.parse(urlStr);
   // MacOS has a max filename length of 255
   // and remove a few extra chars in case we need to add a counter at the end.
-  let lastName = path.basename(url.path).substring(0, 250);
+  let lastName = basename(url.path).substring(0, 250);
   if (lastName.endsWith(".zip")) {
     lastName = lastName.substring(0, lastName.length - 4);
   }
 
-  const realpath = await fs.realpath(storagePath);
-  let folderName = path.join(realpath, lastName);
+  const realpath = await fs_realpath(storagePath);
+  let folderName = join(realpath, lastName);
 
   // avoid overwriting existing folders
   let counter = 0;
-  while (await fs.pathExists(folderName)) {
+  while (await pathExists(folderName)) {
     counter++;
-    folderName = path.join(realpath, `${lastName}-${counter}`);
+    folderName = join(realpath, `${lastName}-${counter}`);
     if (counter > 100) {
       throw new Error("Could not find a unique name for downloaded database.");
     }
@@ -378,7 +386,7 @@ async function readAndUnzip(
   progress?.({
     maxStep: 10,
     step: 9,
-    message: `Unzipping into ${path.basename(unzipPath)}`,
+    message: `Unzipping into ${basename(unzipPath)}`,
   });
   if (cli && (await cli.cliConstraints.supportsDatabaseUnbundle())) {
     // Use the `database unbundle` command if the installed cli version supports it
@@ -387,7 +395,7 @@ async function readAndUnzip(
     // Must get the zip central directory since streaming the
     // zip contents may not have correct local file headers.
     // Instead, we can only rely on the central directory.
-    const directory = await unzipper.Open.file(zipFile);
+    const directory = await Open.file(zipFile);
     await directory.extract({ path: unzipPath });
   }
 }
@@ -405,7 +413,7 @@ async function fetchAndUnzip(
   // file headers may be incorrect. Additionally, saving to file first will reduce memory
   // pressure compared with unzipping while downloading the archive.
 
-  const archivePath = path.join(tmpDir.name, `archive-${Date.now()}.zip`);
+  const archivePath = join(tmpDir.name, `archive-${Date.now()}.zip`);
 
   progress?.({
     maxStep: 3,
@@ -417,7 +425,7 @@ async function fetchAndUnzip(
     await fetch(databaseUrl, { headers: requestHeaders }),
     "Error downloading database",
   );
-  const archiveFileStream = fs.createWriteStream(archivePath);
+  const archiveFileStream = createWriteStream(archivePath);
 
   const contentLength = response.headers.get("content-length");
   const totalNumBytes = contentLength ? parseInt(contentLength, 10) : undefined;
@@ -443,7 +451,7 @@ async function fetchAndUnzip(
   );
 
   // remove archivePath eagerly since these archives can be large.
-  await fs.remove(archivePath);
+  await remove(archivePath);
 }
 
 async function checkForFailingResponse(
@@ -484,15 +492,15 @@ export async function findDirWithFile(
   dir: string,
   ...toFind: string[]
 ): Promise<string | undefined> {
-  if (!(await fs.stat(dir)).isDirectory()) {
+  if (!(await stat(dir)).isDirectory()) {
     return;
   }
-  const files = await fs.readdir(dir);
+  const files = await readdir(dir);
   if (toFind.some((file) => files.includes(file))) {
     return dir;
   }
   for (const file of files) {
-    const newPath = path.join(dir, file);
+    const newPath = join(dir, file);
     const result = await findDirWithFile(newPath, ...toFind);
     if (result) {
       return result;
@@ -744,14 +752,11 @@ async function promptForLanguage(
  * @param databasePath The full path to the unzipped database
  */
 async function ensureZippedSourceLocation(databasePath: string): Promise<void> {
-  const srcFolderPath = path.join(databasePath, "src");
+  const srcFolderPath = join(databasePath, "src");
   const srcZipPath = srcFolderPath + ".zip";
 
-  if (
-    (await fs.pathExists(srcFolderPath)) &&
-    !(await fs.pathExists(srcZipPath))
-  ) {
+  if ((await pathExists(srcFolderPath)) && !(await pathExists(srcZipPath))) {
     await zip(srcFolderPath, srcZipPath);
-    await fs.remove(srcFolderPath);
+    await remove(srcFolderPath);
   }
 }

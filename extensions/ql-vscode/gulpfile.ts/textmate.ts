@@ -1,6 +1,6 @@
-import * as gulp from "gulp";
-import * as jsYaml from "js-yaml";
-import * as through from "through2";
+import { src, dest } from "gulp";
+import { load } from "js-yaml";
+import { obj } from "through2";
 import * as PluginError from "plugin-error";
 import * as Vinyl from "vinyl";
 
@@ -219,7 +219,7 @@ function transformFile(yaml: any) {
 }
 
 export function transpileTextMateGrammar() {
-  return through.obj(
+  return obj(
     (
       file: Vinyl,
       _encoding: string,
@@ -230,7 +230,7 @@ export function transpileTextMateGrammar() {
       } else if (file.isBuffer()) {
         const buf: Buffer = file.contents;
         const yamlText: string = buf.toString("utf8");
-        const jsonData: any = jsYaml.load(yamlText);
+        const jsonData: any = load(yamlText);
         transformFile(jsonData);
 
         file.contents = Buffer.from(JSON.stringify(jsonData, null, 2), "utf8");
@@ -247,8 +247,7 @@ export function transpileTextMateGrammar() {
 }
 
 export function compileTextMateGrammar() {
-  return gulp
-    .src("syntaxes/*.tmLanguage.yml")
+  return src("syntaxes/*.tmLanguage.yml")
     .pipe(transpileTextMateGrammar())
-    .pipe(gulp.dest("out/syntaxes"));
+    .pipe(dest("out/syntaxes"));
 }

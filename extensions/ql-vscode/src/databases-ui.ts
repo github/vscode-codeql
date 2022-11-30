@@ -1,4 +1,4 @@
-import * as path from "path";
+import { join, basename, dirname as path_dirname } from "path";
 import { DisposableObject } from "./pure/disposable-object";
 import {
   Event,
@@ -11,7 +11,7 @@ import {
   env,
   CancellationToken,
 } from "vscode";
-import * as fs from "fs-extra";
+import { pathExists, stat, readdir, remove } from "fs-extra";
 
 import {
   DatabaseChangedEvent,
@@ -61,10 +61,10 @@ function joinThemableIconPath(
 ): ThemableIconPath {
   if (typeof iconPath == "object")
     return {
-      light: path.join(base, iconPath.light),
-      dark: path.join(base, iconPath.dark),
+      light: join(base, iconPath.light),
+      dark: join(base, iconPath.dark),
     };
-  else return path.join(base, iconPath);
+  else return join(base, iconPath);
 }
 
 enum SortOrder {
@@ -397,8 +397,8 @@ export class DatabaseUI extends DisposableObject {
     let dbDirs = undefined;
 
     if (
-      !(await fs.pathExists(this.storagePath)) ||
-      !(await fs.stat(this.storagePath)).isDirectory()
+      !(await pathExists(this.storagePath)) ||
+      !(await stat(this.storagePath)).isDirectory()
     ) {
       void extLogger.log(
         "Missing or invalid storage directory. Not trying to remove orphaned databases.",
@@ -408,11 +408,11 @@ export class DatabaseUI extends DisposableObject {
 
     dbDirs =
       // read directory
-      (await fs.readdir(this.storagePath, { withFileTypes: true }))
+      (await readdir(this.storagePath, { withFileTypes: true }))
         // remove non-directories
         .filter((dirent) => dirent.isDirectory())
         // get the full path
-        .map((dirent) => path.join(this.storagePath, dirent.name))
+        .map((dirent) => join(this.storagePath, dirent.name))
         // remove databases still in workspace
         .filter((dbDir) => {
           const dbUri = Uri.file(dbDir);
@@ -435,15 +435,15 @@ export class DatabaseUI extends DisposableObject {
       dbDirs.map(async (dbDir) => {
         try {
           void extLogger.log(`Deleting orphaned database '${dbDir}'.`);
-          await fs.remove(dbDir);
+          await remove(dbDir);
         } catch (e) {
-          failures.push(`${path.basename(dbDir)}`);
+          failures.push(`${basename(dbDir)}`);
         }
       }),
     );
 
     if (failures.length) {
-      const dirname = path.dirname(failures[0]);
+      const dirname = path_dirname(failures[0]);
       void showAndLogErrorMessage(
         `Failed to delete unused databases (${failures.join(
           ", ",
@@ -620,7 +620,7 @@ export class DatabaseUI extends DisposableObject {
     } catch (e) {
       // rethrow and let this be handled by default error handling.
       throw new Error(
-        `Could not set database to ${path.basename(
+        `Could not set database to ${basename(
           uri.fsPath,
         )}. Reason: ${getErrorMessage(e)}`,
       );
@@ -774,12 +774,12 @@ export class DatabaseUI extends DisposableObject {
    */
   private async fixDbUri(uri: Uri): Promise<Uri> {
     let dbPath = uri.fsPath;
-    if ((await fs.stat(dbPath)).isFile()) {
-      dbPath = path.dirname(dbPath);
+    if ((await stat(dbPath)).isFile()) {
+      dbPath = path_dirname(dbPath);
     }
 
     if (await isLikelyDbLanguageFolder(dbPath)) {
-      dbPath = path.dirname(dbPath);
+      dbPath = path_dirname(dbPath);
     }
     return Uri.file(dbPath);
   }

@@ -1,7 +1,7 @@
-import * as crypto from "crypto";
-import * as fs from "fs-extra";
+import { createHash } from "crypto";
+import { readFile } from "fs-extra";
 import * as tmp from "tmp-promise";
-import * as path from "path";
+import { basename, join } from "path";
 import { CancellationToken, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 
@@ -257,9 +257,8 @@ async function checkDbschemeCompatibility(
       false,
     );
     const hash = async function (filename: string): Promise<string> {
-      return crypto
-        .createHash("sha256")
-        .update(await fs.readFile(filename))
+      return createHash("sha256")
+        .update(await readFile(filename))
         .digest("hex");
     };
 
@@ -379,14 +378,14 @@ export async function compileAndRunQueryAgainstDatabase(
   // database. (Queries that merely need the database to be upgraded
   // won't trigger this check)
   // This test will produce confusing results if we ever change the name of the database schema files.
-  const querySchemaName = path.basename(packConfig.dbscheme);
-  const dbSchemaName = path.basename(dbItem.contents.dbSchemeUri.fsPath);
+  const querySchemaName = basename(packConfig.dbscheme);
+  const dbSchemaName = basename(dbItem.contents.dbSchemeUri.fsPath);
   if (querySchemaName != dbSchemaName) {
     void extLogger.log(
       `Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`,
     );
     throw new Error(
-      `The query ${path.basename(
+      `The query ${basename(
         initialInfo.queryPath,
       )} cannot be run against the selected database (${
         dbItem.name
@@ -441,7 +440,7 @@ export async function compileAndRunQueryAgainstDatabase(
 
   const hasMetadataFile = await dbItem.hasMetadataFile();
   const query = new QueryInProgress(
-    path.join(queryStorageDir, initialInfo.id),
+    join(queryStorageDir, initialInfo.id),
     dbItem.databaseUri.fsPath,
     hasMetadataFile,
     packConfig.dbscheme,

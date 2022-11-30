@@ -1,9 +1,9 @@
-import * as os from "os";
+import { EOL } from "os";
 import { Credentials } from "../authentication";
 import { RepositorySelection } from "./repository-selection";
 import { Repository } from "./shared/repository";
 import { RemoteQueriesResponse } from "./gh-api/remote-queries";
-import * as ghApiClient from "./gh-api/gh-api-client";
+import { submitRemoteQueries } from "./gh-api/gh-api-client";
 import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
@@ -20,7 +20,7 @@ export async function runRemoteQueriesApiRequest(
   queryPackBase64: string,
 ): Promise<void | RemoteQueriesResponse> {
   try {
-    const response = await ghApiClient.submitRemoteQueries(credentials, {
+    const response = await submitRemoteQueries(credentials, {
       ref,
       language,
       repositories: repoSelection.repositories,
@@ -48,8 +48,8 @@ export async function runRemoteQueriesApiRequest(
   }
 }
 
-const eol = os.EOL;
-const eol2 = os.EOL + os.EOL;
+const eol = EOL;
+const eol2 = EOL + EOL;
 
 // exported for testing only
 export function parseResponse(

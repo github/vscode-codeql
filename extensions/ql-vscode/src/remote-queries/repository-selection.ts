@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import { pathExists as fs_pathExists, stat, readFile } from "fs-extra";
 import { QuickPickItem, window } from "vscode";
 import { extLogger } from "../common";
 import {
@@ -144,12 +144,12 @@ async function readExternalRepoLists(): Promise<RepoList[]> {
 }
 
 async function validateExternalRepoListsFile(path: string): Promise<void> {
-  const pathExists = await fs.pathExists(path);
+  const pathExists = await fs_pathExists(path);
   if (!pathExists) {
     throw Error(`External repository lists file does not exist at ${path}`);
   }
 
-  const pathStat = await fs.stat(path);
+  const pathStat = await stat(path);
   if (pathStat.isDirectory()) {
     throw Error(
       "External repository lists path should not point to a directory",
@@ -163,7 +163,7 @@ async function readExternalRepoListsJson(
   let json;
 
   try {
-    const fileContents = await fs.readFile(path, "utf8");
+    const fileContents = await readFile(path, "utf8");
     json = await JSON.parse(fileContents);
   } catch (error) {
     throw Error("Invalid repository lists file. It should contain valid JSON.");

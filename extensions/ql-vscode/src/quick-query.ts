@@ -1,6 +1,6 @@
-import * as fs from "fs-extra";
-import * as yaml from "js-yaml";
-import * as path from "path";
+import { ensureDir, writeFile, pathExists, readFile } from "fs-extra";
+import { dump, load } from "js-yaml";
+import { basename, join } from "path";
 import {
   CancellationToken,
   ExtensionContext,
@@ -26,7 +26,7 @@ const QUICK_QUERY_WORKSPACE_FOLDER_NAME = "Quick Queries";
 const QLPACK_FILE_HEADER = "# This is an automatically generated file.\n\n";
 
 export function isQuickQueryPath(queryPath: string): boolean {
-  return path.basename(queryPath) === QUICK_QUERY_QUERY_NAME;
+  return basename(queryPath) === QUICK_QUERY_QUERY_NAME;
 }
 
 async function getQuickQueriesDir(ctx: ExtensionContext): Promise<string> {
@@ -34,8 +34,8 @@ async function getQuickQueriesDir(ctx: ExtensionContext): Promise<string> {
   if (storagePath === undefined) {
     throw new Error("Workspace storage path is undefined");
   }
-  const queriesPath = path.join(storagePath, QUICK_QUERIES_DIR_NAME);
-  await fs.ensureDir(queriesPath, { mode: 0o700 });
+  const queriesPath = join(storagePath, QUICK_QUERIES_DIR_NAME);
+  await ensureDir(queriesPath, { mode: 0o700 });
   return queriesPath;
 }
 
@@ -48,8 +48,7 @@ function updateQuickQueryDir(queriesDir: string, index: number, len: number) {
 
 function findExistingQuickQueryEditor() {
   return Window.visibleTextEditors.find(
-    (editor) =>
-      path.basename(editor.document.uri.fsPath) === QUICK_QUERY_QUERY_NAME,
+    (editor) => basename(editor.document.uri.fsPath) === QUICK_QUERY_QUERY_NAME,
   );
 }
 
@@ -113,8 +112,8 @@ export async function displayQuickQuery(
     const dbscheme = await getPrimaryDbscheme(datasetFolder);
     const qlpack = (await getQlPackForDbscheme(cliServer, dbscheme))
       .dbschemePack;
-    const qlPackFile = path.join(queriesDir, "qlpack.yml");
-    const qlFile = path.join(queriesDir, QUICK_QUERY_QUERY_NAME);
+    const qlPackFile = join(queriesDir, "qlpack.yml");
+    const qlFile = join(queriesDir, QUICK_QUERY_QUERY_NAME);
     const shouldRewrite = await checkShouldRewrite(qlPackFile, qlpack);
 
     // Only rewrite the qlpack file if the database has changed
@@ -126,15 +125,15 @@ export async function displayQuickQuery(
           [qlpack]: "*",
         },
       };
-      await fs.writeFile(
+      await writeFile(
         qlPackFile,
-        QLPACK_FILE_HEADER + yaml.dump(quickQueryQlpackYaml),
+        QLPACK_FILE_HEADER + dump(quickQueryQlpackYaml),
         "utf8",
       );
     }
 
-    if (shouldRewrite || !(await fs.pathExists(qlFile))) {
-      await fs.writeFile(
+    if (shouldRewrite || !(await pathExists(qlFile))) {
+      await writeFile(
         qlFile,
         getInitialQueryContents(dbItem.language, dbscheme),
         "utf8",
@@ -160,9 +159,9 @@ export async function displayQuickQuery(
 }
 
 async function checkShouldRewrite(qlPackFile: string, newDependency: string) {
-  if (!(await fs.pathExists(qlPackFile))) {
+  if (!(await pathExists(qlPackFile))) {
     return true;
   }
-  const qlPackContents: any = yaml.load(await fs.readFile(qlPackFile, "utf8"));
+  const qlPackContents: any = load(await readFile(qlPackFile, "utf8"));
   return !qlPackContents.dependencies?.[newDependency];
 }

@@ -6,7 +6,7 @@ import {
   workspace,
   commands,
 } from "vscode";
-import * as path from "path";
+import { basename } from "path";
 
 import {
   ToRemoteQueriesMessage,
@@ -87,7 +87,7 @@ export class RemoteQueriesView extends AbstractWebview<
     query: RemoteQuery,
     queryResult: RemoteQueryResult,
   ): RemoteQueryResultViewModel {
-    const queryFileName = path.basename(query.queryFilePath);
+    const queryFileName = basename(query.queryFilePath);
     const totalResultCount = sumAnalysisSummariesResults(
       queryResult.analysisSummaries,
     );

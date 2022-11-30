@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fs from "fs-extra";
+import { join } from "path";
+import { readJsonSync } from "fs-extra";
 
 type CmdDecl = {
   command: string;
@@ -8,7 +8,7 @@ type CmdDecl = {
 };
 
 describe("commands declared in package.json", () => {
-  const manifest = fs.readJsonSync(path.join(__dirname, "../../package.json"));
+  const manifest = readJsonSync(join(__dirname, "../../package.json"));
   const commands = manifest.contributes.commands;
   const menus = manifest.contributes.menus;
 

@@ -1,4 +1,4 @@
-import * as path from "path";
+import { join, dirname } from "path";
 import {
   commands,
   Disposable,
@@ -48,7 +48,7 @@ import {
   variantAnalysisStatusToQueryStatus,
 } from "./query-status";
 import { slurpQueryHistory, splatQueryHistory } from "./query-serialization";
-import * as fs from "fs-extra";
+import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "./cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
 import { Credentials } from "./authentication";
@@ -167,15 +167,12 @@ export class HistoryTreeDataProvider
     private readonly labelProvider: HistoryItemLabelProvider,
   ) {
     super();
-    this.failedIconPath = path.join(
-      extensionPath,
-      FAILED_QUERY_HISTORY_ITEM_ICON,
-    );
-    this.localSuccessIconPath = path.join(
+    this.failedIconPath = join(extensionPath, FAILED_QUERY_HISTORY_ITEM_ICON);
+    this.localSuccessIconPath = join(
       extensionPath,
       LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON,
     );
-    this.remoteSuccessIconPath = path.join(
+    this.remoteSuccessIconPath = join(
       extensionPath,
       REMOTE_SUCCESS_QUERY_HISTORY_ITEM_ICON,
     );
@@ -414,7 +411,7 @@ export class QueryHistoryManager extends DisposableObject {
     // This is because the query history is specific to each workspace.
     // For situations where `ctx.storageUri` is undefined (i.e., there is no workspace),
     // we default to global storage.
-    this.queryMetadataStorageLocation = path.join(
+    this.queryMetadataStorageLocation = join(
       (ctx.storageUri || ctx.globalStorageUri).fsPath,
       WORKSPACE_QUERY_HISTORY_FILE,
     );
@@ -877,7 +874,7 @@ export class QueryHistoryManager extends DisposableObject {
         if (
           item.t == "local" &&
           item.completedQuery &&
-          !(await fs.pathExists(item.completedQuery?.query.querySaveDir))
+          !(await pathExists(item.completedQuery?.query.querySaveDir))
         ) {
           this.treeDataProvider.remove(item);
           item.completedQuery?.dispose();
@@ -1109,7 +1106,7 @@ export class QueryHistoryManager extends DisposableObject {
         return queryHistoryItem.completedQuery.query.querySaveDir;
       }
     } else if (queryHistoryItem.t === "remote") {
-      return path.join(this.queryStorageDir, queryHistoryItem.queryId);
+      return join(this.queryStorageDir, queryHistoryItem.queryId);
     } else if (queryHistoryItem.t === "variant-analysis") {
       return this.variantAnalysisManager.getVariantAnalysisStorageLocation(
         queryHistoryItem.variantAnalysis.id,
@@ -1135,19 +1132,19 @@ export class QueryHistoryManager extends DisposableObject {
     let externalFilePath: string | undefined;
     if (finalSingleItem.t === "local") {
       if (finalSingleItem.completedQuery) {
-        externalFilePath = path.join(
+        externalFilePath = join(
           finalSingleItem.completedQuery.query.querySaveDir,
           "timestamp",
         );
       }
     } else if (finalSingleItem.t === "remote") {
-      externalFilePath = path.join(
+      externalFilePath = join(
         this.queryStorageDir,
         finalSingleItem.queryId,
         "timestamp",
       );
     } else if (finalSingleItem.t === "variant-analysis") {
-      externalFilePath = path.join(
+      externalFilePath = join(
         this.variantAnalysisManager.getVariantAnalysisStorageLocation(
           finalSingleItem.variantAnalysis.id,
         ),
@@ -1156,11 +1153,11 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (externalFilePath) {
-      if (!(await fs.pathExists(externalFilePath))) {
+      if (!(await pathExists(externalFilePath))) {
         // timestamp file is missing (manually deleted?) try selecting the parent folder.
         // It's less nice, but at least it will work.
-        externalFilePath = path.dirname(externalFilePath);
-        if (!(await fs.pathExists(externalFilePath))) {
+        externalFilePath = dirname(externalFilePath);
+        if (!(await pathExists(externalFilePath))) {
           throw new Error(
             `Query directory does not exist: ${externalFilePath}`,
           );
@@ -1248,7 +1245,7 @@ export class QueryHistoryManager extends DisposableObject {
     // Summary log file doesn't exist.
     if (
       finalSingleItem.evalLogLocation &&
-      (await fs.pathExists(finalSingleItem.evalLogLocation))
+      (await pathExists(finalSingleItem.evalLogLocation))
     ) {
       // If raw log does exist, then the summary log is still being generated.
       this.warnInProgressEvalLogSummary();

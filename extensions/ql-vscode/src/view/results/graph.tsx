@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as d3 from "d3";
+import { select } from "d3";
 import { ResultTableProps, jumpToLocation } from "./result-table-utils";
 import {
   InterpretedResultSet,
@@ -87,7 +87,7 @@ export class Graph extends React.Component<GraphProps> {
             d.attributes["xlink:href"] = "#";
             d.attributes["href"] = "#";
             loc.uri = "file://" + loc.uri;
-            d3.select(this).on("click", function (e) {
+            select(this).on("click", function (e) {
               jumpToLocation(loc, databaseUri);
             });
           }

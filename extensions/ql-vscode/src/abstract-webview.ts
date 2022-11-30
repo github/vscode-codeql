@@ -7,7 +7,7 @@ import {
   WebviewPanelOptions,
   WebviewOptions,
 } from "vscode";
-import * as path from "path";
+import { join } from "path";
 
 import { DisposableObject, DisposeHandler } from "./pure/disposable-object";
 import { tmpDir } from "./helpers";
@@ -83,7 +83,7 @@ export abstract class AbstractWebview<
           localResourceRoots: [
             ...(config.additionalOptions?.localResourceRoots ?? []),
             Uri.file(tmpDir.name),
-            Uri.file(path.join(ctx.extensionPath, "out")),
+            Uri.file(join(ctx.extensionPath, "out")),
           ],
         },
       );

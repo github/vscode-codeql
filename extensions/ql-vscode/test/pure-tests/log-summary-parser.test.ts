@@ -1,11 +1,11 @@
-import * as path from "path";
+import { join } from "path";
 
 import { parseViewerData } from "../../src/pure/log-summary-parser";
 
 describe("Evaluator log summary tests", () => {
   describe("for a valid summary text", () => {
     it("should return only valid EvalLogData objects", async () => {
-      const validSummaryPath = path.join(
+      const validSummaryPath = join(
         __dirname,
         "evaluator-log-summaries/valid-summary.jsonl",
       );
@@ -27,7 +27,7 @@ describe("Evaluator log summary tests", () => {
     });
 
     it("should not parse a summary header object", async () => {
-      const invalidHeaderPath = path.join(
+      const invalidHeaderPath = join(
         __dirname,
         "evaluator-log-summaries/invalid-header.jsonl",
       );
@@ -36,7 +36,7 @@ describe("Evaluator log summary tests", () => {
     });
 
     it("should not parse a log event missing RA or millis fields", async () => {
-      const invalidSummaryPath = path.join(
+      const invalidSummaryPath = join(
         __dirname,
         "evaluator-log-summaries/invalid-summary.jsonl",
       );

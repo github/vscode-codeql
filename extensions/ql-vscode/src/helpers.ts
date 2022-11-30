@@ -1,8 +1,15 @@
-import * as fs from "fs-extra";
+import {
+  ensureDirSync,
+  readFile,
+  pathExists,
+  ensureDir,
+  writeFile,
+  opendir,
+} from "fs-extra";
 import * as glob from "glob-promise";
-import * as yaml from "js-yaml";
-import * as path from "path";
-import * as tmp from "tmp-promise";
+import { load } from "js-yaml";
+import { join, basename } from "path";
+import { dirSync } from "tmp-promise";
 import {
   ExtensionContext,
   Uri,
@@ -16,13 +23,13 @@ import { extLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
 
 // Shared temporary folder for the extension.
-export const tmpDir = tmp.dirSync({
+export const tmpDir = dirSync({
   prefix: "queries_",
   keep: false,
   unsafeCleanup: true,
 });
-export const upgradesTmpDir = path.join(tmpDir.name, "upgrades");
-fs.ensureDirSync(upgradesTmpDir);
+export const upgradesTmpDir = join(tmpDir.name, "upgrades");
+ensureDirSync(upgradesTmpDir);
 
 export const tmpDirDisposal = {
   dispose: () => {
@@ -360,12 +367,12 @@ async function findDbschemePack(
 ): Promise<{ name: string; isLibraryPack: boolean }> {
   for (const { packDir, packName } of packs) {
     if (packDir !== undefined) {
-      const qlpack = yaml.load(
-        await fs.readFile(path.join(packDir, "qlpack.yml"), "utf8"),
+      const qlpack = load(
+        await readFile(join(packDir, "qlpack.yml"), "utf8"),
       ) as { dbscheme?: string; library?: boolean };
       if (
         qlpack.dbscheme !== undefined &&
-        path.basename(qlpack.dbscheme) === path.basename(dbschemePath)
+        basename(qlpack.dbscheme) === basename(dbschemePath)
       ) {
         return {
           name: packName,
@@ -432,7 +439,7 @@ export async function getQlPackForDbscheme(
 export async function getPrimaryDbscheme(
   datasetFolder: string,
 ): Promise<string> {
-  const dbschemes = await glob(path.join(datasetFolder, "*.dbscheme"));
+  const dbschemes = await glob(join(datasetFolder, "*.dbscheme"));
 
   if (dbschemes.length < 1) {
     throw new Error(
@@ -568,9 +575,7 @@ export const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce(
  */
 export function getInitialQueryContents(language: string, dbscheme: string) {
   if (!language) {
-    const dbschemeBase = path.basename(
-      dbscheme,
-    ) as keyof typeof dbSchemeToLanguage;
+    const dbschemeBase = basename(dbscheme) as keyof typeof dbSchemeToLanguage;
     language = dbSchemeToLanguage[dbschemeBase];
   }
 
@@ -586,8 +591,8 @@ export function getInitialQueryContents(language: string, dbscheme: string) {
 export async function isLikelyDatabaseRoot(maybeRoot: string) {
   const [a, b, c] = await Promise.all([
     // databases can have either .dbinfo or codeql-database.yml.
-    fs.pathExists(path.join(maybeRoot, ".dbinfo")),
-    fs.pathExists(path.join(maybeRoot, "codeql-database.yml")),
+    pathExists(join(maybeRoot, ".dbinfo")),
+    pathExists(join(maybeRoot, "codeql-database.yml")),
 
     // they *must* have a db-{language} folder
     glob("db-*/", { cwd: maybeRoot }),
@@ -601,8 +606,7 @@ export async function isLikelyDatabaseRoot(maybeRoot: string) {
  */
 export async function isLikelyDbLanguageFolder(dbPath: string) {
   return (
-    path.basename(dbPath).startsWith("db-") &&
-    !(await isLikelyDatabaseRoot(dbPath))
+    basename(dbPath).startsWith("db-") && !(await isLikelyDatabaseRoot(dbPath))
   );
 }
 
@@ -686,9 +690,9 @@ export async function tryGetQueryMetadata(
  * It does not need to exist.
  */
 export async function createTimestampFile(storagePath: string) {
-  const timestampPath = path.join(storagePath, "timestamp");
-  await fs.ensureDir(storagePath);
-  await fs.writeFile(timestampPath, Date.now().toString(), "utf8");
+  const timestampPath = join(storagePath, "timestamp");
+  await ensureDir(storagePath);
+  await writeFile(timestampPath, Date.now().toString(), "utf8");
 }
 
 /**
@@ -703,8 +707,8 @@ export async function* walkDirectory(
   dir: string,
 ): AsyncIterableIterator<string> {
   const seenFiles = new Set<string>();
-  for await (const d of await fs.opendir(dir)) {
-    const entry = path.join(dir, d.name);
+  for await (const d of await opendir(dir)) {
+    const entry = join(dir, d.name);
     seenFiles.add(entry);
     if (d.isDirectory()) {
       yield* walkDirectory(entry);

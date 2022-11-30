@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { readFileSync } from "fs-extra";
+import { join } from "path";
 import { ConfigurationTarget } from "vscode";
 import { ALL_SETTINGS, InspectionResult, Setting } from "../config";
 
@@ -87,7 +87,7 @@ const PKG_CONFIGURATION: Record<string, any> =
     // Note we are using synchronous file reads here. This is fine because
     // we are in tests.
     const pkg = JSON.parse(
-      fs.readFileSync(path.join(__dirname, "../../package.json"), "utf-8"),
+      readFileSync(join(__dirname, "../../package.json"), "utf-8"),
     );
     return pkg.contributes.configuration.properties;
   })();

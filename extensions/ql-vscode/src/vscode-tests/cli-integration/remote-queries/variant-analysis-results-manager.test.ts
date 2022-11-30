@@ -3,7 +3,7 @@ import { CodeQLExtensionInterface } from "../../../extension";
 import { extLogger } from "../../../common";
 import { Credentials } from "../../../authentication";
 import * as fs from "fs-extra";
-import * as path from "path";
+import { join } from "path";
 
 import { VariantAnalysisResultsManager } from "../../../remote-queries/variant-analysis-results-manager";
 import { CodeQLCliServer } from "../../../cli";
@@ -57,7 +57,7 @@ describe(VariantAnalysisResultsManager.name, () => {
 
       dummyRepoTask = createMockVariantAnalysisRepositoryTask();
 
-      variantAnalysisStoragePath = path.join(
+      variantAnalysisStoragePath = join(
         storagePath,
         variantAnalysisId.toString(),
       );
@@ -109,7 +109,7 @@ describe(VariantAnalysisResultsManager.name, () => {
       >;
 
       beforeEach(async () => {
-        const sourceFilePath = path.join(
+        const sourceFilePath = join(
           __dirname,
           "../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip",
         );

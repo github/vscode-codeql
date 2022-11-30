@@ -1,5 +1,5 @@
 import { env } from "vscode";
-import * as path from "path";
+import { basename } from "path";
 import { QueryHistoryConfig } from "./config";
 import { LocalQueryInfo } from "./query-results";
 import {
@@ -106,7 +106,7 @@ export class HistoryItemLabelProvider {
       d: buildRepoLabel(item),
       r: resultCount,
       s: humanizeQueryStatus(item.status),
-      f: path.basename(item.remoteQuery.queryFilePath),
+      f: basename(item.remoteQuery.queryFilePath),
       "%": "%",
     };
   }
@@ -125,7 +125,7 @@ export class HistoryItemLabelProvider {
       d: buildRepoLabel(item),
       r: resultCount,
       s: humanizeQueryStatus(item.status),
-      f: path.basename(item.variantAnalysis.query.filePath),
+      f: basename(item.variantAnalysis.query.filePath),
       "%": "%",
     };
   }

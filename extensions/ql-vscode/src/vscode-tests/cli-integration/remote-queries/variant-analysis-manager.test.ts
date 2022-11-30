@@ -18,7 +18,7 @@ import * as ghApiClient from "../../../remote-queries/gh-api/gh-api-client";
 import * as ghActionsApiClient from "../../../remote-queries/gh-api/gh-actions-api-client";
 import { Credentials } from "../../../authentication";
 import * as fs from "fs-extra";
-import * as path from "path";
+import { join } from "path";
 
 import { VariantAnalysisManager } from "../../../remote-queries/variant-analysis-manager";
 import { CodeQLCliServer } from "../../../cli";
@@ -120,7 +120,7 @@ describe("Variant Analysis Manager", () => {
     let originalDeps: Record<string, string> | undefined;
     let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
 
-    const baseDir = path.join(
+    const baseDir = join(
       __dirname,
       "../../../../src/vscode-tests/cli-integration",
     );
@@ -129,7 +129,7 @@ describe("Variant Analysis Manager", () => {
     ).fsPath;
 
     function getFile(file: string): Uri {
-      return Uri.file(path.join(baseDir, file));
+      return Uri.file(join(baseDir, file));
     }
 
     beforeEach(async () => {
@@ -279,7 +279,7 @@ describe("Variant Analysis Manager", () => {
         expect(stub).toBeCalledTimes(1);
         expect(pathExistsStub).toHaveBeenCalledTimes(1);
         expect(pathExistsStub).toBeCalledWith(
-          path.join(storagePath, variantAnalysis.id.toString()),
+          join(storagePath, variantAnalysis.id.toString()),
         );
       });
     });
@@ -297,7 +297,7 @@ describe("Variant Analysis Manager", () => {
         ).toEqual(variantAnalysis);
 
         expect(pathExistsStub).toBeCalledWith(
-          path.join(storagePath, variantAnalysis.id.toString()),
+          join(storagePath, variantAnalysis.id.toString()),
         );
       });
 
@@ -310,11 +310,7 @@ describe("Variant Analysis Manager", () => {
 
         expect(readJsonStub).toHaveBeenCalledTimes(1);
         expect(readJsonStub).toHaveBeenCalledWith(
-          path.join(
-            storagePath,
-            variantAnalysis.id.toString(),
-            "repo_states.json",
-          ),
+          join(storagePath, variantAnalysis.id.toString(), "repo_states.json"),
         );
         expect(
           await variantAnalysisManager.getRepoStates(variantAnalysis.id),
@@ -341,11 +337,7 @@ describe("Variant Analysis Manager", () => {
 
         expect(readJsonStub).toHaveBeenCalledTimes(1);
         expect(readJsonStub).toHaveBeenCalledWith(
-          path.join(
-            storagePath,
-            variantAnalysis.id.toString(),
-            "repo_states.json",
-          ),
+          join(storagePath, variantAnalysis.id.toString(), "repo_states.json"),
         );
         expect(
           await variantAnalysisManager.getRepoStates(variantAnalysis.id),
@@ -406,7 +398,7 @@ describe("Variant Analysis Manager", () => {
       } as unknown as Credentials;
       jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
 
-      const sourceFilePath = path.join(
+      const sourceFilePath = join(
         __dirname,
         "../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip",
       );
@@ -512,7 +504,7 @@ describe("Variant Analysis Manager", () => {
           );
 
           expect(outputJsonStub).toHaveBeenCalledWith(
-            path.join(
+            join(
               storagePath,
               variantAnalysis.id.toString(),
               "repo_states.json",
@@ -565,7 +557,7 @@ describe("Variant Analysis Manager", () => {
           );
 
           expect(outputJsonStub).toHaveBeenCalledWith(
-            path.join(
+            join(
               storagePath,
               variantAnalysis.id.toString(),
               "repo_states.json",
@@ -607,7 +599,7 @@ describe("Variant Analysis Manager", () => {
           );
 
           expect(outputJsonStub).toHaveBeenCalledWith(
-            path.join(
+            join(
               storagePath,
               variantAnalysis.id.toString(),
               "repo_states.json",
@@ -654,11 +646,11 @@ describe("Variant Analysis Manager", () => {
           );
 
           expect(pathExistsStub).toBeCalledWith(
-            path.join(storagePath, variantAnalysis.id.toString()),
+            join(storagePath, variantAnalysis.id.toString()),
           );
           expect(readJsonStub).toHaveBeenCalledTimes(1);
           expect(readJsonStub).toHaveBeenCalledWith(
-            path.join(
+            join(
               storagePath,
               variantAnalysis.id.toString(),
               "repo_states.json",
@@ -674,7 +666,7 @@ describe("Variant Analysis Manager", () => {
           );
 
           expect(outputJsonStub).toHaveBeenCalledWith(
-            path.join(
+            join(
               storagePath,
               variantAnalysis.id.toString(),
               "repo_states.json",

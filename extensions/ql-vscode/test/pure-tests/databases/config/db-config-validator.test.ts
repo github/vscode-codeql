@@ -1,9 +1,9 @@
-import * as path from "path";
+import { join } from "path";
 import { DbConfig } from "../../../../src/databases/config/db-config";
 import { DbConfigValidator } from "../../../../src/databases/config/db-config-validator";
 
 describe("db config validation", () => {
-  const extensionPath = path.join(__dirname, "../../../..");
+  const extensionPath = join(__dirname, "../../../..");
   const configValidator = new DbConfigValidator(extensionPath);
 
   it("should return error when file is not valid", async () => {

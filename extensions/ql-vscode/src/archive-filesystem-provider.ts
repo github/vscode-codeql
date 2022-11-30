@@ -1,12 +1,12 @@
-import * as fs from "fs-extra";
+import { pathExists } from "fs-extra";
 import * as unzipper from "unzipper";
 import * as vscode from "vscode";
 import { extLogger } from "./common";
 
 // All path operations in this file must be on paths *within* the zip
 // archive.
-import * as _path from "path";
-const path = _path.posix;
+import { posix } from "path";
+const path = posix;
 
 export class File implements vscode.FileStat {
   type: vscode.FileType;
@@ -176,7 +176,7 @@ type Archive = {
 };
 
 async function parse_zip(zipPath: string): Promise<Archive> {
-  if (!(await fs.pathExists(zipPath)))
+  if (!(await pathExists(zipPath)))
     throw vscode.FileSystemError.FileNotFound(zipPath);
   const archive: Archive = {
     unzipped: await unzipper.Open.file(zipPath),

@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { existsSync, createWriteStream, mkdirpSync } from "fs-extra";
+import { normalize, join } from "path";
 import {
   getRequiredAssetName,
   extractZipArchive,
@@ -44,8 +44,7 @@ process.env.CLI_VERSION = CLI_VERSION;
 // Base dir where CLIs will be downloaded into
 // By default, put it in the `build` directory in the root of the extension.
 const CLI_BASE_DIR =
-  process.env.CLI_DIR ||
-  path.normalize(path.join(__dirname, "../../build/cli"));
+  process.env.CLI_DIR || normalize(join(__dirname, "../../build/cli"));
 
 export async function ensureCli(useCli: boolean) {
   try {
@@ -67,7 +66,7 @@ export async function ensureCli(useCli: boolean) {
     const url = getCliDownloadUrl(assetName);
     const unzipDir = getCliUnzipDir();
     const downloadedFilePath = getDownloadFilePath(assetName);
-    const executablePath = path.join(
+    const executablePath = join(
       getCliUnzipDir(),
       "codeql",
       codeQlLauncherName(),
@@ -76,14 +75,14 @@ export async function ensureCli(useCli: boolean) {
     // Use this environment variable to se to the `codeQL.cli.executablePath` in tests
     process.env.CLI_PATH = executablePath;
 
-    if (fs.existsSync(executablePath)) {
+    if (existsSync(executablePath)) {
       console.log(
         `CLI version ${CLI_VERSION} is found ${executablePath}. Not going to download again.`,
       );
       return;
     }
 
-    if (!fs.existsSync(downloadedFilePath)) {
+    if (!existsSync(downloadedFilePath)) {
       console.log(
         `CLI version ${CLI_VERSION} zip file not found. Downloading from '${url}' into '${downloadedFilePath}'.`,
       );
@@ -93,7 +92,7 @@ export async function ensureCli(useCli: boolean) {
         assetStream.headers.get("content-length") || 0,
       );
       console.log("Total content size", Math.round(contentLength / _1MB), "MB");
-      const archiveFile = fs.createWriteStream(downloadedFilePath);
+      const archiveFile = createWriteStream(downloadedFilePath);
       const body = assetStream.body;
       await new Promise<void>((resolve, reject) => {
         let numBytesDownloaded = 0;
@@ -125,7 +124,7 @@ export async function ensureCli(useCli: boolean) {
     }
 
     console.log(`Unzipping into '${unzipDir}'`);
-    fs.mkdirpSync(unzipDir);
+    mkdirpSync(unzipDir);
     await extractZipArchive(downloadedFilePath, unzipDir);
     console.log("Done.");
   } catch (e) {
@@ -153,14 +152,14 @@ function getCliDownloadUrl(assetName: string) {
  * Directory to place the downloaded cli into
  */
 function getDownloadFilePath(assetName: string) {
-  const dir = path.join(CLI_BASE_DIR, "assets", CLI_VERSION);
-  fs.mkdirpSync(dir);
-  return path.join(dir, assetName);
+  const dir = join(CLI_BASE_DIR, "assets", CLI_VERSION);
+  mkdirpSync(dir);
+  return join(dir, assetName);
 }
 
 /**
  * Directory to unzip the downloaded cli into.
  */
 function getCliUnzipDir() {
-  return path.join(CLI_BASE_DIR, CLI_VERSION);
+  return join(CLI_BASE_DIR, CLI_VERSION);
 }

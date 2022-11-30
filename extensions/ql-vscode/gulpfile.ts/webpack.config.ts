@@ -1,4 +1,4 @@
-import * as path from "path";
+import { resolve } from "path";
 import * as webpack from "webpack";
 import * as MiniCssExtractPlugin from "mini-css-extract-plugin";
 
@@ -8,7 +8,7 @@ export const config: webpack.Configuration = {
     webview: "./src/view/webview.tsx",
   },
   output: {
-    path: path.resolve(__dirname, "..", "out"),
+    path: resolve(__dirname, "..", "out"),
     filename: "[name].js",
   },
   devtool: "inline-source-map",

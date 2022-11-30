@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fs from "fs-extra";
+import { dirname } from "path";
+import { ensureFile } from "fs-extra";
 
 import { DisposableObject } from "../pure/disposable-object";
 import { CancellationToken, commands } from "vscode";
@@ -140,7 +140,7 @@ export class QueryServerClient extends DisposableObject {
     }
 
     const structuredLogFile = `${this.opts.contextStoragePath}/structured-evaluator-log.json`;
-    await fs.ensureFile(structuredLogFile);
+    await ensureFile(structuredLogFile);
 
     args.push("--evaluator-log");
     args.push(structuredLogFile);
@@ -236,9 +236,7 @@ export class QueryServerClient extends DisposableObject {
   private updateActiveQuery(method: string, parameter: any): void {
     if (method === messages.runQuery.method) {
       this.activeQueryLogFile = findQueryLogFile(
-        path.dirname(
-          path.dirname((parameter as messages.RunQueryParams).outputPath),
-        ),
+        dirname(dirname((parameter as messages.RunQueryParams).outputPath)),
       );
     }
   }

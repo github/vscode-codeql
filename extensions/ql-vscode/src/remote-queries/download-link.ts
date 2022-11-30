@@ -1,4 +1,4 @@
-import * as path from "path";
+import { join } from "path";
 
 /**
  * Represents a link to an artifact to be downloaded.
@@ -40,7 +40,7 @@ export function createDownloadPath(
   downloadLink: DownloadLink,
   extension = "",
 ) {
-  return path.join(
+  return join(
     storagePath,
     downloadLink.queryId,
     downloadLink.id + (extension ? `.${extension}` : ""),

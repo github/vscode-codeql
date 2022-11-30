@@ -1,5 +1,12 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import {
+  readJSONSync,
+  ensureDir,
+  copy,
+  remove,
+  readFileSync,
+  writeFileSync,
+} from "fs-extra";
+import { join } from "path";
 
 import {
   CancellationToken,
@@ -34,8 +41,8 @@ jest.setTimeout(120000);
  */
 
 describe("Remote queries and query history manager", () => {
-  const EXTENSION_PATH = path.join(__dirname, "../../../../");
-  const STORAGE_DIR = Uri.file(path.join(tmpDir.name, "remote-queries")).fsPath;
+  const EXTENSION_PATH = join(__dirname, "../../../../");
+  const STORAGE_DIR = Uri.file(join(tmpDir.name, "remote-queries")).fsPath;
   const asyncNoop = async () => {
     /** noop */
   };
@@ -80,19 +87,19 @@ describe("Remote queries and query history manager", () => {
 
     disposables = new DisposableBucket();
 
-    rawQueryHistory = fs.readJSONSync(
-      path.join(STORAGE_DIR, "workspace-query-history.json"),
+    rawQueryHistory = readJSONSync(
+      join(STORAGE_DIR, "workspace-query-history.json"),
     ).queries;
-    remoteQueryResult0 = fs.readJSONSync(
-      path.join(
+    remoteQueryResult0 = readJSONSync(
+      join(
         STORAGE_DIR,
         "queries",
         rawQueryHistory[0].queryId,
         "query-result.json",
       ),
     );
-    remoteQueryResult1 = fs.readJSONSync(
-      path.join(
+    remoteQueryResult1 = readJSONSync(
+      join(
         STORAGE_DIR,
         "queries",
         rawQueryHistory[1].queryId,
@@ -216,7 +223,7 @@ describe("Remote queries and query history manager", () => {
 
     // also, both queries should be removed from on disk storage
     expect(
-      fs.readJSONSync(path.join(STORAGE_DIR, "workspace-query-history.json")),
+      readJSONSync(join(STORAGE_DIR, "workspace-query-history.json")),
     ).toEqual({
       version: 2,
       queries: [],
@@ -274,7 +281,7 @@ describe("Remote queries and query history manager", () => {
       arm = new AnalysesResultsManager(
         {} as ExtensionContext,
         mockCliServer,
-        path.join(STORAGE_DIR, "queries"),
+        join(STORAGE_DIR, "queries"),
         mockLogger,
       );
     });
@@ -441,8 +448,8 @@ describe("Remote queries and query history manager", () => {
       const analysisSummaries0 = [remoteQueryResult0.analysisSummaries[0]];
       await arm.loadAnalysesResults(analysisSummaries0, undefined, publisher);
 
-      const sarif = fs.readJSONSync(
-        path.join(
+      const sarif = readJSONSync(
+        join(
           STORAGE_DIR,
           "queries",
           rawQueryHistory[0].queryId,
@@ -504,29 +511,30 @@ describe("Remote queries and query history manager", () => {
   });
 
   async function copyHistoryState() {
-    await fs.ensureDir(STORAGE_DIR);
-    await fs.ensureDir(path.join(tmpDir.name, "remote-queries"));
-    await fs.copy(
-      path.join(__dirname, "../data/remote-queries/"),
-      path.join(tmpDir.name, "remote-queries"),
+    await ensureDir(STORAGE_DIR);
+    await ensureDir(join(tmpDir.name, "remote-queries"));
+    await copy(
+      join(__dirname, "../data/remote-queries/"),
+      join(tmpDir.name, "remote-queries"),
     );
 
     // also, replace the files with "PLACEHOLDER" so that they have the correct directory
     for await (const p of walkDirectory(STORAGE_DIR)) {
-      replacePlaceholder(path.join(p));
+      replacePlaceholder(join(p));
     }
   }
 
   async function deleteHistoryState() {
-    await fs.remove(STORAGE_DIR);
+    await remove(STORAGE_DIR);
   }
 
   function replacePlaceholder(filePath: string) {
     if (filePath.endsWith(".json")) {
-      const newContents = fs
-        .readFileSync(filePath, "utf8")
-        .replaceAll("PLACEHOLDER", STORAGE_DIR.replaceAll("\\", "/"));
-      fs.writeFileSync(filePath, newContents, "utf8");
+      const newContents = readFileSync(filePath, "utf8").replaceAll(
+        "PLACEHOLDER",
+        STORAGE_DIR.replaceAll("\\", "/"),
+      );
+      writeFileSync(filePath, newContents, "utf8");
     }
   }
 });

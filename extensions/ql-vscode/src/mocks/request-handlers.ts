@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fs from "fs-extra";
+import { join } from "path";
+import { readdir, readJson, readFile } from "fs-extra";
 import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
 import {
   GitHubApiRequest,
@@ -33,7 +33,7 @@ export async function createRequestHandlers(
 async function readRequestFiles(
   scenarioDirPath: string,
 ): Promise<GitHubApiRequest[]> {
-  const files = await fs.readdir(scenarioDirPath);
+  const files = await readdir(scenarioDirPath);
 
   const orderedFiles = files.sort((a, b) => {
     const aNum = parseInt(a.split("-")[0]);
@@ -47,8 +47,8 @@ async function readRequestFiles(
       continue;
     }
 
-    const filePath = path.join(scenarioDirPath, file);
-    const request: GitHubApiRequest = await fs.readJson(filePath, {
+    const filePath = join(scenarioDirPath, file);
+    const request: GitHubApiRequest = await readJson(filePath, {
       encoding: "utf8",
     });
 
@@ -56,8 +56,8 @@ async function readRequestFiles(
       typeof request.response.body === "string" &&
       request.response.body.startsWith("file:")
     ) {
-      request.response.body = await fs.readFile(
-        path.join(scenarioDirPath, request.response.body.substring(5)),
+      request.response.body = await readFile(
+        join(scenarioDirPath, request.response.body.substring(5)),
       );
     }
 

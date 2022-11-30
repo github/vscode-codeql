@@ -3,8 +3,8 @@ import { CancellationTokenSource, env } from "vscode";
 import * as messages from "./pure/messages-shared";
 import * as legacyMessages from "./pure/legacy-messages";
 import * as cli from "./cli";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { pathExists } from "fs-extra";
+import { basename } from "path";
 import {
   RawResultsSortState,
   SortedResultSetInfo,
@@ -161,7 +161,7 @@ export async function interpretResultsSarif(
 ): Promise<SarifInterpretationData> {
   const { resultsPath, interpretedResultsPath } = resultsPaths;
   let res;
-  if (await fs.pathExists(interpretedResultsPath)) {
+  if (await pathExists(interpretedResultsPath)) {
     res = await sarifParser(interpretedResultsPath);
   } else {
     res = await cli.interpretBqrsSarif(
@@ -184,7 +184,7 @@ export async function interpretGraphResults(
   sourceInfo?: cli.SourceInfo,
 ): Promise<GraphInterpretationData> {
   const { resultsPath, interpretedResultsPath } = resultsPaths;
-  if (await fs.pathExists(interpretedResultsPath)) {
+  if (await pathExists(interpretedResultsPath)) {
     const dot = await cli.readDotFiles(interpretedResultsPath);
     return { dot, t: "GraphInterpretationData" };
   }
@@ -271,9 +271,9 @@ export class LocalQueryInfo {
     if (this.initialInfo.quickEvalPosition) {
       const { line, endLine, fileName } = this.initialInfo.quickEvalPosition;
       const lineInfo = line === endLine ? `${line}` : `${line}-${endLine}`;
-      return `${path.basename(fileName)}:${lineInfo}`;
+      return `${basename(fileName)}:${lineInfo}`;
     }
-    return path.basename(this.initialInfo.queryPath);
+    return basename(this.initialInfo.queryPath);
   }
 
   /**

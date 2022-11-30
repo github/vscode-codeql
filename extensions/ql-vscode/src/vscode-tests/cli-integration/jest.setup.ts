@@ -1,5 +1,10 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import {
+  mkdirpSync,
+  existsSync,
+  createWriteStream,
+  realpathSync,
+} from "fs-extra";
+import { dirname } from "path";
 import fetch from "node-fetch";
 import { DB_URL, dbLoc, setStoragePath, storagePath } from "./global.helper";
 import * as tmp from "tmp";
@@ -22,13 +27,13 @@ beforeAll(async () => {
   await getTestSetting(CUSTOM_CODEQL_PATH_SETTING)?.setup();
 
   // ensure the test database is downloaded
-  fs.mkdirpSync(path.dirname(dbLoc));
-  if (!fs.existsSync(dbLoc)) {
+  mkdirpSync(dirname(dbLoc));
+  if (!existsSync(dbLoc)) {
     console.log(`Downloading test database to ${dbLoc}`);
 
     await new Promise((resolve, reject) => {
       return fetch(DB_URL).then((response) => {
-        const dest = fs.createWriteStream(dbLoc);
+        const dest = createWriteStream(dbLoc);
         response.body.pipe(dest);
 
         response.body.on("error", reject);
@@ -42,7 +47,7 @@ beforeAll(async () => {
 
   // Create the temp directory to be used as extension local storage.
   const dir = tmp.dirSync();
-  let storagePath = fs.realpathSync(dir.name);
+  let storagePath = realpathSync(dir.name);
   if (storagePath.substring(0, 2).match(/[A-Z]:/)) {
     storagePath =
       storagePath.substring(0, 1).toLocaleLowerCase() +

@@ -1,6 +1,6 @@
-import * as fs from "fs-extra";
+import { pathExists, stat, remove } from "fs-extra";
 import * as glob from "glob-promise";
-import * as path from "path";
+import { join, basename, resolve, relative, dirname, extname } from "path";
 import * as vscode from "vscode";
 import * as cli from "./cli";
 import { ExtensionContext } from "vscode";
@@ -115,7 +115,7 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
     );
   }
 
-  const dbAbsolutePath = path.join(parentDirectory, dbRelativePaths[0]);
+  const dbAbsolutePath = join(parentDirectory, dbRelativePaths[0]);
   if (dbRelativePaths.length > 1) {
     void showAndLogWarningMessage(
       `Found multiple dataset directories in database, using '${dbAbsolutePath}'.`,
@@ -132,13 +132,13 @@ export async function findSourceArchive(
   const relativePaths = ["src", "output/src_archive"];
 
   for (const relativePath of relativePaths) {
-    const basePath = path.join(databasePath, relativePath);
+    const basePath = join(databasePath, relativePath);
     const zipPath = basePath + ".zip";
 
     // Prefer using a zip archive over a directory.
-    if (await fs.pathExists(zipPath)) {
+    if (await pathExists(zipPath)) {
       return encodeArchiveBasePath(zipPath);
-    } else if (await fs.pathExists(basePath)) {
+    } else if (await pathExists(basePath)) {
       return vscode.Uri.file(basePath);
     }
   }
@@ -152,7 +152,7 @@ export async function findSourceArchive(
 async function resolveDatabase(
   databasePath: string,
 ): Promise<DatabaseContents> {
-  const name = path.basename(databasePath);
+  const name = basename(databasePath);
 
   // Look for dataset and source archive.
   const datasetUri = await findDataset(databasePath);
@@ -180,7 +180,7 @@ async function resolveDatabaseContents(
     );
   }
   const databasePath = uri.fsPath;
-  if (!(await fs.pathExists(databasePath))) {
+  if (!(await pathExists(databasePath))) {
     throw new InvalidDatabaseError(
       `Database '${databasePath}' does not exist.`,
     );
@@ -207,9 +207,7 @@ async function resolveDatabaseContents(
       `Database '${databasePath}' contains multiple CodeQL dbschemes under '${dbPath}'.`,
     );
   } else {
-    contents.dbSchemeUri = vscode.Uri.file(
-      path.resolve(dbPath, dbSchemeFiles[0]),
-    );
+    contents.dbSchemeUri = vscode.Uri.file(resolve(dbPath, dbSchemeFiles[0]));
   }
   return contents;
 }
@@ -336,7 +334,7 @@ export class DatabaseItemImpl implements DatabaseItem {
     } else if (this._contents) {
       return this._contents.name;
     } else {
-      return path.basename(this.databaseUri.fsPath);
+      return basename(this.databaseUri.fsPath);
     }
   }
 
@@ -518,14 +516,14 @@ export class DatabaseItemImpl implements DatabaseItem {
       return false;
     }
     try {
-      const stats = await fs.stat(testPath);
+      const stats = await stat(testPath);
       if (stats.isDirectory()) {
-        return !path.relative(testPath, databasePath).startsWith("..");
+        return !relative(testPath, databasePath).startsWith("..");
       } else {
         // database for /one/two/three/test.ql is at /one/two/three/three.testproj
-        const testdir = path.dirname(testPath);
-        const testdirbase = path.basename(testdir);
-        return databasePath == path.join(testdir, testdirbase + ".testproj");
+        const testdir = dirname(testPath);
+        const testdirbase = basename(testdir);
+        return databasePath == join(testdir, testdirbase + ".testproj");
       }
     } catch {
       // No information available for test path - assume database is unaffected.
@@ -597,7 +595,7 @@ export class DatabaseManager extends DisposableObject {
   ): Promise<DatabaseItem> {
     const contents = await resolveDatabaseContents(uri);
     // Ignore the source archive for QLTest databases by default.
-    const isQLTestDatabase = path.extname(uri.fsPath) === ".testproj";
+    const isQLTestDatabase = extname(uri.fsPath) === ".testproj";
     const fullOptions: FullDatabaseOptions = {
       ignoreSourceArchive: isQLTestDatabase,
       // If a displayName is not passed in, the basename of folder containing the database is used.
@@ -926,7 +924,7 @@ export class DatabaseManager extends DisposableObject {
     // Delete folder from file system only if it is controlled by the extension
     if (this.isExtensionControlledLocation(item.databaseUri)) {
       void extLogger.log("Deleting database from filesystem.");
-      fs.remove(item.databaseUri.fsPath).then(
+      remove(item.databaseUri.fsPath).then(
         () => void extLogger.log(`Deleted '${item.databaseUri.fsPath}'`),
         (e) =>
           void extLogger.log(
@@ -1003,7 +1001,7 @@ export class DatabaseManager extends DisposableObject {
  * scripts returned by the cli's upgrade resolution.
  */
 export function getUpgradesDirectories(scripts: string[]): vscode.Uri[] {
-  const parentDirs = scripts.map((dir) => path.dirname(dir));
+  const parentDirs = scripts.map((dir) => dirname(dir));
   const uniqueParentDirs = new Set(parentDirs);
   return Array.from(uniqueParentDirs).map((filePath) =>
     vscode.Uri.file(filePath),

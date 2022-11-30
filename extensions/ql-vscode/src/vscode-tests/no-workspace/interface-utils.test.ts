@@ -1,18 +1,25 @@
-import * as vscode from "vscode";
-import * as path from "path";
-import * as tmp from "tmp";
-import { window, ViewColumn, Uri, WebviewPanel } from "vscode";
+import {
+  Uri,
+  Location,
+  Range,
+  Position,
+  window,
+  ViewColumn,
+  Uri,
+  WebviewPanel,
+} from "vscode";
+import { basename } from "path";
+import { fileSync, FileResult } from "tmp";
 import { fileUriToWebviewUri, tryResolveLocation } from "../../interface-utils";
 import { getDefaultResultSetName } from "../../pure/interface-types";
 import { DatabaseItem } from "../../databases";
-import { FileResult } from "tmp";
 
 describe("interface-utils", () => {
   describe("webview uri conversion", () => {
     const fileSuffix = ".bqrs";
 
     function setupWebview(filePrefix: string) {
-      const tmpFile = tmp.fileSync({
+      const tmpFile = fileSync({
         prefix: `uri_test_${filePrefix}_`,
         postfix: fileSuffix,
         keep: false,
@@ -56,8 +63,8 @@ describe("interface-utils", () => {
       const { fileUriOnDisk, panel } = webview;
       const webviewUri = fileUriToWebviewUri(panel, fileUriOnDisk);
       const parsedUri = Uri.parse(webviewUri);
-      expect(path.basename(parsedUri.path, fileSuffix)).toBe(
-        path.basename(fileUriOnDisk.path, fileSuffix),
+      expect(basename(parsedUri.path, fileSuffix)).toBe(
+        basename(fileUriOnDisk.path, fileSuffix),
       );
     });
   });
@@ -76,35 +83,25 @@ describe("interface-utils", () => {
   describe("resolveWholeFileLocation", () => {
     it("should resolve a whole file location", () => {
       const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.file("abc")),
+        resolveSourceFile: jest.fn().mockReturnValue(Uri.file("abc")),
       } as unknown as DatabaseItem;
       expect(
         tryResolveLocation("file://hucairz:0:0:0:0", mockDatabaseItem),
-      ).toEqual(
-        new vscode.Location(
-          vscode.Uri.file("abc"),
-          new vscode.Range(0, 0, 0, 0),
-        ),
-      );
+      ).toEqual(new Location(Uri.file("abc"), new Range(0, 0, 0, 0)));
     });
 
     it("should resolve a five-part location edge case", () => {
       const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.file("abc")),
+        resolveSourceFile: jest.fn().mockReturnValue(Uri.file("abc")),
       } as unknown as DatabaseItem;
       expect(
         tryResolveLocation("file://hucairz:1:1:1:1", mockDatabaseItem),
-      ).toEqual(
-        new vscode.Location(
-          vscode.Uri.file("abc"),
-          new vscode.Range(0, 0, 0, 1),
-        ),
-      );
+      ).toEqual(new Location(Uri.file("abc"), new Range(0, 0, 0, 1)));
     });
 
     it("should resolve a five-part location", () => {
       const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.parse("abc")),
+        resolveSourceFile: jest.fn().mockReturnValue(Uri.parse("abc")),
       } as unknown as DatabaseItem;
 
       expect(
@@ -119,12 +116,9 @@ describe("interface-utils", () => {
           mockDatabaseItem,
         ),
       ).toEqual(
-        new vscode.Location(
-          vscode.Uri.parse("abc"),
-          new vscode.Range(
-            new vscode.Position(4, 3),
-            new vscode.Position(3, 0),
-          ),
+        new Location(
+          Uri.parse("abc"),
+          new Range(new Position(4, 3), new Position(3, 0)),
         ),
       );
       expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
@@ -135,7 +129,7 @@ describe("interface-utils", () => {
 
     it("should resolve a five-part location with an empty path", () => {
       const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.parse("abc")),
+        resolveSourceFile: jest.fn().mockReturnValue(Uri.parse("abc")),
       } as unknown as DatabaseItem;
 
       expect(
@@ -154,17 +148,12 @@ describe("interface-utils", () => {
 
     it("should resolve a string location for whole file", () => {
       const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.parse("abc")),
+        resolveSourceFile: jest.fn().mockReturnValue(Uri.parse("abc")),
       } as unknown as DatabaseItem;
 
       expect(
         tryResolveLocation("file://hucairz:0:0:0:0", mockDatabaseItem),
-      ).toEqual(
-        new vscode.Location(
-          vscode.Uri.parse("abc"),
-          new vscode.Range(0, 0, 0, 0),
-        ),
-      );
+      ).toEqual(new Location(Uri.parse("abc"), new Range(0, 0, 0, 0)));
       expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
       expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledWith(
         "hucairz",
@@ -173,18 +162,15 @@ describe("interface-utils", () => {
 
     it("should resolve a string location for five-part location", () => {
       const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.parse("abc")),
+        resolveSourceFile: jest.fn().mockReturnValue(Uri.parse("abc")),
       } as unknown as DatabaseItem;
 
       expect(
         tryResolveLocation("file://hucairz:5:4:3:2", mockDatabaseItem),
       ).toEqual(
-        new vscode.Location(
-          vscode.Uri.parse("abc"),
-          new vscode.Range(
-            new vscode.Position(4, 3),
-            new vscode.Position(2, 2),
-          ),
+        new Location(
+          Uri.parse("abc"),
+          new Range(new Position(4, 3), new Position(2, 2)),
         ),
       );
       expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
@@ -195,7 +181,7 @@ describe("interface-utils", () => {
 
     it("should resolve a string location for invalid string", () => {
       const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(vscode.Uri.parse("abc")),
+        resolveSourceFile: jest.fn().mockReturnValue(Uri.parse("abc")),
       } as unknown as DatabaseItem;
 
       expect(

@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import { writeFile, promises } from "fs-extra";
 
 /**
  * Location information for a single pipeline invocation in the RA.
@@ -51,7 +51,7 @@ export async function generateSummarySymbolsFile(
   symbolsPath: string,
 ): Promise<void> {
   const symbols = await generateSummarySymbols(summaryPath);
-  await fs.writeFile(symbolsPath, JSON.stringify(symbols));
+  await writeFile(symbolsPath, JSON.stringify(symbols));
 }
 
 /**
@@ -64,7 +64,7 @@ export async function generateSummarySymbolsFile(
 async function generateSummarySymbols(
   summaryPath: string,
 ): Promise<SummarySymbols> {
-  const summary = await fs.promises.readFile(summaryPath, {
+  const summary = await promises.readFile(summaryPath, {
     encoding: "utf-8",
   });
   const symbols: SummarySymbols = {

@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
-import * as path from "path";
-import * as fs from "fs-extra";
+import { TreeItemCollapsibleState, ThemeIcon } from "vscode";
+import { join } from "path";
+import { ensureDir, remove, writeJson } from "fs-extra";
 import { DbConfig } from "../../../databases/config/db-config";
 import { DbManager } from "../../../databases/db-manager";
 import { DbConfigStore } from "../../../databases/config/db-config-store";
@@ -11,10 +11,10 @@ import { ExtensionApp } from "../../../common/vscode/vscode-app";
 import { createMockExtensionContext } from "../../factories/extension-context";
 
 describe("db panel", () => {
-  const workspaceStoragePath = path.join(__dirname, "test-workspace-storage");
-  const globalStoragePath = path.join(__dirname, "test-global-storage");
-  const extensionPath = path.join(__dirname, "../../../../");
-  const dbConfigFilePath = path.join(
+  const workspaceStoragePath = join(__dirname, "test-workspace-storage");
+  const globalStoragePath = join(__dirname, "test-global-storage");
+  const extensionPath = join(__dirname, "../../../../");
+  const dbConfigFilePath = join(
     workspaceStoragePath,
     "workspace-databases.json",
   );
@@ -28,7 +28,7 @@ describe("db panel", () => {
       globalStoragePath,
       workspaceStoragePath,
     });
-    await fs.ensureDir(workspaceStoragePath);
+    await ensureDir(workspaceStoragePath);
 
     const app = new ExtensionApp(extensionContext);
 
@@ -37,11 +37,11 @@ describe("db panel", () => {
   });
 
   beforeEach(async () => {
-    await fs.ensureDir(workspaceStoragePath);
+    await ensureDir(workspaceStoragePath);
   });
 
   afterEach(async () => {
-    await fs.remove(workspaceStoragePath);
+    await remove(workspaceStoragePath);
   });
 
   it("should render default local and remote nodes when the config is empty", async () => {
@@ -73,7 +73,7 @@ describe("db panel", () => {
     expect(remoteRootNode.label).toBe("remote");
     expect(remoteRootNode.tooltip).toBe("Remote databases");
     expect(remoteRootNode.collapsibleState).toBe(
-      vscode.TreeItemCollapsibleState.Collapsed,
+      TreeItemCollapsibleState.Collapsed,
     );
     expect(remoteRootNode.children).toBeTruthy();
     expect(remoteRootNode.children.length).toBe(3);
@@ -92,7 +92,7 @@ describe("db panel", () => {
     expect(localRootNode.label).toBe("local");
     expect(localRootNode.tooltip).toBe("Local databases");
     expect(localRootNode.collapsibleState).toBe(
-      vscode.TreeItemCollapsibleState.Collapsed,
+      TreeItemCollapsibleState.Collapsed,
     );
     expect(localRootNode.children).toBeTruthy();
     expect(localRootNode.children.length).toBe(0);
@@ -133,7 +133,7 @@ describe("db panel", () => {
     const remoteRootNode = items[0];
     expect(remoteRootNode.dbItem).toBeTruthy();
     expect(remoteRootNode.collapsibleState).toBe(
-      vscode.TreeItemCollapsibleState.Collapsed,
+      TreeItemCollapsibleState.Collapsed,
     );
     expect(remoteRootNode.children).toBeTruthy();
     expect(remoteRootNode.children.length).toBe(5);
@@ -184,7 +184,7 @@ describe("db panel", () => {
     const remoteRootNode = items[0];
     expect(remoteRootNode.dbItem).toBeTruthy();
     expect(remoteRootNode.collapsibleState).toBe(
-      vscode.TreeItemCollapsibleState.Collapsed,
+      TreeItemCollapsibleState.Collapsed,
     );
     expect(remoteRootNode.children).toBeTruthy();
     expect(remoteRootNode.children.length).toBe(5);
@@ -223,7 +223,7 @@ describe("db panel", () => {
     const remoteRootNode = items[0];
     expect(remoteRootNode.dbItem).toBeTruthy();
     expect(remoteRootNode.collapsibleState).toBe(
-      vscode.TreeItemCollapsibleState.Collapsed,
+      TreeItemCollapsibleState.Collapsed,
     );
     expect(remoteRootNode.children).toBeTruthy();
     expect(remoteRootNode.children.length).toBe(5);
@@ -291,7 +291,7 @@ describe("db panel", () => {
     const localRootNode = items[1];
     expect(localRootNode.dbItem).toBeTruthy();
     expect(localRootNode.collapsibleState).toBe(
-      vscode.TreeItemCollapsibleState.Collapsed,
+      TreeItemCollapsibleState.Collapsed,
     );
     expect(localRootNode.children).toBeTruthy();
     expect(localRootNode.children.length).toBe(2);
@@ -366,7 +366,7 @@ describe("db panel", () => {
     const localRootNode = items[1];
     expect(localRootNode.dbItem).toBeTruthy();
     expect(localRootNode.collapsibleState).toBe(
-      vscode.TreeItemCollapsibleState.Collapsed,
+      TreeItemCollapsibleState.Collapsed,
     );
     expect(localRootNode.children).toBeTruthy();
     expect(localRootNode.children.length).toBe(2);
@@ -392,7 +392,7 @@ describe("db panel", () => {
   });
 
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {
-    await fs.writeJson(dbConfigFilePath, dbConfig);
+    await writeJson(dbConfigFilePath, dbConfig);
 
     // Ideally we would just initialise the db config store at the start
     // of each test and then rely on the file watcher to update the config.
@@ -408,8 +408,8 @@ describe("db panel", () => {
   ): void {
     expect(item.label).toBe(`Top ${n} repositories`);
     expect(item.tooltip).toBe(`Top ${n} repositories of a language`);
-    expect(item.iconPath).toEqual(new vscode.ThemeIcon("github"));
-    expect(item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.None);
+    expect(item.iconPath).toEqual(new ThemeIcon("github"));
+    expect(item.collapsibleState).toBe(TreeItemCollapsibleState.None);
   }
 
   function checkUserDefinedListItem(
@@ -420,9 +420,7 @@ describe("db panel", () => {
     expect(item.label).toBe(listName);
     expect(item.tooltip).toBeUndefined();
     expect(item.iconPath).toBeUndefined();
-    expect(item.collapsibleState).toBe(
-      vscode.TreeItemCollapsibleState.Collapsed,
-    );
+    expect(item.collapsibleState).toBe(TreeItemCollapsibleState.Collapsed);
     expect(item.children).toBeTruthy();
     expect(item.children.length).toBe(repos.length);
 
@@ -434,8 +432,8 @@ describe("db panel", () => {
   function checkOwnerItem(item: DbTreeViewItem, ownerName: string): void {
     expect(item.label).toBe(ownerName);
     expect(item.tooltip).toBeUndefined();
-    expect(item.iconPath).toEqual(new vscode.ThemeIcon("organization"));
-    expect(item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.None);
+    expect(item.iconPath).toEqual(new ThemeIcon("organization"));
+    expect(item.collapsibleState).toBe(TreeItemCollapsibleState.None);
     expect(item.children).toBeTruthy();
     expect(item.children.length).toBe(0);
   }
@@ -443,8 +441,8 @@ describe("db panel", () => {
   function checkRemoteRepoItem(item: DbTreeViewItem, repoName: string): void {
     expect(item.label).toBe(repoName);
     expect(item.tooltip).toBeUndefined();
-    expect(item.iconPath).toEqual(new vscode.ThemeIcon("database"));
-    expect(item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.None);
+    expect(item.iconPath).toEqual(new ThemeIcon("database"));
+    expect(item.collapsibleState).toBe(TreeItemCollapsibleState.None);
   }
 
   function checkLocalListItem(
@@ -455,9 +453,7 @@ describe("db panel", () => {
     expect(item.label).toBe(listName);
     expect(item.tooltip).toBeUndefined();
     expect(item.iconPath).toBeUndefined();
-    expect(item.collapsibleState).toBe(
-      vscode.TreeItemCollapsibleState.Collapsed,
-    );
+    expect(item.collapsibleState).toBe(TreeItemCollapsibleState.Collapsed);
     expect(item.children).toBeTruthy();
     expect(item.children.length).toBe(databases.length);
 
@@ -472,7 +468,7 @@ describe("db panel", () => {
   ): void {
     expect(item.label).toBe(database.databaseName);
     expect(item.tooltip).toBe(`Language: ${database.language}`);
-    expect(item.iconPath).toEqual(new vscode.ThemeIcon("database"));
-    expect(item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.None);
+    expect(item.iconPath).toEqual(new ThemeIcon("database"));
+    expect(item.collapsibleState).toBe(TreeItemCollapsibleState.None);
   }
 });

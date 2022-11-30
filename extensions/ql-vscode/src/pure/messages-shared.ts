@@ -14,7 +14,7 @@
  * the fact that any unknown QueryResultType value counts as an error.
  */
 
-import * as rpc from "vscode-jsonrpc";
+import { NotificationType } from "vscode-jsonrpc";
 
 /**
  * A position within a QL file.
@@ -106,6 +106,6 @@ export interface ProgressMessage {
 /**
  * A notification that the progress has been changed.
  */
-export const progress = new rpc.NotificationType<ProgressMessage>(
+export const progress = new NotificationType<ProgressMessage>(
   "ql/progressUpdated",
 );

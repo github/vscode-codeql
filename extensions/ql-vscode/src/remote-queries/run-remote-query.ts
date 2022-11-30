@@ -1,8 +1,8 @@
 import { CancellationToken, Uri, window } from "vscode";
-import * as path from "path";
-import * as yaml from "js-yaml";
-import * as fs from "fs-extra";
-import * as tmp from "tmp-promise";
+import { relative, join, sep, dirname, parse, basename } from "path";
+import { dump, load } from "js-yaml";
+import { pathExists, copy, writeFile, readFile, mkdirp } from "fs-extra";
+import { dir, tmpName } from "tmp-promise";
 import {
   askForLanguage,
   findLanguage,
@@ -22,7 +22,7 @@ import { ProgressCallback, UserCancellationException } from "../commandRunner";
 import { RequestError } from "@octokit/types/dist-types";
 import { QueryMetadata } from "../pure/interface-types";
 import { getErrorMessage, REPO_REGEX } from "../pure/helpers-pure";
-import * as ghApiClient from "./gh-api/gh-api-client";
+import { getRepositoryFromNwo } from "./gh-api/gh-api-client";
 import {
   getRepositorySelection,
   isValidSelection,
@@ -61,18 +61,18 @@ async function generateQueryPack(
   queryPackDir: string,
 ): Promise<GeneratedQueryPack> {
   const originalPackRoot = await findPackRoot(queryFile);
-  const packRelativePath = path.relative(originalPackRoot, queryFile);
-  const targetQueryFileName = path.join(queryPackDir, packRelativePath);
+  const packRelativePath = relative(originalPackRoot, queryFile);
+  const targetQueryFileName = join(queryPackDir, packRelativePath);
 
   let language: string | undefined;
-  if (await fs.pathExists(path.join(originalPackRoot, "qlpack.yml"))) {
+  if (await pathExists(join(originalPackRoot, "qlpack.yml"))) {
     // don't include ql files. We only want the queryFile to be copied.
     const toCopy = await cliServer.packPacklist(originalPackRoot, false);
 
     // also copy the lock file (either new name or old name) and the query file itself. These are not included in the packlist.
     [
-      path.join(originalPackRoot, "qlpack.lock.yml"),
-      path.join(originalPackRoot, "codeql-pack.lock.yml"),
+      join(originalPackRoot, "qlpack.lock.yml"),
+      join(originalPackRoot, "codeql-pack.lock.yml"),
       queryFile,
     ].forEach((absolutePath) => {
       if (absolutePath) {
@@ -81,15 +81,14 @@ async function generateQueryPack(
     });
 
     let copiedCount = 0;
-    await fs.copy(originalPackRoot, queryPackDir, {
+    await copy(originalPackRoot, queryPackDir, {
       filter: (file: string) =>
         // copy file if it is in the packlist, or it is a parent directory of a file in the packlist
         !!toCopy.find((f) => {
           // Normalized paths ensure that Windows drive letters are capitalized consistently.
           const normalizedPath = Uri.file(f).fsPath;
           const matches =
-            normalizedPath === file ||
-            normalizedPath.startsWith(file + path.sep);
+            normalizedPath === file || normalizedPath.startsWith(file + sep);
           if (matches) {
             copiedCount++;
           }
@@ -109,7 +108,7 @@ async function generateQueryPack(
     // copy only the query file to the query pack directory
     // and generate a synthetic query pack
     void extLogger.log(`Copying ${queryFile} to ${queryPackDir}`);
-    await fs.copy(queryFile, targetQueryFileName);
+    await copy(queryFile, targetQueryFileName);
     void extLogger.log("Generating synthetic query pack");
     const syntheticQueryPack = {
       name: QUERY_PACK_NAME,
@@ -119,10 +118,7 @@ async function generateQueryPack(
       },
       defaultSuite: generateDefaultSuite(packRelativePath),
     };
-    await fs.writeFile(
-      path.join(queryPackDir, "qlpack.yml"),
-      yaml.dump(syntheticQueryPack),
-    );
+    await writeFile(join(queryPackDir, "qlpack.yml"), dump(syntheticQueryPack));
   }
   if (!language) {
     throw new UserCancellationException("Could not determine language.");
@@ -133,7 +129,7 @@ async function generateQueryPack(
 
   let precompilationOpts: string[] = [];
   if (await cliServer.cliConstraints.supportsQlxRemote()) {
-    const ccache = path.join(originalPackRoot, ".cache");
+    const ccache = join(originalPackRoot, ".cache");
     precompilationOpts = [
       "--qlx",
       "--no-default-compilation-cache",
@@ -155,7 +151,7 @@ async function generateQueryPack(
     bundlePath,
     precompilationOpts,
   );
-  const base64Pack = (await fs.readFile(bundlePath)).toString("base64");
+  const base64Pack = (await readFile(bundlePath)).toString("base64");
   return {
     base64Pack,
     language,
@@ -164,13 +160,13 @@ async function generateQueryPack(
 
 async function findPackRoot(queryFile: string): Promise<string> {
   // recursively find the directory containing qlpack.yml
-  let dir = path.dirname(queryFile);
-  while (!(await fs.pathExists(path.join(dir, "qlpack.yml")))) {
-    dir = path.dirname(dir);
+  let dir = dirname(queryFile);
+  while (!(await pathExists(join(dir, "qlpack.yml")))) {
+    dir = dirname(dir);
     if (isFileSystemRoot(dir)) {
       // there is no qlpack.yml in this directory or any parent directory.
       // just use the query file's directory as the pack root.
-      return path.dirname(queryFile);
+      return dirname(queryFile);
     }
   }
 
@@ -178,23 +174,23 @@ async function findPackRoot(queryFile: string): Promise<string> {
 }
 
 function isFileSystemRoot(dir: string): boolean {
-  const pathObj = path.parse(dir);
+  const pathObj = parse(dir);
   return pathObj.root === dir && pathObj.base === "";
 }
 
 export async function createRemoteQueriesTempDirectory() {
-  const remoteQueryDir = await tmp.dir({
+  const remoteQueryDir = await dir({
     dir: tmpDir.name,
     unsafeCleanup: true,
   });
-  const queryPackDir = path.join(remoteQueryDir.path, "query-pack");
-  await fs.mkdirp(queryPackDir);
+  const queryPackDir = join(remoteQueryDir.path, "query-pack");
+  await mkdirp(queryPackDir);
   return { remoteQueryDir, queryPackDir };
 }
 
 async function getPackedBundlePath(queryPackDir: string) {
-  return tmp.tmpName({
-    dir: path.dirname(queryPackDir),
+  return tmpName({
+    dir: dirname(queryPackDir),
     postfix: "generated.tgz",
     prefix: "qlpack",
   });
@@ -316,8 +312,8 @@ async function fixPackFile(
   queryPackDir: string,
   packRelativePath: string,
 ): Promise<void> {
-  const packPath = path.join(queryPackDir, "qlpack.yml");
-  const qlpack = yaml.load(await fs.readFile(packPath, "utf8")) as QlPack;
+  const packPath = join(queryPackDir, "qlpack.yml");
+  const qlpack = load(await readFile(packPath, "utf8")) as QlPack;
 
   // update pack name
   qlpack.name = QUERY_PACK_NAME;
@@ -329,7 +325,7 @@ async function fixPackFile(
   // remove any ${workspace} version references
   removeWorkspaceRefs(qlpack);
 
-  await fs.writeFile(packPath, yaml.dump(qlpack));
+  await writeFile(packPath, dump(qlpack));
 }
 
 function generateDefaultSuite(packRelativePath: string) {
@@ -348,7 +344,7 @@ export function getQueryName(
   queryFilePath: string,
 ): string {
   // The query name is either the name as specified in the query metadata, or the file name.
-  return queryMetadata?.name ?? path.basename(queryFilePath);
+  return queryMetadata?.name ?? basename(queryFilePath);
 }
 
 export async function getControllerRepo(
@@ -390,11 +386,7 @@ export async function getControllerRepo(
   const [owner, repo] = controllerRepoNwo.split("/");
 
   try {
-    const controllerRepo = await ghApiClient.getRepositoryFromNwo(
-      credentials,
-      owner,
-      repo,
-    );
+    const controllerRepo = await getRepositoryFromNwo(credentials, owner, repo);
     void extLogger.log(`Controller repository ID: ${controllerRepo.id}`);
     return {
       id: controllerRepo.id,

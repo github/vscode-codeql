@@ -1,6 +1,6 @@
 import * as tmp from "tmp";
 import * as fs from "fs-extra";
-import * as path from "path";
+import { join } from "path";
 import { CancellationToken, ExtensionContext, Uri, workspace } from "vscode";
 
 import {
@@ -509,25 +509,25 @@ describe("databases", () => {
   describe("findSourceArchive", () => {
     ["src", "output/src_archive"].forEach((name) => {
       it(`should find source folder in ${name}`, async () => {
-        const uri = Uri.file(path.join(dir.name, name));
-        fs.createFileSync(path.join(uri.fsPath, "hucairz.txt"));
+        const uri = Uri.file(join(dir.name, name));
+        fs.createFileSync(join(uri.fsPath, "hucairz.txt"));
         const srcUri = await findSourceArchive(dir.name);
         expect(srcUri!.fsPath).toBe(uri.fsPath);
       });
 
       it(`should find source archive in ${name}.zip`, async () => {
-        const uri = Uri.file(path.join(dir.name, name + ".zip"));
+        const uri = Uri.file(join(dir.name, name + ".zip"));
         fs.createFileSync(uri.fsPath);
         const srcUri = await findSourceArchive(dir.name);
         expect(srcUri!.fsPath).toBe(uri.fsPath);
       });
 
       it(`should prioritize ${name}.zip over ${name}`, async () => {
-        const uri = Uri.file(path.join(dir.name, name + ".zip"));
+        const uri = Uri.file(join(dir.name, name + ".zip"));
         fs.createFileSync(uri.fsPath);
 
-        const uriFolder = Uri.file(path.join(dir.name, name));
-        fs.createFileSync(path.join(uriFolder.fsPath, "hucairz.txt"));
+        const uriFolder = Uri.file(join(dir.name, name));
+        fs.createFileSync(join(uriFolder.fsPath, "hucairz.txt"));
 
         const srcUri = await findSourceArchive(dir.name);
         expect(srcUri!.fsPath).toBe(uri.fsPath);
@@ -535,9 +535,9 @@ describe("databases", () => {
     });
 
     it("should prioritize src over output/src_archive", async () => {
-      const uriSrc = Uri.file(path.join(dir.name, "src.zip"));
+      const uriSrc = Uri.file(join(dir.name, "src.zip"));
       fs.createFileSync(uriSrc.fsPath);
-      const uriSrcArchive = Uri.file(path.join(dir.name, "src.zip"));
+      const uriSrcArchive = Uri.file(join(dir.name, "src.zip"));
       fs.createFileSync(uriSrcArchive.fsPath);
 
       const resultUri = await findSourceArchive(dir.name);
@@ -563,10 +563,10 @@ describe("databases", () => {
   }
 
   function sourceLocationUri() {
-    return Uri.file(path.join(dir.name, "src.zip"));
+    return Uri.file(join(dir.name, "src.zip"));
   }
 
   function dbLocationUri() {
-    return Uri.file(path.join(dir.name, "db"));
+    return Uri.file(join(dir.name, "db"));
   }
 });

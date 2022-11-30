@@ -1,7 +1,7 @@
 import { commands, Selection, window, workspace } from "vscode";
-import * as path from "path";
+import { join, basename } from "path";
 import { tmpDir } from "../../helpers";
-import * as fs from "fs-extra";
+import { readFile, writeFile, ensureDir, copy } from "fs-extra";
 
 jest.setTimeout(20_000);
 
@@ -12,8 +12,8 @@ describe("SourceMap", () => {
   it("should jump to QL code", async () => {
     const root = workspace.workspaceFolders![0].uri.fsPath;
     const srcFiles = {
-      summary: path.join(root, "log-summary", "evaluator-log.summary"),
-      summaryMap: path.join(root, "log-summary", "evaluator-log.summary.map"),
+      summary: join(root, "log-summary", "evaluator-log.summary"),
+      summaryMap: join(root, "log-summary", "evaluator-log.summary.map"),
     };
     // We need to modify the source map so that its paths point to the actual location of the
     // workspace root on this machine. We'll copy the summary and its source map to a temp
@@ -22,11 +22,11 @@ describe("SourceMap", () => {
 
     // The checked-in sourcemap has placeholders of the form `${root}`, which we need to replace
     // with the actual root directory.
-    const mapText = await fs.readFile(tempFiles.summaryMap, "utf-8");
+    const mapText = await readFile(tempFiles.summaryMap, "utf-8");
     // Always use forward slashes, since they work everywhere.
     const slashRoot = root.replaceAll("\\", "/");
     const newMapText = mapText.replaceAll("${root}", slashRoot);
-    await fs.writeFile(tempFiles.summaryMap, newMapText);
+    await writeFile(tempFiles.summaryMap, newMapText);
 
     const summaryDocument = await workspace.openTextDocument(tempFiles.summary);
     expect(summaryDocument.languageId).toBe("ql-summary");
@@ -37,7 +37,7 @@ describe("SourceMap", () => {
     const newEditor = window.activeTextEditor;
     expect(newEditor).toBeDefined();
     const newDocument = newEditor!.document;
-    expect(path.basename(newDocument.fileName)).toBe("Namespace.qll");
+    expect(basename(newDocument.fileName)).toBe("Namespace.qll");
     const newSelection = newEditor!.selection;
     expect(newSelection.start.line).toBe(60);
     expect(newSelection.start.character).toBe(2);
@@ -46,12 +46,12 @@ describe("SourceMap", () => {
   async function copyFilesToTempDirectory<T extends Record<string, string>>(
     files: T,
   ): Promise<T> {
-    const tempDir = path.join(tmpDir.name, "log-summary");
-    await fs.ensureDir(tempDir);
+    const tempDir = join(tmpDir.name, "log-summary");
+    await ensureDir(tempDir);
     const result: Record<string, string> = {};
     for (const [key, srcPath] of Object.entries(files)) {
-      const destPath = path.join(tempDir, path.basename(srcPath));
-      await fs.copy(srcPath, destPath);
+      const destPath = join(tempDir, basename(srcPath));
+      await copy(srcPath, destPath);
       result[key] = destPath;
     }
 

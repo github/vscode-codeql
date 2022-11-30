@@ -1,4 +1,4 @@
-import * as path from "path";
+import { join } from "path";
 import { extensions, CancellationToken, Uri, window } from "vscode";
 
 import { CodeQLExtensionInterface } from "../../extension";
@@ -68,7 +68,7 @@ describe("Databases", () => {
     expect(dbItem).toBeDefined();
     dbItem = dbItem!;
     expect(dbItem.name).toBe("db");
-    expect(dbItem.databaseUri.fsPath).toBe(path.join(storagePath, "db", "db"));
+    expect(dbItem.databaseUri.fsPath).toBe(join(storagePath, "db", "db"));
   });
 
   it("should add a database from lgtm with only one language", async () => {
@@ -84,7 +84,7 @@ describe("Databases", () => {
     dbItem = dbItem!;
     expect(dbItem.name).toBe("aeisenberg_angular-bind-notifier_106179a");
     expect(dbItem.databaseUri.fsPath).toBe(
-      path.join(
+      join(
         storagePath,
         "javascript",
         "aeisenberg_angular-bind-notifier_106179a",
@@ -106,7 +106,7 @@ describe("Databases", () => {
     dbItem = dbItem!;
     expect(dbItem.name).toBe("db");
     expect(dbItem.databaseUri.fsPath).toBe(
-      path.join(storagePath, "simple-db", "db"),
+      join(storagePath, "simple-db", "db"),
     );
   });
 });

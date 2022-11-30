@@ -5,7 +5,7 @@ import {
   ExtensionContext,
 } from "vscode";
 import { Credentials } from "../authentication";
-import * as ghApiClient from "./gh-api/gh-api-client";
+import { getVariantAnalysis } from "./gh-api/gh-api-client";
 
 import {
   isFinalVariantAnalysisStatus,
@@ -60,7 +60,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
         return;
       }
 
-      const variantAnalysisSummary = await ghApiClient.getVariantAnalysis(
+      const variantAnalysisSummary = await getVariantAnalysis(
         credentials,
         variantAnalysis.controllerRepo.id,
         variantAnalysis.id,

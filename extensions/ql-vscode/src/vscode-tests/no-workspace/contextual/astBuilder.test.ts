@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import { readFileSync } from "fs-extra";
 
 import AstBuilder from "../../../contextual/astBuilder";
 import { CodeQLCliServer } from "../../../cli";
@@ -163,7 +163,7 @@ describe("AstBuilder", () => {
     const index = mapper[resultSet] as number;
     if (index >= 0 && index <= 2) {
       return JSON.parse(
-        fs.readFileSync(`${__dirname}/../data/astBuilder.json`, "utf8"),
+        readFileSync(`${__dirname}/../data/astBuilder.json`, "utf8"),
       )[index];
     } else {
       throw new Error(`Invalid resultSet: ${resultSet}`);

@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { pathExists, writeJSON, readJSON, readJSONSync } from "fs-extra";
+import { join } from "path";
 import { cloneDbConfig, DbConfig } from "./db-config";
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
@@ -23,7 +23,7 @@ export class DbConfigStore extends DisposableObject {
     super();
 
     const storagePath = app.workspaceStoragePath || app.globalStoragePath;
-    this.configPath = path.join(storagePath, "workspace-databases.json");
+    this.configPath = join(storagePath, "workspace-databases.json");
 
     this.config = this.createEmptyConfig();
     this.configErrors = [];
@@ -57,8 +57,8 @@ export class DbConfigStore extends DisposableObject {
   }
 
   private async loadConfig(): Promise<void> {
-    if (!(await fs.pathExists(this.configPath))) {
-      await fs.writeJSON(this.configPath, this.createEmptyConfig(), {
+    if (!(await pathExists(this.configPath))) {
+      await writeJSON(this.configPath, this.createEmptyConfig(), {
         spaces: 2,
       });
     }
@@ -69,7 +69,7 @@ export class DbConfigStore extends DisposableObject {
   private async readConfig(): Promise<void> {
     let newConfig: DbConfig | undefined = undefined;
     try {
-      newConfig = await fs.readJSON(this.configPath);
+      newConfig = await readJSON(this.configPath);
     } catch (e) {
       this.configErrors = [`Failed to read config file: ${this.configPath}`];
     }
@@ -84,7 +84,7 @@ export class DbConfigStore extends DisposableObject {
   private readConfigSync(): void {
     let newConfig: DbConfig | undefined = undefined;
     try {
-      newConfig = fs.readJSONSync(this.configPath);
+      newConfig = readJSONSync(this.configPath);
     } catch (e) {
       this.configErrors = [`Failed to read config file: ${this.configPath}`];
     }

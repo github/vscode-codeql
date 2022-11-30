@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fs from "fs-extra";
+import { join } from "path";
+import { readFile, readdir } from "fs-extra";
 import {
   generateMarkdown,
   MarkdownFile,
@@ -9,8 +9,8 @@ describe("markdown generation", () => {
   describe("for path-problem query", () => {
     it("should generate markdown file for each repo with results", async () => {
       const pathProblemQuery = JSON.parse(
-        await fs.readFile(
-          path.join(
+        await readFile(
+          join(
             __dirname,
             "data/interpreted-results/path-problem/path-problem-query.json",
           ),
@@ -19,8 +19,8 @@ describe("markdown generation", () => {
       );
 
       const analysesResults = JSON.parse(
-        await fs.readFile(
-          path.join(
+        await readFile(
+          join(
             __dirname,
             "data/interpreted-results/path-problem/analyses-results.json",
           ),
@@ -44,8 +44,8 @@ describe("markdown generation", () => {
   describe("for problem query", () => {
     it("should generate markdown file for each repo with results", async () => {
       const problemQuery = JSON.parse(
-        await fs.readFile(
-          path.join(
+        await readFile(
+          join(
             __dirname,
             "data/interpreted-results/problem/problem-query.json",
           ),
@@ -54,8 +54,8 @@ describe("markdown generation", () => {
       );
 
       const analysesResults = JSON.parse(
-        await fs.readFile(
-          path.join(
+        await readFile(
+          join(
             __dirname,
             "data/interpreted-results/problem/analyses-results.json",
           ),
@@ -78,14 +78,11 @@ describe("markdown generation", () => {
   describe("for non-alert query", () => {
     it("should generate markdown file for each repo with results", async () => {
       const query = JSON.parse(
-        await fs.readFile(
-          path.join(__dirname, "data/raw-results/query.json"),
-          "utf8",
-        ),
+        await readFile(join(__dirname, "data/raw-results/query.json"), "utf8"),
       );
       const analysesResults = JSON.parse(
-        await fs.readFile(
-          path.join(__dirname, "data/raw-results/analyses-results.json"),
+        await readFile(
+          join(__dirname, "data/raw-results/analyses-results.json"),
           "utf8",
         ),
       );
@@ -102,7 +99,7 @@ describe("markdown generation", () => {
  * Replaces line endings with '\n' for consistency across operating systems.
  */
 async function readTestOutputFile(relativePath: string): Promise<string> {
-  const file = await fs.readFile(path.join(__dirname, relativePath), "utf8");
+  const file = await readFile(join(__dirname, relativePath), "utf8");
   return file.replace(/\r?\n/g, "\n");
 }
 
@@ -114,8 +111,8 @@ async function checkGeneratedMarkdown(
   actualFiles: MarkdownFile[],
   testDataBasePath: string,
 ) {
-  const expectedDir = path.join(__dirname, testDataBasePath);
-  const expectedFiles = await fs.readdir(expectedDir);
+  const expectedDir = join(__dirname, testDataBasePath);
+  const expectedFiles = await readdir(expectedDir);
 
   expect(actualFiles.length).toBe(expectedFiles.length);
 
@@ -125,7 +122,7 @@ async function checkGeneratedMarkdown(
     );
     expect(actualFile).toBeDefined();
     const expectedContent = await readTestOutputFile(
-      path.join(testDataBasePath, expectedFile),
+      join(testDataBasePath, expectedFile),
     );
     expect(actualFile!.content.join("\n")).toBe(expectedContent);
   }
