@@ -5,7 +5,7 @@
   "response": {
     "status": 422,
     "body": {
-      "message": "No repositories could be queried."
+      "message": "Unable to trigger a variant analysis. None of the requested repositories could be found."
     }
   }
 }
