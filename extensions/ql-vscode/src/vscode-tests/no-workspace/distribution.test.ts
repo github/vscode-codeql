@@ -1,6 +1,6 @@
-import * as path from "path";
+import { sep } from "path";
 import * as fetch from "node-fetch";
-import * as semver from "semver";
+import { Range } from "semver";
 
 import * as helpers from "../../helpers";
 import { extLogger } from "../../common";
@@ -17,7 +17,7 @@ import {
 describe("Releases API consumer", () => {
   const owner = "someowner";
   const repo = "somerepo";
-  const unconstrainedVersionRange = new semver.Range("*");
+  const unconstrainedVersionRange = new Range("*");
 
   describe("picking the latest release", () => {
     const sampleReleaseResponse: GithubRelease[] = [
@@ -94,9 +94,7 @@ describe("Releases API consumer", () => {
     it("version of picked release is within the version range", async () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
-      const latestRelease = await consumer.getLatestRelease(
-        new semver.Range("2.*.*"),
-      );
+      const latestRelease = await consumer.getLatestRelease(new Range("2.*.*"));
       expect(latestRelease.id).toBe(1);
     });
 
@@ -104,7 +102,7 @@ describe("Releases API consumer", () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       await expect(
-        consumer.getLatestRelease(new semver.Range("5.*.*")),
+        consumer.getLatestRelease(new Range("5.*.*")),
       ).rejects.toThrowError();
     });
 
@@ -112,7 +110,7 @@ describe("Releases API consumer", () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       const latestRelease = await consumer.getLatestRelease(
-        new semver.Range("2.*.*"),
+        new Range("2.*.*"),
         true,
         (release) =>
           release.assets.some((asset) => asset.name === "exampleAsset.txt"),
@@ -124,7 +122,7 @@ describe("Releases API consumer", () => {
       const consumer = new MockReleasesApiConsumer(owner, repo);
 
       await expect(
-        consumer.getLatestRelease(new semver.Range("2.*.*"), true, (release) =>
+        consumer.getLatestRelease(new Range("2.*.*"), true, (release) =>
           release.assets.some(
             (asset) => asset.name === "otherExampleAsset.txt",
           ),
@@ -194,8 +192,8 @@ describe("Releases API consumer", () => {
 });
 
 describe("Launcher path", () => {
-  const pathToCmd = `abc${path.sep}codeql.cmd`;
-  const pathToExe = `abc${path.sep}codeql.exe`;
+  const pathToCmd = `abc${sep}codeql.cmd`;
+  const pathToExe = `abc${sep}codeql.exe`;
 
   let warnSpy: jest.SpiedFunction<typeof helpers.showAndLogWarningMessage>;
   let errorSpy: jest.SpiedFunction<typeof helpers.showAndLogErrorMessage>;

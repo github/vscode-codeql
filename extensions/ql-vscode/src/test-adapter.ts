@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { access } from "fs-extra";
+import { dirname, extname } from "path";
 import * as vscode from "vscode";
 import {
   TestAdapter,
@@ -57,7 +57,7 @@ export function getActualFile(testPath: string): string {
  * @param testPath The full path to the test file.
  */
 export function getTestDirectory(testPath: string): string {
-  return path.dirname(testPath);
+  return dirname(testPath);
 }
 
 /**
@@ -97,7 +97,7 @@ export class QLTestAdapterFactory extends DisposableObject {
  * @param ext The new extension, including the `.`.
  */
 function changeExtension(p: string, ext: string): string {
-  return p.slice(0, -path.extname(p).length) + ext;
+  return p.slice(0, -extname(p).length) + ext;
 }
 
 /**
@@ -147,7 +147,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
   private static createTestOrSuiteInfos(
     testNodes: readonly QLTestNode[],
-  ): (TestSuiteInfo | TestInfo)[] {
+  ): Array<TestSuiteInfo | TestInfo> {
     return testNodes.map((childNode) => {
       return QLTestAdapter.createTestOrSuiteInfo(childNode);
     });
@@ -182,7 +182,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     return {
       type: "suite",
       id: testDirectory.path,
-      label: label,
+      label,
       children: QLTestAdapter.createTestOrSuiteInfos(testDirectory.children),
       tooltip: testDirectory.path,
     };
@@ -227,7 +227,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
     this._testStates.fire({
       type: "started",
-      tests: tests,
+      tests,
     } as TestRunStartedEvent);
 
     const currentDatabaseUri =
@@ -325,7 +325,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
 
   private async isFileAccessible(uri: vscode.Uri): Promise<boolean> {
     try {
-      await fs.access(uri.fsPath);
+      await access(uri.fsPath);
       return true;
     } catch {
       return false;
@@ -357,7 +357,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
       tests,
       workspacePaths,
       {
-        cancellationToken: cancellationToken,
+        cancellationToken,
         logger: testLogger,
       },
     )) {

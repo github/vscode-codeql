@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fs from "fs-extra";
+import { join } from "path";
+import { readFile } from "fs-extra";
 import { createMockExtensionContext } from "../index";
 import { Credentials } from "../../../authentication";
 import * as markdownGenerator from "../../../remote-queries/remote-queries-markdown-generation";
@@ -22,8 +22,8 @@ describe("export results", () => {
 
       const ctx = createMockExtensionContext();
       const query = JSON.parse(
-        await fs.readFile(
-          path.join(
+        await readFile(
+          join(
             __dirname,
             "../data/remote-queries/query-with-results/query.json",
           ),
@@ -31,8 +31,8 @@ describe("export results", () => {
         ),
       );
       const analysesResults = JSON.parse(
-        await fs.readFile(
-          path.join(
+        await readFile(
+          join(
             __dirname,
             "../data/remote-queries/query-with-results/analyses-results.json",
           ),

@@ -1,4 +1,4 @@
-import * as path from "path";
+import { join } from "path";
 import {
   CancellationTokenSource,
   commands,
@@ -8,7 +8,7 @@ import {
   Uri,
   window,
 } from "vscode";
-import * as yaml from "js-yaml";
+import { load } from "js-yaml";
 
 import { QlPack } from "../../../remote-queries/run-remote-query";
 import { CodeQLCliServer } from "../../../cli";
@@ -35,7 +35,7 @@ import {
 jest.setTimeout(3 * 60 * 1000);
 
 describe("Remote queries", () => {
-  const baseDir = path.join(
+  const baseDir = join(
     __dirname,
     "../../../../src/vscode-tests/cli-integration",
   );
@@ -182,7 +182,7 @@ describe("Remote queries", () => {
       expect(packFS.fileExists("not-in-pack.ql")).toBe(false);
 
       // should have generated a correct qlpack file
-      const qlpackContents: any = yaml.load(
+      const qlpackContents: any = load(
         packFS.fileContents("qlpack.yml").toString("utf-8"),
       );
       expect(qlpackContents.name).toBe("codeql-remote/query");
@@ -239,7 +239,7 @@ describe("Remote queries", () => {
       verifyQlPack("in-pack.ql", packFS.fileContents("qlpack.yml"), "0.0.0");
 
       // should have generated a correct qlpack file
-      const qlpackContents: any = yaml.load(
+      const qlpackContents: any = load(
         packFS.fileContents("qlpack.yml").toString("utf-8"),
       );
       expect(qlpackContents.name).toBe("codeql-remote/query");
@@ -299,7 +299,7 @@ describe("Remote queries", () => {
       );
 
       // should have generated a correct qlpack file
-      const qlpackContents: any = yaml.load(
+      const qlpackContents: any = load(
         packFS.fileContents("qlpack.yml").toString("utf-8"),
       );
       expect(qlpackContents.name).toBe("codeql-remote/query");
@@ -334,7 +334,7 @@ describe("Remote queries", () => {
     contents: Buffer,
     packVersion: string,
   ) {
-    const qlPack = yaml.load(contents.toString("utf-8")) as QlPack;
+    const qlPack = load(contents.toString("utf-8")) as QlPack;
 
     // don't check the build metadata since it is variable
     delete (qlPack as any).buildMetadata;
@@ -358,6 +358,6 @@ describe("Remote queries", () => {
   }
 
   function getFile(file: string): Uri {
-    return Uri.file(path.join(baseDir, file));
+    return Uri.file(join(baseDir, file));
   }
 });

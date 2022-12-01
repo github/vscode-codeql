@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fs from "fs-extra";
+import { join } from "path";
+import { createFileSync, mkdirSync } from "fs-extra";
 import * as tmp from "tmp";
 import { QuickPickItem, window } from "vscode";
 
@@ -270,11 +270,9 @@ describe("databaseFetcher", () => {
 
     it("should find files", async () => {
       expect(await findDirWithFile(dir.name, "k")).toBe(
-        path.join(dir.name, "dir2", "dir3"),
+        join(dir.name, "dir2", "dir3"),
       );
-      expect(await findDirWithFile(dir.name, "h")).toBe(
-        path.join(dir.name, "dir2"),
-      );
+      expect(await findDirWithFile(dir.name, "h")).toBe(join(dir.name, "dir2"));
       expect(await findDirWithFile(dir.name, "z", "a")).toBe(dir.name);
       // there's some slight indeterminism when more than one name exists
       // but in general, this will find files in the current directory before
@@ -287,11 +285,11 @@ describe("databaseFetcher", () => {
     });
 
     function createFile(...segments: string[]) {
-      fs.createFileSync(path.join(dir.name, ...segments));
+      createFileSync(join(dir.name, ...segments));
     }
 
     function createDir(...segments: string[]) {
-      fs.mkdirSync(path.join(dir.name, ...segments));
+      mkdirSync(join(dir.name, ...segments));
     }
   });
 });

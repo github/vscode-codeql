@@ -7,7 +7,7 @@ import {
 export function createMockRepository(): Repository {
   return {
     id: faker.datatype.number(),
-    fullName: "github/" + faker.random.word(),
+    fullName: `github/${faker.random.word()}`,
     private: faker.datatype.boolean(),
   };
 }

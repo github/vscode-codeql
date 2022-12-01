@@ -1,5 +1,5 @@
 import { extensions, QuickPickItem, window } from "vscode";
-import * as path from "path";
+import { join } from "path";
 
 import { CodeQLCliServer } from "../../cli";
 import { CodeQLExtensionInterface } from "../../extension";
@@ -91,7 +91,7 @@ describe("Packaging commands", () => {
   });
 
   it("should install valid workspace pack", async () => {
-    const rootDir = path.join(
+    const rootDir = join(
       __dirname,
       "../../../src/vscode-tests/cli-integration/data",
     );
@@ -109,7 +109,7 @@ describe("Packaging commands", () => {
   });
 
   it("should throw an error when installing invalid workspace pack", async () => {
-    const rootDir = path.join(
+    const rootDir = join(
       __dirname,
       "../../../src/vscode-tests/cli-integration/data-invalid-pack",
     );

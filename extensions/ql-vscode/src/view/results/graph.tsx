@@ -1,12 +1,11 @@
 import * as React from "react";
-import * as d3 from "d3";
-import { ResultTableProps } from "./result-table-utils";
+import { select } from "d3";
+import { ResultTableProps, jumpToLocation } from "./result-table-utils";
 import {
   InterpretedResultSet,
   GraphInterpretationData,
 } from "../../pure/interface-types";
 import { graphviz } from "d3-graphviz";
-import { jumpToLocation } from "./result-table-utils";
 import { tryGetLocationFromString } from "../../pure/bqrs-utils";
 export type GraphProps = ResultTableProps & {
   resultSet: InterpretedResultSet<GraphInterpretationData>;
@@ -87,8 +86,8 @@ export class Graph extends React.Component<GraphProps> {
           if (loc !== undefined) {
             d.attributes["xlink:href"] = "#";
             d.attributes["href"] = "#";
-            loc.uri = "file://" + loc.uri;
-            d3.select(this).on("click", function (e) {
+            loc.uri = `file://${loc.uri}`;
+            select(this).on("click", function (e) {
               jumpToLocation(loc, databaseUri);
             });
           }

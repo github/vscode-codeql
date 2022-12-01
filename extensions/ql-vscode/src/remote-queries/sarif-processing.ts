@@ -75,7 +75,7 @@ function extractResultAlerts(
       severity,
       codeSnippet,
       highlightedRegion,
-      codeFlows: codeFlows,
+      codeFlows,
     };
 
     alerts.push(analysisAlert);
@@ -259,7 +259,7 @@ function getMessage(
         text: messagePart.text,
         location: {
           fileLink: {
-            fileLinkPrefix: fileLinkPrefix,
+            fileLinkPrefix,
             filePath: relatedLocation!.physicalLocation!.artifactLocation!.uri!,
           },
           highlightedRegion: getHighlightedRegion(

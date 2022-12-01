@@ -1,5 +1,12 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import {
+  readJSONSync,
+  ensureDirSync,
+  copySync,
+  readFileSync,
+  writeFileSync,
+  rmSync,
+} from "fs-extra";
+import { join } from "path";
 
 import {
   ExtensionContext,
@@ -11,11 +18,10 @@ import {
 } from "vscode";
 import { QueryHistoryConfig } from "../../../config";
 import { DatabaseManager } from "../../../databases";
-import { tmpDir } from "../../../helpers";
+import { tmpDir, walkDirectory } from "../../../helpers";
 import { QueryHistoryManager } from "../../../query-history";
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
-import { walkDirectory } from "../../../helpers";
 import { HistoryItemLabelProvider } from "../../../history-item-label-provider";
 import { RemoteQueriesManager } from "../../../remote-queries/remote-queries-manager";
 import { ResultsView } from "../../../interface";
@@ -31,10 +37,8 @@ jest.setTimeout(120000);
  */
 
 describe("Variant Analyses and QueryHistoryManager", () => {
-  const EXTENSION_PATH = path.join(__dirname, "../../../../");
-  const STORAGE_DIR = Uri.file(
-    path.join(tmpDir.name, "variant-analysis"),
-  ).fsPath;
+  const EXTENSION_PATH = join(__dirname, "../../../../");
+  const STORAGE_DIR = Uri.file(join(tmpDir.name, "variant-analysis")).fsPath;
   const asyncNoop = async () => {
     /** noop */
   };
@@ -79,8 +83,8 @@ describe("Variant Analyses and QueryHistoryManager", () => {
 
     disposables = new DisposableBucket();
 
-    rawQueryHistory = fs.readJSONSync(
-      path.join(STORAGE_DIR, "workspace-query-history.json"),
+    rawQueryHistory = readJSONSync(
+      join(STORAGE_DIR, "workspace-query-history.json"),
     ).queries;
 
     qhm = new QueryHistoryManager(
@@ -173,7 +177,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
 
     // also, both queries should be removed from disk storage
     expect(
-      fs.readJSONSync(path.join(STORAGE_DIR, "workspace-query-history.json")),
+      readJSONSync(join(STORAGE_DIR, "workspace-query-history.json")),
     ).toEqual({
       version: 2,
       queries: [],
@@ -204,29 +208,30 @@ describe("Variant Analyses and QueryHistoryManager", () => {
   });
 
   async function copyHistoryState() {
-    fs.ensureDirSync(STORAGE_DIR);
-    fs.copySync(
-      path.join(__dirname, "../data/variant-analysis/"),
-      path.join(tmpDir.name, "variant-analysis"),
+    ensureDirSync(STORAGE_DIR);
+    copySync(
+      join(__dirname, "../data/variant-analysis/"),
+      join(tmpDir.name, "variant-analysis"),
     );
 
     // also, replace the files with 'PLACEHOLDER' so that they have the correct directory
     for await (const p of walkDirectory(STORAGE_DIR)) {
-      replacePlaceholder(path.join(p));
+      replacePlaceholder(join(p));
     }
   }
 
   function replacePlaceholder(filePath: string) {
     if (filePath.endsWith(".json")) {
-      const newContents = fs
-        .readFileSync(filePath, "utf8")
-        .replaceAll("PLACEHOLDER", STORAGE_DIR.replaceAll("\\", "/"));
-      fs.writeFileSync(filePath, newContents, "utf8");
+      const newContents = readFileSync(filePath, "utf8").replaceAll(
+        "PLACEHOLDER",
+        STORAGE_DIR.replaceAll("\\", "/"),
+      );
+      writeFileSync(filePath, newContents, "utf8");
     }
   }
 
   function deleteHistoryState() {
-    fs.rmSync(STORAGE_DIR, {
+    rmSync(STORAGE_DIR, {
       recursive: true,
       force: true,
       maxRetries: 10,

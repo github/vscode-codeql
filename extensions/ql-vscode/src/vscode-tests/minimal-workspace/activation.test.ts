@@ -1,9 +1,9 @@
-import * as path from "path";
-import * as vscode from "vscode";
-import * as determiningSelectedQueryTest from "./determining-selected-query-test";
+import { resolve } from "path";
+import { extensions, workspace } from "vscode";
+import { run } from "./determining-selected-query-test";
 
 describe("launching with a minimal workspace", () => {
-  const ext = vscode.extensions.getExtension("GitHub.vscode-codeql");
+  const ext = extensions.getExtension("GitHub.vscode-codeql");
   it("should install the extension", () => {
     expect(ext).toBeDefined();
   });
@@ -18,11 +18,11 @@ describe("launching with a minimal workspace", () => {
   it("should activate the extension when a .ql file is opened", async () => {
     await delay();
 
-    const folders = vscode.workspace.workspaceFolders;
+    const folders = workspace.workspaceFolders;
     expect(folders?.length).toEqual(1);
     const folderPath = folders![0].uri.fsPath;
-    const documentPath = path.resolve(folderPath, "query.ql");
-    const document = await vscode.workspace.openTextDocument(documentPath);
+    const documentPath = resolve(folderPath, "query.ql");
+    const document = await workspace.openTextDocument(documentPath);
     expect(document.languageId).toEqual("ql");
     // Delay slightly so that the extension has time to activate.
     await delay();
@@ -34,4 +34,4 @@ describe("launching with a minimal workspace", () => {
   }
 });
 
-determiningSelectedQueryTest.run();
+run();

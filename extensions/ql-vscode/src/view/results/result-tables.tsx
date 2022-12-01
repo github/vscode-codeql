@@ -130,7 +130,7 @@ export class ResultTables extends React.Component<
     const selectedTable =
       props.parsedResultSets.selectedTable ||
       getDefaultResultSet(this.getResultSets());
-    const selectedPage = props.parsedResultSets.pageNumber + 1 + "";
+    const selectedPage = `${props.parsedResultSets.pageNumber + 1}`;
     this.state = {
       selectedTable,
       selectedPage,
@@ -168,10 +168,10 @@ export class ResultTables extends React.Component<
       if (resultsPath !== undefined) {
         vscode.postMessage({
           t: "toggleDiagnostics",
-          origResultsPaths: origResultsPaths,
+          origResultsPaths,
           databaseUri: database.databaseUri,
           visible: e.target.checked,
-          metadata: metadata,
+          metadata,
         });
       }
     };

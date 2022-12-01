@@ -1,13 +1,13 @@
-import * as os from "os";
-import * as unzipper from "unzipper";
-import * as path from "path";
-import * as fs from "fs-extra";
+import { platform } from "os";
+import { Open } from "unzipper";
+import { join } from "path";
+import { pathExists, chmod } from "fs-extra";
 
 /**
  * Get the name of the codeql cli installation we prefer to install, based on our current platform.
  */
 export function getRequiredAssetName(): string {
-  switch (os.platform()) {
+  switch (platform()) {
     case "linux":
       return "codeql-linux64.zip";
     case "darwin":
@@ -23,7 +23,7 @@ export async function extractZipArchive(
   archivePath: string,
   outPath: string,
 ): Promise<void> {
-  const archive = await unzipper.Open.file(archivePath);
+  const archive = await Open.file(archivePath);
   await archive.extract({
     concurrency: 4,
     path: outPath,
@@ -32,22 +32,22 @@ export async function extractZipArchive(
   await Promise.all(
     archive.files.map(async (file) => {
       // Only change file permissions if within outPath (path.join normalises the path)
-      const extractedPath = path.join(outPath, file.path);
+      const extractedPath = join(outPath, file.path);
       if (
         extractedPath.indexOf(outPath) !== 0 ||
-        !(await fs.pathExists(extractedPath))
+        !(await pathExists(extractedPath))
       ) {
         return Promise.resolve();
       }
-      return fs.chmod(extractedPath, file.externalFileAttributes >>> 16);
+      return chmod(extractedPath, file.externalFileAttributes >>> 16);
     }),
   );
 }
 
 export function codeQlLauncherName(): string {
-  return os.platform() === "win32" ? "codeql.exe" : "codeql";
+  return platform() === "win32" ? "codeql.exe" : "codeql";
 }
 
 export function deprecatedCodeQlLauncherName(): string | undefined {
-  return os.platform() === "win32" ? "codeql.cmd" : undefined;
+  return platform() === "win32" ? "codeql.cmd" : undefined;
 }

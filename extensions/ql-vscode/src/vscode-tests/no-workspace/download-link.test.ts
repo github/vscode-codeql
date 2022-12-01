@@ -1,4 +1,4 @@
-import * as path from "path";
+import { join } from "path";
 
 import {
   DownloadLink,
@@ -13,7 +13,7 @@ describe("createDownloadPath", () => {
       innerFilePath: "",
       queryId: "def",
     };
-    const expectedPath = path.join("storage", "def", "abc");
+    const expectedPath = join("storage", "def", "abc");
 
     const actualPath = createDownloadPath("storage", downloadLink);
 
@@ -28,7 +28,7 @@ describe("createDownloadPath", () => {
       queryId: "def",
     };
 
-    const expectedPath = path.join("storage", "def", "abc.zip");
+    const expectedPath = join("storage", "def", "abc.zip");
 
     const actualPath = createDownloadPath("storage", downloadLink, "zip");
 

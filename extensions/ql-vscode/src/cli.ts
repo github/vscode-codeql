@@ -1,7 +1,7 @@
-import * as cpp from "child-process-promise";
+import { spawn } from "child-process-promise";
 import * as child_process from "child_process";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { readFile } from "fs-extra";
+import { dirname, join, delimiter } from "path";
 import * as sarif from "sarif";
 import { SemVer } from "semver";
 import { Readable } from "stream";
@@ -166,7 +166,7 @@ export class CodeQLCliServer implements Disposable {
   /** The process for the cli server, or undefined if one doesn't exist yet */
   process?: child_process.ChildProcessWithoutNullStreams;
   /** Queue of future commands*/
-  commandQueue: (() => void)[];
+  commandQueue: Array<() => void>;
   /** Whether a command is running */
   commandInProcess: boolean;
   /**  A buffer with a single null byte. */
@@ -414,7 +414,7 @@ export class CodeQLCliServer implements Disposable {
 
     // Spawn the CodeQL process
     const codeqlPath = await this.getCodeQlPath();
-    const childPromise = cpp.spawn(codeqlPath, args);
+    const childPromise = spawn(codeqlPath, args);
     const child = childPromise.childProcess;
 
     let cancellationRegistration: Disposable | undefined = undefined;
@@ -690,10 +690,7 @@ export class CodeQLCliServer implements Disposable {
   ): Promise<MlModelsInfo> {
     const args = (await this.cliConstraints.supportsPreciseResolveMlModels())
       ? // use the dirname of the path so that we can handle query libraries
-        [
-          ...this.getAdditionalPacksArg(additionalPacks),
-          path.dirname(queryPath),
-        ]
+        [...this.getAdditionalPacksArg(additionalPacks), dirname(queryPath)]
       : this.getAdditionalPacksArg(additionalPacks);
     return await this.runJsonCodeQlCliCommand<MlModelsInfo>(
       ["resolve", "ml-models"],
@@ -915,10 +912,10 @@ export class CodeQLCliServer implements Disposable {
 
   // Warning: this function is untenable for large dot files,
   async readDotFiles(dir: string): Promise<string[]> {
-    const dotFiles: Promise<string>[] = [];
+    const dotFiles: Array<Promise<string>> = [];
     for await (const file of walkDirectory(dir)) {
       if (file.endsWith(".dot")) {
-        dotFiles.push(fs.readFile(file, "utf8"));
+        dotFiles.push(readFile(file, "utf8"));
       }
     }
     return Promise.all(dotFiles);
@@ -933,9 +930,7 @@ export class CodeQLCliServer implements Disposable {
     const additionalArgs = sourceInfo
       ? [
           "--dot-location-url-format",
-          "file://" +
-            sourceInfo.sourceLocationPrefix +
-            "{path}:{start:line}:{start:column}:{end:line}:{end:column}",
+          `file://${sourceInfo.sourceLocationPrefix}{path}:{start:line}:{start:column}:{end:line}:{end:column}`,
         ]
       : [];
 
@@ -1066,7 +1061,7 @@ export class CodeQLCliServer implements Disposable {
   ): Promise<QlpacksInfo> {
     const args = this.getAdditionalPacksArg(additionalPacks);
     if (searchPath?.length) {
-      args.push("--search-path", path.join(...searchPath));
+      args.push("--search-path", join(...searchPath));
     }
 
     return this.runJsonCodeQlCliCommand<QlpacksInfo>(
@@ -1122,7 +1117,7 @@ export class CodeQLCliServer implements Disposable {
   ): Promise<string[]> {
     const args = this.getAdditionalPacksArg(additionalPacks);
     if (searchPath !== undefined) {
-      args.push("--search-path", path.join(...searchPath));
+      args.push("--search-path", join(...searchPath));
     }
     if (await this.cliConstraints.supportsAllowLibraryPacksInResolveQueries()) {
       // All of our usage of `codeql resolve queries` needs to handle library packs.
@@ -1241,7 +1236,7 @@ export class CodeQLCliServer implements Disposable {
     const distribution = await this.distributionProvider.getDistribution();
     switch (distribution.kind) {
       case FindDistributionResultKind.CompatibleDistribution:
-      // eslint-disable-next-line no-fallthrough
+
       case FindDistributionResultKind.IncompatibleDistribution:
         return distribution.version;
 
@@ -1253,9 +1248,7 @@ export class CodeQLCliServer implements Disposable {
   }
 
   private getAdditionalPacksArg(paths: string[]): string[] {
-    return paths.length
-      ? ["--additional-packs", paths.join(path.delimiter)]
-      : [];
+    return paths.length ? ["--additional-packs", paths.join(delimiter)] : [];
   }
 }
 

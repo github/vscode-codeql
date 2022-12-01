@@ -1,6 +1,12 @@
-import * as fs from "fs-extra";
-import * as os from "os";
-import * as path from "path";
+import {
+  pathExists,
+  mkdir,
+  outputJson,
+  writeFileSync,
+  readJson,
+} from "fs-extra";
+import { EOL } from "os";
+import { join } from "path";
 
 import { Credentials } from "../authentication";
 import { Logger } from "../common";
@@ -15,7 +21,7 @@ import {
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
 import { DisposableObject, DisposeHandler } from "../pure/disposable-object";
-import * as ghApiClient from "./gh-api/gh-api-client";
+import { getVariantAnalysisRepoResult } from "./gh-api/gh-api-client";
 import { EventEmitter } from "vscode";
 import { unzipFile } from "../pure/zip";
 
@@ -79,30 +85,27 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       repoTask.repository.fullName,
     );
 
-    const result = await ghApiClient.getVariantAnalysisRepoResult(
+    const result = await getVariantAnalysisRepoResult(
       credentials,
       repoTask.artifactUrl,
     );
 
-    if (!(await fs.pathExists(resultDirectory))) {
-      await fs.mkdir(resultDirectory, { recursive: true });
+    if (!(await pathExists(resultDirectory))) {
+      await mkdir(resultDirectory, { recursive: true });
     }
 
-    await fs.outputJson(
-      path.join(
-        resultDirectory,
-        VariantAnalysisResultsManager.REPO_TASK_FILENAME,
-      ),
+    await outputJson(
+      join(resultDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME),
       repoTask,
     );
 
-    const zipFilePath = path.join(resultDirectory, "results.zip");
-    const unzippedFilesDirectory = path.join(
+    const zipFilePath = join(resultDirectory, "results.zip");
+    const unzippedFilesDirectory = join(
       resultDirectory,
       VariantAnalysisResultsManager.RESULTS_DIRECTORY,
     );
 
-    fs.writeFileSync(zipFilePath, Buffer.from(result));
+    writeFileSync(zipFilePath, Buffer.from(result));
     await unzipFile(zipFilePath, unzippedFilesDirectory);
 
     this._onResultDownloaded.fire({
@@ -177,11 +180,8 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       repositoryFullName,
     );
 
-    const repoTask: VariantAnalysisRepositoryTask = await fs.readJson(
-      path.join(
-        storageDirectory,
-        VariantAnalysisResultsManager.REPO_TASK_FILENAME,
-      ),
+    const repoTask: VariantAnalysisRepositoryTask = await readJson(
+      join(storageDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME),
     );
 
     if (!repoTask.databaseCommitSha || !repoTask.sourceLocationPrefix) {
@@ -193,13 +193,13 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       repoTask.databaseCommitSha,
     );
 
-    const resultsDirectory = path.join(
+    const resultsDirectory = join(
       storageDirectory,
       VariantAnalysisResultsManager.RESULTS_DIRECTORY,
     );
-    const sarifPath = path.join(resultsDirectory, "results.sarif");
-    const bqrsPath = path.join(resultsDirectory, "results.bqrs");
-    if (await fs.pathExists(sarifPath)) {
+    const sarifPath = join(resultsDirectory, "results.sarif");
+    const bqrsPath = join(resultsDirectory, "results.bqrs");
+    if (await pathExists(sarifPath)) {
       const interpretedResults = await this.readSarifResults(
         sarifPath,
         fileLinkPrefix,
@@ -212,7 +212,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       };
     }
 
-    if (await fs.pathExists(bqrsPath)) {
+    if (await pathExists(bqrsPath)) {
       const rawResults = await this.readBqrsResults(
         bqrsPath,
         fileLinkPrefix,
@@ -233,7 +233,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     variantAnalysisStoragePath: string,
     repositoryFullName: string,
   ): Promise<boolean> {
-    return await fs.pathExists(
+    return await pathExists(
       this.getRepoStorageDirectory(
         variantAnalysisStoragePath,
         repositoryFullName,
@@ -264,9 +264,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     const processedSarif = extractAnalysisAlerts(sarifLog, fileLinkPrefix);
     if (processedSarif.errors.length) {
       void this.logger.log(
-        `Error processing SARIF file: ${os.EOL}${processedSarif.errors.join(
-          os.EOL,
-        )}`,
+        `Error processing SARIF file: ${EOL}${processedSarif.errors.join(EOL)}`,
       );
     }
 
@@ -277,7 +275,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     variantAnalysisStoragePath: string,
     fullName: string,
   ): string {
-    return path.join(variantAnalysisStoragePath, fullName);
+    return join(variantAnalysisStoragePath, fullName);
   }
 
   private createGitHubDotcomFileLinkPrefix(

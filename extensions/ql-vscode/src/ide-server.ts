@@ -1,6 +1,6 @@
 import { ProgressLocation, window } from "vscode";
 import { StreamInfo } from "vscode-languageclient/node";
-import * as cli from "./cli";
+import { shouldDebugIdeServer, spawnServer } from "./cli";
 import { QueryServerConfig } from "./config";
 import { ideServerLogger } from "./common";
 
@@ -16,12 +16,12 @@ export async function spawnIdeServer(
     { title: "CodeQL language server", location: ProgressLocation.Window },
     async (progressReporter, _) => {
       const args = ["--check-errors", "ON_CHANGE"];
-      if (cli.shouldDebugIdeServer()) {
+      if (shouldDebugIdeServer()) {
         args.push(
           "-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9009,server=y,suspend=n,quiet=y",
         );
       }
-      const child = cli.spawnServer(
+      const child = spawnServer(
         config.codeQlPath,
         "CodeQL language server",
         ["execute", "language-server"],

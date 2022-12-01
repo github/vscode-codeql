@@ -1,9 +1,9 @@
-import * as os from "os";
+import { EOL } from "os";
 import { Credentials } from "../authentication";
 import { RepositorySelection } from "./repository-selection";
 import { Repository } from "./shared/repository";
 import { RemoteQueriesResponse } from "./gh-api/remote-queries";
-import * as ghApiClient from "./gh-api/gh-api-client";
+import { submitRemoteQueries } from "./gh-api/gh-api-client";
 import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
@@ -20,7 +20,7 @@ export async function runRemoteQueriesApiRequest(
   queryPackBase64: string,
 ): Promise<void | RemoteQueriesResponse> {
   try {
-    const response = await ghApiClient.submitRemoteQueries(credentials, {
+    const response = await submitRemoteQueries(credentials, {
       ref,
       language,
       repositories: repoSelection.repositories,
@@ -48,8 +48,8 @@ export async function runRemoteQueriesApiRequest(
   }
 }
 
-const eol = os.EOL;
-const eol2 = os.EOL + os.EOL;
+const eol = EOL;
+const eol2 = EOL + EOL;
 
 // exported for testing only
 export function parseResponse(
@@ -59,17 +59,17 @@ export function parseResponse(
   const repositoriesQueried = response.repositories_queried;
   const repositoryCount = repositoriesQueried.length;
 
-  const popupMessage =
-    `Successfully scheduled runs on ${pluralize(
-      repositoryCount,
-      "repository",
-      "repositories",
-    )}. [Click here to see the progress](https://github.com/${
-      controllerRepo.fullName
-    }/actions/runs/${response.workflow_run_id}).` +
-    (response.errors
+  const popupMessage = `Successfully scheduled runs on ${pluralize(
+    repositoryCount,
+    "repository",
+    "repositories",
+  )}. [Click here to see the progress](https://github.com/${
+    controllerRepo.fullName
+  }/actions/runs/${response.workflow_run_id}).${
+    response.errors
       ? `${eol2}Some repositories could not be scheduled. See extension log for details.`
-      : "");
+      : ""
+  }`;
 
   let logMessage = `Successfully scheduled runs on ${pluralize(
     repositoryCount,

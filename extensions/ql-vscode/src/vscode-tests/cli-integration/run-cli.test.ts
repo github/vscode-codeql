@@ -1,5 +1,5 @@
 import { extensions, Uri } from "vscode";
-import * as path from "path";
+import { join } from "path";
 import { SemVer } from "semver";
 
 import { CodeQLCliServer, QueryInfoByLanguage } from "../../cli";
@@ -72,11 +72,7 @@ describe("Use cli", () => {
   });
 
   itWithCodeQL()("should resolve query by language", async () => {
-    const queryPath = path.join(
-      __dirname,
-      "data",
-      "simple-javascript-query.ql",
-    );
+    const queryPath = join(__dirname, "data", "simple-javascript-query.ql");
     const queryInfo: QueryInfoByLanguage = await cli.resolveQueryByLanguage(
       getOnDiskWorkspaceFolders(),
       Uri.file(queryPath),

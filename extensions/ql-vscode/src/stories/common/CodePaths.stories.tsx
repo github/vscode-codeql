@@ -113,7 +113,7 @@ const codeFlows: CodeFlow[] = [
 ];
 
 PowerShell.args = {
-  codeFlows: codeFlows,
+  codeFlows,
   ruleDescription: "ZipSlip vulnerability",
   message: {
     tokens: [

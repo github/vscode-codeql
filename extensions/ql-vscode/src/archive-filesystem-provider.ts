@@ -1,12 +1,12 @@
-import * as fs from "fs-extra";
+import { pathExists } from "fs-extra";
 import * as unzipper from "unzipper";
 import * as vscode from "vscode";
 import { extLogger } from "./common";
 
 // All path operations in this file must be on paths *within* the zip
 // archive.
-import * as _path from "path";
-const path = _path.posix;
+import { posix } from "path";
+const path = posix;
 
 export class File implements vscode.FileStat {
   type: vscode.FileType;
@@ -75,7 +75,7 @@ export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   if (encodedPath.startsWith("/")) {
     sourceArchiveZipPathStartIndex = 0;
   } else {
-    encodedPath = "/" + encodedPath;
+    encodedPath = `/${encodedPath}`;
     sourceArchiveZipPathStartIndex = 1;
   }
 
@@ -85,7 +85,7 @@ export function encodeSourceArchiveUri(ref: ZipFileReference): vscode.Uri {
   const sourceArchiveZipPathEndIndex =
     sourceArchiveZipPathStartIndex + sourceArchiveZipPath.length;
   const authority = `${sourceArchiveZipPathStartIndex}-${sourceArchiveZipPathEndIndex}`;
-  return vscode.Uri.parse(zipArchiveScheme + ":/", true).with({
+  return vscode.Uri.parse(`${zipArchiveScheme}:/`, true).with({
     path: encodedPath,
     authority,
   });
@@ -176,7 +176,7 @@ type Archive = {
 };
 
 async function parse_zip(zipPath: string): Promise<Archive> {
-  if (!(await fs.pathExists(zipPath)))
+  if (!(await pathExists(zipPath)))
     throw vscode.FileSystemError.FileNotFound(zipPath);
   const archive: Archive = {
     unzipped: await unzipper.Open.file(zipPath),
@@ -209,7 +209,9 @@ export class ArchiveFileSystemProvider implements vscode.FileSystemProvider {
     return await this._lookup(uri);
   }
 
-  async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
+  async readDirectory(
+    uri: vscode.Uri,
+  ): Promise<Array<[string, vscode.FileType]>> {
     const ref = decodeSourceArchiveUri(uri);
     const archive = await this.getArchive(ref.sourceArchiveZipPath);
     const contents = archive.dirMap.get(ref.pathWithinSourceArchive);

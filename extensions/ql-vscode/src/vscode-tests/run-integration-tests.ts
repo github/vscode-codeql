@@ -1,13 +1,13 @@
-import * as path from "path";
-import * as os from "os";
-import * as cp from "child_process";
+import { resolve, join } from "path";
+import { platform } from "os";
+import { spawnSync } from "child_process";
 import {
   runTests,
   downloadAndUnzipVSCode,
   resolveCliArgsFromVSCodeExecutablePath,
 } from "@vscode/test-electron";
 import { assertNever } from "../pure/helpers-pure";
-import * as tmp from "tmp-promise";
+import { dirSync } from "tmp-promise";
 
 // For some reason, the following are not exported directly from `vscode-test`,
 // but we can be tricky and import directly from the out file.
@@ -45,7 +45,7 @@ async function runTestsWithRetryOnSegfault(
       if (err === "SIGSEGV") {
         console.error("Test runner segfaulted.");
         if (t < tries - 1) console.error("Retrying...");
-      } else if (os.platform() === "win32") {
+      } else if (platform() === "win32") {
         console.error(`Test runner caught exception (${err})`);
         if (t < tries - 1) console.error("Retrying...");
       } else {
@@ -59,7 +59,7 @@ async function runTestsWithRetryOnSegfault(
   process.exit(1);
 }
 
-const tmpDir = tmp.dirSync({ unsafeCleanup: true });
+const tmpDir = dirSync({ unsafeCleanup: true });
 
 /**
  * Integration test runner. Launches the VSCode Extension Development Host with this extension installed.
@@ -68,7 +68,7 @@ const tmpDir = tmp.dirSync({ unsafeCleanup: true });
 async function main() {
   let exitCode = 0;
   try {
-    const extensionDevelopmentPath = path.resolve(__dirname, "../..");
+    const extensionDevelopmentPath = resolve(__dirname, "../..");
     const vscodeExecutablePath = await downloadAndUnzipVSCode(VSCODE_VERSION);
 
     // Which tests to run. Use a comma-separated list of directories.
@@ -81,7 +81,7 @@ async function main() {
       console.log("Installing required extensions");
       const [cli, ...args] =
         resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
-      cp.spawnSync(
+      spawnSync(
         cli,
         [
           ...args,
@@ -108,7 +108,7 @@ async function main() {
           version: VSCODE_VERSION,
           vscodeExecutablePath,
           extensionDevelopmentPath,
-          extensionTestsPath: path.resolve(__dirname, dir, "index"),
+          extensionTestsPath: resolve(__dirname, dir, "index"),
           extensionTestsEnv,
           launchArgs,
         },
@@ -135,7 +135,7 @@ function getLaunchArgs(dir: TestDir) {
         "--disable-extensions",
         "--disable-gpu",
         "--disable-workspace-trust",
-        "--user-data-dir=" + path.join(tmpDir.name, dir, "user-data"),
+        `--user-data-dir=${join(tmpDir.name, dir, "user-data")}`,
       ];
 
     case TestDir.MinimalWorksspace:
@@ -143,8 +143,8 @@ function getLaunchArgs(dir: TestDir) {
         "--disable-extensions",
         "--disable-gpu",
         "--disable-workspace-trust",
-        "--user-data-dir=" + path.join(tmpDir.name, dir, "user-data"),
-        path.resolve(__dirname, "../../test/data"),
+        `--user-data-dir=${join(tmpDir.name, dir, "user-data")}`,
+        resolve(__dirname, "../../test/data"),
       ];
 
     case TestDir.CliIntegration:
@@ -152,7 +152,7 @@ function getLaunchArgs(dir: TestDir) {
       return [
         "--disable-workspace-trust",
         "--disable-gpu",
-        path.resolve(__dirname, "../../test/data"),
+        resolve(__dirname, "../../test/data"),
 
         // explicitly disable extensions that are known to interfere with the CLI integration tests
         "--disable-extension",
@@ -161,7 +161,7 @@ function getLaunchArgs(dir: TestDir) {
         "github.codespaces",
         "--disable-extension",
         "github.copilot",
-        "--user-data-dir=" + path.join(tmpDir.name, dir, "user-data"),
+        `--user-data-dir=${join(tmpDir.name, dir, "user-data")}`,
       ].concat(
         process.env.TEST_CODEQL_PATH ? [process.env.TEST_CODEQL_PATH] : [],
       );

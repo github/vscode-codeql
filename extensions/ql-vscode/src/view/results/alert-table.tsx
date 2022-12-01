@@ -1,8 +1,8 @@
-import * as path from "path";
+import { basename } from "path";
 import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "../../pure/result-keys";
-import * as octicons from "./octicons";
+import { chevronDown, chevronRight, info, listUnordered } from "./octicons";
 import {
   className,
   renderLocation,
@@ -18,17 +18,15 @@ import {
   NavigateMsg,
   NavigationDirection,
   SarifInterpretationData,
+  InterpretedResultsSortColumn,
+  SortDirection,
+  InterpretedResultsSortState,
 } from "../../pure/interface-types";
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
   isNoLocation,
 } from "../../pure/sarif-utils";
-import {
-  InterpretedResultsSortColumn,
-  SortDirection,
-  InterpretedResultsSortState,
-} from "../../pure/interface-types";
 import { vscode } from "../vscode-api";
 import { isWholeFileLoc, isLineColumnLoc } from "../../pure/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
@@ -128,10 +126,9 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         <tr>
           <th colSpan={2}></th>
           <th
-            className={
-              this.sortClass("alert-message") +
-              " vscode-codeql__alert-message-cell"
-            }
+            className={`${this.sortClass(
+              "alert-message",
+            )} vscode-codeql__alert-message-cell`}
             colSpan={3}
             onClick={() => this.toggleSortStateForColumn("alert-message")}
           >
@@ -224,7 +221,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       if ("hint" in parsedLoc) {
         return renderNonLocation("[no location]", parsedLoc.hint);
       } else if (isWholeFileLoc(parsedLoc)) {
-        const shortLocation = `${path.basename(parsedLoc.userVisibleFile)}`;
+        const shortLocation = `${basename(parsedLoc.userVisibleFile)}`;
         const longLocation = `${parsedLoc.userVisibleFile}`;
         return renderLocation(
           parsedLoc,
@@ -234,7 +231,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           updateSelectionCallback(pathNodeKey),
         );
       } else if (isLineColumnLoc(parsedLoc)) {
-        const shortLocation = `${path.basename(parsedLoc.userVisibleFile)}:${
+        const shortLocation = `${basename(parsedLoc.userVisibleFile)}:${
           parsedLoc.startLine
         }:${parsedLoc.startColumn}`;
         const longLocation = `${parsedLoc.userVisibleFile}`;
@@ -272,9 +269,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         const currentResultExpanded = this.state.expanded.has(
           Keys.keyToString(resultKey),
         );
-        const indicator = currentResultExpanded
-          ? octicons.chevronDown
-          : octicons.chevronRight;
+        const indicator = currentResultExpanded ? chevronDown : chevronRight;
         const location =
           result.locations !== undefined &&
           result.locations.length > 0 &&
@@ -295,7 +290,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
               key={resultIndex}
               {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
             >
-              <td className="vscode-codeql__icon-cell">{octicons.info}</td>
+              <td className="vscode-codeql__icon-cell">{info}</td>
               <td colSpan={3}>{msg}</td>
               {locationCells}
             </tr>,
@@ -322,9 +317,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
               >
                 {indicator}
               </td>
-              <td className="vscode-codeql__icon-cell">
-                {octicons.listUnordered}
-              </td>
+              <td className="vscode-codeql__icon-cell">{listUnordered}</td>
               <td colSpan={2}>{msg}</td>
               {locationCells}
             </tr>,
@@ -337,8 +330,8 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
             );
             if (currentResultExpanded) {
               const indicator = currentPathExpanded
-                ? octicons.chevronDown
-                : octicons.chevronRight;
+                ? chevronDown
+                : chevronRight;
               const isPathSpecificallySelected = Keys.equalsNotUndefined(
                 pathKey,
                 selectedItem,

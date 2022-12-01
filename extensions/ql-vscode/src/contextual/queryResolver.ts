@@ -1,13 +1,18 @@
-import * as fs from "fs-extra";
-import * as yaml from "js-yaml";
-import * as tmp from "tmp-promise";
-import * as path from "path";
+import { writeFile, promises } from "fs-extra";
+import { dump } from "js-yaml";
+import { file } from "tmp-promise";
+import { basename, dirname, resolve } from "path";
 
-import * as helpers from "../helpers";
+import {
+  getPrimaryDbscheme,
+  getQlPackForDbscheme,
+  getOnDiskWorkspaceFolders,
+  showAndLogErrorMessage,
+  QlPacksForLanguage,
+} from "../helpers";
 import { KeyType, kindOfKeyType, nameOfKeyType, tagOfKeyType } from "./keyType";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseItem } from "../databases";
-import { QlPacksForLanguage } from "../helpers";
 import { extLogger } from "../common";
 import { createInitialQueryInfo } from "../run-queries-shared";
 import { CancellationToken, Uri } from "vscode";
@@ -22,8 +27,8 @@ export async function qlpackOfDatabase(
     throw new Error("Database is invalid and cannot infer QLPack.");
   }
   const datasetPath = db.contents.datasetUri.fsPath;
-  const dbscheme = await helpers.getPrimaryDbscheme(datasetPath);
-  return await helpers.getQlPackForDbscheme(cli, dbscheme);
+  const dbscheme = await getPrimaryDbscheme(datasetPath);
+  return await getQlPackForDbscheme(cli, dbscheme);
 }
 
 /**
@@ -40,7 +45,7 @@ async function resolveQueriesFromPacks(
   keyType: KeyType,
 ): Promise<string[]> {
   const suiteFile = (
-    await tmp.file({
+    await file({
       postfix: ".qls",
     })
   ).path;
@@ -55,11 +60,11 @@ async function resolveQueriesFromPacks(
       },
     });
   }
-  await fs.writeFile(suiteFile, yaml.dump(suiteYaml), "utf8");
+  await writeFile(suiteFile, dump(suiteYaml), "utf8");
 
   const queries = await cli.resolveQueriesInSuite(
     suiteFile,
-    helpers.getOnDiskWorkspaceFolders(),
+    getOnDiskWorkspaceFolders(),
   );
   return queries;
 }
@@ -124,7 +129,7 @@ export async function resolveQueries(
     )} queries are not yet available \
     for this language.`;
 
-  void helpers.showAndLogErrorMessage(errorMessage);
+  void showAndLogErrorMessage(errorMessage);
   throw new Error(
     `Couldn't find any queries tagged ${tagOfKeyType(
       keyType,
@@ -144,7 +149,7 @@ async function resolveContextualQuery(
   // Work out the enclosing pack.
   const packContents = await cli.packPacklist(query, false);
   const packFilePath = packContents.find((p) =>
-    ["codeql-pack.yml", "qlpack.yml"].includes(path.basename(p)),
+    ["codeql-pack.yml", "qlpack.yml"].includes(basename(p)),
   );
   if (packFilePath === undefined) {
     // Should not happen; we already resolved this query.
@@ -152,9 +157,9 @@ async function resolveContextualQuery(
       `Could not find a CodeQL pack file for the pack enclosing the contextual query ${query}`,
     );
   }
-  const packPath = path.dirname(packFilePath);
+  const packPath = dirname(packFilePath);
   const lockFilePath = packContents.find((p) =>
-    ["codeql-pack.lock.yml", "qlpack.lock.yml"].includes(path.basename(p)),
+    ["codeql-pack.lock.yml", "qlpack.lock.yml"].includes(basename(p)),
   );
   let createdTempLockFile = false;
   if (!lockFilePath) {
@@ -180,12 +185,12 @@ async function resolveContextualQuery(
 }
 
 async function removeTemporaryLockFile(packPath: string) {
-  const tempLockFilePath = path.resolve(packPath, "codeql-pack.lock.yml");
+  const tempLockFilePath = resolve(packPath, "codeql-pack.lock.yml");
   void extLogger.log(
     `Deleting temporary package lock file at ${tempLockFilePath}`,
   );
   // It's fine if the file doesn't exist.
-  await fs.promises.rm(path.resolve(packPath, "codeql-pack.lock.yml"), {
+  await promises.rm(resolve(packPath, "codeql-pack.lock.yml"), {
     force: true,
   });
 }

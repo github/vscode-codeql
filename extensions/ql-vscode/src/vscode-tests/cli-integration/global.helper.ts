@@ -1,6 +1,6 @@
-import * as path from "path";
-import * as yaml from "js-yaml";
-import * as fs from "fs-extra";
+import { join } from "path";
+import { load, dump } from "js-yaml";
+import { realpathSync, readFileSync, writeFileSync } from "fs-extra";
 import { commands } from "vscode";
 import { DatabaseManager } from "../../databases";
 import { CodeQLCliServer } from "../../cli";
@@ -13,8 +13,8 @@ export const DB_URL =
 
 // We need to resolve the path, but the final three segments won't exist until later, so we only resolve the
 // first portion of the path.
-export const dbLoc = path.join(
-  fs.realpathSync(path.join(__dirname, "../../../")),
+export const dbLoc = join(
+  realpathSync(join(__dirname, "../../../")),
   "build/tests/db.zip",
 );
 export let storagePath: string;
@@ -45,12 +45,10 @@ export async function fixWorkspaceReferences(
 ): Promise<Record<string, string> | undefined> {
   if (!(await cli.cliConstraints.supportsWorkspaceReferences())) {
     // remove the workspace references from the qlpack
-    const qlpack = yaml.load(
-      fs.readFileSync(qlpackFileWithWorkspaceRefs, "utf8"),
-    );
+    const qlpack = load(readFileSync(qlpackFileWithWorkspaceRefs, "utf8"));
     const originalDeps = { ...qlpack.dependencies };
     removeWorkspaceRefs(qlpack);
-    fs.writeFileSync(qlpackFileWithWorkspaceRefs, yaml.dump(qlpack));
+    writeFileSync(qlpackFileWithWorkspaceRefs, dump(qlpack));
     return originalDeps;
   }
   return undefined;
@@ -71,9 +69,7 @@ export async function restoreWorkspaceReferences(
   if (!originalDeps) {
     return;
   }
-  const qlpack = yaml.load(
-    fs.readFileSync(qlpackFileWithWorkspaceRefs, "utf8"),
-  );
+  const qlpack = load(readFileSync(qlpackFileWithWorkspaceRefs, "utf8"));
   qlpack.dependencies = originalDeps;
-  fs.writeFileSync(qlpackFileWithWorkspaceRefs, yaml.dump(qlpack));
+  writeFileSync(qlpackFileWithWorkspaceRefs, dump(qlpack));
 }

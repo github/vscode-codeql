@@ -4,7 +4,7 @@ export type EventHandler<T> = (event: T) => void;
  * A set of listeners for events of type `T`.
  */
 export class EventHandlers<T> {
-  private handlers: EventHandler<T>[] = [];
+  private handlers: Array<EventHandler<T>> = [];
 
   public addListener(handler: EventHandler<T>) {
     this.handlers.push(handler);

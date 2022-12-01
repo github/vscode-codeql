@@ -1,4 +1,4 @@
-import * as yaml from "js-yaml";
+import { load } from "js-yaml";
 import * as fs from "fs-extra";
 
 import { KeyType } from "../../../contextual/keyType";
@@ -67,7 +67,7 @@ describe("queryResolver", () => {
         expect.anything(),
         expect.anything(),
       );
-      expect(yaml.load(writeFileSpy.mock.calls[0][1])).toEqual([
+      expect(load(writeFileSpy.mock.calls[0][1])).toEqual([
         {
           from: "my-qlpack",
           queries: ".",
@@ -101,7 +101,7 @@ describe("queryResolver", () => {
         expect.anything(),
         expect.anything(),
       );
-      expect(yaml.load(writeFileSpy.mock.calls[0][1])).toEqual([
+      expect(load(writeFileSpy.mock.calls[0][1])).toEqual([
         {
           from: "my-qlpack2",
           queries: ".",

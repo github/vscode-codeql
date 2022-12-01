@@ -1,10 +1,10 @@
-import * as React from "react";
+import { createRef } from "react";
 
 /**
  * Some book-keeping needed to scroll a specific HTML element into view in a React component.
  */
 export class ScrollIntoViewHelper {
-  private selectedElementRef = React.createRef<HTMLElement | any>(); // need 'any' to work around typing bug in React
+  private selectedElementRef = createRef<HTMLElement | any>(); // need 'any' to work around typing bug in React
   private shouldScrollIntoView = true;
 
   /**

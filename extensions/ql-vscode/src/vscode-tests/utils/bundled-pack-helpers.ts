@@ -1,6 +1,5 @@
 import { Readable } from "stream";
-import * as tar from "tar-stream";
-import { Headers } from "tar-stream";
+import { extract as tar_extract, Headers } from "tar-stream";
 import { pipeline } from "stream/promises";
 import { createGunzip } from "zlib";
 
@@ -16,7 +15,7 @@ export async function readBundledPack(
   const buffer = Buffer.from(base64Pack, "base64");
   const stream = Readable.from(buffer);
 
-  const extract = tar.extract();
+  const extract = tar_extract();
 
   const files: Record<
     string,

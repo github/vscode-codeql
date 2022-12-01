@@ -5,9 +5,9 @@ import {
   RawResultsSortState,
   QueryMetadata,
   SortDirection,
+  ResultSet,
 } from "../../pure/interface-types";
 import { assertNever } from "../../pure/helpers-pure";
-import { ResultSet } from "../../pure/interface-types";
 import { vscode } from "../vscode-api";
 import { convertNonPrintableChars } from "../../text-utils";
 

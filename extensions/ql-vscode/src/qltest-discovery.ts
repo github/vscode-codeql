@@ -1,4 +1,4 @@
-import * as path from "path";
+import { dirname, basename, join, normalize, relative, extname } from "path";
 import { Discovery } from "./discovery";
 import {
   EventEmitter,
@@ -10,7 +10,7 @@ import {
 } from "vscode";
 import { MultiFileSystemWatcher } from "./vscode-utils/multi-file-system-watcher";
 import { CodeQLCliServer } from "./cli";
-import * as fs from "fs-extra";
+import { pathExists } from "fs-extra";
 
 /**
  * A node in the tree of tests. This will be either a `QLTestDirectory` or a `QLTestFile`.
@@ -52,12 +52,12 @@ export class QLTestDirectory extends QLTestNode {
   }
 
   public createDirectory(relativePath: string): QLTestDirectory {
-    const dirName = path.dirname(relativePath);
+    const dirName = dirname(relativePath);
     if (dirName === ".") {
       return this.createChildDirectory(relativePath);
     } else {
       const parent = this.createDirectory(dirName);
-      return parent.createDirectory(path.basename(relativePath));
+      return parent.createDirectory(basename(relativePath));
     }
   }
 
@@ -76,7 +76,7 @@ export class QLTestDirectory extends QLTestNode {
         // collapse children
         const replacement = new QLTestDirectory(
           child.children[0].path,
-          child.name + " / " + child.children[0].name,
+          `${child.name} / ${child.children[0].name}`,
           Array.from(child.children[0].children),
         );
         this._children[i] = replacement;
@@ -89,7 +89,7 @@ export class QLTestDirectory extends QLTestNode {
     if (existingChild !== undefined) {
       return existingChild as QLTestDirectory;
     } else {
-      const newChild = new QLTestDirectory(path.join(this.path, name), name);
+      const newChild = new QLTestDirectory(join(this.path, name), name);
       this.addChild(newChild);
       return newChild;
     }
@@ -200,17 +200,15 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
     const rootDirectory = new QLTestDirectory(fullPath, name);
 
     // Don't try discovery on workspace folders that don't exist on the filesystem
-    if (await fs.pathExists(fullPath)) {
+    if (await pathExists(fullPath)) {
       const resolvedTests = (
         await this.cliServer.resolveTests(fullPath)
       ).filter((testPath) => !QLTestDiscovery.ignoreTestPath(testPath));
       for (const testPath of resolvedTests) {
-        const relativePath = path.normalize(path.relative(fullPath, testPath));
-        const dirName = path.dirname(relativePath);
+        const relativePath = normalize(relative(fullPath, testPath));
+        const dirName = dirname(relativePath);
         const parentDirectory = rootDirectory.createDirectory(dirName);
-        parentDirectory.addChild(
-          new QLTestFile(testPath, path.basename(testPath)),
-        );
+        parentDirectory.addChild(new QLTestFile(testPath, basename(testPath)));
       }
 
       rootDirectory.finish();
@@ -223,10 +221,10 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
    * @param testPath Path to the test file.
    */
   private static ignoreTestPath(testPath: string): boolean {
-    switch (path.extname(testPath).toLowerCase()) {
+    switch (extname(testPath).toLowerCase()) {
       case ".ql":
       case ".qlref":
-        return path.basename(testPath).startsWith("__");
+        return basename(testPath).startsWith("__");
 
       default:
         return false;

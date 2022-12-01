@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as tmp from "tmp";
+import { join, basename } from "path";
+import { dirSync } from "tmp";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import * as messages from "../../pure/new-messages";
 import * as qsClient from "../../query-server/queryserver-client";
@@ -14,15 +14,15 @@ import { QueryResultType } from "../../pure/new-messages";
 import { cleanDatabases, dbLoc, storagePath } from "./global.helper";
 import { importArchiveDatabase } from "../../databaseFetcher";
 
-const baseDir = path.join(__dirname, "../../../test/data");
+const baseDir = join(__dirname, "../../../test/data");
 
-const tmpDir = tmp.dirSync({
+const tmpDir = dirSync({
   prefix: "query_test_",
   keep: false,
   unsafeCleanup: true,
 });
 
-const RESULTS_PATH = path.join(tmpDir.name, "results.bqrs");
+const RESULTS_PATH = join(tmpDir.name, "results.bqrs");
 
 const source = new CancellationTokenSource();
 const token = source.token;
@@ -70,19 +70,19 @@ type QueryTestCase = {
 // Test cases: queries to run and their expected results.
 const queryTestCases: QueryTestCase[] = [
   {
-    queryPath: path.join(baseDir, "query.ql"),
+    queryPath: join(baseDir, "query.ql"),
     expectedResultSets: {
       "#select": [[42, 3.14159, "hello world", true]],
     },
   },
   {
-    queryPath: path.join(baseDir, "compute-default-strings.ql"),
+    queryPath: join(baseDir, "compute-default-strings.ql"),
     expectedResultSets: {
       "#select": [[{ label: "(no string representation)" }]],
     },
   },
   {
-    queryPath: path.join(baseDir, "multiple-result-sets.ql"),
+    queryPath: join(baseDir, "multiple-result-sets.ql"),
     expectedResultSets: {
       edges: [
         [1, 2],
@@ -168,7 +168,7 @@ describeWithCodeQL()("using the new query server", () => {
   });
 
   for (const queryTestCase of queryTestCases) {
-    const queryName = path.basename(queryTestCase.queryPath);
+    const queryName = basename(queryTestCase.queryPath);
     const evaluationSucceeded = new Checkpoint<void>();
     const parsedResults = new Checkpoint<void>();
 

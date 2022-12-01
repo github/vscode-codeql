@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { pathExists, stat, readdir } from "fs-extra";
+import { join } from "path";
 
 /**
  * Recursively finds all .ql files in this set of Uris.
@@ -14,13 +14,10 @@ export async function gatherQlFiles(
   const gatheredUris: Set<string> = new Set();
   let dirFound = false;
   for (const nextPath of paths) {
-    if (
-      (await fs.pathExists(nextPath)) &&
-      (await fs.stat(nextPath)).isDirectory()
-    ) {
+    if ((await pathExists(nextPath)) && (await stat(nextPath)).isDirectory()) {
       dirFound = true;
-      const subPaths = await fs.readdir(nextPath);
-      const fullPaths = subPaths.map((p) => path.join(nextPath, p));
+      const subPaths = await readdir(nextPath);
+      const fullPaths = subPaths.map((p) => join(nextPath, p));
       const nestedFiles = (await gatherQlFiles(fullPaths))[0];
       nestedFiles.forEach((nested) => gatheredUris.add(nested));
     } else if (nextPath.endsWith(".ql")) {
@@ -38,14 +35,14 @@ export async function gatherQlFiles(
 export async function getDirectoryNamesInsidePath(
   path: string,
 ): Promise<string[]> {
-  if (!(await fs.pathExists(path))) {
+  if (!(await pathExists(path))) {
     throw Error(`Path does not exist: ${path}`);
   }
-  if (!(await fs.stat(path)).isDirectory()) {
+  if (!(await stat(path)).isDirectory()) {
     throw Error(`Path is not a directory: ${path}`);
   }
 
-  const dirItems = await fs.readdir(path, { withFileTypes: true });
+  const dirItems = await readdir(path, { withFileTypes: true });
 
   const dirNames = dirItems
     .filter((dirent) => dirent.isDirectory())

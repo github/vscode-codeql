@@ -1,4 +1,4 @@
-import * as unzipper from "unzipper";
+import { Open } from "unzipper";
 
 /**
  * Unzips a zip file to a directory.
@@ -6,6 +6,6 @@ import * as unzipper from "unzipper";
  * @param destinationPath The path to the directory to unzip to.
  */
 export async function unzipFile(sourcePath: string, destinationPath: string) {
-  const file = await unzipper.Open.file(sourcePath);
+  const file = await Open.file(sourcePath);
   await file.extract({ path: destinationPath });
 }

@@ -67,7 +67,7 @@ export function generateMarkdown(
       resultsFileContent.push(...rawResultTable);
     }
     resultsFiles.push({
-      fileName: fileName,
+      fileName,
       content: resultsFileContent,
     });
   }
@@ -117,7 +117,7 @@ export async function generateVariantAnalysisMarkdown(
       resultsFileContent.push(...rawResultTable);
     }
     resultsFiles.push({
-      fileName: fileName,
+      fileName,
       content: resultsFileContent,
     });
   }
@@ -339,7 +339,7 @@ function generateMarkdownForRawResults(
   const tableHeader = `| ${headers.join(" | ")} |`;
 
   tableRows.push(tableHeader);
-  tableRows.push("|" + " --- |".repeat(columnCount));
+  tableRows.push(`|${" --- |".repeat(columnCount)}`);
 
   for (const row of analysisRawResults.resultSet.rows) {
     const cells = row.map((cell) =>

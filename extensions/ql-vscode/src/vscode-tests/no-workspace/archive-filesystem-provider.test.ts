@@ -1,4 +1,4 @@
-import * as path from "path";
+import { resolve } from "path";
 
 import {
   encodeSourceArchiveUri,
@@ -14,7 +14,7 @@ describe("archive-filesystem-provider", () => {
   it("reads empty file correctly", async () => {
     const archiveProvider = new ArchiveFileSystemProvider();
     const uri = encodeSourceArchiveUri({
-      sourceArchiveZipPath: path.resolve(
+      sourceArchiveZipPath: resolve(
         __dirname,
         "data/archive-filesystem-provider-test/single_file.zip",
       ),
@@ -27,7 +27,7 @@ describe("archive-filesystem-provider", () => {
   it("read non-empty file correctly", async () => {
     const archiveProvider = new ArchiveFileSystemProvider();
     const uri = encodeSourceArchiveUri({
-      sourceArchiveZipPath: path.resolve(
+      sourceArchiveZipPath: resolve(
         __dirname,
         "data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
@@ -40,7 +40,7 @@ describe("archive-filesystem-provider", () => {
   it("read a directory", async () => {
     const archiveProvider = new ArchiveFileSystemProvider();
     const uri = encodeSourceArchiveUri({
-      sourceArchiveZipPath: path.resolve(
+      sourceArchiveZipPath: resolve(
         __dirname,
         "data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
@@ -57,7 +57,7 @@ describe("archive-filesystem-provider", () => {
   it("should handle a missing directory", async () => {
     const archiveProvider = new ArchiveFileSystemProvider();
     const uri = encodeSourceArchiveUri({
-      sourceArchiveZipPath: path.resolve(
+      sourceArchiveZipPath: resolve(
         __dirname,
         "data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
@@ -74,7 +74,7 @@ describe("archive-filesystem-provider", () => {
   it("should handle a missing file", async () => {
     const archiveProvider = new ArchiveFileSystemProvider();
     const uri = encodeSourceArchiveUri({
-      sourceArchiveZipPath: path.resolve(
+      sourceArchiveZipPath: resolve(
         __dirname,
         "data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
@@ -91,7 +91,7 @@ describe("archive-filesystem-provider", () => {
   it("should handle reading a file as a directory", async () => {
     const archiveProvider = new ArchiveFileSystemProvider();
     const uri = encodeSourceArchiveUri({
-      sourceArchiveZipPath: path.resolve(
+      sourceArchiveZipPath: resolve(
         __dirname,
         "data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
@@ -108,7 +108,7 @@ describe("archive-filesystem-provider", () => {
   it("should handle reading a directory as a file", async () => {
     const archiveProvider = new ArchiveFileSystemProvider();
     const uri = encodeSourceArchiveUri({
-      sourceArchiveZipPath: path.resolve(
+      sourceArchiveZipPath: resolve(
         __dirname,
         "data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
@@ -125,7 +125,7 @@ describe("archive-filesystem-provider", () => {
   it("read a nested directory", async () => {
     const archiveProvider = new ArchiveFileSystemProvider();
     const uri = encodeSourceArchiveUri({
-      sourceArchiveZipPath: path.resolve(
+      sourceArchiveZipPath: resolve(
         __dirname,
         "data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
@@ -137,7 +137,7 @@ describe("archive-filesystem-provider", () => {
 });
 
 describe("source archive uri encoding", () => {
-  const testCases: { name: string; input: ZipFileReference }[] = [
+  const testCases: Array<{ name: string; input: ZipFileReference }> = [
     {
       name: "mixed case and unicode",
       input: {

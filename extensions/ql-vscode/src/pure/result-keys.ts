@@ -114,11 +114,5 @@ export function getAllPaths(result: sarif.Result): sarif.ThreadFlow[] {
  * as the key in a map or set.
  */
 export function keyToString(key: ResultKey) {
-  return (
-    key.resultIndex +
-    "-" +
-    (key.pathIndex ?? "") +
-    "-" +
-    (key.pathNodeIndex ?? "")
-  );
+  return `${key.resultIndex}-${key.pathIndex ?? ""}-${key.pathNodeIndex ?? ""}`;
 }

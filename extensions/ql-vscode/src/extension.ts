@@ -20,15 +20,18 @@ import {
   version as vscodeVersion,
 } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
-import * as os from "os";
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as tmp from "tmp-promise";
+import { platform, arch } from "os";
+import { ensureDir } from "fs-extra";
+import { join, basename } from "path";
+import { dirSync } from "tmp-promise";
 import { testExplorerExtensionId, TestHub } from "vscode-test-adapter-api";
-import * as semver from "semver";
+import { parse, lt } from "semver";
 
 import { AstViewer } from "./astViewer";
-import * as archiveFilesystemProvider from "./archive-filesystem-provider";
+import {
+  activate as archiveFilesystemProvider_activate,
+  zipArchiveScheme,
+} from "./archive-filesystem-provider";
 import QuickEvalCodeLensProvider from "./quickEvalCodeLensProvider";
 import { CodeQLCliServer, CliVersionConstraint } from "./cli";
 import {
@@ -41,7 +44,7 @@ import {
   QueryHistoryConfigListener,
   QueryServerConfigListener,
 } from "./config";
-import * as languageSupport from "./languageSupport";
+import { install } from "./languageSupport";
 import { DatabaseItem, DatabaseManager } from "./databases";
 import { DatabaseUI } from "./databases-ui";
 import {
@@ -82,8 +85,8 @@ import {
 } from "./common";
 import { QueryHistoryManager } from "./query-history";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
-import * as legacyQueryServer from "./legacy-query-server/queryserver-client";
-import * as newQueryServer from "./query-server/queryserver-client";
+import { QueryServerClient as LegacyQueryServerClient } from "./legacy-query-server/queryserver-client";
+import { QueryServerClient } from "./query-server/queryserver-client";
 import { displayQuickQuery } from "./quick-query";
 import { QLTestAdapterFactory } from "./test-adapter";
 import { TestUIService } from "./test-ui";
@@ -238,7 +241,7 @@ export async function activate(
   const distributionConfigListener = new DistributionConfigListener();
   await initializeLogging(ctx);
   await initializeTelemetry(extension, ctx);
-  languageSupport.install();
+  install();
 
   const codelensProvider = new QuickEvalCodeLensProvider();
   languages.registerCodeLensProvider(
@@ -370,12 +373,13 @@ export async function activate(
         codeQlInstalled && !config.isUserInitiated
           ? showAndLogWarningMessage
           : showAndLogErrorMessage;
-      const taskDescription =
-        (willUpdateCodeQl
+      const taskDescription = `${
+        willUpdateCodeQl
           ? "update"
           : codeQlInstalled
           ? "check for updates to"
-          : "install") + " CodeQL CLI";
+          : "install"
+      } CodeQL CLI`;
 
       if (e instanceof GithubRateLimitedError) {
         void alertFunction(
@@ -386,11 +390,10 @@ export async function activate(
         );
       } else if (e instanceof GithubApiError) {
         void alertFunction(
-          `Encountered GitHub API error while trying to ${taskDescription}. ` +
-            e,
+          `Encountered GitHub API error while trying to ${taskDescription}. ${e}`,
         );
       }
-      void alertFunction(`Unable to ${taskDescription}. ` + e);
+      void alertFunction(`Unable to ${taskDescription}. ${e}`);
     } finally {
       isInstallingOrUpdatingDistribution = false;
     }
@@ -602,8 +605,8 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(queryHistoryConfigurationListener);
   const showResults = async (item: CompletedLocalQueryInfo) =>
     showResultsForCompletedQuery(item, WebviewReveal.Forced);
-  const queryStorageDir = path.join(ctx.globalStorageUri.fsPath, "queries");
-  await fs.ensureDir(queryStorageDir);
+  const queryStorageDir = join(ctx.globalStorageUri.fsPath, "queries");
+  await ensureDir(queryStorageDir);
   const labelProvider = new HistoryItemLabelProvider(
     queryHistoryConfigurationListener,
   );
@@ -619,11 +622,11 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(localQueryResultsView);
 
   void extLogger.log("Initializing variant analysis manager.");
-  const variantAnalysisStorageDir = path.join(
+  const variantAnalysisStorageDir = join(
     ctx.globalStorageUri.fsPath,
     "variant-analyses",
   );
-  await fs.ensureDir(variantAnalysisStorageDir);
+  await ensureDir(variantAnalysisStorageDir);
   const variantAnalysisResultsManager = new VariantAnalysisResultsManager(
     cliServer,
     extLogger,
@@ -691,7 +694,7 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(compareView);
 
   void extLogger.log("Initializing source archive filesystem provider.");
-  archiveFilesystemProvider.activate(ctx);
+  archiveFilesystemProvider_activate(ctx);
 
   async function showResultsForComparison(
     from: CompletedLocalQueryInfo,
@@ -772,7 +775,7 @@ async function activateWithInstalledDistribution(
     }
   }
 
-  const qhelpTmpDir = tmp.dirSync({
+  const qhelpTmpDir = dirSync({
     prefix: "qhelp_",
     keep: false,
     unsafeCleanup: true,
@@ -786,8 +789,8 @@ async function activateWithInstalledDistribution(
       : window.activeTextEditor?.document.uri.fsPath;
     if (pathToQhelp) {
       // Create temporary directory
-      const relativePathToMd = path.basename(pathToQhelp, ".qhelp") + ".md";
-      const absolutePathToMd = path.join(qhelpTmpDir.name, relativePathToMd);
+      const relativePathToMd = `${basename(pathToQhelp, ".qhelp")}.md`;
+      const absolutePathToMd = join(qhelpTmpDir.name, relativePathToMd);
       const uri = Uri.file(absolutePathToMd);
       try {
         await cliServer.generateQueryHelp(pathToQhelp, absolutePathToMd);
@@ -981,9 +984,7 @@ async function activateWithInstalledDistribution(
         // warn user and display selected files when a directory is selected because some ql
         // files may be hidden from the user.
         if (dirFound) {
-          const fileString = files
-            .map((file) => path.basename(file))
-            .join(", ");
+          const fileString = files.map((file) => basename(file)).join(", ");
           const res = await showBinaryChoiceDialog(
             `You are about to run ${files.length} queries: ${fileString} Do you want to continue?`,
           );
@@ -1367,7 +1368,7 @@ async function activateWithInstalledDistribution(
     commandRunner("codeQL.copyVersion", async () => {
       const text = `CodeQL extension version: ${
         extension?.packageJSON.version
-      } \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${os.platform()} ${os.arch()}`;
+      } \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${platform()} ${arch()}`;
       await env.clipboard.writeText(text);
       void showAndLogInformationMessage(text);
     }),
@@ -1438,13 +1439,13 @@ async function activateWithInstalledDistribution(
 
   // Store contextual queries in a temporary folder so that they are removed
   // when the application closes. There is no need for the user to interact with them.
-  const contextualQueryStorageDir = path.join(
+  const contextualQueryStorageDir = join(
     tmpDir.name,
     "contextual-query-storage",
   );
-  await fs.ensureDir(contextualQueryStorageDir);
+  await ensureDir(contextualQueryStorageDir);
   languages.registerDefinitionProvider(
-    { scheme: archiveFilesystemProvider.zipArchiveScheme },
+    { scheme: zipArchiveScheme },
     new TemplateQueryDefinitionProvider(
       cliServer,
       qs,
@@ -1454,7 +1455,7 @@ async function activateWithInstalledDistribution(
   );
 
   languages.registerReferenceProvider(
-    { scheme: archiveFilesystemProvider.zipArchiveScheme },
+    { scheme: zipArchiveScheme },
     new TemplateQueryReferenceProvider(
       cliServer,
       qs,
@@ -1593,7 +1594,7 @@ async function createQueryServer(
       task,
     );
   if (await cliServer.cliConstraints.supportsNewQueryServer()) {
-    const qs = new newQueryServer.QueryServerClient(
+    const qs = new QueryServerClient(
       qlConfigurationListener,
       cliServer,
       qsOpts,
@@ -1603,7 +1604,7 @@ async function createQueryServer(
     await qs.startQueryServer();
     return new NewQueryRunner(qs);
   } else {
-    const qs = new legacyQueryServer.QueryServerClient(
+    const qs = new LegacyQueryServerClient(
       qlConfigurationListener,
       cliServer,
       qsOpts,
@@ -1663,8 +1664,8 @@ async function assertVSCodeVersionGreaterThan(
     return;
   }
   try {
-    const parsedVersion = semver.parse(vscodeVersion);
-    const parsedMinVersion = semver.parse(minVersion);
+    const parsedVersion = parse(vscodeVersion);
+    const parsedMinVersion = parse(minVersion);
     if (!parsedVersion || !parsedMinVersion) {
       void showAndLogWarningMessage(
         `Could not do a version check of vscode because could not parse version number: actual vscode version ${vscodeVersion} or minimum supported vscode version ${minVersion}.`,
@@ -1672,7 +1673,7 @@ async function assertVSCodeVersionGreaterThan(
       return;
     }
 
-    if (semver.lt(parsedVersion, parsedMinVersion)) {
+    if (lt(parsedVersion, parsedMinVersion)) {
       const message = `The CodeQL extension requires VS Code version ${minVersion} or later. Current version is ${vscodeVersion}. Please update VS Code to get the latest features of CodeQL.`;
       const result = await showBinaryChoiceDialog(
         message,

@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { readJsonSync } from "fs-extra";
+import { resolve } from "path";
 import Ajv from "ajv";
 import { DbConfig } from "./db-config";
 
@@ -7,11 +7,11 @@ export class DbConfigValidator {
   private readonly schema: any;
 
   constructor(extensionPath: string) {
-    const schemaPath = path.resolve(
+    const schemaPath = resolve(
       extensionPath,
       "workspace-databases-schema.json",
     );
-    this.schema = fs.readJsonSync(schemaPath);
+    this.schema = readJsonSync(schemaPath);
   }
 
   public validate(dbConfig: DbConfig): string[] {

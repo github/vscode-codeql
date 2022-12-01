@@ -12,10 +12,10 @@ import {
   GRAPH_TABLE_NAME,
   ParsedResultSets,
   NavigateMsg,
+  ResultSet,
 } from "../../pure/interface-types";
 import { EventHandlers as EventHandlerList } from "./event-handler-list";
 import { ResultTables } from "./result-tables";
-import { ResultSet } from "../../pure/interface-types";
 
 import "./resultsView.css";
 

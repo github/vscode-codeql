@@ -1,4 +1,4 @@
-import * as path from "path";
+import { join } from "path";
 import { extensions } from "vscode";
 
 import { CodeQLCliServer } from "../../cli";
@@ -9,10 +9,7 @@ import { tryGetQueryMetadata } from "../../helpers";
 jest.setTimeout(3 * 60 * 1000);
 
 describe("helpers (with CLI)", () => {
-  const baseDir = path.join(
-    __dirname,
-    "../../../src/vscode-tests/cli-integration",
-  );
+  const baseDir = join(__dirname, "../../../src/vscode-tests/cli-integration");
 
   let cli: CodeQLCliServer;
 
@@ -35,7 +32,7 @@ describe("helpers (with CLI)", () => {
     // Query with metadata
     const metadata = await tryGetQueryMetadata(
       cli,
-      path.join(baseDir, "data", "simple-javascript-query.ql"),
+      join(baseDir, "data", "simple-javascript-query.ql"),
     );
 
     expect(metadata!.name).toBe("This is the name");
@@ -47,7 +44,7 @@ describe("helpers (with CLI)", () => {
     // Query with empty metadata
     const noMetadata = await tryGetQueryMetadata(
       cli,
-      path.join(baseDir, "data", "simple-query.ql"),
+      join(baseDir, "data", "simple-query.ql"),
     );
 
     expect(noMetadata).toEqual({});

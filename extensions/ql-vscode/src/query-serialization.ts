@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { pathExists, readFile, remove, mkdir, writeFile } from "fs-extra";
+import { dirname } from "path";
 
 import { showAndLogErrorMessage } from "./helpers";
 import {
@@ -17,11 +17,11 @@ export async function slurpQueryHistory(
   fsPath: string,
 ): Promise<QueryHistoryInfo[]> {
   try {
-    if (!(await fs.pathExists(fsPath))) {
+    if (!(await pathExists(fsPath))) {
       return [];
     }
 
-    const data = await fs.readFile(fsPath, "utf8");
+    const data = await readFile(fsPath, "utf8");
     const obj = JSON.parse(data);
     if (![1, 2].includes(obj.version)) {
       void showAndLogErrorMessage(
@@ -89,7 +89,7 @@ export async function slurpQueryHistory(
         return true;
       }
       const resultsPath = q.completedQuery?.query.resultsPaths.resultsPath;
-      return !!resultsPath && (await fs.pathExists(resultsPath));
+      return !!resultsPath && (await pathExists(resultsPath));
     });
   } catch (e) {
     void showAndLogErrorMessage("Error loading query history.", {
@@ -98,7 +98,7 @@ export async function slurpQueryHistory(
       ),
     });
     // since the query history is invalid, it should be deleted so this error does not happen on next startup.
-    await fs.remove(fsPath);
+    await remove(fsPath);
     return [];
   }
 }
@@ -117,8 +117,8 @@ export async function splatQueryHistory(
   fsPath: string,
 ): Promise<void> {
   try {
-    if (!(await fs.pathExists(fsPath))) {
-      await fs.mkdir(path.dirname(fsPath), { recursive: true });
+    if (!(await pathExists(fsPath))) {
+      await mkdir(dirname(fsPath), { recursive: true });
     }
     // remove incomplete local queries since they cannot be recreated on restart
     const filteredQueries = queries.filter((q) =>
@@ -135,7 +135,7 @@ export async function splatQueryHistory(
       null,
       2,
     );
-    await fs.writeFile(fsPath, data);
+    await writeFile(fsPath, data);
   } catch (e) {
     throw new Error(
       `Error saving query history to ${fsPath}: ${getErrorMessage(e)}`,

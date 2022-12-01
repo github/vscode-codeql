@@ -1,4 +1,4 @@
-import * as path from "path";
+import { resolve } from "path";
 
 import {
   authentication,
@@ -9,7 +9,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import * as Octokit from "@octokit/rest";
+import { Octokit } from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 
 import { CodeQLExtensionInterface } from "../../../extension";
@@ -25,7 +25,7 @@ afterAll(() => mockServer.stopServer());
 
 async function showQlDocument(name: string): Promise<TextDocument> {
   const folderPath = workspace.workspaceFolders![0].uri.fsPath;
-  const documentPath = path.resolve(folderPath, name);
+  const documentPath = resolve(folderPath, name);
   const document = await workspace.openTextDocument(documentPath);
   await window.showTextDocument(document!);
   return document;
@@ -94,7 +94,7 @@ describe("Variant Analysis Submission Integration", () => {
     });
 
     const mockCredentials = {
-      getOctokit: () => Promise.resolve(new Octokit.Octokit({ retry })),
+      getOctokit: () => Promise.resolve(new Octokit({ retry })),
     } as unknown as Credentials;
     jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
 

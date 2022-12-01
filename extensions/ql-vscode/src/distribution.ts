@@ -1,9 +1,9 @@
 import * as fetch from "node-fetch";
-import * as fs from "fs-extra";
-import * as os from "os";
-import * as path from "path";
+import { pathExists, mkdtemp, createWriteStream, remove } from "fs-extra";
+import { tmpdir } from "os";
+import { delimiter, dirname, join } from "path";
 import * as semver from "semver";
-import * as url from "url";
+import { parse } from "url";
 import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "./config";
 import {
@@ -153,7 +153,7 @@ export class DistributionManager implements DistributionProvider {
   > {
     // Check config setting, then extension specific distribution, then PATH.
     if (this.config.customCodeQlPath) {
-      if (!(await fs.pathExists(this.config.customCodeQlPath))) {
+      if (!(await pathExists(this.config.customCodeQlPath))) {
         void showAndLogErrorMessage(
           `The CodeQL executable path is specified as "${this.config.customCodeQlPath}" ` +
             "by a configuration setting, but a CodeQL executable could not be found at that path. Please check " +
@@ -188,7 +188,7 @@ export class DistributionManager implements DistributionProvider {
     }
 
     if (process.env.PATH) {
-      for (const searchDirectory of process.env.PATH.split(path.delimiter)) {
+      for (const searchDirectory of process.env.PATH.split(delimiter)) {
         const expectedLauncherPath = await getExecutableFromDirectory(
           searchDirectory,
         );
@@ -262,9 +262,9 @@ export class DistributionManager implements DistributionProvider {
       // not managed externally
       return false;
     }
-    const dir = path.dirname(this.config.customCodeQlPath);
-    const newLaunderPath = path.join(dir, codeQlLauncherName());
-    return await fs.pathExists(newLaunderPath);
+    const dir = dirname(this.config.customCodeQlPath);
+    const newLaunderPath = join(dir, codeQlLauncherName());
+    return await pathExists(newLaunderPath);
   }
 
   private readonly extensionSpecificDistributionManager: ExtensionSpecificDistributionManager;
@@ -364,8 +364,9 @@ class ExtensionSpecificDistributionManager {
     }
     if (assets.length > 1) {
       void extLogger.log(
-        "WARNING: chose a release with more than one asset to install, found " +
-          assets.map((asset) => asset.name).join(", "),
+        `WARNING: chose a release with more than one asset to install, found ${assets
+          .map((asset) => asset.name)
+          .join(", ")}`,
       );
     }
 
@@ -373,13 +374,11 @@ class ExtensionSpecificDistributionManager {
       await this.createReleasesApiConsumer().streamBinaryContentOfAsset(
         assets[0],
       );
-    const tmpDirectory = await fs.mkdtemp(
-      path.join(os.tmpdir(), "vscode-codeql"),
-    );
+    const tmpDirectory = await mkdtemp(join(tmpdir(), "vscode-codeql"));
 
     try {
-      const archivePath = path.join(tmpDirectory, "distributionDownload.zip");
-      const archiveFile = fs.createWriteStream(archivePath);
+      const archivePath = join(tmpDirectory, "distributionDownload.zip");
+      const archiveFile = createWriteStream(archivePath);
 
       const contentLength = assetStream.headers.get("content-length");
       const totalNumBytes = contentLength
@@ -406,7 +405,7 @@ class ExtensionSpecificDistributionManager {
       );
       await extractZipArchive(archivePath, this.getDistributionStoragePath());
     } finally {
-      await fs.remove(tmpDirectory);
+      await remove(tmpDirectory);
     }
   }
 
@@ -417,8 +416,8 @@ class ExtensionSpecificDistributionManager {
    */
   private async removeDistribution(): Promise<void> {
     await this.storeInstalledRelease(undefined);
-    if (await fs.pathExists(this.getDistributionStoragePath())) {
-      await fs.remove(this.getDistributionStoragePath());
+    if (await pathExists(this.getDistributionStoragePath())) {
+      await remove(this.getDistributionStoragePath());
     }
   }
 
@@ -484,7 +483,7 @@ class ExtensionSpecificDistributionManager {
         ExtensionSpecificDistributionManager._currentDistributionFolderIndexStateKey,
         0,
       ) || "";
-    return path.join(
+    return join(
       this.extensionContext.globalStoragePath,
       ExtensionSpecificDistributionManager._currentDistributionFolderBaseName +
         distributionFolderIndex,
@@ -492,7 +491,7 @@ class ExtensionSpecificDistributionManager {
   }
 
   private getDistributionRootPath(): string {
-    return path.join(
+    return join(
       this.getDistributionStoragePath(),
       ExtensionSpecificDistributionManager._codeQlExtractedFolderName,
     );
@@ -650,7 +649,7 @@ export class ReleasesApiConsumer {
       redirectUrl &&
       redirectCount < ReleasesApiConsumer._maxRedirects
     ) {
-      const parsedRedirectUrl = url.parse(redirectUrl);
+      const parsedRedirectUrl = parse(redirectUrl);
       if (parsedRedirectUrl.protocol != "https:") {
         throw new Error("Encountered a non-https redirect, rejecting");
       }
@@ -805,16 +804,16 @@ export async function getExecutableFromDirectory(
   directory: string,
   warnWhenNotFound = false,
 ): Promise<string | undefined> {
-  const expectedLauncherPath = path.join(directory, codeQlLauncherName());
+  const expectedLauncherPath = join(directory, codeQlLauncherName());
   const deprecatedLauncherName = deprecatedCodeQlLauncherName();
   const alternateExpectedLauncherPath = deprecatedLauncherName
-    ? path.join(directory, deprecatedLauncherName)
+    ? join(directory, deprecatedLauncherName)
     : undefined;
-  if (await fs.pathExists(expectedLauncherPath)) {
+  if (await pathExists(expectedLauncherPath)) {
     return expectedLauncherPath;
   } else if (
     alternateExpectedLauncherPath &&
-    (await fs.pathExists(alternateExpectedLauncherPath))
+    (await pathExists(alternateExpectedLauncherPath))
   ) {
     warnDeprecatedLauncher();
     return alternateExpectedLauncherPath;

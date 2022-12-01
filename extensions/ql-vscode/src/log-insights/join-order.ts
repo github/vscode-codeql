@@ -34,7 +34,7 @@ function makeKey(
       "queryCausingWork was not defined on an event we expected it to be defined for!",
     );
   }
-  return `${queryCausingWork}:${predicate}${suffix ? " " + suffix : ""}`;
+  return `${queryCausingWork}:${predicate}${suffix ? ` ${suffix}` : ""}`;
 }
 
 const DEPENDENT_PREDICATES_REGEXP = (() => {
@@ -149,7 +149,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
   private readonly predicateSizes = new Map<string, number>();
   private readonly layerEvents = new Map<
     string,
-    (ComputeRecursive | InLayer)[]
+    Array<ComputeRecursive | InLayer>
   >();
   // Map a key of the form 'query-with-demand : predicate name' to its badness input.
   private readonly maxTupleCountMap = new Map<string, number[]>();
@@ -360,7 +360,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
     const maxDependentPredicateSize = safeMax(dependentPredicateSizes);
     return {
       maxTupleCount: safeMax(pipelineRun.counts),
-      maxDependentPredicateSize: maxDependentPredicateSize,
+      maxDependentPredicateSize,
     };
   }
 
@@ -491,7 +491,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
         );
       orderTobucket.set(raReference, {
         tupleCounts: newTupleCounts,
-        resultSize: resultSize,
+        resultSize,
         dependentPredicateSizes: newDependentPredicateSizes,
       });
     });

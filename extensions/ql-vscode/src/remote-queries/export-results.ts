@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fs from "fs-extra";
+import { join } from "path";
+import { ensureDir, writeFile } from "fs-extra";
 
 import {
   window,
@@ -101,10 +101,7 @@ export async function exportRemoteQueryResults(
 
   const exportDirectory =
     await queryHistoryManager.getQueryHistoryItemDirectory(queryHistoryItem);
-  const exportedResultsDirectory = path.join(
-    exportDirectory,
-    "exported-results",
-  );
+  const exportedResultsDirectory = join(exportDirectory, "exported-results");
 
   await exportRemoteQueryAnalysisResults(
     ctx,
@@ -214,7 +211,7 @@ export async function exportVariantAnalysisResults(
     .toISOString()
     .replace(/[-:]/g, "")
     .replace(/\.\d+Z$/, "Z");
-  const exportedResultsDirectory = path.join(
+  const exportedResultsDirectory = join(
     exportDirectory,
     "exported-results",
     `results_${formattedDate}`,
@@ -373,20 +370,17 @@ async function exportToLocalMarkdown(
   exportedResultsPath: string,
   markdownFiles: MarkdownFile[],
 ) {
-  await fs.ensureDir(exportedResultsPath);
+  await ensureDir(exportedResultsPath);
   for (const markdownFile of markdownFiles) {
-    const filePath = path.join(
-      exportedResultsPath,
-      `${markdownFile.fileName}.md`,
-    );
-    await fs.writeFile(filePath, markdownFile.content.join("\n"), "utf8");
+    const filePath = join(exportedResultsPath, `${markdownFile.fileName}.md`);
+    await writeFile(filePath, markdownFile.content.join("\n"), "utf8");
   }
   const shouldOpenExportedResults = await showInformationMessageWithAction(
     `Variant analysis results exported to \"${exportedResultsPath}\".`,
     "Open exported results",
   );
   if (shouldOpenExportedResults) {
-    const summaryFilePath = path.join(exportedResultsPath, "_summary.md");
+    const summaryFilePath = join(exportedResultsPath, "_summary.md");
     const summaryFile = await workspace.openTextDocument(summaryFilePath);
     await window.showTextDocument(summaryFile, ViewColumn.One);
     await commands.executeCommand("revealFileInOS", Uri.file(summaryFilePath));

@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fs from "fs-extra";
+import { join } from "path";
+import { readFileSync } from "fs-extra";
 import { Uri } from "vscode";
 
 import {
@@ -28,15 +28,13 @@ describe("run-queries", () => {
     const saveDir = "query-save-dir";
     const info = createMockQueryInfo(true, saveDir);
 
-    expect(info.compiledQueryPath).toBe(
-      path.join(saveDir, "compiledQuery.qlo"),
-    );
-    expect(info.queryEvalInfo.dilPath).toBe(path.join(saveDir, "results.dil"));
+    expect(info.compiledQueryPath).toBe(join(saveDir, "compiledQuery.qlo"));
+    expect(info.queryEvalInfo.dilPath).toBe(join(saveDir, "results.dil"));
     expect(info.queryEvalInfo.resultsPaths.resultsPath).toBe(
-      path.join(saveDir, "results.bqrs"),
+      join(saveDir, "results.bqrs"),
     );
     expect(info.queryEvalInfo.resultsPaths.interpretedResultsPath).toBe(
-      path.join(saveDir, "interpretedResults.sarif"),
+      join(saveDir, "interpretedResults.sarif"),
     );
     expect(info.dbItemPath).toBe(Uri.file("/abc").fsPath);
   });
@@ -72,7 +70,7 @@ describe("run-queries", () => {
 
   [SELECT_QUERY_NAME, "other"].forEach((resultSetName) => {
     it(`should export csv results for result set ${resultSetName}`, async () => {
-      const csvLocation = path.join(tmpDir.name, "test.csv");
+      const csvLocation = join(tmpDir.name, "test.csv");
       const cliServer = createMockCliServer({
         bqrsInfo: [
           { "result-sets": [{ name: resultSetName }, { name: "hucairz" }] },
@@ -107,7 +105,7 @@ describe("run-queries", () => {
       const result = await promise;
       expect(result).toBe(true);
 
-      const csv = fs.readFileSync(csvLocation, "utf8");
+      const csv = readFileSync(csvLocation, "utf8");
       expect(csv).toBe('a,"b"\nc,"d"\n"a",b,c\n');
 
       // now verify that we are using the expected result set
@@ -120,7 +118,7 @@ describe("run-queries", () => {
   });
 
   it("should export csv results with characters that need to be escaped", async () => {
-    const csvLocation = path.join(tmpDir.name, "test.csv");
+    const csvLocation = join(tmpDir.name, "test.csv");
     const cliServer = createMockCliServer({
       bqrsInfo: [
         { "result-sets": [{ name: SELECT_QUERY_NAME }, { name: "hucairz" }] },
@@ -147,7 +145,7 @@ describe("run-queries", () => {
     const result = await promise;
     expect(result).toBe(true);
 
-    const csv = fs.readFileSync(csvLocation, "utf8");
+    const csv = readFileSync(csvLocation, "utf8");
     expect(csv).toBe(
       '"a","""b"""\nc,xxx,"d,yyy"\naaa " bbb,"ccc "" ddd"\ntrue,"false"\n123,"456"\n123.98,"456.99"\n',
     );
@@ -161,7 +159,7 @@ describe("run-queries", () => {
   });
 
   it("should handle csv exports for a query with no result sets", async () => {
-    const csvLocation = path.join(tmpDir.name, "test.csv");
+    const csvLocation = join(tmpDir.name, "test.csv");
     const cliServer = createMockCliServer({
       bqrsInfo: [{ "result-sets": [] }],
     });

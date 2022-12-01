@@ -1,7 +1,7 @@
 import * as messages from "./pure/messages-shared";
 import * as legacyMessages from "./pure/legacy-messages";
 import { DatabaseInfo, QueryMetadata } from "./pure/interface-types";
-import * as path from "path";
+import { join, parse, dirname, basename } from "path";
 import { createTimestampFile, showAndLogWarningMessage } from "./helpers";
 import {
   ConfigurationTarget,
@@ -11,9 +11,15 @@ import {
   Uri,
   window,
 } from "vscode";
-import * as config from "./config";
+import { isCanary, AUTOSAVE_SETTING } from "./config";
 import { UserCancellationException } from "./commandRunner";
-import * as fs from "fs-extra";
+import {
+  pathExists,
+  readFile,
+  createWriteStream,
+  remove,
+  readdir,
+} from "fs-extra";
 import {
   ensureMetadataIsComplete,
   InitialQueryInfo,
@@ -25,8 +31,7 @@ import { CodeQLCliServer } from "./cli";
 import { SELECT_QUERY_NAME } from "./contextual/locationFinder";
 import { DatabaseManager } from "./databases";
 import { DecodedBqrsChunk } from "./pure/bqrs-cli-types";
-import { extLogger } from "./common";
-import { Logger } from "./common";
+import { extLogger, Logger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { asError } from "./pure/helpers-pure";
 
@@ -38,27 +43,27 @@ import { asError } from "./pure/helpers-pure";
  */
 
 export function findQueryLogFile(resultPath: string): string {
-  return path.join(resultPath, "query.log");
+  return join(resultPath, "query.log");
 }
 
 function findQueryEvalLogFile(resultPath: string): string {
-  return path.join(resultPath, "evaluator-log.jsonl");
+  return join(resultPath, "evaluator-log.jsonl");
 }
 
 function findQueryEvalLogSummaryFile(resultPath: string): string {
-  return path.join(resultPath, "evaluator-log.summary");
+  return join(resultPath, "evaluator-log.summary");
 }
 
 function findJsonQueryEvalLogSummaryFile(resultPath: string): string {
-  return path.join(resultPath, "evaluator-log.summary.jsonl");
+  return join(resultPath, "evaluator-log.summary.jsonl");
 }
 
 function findQueryEvalLogSummarySymbolsFile(resultPath: string): string {
-  return path.join(resultPath, "evaluator-log.summary.symbols.json");
+  return join(resultPath, "evaluator-log.summary.symbols.json");
 }
 
 function findQueryEvalLogEndSummaryFile(resultPath: string): string {
-  return path.join(resultPath, "evaluator-log-end.summary");
+  return join(resultPath, "evaluator-log-end.summary");
 }
 
 export class QueryEvaluationInfo {
@@ -77,18 +82,18 @@ export class QueryEvaluationInfo {
   }
 
   get dilPath() {
-    return path.join(this.querySaveDir, "results.dil");
+    return join(this.querySaveDir, "results.dil");
   }
 
   /**
    * Get the path that the compiled query is if it exists. Note that it only exists when using the legacy query server.
    */
   get compileQueryPath() {
-    return path.join(this.querySaveDir, "compiledQuery.qlo");
+    return join(this.querySaveDir, "compiledQuery.qlo");
   }
 
   get csvPath() {
-    return path.join(this.querySaveDir, "results.csv");
+    return join(this.querySaveDir, "results.csv");
   }
 
   get logPath() {
@@ -117,8 +122,8 @@ export class QueryEvaluationInfo {
 
   get resultsPaths() {
     return {
-      resultsPath: path.join(this.querySaveDir, "results.bqrs"),
-      interpretedResultsPath: path.join(
+      resultsPath: join(this.querySaveDir, "results.bqrs"),
+      interpretedResultsPath: join(
         this.querySaveDir,
         this.metadata?.kind === "graph"
           ? "graphResults"
@@ -127,7 +132,7 @@ export class QueryEvaluationInfo {
     };
   }
   getSortedResultSetPath(resultSetName: string) {
-    return path.join(this.querySaveDir, `sortedResults-${resultSetName}.bqrs`);
+    return join(this.querySaveDir, `sortedResults-${resultSetName}.bqrs`);
   }
 
   /**
@@ -160,7 +165,7 @@ export class QueryEvaluationInfo {
 
     // Graph queries only return interpreted results if we are in canary mode.
     if (kind === "graph") {
-      return config.isCanary();
+      return isCanary();
     }
 
     // table is the default query kind. It does not produce interpreted results.
@@ -172,21 +177,21 @@ export class QueryEvaluationInfo {
    * Holds if this query actually has produced interpreted results.
    */
   async hasInterpretedResults(): Promise<boolean> {
-    return fs.pathExists(this.resultsPaths.interpretedResultsPath);
+    return pathExists(this.resultsPaths.interpretedResultsPath);
   }
 
   /**
    * Holds if this query already has DIL produced
    */
   async hasDil(): Promise<boolean> {
-    return fs.pathExists(this.dilPath);
+    return pathExists(this.dilPath);
   }
 
   /**
    * Holds if this query already has CSV results produced
    */
   async hasCsv(): Promise<boolean> {
-    return fs.pathExists(this.csvPath);
+    return pathExists(this.csvPath);
   }
 
   /**
@@ -198,7 +203,7 @@ export class QueryEvaluationInfo {
       return this.dilPath;
     }
     const compiledQuery = this.compileQueryPath;
-    if (!(await fs.pathExists(compiledQuery))) {
+    if (!(await pathExists(compiledQuery))) {
       if (await cliServer.cliConstraints.supportsNewQueryServer()) {
         // This could be from the new query server
         // in which case we expect the qlo to be missing so we should ignore it
@@ -220,7 +225,7 @@ export class QueryEvaluationInfo {
    * Holds if this query already has a completed structured evaluator log
    */
   async hasEvalLog(): Promise<boolean> {
-    return fs.pathExists(this.evalLogPath);
+    return pathExists(this.evalLogPath);
   }
 
   /**
@@ -235,7 +240,7 @@ export class QueryEvaluationInfo {
     queryInfo.evalLogSummaryLocation =
       await this.generateHumanReadableLogSummary(cliServer);
     void this.logEndSummary(queryInfo.evalLogSummaryLocation, logger); // Logged asynchrnously
-    if (config.isCanary()) {
+    if (isCanary()) {
       // Generate JSON summary for viewer.
       await cliServer.generateJsonLogSummary(
         this.evalLogPath,
@@ -288,7 +293,7 @@ export class QueryEvaluationInfo {
     }
 
     try {
-      const endSummaryContent = await fs.readFile(
+      const endSummaryContent = await readFile(
         this.evalLogEndSummaryPath,
         "utf-8",
       );
@@ -324,7 +329,7 @@ export class QueryEvaluationInfo {
       return false;
     }
     let stopDecoding = false;
-    const out = fs.createWriteStream(csvPath);
+    const out = createWriteStream(csvPath);
 
     const promise: Promise<boolean> = new Promise((resolve, reject) => {
       out.on("finish", () => resolve(true));
@@ -348,13 +353,13 @@ export class QueryEvaluationInfo {
       );
       chunk.tuples.forEach((tuple) => {
         out.write(
-          tuple
+          `${tuple
             .map((v, i) =>
               chunk.columns[i].kind === "String"
                 ? `"${typeof v === "string" ? v.replaceAll('"', '""') : v}"`
                 : v,
             )
-            .join(",") + "\n",
+            .join(",")}\n`,
         );
       });
       nextOffset = chunk.next;
@@ -423,7 +428,7 @@ export class QueryEvaluationInfo {
    * Cleans this query's results directory.
    */
   async deleteQuery(): Promise<void> {
-    await fs.remove(this.querySaveDir);
+    await remove(this.querySaveDir);
   }
 }
 
@@ -564,7 +569,7 @@ async function promptUserToSaveChanges(
   document: TextDocument,
 ): Promise<boolean> {
   if (document.isDirty) {
-    if (config.AUTOSAVE_SETTING.getValue()) {
+    if (AUTOSAVE_SETTING.getValue()) {
       return true;
     } else {
       const yesItem = { title: "Yes", isCloseAffordance: false };
@@ -585,10 +590,7 @@ async function promptUserToSaveChanges(
       );
 
       if (chosenItem === alwaysItem) {
-        await config.AUTOSAVE_SETTING.updateValue(
-          true,
-          ConfigurationTarget.Workspace,
-        );
+        await AUTOSAVE_SETTING.updateValue(true, ConfigurationTarget.Workspace);
         return true;
       }
 
@@ -609,13 +611,13 @@ async function promptUserToSaveChanges(
  */
 async function convertToQlPath(filePath: string): Promise<string> {
   if (process.platform === "win32") {
-    if (path.parse(filePath).root === filePath) {
+    if (parse(filePath).root === filePath) {
       // Java assumes uppercase drive letters are canonical.
       return filePath.toUpperCase();
     } else {
-      const dir = await convertToQlPath(path.dirname(filePath));
-      const fileName = path.basename(filePath);
-      const fileNames = await fs.readdir(dir);
+      const dir = await convertToQlPath(dirname(filePath));
+      const fileName = basename(filePath);
+      const fileNames = await readdir(dir);
       for (const name of fileNames) {
         // Leave the locale argument empty so that the default OS locale is used.
         // We do this because this operation works on filesystem entities, which
@@ -624,11 +626,11 @@ async function convertToQlPath(filePath: string): Promise<string> {
           fileName.localeCompare(name, undefined, { sensitivity: "accent" }) ===
           0
         ) {
-          return path.join(dir, name);
+          return join(dir, name);
         }
       }
     }
-    throw new Error("Can't convert path to form suitable for QL:" + filePath);
+    throw new Error(`Can't convert path to form suitable for QL:${filePath}`);
   } else {
     return filePath;
   }
@@ -659,15 +661,15 @@ export async function createInitialQueryInfo(
     isQuickEval,
     isQuickQuery: isQuickQueryPath(queryPath),
     databaseInfo,
-    id: `${path.basename(queryPath)}-${nanoid()}`,
+    id: `${basename(queryPath)}-${nanoid()}`,
     start: new Date(),
     ...(isQuickEval
       ? {
           queryText: quickEvalText!, // if this query is quick eval, it must have quick eval text
-          quickEvalPosition: quickEvalPosition,
+          quickEvalPosition,
         }
       : {
-          queryText: await fs.readFile(queryPath, "utf8"),
+          queryText: await readFile(queryPath, "utf8"),
         }),
   };
 }

@@ -1,4 +1,4 @@
-import * as path from "path";
+import { join } from "path";
 import { CancellationToken } from "vscode";
 import * as cli from "../cli";
 import { ProgressCallback } from "../commandRunner";
@@ -11,7 +11,7 @@ import {
 } from "../helpers";
 import { extLogger } from "../common";
 import * as messages from "../pure/new-messages";
-import * as legacyMessages from "../pure/legacy-messages";
+import { QueryResultType } from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
 import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
 import * as qsClient from "./queryserver-client";
@@ -52,7 +52,7 @@ export async function compileAndRunQueryAgainstDatabase(
 
   const hasMetadataFile = await dbItem.hasMetadataFile();
   const query = new QueryEvaluationInfo(
-    path.join(queryStorageDir, initialInfo.id),
+    join(queryStorageDir, initialInfo.id),
     dbItem.databaseUri.fsPath,
     hasMetadataFile,
     initialInfo.quickEvalPosition,
@@ -143,8 +143,8 @@ export async function compileAndRunQueryAgainstDatabase(
       evaluationTime: result.evaluationTime,
       queryId: 0,
       resultType: successful
-        ? legacyMessages.QueryResultType.SUCCESS
-        : legacyMessages.QueryResultType.OTHER_ERROR,
+        ? QueryResultType.SUCCESS
+        : QueryResultType.OTHER_ERROR,
       runId: 0,
       message,
     },

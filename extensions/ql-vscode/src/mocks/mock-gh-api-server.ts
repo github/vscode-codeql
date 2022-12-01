@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fs from "fs-extra";
+import { join, resolve } from "path";
+import { pathExists } from "fs-extra";
 import { setupServer, SetupServerApi } from "msw/node";
 
 import { DisposableObject } from "../pure/disposable-object";
@@ -50,7 +50,7 @@ export class MockGitHubApiServer extends DisposableObject {
       }
     }
 
-    const scenarioPath = path.join(scenariosPath, scenarioName);
+    const scenarioPath = join(scenariosPath, scenarioName);
 
     const handlers = await createRequestHandlers(scenarioPath);
     this.server.resetHandlers();
@@ -129,10 +129,10 @@ export class MockGitHubApiServer extends DisposableObject {
 
   public async getDefaultScenariosPath(): Promise<string | undefined> {
     // This should be the directory where package.json is located
-    const rootDirectory = path.resolve(__dirname, "../..");
+    const rootDirectory = resolve(__dirname, "../..");
 
-    const scenariosPath = path.resolve(rootDirectory, "src/mocks/scenarios");
-    if (await fs.pathExists(scenariosPath)) {
+    const scenariosPath = resolve(rootDirectory, "src/mocks/scenarios");
+    if (await pathExists(scenariosPath)) {
       return scenariosPath;
     }
 

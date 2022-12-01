@@ -1,6 +1,6 @@
-import * as fs from "fs-extra";
-import * as os from "os";
-import * as path from "path";
+import { pathExists } from "fs-extra";
+import { EOL } from "os";
+import { extname } from "path";
 import { CancellationToken, ExtensionContext } from "vscode";
 
 import { Credentials } from "../authentication";
@@ -112,7 +112,7 @@ export class AnalysesResultsManager {
       const taskResults = await Promise.allSettled(batchTasks);
       const failedTasks = taskResults.filter(
         (x) => x.status === "rejected",
-      ) as Array<PromiseRejectedResult>;
+      ) as PromiseRejectedResult[];
       if (failedTasks.length > 0) {
         const failures = failedTasks.map((t) => t.reason.message);
         failures.forEach((f) => void this.logger.log(f));
@@ -121,7 +121,7 @@ export class AnalysesResultsManager {
     }
 
     if (allFailures.length > 0) {
-      throw Error(allFailures.join(os.EOL));
+      throw Error(allFailures.join(EOL));
     }
   }
 
@@ -178,7 +178,7 @@ export class AnalysesResultsManager {
     );
 
     let newAnaysisResults: AnalysisResults;
-    const fileExtension = path.extname(artifactPath);
+    const fileExtension = extname(artifactPath);
     if (fileExtension === ".sarif") {
       const queryResults = await this.readSarifResults(
         artifactPath,
@@ -225,7 +225,7 @@ export class AnalysesResultsManager {
   private async isAnalysisDownloaded(
     analysis: AnalysisSummary,
   ): Promise<boolean> {
-    return await fs.pathExists(
+    return await pathExists(
       createDownloadPath(this.storagePath, analysis.downloadLink),
     );
   }
@@ -253,9 +253,7 @@ export class AnalysesResultsManager {
     const processedSarif = extractAnalysisAlerts(sarifLog, fileLinkPrefix);
     if (processedSarif.errors.length) {
       void this.logger.log(
-        `Error processing SARIF file: ${os.EOL}${processedSarif.errors.join(
-          os.EOL,
-        )}`,
+        `Error processing SARIF file: ${EOL}${processedSarif.errors.join(EOL)}`,
       );
     }
 
