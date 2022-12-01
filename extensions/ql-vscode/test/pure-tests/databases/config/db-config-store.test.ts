@@ -84,8 +84,8 @@ describe("db config store", () => {
       storagePath: "/path/to/database/",
     });
     expect(config.selected).toEqual({
-      kind: "configDefined",
-      value: "path.to.database",
+      kind: "remoteUserDefinedList",
+      listName: "repoList1",
     });
 
     configStore.dispose();

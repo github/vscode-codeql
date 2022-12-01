@@ -20,12 +20,14 @@ export type LocalDbItem = LocalListDbItem | LocalDatabaseDbItem;
 
 export interface LocalListDbItem {
   kind: DbItemKind.LocalList;
+  selected: boolean;
   listName: string;
   databases: LocalDatabaseDbItem[];
 }
 
 export interface LocalDatabaseDbItem {
   kind: DbItemKind.LocalDatabase;
+  selected: boolean;
   databaseName: string;
   dateAdded: number;
   language: string;
@@ -51,6 +53,7 @@ export type RemoteDbItem =
 
 export interface RemoteSystemDefinedListDbItem {
   kind: DbItemKind.RemoteSystemDefinedList;
+  selected: boolean;
   listName: string;
   listDisplayName: string;
   listDescription: string;
@@ -58,16 +61,66 @@ export interface RemoteSystemDefinedListDbItem {
 
 export interface RemoteUserDefinedListDbItem {
   kind: DbItemKind.RemoteUserDefinedList;
+  selected: boolean;
   listName: string;
   repos: RemoteRepoDbItem[];
 }
 
 export interface RemoteOwnerDbItem {
   kind: DbItemKind.RemoteOwner;
+  selected: boolean;
   ownerName: string;
 }
 
 export interface RemoteRepoDbItem {
   kind: DbItemKind.RemoteRepo;
+  selected: boolean;
   repoFullName: string;
 }
+
+export function isRemoteSystemDefinedListDbItem(
+  dbItem: DbItem,
+): dbItem is RemoteSystemDefinedListDbItem {
+  return dbItem.kind === DbItemKind.RemoteSystemDefinedList;
+}
+
+export function isRemoteUserDefinedListDbItem(
+  dbItem: DbItem,
+): dbItem is RemoteUserDefinedListDbItem {
+  return dbItem.kind === DbItemKind.RemoteUserDefinedList;
+}
+
+export function isRemoteOwnerDbItem(
+  dbItem: DbItem,
+): dbItem is RemoteOwnerDbItem {
+  return dbItem.kind === DbItemKind.RemoteOwner;
+}
+
+export function isRemoteRepoDbItem(dbItem: DbItem): dbItem is RemoteRepoDbItem {
+  return dbItem.kind === DbItemKind.RemoteRepo;
+}
+
+export function isLocalListDbItem(dbItem: DbItem): dbItem is LocalListDbItem {
+  return dbItem.kind === DbItemKind.LocalList;
+}
+
+export function isLocalDatabaseDbItem(
+  dbItem: DbItem,
+): dbItem is LocalDatabaseDbItem {
+  return dbItem.kind === DbItemKind.LocalDatabase;
+}
+
+export type SelectableDbItem = RemoteDbItem | LocalDbItem;
+
+export function isSelectableDbItem(dbItem: DbItem): dbItem is SelectableDbItem {
+  return SelectableDbItemKinds.includes(dbItem.kind);
+}
+
+const SelectableDbItemKinds = [
+  DbItemKind.LocalList,
+  DbItemKind.LocalDatabase,
+  DbItemKind.RemoteSystemDefinedList,
+  DbItemKind.RemoteUserDefinedList,
+  DbItemKind.RemoteOwner,
+  DbItemKind.RemoteRepo,
+];
