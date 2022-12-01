@@ -1235,9 +1235,11 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner(
+    commandRunnerWithProgress(
       "codeQL.exportVariantAnalysisResults",
       async (
+        progress: ProgressCallback,
+        token: CancellationToken,
         variantAnalysisId: number,
         filterSort?: RepositoriesFilterSortStateWithIds,
       ) => {
@@ -1246,7 +1248,13 @@ async function activateWithInstalledDistribution(
           variantAnalysisManager,
           variantAnalysisId,
           filterSort,
+          progress,
+          token,
         );
+      },
+      {
+        title: "Exporting variant analysis results",
+        cancellable: true,
       },
     ),
   );
