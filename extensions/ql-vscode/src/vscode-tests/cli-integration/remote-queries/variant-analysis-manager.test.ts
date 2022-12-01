@@ -745,7 +745,7 @@ describe("Variant Analysis Manager", () => {
             dummyVariantAnalysis,
           );
           expect(pathExistsStub).toBeCalledWith(
-            path.join(storagePath, dummyVariantAnalysis.id.toString()),
+            join(storagePath, dummyVariantAnalysis.id.toString()),
           );
           expect(variantAnalysisManager.variantAnalysesSize).toBe(1);
 
