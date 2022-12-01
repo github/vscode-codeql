@@ -10,14 +10,53 @@ export interface DbConfigDatabases {
   local: LocalDbConfig;
 }
 
-export interface SelectedDbItem {
-  kind: SelectedDbItemKind;
-  value: string;
-}
+export type SelectedDbItem =
+  | SelectedLocalUserDefinedList
+  | SelectedLocalDatabase
+  | SelectedRemoteSystemDefinedList
+  | SelectedRemoteUserDefinedList
+  | SelectedRemoteOwner
+  | SelectedRemoteRepository;
 
 export enum SelectedDbItemKind {
-  ConfigDefined = "configDefined",
+  LocalUserDefinedList = "localUserDefinedList",
+  LocalDatabase = "localDatabase",
   RemoteSystemDefinedList = "remoteSystemDefinedList",
+  RemoteUserDefinedList = "remoteUserDefinedList",
+  RemoteOwner = "remoteOwner",
+  RemoteRepository = "remoteRepository",
+}
+
+export interface SelectedLocalUserDefinedList {
+  kind: SelectedDbItemKind.LocalUserDefinedList;
+  listName: string;
+}
+
+export interface SelectedLocalDatabase {
+  kind: SelectedDbItemKind.LocalDatabase;
+  databaseName: string;
+  listName?: string;
+}
+
+export interface SelectedRemoteSystemDefinedList {
+  kind: SelectedDbItemKind.RemoteSystemDefinedList;
+  listName: string;
+}
+
+export interface SelectedRemoteUserDefinedList {
+  kind: SelectedDbItemKind.RemoteUserDefinedList;
+  listName: string;
+}
+
+export interface SelectedRemoteOwner {
+  kind: SelectedDbItemKind.RemoteOwner;
+  ownerName: string;
+}
+
+export interface SelectedRemoteRepository {
+  kind: SelectedDbItemKind.RemoteRepository;
+  repositoryName: string;
+  listName?: string;
 }
 
 export interface RemoteDbConfig {
@@ -70,10 +109,44 @@ export function cloneDbConfig(config: DbConfig): DbConfig {
       },
     },
     selected: config.selected
-      ? {
-          kind: config.selected.kind,
-          value: config.selected.value,
-        }
+      ? cloneDbConfigSelectedItem(config.selected)
       : undefined,
   };
+}
+
+function cloneDbConfigSelectedItem(selected: SelectedDbItem): SelectedDbItem {
+  switch (selected.kind) {
+    case SelectedDbItemKind.LocalUserDefinedList:
+      return {
+        kind: SelectedDbItemKind.LocalUserDefinedList,
+        listName: selected.listName,
+      };
+    case SelectedDbItemKind.LocalDatabase:
+      return {
+        kind: SelectedDbItemKind.LocalDatabase,
+        databaseName: selected.databaseName,
+        listName: selected.listName,
+      };
+    case SelectedDbItemKind.RemoteSystemDefinedList:
+      return {
+        kind: SelectedDbItemKind.RemoteSystemDefinedList,
+        listName: selected.listName,
+      };
+    case SelectedDbItemKind.RemoteUserDefinedList:
+      return {
+        kind: SelectedDbItemKind.RemoteUserDefinedList,
+        listName: selected.listName,
+      };
+    case SelectedDbItemKind.RemoteOwner:
+      return {
+        kind: SelectedDbItemKind.RemoteOwner,
+        ownerName: selected.ownerName,
+      };
+    case SelectedDbItemKind.RemoteRepository:
+      return {
+        kind: SelectedDbItemKind.RemoteRepository,
+        repositoryName: selected.repositoryName,
+        listName: selected.listName,
+      };
+  }
 }
