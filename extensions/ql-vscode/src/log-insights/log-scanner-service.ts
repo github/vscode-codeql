@@ -7,7 +7,7 @@ import {
   EvaluationLogScannerSet,
 } from "./log-scanner";
 import { PipelineInfo, SummarySymbols } from "./summary-parser";
-import * as fs from "fs-extra";
+import { readFile } from "fs-extra";
 import { extLogger } from "../common";
 
 /**
@@ -125,7 +125,7 @@ export class LogScannerService extends DisposableObject {
     let symbols: SummarySymbols | undefined = undefined;
     if (symbolsLocation !== undefined) {
       symbols = JSON.parse(
-        await fs.readFile(symbolsLocation, { encoding: "utf-8" }),
+        await readFile(symbolsLocation, { encoding: "utf-8" }),
       );
     }
     const problemReporter = new ProblemReporter(symbols);

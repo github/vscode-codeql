@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fs from "fs-extra";
+import { dirname } from "path";
+import { ensureFile } from "fs-extra";
 
 import { DisposableObject } from "../pure/disposable-object";
 import { CancellationToken, commands } from "vscode";
@@ -13,8 +13,8 @@ import {
   progress,
   ProgressMessage,
   WithProgressId,
+  compileQuery,
 } from "../pure/legacy-messages";
-import * as messages from "../pure/legacy-messages";
 import { ProgressCallback, ProgressTask } from "../commandRunner";
 import { findQueryLogFile } from "../run-queries-shared";
 import { ServerProcess } from "../json-rpc-server";
@@ -47,7 +47,7 @@ export class QueryServerClient extends DisposableObject {
   nextProgress: number;
   withProgressReporting: WithProgressReporting;
 
-  private readonly queryServerStartListeners = [] as ProgressTask<void>[];
+  private readonly queryServerStartListeners = [] as Array<ProgressTask<void>>;
 
   // Can't use standard vscode EventEmitter here since they do not cause the calling
   // function to fail if one of the event handlers fail. This is something that
@@ -154,7 +154,7 @@ export class QueryServerClient extends DisposableObject {
 
     if (await this.cliServer.cliConstraints.supportsStructuredEvalLog()) {
       const structuredLogFile = `${this.opts.contextStoragePath}/structured-evaluator-log.json`;
-      await fs.ensureFile(structuredLogFile);
+      await ensureFile(structuredLogFile);
 
       args.push("--evaluator-log");
       args.push(structuredLogFile);
@@ -270,10 +270,8 @@ export class QueryServerClient extends DisposableObject {
    * properly will require a change in the query server.
    */
   private updateActiveQuery(method: string, parameter: any): void {
-    if (method === messages.compileQuery.method) {
-      this.activeQueryLogFile = findQueryLogFile(
-        path.dirname(parameter.resultPath),
-      );
+    if (method === compileQuery.method) {
+      this.activeQueryLogFile = findQueryLogFile(dirname(parameter.resultPath));
     }
   }
 }

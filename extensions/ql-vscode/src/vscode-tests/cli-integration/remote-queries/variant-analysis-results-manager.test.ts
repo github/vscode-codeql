@@ -3,7 +3,7 @@ import { CodeQLExtensionInterface } from "../../../extension";
 import { extLogger } from "../../../common";
 import { Credentials } from "../../../authentication";
 import * as fs from "fs-extra";
-import * as path from "path";
+import { join, resolve } from "path";
 
 import { VariantAnalysisResultsManager } from "../../../remote-queries/variant-analysis-results-manager";
 import { CodeQLCliServer } from "../../../cli";
@@ -57,7 +57,7 @@ describe(VariantAnalysisResultsManager.name, () => {
 
       dummyRepoTask = createMockVariantAnalysisRepositoryTask();
 
-      variantAnalysisStoragePath = path.join(
+      variantAnalysisStoragePath = join(
         storagePath,
         variantAnalysisId.toString(),
       );
@@ -109,7 +109,7 @@ describe(VariantAnalysisResultsManager.name, () => {
       >;
 
       beforeEach(async () => {
-        const sourceFilePath = path.join(
+        const sourceFilePath = join(
           __dirname,
           "../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip",
         );
@@ -204,7 +204,7 @@ describe(VariantAnalysisResultsManager.name, () => {
 
       dummyRepoTask = createMockVariantAnalysisRepositoryTask();
 
-      variantAnalysisStoragePath = path.join(
+      variantAnalysisStoragePath = join(
         storagePath,
         variantAnalysisId.toString(),
       );
@@ -236,7 +236,7 @@ describe(VariantAnalysisResultsManager.name, () => {
     describe("when the repo task has been written to disk", () => {
       beforeEach(async () => {
         await fs.outputJson(
-          path.join(repoTaskStorageDirectory, "repo_task.json"),
+          join(repoTaskStorageDirectory, "repo_task.json"),
           dummyRepoTask,
         );
       });
@@ -256,9 +256,9 @@ describe(VariantAnalysisResultsManager.name, () => {
       describe("when the SARIF results are downloaded", () => {
         beforeEach(async () => {
           await fs.outputJson(
-            path.join(repoTaskStorageDirectory, "results/results.sarif"),
+            join(repoTaskStorageDirectory, "results/results.sarif"),
             await fs.readJson(
-              path.resolve(
+              resolve(
                 __dirname,
                 "../../no-workspace/data/sarif/validSarif.sarif",
               ),

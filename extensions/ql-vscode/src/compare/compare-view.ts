@@ -88,7 +88,7 @@ export class CompareView extends AbstractWebview<
         },
         columns: fromResultSet.schema.columns,
         commonResultSetNames,
-        currentResultSetName: currentResultSetName,
+        currentResultSetName,
         rows,
         message,
         databaseUri: to.initialInfo.databaseInfo.databaseUri,

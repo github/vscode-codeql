@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import { readFile } from "fs-extra";
 import { RawSourceMap, SourceMapConsumer } from "source-map";
 import {
   commands,
@@ -95,10 +95,10 @@ export class SummaryLanguageSupport extends DisposableObject {
     if (this.lastDocument !== document) {
       this.clearCache();
 
-      const mapPath = document.uri.fsPath + ".map";
+      const mapPath = `${document.uri.fsPath}.map`;
 
       try {
-        const sourceMapText = await fs.readFile(mapPath, "utf-8");
+        const sourceMapText = await readFile(mapPath, "utf-8");
         const rawMap: RawSourceMap = JSON.parse(sourceMapText);
         this.sourceMap = await new SourceMapConsumer(rawMap);
       } catch (e: unknown) {

@@ -6,7 +6,7 @@ import {
   workspace,
   commands,
 } from "vscode";
-import * as path from "path";
+import { basename } from "path";
 
 import {
   ToRemoteQueriesMessage,
@@ -87,7 +87,7 @@ export class RemoteQueriesView extends AbstractWebview<
     query: RemoteQuery,
     queryResult: RemoteQueryResult,
   ): RemoteQueryResultViewModel {
-    const queryFileName = path.basename(query.queryFilePath);
+    const queryFileName = basename(query.queryFilePath);
     const totalResultCount = sumAnalysisSummariesResults(
       queryResult.analysisSummaries,
     );
@@ -106,17 +106,17 @@ export class RemoteQueriesView extends AbstractWebview<
     return {
       queryId: queryResult.queryId,
       queryTitle: query.queryName,
-      queryFileName: queryFileName,
+      queryFileName,
       queryFilePath: query.queryFilePath,
       queryText: query.queryText,
       language: query.language,
       workflowRunUrl: `https://github.com/${query.controllerRepository.owner}/${query.controllerRepository.name}/actions/runs/${query.actionsWorkflowRunId}`,
-      totalRepositoryCount: totalRepositoryCount,
+      totalRepositoryCount,
       affectedRepositoryCount: affectedRepositories.length,
-      totalResultCount: totalResultCount,
+      totalResultCount,
       executionTimestamp: this.formatDate(query.executionStartTime),
-      executionDuration: executionDuration,
-      analysisSummaries: analysisSummaries,
+      executionDuration,
+      analysisSummaries,
       analysisFailures: queryResult.analysisFailures,
     };
   }

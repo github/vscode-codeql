@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as fs from "fs-extra";
+import { join } from "path";
+import { pathExists, readFile, writeFile } from "fs-extra";
 import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
@@ -83,7 +83,7 @@ export async function getRemoteQueryIndex(
 
     return {
       id: item.id.toString(),
-      artifactId: artifactId,
+      artifactId,
       nwo: item.nwo,
       sha: item.sha,
       resultCount: item.results_count,
@@ -160,7 +160,7 @@ export async function downloadArtifactFromLink(
   const extractedPath = createDownloadPath(storagePath, downloadLink);
 
   // first check if we already have the artifact
-  if (!(await fs.pathExists(extractedPath))) {
+  if (!(await pathExists(extractedPath))) {
     // Download the zipped artifact.
     const response = await octokit.request(
       `GET ${downloadLink.urlPath}/zip`,
@@ -171,7 +171,7 @@ export async function downloadArtifactFromLink(
 
     await unzipBuffer(response.data as ArrayBuffer, zipFilePath, extractedPath);
   }
-  return path.join(extractedPath, downloadLink.innerFilePath || "");
+  return join(extractedPath, downloadLink.innerFilePath || "");
 }
 
 /**
@@ -220,17 +220,14 @@ async function getResultIndex(
     repo,
     artifactId,
   );
-  const indexFilePath = path.join(artifactPath, "index.json");
-  if (!(await fs.pathExists(indexFilePath))) {
+  const indexFilePath = join(artifactPath, "index.json");
+  if (!(await pathExists(indexFilePath))) {
     void showAndLogWarningMessage(
       "Could not find an `index.json` file in the result artifact.",
     );
     return undefined;
   }
-  const resultIndex = await fs.readFile(
-    path.join(artifactPath, "index.json"),
-    "utf8",
-  );
+  const resultIndex = await readFile(join(artifactPath, "index.json"), "utf8");
 
   try {
     return JSON.parse(resultIndex);
@@ -370,7 +367,7 @@ async function downloadArtifact(
     artifact_id: artifactId,
     archive_format: "zip",
   });
-  const artifactPath = path.join(tmpDir.name, `${artifactId}`);
+  const artifactPath = join(tmpDir.name, `${artifactId}`);
   await unzipBuffer(
     response.data as ArrayBuffer,
     `${artifactPath}.zip`,
@@ -385,7 +382,7 @@ async function unzipBuffer(
   destinationPath: string,
 ): Promise<void> {
   void extLogger.log(`Saving file to ${filePath}`);
-  await fs.writeFile(filePath, Buffer.from(data));
+  await writeFile(filePath, Buffer.from(data));
 
   void extLogger.log(`Unzipping file to ${destinationPath}`);
   await unzipFile(filePath, destinationPath);
@@ -438,7 +435,7 @@ const repositoriesMetadataQuery = `query Stars($repos: String!, $pageSize: Int!,
 
 type RepositoriesMetadataQueryResponse = {
   search: {
-    edges: {
+    edges: Array<{
       cursor: string;
       node: {
         name: string;
@@ -448,7 +445,7 @@ type RepositoriesMetadataQueryResponse = {
         stargazerCount: number;
         updatedAt: string; // Actually a ISO Date string
       };
-    }[];
+    }>;
   };
 };
 

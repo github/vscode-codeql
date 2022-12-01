@@ -9,7 +9,7 @@ import { extLogger } from "../common";
 import * as messages from "../pure/legacy-messages";
 import * as qsClient from "./queryserver-client";
 import * as tmp from "tmp-promise";
-import * as path from "path";
+import { dirname } from "path";
 import { DatabaseItem } from "../databases";
 
 /**
@@ -69,7 +69,7 @@ async function compileDatabaseUpgrade(
   // We have the upgrades we want but compileUpgrade
   // requires searching for them.  So we use the parent directories of the upgrades
   // as the upgrade path.
-  const parentDirs = resolvedSequence.map((dir) => path.dirname(dir));
+  const parentDirs = resolvedSequence.map((dir) => dirname(dir));
   const uniqueParentDirs = new Set(parentDirs);
   progress({
     step: 1,

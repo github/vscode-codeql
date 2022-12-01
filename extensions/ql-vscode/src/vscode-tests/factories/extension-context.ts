@@ -13,7 +13,7 @@ export function createMockExtensionContext({
   globalStoragePath?: string;
 }): vscode.ExtensionContext {
   return {
-    extensionPath: extensionPath,
+    extensionPath,
     globalStorageUri: vscode.Uri.file(globalStoragePath),
     storageUri: vscode.Uri.file(workspaceStoragePath),
   } as any as vscode.ExtensionContext;

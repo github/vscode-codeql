@@ -1,6 +1,6 @@
 import { window as Window, OutputChannel, Progress } from "vscode";
-import * as fs from "fs-extra";
-import * as path from "path";
+import { ensureFile, appendFile } from "fs-extra";
+import { isAbsolute } from "path";
 import { Logger, LogOptions } from "../logger";
 import { DisposableObject } from "../../../pure/disposable-object";
 
@@ -34,7 +34,7 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
       }
 
       if (options.additionalLogLocation) {
-        if (!path.isAbsolute(options.additionalLogLocation)) {
+        if (!isAbsolute(options.additionalLogLocation)) {
           throw new Error(
             `Additional Log Location must be an absolute path: ${options.additionalLogLocation}`,
           );
@@ -84,9 +84,9 @@ class AdditionalLogLocation {
     if (options.trailingNewline === undefined) {
       options.trailingNewline = true;
     }
-    await fs.ensureFile(this.location);
+    await ensureFile(this.location);
 
-    await fs.appendFile(
+    await appendFile(
       this.location,
       message + (options.trailingNewline ? "\n" : ""),
       {

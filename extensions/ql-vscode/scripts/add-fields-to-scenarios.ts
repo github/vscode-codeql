@@ -11,8 +11,8 @@
  * Usage: npx ts-node scripts/add-fields-to-scenarios.ts
  */
 
-import * as fs from "fs-extra";
-import * as path from "path";
+import { pathExists, readJson, writeJson } from "fs-extra";
+import { resolve, relative } from "path";
 
 import { Octokit, type RestEndpointMethodTypes } from "@octokit/rest";
 import { throttling } from "@octokit/plugin-throttling";
@@ -23,11 +23,8 @@ import { isGetVariantAnalysisRequest } from "../src/mocks/gh-api-request";
 import { VariantAnalysis } from "../src/remote-queries/gh-api/variant-analysis";
 import { RepositoryWithMetadata } from "../src/remote-queries/gh-api/repository";
 
-const extensionDirectory = path.resolve(__dirname, "..");
-const scenariosDirectory = path.resolve(
-  extensionDirectory,
-  "src/mocks/scenarios",
-);
+const extensionDirectory = resolve(__dirname, "..");
+const scenariosDirectory = resolve(extensionDirectory, "src/mocks/scenarios");
 
 // Make sure we don't run into rate limits by automatically waiting until we can
 // make another request.
@@ -84,8 +81,8 @@ async function addFieldsToRepository(repository: RepositoryWithMetadata) {
 }
 
 async function addFieldsToScenarios() {
-  if (!(await fs.pathExists(scenariosDirectory))) {
-    console.error("Scenarios directory does not exist: " + scenariosDirectory);
+  if (!(await pathExists(scenariosDirectory))) {
+    console.error(`Scenarios directory does not exist: ${scenariosDirectory}`);
     return;
   }
 
@@ -94,7 +91,7 @@ async function addFieldsToScenarios() {
       continue;
     }
 
-    const data: GitHubApiRequest = await fs.readJson(file);
+    const data: GitHubApiRequest = await readJson(file);
 
     if (!isGetVariantAnalysisRequest(data)) {
       continue;
@@ -104,9 +101,7 @@ async function addFieldsToScenarios() {
       continue;
     }
 
-    console.log(
-      `Adding fields to '${path.relative(scenariosDirectory, file)}'`,
-    );
+    console.log(`Adding fields to '${relative(scenariosDirectory, file)}'`);
 
     const variantAnalysis = data.response.body as VariantAnalysis;
 
@@ -137,7 +132,7 @@ async function addFieldsToScenarios() {
       }
     }
 
-    await fs.writeJson(file, data, { spaces: 2 });
+    await writeJson(file, data, { spaces: 2 });
   }
 }
 

@@ -1,6 +1,9 @@
-import * as path from "path";
+import { join } from "path";
 
-import * as ghApiClient from "./gh-api/gh-api-client";
+import {
+  submitVariantAnalysis,
+  getVariantAnalysisRepo,
+} from "./gh-api/gh-api-client";
 import {
   CancellationToken,
   commands,
@@ -41,8 +44,8 @@ import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
 } from "../helpers";
-import * as fs from "fs-extra";
-import * as os from "os";
+import { readFile, readJson, remove, pathExists, outputJson } from "fs-extra";
+import { EOL } from "os";
 import { cancelVariantAnalysis } from "./gh-api/gh-actions-api-client";
 import { ProgressCallback, UserCancellationException } from "../commandRunner";
 import { CodeQLCliServer } from "../cli";
@@ -142,7 +145,7 @@ export class VariantAnalysisManager
       );
     }
 
-    const queryText = await fs.readFile(queryFile, "utf8");
+    const queryText = await readFile(queryFile, "utf8");
 
     const variantAnalysisSubmission: VariantAnalysisSubmission = {
       startTime: queryStartTime,
@@ -162,7 +165,7 @@ export class VariantAnalysisManager
       },
     };
 
-    const variantAnalysisResponse = await ghApiClient.submitVariantAnalysis(
+    const variantAnalysisResponse = await submitVariantAnalysis(
       credentials,
       variantAnalysisSubmission,
     );
@@ -197,7 +200,7 @@ export class VariantAnalysisManager
       await this.setVariantAnalysis(variantAnalysis);
 
       try {
-        const repoStates = await fs.readJson(
+        const repoStates = await readJson(
           this.getRepoStatesStoragePath(variantAnalysis.id),
         );
         this.repoStates.set(variantAnalysis.id, repoStates);
@@ -245,7 +248,7 @@ export class VariantAnalysisManager
   private async removeStorageDirectory(variantAnalysisId: number) {
     const storageLocation =
       this.getVariantAnalysisStorageLocation(variantAnalysisId);
-    await fs.remove(storageLocation);
+    await remove(storageLocation);
   }
 
   public async showView(variantAnalysisId: number): Promise<void> {
@@ -321,7 +324,7 @@ export class VariantAnalysisManager
     variantAnalysisId: number,
   ): Promise<boolean> {
     const filePath = this.getVariantAnalysisStorageLocation(variantAnalysisId);
-    return await fs.pathExists(filePath);
+    return await pathExists(filePath);
   }
 
   private async shouldCancelMonitorVariantAnalysis(
@@ -431,7 +434,7 @@ export class VariantAnalysisManager
 
     let repoTask: VariantAnalysisRepositoryTask;
     try {
-      const repoTaskResponse = await ghApiClient.getVariantAnalysisRepo(
+      const repoTaskResponse = await getVariantAnalysisRepo(
         credentials,
         variantAnalysis.controllerRepo.id,
         variantAnalysis.id,
@@ -478,7 +481,7 @@ export class VariantAnalysisManager
       VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
-    await fs.outputJson(
+    await outputJson(
       this.getRepoStatesStoragePath(variantAnalysis.id),
       this.repoStates.get(variantAnalysis.id),
     );
@@ -503,7 +506,7 @@ export class VariantAnalysisManager
   }
 
   public getVariantAnalysisStorageLocation(variantAnalysisId: number): string {
-    return path.join(this.storagePath, `${variantAnalysisId}`);
+    return join(this.storagePath, `${variantAnalysisId}`);
   }
 
   public async cancelVariantAnalysis(variantAnalysisId: number) {
@@ -557,11 +560,11 @@ export class VariantAnalysisManager
       "]",
     ];
 
-    await env.clipboard.writeText(text.join(os.EOL));
+    await env.clipboard.writeText(text.join(EOL));
   }
 
   private getRepoStatesStoragePath(variantAnalysisId: number): string {
-    return path.join(
+    return join(
       this.getVariantAnalysisStorageLocation(variantAnalysisId),
       VariantAnalysisManager.REPO_STATES_FILENAME,
     );

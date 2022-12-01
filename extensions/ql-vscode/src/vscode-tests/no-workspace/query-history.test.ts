@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { readdirSync, mkdirSync, writeFileSync } from "fs-extra";
+import { join } from "path";
 import * as vscode from "vscode";
 
 import { extLogger } from "../../common";
@@ -12,7 +12,7 @@ import {
 import { QueryHistoryConfig, QueryHistoryConfigListener } from "../../config";
 import { LocalQueryInfo } from "../../query-results";
 import { DatabaseManager } from "../../databases";
-import * as tmp from "tmp-promise";
+import { dirSync } from "tmp-promise";
 import {
   ONE_DAY_IN_MS,
   ONE_HOUR_IN_MS,
@@ -44,10 +44,7 @@ import { QuickPickItem, TextEditor } from "vscode";
 import { WebviewReveal } from "../../interface-utils";
 
 describe("query-history", () => {
-  const mockExtensionLocation = path.join(
-    tmpDir.name,
-    "mock-extension-location",
-  );
+  const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
   let configListener: QueryHistoryConfigListener;
   let showTextDocumentSpy: jest.SpiedFunction<
     typeof vscode.window.showTextDocument
@@ -1066,7 +1063,7 @@ describe("query-history", () => {
       // We don't want our times to align exactly with the hour,
       // so we can better mimic real life
       const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
-      const tmpDir = tmp.dirSync({
+      const tmpDir = dirSync({
         unsafeCleanup: true,
       });
 
@@ -1178,38 +1175,35 @@ describe("query-history", () => {
       });
 
       function expectDirectories(queryDir: string, ...dirNames: string[]) {
-        const files = fs.readdirSync(queryDir);
+        const files = readdirSync(queryDir);
         expect(files.sort()).toEqual(dirNames.sort());
       }
 
       function createMockQueryDir(...timestamps: number[]) {
         const dir = tmpDir.name;
-        const queryDir = path.join(dir, "query");
+        const queryDir = join(dir, "query");
         // create qyuery directory and fill it with some query directories
-        fs.mkdirSync(queryDir);
+        mkdirSync(queryDir);
 
         // create an invalid file
-        const invalidFile = path.join(queryDir, "invalid.txt");
-        fs.writeFileSync(invalidFile, "invalid");
+        const invalidFile = join(queryDir, "invalid.txt");
+        writeFileSync(invalidFile, "invalid");
 
         // create a directory without a timestamp file
-        const noTimestampDir = path.join(queryDir, "noTimestampDir");
-        fs.mkdirSync(noTimestampDir);
-        fs.writeFileSync(path.join(noTimestampDir, "invalid.txt"), "invalid");
+        const noTimestampDir = join(queryDir, "noTimestampDir");
+        mkdirSync(noTimestampDir);
+        writeFileSync(join(noTimestampDir, "invalid.txt"), "invalid");
 
         // create a directory with a timestamp file, but is invalid
-        const invalidTimestampDir = path.join(queryDir, "invalidTimestampDir");
-        fs.mkdirSync(invalidTimestampDir);
-        fs.writeFileSync(
-          path.join(invalidTimestampDir, "timestamp"),
-          "invalid",
-        );
+        const invalidTimestampDir = join(queryDir, "invalidTimestampDir");
+        mkdirSync(invalidTimestampDir);
+        writeFileSync(join(invalidTimestampDir, "timestamp"), "invalid");
 
         // create a directories with a valid timestamp files from the args
         timestamps.forEach((timestamp) => {
-          const dir = path.join(queryDir, toQueryDirName(timestamp));
-          fs.mkdirSync(dir);
-          fs.writeFileSync(path.join(dir, "timestamp"), `${now + timestamp}`);
+          const dir = join(queryDir, toQueryDirName(timestamp));
+          mkdirSync(dir);
+          writeFileSync(join(dir, "timestamp"), `${now + timestamp}`);
         });
 
         return queryDir;
@@ -1282,7 +1276,7 @@ describe("query-history", () => {
         expect(treeItem.label).toContain("query-file.ql");
         expect(treeItem.contextValue).toBe("rawResultsItem");
         expect(treeItem.iconPath).toEqual(
-          vscode.Uri.file(mockExtensionLocation + "/media/drive.svg").fsPath,
+          vscode.Uri.file(`${mockExtensionLocation}/media/drive.svg`).fsPath,
         );
       });
 
@@ -1300,7 +1294,7 @@ describe("query-history", () => {
         );
         expect(treeItem.contextValue).toBe("interpretedResultsItem");
         expect(treeItem.iconPath).toEqual(
-          vscode.Uri.file(mockExtensionLocation + "/media/drive.svg").fsPath,
+          vscode.Uri.file(`${mockExtensionLocation}/media/drive.svg`).fsPath,
         );
       });
 
@@ -1315,7 +1309,7 @@ describe("query-history", () => {
 
         const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
         expect(treeItem.iconPath).toBe(
-          vscode.Uri.file(mockExtensionLocation + "/media/red-x.svg").fsPath,
+          vscode.Uri.file(`${mockExtensionLocation}/media/red-x.svg`).fsPath,
         );
       });
 
@@ -1327,7 +1321,7 @@ describe("query-history", () => {
 
         const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
         expect(treeItem.iconPath).toBe(
-          vscode.Uri.file(mockExtensionLocation + "/media/red-x.svg").fsPath,
+          vscode.Uri.file(`${mockExtensionLocation}/media/red-x.svg`).fsPath,
         );
       });
 

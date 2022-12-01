@@ -1,6 +1,12 @@
-import * as path from "path";
-import * as fs from "fs-extra";
-import * as os from "os";
+import { join, basename } from "path";
+import {
+  ensureDir,
+  writeFileSync,
+  createWriteStream,
+  unlinkSync,
+  mkdirpSync,
+} from "fs-extra";
+import { platform } from "os";
 import {
   LocalQueryInfo,
   InitialQueryInfo,
@@ -31,7 +37,7 @@ describe("query-results", () => {
   let cnt = 0;
 
   beforeEach(() => {
-    queryPath = path.join(Uri.file(tmpDir.name).fsPath, `query-${cnt++}`);
+    queryPath = join(Uri.file(tmpDir.name).fsPath, `query-${cnt++}`);
   });
 
   describe("FullQueryInfo", () => {
@@ -78,7 +84,7 @@ describe("query-results", () => {
       const query = createMockQueryWithResults(queryPath);
       const fqi = createMockFullQueryInfo("a", query);
       const completedQuery = fqi.completedQuery!;
-      const expectedResultsPath = path.join(queryPath, "results.bqrs");
+      const expectedResultsPath = join(queryPath, "results.bqrs");
 
       // from results path
       expect(completedQuery.getResultsPath("zxa", false)).toBe(
@@ -150,8 +156,8 @@ describe("query-results", () => {
       );
 
       // verify
-      const expectedResultsPath = path.join(queryPath, "results.bqrs");
-      const expectedSortedResultsPath = path.join(
+      const expectedResultsPath = join(queryPath, "results.bqrs");
+      const expectedSortedResultsPath = join(
         queryPath,
         "sortedResults-a-result-set-name.bqrs",
       );
@@ -183,13 +189,13 @@ describe("query-results", () => {
       scored: undefined,
     };
     const resultsPath = "123";
-    const interpretedResultsPath = path.join(tmpDir.name, "interpreted.json");
+    const interpretedResultsPath = join(tmpDir.name, "interpreted.json");
     const sourceInfo = {};
 
     beforeEach(async () => {
       spy.mockReturnValue({ a: "1234" });
 
-      await fs.ensureDir(path.basename(interpretedResultsPath));
+      await ensureDir(basename(interpretedResultsPath));
 
       mockServer = {
         interpretBqrsSarif: spy,
@@ -251,7 +257,7 @@ describe("query-results", () => {
     it(
       "should use sarifParser on a valid small SARIF file",
       async () => {
-        fs.writeFileSync(
+        writeFileSync(
           interpretedResultsPath,
           JSON.stringify({
             runs: [{ results: [] }], // A run needs results to succeed.
@@ -279,7 +285,7 @@ describe("query-results", () => {
     it(
       "should throw an error on an invalid small SARIF file",
       async () => {
-        fs.writeFileSync(
+        writeFileSync(
           interpretedResultsPath,
           JSON.stringify({
             a: "6", // Invalid: no runs or results
@@ -310,7 +316,7 @@ describe("query-results", () => {
     it(
       "should use sarifParser on a valid large SARIF file",
       async () => {
-        const validSarifStream = fs.createWriteStream(interpretedResultsPath, {
+        const validSarifStream = createWriteStream(interpretedResultsPath, {
           flags: "w",
         });
 
@@ -345,7 +351,7 @@ describe("query-results", () => {
 
         // We need to sleep to wait for MSFT Defender to scan the file
         // so that it can be read by our test.
-        if (os.platform() === "win32") {
+        if (platform() === "win32") {
           await sleep(10_000);
         }
 
@@ -372,16 +378,13 @@ describe("query-results", () => {
       async () => {
         // There is a problem on Windows where the file at the prior path isn't able
         // to be deleted or written to, so we rename the path for this last test.
-        const interpretedResultsPath = path.join(
+        const interpretedResultsPath = join(
           tmpDir.name,
           "interpreted-invalid.json",
         );
-        const invalidSarifStream = fs.createWriteStream(
-          interpretedResultsPath,
-          {
-            flags: "w",
-          },
-        );
+        const invalidSarifStream = createWriteStream(interpretedResultsPath, {
+          flags: "w",
+        });
 
         const finished = new Promise((res, rej) => {
           invalidSarifStream.addListener("close", res);
@@ -407,7 +410,7 @@ describe("query-results", () => {
 
         // We need to sleep to wait for MSFT Defender to scan the file
         // so that it can be read by our test.
-        if (os.platform() === "win32") {
+        if (platform() === "win32") {
           await sleep(10_000);
         }
 
@@ -490,10 +493,7 @@ describe("query-results", () => {
         infoLateFailure,
       ];
 
-      const allHistoryPath = path.join(
-        tmpDir.name,
-        "workspace-query-history.json",
-      );
+      const allHistoryPath = join(tmpDir.name, "workspace-query-history.json");
 
       // splat and slurp
       await splatQueryHistory(allHistory, allHistoryPath);
@@ -530,8 +530,8 @@ describe("query-results", () => {
     });
 
     it("should handle an invalid query history version", async () => {
-      const badPath = path.join(tmpDir.name, "bad-query-history.json");
-      fs.writeFileSync(
+      const badPath = join(tmpDir.name, "bad-query-history.json");
+      writeFileSync(
         badPath,
         JSON.stringify({
           version: 3,
@@ -548,7 +548,7 @@ describe("query-results", () => {
 
   function safeDel(file: string) {
     try {
-      fs.unlinkSync(file);
+      unlinkSync(file);
     } catch (e) {
       // ignore
     }
@@ -562,9 +562,9 @@ describe("query-results", () => {
     includeSpies = true,
   ): QueryWithResults {
     // pretend that the results path exists
-    const resultsPath = path.join(queryPath, "results.bqrs");
-    fs.mkdirpSync(queryPath);
-    fs.writeFileSync(resultsPath, "", "utf8");
+    const resultsPath = join(queryPath, "results.bqrs");
+    mkdirpSync(queryPath);
+    writeFileSync(resultsPath, "", "utf8");
 
     const query = new QueryInProgress(
       queryPath,

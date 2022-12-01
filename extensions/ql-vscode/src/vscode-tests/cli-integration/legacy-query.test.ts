@@ -1,7 +1,7 @@
-import * as fs from "fs-extra";
-import * as path from "path";
-import * as tmp from "tmp";
-import * as url from "url";
+import { existsSync } from "fs-extra";
+import { join, basename } from "path";
+import { dirSync } from "tmp";
+import { pathToFileURL } from "url";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import * as messages from "../../pure/legacy-messages";
 import * as qsClient from "../../legacy-query-server/queryserver-client";
@@ -13,16 +13,16 @@ import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../legacy-query-server/queryserver-client";
 import { extLogger, ProgressReporter } from "../../common";
 
-const baseDir = path.join(__dirname, "../../../test/data");
+const baseDir = join(__dirname, "../../../test/data");
 
-const tmpDir = tmp.dirSync({
+const tmpDir = dirSync({
   prefix: "query_test_",
   keep: false,
   unsafeCleanup: true,
 });
 
-const COMPILED_QUERY_PATH = path.join(tmpDir.name, "compiled.qlo");
-const RESULTS_PATH = path.join(tmpDir.name, "results.bqrs");
+const COMPILED_QUERY_PATH = join(tmpDir.name, "compiled.qlo");
+const RESULTS_PATH = join(tmpDir.name, "results.bqrs");
 
 const source = new CancellationTokenSource();
 const token = source.token;
@@ -70,19 +70,19 @@ type QueryTestCase = {
 // Test cases: queries to run and their expected results.
 const queryTestCases: QueryTestCase[] = [
   {
-    queryPath: path.join(baseDir, "query.ql"),
+    queryPath: join(baseDir, "query.ql"),
     expectedResultSets: {
       "#select": [[42, 3.14159, "hello world", true]],
     },
   },
   {
-    queryPath: path.join(baseDir, "compute-default-strings.ql"),
+    queryPath: join(baseDir, "compute-default-strings.ql"),
     expectedResultSets: {
       "#select": [[{ label: "(no string representation)" }]],
     },
   },
   {
-    queryPath: path.join(baseDir, "multiple-result-sets.ql"),
+    queryPath: join(baseDir, "multiple-result-sets.ql"),
     expectedResultSets: {
       edges: [
         [1, 2],
@@ -94,7 +94,7 @@ const queryTestCases: QueryTestCase[] = [
 ];
 
 const db: messages.Dataset = {
-  dbDir: path.join(__dirname, "../../../.vscode-test/test-db"),
+  dbDir: join(__dirname, "../../../.vscode-test/test-db"),
   workingSet: "default",
 };
 
@@ -148,7 +148,7 @@ describeWithCodeQL()("using the legacy query server", () => {
   });
 
   for (const queryTestCase of queryTestCases) {
-    const queryName = path.basename(queryTestCase.queryPath);
+    const queryName = basename(queryTestCase.queryPath);
     const compilationSucceeded = new Checkpoint<void>();
     const evaluationSucceeded = new Checkpoint<void>();
     const parsedResults = new Checkpoint<void>();
@@ -167,11 +167,11 @@ describeWithCodeQL()("using the legacy query server", () => {
     });
 
     it(`should be able to compile query ${queryName}`, async () => {
-      expect(fs.existsSync(queryTestCase.queryPath)).toBe(true);
+      expect(existsSync(queryTestCase.queryPath)).toBe(true);
       try {
         const qlProgram: messages.QlProgram = {
           libraryPath: [],
-          dbschemePath: path.join(baseDir, "test.dbscheme"),
+          dbschemePath: join(baseDir, "test.dbscheme"),
           queryPath: queryTestCase.queryPath,
         };
         const params: messages.CompileQueryParams = {
@@ -213,7 +213,7 @@ describeWithCodeQL()("using the legacy query server", () => {
         });
         const queryToRun: messages.QueryToRun = {
           resultsPath: RESULTS_PATH,
-          qlo: url.pathToFileURL(COMPILED_QUERY_PATH).toString(),
+          qlo: pathToFileURL(COMPILED_QUERY_PATH).toString(),
           allowUnknownTemplates: true,
           id: callbackId,
           timeoutSecs: 1000,

@@ -7,9 +7,9 @@ import {
   env,
 } from "vscode";
 import { nanoid } from "nanoid";
-import * as path from "path";
-import * as fs from "fs-extra";
-import * as os from "os";
+import { join } from "path";
+import { writeFile, readFile, remove, pathExists } from "fs-extra";
+import { EOL } from "os";
 
 import { Credentials } from "../authentication";
 import { CodeQLCliServer } from "../cli";
@@ -324,7 +324,7 @@ export class RemoteQueriesManager extends DisposableObject {
         "]",
       ];
 
-      await env.clipboard.writeText(text.join(os.EOL));
+      await env.clipboard.writeText(text.join(EOL));
     }
   }
 
@@ -403,7 +403,7 @@ export class RemoteQueriesManager extends DisposableObject {
    *
    */
   private async prepareStorageDirectory(queryId: string): Promise<void> {
-    await createTimestampFile(path.join(this.storagePath, queryId));
+    await createTimestampFile(join(this.storagePath, queryId));
   }
 
   private async getRemoteQueryResult(
@@ -420,26 +420,26 @@ export class RemoteQueriesManager extends DisposableObject {
     fileName: string,
     obj: T,
   ): Promise<void> {
-    const filePath = path.join(this.storagePath, queryId, fileName);
-    await fs.writeFile(filePath, JSON.stringify(obj, null, 2), "utf8");
+    const filePath = join(this.storagePath, queryId, fileName);
+    await writeFile(filePath, JSON.stringify(obj, null, 2), "utf8");
   }
 
   private async retrieveJsonFile<T>(
     queryId: string,
     fileName: string,
   ): Promise<T> {
-    const filePath = path.join(this.storagePath, queryId, fileName);
-    return JSON.parse(await fs.readFile(filePath, "utf8"));
+    const filePath = join(this.storagePath, queryId, fileName);
+    return JSON.parse(await readFile(filePath, "utf8"));
   }
 
   private async removeStorageDirectory(queryId: string): Promise<void> {
-    const filePath = path.join(this.storagePath, queryId);
-    await fs.remove(filePath);
+    const filePath = join(this.storagePath, queryId);
+    await remove(filePath);
   }
 
   private async queryRecordExists(queryId: string): Promise<boolean> {
-    const filePath = path.join(this.storagePath, queryId);
-    return await fs.pathExists(filePath);
+    const filePath = join(this.storagePath, queryId);
+    return await pathExists(filePath);
   }
 
   /**

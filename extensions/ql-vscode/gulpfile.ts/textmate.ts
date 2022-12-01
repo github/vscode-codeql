@@ -1,6 +1,6 @@
-import * as gulp from "gulp";
-import * as jsYaml from "js-yaml";
-import * as through from "through2";
+import { src, dest } from "gulp";
+import { load } from "js-yaml";
+import { obj } from "through2";
 import * as PluginError from "plugin-error";
 import * as Vinyl from "vinyl";
 
@@ -61,11 +61,11 @@ function getNodeMatchText(rule: any): string {
     for (const patternIndex in rule.patterns) {
       const pattern = rule.patterns[patternIndex];
       if (pattern.include !== null) {
-        patterns.push("(?" + pattern.include + ")");
+        patterns.push(`(?${pattern.include})`);
       }
     }
 
-    return "(?:" + patterns.join("|") + ")";
+    return `(?:${patterns.join("|")})`;
   } else {
     return "";
   }
@@ -149,8 +149,8 @@ function visitAllMatchesInRule(rule: any, action: (match: any) => any) {
  * @param key Base key of the property to be transformed.
  */
 function expandPatternMatchProperties(rule: any, key: "begin" | "end") {
-  const patternKey = key + "Pattern";
-  const capturesKey = key + "Captures";
+  const patternKey = `${key}Pattern`;
+  const capturesKey = `${key}Captures`;
   const pattern = rule[patternKey];
   if (pattern !== undefined) {
     const patterns: string[] = Array.isArray(pattern) ? pattern : [pattern];
@@ -207,7 +207,7 @@ function transformFile(yaml: any) {
   });
 
   if (yaml.regexOptions !== undefined) {
-    const regexOptions = "(?" + yaml.regexOptions + ")";
+    const regexOptions = `(?${yaml.regexOptions})`;
     visitAllRulesInFile(yaml, (rule) => {
       visitAllMatchesInRule(rule, (match) => {
         return regexOptions + match;
@@ -219,7 +219,7 @@ function transformFile(yaml: any) {
 }
 
 export function transpileTextMateGrammar() {
-  return through.obj(
+  return obj(
     (
       file: Vinyl,
       _encoding: string,
@@ -230,7 +230,7 @@ export function transpileTextMateGrammar() {
       } else if (file.isBuffer()) {
         const buf: Buffer = file.contents;
         const yamlText: string = buf.toString("utf8");
-        const jsonData: any = jsYaml.load(yamlText);
+        const jsonData: any = load(yamlText);
         transformFile(jsonData);
 
         file.contents = Buffer.from(JSON.stringify(jsonData, null, 2), "utf8");
@@ -247,8 +247,7 @@ export function transpileTextMateGrammar() {
 }
 
 export function compileTextMateGrammar() {
-  return gulp
-    .src("syntaxes/*.tmLanguage.yml")
+  return src("syntaxes/*.tmLanguage.yml")
     .pipe(transpileTextMateGrammar())
-    .pipe(gulp.dest("out/syntaxes"));
+    .pipe(dest("out/syntaxes"));
 }

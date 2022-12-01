@@ -1,5 +1,5 @@
-import * as cp from "child_process";
-import * as path from "path";
+import { spawnSync } from "child_process";
+import { dirname } from "path";
 
 import type * as JestRunner from "jest-runner";
 import VSCodeTestRunner, { RunnerOptions } from "jest-runner-vscode";
@@ -26,7 +26,7 @@ export default class JestRunnerCliIntegration extends VSCodeTestRunner {
       new Set<`${RunnerOptions["version"]}-${RunnerOptions["platform"]}`>();
 
     for (const test of tests) {
-      const testDir = path.dirname(test.path);
+      const testDir = dirname(test.path);
 
       const options: RunnerOptions =
         ((await cosmiconfig("jest-runner-vscode").search(testDir))
@@ -49,7 +49,7 @@ export default class JestRunnerCliIntegration extends VSCodeTestRunner {
       const [cli, ...args] =
         resolveCliArgsFromVSCodeExecutablePath(vscodeExecutablePath);
 
-      cp.spawnSync(
+      spawnSync(
         cli,
         [
           ...args,

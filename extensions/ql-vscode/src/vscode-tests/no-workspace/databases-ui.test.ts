@@ -1,6 +1,12 @@
-import * as tmp from "tmp";
-import * as path from "path";
-import * as fs from "fs-extra";
+import { dirSync, fileSync } from "tmp";
+import { dirname, join } from "path";
+import {
+  mkdirs,
+  createFile,
+  mkdirsSync,
+  createFileSync,
+  pathExistsSync,
+} from "fs-extra";
 import { Uri } from "vscode";
 
 import { DatabaseUI } from "../../databases-ui";
@@ -11,32 +17,32 @@ describe("databases-ui", () => {
   describe("fixDbUri", () => {
     const fixDbUri = (DatabaseUI.prototype as any).fixDbUri;
     it("should choose current directory direcory normally", async () => {
-      const dir = tmp.dirSync().name;
+      const dir = dirSync().name;
       const uri = await fixDbUri(Uri.file(dir));
       expect(uri.toString()).toBe(Uri.file(dir).toString());
     });
 
     it("should choose parent direcory when file is selected", async () => {
-      const file = tmp.fileSync().name;
+      const file = fileSync().name;
       const uri = await fixDbUri(Uri.file(file));
-      expect(uri.toString()).toBe(Uri.file(path.dirname(file)).toString());
+      expect(uri.toString()).toBe(Uri.file(dirname(file)).toString());
     });
 
     it("should choose parent direcory when db-* is selected", async () => {
-      const dir = tmp.dirSync().name;
-      const dbDir = path.join(dir, "db-javascript");
-      await fs.mkdirs(dbDir);
+      const dir = dirSync().name;
+      const dbDir = join(dir, "db-javascript");
+      await mkdirs(dbDir);
 
       const uri = await fixDbUri(Uri.file(dbDir));
       expect(uri.toString()).toBe(Uri.file(dir).toString());
     });
 
     it("should choose parent's parent direcory when file selected is in db-*", async () => {
-      const dir = tmp.dirSync().name;
-      const dbDir = path.join(dir, "db-javascript");
-      const file = path.join(dbDir, "nested");
-      await fs.mkdirs(dbDir);
-      await fs.createFile(file);
+      const dir = dirSync().name;
+      const dbDir = join(dir, "db-javascript");
+      const file = join(dbDir, "nested");
+      await mkdirs(dbDir);
+      await createFile(file);
 
       const uri = await fixDbUri(Uri.file(file));
       expect(uri.toString()).toBe(Uri.file(dir).toString());
@@ -44,12 +50,12 @@ describe("databases-ui", () => {
 
     it("should handle a parent whose name is db-*", async () => {
       // fixes https://github.com/github/vscode-codeql/issues/482
-      const dir = tmp.dirSync().name;
-      const parentDir = path.join(dir, "db-hucairz");
-      const dbDir = path.join(parentDir, "db-javascript");
-      const file = path.join(dbDir, "nested");
-      fs.mkdirsSync(dbDir);
-      fs.createFileSync(file);
+      const dir = dirSync().name;
+      const parentDir = join(dir, "db-hucairz");
+      const dbDir = join(parentDir, "db-javascript");
+      const file = join(dbDir, "nested");
+      mkdirsSync(dbDir);
+      createFileSync(file);
 
       const uri = await fixDbUri(Uri.file(file));
       expect(uri.toString()).toBe(Uri.file(parentDir).toString());
@@ -57,7 +63,7 @@ describe("databases-ui", () => {
   });
 
   it("should delete orphaned databases", async () => {
-    const storageDir = tmp.dirSync().name;
+    const storageDir = dirSync().name;
     const db1 = createDatabase(storageDir, "db1-imported", "cpp");
     const db2 = createDatabase(storageDir, "db2-notimported", "cpp");
     const db3 = createDatabase(storageDir, "db3-invalidlanguage", "hucairz");
@@ -94,12 +100,12 @@ describe("databases-ui", () => {
 
     await databaseUI.handleRemoveOrphanedDatabases();
 
-    expect(fs.pathExistsSync(db1)).toBe(true);
-    expect(fs.pathExistsSync(db2)).toBe(true);
-    expect(fs.pathExistsSync(db3)).toBe(true);
+    expect(pathExistsSync(db1)).toBe(true);
+    expect(pathExistsSync(db2)).toBe(true);
+    expect(pathExistsSync(db3)).toBe(true);
 
-    expect(fs.pathExistsSync(db4)).toBe(false);
-    expect(fs.pathExistsSync(db5)).toBe(false);
+    expect(pathExistsSync(db4)).toBe(false);
+    expect(pathExistsSync(db5)).toBe(false);
 
     databaseUI.dispose(testDisposeHandler);
   });
@@ -110,12 +116,12 @@ describe("databases-ui", () => {
     language: string,
     extraFile?: string,
   ) {
-    const parentDir = path.join(storageDir, dbName);
-    const dbDir = path.join(parentDir, `db-${language}`);
-    fs.mkdirsSync(dbDir);
+    const parentDir = join(storageDir, dbName);
+    const dbDir = join(parentDir, `db-${language}`);
+    mkdirsSync(dbDir);
 
     if (extraFile) {
-      fs.createFileSync(path.join(parentDir, extraFile));
+      createFileSync(join(parentDir, extraFile));
     }
 
     return parentDir;

@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { ensureDir, writeFile } from "fs-extra";
+import { join } from "path";
 
 import { MockedRequest } from "msw";
 import { SetupServerApi } from "msw/node";
@@ -66,15 +66,15 @@ export class Recorder extends DisposableObject {
   }
 
   public async save(scenariosPath: string, name: string): Promise<string> {
-    const scenarioDirectory = path.join(scenariosPath, name);
+    const scenarioDirectory = join(scenariosPath, name);
 
-    await fs.ensureDir(scenarioDirectory);
+    await ensureDir(scenarioDirectory);
 
     for (let i = 0; i < this.currentRecordedScenario.length; i++) {
       const request = this.currentRecordedScenario[i];
 
       const fileName = `${i}-${request.request.kind}.json`;
-      const filePath = path.join(scenarioDirectory, fileName);
+      const filePath = join(scenarioDirectory, fileName);
 
       let writtenRequest = {
         ...request,
@@ -87,8 +87,8 @@ export class Recorder extends DisposableObject {
             : "bin";
 
         const bodyFileName = `${i}-${writtenRequest.request.kind}.body.${extension}`;
-        const bodyFilePath = path.join(scenarioDirectory, bodyFileName);
-        await fs.writeFile(bodyFilePath, writtenRequest.response.body);
+        const bodyFilePath = join(scenarioDirectory, bodyFileName);
+        await writeFile(bodyFilePath, writtenRequest.response.body);
 
         writtenRequest = {
           ...writtenRequest,
@@ -99,7 +99,7 @@ export class Recorder extends DisposableObject {
         };
       }
 
-      await fs.writeFile(filePath, JSON.stringify(writtenRequest, null, 2));
+      await writeFile(filePath, JSON.stringify(writtenRequest, null, 2));
     }
 
     this.stop();

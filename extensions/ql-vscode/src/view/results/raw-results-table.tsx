@@ -10,8 +10,8 @@ import {
   RawResultsSortState,
   NavigateMsg,
   NavigationDirection,
+  RawTableResultSet,
 } from "../../pure/interface-types";
-import { RawTableResultSet } from "../../pure/interface-types";
 import RawTableHeader from "./RawTableHeader";
 import RawTableRow from "./RawTableRow";
 import { ResultRow } from "../../pure/bqrs-cli-types";

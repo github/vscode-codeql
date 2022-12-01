@@ -1,5 +1,5 @@
-import * as crypto from "crypto";
-import * as os from "os";
+import { randomBytes } from "crypto";
+import { EOL } from "os";
 import {
   Uri,
   Location,
@@ -32,7 +32,7 @@ import {
 
 /** Gets a nonce string created with 128 bits of entropy. */
 export function getNonce(): string {
-  return crypto.randomBytes(16).toString("base64");
+  return randomBytes(16).toString("base64");
 }
 
 /**
@@ -175,7 +175,7 @@ export function getHtmlForWebview(
           content="default-src 'none'; script-src 'nonce-${nonce}'; font-src ${fontSrc}; style-src ${styleSrc}; connect-src ${
     webview.cspSource
   };">
-        ${stylesheetsHtmlLines.join(`    ${os.EOL}`)}
+        ${stylesheetsHtmlLines.join(`    ${EOL}`)}
   </head>
   <body>
     <div id=root data-view="${view}">

@@ -27,7 +27,7 @@ export function createMockApiResponse(
     query_pack_url: "https://example.com/foo",
     created_at: faker.date.recent().toISOString(),
     updated_at: faker.date.recent().toISOString(),
-    status: status,
+    status,
     actions_workflow_run_id: faker.datatype.number(),
     scanned_repositories: scannedRepos,
     skipped_repositories: skippedRepos,

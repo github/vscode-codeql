@@ -1,44 +1,39 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { pathExists, readFile } from "fs-extra";
+import { resolve, relative } from "path";
 
 import Ajv from "ajv";
-import * as tsj from "ts-json-schema-generator";
+import { createGenerator } from "ts-json-schema-generator";
 
 import { getFiles } from "./util/files";
 
-const extensionDirectory = path.resolve(__dirname, "..");
-const rootDirectory = path.resolve(extensionDirectory, "../..");
-const scenariosDirectory = path.resolve(
-  extensionDirectory,
-  "src/mocks/scenarios",
-);
+const extensionDirectory = resolve(__dirname, "..");
+const rootDirectory = resolve(extensionDirectory, "../..");
+const scenariosDirectory = resolve(extensionDirectory, "src/mocks/scenarios");
 
 const debug = process.env.RUNNER_DEBUG || process.argv.includes("--debug");
 
 async function lintScenarios() {
-  const schema = tsj
-    .createGenerator({
-      path: path.resolve(extensionDirectory, "src/mocks/gh-api-request.ts"),
-      tsconfig: path.resolve(extensionDirectory, "tsconfig.json"),
-      type: "GitHubApiRequest",
-      skipTypeCheck: true,
-      topRef: true,
-      additionalProperties: true,
-    })
-    .createSchema("GitHubApiRequest");
+  const schema = createGenerator({
+    path: resolve(extensionDirectory, "src/mocks/gh-api-request.ts"),
+    tsconfig: resolve(extensionDirectory, "tsconfig.json"),
+    type: "GitHubApiRequest",
+    skipTypeCheck: true,
+    topRef: true,
+    additionalProperties: true,
+  }).createSchema("GitHubApiRequest");
 
   const ajv = new Ajv();
 
   if (!ajv.validateSchema(schema)) {
-    throw new Error("Invalid schema: " + ajv.errorsText());
+    throw new Error(`Invalid schema: ${ajv.errorsText()}`);
   }
 
   const validate = await ajv.compile(schema);
 
   let invalidFiles = 0;
 
-  if (!(await fs.pathExists(scenariosDirectory))) {
-    console.error("Scenarios directory does not exist: " + scenariosDirectory);
+  if (!(await pathExists(scenariosDirectory))) {
+    console.error(`Scenarios directory does not exist: ${scenariosDirectory}`);
     // Do not exit with a non-zero status code, as this is not a fatal error.
     return;
   }
@@ -48,21 +43,21 @@ async function lintScenarios() {
       continue;
     }
 
-    const contents = await fs.readFile(file, "utf8");
+    const contents = await readFile(file, "utf8");
     const data = JSON.parse(contents);
 
     if (!validate(data)) {
       validate.errors?.forEach((error) => {
         // https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message
         console.log(
-          `::error file=${path.relative(rootDirectory, file)}::${
+          `::error file=${relative(rootDirectory, file)}::${
             error.instancePath
           }: ${error.message}`,
         );
       });
       invalidFiles++;
     } else if (debug) {
-      console.log(`File '${path.relative(rootDirectory, file)}' is valid`);
+      console.log(`File '${relative(rootDirectory, file)}' is valid`);
     }
   }
 

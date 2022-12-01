@@ -26,7 +26,7 @@ export function createMockVariantAnalysisHistoryItem({
     completed: false,
     variantAnalysis: createMockVariantAnalysis({
       status: variantAnalysisStatus,
-      executionStartTime: executionStartTime,
+      executionStartTime,
     }),
     userSpecifiedLabel,
   };

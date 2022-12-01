@@ -1,5 +1,5 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
+import { createPortal } from "react-dom";
 import styled from "styled-components";
 import { XCircleIcon } from "@primer/octicons-react";
 
@@ -37,7 +37,7 @@ const FullScreenModal = ({
     throw Error(`Could not find container element. Id: ${containerElementId}`);
   }
 
-  return ReactDOM.createPortal(
+  return createPortal(
     <>
       <Container>
         <CloseButton onClick={() => setOpen(false)}>

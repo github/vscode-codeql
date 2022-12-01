@@ -1,4 +1,4 @@
-import * as gulp from "gulp";
+import { series, parallel } from "gulp";
 import { compileTypeScript, watchTypeScript, cleanOutput } from "./typescript";
 import { compileTextMateGrammar } from "./textmate";
 import { copyTestData, watchTestData } from "./tests";
@@ -6,9 +6,9 @@ import { compileView, watchView } from "./webpack";
 import { packageExtension } from "./package";
 import { injectAppInsightsKey } from "./appInsights";
 
-export const buildWithoutPackage = gulp.series(
+export const buildWithoutPackage = series(
   cleanOutput,
-  gulp.parallel(
+  parallel(
     compileTypeScript,
     compileTextMateGrammar,
     compileView,
@@ -27,7 +27,7 @@ export {
   injectAppInsightsKey,
   compileView,
 };
-export default gulp.series(
+export default series(
   buildWithoutPackage,
   injectAppInsightsKey,
   packageExtension,

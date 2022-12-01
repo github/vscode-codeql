@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import { pathExists } from "fs-extra";
 import {
   commands,
   env,
@@ -216,7 +216,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
         this.ctx.extensionUri,
         "src/mocks/scenarios",
       ).fsPath.toString();
-      if (await fs.pathExists(developmentScenariosPath)) {
+      if (await pathExists(developmentScenariosPath)) {
         return developmentScenariosPath;
       }
     }

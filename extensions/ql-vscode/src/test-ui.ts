@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { lstat, copy, pathExists, createFile } from "fs-extra";
+import { basename } from "path";
 import { Uri, TextDocumentShowOptions, commands, window } from "vscode";
 import {
   TestHub,
@@ -76,17 +76,17 @@ export class TestUIService extends UIService implements TestController {
 
   private async acceptOutput(node: TestTreeNode): Promise<void> {
     const testId = node.info.id;
-    const stat = await fs.lstat(testId);
+    const stat = await lstat(testId);
     if (stat.isFile()) {
       const expectedPath = getExpectedFile(testId);
       const actualPath = getActualFile(testId);
-      await fs.copy(actualPath, expectedPath, { overwrite: true });
+      await copy(actualPath, expectedPath, { overwrite: true });
     }
   }
 
   private async showOutputDifferences(node: TestTreeNode): Promise<void> {
     const testId = node.info.id;
-    const stat = await fs.lstat(testId);
+    const stat = await lstat(testId);
     if (stat.isFile()) {
       const expectedPath = getExpectedFile(testId);
       const expectedUri = Uri.file(expectedPath);
@@ -96,22 +96,20 @@ export class TestUIService extends UIService implements TestController {
         preview: true,
       };
 
-      if (!(await fs.pathExists(expectedPath))) {
+      if (!(await pathExists(expectedPath))) {
         void showAndLogWarningMessage(
-          `'${path.basename(
-            expectedPath,
-          )}' does not exist. Creating an empty file.`,
+          `'${basename(expectedPath)}' does not exist. Creating an empty file.`,
         );
-        await fs.createFile(expectedPath);
+        await createFile(expectedPath);
       }
 
-      if (await fs.pathExists(actualPath)) {
+      if (await pathExists(actualPath)) {
         const actualUri = Uri.file(actualPath);
         await commands.executeCommand<void>(
           "vscode.diff",
           expectedUri,
           actualUri,
-          `Expected vs. Actual for ${path.basename(testId)}`,
+          `Expected vs. Actual for ${basename(testId)}`,
           options,
         );
       } else {

@@ -1,5 +1,5 @@
 import * as Sarif from "sarif";
-import * as fs from "fs-extra";
+import { createReadStream } from "fs-extra";
 import { connectTo } from "stream-json/Assembler";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { withParser } from "stream-json/filters/Pick";
@@ -11,9 +11,9 @@ export async function sarifParser(
 ): Promise<Sarif.Log> {
   try {
     // Parse the SARIF file into token streams, filtering out only the results array.
-    const pipeline = fs
-      .createReadStream(interpretedResultsPath)
-      .pipe(withParser({ filter: "runs.0.results" }));
+    const pipeline = createReadStream(interpretedResultsPath).pipe(
+      withParser({ filter: "runs.0.results" }),
+    );
 
     // Creates JavaScript objects from the token stream
     const asm = connectTo(pipeline);

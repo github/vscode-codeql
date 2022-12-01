@@ -14,7 +14,7 @@
  * the fact that any unknown QueryResultType value counts as an error.
  */
 
-import * as rpc from "vscode-jsonrpc";
+import { RequestType } from "vscode-jsonrpc";
 import * as shared from "./messages-shared";
 
 /**
@@ -164,7 +164,7 @@ export type ProgressMessage = shared.ProgressMessage;
 /**
  * Clear the cache of a dataset
  */
-export const clearCache = new rpc.RequestType<
+export const clearCache = new RequestType<
   WithProgressId<ClearCacheParams>,
   ClearCacheResult,
   void
@@ -172,7 +172,7 @@ export const clearCache = new rpc.RequestType<
 /**
  * Trim the cache of a dataset
  */
-export const trimCache = new rpc.RequestType<
+export const trimCache = new RequestType<
   WithProgressId<TrimCacheParams>,
   ClearCacheResult,
   void
@@ -181,7 +181,7 @@ export const trimCache = new rpc.RequestType<
 /**
  * Clear the pack cache
  */
-export const clearPackCache = new rpc.RequestType<
+export const clearPackCache = new RequestType<
   WithProgressId<ClearPackCacheParams>,
   ClearPackCacheResult,
   void
@@ -190,25 +190,25 @@ export const clearPackCache = new rpc.RequestType<
 /**
  * Run a query on a database
  */
-export const runQuery = new rpc.RequestType<
+export const runQuery = new RequestType<
   WithProgressId<RunQueryParams>,
   RunQueryResult,
   void
 >("evaluation/runQuery");
 
-export const registerDatabases = new rpc.RequestType<
+export const registerDatabases = new RequestType<
   WithProgressId<RegisterDatabasesParams>,
   RegisterDatabasesResult,
   void
 >("evaluation/registerDatabases");
 
-export const deregisterDatabases = new rpc.RequestType<
+export const deregisterDatabases = new RequestType<
   WithProgressId<DeregisterDatabasesParams>,
   DeregisterDatabasesResult,
   void
 >("evaluation/deregisterDatabases");
 
-export const upgradeDatabase = new rpc.RequestType<
+export const upgradeDatabase = new RequestType<
   WithProgressId<UpgradeParams>,
   UpgradeResult,
   void

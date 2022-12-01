@@ -1,4 +1,4 @@
-import * as gulp from "gulp";
+import { src, dest } from "gulp";
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const replace = require("gulp-replace");
 
@@ -13,8 +13,7 @@ export function injectAppInsightsKey() {
   }
 
   // replace the key
-  return gulp
-    .src(["out/telemetry.js"])
+  return src(["out/telemetry.js"])
     .pipe(replace(/REPLACE-APP-INSIGHTS-KEY/, process.env.APP_INSIGHTS_KEY))
-    .pipe(gulp.dest("out/"));
+    .pipe(dest("out/"));
 }

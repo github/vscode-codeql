@@ -1,4 +1,4 @@
-import * as Octokit from "@octokit/rest";
+import { Octokit as Octokit_Octokit } from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 
 import { faker } from "@faker-js/faker";
@@ -14,12 +14,12 @@ import { Credentials } from "../../../../src/authentication";
 import { createMockSubmission } from "../../../../src/vscode-tests/factories/remote-queries/shared/variant-analysis-submission";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 
-import * as getRepoJson from "../../../../src/mocks/scenarios/problem-query-success/0-getRepo.json";
-import * as variantAnalysisJson from "../../../../src/mocks/scenarios/problem-query-success/1-submitVariantAnalysis.json";
-import * as variantAnalysisRepoJson from "../../../../src/mocks/scenarios/problem-query-success/9-getVariantAnalysisRepo.json";
+import { response } from "../../../../src/mocks/scenarios/problem-query-success/0-getRepo.json";
+import { response as variantAnalysisJson_response } from "../../../../src/mocks/scenarios/problem-query-success/1-submitVariantAnalysis.json";
+import { response as variantAnalysisRepoJson_response } from "../../../../src/mocks/scenarios/problem-query-success/9-getVariantAnalysisRepo.json";
 
 const mockCredentials = {
-  getOctokit: () => Promise.resolve(new Octokit.Octokit({ retry })),
+  getOctokit: () => Promise.resolve(new Octokit_Octokit({ retry })),
 } as unknown as Credentials;
 
 const mockServer = new MockGitHubApiServer();
@@ -27,9 +27,9 @@ beforeAll(() => mockServer.startServer());
 afterEach(() => mockServer.unloadScenario());
 afterAll(() => mockServer.stopServer());
 
-const controllerRepoId = variantAnalysisJson.response.body.controller_repo.id;
-const variantAnalysisId = variantAnalysisJson.response.body.id;
-const repoTaskId = variantAnalysisRepoJson.response.body.repository.id;
+const controllerRepoId = variantAnalysisJson_response.body.controller_repo.id;
+const variantAnalysisId = variantAnalysisJson_response.body.id;
+const repoTaskId = variantAnalysisRepoJson_response.body.repository.id;
 
 describe("submitVariantAnalysis", () => {
   it("returns the submitted variant analysis", async () => {
@@ -88,7 +88,7 @@ describe("getVariantAnalysisRepoResult", () => {
     expect(result).toBeDefined();
     expect(result).toBeInstanceOf(ArrayBuffer);
     expect(result.byteLength).toBe(
-      variantAnalysisRepoJson.response.body.artifact_size_in_bytes,
+      variantAnalysisRepoJson_response.body.artifact_size_in_bytes,
     );
   });
 });
@@ -104,6 +104,6 @@ describe("getRepositoryFromNwo", () => {
     );
 
     expect(result).toBeDefined();
-    expect(result.id).toBe(getRepoJson.response.body.id);
+    expect(result.id).toBe(response.body.id);
   });
 });

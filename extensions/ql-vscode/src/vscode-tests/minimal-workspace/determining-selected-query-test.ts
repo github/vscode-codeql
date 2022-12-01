@@ -1,11 +1,11 @@
-import * as path from "path";
+import { resolve, join } from "path";
 import * as vscode from "vscode";
 import { Uri } from "vscode";
 import { determineSelectedQuery } from "../../run-queries-shared";
 
 async function showQlDocument(name: string): Promise<vscode.TextDocument> {
   const folderPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
-  const documentPath = path.resolve(folderPath, name);
+  const documentPath = resolve(folderPath, name);
   const document = await vscode.workspace.openTextDocument(documentPath);
   await vscode.window.showTextDocument(document!);
   return document;
@@ -18,7 +18,7 @@ export function run() {
         Uri.parse("file:///tmp/queryname.ql"),
         false,
       );
-      expect(q.queryPath).toBe(path.join("/", "tmp", "queryname.ql"));
+      expect(q.queryPath).toBe(join("/", "tmp", "queryname.ql"));
       expect(q.quickEvalPosition).toBeUndefined();
     });
 
@@ -26,9 +26,7 @@ export function run() {
       const doc = await showQlDocument("query.ql");
       const q = await determineSelectedQuery(doc.uri, true);
       expect(
-        q.queryPath.endsWith(
-          path.join("ql-vscode", "test", "data", "query.ql"),
-        ),
+        q.queryPath.endsWith(join("ql-vscode", "test", "data", "query.ql")),
       ).toBe(true);
     });
 
@@ -36,9 +34,7 @@ export function run() {
       const doc = await showQlDocument("library.qll");
       const q = await determineSelectedQuery(doc.uri, true);
       expect(
-        q.queryPath.endsWith(
-          path.join("ql-vscode", "test", "data", "library.qll"),
-        ),
+        q.queryPath.endsWith(join("ql-vscode", "test", "data", "library.qll")),
       ).toBe(true);
     });
 

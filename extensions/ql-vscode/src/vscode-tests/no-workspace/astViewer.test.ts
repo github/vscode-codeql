@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as yaml from "js-yaml";
+import { readFile } from "fs-extra";
+import { load } from "js-yaml";
 
 import { AstViewer, AstItem } from "../../astViewer";
 import { commands, Range, Uri } from "vscode";
@@ -134,8 +134,8 @@ describe("AstViewer", () => {
   }
 
   async function buildAst() {
-    const astRoots = yaml.load(
-      await fs.readFile(`${__dirname}/data/astViewer.yml`, "utf8"),
+    const astRoots = load(
+      await readFile(`${__dirname}/data/astViewer.yml`, "utf8"),
     ) as AstItem[];
 
     // convert range properties into vscode.Range instances

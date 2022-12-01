@@ -3,7 +3,7 @@ import {
   EvaluationLogScannerSet,
 } from "../../src/log-insights/log-scanner";
 import { JoinOrderScannerProvider } from "../../src/log-insights/join-order";
-import * as path from "path";
+import { join } from "path";
 
 interface TestProblem {
   predicateName: string;
@@ -38,7 +38,7 @@ describe("log scanners", () => {
   it("should detect bad join orders", async () => {
     const scanners = new EvaluationLogScannerSet();
     scanners.registerLogScannerProvider(new JoinOrderScannerProvider(() => 50));
-    const summaryPath = path.join(
+    const summaryPath = join(
       __dirname,
       "evaluator-log-summaries/bad-join-order.jsonl",
     );

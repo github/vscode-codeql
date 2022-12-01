@@ -1,5 +1,5 @@
-import * as fs from "fs-extra";
-import * as path from "path";
+import { readdirSync, readFileSync } from "fs-extra";
+import { join } from "path";
 import * as tmp from "tmp";
 import { OutputChannelLogger } from "../../../src/common";
 
@@ -61,7 +61,7 @@ describe("OutputChannelLogger tests", function () {
     await logger.log("zzz", createLogOptions("hucairz"));
 
     // should have created 1 side log
-    expect(fs.readdirSync(tempFolders.storagePath.name)).toEqual(["hucairz"]);
+    expect(readdirSync(tempFolders.storagePath.name)).toEqual(["hucairz"]);
   });
 
   it("should create a side log", async () => {
@@ -71,17 +71,14 @@ describe("OutputChannelLogger tests", function () {
     await logger.log("aaa");
 
     // expect 2 side logs
-    expect(fs.readdirSync(tempFolders.storagePath.name).length).toBe(2);
+    expect(readdirSync(tempFolders.storagePath.name).length).toBe(2);
 
     // contents
     expect(
-      fs.readFileSync(path.join(tempFolders.storagePath.name, "first"), "utf8"),
+      readFileSync(join(tempFolders.storagePath.name, "first"), "utf8"),
     ).toBe("xxx\nzzz");
     expect(
-      fs.readFileSync(
-        path.join(tempFolders.storagePath.name, "second"),
-        "utf8",
-      ),
+      readFileSync(join(tempFolders.storagePath.name, "second"), "utf8"),
     ).toBe("yyy\n");
   });
 
@@ -90,7 +87,7 @@ describe("OutputChannelLogger tests", function () {
     trailingNewline?: boolean,
   ) {
     return {
-      additionalLogLocation: path.join(
+      additionalLogLocation: join(
         tempFolders.storagePath.name,
         additionalLogLocation,
       ),

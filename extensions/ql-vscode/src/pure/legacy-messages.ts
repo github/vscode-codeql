@@ -14,7 +14,7 @@
  * the fact that any unknown QueryResultType value counts as an error.
  */
 
-import * as rpc from "vscode-jsonrpc";
+import { RequestType } from "vscode-jsonrpc";
 import * as shared from "./messages-shared";
 
 /**
@@ -970,7 +970,7 @@ export type ProgressMessage = shared.ProgressMessage;
 /**
  * Check a Ql query for errors without compiling it
  */
-export const checkQuery = new rpc.RequestType<
+export const checkQuery = new RequestType<
   WithProgressId<CheckQueryParams>,
   CheckQueryResult,
   void
@@ -978,7 +978,7 @@ export const checkQuery = new rpc.RequestType<
 /**
  * Compile a Ql query into a qlo
  */
-export const compileQuery = new rpc.RequestType<
+export const compileQuery = new RequestType<
   WithProgressId<CompileQueryParams>,
   CheckQueryResult,
   void
@@ -986,7 +986,7 @@ export const compileQuery = new rpc.RequestType<
 /**
  * Compile a dil query into a qlo
  */
-export const compileDilQuery = new rpc.RequestType<
+export const compileDilQuery = new RequestType<
   WithProgressId<CompileDilParams>,
   CheckQueryResult,
   void
@@ -995,7 +995,7 @@ export const compileDilQuery = new rpc.RequestType<
 /**
  * Check if there is a valid upgrade path between two dbschemes.
  */
-export const checkUpgrade = new rpc.RequestType<
+export const checkUpgrade = new RequestType<
   WithProgressId<UpgradeParams>,
   CheckUpgradeResult,
   void
@@ -1003,7 +1003,7 @@ export const checkUpgrade = new rpc.RequestType<
 /**
  * Compile an upgrade script to upgrade a dataset.
  */
-export const compileUpgrade = new rpc.RequestType<
+export const compileUpgrade = new RequestType<
   WithProgressId<CompileUpgradeParams>,
   CompileUpgradeResult,
   void
@@ -1011,7 +1011,7 @@ export const compileUpgrade = new rpc.RequestType<
 /**
  * Compile an upgrade script to upgrade a dataset.
  */
-export const compileUpgradeSequence = new rpc.RequestType<
+export const compileUpgradeSequence = new RequestType<
   WithProgressId<CompileUpgradeSequenceParams>,
   CompileUpgradeSequenceResult,
   void
@@ -1020,7 +1020,7 @@ export const compileUpgradeSequence = new rpc.RequestType<
 /**
  * Start a new structured log in the evaluator, terminating the previous one if it exists
  */
-export const startLog = new rpc.RequestType<
+export const startLog = new RequestType<
   WithProgressId<StartLogParams>,
   StartLogResult,
   void
@@ -1029,7 +1029,7 @@ export const startLog = new rpc.RequestType<
 /**
  * Terminate a structured log in the evaluator. Is a no-op if we aren't logging to the given location
  */
-export const endLog = new rpc.RequestType<
+export const endLog = new RequestType<
   WithProgressId<EndLogParams>,
   EndLogResult,
   void
@@ -1038,7 +1038,7 @@ export const endLog = new rpc.RequestType<
 /**
  * Clear the cache of a dataset
  */
-export const clearCache = new rpc.RequestType<
+export const clearCache = new RequestType<
   WithProgressId<ClearCacheParams>,
   ClearCacheResult,
   void
@@ -1046,7 +1046,7 @@ export const clearCache = new rpc.RequestType<
 /**
  * Trim the cache of a dataset
  */
-export const trimCache = new rpc.RequestType<
+export const trimCache = new RequestType<
   WithProgressId<TrimCacheParams>,
   ClearCacheResult,
   void
@@ -1055,7 +1055,7 @@ export const trimCache = new rpc.RequestType<
 /**
  * Run some queries on a dataset
  */
-export const runQueries = new rpc.RequestType<
+export const runQueries = new RequestType<
   WithProgressId<EvaluateQueriesParams>,
   EvaluationComplete,
   void
@@ -1064,19 +1064,19 @@ export const runQueries = new rpc.RequestType<
 /**
  * Run upgrades on a dataset
  */
-export const runUpgrade = new rpc.RequestType<
+export const runUpgrade = new RequestType<
   WithProgressId<RunUpgradeParams>,
   RunUpgradeResult,
   void
 >("evaluation/runUpgrade");
 
-export const registerDatabases = new rpc.RequestType<
+export const registerDatabases = new RequestType<
   WithProgressId<RegisterDatabasesParams>,
   RegisterDatabasesResult,
   void
 >("evaluation/registerDatabases");
 
-export const deregisterDatabases = new rpc.RequestType<
+export const deregisterDatabases = new RequestType<
   WithProgressId<DeregisterDatabasesParams>,
   DeregisterDatabasesResult,
   void
@@ -1086,7 +1086,7 @@ export const deregisterDatabases = new rpc.RequestType<
  * Request returned to the client to notify completion of a query.
  * The full runQueries job is completed when all queries are acknowledged.
  */
-export const completeQuery = new rpc.RequestType<
+export const completeQuery = new RequestType<
   EvaluationResult,
   Record<string, any>,
   void

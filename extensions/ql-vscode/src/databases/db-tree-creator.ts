@@ -72,7 +72,7 @@ function createSystemDefinedList(
 
   return {
     kind: DbItemKind.RemoteSystemDefinedList,
-    listName: listName,
+    listName,
     listDisplayName: `Top ${n} repositories`,
     listDescription: `Top ${n} repositories of a language`,
     selected: !!selected,

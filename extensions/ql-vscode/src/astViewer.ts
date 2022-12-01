@@ -13,7 +13,7 @@ import {
   Range,
   Uri,
 } from "vscode";
-import * as path from "path";
+import { basename } from "path";
 
 import { DatabaseItem } from "./databases";
 import { UrlValue, BqrsId } from "./pure/bqrs-cli-types";
@@ -138,7 +138,7 @@ export class AstViewer extends DisposableObject {
     this.treeDataProvider.roots = roots;
     this.treeDataProvider.db = db;
     this.treeDataProvider.refresh();
-    this.treeView.message = `AST for ${path.basename(fileUri.fsPath)}`;
+    this.treeView.message = `AST for ${basename(fileUri.fsPath)}`;
     this.currentFileUri = fileUri;
     // Handle error on reveal. This could happen if
     // the tree view is disposed during the reveal.
