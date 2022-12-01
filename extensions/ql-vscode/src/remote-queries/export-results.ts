@@ -20,6 +20,7 @@ import {
   generateMarkdown,
   generateVariantAnalysisMarkdown,
   MarkdownFile,
+  RepositorySummary,
 } from "./remote-queries-markdown-generation";
 import { RemoteQuery } from "./remote-query";
 import { AnalysisResults, sumAnalysesResults } from "./shared/analysis-result";
@@ -235,11 +236,14 @@ export async function exportVariantAnalysisAnalysisResults(
   >,
   exportFormat: "gist" | "local",
 ) {
-  const description = buildVariantAnalysisGistDescription(variantAnalysis);
-  const markdownFiles = await generateVariantAnalysisMarkdown(
+  const { markdownFiles, summaries } = await generateVariantAnalysisMarkdown(
     variantAnalysis,
     analysesResults,
-    "gist",
+    exportFormat,
+  );
+  const description = buildVariantAnalysisGistDescription(
+    variantAnalysis,
+    summaries,
   );
 
   await exportResults(
@@ -345,20 +349,16 @@ const buildGistDescription = (
  */
 const buildVariantAnalysisGistDescription = (
   variantAnalysis: VariantAnalysis,
+  summaries: RepositorySummary[],
 ) => {
-  const resultCount =
-    variantAnalysis.scannedRepos?.reduce(
-      (acc, item) => acc + (item.resultCount ?? 0),
-      0,
-    ) ?? 0;
+  const resultCount = summaries.reduce(
+    (acc, summary) => acc + (summary.resultCount ?? 0),
+    0,
+  );
   const resultLabel = pluralize(resultCount, "result", "results");
 
-  const repositoryLabel = variantAnalysis.scannedRepos?.length
-    ? `(${pluralize(
-        variantAnalysis.scannedRepos.length,
-        "repository",
-        "repositories",
-      )})`
+  const repositoryLabel = summaries.length
+    ? `(${pluralize(summaries.length, "repository", "repositories")})`
     : "";
   return `${variantAnalysis.query.name} (${variantAnalysis.query.language}) ${resultLabel} ${repositoryLabel}`;
 };
