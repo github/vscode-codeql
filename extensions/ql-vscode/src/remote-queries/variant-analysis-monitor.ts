@@ -13,9 +13,12 @@ import {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
 } from "./shared/variant-analysis";
+import { VariantAnalysis as ApiVariantAnalysis } from "./gh-api/variant-analysis";
 import { processUpdatedVariantAnalysis } from "./variant-analysis-processor";
 import { DisposableObject } from "../pure/disposable-object";
 import { sleep } from "../pure/time";
+import { getErrorMessage } from "../pure/helpers-pure";
+import { showAndLogWarningMessage } from "../helpers";
 
 export class VariantAnalysisMonitor extends DisposableObject {
   // With a sleep of 5 seconds, the maximum number of attempts takes
@@ -60,11 +63,19 @@ export class VariantAnalysisMonitor extends DisposableObject {
         return;
       }
 
-      const variantAnalysisSummary = await getVariantAnalysis(
-        credentials,
-        variantAnalysis.controllerRepo.id,
-        variantAnalysis.id,
-      );
+      let variantAnalysisSummary: ApiVariantAnalysis;
+      try {
+        variantAnalysisSummary = await getVariantAnalysis(
+          credentials,
+          variantAnalysis.controllerRepo.id,
+          variantAnalysis.id,
+        );
+      } catch (e) {
+        void showAndLogWarningMessage(
+          `Error while monitoring variant analysis: ${getErrorMessage(e)}`,
+        );
+        continue;
+      }
 
       variantAnalysis = processUpdatedVariantAnalysis(
         variantAnalysis,
