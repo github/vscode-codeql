@@ -47,10 +47,24 @@ InProgress.args = {
   variantAnalysisStatus: VariantAnalysisStatus.InProgress,
 };
 
+export const InProgressWithResults = Template.bind({});
+InProgressWithResults.args = {
+  variantAnalysisStatus: VariantAnalysisStatus.InProgress,
+  showResultActions: true,
+};
+
+export const InProgressWithoutDownloadedRepos = Template.bind({});
+InProgressWithoutDownloadedRepos.args = {
+  variantAnalysisStatus: VariantAnalysisStatus.InProgress,
+  showResultActions: true,
+  exportResultsDisabled: true,
+};
+
 export const Succeeded = Template.bind({});
 Succeeded.args = {
   ...InProgress.args,
   variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
+  showResultActions: true,
 };
 
 export const Failed = Template.bind({});

@@ -43,6 +43,7 @@ const variantAnalysis: VariantAnalysisDomainModel = {
         private: false,
       },
       analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+      resultCount: 100,
     },
     {
       repository: {

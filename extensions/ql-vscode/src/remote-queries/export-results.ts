@@ -2,12 +2,12 @@ import * as path from "path";
 import * as fs from "fs-extra";
 
 import {
-  window,
   commands,
-  Uri,
   ExtensionContext,
-  workspace,
+  Uri,
   ViewColumn,
+  window,
+  workspace,
 } from "vscode";
 import { Credentials } from "../authentication";
 import { UserCancellationException } from "../commandRunner";
@@ -29,6 +29,7 @@ import { assertNever } from "../pure/helpers-pure";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
+  VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
 import {
@@ -156,6 +157,10 @@ export async function exportVariantAnalysisResults(
     );
   }
 
+  const repoStates = await variantAnalysisManager.getRepoStates(
+    variantAnalysisId,
+  );
+
   void extLogger.log(
     `Exporting variant analysis results for variant analysis with id ${variantAnalysis.id}`,
   );
@@ -181,6 +186,18 @@ export async function exportVariantAnalysisResults(
     }
 
     for (const repo of repositories) {
+      const repoState = repoStates.find(
+        (r) => r.repositoryId === repo.repository.id,
+      );
+
+      // Do not export if it has not yet completed or the download has not yet succeeded.
+      if (
+        repoState?.downloadStatus !==
+        VariantAnalysisScannedRepositoryDownloadStatus.Succeeded
+      ) {
+        continue;
+      }
+
       if (repo.resultCount == 0) {
         yield [
           repo,

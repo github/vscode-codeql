@@ -144,6 +144,7 @@ export function VariantAnalysis({
     <>
       <VariantAnalysisHeader
         variantAnalysis={variantAnalysis}
+        repositoryStates={repoStates}
         onOpenQueryFileClick={openQueryFile}
         onViewQueryTextClick={openQueryText}
         onStopQueryClick={stopQuery}

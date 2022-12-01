@@ -3,14 +3,16 @@ import styled from "styled-components";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
 
-type Props = {
+export type VariantAnalysisActionsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
 
   onStopQueryClick: () => void;
   stopQueryDisabled?: boolean;
 
+  showResultActions?: boolean;
   onCopyRepositoryListClick: () => void;
   onExportResultsClick: () => void;
+  exportResultsDisabled?: boolean;
 };
 
 const Container = styled.div`
@@ -26,12 +28,28 @@ const Button = styled(VSCodeButton)`
 export const VariantAnalysisActions = ({
   variantAnalysisStatus,
   onStopQueryClick,
+  stopQueryDisabled,
+  showResultActions,
   onCopyRepositoryListClick,
   onExportResultsClick,
-  stopQueryDisabled,
-}: Props) => {
+  exportResultsDisabled,
+}: VariantAnalysisActionsProps) => {
   return (
     <Container>
+      {showResultActions && (
+        <>
+          <Button appearance="secondary" onClick={onCopyRepositoryListClick}>
+            Copy repository list
+          </Button>
+          <Button
+            appearance="primary"
+            onClick={onExportResultsClick}
+            disabled={exportResultsDisabled}
+          >
+            Export results
+          </Button>
+        </>
+      )}
       {variantAnalysisStatus === VariantAnalysisStatus.InProgress && (
         <Button
           appearance="secondary"
@@ -40,16 +58,6 @@ export const VariantAnalysisActions = ({
         >
           Stop query
         </Button>
-      )}
-      {variantAnalysisStatus === VariantAnalysisStatus.Succeeded && (
-        <>
-          <Button appearance="secondary" onClick={onCopyRepositoryListClick}>
-            Copy repository list
-          </Button>
-          <Button appearance="primary" onClick={onExportResultsClick}>
-            Export results
-          </Button>
-        </>
       )}
     </Container>
   );

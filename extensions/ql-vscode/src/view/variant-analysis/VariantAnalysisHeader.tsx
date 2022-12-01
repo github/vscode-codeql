@@ -6,6 +6,8 @@ import {
   getTotalResultCount,
   hasRepoScanCompleted,
   VariantAnalysis,
+  VariantAnalysisScannedRepositoryDownloadStatus,
+  VariantAnalysisScannedRepositoryState,
 } from "../../remote-queries/shared/variant-analysis";
 import { QueryDetails } from "./QueryDetails";
 import { VariantAnalysisActions } from "./VariantAnalysisActions";
@@ -15,6 +17,7 @@ import { basename } from "../common/path";
 
 export type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;
+  repositoryStates?: VariantAnalysisScannedRepositoryState[];
 
   onOpenQueryFileClick: () => void;
   onViewQueryTextClick: () => void;
@@ -40,6 +43,7 @@ const Row = styled.div`
 
 export const VariantAnalysisHeader = ({
   variantAnalysis,
+  repositoryStates,
   onOpenQueryFileClick,
   onViewQueryTextClick,
   onStopQueryClick,
@@ -62,6 +66,15 @@ export const VariantAnalysisHeader = ({
   const hasSkippedRepos = useMemo(() => {
     return getSkippedRepoCount(variantAnalysis.skippedRepos) > 0;
   }, [variantAnalysis.skippedRepos]);
+  const hasDownloadedRepos = useMemo(() => {
+    return (
+      repositoryStates?.some(
+        (repo) =>
+          repo.downloadStatus ===
+          VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+      ) ?? false
+    );
+  }, [repositoryStates]);
 
   return (
     <Container>
@@ -74,10 +87,12 @@ export const VariantAnalysisHeader = ({
         />
         <VariantAnalysisActions
           variantAnalysisStatus={variantAnalysis.status}
+          showResultActions={(resultCount ?? 0) > 0}
           onStopQueryClick={onStopQueryClick}
           onCopyRepositoryListClick={onCopyRepositoryListClick}
           onExportResultsClick={onExportResultsClick}
           stopQueryDisabled={!variantAnalysis.actionsWorkflowRunId}
+          exportResultsDisabled={!hasDownloadedRepos}
         />
       </Row>
       <VariantAnalysisStats
