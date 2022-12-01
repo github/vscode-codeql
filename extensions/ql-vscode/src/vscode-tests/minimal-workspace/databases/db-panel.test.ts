@@ -1,7 +1,10 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { DbConfig } from "../../../databases/config/db-config";
+import {
+  DbConfig,
+  SelectedDbItemKind,
+} from "../../../databases/config/db-config";
 import { DbManager } from "../../../databases/db-manager";
 import { DbConfigStore } from "../../../databases/config/db-config-store";
 import { DbTreeDataProvider } from "../../../databases/ui/db-tree-data-provider";
@@ -307,6 +310,7 @@ describe("db panel", () => {
         dateAdded: 1668428293677,
         language: "cpp",
         storagePath: "/path/to/db1/",
+        selected: false,
       },
       {
         kind: DbItemKind.LocalDatabase,
@@ -314,6 +318,7 @@ describe("db panel", () => {
         dateAdded: 1668428472731,
         language: "cpp",
         storagePath: "/path/to/db2/",
+        selected: false,
       },
     ]);
     checkLocalListItem(localListItems[1], "my-list-2", [
@@ -323,6 +328,7 @@ describe("db panel", () => {
         dateAdded: 1668428472731,
         language: "ruby",
         storagePath: "/path/to/db3/",
+        selected: false,
       },
     ]);
   });
@@ -381,6 +387,7 @@ describe("db panel", () => {
       dateAdded: 1668428293677,
       language: "csharp",
       storagePath: "/path/to/db1/",
+      selected: false,
     });
     checkLocalDatabaseItem(localDatabaseItems[1], {
       kind: DbItemKind.LocalDatabase,
@@ -388,7 +395,132 @@ describe("db panel", () => {
       dateAdded: 1668428472731,
       language: "go",
       storagePath: "/path/to/db2/",
+      selected: false,
     });
+  });
+
+  it("should mark selected remote db list as selected", async () => {
+    const dbConfig: DbConfig = {
+      databases: {
+        remote: {
+          repositoryLists: [
+            {
+              name: "my-list-1",
+              repositories: ["owner1/repo1", "owner1/repo2"],
+            },
+            {
+              name: "my-list-2",
+              repositories: ["owner2/repo1", "owner2/repo2"],
+            },
+          ],
+          owners: [],
+          repositories: [],
+        },
+        local: {
+          lists: [],
+          databases: [],
+        },
+      },
+      selected: {
+        kind: SelectedDbItemKind.RemoteUserDefinedList,
+        listName: "my-list-2",
+      },
+    };
+
+    await saveDbConfig(dbConfig);
+
+    const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+    expect(dbTreeItems).toBeTruthy();
+    const items = dbTreeItems!;
+
+    const remoteRootNode = items[0];
+    expect(remoteRootNode.dbItem).toBeTruthy();
+    expect(remoteRootNode.dbItem?.kind).toEqual(DbItemKind.RootRemote);
+
+    const list1 = remoteRootNode.children.find(
+      (c) =>
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+        c.dbItem?.listName === "my-list-1",
+    );
+    const list2 = remoteRootNode.children.find(
+      (c) =>
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+        c.dbItem?.listName === "my-list-2",
+    );
+
+    expect(list1).toBeTruthy();
+    expect(list2).toBeTruthy();
+    expect(isTreeViewItemSelectable(list1!)).toBeTruthy();
+    expect(isTreeViewItemSelected(list2!)).toBeTruthy();
+  });
+
+  it("should mark selected remote db inside list as selected", async () => {
+    const dbConfig: DbConfig = {
+      databases: {
+        remote: {
+          repositoryLists: [
+            {
+              name: "my-list-1",
+              repositories: ["owner1/repo1", "owner1/repo2"],
+            },
+            {
+              name: "my-list-2",
+              repositories: ["owner1/repo1", "owner2/repo2"],
+            },
+          ],
+          owners: [],
+          repositories: ["owner1/repo1"],
+        },
+        local: {
+          lists: [],
+          databases: [],
+        },
+      },
+      selected: {
+        kind: SelectedDbItemKind.RemoteRepository,
+        repositoryName: "owner1/repo1",
+        listName: "my-list-2",
+      },
+    };
+
+    await saveDbConfig(dbConfig);
+
+    const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+    expect(dbTreeItems).toBeTruthy();
+    const items = dbTreeItems!;
+
+    const remoteRootNode = items[0];
+    expect(remoteRootNode.dbItem).toBeTruthy();
+    expect(remoteRootNode.dbItem?.kind).toEqual(DbItemKind.RootRemote);
+
+    const list2 = remoteRootNode.children.find(
+      (c) =>
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+        c.dbItem?.listName === "my-list-2",
+    );
+    expect(list2).toBeTruthy();
+
+    const repo1Node = list2?.children.find(
+      (c) =>
+        c.dbItem?.kind === DbItemKind.RemoteRepo &&
+        c.dbItem?.repoFullName === "owner1/repo1",
+    );
+    expect(repo1Node).toBeTruthy();
+    expect(isTreeViewItemSelected(repo1Node!)).toBeTruthy();
+
+    const repo2Node = list2?.children.find(
+      (c) =>
+        c.dbItem?.kind === DbItemKind.RemoteRepo &&
+        c.dbItem?.repoFullName === "owner2/repo2",
+    );
+    expect(repo2Node).toBeTruthy();
+    expect(isTreeViewItemSelectable(repo2Node!)).toBeTruthy();
+
+    for (const item of remoteRootNode.children) {
+      expect(isTreeViewItemSelectable(item)).toBeTruthy();
+    }
   });
 
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {
@@ -474,5 +606,19 @@ describe("db panel", () => {
     expect(item.tooltip).toBe(`Language: ${database.language}`);
     expect(item.iconPath).toEqual(new vscode.ThemeIcon("database"));
     expect(item.collapsibleState).toBe(vscode.TreeItemCollapsibleState.None);
+  }
+
+  function isTreeViewItemSelectable(treeViewItem: DbTreeViewItem) {
+    return (
+      treeViewItem.resourceUri === undefined &&
+      treeViewItem.contextValue === "selectableDbItem"
+    );
+  }
+
+  function isTreeViewItemSelected(treeViewItem: DbTreeViewItem) {
+    return (
+      treeViewItem.resourceUri?.query === "selected=true" &&
+      treeViewItem.contextValue === undefined
+    );
   }
 });
