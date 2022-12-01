@@ -36,6 +36,7 @@ describe("Variant Analysis Monitor", () => {
   >;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
+  let shouldCancelMonitor: jest.Mock<Promise<boolean>, [number]>;
   let variantAnalysis: VariantAnalysis;
   let variantAnalysisManager: VariantAnalysisManager;
   let mockGetDownloadResult: jest.SpiedFunction<
@@ -53,12 +54,17 @@ describe("Variant Analysis Monitor", () => {
 
     variantAnalysis = createMockVariantAnalysis({});
 
+    shouldCancelMonitor = jest.fn();
+
     extension = await extensions
       .getExtension<CodeQLExtensionInterface | Record<string, never>>(
         "GitHub.vscode-codeql",
       )!
       .activate();
-    variantAnalysisMonitor = new VariantAnalysisMonitor(extension.ctx);
+    variantAnalysisMonitor = new VariantAnalysisMonitor(
+      extension.ctx,
+      shouldCancelMonitor,
+    );
     variantAnalysisMonitor.onVariantAnalysisChange(onVariantAnalysisChangeSpy);
 
     variantAnalysisManager = extension.variantAnalysisManager;
@@ -105,6 +111,17 @@ describe("Variant Analysis Monitor", () => {
 
     it("should return early if variant analysis is cancelled", async () => {
       cancellationTokenSource.cancel();
+
+      await variantAnalysisMonitor.monitorVariantAnalysis(
+        variantAnalysis,
+        cancellationTokenSource.token,
+      );
+
+      expect(onVariantAnalysisChangeSpy).not.toHaveBeenCalled();
+    });
+
+    it("should return early if variant analysis should be cancelled", async () => {
+      shouldCancelMonitor.mockResolvedValue(true);
 
       await variantAnalysisMonitor.monitorVariantAnalysis(
         variantAnalysis,

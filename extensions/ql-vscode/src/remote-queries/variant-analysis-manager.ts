@@ -94,7 +94,12 @@ export class VariantAnalysisManager
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager,
   ) {
     super();
-    this.variantAnalysisMonitor = this.push(new VariantAnalysisMonitor(ctx));
+    this.variantAnalysisMonitor = this.push(
+      new VariantAnalysisMonitor(
+        ctx,
+        this.shouldCancelMonitorVariantAnalysis.bind(this),
+      ),
+    );
     this.variantAnalysisMonitor.onVariantAnalysisChange(
       this.onVariantAnalysisUpdated.bind(this),
     );
@@ -319,10 +324,20 @@ export class VariantAnalysisManager
     return await fs.pathExists(filePath);
   }
 
+  private async shouldCancelMonitorVariantAnalysis(
+    variantAnalysisId: number,
+  ): Promise<boolean> {
+    return !this.variantAnalyses.has(variantAnalysisId);
+  }
+
   public async onVariantAnalysisUpdated(
     variantAnalysis: VariantAnalysis | undefined,
   ): Promise<void> {
     if (!variantAnalysis) {
+      return;
+    }
+
+    if (!this.variantAnalyses.has(variantAnalysis.id)) {
       return;
     }
 

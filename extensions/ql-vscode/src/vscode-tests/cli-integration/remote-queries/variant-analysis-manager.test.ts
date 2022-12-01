@@ -748,8 +748,12 @@ describe("Variant Analysis Manager", () => {
         });
 
         it("should remove variant analysis", async () => {
-          await variantAnalysisManager.onVariantAnalysisUpdated(
+          pathExistsStub.mockImplementation(() => true);
+          await variantAnalysisManager.rehydrateVariantAnalysis(
             dummyVariantAnalysis,
+          );
+          expect(pathExistsStub).toBeCalledWith(
+            path.join(storagePath, dummyVariantAnalysis.id.toString()),
           );
           expect(variantAnalysisManager.variantAnalysesSize).toBe(1);
 
