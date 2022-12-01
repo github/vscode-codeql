@@ -38,6 +38,15 @@ export class VariantAnalysisViewSerializer implements WebviewPanelSerializer {
 
     const manager = await this.waitForExtensionFullyLoaded();
 
+    const existingView = manager.getView(
+      variantAnalysisState.variantAnalysisId,
+    );
+    if (existingView) {
+      await existingView.openView();
+      webviewPanel.dispose();
+      return;
+    }
+
     const view = new VariantAnalysisView(
       this.ctx,
       variantAnalysisState.variantAnalysisId,
