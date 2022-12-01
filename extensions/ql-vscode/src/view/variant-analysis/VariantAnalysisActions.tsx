@@ -12,6 +12,7 @@ export type VariantAnalysisActionsProps = {
   showResultActions?: boolean;
   onCopyRepositoryListClick: () => void;
   onExportResultsClick: () => void;
+  copyRepositoryListDisabled?: boolean;
   exportResultsDisabled?: boolean;
 };
 
@@ -32,13 +33,18 @@ export const VariantAnalysisActions = ({
   showResultActions,
   onCopyRepositoryListClick,
   onExportResultsClick,
+  copyRepositoryListDisabled,
   exportResultsDisabled,
 }: VariantAnalysisActionsProps) => {
   return (
     <Container>
       {showResultActions && (
         <>
-          <Button appearance="secondary" onClick={onCopyRepositoryListClick}>
+          <Button
+            appearance="secondary"
+            onClick={onCopyRepositoryListClick}
+            disabled={copyRepositoryListDisabled}
+          >
             Copy repository list
           </Button>
           <Button

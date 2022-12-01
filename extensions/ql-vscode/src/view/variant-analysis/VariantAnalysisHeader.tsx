@@ -14,10 +14,17 @@ import { VariantAnalysisActions } from "./VariantAnalysisActions";
 import { VariantAnalysisStats } from "./VariantAnalysisStats";
 import { parseDate } from "../../pure/date";
 import { basename } from "../common/path";
+import {
+  defaultFilterSortState,
+  filterAndSortRepositoriesWithResults,
+  RepositoriesFilterSortState,
+} from "../../pure/variant-analysis-filter-sort";
 
 export type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;
   repositoryStates?: VariantAnalysisScannedRepositoryState[];
+  filterSortState?: RepositoriesFilterSortState;
+  selectedRepositoryIds?: number[];
 
   onOpenQueryFileClick: () => void;
   onViewQueryTextClick: () => void;
@@ -44,6 +51,8 @@ const Row = styled.div`
 export const VariantAnalysisHeader = ({
   variantAnalysis,
   repositoryStates,
+  filterSortState,
+  selectedRepositoryIds,
   onOpenQueryFileClick,
   onViewQueryTextClick,
   onStopQueryClick,
@@ -66,15 +75,36 @@ export const VariantAnalysisHeader = ({
   const hasSkippedRepos = useMemo(() => {
     return getSkippedRepoCount(variantAnalysis.skippedRepos) > 0;
   }, [variantAnalysis.skippedRepos]);
+  const filteredRepositories = useMemo(() => {
+    return filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos, {
+      ...defaultFilterSortState,
+      ...filterSortState,
+      repositoryIds: selectedRepositoryIds,
+    });
+  }, [filterSortState, selectedRepositoryIds, variantAnalysis.scannedRepos]);
   const hasDownloadedRepos = useMemo(() => {
-    return (
-      repositoryStates?.some(
-        (repo) =>
-          repo.downloadStatus ===
-          VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-      ) ?? false
+    const repositoryStatesById = new Map<
+      number,
+      VariantAnalysisScannedRepositoryState
+    >();
+    if (repositoryStates) {
+      for (const repositoryState of repositoryStates) {
+        repositoryStatesById.set(repositoryState.repositoryId, repositoryState);
+      }
+    }
+
+    return filteredRepositories?.some((repo) => {
+      return (
+        repositoryStatesById.get(repo.repository.id)?.downloadStatus ===
+        VariantAnalysisScannedRepositoryDownloadStatus.Succeeded
+      );
+    });
+  }, [repositoryStates, filteredRepositories]);
+  const hasReposWithResults = useMemo(() => {
+    return filteredRepositories?.some(
+      (repo) => repo.resultCount && repo.resultCount > 0,
     );
-  }, [repositoryStates]);
+  }, [filteredRepositories]);
 
   return (
     <Container>
@@ -93,6 +123,7 @@ export const VariantAnalysisHeader = ({
           onExportResultsClick={onExportResultsClick}
           stopQueryDisabled={!variantAnalysis.actionsWorkflowRunId}
           exportResultsDisabled={!hasDownloadedRepos}
+          copyRepositoryListDisabled={!hasReposWithResults}
         />
       </Row>
       <VariantAnalysisStats
