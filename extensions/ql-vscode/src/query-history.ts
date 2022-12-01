@@ -826,6 +826,14 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
+    if (finalSingleItem.t === "variant-analysis") {
+      await commands.executeCommand(
+        "codeQL.openVariantAnalysisQueryFile",
+        finalSingleItem.variantAnalysis.id,
+      );
+      return;
+    }
+
     let queryPath: string;
     switch (finalSingleItem.t) {
       case "local":
@@ -833,9 +841,6 @@ export class QueryHistoryManager extends DisposableObject {
         break;
       case "remote":
         queryPath = finalSingleItem.remoteQuery.queryFilePath;
-        break;
-      case "variant-analysis":
-        queryPath = finalSingleItem.variantAnalysis.query.filePath;
         break;
       default:
         assertNever(finalSingleItem);
@@ -1337,6 +1342,14 @@ export class QueryHistoryManager extends DisposableObject {
     );
 
     if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
+      return;
+    }
+
+    if (finalSingleItem.t === "variant-analysis") {
+      await commands.executeCommand(
+        "codeQL.openVariantAnalysisQueryText",
+        finalSingleItem.variantAnalysis.id,
+      );
       return;
     }
 
