@@ -637,6 +637,43 @@ describe("SARIF processing", () => {
       expect(message.tokens[2].t).toBe("text");
       expect(message.tokens[2].text).toBe(".");
     });
+
+    it("should not include snippets for large snippets", () => {
+      const sarif = buildValidSarifLog();
+      // Build string of 10 kilobytes
+      const snippet = new Array(10 * 1024).fill("a").join("");
+      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion!.snippet =
+        {
+          text: snippet,
+        };
+
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
+
+      const actualCodeSnippet = result.alerts[0].codeSnippet;
+
+      expect(result).toBeTruthy();
+      expectNoParsingError(result);
+      expect(actualCodeSnippet).toBeUndefined();
+    });
+
+    it("should include snippets for large snippets which are relevant", () => {
+      const sarif = buildValidSarifLog();
+      // Build string of 10 kilobytes
+      const snippet = new Array(10 * 1024).fill("a").join("");
+      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.contextRegion!.snippet =
+        {
+          text: snippet,
+        };
+      sarif.runs![0]!.results![0]!.locations![0]!.physicalLocation!.region!.endColumn = 1000;
+
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
+
+      const actualCodeSnippet = result.alerts[0].codeSnippet;
+
+      expect(result).toBeTruthy();
+      expectNoParsingError(result);
+      expect(actualCodeSnippet).not.toBeUndefined();
+    });
   });
 
   function expectResultParsingError(msg: string) {

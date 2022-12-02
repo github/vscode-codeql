@@ -1,5 +1,5 @@
 import * as Sarif from "sarif";
-import { HighlightedRegion } from "../remote-queries/shared/analysis-result";
+import type { HighlightedRegion } from "../remote-queries/shared/analysis-result";
 import { ResolvableLocationValue } from "./bqrs-cli-types";
 
 export interface SarifLink {
