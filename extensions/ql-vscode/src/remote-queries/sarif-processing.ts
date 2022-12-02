@@ -19,7 +19,7 @@ import {
 // A line of more than 8k characters is probably generated.
 const CODE_SNIPPET_LARGE_LINE_SIZE_LIMIT = 8192;
 // If less than 1% of the line is highlighted, we consider it a small snippet.
-const CODE_SNIPPET_HIGHLIGHTED_REGION_MINIMUM_PERCENTAGE = 0.01;
+const CODE_SNIPPET_HIGHLIGHTED_REGION_MINIMUM_RATIO = 0.01;
 
 const defaultSeverity = "Warning";
 
@@ -194,15 +194,14 @@ function getCodeSnippet(
       return parseHighlightedLine(line, startLine + index, highlightedRegion);
     });
 
-    const highlightedCharactersCount = highlightedLines
-      .map((line) => line.highlightedSection.length)
-      .reduce((a, b) => a + b, 0);
+    const highlightedCharactersCount = highlightedLines.reduce(
+      (a, line) => a + line.highlightedSection.length,
+      0,
+    );
 
-    const highlightedPercentage = highlightedCharactersCount / text.length;
+    const highlightedRatio = highlightedCharactersCount / text.length;
 
-    if (
-      highlightedPercentage < CODE_SNIPPET_HIGHLIGHTED_REGION_MINIMUM_PERCENTAGE
-    ) {
+    if (highlightedRatio < CODE_SNIPPET_HIGHLIGHTED_REGION_MINIMUM_RATIO) {
       // If not enough is highlighted and the snippet is large, it's probably generated or bundled code and
       // we don't want to show it.
       return undefined;
