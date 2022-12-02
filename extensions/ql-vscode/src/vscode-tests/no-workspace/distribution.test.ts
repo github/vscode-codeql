@@ -1,11 +1,12 @@
-import { sep } from "path";
 import * as fetch from "node-fetch";
 import { Range } from "semver";
 
 import * as helpers from "../../helpers";
 import { extLogger } from "../../common";
 import * as fs from "fs-extra";
+import * as path from "path";
 import * as os from "os";
+import * as tmp from "tmp-promise";
 import {
   GithubRelease,
   GithubReleaseAsset,
@@ -13,6 +14,17 @@ import {
   getExecutableFromDirectory,
   DistributionManager,
 } from "../../distribution";
+import { DirectoryResult } from "tmp-promise";
+
+jest.mock("os", () => {
+  const original = jest.requireActual("os");
+  return {
+    ...original,
+    platform: jest.fn(),
+  };
+});
+
+const mockedOS = jest.mocked(os);
 
 describe("Releases API consumer", () => {
   const owner = "someowner";
@@ -192,17 +204,16 @@ describe("Releases API consumer", () => {
 });
 
 describe("Launcher path", () => {
-  const pathToCmd = `abc${sep}codeql.cmd`;
-  const pathToExe = `abc${sep}codeql.exe`;
-
   let warnSpy: jest.SpiedFunction<typeof helpers.showAndLogWarningMessage>;
   let errorSpy: jest.SpiedFunction<typeof helpers.showAndLogErrorMessage>;
   let logSpy: jest.SpiedFunction<typeof extLogger.log>;
-  let pathExistsSpy: jest.SpiedFunction<typeof fs.pathExists>;
 
-  let launcherThatExists = "";
+  let directory: DirectoryResult;
 
-  beforeEach(() => {
+  let pathToCmd: string;
+  let pathToExe: string;
+
+  beforeEach(async () => {
     warnSpy = jest
       .spyOn(helpers, "showAndLogWarningMessage")
       .mockResolvedValue(undefined);
@@ -210,22 +221,25 @@ describe("Launcher path", () => {
       .spyOn(helpers, "showAndLogErrorMessage")
       .mockResolvedValue(undefined);
     logSpy = jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
-    pathExistsSpy = jest
-      .spyOn(fs, "pathExists")
-      .mockImplementation(async (path: string) => {
-        return path.endsWith(launcherThatExists);
-      });
 
-    jest.spyOn(os, "platform").mockReturnValue("win32");
+    mockedOS.platform.mockReturnValue("win32");
+
+    directory = await tmp.dir({
+      unsafeCleanup: true,
+    });
+
+    pathToCmd = path.join(directory.path, "codeql.cmd");
+    pathToExe = path.join(directory.path, "codeql.exe");
+  });
+
+  afterEach(async () => {
+    await directory.cleanup();
   });
 
   it("should not warn with proper launcher name", async () => {
-    launcherThatExists = "codeql.exe";
-    const result = await getExecutableFromDirectory("abc");
-    expect(pathExistsSpy).toBeCalledWith(pathToExe);
+    await fs.writeFile(pathToExe, "");
 
-    // correct launcher has been found, so alternate one not looked for
-    expect(pathExistsSpy).not.toBeCalledWith(pathToCmd);
+    const result = await getExecutableFromDirectory(directory.path);
 
     // no warning message
     expect(warnSpy).not.toHaveBeenCalled();
@@ -235,10 +249,9 @@ describe("Launcher path", () => {
   });
 
   it("should warn when using a hard-coded deprecated launcher name", async () => {
-    launcherThatExists = "codeql.cmd";
-    const result = await getExecutableFromDirectory("abc");
-    expect(pathExistsSpy).toBeCalledWith(pathToExe);
-    expect(pathExistsSpy).toBeCalledWith(pathToCmd);
+    await fs.writeFile(pathToCmd, "");
+
+    const result = await getExecutableFromDirectory(directory.path);
 
     // Should have opened a warning message
     expect(warnSpy).toHaveBeenCalled();
@@ -248,10 +261,7 @@ describe("Launcher path", () => {
   });
 
   it("should avoid warn when no launcher is found", async () => {
-    launcherThatExists = "xxx";
-    const result = await getExecutableFromDirectory("abc", false);
-    expect(pathExistsSpy).toBeCalledWith(pathToExe);
-    expect(pathExistsSpy).toBeCalledWith(pathToCmd);
+    const result = await getExecutableFromDirectory(directory.path, false);
 
     // no warning message
     expect(warnSpy).not.toHaveBeenCalled();
@@ -261,10 +271,7 @@ describe("Launcher path", () => {
   });
 
   it("should warn when no launcher is found", async () => {
-    launcherThatExists = "xxx";
     const result = await getExecutableFromDirectory("abc", true);
-    expect(pathExistsSpy).toBeCalledWith(pathToExe);
-    expect(pathExistsSpy).toBeCalledWith(pathToCmd);
 
     // no warning message
     expect(warnSpy).not.toHaveBeenCalled();
@@ -274,12 +281,13 @@ describe("Launcher path", () => {
   });
 
   it("should not warn when deprecated launcher is used, but no new launcher is available", async function () {
+    await fs.writeFile(pathToCmd, "");
+
     const manager = new DistributionManager(
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
       undefined as any,
     );
-    launcherThatExists = "codeql.cmd";
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
     expect(result).toBe(pathToCmd);
@@ -290,12 +298,14 @@ describe("Launcher path", () => {
   });
 
   it("should warn when deprecated launcher is used, and new launcher is available", async () => {
+    await fs.writeFile(pathToCmd, "");
+    await fs.writeFile(pathToExe, "");
+
     const manager = new DistributionManager(
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
       undefined as any,
     );
-    launcherThatExists = ""; // pretend both launchers exist
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
     expect(result).toBe(pathToCmd);
@@ -311,7 +321,6 @@ describe("Launcher path", () => {
       {} as any,
       undefined as any,
     );
-    launcherThatExists = "xxx"; // pretend neither launcher exists
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
     expect(result).toBeUndefined();

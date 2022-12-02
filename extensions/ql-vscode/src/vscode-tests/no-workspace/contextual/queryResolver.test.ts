@@ -13,8 +13,6 @@ import { CodeQLCliServer } from "../../../cli";
 import { DatabaseItem } from "../../../databases";
 
 describe("queryResolver", () => {
-  let writeFileSpy: jest.SpiedFunction<typeof fs.writeFile>;
-
   let getQlPackForDbschemeSpy: jest.SpiedFunction<
     typeof helpers.getQlPackForDbscheme
   >;
@@ -30,10 +28,6 @@ describe("queryResolver", () => {
   };
 
   beforeEach(() => {
-    writeFileSpy = jest
-      .spyOn(fs, "writeFile")
-      .mockImplementation(() => Promise.resolve());
-
     getQlPackForDbschemeSpy = jest
       .spyOn(helpers, "getQlPackForDbscheme")
       .mockResolvedValue({
@@ -61,13 +55,15 @@ describe("queryResolver", () => {
         KeyType.DefinitionQuery,
       );
       expect(result).toEqual(["a", "b"]);
-      expect(writeFileSpy).toHaveBeenNthCalledWith(
-        1,
-        expect.stringMatching(/.qls$/),
-        expect.anything(),
-        expect.anything(),
+
+      expect(mockCli.resolveQueriesInSuite).toHaveBeenCalledWith(
+        expect.stringMatching(/\.qls$/),
+        [],
       );
-      expect(load(writeFileSpy.mock.calls[0][1])).toEqual([
+
+      const fileName = mockCli.resolveQueriesInSuite.mock.calls[0][0];
+
+      expect(load(await fs.readFile(fileName, "utf-8"))).toEqual([
         {
           from: "my-qlpack",
           queries: ".",
@@ -95,13 +91,15 @@ describe("queryResolver", () => {
         KeyType.DefinitionQuery,
       );
       expect(result).toEqual(["a", "b"]);
-      expect(writeFileSpy).toHaveBeenNthCalledWith(
-        1,
-        expect.stringMatching(/.qls$/),
-        expect.anything(),
-        expect.anything(),
+
+      expect(mockCli.resolveQueriesInSuite).toHaveBeenCalledWith(
+        expect.stringMatching(/\.qls$/),
+        [],
       );
-      expect(load(writeFileSpy.mock.calls[0][1])).toEqual([
+
+      const fileName = mockCli.resolveQueriesInSuite.mock.calls[0][0];
+
+      expect(load(await fs.readFile(fileName, "utf-8"))).toEqual([
         {
           from: "my-qlpack2",
           queries: ".",
