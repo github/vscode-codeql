@@ -61,10 +61,6 @@ import {
 jest.setTimeout(3 * 60 * 1000);
 
 describe("Variant Analysis Manager", () => {
-  let pathExistsStub: jest.SpiedFunction<typeof fs.pathExists>;
-  let readJsonStub: jest.SpiedFunction<typeof fs.readJson>;
-  let outputJsonStub: jest.SpiedFunction<typeof fs.outputJson>;
-  let writeFileStub: jest.SpiedFunction<typeof fs.writeFile>;
   let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
@@ -73,16 +69,10 @@ describe("Variant Analysis Manager", () => {
   let scannedRepos: VariantAnalysisScannedRepository[];
 
   beforeEach(async () => {
-    pathExistsStub = jest.spyOn(fs, "pathExists");
-    readJsonStub = jest.spyOn(fs, "readJson");
-    outputJsonStub = jest.spyOn(fs, "outputJson").mockReturnValue(undefined);
-    writeFileStub = jest.spyOn(fs, "writeFile").mockReturnValue(undefined);
-
     jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
     jest
       .spyOn(config, "isVariantAnalysisLiveResultsEnabled")
       .mockReturnValue(false);
-    jest.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
 
     cancellationTokenSource = new CancellationTokenSource();
 
@@ -136,8 +126,6 @@ describe("Variant Analysis Manager", () => {
     }
 
     beforeEach(async () => {
-      writeFileStub.mockRestore();
-
       // Should not have asked for a language
       showQuickPickSpy = jest
         .spyOn(window, "showQuickPick")
@@ -269,10 +257,6 @@ describe("Variant Analysis Manager", () => {
     const variantAnalysis = createMockVariantAnalysis({});
 
     describe("when the directory does not exist", () => {
-      beforeEach(() => {
-        pathExistsStub.mockImplementation(() => false);
-      });
-
       it("should fire the removed event if the file does not exist", async () => {
         const stub = jest.fn();
         variantAnalysisManager.onVariantAnalysisRemoved(stub);
@@ -280,16 +264,12 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
         expect(stub).toBeCalledTimes(1);
-        expect(pathExistsStub).toHaveBeenCalledTimes(1);
-        expect(pathExistsStub).toBeCalledWith(
-          join(storagePath, variantAnalysis.id.toString()),
-        );
       });
     });
 
     describe("when the directory exists", () => {
-      beforeEach(() => {
-        pathExistsStub.mockImplementation(() => true);
+      beforeEach(async () => {
+        await fs.ensureDir(join(storagePath, variantAnalysis.id.toString()));
       });
 
       it("should store the variant analysis", async () => {
@@ -298,31 +278,19 @@ describe("Variant Analysis Manager", () => {
         expect(
           await variantAnalysisManager.getVariantAnalysis(variantAnalysis.id),
         ).toEqual(variantAnalysis);
-
-        expect(pathExistsStub).toBeCalledWith(
-          join(storagePath, variantAnalysis.id.toString()),
-        );
       });
 
       it("should not error if the repo states file does not exist", async () => {
-        readJsonStub.mockImplementation(() =>
-          Promise.reject(new Error("File does not exist")),
-        );
-
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
-
-        expect(readJsonStub).toHaveBeenCalledTimes(1);
-        expect(readJsonStub).toHaveBeenCalledWith(
-          join(storagePath, variantAnalysis.id.toString(), "repo_states.json"),
-        );
         expect(
           await variantAnalysisManager.getRepoStates(variantAnalysis.id),
         ).toEqual([]);
       });
 
       it("should read in the repo states if it exists", async () => {
-        readJsonStub.mockImplementation(() =>
-          Promise.resolve({
+        await fs.writeJson(
+          join(storagePath, variantAnalysis.id.toString(), "repo_states.json"),
+          {
             [scannedRepos[0].repository.id]: {
               repositoryId: scannedRepos[0].repository.id,
               downloadStatus:
@@ -333,15 +301,11 @@ describe("Variant Analysis Manager", () => {
               downloadStatus:
                 VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
             },
-          }),
+          },
         );
 
         await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
-        expect(readJsonStub).toHaveBeenCalledTimes(1);
-        expect(readJsonStub).toHaveBeenCalledWith(
-          join(storagePath, variantAnalysis.id.toString(), "repo_states.json"),
-        );
         expect(
           await variantAnalysisManager.getRepoStates(variantAnalysis.id),
         ).toEqual(
@@ -448,6 +412,16 @@ describe("Variant Analysis Manager", () => {
       });
 
       describe("autoDownloadVariantAnalysisResult", () => {
+        let repoStatesPath: string;
+
+        beforeEach(() => {
+          repoStatesPath = join(
+            storagePath,
+            variantAnalysis.id.toString(),
+            "repo_states.json",
+          );
+        });
+
         it("should return early if variant analysis is cancelled", async () => {
           cancellationTokenSource.cancel();
 
@@ -506,20 +480,13 @@ describe("Variant Analysis Manager", () => {
             cancellationTokenSource.token,
           );
 
-          expect(outputJsonStub).toHaveBeenCalledWith(
-            join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            ),
-            {
-              [scannedRepos[0].repository.id]: {
-                repositoryId: scannedRepos[0].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
+          await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
+            [scannedRepos[0].repository.id]: {
+              repositoryId: scannedRepos[0].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
             },
-          );
+          });
         });
 
         it("should not write the repo state when the download fails", async () => {
@@ -535,7 +502,7 @@ describe("Variant Analysis Manager", () => {
             ),
           ).rejects.toThrow();
 
-          expect(outputJsonStub).not.toHaveBeenCalled();
+          await expect(fs.pathExists(repoStatesPath)).resolves.toBe(false);
         });
 
         it("should have a failed repo state when the repo task API fails", async () => {
@@ -551,7 +518,7 @@ describe("Variant Analysis Manager", () => {
             ),
           ).rejects.toThrow();
 
-          expect(outputJsonStub).not.toHaveBeenCalled();
+          await expect(fs.pathExists(repoStatesPath)).resolves.toBe(false);
 
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[1],
@@ -559,25 +526,18 @@ describe("Variant Analysis Manager", () => {
             cancellationTokenSource.token,
           );
 
-          expect(outputJsonStub).toHaveBeenCalledWith(
-            join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            ),
-            {
-              [scannedRepos[0].repository.id]: {
-                repositoryId: scannedRepos[0].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Failed,
-              },
-              [scannedRepos[1].repository.id]: {
-                repositoryId: scannedRepos[1].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
+          await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
+            [scannedRepos[0].repository.id]: {
+              repositoryId: scannedRepos[0].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Failed,
             },
-          );
+            [scannedRepos[1].repository.id]: {
+              repositoryId: scannedRepos[1].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+            },
+          });
         });
 
         it("should have a failed repo state when the download fails", async () => {
@@ -593,7 +553,7 @@ describe("Variant Analysis Manager", () => {
             ),
           ).rejects.toThrow();
 
-          expect(outputJsonStub).not.toHaveBeenCalled();
+          await expect(fs.pathExists(repoStatesPath)).resolves.toBe(false);
 
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[1],
@@ -601,66 +561,37 @@ describe("Variant Analysis Manager", () => {
             cancellationTokenSource.token,
           );
 
-          expect(outputJsonStub).toHaveBeenCalledWith(
-            join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            ),
-            {
-              [scannedRepos[0].repository.id]: {
-                repositoryId: scannedRepos[0].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Failed,
-              },
-              [scannedRepos[1].repository.id]: {
-                repositoryId: scannedRepos[1].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
+          await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
+            [scannedRepos[0].repository.id]: {
+              repositoryId: scannedRepos[0].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Failed,
             },
-          );
+            [scannedRepos[1].repository.id]: {
+              repositoryId: scannedRepos[1].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+            },
+          });
         });
 
         it("should update the repo state correctly", async () => {
-          // To set some initial repo states, we need to mock the correct methods so that the repo states are read in.
-          // The actual tests for these are in rehydrateVariantAnalysis, so we can just mock them here and test that
-          // the methods are called.
-
-          pathExistsStub.mockImplementation(() => true);
-          // This will read in the correct repo states
-          readJsonStub.mockImplementation(() =>
-            Promise.resolve({
-              [scannedRepos[1].repository.id]: {
-                repositoryId: scannedRepos[1].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
-              [scannedRepos[2].repository.id]: {
-                repositoryId: scannedRepos[2].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
-              },
-            }),
-          );
+          await fs.outputJson(repoStatesPath, {
+            [scannedRepos[1].repository.id]: {
+              repositoryId: scannedRepos[1].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+            },
+            [scannedRepos[2].repository.id]: {
+              repositoryId: scannedRepos[2].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
+            },
+          });
 
           await variantAnalysisManager.rehydrateVariantAnalysis(
             variantAnalysis,
           );
-
-          expect(pathExistsStub).toBeCalledWith(
-            join(storagePath, variantAnalysis.id.toString()),
-          );
-          expect(readJsonStub).toHaveBeenCalledTimes(1);
-          expect(readJsonStub).toHaveBeenCalledWith(
-            join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            ),
-          );
-
-          pathExistsStub.mockRestore();
 
           await variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
@@ -668,30 +599,23 @@ describe("Variant Analysis Manager", () => {
             cancellationTokenSource.token,
           );
 
-          expect(outputJsonStub).toHaveBeenCalledWith(
-            join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            ),
-            {
-              [scannedRepos[1].repository.id]: {
-                repositoryId: scannedRepos[1].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
-              [scannedRepos[2].repository.id]: {
-                repositoryId: scannedRepos[2].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
-              },
-              [scannedRepos[0].repository.id]: {
-                repositoryId: scannedRepos[0].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
+          await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
+            [scannedRepos[1].repository.id]: {
+              repositoryId: scannedRepos[1].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
             },
-          );
+            [scannedRepos[2].repository.id]: {
+              repositoryId: scannedRepos[2].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
+            },
+            [scannedRepos[0].repository.id]: {
+              repositoryId: scannedRepos[0].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+            },
+          });
         });
       });
 
@@ -727,7 +651,6 @@ describe("Variant Analysis Manager", () => {
         let removeAnalysisResultsStub: jest.SpiedFunction<
           typeof variantAnalysisResultsManager.removeAnalysisResults
         >;
-        let removeStorageStub: jest.SpiedFunction<typeof fs.remove>;
         let dummyVariantAnalysis: VariantAnalysis;
 
         beforeEach(async () => {
@@ -736,19 +659,15 @@ describe("Variant Analysis Manager", () => {
           removeAnalysisResultsStub = jest
             .spyOn(variantAnalysisResultsManager, "removeAnalysisResults")
             .mockReturnValue(undefined);
-
-          removeStorageStub = jest
-            .spyOn(fs, "remove")
-            .mockReturnValue(undefined);
         });
 
         it("should remove variant analysis", async () => {
-          pathExistsStub.mockImplementation(() => true);
+          await fs.ensureDir(
+            join(storagePath, dummyVariantAnalysis.id.toString()),
+          );
+
           await variantAnalysisManager.rehydrateVariantAnalysis(
             dummyVariantAnalysis,
-          );
-          expect(pathExistsStub).toBeCalledWith(
-            join(storagePath, dummyVariantAnalysis.id.toString()),
           );
           expect(variantAnalysisManager.variantAnalysesSize).toBe(1);
 
@@ -757,8 +676,13 @@ describe("Variant Analysis Manager", () => {
           );
 
           expect(removeAnalysisResultsStub).toBeCalledTimes(1);
-          expect(removeStorageStub).toBeCalledTimes(1);
           expect(variantAnalysisManager.variantAnalysesSize).toBe(0);
+
+          await expect(
+            fs.pathExists(
+              join(storagePath, dummyVariantAnalysis.id.toString()),
+            ),
+          ).resolves.toBe(false);
         });
       });
     });
