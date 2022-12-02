@@ -94,7 +94,7 @@
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
         "--projects",
-        "out/vscode-tests/no-workspace"
+        "src/vscode-tests/no-workspace"
       ],
       "sourceMaps": true,
       "console": "integratedTerminal",
@@ -110,7 +110,7 @@
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
         "--projects",
-        "out/vscode-tests/minimal-workspace"
+        "src/vscode-tests/minimal-workspace"
       ],
       "sourceMaps": true,
       "console": "integratedTerminal",
@@ -126,7 +126,7 @@
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
         "--projects",
-        "out/vscode-tests/cli-integration"
+        "src/vscode-tests/cli-integration"
       ],
       "env": {
         // Optionally, set the version to use for the integration tests.
