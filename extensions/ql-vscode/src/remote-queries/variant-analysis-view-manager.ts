@@ -13,6 +13,7 @@ export interface VariantAnalysisViewManager<
 > {
   registerView(view: T): void;
   unregisterView(view: T): void;
+  getView(variantAnalysisId: number): T | undefined;
 
   getVariantAnalysis(
     variantAnalysisId: number,

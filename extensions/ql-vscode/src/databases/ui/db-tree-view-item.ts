@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import {
   DbItem,
+  isSelectableDbItem,
   LocalDatabaseDbItem,
   LocalListDbItem,
   RemoteOwnerDbItem,
@@ -28,6 +29,16 @@ export class DbTreeViewItem extends vscode.TreeItem {
     public readonly children: DbTreeViewItem[],
   ) {
     super(label, collapsibleState);
+
+    if (dbItem && isSelectableDbItem(dbItem)) {
+      if (dbItem.selected) {
+        // Define the resource id to drive the UI to render this item as selected.
+        this.resourceUri = vscode.Uri.parse("codeql://databases?selected=true");
+      } else {
+        // Define a context value to drive the UI to show an action to select the item.
+        this.contextValue = "selectableDbItem";
+      }
+    }
   }
 }
 

@@ -2,13 +2,13 @@ import { join } from "path";
 import { ensureDir, writeFile } from "fs-extra";
 
 import {
-  window,
   commands,
-  Uri,
-  ExtensionContext,
-  workspace,
-  ViewColumn,
   CancellationToken,
+  ExtensionContext,
+  Uri,
+  ViewColumn,
+  window,
+  workspace,
 } from "vscode";
 import { Credentials } from "../authentication";
 import { ProgressCallback, UserCancellationException } from "../commandRunner";
@@ -21,6 +21,7 @@ import {
   generateMarkdown,
   generateVariantAnalysisMarkdown,
   MarkdownFile,
+  RepositorySummary,
 } from "./remote-queries-markdown-generation";
 import { RemoteQuery } from "./remote-query";
 import { AnalysisResults, sumAnalysesResults } from "./shared/analysis-result";
@@ -30,6 +31,7 @@ import { assertNever } from "../pure/helpers-pure";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
+  VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
 import {
@@ -162,6 +164,10 @@ export async function exportVariantAnalysisResults(
     throw new UserCancellationException("Cancelled");
   }
 
+  const repoStates = await variantAnalysisManager.getRepoStates(
+    variantAnalysisId,
+  );
+
   void extLogger.log(
     `Exporting variant analysis results for variant analysis with id ${variantAnalysis.id}`,
   );
@@ -197,6 +203,18 @@ export async function exportVariantAnalysisResults(
     }
 
     for (const repo of repositories) {
+      const repoState = repoStates.find(
+        (r) => r.repositoryId === repo.repository.id,
+      );
+
+      // Do not export if it has not yet completed or the download has not yet succeeded.
+      if (
+        repoState?.downloadStatus !==
+        VariantAnalysisScannedRepositoryDownloadStatus.Succeeded
+      ) {
+        continue;
+      }
+
       if (repo.resultCount == 0) {
         yield [
           repo,
@@ -268,11 +286,14 @@ export async function exportVariantAnalysisAnalysisResults(
     message: "Generating Markdown files",
   });
 
-  const description = buildVariantAnalysisGistDescription(variantAnalysis);
-  const markdownFiles = await generateVariantAnalysisMarkdown(
+  const { markdownFiles, summaries } = await generateVariantAnalysisMarkdown(
     variantAnalysis,
     analysesResults,
-    "gist",
+    exportFormat,
+  );
+  const description = buildVariantAnalysisGistDescription(
+    variantAnalysis,
+    summaries,
   );
 
   await exportResults(
@@ -407,20 +428,16 @@ const buildGistDescription = (
  */
 const buildVariantAnalysisGistDescription = (
   variantAnalysis: VariantAnalysis,
+  summaries: RepositorySummary[],
 ) => {
-  const resultCount =
-    variantAnalysis.scannedRepos?.reduce(
-      (acc, item) => acc + (item.resultCount ?? 0),
-      0,
-    ) ?? 0;
+  const resultCount = summaries.reduce(
+    (acc, summary) => acc + (summary.resultCount ?? 0),
+    0,
+  );
   const resultLabel = pluralize(resultCount, "result", "results");
 
-  const repositoryLabel = variantAnalysis.scannedRepos?.length
-    ? `(${pluralize(
-        variantAnalysis.scannedRepos.length,
-        "repository",
-        "repositories",
-      )})`
+  const repositoryLabel = summaries.length
+    ? `(${pluralize(summaries.length, "repository", "repositories")})`
     : "";
   return `${variantAnalysis.query.name} (${variantAnalysis.query.language}) ${resultLabel} ${repositoryLabel}`;
 };

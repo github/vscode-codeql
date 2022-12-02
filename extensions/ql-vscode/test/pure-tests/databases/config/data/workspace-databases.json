@@ -46,7 +46,7 @@
     }
   },
   "selected": {
-    "kind": "configDefined",
-    "value": "path.to.database"
+    "kind": "remoteUserDefinedList",
+    "listName": "repoList1"
   }
 }

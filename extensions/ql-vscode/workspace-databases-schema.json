@@ -123,17 +123,92 @@
     },
     "selected": {
       "type": "object",
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": ["configDefined", "remoteSystemDefinedList"]
+      "oneOf": [
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["localUserDefinedList"]
+            },
+            "listName": {
+              "type": "string"
+            }
+          },
+          "required": ["kind", "listName"],
+          "additionalProperties": false
         },
-        "value": {
-          "type": "string"
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["localDatabase"]
+            },
+            "databaseName": {
+              "type": "string"
+            },
+            "listName": {
+              "type": "string"
+            }
+          },
+          "required": ["kind", "databaseName"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["remoteSystemDefinedList"]
+            },
+            "listName": {
+              "type": "string"
+            }
+          },
+          "required": ["kind", "listName"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["remoteUserDefinedList"]
+            },
+            "listName": {
+              "type": "string"
+            }
+          },
+          "required": ["kind", "listName"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["remoteOwner"]
+            },
+            "ownerName": {
+              "type": "string"
+            }
+          },
+          "required": ["kind", "ownerName"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["remoteRepository"]
+            },
+            "repositoryName": {
+              "type": "string"
+            },
+            "listName": {
+              "type": "string"
+            }
+          },
+          "required": ["kind", "repositoryName"],
+          "additionalProperties": false
         }
-      },
-      "required": ["kind", "value"],
-      "additionalProperties": false
+      ]
     }
   },
   "required": ["databases"],

@@ -1,3 +1,4 @@
+import { window } from "vscode";
 import { App, AppMode } from "../common/app";
 import { isCanary, isNewQueryRunExperienceEnabled } from "../config";
 import { extLogger } from "../common";
@@ -5,6 +6,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbManager } from "./db-manager";
 import { DbPanel } from "./ui/db-panel";
+import { DbSelectionDecorationProvider } from "./ui/db-selection-decoration-provider";
 
 export class DbModule extends DisposableObject {
   public async initialize(app: App): Promise<void> {
@@ -30,6 +32,10 @@ export class DbModule extends DisposableObject {
 
     this.push(dbPanel);
     this.push(dbConfigStore);
+
+    const dbSelectionDecorationProvider = new DbSelectionDecorationProvider();
+
+    window.registerFileDecorationProvider(dbSelectionDecorationProvider);
   }
 }
 

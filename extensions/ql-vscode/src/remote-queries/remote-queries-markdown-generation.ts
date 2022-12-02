@@ -18,6 +18,7 @@ import {
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
+import { RepositoryWithMetadata } from "./shared/repository";
 
 export type MarkdownLinkType = "local" | "gist";
 
@@ -74,6 +75,17 @@ export function generateMarkdown(
   return [summaryFile, ...resultsFiles];
 }
 
+export interface RepositorySummary {
+  fileName: string;
+  repository: RepositoryWithMetadata;
+  resultCount: number;
+}
+
+export interface VariantAnalysisMarkdown {
+  markdownFiles: MarkdownFile[];
+  summaries: RepositorySummary[];
+}
+
 /**
  * Generates markdown files with variant analysis results.
  */
@@ -83,23 +95,22 @@ export async function generateVariantAnalysisMarkdown(
     [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
   >,
   linkType: MarkdownLinkType,
-): Promise<MarkdownFile[]> {
+): Promise<VariantAnalysisMarkdown> {
   const resultsFiles: MarkdownFile[] = [];
-  // Generate summary file with links to individual files
-  const summaryFile: MarkdownFile =
-    generateVariantAnalysisMarkdownSummary(variantAnalysis);
+  const summaries: RepositorySummary[] = [];
   for await (const [scannedRepo, result] of results) {
-    if (scannedRepo.resultCount === 0) {
+    if (!scannedRepo.resultCount || scannedRepo.resultCount === 0) {
       continue;
     }
 
     // Append nwo and results count to the summary table
     const fullName = scannedRepo.repository.fullName;
     const fileName = createFileName(fullName);
-    const link = createRelativeLink(fileName, linkType);
-    summaryFile.content.push(
-      `| ${fullName} | [${scannedRepo.resultCount} result(s)](${link}) |`,
-    );
+    summaries.push({
+      fileName,
+      repository: scannedRepo.repository,
+      resultCount: scannedRepo.resultCount,
+    });
 
     // Generate individual markdown file for each repository
     const resultsFileContent = [`### ${scannedRepo.repository.fullName}`, ""];
@@ -121,7 +132,18 @@ export async function generateVariantAnalysisMarkdown(
       content: resultsFileContent,
     });
   }
-  return [summaryFile, ...resultsFiles];
+
+  // Generate summary file with links to individual files
+  const summaryFile: MarkdownFile = generateVariantAnalysisMarkdownSummary(
+    variantAnalysis,
+    summaries,
+    linkType,
+  );
+
+  return {
+    markdownFiles: [summaryFile, ...resultsFiles],
+    summaries,
+  };
 }
 
 export function generateMarkdownSummary(query: RemoteQuery): MarkdownFile {
@@ -147,6 +169,8 @@ export function generateMarkdownSummary(query: RemoteQuery): MarkdownFile {
 
 export function generateVariantAnalysisMarkdownSummary(
   variantAnalysis: VariantAnalysis,
+  summaries: RepositorySummary[],
+  linkType: MarkdownLinkType,
 ): MarkdownFile {
   const lines: string[] = [];
   // Title
@@ -165,7 +189,14 @@ export function generateVariantAnalysisMarkdownSummary(
 
   // Summary table
   lines.push("### Summary", "", "| Repository | Results |", "| --- | --- |");
-  // nwo and result count will be appended to this table
+
+  for (const summary of summaries) {
+    // Append nwo and results count to the summary table
+    const fullName = summary.repository.fullName;
+    const link = createRelativeLink(summary.fileName, linkType);
+    lines.push(`| ${fullName} | [${summary.resultCount} result(s)](${link}) |`);
+  }
+
   return {
     fileName: "_summary",
     content: lines,
