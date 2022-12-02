@@ -124,35 +124,3 @@ const SelectableDbItemKinds = [
   DbItemKind.RemoteOwner,
   DbItemKind.RemoteRepo,
 ];
-
-export function getSelectedDbItem(dbItems: DbItem[]): DbItem | undefined {
-  for (const dbItem of dbItems) {
-    if (
-      dbItem.kind === DbItemKind.RootRemote ||
-      dbItem.kind === DbItemKind.RootLocal
-    ) {
-      for (const child of dbItem.children) {
-        switch (child.kind) {
-          case DbItemKind.LocalList:
-            for (const database of child.databases) {
-              if (database.selected) {
-                return database;
-              }
-            }
-            break;
-          case DbItemKind.RemoteUserDefinedList:
-            for (const repo of child.repos) {
-              if (repo.selected) {
-                return repo;
-              }
-            }
-            break;
-          default:
-            if (child.selected) {
-              return child;
-            }
-        }
-      }
-    }
-  }
-}

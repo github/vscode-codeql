@@ -2,7 +2,8 @@ import { App } from "../common/app";
 import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
 import { DbConfigStore } from "./config/db-config-store";
-import { DbItem, getSelectedDbItem } from "./db-item";
+import { DbItem } from "./db-item";
+import { getSelectedDbItem } from "./db-item-selection";
 import { createLocalTree, createRemoteTree } from "./db-tree-creator";
 
 export class DbManager {
