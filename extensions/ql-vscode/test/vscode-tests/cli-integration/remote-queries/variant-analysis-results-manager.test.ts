@@ -47,8 +47,6 @@ describe(VariantAnalysisResultsManager.name, () => {
 
     beforeEach(async () => {
       jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
-      jest.spyOn(fs, "mkdirSync").mockReturnValue(undefined);
-      jest.spyOn(fs, "writeFile").mockReturnValue(undefined);
 
       variantAnalysisResultsManager = new VariantAnalysisResultsManager(
         cli,
