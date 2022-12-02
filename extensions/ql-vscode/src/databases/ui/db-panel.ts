@@ -26,11 +26,20 @@ export class DbPanel extends DisposableObject {
         this.openConfigFile(),
       ),
     );
+    this.push(
+      commandRunner("codeQLDatabasesExperimental.setSelectedItem", () =>
+        this.setSelectedItem(),
+      ),
+    );
   }
 
   private async openConfigFile(): Promise<void> {
     const configPath = this.dbManager.getConfigPath();
     const document = await workspace.openTextDocument(configPath);
     await window.showTextDocument(document);
+  }
+  private async setSelectedItem(): Promise<void> {
+    // TODO
+    console.log("setSelectedItem");
   }
 }

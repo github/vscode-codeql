@@ -61,6 +61,8 @@
     "onCommand:codeQL.chooseDatabaseLgtm",
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
+    "onCommand:codeQLDatabasesExperimental.openConfigFile",
+    "onCommand:codeQLDatabasesExperimental.setSelectedItem",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
@@ -363,6 +365,11 @@
           "light": "media/light/edit.svg",
           "dark": "media/dark/edit.svg"
         }
+      },
+      {
+        "command": "codeQLDatabasesExperimental.setSelectedItem",
+        "title": "Select Item",
+        "icon": "$(circle-small-filled)"
       },
       {
         "command": "codeQLDatabases.chooseDatabaseFolder",
@@ -796,6 +803,11 @@
           "when": "view == codeQLDatabases"
         },
         {
+          "command": "codeQLDatabasesExperimental.setSelectedItem",
+          "when": "view == codeQLDatabasesExperimental",
+          "group": "inline"
+        },
+        {
           "command": "codeQLQueryHistory.openQuery",
           "group": "9_qlCommands",
           "when": "view == codeQLQueryHistory"
@@ -983,6 +995,10 @@
         },
         {
           "command": "codeQLDatabasesExperimental.openConfigFile",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.setSelectedItem",
           "when": "false"
         },
         {
