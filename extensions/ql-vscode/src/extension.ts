@@ -138,7 +138,6 @@ import { VariantAnalysisResultsManager } from "./remote-queries/variant-analysis
 import { initializeDbModule } from "./databases/db-module";
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
-import { DbSelectionDecorationProvider } from "./databases/ui/db-selection-decoration-provider";
 
 /**
  * extension.ts
@@ -1558,10 +1557,6 @@ async function activateWithInstalledDistribution(
   const app = new ExtensionApp(ctx);
   const dbModule = await initializeDbModule(app);
   ctx.subscriptions.push(dbModule);
-
-  const dbSelectionDecorationProvider = new DbSelectionDecorationProvider();
-
-  window.registerFileDecorationProvider(dbSelectionDecorationProvider);
 
   void extLogger.log("Successfully finished extension initialization.");
 
