@@ -3,6 +3,7 @@ import { ensureDir, writeFile } from "fs-extra";
 
 import {
   commands,
+  CancellationToken,
   ExtensionContext,
   Uri,
   ViewColumn,
@@ -10,7 +11,7 @@ import {
   workspace,
 } from "vscode";
 import { Credentials } from "../authentication";
-import { UserCancellationException } from "../commandRunner";
+import { ProgressCallback, UserCancellationException } from "../commandRunner";
 import { showInformationMessageWithAction } from "../helpers";
 import { extLogger } from "../common";
 import { QueryHistoryManager } from "../query-history";
@@ -133,6 +134,8 @@ export async function exportRemoteQueryAnalysisResults(
   );
 }
 
+const MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS = 2;
+
 /**
  * Exports the results of the given or currently-selected remote query.
  * The user is prompted to select the export format.
@@ -141,7 +144,9 @@ export async function exportVariantAnalysisResults(
   ctx: ExtensionContext,
   variantAnalysisManager: VariantAnalysisManager,
   variantAnalysisId: number,
-  filterSort?: RepositoriesFilterSortStateWithIds,
+  filterSort: RepositoriesFilterSortStateWithIds | undefined,
+  progress: ProgressCallback,
+  token: CancellationToken,
 ): Promise<void> {
   const variantAnalysis = await variantAnalysisManager.getVariantAnalysis(
     variantAnalysisId,
@@ -155,6 +160,10 @@ export async function exportVariantAnalysisResults(
     );
   }
 
+  if (token.isCancellationRequested) {
+    throw new UserCancellationException("Cancelled");
+  }
+
   const repoStates = await variantAnalysisManager.getRepoStates(
     variantAnalysisId,
   );
@@ -163,9 +172,19 @@ export async function exportVariantAnalysisResults(
     `Exporting variant analysis results for variant analysis with id ${variantAnalysis.id}`,
   );
 
+  progress({
+    maxStep: MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS,
+    step: 0,
+    message: "Determining export format",
+  });
+
   const exportFormat = await determineExportFormat();
   if (!exportFormat) {
     return;
+  }
+
+  if (token.isCancellationRequested) {
+    throw new UserCancellationException("Cancelled");
   }
 
   async function* getAnalysesResults(): AsyncGenerator<
@@ -241,6 +260,8 @@ export async function exportVariantAnalysisResults(
     variantAnalysis,
     getAnalysesResults(),
     exportFormat,
+    progress,
+    token,
   );
 }
 
@@ -252,7 +273,19 @@ export async function exportVariantAnalysisAnalysisResults(
     [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
   >,
   exportFormat: "gist" | "local",
+  progress: ProgressCallback,
+  token: CancellationToken,
 ) {
+  if (token.isCancellationRequested) {
+    throw new UserCancellationException("Cancelled");
+  }
+
+  progress({
+    maxStep: MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS,
+    step: 1,
+    message: "Generating Markdown files",
+  });
+
   const { markdownFiles, summaries } = await generateVariantAnalysisMarkdown(
     variantAnalysis,
     analysesResults,
@@ -269,6 +302,8 @@ export async function exportVariantAnalysisAnalysisResults(
     description,
     markdownFiles,
     exportFormat,
+    progress,
+    token,
   );
 }
 
@@ -311,11 +346,22 @@ export async function exportResults(
   description: string,
   markdownFiles: MarkdownFile[],
   exportFormat: "gist" | "local",
+  progress?: ProgressCallback,
+  token?: CancellationToken,
 ) {
+  if (token?.isCancellationRequested) {
+    throw new UserCancellationException("Cancelled");
+  }
+
   if (exportFormat === "gist") {
-    await exportToGist(ctx, description, markdownFiles);
+    await exportToGist(ctx, description, markdownFiles, progress, token);
   } else if (exportFormat === "local") {
-    await exportToLocalMarkdown(exportedResultsPath, markdownFiles);
+    await exportToLocalMarkdown(
+      exportedResultsPath,
+      markdownFiles,
+      progress,
+      token,
+    );
   }
 }
 
@@ -323,8 +369,20 @@ export async function exportToGist(
   ctx: ExtensionContext,
   description: string,
   markdownFiles: MarkdownFile[],
+  progress?: ProgressCallback,
+  token?: CancellationToken,
 ) {
+  progress?.({
+    maxStep: MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS,
+    step: 2,
+    message: "Creating Gist",
+  });
+
   const credentials = await Credentials.initialize(ctx);
+
+  if (token?.isCancellationRequested) {
+    throw new UserCancellationException("Cancelled");
+  }
 
   // Convert markdownFiles to the appropriate format for uploading to gist
   const gistFiles = markdownFiles.reduce((acc, cur) => {
@@ -334,13 +392,17 @@ export async function exportToGist(
 
   const gistUrl = await createGist(credentials, description, gistFiles);
   if (gistUrl) {
-    const shouldOpenGist = await showInformationMessageWithAction(
+    // This needs to use .then to ensure we aren't keeping the progress notification open. We shouldn't await the
+    // "Open gist" button click.
+    void showInformationMessageWithAction(
       "Variant analysis results exported to gist.",
       "Open gist",
-    );
-    if (shouldOpenGist) {
-      await commands.executeCommand("vscode.open", Uri.parse(gistUrl));
-    }
+    ).then((shouldOpenGist) => {
+      if (!shouldOpenGist) {
+        return;
+      }
+      return commands.executeCommand("vscode.open", Uri.parse(gistUrl));
+    });
   }
 }
 
@@ -386,20 +448,38 @@ const buildVariantAnalysisGistDescription = (
 async function exportToLocalMarkdown(
   exportedResultsPath: string,
   markdownFiles: MarkdownFile[],
+  progress?: ProgressCallback,
+  token?: CancellationToken,
 ) {
+  if (token?.isCancellationRequested) {
+    throw new UserCancellationException("Cancelled");
+  }
+
+  progress?.({
+    maxStep: MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS,
+    step: 2,
+    message: "Creating local Markdown files",
+  });
+
   await ensureDir(exportedResultsPath);
   for (const markdownFile of markdownFiles) {
     const filePath = join(exportedResultsPath, `${markdownFile.fileName}.md`);
     await writeFile(filePath, markdownFile.content.join("\n"), "utf8");
   }
-  const shouldOpenExportedResults = await showInformationMessageWithAction(
+
+  // This needs to use .then to ensure we aren't keeping the progress notification open. We shouldn't await the
+  // "Open exported results" button click.
+  void showInformationMessageWithAction(
     `Variant analysis results exported to \"${exportedResultsPath}\".`,
     "Open exported results",
-  );
-  if (shouldOpenExportedResults) {
+  ).then(async (shouldOpenExportedResults) => {
+    if (!shouldOpenExportedResults) {
+      return;
+    }
+
     const summaryFilePath = join(exportedResultsPath, "_summary.md");
     const summaryFile = await workspace.openTextDocument(summaryFilePath);
     await window.showTextDocument(summaryFile, ViewColumn.One);
     await commands.executeCommand("revealFileInOS", Uri.file(summaryFilePath));
-  }
+  });
 }
