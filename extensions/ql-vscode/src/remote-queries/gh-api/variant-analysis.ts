@@ -16,7 +16,8 @@ export type VariantAnalysisQueryLanguage =
   | "java"
   | "javascript"
   | "python"
-  | "ruby";
+  | "ruby"
+  | "swift";
 
 export interface VariantAnalysis {
   id: number;
