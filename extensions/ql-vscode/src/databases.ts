@@ -924,7 +924,7 @@ export class DatabaseManager extends DisposableObject {
     // Delete folder from file system only if it is controlled by the extension
     if (this.isExtensionControlledLocation(item.databaseUri)) {
       void extLogger.log("Deleting database from filesystem.");
-      remove(item.databaseUri.fsPath).then(
+      await remove(item.databaseUri.fsPath).then(
         () => void extLogger.log(`Deleted '${item.databaseUri.fsPath}'`),
         (e) =>
           void extLogger.log(

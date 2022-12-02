@@ -200,9 +200,7 @@ describe("databases", () => {
 
     it("should remove a database item", async () => {
       const mockDbItem = createMockDB();
-      const removeMock = jest
-        .spyOn(fs, "remove")
-        .mockImplementation(() => Promise.resolve());
+      await fs.ensureDir(mockDbItem.databaseUri.fsPath);
 
       // pretend that this item is the first workspace folder in the list
       jest
@@ -229,13 +227,14 @@ describe("databases", () => {
       expect(workspace.updateWorkspaceFolders).toBeCalledWith(0, 1);
 
       // should also delete the db contents
-      expect(removeMock).toBeCalledWith(mockDbItem.databaseUri.fsPath);
+      await expect(fs.pathExists(mockDbItem.databaseUri.fsPath)).resolves.toBe(
+        false,
+      );
     });
 
     it("should remove a database item outside of the extension controlled area", async () => {
       const mockDbItem = createMockDB();
-      const removeMock = jest.spyOn(fs, "remove");
-      removeMock.mockReset().mockImplementation(() => Promise.resolve());
+      await fs.ensureDir(mockDbItem.databaseUri.fsPath);
 
       // pretend that this item is the first workspace folder in the list
       jest
@@ -263,15 +262,15 @@ describe("databases", () => {
       expect(workspace.updateWorkspaceFolders).toBeCalledWith(0, 1);
 
       // should NOT delete the db contents
-      expect(removeMock).not.toBeCalled();
+      await expect(fs.pathExists(mockDbItem.databaseUri.fsPath)).resolves.toBe(
+        true,
+      );
     });
 
     it("should register and deregister a database when adding and removing it", async () => {
       // similar test as above, but also check the call to sendRequestSpy to make sure they send the
       // registration messages.
       const mockDbItem = createMockDB();
-
-      jest.spyOn(fs, "remove").mockImplementation(() => Promise.resolve());
 
       await (databaseManager as any).addDatabaseItem(
         {} as ProgressCallback,
@@ -411,98 +410,93 @@ describe("databases", () => {
   });
 
   describe("isAffectedByTest", () => {
-    const directoryStats = new fs.Stats();
-    const fileStats = new fs.Stats();
-    beforeEach(() => {
-      jest.spyOn(directoryStats, "isDirectory").mockReturnValue(true);
-      jest.spyOn(fileStats, "isDirectory").mockReturnValue(false);
+    let directoryPath: string;
+    let projectPath: string;
+    let qlFilePath: string;
+
+    beforeEach(async () => {
+      directoryPath = join(dir.name, "dir");
+      await fs.ensureDir(directoryPath);
+      projectPath = join(directoryPath, "dir.testproj");
+      await fs.writeFile(projectPath, "");
+      qlFilePath = join(directoryPath, "test.ql");
+      await fs.writeFile(qlFilePath, "");
     });
 
     it("should return true for testproj database in test directory", async () => {
-      jest.spyOn(fs, "stat").mockResolvedValue(directoryStats);
-      const db = createMockDB(
-        sourceLocationUri(),
-        Uri.file("/path/to/dir/dir.testproj"),
-      );
-      expect(await db.isAffectedByTest("/path/to/dir")).toBe(true);
+      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      expect(await db.isAffectedByTest(directoryPath)).toBe(true);
     });
 
     it("should return false for non-existent test directory", async () => {
-      jest.spyOn(fs, "stat").mockImplementation(() => {
-        throw new Error("Simulated Error: ENOENT");
-      });
       const db = createMockDB(
         sourceLocationUri(),
-        Uri.file("/path/to/dir/dir.testproj"),
+        Uri.file(join(dir.name, "non-existent/non-existent.testproj")),
       );
-      expect(await db.isAffectedByTest("/path/to/dir")).toBe(false);
+      expect(await db.isAffectedByTest(join(dir.name, "non-existent"))).toBe(
+        false,
+      );
     });
 
     it("should return false for non-testproj database in test directory", async () => {
-      jest.spyOn(fs, "stat").mockResolvedValue(directoryStats);
+      const anotherProjectPath = join(directoryPath, "dir.proj");
+      await fs.writeFile(anotherProjectPath, "");
+
       const db = createMockDB(
         sourceLocationUri(),
-        Uri.file("/path/to/dir/dir.proj"),
+        Uri.file(anotherProjectPath),
       );
-      expect(await db.isAffectedByTest("/path/to/dir")).toBe(false);
+      expect(await db.isAffectedByTest(directoryPath)).toBe(false);
     });
 
     it("should return false for testproj database outside test directory", async () => {
-      jest.spyOn(fs, "stat").mockResolvedValue(directoryStats);
+      const anotherProjectDir = join(dir.name, "other");
+      await fs.ensureDir(anotherProjectDir);
+      const anotherProjectPath = join(anotherProjectDir, "other.testproj");
+      await fs.writeFile(anotherProjectPath, "");
+
       const db = createMockDB(
         sourceLocationUri(),
-        Uri.file("/path/to/other/dir.testproj"),
+        Uri.file(anotherProjectPath),
       );
-      expect(await db.isAffectedByTest("/path/to/dir")).toBe(false);
+      expect(await db.isAffectedByTest(directoryPath)).toBe(false);
     });
 
     it("should return false for testproj database for prefix directory", async () => {
-      jest.spyOn(fs, "stat").mockResolvedValue(directoryStats);
-      const db = createMockDB(
-        sourceLocationUri(),
-        Uri.file("/path/to/dir/dir.testproj"),
-      );
-      // /path/to/d is a prefix of /path/to/dir/dir.testproj, but
-      // /path/to/dir/dir.testproj is not under /path/to/d
-      expect(await db.isAffectedByTest("/path/to/d")).toBe(false);
+      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      // /d is a prefix of /dir/dir.testproj, but
+      // /dir/dir.testproj is not under /d
+      expect(await db.isAffectedByTest(join(directoryPath, "d"))).toBe(false);
     });
 
     it("should return true for testproj database for test file", async () => {
-      jest.spyOn(fs, "stat").mockResolvedValue(fileStats);
-      const db = createMockDB(
-        sourceLocationUri(),
-        Uri.file("/path/to/dir/dir.testproj"),
-      );
-      expect(await db.isAffectedByTest("/path/to/dir/test.ql")).toBe(true);
+      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      expect(await db.isAffectedByTest(qlFilePath)).toBe(true);
     });
 
     it("should return false for non-existent test file", async () => {
-      jest.spyOn(fs, "stat").mockImplementation(() => {
-        throw new Error("Simulated Error: ENOENT");
-      });
-      const db = createMockDB(
-        sourceLocationUri(),
-        Uri.file("/path/to/dir/dir.testproj"),
-      );
-      expect(await db.isAffectedByTest("/path/to/dir/test.ql")).toBe(false);
+      const otherTestFile = join(directoryPath, "other-test.ql");
+      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      expect(await db.isAffectedByTest(otherTestFile)).toBe(false);
     });
 
     it("should return false for non-testproj database for test file", async () => {
-      jest.spyOn(fs, "stat").mockResolvedValue(fileStats);
+      const anotherProjectPath = join(directoryPath, "dir.proj");
+      await fs.writeFile(anotherProjectPath, "");
+
       const db = createMockDB(
         sourceLocationUri(),
-        Uri.file("/path/to/dir/dir.proj"),
+        Uri.file(anotherProjectPath),
       );
-      expect(await db.isAffectedByTest("/path/to/dir/test.ql")).toBe(false);
+      expect(await db.isAffectedByTest(qlFilePath)).toBe(false);
     });
 
     it("should return false for testproj database not matching test file", async () => {
-      jest.spyOn(fs, "stat").mockResolvedValue(fileStats);
-      const db = createMockDB(
-        sourceLocationUri(),
-        Uri.file("/path/to/dir/dir.testproj"),
-      );
-      expect(await db.isAffectedByTest("/path/to/test.ql")).toBe(false);
+      const otherTestFile = join(dir.name, "test.ql");
+      await fs.writeFile(otherTestFile, "");
+
+      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      expect(await db.isAffectedByTest(otherTestFile)).toBe(false);
     });
   });
 
