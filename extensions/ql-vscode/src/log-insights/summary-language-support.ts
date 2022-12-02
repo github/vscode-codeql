@@ -59,18 +59,22 @@ export class SummaryLanguageSupport extends DisposableObject {
     super();
 
     this.push(
-      window.onDidChangeActiveTextEditor(this.handleDidChangeActiveTextEditor),
-    );
-    this.push(
-      window.onDidChangeTextEditorSelection(
-        this.handleDidChangeTextEditorSelection,
+      window.onDidChangeActiveTextEditor(
+        this.handleDidChangeActiveTextEditor.bind(this),
       ),
     );
     this.push(
-      workspace.onDidCloseTextDocument(this.handleDidCloseTextDocument),
+      window.onDidChangeTextEditorSelection(
+        this.handleDidChangeTextEditorSelection.bind(this),
+      ),
+    );
+    this.push(
+      workspace.onDidCloseTextDocument(
+        this.handleDidCloseTextDocument.bind(this),
+      ),
     );
 
-    this.push(commandRunner("codeQL.gotoQL", this.handleGotoQL));
+    this.push(commandRunner("codeQL.gotoQL", this.handleGotoQL.bind(this)));
   }
 
   /**
