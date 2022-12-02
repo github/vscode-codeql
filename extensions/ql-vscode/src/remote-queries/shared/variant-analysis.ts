@@ -165,13 +165,15 @@ export async function isVariantAnalysisComplete(
     repo: VariantAnalysisScannedRepository,
   ) => Promise<boolean>,
 ): Promise<boolean> {
-  // It's only acceptable to have no scanned repos if the variant analysis is not in a final state.
-  // Otherwise it means the analysis hit some kind of internal error or there were no repos to scan.
+  if (!isFinalVariantAnalysisStatus(variantAnalysis.status)) {
+    return false;
+  }
+
   if (
     variantAnalysis.scannedRepos === undefined ||
     variantAnalysis.scannedRepos.length === 0
   ) {
-    return variantAnalysis.status !== VariantAnalysisStatus.InProgress;
+    return true;
   }
 
   return (
