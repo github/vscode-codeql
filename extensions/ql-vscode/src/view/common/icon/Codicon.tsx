@@ -17,6 +17,7 @@ export const Codicon = ({ name, label, className, slot }: Props) => (
   <CodiconIcon
     role="img"
     aria-label={label}
+    title={label}
     className={classNames("codicon", `codicon-${name}`, className)}
     slot={slot}
   />
