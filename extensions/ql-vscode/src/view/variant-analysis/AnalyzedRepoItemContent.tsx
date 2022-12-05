@@ -4,13 +4,13 @@ import {
   AnalysisAlert,
   AnalysisRawResults,
 } from "../../remote-queries/shared/analysis-result";
-import AnalysisAlertResult from "../remote-queries/AnalysisAlertResult";
 import RawResultsTable from "../remote-queries/RawResultsTable";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
 } from "../../remote-queries/shared/variant-analysis";
 import { Alert } from "../common";
+import { InterpretedResults } from "./InterpretedResults";
 
 const ContentContainer = styled.div`
   display: flex;
@@ -19,17 +19,6 @@ const ContentContainer = styled.div`
 
 const AlertContainer = styled.div`
   margin-top: 1em;
-`;
-
-const InterpretedResultsContainer = styled.ul`
-  list-style-type: none;
-  margin: 1em 0 0;
-  padding: 0.5em 0 0 0;
-`;
-
-const InterpretedResultItem = styled.li`
-  margin-bottom: 1em;
-  background-color: var(--vscode-notifications-background);
 `;
 
 const RawResultsContainer = styled.div`
@@ -91,13 +80,7 @@ export const AnalyzedRepoItemContent = ({
         </AlertContainer>
       )}
       {interpretedResults && (
-        <InterpretedResultsContainer>
-          {interpretedResults.map((r, i) => (
-            <InterpretedResultItem key={i}>
-              <AnalysisAlertResult alert={r} />
-            </InterpretedResultItem>
-          ))}
-        </InterpretedResultsContainer>
+        <InterpretedResults interpretedResults={interpretedResults} />
       )}
       {rawResults && (
         <RawResultsContainer>
