@@ -32,6 +32,7 @@ export interface LocalDatabaseDbItem {
   dateAdded: number;
   language: string;
   storagePath: string;
+  parentListName?: string;
 }
 
 export interface RootRemoteDbItem {
@@ -76,6 +77,7 @@ export interface RemoteRepoDbItem {
   kind: DbItemKind.RemoteRepo;
   selected: boolean;
   repoFullName: string;
+  parentListName?: string;
 }
 
 export function isRemoteSystemDefinedListDbItem(

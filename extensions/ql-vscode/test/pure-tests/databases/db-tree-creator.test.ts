@@ -100,6 +100,7 @@ describe("db tree creator", () => {
             kind: DbItemKind.RemoteRepo,
             selected: false,
             repoFullName: repo,
+            parentListName: dbConfig.databases.remote.repositoryLists[0].name,
           }),
         ),
       });
@@ -112,6 +113,7 @@ describe("db tree creator", () => {
             kind: DbItemKind.RemoteRepo,
             selected: false,
             repoFullName: repo,
+            parentListName: dbConfig.databases.remote.repositoryLists[1].name,
           }),
         ),
       });
@@ -422,6 +424,7 @@ describe("db tree creator", () => {
           dateAdded: db.dateAdded,
           language: db.language,
           storagePath: db.storagePath,
+          parentListName: dbConfig.databases.local.lists[0].name,
         })),
       });
       expect(localListNodes[1]).toEqual({
@@ -435,6 +438,7 @@ describe("db tree creator", () => {
           dateAdded: db.dateAdded,
           language: db.language,
           storagePath: db.storagePath,
+          parentListName: dbConfig.databases.local.lists[1].name,
         })),
       });
     });
