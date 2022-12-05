@@ -1,7 +1,7 @@
 import { DbItem, DbItemKind } from "../../../src/databases/db-item";
 import { getSelectedDbItem } from "../../../src/databases/db-item-selection";
 describe("db item selection", () => {
-  it("dhoulf return undefined if no item is selected", () => {
+  it("should return undefined if no item is selected", () => {
     const dbItems: DbItem[] = [
       {
         kind: DbItemKind.RootRemote,
