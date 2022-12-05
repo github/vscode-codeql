@@ -1,7 +1,7 @@
 import { DbItem, DbItemKind } from "../../../src/databases/db-item";
 import { getSelectedDbItem } from "../../../src/databases/db-item-selection";
 describe("db item selection", () => {
-  it("return undefined if no item is selected", () => {
+  it("dhoulf return undefined if no item is selected", () => {
     const dbItems: DbItem[] = [
       {
         kind: DbItemKind.RootRemote,
@@ -18,13 +18,6 @@ describe("db item selection", () => {
             listName: "top_100",
             listDisplayName: "Top 100 repositories",
             listDescription: "Top 100 repositories of a language",
-            selected: false,
-          },
-          {
-            kind: DbItemKind.RemoteSystemDefinedList,
-            listName: "top_1000",
-            listDisplayName: "Top 1000 repositories",
-            listDescription: "Top 1000 repositories of a language",
             selected: false,
           },
           {
@@ -92,7 +85,7 @@ describe("db item selection", () => {
     expect(getSelectedDbItem(dbItems)).toBeUndefined();
   });
 
-  it("return correct local database item from DbItem list", () => {
+  it("should return correct local database item from DbItem list", () => {
     const dbItems: DbItem[] = [
       {
         kind: DbItemKind.RootLocal,
@@ -142,7 +135,7 @@ describe("db item selection", () => {
     });
   });
 
-  it("return correct remote database list item from DbItem list", () => {
+  it("should return correct remote database list item from DbItem list", () => {
     const dbItems: DbItem[] = [
       {
         kind: DbItemKind.RootRemote,
@@ -152,20 +145,6 @@ describe("db item selection", () => {
             listName: "top_10",
             listDisplayName: "Top 10 repositories",
             listDescription: "Top 10 repositories of a language",
-            selected: false,
-          },
-          {
-            kind: DbItemKind.RemoteSystemDefinedList,
-            listName: "top_100",
-            listDisplayName: "Top 100 repositories",
-            listDescription: "Top 100 repositories of a language",
-            selected: false,
-          },
-          {
-            kind: DbItemKind.RemoteSystemDefinedList,
-            listName: "top_1000",
-            listDisplayName: "Top 1000 repositories",
-            listDescription: "Top 1000 repositories of a language",
             selected: false,
           },
           {
