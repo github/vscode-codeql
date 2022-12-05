@@ -124,6 +124,7 @@ function createRepoItem(
     kind: DbItemKind.RemoteRepo,
     repoFullName: repo,
     selected: !!selected,
+    parentListName: listName,
   };
 }
 
@@ -159,5 +160,6 @@ function createLocalDb(
     language: db.language,
     storagePath: db.storagePath,
     selected: !!selected,
+    parentListName: listName,
   };
 }
