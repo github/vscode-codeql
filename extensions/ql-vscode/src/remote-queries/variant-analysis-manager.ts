@@ -11,6 +11,9 @@ import {
   EventEmitter,
   ExtensionContext,
   Uri,
+  ViewColumn,
+  window as Window,
+  workspace,
 } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
 import { Credentials } from "../authentication";
@@ -43,6 +46,7 @@ import {
   createTimestampFile,
   showAndLogErrorMessage,
   showAndLogInformationMessage,
+  showAndLogWarningMessage,
 } from "../helpers";
 import { readFile, readJson, remove, pathExists, outputJson } from "fs-extra";
 import { EOL } from "os";
@@ -54,6 +58,7 @@ import {
   filterAndSortRepositoriesWithResults,
   RepositoriesFilterSortStateWithIds,
 } from "../pure/variant-analysis-filter-sort";
+import { URLSearchParams } from "url";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -265,6 +270,57 @@ export class VariantAnalysisManager
     const variantAnalysisView = this.views.get(variantAnalysisId)!;
     await variantAnalysisView.openView();
     return;
+  }
+
+  public async openQueryText(variantAnalysisId: number): Promise<void> {
+    const variantAnalysis = await this.getVariantAnalysis(variantAnalysisId);
+    if (!variantAnalysis) {
+      void showAndLogWarningMessage(
+        "Could not open variant analysis query text. Variant analysis not found.",
+      );
+      return;
+    }
+
+    const filename = variantAnalysis.query.filePath;
+
+    try {
+      const params = new URLSearchParams({
+        variantAnalysisId: variantAnalysis.id.toString(),
+      });
+      const uri = Uri.from({
+        scheme: "codeql-variant-analysis",
+        path: filename,
+        query: params.toString(),
+      });
+      const doc = await workspace.openTextDocument(uri);
+      await Window.showTextDocument(doc, { preview: false });
+    } catch (error) {
+      void showAndLogWarningMessage(
+        "Could not open variant analysis query text. Failed to open text document.",
+      );
+    }
+  }
+
+  public async openQueryFile(variantAnalysisId: number): Promise<void> {
+    const variantAnalysis = await this.getVariantAnalysis(variantAnalysisId);
+
+    if (!variantAnalysis) {
+      void showAndLogWarningMessage(
+        "Could not open variant analysis query file",
+      );
+      return;
+    }
+
+    try {
+      const textDocument = await workspace.openTextDocument(
+        variantAnalysis.query.filePath,
+      );
+      await Window.showTextDocument(textDocument, ViewColumn.One);
+    } catch (error) {
+      void showAndLogWarningMessage(
+        `Could not open file: ${variantAnalysis.query.filePath}`,
+      );
+    }
   }
 
   public registerView(view: VariantAnalysisView): void {

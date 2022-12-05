@@ -8,14 +8,7 @@ import {
 } from "fs-extra";
 import { join } from "path";
 
-import {
-  ExtensionContext,
-  TextDocument,
-  TextEditor,
-  Uri,
-  window,
-  workspace,
-} from "vscode";
+import { commands, ExtensionContext, Uri } from "vscode";
 import { QueryHistoryConfig } from "../../../config";
 import { DatabaseManager } from "../../../databases";
 import { tmpDir, walkDirectory } from "../../../helpers";
@@ -71,10 +64,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     showView: showViewStub,
   } as any as VariantAnalysisManager;
 
-  let showTextDocumentSpy: jest.SpiedFunction<typeof window.showTextDocument>;
-  let openTextDocumentSpy: jest.SpiedFunction<
-    typeof workspace.openTextDocument
-  >;
+  let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
 
   beforeEach(async () => {
     // Since these tests change the state of the query history manager, we need to copy the original
@@ -107,12 +97,9 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     );
     disposables.push(qhm);
 
-    showTextDocumentSpy = jest
-      .spyOn(window, "showTextDocument")
-      .mockResolvedValue(undefined as unknown as TextEditor);
-    openTextDocumentSpy = jest
-      .spyOn(workspace, "openTextDocument")
-      .mockResolvedValue(undefined as unknown as TextDocument);
+    executeCommandSpy = jest
+      .spyOn(commands, "executeCommand")
+      .mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -195,15 +182,9 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     await qhm.readQueryHistory();
     await qhm.handleShowQueryText(qhm.treeDataProvider.allHistory[0], []);
 
-    expect(showTextDocumentSpy).toBeCalledTimes(1);
-    expect(openTextDocumentSpy).toBeCalledTimes(1);
-
-    const uri: Uri = openTextDocumentSpy.mock.calls[0][0] as Uri;
-    expect(uri.scheme).toBe("codeql");
-    const params = new URLSearchParams(uri.query);
-    expect(params.get("isQuickEval")).toBe("false");
-    expect(params.get("queryText")).toBe(
-      rawQueryHistory[0].variantAnalysis.query.text,
+    expect(executeCommandSpy).toHaveBeenCalledWith(
+      "codeQL.openVariantAnalysisQueryText",
+      rawQueryHistory[0].variantAnalysis.id,
     );
   });
 

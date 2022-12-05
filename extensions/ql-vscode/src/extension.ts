@@ -1282,6 +1282,24 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
+    commandRunner(
+      "codeQL.openVariantAnalysisQueryText",
+      async (variantAnalysisId: number) => {
+        await variantAnalysisManager.openQueryText(variantAnalysisId);
+      },
+    ),
+  );
+
+  ctx.subscriptions.push(
+    commandRunner(
+      "codeQL.openVariantAnalysisQueryFile",
+      async (variantAnalysisId: number) => {
+        await variantAnalysisManager.openQueryFile(variantAnalysisId);
+      },
+    ),
+  );
+
+  ctx.subscriptions.push(
     commandRunner("codeQL.openReferencedFile", openReferencedFile),
   );
 

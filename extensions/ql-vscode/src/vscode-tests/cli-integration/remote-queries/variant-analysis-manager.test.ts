@@ -4,8 +4,11 @@ import {
   env,
   extensions,
   QuickPickItem,
+  TextDocument,
+  TextEditor,
   Uri,
   window,
+  workspace,
 } from "vscode";
 import { CodeQLExtensionInterface } from "../../../extension";
 import { extLogger } from "../../../common";
@@ -1119,6 +1122,96 @@ describe("Variant Analysis Manager", () => {
           "new-repo-list": [scannedRepos[4].repository.fullName],
         });
       });
+    });
+  });
+
+  describe("openQueryText", () => {
+    let variantAnalysis: VariantAnalysis;
+    let variantAnalysisStorageLocation: string;
+
+    let showTextDocumentSpy: jest.SpiedFunction<typeof window.showTextDocument>;
+    let openTextDocumentSpy: jest.SpiedFunction<
+      typeof workspace.openTextDocument
+    >;
+
+    beforeEach(async () => {
+      variantAnalysis = createMockVariantAnalysis({});
+
+      variantAnalysisStorageLocation =
+        variantAnalysisManager.getVariantAnalysisStorageLocation(
+          variantAnalysis.id,
+        );
+      await createTimestampFile(variantAnalysisStorageLocation);
+      await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+
+      showTextDocumentSpy = jest
+        .spyOn(window, "showTextDocument")
+        .mockResolvedValue(undefined as unknown as TextEditor);
+      openTextDocumentSpy = jest
+        .spyOn(workspace, "openTextDocument")
+        .mockResolvedValue(undefined as unknown as TextDocument);
+    });
+
+    afterEach(() => {
+      fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+    });
+
+    it("opens the query text", async () => {
+      await variantAnalysisManager.openQueryText(variantAnalysis.id);
+
+      expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
+      expect(openTextDocumentSpy).toHaveBeenCalledTimes(1);
+
+      const uri: Uri = openTextDocumentSpy.mock.calls[0][0] as Uri;
+      expect(uri.scheme).toEqual("codeql-variant-analysis");
+      expect(uri.path).toEqual(variantAnalysis.query.filePath);
+      const params = new URLSearchParams(uri.query);
+      expect(Array.from(params.keys())).toEqual(["variantAnalysisId"]);
+      expect(params.get("variantAnalysisId")).toEqual(
+        variantAnalysis.id.toString(),
+      );
+    });
+  });
+
+  describe("openQueryFile", () => {
+    let variantAnalysis: VariantAnalysis;
+    let variantAnalysisStorageLocation: string;
+
+    let showTextDocumentSpy: jest.SpiedFunction<typeof window.showTextDocument>;
+    let openTextDocumentSpy: jest.SpiedFunction<
+      typeof workspace.openTextDocument
+    >;
+
+    beforeEach(async () => {
+      variantAnalysis = createMockVariantAnalysis({});
+
+      variantAnalysisStorageLocation =
+        variantAnalysisManager.getVariantAnalysisStorageLocation(
+          variantAnalysis.id,
+        );
+      await createTimestampFile(variantAnalysisStorageLocation);
+      await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+
+      showTextDocumentSpy = jest
+        .spyOn(window, "showTextDocument")
+        .mockResolvedValue(undefined as unknown as TextEditor);
+      openTextDocumentSpy = jest
+        .spyOn(workspace, "openTextDocument")
+        .mockResolvedValue(undefined as unknown as TextDocument);
+    });
+
+    afterEach(() => {
+      fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
+    });
+
+    it("opens the query file", async () => {
+      await variantAnalysisManager.openQueryFile(variantAnalysis.id);
+
+      expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
+      expect(openTextDocumentSpy).toHaveBeenCalledTimes(1);
+
+      const filename: string = openTextDocumentSpy.mock.calls[0][0] as string;
+      expect(filename).toEqual(variantAnalysis.query.filePath);
     });
   });
 });
