@@ -551,6 +551,7 @@ export const dbSchemeToLanguage = {
   "semmlecode.csharp.dbscheme": "csharp",
   "go.dbscheme": "go",
   "ruby.dbscheme": "ruby",
+  "swift.dbscheme": "swift",
 };
 
 export const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce(

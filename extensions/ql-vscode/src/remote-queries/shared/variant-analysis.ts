@@ -34,6 +34,7 @@ export enum VariantAnalysisQueryLanguage {
   Javascript = "javascript",
   Python = "python",
   Ruby = "ruby",
+  Swift = "swift",
 }
 
 export function parseVariantAnalysisQueryLanguage(
