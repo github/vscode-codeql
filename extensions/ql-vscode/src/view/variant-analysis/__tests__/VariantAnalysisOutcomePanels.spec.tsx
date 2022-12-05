@@ -2,6 +2,7 @@ import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import {
   VariantAnalysis,
+  VariantAnalysisFailureReason,
   VariantAnalysisRepoStatus,
   VariantAnalysisStatus,
 } from "../../../remote-queries/shared/variant-analysis";
@@ -142,6 +143,36 @@ describe(VariantAnalysisOutcomePanels.name, () => {
     expect(screen.getByText("Analyzed")).toBeInTheDocument();
     expect(screen.getByText("No access")).toBeInTheDocument();
     expect(screen.getByText("No database")).toBeInTheDocument();
+  });
+
+  it("does not render analyzed panel when there are no scanned repos", () => {
+    render({
+      scannedRepos: [],
+      skippedRepos: {
+        notFoundRepos: defaultVariantAnalysis.skippedRepos.notFoundRepos,
+        noCodeqlDbRepos: defaultVariantAnalysis.skippedRepos.noCodeqlDbRepos,
+      },
+    });
+
+    expect(screen.queryByRole("Analyzed")).not.toBeInTheDocument();
+    expect(screen.getByText("No access")).toBeInTheDocument();
+    expect(screen.getByText("No database")).toBeInTheDocument();
+  });
+
+  it("does not render any tabs when there are no repos", () => {
+    render({
+      status: VariantAnalysisStatus.Failed,
+      failureReason: VariantAnalysisFailureReason.InternalError,
+      scannedRepos: [],
+      skippedRepos: {},
+    });
+
+    expect(screen.queryByRole("Analyzed")).not.toBeInTheDocument();
+    expect(screen.queryByRole("No access")).not.toBeInTheDocument();
+    expect(screen.queryByRole("No database")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Error: Something unexpected happened"),
+    ).toBeInTheDocument();
   });
 
   it("renders warning with canceled variant analysis", () => {
