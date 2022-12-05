@@ -110,6 +110,14 @@ export const VariantAnalysisOutcomePanels = ({
     </WarningsContainer>
   );
 
+  const noPanels =
+    scannedReposCount === 0 &&
+    !noCodeqlDbRepos?.repositoryCount &&
+    !notFoundRepos?.repositoryCount;
+  if (noPanels) {
+    return warnings;
+  }
+
   if (!noCodeqlDbRepos?.repositoryCount && !notFoundRepos?.repositoryCount) {
     return (
       <>
@@ -138,12 +146,14 @@ export const VariantAnalysisOutcomePanels = ({
         onChange={setFilterSortState}
       />
       <VSCodePanels>
-        <Tab>
-          Analyzed
-          <VSCodeBadge appearance="secondary">
-            {formatDecimal(variantAnalysis.scannedRepos?.length ?? 0)}
-          </VSCodeBadge>
-        </Tab>
+        {scannedReposCount > 0 && (
+          <Tab>
+            Analyzed
+            <VSCodeBadge appearance="secondary">
+              {formatDecimal(variantAnalysis.scannedRepos?.length ?? 0)}
+            </VSCodeBadge>
+          </Tab>
+        )}
         {notFoundRepos?.repositoryCount && (
           <Tab>
             No access
@@ -160,16 +170,18 @@ export const VariantAnalysisOutcomePanels = ({
             </VSCodeBadge>
           </Tab>
         )}
-        <VSCodePanelView>
-          <VariantAnalysisAnalyzedRepos
-            variantAnalysis={variantAnalysis}
-            repositoryStates={repositoryStates}
-            repositoryResults={repositoryResults}
-            filterSortState={filterSortState}
-            selectedRepositoryIds={selectedRepositoryIds}
-            setSelectedRepositoryIds={setSelectedRepositoryIds}
-          />
-        </VSCodePanelView>
+        {scannedReposCount > 0 && (
+          <VSCodePanelView>
+            <VariantAnalysisAnalyzedRepos
+              variantAnalysis={variantAnalysis}
+              repositoryStates={repositoryStates}
+              repositoryResults={repositoryResults}
+              filterSortState={filterSortState}
+              selectedRepositoryIds={selectedRepositoryIds}
+              setSelectedRepositoryIds={setSelectedRepositoryIds}
+            />
+          </VSCodePanelView>
+        )}
         {notFoundRepos?.repositoryCount && (
           <VSCodePanelView>
             <VariantAnalysisSkippedRepositoriesTab

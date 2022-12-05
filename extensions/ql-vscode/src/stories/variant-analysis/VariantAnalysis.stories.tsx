@@ -385,3 +385,19 @@ Failed.args = {
   repoStates,
   repoResults,
 };
+
+export const FailedInternal = Template.bind({});
+FailedInternal.args = {
+  variantAnalysis: {
+    ...variantAnalysis,
+    status: VariantAnalysisStatus.Failed,
+    failureReason: VariantAnalysisFailureReason.InternalError,
+    completedAt: new Date(
+      new Date(variantAnalysis.createdAt).getTime() + 100_000,
+    ).toISOString(),
+    scannedRepos: [],
+    skippedRepos: {},
+  },
+  repoStates,
+  repoResults,
+};
