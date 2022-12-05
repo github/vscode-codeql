@@ -6,6 +6,7 @@ import {
   isCompletedAnalysisRepoStatus,
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
+  VariantAnalysisScannedRepositoryState,
 } from "../../remote-queries/shared/variant-analysis";
 import { formatDecimal } from "../../pure/number";
 import {
@@ -90,7 +91,7 @@ export type RepoRowProps = {
   repository: Partial<RepositoryWithMetadata> &
     Pick<RepositoryWithMetadata, "fullName">;
   status?: VariantAnalysisRepoStatus;
-  downloadStatus?: VariantAnalysisScannedRepositoryDownloadStatus;
+  downloadState?: VariantAnalysisScannedRepositoryState;
   resultCount?: number;
 
   interpretedResults?: AnalysisAlert[];
@@ -160,7 +161,7 @@ const isExpandableContentLoaded = (
 export const RepoRow = ({
   repository,
   status,
-  downloadStatus,
+  downloadState,
   resultCount,
   interpretedResults,
   rawResults,
@@ -179,7 +180,7 @@ export const RepoRow = ({
     if (
       resultsLoaded ||
       status !== VariantAnalysisRepoStatus.Succeeded ||
-      downloadStatus !==
+      downloadState?.downloadStatus !==
         VariantAnalysisScannedRepositoryDownloadStatus.Succeeded
     ) {
       setExpanded((oldIsExpanded) => !oldIsExpanded);
@@ -197,7 +198,7 @@ export const RepoRow = ({
     resultsLoaded,
     repository.fullName,
     status,
-    downloadStatus,
+    downloadState,
   ]);
 
   useEffect(() => {
@@ -227,10 +228,11 @@ export const RepoRow = ({
     [onSelectedChange, repository],
   );
 
-  const disabled = !canExpand(status, downloadStatus) || resultsLoading;
+  const disabled =
+    !canExpand(status, downloadState?.downloadStatus) || resultsLoading;
   const expandableContentLoaded = isExpandableContentLoaded(
     status,
-    downloadStatus,
+    downloadState?.downloadStatus,
     resultsLoaded,
   );
 
@@ -245,7 +247,9 @@ export const RepoRow = ({
           onChange={onChangeCheckbox}
           onClick={onClickCheckbox}
           checked={selected}
-          disabled={!repository.id || !canSelect(status, downloadStatus)}
+          disabled={
+            !repository.id || !canSelect(status, downloadState?.downloadStatus)
+          }
         />
         {isExpanded && (
           <ExpandCollapseCodicon name="chevron-down" label="Collapse" />
@@ -271,11 +275,17 @@ export const RepoRow = ({
           )}
           {!status && <WarningIcon />}
         </span>
-        {downloadStatus ===
+        {downloadState?.downloadStatus ===
           VariantAnalysisScannedRepositoryDownloadStatus.InProgress && (
-          <LoadingIcon label="Downloading" />
+          <LoadingIcon
+            label={
+              downloadState.downloadPercentage !== undefined
+                ? `Downloading: ${downloadState.downloadPercentage}%`
+                : "Downloading"
+            }
+          />
         )}
-        {downloadStatus ===
+        {downloadState?.downloadStatus ===
           VariantAnalysisScannedRepositoryDownloadStatus.Failed && (
           <WarningIcon label="Failed to download the results" />
         )}
@@ -289,7 +299,7 @@ export const RepoRow = ({
       {isExpanded && expandableContentLoaded && (
         <AnalyzedRepoItemContent
           status={status}
-          downloadStatus={downloadStatus}
+          downloadStatus={downloadState?.downloadStatus}
           interpretedResults={interpretedResults}
           rawResults={rawResults}
         />
