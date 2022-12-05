@@ -37,7 +37,7 @@ export async function getRepositorySelection(
   dbManager?: DbManager,
 ): Promise<RepositorySelection> {
   if (isNewQueryRunExperienceEnabled()) {
-    const selectedDbItem = await dbManager?.selectedDbItem();
+    const selectedDbItem = await dbManager?.getSelectedDbItem();
     if (selectedDbItem) {
       switch (selectedDbItem.kind) {
         case DbItemKind.LocalDatabase || DbItemKind.LocalList:
