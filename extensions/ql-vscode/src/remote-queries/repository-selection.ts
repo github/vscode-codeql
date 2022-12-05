@@ -49,15 +49,21 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     options,
   );
 
-  if (quickpick?.repositories?.length) {
+  if (!quickpick) {
+    // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
+    // We set 'true' to make this a silent exception.
+    throw new UserCancellationException("No repositories selected", true);
+  }
+
+  if (quickpick.repositories?.length) {
     void extLogger.log(
       `Selected repositories: ${quickpick.repositories.join(", ")}`,
     );
     return { repositories: quickpick.repositories };
-  } else if (quickpick?.repositoryList) {
+  } else if (quickpick.repositoryList) {
     void extLogger.log(`Selected repository list: ${quickpick.repositoryList}`);
     return { repositoryLists: [quickpick.repositoryList] };
-  } else if (quickpick?.useCustomRepo) {
+  } else if (quickpick.useCustomRepo) {
     const customRepo = await getCustomRepo();
     if (customRepo === undefined) {
       // The user cancelled, do nothing.
@@ -70,7 +76,7 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     }
     void extLogger.log(`Entered repository: ${customRepo}`);
     return { repositories: [customRepo] };
-  } else if (quickpick?.useAllReposOfOwner) {
+  } else if (quickpick.useAllReposOfOwner) {
     const owner = await getOwner();
     if (owner === undefined) {
       // The user cancelled, do nothing.
@@ -82,9 +88,9 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     void extLogger.log(`Entered owner: ${owner}`);
     return { owners: [owner] };
   } else {
-    // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
-    // We set 'true' to make this a silent exception.
-    throw new UserCancellationException("No repositories selected", true);
+    // This means the user has selected something, but there is nothing actually linked to this item. We want to show
+    // this to the user.
+    throw new UserCancellationException("No repositories selected", false);
   }
 }
 

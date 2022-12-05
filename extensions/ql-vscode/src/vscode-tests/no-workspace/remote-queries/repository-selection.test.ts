@@ -65,6 +65,28 @@ describe("repository selection", () => {
       expect(repoSelection.owners).toBeUndefined();
       expect(repoSelection.repositories).toEqual(["foo/bar", "foo/baz"]);
     });
+
+    it("should return an error for an empty repository list", async () => {
+      // Fake return values
+      quickPickSpy.mockResolvedValue({
+        repositories: [],
+      } as unknown as QuickPickItem);
+      getRemoteRepositoryListsSpy.mockReturnValue({
+        list1: ["foo/bar", "foo/baz"],
+        list2: [],
+      });
+
+      await expect(getRepositorySelection()).rejects.toThrow(
+        "No repositories selected",
+      );
+      await expect(getRepositorySelection()).rejects.toThrow(
+        UserCancellationException,
+      );
+      await expect(getRepositorySelection()).rejects.toHaveProperty(
+        "silent",
+        false,
+      );
+    });
   });
 
   describe("system level repo lists", () => {
@@ -149,6 +171,10 @@ describe("repository selection", () => {
       await expect(getRepositorySelection()).rejects.toThrow(
         UserCancellationException,
       );
+      await expect(getRepositorySelection()).rejects.toHaveProperty(
+        "silent",
+        true,
+      );
     });
   });
 
@@ -218,6 +244,10 @@ describe("repository selection", () => {
       );
       await expect(getRepositorySelection()).rejects.toThrow(
         UserCancellationException,
+      );
+      await expect(getRepositorySelection()).rejects.toHaveProperty(
+        "silent",
+        true,
       );
     });
   });
@@ -312,5 +342,21 @@ describe("repository selection", () => {
       expect(repoSelection.owners).toBeUndefined();
       expect(repoSelection.repositories).toEqual(["owner3/repo3"]);
     });
+  });
+
+  it("should allow the user to cancel", async () => {
+    // Fake return values
+    quickPickSpy.mockResolvedValue(undefined);
+
+    await expect(getRepositorySelection()).rejects.toThrow(
+      "No repositories selected",
+    );
+    await expect(getRepositorySelection()).rejects.toThrow(
+      UserCancellationException,
+    );
+    await expect(getRepositorySelection()).rejects.toHaveProperty(
+      "silent",
+      true,
+    );
   });
 });
