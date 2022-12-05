@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- Required version of VS Code increased to 1.67.0. 
+- Increase the required version of VS Code to 1.67.0. [#1662](https://github.com/github/vscode-codeql/pull/1662)
 
 ## 1.7.6 - 21 November 2022
 
