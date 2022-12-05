@@ -19,7 +19,7 @@ export class DbManager {
     });
   }
 
-  public selectedDbItem(): DbItem | undefined {
+  public getSelectedDbItem(): DbItem | undefined {
     const dbItems = this.getDbItems();
 
     if (dbItems.isFailure) {
