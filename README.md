@@ -22,11 +22,10 @@ This project will track new feature development in CodeQL and, whenever appropri
 
 ## Dependencies
 
-vscode-codeql installs the following two extensions: 
+This extension depends on the following two extensions for required functionality. They will be installed automatically when you install VS Code CodeQL.
+
 - [Test Adapter Converter](https://marketplace.visualstudio.com/items?itemName=ms-vscode.test-adapter-converter)
 - [Test Explorer UI](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-test-explorer)
-
-They are dependencies and are required for proper functionality.
 
 ## Contributing
 
