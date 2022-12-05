@@ -191,4 +191,88 @@ describe("db item selection", () => {
       selected: true,
     });
   });
+
+  it("should handle arbitrary list of db items", () => {
+    const dbItems: DbItem[] = [
+      {
+        kind: DbItemKind.RootRemote,
+        children: [
+          {
+            kind: DbItemKind.RemoteSystemDefinedList,
+            listName: "top_10",
+            listDisplayName: "Top 10 repositories",
+            listDescription: "Top 10 repositories of a language",
+            selected: false,
+          },
+          {
+            kind: DbItemKind.RemoteOwner,
+            ownerName: "github",
+            selected: false,
+          },
+          {
+            kind: DbItemKind.RemoteUserDefinedList,
+            listName: "my list",
+            repos: [
+              {
+                kind: DbItemKind.RemoteRepo,
+                repoFullName: "owner1/repo2",
+                selected: false,
+              },
+              {
+                kind: DbItemKind.RemoteRepo,
+                repoFullName: "owner1/repo3",
+                selected: false,
+              },
+            ],
+            selected: false,
+          },
+        ],
+      },
+      {
+        kind: DbItemKind.RemoteSystemDefinedList,
+        listName: "top_10",
+        listDisplayName: "Top 10 repositories",
+        listDescription: "Top 10 repositories of a language",
+        selected: true,
+      },
+    ];
+
+    expect(getSelectedDbItem(dbItems)).toEqual({
+      kind: DbItemKind.RemoteSystemDefinedList,
+      listName: "top_10",
+      listDisplayName: "Top 10 repositories",
+      listDescription: "Top 10 repositories of a language",
+      selected: true,
+    });
+  });
+
+  it("should handle empty db item lists", () => {
+    const dbItems: DbItem[] = [
+      {
+        kind: DbItemKind.RootRemote,
+        children: [
+          {
+            kind: DbItemKind.RemoteSystemDefinedList,
+            listName: "top_10",
+            listDisplayName: "Top 10 repositories",
+            listDescription: "Top 10 repositories of a language",
+            selected: false,
+          },
+          {
+            kind: DbItemKind.RemoteOwner,
+            ownerName: "github",
+            selected: false,
+          },
+          {
+            kind: DbItemKind.RemoteUserDefinedList,
+            listName: "my list",
+            repos: [],
+            selected: false,
+          },
+        ],
+      },
+    ];
+
+    expect(getSelectedDbItem(dbItems)).toBeUndefined();
+  });
 });
