@@ -20,6 +20,13 @@ To see what has changed in the last few versions of the extension, see the [Chan
 
 This project will track new feature development in CodeQL and, whenever appropriate, bring that functionality to the Visual Studio Code experience.
 
+## Dependencies
+
+This extension depends on the following two extensions for required functionality. They will be installed automatically when you install VS Code CodeQL.
+
+- [Test Adapter Converter](https://marketplace.visualstudio.com/items?itemName=ms-vscode.test-adapter-converter)
+- [Test Explorer UI](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-test-explorer)
+
 ## Contributing
 
 This project welcomes contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to build, install, and contribute.
