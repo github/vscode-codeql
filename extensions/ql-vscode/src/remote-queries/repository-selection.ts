@@ -4,9 +4,12 @@ import { extLogger } from "../common";
 import {
   getRemoteRepositoryLists,
   getRemoteRepositoryListsPath,
+  isNewQueryRunExperienceEnabled,
 } from "../config";
 import { OWNER_REGEX, REPO_REGEX } from "../pure/helpers-pure";
 import { UserCancellationException } from "../commandRunner";
+import { DbManager } from "../databases/db-manager";
+import { DbItemKind } from "../databases/db-item";
 
 export interface RepositorySelection {
   repositories?: string[];
@@ -30,7 +33,33 @@ interface RepoList {
  * Gets the repositories or repository lists to run the query against.
  * @returns The user selection.
  */
-export async function getRepositorySelection(): Promise<RepositorySelection> {
+export async function getRepositorySelection(
+  dbManager?: DbManager,
+): Promise<RepositorySelection> {
+  if (isNewQueryRunExperienceEnabled()) {
+    const selectedDbItem = await dbManager?.selectedDbItem();
+    if (selectedDbItem) {
+      switch (selectedDbItem.kind) {
+        case DbItemKind.LocalDatabase || DbItemKind.LocalList:
+          throw new Error("Local databases and lists are not supported");
+        case DbItemKind.RemoteSystemDefinedList:
+          return { repositoryLists: [selectedDbItem.listName] };
+        case DbItemKind.RemoteUserDefinedList:
+          return {
+            repositories: selectedDbItem.repos.map((repo) => repo.repoFullName),
+          };
+        case DbItemKind.RemoteOwner:
+          return { owners: [selectedDbItem.ownerName] };
+        case DbItemKind.RemoteRepo:
+          return { repositories: [selectedDbItem.repoFullName] };
+      }
+    } else {
+      throw new Error(
+        "Please select a remote database item to run the query against.",
+      );
+    }
+  }
+
   const quickPickItems = [
     createCustomRepoQuickPickItem(),
     createAllReposOfOwnerQuickPickItem(),
