@@ -127,6 +127,7 @@ export enum VariantAnalysisScannedRepositoryDownloadStatus {
 export interface VariantAnalysisScannedRepositoryState {
   repositoryId: number;
   downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus;
+  downloadPercentage?: number;
 }
 
 export interface VariantAnalysisScannedRepositoryResult {
