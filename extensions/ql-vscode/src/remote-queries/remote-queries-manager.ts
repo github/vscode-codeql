@@ -125,11 +125,7 @@ export class RemoteQueriesManager extends DisposableObject {
     } else if (status === QueryStatus.InProgress) {
       // In this case, last time we checked, the query was still in progress.
       // We need to setup the monitor to check for completion.
-      await commands.executeCommand(
-        "codeQL.monitorRemoteQuery",
-        queryId,
-        query,
-      );
+      void commands.executeCommand("codeQL.monitorRemoteQuery", queryId, query);
     }
   }
 
