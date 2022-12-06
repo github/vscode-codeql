@@ -40,6 +40,7 @@ export class DbPanel extends DisposableObject {
     const document = await workspace.openTextDocument(configPath);
     await window.showTextDocument(document);
   }
+
   private async setSelectedItem(treeViewItem: DbTreeViewItem): Promise<void> {
     if (treeViewItem.dbItem === undefined) {
       throw new Error(
