@@ -3,6 +3,7 @@ import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbItem } from "./db-item";
+import { getSelectedDbItem } from "./db-item-selection";
 import { createLocalTree, createRemoteTree } from "./db-tree-creator";
 
 export class DbManager {
@@ -16,6 +17,16 @@ export class DbManager {
     this.dbConfigStore.onDidChangeConfig(() => {
       this.onDbItemsChangesEventEmitter.fire();
     });
+  }
+
+  public getSelectedDbItem(): DbItem | undefined {
+    const dbItems = this.getDbItems();
+
+    if (dbItems.isFailure) {
+      return undefined;
+    }
+
+    return getSelectedDbItem(dbItems.value);
   }
 
   public getDbItems(): ValueResult<DbItem[]> {
