@@ -1,10 +1,12 @@
 import { DbItem, DbItemKind } from "../../../src/databases/db-item";
 import { getSelectedDbItem } from "../../../src/databases/db-item-selection";
+
 describe("db item selection", () => {
   it("should return undefined if no item is selected", () => {
     const dbItems: DbItem[] = [
       {
         kind: DbItemKind.RootRemote,
+        expanded: false,
         children: [
           {
             kind: DbItemKind.RemoteSystemDefinedList,
@@ -27,6 +29,7 @@ describe("db item selection", () => {
           },
           {
             kind: DbItemKind.RemoteUserDefinedList,
+            expanded: false,
             listName: "my list",
             repos: [
               {
@@ -46,9 +49,11 @@ describe("db item selection", () => {
       },
       {
         kind: DbItemKind.RootLocal,
+        expanded: false,
         children: [
           {
             kind: DbItemKind.LocalList,
+            expanded: false,
             listName: "list-1",
             databases: [
               {
@@ -89,9 +94,11 @@ describe("db item selection", () => {
     const dbItems: DbItem[] = [
       {
         kind: DbItemKind.RootLocal,
+        expanded: false,
         children: [
           {
             kind: DbItemKind.LocalList,
+            expanded: false,
             listName: "list-1",
             databases: [
               {
@@ -139,6 +146,7 @@ describe("db item selection", () => {
     const dbItems: DbItem[] = [
       {
         kind: DbItemKind.RootRemote,
+        expanded: false,
         children: [
           {
             kind: DbItemKind.RemoteSystemDefinedList,
@@ -154,6 +162,7 @@ describe("db item selection", () => {
           },
           {
             kind: DbItemKind.RemoteUserDefinedList,
+            expanded: false,
             listName: "my list",
             repos: [
               {
@@ -175,6 +184,7 @@ describe("db item selection", () => {
 
     expect(getSelectedDbItem(dbItems)).toEqual({
       kind: DbItemKind.RemoteUserDefinedList,
+      expanded: false,
       listName: "my list",
       repos: [
         {
@@ -196,6 +206,7 @@ describe("db item selection", () => {
     const dbItems: DbItem[] = [
       {
         kind: DbItemKind.RootRemote,
+        expanded: false,
         children: [
           {
             kind: DbItemKind.RemoteSystemDefinedList,
@@ -211,6 +222,7 @@ describe("db item selection", () => {
           },
           {
             kind: DbItemKind.RemoteUserDefinedList,
+            expanded: false,
             listName: "my list",
             repos: [
               {
@@ -250,6 +262,7 @@ describe("db item selection", () => {
     const dbItems: DbItem[] = [
       {
         kind: DbItemKind.RootRemote,
+        expanded: false,
         children: [
           {
             kind: DbItemKind.RemoteSystemDefinedList,
@@ -265,6 +278,7 @@ describe("db item selection", () => {
           },
           {
             kind: DbItemKind.RemoteUserDefinedList,
+            expanded: false,
             listName: "my list",
             repos: [],
             selected: false,

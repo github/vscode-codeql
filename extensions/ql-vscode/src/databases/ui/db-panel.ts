@@ -1,4 +1,4 @@
-import { window, workspace } from "vscode";
+import { TreeViewExpansionEvent, window, workspace } from "vscode";
 import { commandRunner } from "../../commandRunner";
 import { DisposableObject } from "../../pure/disposable-object";
 import { DbManager } from "../db-manager";
@@ -17,6 +17,9 @@ export class DbPanel extends DisposableObject {
       treeDataProvider: this.dataProvider,
       canSelectMany: false,
     });
+
+    treeView.onDidCollapseElement.bind(this.onDidCollapseElement);
+    treeView.onDidExpandElement.bind(this.onDidExpandElement);
 
     this.push(treeView);
   }
@@ -48,5 +51,27 @@ export class DbPanel extends DisposableObject {
       );
     }
     await this.dbManager.setSelectedDbItem(treeViewItem.dbItem);
+  }
+
+  private async onDidCollapseElement(
+    event: TreeViewExpansionEvent<DbTreeViewItem>,
+  ): Promise<void> {
+    const dbItem = event.element.dbItem;
+    if (!dbItem) {
+      throw Error("Expected a database item.");
+    }
+
+    await this.dbManager.updateDbItemExpandedState(event.element.dbItem, false);
+  }
+
+  private async onDidExpandElement(
+    event: TreeViewExpansionEvent<DbTreeViewItem>,
+  ): Promise<void> {
+    const dbItem = event.element.dbItem;
+    if (!dbItem) {
+      throw Error("Expected a database item.");
+    }
+
+    await this.dbManager.updateDbItemExpandedState(event.element.dbItem, true);
   }
 }
