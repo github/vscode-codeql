@@ -58,16 +58,19 @@ export function mapDbItemToSelectedDbItem(
         kind: SelectedDbItemKind.LocalUserDefinedList,
         listName: dbItem.listName,
       };
+
     case DbItemKind.RemoteUserDefinedList:
       return {
         kind: SelectedDbItemKind.RemoteUserDefinedList,
         listName: dbItem.listName,
       };
+
     case DbItemKind.RemoteSystemDefinedList:
       return {
         kind: SelectedDbItemKind.RemoteSystemDefinedList,
         listName: dbItem.listName,
       };
+
     case DbItemKind.RemoteOwner:
       return {
         kind: SelectedDbItemKind.RemoteOwner,
