@@ -59,7 +59,7 @@ export class DbConfigStore extends DisposableObject {
   public async setSelectedDbItem(dbItem: SelectedDbItem): Promise<void> {
     if (!this.config) {
       // If the app is trying to set the selected item without a config
-      // being set it means that there is a bug in our code. sp we thow
+      // being set it means that there is a bug in our code, so we throw
       // an error instead of just returning an error result.
       throw Error("Cannot select database item if config is not loaded");
     }
