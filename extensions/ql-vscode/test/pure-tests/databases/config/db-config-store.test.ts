@@ -1,6 +1,12 @@
-import { ensureDir, remove, pathExists } from "fs-extra";
+import { ensureDir, remove, pathExists, writeJSON } from "fs-extra";
 import { join } from "path";
+import {
+  DbConfig,
+  SelectedDbItemKind,
+  SelectedRemoteUserDefinedList,
+} from "../../../../src/databases/config/db-config";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
+import { sleep } from "../../../../src/pure/time";
 import { createMockApp } from "../../../__mocks__/appMock";
 
 describe("db config store", () => {
@@ -125,6 +131,63 @@ describe("db config store", () => {
 
     const reRetrievedConfig = configStore.getConfig().value;
     expect(reRetrievedConfig.databases.remote.repositoryLists).toHaveLength(1);
+
+    configStore.dispose();
+  });
+
+  it("should allow updating the selected item", async () => {
+    const app = createMockApp({
+      extensionPath,
+      workspaceStoragePath: tempWorkspaceStoragePath,
+    });
+    const configStore = new DbConfigStore(app);
+    await configStore.initialize();
+
+    const initialConfig: DbConfig = {
+      databases: {
+        remote: {
+          repositoryLists: [
+            {
+              name: "repoList1",
+              repositories: ["owner1/repo1", "owner1/repo2"],
+            },
+            {
+              name: "repoList2",
+              repositories: ["owner2/repo1", "owner2/repo2"],
+            },
+          ],
+
+          owners: [],
+          repositories: [],
+        },
+        local: {
+          lists: [],
+          databases: [],
+        },
+      },
+    };
+
+    await writeJSON(configStore.getConfigPath(), initialConfig, {
+      spaces: 2,
+    });
+
+    let config = configStore.getConfig().value;
+    expect(config.selected).toBeUndefined();
+
+    const selectedDbItem: SelectedRemoteUserDefinedList = {
+      kind: SelectedDbItemKind.RemoteUserDefinedList,
+      listName: "repoList2",
+    };
+
+    // Give the config file watcher enough time to read the file
+    await configStore.setSelectedDbItem(selectedDbItem);
+    await sleep(2000);
+    config = configStore.getConfig().value;
+
+    expect(config.selected).toEqual({
+      kind: "remoteUserDefinedList",
+      listName: "repoList2",
+    });
 
     configStore.dispose();
   });

@@ -3,7 +3,10 @@ import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbItem } from "./db-item";
-import { getSelectedDbItem } from "./db-item-selection";
+import {
+  getSelectedDbItem,
+  mapDbItemToSelectedDbItem,
+} from "./db-item-selection";
 import { createLocalTree, createRemoteTree } from "./db-tree-creator";
 
 export class DbManager {
@@ -43,5 +46,12 @@ export class DbManager {
 
   public getConfigPath(): string {
     return this.dbConfigStore.getConfigPath();
+  }
+
+  public async setSelectedDbItem(dbItem: DbItem): Promise<void> {
+    const selectedDbItem = mapDbItemToSelectedDbItem(dbItem);
+    if (selectedDbItem) {
+      await this.dbConfigStore.setSelectedDbItem(selectedDbItem);
+    }
   }
 }
