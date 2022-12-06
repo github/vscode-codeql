@@ -41,7 +41,7 @@ export async function getRepositorySelection(
     if (selectedDbItem) {
       switch (selectedDbItem.kind) {
         case DbItemKind.LocalDatabase || DbItemKind.LocalList:
-          throw new Error("Local databases and lists are not supported");
+          throw new Error("Local databases and lists are not supported yet.");
         case DbItemKind.RemoteSystemDefinedList:
           return { repositoryLists: [selectedDbItem.listName] };
         case DbItemKind.RemoteUserDefinedList:

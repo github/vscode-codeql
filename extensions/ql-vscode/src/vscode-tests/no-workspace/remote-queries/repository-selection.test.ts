@@ -4,8 +4,116 @@ import { UserCancellationException } from "../../../commandRunner";
 
 import * as config from "../../../config";
 import { getRepositorySelection } from "../../../remote-queries/repository-selection";
+import { DbManager } from "../../../databases/db-manager";
+import { DbItemKind } from "../../../databases/db-item";
 
 describe("repository selection", () => {
+  describe("newQueryRunExperience true", () => {
+    beforeEach(() => {
+      jest
+        .spyOn(config, "isNewQueryRunExperienceEnabled")
+        .mockReturnValue(true);
+    });
+
+    it("should throw error when no database item is selected", async () => {
+      const dbManager = {
+        getSelectedDbItem: jest.fn(() => undefined),
+      } as any as DbManager;
+
+      await expect(getRepositorySelection(dbManager)).rejects.toThrow(
+        Error("Please select a remote database item to run the query against."),
+      );
+    });
+
+    it("should throw error when local database item is selected", async () => {
+      const dbManager = {
+        getSelectedDbItem: jest.fn(() => {
+          return {
+            kind: DbItemKind.LocalDatabase,
+          };
+        }),
+      } as any as DbManager;
+
+      await expect(getRepositorySelection(dbManager)).rejects.toThrow(
+        Error("Local databases and lists are not supported yet."),
+      );
+    });
+
+    it("should return correct selection when remote system defined list is selected", async () => {
+      const dbManager = {
+        getSelectedDbItem: jest.fn(() => {
+          return {
+            kind: DbItemKind.RemoteSystemDefinedList,
+            listName: "top_10",
+          };
+        }),
+      } as any as DbManager;
+
+      const repoSelection = await getRepositorySelection(dbManager);
+
+      expect(repoSelection.repositoryLists).toEqual(["top_10"]);
+      expect(repoSelection.owners).toBeUndefined();
+      expect(repoSelection.repositories).toBeUndefined();
+    });
+
+    it("should return correct selection when remote user defined list is selected", async () => {
+      const dbManager = {
+        getSelectedDbItem: jest.fn(() => {
+          return {
+            kind: DbItemKind.RemoteUserDefinedList,
+            repos: [
+              { repoFullName: "owner1/repo1" },
+              { repoFullName: "owner1/repo2" },
+            ],
+          };
+        }),
+      } as any as DbManager;
+
+      const repoSelection = await getRepositorySelection(dbManager);
+
+      expect(repoSelection.repositoryLists).toBeUndefined();
+      expect(repoSelection.owners).toBeUndefined();
+      expect(repoSelection.repositories).toEqual([
+        "owner1/repo1",
+        "owner1/repo2",
+      ]);
+    });
+
+    it("should return correct selection when remote owner is selected", async () => {
+      const dbManager = {
+        getSelectedDbItem: jest.fn(() => {
+          return {
+            kind: DbItemKind.RemoteOwner,
+            ownerName: "owner2",
+          };
+        }),
+      } as any as DbManager;
+
+      const repoSelection = await getRepositorySelection(dbManager);
+
+      expect(repoSelection.repositoryLists).toBeUndefined();
+      expect(repoSelection.owners).toEqual(["owner2"]);
+      expect(repoSelection.repositories).toBeUndefined();
+    });
+
+    it("should return correct selection when remote repo is selected", async () => {
+      const dbManager = {
+        getSelectedDbItem: jest.fn(() => {
+          return {
+            kind: DbItemKind.RemoteRepo,
+            repoFullName: "owner1/repo2",
+          };
+        }),
+      } as any as DbManager;
+
+      const repoSelection = await getRepositorySelection(dbManager);
+
+      expect(repoSelection.repositoryLists).toBeUndefined();
+      expect(repoSelection.owners).toBeUndefined();
+      expect(repoSelection.repositories).toEqual(["owner1/repo2"]);
+    });
+  });
+
   describe("newQueryRunExperience false", () => {
     let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
     let showInputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
