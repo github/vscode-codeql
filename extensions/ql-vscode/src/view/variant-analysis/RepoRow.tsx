@@ -227,7 +227,7 @@ export const RepoRow = ({
     [onSelectedChange, repository],
   );
 
-  const disabled = !canExpand(status, downloadStatus);
+  const disabled = !canExpand(status, downloadStatus) || resultsLoading;
   const expandableContentLoaded = isExpandableContentLoaded(
     status,
     downloadStatus,
@@ -247,11 +247,13 @@ export const RepoRow = ({
           checked={selected}
           disabled={!repository.id || !canSelect(status, downloadStatus)}
         />
-        {isExpanded ? (
+        {isExpanded && (
           <ExpandCollapseCodicon name="chevron-down" label="Collapse" />
-        ) : (
+        )}
+        {!isExpanded && !resultsLoading && (
           <ExpandCollapseCodicon name="chevron-right" label="Expand" />
         )}
+        {resultsLoading && <LoadingIcon label="Results are loading" />}
         <VSCodeBadge>
           {resultCount === undefined ? "-" : formatDecimal(resultCount)}
         </VSCodeBadge>

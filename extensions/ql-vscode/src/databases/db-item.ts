@@ -13,6 +13,7 @@ export enum DbItemKind {
 
 export interface RootLocalDbItem {
   kind: DbItemKind.RootLocal;
+  expanded: boolean;
   children: LocalDbItem[];
 }
 
@@ -20,6 +21,7 @@ export type LocalDbItem = LocalListDbItem | LocalDatabaseDbItem;
 
 export interface LocalListDbItem {
   kind: DbItemKind.LocalList;
+  expanded: boolean;
   selected: boolean;
   listName: string;
   databases: LocalDatabaseDbItem[];
@@ -37,6 +39,7 @@ export interface LocalDatabaseDbItem {
 
 export interface RootRemoteDbItem {
   kind: DbItemKind.RootRemote;
+  expanded: boolean;
   children: RemoteDbItem[];
 }
 
@@ -62,6 +65,7 @@ export interface RemoteSystemDefinedListDbItem {
 
 export interface RemoteUserDefinedListDbItem {
   kind: DbItemKind.RemoteUserDefinedList;
+  expanded: boolean;
   selected: boolean;
   listName: string;
   repos: RemoteRepoDbItem[];

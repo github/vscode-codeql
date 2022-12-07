@@ -29,6 +29,7 @@ import {
   RepositorySelection,
 } from "./repository-selection";
 import { Repository } from "./shared/repository";
+import { DbManager } from "../databases/db-manager";
 
 export interface QlPack {
   name: string;
@@ -213,6 +214,7 @@ export async function prepareRemoteQueryRun(
   uri: Uri | undefined,
   progress: ProgressCallback,
   token: CancellationToken,
+  dbManager?: DbManager, // the dbManager is only needed when the newQueryRunExperience is enabled
 ): Promise<PreparedRemoteQuery> {
   if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
     throw new Error(
@@ -232,7 +234,7 @@ export async function prepareRemoteQueryRun(
     message: "Determining query target language",
   });
 
-  const repoSelection = await getRepositorySelection();
+  const repoSelection = await getRepositorySelection(dbManager);
   if (!isValidSelection(repoSelection)) {
     throw new UserCancellationException("No repositories to query.");
   }

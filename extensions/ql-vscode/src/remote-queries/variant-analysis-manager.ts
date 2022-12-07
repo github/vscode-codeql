@@ -59,6 +59,7 @@ import {
   RepositoriesFilterSortStateWithIds,
 } from "../pure/variant-analysis-filter-sort";
 import { URLSearchParams } from "url";
+import { DbManager } from "../databases/db-manager";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -100,6 +101,7 @@ export class VariantAnalysisManager
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager,
+    private readonly dbManager: DbManager,
   ) {
     super();
     this.variantAnalysisMonitor = this.push(
@@ -140,6 +142,7 @@ export class VariantAnalysisManager
       uri,
       progress,
       token,
+      this.dbManager,
     );
 
     const queryName = getQueryName(queryMetadata, queryFile);

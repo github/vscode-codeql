@@ -1,6 +1,11 @@
 import { pathExists, writeJSON, readJSON, readJSONSync } from "fs-extra";
 import { join } from "path";
-import { cloneDbConfig, DbConfig } from "./db-config";
+import {
+  cloneDbConfig,
+  DbConfig,
+  ExpandedDbItem,
+  SelectedDbItem,
+} from "./db-config";
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
 import { DbConfigValidator } from "./db-config-validator";
@@ -56,11 +61,44 @@ export class DbConfigStore extends DisposableObject {
     return this.configPath;
   }
 
+  public async setSelectedDbItem(dbItem: SelectedDbItem): Promise<void> {
+    if (!this.config) {
+      // If the app is trying to set the selected item without a config
+      // being set it means that there is a bug in our code, so we throw
+      // an error instead of just returning an error result.
+      throw Error("Cannot select database item if config is not loaded");
+    }
+
+    const config: DbConfig = {
+      ...this.config,
+      selected: dbItem,
+    };
+
+    await this.writeConfig(config);
+  }
+
+  public async updateExpandedState(expandedItems: ExpandedDbItem[]) {
+    if (!this.config) {
+      throw Error("Cannot update expansion state if config is not loaded");
+    }
+
+    const config: DbConfig = {
+      ...this.config,
+      expanded: expandedItems,
+    };
+
+    await this.writeConfig(config);
+  }
+
+  private async writeConfig(config: DbConfig): Promise<void> {
+    await writeJSON(this.configPath, config, {
+      spaces: 2,
+    });
+  }
+
   private async loadConfig(): Promise<void> {
     if (!(await pathExists(this.configPath))) {
-      await writeJSON(this.configPath, this.createEmptyConfig(), {
-        spaces: 2,
-      });
+      await this.writeConfig(this.createEmptyConfig());
     }
 
     await this.readConfig();
@@ -117,6 +155,7 @@ export class DbConfigStore extends DisposableObject {
           databases: [],
         },
       },
+      expanded: [],
     };
   }
 }

@@ -45,6 +45,7 @@
       ]
     }
   },
+  "expanded": [],
   "selected": {
     "kind": "remoteUserDefinedList",
     "listName": "repoList1"

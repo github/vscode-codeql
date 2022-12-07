@@ -16,7 +16,9 @@ For information about other configurations, see the separate [CodeQL help](https
 
 ### Quick start: Installing and configuring the extension
 
-1. [Install the extension](#installing-the-extension).
+1. [Install the extension](#installing-the-extension).  
+   *Note: vscode-codeql installs the following dependencies for required functionality: [Test Adapter Converter](https://marketplace.visualstudio.com/items?itemName=ms-vscode.test-adapter-converter), [Test Explorer UI](https://marketplace.visualstudio.com/items?itemName=hbenl.vscode-test-explorer).*
+
 1. [Check access to the CodeQL CLI](#checking-access-to-the-codeql-cli).
 1. [Clone the CodeQL starter workspace](#cloning-the-codeql-starter-workspace).
 

@@ -1,8 +1,9 @@
-import { window, workspace } from "vscode";
+import { TreeViewExpansionEvent, window, workspace } from "vscode";
 import { commandRunner } from "../../commandRunner";
 import { DisposableObject } from "../../pure/disposable-object";
 import { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
+import { DbTreeViewItem } from "./db-tree-view-item";
 
 export class DbPanel extends DisposableObject {
   private readonly dataProvider: DbTreeDataProvider;
@@ -17,6 +18,9 @@ export class DbPanel extends DisposableObject {
       canSelectMany: false,
     });
 
+    treeView.onDidCollapseElement.bind(this.onDidCollapseElement);
+    treeView.onDidExpandElement.bind(this.onDidExpandElement);
+
     this.push(treeView);
   }
 
@@ -26,11 +30,48 @@ export class DbPanel extends DisposableObject {
         this.openConfigFile(),
       ),
     );
+    this.push(
+      commandRunner(
+        "codeQLDatabasesExperimental.setSelectedItem",
+        (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
+      ),
+    );
   }
 
   private async openConfigFile(): Promise<void> {
     const configPath = this.dbManager.getConfigPath();
     const document = await workspace.openTextDocument(configPath);
     await window.showTextDocument(document);
+  }
+
+  private async setSelectedItem(treeViewItem: DbTreeViewItem): Promise<void> {
+    if (treeViewItem.dbItem === undefined) {
+      throw new Error(
+        "Not a selectable database item. Please select a valid item.",
+      );
+    }
+    await this.dbManager.setSelectedDbItem(treeViewItem.dbItem);
+  }
+
+  private async onDidCollapseElement(
+    event: TreeViewExpansionEvent<DbTreeViewItem>,
+  ): Promise<void> {
+    const dbItem = event.element.dbItem;
+    if (!dbItem) {
+      throw Error("Expected a database item.");
+    }
+
+    await this.dbManager.updateDbItemExpandedState(event.element.dbItem, false);
+  }
+
+  private async onDidExpandElement(
+    event: TreeViewExpansionEvent<DbTreeViewItem>,
+  ): Promise<void> {
+    const dbItem = event.element.dbItem;
+    if (!dbItem) {
+      throw Error("Expected a database item.");
+    }
+
+    await this.dbManager.updateDbItemExpandedState(event.element.dbItem, true);
   }
 }
