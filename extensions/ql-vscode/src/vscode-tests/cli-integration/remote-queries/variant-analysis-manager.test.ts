@@ -38,6 +38,7 @@ import {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryDownloadStatus,
+  VariantAnalysisScannedRepositoryState,
   VariantAnalysisStatus,
 } from "../../../remote-queries/shared/variant-analysis";
 import { createTimestampFile } from "../../../helpers";
@@ -622,26 +623,18 @@ describe("Variant Analysis Manager", () => {
         });
 
         it("should update the repo state correctly", async () => {
-          // To set some initial repo states, we need to mock the correct methods so that the repo states are read in.
-          // The actual tests for these are in rehydrateVariantAnalysis, so we can just mock them here and test that
-          // the methods are called.
-
-          pathExistsStub.mockImplementation(() => true);
-          // This will read in the correct repo states
-          readJsonStub.mockImplementation(() =>
-            Promise.resolve({
-              [scannedRepos[1].repository.id]: {
-                repositoryId: scannedRepos[1].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
-              [scannedRepos[2].repository.id]: {
-                repositoryId: scannedRepos[2].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
-              },
-            }),
-          );
+          mockRepoStates({
+            [scannedRepos[1].repository.id]: {
+              repositoryId: scannedRepos[1].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+            },
+            [scannedRepos[2].repository.id]: {
+              repositoryId: scannedRepos[2].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
+            },
+          });
 
           await variantAnalysisManager.rehydrateVariantAnalysis(
             variantAnalysis,
@@ -692,6 +685,14 @@ describe("Variant Analysis Manager", () => {
             },
           );
         });
+
+        function mockRepoStates(
+          repoStates: Record<number, VariantAnalysisScannedRepositoryState>,
+        ) {
+          pathExistsStub.mockImplementation(() => true);
+          // This will read in the correct repo states
+          readJsonStub.mockImplementation(() => Promise.resolve(repoStates));
+        }
       });
     });
   });
