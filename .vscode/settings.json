@@ -42,13 +42,28 @@
     "LANG": "en-US",
     "TZ": "UTC"
   },
-  // Uncomment to debug integration tests
-  // "jestrunner.debugOptions": {
-  //   "attachSimplePort": 9223,
-  //   "env": {
-  //     "VSCODE_WAIT_FOR_DEBUGGER": "true",
-  //   }
-  // },
+  "jestrunner.debugOptions": {
+    // Uncomment to debug integration tests
+    // "attachSimplePort": 9223,
+    "env": {
+      "LANG": "en-US",
+      "TZ": "UTC",
+      // Uncomment to debug integration tests
+      // "VSCODE_WAIT_FOR_DEBUGGER": "true",
+    }
+  },
+  "terminal.integrated.env.linux": {
+    "LANG": "en-US",
+    "TZ": "UTC"
+  },
+  "terminal.integrated.env.osx": {
+    "LANG": "en-US",
+    "TZ": "UTC"
+  },
+  "terminal.integrated.env.windows": {
+    "LANG": "en-US",
+    "TZ": "UTC"
+  },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true,
