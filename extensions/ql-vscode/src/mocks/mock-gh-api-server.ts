@@ -14,7 +14,7 @@ import { getDirectoryNamesInsidePath } from "../pure/files";
 export class MockGitHubApiServer extends DisposableObject {
   private _isListening: boolean;
 
-  private readonly server: SetupServerApi;
+  public readonly server: SetupServerApi;
   private readonly recorder: Recorder;
 
   constructor() {

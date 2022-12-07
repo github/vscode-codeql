@@ -14,14 +14,12 @@ import { retry } from "@octokit/plugin-retry";
 
 import { CodeQLExtensionInterface } from "../../../extension";
 import { Credentials } from "../../../authentication";
-import { MockGitHubApiServer } from "../../../mocks/mock-gh-api-server";
+import { mockGitHubApiServer } from "../../utils/mock-gh-api-server-test";
 
 jest.setTimeout(10_000);
+jest.useFakeTimers();
 
-const mockServer = new MockGitHubApiServer();
-beforeAll(() => mockServer.startServer());
-afterEach(() => mockServer.unloadScenario());
-afterAll(() => mockServer.stopServer());
+const mockServer = mockGitHubApiServer();
 
 async function showQlDocument(name: string): Promise<TextDocument> {
   const folderPath = workspace.workspaceFolders![0].uri.fsPath;
@@ -140,6 +138,37 @@ describe("Variant Analysis Submission Integration", () => {
       expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.openVariantAnalysisView",
         146,
+      );
+
+      expect(mockServer.requests).toContainEqual(
+        expect.objectContaining({
+          method: "POST",
+          url: new URL(
+            "https://api.github.com/repositories/557804416/code-scanning/codeql/variant-analyses",
+          ),
+        }),
+      );
+
+      expect(executeCommandSpy).toHaveBeenLastCalledWith(
+        "codeQL.monitorVariantAnalysis",
+        expect.objectContaining({
+          id: 146,
+        }),
+      );
+
+      // 1 request
+      jest.advanceTimersByTime(5_000);
+
+      console.log(mockServer.requests);
+
+      // all requests
+      jest.advanceTimersByTime(120_000);
+
+      console.log(mockServer.requests);
+
+      console.log(
+        executeCommandSpy.mock.lastCall,
+        executeCommandSpy.mock.results,
       );
     });
   });

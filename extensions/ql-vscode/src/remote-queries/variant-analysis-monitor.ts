@@ -53,6 +53,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
     const scannedReposDownloaded: number[] = [];
 
     while (attemptCount <= VariantAnalysisMonitor.maxAttemptCount) {
+      console.log(`Monitoring variant analysis ${variantAnalysis.id}`);
       await sleep(VariantAnalysisMonitor.sleepTime);
 
       if (cancellationToken && cancellationToken.isCancellationRequested) {
