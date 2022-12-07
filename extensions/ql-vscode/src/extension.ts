@@ -622,6 +622,11 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(localQueryResultsView);
 
   void extLogger.log("Initializing variant analysis manager.");
+
+  const app = new ExtensionApp(ctx);
+  const dbModule = await initializeDbModule(app);
+  ctx.subscriptions.push(dbModule);
+
   const variantAnalysisStorageDir = join(
     ctx.globalStorageUri.fsPath,
     "variant-analyses",
@@ -636,6 +641,7 @@ async function activateWithInstalledDistribution(
     cliServer,
     variantAnalysisStorageDir,
     variantAnalysisResultsManager,
+    dbModule.dbManager,
   );
   ctx.subscriptions.push(variantAnalysisManager);
   ctx.subscriptions.push(variantAnalysisResultsManager);
@@ -1579,10 +1585,6 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Reading query history");
   await qhm.readQueryHistory();
-
-  const app = new ExtensionApp(ctx);
-  const dbModule = await initializeDbModule(app);
-  ctx.subscriptions.push(dbModule);
 
   void extLogger.log("Successfully finished extension initialization.");
 

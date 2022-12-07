@@ -56,6 +56,7 @@ import {
   defaultFilterSortState,
   SortKey,
 } from "../../../pure/variant-analysis-filter-sort";
+import { DbManager } from "../../../databases/db-manager";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -69,6 +70,7 @@ describe("Variant Analysis Manager", () => {
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
   let variantAnalysisResultsManager: VariantAnalysisResultsManager;
+  let dbManager: DbManager;
   let variantAnalysis: VariantAnalysis;
   let scannedRepos: VariantAnalysisScannedRepository[];
 
@@ -107,6 +109,7 @@ describe("Variant Analysis Manager", () => {
       cli,
       storagePath,
       variantAnalysisResultsManager,
+      dbManager,
     );
   });
 
