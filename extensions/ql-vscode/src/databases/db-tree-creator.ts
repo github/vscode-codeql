@@ -1,5 +1,6 @@
 import {
   DbConfig,
+  ExpandedDbItemKind,
   LocalDatabase,
   LocalList,
   RemoteRepositoryList,
@@ -34,6 +35,10 @@ export function createRemoteTree(dbConfig: DbConfig): RootRemoteDbItem {
     createRepoItem(r, dbConfig),
   );
 
+  const expanded =
+    dbConfig.expanded &&
+    dbConfig.expanded.some((e) => e.kind === ExpandedDbItemKind.RootRemote);
+
   return {
     kind: DbItemKind.RootRemote,
     children: [
@@ -42,6 +47,7 @@ export function createRemoteTree(dbConfig: DbConfig): RootRemoteDbItem {
       ...userDefinedRepoLists,
       ...repos,
     ],
+    expanded: !!expanded,
   };
 }
 
@@ -53,9 +59,14 @@ export function createLocalTree(dbConfig: DbConfig): RootLocalDbItem {
     createLocalDb(l, dbConfig),
   );
 
+  const expanded =
+    dbConfig.expanded &&
+    dbConfig.expanded.some((e) => e.kind === ExpandedDbItemKind.RootLocal);
+
   return {
     kind: DbItemKind.RootLocal,
     children: [...localLists, ...localDbs],
+    expanded: !!expanded,
   };
 }
 
@@ -88,11 +99,20 @@ function createRemoteUserDefinedList(
     dbConfig.selected.kind === SelectedDbItemKind.RemoteUserDefinedList &&
     dbConfig.selected.listName === list.name;
 
+  const expanded =
+    dbConfig.expanded &&
+    dbConfig.expanded.some(
+      (e) =>
+        e.kind === ExpandedDbItemKind.RemoteUserDefinedList &&
+        e.listName === list.name,
+    );
+
   return {
     kind: DbItemKind.RemoteUserDefinedList,
     listName: list.name,
     repos: list.repositories.map((r) => createRepoItem(r, dbConfig, list.name)),
     selected: !!selected,
+    expanded: !!expanded,
   };
 }
 
@@ -134,11 +154,20 @@ function createLocalList(list: LocalList, dbConfig: DbConfig): LocalListDbItem {
     dbConfig.selected.kind === SelectedDbItemKind.LocalUserDefinedList &&
     dbConfig.selected.listName === list.name;
 
+  const expanded =
+    dbConfig.expanded &&
+    dbConfig.expanded.some(
+      (e) =>
+        e.kind === ExpandedDbItemKind.LocalUserDefinedList &&
+        e.listName === list.name,
+    );
+
   return {
     kind: DbItemKind.LocalList,
     listName: list.name,
     databases: list.databases.map((d) => createLocalDb(d, dbConfig, list.name)),
     selected: !!selected,
+    expanded: !!expanded,
   };
 }
 

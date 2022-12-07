@@ -2,6 +2,7 @@
 
 export interface DbConfig {
   databases: DbConfigDatabases;
+  expanded: ExpandedDbItem[];
   selected?: SelectedDbItem;
 }
 
@@ -87,6 +88,37 @@ export interface LocalDatabase {
   storagePath: string;
 }
 
+export type ExpandedDbItem =
+  | RootLocalExpandedDbItem
+  | LocalUserDefinedListExpandedDbItem
+  | RootRemoteExpandedDbItem
+  | RemoteUserDefinedListExpandedDbItem;
+
+export enum ExpandedDbItemKind {
+  RootLocal = "rootLocal",
+  LocalUserDefinedList = "localUserDefinedList",
+  RootRemote = "rootRemote",
+  RemoteUserDefinedList = "remoteUserDefinedList",
+}
+
+export interface RootLocalExpandedDbItem {
+  kind: ExpandedDbItemKind.RootLocal;
+}
+
+export interface LocalUserDefinedListExpandedDbItem {
+  kind: ExpandedDbItemKind.LocalUserDefinedList;
+  listName: string;
+}
+
+export interface RootRemoteExpandedDbItem {
+  kind: ExpandedDbItemKind.RootRemote;
+}
+
+export interface RemoteUserDefinedListExpandedDbItem {
+  kind: ExpandedDbItemKind.RemoteUserDefinedList;
+  listName: string;
+}
+
 export function cloneDbConfig(config: DbConfig): DbConfig {
   return {
     databases: {
@@ -108,6 +140,7 @@ export function cloneDbConfig(config: DbConfig): DbConfig {
         databases: config.databases.local.databases.map((db) => ({ ...db })),
       },
     },
+    expanded: config.expanded.map(cloneDbConfigExpandedItem),
     selected: config.selected
       ? cloneDbConfigSelectedItem(config.selected)
       : undefined,
@@ -147,6 +180,20 @@ function cloneDbConfigSelectedItem(selected: SelectedDbItem): SelectedDbItem {
         kind: SelectedDbItemKind.RemoteRepository,
         repositoryName: selected.repositoryName,
         listName: selected.listName,
+      };
+  }
+}
+
+function cloneDbConfigExpandedItem(item: ExpandedDbItem): ExpandedDbItem {
+  switch (item.kind) {
+    case ExpandedDbItemKind.RootLocal:
+    case ExpandedDbItemKind.RootRemote:
+      return { kind: item.kind };
+    case ExpandedDbItemKind.LocalUserDefinedList:
+    case ExpandedDbItemKind.RemoteUserDefinedList:
+      return {
+        kind: item.kind,
+        listName: item.listName,
       };
   }
 }

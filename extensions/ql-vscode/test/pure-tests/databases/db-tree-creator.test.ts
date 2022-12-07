@@ -1,5 +1,6 @@
 import {
   DbConfig,
+  ExpandedDbItemKind,
   SelectedDbItemKind,
 } from "../../../src/databases/config/db-config";
 import {
@@ -28,12 +29,14 @@ describe("db tree creator", () => {
             databases: [],
           },
         },
+        expanded: [],
       };
 
       const dbTreeRoot = createRemoteTree(dbConfig);
 
       expect(dbTreeRoot).toBeTruthy();
       expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
+      expect(dbTreeRoot.expanded).toBe(false);
       expect(dbTreeRoot.children.length).toBe(3);
       expect(dbTreeRoot.children[0]).toEqual({
         kind: DbItemKind.RemoteSystemDefinedList,
@@ -80,6 +83,7 @@ describe("db tree creator", () => {
             databases: [],
           },
         },
+        expanded: [],
       };
 
       const dbTreeRoot = createRemoteTree(dbConfig);
@@ -94,6 +98,7 @@ describe("db tree creator", () => {
       expect(repositoryListNodes[0]).toEqual({
         kind: DbItemKind.RemoteUserDefinedList,
         selected: false,
+        expanded: false,
         listName: dbConfig.databases.remote.repositoryLists[0].name,
         repos: dbConfig.databases.remote.repositoryLists[0].repositories.map(
           (repo) => ({
@@ -107,6 +112,7 @@ describe("db tree creator", () => {
       expect(repositoryListNodes[1]).toEqual({
         kind: DbItemKind.RemoteUserDefinedList,
         selected: false,
+        expanded: false,
         listName: dbConfig.databases.remote.repositoryLists[1].name,
         repos: dbConfig.databases.remote.repositoryLists[1].repositories.map(
           (repo) => ({
@@ -132,6 +138,7 @@ describe("db tree creator", () => {
             databases: [],
           },
         },
+        expanded: [],
       };
 
       const dbTreeRoot = createRemoteTree(dbConfig);
@@ -166,6 +173,7 @@ describe("db tree creator", () => {
             databases: [],
           },
         },
+        expanded: [],
       };
 
       const dbTreeRoot = createRemoteTree(dbConfig);
@@ -215,6 +223,7 @@ describe("db tree creator", () => {
               databases: [],
             },
           },
+          expanded: [],
           selected: {
             kind: SelectedDbItemKind.RemoteUserDefinedList,
             listName: "my-list-1",
@@ -246,6 +255,7 @@ describe("db tree creator", () => {
               databases: [],
             },
           },
+          expanded: [],
           selected: {
             kind: SelectedDbItemKind.RemoteOwner,
             ownerName: "owner1",
@@ -278,6 +288,7 @@ describe("db tree creator", () => {
               databases: [],
             },
           },
+          expanded: [],
           selected: {
             kind: SelectedDbItemKind.RemoteRepository,
             repositoryName: "owner1/repo2",
@@ -313,6 +324,7 @@ describe("db tree creator", () => {
               databases: [],
             },
           },
+          expanded: [],
           selected: {
             kind: SelectedDbItemKind.RemoteRepository,
             listName: "my-list-1",
@@ -335,6 +347,81 @@ describe("db tree creator", () => {
         expect(listNodes[0].repos[0].selected).toBe(true);
       });
     });
+
+    describe("expanded db items", () => {
+      it("should allow expanding the root remote list node", () => {
+        const dbConfig: DbConfig = {
+          databases: {
+            remote: {
+              repositoryLists: [],
+              owners: [],
+              repositories: [],
+            },
+            local: {
+              lists: [],
+              databases: [],
+            },
+          },
+          expanded: [
+            {
+              kind: ExpandedDbItemKind.RootRemote,
+            },
+          ],
+        };
+
+        const dbTreeRoot = createRemoteTree(dbConfig);
+
+        expect(dbTreeRoot).toBeTruthy();
+        expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
+        expect(dbTreeRoot.expanded).toBe(true);
+      });
+
+      it("should allow expanding a remote user defined list node", () => {
+        const dbConfig: DbConfig = {
+          databases: {
+            remote: {
+              repositoryLists: [
+                {
+                  name: "my-list-1",
+                  repositories: [
+                    "owner1/repo1",
+                    "owner1/repo2",
+                    "owner2/repo1",
+                  ],
+                },
+              ],
+              owners: [],
+              repositories: [],
+            },
+            local: {
+              lists: [],
+              databases: [],
+            },
+          },
+          expanded: [
+            {
+              kind: ExpandedDbItemKind.RootRemote,
+            },
+            {
+              kind: ExpandedDbItemKind.RemoteUserDefinedList,
+              listName: "my-list-1",
+            },
+          ],
+        };
+
+        const dbTreeRoot = createRemoteTree(dbConfig);
+
+        expect(dbTreeRoot).toBeTruthy();
+        expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
+        expect(dbTreeRoot.expanded).toBe(true);
+        const repositoryListNodes = dbTreeRoot.children.filter(
+          isRemoteUserDefinedListDbItem,
+        );
+
+        expect(repositoryListNodes.length).toBe(1);
+        expect(repositoryListNodes[0].expanded).toEqual(true);
+      });
+    });
   });
 
   describe("createLocalTree", () => {
@@ -351,12 +438,14 @@ describe("db tree creator", () => {
             databases: [],
           },
         },
+        expanded: [],
       };
 
       const dbTreeRoot = createLocalTree(dbConfig);
 
       expect(dbTreeRoot).toBeTruthy();
       expect(dbTreeRoot.kind).toBe(DbItemKind.RootLocal);
+      expect(dbTreeRoot.expanded).toBe(false);
       expect(dbTreeRoot.children.length).toBe(0);
     });
 
@@ -402,6 +491,7 @@ describe("db tree creator", () => {
             databases: [],
           },
         },
+        expanded: [],
       };
 
       const dbTreeRoot = createLocalTree(dbConfig);
@@ -415,6 +505,7 @@ describe("db tree creator", () => {
       expect(localListNodes.length).toBe(2);
       expect(localListNodes[0]).toEqual({
         kind: DbItemKind.LocalList,
+        expanded: false,
         selected: false,
         listName: dbConfig.databases.local.lists[0].name,
         databases: dbConfig.databases.local.lists[0].databases.map((db) => ({
@@ -429,6 +520,7 @@ describe("db tree creator", () => {
       });
       expect(localListNodes[1]).toEqual({
         kind: DbItemKind.LocalList,
+        expanded: false,
         selected: false,
         listName: dbConfig.databases.local.lists[1].name,
         databases: dbConfig.databases.local.lists[1].databases.map((db) => ({
@@ -469,6 +561,7 @@ describe("db tree creator", () => {
             ],
           },
         },
+        expanded: [],
       };
 
       const dbTreeRoot = createLocalTree(dbConfig);

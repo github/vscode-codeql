@@ -70,7 +70,7 @@ export function createDbTreeViewItemRoot(
     undefined,
     label,
     tooltip,
-    vscode.TreeItemCollapsibleState.Collapsed,
+    getCollapsibleState(dbItem.expanded),
     children,
   );
 }
@@ -100,7 +100,7 @@ export function createDbTreeViewItemUserDefinedList(
     undefined,
     listName,
     undefined,
-    vscode.TreeItemCollapsibleState.Collapsed,
+    getCollapsibleState(dbItem.expanded),
     children,
   );
 }
@@ -146,4 +146,12 @@ export function createDbTreeViewItemLocalDatabase(
     vscode.TreeItemCollapsibleState.None,
     [],
   );
+}
+
+function getCollapsibleState(
+  expanded: boolean,
+): vscode.TreeItemCollapsibleState {
+  return expanded
+    ? vscode.TreeItemCollapsibleState.Expanded
+    : vscode.TreeItemCollapsibleState.Collapsed;
 }
