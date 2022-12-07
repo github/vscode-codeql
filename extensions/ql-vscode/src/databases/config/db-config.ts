@@ -187,17 +187,12 @@ function cloneDbConfigSelectedItem(selected: SelectedDbItem): SelectedDbItem {
 function cloneDbConfigExpandedItem(item: ExpandedDbItem): ExpandedDbItem {
   switch (item.kind) {
     case ExpandedDbItemKind.RootLocal:
-      return { kind: ExpandedDbItemKind.RootLocal };
-    case ExpandedDbItemKind.LocalUserDefinedList:
-      return {
-        kind: ExpandedDbItemKind.LocalUserDefinedList,
-        listName: item.listName,
-      };
     case ExpandedDbItemKind.RootRemote:
-      return { kind: ExpandedDbItemKind.RootRemote };
+      return { kind: item.kind };
+    case ExpandedDbItemKind.LocalUserDefinedList:
     case ExpandedDbItemKind.RemoteUserDefinedList:
       return {
-        kind: ExpandedDbItemKind.RemoteUserDefinedList,
+        kind: item.kind,
         listName: item.listName,
       };
   }
