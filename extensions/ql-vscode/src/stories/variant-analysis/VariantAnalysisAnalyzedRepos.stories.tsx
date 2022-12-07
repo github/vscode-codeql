@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 
@@ -15,7 +15,7 @@ import { createMockVariantAnalysis } from "../../vscode-tests/factories/remote-q
 import { createMockRepositoryWithMetadata } from "../../vscode-tests/factories/remote-queries/shared/repository";
 import { createMockScannedRepo } from "../../vscode-tests/factories/remote-queries/shared/scanned-repositories";
 
-import analysesResults from "../remote-queries/data/analysesResultsMessage.json";
+import * as analysesResults from "../remote-queries/data/analysesResultsMessage.json";
 
 export default {
   title: "Variant Analysis/Analyzed Repos",
@@ -151,10 +151,10 @@ const manyScannedRepos = Array.from({ length: 1000 }, (_, i) => {
 export const PerformanceExample = Template.bind({});
 PerformanceExample.args = {
   variantAnalysis: {
-    ...createMockVariantAnalysis(
-      VariantAnalysisStatus.Succeeded,
-      manyScannedRepos,
-    ),
+    ...createMockVariantAnalysis({
+      status: VariantAnalysisStatus.Succeeded,
+      scannedRepos: manyScannedRepos,
+    }),
     id: 1,
   },
   repositoryResults: manyScannedRepos.map((repoTask) => ({

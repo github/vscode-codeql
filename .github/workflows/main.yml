@@ -90,6 +90,11 @@ jobs:
           npm ci
         shell: bash
 
+      - name: Check types
+        working-directory: extensions/ql-vscode
+        run: |
+          npm run check-types
+
       - name: Lint
         working-directory: extensions/ql-vscode
         run: |

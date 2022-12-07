@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 
@@ -13,8 +13,8 @@ import {
 } from "../../remote-queries/shared/analysis-result";
 import { createMockRepositoryWithMetadata } from "../../vscode-tests/factories/remote-queries/shared/repository";
 
-import analysesResults from "../remote-queries/data/analysesResultsMessage.json";
-import rawResults from "../remote-queries/data/rawResults.json";
+import * as analysesResults from "../remote-queries/data/analysesResultsMessage.json";
+import * as rawResults from "../remote-queries/data/rawResults.json";
 import { RepoRow } from "../../view/variant-analysis/RepoRow";
 
 export default {

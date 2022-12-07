@@ -1,11 +1,12 @@
-import React, { useEffect } from "react";
+import * as React from "react";
+import { useEffect } from "react";
 
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
 import { RemoteQueries } from "../../view/remote-queries/RemoteQueries";
 
-import remoteQueryResult from "./data/remoteQueryResultMessage.json";
-import analysesResults from "./data/analysesResultsMessage.json";
+import * as remoteQueryResult from "./data/remoteQueryResultMessage.json";
+import * as analysesResults from "./data/analysesResultsMessage.json";
 
 export default {
   title: "MRVA/Remote Queries",

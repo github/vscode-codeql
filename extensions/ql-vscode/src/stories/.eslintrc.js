@@ -1,10 +1,8 @@
 module.exports = {
   env: {
-    browser: true
+    browser: true,
   },
-  plugins: [
-    "github",
-  ],
+  plugins: ["github"],
   extends: [
     "plugin:github/react",
     "plugin:github/recommended",
@@ -16,12 +14,13 @@ module.exports = {
   rules: {
     "filenames/match-regex": "off",
     "import/named": "off",
+    "import/no-namespace": "off",
     "import/no-unresolved": "off",
     "no-unused-vars": "off",
   },
   settings: {
     react: {
-      version: 'detect'
-    }
-  }
-}
+      version: "detect",
+    },
+  },
+};

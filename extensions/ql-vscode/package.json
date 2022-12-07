@@ -1299,6 +1299,7 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "lint:scenarios": "ts-node scripts/lint-scenarios.ts",
+    "check-types": "find . -type f -name \"tsconfig.json\" -not -path \"./node_modules/*\" | sed -r 's|/[^/]+$||' | sort | uniq | xargs -I {} sh -c \"echo Checking types in {} && cd {} && npx tsc --noEmit\"",
     "postinstall": "patch-package"
   },
   "dependencies": {
