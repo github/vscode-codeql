@@ -37,7 +37,7 @@ export async function getRepositorySelection(
   dbManager?: DbManager,
 ): Promise<RepositorySelection> {
   if (isNewQueryRunExperienceEnabled()) {
-    const selectedDbItem = await dbManager?.getSelectedDbItem();
+    const selectedDbItem = dbManager?.getSelectedDbItem();
     if (selectedDbItem) {
       switch (selectedDbItem.kind) {
         case DbItemKind.LocalDatabase || DbItemKind.LocalList:
@@ -55,7 +55,7 @@ export async function getRepositorySelection(
       }
     } else {
       throw new Error(
-        "Please select a remote database item to run the query against.",
+        "Please select a remote database to run the query against.",
       );
     }
   }
