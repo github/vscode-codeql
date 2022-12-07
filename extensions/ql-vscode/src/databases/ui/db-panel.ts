@@ -39,6 +39,11 @@ export class DbPanel extends DisposableObject {
       ),
     );
     this.push(
+      commandRunner("codeQLDatabasesExperimental.addNewList", () =>
+        this.addNewList(),
+      ),
+    );
+    this.push(
       commandRunner(
         "codeQLDatabasesExperimental.setSelectedItem",
         (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
@@ -50,6 +55,18 @@ export class DbPanel extends DisposableObject {
     const configPath = this.dbManager.getConfigPath();
     const document = await workspace.openTextDocument(configPath);
     await window.showTextDocument(document);
+  }
+
+  private async addNewList(): Promise<void> {
+    // TODO: check that config exists *before* showing the input box
+    const listName = await window.showInputBox({
+      prompt: "Enter a name for the new list",
+      placeHolder: "example-list",
+    });
+    if (listName === undefined) {
+      return;
+    }
+    await this.dbManager.addNewList(listName);
   }
 
   private async setSelectedItem(treeViewItem: DbTreeViewItem): Promise<void> {

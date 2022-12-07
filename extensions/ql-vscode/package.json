@@ -62,6 +62,7 @@
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
     "onCommand:codeQLDatabasesExperimental.openConfigFile",
+    "onCommand:codeQLDatabasesExperimental.addNewList",
     "onCommand:codeQLDatabasesExperimental.setSelectedItem",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
@@ -361,10 +362,12 @@
       {
         "command": "codeQLDatabasesExperimental.openConfigFile",
         "title": "Open Database Configuration File",
-        "icon": {
-          "light": "media/light/edit.svg",
-          "dark": "media/dark/edit.svg"
-        }
+        "icon": "$(edit)"
+      },
+      {
+        "command": "codeQLDatabasesExperimental.addNewList",
+        "title": "Add new list",
+        "icon": "$(new-folder)"
       },
       {
         "command": "codeQLDatabasesExperimental.setSelectedItem",
@@ -774,6 +777,11 @@
           "command": "codeQLDatabasesExperimental.openConfigFile",
           "when": "view == codeQLDatabasesExperimental",
           "group": "navigation"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.addNewList",
+          "when": "view == codeQLDatabasesExperimental",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -995,6 +1003,10 @@
         },
         {
           "command": "codeQLDatabasesExperimental.openConfigFile",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.addNewList",
           "when": "false"
         },
         {
