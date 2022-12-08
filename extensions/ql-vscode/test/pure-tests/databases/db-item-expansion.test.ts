@@ -26,7 +26,7 @@ describe("db item expansion", () => {
 
     const dbItem: RemoteUserDefinedListDbItem =
       createRemoteUserDefinedListDbItem({
-        name: "list2",
+        listName: "list2",
       });
 
     const newExpandedItems = calculateNewExpandedState(
@@ -47,7 +47,7 @@ describe("db item expansion", () => {
   it("should add an expanded item to an empty list", () => {
     const dbItem: RemoteUserDefinedListDbItem =
       createRemoteUserDefinedListDbItem({
-        name: "list2",
+        listName: "list2",
       });
 
     const newExpandedItems = calculateNewExpandedState([], dbItem, true);
@@ -73,7 +73,7 @@ describe("db item expansion", () => {
 
     const dbItem: RemoteUserDefinedListDbItem =
       createRemoteUserDefinedListDbItem({
-        name: "list1",
+        listName: "list1",
       });
 
     const newExpandedItems = calculateNewExpandedState(
@@ -96,7 +96,7 @@ describe("db item expansion", () => {
       },
     ];
 
-    const dbItem: RootRemoteDbItem = createRootRemoteDbItem();
+    const dbItem: RootRemoteDbItem = createRootRemoteDbItem({});
 
     const newExpandedItems = calculateNewExpandedState(
       currentExpandedItems,
