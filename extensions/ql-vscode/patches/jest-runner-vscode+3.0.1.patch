@@ -1,8 +1,8 @@
 diff --git a/node_modules/jest-runner-vscode/dist/child/environment.js b/node_modules/jest-runner-vscode/dist/child/environment.js
-index 1ac28d5..52665c7 100644
+index 1ac28d5..f91f216 100644
 --- a/node_modules/jest-runner-vscode/dist/child/environment.js
 +++ b/node_modules/jest-runner-vscode/dist/child/environment.js
-@@ -10,6 +10,14 @@ const wrap_io_1 = __importDefault(require("./wrap-io"));
+@@ -10,6 +10,21 @@ const wrap_io_1 = __importDefault(require("./wrap-io"));
  const load_pnp_1 = __importDefault(require("./load-pnp"));
  const ipc = new ipc_client_1.default('env');
  class VSCodeEnvironment extends jest_environment_node_1.default {
@@ -11,7 +11,14 @@ index 1ac28d5..52665c7 100644
 +        // The _VSCODE_NODE_MODULES is a proxy which will require a module if any property
 +        // on it is accessed. This is a workaround for the fact that jest will call
 +        // _isMockFunction on the module, which will cause that function to be required.
-+        delete this.global._VSCODE_NODE_MODULES;
++        this.global._VSCODE_NODE_MODULES = new Proxy(this.global._VSCODE_NODE_MODULES, {
++          get(target, prop) {
++            if (prop === '_isMockFunction') {
++              return undefined;
++            }
++            return target[prop];
++          },
++        });
 +    }
 +
      async setup() {
