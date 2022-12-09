@@ -7,11 +7,13 @@ export function createMockApp({
   workspaceStoragePath = "/mock/workspace/storage/path",
   globalStoragePath = "/mock/global/storage/path",
   createEventEmitter = <T>() => new MockAppEventEmitter<T>(),
+  executeCommand = jest.fn(() => Promise.resolve()),
 }: {
   extensionPath?: string;
   workspaceStoragePath?: string;
   globalStoragePath?: string;
   createEventEmitter?: <T>() => AppEventEmitter<T>;
+  executeCommand?: () => Promise<void>;
 }): App {
   return {
     mode: AppMode.Test,
@@ -20,6 +22,7 @@ export function createMockApp({
     workspaceStoragePath,
     globalStoragePath,
     createEventEmitter,
+    executeCommand,
   };
 }
 

@@ -39,4 +39,8 @@ export class ExtensionApp implements App {
   public createEventEmitter<T>(): AppEventEmitter<T> {
     return new VSCodeAppEventEmitter<T>();
   }
+
+  public executeCommand(command: string, ...args: any): Thenable<void> {
+    return vscode.commands.executeCommand(command, args);
+  }
 }
