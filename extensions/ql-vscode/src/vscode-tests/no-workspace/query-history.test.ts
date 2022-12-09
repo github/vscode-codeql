@@ -58,7 +58,7 @@ describe("query-history", () => {
   >;
   const doCompareCallback = jest.fn();
 
-  let queryHistoryManager: QueryHistoryManager | undefined;
+  let queryHistoryManager: QueryHistoryManager;
 
   let localQueriesResultsViewStub: ResultsView;
   let remoteQueriesManagerStub: RemoteQueriesManager;
@@ -177,7 +177,6 @@ describe("query-history", () => {
   afterEach(async () => {
     if (queryHistoryManager) {
       queryHistoryManager.dispose();
-      queryHistoryManager = undefined;
     }
   });
 
@@ -390,77 +389,297 @@ describe("query-history", () => {
     });
 
     describe("handleRemoveHistoryItem", () => {
-      it("should remove an item and not select a new one", async () => {
-        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
-        // initialize the selection
-        await queryHistoryManager.treeView.reveal(localQueryHistory[0], {
-          select: true,
+      describe("when the item is a local query", () => {
+        describe("when the item being removed is not selected", () => {
+          // deleting the first item when a different item is selected
+          // will not change the selection
+          let toDelete: LocalQueryInfo;
+          let selected: LocalQueryInfo;
+
+          beforeEach(async () => {
+            toDelete = localQueryHistory[1];
+            selected = localQueryHistory[3];
+
+            queryHistoryManager = await createMockQueryHistory(
+              localQueryHistory,
+            );
+            // initialize the selection
+            await queryHistoryManager.treeView.reveal(localQueryHistory[0], {
+              select: true,
+            });
+
+            // select the item we want
+            await queryHistoryManager.treeView.reveal(selected, {
+              select: true,
+            });
+
+            // should be selected
+            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
+              selected,
+            );
+
+            // remove an item
+            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+              toDelete,
+            ]);
+          });
+
+          it("should remove the item", () => {
+            expect(toDelete.completedQuery!.dispose).toBeCalledTimes(1);
+            expect(queryHistoryManager.treeDataProvider.allHistory).toEqual(
+              expect.not.arrayContaining([toDelete]),
+            );
+          });
+
+          it("should not change the selection", () => {
+            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
+              selected,
+            );
+
+            expect(
+              localQueriesResultsViewStub.showResults,
+            ).toHaveBeenCalledTimes(1);
+            expect(
+              localQueriesResultsViewStub.showResults,
+            ).toHaveBeenCalledWith(selected, WebviewReveal.Forced, false);
+          });
         });
 
-        // deleting the first item when a different item is selected
-        // will not change the selection
-        const toDelete = localQueryHistory[1];
-        const selected = localQueryHistory[3];
+        describe("when the item being removed is selected", () => {
+          // deleting the selected item automatically selects next item
+          let toDelete: LocalQueryInfo;
+          let newSelected: LocalQueryInfo;
 
-        // select the item we want
-        await queryHistoryManager.treeView.reveal(selected, { select: true });
+          beforeEach(async () => {
+            toDelete = localQueryHistory[1];
+            newSelected = localQueryHistory[2];
 
-        // should be selected
-        expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
-          selected,
-        );
+            queryHistoryManager = await createMockQueryHistory(
+              localQueryHistory,
+            );
 
-        // remove an item
-        await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
+            // select the item we want
+            await queryHistoryManager.treeView.reveal(toDelete, {
+              select: true,
+            });
+            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+              toDelete,
+            ]);
+          });
 
-        expect(toDelete.completedQuery!.dispose).toBeCalledTimes(1);
-        expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
-          selected,
-        );
-        expect(queryHistoryManager.treeDataProvider.allHistory).toEqual(
-          expect.not.arrayContaining([toDelete]),
-        );
+          it("should remove the item", () => {
+            expect(toDelete.completedQuery!.dispose).toBeCalledTimes(1);
+            expect(queryHistoryManager.treeDataProvider.allHistory).toEqual(
+              expect.not.arrayContaining([toDelete]),
+            );
+          });
 
-        // the same item should be selected
-        expect(localQueriesResultsViewStub.showResults).toHaveBeenCalledTimes(
-          1,
-        );
-        expect(localQueriesResultsViewStub.showResults).toHaveBeenCalledWith(
-          selected,
-          WebviewReveal.Forced,
-          false,
-        );
+          it("should change the selection", () => {
+            expect(queryHistoryManager.treeDataProvider.getCurrent()).toBe(
+              newSelected,
+            );
+
+            expect(
+              localQueriesResultsViewStub.showResults,
+            ).toHaveBeenCalledTimes(1);
+            expect(
+              localQueriesResultsViewStub.showResults,
+            ).toHaveBeenCalledWith(newSelected, WebviewReveal.Forced, false);
+          });
+        });
       });
 
-      it("should remove an item and select a new one", async () => {
-        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
+      describe("when the item is a remote query", () => {
+        describe("when the item being removed is not selected", () => {
+          let toDelete: RemoteQueryHistoryItem;
+          let selected: RemoteQueryHistoryItem;
 
-        // deleting the selected item automatically selects next item
-        const toDelete = localQueryHistory[1];
-        const newSelected = localQueryHistory[2];
-        // avoid triggering the callback by setting the field directly
+          beforeEach(async () => {
+            // deleting the first item when a different item is selected
+            // will not change the selection
+            toDelete = remoteQueryHistory[1];
+            selected = remoteQueryHistory[3];
 
-        // select the item we want
-        await queryHistoryManager.treeView.reveal(toDelete, { select: true });
-        await queryHistoryManager.handleRemoveHistoryItem(toDelete, [toDelete]);
+            queryHistoryManager = await createMockQueryHistory(allHistory);
 
-        expect(toDelete.completedQuery!.dispose).toBeCalledTimes(1);
-        expect(queryHistoryManager.treeDataProvider.getCurrent()).toBe(
-          newSelected,
-        );
-        expect(queryHistoryManager.treeDataProvider.allHistory).toEqual(
-          expect.not.arrayContaining([toDelete]),
-        );
+            // initialize the selection
+            await queryHistoryManager.treeView.reveal(remoteQueryHistory[0], {
+              select: true,
+            });
 
-        // the current item should have been selected
-        expect(localQueriesResultsViewStub.showResults).toHaveBeenCalledTimes(
-          1,
-        );
-        expect(localQueriesResultsViewStub.showResults).toHaveBeenCalledWith(
-          newSelected,
-          WebviewReveal.Forced,
-          false,
-        );
+            // select the item we want
+            await queryHistoryManager.treeView.reveal(selected, {
+              select: true,
+            });
+
+            // should be selected
+            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
+              selected,
+            );
+
+            // remove an item
+            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+              toDelete,
+            ]);
+          });
+
+          it("should remove the item", () => {
+            expect(
+              remoteQueriesManagerStub.removeRemoteQuery,
+            ).toHaveBeenCalledWith(toDelete.queryId);
+            expect(
+              queryHistoryManager.treeDataProvider.allHistory,
+            ).not.toContain(toDelete);
+          });
+
+          it("should not change the selection", () => {
+            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
+              selected,
+            );
+
+            expect(
+              remoteQueriesManagerStub.openRemoteQueryResults,
+            ).toHaveBeenCalledWith(selected.queryId);
+          });
+        });
+
+        describe("when the item being removed is selected", () => {
+          let toDelete: RemoteQueryHistoryItem;
+          let newSelected: RemoteQueryHistoryItem;
+
+          beforeEach(async () => {
+            // deleting the selected item automatically selects next item
+            toDelete = remoteQueryHistory[1];
+            newSelected = remoteQueryHistory[2];
+
+            queryHistoryManager = await createMockQueryHistory(
+              remoteQueryHistory,
+            );
+
+            // select the item we want
+            await queryHistoryManager.treeView.reveal(toDelete, {
+              select: true,
+            });
+            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+              toDelete,
+            ]);
+          });
+
+          it("should remove the item", () => {
+            expect(
+              remoteQueriesManagerStub.removeRemoteQuery,
+            ).toHaveBeenCalledWith(toDelete.queryId);
+            expect(
+              queryHistoryManager.treeDataProvider.allHistory,
+            ).not.toContain(toDelete);
+          });
+
+          it("should change the selection", () => {
+            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
+              newSelected,
+            );
+            expect(
+              remoteQueriesManagerStub.openRemoteQueryResults,
+            ).toHaveBeenCalledWith(newSelected.queryId);
+          });
+        });
+      });
+
+      describe("when the item is a variant analysis", () => {
+        describe("when the item being removed is not selected", () => {
+          let toDelete: VariantAnalysisHistoryItem;
+          let selected: VariantAnalysisHistoryItem;
+
+          beforeEach(async () => {
+            // deleting the first item when a different item is selected
+            // will not change the selection
+            toDelete = variantAnalysisHistory[1];
+            selected = variantAnalysisHistory[3];
+
+            queryHistoryManager = await createMockQueryHistory(allHistory);
+            // initialize the selection
+            await queryHistoryManager.treeView.reveal(
+              variantAnalysisHistory[0],
+              {
+                select: true,
+              },
+            );
+
+            // select the item we want
+            await queryHistoryManager.treeView.reveal(selected, {
+              select: true,
+            });
+
+            // should be selected
+            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
+              selected,
+            );
+
+            // remove an item
+            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+              toDelete,
+            ]);
+          });
+
+          it("should remove the item", () => {
+            expect(
+              variantAnalysisManagerStub.removeVariantAnalysis,
+            ).toHaveBeenCalledWith(toDelete.variantAnalysis);
+            expect(
+              queryHistoryManager.treeDataProvider.allHistory,
+            ).not.toContain(toDelete);
+          });
+
+          it("should not change the selection", () => {
+            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
+              selected,
+            );
+            expect(variantAnalysisManagerStub.showView).toHaveBeenCalledWith(
+              selected.variantAnalysis.id,
+            );
+          });
+        });
+
+        describe("when the item being removed is selected", () => {
+          let toDelete: VariantAnalysisHistoryItem;
+          let newSelected: VariantAnalysisHistoryItem;
+
+          beforeEach(async () => {
+            // deleting the selected item automatically selects next item
+            toDelete = variantAnalysisHistory[1];
+            newSelected = variantAnalysisHistory[2];
+
+            queryHistoryManager = await createMockQueryHistory(
+              variantAnalysisHistory,
+            );
+
+            // select the item we want
+            await queryHistoryManager.treeView.reveal(toDelete, {
+              select: true,
+            });
+            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+              toDelete,
+            ]);
+          });
+
+          it("should remove the item", () => {
+            expect(
+              variantAnalysisManagerStub.removeVariantAnalysis,
+            ).toHaveBeenCalledWith(toDelete.variantAnalysis);
+            expect(
+              queryHistoryManager.treeDataProvider.allHistory,
+            ).not.toContain(toDelete);
+          });
+
+          it.skip("should change the selection", () => {
+            expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
+              newSelected,
+            );
+            expect(variantAnalysisManagerStub.showView).toHaveBeenCalledWith(
+              newSelected.variantAnalysis.id,
+            );
+          });
+        });
       });
     });
 
