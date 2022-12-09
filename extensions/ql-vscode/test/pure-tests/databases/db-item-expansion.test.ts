@@ -96,7 +96,7 @@ describe("db item expansion", () => {
       },
     ];
 
-    const dbItem: RootRemoteDbItem = createRootRemoteDbItem({});
+    const dbItem: RootRemoteDbItem = createRootRemoteDbItem();
 
     const newExpandedItems = calculateNewExpandedState(
       currentExpandedItems,

@@ -1,7 +1,10 @@
+import { faker } from "@faker-js/faker";
 import {
   DbItemKind,
   LocalDatabaseDbItem,
+  LocalDbItem,
   LocalListDbItem,
+  RemoteDbItem,
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
@@ -15,13 +18,9 @@ export function createRootRemoteDbItem({
   children = [],
   expanded = false,
 }: {
-  children?: Array<
-    | RemoteOwnerDbItem
-    | RemoteSystemDefinedListDbItem
-    | RemoteUserDefinedListDbItem
-  >;
+  children?: RemoteDbItem[];
   expanded?: boolean;
-}): RootRemoteDbItem {
+} = {}): RootRemoteDbItem {
   return {
     kind: DbItemKind.RootRemote,
     children,
@@ -30,12 +29,12 @@ export function createRootRemoteDbItem({
 }
 
 export function createRemoteOwnerDbItem({
-  ownerName = `owner${getRandomInt()}`,
+  ownerName = `owner${faker.datatype.number()}`,
   selected = false,
 }: {
   ownerName?: string;
   selected?: boolean;
-}): RemoteOwnerDbItem {
+} = {}): RemoteOwnerDbItem {
   return {
     kind: DbItemKind.RemoteOwner,
     selected,
@@ -44,14 +43,14 @@ export function createRemoteOwnerDbItem({
 }
 
 export function createRemoteRepoDbItem({
-  repoFullName = `repoFullName${getRandomInt()}`,
+  repoFullName = `owner${faker.datatype.number()}/repo${faker.datatype.number}`,
   selected = false,
   parentListName = undefined,
 }: {
   repoFullName?: string;
   selected?: boolean;
   parentListName?: string;
-}): RemoteRepoDbItem {
+} = {}): RemoteRepoDbItem {
   return {
     kind: DbItemKind.RemoteRepo,
     selected,
@@ -61,7 +60,7 @@ export function createRemoteRepoDbItem({
 }
 
 export function createRemoteSystemDefinedListDbItem({
-  listName = `top_${getRandomInt()}`,
+  listName = `top_${faker.datatype.number()}`,
   listDisplayName = `Display Name`,
   listDescription = `Description`,
   selected = false,
@@ -70,7 +69,7 @@ export function createRemoteSystemDefinedListDbItem({
   listDisplayName?: string;
   listDescription?: string;
   selected?: boolean;
-}): RemoteSystemDefinedListDbItem {
+} = {}): RemoteSystemDefinedListDbItem {
   return {
     kind: DbItemKind.RemoteSystemDefinedList,
     selected,
@@ -83,7 +82,7 @@ export function createRemoteSystemDefinedListDbItem({
 export function createRemoteUserDefinedListDbItem({
   expanded = false,
   selected = false,
-  listName = `list${getRandomInt()}`,
+  listName = `list${faker.datatype.number()}`,
   repos = [
     createRemoteRepoDbItem({
       parentListName: listName,
@@ -94,7 +93,7 @@ export function createRemoteUserDefinedListDbItem({
   expanded?: boolean;
   selected?: boolean;
   repos?: RemoteRepoDbItem[];
-}): RemoteUserDefinedListDbItem {
+} = {}): RemoteUserDefinedListDbItem {
   return {
     kind: DbItemKind.RemoteUserDefinedList,
     expanded,
@@ -109,9 +108,9 @@ export function createRootLocalDbItem({
   children = [],
   expanded = false,
 }: {
-  children?: Array<LocalDatabaseDbItem | LocalListDbItem>;
+  children?: LocalDbItem[];
   expanded?: boolean;
-}): RootLocalDbItem {
+} = {}): RootLocalDbItem {
   return {
     kind: DbItemKind.RootLocal,
     children,
@@ -120,10 +119,10 @@ export function createRootLocalDbItem({
 }
 
 export function createLocalDatabaseDbItem({
-  databaseName = `database${getRandomInt()}`,
-  dateAdded = getRandomInt(),
-  language = `language${getRandomInt()}`,
-  storagePath = `storagePath${getRandomInt()}`,
+  databaseName = `database${faker.datatype.number()}`,
+  dateAdded = faker.date.past().getTime(),
+  language = `language${faker.datatype.number()}`,
+  storagePath = `storagePath${faker.datatype.number()}`,
   selected = false,
 }: {
   databaseName?: string;
@@ -131,7 +130,7 @@ export function createLocalDatabaseDbItem({
   language?: string;
   storagePath?: string;
   selected?: boolean;
-}): LocalDatabaseDbItem {
+} = {}): LocalDatabaseDbItem {
   return {
     kind: DbItemKind.LocalDatabase,
     selected,
@@ -143,7 +142,7 @@ export function createLocalDatabaseDbItem({
 }
 
 export function createLocalListDbItem({
-  listName = `top_${getRandomInt()}`,
+  listName = `top_${faker.datatype.number()}`,
   selected = false,
   expanded = false,
   databases = [],
@@ -152,7 +151,7 @@ export function createLocalListDbItem({
   databases?: LocalDatabaseDbItem[];
   selected?: boolean;
   expanded?: boolean;
-}): LocalListDbItem {
+} = {}): LocalListDbItem {
   return {
     kind: DbItemKind.LocalList,
     selected,
@@ -160,8 +159,4 @@ export function createLocalListDbItem({
     databases,
     listName,
   };
-}
-
-function getRandomInt() {
-  return Math.floor(Math.random() * 100);
 }

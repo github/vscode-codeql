@@ -16,13 +16,13 @@ describe("db item selection", () => {
     const dbItems: DbItem[] = [
       createRootRemoteDbItem({
         children: [
-          createRemoteSystemDefinedListDbItem({}),
-          createRemoteOwnerDbItem({}),
-          createRemoteUserDefinedListDbItem({}),
+          createRemoteSystemDefinedListDbItem(),
+          createRemoteOwnerDbItem(),
+          createRemoteUserDefinedListDbItem(),
         ],
       }),
       createRootLocalDbItem({
-        children: [createLocalListDbItem({}), createLocalDatabaseDbItem({})],
+        children: [createLocalListDbItem(), createLocalDatabaseDbItem()],
       }),
     ];
 
@@ -42,8 +42,8 @@ describe("db item selection", () => {
           }),
           createLocalListDbItem({
             databases: [
-              createLocalDatabaseDbItem({}),
-              createLocalDatabaseDbItem({}),
+              createLocalDatabaseDbItem(),
+              createLocalDatabaseDbItem(),
             ],
           }),
         ],
@@ -65,8 +65,8 @@ describe("db item selection", () => {
     const dbItems: DbItem[] = [
       createRootRemoteDbItem({
         children: [
-          createRemoteSystemDefinedListDbItem({}),
-          createRemoteOwnerDbItem({}),
+          createRemoteSystemDefinedListDbItem(),
+          createRemoteOwnerDbItem(),
           createRemoteUserDefinedListDbItem({
             listName: "my list",
             selected: true,
@@ -103,9 +103,9 @@ describe("db item selection", () => {
     const dbItems: DbItem[] = [
       createRootRemoteDbItem({
         children: [
-          createRemoteSystemDefinedListDbItem({}),
-          createRemoteOwnerDbItem({}),
-          createRemoteUserDefinedListDbItem({}),
+          createRemoteSystemDefinedListDbItem(),
+          createRemoteOwnerDbItem(),
+          createRemoteUserDefinedListDbItem(),
         ],
       }),
       createRemoteSystemDefinedListDbItem({
@@ -129,8 +129,8 @@ describe("db item selection", () => {
     const dbItems: DbItem[] = [
       createRootRemoteDbItem({
         children: [
-          createRemoteSystemDefinedListDbItem({}),
-          createRemoteOwnerDbItem({}),
+          createRemoteSystemDefinedListDbItem(),
+          createRemoteOwnerDbItem(),
           createRemoteUserDefinedListDbItem({
             repos: [],
             selected: true,
