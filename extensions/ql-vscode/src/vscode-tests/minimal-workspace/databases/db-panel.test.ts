@@ -60,6 +60,7 @@ describe("db panel", () => {
           databases: [],
         },
       },
+      expanded: [],
     };
 
     await saveDbConfig(dbConfig);
@@ -123,6 +124,7 @@ describe("db panel", () => {
           databases: [],
         },
       },
+      expanded: [],
     };
 
     await saveDbConfig(dbConfig);
@@ -174,6 +176,7 @@ describe("db panel", () => {
           databases: [],
         },
       },
+      expanded: [],
     };
 
     await saveDbConfig(dbConfig);
@@ -213,6 +216,7 @@ describe("db panel", () => {
           databases: [],
         },
       },
+      expanded: [],
     };
 
     await saveDbConfig(dbConfig);
@@ -281,6 +285,7 @@ describe("db panel", () => {
           databases: [],
         },
       },
+      expanded: [],
     };
 
     await saveDbConfig(dbConfig);
@@ -359,6 +364,7 @@ describe("db panel", () => {
           ],
         },
       },
+      expanded: [],
     };
 
     await saveDbConfig(dbConfig);
@@ -421,6 +427,7 @@ describe("db panel", () => {
           databases: [],
         },
       },
+      expanded: [],
       selected: {
         kind: SelectedDbItemKind.RemoteUserDefinedList,
         listName: "my-list-2",
@@ -477,6 +484,7 @@ describe("db panel", () => {
           databases: [],
         },
       },
+      expanded: [],
       selected: {
         kind: SelectedDbItemKind.RemoteRepository,
         repositoryName: "owner1/repo1",

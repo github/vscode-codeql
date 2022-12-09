@@ -3,6 +3,7 @@ import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbItem } from "./db-item";
+import { calculateNewExpandedState } from "./db-item-expansion";
 import {
   getSelectedDbItem,
   mapDbItemToSelectedDbItem,
@@ -53,5 +54,23 @@ export class DbManager {
     if (selectedDbItem) {
       await this.dbConfigStore.setSelectedDbItem(selectedDbItem);
     }
+  }
+
+  public async updateDbItemExpandedState(
+    dbItem: DbItem,
+    itemExpanded: boolean,
+  ): Promise<void> {
+    const configResult = this.dbConfigStore.getConfig();
+    if (configResult.isFailure) {
+      throw Error("Cannot update expanded state if config is not loaded");
+    }
+
+    const newExpandedItems = calculateNewExpandedState(
+      configResult.value.expanded,
+      dbItem,
+      itemExpanded,
+    );
+
+    await this.dbConfigStore.updateExpandedState(newExpandedItems);
   }
 }

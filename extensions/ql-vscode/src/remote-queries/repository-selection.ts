@@ -4,9 +4,12 @@ import { extLogger } from "../common";
 import {
   getRemoteRepositoryLists,
   getRemoteRepositoryListsPath,
+  isNewQueryRunExperienceEnabled,
 } from "../config";
 import { OWNER_REGEX, REPO_REGEX } from "../pure/helpers-pure";
 import { UserCancellationException } from "../commandRunner";
+import { DbManager } from "../databases/db-manager";
+import { DbItemKind } from "../databases/db-item";
 
 export interface RepositorySelection {
   repositories?: string[];
@@ -30,7 +33,33 @@ interface RepoList {
  * Gets the repositories or repository lists to run the query against.
  * @returns The user selection.
  */
-export async function getRepositorySelection(): Promise<RepositorySelection> {
+export async function getRepositorySelection(
+  dbManager?: DbManager,
+): Promise<RepositorySelection> {
+  if (isNewQueryRunExperienceEnabled()) {
+    const selectedDbItem = dbManager?.getSelectedDbItem();
+    if (selectedDbItem) {
+      switch (selectedDbItem.kind) {
+        case DbItemKind.LocalDatabase || DbItemKind.LocalList:
+          throw new Error("Local databases and lists are not supported yet.");
+        case DbItemKind.RemoteSystemDefinedList:
+          return { repositoryLists: [selectedDbItem.listName] };
+        case DbItemKind.RemoteUserDefinedList:
+          return {
+            repositories: selectedDbItem.repos.map((repo) => repo.repoFullName),
+          };
+        case DbItemKind.RemoteOwner:
+          return { owners: [selectedDbItem.ownerName] };
+        case DbItemKind.RemoteRepo:
+          return { repositories: [selectedDbItem.repoFullName] };
+      }
+    } else {
+      throw new Error(
+        "Please select a remote database to run the query against.",
+      );
+    }
+  }
+
   const quickPickItems = [
     createCustomRepoQuickPickItem(),
     createAllReposOfOwnerQuickPickItem(),
@@ -49,15 +78,21 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     options,
   );
 
-  if (quickpick?.repositories?.length) {
+  if (!quickpick) {
+    // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
+    // We set 'true' to make this a silent exception.
+    throw new UserCancellationException("No repositories selected", true);
+  }
+
+  if (quickpick.repositories?.length) {
     void extLogger.log(
       `Selected repositories: ${quickpick.repositories.join(", ")}`,
     );
     return { repositories: quickpick.repositories };
-  } else if (quickpick?.repositoryList) {
+  } else if (quickpick.repositoryList) {
     void extLogger.log(`Selected repository list: ${quickpick.repositoryList}`);
     return { repositoryLists: [quickpick.repositoryList] };
-  } else if (quickpick?.useCustomRepo) {
+  } else if (quickpick.useCustomRepo) {
     const customRepo = await getCustomRepo();
     if (customRepo === undefined) {
       // The user cancelled, do nothing.
@@ -70,7 +105,7 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     }
     void extLogger.log(`Entered repository: ${customRepo}`);
     return { repositories: [customRepo] };
-  } else if (quickpick?.useAllReposOfOwner) {
+  } else if (quickpick.useAllReposOfOwner) {
     const owner = await getOwner();
     if (owner === undefined) {
       // The user cancelled, do nothing.
@@ -82,9 +117,9 @@ export async function getRepositorySelection(): Promise<RepositorySelection> {
     void extLogger.log(`Entered owner: ${owner}`);
     return { owners: [owner] };
   } else {
-    // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
-    // We set 'true' to make this a silent exception.
-    throw new UserCancellationException("No repositories selected", true);
+    // This means the user has selected something, but there is nothing actually linked to this item. We want to show
+    // this to the user.
+    throw new UserCancellationException("No repositories selected", false);
   }
 }
 
