@@ -5,6 +5,7 @@ import {
   ExtensionContext,
   Uri,
   env,
+  window,
 } from "vscode";
 import { nanoid } from "nanoid";
 import { join } from "path";
@@ -13,7 +14,7 @@ import { EOL } from "os";
 
 import { Credentials } from "../authentication";
 import { CodeQLCliServer } from "../cli";
-import { ProgressCallback } from "../commandRunner";
+import { ProgressCallback, UserCancellationException } from "../commandRunner";
 import {
   createTimestampFile,
   showAndLogErrorMessage,
@@ -204,6 +205,47 @@ export class RemoteQueriesManager extends DisposableObject {
       repositoryCount,
     );
 
+    const queryId = this.createQueryId();
+
+    await this.prepareStorageDirectory(queryId);
+    await this.storeJsonFile(queryId, "query.json", query);
+
+    this.remoteQueryAddedEventEmitter.fire({ queryId, query });
+    void commands.executeCommand("codeQL.monitorRemoteQuery", queryId, query);
+  }
+
+  public async getRemoteQueryResults(
+    _uri: Uri | undefined,
+    _progress: ProgressCallback,
+    _token: CancellationToken,
+  ) {
+    const workflowRunUrl = await window.showInputBox({
+      title: "Workflow address",
+      placeHolder: "<owner>/<repo>/actions/runs/<run>",
+      prompt:
+        "Enter the URL of a GitHub Actions workflow run in the format <owner>/<repo>/actions/runs/<run>",
+      ignoreFocusOut: true,
+    });
+
+    if (!workflowRunUrl) {
+      throw new UserCancellationException("No workflow address entered.");
+    }
+
+    const [owner, repo, , , run] = workflowRunUrl.split("/");
+
+    const query: RemoteQuery = {
+      queryFilePath: "",
+      queryText: "",
+      language: "",
+      executionStartTime: 0,
+      queryName: `Imported query from ${workflowRunUrl}`,
+      controllerRepository: {
+        owner,
+        name: repo,
+      },
+      actionsWorkflowRunId: Number.parseInt(run),
+      repositoryCount: 1,
+    };
     const queryId = this.createQueryId();
 
     await this.prepareStorageDirectory(queryId);

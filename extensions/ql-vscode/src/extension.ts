@@ -1150,6 +1150,39 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.importVariantAnalysisResults",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        uri: Uri | undefined,
+      ) => {
+        if (isCanary()) {
+          progress({
+            maxStep: 5,
+            step: 0,
+            message: "Getting credentials",
+          });
+
+          await rqm.getRemoteQueryResults(
+            uri || window.activeTextEditor?.document.uri,
+            progress,
+            token,
+          );
+        } else {
+          throw new Error(
+            "Variant analysis requires the CodeQL Canary version to run.",
+          );
+        }
+      },
+      {
+        title: "Import Variant Analysis Results",
+        cancellable: true,
+      },
+    ),
+  );
+
+  ctx.subscriptions.push(
     commandRunner(
       "codeQL.monitorRemoteQuery",
       async (queryId: string, query: RemoteQuery, token: CancellationToken) => {
