@@ -13,24 +13,12 @@ import {
   createLocalTree,
   createRemoteTree,
 } from "../../../src/databases/db-tree-creator";
+import { createDbConfig } from "../../factories/db-config-factories";
 
 describe("db tree creator", () => {
   describe("createRemoteTree", () => {
     it("should build root node and system defined lists", () => {
-      const dbConfig: DbConfig = {
-        databases: {
-          remote: {
-            repositoryLists: [],
-            owners: [],
-            repositories: [],
-          },
-          local: {
-            lists: [],
-            databases: [],
-          },
-        },
-        expanded: [],
-      };
+      const dbConfig = createDbConfig();
 
       const dbTreeRoot = createRemoteTree(dbConfig);
 
@@ -62,29 +50,18 @@ describe("db tree creator", () => {
     });
 
     it("should create remote user defined list nodes", () => {
-      const dbConfig: DbConfig = {
-        databases: {
-          remote: {
-            repositoryLists: [
-              {
-                name: "my-list-1",
-                repositories: ["owner1/repo1", "owner1/repo2", "owner2/repo1"],
-              },
-              {
-                name: "my-list-2",
-                repositories: ["owner3/repo1", "owner3/repo2", "owner4/repo1"],
-              },
-            ],
-            owners: [],
-            repositories: [],
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1", "owner1/repo2", "owner2/repo1"],
           },
-          local: {
-            lists: [],
-            databases: [],
+          {
+            name: "my-list-2",
+            repositories: ["owner3/repo1", "owner3/repo2", "owner4/repo1"],
           },
-        },
-        expanded: [],
-      };
+        ],
+      });
 
       const dbTreeRoot = createRemoteTree(dbConfig);
 
@@ -161,20 +138,9 @@ describe("db tree creator", () => {
     });
 
     it("should create remote repo nodes", () => {
-      const dbConfig: DbConfig = {
-        databases: {
-          remote: {
-            repositoryLists: [],
-            owners: [],
-            repositories: ["owner1/repo1", "owner1/repo2", "owner2/repo1"],
-          },
-          local: {
-            lists: [],
-            databases: [],
-          },
-        },
-        expanded: [],
-      };
+      const dbConfig = createDbConfig({
+        remoteRepos: ["owner1/repo1", "owner1/repo2", "owner2/repo1"],
+      });
 
       const dbTreeRoot = createRemoteTree(dbConfig);
 
@@ -202,33 +168,18 @@ describe("db tree creator", () => {
 
     describe("selected db item", () => {
       it("should allow selecting a remote user defined list node", () => {
-        const dbConfig: DbConfig = {
-          databases: {
-            remote: {
-              repositoryLists: [
-                {
-                  name: "my-list-1",
-                  repositories: [
-                    "owner1/repo1",
-                    "owner1/repo2",
-                    "owner2/repo1",
-                  ],
-                },
-              ],
-              owners: [],
-              repositories: [],
+        const dbConfig = createDbConfig({
+          remoteLists: [
+            {
+              name: "my-list-1",
+              repositories: ["owner1/repo1", "owner1/repo2", "owner2/repo1"],
             },
-            local: {
-              lists: [],
-              databases: [],
-            },
-          },
-          expanded: [],
+          ],
           selected: {
             kind: SelectedDbItemKind.RemoteUserDefinedList,
             listName: "my-list-1",
           },
-        };
+        });
 
         const dbTreeRoot = createRemoteTree(dbConfig);
 
@@ -243,24 +194,13 @@ describe("db tree creator", () => {
       });
 
       it("should allow selecting a remote owner node", () => {
-        const dbConfig: DbConfig = {
-          databases: {
-            remote: {
-              repositoryLists: [],
-              owners: ["owner1", "owner2"],
-              repositories: [],
-            },
-            local: {
-              lists: [],
-              databases: [],
-            },
-          },
-          expanded: [],
+        const dbConfig = createDbConfig({
+          remoteOwners: ["owner1", "owner2"],
           selected: {
             kind: SelectedDbItemKind.RemoteOwner,
             ownerName: "owner1",
           },
-        };
+        });
 
         const dbTreeRoot = createRemoteTree(dbConfig);
 
@@ -276,24 +216,13 @@ describe("db tree creator", () => {
       });
 
       it("should allow selecting a remote repo node", () => {
-        const dbConfig: DbConfig = {
-          databases: {
-            remote: {
-              repositoryLists: [],
-              owners: [],
-              repositories: ["owner1/repo1", "owner1/repo2"],
-            },
-            local: {
-              lists: [],
-              databases: [],
-            },
-          },
-          expanded: [],
+        const dbConfig = createDbConfig({
+          remoteRepos: ["owner1/repo1", "owner1/repo2"],
           selected: {
             kind: SelectedDbItemKind.RemoteRepository,
             repositoryName: "owner1/repo2",
           },
-        };
+        });
 
         const dbTreeRoot = createRemoteTree(dbConfig);
 
@@ -307,30 +236,20 @@ describe("db tree creator", () => {
       });
 
       it("should allow selecting a remote repo in a list", () => {
-        const dbConfig: DbConfig = {
-          databases: {
-            remote: {
-              repositoryLists: [
-                {
-                  name: "my-list-1",
-                  repositories: ["owner1/repo1"],
-                },
-              ],
-              owners: [],
-              repositories: ["owner1/repo2"],
+        const dbConfig = createDbConfig({
+          remoteLists: [
+            {
+              name: "my-list-1",
+              repositories: ["owner1/repo1"],
             },
-            local: {
-              lists: [],
-              databases: [],
-            },
-          },
-          expanded: [],
+          ],
+          remoteRepos: ["owner1/repo2"],
           selected: {
             kind: SelectedDbItemKind.RemoteRepository,
             listName: "my-list-1",
             repositoryName: "owner1/repo1",
           },
-        };
+        });
 
         const dbTreeRoot = createRemoteTree(dbConfig);
 
@@ -350,24 +269,13 @@ describe("db tree creator", () => {
 
     describe("expanded db items", () => {
       it("should allow expanding the root remote list node", () => {
-        const dbConfig: DbConfig = {
-          databases: {
-            remote: {
-              repositoryLists: [],
-              owners: [],
-              repositories: [],
-            },
-            local: {
-              lists: [],
-              databases: [],
-            },
-          },
+        const dbConfig = createDbConfig({
           expanded: [
             {
               kind: ExpandedDbItemKind.RootRemote,
             },
           ],
-        };
+        });
 
         const dbTreeRoot = createRemoteTree(dbConfig);
 
@@ -377,27 +285,13 @@ describe("db tree creator", () => {
       });
 
       it("should allow expanding a remote user defined list node", () => {
-        const dbConfig: DbConfig = {
-          databases: {
-            remote: {
-              repositoryLists: [
-                {
-                  name: "my-list-1",
-                  repositories: [
-                    "owner1/repo1",
-                    "owner1/repo2",
-                    "owner2/repo1",
-                  ],
-                },
-              ],
-              owners: [],
-              repositories: [],
+        const dbConfig = createDbConfig({
+          remoteLists: [
+            {
+              name: "my-list-1",
+              repositories: ["owner1/repo1", "owner1/repo2", "owner2/repo1"],
             },
-            local: {
-              lists: [],
-              databases: [],
-            },
-          },
+          ],
           expanded: [
             {
               kind: ExpandedDbItemKind.RootRemote,
@@ -407,7 +301,7 @@ describe("db tree creator", () => {
               listName: "my-list-1",
             },
           ],
-        };
+        });
 
         const dbTreeRoot = createRemoteTree(dbConfig);
 
@@ -426,20 +320,7 @@ describe("db tree creator", () => {
 
   describe("createLocalTree", () => {
     it("should build root node", () => {
-      const dbConfig: DbConfig = {
-        databases: {
-          remote: {
-            repositoryLists: [],
-            owners: [],
-            repositories: [],
-          },
-          local: {
-            lists: [],
-            databases: [],
-          },
-        },
-        expanded: [],
-      };
+      const dbConfig = createDbConfig();
 
       const dbTreeRoot = createLocalTree(dbConfig);
 
@@ -450,49 +331,38 @@ describe("db tree creator", () => {
     });
 
     it("should create local list nodes", () => {
-      const dbConfig: DbConfig = {
-        databases: {
-          remote: {
-            repositoryLists: [],
-            owners: [],
-            repositories: [],
-          },
-          local: {
-            lists: [
+      const dbConfig = createDbConfig({
+        localLists: [
+          {
+            name: "my-list-1",
+            databases: [
               {
-                name: "my-list-1",
-                databases: [
-                  {
-                    name: "db1",
-                    dateAdded: 1668428293677,
-                    language: "cpp",
-                    storagePath: "/path/to/db1/",
-                  },
-                  {
-                    name: "db2",
-                    dateAdded: 1668428472731,
-                    language: "cpp",
-                    storagePath: "/path/to/db2/",
-                  },
-                ],
+                name: "db1",
+                dateAdded: 1668428293677,
+                language: "cpp",
+                storagePath: "/path/to/db1/",
               },
               {
-                name: "my-list-2",
-                databases: [
-                  {
-                    name: "db3",
-                    dateAdded: 1668428472731,
-                    language: "ruby",
-                    storagePath: "/path/to/db3/",
-                  },
-                ],
+                name: "db2",
+                dateAdded: 1668428472731,
+                language: "cpp",
+                storagePath: "/path/to/db2/",
               },
             ],
-            databases: [],
           },
-        },
-        expanded: [],
-      };
+          {
+            name: "my-list-2",
+            databases: [
+              {
+                name: "db3",
+                dateAdded: 1668428472731,
+                language: "ruby",
+                storagePath: "/path/to/db3/",
+              },
+            ],
+          },
+        ],
+      });
 
       const dbTreeRoot = createLocalTree(dbConfig);
 
@@ -536,33 +406,22 @@ describe("db tree creator", () => {
     });
 
     it("should create local database nodes", () => {
-      const dbConfig: DbConfig = {
-        databases: {
-          remote: {
-            repositoryLists: [],
-            owners: [],
-            repositories: [],
+      const dbConfig: DbConfig = createDbConfig({
+        localDbs: [
+          {
+            name: "db1",
+            dateAdded: 1668428293677,
+            language: "csharp",
+            storagePath: "/path/to/db1/",
           },
-          local: {
-            lists: [],
-            databases: [
-              {
-                name: "db1",
-                dateAdded: 1668428293677,
-                language: "csharp",
-                storagePath: "/path/to/db1/",
-              },
-              {
-                name: "db2",
-                dateAdded: 1668428472731,
-                language: "go",
-                storagePath: "/path/to/db2/",
-              },
-            ],
+          {
+            name: "db2",
+            dateAdded: 1668428472731,
+            language: "go",
+            storagePath: "/path/to/db2/",
           },
-        },
-        expanded: [],
-      };
+        ],
+      });
 
       const dbTreeRoot = createLocalTree(dbConfig);
 
