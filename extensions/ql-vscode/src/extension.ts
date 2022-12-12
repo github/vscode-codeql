@@ -38,7 +38,6 @@ import {
   CliConfigListener,
   DistributionConfigListener,
   isCanary,
-  isNewQueryRunExperienceEnabled,
   isVariantAnalysisLiveResultsEnabled,
   joinOrderWarningThreshold,
   MAX_QUERIES,
@@ -136,10 +135,9 @@ import { VariantAnalysisManager } from "./remote-queries/variant-analysis-manage
 import { createVariantAnalysisContentProvider } from "./remote-queries/variant-analysis-content-provider";
 import { VSCodeMockGitHubApiServer } from "./mocks/vscode-mock-gh-api-server";
 import { VariantAnalysisResultsManager } from "./remote-queries/variant-analysis-results-manager";
-import { initializeDbModule } from "./databases/db-module";
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
-import { AppMode } from "./common/app";
+import { DbModule } from "./databases/db-module";
 
 /**
  * extension.ts
@@ -625,15 +623,9 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing variant analysis manager.");
 
-  // We only want to initialize the new db panel when the newQueryRunExperience is enabled
-  let dbModule;
-  if (isCanary() && isNewQueryRunExperienceEnabled()) {
-    const app = new ExtensionApp(ctx);
-    if (app.mode === AppMode.Development) {
-      dbModule = await initializeDbModule(app);
-      ctx.subscriptions.push(dbModule);
-    }
-  }
+  const app = new ExtensionApp(ctx);
+
+  const dbModule = await DbModule.initialize(app);
 
   const variantAnalysisStorageDir = join(
     ctx.globalStorageUri.fsPath,
@@ -650,7 +642,7 @@ async function activateWithInstalledDistribution(
     cliServer,
     variantAnalysisStorageDir,
     variantAnalysisResultsManager,
-    dbModule ? dbModule.dbManager : undefined, // the dbModule is only needed when the newQueryRunExperience is enabled
+    dbModule?.dbManager, // the dbModule is only needed when the newQueryRunExperience is enabled
   );
   ctx.subscriptions.push(variantAnalysisManager);
   ctx.subscriptions.push(variantAnalysisResultsManager);

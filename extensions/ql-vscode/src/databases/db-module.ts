@@ -1,24 +1,42 @@
 import { window } from "vscode";
-import { App } from "../common/app";
+import { App, AppMode } from "../common/app";
 import { extLogger } from "../common";
 import { DisposableObject } from "../pure/disposable-object";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbManager } from "./db-manager";
 import { DbPanel } from "./ui/db-panel";
 import { DbSelectionDecorationProvider } from "./ui/db-selection-decoration-provider";
+import { isCanary, isNewQueryRunExperienceEnabled } from "../config";
 
 export class DbModule extends DisposableObject {
   public readonly dbManager: DbManager;
   private readonly dbConfigStore: DbConfigStore;
 
-  constructor(app: App) {
+  private constructor(app: App) {
     super();
 
     this.dbConfigStore = new DbConfigStore(app);
     this.dbManager = new DbManager(app, this.dbConfigStore);
   }
 
-  public async initialize(): Promise<void> {
+  public static async initialize(app: App): Promise<DbModule | undefined> {
+    if (
+      isCanary() &&
+      isNewQueryRunExperienceEnabled() &&
+      app.mode === AppMode.Development
+    ) {
+      const dbModule = new DbModule(app);
+      app.subscriptions.push(dbModule);
+
+      await dbModule.initialize();
+
+      return dbModule;
+    }
+
+    return undefined;
+  }
+
+  private async initialize(): Promise<void> {
     void extLogger.log("Initializing database module");
 
     await this.dbConfigStore.initialize();
@@ -33,10 +51,4 @@ export class DbModule extends DisposableObject {
 
     window.registerFileDecorationProvider(dbSelectionDecorationProvider);
   }
-}
-
-export async function initializeDbModule(app: App): Promise<DbModule> {
-  const dbModule = new DbModule(app);
-  await dbModule.initialize();
-  return dbModule;
 }
