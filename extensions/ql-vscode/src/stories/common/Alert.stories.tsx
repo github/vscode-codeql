@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 import { VSCodeButton, VSCodeLink } from "@vscode/webview-ui-toolkit/react";

@@ -14,7 +14,7 @@
     "noFallthroughCasesInSwitch": true,
     "experimentalDecorators": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true
+    "skipLibCheck": true
   },
   "exclude": ["node_modules"]
 }

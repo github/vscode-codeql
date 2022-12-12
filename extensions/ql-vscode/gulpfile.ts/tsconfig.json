@@ -1,23 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "declaration": true,
-    "strict": true,
-    "module": "commonjs",
-    "target": "es2021",
-    "lib": ["ES2021"],
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "rootDir": ".",
-    "strictNullChecks": true,
-    "noFallthroughCasesInSwitch": true,
-    "preserveWatchOutput": true,
-    "newLine": "lf",
-    "noImplicitReturns": true,
-    "experimentalDecorators": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "esModuleInterop": true
+    "rootDir": "."
   },
   "include": ["*.ts"]
 }
