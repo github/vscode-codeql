@@ -18,8 +18,16 @@ export class DbPanel extends DisposableObject {
       canSelectMany: false,
     });
 
-    treeView.onDidCollapseElement.bind(this.onDidCollapseElement);
-    treeView.onDidExpandElement.bind(this.onDidExpandElement);
+    this.push(
+      treeView.onDidCollapseElement(async (e) => {
+        await this.onDidCollapseElement(e);
+      }),
+    );
+    this.push(
+      treeView.onDidExpandElement(async (e) => {
+        await this.onDidExpandElement(e);
+      }),
+    );
 
     this.push(treeView);
   }

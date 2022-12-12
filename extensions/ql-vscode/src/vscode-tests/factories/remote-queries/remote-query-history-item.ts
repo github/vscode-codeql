@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import { RemoteQueryHistoryItem } from "../../../remote-queries/remote-query-history-item";
 import { QueryStatus } from "../../../query-status";
 
@@ -25,7 +26,7 @@ export function createMockRemoteQueryHistoryItem({
     resultCount,
     status,
     completed: false,
-    queryId: "queryId",
+    queryId: nanoid(),
     remoteQuery: {
       queryName: "query-name",
       queryFilePath: "query-file.ql",

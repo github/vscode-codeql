@@ -101,7 +101,7 @@ export class VariantAnalysisManager
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager,
-    private readonly dbManager: DbManager,
+    private readonly dbManager?: DbManager, // the dbManager is only needed when the newQueryRunExperience is enabled
   ) {
     super();
     this.variantAnalysisMonitor = this.push(
