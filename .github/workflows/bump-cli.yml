@@ -1,0 +1,44 @@
+name: Bump CLI version
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+  - cron: 0 0 */14 * * # run every 14 days
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -qq jq
+          sudo apt-get install gh
+        shell: bash
+      - name: Bump CLI
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          scripts/replace-cli-version.sh
+      - name: Push changes to a branch
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git checkout -b bump-cli
+          if [[ `git status --porcelain` ]]; then
+            git add .
+            git commit -m "automatically bump cli version"
+            git push --set-upstream origin bump-cli
+            git push
+            gh pr create --title "Bump CLI Version for integration tests" --body "" 
+          fi
