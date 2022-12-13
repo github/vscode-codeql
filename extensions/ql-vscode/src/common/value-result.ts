@@ -1,13 +1,13 @@
 /**
  * Represents a result that can be either a value or some errors.
  */
-export class ValueResult<TValue> {
+export class ValueResult<TValue, TError> {
   private constructor(
-    private readonly errorMsgs: string[],
+    private readonly errs: TError[],
     private readonly val?: TValue,
   ) {}
 
-  public static ok<TValue>(value: TValue): ValueResult<TValue> {
+  public static ok<TValue, TError>(value: TValue): ValueResult<TValue, TError> {
     if (value === undefined) {
       throw new Error("Value must be set for successful result");
     }
@@ -15,30 +15,30 @@ export class ValueResult<TValue> {
     return new ValueResult([], value);
   }
 
-  public static fail<TValue>(errorMsgs: string[]): ValueResult<TValue> {
-    if (errorMsgs.length === 0) {
-      throw new Error(
-        "At least one error message must be set for a failed result",
-      );
+  public static fail<TValue, TError>(
+    errors: TError[],
+  ): ValueResult<TValue, TError> {
+    if (errors.length === 0) {
+      throw new Error("At least one error must be set for a failed result");
     }
 
-    return new ValueResult<TValue>(errorMsgs, undefined);
+    return new ValueResult<TValue, TError>(errors, undefined);
   }
 
   public get isOk(): boolean {
-    return this.errorMsgs.length === 0;
+    return this.errs.length === 0;
   }
 
   public get isFailure(): boolean {
-    return this.errorMsgs.length > 0;
+    return this.errs.length > 0;
   }
 
-  public get errors(): string[] {
-    if (!this.errorMsgs) {
+  public get errors(): TError[] {
+    if (!this.errs) {
       throw new Error("Cannot get error for successful result");
     }
 
-    return this.errorMsgs;
+    return this.errs;
   }
 
   public get value(): TValue {

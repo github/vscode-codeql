@@ -33,7 +33,7 @@ export class DbManager {
     return getSelectedDbItem(dbItems.value);
   }
 
-  public getDbItems(): ValueResult<DbItem[]> {
+  public getDbItems(): ValueResult<DbItem[], string> {
     const configResult = this.dbConfigStore.getConfig();
     if (configResult.isFailure) {
       return ValueResult.fail(configResult.errors);
