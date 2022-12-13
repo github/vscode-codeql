@@ -48,7 +48,7 @@ export class DbConfigStore extends DisposableObject {
     this.configWatcher?.unwatch(this.configPath);
   }
 
-  public getConfig(): ValueResult<DbConfig> {
+  public getConfig(): ValueResult<DbConfig, string> {
     if (this.config) {
       // Clone the config so that it's not modified outside of this class.
       return ValueResult.ok(cloneDbConfig(this.config));
