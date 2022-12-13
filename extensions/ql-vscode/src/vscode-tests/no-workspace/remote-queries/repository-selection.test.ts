@@ -33,7 +33,7 @@ describe("repository selection", () => {
       );
     });
 
-    it("should return throw error when empt remote user defined list is selected", async () => {
+    it("should throw an error when an empty remote user defined list is selected", async () => {
       const dbManager = setUpDbManager({
         kind: DbItemKind.RemoteUserDefinedList,
         repos: [],
