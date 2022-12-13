@@ -90,6 +90,21 @@ export class DbConfigStore extends DisposableObject {
     await this.writeConfig(config);
   }
 
+  public async addRemoteList(listName: string): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot add remote list if config is not loaded");
+    }
+
+    const config: DbConfig = cloneDbConfig(this.config);
+    config.databases.remote.repositoryLists.push({
+      name: listName,
+      repositories: [],
+    });
+
+    // TODO: validate that the name doesn't already exist
+    await this.writeConfig(config);
+  }
+
   private async writeConfig(config: DbConfig): Promise<void> {
     await writeJSON(this.configPath, config, {
       spaces: 2,

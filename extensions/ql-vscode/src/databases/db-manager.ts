@@ -73,4 +73,8 @@ export class DbManager {
 
     await this.dbConfigStore.updateExpandedState(newExpandedItems);
   }
+
+  public async addNewRemoteList(listName: string): Promise<void> {
+    await this.dbConfigStore.addRemoteList(listName);
+  }
 }
