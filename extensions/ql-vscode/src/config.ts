@@ -554,14 +554,8 @@ export function isIntegrationTestMode() {
   return process.env.INTEGRATION_TEST_MODE === "true";
 }
 
-/**
- * A flag indicating whether to enable the experimental "live results" feature
- * for multi-repo variant analyses.
- */
-const LIVE_RESULTS = new Setting("liveResults", REMOTE_QUERIES_SETTING);
-
 export function isVariantAnalysisLiveResultsEnabled(): boolean {
-  return !!LIVE_RESULTS.getValue<boolean>();
+  return true;
 }
 
 /**
