@@ -16,7 +16,8 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   },
                   "repositories": {
                     "type": "array",
@@ -65,16 +66,19 @@
                       "type": "object",
                       "properties": {
                         "name": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1
                         },
                         "dateAdded": {
                           "type": "number"
                         },
                         "language": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1
                         },
                         "storagePath": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1
                         }
                       },
                       "required": [
@@ -97,16 +101,19 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   },
                   "dateAdded": {
                     "type": "number"
                   },
                   "language": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   },
                   "storagePath": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   }
                 },
                 "required": ["name", "dateAdded", "language", "storagePath"],
@@ -143,7 +150,8 @@
                 "enum": ["localUserDefinedList"]
               },
               "listName": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               }
             },
             "required": ["kind", "listName"],
@@ -166,7 +174,8 @@
                 "enum": ["remoteUserDefinedList"]
               },
               "listName": {
-                "type": "string"
+                "type": "string",
+                "minLength": 1
               }
             },
             "required": ["kind", "listName"],
@@ -185,7 +194,8 @@
               "enum": ["localUserDefinedList"]
             },
             "listName": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             }
           },
           "required": ["kind", "listName"],
@@ -201,7 +211,8 @@
               "type": "string"
             },
             "listName": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             }
           },
           "required": ["kind", "databaseName"],
@@ -214,7 +225,8 @@
               "enum": ["remoteSystemDefinedList"]
             },
             "listName": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             }
           },
           "required": ["kind", "listName"],
@@ -227,7 +239,8 @@
               "enum": ["remoteUserDefinedList"]
             },
             "listName": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             }
           },
           "required": ["kind", "listName"],
@@ -240,7 +253,8 @@
               "enum": ["remoteOwner"]
             },
             "ownerName": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             }
           },
           "required": ["kind", "ownerName"],
@@ -253,10 +267,12 @@
               "enum": ["remoteRepository"]
             },
             "repositoryName": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             },
             "listName": {
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             }
           },
           "required": ["kind", "repositoryName"],
