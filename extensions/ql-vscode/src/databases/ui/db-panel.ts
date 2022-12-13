@@ -58,7 +58,6 @@ export class DbPanel extends DisposableObject {
   }
 
   private async addNewRemoteList(): Promise<void> {
-    // TODO: check that config exists *before* showing the input box
     const listName = await window.showInputBox({
       prompt: "Enter a name for the new list",
       placeHolder: "example-list",
