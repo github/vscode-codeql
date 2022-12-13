@@ -8,9 +8,9 @@ import {
   convertLgtmUrlToDatabaseUrl,
   looksLikeLgtmUrl,
   findDirWithFile,
-  looksLikeGithubRepo,
 } from "../../databaseFetcher";
 import * as Octokit from "@octokit/rest";
+import { looksLikeGithubRepo } from "../../databases/github-nwo";
 
 // These tests make API calls and may need extra time to complete.
 jest.setTimeout(10000);
