@@ -90,6 +90,17 @@ export class DbConfigStore extends DisposableObject {
     await this.writeConfig(config);
   }
 
+  public async addRemoteRepo(repoNwo: string): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot add remote repo if config is not loaded");
+    }
+
+    const config: DbConfig = cloneDbConfig(this.config);
+    config.databases.remote.repositories.push(repoNwo);
+
+    await this.writeConfig(config);
+  }
+
   public async addRemoteList(listName: string): Promise<void> {
     if (!this.config) {
       throw Error("Cannot add remote list if config is not loaded");

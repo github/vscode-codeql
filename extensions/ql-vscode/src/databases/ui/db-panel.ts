@@ -1,9 +1,19 @@
-import { TreeViewExpansionEvent, window, workspace } from "vscode";
-import { commandRunner } from "../../commandRunner";
+import {
+  QuickPickItem,
+  TreeViewExpansionEvent,
+  window,
+  workspace,
+} from "vscode";
+import { commandRunner, UserCancellationException } from "../../commandRunner";
 import { DisposableObject } from "../../pure/disposable-object";
 import { DbManager } from "../db-manager";
+import { convertGitHubUrlToNwo, looksLikeGithubRepo } from "../github-nwo";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
 import { DbTreeViewItem } from "./db-tree-view-item";
+
+interface RemoteDatabaseQuickPickItem extends QuickPickItem {
+  kind: string;
+}
 
 export class DbPanel extends DisposableObject {
   private readonly dataProvider: DbTreeDataProvider;
@@ -39,6 +49,11 @@ export class DbPanel extends DisposableObject {
       ),
     );
     this.push(
+      commandRunner("codeQLDatabasesExperimental.addNewDatabase", () =>
+        this.addNewRemoteDatabase(),
+      ),
+    );
+    this.push(
       commandRunner("codeQLDatabasesExperimental.addNewList", () =>
         this.addNewRemoteList(),
       ),
@@ -55,6 +70,62 @@ export class DbPanel extends DisposableObject {
     const configPath = this.dbManager.getConfigPath();
     const document = await workspace.openTextDocument(configPath);
     await window.showTextDocument(document);
+  }
+
+  // TODO: reconsider naming, since we're not really adding a database
+  private async addNewRemoteDatabase(): Promise<void> {
+    const quickPickItems = [
+      {
+        label: "$(repo) From a GitHub repository",
+        detail: "Add a remote database from a GitHub repository",
+        alwaysShow: true,
+        kind: "repo",
+      },
+      {
+        label: "$(organization) All repositories of a GitHub org or owner",
+        detail:
+          "Add a remote list of databases from a GitHub organization or owner",
+        alwaysShow: true,
+        kind: "owner",
+      },
+    ];
+    const databaseKind =
+      await window.showQuickPick<RemoteDatabaseQuickPickItem>(quickPickItems, {
+        title: "Add a remote database",
+        placeHolder: "Select an option",
+        ignoreFocusOut: true,
+      });
+    if (!databaseKind) {
+      // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
+      // We set 'true' to make this a silent exception.
+      throw new UserCancellationException("No database selected", true);
+    }
+    if (databaseKind.kind === "repo") {
+      await this.addNewRemoteRepo();
+    } else if (databaseKind.kind === "owner") {
+      await this.addNewRemoteOwner();
+    }
+  }
+
+  private async addNewRemoteRepo(): Promise<void> {
+    const repoName = await window.showInputBox({
+      title: "Add a remote repository",
+      prompt: "Insert a GitHub repository URL or name with owner",
+      placeHolder: "github.com/<owner>/<repo> or <owner>/<repo>",
+    });
+    if (repoName === undefined) {
+      return;
+    }
+    if (!looksLikeGithubRepo(repoName)) {
+      throw new Error(`Invalid GitHub repository: ${repoName}`);
+    }
+    const nwo = convertGitHubUrlToNwo(repoName) || repoName;
+
+    await this.dbManager.addNewRemoteRepo(nwo);
+  }
+
+  private async addNewRemoteOwner(): Promise<void> {
+    // TODO
   }
 
   private async addNewRemoteList(): Promise<void> {
