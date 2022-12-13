@@ -40,7 +40,7 @@ export class DbPanel extends DisposableObject {
     );
     this.push(
       commandRunner("codeQLDatabasesExperimental.addNewList", () =>
-        this.addNewList(),
+        this.addNewRemoteList(),
       ),
     );
     this.push(
@@ -57,7 +57,7 @@ export class DbPanel extends DisposableObject {
     await window.showTextDocument(document);
   }
 
-  private async addNewList(): Promise<void> {
+  private async addNewRemoteList(): Promise<void> {
     // TODO: check that config exists *before* showing the input box
     const listName = await window.showInputBox({
       prompt: "Enter a name for the new list",
@@ -66,7 +66,7 @@ export class DbPanel extends DisposableObject {
     if (listName === undefined) {
       return;
     }
-    await this.dbManager.addNewList(listName);
+    await this.dbManager.addNewRemoteList(listName);
   }
 
   private async setSelectedItem(treeViewItem: DbTreeViewItem): Promise<void> {

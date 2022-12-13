@@ -576,7 +576,7 @@ describe("db panel", () => {
     expect(remoteUserDefinedLists.length).toBe(1);
     expect(remoteUserDefinedLists[0]).toBe(list1);
 
-    await dbManager.addNewList("my-list-2");
+    await dbManager.addNewRemoteList("my-list-2");
 
     // Read the workspace databases JSON file directly to check that the new list has been added.
     // We can't use the dbConfigStore's `read` function here because it depends on the file watcher
