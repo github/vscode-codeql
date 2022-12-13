@@ -41,6 +41,6 @@ export class ExtensionApp implements App {
   }
 
   public executeCommand(command: string, ...args: any): Thenable<void> {
-    return vscode.commands.executeCommand(command, args);
+    return vscode.commands.executeCommand(command, ...args);
   }
 }
