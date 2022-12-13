@@ -38,7 +38,7 @@ const _10MB = _1MB * 10;
 
 // CLI version to test. Hard code the latest as default. And be sure
 // to update the env if it is not otherwise set.
-const CLI_VERSION = process.env.CLI_VERSION || "v2.11.5";
+const CLI_VERSION = process.env.CLI_VERSION || "v2.11.6";
 process.env.CLI_VERSION = CLI_VERSION;
 
 // Base dir where CLIs will be downloaded into
