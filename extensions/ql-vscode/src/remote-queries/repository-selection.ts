@@ -41,20 +41,30 @@ export async function getRepositorySelection(
     if (selectedDbItem) {
       switch (selectedDbItem.kind) {
         case DbItemKind.LocalDatabase || DbItemKind.LocalList:
-          throw new Error("Local databases and lists are not supported yet.");
+          throw new UserCancellationException(
+            "Local databases and lists are not supported yet.",
+          );
         case DbItemKind.RemoteSystemDefinedList:
           return { repositoryLists: [selectedDbItem.listName] };
         case DbItemKind.RemoteUserDefinedList:
-          return {
-            repositories: selectedDbItem.repos.map((repo) => repo.repoFullName),
-          };
+          if (selectedDbItem.repos.length === 0) {
+            throw new UserCancellationException(
+              "The selected repository list is empty. Please add repositories to it before running a variant analysis.",
+            );
+          } else {
+            return {
+              repositories: selectedDbItem.repos.map(
+                (repo) => repo.repoFullName,
+              ),
+            };
+          }
         case DbItemKind.RemoteOwner:
           return { owners: [selectedDbItem.ownerName] };
         case DbItemKind.RemoteRepo:
           return { repositories: [selectedDbItem.repoFullName] };
       }
     } else {
-      throw new Error(
+      throw new UserCancellationException(
         "Please select a remote database to run the query against.",
       );
     }

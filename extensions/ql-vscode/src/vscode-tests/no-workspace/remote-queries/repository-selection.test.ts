@@ -5,7 +5,11 @@ import { UserCancellationException } from "../../../commandRunner";
 import * as config from "../../../config";
 import { getRepositorySelection } from "../../../remote-queries/repository-selection";
 import { DbManager } from "../../../databases/db-manager";
-import { DbItem, DbItemKind } from "../../../databases/db-item";
+import {
+  DbItem,
+  DbItemKind,
+  RemoteRepoDbItem,
+} from "../../../databases/db-item";
 
 describe("repository selection", () => {
   describe("newQueryRunExperience true", () => {
@@ -19,17 +23,28 @@ describe("repository selection", () => {
       const dbManager = setUpDbManager(undefined);
 
       await expect(getRepositorySelection(dbManager)).rejects.toThrow(
-        Error("Please select a remote database to run the query against."),
+        "Please select a remote database to run the query against.",
       );
     });
 
-    it("should throw error when local database item is selected", async () => {
+    it("should log error when local database item is selected", async () => {
       const dbManager = setUpDbManager({
         kind: DbItemKind.LocalDatabase,
       } as DbItem);
 
       await expect(getRepositorySelection(dbManager)).rejects.toThrow(
-        Error("Local databases and lists are not supported yet."),
+        "Local databases and lists are not supported yet.",
+      );
+    });
+
+    it("should log an error when an empty remote user defined list is selected", async () => {
+      const dbManager = setUpDbManager({
+        kind: DbItemKind.RemoteUserDefinedList,
+        repos: [] as RemoteRepoDbItem[],
+      } as DbItem);
+
+      await expect(getRepositorySelection(dbManager)).rejects.toThrow(
+        "The selected repository list is empty. Please add repositories to it before running a variant analysis.",
       );
     });
 
