@@ -9,9 +9,13 @@ import {
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
 import { DbConfigValidator } from "./db-config-validator";
-import { ValueResult } from "../../common/value-result";
 import { App } from "../../common/app";
 import { AppEvent, AppEventEmitter } from "../../common/events";
+import {
+  DbConfigValidationError,
+  DbConfigValidationErrorKind,
+} from "../db-validation-errors";
+import { ValueResult } from "../../common/value-result";
 
 export class DbConfigStore extends DisposableObject {
   public readonly onDidChangeConfig: AppEvent<void>;
@@ -21,7 +25,7 @@ export class DbConfigStore extends DisposableObject {
   private readonly configValidator: DbConfigValidator;
 
   private config: DbConfig | undefined;
-  private configErrors: string[];
+  private configErrors: DbConfigValidationError[];
   private configWatcher: chokidar.FSWatcher | undefined;
 
   public constructor(app: App) {
@@ -48,7 +52,7 @@ export class DbConfigStore extends DisposableObject {
     this.configWatcher?.unwatch(this.configPath);
   }
 
-  public getConfig(): ValueResult<DbConfig, string> {
+  public getConfig(): ValueResult<DbConfig, DbConfigValidationError> {
     if (this.config) {
       // Clone the config so that it's not modified outside of this class.
       return ValueResult.ok(cloneDbConfig(this.config));
@@ -124,7 +128,12 @@ export class DbConfigStore extends DisposableObject {
     try {
       newConfig = await readJSON(this.configPath);
     } catch (e) {
-      this.configErrors = [`Failed to read config file: ${this.configPath}`];
+      this.configErrors = [
+        {
+          kind: DbConfigValidationErrorKind.InvalidJson,
+          message: `Failed to read config file: ${this.configPath}`,
+        },
+      ];
     }
 
     if (newConfig) {
@@ -139,7 +148,12 @@ export class DbConfigStore extends DisposableObject {
     try {
       newConfig = readJSONSync(this.configPath);
     } catch (e) {
-      this.configErrors = [`Failed to read config file: ${this.configPath}`];
+      this.configErrors = [
+        {
+          kind: DbConfigValidationErrorKind.InvalidJson,
+          message: `Failed to read config file: ${this.configPath}`,
+        },
+      ];
     }
 
     if (newConfig) {
