@@ -41,13 +41,15 @@ export async function getRepositorySelection(
     if (selectedDbItem) {
       switch (selectedDbItem.kind) {
         case DbItemKind.LocalDatabase || DbItemKind.LocalList:
-          throw new Error("Local databases and lists are not supported yet.");
+          throw new UserCancellationException(
+            "Local databases and lists are not supported yet.",
+          );
         case DbItemKind.RemoteSystemDefinedList:
           return { repositoryLists: [selectedDbItem.listName] };
         case DbItemKind.RemoteUserDefinedList:
           if (selectedDbItem.repos.length === 0) {
-            throw new Error(
-              "The selected repository list is empty. Please add repositories to it before running a query on it.",
+            throw new UserCancellationException(
+              "The selected repository list is empty. Please add repositories to it before running a variant analysis.",
             );
           } else {
             return {
@@ -62,7 +64,7 @@ export async function getRepositorySelection(
           return { repositories: [selectedDbItem.repoFullName] };
       }
     } else {
-      throw new Error(
+      throw new UserCancellationException(
         "Please select a remote database to run the query against.",
       );
     }
