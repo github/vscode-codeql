@@ -33,6 +33,19 @@ describe("repository selection", () => {
       );
     });
 
+    it("should return throw error when empt remote user defined list is selected", async () => {
+      const dbManager = setUpDbManager({
+        kind: DbItemKind.RemoteUserDefinedList,
+        repos: [],
+      } as any as DbItem);
+
+      await expect(getRepositorySelection(dbManager)).rejects.toThrow(
+        Error(
+          "The selected repository list is empty. Please add repositories to it before running a query on it.",
+        ),
+      );
+    });
+
     it("should return correct selection when remote system defined list is selected", async () => {
       const dbManager = setUpDbManager({
         kind: DbItemKind.RemoteSystemDefinedList,

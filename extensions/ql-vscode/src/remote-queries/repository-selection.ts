@@ -45,9 +45,17 @@ export async function getRepositorySelection(
         case DbItemKind.RemoteSystemDefinedList:
           return { repositoryLists: [selectedDbItem.listName] };
         case DbItemKind.RemoteUserDefinedList:
-          return {
-            repositories: selectedDbItem.repos.map((repo) => repo.repoFullName),
-          };
+          if (selectedDbItem.repos.length === 0) {
+            throw new Error(
+              "The selected repository list is empty. Please add repositories to it before running a query on it.",
+            );
+          } else {
+            return {
+              repositories: selectedDbItem.repos.map(
+                (repo) => repo.repoFullName,
+              ),
+            };
+          }
         case DbItemKind.RemoteOwner:
           return { owners: [selectedDbItem.ownerName] };
         case DbItemKind.RemoteRepo:
