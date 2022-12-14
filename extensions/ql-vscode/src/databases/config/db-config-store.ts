@@ -145,7 +145,16 @@ export class DbConfigStore extends DisposableObject {
       this.configErrors = this.configValidator.validate(newConfig);
     }
 
-    this.config = this.configErrors.length === 0 ? newConfig : undefined;
+    if (this.configErrors.length === 0) {
+      this.config = newConfig;
+      await this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        false,
+      );
+    } else {
+      this.config = undefined;
+    }
   }
 
   private readConfigSync(): void {
@@ -170,8 +179,16 @@ export class DbConfigStore extends DisposableObject {
       this.configErrors = this.configValidator.validate(newConfig);
     }
 
-    this.config = this.configErrors.length === 0 ? newConfig : undefined;
-
+    if (this.configErrors.length === 0) {
+      this.config = newConfig;
+      void this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        false,
+      );
+    } else {
+      this.config = undefined;
+    }
     this.onDidChangeConfigEventEmitter.fire();
   }
 
