@@ -9,6 +9,7 @@ import {
   mapDbItemToSelectedDbItem,
 } from "./db-item-selection";
 import { createLocalTree, createRemoteTree } from "./db-tree-creator";
+import { DbConfigValidationError } from "./db-validation-errors";
 
 export class DbManager {
   public readonly onDbItemsChanged: AppEvent<void>;
@@ -24,16 +25,16 @@ export class DbManager {
   }
 
   public getSelectedDbItem(): DbItem | undefined {
-    const dbItems = this.getDbItems();
+    const dbItemsResult = this.getDbItems();
 
-    if (dbItems.isFailure) {
+    if (dbItemsResult.errors.length > 0) {
       return undefined;
     }
 
-    return getSelectedDbItem(dbItems.value);
+    return getSelectedDbItem(dbItemsResult.value);
   }
 
-  public getDbItems(): ValueResult<DbItem[], string> {
+  public getDbItems(): ValueResult<DbItem[], DbConfigValidationError> {
     const configResult = this.dbConfigStore.getConfig();
     if (configResult.isFailure) {
       return ValueResult.fail(configResult.errors);

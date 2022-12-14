@@ -9,6 +9,10 @@ import { createDbTreeViewItemError, DbTreeViewItem } from "./db-tree-view-item";
 import { DbManager } from "../db-manager";
 import { mapDbItemToTreeViewItem } from "./db-item-mapper";
 import { DisposableObject } from "../../pure/disposable-object";
+import {
+  DbConfigValidationError,
+  DbConfigValidationErrorKind,
+} from "../db-validation-errors";
 
 export class DbTreeDataProvider
   extends DisposableObject
@@ -61,14 +65,34 @@ export class DbTreeDataProvider
     const dbItemsResult = this.dbManager.getDbItems();
 
     if (dbItemsResult.isFailure) {
+      return this.createErrorItems(dbItemsResult.errors);
+    }
+
+    return dbItemsResult.value.map(mapDbItemToTreeViewItem);
+  }
+
+  private createErrorItems(
+    errors: DbConfigValidationError[],
+  ): DbTreeViewItem[] {
+    if (
+      errors.some(
+        (e) =>
+          e.kind === DbConfigValidationErrorKind.InvalidJson ||
+          e.kind === DbConfigValidationErrorKind.InvalidConfig,
+      )
+    ) {
       const errorTreeViewItem = createDbTreeViewItemError(
         "Error when reading databases config",
         "Please open your databases config and address errors",
       );
 
       return [errorTreeViewItem];
+    } else {
+      return errors
+        .filter((e) => e.kind === DbConfigValidationErrorKind.DuplicateNames)
+        .map((e) =>
+          createDbTreeViewItemError(e.message, "Please remove duplicates"),
+        );
     }
-
-    return dbItemsResult.value.map(mapDbItemToTreeViewItem);
   }
 }

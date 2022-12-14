@@ -1,4 +1,4 @@
-import { TreeItemCollapsibleState, ThemeIcon } from "vscode";
+import { TreeItemCollapsibleState, ThemeIcon, ThemeColor } from "vscode";
 import { join } from "path";
 import { ensureDir, readJSON, remove, writeJson } from "fs-extra";
 import {
@@ -591,6 +591,73 @@ describe("db panel", () => {
     });
   });
 
+  it("should show error for invalid config", async () => {
+    // We're intentionally bypassing the type check because we'd
+    // like to make sure validation errors are highlighted.
+    const dbConfig = {
+      databases: {},
+    } as any as DbConfig;
+
+    await saveDbConfig(dbConfig);
+
+    const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+    expect(dbTreeItems).toBeTruthy();
+    const items = dbTreeItems!;
+    expect(items.length).toBe(1);
+
+    checkErrorItem(
+      items[0],
+      "Error when reading databases config",
+      "Please open your databases config and address errors",
+    );
+  });
+
+  it("should show errors for duplicate names", async () => {
+    const dbConfig: DbConfig = {
+      databases: {
+        remote: {
+          repositoryLists: [
+            {
+              name: "my-list-1",
+              repositories: ["owner1/repo1", "owner1/repo2"],
+            },
+            {
+              name: "my-list-1",
+              repositories: ["owner1/repo1", "owner2/repo2"],
+            },
+          ],
+          owners: [],
+          repositories: ["owner1/repo1", "owner1/repo1"],
+        },
+        local: {
+          lists: [],
+          databases: [],
+        },
+      },
+      expanded: [],
+    };
+
+    await saveDbConfig(dbConfig);
+
+    const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+    expect(dbTreeItems).toBeTruthy();
+    const items = dbTreeItems!;
+    expect(items.length).toBe(2);
+
+    checkErrorItem(
+      items[0],
+      "There are database lists with the same name: my-list-1",
+      "Please remove duplicates",
+    );
+    checkErrorItem(
+      items[1],
+      "There are databases with the same name: owner1/repo1",
+      "Please remove duplicates",
+    );
+  });
+
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {
     await writeJson(dbConfigFilePath, dbConfig);
 
@@ -670,6 +737,21 @@ describe("db panel", () => {
     expect(item.tooltip).toBe(`Language: ${database.language}`);
     expect(item.iconPath).toEqual(new ThemeIcon("database"));
     expect(item.collapsibleState).toBe(TreeItemCollapsibleState.None);
+  }
+
+  function checkErrorItem(
+    item: DbTreeViewItem,
+    label: string,
+    tooltip: string,
+  ): void {
+    expect(item.dbItem).toBe(undefined);
+    expect(item.iconPath).toEqual(
+      new ThemeIcon("error", new ThemeColor("problemsErrorIcon.foreground")),
+    );
+    expect(item.label).toBe(label);
+    expect(item.tooltip).toBe(tooltip);
+    expect(item.collapsibleState).toBe(TreeItemCollapsibleState.None);
+    expect(item.children.length).toBe(0);
   }
 
   function isTreeViewItemSelectable(treeViewItem: DbTreeViewItem) {
