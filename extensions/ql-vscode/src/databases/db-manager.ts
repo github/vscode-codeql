@@ -76,6 +76,14 @@ export class DbManager {
   }
 
   public async addNewRemoteList(listName: string): Promise<void> {
+    if (this.dbConfigStore.doesRemoteListExist(listName)) {
+      throw Error(`A list with the name '${listName}' already exists`);
+    }
+
     await this.dbConfigStore.addRemoteList(listName);
+  }
+
+  public doesRemoteListExist(listName: string): boolean {
+    return this.dbConfigStore.doesRemoteListExist(listName);
   }
 }
