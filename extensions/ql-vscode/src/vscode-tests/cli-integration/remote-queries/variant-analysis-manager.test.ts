@@ -22,6 +22,8 @@ import * as ghActionsApiClient from "../../../remote-queries/gh-api/gh-actions-a
 import { Credentials } from "../../../authentication";
 import * as fs from "fs-extra";
 import { join } from "path";
+import { Response } from "node-fetch";
+import * as fetchModule from "node-fetch";
 
 import { VariantAnalysisManager } from "../../../remote-queries/variant-analysis-manager";
 import { CodeQLCliServer } from "../../../cli";
@@ -388,13 +390,11 @@ describe("Variant Analysis Manager", () => {
     });
 
     describe("when credentials are valid", () => {
-      let arrayBuffer: ArrayBuffer;
-
       let getVariantAnalysisRepoStub: jest.SpiedFunction<
         typeof ghApiClient.getVariantAnalysisRepo
       >;
       let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
-        typeof ghApiClient.getVariantAnalysisRepoResult
+        typeof fetchModule.default
       >;
 
       beforeEach(async () => {
@@ -408,20 +408,11 @@ describe("Variant Analysis Manager", () => {
           .spyOn(Credentials, "initialize")
           .mockResolvedValue(mockCredentials);
 
-        const sourceFilePath = join(
-          __dirname,
-          "../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip",
-        );
-        arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
-
         getVariantAnalysisRepoStub = jest.spyOn(
           ghApiClient,
           "getVariantAnalysisRepo",
         );
-        getVariantAnalysisRepoResultStub = jest.spyOn(
-          ghApiClient,
-          "getVariantAnalysisRepoResult",
-        );
+        getVariantAnalysisRepoResultStub = jest.spyOn(fetchModule, "default");
       });
 
       describe("when the artifact_url is missing", () => {
@@ -430,7 +421,6 @@ describe("Variant Analysis Manager", () => {
           delete dummyRepoTask.artifact_url;
 
           getVariantAnalysisRepoStub.mockResolvedValue(dummyRepoTask);
-          getVariantAnalysisRepoResultStub.mockResolvedValue(arrayBuffer);
         });
 
         it("should not try to download the result", async () => {
@@ -451,7 +441,15 @@ describe("Variant Analysis Manager", () => {
           dummyRepoTask = createMockVariantAnalysisRepoTask();
 
           getVariantAnalysisRepoStub.mockResolvedValue(dummyRepoTask);
-          getVariantAnalysisRepoResultStub.mockResolvedValue(arrayBuffer);
+
+          const sourceFilePath = join(
+            __dirname,
+            "../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip",
+          );
+          const arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
+          getVariantAnalysisRepoResultStub.mockResolvedValue(
+            new Response(arrayBuffer),
+          );
         });
 
         it("should return early if variant analysis is cancelled", async () => {

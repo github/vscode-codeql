@@ -1,13 +1,10 @@
 import { Octokit as Octokit_Octokit } from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 
-import { faker } from "@faker-js/faker";
-
 import {
   getRepositoryFromNwo,
   getVariantAnalysis,
   getVariantAnalysisRepo,
-  getVariantAnalysisRepoResult,
   submitVariantAnalysis,
 } from "../../../../src/remote-queries/gh-api/gh-api-client";
 import { Credentials } from "../../../../src/authentication";
@@ -73,23 +70,6 @@ describe("getVariantAnalysisRepo", () => {
 
     expect(result).toBeDefined();
     expect(result.repository.id).toBe(repoTaskId);
-  });
-});
-
-describe("getVariantAnalysisRepoResult", () => {
-  it("returns the variant analysis repo result", async () => {
-    await mockServer.loadScenario("problem-query-success");
-
-    const result = await getVariantAnalysisRepoResult(
-      mockCredentials,
-      `https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/${variantAnalysisId}/${repoTaskId}/${faker.datatype.uuid()}`,
-    );
-
-    expect(result).toBeDefined();
-    expect(result).toBeInstanceOf(ArrayBuffer);
-    expect(result.byteLength).toBe(
-      variantAnalysisRepoJson_response.body.artifact_size_in_bytes,
-    );
   });
 });
 

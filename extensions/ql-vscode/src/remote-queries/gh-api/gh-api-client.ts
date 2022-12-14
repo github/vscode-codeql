@@ -81,16 +81,6 @@ export async function getVariantAnalysisRepo(
   return response.data;
 }
 
-export async function getVariantAnalysisRepoResult(
-  credentials: Credentials,
-  downloadUrl: string,
-): Promise<ArrayBuffer> {
-  const octokit = await credentials.getOctokit();
-  const response = await octokit.request(`GET ${downloadUrl}`);
-
-  return response.data;
-}
-
 export async function getRepositoryFromNwo(
   credentials: Credentials,
   owner: string,

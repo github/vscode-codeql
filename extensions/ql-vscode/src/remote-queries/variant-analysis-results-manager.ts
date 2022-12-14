@@ -1,14 +1,14 @@
 import {
+  appendFileSync,
   pathExists,
   mkdir,
   outputJson,
-  writeFileSync,
   readJson,
 } from "fs-extra";
+import fetch from "node-fetch";
 import { EOL } from "os";
 import { join } from "path";
 
-import { Credentials } from "../authentication";
 import { Logger } from "../common";
 import { AnalysisAlert, AnalysisRawResults } from "./shared/analysis-result";
 import { sarifParser } from "../sarif-parser";
@@ -21,7 +21,6 @@ import {
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
 import { DisposableObject, DisposeHandler } from "../pure/disposable-object";
-import { getVariantAnalysisRepoResult } from "./gh-api/gh-api-client";
 import { EventEmitter } from "vscode";
 import { unzipFile } from "../pure/zip";
 
@@ -71,10 +70,10 @@ export class VariantAnalysisResultsManager extends DisposableObject {
   }
 
   public async download(
-    credentials: Credentials,
     variantAnalysisId: number,
     repoTask: VariantAnalysisRepositoryTask,
     variantAnalysisStoragePath: string,
+    onDownloadPercentageChanged: (downloadPercentage: number) => Promise<void>,
   ): Promise<void> {
     if (!repoTask.artifactUrl) {
       throw new Error("Missing artifact URL");
@@ -83,11 +82,6 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     const resultDirectory = this.getRepoStorageDirectory(
       variantAnalysisStoragePath,
       repoTask.repository.fullName,
-    );
-
-    const result = await getVariantAnalysisRepoResult(
-      credentials,
-      repoTask.artifactUrl,
     );
 
     if (!(await pathExists(resultDirectory))) {
@@ -100,12 +94,22 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     );
 
     const zipFilePath = join(resultDirectory, "results.zip");
+
+    const response = await fetch(repoTask.artifactUrl);
+    let amountDownloaded = 0;
+    for await (const chunk of response.body) {
+      appendFileSync(zipFilePath, Buffer.from(chunk));
+      amountDownloaded += chunk.length;
+      await onDownloadPercentageChanged(
+        Math.floor((amountDownloaded / response.size) * 100),
+      );
+    }
+
     const unzippedFilesDirectory = join(
       resultDirectory,
       VariantAnalysisResultsManager.RESULTS_DIRECTORY,
     );
 
-    writeFileSync(zipFilePath, Buffer.from(result));
     await unzipFile(zipFilePath, unzippedFilesDirectory);
 
     this._onResultDownloaded.fire({

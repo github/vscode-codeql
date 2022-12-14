@@ -1,15 +1,15 @@
 import { extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../../extension";
 import { extLogger } from "../../../common";
-import { Credentials } from "../../../authentication";
 import * as fs from "fs-extra";
 import { join, resolve } from "path";
+import { Response, RequestInfo, RequestInit } from "node-fetch";
+import * as fetchModule from "node-fetch";
 
 import { VariantAnalysisResultsManager } from "../../../remote-queries/variant-analysis-results-manager";
 import { CodeQLCliServer } from "../../../cli";
 import { storagePath } from "../global.helper";
 import { faker } from "@faker-js/faker";
-import * as ghApiClient from "../../../remote-queries/gh-api/gh-api-client";
 import { createMockVariantAnalysisRepositoryTask } from "../../factories/remote-queries/shared/variant-analysis-repo-tasks";
 import {
   VariantAnalysisRepositoryTask,
@@ -34,12 +34,6 @@ describe(VariantAnalysisResultsManager.name, () => {
   });
 
   describe("download", () => {
-    const mockCredentials = {
-      getOctokit: () =>
-        Promise.resolve({
-          request: jest.fn(),
-        }),
-    } as unknown as Credentials;
     let dummyRepoTask: VariantAnalysisRepositoryTask;
     let variantAnalysisStoragePath: string;
     let repoTaskStorageDirectory: string;
@@ -92,10 +86,10 @@ describe(VariantAnalysisResultsManager.name, () => {
 
         await expect(
           variantAnalysisResultsManager.download(
-            mockCredentials,
             variantAnalysisId,
             dummyRepoTask,
             variantAnalysisStoragePath,
+            () => Promise.resolve(),
           ),
         ).rejects.toThrow("Missing artifact URL");
       });
@@ -105,7 +99,7 @@ describe(VariantAnalysisResultsManager.name, () => {
       let arrayBuffer: ArrayBuffer;
 
       let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
-        typeof ghApiClient.getVariantAnalysisRepoResult
+        typeof fetchModule.default
       >;
 
       beforeEach(async () => {
@@ -116,23 +110,21 @@ describe(VariantAnalysisResultsManager.name, () => {
         arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
 
         getVariantAnalysisRepoResultStub = jest
-          .spyOn(ghApiClient, "getVariantAnalysisRepoResult")
-          .mockImplementation(
-            (_credentials: Credentials, downloadUrl: string) => {
-              if (downloadUrl === dummyRepoTask.artifactUrl) {
-                return Promise.resolve(arrayBuffer);
-              }
-              return Promise.reject(new Error("Unexpected artifact URL"));
-            },
-          );
+          .spyOn(fetchModule, "default")
+          .mockImplementation((url: RequestInfo, _init?: RequestInit) => {
+            if (url === dummyRepoTask.artifactUrl) {
+              return Promise.resolve(new Response(arrayBuffer));
+            }
+            return Promise.reject(new Error("Unexpected artifact URL"));
+          });
       });
 
       it("should call the API to download the results", async () => {
         await variantAnalysisResultsManager.download(
-          mockCredentials,
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
+          () => Promise.resolve(),
         );
 
         expect(getVariantAnalysisRepoResultStub).toHaveBeenCalledTimes(1);
@@ -140,10 +132,10 @@ describe(VariantAnalysisResultsManager.name, () => {
 
       it("should save the results zip file to disk", async () => {
         await variantAnalysisResultsManager.download(
-          mockCredentials,
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
+          () => Promise.resolve(),
         );
 
         expect(fs.existsSync(`${repoTaskStorageDirectory}/results.zip`)).toBe(
@@ -153,10 +145,10 @@ describe(VariantAnalysisResultsManager.name, () => {
 
       it("should unzip the results in a `results/` folder", async () => {
         await variantAnalysisResultsManager.download(
-          mockCredentials,
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
+          () => Promise.resolve(),
         );
 
         expect(
@@ -167,10 +159,10 @@ describe(VariantAnalysisResultsManager.name, () => {
       describe("isVariantAnalysisRepoDownloaded", () => {
         it("should return true once results are downloaded", async () => {
           await variantAnalysisResultsManager.download(
-            mockCredentials,
             variantAnalysisId,
             dummyRepoTask,
             variantAnalysisStoragePath,
+            () => Promise.resolve(),
           );
 
           expect(
