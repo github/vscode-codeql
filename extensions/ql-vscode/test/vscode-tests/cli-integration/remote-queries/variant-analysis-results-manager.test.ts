@@ -3,19 +3,18 @@ import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { extLogger } from "../../../../src/common";
 import * as fs from "fs-extra";
 import { join, resolve } from "path";
+import { Response, RequestInfo, RequestInit } from "node-fetch";
+import * as fetchModule from "node-fetch";
 
 import { VariantAnalysisResultsManager } from "../../../../src/remote-queries/variant-analysis-results-manager";
 import { CodeQLCliServer } from "../../../../src/cli";
 import { storagePath } from "../global.helper";
 import { faker } from "@faker-js/faker";
-import * as ghApiClient from "../../../../src/remote-queries/gh-api/gh-api-client";
 import { createMockVariantAnalysisRepositoryTask } from "../../../factories/remote-queries/shared/variant-analysis-repo-tasks";
 import {
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepositoryResult,
 } from "../../../../src/remote-queries/shared/variant-analysis";
-import { testCredentialsWithStub } from "../../../factories/authentication";
-import { Credentials } from "../../../../src/common/authentication";
 
 jest.setTimeout(10_000);
 
@@ -44,7 +43,6 @@ describe(VariantAnalysisResultsManager.name, () => {
       jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
       variantAnalysisResultsManager = new VariantAnalysisResultsManager(
-        testCredentialsWithStub(),
         cli,
         extLogger,
       );
@@ -89,6 +87,7 @@ describe(VariantAnalysisResultsManager.name, () => {
             variantAnalysisId,
             dummyRepoTask,
             variantAnalysisStoragePath,
+            () => Promise.resolve(),
           ),
         ).rejects.toThrow("Missing artifact URL");
       });
@@ -98,7 +97,7 @@ describe(VariantAnalysisResultsManager.name, () => {
       let arrayBuffer: ArrayBuffer;
 
       let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
-        typeof ghApiClient.getVariantAnalysisRepoResult
+        typeof fetchModule.default
       >;
 
       beforeEach(async () => {
@@ -109,15 +108,13 @@ describe(VariantAnalysisResultsManager.name, () => {
         arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
 
         getVariantAnalysisRepoResultStub = jest
-          .spyOn(ghApiClient, "getVariantAnalysisRepoResult")
-          .mockImplementation(
-            (_credentials: Credentials, downloadUrl: string) => {
-              if (downloadUrl === dummyRepoTask.artifactUrl) {
-                return Promise.resolve(arrayBuffer);
-              }
-              return Promise.reject(new Error("Unexpected artifact URL"));
-            },
-          );
+          .spyOn(fetchModule, "default")
+          .mockImplementation((url: RequestInfo, _init?: RequestInit) => {
+            if (url === dummyRepoTask.artifactUrl) {
+              return Promise.resolve(new Response(arrayBuffer));
+            }
+            return Promise.reject(new Error("Unexpected artifact URL"));
+          });
       });
 
       it("should call the API to download the results", async () => {
@@ -125,6 +122,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
+          () => Promise.resolve(),
         );
 
         expect(getVariantAnalysisRepoResultStub).toHaveBeenCalledTimes(1);
@@ -135,6 +133,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
+          () => Promise.resolve(),
         );
 
         expect(fs.existsSync(`${repoTaskStorageDirectory}/results.zip`)).toBe(
@@ -147,6 +146,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
+          () => Promise.resolve(),
         );
 
         expect(
@@ -160,6 +160,7 @@ describe(VariantAnalysisResultsManager.name, () => {
             variantAnalysisId,
             dummyRepoTask,
             variantAnalysisStoragePath,
+            () => Promise.resolve(),
           );
 
           expect(
@@ -185,7 +186,6 @@ describe(VariantAnalysisResultsManager.name, () => {
 
     beforeEach(() => {
       variantAnalysisResultsManager = new VariantAnalysisResultsManager(
-        testCredentialsWithStub(),
         cli,
         extLogger,
       );

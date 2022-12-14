@@ -633,7 +633,6 @@ async function activateWithInstalledDistribution(
   );
   await ensureDir(variantAnalysisStorageDir);
   const variantAnalysisResultsManager = new VariantAnalysisResultsManager(
-    app.credentials,
     cliServer,
     extLogger,
   );
