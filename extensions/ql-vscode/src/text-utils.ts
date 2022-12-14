@@ -31,3 +31,11 @@ export function convertNonPrintableChars(label: string | undefined) {
     return convertedLabelArray.join("");
   }
 }
+
+export function findDuplicateStrings(strings: string[]): string[] {
+  const dups = strings.filter(
+    (string, index, strings) => strings.indexOf(string) !== index,
+  );
+
+  return [...new Set(dups)];
+}
