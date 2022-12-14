@@ -6,8 +6,12 @@ import {
 } from "vscode";
 import { commandRunner, UserCancellationException } from "../../commandRunner";
 import { DisposableObject } from "../../pure/disposable-object";
+import { OWNER_REGEX } from "../../pure/helpers-pure";
 import { DbManager } from "../db-manager";
-import { convertGitHubUrlToNwo, looksLikeGithubRepo } from "../github-nwo";
+import {
+  convertGitHubUrlToIdentifier,
+  looksLikeGithubRepo,
+} from "../github-nwo";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
 import { DbTreeViewItem } from "./db-tree-view-item";
 
@@ -119,13 +123,28 @@ export class DbPanel extends DisposableObject {
     if (!looksLikeGithubRepo(repoName)) {
       throw new Error(`Invalid GitHub repository: ${repoName}`);
     }
-    const nwo = convertGitHubUrlToNwo(repoName) || repoName;
+    const nwo = convertGitHubUrlToIdentifier(repoName) || repoName;
 
     await this.dbManager.addNewRemoteRepo(nwo);
   }
 
   private async addNewRemoteOwner(): Promise<void> {
-    // TODO
+    const ownerName = await window.showInputBox({
+      title: "Add all repositories of a GitHub org or owner",
+      prompt: "Insert a GitHub organization or owner name",
+      placeHolder: "github.com/<owner> or <owner>",
+    });
+    if (!ownerName) {
+      return;
+    }
+
+    const owner = convertGitHubUrlToIdentifier(ownerName, true) || ownerName;
+
+    if (!OWNER_REGEX.test(owner)) {
+      throw new Error(`Invalid user or organization: ${owner}`);
+    }
+
+    await this.dbManager.addNewRemoteOwner(owner);
   }
 
   private async addNewRemoteList(): Promise<void> {

@@ -23,7 +23,7 @@ import { extLogger } from "./common";
 import { Credentials } from "./authentication";
 import { getErrorMessage } from "./pure/helpers-pure";
 import {
-  convertGitHubUrlToNwo,
+  convertGitHubUrlToIdentifier,
   looksLikeGithubRepo,
 } from "./databases/github-nwo";
 
@@ -526,7 +526,7 @@ export async function convertGithubNwoToDatabaseUrl(
   | undefined
 > {
   try {
-    const nwo = convertGitHubUrlToNwo(githubRepo) || githubRepo;
+    const nwo = convertGitHubUrlToIdentifier(githubRepo) || githubRepo;
     const [owner, repo] = nwo.split("/");
 
     const response = await octokit.request(

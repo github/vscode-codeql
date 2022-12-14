@@ -101,6 +101,17 @@ export class DbConfigStore extends DisposableObject {
     await this.writeConfig(config);
   }
 
+  public async addRemoteOwner(owner: string): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot add remote owner if config is not loaded");
+    }
+
+    const config: DbConfig = cloneDbConfig(this.config);
+    config.databases.remote.owners.push(owner);
+
+    await this.writeConfig(config);
+  }
+
   public async addRemoteList(listName: string): Promise<void> {
     if (!this.config) {
       throw Error("Cannot add remote list if config is not loaded");

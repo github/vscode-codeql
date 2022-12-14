@@ -1,5 +1,5 @@
 import { Uri } from "vscode";
-import { REPO_REGEX } from "../pure/helpers-pure";
+import { OWNER_REGEX, REPO_REGEX } from "../pure/helpers-pure";
 
 /**
  * The URL pattern is https://github.com/{owner}/{name}/{subpages}.
@@ -17,7 +17,7 @@ export function looksLikeGithubRepo(
   if (!githubRepo) {
     return false;
   }
-  if (REPO_REGEX.test(githubRepo) || convertGitHubUrlToNwo(githubRepo)) {
+  if (REPO_REGEX.test(githubRepo) || convertGitHubUrlToIdentifier(githubRepo)) {
     return true;
   }
   return false;
@@ -28,7 +28,10 @@ export function looksLikeGithubRepo(
  * @param githubUrl The GitHub repository URL
  * @return The corresponding NWO, or undefined if the URL is not valid
  */
-export function convertGitHubUrlToNwo(githubUrl: string): string | undefined {
+export function convertGitHubUrlToIdentifier(
+  githubUrl: string,
+  onlyOwner?: boolean,
+): string | undefined {
   try {
     const uri = Uri.parse(githubUrl, true);
     if (uri.scheme !== "https") {
@@ -38,8 +41,12 @@ export function convertGitHubUrlToNwo(githubUrl: string): string | undefined {
       return;
     }
     const paths = uri.path.split("/").filter((segment: string) => segment);
+    const owner = `${paths[0]}`;
+    if (onlyOwner && OWNER_REGEX.test(owner)) {
+      return owner;
+    }
     const nwo = `${paths[0]}/${paths[1]}`;
-    if (REPO_REGEX.test(nwo)) {
+    if (!onlyOwner && REPO_REGEX.test(nwo)) {
       return nwo;
     }
     return;
