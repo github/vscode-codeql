@@ -99,7 +99,7 @@ export class DbConfigValidator {
 
     const buildError = (listName: string, dups: string[]) => ({
       kind: DbConfigValidationErrorKind.DuplicateNames,
-      message: `There are databases with the same name in the the ${listName} list: ${dups.join(
+      message: `There are databases with the same name in the ${listName} list: ${dups.join(
         ", ",
       )}`,
     });

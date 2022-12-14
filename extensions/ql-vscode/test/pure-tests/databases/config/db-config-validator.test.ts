@@ -101,7 +101,7 @@ describe("db config validation", () => {
     expect(validationOutput[0]).toEqual({
       kind: DbConfigValidationErrorKind.DuplicateNames,
       message:
-        "There are databases with the same name in the the repoList1 list: owner1/repo2",
+        "There are databases with the same name in the repoList1 list: owner1/repo2",
     });
   });
 
@@ -166,7 +166,7 @@ describe("db config validation", () => {
     expect(validationOutput[0]).toEqual({
       kind: DbConfigValidationErrorKind.DuplicateNames,
       message:
-        "There are databases with the same name in the the dbList1 list: db1",
+        "There are databases with the same name in the dbList1 list: db1",
     });
   });
 });
