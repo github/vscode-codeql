@@ -188,9 +188,20 @@ export class DbConfigStore extends DisposableObject {
   }
 
   private watchConfig(): void {
-    this.configWatcher = chokidar.watch(this.configPath).on("change", () => {
-      this.readConfigSync();
-    });
+    this.configWatcher = chokidar
+      .watch(this.configPath, {
+        // In some cases, change events are emitted while the file is still
+        // being written. The awaitWriteFinish option tells the watcher to
+        // poll the file size, holding its add and change events until the size
+        // does not change for a configurable amount of time. We set that time
+        // to 1 second, but it may need to be adjusted if there are issues.
+        awaitWriteFinish: {
+          stabilityThreshold: 1000,
+        },
+      })
+      .on("change", () => {
+        this.readConfigSync();
+      });
   }
 
   private createEmptyConfig(): DbConfig {
