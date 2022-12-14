@@ -1,9 +1,10 @@
 name: Bump CLI version
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
   pull_request:
     branches: [main]
+    paths:
+      - .github/actions/create-pr/action.yml
   schedule:
   - cron: 0 0 */14 * * # run every 14 days
 
@@ -16,29 +17,18 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 1
-          token: ${{ secrets.WORKFLOW_TOKEN }}
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -qq jq
-          sudo apt-get install gh
-        shell: bash
       - name: Bump CLI
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           scripts/replace-cli-version.sh
-      - name: Push changes to a branch
-        env:
-          GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git checkout -b bump-cli
-          if [[ `git status --porcelain` ]]; then
-            git add .
-            git commit -m "automatically bump cli version"
-            git push --set-upstream origin bump-cli
-            git push
-            gh pr create --title "Bump CLI Version for integration tests" --body "" 
-          fi
+      - name: Commit, Push and Open a PR
+        uses: ./.github/actions/create-pr
+        with:
+          token: ${{ github.token }}
+          base-branch: refs/heads/main
+          head-branch: bump-cli
+          commit-message: Bump CLI version from ${{ env.PREVIOUS_VERSION }} to ${{ env.LATEST_VERSION }} for integration tests
+          title: Bump CLI Version to ${{ env.LATEST_VERSION }} for integration tests
+          body: >
+            Bumps CLI version from ${{ env.PREVIOUS_VERSION }} to ${{ env.LATEST_VERSION }}
