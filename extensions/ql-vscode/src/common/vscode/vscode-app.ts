@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { Disposable } from "../../pure/disposable-object";
 import { App, AppMode } from "../app";
 import { AppEventEmitter } from "../events";
+import { extLogger, Logger } from "../logging";
 import { VSCodeAppEventEmitter } from "./events";
 
 export class ExtensionApp implements App {
@@ -34,6 +35,10 @@ export class ExtensionApp implements App {
       default:
         return AppMode.Production;
     }
+  }
+
+  public get logger(): Logger {
+    return extLogger;
   }
 
   public createEventEmitter<T>(): AppEventEmitter<T> {
