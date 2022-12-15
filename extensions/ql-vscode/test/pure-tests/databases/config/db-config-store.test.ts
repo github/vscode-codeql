@@ -128,4 +128,39 @@ describe("db config store", () => {
 
     configStore.dispose();
   });
+
+  it("should set codeQLDatabasesExperimental.configError to true when config has error", async () => {
+    const testDataStoragePathInvalid = join(__dirname, "data", "invalid");
+
+    const app = createMockApp({
+      extensionPath,
+      workspaceStoragePath: testDataStoragePathInvalid,
+    });
+    const configStore = new DbConfigStore(app);
+    await configStore.initialize();
+
+    expect(app.executeCommand).toBeCalledWith(
+      "setContext",
+      "codeQLDatabasesExperimental.configError",
+      true,
+    );
+    configStore.dispose();
+  });
+
+  it("should set codeQLDatabasesExperimental.configError to false when config is valid", async () => {
+    const app = createMockApp({
+      extensionPath,
+      workspaceStoragePath: testDataStoragePath,
+    });
+    const configStore = new DbConfigStore(app);
+    await configStore.initialize();
+
+    expect(app.executeCommand).toBeCalledWith(
+      "setContext",
+      "codeQLDatabasesExperimental.configError",
+      false,
+    );
+
+    configStore.dispose();
+  });
 });
