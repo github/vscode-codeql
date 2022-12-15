@@ -28,7 +28,7 @@ export class DbConfigStore extends DisposableObject {
   private configErrors: DbConfigValidationError[];
   private configWatcher: chokidar.FSWatcher | undefined;
 
-  public constructor(app: App) {
+  public constructor(private readonly app: App) {
     super();
 
     const storagePath = app.workspaceStoragePath || app.globalStoragePath;
@@ -169,13 +169,27 @@ export class DbConfigStore extends DisposableObject {
           message: `Failed to read config file: ${this.configPath}`,
         },
       ];
+      await this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        true,
+      );
     }
 
     if (newConfig) {
       this.configErrors = this.configValidator.validate(newConfig);
     }
 
-    this.config = this.configErrors.length === 0 ? newConfig : undefined;
+    if (this.configErrors.length === 0) {
+      this.config = newConfig;
+      await this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        false,
+      );
+    } else {
+      this.config = undefined;
+    }
   }
 
   private readConfigSync(): void {
@@ -189,14 +203,27 @@ export class DbConfigStore extends DisposableObject {
           message: `Failed to read config file: ${this.configPath}`,
         },
       ];
+      void this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        true,
+      );
     }
 
     if (newConfig) {
       this.configErrors = this.configValidator.validate(newConfig);
     }
 
-    this.config = this.configErrors.length === 0 ? newConfig : undefined;
-
+    if (this.configErrors.length === 0) {
+      this.config = newConfig;
+      void this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        false,
+      );
+    } else {
+      this.config = undefined;
+    }
     this.onDidChangeConfigEventEmitter.fire();
   }
 
