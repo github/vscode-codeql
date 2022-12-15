@@ -173,11 +173,6 @@ export class DbConfigStore extends DisposableObject {
           message: `Failed to read config file: ${this.configPath}`,
         },
       ];
-      await this.app.executeCommand(
-        "setContext",
-        "codeQLDatabasesExperimental.configError",
-        true,
-      );
     }
 
     if (newConfig) {
@@ -193,6 +188,11 @@ export class DbConfigStore extends DisposableObject {
       );
     } else {
       this.config = undefined;
+      await this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        true,
+      );
     }
   }
 
@@ -207,11 +207,6 @@ export class DbConfigStore extends DisposableObject {
           message: `Failed to read config file: ${this.configPath}`,
         },
       ];
-      void this.app.executeCommand(
-        "setContext",
-        "codeQLDatabasesExperimental.configError",
-        true,
-      );
     }
 
     if (newConfig) {
@@ -227,6 +222,11 @@ export class DbConfigStore extends DisposableObject {
       );
     } else {
       this.config = undefined;
+      void this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        true,
+      );
     }
     this.onDidChangeConfigEventEmitter.fire();
   }
