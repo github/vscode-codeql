@@ -103,20 +103,9 @@ describe("db tree creator", () => {
     });
 
     it("should create remote owner nodes", () => {
-      const dbConfig: DbConfig = {
-        databases: {
-          remote: {
-            repositoryLists: [],
-            owners: ["owner1", "owner2"],
-            repositories: [],
-          },
-          local: {
-            lists: [],
-            databases: [],
-          },
-        },
-        expanded: [],
-      };
+      const dbConfig: DbConfig = createDbConfig({
+        remoteOwners: ["owner1", "owner2"],
+      });
 
       const dbTreeRoot = createRemoteTree(dbConfig);
 
