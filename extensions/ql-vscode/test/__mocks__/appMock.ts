@@ -1,6 +1,7 @@
 import { App, AppMode } from "../../src/common/app";
 import { AppEvent, AppEventEmitter } from "../../src/common/events";
 import { Disposable } from "../../src/pure/disposable-object";
+import { createMockLogger } from "./loggerMock";
 
 export function createMockApp({
   extensionPath = "/mock/extension/path",
@@ -17,6 +18,7 @@ export function createMockApp({
 }): App {
   return {
     mode: AppMode.Test,
+    logger: createMockLogger(),
     subscriptions: [],
     extensionPath,
     workspaceStoragePath,
