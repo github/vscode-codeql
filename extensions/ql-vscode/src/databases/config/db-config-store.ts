@@ -121,14 +121,27 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot add remote list if config is not loaded");
     }
 
+    if (this.doesRemoteListExist(listName)) {
+      throw Error(`A remote list with the name '${listName}' already exists`);
+    }
+
     const config: DbConfig = cloneDbConfig(this.config);
     config.databases.remote.repositoryLists.push({
       name: listName,
       repositories: [],
     });
 
-    // TODO: validate that the name doesn't already exist
     await this.writeConfig(config);
+  }
+
+  public doesRemoteListExist(listName: string): boolean {
+    if (!this.config) {
+      throw Error("Cannot check remote list existence if config is not loaded");
+    }
+
+    return this.config.databases.remote.repositoryLists.some(
+      (l) => l.name === listName,
+    );
   }
 
   private async writeConfig(config: DbConfig): Promise<void> {
