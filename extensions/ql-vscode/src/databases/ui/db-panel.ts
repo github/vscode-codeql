@@ -7,12 +7,11 @@ import {
 import { commandRunner, UserCancellationException } from "../../commandRunner";
 import { showAndLogErrorMessage } from "../../helpers";
 import { DisposableObject } from "../../pure/disposable-object";
-import { OWNER_REGEX } from "../../pure/helpers-pure";
 import { DbManager } from "../db-manager";
 import {
-  convertGitHubUrlToIdentifier,
-  looksLikeGithubRepo,
-} from "../github-nwo";
+  getNwoOrOwnerFromGitHubUrl,
+  validGitHubNwoOrOwner,
+} from "../git-hub-url-identifier-helper";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
 import { DbTreeViewItem } from "./db-tree-view-item";
 
@@ -118,13 +117,14 @@ export class DbPanel extends DisposableObject {
       prompt: "Insert a GitHub repository URL or name with owner",
       placeHolder: "github.com/<owner>/<repo> or <owner>/<repo>",
     });
-    if (repoName === undefined) {
+    if (!repoName) {
       return;
     }
-    if (!looksLikeGithubRepo(repoName)) {
+
+    const nwo = getNwoOrOwnerFromGitHubUrl(repoName) || repoName;
+    if (!validGitHubNwoOrOwner(nwo)) {
       throw new Error(`Invalid GitHub repository: ${repoName}`);
     }
-    const nwo = convertGitHubUrlToIdentifier(repoName) || repoName;
 
     await this.dbManager.addNewRemoteRepo(nwo);
   }
@@ -135,13 +135,13 @@ export class DbPanel extends DisposableObject {
       prompt: "Insert a GitHub organization or owner name",
       placeHolder: "github.com/<owner> or <owner>",
     });
+
     if (!ownerName) {
       return;
     }
 
-    const owner = convertGitHubUrlToIdentifier(ownerName, true) || ownerName;
-
-    if (!OWNER_REGEX.test(owner)) {
+    const owner = getNwoOrOwnerFromGitHubUrl(ownerName, true) || ownerName;
+    if (!validGitHubNwoOrOwner(owner, true)) {
       throw new Error(`Invalid user or organization: ${owner}`);
     }
 
