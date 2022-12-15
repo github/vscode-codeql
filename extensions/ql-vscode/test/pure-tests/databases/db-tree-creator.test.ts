@@ -13,7 +13,7 @@ import {
   createLocalTree,
   createRemoteTree,
 } from "../../../src/databases/db-tree-creator";
-import { createDbConfig } from "../../factories/db-config-factories";
+import { createDbConfig } from "../../../src/vscode-tests/factories/db-config-factories";
 
 describe("db tree creator", () => {
   describe("createRemoteTree", () => {

@@ -1,6 +1,9 @@
 {
   "extends": "../tsconfig.json",
-  "include": ["**/*.ts"],
+  "include": [
+    "**/*.ts",
+    "../src/vscode-tests/factories/db-config-factories.ts"
+  ],
   "exclude": [],
   "compilerOptions": {
     "noEmit": true,
