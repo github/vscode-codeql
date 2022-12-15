@@ -786,7 +786,7 @@
         },
         {
           "command": "codeQLDatabasesExperimental.addNewDatabase",
-          "when": "view == codeQLDatabasesExperimental",
+          "when": "view == codeQLDatabasesExperimental && codeQLDatabasesExperimental.configError == false",
           "group": "navigation"
         },
         {
