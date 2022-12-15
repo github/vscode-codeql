@@ -152,10 +152,14 @@ export class DbConfigStore extends DisposableObject {
 
   private async loadConfig(): Promise<void> {
     if (!(await pathExists(this.configPath))) {
+      void this.app.logger.log(
+        `Creating new database config file at ${this.configPath}`,
+      );
       await this.writeConfig(this.createEmptyConfig());
     }
 
     await this.readConfig();
+    void this.app.logger.log(`Database config loaded from ${this.configPath}`);
   }
 
   private async readConfig(): Promise<void> {
