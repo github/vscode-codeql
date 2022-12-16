@@ -549,6 +549,35 @@ describe("db panel", () => {
     );
   });
 
+  describe("Name validation", () => {
+    it("should not allow adding a new list with empty name", async () => {
+      const dbConfig = createDbConfig();
+
+      await saveDbConfig(dbConfig);
+
+      await expect(dbManager.addNewRemoteList("")).rejects.toThrow(
+        new Error("List name cannot be empty"),
+      );
+    });
+
+    it("should not allow adding a list with duplicate name", async () => {
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1", "owner1/repo2"],
+          },
+        ],
+      });
+
+      await saveDbConfig(dbConfig);
+
+      await expect(dbManager.addNewRemoteList("my-list-1")).rejects.toThrow(
+        new Error("A list with the name 'my-list-1' already exists"),
+      );
+    });
+  });
+
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {
     await writeJson(dbConfigFilePath, dbConfig);
 
