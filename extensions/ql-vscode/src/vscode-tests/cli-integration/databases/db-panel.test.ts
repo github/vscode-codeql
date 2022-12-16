@@ -5,7 +5,7 @@ import { readJson } from "fs-extra";
 import * as path from "path";
 import { DbConfig } from "../../../databases/config/db-config";
 
-jest.setTimeout(10_000);
+jest.setTimeout(60_000);
 
 describe("Db panel UI commands", () => {
   let extension: CodeQLExtensionInterface | Record<string, never>;
