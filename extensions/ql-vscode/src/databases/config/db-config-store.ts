@@ -1,4 +1,4 @@
-import { pathExists, writeJSON, readJSON, readJSONSync } from "fs-extra";
+import { pathExists, outputJSON, readJSON, readJSONSync } from "fs-extra";
 import { join } from "path";
 import {
   cloneDbConfig,
@@ -123,7 +123,7 @@ export class DbConfigStore extends DisposableObject {
   }
 
   private async writeConfig(config: DbConfig): Promise<void> {
-    await writeJSON(this.configPath, config, {
+    await outputJSON(this.configPath, config, {
       spaces: 2,
     });
   }
