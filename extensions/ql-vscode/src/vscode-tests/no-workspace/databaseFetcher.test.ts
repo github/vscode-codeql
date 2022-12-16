@@ -5,8 +5,6 @@ import { QuickPickItem, window } from "vscode";
 
 import {
   convertGithubNwoToDatabaseUrl,
-  convertLgtmUrlToDatabaseUrl,
-  looksLikeLgtmUrl,
   findDirWithFile,
 } from "../../databaseFetcher";
 import * as Octokit from "@octokit/rest";
@@ -131,64 +129,6 @@ describe("databaseFetcher", () => {
     });
   });
 
-  describe("convertLgtmUrlToDatabaseUrl", () => {
-    let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
-    const progressSpy = jest.fn();
-
-    beforeEach(() => {
-      quickPickSpy = jest
-        .spyOn(window, "showQuickPick")
-        .mockResolvedValue(undefined);
-    });
-
-    it("should convert a project url to a database url", async () => {
-      quickPickSpy.mockResolvedValue("javascript" as unknown as QuickPickItem);
-      const lgtmUrl = "https://lgtm.com/projects/g/github/codeql";
-      const dbUrl = await convertLgtmUrlToDatabaseUrl(lgtmUrl, progressSpy);
-
-      expect(dbUrl).toBe(
-        "https://lgtm.com/api/v1.0/snapshots/1506465042581/javascript",
-      );
-      expect(quickPickSpy).toHaveBeenNthCalledWith(
-        1,
-        expect.arrayContaining(["javascript", "python"]),
-        expect.anything(),
-      );
-    });
-
-    it("should convert a project url to a database url with extra path segments", async () => {
-      quickPickSpy.mockResolvedValue("python" as unknown as QuickPickItem);
-      const lgtmUrl =
-        "https://lgtm.com/projects/g/github/codeql/subpage/subpage2?query=xxx";
-      const dbUrl = await convertLgtmUrlToDatabaseUrl(lgtmUrl, progressSpy);
-
-      expect(dbUrl).toBe(
-        "https://lgtm.com/api/v1.0/snapshots/1506465042581/python",
-      );
-      expect(progressSpy).toBeCalledTimes(1);
-    });
-
-    it("should convert a raw slug to a database url with extra path segments", async () => {
-      quickPickSpy.mockResolvedValue("python" as unknown as QuickPickItem);
-      const lgtmUrl = "g/github/codeql";
-      const dbUrl = await convertLgtmUrlToDatabaseUrl(lgtmUrl, progressSpy);
-
-      expect(dbUrl).toBe(
-        "https://lgtm.com/api/v1.0/snapshots/1506465042581/python",
-      );
-      expect(progressSpy).toBeCalledTimes(1);
-    });
-
-    it("should fail on a nonexistent project", async () => {
-      quickPickSpy.mockResolvedValue("javascript" as unknown as QuickPickItem);
-      const lgtmUrl = "https://lgtm.com/projects/g/github/hucairz";
-      await expect(
-        convertLgtmUrlToDatabaseUrl(lgtmUrl, progressSpy),
-      ).rejects.toThrow(/Invalid LGTM URL/);
-      expect(progressSpy).toBeCalledTimes(0);
-    });
-  });
-
   describe("looksLikeGithubRepo", () => {
     it("should handle invalid urls", () => {
       expect(looksLikeGithubRepo("")).toBe(false);
@@ -205,42 +145,6 @@ describe("databaseFetcher", () => {
         true,
       );
       expect(looksLikeGithubRepo("foo/bar")).toBe(true);
-    });
-  });
-
-  describe("looksLikeLgtmUrl", () => {
-    it("should handle invalid urls", () => {
-      expect(looksLikeLgtmUrl("")).toBe(false);
-      expect(looksLikeLgtmUrl("http://lgtm.com/projects/g/github/codeql")).toBe(
-        false,
-      );
-      expect(
-        looksLikeLgtmUrl("https://ww.lgtm.com/projects/g/github/codeql"),
-      ).toBe(false);
-      expect(looksLikeLgtmUrl("https://ww.lgtm.com/projects/g/github")).toBe(
-        false,
-      );
-      expect(looksLikeLgtmUrl("g/github")).toBe(false);
-      expect(looksLikeLgtmUrl("ggg/github/myproj")).toBe(false);
-    });
-
-    it("should handle valid urls", () => {
-      expect(
-        looksLikeLgtmUrl("https://lgtm.com/projects/g/github/codeql"),
-      ).toBe(true);
-      expect(
-        looksLikeLgtmUrl("https://www.lgtm.com/projects/g/github/codeql"),
-      ).toBe(true);
-      expect(
-        looksLikeLgtmUrl("https://lgtm.com/projects/g/github/codeql/sub/pages"),
-      ).toBe(true);
-      expect(
-        looksLikeLgtmUrl(
-          "https://lgtm.com/projects/g/github/codeql/sub/pages?query=string",
-        ),
-      ).toBe(true);
-      expect(looksLikeLgtmUrl("g/github/myproj")).toBe(true);
-      expect(looksLikeLgtmUrl("git/github/myproj")).toBe(true);
     });
   });
 

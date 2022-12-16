@@ -1,6 +1,11 @@
 import { join } from "path";
 import { DbConfig } from "../../../../src/databases/config/db-config";
 import { DbConfigValidator } from "../../../../src/databases/config/db-config-validator";
+import { DbConfigValidationErrorKind } from "../../../../src/databases/db-validation-errors";
+import {
+  createDbConfig,
+  createLocalDbConfigItem,
+} from "../../../../src/vscode-tests/factories/db-config-factories";
 
 describe("db config validation", () => {
   const extensionPath = join(__dirname, "../../../..");
@@ -29,14 +34,139 @@ describe("db config validation", () => {
 
     expect(validationOutput).toHaveLength(3);
 
-    expect(validationOutput[0]).toEqual(
-      "/databases must have required property 'local'",
-    );
-    expect(validationOutput[1]).toEqual(
-      "/databases/remote must have required property 'owners'",
-    );
-    expect(validationOutput[2]).toEqual(
-      "/databases/remote must NOT have additional properties",
-    );
+    expect(validationOutput[0]).toEqual({
+      kind: DbConfigValidationErrorKind.InvalidConfig,
+      message: "/databases must have required property 'local'",
+    });
+    expect(validationOutput[1]).toEqual({
+      kind: DbConfigValidationErrorKind.InvalidConfig,
+      message: "/databases/remote must have required property 'owners'",
+    });
+    expect(validationOutput[2]).toEqual({
+      kind: DbConfigValidationErrorKind.InvalidConfig,
+      message: "/databases/remote must NOT have additional properties",
+    });
+  });
+
+  it("should return error when there are multiple remote db lists with the same name", async () => {
+    const dbConfig = createDbConfig({
+      remoteLists: [
+        {
+          name: "repoList1",
+          repositories: ["owner1/repo1", "owner1/repo2"],
+        },
+        {
+          name: "repoList1",
+          repositories: ["owner2/repo1", "owner2/repo2"],
+        },
+      ],
+    });
+
+    const validationOutput = configValidator.validate(dbConfig);
+
+    expect(validationOutput).toHaveLength(1);
+    expect(validationOutput[0]).toEqual({
+      kind: DbConfigValidationErrorKind.DuplicateNames,
+      message: "There are database lists with the same name: repoList1",
+    });
+  });
+
+  it("should return error when there are multiple remote dbs with the same name", async () => {
+    const dbConfig = createDbConfig({
+      remoteRepos: ["owner1/repo1", "owner1/repo2", "owner1/repo2"],
+    });
+
+    const validationOutput = configValidator.validate(dbConfig);
+
+    expect(validationOutput).toHaveLength(1);
+    expect(validationOutput[0]).toEqual({
+      kind: DbConfigValidationErrorKind.DuplicateNames,
+      message: "There are databases with the same name: owner1/repo2",
+    });
+  });
+
+  it("should return error when there are multiple remote dbs with the same name in the same list", async () => {
+    const dbConfig = createDbConfig({
+      remoteLists: [
+        {
+          name: "repoList1",
+          repositories: ["owner1/repo1", "owner1/repo2", "owner1/repo2"],
+        },
+      ],
+    });
+
+    const validationOutput = configValidator.validate(dbConfig);
+
+    expect(validationOutput).toHaveLength(1);
+    expect(validationOutput[0]).toEqual({
+      kind: DbConfigValidationErrorKind.DuplicateNames,
+      message:
+        "There are databases with the same name in the repoList1 list: owner1/repo2",
+    });
+  });
+
+  it("should return error when there are multiple local db lists with the same name", async () => {
+    const dbConfig = createDbConfig({
+      localLists: [
+        {
+          name: "dbList1",
+          databases: [createLocalDbConfigItem()],
+        },
+        {
+          name: "dbList1",
+          databases: [createLocalDbConfigItem()],
+        },
+      ],
+    });
+
+    const validationOutput = configValidator.validate(dbConfig);
+
+    expect(validationOutput).toHaveLength(1);
+    expect(validationOutput[0]).toEqual({
+      kind: DbConfigValidationErrorKind.DuplicateNames,
+      message: "There are database lists with the same name: dbList1",
+    });
+  });
+
+  it("should return error when there are multiple local dbs with the same name", async () => {
+    const dbConfig = createDbConfig({
+      localDbs: [
+        createLocalDbConfigItem({ name: "db1" }),
+        createLocalDbConfigItem({ name: "db2" }),
+        createLocalDbConfigItem({ name: "db1" }),
+      ],
+    });
+
+    const validationOutput = configValidator.validate(dbConfig);
+
+    expect(validationOutput).toHaveLength(1);
+    expect(validationOutput[0]).toEqual({
+      kind: DbConfigValidationErrorKind.DuplicateNames,
+      message: "There are databases with the same name: db1",
+    });
+  });
+
+  it("should return error when there are multiple local dbs with the same name in the same list", async () => {
+    const dbConfig = createDbConfig({
+      localLists: [
+        {
+          name: "dbList1",
+          databases: [
+            createLocalDbConfigItem({ name: "db1" }),
+            createLocalDbConfigItem({ name: "db2" }),
+            createLocalDbConfigItem({ name: "db1" }),
+          ],
+        },
+      ],
+    });
+
+    const validationOutput = configValidator.validate(dbConfig);
+
+    expect(validationOutput).toHaveLength(1);
+    expect(validationOutput[0]).toEqual({
+      kind: DbConfigValidationErrorKind.DuplicateNames,
+      message:
+        "There are databases with the same name in the dbList1 list: db1",
+    });
   });
 });
