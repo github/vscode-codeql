@@ -48,7 +48,6 @@
     "onCommand:codeQLDatabases.chooseDatabaseArchive",
     "onCommand:codeQLDatabases.chooseDatabaseInternet",
     "onCommand:codeQLDatabases.chooseDatabaseGithub",
-    "onCommand:codeQLDatabases.chooseDatabaseLgtm",
     "onCommand:codeQL.setCurrentDatabase",
     "onCommand:codeQL.viewAst",
     "onCommand:codeQL.viewCfg",
@@ -58,7 +57,6 @@
     "onCommand:codeQL.chooseDatabaseArchive",
     "onCommand:codeQL.chooseDatabaseInternet",
     "onCommand:codeQL.chooseDatabaseGithub",
-    "onCommand:codeQL.chooseDatabaseLgtm",
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
     "onCommand:codeQLDatabasesExperimental.openConfigFile",
@@ -411,14 +409,6 @@
         }
       },
       {
-        "command": "codeQLDatabases.chooseDatabaseLgtm",
-        "title": "Download from LGTM",
-        "icon": {
-          "light": "media/light/lgtm-plus.svg",
-          "dark": "media/dark/lgtm-plus.svg"
-        }
-      },
-      {
         "command": "codeQL.setCurrentDatabase",
         "title": "CodeQL: Set Current Database"
       },
@@ -485,10 +475,6 @@
       {
         "command": "codeQL.chooseDatabaseGithub",
         "title": "CodeQL: Download Database from GitHub"
-      },
-      {
-        "command": "codeQL.chooseDatabaseLgtm",
-        "title": "CodeQL: Download Database from LGTM"
       },
       {
         "command": "codeQLDatabases.sortByName",
@@ -726,11 +712,6 @@
         {
           "command": "codeQLDatabases.chooseDatabaseGithub",
           "when": "view == codeQLDatabases",
-          "group": "navigation"
-        },
-        {
-          "command": "codeQLDatabases.chooseDatabaseLgtm",
-          "when": "config.codeQL.canary && view == codeQLDatabases",
           "group": "navigation"
         },
         {
@@ -998,10 +979,6 @@
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
-          "command": "codeQL.chooseDatabaseLgtm",
-          "when": "config.codeQL.canary"
-        },
-        {
           "command": "codeQLDatabasesExperimental.openConfigFile",
           "when": "false"
         },
@@ -1059,10 +1036,6 @@
         },
         {
           "command": "codeQLDatabases.chooseDatabaseGithub",
-          "when": "false"
-        },
-        {
-          "command": "codeQLDatabases.chooseDatabaseLgtm",
           "when": "false"
         },
         {
