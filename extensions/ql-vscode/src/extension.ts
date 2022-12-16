@@ -1371,16 +1371,6 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(
     commandRunnerWithProgress(
-      "codeQL.chooseDatabaseLgtm",
-      (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.handleChooseDatabaseLgtm(progress, token),
-      {
-        title: "Adding database from LGTM",
-      },
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
       "codeQL.chooseDatabaseInternet",
       (progress: ProgressCallback, token: CancellationToken) =>
         databaseUI.handleChooseDatabaseInternet(progress, token),

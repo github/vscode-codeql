@@ -33,7 +33,6 @@ import {
   importArchiveDatabase,
   promptImportGithubDatabase,
   promptImportInternetDatabase,
-  promptImportLgtmDatabase,
 } from "./databaseFetcher";
 import { asyncFilter, getErrorMessage } from "./pure/helpers-pure";
 import { Credentials } from "./authentication";
@@ -309,15 +308,6 @@ export class DatabaseUI extends DisposableObject {
       ),
     );
     this.push(
-      commandRunnerWithProgress(
-        "codeQLDatabases.chooseDatabaseLgtm",
-        this.handleChooseDatabaseLgtm,
-        {
-          title: "Adding database from LGTM",
-        },
-      ),
-    );
-    this.push(
       commandRunner(
         "codeQLDatabases.setCurrentDatabase",
         this.handleMakeCurrentDatabase,
@@ -485,19 +475,6 @@ export class DatabaseUI extends DisposableObject {
       this.databaseManager,
       this.storagePath,
       credentials,
-      progress,
-      token,
-      this.queryServer?.cliServer,
-    );
-  };
-
-  handleChooseDatabaseLgtm = async (
-    progress: ProgressCallback,
-    token: CancellationToken,
-  ): Promise<DatabaseItem | undefined> => {
-    return await promptImportLgtmDatabase(
-      this.databaseManager,
-      this.storagePath,
       progress,
       token,
       this.queryServer?.cliServer,

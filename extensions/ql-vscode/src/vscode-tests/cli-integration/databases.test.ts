@@ -5,7 +5,6 @@ import { CodeQLExtensionInterface } from "../../extension";
 import { CodeQLCliServer } from "../../cli";
 import { DatabaseManager } from "../../databases";
 import {
-  promptImportLgtmDatabase,
   importArchiveDatabase,
   promptImportInternetDatabase,
 } from "../../databaseFetcher";
@@ -17,9 +16,6 @@ jest.setTimeout(60_000);
  * Run various integration tests for databases
  */
 describe("Databases", () => {
-  const LGTM_URL =
-    "https://lgtm.com/projects/g/aeisenberg/angular-bind-notifier/";
-
   let databaseManager: DatabaseManager;
   let inputBoxStub: jest.SpiedFunction<typeof window.showInputBox>;
   let cli: CodeQLCliServer;
@@ -69,27 +65,6 @@ describe("Databases", () => {
     dbItem = dbItem!;
     expect(dbItem.name).toBe("db");
     expect(dbItem.databaseUri.fsPath).toBe(join(storagePath, "db", "db"));
-  });
-
-  it("should add a database from lgtm with only one language", async () => {
-    inputBoxStub.mockResolvedValue(LGTM_URL);
-    let dbItem = await promptImportLgtmDatabase(
-      databaseManager,
-      storagePath,
-      progressCallback,
-      {} as CancellationToken,
-      cli,
-    );
-    expect(dbItem).toBeDefined();
-    dbItem = dbItem!;
-    expect(dbItem.name).toBe("aeisenberg_angular-bind-notifier_106179a");
-    expect(dbItem.databaseUri.fsPath).toBe(
-      join(
-        storagePath,
-        "javascript",
-        "aeisenberg_angular-bind-notifier_106179a",
-      ),
-    );
   });
 
   it("should add a database from a url", async () => {
