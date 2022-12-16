@@ -191,7 +191,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Set the variables
         id: set-variables
-        run: echo "::set-output name=cli-versions::$(cat ./supported_cli_versions.json | jq)"
+        run: echo "cli-versions=$(cat ./supported_cli_versions.json | jq -rc)" >> $GITHUB_OUTPUT
     outputs:
       cli-versions: ${{ steps.set-variables.outputs.cli-versions }}
   cli-test:

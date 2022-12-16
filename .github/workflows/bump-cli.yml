@@ -8,6 +8,10 @@ on:
   schedule:
   - cron: 0 0 */14 * * # run every 14 days
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   build:
     name: Build
