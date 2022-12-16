@@ -20,20 +20,23 @@ export class DbModule extends DisposableObject {
   }
 
   public static async initialize(app: App): Promise<DbModule | undefined> {
-    if (
-      isCanary() &&
-      isNewQueryRunExperienceEnabled() &&
-      app.mode === AppMode.Development
-    ) {
+    if (DbModule.shouldEnableModule(app.mode)) {
       const dbModule = new DbModule(app);
       app.subscriptions.push(dbModule);
 
       await dbModule.initialize();
-
       return dbModule;
     }
 
     return undefined;
+  }
+
+  private static shouldEnableModule(app: AppMode): boolean {
+    if (app === AppMode.Development || app === AppMode.Test) {
+      return true;
+    }
+
+    return isCanary() && isNewQueryRunExperienceEnabled();
   }
 
   private async initialize(): Promise<void> {
