@@ -6,7 +6,7 @@ import {
   LocalList,
   RemoteRepositoryList,
   SelectedDbItem,
-} from "../../src/databases/config/db-config";
+} from "../../databases/config/db-config";
 
 export function createDbConfig({
   remoteLists = [],

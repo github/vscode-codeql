@@ -12,6 +12,7 @@ import { DbItemKind, LocalDatabaseDbItem } from "../../../databases/db-item";
 import { DbTreeViewItem } from "../../../databases/ui/db-tree-view-item";
 import { ExtensionApp } from "../../../common/vscode/vscode-app";
 import { createMockExtensionContext } from "../../factories/extension-context";
+import { createDbConfig } from "../../factories/db-config-factories";
 
 describe("db panel", () => {
   const workspaceStoragePath = join(__dirname, "test-workspace-storage");
@@ -48,20 +49,7 @@ describe("db panel", () => {
   });
 
   it("should render default local and remote nodes when the config is empty", async () => {
-    const dbConfig: DbConfig = {
-      databases: {
-        remote: {
-          repositoryLists: [],
-          owners: [],
-          repositories: [],
-        },
-        local: {
-          lists: [],
-          databases: [],
-        },
-      },
-      expanded: [],
-    };
+    const dbConfig: DbConfig = createDbConfig();
 
     await saveDbConfig(dbConfig);
 
@@ -103,29 +91,18 @@ describe("db panel", () => {
   });
 
   it("should render remote repository list nodes", async () => {
-    const dbConfig: DbConfig = {
-      databases: {
-        remote: {
-          repositoryLists: [
-            {
-              name: "my-list-1",
-              repositories: ["owner1/repo1", "owner1/repo2"],
-            },
-            {
-              name: "my-list-2",
-              repositories: ["owner1/repo1", "owner2/repo1", "owner2/repo2"],
-            },
-          ],
-          owners: [],
-          repositories: [],
+    const dbConfig: DbConfig = createDbConfig({
+      remoteLists: [
+        {
+          name: "my-list-1",
+          repositories: ["owner1/repo1", "owner1/repo2"],
         },
-        local: {
-          lists: [],
-          databases: [],
+        {
+          name: "my-list-2",
+          repositories: ["owner1/repo1", "owner2/repo1", "owner2/repo2"],
         },
-      },
-      expanded: [],
-    };
+      ],
+    });
 
     await saveDbConfig(dbConfig);
 
@@ -164,20 +141,9 @@ describe("db panel", () => {
   });
 
   it("should render owner list nodes", async () => {
-    const dbConfig: DbConfig = {
-      databases: {
-        remote: {
-          repositoryLists: [],
-          owners: ["owner1", "owner2"],
-          repositories: [],
-        },
-        local: {
-          lists: [],
-          databases: [],
-        },
-      },
-      expanded: [],
-    };
+    const dbConfig: DbConfig = createDbConfig({
+      remoteOwners: ["owner1", "owner2"],
+    });
 
     await saveDbConfig(dbConfig);
 
@@ -204,20 +170,9 @@ describe("db panel", () => {
   });
 
   it("should render repository nodes", async () => {
-    const dbConfig: DbConfig = {
-      databases: {
-        remote: {
-          repositoryLists: [],
-          owners: [],
-          repositories: ["owner1/repo1", "owner1/repo2"],
-        },
-        local: {
-          lists: [],
-          databases: [],
-        },
-      },
-      expanded: [],
-    };
+    const dbConfig: DbConfig = createDbConfig({
+      remoteRepos: ["owner1/repo1", "owner1/repo2"],
+    });
 
     await saveDbConfig(dbConfig);
 
@@ -244,49 +199,38 @@ describe("db panel", () => {
   });
 
   it("should render local list nodes", async () => {
-    const dbConfig: DbConfig = {
-      databases: {
-        remote: {
-          repositoryLists: [],
-          owners: [],
-          repositories: [],
-        },
-        local: {
-          lists: [
+    const dbConfig: DbConfig = createDbConfig({
+      localLists: [
+        {
+          name: "my-list-1",
+          databases: [
             {
-              name: "my-list-1",
-              databases: [
-                {
-                  name: "db1",
-                  dateAdded: 1668428293677,
-                  language: "cpp",
-                  storagePath: "/path/to/db1/",
-                },
-                {
-                  name: "db2",
-                  dateAdded: 1668428472731,
-                  language: "cpp",
-                  storagePath: "/path/to/db2/",
-                },
-              ],
+              name: "db1",
+              dateAdded: 1668428293677,
+              language: "cpp",
+              storagePath: "/path/to/db1/",
             },
             {
-              name: "my-list-2",
-              databases: [
-                {
-                  name: "db3",
-                  dateAdded: 1668428472731,
-                  language: "ruby",
-                  storagePath: "/path/to/db3/",
-                },
-              ],
+              name: "db2",
+              dateAdded: 1668428472731,
+              language: "cpp",
+              storagePath: "/path/to/db2/",
             },
           ],
-          databases: [],
         },
-      },
-      expanded: [],
-    };
+        {
+          name: "my-list-2",
+          databases: [
+            {
+              name: "db3",
+              dateAdded: 1668428472731,
+              language: "ruby",
+              storagePath: "/path/to/db3/",
+            },
+          ],
+        },
+      ],
+    });
 
     await saveDbConfig(dbConfig);
 
@@ -339,33 +283,22 @@ describe("db panel", () => {
   });
 
   it("should render local database nodes", async () => {
-    const dbConfig: DbConfig = {
-      databases: {
-        remote: {
-          repositoryLists: [],
-          owners: [],
-          repositories: [],
+    const dbConfig: DbConfig = createDbConfig({
+      localDbs: [
+        {
+          name: "db1",
+          dateAdded: 1668428293677,
+          language: "csharp",
+          storagePath: "/path/to/db1/",
         },
-        local: {
-          lists: [],
-          databases: [
-            {
-              name: "db1",
-              dateAdded: 1668428293677,
-              language: "csharp",
-              storagePath: "/path/to/db1/",
-            },
-            {
-              name: "db2",
-              dateAdded: 1668428472731,
-              language: "go",
-              storagePath: "/path/to/db2/",
-            },
-          ],
+        {
+          name: "db2",
+          dateAdded: 1668428472731,
+          language: "go",
+          storagePath: "/path/to/db2/",
         },
-      },
-      expanded: [],
-    };
+      ],
+    });
 
     await saveDbConfig(dbConfig);
 
@@ -406,33 +339,22 @@ describe("db panel", () => {
   });
 
   it("should mark selected remote db list as selected", async () => {
-    const dbConfig: DbConfig = {
-      databases: {
-        remote: {
-          repositoryLists: [
-            {
-              name: "my-list-1",
-              repositories: ["owner1/repo1", "owner1/repo2"],
-            },
-            {
-              name: "my-list-2",
-              repositories: ["owner2/repo1", "owner2/repo2"],
-            },
-          ],
-          owners: [],
-          repositories: [],
+    const dbConfig: DbConfig = createDbConfig({
+      remoteLists: [
+        {
+          name: "my-list-1",
+          repositories: ["owner1/repo1", "owner1/repo2"],
         },
-        local: {
-          lists: [],
-          databases: [],
+        {
+          name: "my-list-2",
+          repositories: ["owner2/repo1", "owner2/repo2"],
         },
-      },
-      expanded: [],
+      ],
       selected: {
         kind: SelectedDbItemKind.RemoteUserDefinedList,
         listName: "my-list-2",
       },
-    };
+    });
 
     await saveDbConfig(dbConfig);
 
@@ -463,34 +385,24 @@ describe("db panel", () => {
   });
 
   it("should mark selected remote db inside list as selected", async () => {
-    const dbConfig: DbConfig = {
-      databases: {
-        remote: {
-          repositoryLists: [
-            {
-              name: "my-list-1",
-              repositories: ["owner1/repo1", "owner1/repo2"],
-            },
-            {
-              name: "my-list-2",
-              repositories: ["owner1/repo1", "owner2/repo2"],
-            },
-          ],
-          owners: [],
-          repositories: ["owner1/repo1"],
+    const dbConfig: DbConfig = createDbConfig({
+      remoteLists: [
+        {
+          name: "my-list-1",
+          repositories: ["owner1/repo1", "owner1/repo2"],
         },
-        local: {
-          lists: [],
-          databases: [],
+        {
+          name: "my-list-2",
+          repositories: ["owner1/repo1", "owner2/repo2"],
         },
-      },
-      expanded: [],
+      ],
+      remoteRepos: ["owner1/repo1"],
       selected: {
         kind: SelectedDbItemKind.RemoteRepository,
         repositoryName: "owner1/repo1",
         listName: "my-list-2",
       },
-    };
+    });
 
     await saveDbConfig(dbConfig);
 
@@ -532,29 +444,18 @@ describe("db panel", () => {
   });
 
   it("should add a new list to the remote db list", async () => {
-    const dbConfig: DbConfig = {
-      databases: {
-        remote: {
-          repositoryLists: [
-            {
-              name: "my-list-1",
-              repositories: ["owner1/repo1", "owner1/repo2"],
-            },
-          ],
-          owners: [],
-          repositories: [],
+    const dbConfig: DbConfig = createDbConfig({
+      remoteLists: [
+        {
+          name: "my-list-1",
+          repositories: ["owner1/repo1", "owner1/repo2"],
         },
-        local: {
-          lists: [],
-          databases: [],
-        },
-      },
-      expanded: [],
+      ],
       selected: {
         kind: SelectedDbItemKind.RemoteUserDefinedList,
         listName: "my-list-1",
       },
-    };
+    });
 
     await saveDbConfig(dbConfig);
 
@@ -614,29 +515,19 @@ describe("db panel", () => {
   });
 
   it("should show errors for duplicate names", async () => {
-    const dbConfig: DbConfig = {
-      databases: {
-        remote: {
-          repositoryLists: [
-            {
-              name: "my-list-1",
-              repositories: ["owner1/repo1", "owner1/repo2"],
-            },
-            {
-              name: "my-list-1",
-              repositories: ["owner1/repo1", "owner2/repo2"],
-            },
-          ],
-          owners: [],
-          repositories: ["owner1/repo1", "owner1/repo1"],
+    const dbConfig: DbConfig = createDbConfig({
+      remoteLists: [
+        {
+          name: "my-list-1",
+          repositories: ["owner1/repo1", "owner1/repo2"],
         },
-        local: {
-          lists: [],
-          databases: [],
+        {
+          name: "my-list-1",
+          repositories: ["owner1/repo1", "owner2/repo2"],
         },
-      },
-      expanded: [],
-    };
+      ],
+      remoteRepos: ["owner1/repo1", "owner1/repo1"],
+    });
 
     await saveDbConfig(dbConfig);
 
