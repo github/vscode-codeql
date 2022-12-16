@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import {
   DbConfig,
   ExpandedDbItem,
@@ -5,7 +6,7 @@ import {
   LocalList,
   RemoteRepositoryList,
   SelectedDbItem,
-} from "../../src/databases/config/db-config";
+} from "../../databases/config/db-config";
 
 export function createDbConfig({
   remoteLists = [],
@@ -38,5 +39,24 @@ export function createDbConfig({
     },
     expanded,
     selected,
+  };
+}
+
+export function createLocalDbConfigItem({
+  name = `database${faker.datatype.number()}`,
+  dateAdded = faker.date.past().getTime(),
+  language = `language${faker.datatype.number()}`,
+  storagePath = `storagePath${faker.datatype.number()}`,
+}: {
+  name?: string;
+  dateAdded?: number;
+  language?: string;
+  storagePath?: string;
+} = {}): LocalDatabase {
+  return {
+    name,
+    dateAdded,
+    language,
+    storagePath,
   };
 }

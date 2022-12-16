@@ -1,4 +1,4 @@
-import { pathExists, writeJSON, readJSON, readJSONSync } from "fs-extra";
+import { pathExists, outputJSON, readJSON, readJSONSync } from "fs-extra";
 import { join } from "path";
 import {
   cloneDbConfig,
@@ -9,9 +9,13 @@ import {
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
 import { DbConfigValidator } from "./db-config-validator";
-import { ValueResult } from "../../common/value-result";
 import { App } from "../../common/app";
 import { AppEvent, AppEventEmitter } from "../../common/events";
+import {
+  DbConfigValidationError,
+  DbConfigValidationErrorKind,
+} from "../db-validation-errors";
+import { ValueResult } from "../../common/value-result";
 
 export class DbConfigStore extends DisposableObject {
   public readonly onDidChangeConfig: AppEvent<void>;
@@ -21,10 +25,10 @@ export class DbConfigStore extends DisposableObject {
   private readonly configValidator: DbConfigValidator;
 
   private config: DbConfig | undefined;
-  private configErrors: string[];
+  private configErrors: DbConfigValidationError[];
   private configWatcher: chokidar.FSWatcher | undefined;
 
-  public constructor(app: App) {
+  public constructor(private readonly app: App) {
     super();
 
     const storagePath = app.workspaceStoragePath || app.globalStoragePath;
@@ -48,7 +52,7 @@ export class DbConfigStore extends DisposableObject {
     this.configWatcher?.unwatch(this.configPath);
   }
 
-  public getConfig(): ValueResult<DbConfig, string> {
+  public getConfig(): ValueResult<DbConfig, DbConfigValidationError> {
     if (this.config) {
       // Clone the config so that it's not modified outside of this class.
       return ValueResult.ok(cloneDbConfig(this.config));
@@ -95,28 +99,45 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot add remote list if config is not loaded");
     }
 
+    if (this.doesRemoteListExist(listName)) {
+      throw Error(`A remote list with the name '${listName}' already exists`);
+    }
+
     const config: DbConfig = cloneDbConfig(this.config);
     config.databases.remote.repositoryLists.push({
       name: listName,
       repositories: [],
     });
 
-    // TODO: validate that the name doesn't already exist
     await this.writeConfig(config);
   }
 
+  public doesRemoteListExist(listName: string): boolean {
+    if (!this.config) {
+      throw Error("Cannot check remote list existence if config is not loaded");
+    }
+
+    return this.config.databases.remote.repositoryLists.some(
+      (l) => l.name === listName,
+    );
+  }
+
   private async writeConfig(config: DbConfig): Promise<void> {
-    await writeJSON(this.configPath, config, {
+    await outputJSON(this.configPath, config, {
       spaces: 2,
     });
   }
 
   private async loadConfig(): Promise<void> {
     if (!(await pathExists(this.configPath))) {
+      void this.app.logger.log(
+        `Creating new database config file at ${this.configPath}`,
+      );
       await this.writeConfig(this.createEmptyConfig());
     }
 
     await this.readConfig();
+    void this.app.logger.log(`Database config loaded from ${this.configPath}`);
   }
 
   private async readConfig(): Promise<void> {
@@ -124,14 +145,33 @@ export class DbConfigStore extends DisposableObject {
     try {
       newConfig = await readJSON(this.configPath);
     } catch (e) {
-      this.configErrors = [`Failed to read config file: ${this.configPath}`];
+      this.configErrors = [
+        {
+          kind: DbConfigValidationErrorKind.InvalidJson,
+          message: `Failed to read config file: ${this.configPath}`,
+        },
+      ];
     }
 
     if (newConfig) {
       this.configErrors = this.configValidator.validate(newConfig);
     }
 
-    this.config = this.configErrors.length === 0 ? newConfig : undefined;
+    if (this.configErrors.length === 0) {
+      this.config = newConfig;
+      await this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        false,
+      );
+    } else {
+      this.config = undefined;
+      await this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        true,
+      );
+    }
   }
 
   private readConfigSync(): void {
@@ -139,22 +179,51 @@ export class DbConfigStore extends DisposableObject {
     try {
       newConfig = readJSONSync(this.configPath);
     } catch (e) {
-      this.configErrors = [`Failed to read config file: ${this.configPath}`];
+      this.configErrors = [
+        {
+          kind: DbConfigValidationErrorKind.InvalidJson,
+          message: `Failed to read config file: ${this.configPath}`,
+        },
+      ];
     }
 
     if (newConfig) {
       this.configErrors = this.configValidator.validate(newConfig);
     }
 
-    this.config = this.configErrors.length === 0 ? newConfig : undefined;
-
+    if (this.configErrors.length === 0) {
+      this.config = newConfig;
+      void this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        false,
+      );
+    } else {
+      this.config = undefined;
+      void this.app.executeCommand(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        true,
+      );
+    }
     this.onDidChangeConfigEventEmitter.fire();
   }
 
   private watchConfig(): void {
-    this.configWatcher = chokidar.watch(this.configPath).on("change", () => {
-      this.readConfigSync();
-    });
+    this.configWatcher = chokidar
+      .watch(this.configPath, {
+        // In some cases, change events are emitted while the file is still
+        // being written. The awaitWriteFinish option tells the watcher to
+        // poll the file size, holding its add and change events until the size
+        // does not change for a configurable amount of time. We set that time
+        // to 1 second, but it may need to be adjusted if there are issues.
+        awaitWriteFinish: {
+          stabilityThreshold: 1000,
+        },
+      })
+      .on("change", () => {
+        this.readConfigSync();
+      });
   }
 
   private createEmptyConfig(): DbConfig {

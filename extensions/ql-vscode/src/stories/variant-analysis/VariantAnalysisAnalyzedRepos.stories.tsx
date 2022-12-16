@@ -8,6 +8,7 @@ import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAna
 import { VariantAnalysisAnalyzedRepos } from "../../view/variant-analysis/VariantAnalysisAnalyzedRepos";
 import {
   VariantAnalysisRepoStatus,
+  VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisStatus,
 } from "../../remote-queries/shared/variant-analysis";
 import { AnalysisAlert } from "../../remote-queries/shared/analysis-result";
@@ -148,8 +149,8 @@ const manyScannedRepos = Array.from({ length: 1000 }, (_, i) => {
   };
 });
 
-export const PerformanceExample = Template.bind({});
-PerformanceExample.args = {
+export const ManyRepositoriesPerformanceExample = Template.bind({});
+ManyRepositoriesPerformanceExample.args = {
   variantAnalysis: {
     ...createMockVariantAnalysis({
       status: VariantAnalysisStatus.Succeeded,
@@ -161,5 +162,41 @@ PerformanceExample.args = {
     variantAnalysisId: 1,
     repositoryId: repoTask.repository.id,
     interpretedResults: interpretedResultsForRepo("facebook/create-react-app"),
+  })),
+};
+
+const mockAnalysisAlert = interpretedResultsForRepo(
+  "facebook/create-react-app",
+)![0];
+
+const performanceNumbers = [10, 50, 100, 500, 1000, 2000, 5000, 10_000];
+
+export const ManyResultsPerformanceExample = Template.bind({});
+ManyResultsPerformanceExample.args = {
+  variantAnalysis: {
+    ...createMockVariantAnalysis({
+      status: VariantAnalysisStatus.Succeeded,
+      scannedRepos: performanceNumbers.map((resultCount, i) => ({
+        repository: {
+          ...createMockRepositoryWithMetadata(),
+          id: resultCount,
+          fullName: `octodemo/${i}-${resultCount}-results`,
+        },
+        analysisStatus: VariantAnalysisRepoStatus.Succeeded,
+        resultCount,
+      })),
+    }),
+    id: 1,
+  },
+  repositoryStates: performanceNumbers.map((resultCount) => ({
+    repositoryId: resultCount,
+    downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+  })),
+  repositoryResults: performanceNumbers.map((resultCount) => ({
+    variantAnalysisId: 1,
+    repositoryId: resultCount,
+    interpretedResults: Array.from({ length: resultCount }, (_, i) => ({
+      ...mockAnalysisAlert,
+    })),
   })),
 };

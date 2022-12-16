@@ -1,5 +1,6 @@
 import { TreeViewExpansionEvent, window, workspace } from "vscode";
 import { commandRunner } from "../../commandRunner";
+import { showAndLogErrorMessage } from "../../helpers";
 import { DisposableObject } from "../../pure/disposable-object";
 import { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
@@ -58,7 +59,6 @@ export class DbPanel extends DisposableObject {
   }
 
   private async addNewRemoteList(): Promise<void> {
-    // TODO: check that config exists *before* showing the input box
     const listName = await window.showInputBox({
       prompt: "Enter a name for the new list",
       placeHolder: "example-list",
@@ -66,7 +66,14 @@ export class DbPanel extends DisposableObject {
     if (listName === undefined) {
       return;
     }
-    await this.dbManager.addNewRemoteList(listName);
+
+    if (this.dbManager.doesRemoteListExist(listName)) {
+      void showAndLogErrorMessage(
+        `A list with the name '${listName}' already exists`,
+      );
+    } else {
+      await this.dbManager.addNewRemoteList(listName);
+    }
   }
 
   private async setSelectedItem(treeViewItem: DbTreeViewItem): Promise<void> {
