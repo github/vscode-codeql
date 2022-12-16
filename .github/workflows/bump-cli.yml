@@ -26,8 +26,8 @@ jobs:
         uses: ./.github/actions/create-pr
         with:
           token: ${{ github.token }}
-          base-branch: refs/heads/main
-          head-branch: bump-cli
+          base-branch: main
+          head-branch: github-action/bump-cli
           commit-message: Bump CLI version from ${{ env.PREVIOUS_VERSION }} to ${{ env.LATEST_VERSION }} for integration tests
           title: Bump CLI Version to ${{ env.LATEST_VERSION }} for integration tests
           body: >
