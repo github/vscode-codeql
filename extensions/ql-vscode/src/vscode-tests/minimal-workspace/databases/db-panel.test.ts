@@ -477,7 +477,7 @@ describe("db panel", () => {
     expect(remoteUserDefinedLists.length).toBe(1);
     expect(remoteUserDefinedLists[0]).toBe(list1);
 
-    await dbManager.addNewRemoteList("my-list-2");
+    await dbManager.addNewList(DbItemKind.RootRemote, "my-list-2");
 
     // Read the workspace databases JSON file directly to check that the new list has been added.
     // We can't use the dbConfigStore's `read` function here because it depends on the file watcher
@@ -555,9 +555,9 @@ describe("db panel", () => {
 
       await saveDbConfig(dbConfig);
 
-      await expect(dbManager.addNewRemoteList("")).rejects.toThrow(
-        new Error("List name cannot be empty"),
-      );
+      await expect(
+        dbManager.addNewList(DbItemKind.RootRemote, ""),
+      ).rejects.toThrow(new Error("List name cannot be empty"));
     });
 
     it("should not allow adding a list with duplicate name", async () => {
@@ -572,7 +572,9 @@ describe("db panel", () => {
 
       await saveDbConfig(dbConfig);
 
-      await expect(dbManager.addNewRemoteList("my-list-1")).rejects.toThrow(
+      await expect(
+        dbManager.addNewList(DbItemKind.RootRemote, "my-list-1"),
+      ).rejects.toThrow(
         new Error("A list with the name 'my-list-1' already exists"),
       );
     });
