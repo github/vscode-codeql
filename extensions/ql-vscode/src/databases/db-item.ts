@@ -11,6 +11,20 @@ export enum DbItemKind {
   RemoteRepo = "RemoteRepo",
 }
 
+export const remoteDbKinds = [
+  DbItemKind.RootRemote,
+  DbItemKind.RemoteSystemDefinedList,
+  DbItemKind.RemoteUserDefinedList,
+  DbItemKind.RemoteOwner,
+  DbItemKind.RemoteRepo,
+];
+
+export const localDbKinds = [
+  DbItemKind.RootLocal,
+  DbItemKind.LocalList,
+  DbItemKind.LocalDatabase,
+];
+
 export interface RootLocalDbItem {
   kind: DbItemKind.RootLocal;
   expanded: boolean;
