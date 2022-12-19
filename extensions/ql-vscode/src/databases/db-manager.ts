@@ -76,6 +76,10 @@ export class DbManager {
   }
 
   public async addNewRemoteList(listName: string): Promise<void> {
+    if (listName === "") {
+      throw Error("List name cannot be empty");
+    }
+
     if (this.dbConfigStore.doesRemoteListExist(listName)) {
       throw Error(`A list with the name '${listName}' already exists`);
     }
