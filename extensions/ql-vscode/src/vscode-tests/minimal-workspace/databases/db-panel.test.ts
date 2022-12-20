@@ -589,6 +589,50 @@ describe("db panel", () => {
         new Error("A list with the name 'my-list-1' already exists"),
       );
     });
+
+    it("should not allow adding a new remote db with empty name", async () => {
+      const dbConfig = createDbConfig();
+
+      await saveDbConfig(dbConfig);
+
+      await expect(dbManager.addNewRemoteRepo("")).rejects.toThrow(
+        new Error("Repository name cannot be empty"),
+      );
+    });
+
+    it("should not allow adding a remote db with duplicate name", async () => {
+      const dbConfig = createDbConfig({
+        remoteRepos: ["owner1/repo1"],
+      });
+
+      await saveDbConfig(dbConfig);
+
+      await expect(dbManager.addNewRemoteRepo("owner1/repo1")).rejects.toThrow(
+        new Error("The repository 'owner1/repo1' already exists"),
+      );
+    });
+
+    it("should not allow adding a new remote owner with empty name", async () => {
+      const dbConfig = createDbConfig();
+
+      await saveDbConfig(dbConfig);
+
+      await expect(dbManager.addNewRemoteOwner("")).rejects.toThrow(
+        new Error("Owner name cannot be empty"),
+      );
+    });
+
+    it("should not allow adding a remote owner with duplicate name", async () => {
+      const dbConfig = createDbConfig({
+        remoteOwners: ["owner1"],
+      });
+
+      await saveDbConfig(dbConfig);
+
+      await expect(dbManager.addNewRemoteOwner("owner1")).rejects.toThrow(
+        new Error("The owner 'owner1' already exists"),
+      );
+    });
   });
 
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {

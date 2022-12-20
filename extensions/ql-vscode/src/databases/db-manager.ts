@@ -76,10 +76,24 @@ export class DbManager {
   }
 
   public async addNewRemoteRepo(nwo: string): Promise<void> {
+    if (nwo === "") {
+      throw new Error("Repository name cannot be empty");
+    }
+    if (this.dbConfigStore.doesRemoteDbExist(nwo)) {
+      throw new Error(`The repository '${nwo}' already exists`);
+    }
+
     await this.dbConfigStore.addRemoteRepo(nwo);
   }
 
   public async addNewRemoteOwner(owner: string): Promise<void> {
+    if (owner === "") {
+      throw Error("Owner name cannot be empty");
+    }
+    if (this.dbConfigStore.doesRemoteOwnerExist(owner)) {
+      throw Error(`The owner '${owner}' already exists`);
+    }
+
     await this.dbConfigStore.addRemoteOwner(owner);
   }
 
@@ -96,9 +110,5 @@ export class DbManager {
     } else {
       throw Error("Cannot add a local list");
     }
-  }
-
-  public doesRemoteListExist(listName: string): boolean {
-    return this.dbConfigStore.doesRemoteListExist(listName);
   }
 }
