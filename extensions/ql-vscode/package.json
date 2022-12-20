@@ -369,8 +369,7 @@
       },
       {
         "command": "codeQLDatabasesExperimental.setSelectedItem",
-        "title": "Select Item",
-        "icon": "$(circle-small-filled)"
+        "title": "✓"
       },
       {
         "command": "codeQLDatabases.chooseDatabaseFolder",
