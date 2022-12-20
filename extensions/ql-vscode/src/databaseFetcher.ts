@@ -23,9 +23,9 @@ import { extLogger } from "./common";
 import { Credentials } from "./authentication";
 import { getErrorMessage } from "./pure/helpers-pure";
 import {
-  convertGitHubUrlToNwo,
-  looksLikeGithubRepo,
-} from "./databases/github-nwo";
+  getNwoFromGitHubUrl,
+  validGitHubNwo,
+} from "./common/github-url-identifier-helper";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -100,7 +100,8 @@ export async function promptImportGithubDatabase(
     return;
   }
 
-  if (!looksLikeGithubRepo(githubRepo)) {
+  const nwo = getNwoFromGitHubUrl(githubRepo) || githubRepo;
+  if (!validGitHubNwo(nwo)) {
     throw new Error(`Invalid GitHub repository: ${githubRepo}`);
   }
 
@@ -108,11 +109,7 @@ export async function promptImportGithubDatabase(
     ? await credentials.getOctokit(true)
     : new Octokit.Octokit({ retry });
 
-  const result = await convertGithubNwoToDatabaseUrl(
-    githubRepo,
-    octokit,
-    progress,
-  );
+  const result = await convertGithubNwoToDatabaseUrl(nwo, octokit, progress);
   if (!result) {
     return;
   }
@@ -446,7 +443,7 @@ export async function findDirWithFile(
 }
 
 export async function convertGithubNwoToDatabaseUrl(
-  githubRepo: string,
+  nwo: string,
   octokit: Octokit.Octokit,
   progress: ProgressCallback,
 ): Promise<
@@ -458,7 +455,6 @@ export async function convertGithubNwoToDatabaseUrl(
   | undefined
 > {
   try {
-    const nwo = convertGitHubUrlToNwo(githubRepo) || githubRepo;
     const [owner, repo] = nwo.split("/");
 
     const response = await octokit.request(
@@ -480,7 +476,7 @@ export async function convertGithubNwoToDatabaseUrl(
     };
   } catch (e) {
     void extLogger.log(`Error: ${getErrorMessage(e)}`);
-    throw new Error(`Unable to get database for '${githubRepo}'`);
+    throw new Error(`Unable to get database for '${nwo}'`);
   }
 }
 

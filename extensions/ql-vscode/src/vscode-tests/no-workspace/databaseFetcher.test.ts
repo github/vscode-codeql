@@ -8,7 +8,6 @@ import {
   findDirWithFile,
 } from "../../databaseFetcher";
 import * as Octokit from "@octokit/rest";
-import { looksLikeGithubRepo } from "../../databases/github-nwo";
 
 // These tests make API calls and may need extra time to complete.
 jest.setTimeout(10000);
@@ -126,25 +125,6 @@ describe("databaseFetcher", () => {
         convertGithubNwoToDatabaseUrl(githubRepo, octokit, progressSpy),
       ).rejects.toThrow(/Unable to get database/);
       expect(progressSpy).toBeCalledTimes(1);
-    });
-  });
-
-  describe("looksLikeGithubRepo", () => {
-    it("should handle invalid urls", () => {
-      expect(looksLikeGithubRepo("")).toBe(false);
-      expect(looksLikeGithubRepo("http://github.com/foo/bar")).toBe(false);
-      expect(looksLikeGithubRepo("https://ww.github.com/foo/bar")).toBe(false);
-      expect(looksLikeGithubRepo("https://ww.github.com/foo")).toBe(false);
-      expect(looksLikeGithubRepo("foo")).toBe(false);
-    });
-
-    it("should handle valid urls", () => {
-      expect(looksLikeGithubRepo("https://github.com/foo/bar")).toBe(true);
-      expect(looksLikeGithubRepo("https://www.github.com/foo/bar")).toBe(true);
-      expect(looksLikeGithubRepo("https://github.com/foo/bar/sub/pages")).toBe(
-        true,
-      );
-      expect(looksLikeGithubRepo("foo/bar")).toBe(true);
     });
   });
 
