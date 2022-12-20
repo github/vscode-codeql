@@ -13,7 +13,7 @@ export class DbSelectionDecorationProvider implements FileDecorationProvider {
   ): ProviderResult<FileDecoration> {
     if (uri?.query === "selected=true") {
       return {
-        badge: "●",
+        badge: "✓",
         tooltip: "Currently selected",
       };
     }

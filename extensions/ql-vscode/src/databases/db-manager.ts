@@ -2,7 +2,7 @@ import { App } from "../common/app";
 import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
 import { DbConfigStore } from "./config/db-config-store";
-import { DbItem } from "./db-item";
+import { DbItem, DbItemKind, remoteDbKinds } from "./db-item";
 import { calculateNewExpandedState } from "./db-item-expansion";
 import {
   getSelectedDbItem,
@@ -83,16 +83,19 @@ export class DbManager {
     await this.dbConfigStore.addRemoteOwner(owner);
   }
 
-  public async addNewRemoteList(listName: string): Promise<void> {
-    if (listName === "") {
-      throw Error("List name cannot be empty");
-    }
+  public async addNewList(kind: DbItemKind, listName: string): Promise<void> {
+    if (remoteDbKinds.includes(kind)) {
+      if (listName === "") {
+        throw Error("List name cannot be empty");
+      }
+      if (this.dbConfigStore.doesRemoteListExist(listName)) {
+        throw Error(`A list with the name '${listName}' already exists`);
+      }
 
-    if (this.dbConfigStore.doesRemoteListExist(listName)) {
-      throw Error(`A list with the name '${listName}' already exists`);
+      await this.dbConfigStore.addRemoteList(listName);
+    } else {
+      throw Error("Cannot add a local list");
     }
-
-    await this.dbConfigStore.addRemoteList(listName);
   }
 
   public doesRemoteListExist(listName: string): boolean {
