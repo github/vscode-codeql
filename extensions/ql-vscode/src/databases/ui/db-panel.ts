@@ -18,7 +18,7 @@ import { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
 import { DbTreeViewItem } from "./db-tree-view-item";
 
-interface RemoteDatabaseQuickPickItem extends QuickPickItem {
+export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   kind: string;
 }
 
