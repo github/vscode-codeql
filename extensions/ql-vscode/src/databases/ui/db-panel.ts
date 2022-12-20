@@ -7,9 +7,9 @@ import {
 import { commandRunner, UserCancellationException } from "../../commandRunner";
 import {
   getNwoFromGitHubUrl,
-  validGitHubNwo,
+  isValidGitHubNwo,
   getOwnerFromGitHubUrl,
-  validGitHubOwner,
+  isValidGitHubOwner,
 } from "../../common/github-url-identifier-helper";
 import { showAndLogErrorMessage } from "../../helpers";
 import { DisposableObject } from "../../pure/disposable-object";
@@ -123,7 +123,7 @@ export class DbPanel extends DisposableObject {
     }
 
     const nwo = getNwoFromGitHubUrl(repoName) || repoName;
-    if (!validGitHubNwo(nwo)) {
+    if (!isValidGitHubNwo(nwo)) {
       throw new Error(`Invalid GitHub repository: ${repoName}`);
     }
 
@@ -142,7 +142,7 @@ export class DbPanel extends DisposableObject {
     }
 
     const owner = getOwnerFromGitHubUrl(ownerName) || ownerName;
-    if (!validGitHubOwner(owner)) {
+    if (!isValidGitHubOwner(owner)) {
       throw new Error(`Invalid user or organization: ${owner}`);
     }
 
