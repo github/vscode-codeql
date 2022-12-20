@@ -443,52 +443,63 @@ describe("db panel", () => {
     }
   });
 
-  it("should add a new list to the remote db list", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      remoteLists: [
-        {
-          name: "my-list-1",
-          repositories: ["owner1/repo1", "owner1/repo2"],
+  describe("addNewList", () => {
+    it("should add a new remote list", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1", "owner1/repo2"],
+          },
+        ],
+        selected: {
+          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          listName: "my-list-1",
         },
-      ],
-      selected: {
-        kind: SelectedDbItemKind.RemoteUserDefinedList,
-        listName: "my-list-1",
-      },
+      });
+
+      await saveDbConfig(dbConfig);
+
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+
+      const remoteRootNode = items[0];
+      const remoteUserDefinedLists = remoteRootNode.children.filter(
+        (c) => c.dbItem?.kind === DbItemKind.RemoteUserDefinedList,
+      );
+      const list1 = remoteRootNode.children.find(
+        (c) =>
+          c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+          c.dbItem?.listName === "my-list-1",
+      );
+
+      expect(remoteUserDefinedLists.length).toBe(1);
+      expect(remoteUserDefinedLists[0]).toBe(list1);
+
+      await dbManager.addNewList(DbItemKind.RootRemote, "my-list-2");
+
+      // Read the workspace databases JSON file directly to check that the new list has been added.
+      // We can't use the dbConfigStore's `read` function here because it depends on the file watcher
+      // picking up changes, and we don't control the timing of that.
+      const dbConfigFileContents = await readJSON(dbConfigFilePath);
+      expect(dbConfigFileContents.databases.remote.repositoryLists.length).toBe(
+        2,
+      );
+      expect(dbConfigFileContents.databases.remote.repositoryLists[1]).toEqual({
+        name: "my-list-2",
+        repositories: [],
+      });
     });
 
-    await saveDbConfig(dbConfig);
+    it("should throw error when adding a new list to a local node", async () => {
+      const dbConfig: DbConfig = createDbConfig();
+      await saveDbConfig(dbConfig);
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
-
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-
-    const remoteRootNode = items[0];
-    const remoteUserDefinedLists = remoteRootNode.children.filter(
-      (c) => c.dbItem?.kind === DbItemKind.RemoteUserDefinedList,
-    );
-    const list1 = remoteRootNode.children.find(
-      (c) =>
-        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
-        c.dbItem?.listName === "my-list-1",
-    );
-
-    expect(remoteUserDefinedLists.length).toBe(1);
-    expect(remoteUserDefinedLists[0]).toBe(list1);
-
-    await dbManager.addNewRemoteList("my-list-2");
-
-    // Read the workspace databases JSON file directly to check that the new list has been added.
-    // We can't use the dbConfigStore's `read` function here because it depends on the file watcher
-    // picking up changes, and we don't control the timing of that.
-    const dbConfigFileContents = await readJSON(dbConfigFilePath);
-    expect(dbConfigFileContents.databases.remote.repositoryLists.length).toBe(
-      2,
-    );
-    expect(dbConfigFileContents.databases.remote.repositoryLists[1]).toEqual({
-      name: "my-list-2",
-      repositories: [],
+      await expect(
+        dbManager.addNewList(DbItemKind.RootLocal, ""),
+      ).rejects.toThrow(new Error("Cannot add a local list"));
     });
   });
 
@@ -555,9 +566,9 @@ describe("db panel", () => {
 
       await saveDbConfig(dbConfig);
 
-      await expect(dbManager.addNewRemoteList("")).rejects.toThrow(
-        new Error("List name cannot be empty"),
-      );
+      await expect(
+        dbManager.addNewList(DbItemKind.RootRemote, ""),
+      ).rejects.toThrow(new Error("List name cannot be empty"));
     });
 
     it("should not allow adding a list with duplicate name", async () => {
@@ -572,7 +583,9 @@ describe("db panel", () => {
 
       await saveDbConfig(dbConfig);
 
-      await expect(dbManager.addNewRemoteList("my-list-1")).rejects.toThrow(
+      await expect(
+        dbManager.addNewList(DbItemKind.RootRemote, "my-list-1"),
+      ).rejects.toThrow(
         new Error("A list with the name 'my-list-1' already exists"),
       );
     });

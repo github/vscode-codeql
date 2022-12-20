@@ -1,36 +1,37 @@
-import { TreeViewExpansionEvent, window, workspace } from "vscode";
+import { TreeView, TreeViewExpansionEvent, window, workspace } from "vscode";
 import { commandRunner } from "../../commandRunner";
-import { showAndLogErrorMessage } from "../../helpers";
 import { DisposableObject } from "../../pure/disposable-object";
+import { DbItem, DbItemKind } from "../db-item";
 import { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
 import { DbTreeViewItem } from "./db-tree-view-item";
 
 export class DbPanel extends DisposableObject {
   private readonly dataProvider: DbTreeDataProvider;
+  private readonly treeView: TreeView<DbTreeViewItem>;
 
   public constructor(private readonly dbManager: DbManager) {
     super();
 
     this.dataProvider = new DbTreeDataProvider(dbManager);
 
-    const treeView = window.createTreeView("codeQLDatabasesExperimental", {
+    this.treeView = window.createTreeView("codeQLDatabasesExperimental", {
       treeDataProvider: this.dataProvider,
       canSelectMany: false,
     });
 
     this.push(
-      treeView.onDidCollapseElement(async (e) => {
+      this.treeView.onDidCollapseElement(async (e) => {
         await this.onDidCollapseElement(e);
       }),
     );
     this.push(
-      treeView.onDidExpandElement(async (e) => {
+      this.treeView.onDidExpandElement(async (e) => {
         await this.onDidExpandElement(e);
       }),
     );
 
-    this.push(treeView);
+    this.push(this.treeView);
   }
 
   public async initialize(): Promise<void> {
@@ -67,13 +68,15 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    if (this.dbManager.doesRemoteListExist(listName)) {
-      void showAndLogErrorMessage(
-        `A list with the name '${listName}' already exists`,
-      );
-    } else {
-      await this.dbManager.addNewRemoteList(listName);
-    }
+    const highlightedItem = await this.getHighlightedDbItem();
+
+    // For now: we only support adding remote lists, so if no item is highlighted,
+    // we default to the "RootRemote" kind.
+    // In future: if the highlighted item is undefined, we'll show a quick pick where
+    // a user can select whether to add a remote or local list.
+    const listKind = highlightedItem?.kind || DbItemKind.RootRemote;
+
+    await this.dbManager.addNewList(listKind, listName);
   }
 
   private async setSelectedItem(treeViewItem: DbTreeViewItem): Promise<void> {
@@ -105,5 +108,17 @@ export class DbPanel extends DisposableObject {
     }
 
     await this.dbManager.updateDbItemExpandedState(event.element.dbItem, true);
+  }
+
+  /**
+   * Gets the currently highlighted database item in the tree view.
+   * The VS Code API calls this the "selection", but we already have a notion of selection
+   * (i.e. which item has a check mark next to it), so we call this "highlighted".
+   *
+   * @returns The highlighted database item, or `undefined` if no item is highlighted.
+   */
+  private async getHighlightedDbItem(): Promise<DbItem | undefined> {
+    // You can only select one item at a time, so selection[0] gives the selection
+    return this.treeView.selection[0]?.dbItem;
   }
 }
