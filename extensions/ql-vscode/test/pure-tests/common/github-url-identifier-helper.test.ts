@@ -1,23 +1,23 @@
 import {
   getNwoFromGitHubUrl,
   getOwnerFromGitHubUrl,
-  validGitHubNwo,
-  validGitHubOwner,
+  isValidGitHubNwo,
+  isValidGitHubOwner,
 } from "../../../src/common/github-url-identifier-helper";
 
 describe("github url identifier helper", () => {
   describe("valid GitHub Nwo Or Owner method", () => {
     it("should return true for valid owner", () => {
-      expect(validGitHubOwner("github")).toBe(true);
+      expect(isValidGitHubOwner("github")).toBe(true);
     });
     it("should return true for valid NWO", () => {
-      expect(validGitHubNwo("github/codeql")).toBe(true);
+      expect(isValidGitHubNwo("github/codeql")).toBe(true);
     });
     it("should return false for invalid owner", () => {
-      expect(validGitHubOwner("github/codeql")).toBe(false);
+      expect(isValidGitHubOwner("github/codeql")).toBe(false);
     });
     it("should return false for invalid NWO", () => {
-      expect(validGitHubNwo("githubl")).toBe(false);
+      expect(isValidGitHubNwo("githubl")).toBe(false);
     });
   });
 

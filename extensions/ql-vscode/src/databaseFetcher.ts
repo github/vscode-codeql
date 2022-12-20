@@ -24,7 +24,7 @@ import { Credentials } from "./authentication";
 import { getErrorMessage } from "./pure/helpers-pure";
 import {
   getNwoFromGitHubUrl,
-  validGitHubNwo,
+  isValidGitHubNwo,
 } from "./common/github-url-identifier-helper";
 
 /**
@@ -101,7 +101,7 @@ export async function promptImportGithubDatabase(
   }
 
   const nwo = getNwoFromGitHubUrl(githubRepo) || githubRepo;
-  if (!validGitHubNwo(nwo)) {
+  if (!isValidGitHubNwo(nwo)) {
     throw new Error(`Invalid GitHub repository: ${githubRepo}`);
   }
 

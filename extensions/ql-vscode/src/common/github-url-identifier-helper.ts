@@ -5,7 +5,7 @@ import { OWNER_REGEX, REPO_REGEX } from "../pure/helpers-pure";
  * @param identifier The GitHub NWO
  * @returns
  */
-export function validGitHubNwo(identifier: string): boolean {
+export function isValidGitHubNwo(identifier: string): boolean {
   return validGitHubNwoOrOwner(identifier, "nwo");
 }
 
@@ -14,7 +14,7 @@ export function validGitHubNwo(identifier: string): boolean {
  * @param identifier The GitHub owner
  * @returns
  */
-export function validGitHubOwner(identifier: string): boolean {
+export function isValidGitHubOwner(identifier: string): boolean {
   return validGitHubNwoOrOwner(identifier, "owner");
 }
 
@@ -28,7 +28,7 @@ function validGitHubNwoOrOwner(
 }
 
 /**
- * Extracts an NOW from a GitHub URL.
+ * Extracts an NWO from a GitHub URL.
  * @param githubUrl The GitHub repository URL
  * @return The corresponding NWO, or undefined if the URL is not valid
  */

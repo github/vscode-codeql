@@ -60,6 +60,7 @@
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
     "onCommand:codeQLDatabasesExperimental.openConfigFile",
+    "onCommand:codeQLDatabasesExperimental.addNewDatabase",
     "onCommand:codeQLDatabasesExperimental.addNewList",
     "onCommand:codeQLDatabasesExperimental.setSelectedItem",
     "onCommand:codeQL.quickQuery",
@@ -361,6 +362,11 @@
         "command": "codeQLDatabasesExperimental.openConfigFile",
         "title": "Open Database Configuration File",
         "icon": "$(edit)"
+      },
+      {
+        "command": "codeQLDatabasesExperimental.addNewDatabase",
+        "title": "Add new database",
+        "icon": "$(add)"
       },
       {
         "command": "codeQLDatabasesExperimental.addNewList",
@@ -759,6 +765,11 @@
           "group": "navigation"
         },
         {
+          "command": "codeQLDatabasesExperimental.addNewDatabase",
+          "when": "view == codeQLDatabasesExperimental && codeQLDatabasesExperimental.configError == false",
+          "group": "navigation"
+        },
+        {
           "command": "codeQLDatabasesExperimental.addNewList",
           "when": "view == codeQLDatabasesExperimental && codeQLDatabasesExperimental.configError == false",
           "group": "navigation"
@@ -979,6 +990,10 @@
         },
         {
           "command": "codeQLDatabasesExperimental.openConfigFile",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.addNewDatabase",
           "when": "false"
         },
         {
