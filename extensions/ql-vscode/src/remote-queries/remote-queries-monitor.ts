@@ -27,10 +27,6 @@ export class RemoteQueriesMonitor {
   ): Promise<RemoteQueryWorkflowResult> {
     const credentials = await Credentials.initialize(this.extensionContext);
 
-    if (!credentials) {
-      throw Error("Error authenticating with GitHub");
-    }
-
     let attemptCount = 0;
 
     while (attemptCount <= RemoteQueriesMonitor.maxAttemptCount) {

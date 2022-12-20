@@ -45,9 +45,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
     cancellationToken: CancellationToken,
   ): Promise<void> {
     const credentials = await Credentials.initialize(this.extensionContext);
-    if (!credentials) {
-      throw Error("Error authenticating with GitHub");
-    }
 
     let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];

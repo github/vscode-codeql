@@ -77,260 +77,237 @@ describe("Variant Analysis Monitor", () => {
       .mockRejectedValue(new Error("Not mocked"));
 
     limitNumberOfAttemptsToMonitor();
+
+    const mockCredentials = {
+      getOctokit: () =>
+        Promise.resolve({
+          request: jest.fn(),
+        }),
+    } as unknown as Credentials;
+    jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
   });
 
-  describe("when credentials are invalid", () => {
+  it("should return early if variant analysis is cancelled", async () => {
+    cancellationTokenSource.cancel();
+
+    await variantAnalysisMonitor.monitorVariantAnalysis(
+      variantAnalysis,
+      cancellationTokenSource.token,
+    );
+
+    expect(onVariantAnalysisChangeSpy).not.toHaveBeenCalled();
+  });
+
+  it("should return early if variant analysis should be cancelled", async () => {
+    shouldCancelMonitor.mockResolvedValue(true);
+
+    await variantAnalysisMonitor.monitorVariantAnalysis(
+      variantAnalysis,
+      cancellationTokenSource.token,
+    );
+
+    expect(onVariantAnalysisChangeSpy).not.toHaveBeenCalled();
+  });
+
+  describe("when the variant analysis fails", () => {
+    let mockFailedApiResponse: VariantAnalysisApiResponse;
+
     beforeEach(async () => {
-      jest
-        .spyOn(Credentials, "initialize")
-        .mockResolvedValue(undefined as unknown as Credentials);
+      mockFailedApiResponse = createFailedMockApiResponse();
+      mockGetVariantAnalysis.mockResolvedValue(mockFailedApiResponse);
     });
 
-    it("should return early if credentials are wrong", async () => {
-      try {
+    it("should mark as failed and stop monitoring", async () => {
+      await variantAnalysisMonitor.monitorVariantAnalysis(
+        variantAnalysis,
+        cancellationTokenSource.token,
+      );
+
+      expect(mockGetVariantAnalysis).toHaveBeenCalledTimes(1);
+
+      expect(onVariantAnalysisChangeSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: VariantAnalysisStatus.Failed,
+          failureReason: processFailureReason(
+            mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason,
+          ),
+        }),
+      );
+    });
+  });
+
+  describe("when the variant analysis is in progress", () => {
+    let mockApiResponse: VariantAnalysisApiResponse;
+    let scannedRepos: ApiVariantAnalysisScannedRepository[];
+    let succeededRepos: ApiVariantAnalysisScannedRepository[];
+
+    describe("when there are successfully scanned repos", () => {
+      beforeEach(async () => {
+        scannedRepos = createMockScannedRepos([
+          "pending",
+          "pending",
+          "in_progress",
+          "in_progress",
+          "succeeded",
+          "succeeded",
+          "succeeded",
+        ]);
+        mockApiResponse = createMockApiResponse("succeeded", scannedRepos);
+        mockGetVariantAnalysis.mockResolvedValue(mockApiResponse);
+        succeededRepos = scannedRepos.filter(
+          (r) => r.analysis_status === "succeeded",
+        );
+      });
+
+      it("should trigger a download extension command for each repo", async () => {
+        const succeededRepos = scannedRepos.filter(
+          (r) => r.analysis_status === "succeeded",
+        );
+        const commandSpy = jest
+          .spyOn(commands, "executeCommand")
+          .mockResolvedValue(undefined);
+
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
           cancellationTokenSource.token,
         );
-      } catch (error: any) {
-        expect(error.message).toBe("Error authenticating with GitHub");
-      }
-    });
-  });
 
-  describe("when credentials are valid", () => {
-    beforeEach(async () => {
-      const mockCredentials = {
-        getOctokit: () =>
-          Promise.resolve({
-            request: jest.fn(),
-          }),
-      } as unknown as Credentials;
-      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
-    });
+        expect(commandSpy).toBeCalledTimes(succeededRepos.length);
 
-    it("should return early if variant analysis is cancelled", async () => {
-      cancellationTokenSource.cancel();
+        succeededRepos.forEach((succeededRepo, index) => {
+          expect(commandSpy).toHaveBeenNthCalledWith(
+            index + 1,
+            "codeQL.autoDownloadVariantAnalysisResult",
+            processScannedRepository(succeededRepo),
+            processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
+          );
+        });
+      });
 
-      await variantAnalysisMonitor.monitorVariantAnalysis(
-        variantAnalysis,
-        cancellationTokenSource.token,
-      );
+      it("should download all available results", async () => {
+        await variantAnalysisMonitor.monitorVariantAnalysis(
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
 
-      expect(onVariantAnalysisChangeSpy).not.toHaveBeenCalled();
-    });
+        expect(mockGetDownloadResult).toBeCalledTimes(succeededRepos.length);
 
-    it("should return early if variant analysis should be cancelled", async () => {
-      shouldCancelMonitor.mockResolvedValue(true);
-
-      await variantAnalysisMonitor.monitorVariantAnalysis(
-        variantAnalysis,
-        cancellationTokenSource.token,
-      );
-
-      expect(onVariantAnalysisChangeSpy).not.toHaveBeenCalled();
+        succeededRepos.forEach((succeededRepo, index) => {
+          expect(mockGetDownloadResult).toHaveBeenNthCalledWith(
+            index + 1,
+            processScannedRepository(succeededRepo),
+            processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
+            undefined,
+          );
+        });
+      });
     });
 
-    describe("when the variant analysis fails", () => {
-      let mockFailedApiResponse: VariantAnalysisApiResponse;
+    describe("when there are only in progress repos", () => {
+      let scannedRepos: ApiVariantAnalysisScannedRepository[];
 
       beforeEach(async () => {
-        mockFailedApiResponse = createFailedMockApiResponse();
-        mockGetVariantAnalysis.mockResolvedValue(mockFailedApiResponse);
+        scannedRepos = createMockScannedRepos(["pending", "in_progress"]);
+        mockApiResponse = createMockApiResponse("in_progress", scannedRepos);
+        mockGetVariantAnalysis.mockResolvedValue(mockApiResponse);
       });
 
-      it("should mark as failed and stop monitoring", async () => {
+      it("should succeed and not download any repos via a command", async () => {
+        const commandSpy = jest
+          .spyOn(commands, "executeCommand")
+          .mockResolvedValue(undefined);
+
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
           cancellationTokenSource.token,
         );
 
-        expect(mockGetVariantAnalysis).toHaveBeenCalledTimes(1);
+        expect(commandSpy).not.toHaveBeenCalled();
+      });
 
-        expect(onVariantAnalysisChangeSpy).toHaveBeenCalledWith(
-          expect.objectContaining({
-            status: VariantAnalysisStatus.Failed,
-            failureReason: processFailureReason(
-              mockFailedApiResponse.failure_reason as VariantAnalysisFailureReason,
-            ),
-          }),
+      it("should not try to download any repos", async () => {
+        await variantAnalysisMonitor.monitorVariantAnalysis(
+          variantAnalysis,
+          cancellationTokenSource.token,
         );
+
+        expect(mockGetDownloadResult).not.toBeCalled();
       });
     });
 
-    describe("when the variant analysis is in progress", () => {
-      let mockApiResponse: VariantAnalysisApiResponse;
+    describe("when the responses change", () => {
       let scannedRepos: ApiVariantAnalysisScannedRepository[];
-      let succeededRepos: ApiVariantAnalysisScannedRepository[];
 
-      describe("when there are successfully scanned repos", () => {
-        beforeEach(async () => {
-          scannedRepos = createMockScannedRepos([
-            "pending",
-            "pending",
-            "in_progress",
-            "in_progress",
-            "succeeded",
-            "succeeded",
-            "succeeded",
-          ]);
-          mockApiResponse = createMockApiResponse("succeeded", scannedRepos);
-          mockGetVariantAnalysis.mockResolvedValue(mockApiResponse);
-          succeededRepos = scannedRepos.filter(
-            (r) => r.analysis_status === "succeeded",
-          );
-        });
+      beforeEach(async () => {
+        scannedRepos = createMockScannedRepos([
+          "pending",
+          "in_progress",
+          "in_progress",
+          "in_progress",
+          "pending",
+          "pending",
+        ]);
+        mockApiResponse = createMockApiResponse("in_progress", scannedRepos);
+        mockGetVariantAnalysis.mockResolvedValueOnce(mockApiResponse);
 
-        it("should trigger a download extension command for each repo", async () => {
-          const succeededRepos = scannedRepos.filter(
-            (r) => r.analysis_status === "succeeded",
-          );
-          const commandSpy = jest
-            .spyOn(commands, "executeCommand")
-            .mockResolvedValue(undefined);
+        let nextApiResponse = {
+          ...mockApiResponse,
+          scanned_repositories: [...scannedRepos.map((r) => ({ ...r }))],
+        };
+        nextApiResponse.scanned_repositories[0].analysis_status = "succeeded";
+        nextApiResponse.scanned_repositories[1].analysis_status = "succeeded";
+        mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
 
-          await variantAnalysisMonitor.monitorVariantAnalysis(
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
+        nextApiResponse = {
+          ...mockApiResponse,
+          scanned_repositories: [
+            ...nextApiResponse.scanned_repositories.map((r) => ({ ...r })),
+          ],
+        };
+        nextApiResponse.scanned_repositories[2].analysis_status = "succeeded";
+        nextApiResponse.scanned_repositories[5].analysis_status = "succeeded";
+        mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
 
-          expect(commandSpy).toBeCalledTimes(succeededRepos.length);
-
-          succeededRepos.forEach((succeededRepo, index) => {
-            expect(commandSpy).toHaveBeenNthCalledWith(
-              index + 1,
-              "codeQL.autoDownloadVariantAnalysisResult",
-              processScannedRepository(succeededRepo),
-              processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
-            );
-          });
-        });
-
-        it("should download all available results", async () => {
-          await variantAnalysisMonitor.monitorVariantAnalysis(
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
-
-          expect(mockGetDownloadResult).toBeCalledTimes(succeededRepos.length);
-
-          succeededRepos.forEach((succeededRepo, index) => {
-            expect(mockGetDownloadResult).toHaveBeenNthCalledWith(
-              index + 1,
-              processScannedRepository(succeededRepo),
-              processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
-              undefined,
-            );
-          });
-        });
+        nextApiResponse = {
+          ...mockApiResponse,
+          scanned_repositories: [
+            ...nextApiResponse.scanned_repositories.map((r) => ({ ...r })),
+          ],
+        };
+        nextApiResponse.scanned_repositories[3].analysis_status = "succeeded";
+        nextApiResponse.scanned_repositories[4].analysis_status = "failed";
+        mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
       });
 
-      describe("when there are only in progress repos", () => {
-        let scannedRepos: ApiVariantAnalysisScannedRepository[];
+      it("should trigger a download extension command for each repo", async () => {
+        const commandSpy = jest
+          .spyOn(commands, "executeCommand")
+          .mockResolvedValue(undefined);
 
-        beforeEach(async () => {
-          scannedRepos = createMockScannedRepos(["pending", "in_progress"]);
-          mockApiResponse = createMockApiResponse("in_progress", scannedRepos);
-          mockGetVariantAnalysis.mockResolvedValue(mockApiResponse);
-        });
+        await variantAnalysisMonitor.monitorVariantAnalysis(
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
 
-        it("should succeed and not download any repos via a command", async () => {
-          const commandSpy = jest
-            .spyOn(commands, "executeCommand")
-            .mockResolvedValue(undefined);
+        expect(mockGetVariantAnalysis).toBeCalledTimes(4);
+        expect(commandSpy).toBeCalledTimes(5);
+      });
+    });
 
-          await variantAnalysisMonitor.monitorVariantAnalysis(
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
-
-          expect(commandSpy).not.toHaveBeenCalled();
-        });
-
-        it("should not try to download any repos", async () => {
-          await variantAnalysisMonitor.monitorVariantAnalysis(
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
-
-          expect(mockGetDownloadResult).not.toBeCalled();
-        });
+    describe("when there are no repos to scan", () => {
+      beforeEach(async () => {
+        scannedRepos = [];
+        mockApiResponse = createMockApiResponse("succeeded", scannedRepos);
+        mockGetVariantAnalysis.mockResolvedValue(mockApiResponse);
       });
 
-      describe("when the responses change", () => {
-        let scannedRepos: ApiVariantAnalysisScannedRepository[];
+      it("should not try to download any repos", async () => {
+        await variantAnalysisMonitor.monitorVariantAnalysis(
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
 
-        beforeEach(async () => {
-          scannedRepos = createMockScannedRepos([
-            "pending",
-            "in_progress",
-            "in_progress",
-            "in_progress",
-            "pending",
-            "pending",
-          ]);
-          mockApiResponse = createMockApiResponse("in_progress", scannedRepos);
-          mockGetVariantAnalysis.mockResolvedValueOnce(mockApiResponse);
-
-          let nextApiResponse = {
-            ...mockApiResponse,
-            scanned_repositories: [...scannedRepos.map((r) => ({ ...r }))],
-          };
-          nextApiResponse.scanned_repositories[0].analysis_status = "succeeded";
-          nextApiResponse.scanned_repositories[1].analysis_status = "succeeded";
-          mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
-
-          nextApiResponse = {
-            ...mockApiResponse,
-            scanned_repositories: [
-              ...nextApiResponse.scanned_repositories.map((r) => ({ ...r })),
-            ],
-          };
-          nextApiResponse.scanned_repositories[2].analysis_status = "succeeded";
-          nextApiResponse.scanned_repositories[5].analysis_status = "succeeded";
-          mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
-
-          nextApiResponse = {
-            ...mockApiResponse,
-            scanned_repositories: [
-              ...nextApiResponse.scanned_repositories.map((r) => ({ ...r })),
-            ],
-          };
-          nextApiResponse.scanned_repositories[3].analysis_status = "succeeded";
-          nextApiResponse.scanned_repositories[4].analysis_status = "failed";
-          mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
-        });
-
-        it("should trigger a download extension command for each repo", async () => {
-          const commandSpy = jest
-            .spyOn(commands, "executeCommand")
-            .mockResolvedValue(undefined);
-
-          await variantAnalysisMonitor.monitorVariantAnalysis(
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
-
-          expect(mockGetVariantAnalysis).toBeCalledTimes(4);
-          expect(commandSpy).toBeCalledTimes(5);
-        });
-      });
-
-      describe("when there are no repos to scan", () => {
-        beforeEach(async () => {
-          scannedRepos = [];
-          mockApiResponse = createMockApiResponse("succeeded", scannedRepos);
-          mockGetVariantAnalysis.mockResolvedValue(mockApiResponse);
-        });
-
-        it("should not try to download any repos", async () => {
-          await variantAnalysisMonitor.monitorVariantAnalysis(
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
-
-          expect(mockGetDownloadResult).not.toBeCalled();
-        });
+        expect(mockGetDownloadResult).not.toBeCalled();
       });
     });
   });

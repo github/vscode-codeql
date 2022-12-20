@@ -480,9 +480,6 @@ export class VariantAnalysisManager
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
     const credentials = await Credentials.initialize(this.ctx);
-    if (!credentials) {
-      throw Error("Error authenticating with GitHub");
-    }
 
     if (cancellationToken && cancellationToken.isCancellationRequested) {
       repoState.downloadStatus =
@@ -581,9 +578,6 @@ export class VariantAnalysisManager
     }
 
     const credentials = await Credentials.initialize(this.ctx);
-    if (!credentials) {
-      throw Error("Error authenticating with GitHub");
-    }
 
     void showAndLogInformationMessage(
       "Cancelling variant analysis. This may take a while.",

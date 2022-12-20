@@ -142,6 +142,14 @@ describe("Variant Analysis Manager", () => {
     beforeEach(async () => {
       writeFileStub.mockRestore();
 
+      const mockCredentials = {
+        getOctokit: () =>
+          Promise.resolve({
+            request: jest.fn(),
+          }),
+      } as unknown as Credentials;
+      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
+
       // Should not have asked for a language
       showQuickPickSpy = jest
         .spyOn(window, "showQuickPick")
@@ -367,269 +375,267 @@ describe("Variant Analysis Manager", () => {
   });
 
   describe("autoDownloadVariantAnalysisResult", () => {
-    describe("when credentials are invalid", () => {
+    let arrayBuffer: ArrayBuffer;
+
+    let getVariantAnalysisRepoStub: jest.SpiedFunction<
+      typeof ghApiClient.getVariantAnalysisRepo
+    >;
+    let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
+      typeof ghApiClient.getVariantAnalysisRepoResult
+    >;
+
+    beforeEach(async () => {
+      const mockCredentials = {
+        getOctokit: () =>
+          Promise.resolve({
+            request: jest.fn(),
+          }),
+      } as unknown as Credentials;
+      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
+
+      const sourceFilePath = join(
+        __dirname,
+        "../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip",
+      );
+      arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
+
+      getVariantAnalysisRepoStub = jest.spyOn(
+        ghApiClient,
+        "getVariantAnalysisRepo",
+      );
+      getVariantAnalysisRepoResultStub = jest.spyOn(
+        ghApiClient,
+        "getVariantAnalysisRepoResult",
+      );
+    });
+
+    describe("when the artifact_url is missing", () => {
       beforeEach(async () => {
-        jest
-          .spyOn(Credentials, "initialize")
-          .mockResolvedValue(undefined as unknown as Credentials);
+        const dummyRepoTask = createMockVariantAnalysisRepoTask();
+        delete dummyRepoTask.artifact_url;
+
+        getVariantAnalysisRepoStub.mockResolvedValue(dummyRepoTask);
+        getVariantAnalysisRepoResultStub.mockResolvedValue(arrayBuffer);
       });
 
-      it("should return early if credentials are wrong", async () => {
-        try {
-          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-            scannedRepos[0],
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
-        } catch (error: any) {
-          expect(error.message).toBe("Error authenticating with GitHub");
-        }
+      it("should not try to download the result", async () => {
+        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          scannedRepos[0],
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
+
+        expect(getVariantAnalysisRepoResultStub).not.toHaveBeenCalled();
       });
     });
 
-    describe("when credentials are valid", () => {
-      let arrayBuffer: ArrayBuffer;
-
-      let getVariantAnalysisRepoStub: jest.SpiedFunction<
-        typeof ghApiClient.getVariantAnalysisRepo
-      >;
-      let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
-        typeof ghApiClient.getVariantAnalysisRepoResult
-      >;
+    describe("when the artifact_url is present", () => {
+      let dummyRepoTask: VariantAnalysisRepoTask;
 
       beforeEach(async () => {
-        const mockCredentials = {
-          getOctokit: () =>
-            Promise.resolve({
-              request: jest.fn(),
-            }),
-        } as unknown as Credentials;
-        jest
-          .spyOn(Credentials, "initialize")
-          .mockResolvedValue(mockCredentials);
+        dummyRepoTask = createMockVariantAnalysisRepoTask();
 
-        const sourceFilePath = join(
-          __dirname,
-          "../../../../src/vscode-tests/cli-integration/data/variant-analysis-results.zip",
-        );
-        arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
+        getVariantAnalysisRepoStub.mockResolvedValue(dummyRepoTask);
+        getVariantAnalysisRepoResultStub.mockResolvedValue(arrayBuffer);
+      });
 
-        getVariantAnalysisRepoStub = jest.spyOn(
-          ghApiClient,
-          "getVariantAnalysisRepo",
+      it("should return early if variant analysis is cancelled", async () => {
+        cancellationTokenSource.cancel();
+
+        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          scannedRepos[0],
+          variantAnalysis,
+          cancellationTokenSource.token,
         );
-        getVariantAnalysisRepoResultStub = jest.spyOn(
-          ghApiClient,
-          "getVariantAnalysisRepoResult",
+
+        expect(getVariantAnalysisRepoStub).not.toHaveBeenCalled();
+      });
+
+      it("should fetch a repo task", async () => {
+        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          scannedRepos[0],
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
+
+        expect(getVariantAnalysisRepoStub).toHaveBeenCalled();
+      });
+
+      it("should fetch a repo result", async () => {
+        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          scannedRepos[0],
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
+
+        expect(getVariantAnalysisRepoResultStub).toHaveBeenCalled();
+      });
+
+      it("should skip the download if the repository has already been downloaded", async () => {
+        // First, do a download so it is downloaded. This avoids having to mock the repo states.
+        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          scannedRepos[0],
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
+
+        getVariantAnalysisRepoStub.mockClear();
+
+        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          scannedRepos[0],
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
+
+        expect(getVariantAnalysisRepoStub).not.toHaveBeenCalled();
+      });
+
+      it("should write the repo state when the download is successful", async () => {
+        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          scannedRepos[0],
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
+
+        expect(outputJsonStub).toHaveBeenCalledWith(
+          join(storagePath, variantAnalysis.id.toString(), "repo_states.json"),
+          {
+            [scannedRepos[0].repository.id]: {
+              repositoryId: scannedRepos[0].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+            },
+          },
         );
       });
 
-      describe("when the artifact_url is missing", () => {
-        beforeEach(async () => {
-          const dummyRepoTask = createMockVariantAnalysisRepoTask();
-          delete dummyRepoTask.artifact_url;
+      it("should not write the repo state when the download fails", async () => {
+        getVariantAnalysisRepoResultStub.mockRejectedValue(
+          new Error("Failed to download"),
+        );
 
-          getVariantAnalysisRepoStub.mockResolvedValue(dummyRepoTask);
-          getVariantAnalysisRepoResultStub.mockResolvedValue(arrayBuffer);
-        });
-
-        it("should not try to download the result", async () => {
-          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+        await expect(
+          variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
             variantAnalysis,
             cancellationTokenSource.token,
-          );
+          ),
+        ).rejects.toThrow();
 
-          expect(getVariantAnalysisRepoResultStub).not.toHaveBeenCalled();
-        });
+        expect(outputJsonStub).not.toHaveBeenCalled();
       });
 
-      describe("when the artifact_url is present", () => {
-        let dummyRepoTask: VariantAnalysisRepoTask;
+      it("should have a failed repo state when the repo task API fails", async () => {
+        getVariantAnalysisRepoStub.mockRejectedValueOnce(
+          new Error("Failed to download"),
+        );
 
-        beforeEach(async () => {
-          dummyRepoTask = createMockVariantAnalysisRepoTask();
-
-          getVariantAnalysisRepoStub.mockResolvedValue(dummyRepoTask);
-          getVariantAnalysisRepoResultStub.mockResolvedValue(arrayBuffer);
-        });
-
-        it("should return early if variant analysis is cancelled", async () => {
-          cancellationTokenSource.cancel();
-
-          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+        await expect(
+          variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
             variantAnalysis,
             cancellationTokenSource.token,
-          );
+          ),
+        ).rejects.toThrow();
 
-          expect(getVariantAnalysisRepoStub).not.toHaveBeenCalled();
-        });
+        expect(outputJsonStub).not.toHaveBeenCalled();
 
-        it("should fetch a repo task", async () => {
-          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-            scannedRepos[0],
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
+        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          scannedRepos[1],
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
 
-          expect(getVariantAnalysisRepoStub).toHaveBeenCalled();
-        });
-
-        it("should fetch a repo result", async () => {
-          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-            scannedRepos[0],
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
-
-          expect(getVariantAnalysisRepoResultStub).toHaveBeenCalled();
-        });
-
-        it("should skip the download if the repository has already been downloaded", async () => {
-          // First, do a download so it is downloaded. This avoids having to mock the repo states.
-          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-            scannedRepos[0],
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
-
-          getVariantAnalysisRepoStub.mockClear();
-
-          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-            scannedRepos[0],
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
-
-          expect(getVariantAnalysisRepoStub).not.toHaveBeenCalled();
-        });
-
-        it("should write the repo state when the download is successful", async () => {
-          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-            scannedRepos[0],
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
-
-          expect(outputJsonStub).toHaveBeenCalledWith(
-            join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            ),
-            {
-              [scannedRepos[0].repository.id]: {
-                repositoryId: scannedRepos[0].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
+        expect(outputJsonStub).toHaveBeenCalledWith(
+          join(storagePath, variantAnalysis.id.toString(), "repo_states.json"),
+          {
+            [scannedRepos[0].repository.id]: {
+              repositoryId: scannedRepos[0].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Failed,
             },
-          );
-        });
+            [scannedRepos[1].repository.id]: {
+              repositoryId: scannedRepos[1].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+            },
+          },
+        );
+      });
 
-        it("should not write the repo state when the download fails", async () => {
-          getVariantAnalysisRepoResultStub.mockRejectedValue(
-            new Error("Failed to download"),
-          );
+      it("should have a failed repo state when the download fails", async () => {
+        getVariantAnalysisRepoResultStub.mockRejectedValueOnce(
+          new Error("Failed to download"),
+        );
 
-          await expect(
-            variantAnalysisManager.autoDownloadVariantAnalysisResult(
-              scannedRepos[0],
-              variantAnalysis,
-              cancellationTokenSource.token,
-            ),
-          ).rejects.toThrow();
-
-          expect(outputJsonStub).not.toHaveBeenCalled();
-        });
-
-        it("should have a failed repo state when the repo task API fails", async () => {
-          getVariantAnalysisRepoStub.mockRejectedValueOnce(
-            new Error("Failed to download"),
-          );
-
-          await expect(
-            variantAnalysisManager.autoDownloadVariantAnalysisResult(
-              scannedRepos[0],
-              variantAnalysis,
-              cancellationTokenSource.token,
-            ),
-          ).rejects.toThrow();
-
-          expect(outputJsonStub).not.toHaveBeenCalled();
-
-          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-            scannedRepos[1],
+        await expect(
+          variantAnalysisManager.autoDownloadVariantAnalysisResult(
+            scannedRepos[0],
             variantAnalysis,
             cancellationTokenSource.token,
-          );
+          ),
+        ).rejects.toThrow();
 
-          expect(outputJsonStub).toHaveBeenCalledWith(
-            join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            ),
-            {
-              [scannedRepos[0].repository.id]: {
-                repositoryId: scannedRepos[0].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Failed,
-              },
-              [scannedRepos[1].repository.id]: {
-                repositoryId: scannedRepos[1].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
+        expect(outputJsonStub).not.toHaveBeenCalled();
+
+        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          scannedRepos[1],
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
+
+        expect(outputJsonStub).toHaveBeenCalledWith(
+          join(storagePath, variantAnalysis.id.toString(), "repo_states.json"),
+          {
+            [scannedRepos[0].repository.id]: {
+              repositoryId: scannedRepos[0].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Failed,
             },
-          );
+            [scannedRepos[1].repository.id]: {
+              repositoryId: scannedRepos[1].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+            },
+          },
+        );
+      });
+
+      it("should update the repo state correctly", async () => {
+        mockRepoStates({
+          [scannedRepos[1].repository.id]: {
+            repositoryId: scannedRepos[1].repository.id,
+            downloadStatus:
+              VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+          },
+          [scannedRepos[2].repository.id]: {
+            repositoryId: scannedRepos[2].repository.id,
+            downloadStatus:
+              VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
+          },
         });
 
-        it("should have a failed repo state when the download fails", async () => {
-          getVariantAnalysisRepoResultStub.mockRejectedValueOnce(
-            new Error("Failed to download"),
-          );
+        await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
 
-          await expect(
-            variantAnalysisManager.autoDownloadVariantAnalysisResult(
-              scannedRepos[0],
-              variantAnalysis,
-              cancellationTokenSource.token,
-            ),
-          ).rejects.toThrow();
+        expect(pathExistsStub).toBeCalledWith(
+          join(storagePath, variantAnalysis.id.toString()),
+        );
+        expect(readJsonStub).toHaveBeenCalledTimes(1);
+        expect(readJsonStub).toHaveBeenCalledWith(
+          join(storagePath, variantAnalysis.id.toString(), "repo_states.json"),
+        );
 
-          expect(outputJsonStub).not.toHaveBeenCalled();
+        pathExistsStub.mockRestore();
 
-          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-            scannedRepos[1],
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
+        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
+          scannedRepos[0],
+          variantAnalysis,
+          cancellationTokenSource.token,
+        );
 
-          expect(outputJsonStub).toHaveBeenCalledWith(
-            join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            ),
-            {
-              [scannedRepos[0].repository.id]: {
-                repositoryId: scannedRepos[0].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Failed,
-              },
-              [scannedRepos[1].repository.id]: {
-                repositoryId: scannedRepos[1].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
-            },
-          );
-        });
-
-        it("should update the repo state correctly", async () => {
-          mockRepoStates({
+        expect(outputJsonStub).toHaveBeenCalledWith(
+          join(storagePath, variantAnalysis.id.toString(), "repo_states.json"),
+          {
             [scannedRepos[1].repository.id]: {
               repositoryId: scannedRepos[1].repository.id,
               downloadStatus:
@@ -640,66 +646,22 @@ describe("Variant Analysis Manager", () => {
               downloadStatus:
                 VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
             },
-          });
-
-          await variantAnalysisManager.rehydrateVariantAnalysis(
-            variantAnalysis,
-          );
-
-          expect(pathExistsStub).toBeCalledWith(
-            join(storagePath, variantAnalysis.id.toString()),
-          );
-          expect(readJsonStub).toHaveBeenCalledTimes(1);
-          expect(readJsonStub).toHaveBeenCalledWith(
-            join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            ),
-          );
-
-          pathExistsStub.mockRestore();
-
-          await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-            scannedRepos[0],
-            variantAnalysis,
-            cancellationTokenSource.token,
-          );
-
-          expect(outputJsonStub).toHaveBeenCalledWith(
-            join(
-              storagePath,
-              variantAnalysis.id.toString(),
-              "repo_states.json",
-            ),
-            {
-              [scannedRepos[1].repository.id]: {
-                repositoryId: scannedRepos[1].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
-              [scannedRepos[2].repository.id]: {
-                repositoryId: scannedRepos[2].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
-              },
-              [scannedRepos[0].repository.id]: {
-                repositoryId: scannedRepos[0].repository.id,
-                downloadStatus:
-                  VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
-              },
+            [scannedRepos[0].repository.id]: {
+              repositoryId: scannedRepos[0].repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
             },
-          );
-        });
-
-        function mockRepoStates(
-          repoStates: Record<number, VariantAnalysisScannedRepositoryState>,
-        ) {
-          pathExistsStub.mockImplementation(() => true);
-          // This will read in the correct repo states
-          readJsonStub.mockImplementation(() => Promise.resolve(repoStates));
-        }
+          },
+        );
       });
+
+      function mockRepoStates(
+        repoStates: Record<number, VariantAnalysisScannedRepositoryState>,
+      ) {
+        pathExistsStub.mockImplementation(() => true);
+        // This will read in the correct repo states
+        readJsonStub.mockImplementation(() => Promise.resolve(repoStates));
+      }
     });
   });
 
@@ -876,6 +838,8 @@ describe("Variant Analysis Manager", () => {
 
     let variantAnalysisStorageLocation: string;
 
+    let mockCredentials: Credentials;
+
     beforeEach(async () => {
       variantAnalysis = createMockVariantAnalysis({});
 
@@ -889,82 +853,54 @@ describe("Variant Analysis Manager", () => {
         );
       await createTimestampFile(variantAnalysisStorageLocation);
       await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
+
+      mockCredentials = {
+        getOctokit: () =>
+          Promise.resolve({
+            request: jest.fn(),
+          }),
+      } as unknown as Credentials;
+      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
     });
 
     afterEach(() => {
       fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
     });
 
-    describe("when the credentials are invalid", () => {
-      beforeEach(async () => {
-        jest
-          .spyOn(Credentials, "initialize")
-          .mockResolvedValue(undefined as unknown as Credentials);
-      });
-
-      it("should return early", async () => {
-        try {
-          await variantAnalysisManager.cancelVariantAnalysis(
-            variantAnalysis.id,
-          );
-        } catch (error: any) {
-          expect(error.message).toBe("Error authenticating with GitHub");
-        }
-      });
+    it("should return early if the variant analysis is not found", async () => {
+      try {
+        await variantAnalysisManager.cancelVariantAnalysis(
+          variantAnalysis.id + 100,
+        );
+      } catch (error: any) {
+        expect(error.message).toBe(
+          `No variant analysis with id: ${variantAnalysis.id + 100}`,
+        );
+      }
     });
 
-    describe("when the credentials are valid", () => {
-      let mockCredentials: Credentials;
-
-      beforeEach(async () => {
-        mockCredentials = {
-          getOctokit: () =>
-            Promise.resolve({
-              request: jest.fn(),
-            }),
-        } as unknown as Credentials;
-        jest
-          .spyOn(Credentials, "initialize")
-          .mockResolvedValue(mockCredentials);
+    it("should return early if the variant analysis does not have an actions workflow run id", async () => {
+      await variantAnalysisManager.onVariantAnalysisUpdated({
+        ...variantAnalysis,
+        actionsWorkflowRunId: undefined,
       });
 
-      it("should return early if the variant analysis is not found", async () => {
-        try {
-          await variantAnalysisManager.cancelVariantAnalysis(
-            variantAnalysis.id + 100,
-          );
-        } catch (error: any) {
-          expect(error.message).toBe(
-            `No variant analysis with id: ${variantAnalysis.id + 100}`,
-          );
-        }
-      });
-
-      it("should return early if the variant analysis does not have an actions workflow run id", async () => {
-        await variantAnalysisManager.onVariantAnalysisUpdated({
-          ...variantAnalysis,
-          actionsWorkflowRunId: undefined,
-        });
-
-        try {
-          await variantAnalysisManager.cancelVariantAnalysis(
-            variantAnalysis.id,
-          );
-        } catch (error: any) {
-          expect(error.message).toBe(
-            `No workflow run id for variant analysis with id: ${variantAnalysis.id}`,
-          );
-        }
-      });
-
-      it("should return cancel if valid", async () => {
+      try {
         await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
-
-        expect(mockCancelVariantAnalysis).toBeCalledWith(
-          mockCredentials,
-          variantAnalysis,
+      } catch (error: any) {
+        expect(error.message).toBe(
+          `No workflow run id for variant analysis with id: ${variantAnalysis.id}`,
         );
-      });
+      }
+    });
+
+    it("should return cancel if valid", async () => {
+      await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
+
+      expect(mockCancelVariantAnalysis).toBeCalledWith(
+        mockCredentials,
+        variantAnalysis,
+      );
     });
   });
 
