@@ -75,6 +75,14 @@ export class DbManager {
     await this.dbConfigStore.updateExpandedState(newExpandedItems);
   }
 
+  public async addNewRemoteRepo(nwo: string): Promise<void> {
+    await this.dbConfigStore.addRemoteRepo(nwo);
+  }
+
+  public async addNewRemoteOwner(owner: string): Promise<void> {
+    await this.dbConfigStore.addRemoteOwner(owner);
+  }
+
   public async addNewRemoteList(listName: string): Promise<void> {
     if (listName === "") {
       throw Error("List name cannot be empty");
