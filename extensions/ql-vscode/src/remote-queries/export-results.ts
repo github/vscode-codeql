@@ -187,6 +187,17 @@ export async function exportVariantAnalysisResults(
     throw new UserCancellationException("Cancelled");
   }
 
+  const repositories = filterAndSortRepositoriesWithResults(
+    variantAnalysis.scannedRepos,
+    filterSort,
+  )?.filter(
+    (repo) =>
+      repo.resultCount &&
+      repoStates.find((r) => r.repositoryId === repo.repository.id)
+        ?.downloadStatus ===
+        VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+  );
+
   async function* getAnalysesResults(): AsyncGenerator<
     [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
   > {
@@ -194,38 +205,11 @@ export async function exportVariantAnalysisResults(
       return;
     }
 
-    const repositories = filterAndSortRepositoriesWithResults(
-      variantAnalysis.scannedRepos,
-      filterSort,
-    );
     if (!repositories) {
       return;
     }
 
     for (const repo of repositories) {
-      const repoState = repoStates.find(
-        (r) => r.repositoryId === repo.repository.id,
-      );
-
-      // Do not export if it has not yet completed or the download has not yet succeeded.
-      if (
-        repoState?.downloadStatus !==
-        VariantAnalysisScannedRepositoryDownloadStatus.Succeeded
-      ) {
-        continue;
-      }
-
-      if (repo.resultCount == 0) {
-        yield [
-          repo,
-          {
-            variantAnalysisId: variantAnalysis.id,
-            repositoryId: repo.repository.id,
-          },
-        ];
-        continue;
-      }
-
       const result = await variantAnalysisManager.loadResults(
         variantAnalysis.id,
         repo.repository.fullName,
@@ -259,6 +243,7 @@ export async function exportVariantAnalysisResults(
     exportedResultsDirectory,
     variantAnalysis,
     getAnalysesResults(),
+    repositories?.length ?? 0,
     exportFormat,
     progress,
     token,
@@ -272,6 +257,7 @@ export async function exportVariantAnalysisAnalysisResults(
   analysesResults: AsyncIterable<
     [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
   >,
+  expectedAnalysesResultsCount: number,
   exportFormat: "gist" | "local",
   progress: ProgressCallback,
   token: CancellationToken,
@@ -289,6 +275,7 @@ export async function exportVariantAnalysisAnalysisResults(
   const { markdownFiles, summaries } = await generateVariantAnalysisMarkdown(
     variantAnalysis,
     analysesResults,
+    expectedAnalysesResultsCount,
     exportFormat,
   );
   const description = buildVariantAnalysisGistDescription(

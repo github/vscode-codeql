@@ -94,18 +94,25 @@ export async function generateVariantAnalysisMarkdown(
   results: AsyncIterable<
     [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
   >,
+  expectedResultsCount: number,
   linkType: MarkdownLinkType,
 ): Promise<VariantAnalysisMarkdown> {
   const resultsFiles: MarkdownFile[] = [];
   const summaries: RepositorySummary[] = [];
+
   for await (const [scannedRepo, result] of results) {
-    if (!scannedRepo.resultCount || scannedRepo.resultCount === 0) {
+    if (!scannedRepo.resultCount) {
       continue;
     }
 
     // Append nwo and results count to the summary table
     const fullName = scannedRepo.repository.fullName;
-    const fileName = createFileName(fullName);
+    const fileName = createVariantAnalysisFileName(
+      fullName,
+      resultsFiles.length,
+      expectedResultsCount,
+      linkType,
+    );
     summaries.push({
       fileName,
       repository: scannedRepo.repository,
@@ -480,6 +487,32 @@ function createRelativeLink(
 function createFileName(nwo: string) {
   const [owner, repo] = nwo.split("/");
   return `${owner}-${repo}`;
+}
+
+/**
+ * Creates the name of the markdown file for a given repository nwo.
+ * This name doesn't include the file extension.
+ */
+function createVariantAnalysisFileName(
+  fullName: string,
+  index: number,
+  expectedResultsCount: number,
+  linkType: MarkdownLinkType,
+) {
+  const baseName = createFileName(fullName);
+  if (linkType === "gist") {
+    const requiredNumberOfDecimals = Math.ceil(
+      Math.log10(expectedResultsCount),
+    );
+
+    const prefix = (index + 1)
+      .toString()
+      .padStart(requiredNumberOfDecimals, "0");
+
+    return `result-${prefix}-${baseName}`;
+  }
+
+  return baseName;
 }
 
 /**
