@@ -70,6 +70,10 @@ export class DbPanel extends DisposableObject {
 
     const highlightedItem = await this.getHighlightedDbItem();
 
+    // For now: we only support adding remote lists, so if no item is highlighted,
+    // we default to the "RootRemote" kind.
+    // In future: if the highlighted item is undefined, we'll show a quick pick where
+    // a user can select whether to add a remote or local list.
     const listKind = highlightedItem?.kind || DbItemKind.RootRemote;
 
     await this.dbManager.addNewList(listKind, listName);
@@ -106,6 +110,13 @@ export class DbPanel extends DisposableObject {
     await this.dbManager.updateDbItemExpandedState(event.element.dbItem, true);
   }
 
+  /**
+   * Gets the currently highlighted database item in the tree view.
+   * The VS Code API calls this the "selection", but we already have a notion of selection
+   * (i.e. which item has a check mark next to it), so we call this "highlighted".
+   *
+   * @returns The highlighted database item, or `undefined` if no item is highlighted.
+   */
   private async getHighlightedDbItem(): Promise<DbItem | undefined> {
     // You can only select one item at a time, so selection[0] gives the selection
     return this.treeView.selection[0]?.dbItem;
