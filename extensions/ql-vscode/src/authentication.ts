@@ -51,23 +51,17 @@ export class Credentials {
     return c;
   }
 
-  private async createOctokit(
-    createIfNone: boolean,
-  ): Promise<Octokit.Octokit | undefined> {
+  private async createOctokit(): Promise<Octokit.Octokit> {
     const session = await vscode.authentication.getSession(
       GITHUB_AUTH_PROVIDER_ID,
       SCOPES,
-      { createIfNone },
+      { createIfNone: true },
     );
 
-    if (session) {
-      return new Octokit.Octokit({
-        auth: session.accessToken,
-        retry,
-      });
-    } else {
-      return undefined;
-    }
+    return new Octokit.Octokit({
+      auth: session.accessToken,
+      retry,
+    });
   }
 
   registerListeners(context: vscode.ExtensionContext): void {
@@ -87,14 +81,8 @@ export class Credentials {
    * @returns An instance of Octokit.
    */
   async getOctokit(): Promise<Octokit.Octokit> {
-    if (this.octokit) {
-      return this.octokit;
-    }
-
-    this.octokit = await this.createOctokit(true);
-
     if (!this.octokit) {
-      throw new Error("Did not initialize Octokit.");
+      this.octokit = await this.createOctokit();
     }
     return this.octokit;
   }
