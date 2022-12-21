@@ -2,7 +2,7 @@ import { App } from "../common/app";
 import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
 import { DbConfigStore } from "./config/db-config-store";
-import { DbItem, DbItemKind, remoteDbKinds } from "./db-item";
+import { DbItem, DbListKind } from "./db-item";
 import { calculateNewExpandedState } from "./db-item-expansion";
 import {
   getSelectedDbItem,
@@ -76,39 +76,45 @@ export class DbManager {
   }
 
   public async addNewRemoteRepo(nwo: string): Promise<void> {
-    if (nwo === "") {
-      throw new Error("Repository name cannot be empty");
-    }
-    if (this.dbConfigStore.doesRemoteDbExist(nwo)) {
-      throw new Error(`The repository '${nwo}' already exists`);
-    }
-
     await this.dbConfigStore.addRemoteRepo(nwo);
   }
 
   public async addNewRemoteOwner(owner: string): Promise<void> {
-    if (owner === "") {
-      throw Error("Owner name cannot be empty");
-    }
-    if (this.dbConfigStore.doesRemoteOwnerExist(owner)) {
-      throw Error(`The owner '${owner}' already exists`);
-    }
-
     await this.dbConfigStore.addRemoteOwner(owner);
   }
 
-  public async addNewList(kind: DbItemKind, listName: string): Promise<void> {
-    if (remoteDbKinds.includes(kind)) {
-      if (listName === "") {
-        throw Error("List name cannot be empty");
-      }
-      if (this.dbConfigStore.doesRemoteListExist(listName)) {
-        throw Error(`A list with the name '${listName}' already exists`);
-      }
-
-      await this.dbConfigStore.addRemoteList(listName);
-    } else {
-      throw Error("Cannot add a local list");
+  public async addNewList(
+    listKind: DbListKind,
+    listName: string,
+  ): Promise<void> {
+    switch (listKind) {
+      case DbListKind.Local:
+        // Adding a local list is not supported yet.
+        throw Error("Cannot add a local list");
+      case DbListKind.Remote:
+        await this.dbConfigStore.addRemoteList(listName);
+        break;
+      default:
+        throw Error(`Unknown list kind '${listKind}'`);
     }
+  }
+
+  public doesListExist(listKind: DbListKind, listName: string): boolean {
+    switch (listKind) {
+      case DbListKind.Local:
+        return this.dbConfigStore.doesLocalListExist(listName);
+      case DbListKind.Remote:
+        return this.dbConfigStore.doesRemoteListExist(listName);
+      default:
+        throw Error(`Unknown list kind '${listKind}'`);
+    }
+  }
+
+  public doesRemoteOwnerExist(owner: string): boolean {
+    return this.dbConfigStore.doesRemoteOwnerExist(owner);
+  }
+
+  public doesRemoteRepoExist(nwo: string, listName?: string): boolean {
+    return this.dbConfigStore.doesRemoteDbExist(nwo, listName);
   }
 }

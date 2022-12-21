@@ -25,6 +25,11 @@ export const localDbKinds = [
   DbItemKind.LocalDatabase,
 ];
 
+export enum DbListKind {
+  Local = "Local",
+  Remote = "Remote",
+}
+
 export interface RootLocalDbItem {
   kind: DbItemKind.RootLocal;
   expanded: boolean;
