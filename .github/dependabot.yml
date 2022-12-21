@@ -11,7 +11,7 @@ updates:
       - dependency-name: "*"
         update-types: ["version-update:semver-minor", "version-update:semver-patch"]
   - package-ecosystem: "github-actions"
-    directory: ".github"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "thursday" # Thursday is arbitrary
