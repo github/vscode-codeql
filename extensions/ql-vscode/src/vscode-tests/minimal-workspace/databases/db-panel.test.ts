@@ -8,7 +8,11 @@ import {
 import { DbManager } from "../../../databases/db-manager";
 import { DbConfigStore } from "../../../databases/config/db-config-store";
 import { DbTreeDataProvider } from "../../../databases/ui/db-tree-data-provider";
-import { DbItemKind, LocalDatabaseDbItem } from "../../../databases/db-item";
+import {
+  DbItemKind,
+  DbListKind,
+  LocalDatabaseDbItem,
+} from "../../../databases/db-item";
 import { DbTreeViewItem } from "../../../databases/ui/db-tree-view-item";
 import { ExtensionApp } from "../../../common/vscode/vscode-app";
 import { createMockExtensionContext } from "../../factories/extension-context";
@@ -478,7 +482,7 @@ describe("db panel", () => {
       expect(remoteUserDefinedLists.length).toBe(1);
       expect(remoteUserDefinedLists[0]).toBe(list1);
 
-      await dbManager.addNewList(DbItemKind.RootRemote, "my-list-2");
+      await dbManager.addNewList(DbListKind.Remote, "my-list-2");
 
       // Read the workspace databases JSON file directly to check that the new list has been added.
       // We can't use the dbConfigStore's `read` function here because it depends on the file watcher
@@ -497,9 +501,9 @@ describe("db panel", () => {
       const dbConfig: DbConfig = createDbConfig();
       await saveDbConfig(dbConfig);
 
-      await expect(
-        dbManager.addNewList(DbItemKind.RootLocal, ""),
-      ).rejects.toThrow(new Error("Cannot add a local list"));
+      await expect(dbManager.addNewList(DbListKind.Local, "")).rejects.toThrow(
+        new Error("Cannot add a local list"),
+      );
     });
   });
 
@@ -566,9 +570,9 @@ describe("db panel", () => {
 
       await saveDbConfig(dbConfig);
 
-      await expect(
-        dbManager.addNewList(DbItemKind.RootRemote, ""),
-      ).rejects.toThrow(new Error("List name cannot be empty"));
+      await expect(dbManager.addNewList(DbListKind.Remote, "")).rejects.toThrow(
+        new Error("List name cannot be empty"),
+      );
     });
 
     it("should not allow adding a list with duplicate name", async () => {
@@ -584,9 +588,9 @@ describe("db panel", () => {
       await saveDbConfig(dbConfig);
 
       await expect(
-        dbManager.addNewList(DbItemKind.RootRemote, "my-list-1"),
+        dbManager.addNewList(DbListKind.Remote, "my-list-1"),
       ).rejects.toThrow(
-        new Error("A list with the name 'my-list-1' already exists"),
+        new Error("A remote list with the name 'my-list-1' already exists"),
       );
     });
 
@@ -608,7 +612,9 @@ describe("db panel", () => {
       await saveDbConfig(dbConfig);
 
       await expect(dbManager.addNewRemoteRepo("owner1/repo1")).rejects.toThrow(
-        new Error("The repository 'owner1/repo1' already exists"),
+        new Error(
+          "A remote repository with the name 'owner1/repo1' already exists",
+        ),
       );
     });
 
@@ -630,7 +636,7 @@ describe("db panel", () => {
       await saveDbConfig(dbConfig);
 
       await expect(dbManager.addNewRemoteOwner("owner1")).rejects.toThrow(
-        new Error("The owner 'owner1' already exists"),
+        new Error("A remote owner with the name 'owner1' already exists"),
       );
     });
   });

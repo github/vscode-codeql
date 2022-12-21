@@ -99,6 +99,10 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot add remote repo if config is not loaded");
     }
 
+    if (repoNwo === "") {
+      throw Error("Repository name cannot be empty");
+    }
+
     if (this.doesRemoteDbExist(repoNwo)) {
       throw Error(
         `A remote repository with the name '${repoNwo}' already exists`,
@@ -116,6 +120,10 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot add remote owner if config is not loaded");
     }
 
+    if (owner === "") {
+      throw Error("Owner name cannot be empty");
+    }
+
     if (this.doesRemoteOwnerExist(owner)) {
       throw Error(`A remote owner with the name '${owner}' already exists`);
     }
@@ -129,6 +137,10 @@ export class DbConfigStore extends DisposableObject {
   public async addRemoteList(listName: string): Promise<void> {
     if (!this.config) {
       throw Error("Cannot add remote list if config is not loaded");
+    }
+
+    if (listName === "") {
+      throw Error("List name cannot be empty");
     }
 
     if (this.doesRemoteListExist(listName)) {
@@ -152,6 +164,14 @@ export class DbConfigStore extends DisposableObject {
     return this.config.databases.remote.repositoryLists.some(
       (l) => l.name === listName,
     );
+  }
+
+  public doesLocalListExist(listName: string): boolean {
+    if (!this.config) {
+      throw Error("Cannot check local list existence if config is not loaded");
+    }
+
+    return this.config.databases.local.lists.some((l) => l.name === listName);
   }
 
   public doesRemoteDbExist(dbName: string, listName?: string): boolean {

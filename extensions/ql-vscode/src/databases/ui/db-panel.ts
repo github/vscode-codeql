@@ -12,8 +12,9 @@ import {
   getOwnerFromGitHubUrl,
   isValidGitHubOwner,
 } from "../../common/github-url-identifier-helper";
+import { showAndLogErrorMessage } from "../../helpers";
 import { DisposableObject } from "../../pure/disposable-object";
-import { DbItem, DbItemKind } from "../db-item";
+import { DbItem, DbItemKind, DbListKind, remoteDbKinds } from "../db-item";
 import { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
 import { DbTreeViewItem } from "./db-tree-view-item";
@@ -126,7 +127,13 @@ export class DbPanel extends DisposableObject {
 
     const nwo = getNwoFromGitHubUrl(repoName) || repoName;
     if (!isValidGitHubNwo(nwo)) {
-      throw new Error(`Invalid GitHub repository: ${repoName}`);
+      void showAndLogErrorMessage(`Invalid GitHub repository: ${repoName}`);
+      return;
+    }
+
+    if (this.dbManager.doesRemoteRepoExist(nwo)) {
+      void showAndLogErrorMessage(`The repository '${nwo}' already exists`);
+      return;
     }
 
     await this.dbManager.addNewRemoteRepo(nwo);
@@ -145,7 +152,13 @@ export class DbPanel extends DisposableObject {
 
     const owner = getOwnerFromGitHubUrl(ownerName) || ownerName;
     if (!isValidGitHubOwner(owner)) {
-      throw new Error(`Invalid user or organization: ${owner}`);
+      void showAndLogErrorMessage(`Invalid user or organization: ${owner}`);
+      return;
+    }
+
+    if (this.dbManager.doesRemoteOwnerExist(owner)) {
+      void showAndLogErrorMessage(`The owner '${owner}' already exists`);
+      return;
     }
 
     await this.dbManager.addNewRemoteOwner(owner);
@@ -156,7 +169,7 @@ export class DbPanel extends DisposableObject {
       prompt: "Enter a name for the new list",
       placeHolder: "example-list",
     });
-    if (listName === undefined) {
+    if (listName === undefined || listName === "") {
       return;
     }
 
@@ -166,7 +179,15 @@ export class DbPanel extends DisposableObject {
     // we default to the "RootRemote" kind.
     // In future: if the highlighted item is undefined, we'll show a quick pick where
     // a user can select whether to add a remote or local list.
-    const listKind = highlightedItem?.kind || DbItemKind.RootRemote;
+    const highlightedItemKind = highlightedItem?.kind || DbItemKind.RootRemote;
+    const listKind = remoteDbKinds.includes(highlightedItemKind)
+      ? DbListKind.Remote
+      : DbListKind.Local;
+
+    if (this.dbManager.doesListExist(listKind, listName)) {
+      void showAndLogErrorMessage(`The list '${listName}' already exists`);
+      return;
+    }
 
     await this.dbManager.addNewList(listKind, listName);
   }
