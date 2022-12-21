@@ -86,6 +86,11 @@ export class DbPanel extends DisposableObject {
 
     if (highlightedItem?.kind === DbItemKind.RemoteUserDefinedList) {
       await this.addNewRemoteRepo(highlightedItem.listName);
+    } else if (
+      highlightedItem?.kind === DbItemKind.RemoteRepo &&
+      highlightedItem.parentListName
+    ) {
+      await this.addNewRemoteRepo(highlightedItem.parentListName);
     } else {
       const quickPickItems = [
         {
