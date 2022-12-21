@@ -16,16 +16,13 @@ export class RemoteQueriesMonitor {
   private static readonly maxAttemptCount = 17280;
   private static readonly sleepTime = 5000;
 
-  constructor(
-    private readonly extensionContext: vscode.ExtensionContext,
-    private readonly logger: Logger,
-  ) {}
+  constructor(private readonly logger: Logger) {}
 
   public async monitorQuery(
     remoteQuery: RemoteQuery,
     cancellationToken: vscode.CancellationToken,
   ): Promise<RemoteQueryWorkflowResult> {
-    const credentials = await Credentials.initialize(this.extensionContext);
+    const credentials = await Credentials.initialize();
 
     let attemptCount = 0;
 

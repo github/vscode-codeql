@@ -61,10 +61,7 @@ describe("Variant Analysis Monitor", () => {
         "GitHub.vscode-codeql",
       )!
       .activate();
-    variantAnalysisMonitor = new VariantAnalysisMonitor(
-      extension.ctx,
-      shouldCancelMonitor,
-    );
+    variantAnalysisMonitor = new VariantAnalysisMonitor(shouldCancelMonitor);
     variantAnalysisMonitor.onVariantAnalysisChange(onVariantAnalysisChangeSpy);
 
     variantAnalysisManager = extension.variantAnalysisManager;

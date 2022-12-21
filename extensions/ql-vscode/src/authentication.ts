@@ -13,42 +13,38 @@ const SCOPES = ["repo", "gist"];
  * Handles authentication to GitHub, using the VS Code [authentication API](https://code.visualstudio.com/api/references/vscode-api#authentication).
  */
 export class Credentials {
+  /**
+   * A specific octokit to return, otherwise a new authenticated octokit will be created when needed.
+   */
   private octokit: Octokit.Octokit | undefined;
 
   // Explicitly make the constructor private, so that we can't accidentally call the constructor from outside the class
   // without also initializing the class.
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  private constructor() {}
+  private constructor(octokit?: Octokit.Octokit) {
+    this.octokit = octokit;
+  }
 
   /**
-   * Initializes an instance of credentials with an octokit instance.
+   * Initializes a Credentials instance. This will generate octokit instances
+   * authenticated as the user. If there is not already an authenticated GitHub
+   * session availabeT then the user will be prompted to log in.
    *
-   * Do not call this method until you know you actually need an instance of credentials.
-   * since calling this method will require the user to log in.
-   *
-   * @param context The extension context.
    * @returns An instance of credentials.
    */
-  static async initialize(
-    context: vscode.ExtensionContext,
-  ): Promise<Credentials> {
-    const c = new Credentials();
-    c.registerListeners(context);
-    return c;
+  static async initialize(): Promise<Credentials> {
+    return new Credentials();
   }
 
   /**
    * Initializes an instance of credentials with an octokit instance using
-   * a token from the user's GitHub account. This method is meant to be
-   * used non-interactive environments such as tests.
+   * a specific known token. This method is meant to be used non-interactive
+   * environments such as tests.
    *
    * @param overrideToken The GitHub token to use for authentication.
    * @returns An instance of credentials.
    */
   static async initializeWithToken(overrideToken: string) {
-    const c = new Credentials();
-    c.octokit = new Octokit.Octokit({ auth: overrideToken, retry });
-    return c;
+    return new Credentials(new Octokit.Octokit({ auth: overrideToken, retry }));
   }
 
   private async createOctokit(): Promise<Octokit.Octokit> {
@@ -64,26 +60,15 @@ export class Credentials {
     });
   }
 
-  registerListeners(context: vscode.ExtensionContext): void {
-    // Sessions are changed when a user logs in or logs out.
-    context.subscriptions.push(
-      vscode.authentication.onDidChangeSessions(async (e) => {
-        if (e.provider.id === GITHUB_AUTH_PROVIDER_ID) {
-          this.octokit = undefined;
-        }
-      }),
-    );
-  }
-
   /**
    * Creates or returns an instance of Octokit.
    *
    * @returns An instance of Octokit.
    */
   async getOctokit(): Promise<Octokit.Octokit> {
-    if (!this.octokit) {
-      this.octokit = await this.createOctokit();
+    if (this.octokit) {
+      return this.octokit;
     }
-    return this.octokit;
+    return await this.createOctokit();
   }
 }

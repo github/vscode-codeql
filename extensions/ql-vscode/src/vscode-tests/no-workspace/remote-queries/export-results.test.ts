@@ -1,6 +1,5 @@
 import { join } from "path";
 import { readFile } from "fs-extra";
-import { createMockExtensionContext } from "../index";
 import { Credentials } from "../../../authentication";
 import * as markdownGenerator from "../../../remote-queries/remote-queries-markdown-generation";
 import * as ghApiClient from "../../../remote-queries/gh-api/gh-api-client";
@@ -20,7 +19,6 @@ describe("export results", () => {
         .spyOn(ghApiClient, "createGist")
         .mockResolvedValue(undefined);
 
-      const ctx = createMockExtensionContext();
       const query = JSON.parse(
         await readFile(
           join(
@@ -41,7 +39,6 @@ describe("export results", () => {
       );
 
       await exportRemoteQueryAnalysisResults(
-        ctx,
         "",
         query,
         analysesResults,
