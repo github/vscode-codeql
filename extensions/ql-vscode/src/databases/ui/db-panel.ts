@@ -128,10 +128,12 @@ export class DbPanel extends DisposableObject {
     const nwo = getNwoFromGitHubUrl(repoName) || repoName;
     if (!isValidGitHubNwo(nwo)) {
       void showAndLogErrorMessage(`Invalid GitHub repository: ${repoName}`);
+      return;
     }
 
     if (this.dbManager.doesRemoteRepoExist(nwo)) {
       void showAndLogErrorMessage(`The repository '${nwo}' already exists`);
+      return;
     }
 
     await this.dbManager.addNewRemoteRepo(nwo);
@@ -151,10 +153,12 @@ export class DbPanel extends DisposableObject {
     const owner = getOwnerFromGitHubUrl(ownerName) || ownerName;
     if (!isValidGitHubOwner(owner)) {
       void showAndLogErrorMessage(`Invalid user or organization: ${owner}`);
+      return;
     }
 
     if (this.dbManager.doesRemoteOwnerExist(owner)) {
       void showAndLogErrorMessage(`The owner '${owner}' already exists`);
+      return;
     }
 
     await this.dbManager.addNewRemoteOwner(owner);
@@ -182,6 +186,7 @@ export class DbPanel extends DisposableObject {
 
     if (this.dbManager.doesListExist(listKind, listName)) {
       void showAndLogErrorMessage(`The list '${listName}' already exists`);
+      return;
     }
 
     await this.dbManager.addNewList(listKind, listName);
