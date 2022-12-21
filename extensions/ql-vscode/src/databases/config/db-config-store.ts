@@ -99,6 +99,12 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot add remote repo if config is not loaded");
     }
 
+    if (this.doesRemoteDbExist(repoNwo)) {
+      throw Error(
+        `A remote repository with the name '${repoNwo}' already exists`,
+      );
+    }
+
     const config: DbConfig = cloneDbConfig(this.config);
     config.databases.remote.repositories.push(repoNwo);
 
@@ -108,6 +114,10 @@ export class DbConfigStore extends DisposableObject {
   public async addRemoteOwner(owner: string): Promise<void> {
     if (!this.config) {
       throw Error("Cannot add remote owner if config is not loaded");
+    }
+
+    if (this.doesRemoteOwnerExist(owner)) {
+      throw Error(`A remote owner with the name '${owner}' already exists`);
     }
 
     const config: DbConfig = cloneDbConfig(this.config);
@@ -142,6 +152,32 @@ export class DbConfigStore extends DisposableObject {
     return this.config.databases.remote.repositoryLists.some(
       (l) => l.name === listName,
     );
+  }
+
+  public doesRemoteDbExist(dbName: string, listName?: string): boolean {
+    if (!this.config) {
+      throw Error(
+        "Cannot check remote database existence if config is not loaded",
+      );
+    }
+
+    if (listName) {
+      return this.config.databases.remote.repositoryLists.some(
+        (l) => l.name === listName && l.repositories.includes(dbName),
+      );
+    }
+
+    return this.config.databases.remote.repositories.includes(dbName);
+  }
+
+  public doesRemoteOwnerExist(owner: string): boolean {
+    if (!this.config) {
+      throw Error(
+        "Cannot check remote onwer existence if config is not loaded",
+      );
+    }
+
+    return this.config.databases.remote.owners.includes(owner);
   }
 
   private async writeConfig(config: DbConfig): Promise<void> {
