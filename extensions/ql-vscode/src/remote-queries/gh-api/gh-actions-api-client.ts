@@ -5,7 +5,7 @@ import {
   showAndLogWarningMessage,
   tmpDir,
 } from "../../helpers";
-import { Credentials } from "../../authentication";
+import { getOctokit } from "../../pure/authentication";
 import { extLogger } from "../../common";
 import { RemoteQueryWorkflowResult } from "../remote-query-workflow-result";
 import { DownloadLink, createDownloadPath } from "../download-link";
@@ -43,7 +43,6 @@ interface ApiResultIndex {
 }
 
 export async function getRemoteQueryIndex(
-  credentials: Credentials,
   remoteQuery: RemoteQuery,
 ): Promise<RemoteQueryResultIndex | undefined> {
   const controllerRepo = remoteQuery.controllerRepository;
@@ -55,7 +54,6 @@ export async function getRemoteQueryIndex(
   const artifactsUrlPath = `/repos/${owner}/${repoName}/actions/artifacts`;
 
   const artifactList = await listWorkflowRunArtifacts(
-    credentials,
     owner,
     repoName,
     workflowRunId,
@@ -68,7 +66,6 @@ export async function getRemoteQueryIndex(
     return undefined;
   }
   const resultIndex = await getResultIndex(
-    credentials,
     owner,
     repoName,
     resultIndexArtifactId,
@@ -109,10 +106,9 @@ export async function getRemoteQueryIndex(
 }
 
 export async function cancelRemoteQuery(
-  credentials: Credentials,
   remoteQuery: RemoteQuery,
 ): Promise<void> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
   const {
     actionsWorkflowRunId,
     controllerRepository: { owner, name },
@@ -130,10 +126,9 @@ export async function cancelRemoteQuery(
 }
 
 export async function cancelVariantAnalysis(
-  credentials: Credentials,
   variantAnalysis: VariantAnalysis,
 ): Promise<void> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
   const {
     actionsWorkflowRunId,
     controllerRepo: { fullName },
@@ -151,11 +146,10 @@ export async function cancelVariantAnalysis(
 }
 
 export async function downloadArtifactFromLink(
-  credentials: Credentials,
   storagePath: string,
   downloadLink: DownloadLink,
 ): Promise<string> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
 
   const extractedPath = createDownloadPath(storagePath, downloadLink);
 
@@ -184,14 +178,12 @@ export async function downloadArtifactFromLink(
  * @returns A boolean indicating if the artifact is available.
  */
 export async function isArtifactAvailable(
-  credentials: Credentials,
   owner: string,
   repo: string,
   workflowRunId: number,
   artifactName: string,
 ): Promise<boolean> {
   const artifactList = await listWorkflowRunArtifacts(
-    credentials,
     owner,
     repo,
     workflowRunId,
@@ -202,24 +194,17 @@ export async function isArtifactAvailable(
 
 /**
  * Downloads the result index artifact and extracts the result index items.
- * @param credentials Credentials for authenticating to the GitHub API.
  * @param owner
  * @param repo
  * @param workflowRunId The ID of the workflow run to get the result index for.
  * @returns An object containing the result index.
  */
 async function getResultIndex(
-  credentials: Credentials,
   owner: string,
   repo: string,
   artifactId: number,
 ): Promise<ApiResultIndex | undefined> {
-  const artifactPath = await downloadArtifact(
-    credentials,
-    owner,
-    repo,
-    artifactId,
-  );
+  const artifactPath = await downloadArtifact(owner, repo, artifactId);
   const indexFilePath = join(artifactPath, "index.json");
   if (!(await pathExists(indexFilePath))) {
     void showAndLogWarningMessage(
@@ -245,12 +230,11 @@ async function getResultIndex(
  * @returns The workflow run status.
  */
 export async function getWorkflowStatus(
-  credentials: Credentials,
   owner: string,
   repo: string,
   workflowRunId: number,
 ): Promise<RemoteQueryWorkflowResult> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
 
   const workflowRun = await octokit.rest.actions.getWorkflowRun({
     owner,
@@ -279,12 +263,11 @@ export async function getWorkflowStatus(
  * @returns An array of artifact details (including artifact name and ID).
  */
 async function listWorkflowRunArtifacts(
-  credentials: Credentials,
   owner: string,
   repo: string,
   workflowRunId: number,
 ) {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
 
   // There are limits on the number of artifacts that are returned by the API
   // so we use paging to make sure we retrieve all of them.
@@ -355,12 +338,11 @@ function tryGetArtifactIDfromName(
  * @returns The path to the enclosing directory of the unzipped artifact.
  */
 async function downloadArtifact(
-  credentials: Credentials,
   owner: string,
   repo: string,
   artifactId: number,
 ): Promise<string> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
   const response = await octokit.rest.actions.downloadArtifact({
     owner,
     repo,
@@ -455,11 +437,10 @@ export type RepositoriesMetadata = Record<
 >;
 
 export async function getRepositoriesMetadata(
-  credentials: Credentials,
   nwos: string[],
   pageSize = 100,
 ): Promise<RepositoriesMetadata> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
   const repos = `repo:${nwos.join(" repo:")} fork:true`;
   let cursor = null;
   const metadata: RepositoriesMetadata = {};

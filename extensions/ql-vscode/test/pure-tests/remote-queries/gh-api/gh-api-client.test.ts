@@ -1,6 +1,3 @@
-import { Octokit as Octokit_Octokit } from "@octokit/rest";
-import { retry } from "@octokit/plugin-retry";
-
 import { faker } from "@faker-js/faker";
 
 import {
@@ -10,22 +7,29 @@ import {
   getVariantAnalysisRepoResult,
   submitVariantAnalysis,
 } from "../../../../src/remote-queries/gh-api/gh-api-client";
-import { Credentials } from "../../../../src/authentication";
 import { createMockSubmission } from "../../../../src/vscode-tests/factories/remote-queries/shared/variant-analysis-submission";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 
 import { response } from "../../../../src/mocks/scenarios/problem-query-success/0-getRepo.json";
 import { response as variantAnalysisJson_response } from "../../../../src/mocks/scenarios/problem-query-success/1-submitVariantAnalysis.json";
 import { response as variantAnalysisRepoJson_response } from "../../../../src/mocks/scenarios/problem-query-success/9-getVariantAnalysisRepo.json";
+import { registerCredentials } from "../../../../src/pure/authentication";
+import { TestCredentials } from "../../../../src/vscode-tests/factories/authentication";
 
-const mockCredentials = {
-  getOctokit: () => Promise.resolve(new Octokit_Octokit({ retry })),
-} as unknown as Credentials;
-
+let credentialsDisposer: () => void;
 const mockServer = new MockGitHubApiServer();
-beforeAll(() => mockServer.startServer());
+
+beforeAll(() => {
+  credentialsDisposer = registerCredentials(
+    TestCredentials.initializeWithUnauthenticatedOctokit(),
+  );
+  mockServer.startServer();
+});
 afterEach(() => mockServer.unloadScenario());
-afterAll(() => mockServer.stopServer());
+afterAll(() => {
+  mockServer.stopServer();
+  credentialsDisposer();
+});
 
 const controllerRepoId = variantAnalysisJson_response.body.controller_repo.id;
 const variantAnalysisId = variantAnalysisJson_response.body.id;
@@ -35,10 +39,7 @@ describe("submitVariantAnalysis", () => {
   it("returns the submitted variant analysis", async () => {
     await mockServer.loadScenario("problem-query-success");
 
-    const result = await submitVariantAnalysis(
-      mockCredentials,
-      createMockSubmission(),
-    );
+    const result = await submitVariantAnalysis(createMockSubmission());
 
     expect(result).toBeDefined();
     expect(result.id).toBe(variantAnalysisId);
@@ -50,7 +51,6 @@ describe("getVariantAnalysis", () => {
     await mockServer.loadScenario("problem-query-success");
 
     const result = await getVariantAnalysis(
-      mockCredentials,
       controllerRepoId,
       variantAnalysisId,
     );
@@ -65,7 +65,6 @@ describe("getVariantAnalysisRepo", () => {
     await mockServer.loadScenario("problem-query-success");
 
     const result = await getVariantAnalysisRepo(
-      mockCredentials,
       controllerRepoId,
       variantAnalysisId,
       repoTaskId,
@@ -81,7 +80,6 @@ describe("getVariantAnalysisRepoResult", () => {
     await mockServer.loadScenario("problem-query-success");
 
     const result = await getVariantAnalysisRepoResult(
-      mockCredentials,
       `https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/${variantAnalysisId}/${repoTaskId}/${faker.datatype.uuid()}`,
     );
 
@@ -98,7 +96,6 @@ describe("getRepositoryFromNwo", () => {
     await mockServer.loadScenario("problem-query-success");
 
     const result = await getRepositoryFromNwo(
-      mockCredentials,
       "github",
       "mrva-demo-controller-repo",
     );

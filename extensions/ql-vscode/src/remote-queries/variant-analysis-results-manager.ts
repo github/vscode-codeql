@@ -8,7 +8,6 @@ import {
 import { EOL } from "os";
 import { join } from "path";
 
-import { Credentials } from "../authentication";
 import { Logger } from "../common";
 import { AnalysisAlert, AnalysisRawResults } from "./shared/analysis-result";
 import { sarifParser } from "../sarif-parser";
@@ -71,7 +70,6 @@ export class VariantAnalysisResultsManager extends DisposableObject {
   }
 
   public async download(
-    credentials: Credentials,
     variantAnalysisId: number,
     repoTask: VariantAnalysisRepositoryTask,
     variantAnalysisStoragePath: string,
@@ -85,10 +83,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       repoTask.repository.fullName,
     );
 
-    const result = await getVariantAnalysisRepoResult(
-      credentials,
-      repoTask.artifactUrl,
-    );
+    const result = await getVariantAnalysisRepoResult(repoTask.artifactUrl);
 
     if (!(await pathExists(resultDirectory))) {
       await mkdir(resultDirectory, { recursive: true });

@@ -10,7 +10,6 @@ import {
   tryGetQueryMetadata,
   tmpDir,
 } from "../helpers";
-import { Credentials } from "../authentication";
 import * as cli from "../cli";
 import { extLogger } from "../common";
 import {
@@ -210,7 +209,6 @@ export interface PreparedRemoteQuery {
 
 export async function prepareRemoteQueryRun(
   cliServer: cli.CodeQLCliServer,
-  credentials: Credentials,
   uri: Uri | undefined,
   progress: ProgressCallback,
   token: CancellationToken,
@@ -245,7 +243,7 @@ export async function prepareRemoteQueryRun(
     message: "Determining controller repo",
   });
 
-  const controllerRepo = await getControllerRepo(credentials);
+  const controllerRepo = await getControllerRepo();
 
   progress({
     maxStep: 4,
@@ -349,9 +347,7 @@ export function getQueryName(
   return queryMetadata?.name ?? basename(queryFilePath);
 }
 
-export async function getControllerRepo(
-  credentials: Credentials,
-): Promise<Repository> {
+export async function getControllerRepo(): Promise<Repository> {
   // Get the controller repo from the config, if it exists.
   // If it doesn't exist, prompt the user to enter it, and save that value to the config.
   let controllerRepoNwo: string | undefined;
@@ -388,7 +384,7 @@ export async function getControllerRepo(
   const [owner, repo] = controllerRepoNwo.split("/");
 
   try {
-    const controllerRepo = await getRepositoryFromNwo(credentials, owner, repo);
+    const controllerRepo = await getRepositoryFromNwo(owner, repo);
     void extLogger.log(`Controller repository ID: ${controllerRepo.id}`);
     return {
       id: controllerRepo.id,

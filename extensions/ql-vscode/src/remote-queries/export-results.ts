@@ -9,7 +9,6 @@ import {
   window,
   workspace,
 } from "vscode";
-import { Credentials } from "../authentication";
 import { ProgressCallback, UserCancellationException } from "../commandRunner";
 import { showInformationMessageWithAction } from "../helpers";
 import { extLogger } from "../common";
@@ -354,8 +353,6 @@ export async function exportToGist(
     message: "Creating Gist",
   });
 
-  const credentials = await Credentials.initialize();
-
   if (token?.isCancellationRequested) {
     throw new UserCancellationException("Cancelled");
   }
@@ -366,7 +363,7 @@ export async function exportToGist(
     return acc;
   }, {} as { [key: string]: { content: string } });
 
-  const gistUrl = await createGist(credentials, description, gistFiles);
+  const gistUrl = await createGist(description, gistFiles);
   if (gistUrl) {
     // This needs to use .then to ensure we aren't keeping the progress notification open. We shouldn't await the
     // "Open gist" button click.

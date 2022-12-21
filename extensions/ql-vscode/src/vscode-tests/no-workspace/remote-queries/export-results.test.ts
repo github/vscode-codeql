@@ -1,17 +1,24 @@
 import { join } from "path";
 import { readFile } from "fs-extra";
-import { Credentials } from "../../../authentication";
+import { registerCredentials } from "../../../pure/authentication";
 import * as markdownGenerator from "../../../remote-queries/remote-queries-markdown-generation";
 import * as ghApiClient from "../../../remote-queries/gh-api/gh-api-client";
 import { exportRemoteQueryAnalysisResults } from "../../../remote-queries/export-results";
+import { TestCredentials } from "../../factories/authentication";
 
 describe("export results", () => {
   describe("exportRemoteQueryAnalysisResults", () => {
-    const mockCredentials = {} as unknown as Credentials;
+    let credentialDisposer: () => void;
 
     beforeEach(() => {
       jest.spyOn(markdownGenerator, "generateMarkdown").mockReturnValue([]);
-      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
+      credentialDisposer = registerCredentials(
+        TestCredentials.initializeWithStub(),
+      );
+    });
+
+    afterEach(() => {
+      credentialDisposer?.();
     });
 
     it("should call the GitHub Actions API with the correct gist title", async function () {
@@ -47,7 +54,6 @@ describe("export results", () => {
 
       expect(mockCreateGist).toHaveBeenCalledTimes(1);
       expect(mockCreateGist).toHaveBeenCalledWith(
-        expect.anything(),
         "Shell command built from environment values (javascript) 3 results (10 repositories)",
         expect.anything(),
       );

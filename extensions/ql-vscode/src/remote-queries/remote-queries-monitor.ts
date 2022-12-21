@@ -1,5 +1,4 @@
 import * as vscode from "vscode";
-import { Credentials } from "../authentication";
 import { Logger } from "../common";
 import { sleep } from "../pure/time";
 import {
@@ -22,8 +21,6 @@ export class RemoteQueriesMonitor {
     remoteQuery: RemoteQuery,
     cancellationToken: vscode.CancellationToken,
   ): Promise<RemoteQueryWorkflowResult> {
-    const credentials = await Credentials.initialize();
-
     let attemptCount = 0;
 
     while (attemptCount <= RemoteQueriesMonitor.maxAttemptCount) {
@@ -34,7 +31,6 @@ export class RemoteQueriesMonitor {
       }
 
       const workflowStatus = await getWorkflowStatus(
-        credentials,
         remoteQuery.controllerRepository.owner,
         remoteQuery.controllerRepository.name,
         remoteQuery.actionsWorkflowRunId,
@@ -46,7 +42,6 @@ export class RemoteQueriesMonitor {
       // as having completed.
       if (workflowStatus.status === "CompletedSuccessfully") {
         const resultIndexAvailable = await isArtifactAvailable(
-          credentials,
           remoteQuery.controllerRepository.owner,
           remoteQuery.controllerRepository.name,
           remoteQuery.actionsWorkflowRunId,

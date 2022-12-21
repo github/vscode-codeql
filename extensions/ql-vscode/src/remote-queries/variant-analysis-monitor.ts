@@ -1,5 +1,4 @@
 import { CancellationToken, commands, EventEmitter } from "vscode";
-import { Credentials } from "../authentication";
 import { getVariantAnalysis } from "./gh-api/gh-api-client";
 
 import {
@@ -38,8 +37,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
     variantAnalysis: VariantAnalysis,
     cancellationToken: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize();
-
     let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];
 
@@ -57,7 +54,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
       let variantAnalysisSummary: ApiVariantAnalysis;
       try {
         variantAnalysisSummary = await getVariantAnalysis(
-          credentials,
           variantAnalysis.controllerRepo.id,
           variantAnalysis.id,
         );

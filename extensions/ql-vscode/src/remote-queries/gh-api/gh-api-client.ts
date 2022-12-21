@@ -1,4 +1,4 @@
-import { Credentials } from "../../authentication";
+import { getOctokit } from "../../pure/authentication";
 import { OctokitResponse } from "@octokit/types/dist-types";
 import { RemoteQueriesSubmission } from "../shared/remote-queries";
 import { VariantAnalysisSubmission } from "../shared/variant-analysis";
@@ -14,10 +14,9 @@ import {
 } from "./remote-queries";
 
 export async function submitVariantAnalysis(
-  credentials: Credentials,
   submissionDetails: VariantAnalysisSubmission,
 ): Promise<VariantAnalysis> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
 
   const { actionRepoRef, query, databases, controllerRepoId } =
     submissionDetails;
@@ -43,11 +42,10 @@ export async function submitVariantAnalysis(
 }
 
 export async function getVariantAnalysis(
-  credentials: Credentials,
   controllerRepoId: number,
   variantAnalysisId: number,
 ): Promise<VariantAnalysis> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
 
   const response: OctokitResponse<VariantAnalysis> = await octokit.request(
     "GET /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId",
@@ -61,12 +59,11 @@ export async function getVariantAnalysis(
 }
 
 export async function getVariantAnalysisRepo(
-  credentials: Credentials,
   controllerRepoId: number,
   variantAnalysisId: number,
   repoId: number,
 ): Promise<VariantAnalysisRepoTask> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
 
   const response: OctokitResponse<VariantAnalysisRepoTask> =
     await octokit.request(
@@ -82,21 +79,19 @@ export async function getVariantAnalysisRepo(
 }
 
 export async function getVariantAnalysisRepoResult(
-  credentials: Credentials,
   downloadUrl: string,
 ): Promise<ArrayBuffer> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
   const response = await octokit.request(`GET ${downloadUrl}`);
 
   return response.data;
 }
 
 export async function getRepositoryFromNwo(
-  credentials: Credentials,
   owner: string,
   repo: string,
 ): Promise<Repository> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
 
   const response = await octokit.rest.repos.get({ owner, repo });
   return response.data as Repository;
@@ -107,11 +102,10 @@ export async function getRepositoryFromNwo(
  * Returns the URL of the created gist.
  */
 export async function createGist(
-  credentials: Credentials,
   description: string,
   files: { [key: string]: { content: string } },
 ): Promise<string | undefined> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
   const response = await octokit.request("POST /gists", {
     description,
     files,
@@ -128,10 +122,9 @@ export async function createGist(
 }
 
 export async function submitRemoteQueries(
-  credentials: Credentials,
   submissionDetails: RemoteQueriesSubmission,
 ): Promise<RemoteQueriesResponse> {
-  const octokit = await credentials.getOctokit();
+  const octokit = await getOctokit();
 
   const {
     ref,

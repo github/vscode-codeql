@@ -23,14 +23,16 @@ import {
   processScannedRepository,
   processUpdatedVariantAnalysis,
 } from "../../../remote-queries/variant-analysis-processor";
-import { Credentials } from "../../../authentication";
+import { registerCredentials } from "../../../pure/authentication";
 import { createMockVariantAnalysis } from "../../factories/remote-queries/shared/variant-analysis";
 import { VariantAnalysisManager } from "../../../remote-queries/variant-analysis-manager";
+import { TestCredentials } from "../../factories/authentication";
 
 jest.setTimeout(60_000);
 
 describe("Variant Analysis Monitor", () => {
   let extension: CodeQLExtensionInterface | Record<string, never>;
+  let credentialDisposer: () => void;
   let mockGetVariantAnalysis: jest.SpiedFunction<
     typeof ghApiClient.getVariantAnalysis
   >;
@@ -75,13 +77,13 @@ describe("Variant Analysis Monitor", () => {
 
     limitNumberOfAttemptsToMonitor();
 
-    const mockCredentials = {
-      getOctokit: () =>
-        Promise.resolve({
-          request: jest.fn(),
-        }),
-    } as unknown as Credentials;
-    jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
+    credentialDisposer = registerCredentials(
+      TestCredentials.initializeWithStub(),
+    );
+  });
+
+  afterEach(() => {
+    credentialDisposer?.();
   });
 
   it("should return early if variant analysis is cancelled", async () => {

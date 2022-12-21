@@ -1,5 +1,4 @@
 import { EOL } from "os";
-import { Credentials } from "../authentication";
 import { RepositorySelection } from "./repository-selection";
 import { Repository } from "./shared/repository";
 import { RemoteQueriesResponse } from "./gh-api/remote-queries";
@@ -12,7 +11,6 @@ import { getErrorMessage } from "../pure/helpers-pure";
 import { pluralize } from "../pure/word";
 
 export async function runRemoteQueriesApiRequest(
-  credentials: Credentials,
   ref: string,
   language: string,
   repoSelection: RepositorySelection,
@@ -20,7 +18,7 @@ export async function runRemoteQueriesApiRequest(
   queryPackBase64: string,
 ): Promise<void | RemoteQueriesResponse> {
   try {
-    const response = await submitRemoteQueries(credentials, {
+    const response = await submitRemoteQueries({
       ref,
       language,
       repositories: repoSelection.repositories,

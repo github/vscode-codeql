@@ -51,7 +51,6 @@ import { slurpQueryHistory, splatQueryHistory } from "./query-serialization";
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "./cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
-import { Credentials } from "./authentication";
 import { cancelRemoteQuery } from "./remote-queries/gh-api/gh-actions-api-client";
 import { RemoteQueriesManager } from "./remote-queries/remote-queries-manager";
 import { RemoteQueryHistoryItem } from "./remote-queries/remote-query-history-item";
@@ -630,10 +629,6 @@ export class QueryHistoryManager extends DisposableObject {
   public completeQuery(info: LocalQueryInfo, results: QueryWithResults): void {
     info.completeThisQuery(results);
     this._onDidCompleteQuery.fire(info);
-  }
-
-  private getCredentials() {
-    return Credentials.initialize();
   }
 
   /**
@@ -1318,8 +1313,7 @@ export class QueryHistoryManager extends DisposableObject {
           void showAndLogInformationMessage(
             "Cancelling variant analysis. This may take a while.",
           );
-          const credentials = await this.getCredentials();
-          await cancelRemoteQuery(credentials, item.remoteQuery);
+          await cancelRemoteQuery(item.remoteQuery);
         } else if (item.t === "variant-analysis") {
           await commands.executeCommand(
             "codeQL.cancelVariantAnalysis",

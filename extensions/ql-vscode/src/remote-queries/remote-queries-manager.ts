@@ -11,7 +11,6 @@ import { join } from "path";
 import { writeFile, readFile, remove, pathExists } from "fs-extra";
 import { EOL } from "os";
 
-import { Credentials } from "../authentication";
 import { CodeQLCliServer } from "../cli";
 import { ProgressCallback } from "../commandRunner";
 import {
@@ -159,8 +158,6 @@ export class RemoteQueriesManager extends DisposableObject {
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize();
-
     const {
       actionBranch,
       base64Pack,
@@ -170,16 +167,9 @@ export class RemoteQueriesManager extends DisposableObject {
       controllerRepo,
       queryStartTime,
       language,
-    } = await prepareRemoteQueryRun(
-      this.cliServer,
-      credentials,
-      uri,
-      progress,
-      token,
-    );
+    } = await prepareRemoteQueryRun(this.cliServer, uri, progress, token);
 
     const apiResponse = await runRemoteQueriesApiRequest(
-      credentials,
       actionBranch,
       language,
       repoSelection,
@@ -217,8 +207,6 @@ export class RemoteQueriesManager extends DisposableObject {
     remoteQuery: RemoteQuery,
     cancellationToken: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize();
-
     const queryWorkflowResult = await this.remoteQueriesMonitor.monitorQuery(
       remoteQuery,
       cancellationToken,
@@ -230,7 +218,6 @@ export class RemoteQueriesManager extends DisposableObject {
       await this.downloadAvailableResults(
         queryId,
         remoteQuery,
-        credentials,
         executionEndTime,
       );
     } else if (queryWorkflowResult.status === "CompletedUnsuccessfully") {
@@ -244,7 +231,6 @@ export class RemoteQueriesManager extends DisposableObject {
         await this.downloadAvailableResults(
           queryId,
           remoteQuery,
-          credentials,
           executionEndTime,
         );
         void showAndLogInformationMessage("Variant analysis was cancelled");
@@ -267,7 +253,6 @@ export class RemoteQueriesManager extends DisposableObject {
       await this.downloadAvailableResults(
         queryId,
         remoteQuery,
-        credentials,
         executionEndTime,
       );
       void showAndLogInformationMessage("Variant analysis was cancelled");
@@ -444,15 +429,11 @@ export class RemoteQueriesManager extends DisposableObject {
   private async downloadAvailableResults(
     queryId: string,
     remoteQuery: RemoteQuery,
-    credentials: Credentials,
     executionEndTime: number,
   ): Promise<void> {
-    const resultIndex = await getRemoteQueryIndex(credentials, remoteQuery);
+    const resultIndex = await getRemoteQueryIndex(remoteQuery);
     if (resultIndex) {
-      const metadata = await this.getRepositoriesMetadata(
-        resultIndex,
-        credentials,
-      );
+      const metadata = await this.getRepositoriesMetadata(resultIndex);
       const queryResult = this.mapQueryResult(
         executionEndTime,
         resultIndex,
@@ -494,12 +475,9 @@ export class RemoteQueriesManager extends DisposableObject {
     }
   }
 
-  private async getRepositoriesMetadata(
-    resultIndex: RemoteQueryResultIndex,
-    credentials: Credentials,
-  ) {
+  private async getRepositoriesMetadata(resultIndex: RemoteQueryResultIndex) {
     const nwos = resultIndex.successes.map((s) => s.nwo);
-    return await getRepositoriesMetadata(credentials, nwos);
+    return await getRepositoriesMetadata(nwos);
   }
 
   // Pulled from the analysis results manager, so that we can get access to

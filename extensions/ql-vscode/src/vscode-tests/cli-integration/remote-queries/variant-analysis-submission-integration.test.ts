@@ -9,12 +9,11 @@ import {
   window,
   workspace,
 } from "vscode";
-import { Octokit } from "@octokit/rest";
-import { retry } from "@octokit/plugin-retry";
 
 import { CodeQLExtensionInterface } from "../../../extension";
-import { Credentials } from "../../../authentication";
 import { MockGitHubApiServer } from "../../../mocks/mock-gh-api-server";
+import { registerCredentials } from "../../../pure/authentication";
+import { TestCredentials } from "../../factories/authentication";
 
 jest.setTimeout(10_000);
 
@@ -36,6 +35,7 @@ describe("Variant Analysis Submission Integration", () => {
   let inputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
   let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
   let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;
+  let credentialDisposer: () => void;
 
   beforeEach(async () => {
     const originalGetConfiguration = workspace.getConfiguration;
@@ -93,10 +93,9 @@ describe("Variant Analysis Submission Integration", () => {
       },
     });
 
-    const mockCredentials = {
-      getOctokit: () => Promise.resolve(new Octokit({ retry })),
-    } as unknown as Credentials;
-    jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
+    credentialDisposer = registerCredentials(
+      TestCredentials.initializeWithUnauthenticatedOctokit(),
+    );
 
     quickPickSpy = jest
       .spyOn(window, "showQuickPick")
@@ -114,6 +113,10 @@ describe("Variant Analysis Submission Integration", () => {
         "GitHub.vscode-codeql",
       )!
       .activate();
+  });
+
+  afterEach(() => {
+    credentialDisposer?.();
   });
 
   describe("Successful scenario", () => {

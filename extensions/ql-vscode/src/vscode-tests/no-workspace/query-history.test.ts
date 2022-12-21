@@ -39,9 +39,10 @@ import { VariantAnalysisHistoryItem } from "../../remote-queries/variant-analysi
 import { QueryStatus } from "../../query-status";
 import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
 import * as ghActionsApiClient from "../../remote-queries/gh-api/gh-actions-api-client";
-import { Credentials } from "../../authentication";
+import { registerCredentials } from "../../pure/authentication";
 import { QuickPickItem, TextEditor } from "vscode";
 import { WebviewReveal } from "../../interface-utils";
+import { TestCredentials } from "../factories/authentication";
 
 describe("query-history", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -684,26 +685,23 @@ describe("query-history", () => {
     });
 
     describe("handleCancel", () => {
-      let mockCredentials: Credentials;
+      let credentialDisposer: () => void;
       let mockCancelRemoteQuery: jest.SpiedFunction<
         typeof ghActionsApiClient.cancelRemoteQuery
       >;
-      const getOctokitStub = jest.fn();
 
       beforeEach(async () => {
-        mockCredentials = {
-          getOctokit: () =>
-            Promise.resolve({
-              request: getOctokitStub,
-            }),
-        } as unknown as Credentials;
-        jest
-          .spyOn(Credentials, "initialize")
-          .mockResolvedValue(mockCredentials);
+        credentialDisposer = registerCredentials(
+          TestCredentials.initializeWithStub(),
+        );
 
         mockCancelRemoteQuery = jest
           .spyOn(ghActionsApiClient, "cancelRemoteQuery")
           .mockResolvedValue();
+      });
+
+      afterEach(() => {
+        credentialDisposer?.();
       });
 
       describe("if the item is in progress", () => {
@@ -743,10 +741,7 @@ describe("query-history", () => {
           const inProgress1 = remoteQueryHistory[2];
 
           await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
-          expect(mockCancelRemoteQuery).toBeCalledWith(
-            mockCredentials,
-            inProgress1.remoteQuery,
-          );
+          expect(mockCancelRemoteQuery).toBeCalledWith(inProgress1.remoteQuery);
         });
 
         it("should cancel multiple remote queries", async () => {
@@ -760,14 +755,8 @@ describe("query-history", () => {
             inProgress1,
             inProgress2,
           ]);
-          expect(mockCancelRemoteQuery).toBeCalledWith(
-            mockCredentials,
-            inProgress1.remoteQuery,
-          );
-          expect(mockCancelRemoteQuery).toBeCalledWith(
-            mockCredentials,
-            inProgress2.remoteQuery,
-          );
+          expect(mockCancelRemoteQuery).toBeCalledWith(inProgress1.remoteQuery);
+          expect(mockCancelRemoteQuery).toBeCalledWith(inProgress2.remoteQuery);
         });
 
         it("should cancel a single variant analysis", async () => {
@@ -843,7 +832,6 @@ describe("query-history", () => {
 
           await queryHistoryManager.handleCancel(completed, [completed]);
           expect(mockCancelRemoteQuery).not.toBeCalledWith(
-            mockCredentials,
             completed.remoteQuery,
           );
         });
@@ -860,13 +848,9 @@ describe("query-history", () => {
             failed,
           ]);
           expect(mockCancelRemoteQuery).not.toBeCalledWith(
-            mockCredentials,
             completed.remoteQuery,
           );
-          expect(mockCancelRemoteQuery).not.toBeCalledWith(
-            mockCredentials,
-            failed.remoteQuery,
-          );
+          expect(mockCancelRemoteQuery).not.toBeCalledWith(failed.remoteQuery);
         });
 
         it("should not cancel a single variant analysis", async () => {

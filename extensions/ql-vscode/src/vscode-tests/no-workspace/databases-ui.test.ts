@@ -11,7 +11,6 @@ import { Uri } from "vscode";
 
 import { DatabaseUI } from "../../databases-ui";
 import { testDisposeHandler } from "../test-dispose-handler";
-import { Credentials } from "../../authentication";
 
 describe("databases-ui", () => {
   describe("fixDbUri", () => {
@@ -95,7 +94,6 @@ describe("databases-ui", () => {
       {} as any,
       storageDir,
       storageDir,
-      () => Promise.resolve({} as Credentials),
     );
 
     await databaseUI.handleRemoveOrphanedDatabases();

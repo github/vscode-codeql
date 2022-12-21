@@ -25,11 +25,12 @@ import { OutputChannelLogger } from "../../../common";
 import { RemoteQueriesSubmission } from "../../../remote-queries/shared/remote-queries";
 import { readBundledPack } from "../../utils/bundled-pack-helpers";
 import { RemoteQueriesManager } from "../../../remote-queries/remote-queries-manager";
-import { Credentials } from "../../../authentication";
 import {
   fixWorkspaceReferences,
   restoreWorkspaceReferences,
 } from "../global.helper";
+import { TestCredentials } from "../../factories/authentication";
+import { registerCredentials } from "../../../pure/authentication";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -56,6 +57,8 @@ describe("Remote queries", () => {
   let remoteQueriesManager: RemoteQueriesManager;
 
   let originalDeps: Record<string, string> | undefined;
+
+  let credentialDisposer: () => void;
 
   beforeEach(async () => {
     showQuickPickSpy = jest.spyOn(window, "showQuickPick");
@@ -107,13 +110,9 @@ describe("Remote queries", () => {
       "vscode-codeql": ["github/vscode-codeql"],
     });
 
-    const mockCredentials = {
-      getOctokit: () =>
-        Promise.resolve({
-          request: undefined,
-        }),
-    } as unknown as Credentials;
-    jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
+    credentialDisposer = registerCredentials(
+      TestCredentials.initializeWithStub(),
+    );
 
     // Only new version support `${workspace}` in qlpack.yml
     originalDeps = await fixWorkspaceReferences(
@@ -124,6 +123,7 @@ describe("Remote queries", () => {
 
   afterEach(async () => {
     await restoreWorkspaceReferences(qlpackFileWithWorkspaceRefs, originalDeps);
+    credentialDisposer?.();
   });
 
   describe("runRemoteQuery", () => {
@@ -160,7 +160,7 @@ describe("Remote queries", () => {
       );
 
       const request: RemoteQueriesSubmission =
-        mockSubmitRemoteQueries.mock.calls[0][1];
+        mockSubmitRemoteQueries.mock.calls[0][0];
 
       const packFS = await readBundledPack(request.queryPack);
 
@@ -214,7 +214,7 @@ describe("Remote queries", () => {
       );
 
       const request: RemoteQueriesSubmission =
-        mockSubmitRemoteQueries.mock.calls[0][1];
+        mockSubmitRemoteQueries.mock.calls[0][0];
 
       const packFS = await readBundledPack(request.queryPack);
 
@@ -271,7 +271,7 @@ describe("Remote queries", () => {
       );
 
       const request: RemoteQueriesSubmission =
-        mockSubmitRemoteQueries.mock.calls[0][1];
+        mockSubmitRemoteQueries.mock.calls[0][0];
 
       const packFS = await readBundledPack(request.queryPack);
 

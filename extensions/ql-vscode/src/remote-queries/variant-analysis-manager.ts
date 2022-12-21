@@ -16,7 +16,6 @@ import {
   workspace,
 } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
-import { Credentials } from "../authentication";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
 import {
   isVariantAnalysisComplete,
@@ -124,8 +123,6 @@ export class VariantAnalysisManager
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize();
-
     const {
       actionBranch,
       base64Pack,
@@ -137,7 +134,6 @@ export class VariantAnalysisManager
       language,
     } = await prepareRemoteQueryRun(
       this.cliServer,
-      credentials,
       uri,
       progress,
       token,
@@ -173,7 +169,6 @@ export class VariantAnalysisManager
     };
 
     const variantAnalysisResponse = await submitVariantAnalysis(
-      credentials,
       variantAnalysisSubmission,
     );
 
@@ -478,8 +473,6 @@ export class VariantAnalysisManager
 
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
-    const credentials = await Credentials.initialize();
-
     if (cancellationToken && cancellationToken.isCancellationRequested) {
       repoState.downloadStatus =
         VariantAnalysisScannedRepositoryDownloadStatus.Failed;
@@ -490,7 +483,6 @@ export class VariantAnalysisManager
     let repoTask: VariantAnalysisRepositoryTask;
     try {
       const repoTaskResponse = await getVariantAnalysisRepo(
-        credentials,
         variantAnalysis.controllerRepo.id,
         variantAnalysis.id,
         scannedRepo.repository.id,
@@ -515,7 +507,6 @@ export class VariantAnalysisManager
 
       try {
         await this.variantAnalysisResultsManager.download(
-          credentials,
           variantAnalysis.id,
           repoTask,
           this.getVariantAnalysisStorageLocation(variantAnalysis.id),
@@ -576,12 +567,10 @@ export class VariantAnalysisManager
       );
     }
 
-    const credentials = await Credentials.initialize();
-
     void showAndLogInformationMessage(
       "Cancelling variant analysis. This may take a while.",
     );
-    await cancelVariantAnalysis(credentials, variantAnalysis);
+    await cancelVariantAnalysis(variantAnalysis);
   }
 
   public async copyRepoListToClipboard(

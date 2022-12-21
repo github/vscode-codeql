@@ -102,7 +102,7 @@ import {
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
 
-import { Credentials } from "./authentication";
+import { getOctokit, registerCredentials } from "./pure/authentication";
 import { RemoteQueriesManager } from "./remote-queries/remote-queries-manager";
 import { RemoteQueryResult } from "./remote-queries/remote-query-result";
 import { URLSearchParams } from "url";
@@ -138,6 +138,7 @@ import { VariantAnalysisResultsManager } from "./remote-queries/variant-analysis
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
+import { VSCodeCredentials } from "./authentication";
 
 /**
  * extension.ts
@@ -242,6 +243,8 @@ export async function activate(
   await initializeLogging(ctx);
   await initializeTelemetry(extension, ctx);
   install();
+
+  registerCredentials(new VSCodeCredentials());
 
   const codelensProvider = new QuickEvalCodeLensProvider();
   languages.registerCodeLensProvider(
@@ -591,7 +594,6 @@ async function activateWithInstalledDistribution(
     qs,
     getContextStoragePath(ctx),
     ctx.extensionPath,
-    () => Credentials.initialize(),
   );
   databaseUI.init();
   ctx.subscriptions.push(databaseUI);
@@ -1354,14 +1356,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseGithub",
       async (progress: ProgressCallback, token: CancellationToken) => {
-        const credentials = isCanary()
-          ? await Credentials.initialize()
-          : undefined;
-        await databaseUI.handleChooseDatabaseGithub(
-          credentials,
-          progress,
-          token,
-        );
+        await databaseUI.handleChooseDatabaseGithub(progress, token);
       },
       {
         title: "Adding database from GitHub",
@@ -1410,8 +1405,7 @@ async function activateWithInstalledDistribution(
        * Credentials for authenticating to GitHub.
        * These are used when making API calls.
        */
-      const credentials = await Credentials.initialize();
-      const octokit = await credentials.getOctokit();
+      const octokit = await getOctokit();
       const userInfo = await octokit.users.getAuthenticated();
       void showAndLogInformationMessage(
         `Authenticated to GitHub as user: ${userInfo.data.login}`,
