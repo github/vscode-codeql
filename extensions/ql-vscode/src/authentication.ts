@@ -47,7 +47,16 @@ export class Credentials {
     return new Credentials(new Octokit.Octokit({ auth: overrideToken, retry }));
   }
 
-  private async createOctokit(): Promise<Octokit.Octokit> {
+  /**
+   * Creates or returns an instance of Octokit.
+   *
+   * @returns An instance of Octokit.
+   */
+  async getOctokit(): Promise<Octokit.Octokit> {
+    if (this.octokit) {
+      return this.octokit;
+    }
+
     const session = await vscode.authentication.getSession(
       GITHUB_AUTH_PROVIDER_ID,
       SCOPES,
@@ -58,17 +67,5 @@ export class Credentials {
       auth: session.accessToken,
       retry,
     });
-  }
-
-  /**
-   * Creates or returns an instance of Octokit.
-   *
-   * @returns An instance of Octokit.
-   */
-  async getOctokit(): Promise<Octokit.Octokit> {
-    if (this.octokit) {
-      return this.octokit;
-    }
-    return await this.createOctokit();
   }
 }
