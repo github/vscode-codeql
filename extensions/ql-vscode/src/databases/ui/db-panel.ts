@@ -82,40 +82,49 @@ export class DbPanel extends DisposableObject {
   }
 
   private async addNewRemoteDatabase(): Promise<void> {
-    const quickPickItems = [
-      {
-        label: "$(repo) From a GitHub repository",
-        detail: "Add a remote repository from GitHub",
-        alwaysShow: true,
-        kind: "repo",
-      },
-      {
-        label: "$(organization) All repositories of a GitHub org or owner",
-        detail:
-          "Add a remote list of repositories from a GitHub organization/owner",
-        alwaysShow: true,
-        kind: "owner",
-      },
-    ];
-    const databaseKind =
-      await window.showQuickPick<RemoteDatabaseQuickPickItem>(quickPickItems, {
-        title: "Add a remote repository",
-        placeHolder: "Select an option",
-        ignoreFocusOut: true,
-      });
-    if (!databaseKind) {
-      // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
-      // We set 'true' to make this a silent exception.
-      throw new UserCancellationException("No repository selected", true);
-    }
-    if (databaseKind.kind === "repo") {
-      await this.addNewRemoteRepo();
-    } else if (databaseKind.kind === "owner") {
-      await this.addNewRemoteOwner();
+    const highlightedItem = await this.getHighlightedDbItem();
+
+    if (highlightedItem?.kind === DbItemKind.RemoteUserDefinedList) {
+      await this.addNewRemoteRepo(highlightedItem.listName);
+    } else {
+      const quickPickItems = [
+        {
+          label: "$(repo) From a GitHub repository",
+          detail: "Add a remote repository from GitHub",
+          alwaysShow: true,
+          kind: "repo",
+        },
+        {
+          label: "$(organization) All repositories of a GitHub org or owner",
+          detail:
+            "Add a remote list of repositories from a GitHub organization/owner",
+          alwaysShow: true,
+          kind: "owner",
+        },
+      ];
+      const databaseKind =
+        await window.showQuickPick<RemoteDatabaseQuickPickItem>(
+          quickPickItems,
+          {
+            title: "Add a remote repository",
+            placeHolder: "Select an option",
+            ignoreFocusOut: true,
+          },
+        );
+      if (!databaseKind) {
+        // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
+        // We set 'true' to make this a silent exception.
+        throw new UserCancellationException("No repository selected", true);
+      }
+      if (databaseKind.kind === "repo") {
+        await this.addNewRemoteRepo();
+      } else if (databaseKind.kind === "owner") {
+        await this.addNewRemoteOwner();
+      }
     }
   }
 
-  private async addNewRemoteRepo(): Promise<void> {
+  private async addNewRemoteRepo(parentList?: string): Promise<void> {
     const repoName = await window.showInputBox({
       title: "Add a remote repository",
       prompt: "Insert a GitHub repository URL or name with owner",
@@ -136,7 +145,7 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    await this.dbManager.addNewRemoteRepo(nwo);
+    await this.dbManager.addNewRemoteRepo(nwo, parentList);
   }
 
   private async addNewRemoteOwner(): Promise<void> {

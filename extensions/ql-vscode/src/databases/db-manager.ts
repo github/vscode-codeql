@@ -75,8 +75,18 @@ export class DbManager {
     await this.dbConfigStore.updateExpandedState(newExpandedItems);
   }
 
-  public async addNewRemoteRepo(nwo: string): Promise<void> {
-    await this.dbConfigStore.addRemoteRepo(nwo);
+  public async addNewRemoteRepo(
+    nwo: string,
+    parentList?: string,
+  ): Promise<void> {
+    if (nwo === "") {
+      throw new Error("Repository name cannot be empty");
+    }
+    if (this.dbConfigStore.doesRemoteDbExist(nwo)) {
+      throw new Error(`The repository '${nwo}' already exists`);
+    }
+
+    await this.dbConfigStore.addRemoteRepo(nwo, parentList);
   }
 
   public async addNewRemoteOwner(owner: string): Promise<void> {
