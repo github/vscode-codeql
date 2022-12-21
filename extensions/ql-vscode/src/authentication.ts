@@ -34,7 +34,6 @@ export class Credentials {
   ): Promise<Credentials> {
     const c = new Credentials();
     c.registerListeners(context);
-    c.octokit = await c.createOctokit(false);
     return c;
   }
 
@@ -76,7 +75,7 @@ export class Credentials {
     context.subscriptions.push(
       vscode.authentication.onDidChangeSessions(async (e) => {
         if (e.provider.id === GITHUB_AUTH_PROVIDER_ID) {
-          this.octokit = await this.createOctokit(false);
+          this.octokit = undefined;
         }
       }),
     );
