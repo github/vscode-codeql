@@ -221,6 +221,7 @@ Pre-recorded scenarios are stored in `./src/mocks/scenarios`. However, it's poss
 
 ## Releasing (write access required)
 
+1. Go through [our test plan](/extensions/ql-vscode/docs/test-plan.md) to ensure that the extension is working as expected.
 1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
     * Go through all recent PRs and make sure they are properly accounted for.
     * Make sure all changelog entries have links back to their PR(s) if appropriate.
