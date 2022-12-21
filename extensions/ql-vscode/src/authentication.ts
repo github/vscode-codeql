@@ -90,24 +90,17 @@ export class Credentials {
   /**
    * Creates or returns an instance of Octokit.
    *
-   * @param requireAuthentication Whether the Octokit instance needs to be authenticated as user.
    * @returns An instance of Octokit.
    */
-  async getOctokit(requireAuthentication = true): Promise<Octokit.Octokit> {
+  async getOctokit(): Promise<Octokit.Octokit> {
     if (this.octokit) {
       return this.octokit;
     }
 
-    this.octokit = await this.createOctokit(requireAuthentication);
+    this.octokit = await this.createOctokit(true);
 
     if (!this.octokit) {
-      if (requireAuthentication) {
-        throw new Error("Did not initialize Octokit.");
-      }
-
-      // We don't want to set this in this.octokit because that would prevent
-      // authenticating when requireCredentials is true.
-      return new Octokit.Octokit({ retry });
+      throw new Error("Did not initialize Octokit.");
     }
     return this.octokit;
   }

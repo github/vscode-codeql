@@ -106,7 +106,7 @@ export async function promptImportGithubDatabase(
   }
 
   const octokit = credentials
-    ? await credentials.getOctokit(true)
+    ? await credentials.getOctokit()
     : new Octokit.Octokit({ retry });
 
   const result = await convertGithubNwoToDatabaseUrl(nwo, octokit, progress);
