@@ -48,18 +48,13 @@ export class Credentials {
    */
   static async initializeWithToken(overrideToken: string) {
     const c = new Credentials();
-    c.octokit = await c.createOctokit(false, overrideToken);
+    c.octokit = new Octokit.Octokit({ auth: overrideToken, retry });
     return c;
   }
 
   private async createOctokit(
     createIfNone: boolean,
-    overrideToken?: string,
   ): Promise<Octokit.Octokit | undefined> {
-    if (overrideToken) {
-      return new Octokit.Octokit({ auth: overrideToken, retry });
-    }
-
     const session = await vscode.authentication.getSession(
       GITHUB_AUTH_PROVIDER_ID,
       SCOPES,
