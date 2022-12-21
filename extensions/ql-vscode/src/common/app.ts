@@ -1,6 +1,7 @@
 import { Disposable } from "../pure/disposable-object";
 import { AppEventEmitter } from "./events";
 import { Logger } from "./logging";
+import { Memento } from "./memento";
 
 export interface App {
   createEventEmitter<T>(): AppEventEmitter<T>;
@@ -11,6 +12,7 @@ export interface App {
   extensionPath: string;
   globalStoragePath: string;
   workspaceStoragePath?: string;
+  workspaceState: Memento;
 }
 
 export enum AppMode {

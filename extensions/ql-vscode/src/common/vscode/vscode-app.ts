@@ -3,6 +3,7 @@ import { Disposable } from "../../pure/disposable-object";
 import { App, AppMode } from "../app";
 import { AppEventEmitter } from "../events";
 import { extLogger, Logger } from "../logging";
+import { Memento } from "../memento";
 import { VSCodeAppEventEmitter } from "./events";
 
 export class ExtensionApp implements App {
@@ -20,6 +21,10 @@ export class ExtensionApp implements App {
 
   public get workspaceStoragePath(): string | undefined {
     return this.extensionContext.storageUri?.fsPath;
+  }
+
+  public get workspaceState(): Memento {
+    return this.extensionContext.workspaceState;
   }
 
   public get subscriptions(): Disposable[] {
