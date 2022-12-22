@@ -114,10 +114,7 @@ These are mostly aimed at MRVA, but some of them are also applicable to non-MRVA
    3. No repositories in the list have a CodeQL database
 2. The repository list is empty
 
-#### Test case 3: Running a query on a built-in repository list (i.e. topN)
-- Check that the query runs and results are shown
-
-#### Test case 4: Running a query on all repositories in an organization
+#### Test case 3: Running a query on all repositories in an organization
 1. The org exists
   1. The org contains repositories that have CodeQL databases
   2. The org contains repositories of the right language but without CodeQL databases
