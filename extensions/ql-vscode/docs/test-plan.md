@@ -93,6 +93,8 @@ Are there any components that are not showing up?
 
 ## Optional Test Cases
 
+These are mostly aimed at MRVA, but some of them are also applicable to non-MRVA queries.
+
 ### Selecting repositories to run on
 
 #### Test case 1: Running a query on a single repository
