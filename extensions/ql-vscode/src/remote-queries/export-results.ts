@@ -4,7 +4,6 @@ import { ensureDir, writeFile } from "fs-extra";
 import {
   commands,
   CancellationToken,
-  ExtensionContext,
   Uri,
   ViewColumn,
   window,
@@ -74,7 +73,6 @@ export async function exportSelectedRemoteQueryResults(
 export async function exportRemoteQueryResults(
   queryHistoryManager: QueryHistoryManager,
   remoteQueriesManager: RemoteQueriesManager,
-  ctx: ExtensionContext,
   queryId: string,
 ): Promise<void> {
   const queryHistoryItem = queryHistoryManager.getRemoteQueryById(queryId);
@@ -107,7 +105,6 @@ export async function exportRemoteQueryResults(
   const exportedResultsDirectory = join(exportDirectory, "exported-results");
 
   await exportRemoteQueryAnalysisResults(
-    ctx,
     exportedResultsDirectory,
     query,
     analysesResults,
@@ -116,7 +113,6 @@ export async function exportRemoteQueryResults(
 }
 
 export async function exportRemoteQueryAnalysisResults(
-  ctx: ExtensionContext,
   exportedResultsPath: string,
   query: RemoteQuery,
   analysesResults: AnalysisResults[],
@@ -126,7 +122,6 @@ export async function exportRemoteQueryAnalysisResults(
   const markdownFiles = generateMarkdown(query, analysesResults, exportFormat);
 
   await exportResults(
-    ctx,
     exportedResultsPath,
     description,
     markdownFiles,
@@ -141,7 +136,6 @@ const MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS = 2;
  * The user is prompted to select the export format.
  */
 export async function exportVariantAnalysisResults(
-  ctx: ExtensionContext,
   variantAnalysisManager: VariantAnalysisManager,
   variantAnalysisId: number,
   filterSort: RepositoriesFilterSortStateWithIds | undefined,
@@ -239,7 +233,6 @@ export async function exportVariantAnalysisResults(
   );
 
   await exportVariantAnalysisAnalysisResults(
-    ctx,
     exportedResultsDirectory,
     variantAnalysis,
     getAnalysesResults(),
@@ -251,7 +244,6 @@ export async function exportVariantAnalysisResults(
 }
 
 export async function exportVariantAnalysisAnalysisResults(
-  ctx: ExtensionContext,
   exportedResultsPath: string,
   variantAnalysis: VariantAnalysis,
   analysesResults: AsyncIterable<
@@ -284,7 +276,6 @@ export async function exportVariantAnalysisAnalysisResults(
   );
 
   await exportResults(
-    ctx,
     exportedResultsPath,
     description,
     markdownFiles,
@@ -328,7 +319,6 @@ async function determineExportFormat(): Promise<"gist" | "local" | undefined> {
 }
 
 export async function exportResults(
-  ctx: ExtensionContext,
   exportedResultsPath: string,
   description: string,
   markdownFiles: MarkdownFile[],
@@ -341,7 +331,7 @@ export async function exportResults(
   }
 
   if (exportFormat === "gist") {
-    await exportToGist(ctx, description, markdownFiles, progress, token);
+    await exportToGist(description, markdownFiles, progress, token);
   } else if (exportFormat === "local") {
     await exportToLocalMarkdown(
       exportedResultsPath,
@@ -353,7 +343,6 @@ export async function exportResults(
 }
 
 export async function exportToGist(
-  ctx: ExtensionContext,
   description: string,
   markdownFiles: MarkdownFile[],
   progress?: ProgressCallback,
@@ -365,7 +354,7 @@ export async function exportToGist(
     message: "Creating Gist",
   });
 
-  const credentials = await Credentials.initialize(ctx);
+  const credentials = await Credentials.initialize();
 
   if (token?.isCancellationRequested) {
     throw new UserCancellationException("Cancelled");

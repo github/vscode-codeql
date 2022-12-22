@@ -106,7 +106,6 @@ export class VariantAnalysisManager
     super();
     this.variantAnalysisMonitor = this.push(
       new VariantAnalysisMonitor(
-        ctx,
         this.shouldCancelMonitorVariantAnalysis.bind(this),
       ),
     );
@@ -125,7 +124,7 @@ export class VariantAnalysisManager
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize(this.ctx);
+    const credentials = await Credentials.initialize();
 
     const {
       actionBranch,
@@ -479,10 +478,7 @@ export class VariantAnalysisManager
 
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
-    const credentials = await Credentials.initialize(this.ctx);
-    if (!credentials) {
-      throw Error("Error authenticating with GitHub");
-    }
+    const credentials = await Credentials.initialize();
 
     if (cancellationToken && cancellationToken.isCancellationRequested) {
       repoState.downloadStatus =
@@ -580,10 +576,7 @@ export class VariantAnalysisManager
       );
     }
 
-    const credentials = await Credentials.initialize(this.ctx);
-    if (!credentials) {
-      throw Error("Error authenticating with GitHub");
-    }
+    const credentials = await Credentials.initialize();
 
     void showAndLogInformationMessage(
       "Cancelling variant analysis. This may take a while.",

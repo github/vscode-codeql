@@ -279,7 +279,6 @@ describe("Remote queries and query history manager", () => {
       jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
 
       arm = new AnalysesResultsManager(
-        {} as ExtensionContext,
         mockCliServer,
         join(STORAGE_DIR, "queries"),
         mockLogger,
