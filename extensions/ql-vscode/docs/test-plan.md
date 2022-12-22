@@ -278,8 +278,3 @@ This requires running a MRVA query and seeing the results view.
 #### Test case 4: When variant analysis is in "failed" or "cancelled" state
 1. Can view logs
 1. Results for finished queries are still downloaded.
-
-### Is all copy / text correct?
-1. In prompts when running a query
-2. In query history
-3. In results view
