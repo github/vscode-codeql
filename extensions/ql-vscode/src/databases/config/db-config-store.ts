@@ -114,11 +114,14 @@ export class DbConfigStore extends DisposableObject {
 
     const config: DbConfig = cloneDbConfig(this.config);
     if (parentList) {
-      config.databases.remote.repositoryLists.forEach((list) => {
-        if (list.name === parentList) {
-          list.repositories.push(repoNwo);
-        }
-      });
+      const parent = config.databases.remote.repositoryLists.find(
+        (list) => list.name === parentList,
+      );
+      if (!parent) {
+        throw Error(`Cannot find parent list '${parentList}'`);
+      } else {
+        parent.repositories.push(repoNwo);
+      }
     } else {
       config.databases.remote.repositories.push(repoNwo);
     }
