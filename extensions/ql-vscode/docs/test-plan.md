@@ -93,7 +93,7 @@ Are there any components that are not showing up?
 
 ## Optional Test Cases
 
-### 1. Selecting repositories to run on
+### Selecting repositories to run on
 
 #### Test case 1: Running a query on a single repository
 1. When the repository exists and is public 
@@ -123,7 +123,7 @@ Are there any components that are not showing up?
   4. The org contains private repositories that are inaccessible
 2. The org does not exist
 
-### 2. Using different types of controller repos
+### Using different types of controller repos
 1. The controller is public 
   1. Can run queries on public repositories
   2. Can not run queries on private repositories
@@ -134,7 +134,7 @@ Are there any components that are not showing up?
 4. The controller repo doesn’t exist
 5. The “config field” for the controller repo is not set
 
-### 3. Query History
+### Query History
 1. Query history is loaded when vscode starts
 - Handles when action workflow was cancelled while vscode was closed
 - Starts monitoring variant analyses
@@ -186,7 +186,7 @@ Are there any components that are not showing up?
 - Option is not shown before action run has been started
 - Causes the actions run to be cancelled
 
-### 4. Results view
+### Results view
 1. Can open a results view
 - When variant analysis state is “pending”
 - When variant analysis state is “in_progress”
@@ -235,7 +235,7 @@ See section from query history.
     - Some but not all queries failed
     - The variant analysis was cancelled after some queries completed
 
-### 5. Is all copy / text correct?
+### Is all copy / text correct?
 - In prompts when running a query
 - In query history
 - In results view
