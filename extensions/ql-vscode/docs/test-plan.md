@@ -20,7 +20,7 @@ choose to go through some of the Optional Test Cases.
 
 - Flip the `codeQL.canary` flag. This will enable MRVA in the extension.
 
-### Test Case 1: Running a problem path query and viewing results
+### Test Case 1: MRVA - Running a problem path query and viewing results
 
 1. Open the [UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
 2. Run it against the following repo list:
@@ -44,7 +44,7 @@ choose to go through some of the Optional Test Cases.
    - Check that the repository filter box works
    - Click links to files/locations on GitHub.
 
-### Test Case 2: Running a problem query and viewing results
+### Test Case 2: MRVA - Running a problem query and viewing results
 
 1. Open the [ReDoS query](https://github.com/github/codeql/blob/main/javascript/ql/src/Performance/ReDoS.ql).
 2. Run it against the "Top 10" repositories.
@@ -59,7 +59,7 @@ choose to go through some of the Optional Test Cases.
    - Check that the results are rendered with an alert message and a highlighted code snippet:
 ![highlighted-code-snippet](images/highlighted-code-snippet.png)
 
-### Test Case 3: Running a non-problem query and viewing results
+### Test Case 3: MRVA - Running a non-problem query and viewing results
 
 1. Open the [FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
 2. Run it against a single repository (e.g. `google/brotli`).
@@ -68,7 +68,7 @@ choose to go through some of the Optional Test Cases.
    - Check that the results show up in a table:
 ![results-table](images/results-table.png)
 
-### Test Case 4: Interacting with query history
+### Test Case 4: MRVA - Interacting with query history
 
 1. Click a history item (for MRVA):
    - Check that exporting results works
@@ -79,14 +79,14 @@ choose to go through some of the Optional Test Cases.
 3. Open variant analysis on GitHub
    - Check that the correct workflow is opened
 
-### Test Case 5: Cancelling a variant analysis run
+### Test Case 5: MRVA - Cancelling a variant analysis run
 
 When running one of the above queries, try cancelling one from within VS Code:
 - Check that the query is cancelled and the query history item is updated.
 - Check that the workflow run is also cancelled. 
 - Check that any available results are visible in VS Code.
 
-### Test Case 6: Change to a different colour theme 
+### Test Case 6: MRVA - Change to a different colour theme 
 
 When running one of the above queries, try changing to a different colour theme 
 and check that everything looks sensible. Are there any components that are not showing up?
