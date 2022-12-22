@@ -27,7 +27,6 @@ describe("db config validation", () => {
           somethingElse: "bar",
         },
       },
-      expanded: [],
     } as any as DbConfig;
 
     const validationOutput = configValidator.validate(dbConfig);
