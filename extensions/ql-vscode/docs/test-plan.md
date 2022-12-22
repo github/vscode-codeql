@@ -31,9 +31,7 @@ choose to go through some of the Optional Test Cases.
     "apache/hive"
 ]
 ```
-3. Check the notification message. It should:
-   - Show the number of repos that are going to be queried
-   - Provide a link to the actions workflow
+3. Check that a notification message pops up and the results view is opened.
 4. Check the query history. It should:
    - Show that an item has been added to the query history
    - The item should be marked as “in progress”.
