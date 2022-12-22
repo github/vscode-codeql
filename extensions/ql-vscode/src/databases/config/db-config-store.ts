@@ -206,7 +206,7 @@ export class DbConfigStore extends DisposableObject {
   public doesRemoteOwnerExist(owner: string): boolean {
     if (!this.config) {
       throw Error(
-        "Cannot check remote onwer existence if config is not loaded",
+        "Cannot check remote owner existence if config is not loaded",
       );
     }
 
