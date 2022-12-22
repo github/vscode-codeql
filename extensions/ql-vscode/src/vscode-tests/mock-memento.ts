@@ -1,4 +1,4 @@
-import { Memento } from "../../src/common/memento";
+import { Memento } from "../common/memento";
 
 export function createMockMemento(): Memento {
   return new MockMemento();
