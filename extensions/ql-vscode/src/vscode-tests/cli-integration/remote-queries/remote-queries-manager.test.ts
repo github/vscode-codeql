@@ -31,6 +31,7 @@ import {
 } from "../global.helper";
 import { TestCredentials } from "../../factories/authentication";
 import { registerCredentials } from "../../../pure/authentication";
+import { Disposable } from "../../../pure/disposable-object";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -58,7 +59,7 @@ describe("Remote queries", () => {
 
   let originalDeps: Record<string, string> | undefined;
 
-  let credentialDisposer: () => void;
+  let credentialDisposer: Disposable;
 
   beforeEach(async () => {
     showQuickPickSpy = jest.spyOn(window, "showQuickPick");
@@ -123,7 +124,7 @@ describe("Remote queries", () => {
 
   afterEach(async () => {
     await restoreWorkspaceReferences(qlpackFileWithWorkspaceRefs, originalDeps);
-    credentialDisposer?.();
+    credentialDisposer?.dispose();
   });
 
   describe("runRemoteQuery", () => {

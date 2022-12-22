@@ -59,6 +59,7 @@ import {
 } from "../../../pure/variant-analysis-filter-sort";
 import { DbManager } from "../../../databases/db-manager";
 import { TestCredentials } from "../../factories/authentication";
+import { Disposable } from "../../../pure/disposable-object";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -116,7 +117,7 @@ describe("Variant Analysis Manager", () => {
   });
 
   describe("runVariantAnalysis", () => {
-    let credentialDisposer: () => void;
+    let credentialDisposer: Disposable;
 
     const progress = jest.fn();
     let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
@@ -194,7 +195,7 @@ describe("Variant Analysis Manager", () => {
         qlpackFileWithWorkspaceRefs,
         originalDeps,
       );
-      credentialDisposer?.();
+      credentialDisposer?.dispose();
     });
 
     it("should run a variant analysis that is part of a qlpack", async () => {
@@ -375,7 +376,7 @@ describe("Variant Analysis Manager", () => {
   });
 
   describe("autoDownloadVariantAnalysisResult", () => {
-    let credentialDisposer: () => void;
+    let credentialDisposer: Disposable;
     let arrayBuffer: ArrayBuffer;
 
     let getVariantAnalysisRepoStub: jest.SpiedFunction<
@@ -407,7 +408,7 @@ describe("Variant Analysis Manager", () => {
     });
 
     afterEach(() => {
-      credentialDisposer?.();
+      credentialDisposer?.dispose();
     });
 
     describe("when the artifact_url is missing", () => {
@@ -667,7 +668,7 @@ describe("Variant Analysis Manager", () => {
   });
 
   describe("enqueueDownload", () => {
-    let credentialDisposer: () => void;
+    let credentialDisposer: Disposable;
 
     beforeEach(async () => {
       credentialDisposer = registerCredentials(
@@ -676,7 +677,7 @@ describe("Variant Analysis Manager", () => {
     });
 
     afterEach(() => {
-      credentialDisposer?.();
+      credentialDisposer?.dispose();
     });
 
     it("should pop download tasks off the queue", async () => {
@@ -834,7 +835,7 @@ describe("Variant Analysis Manager", () => {
   });
 
   describe("cancelVariantAnalysis", () => {
-    let credentialDisposer: () => void;
+    let credentialDisposer: Disposable;
 
     let variantAnalysis: VariantAnalysis;
     let mockCancelVariantAnalysis: jest.SpiedFunction<
@@ -864,7 +865,7 @@ describe("Variant Analysis Manager", () => {
 
     afterEach(() => {
       fs.rmSync(variantAnalysisStorageLocation, { recursive: true });
-      credentialDisposer?.();
+      credentialDisposer?.dispose();
     });
 
     it("should return early if the variant analysis is not found", async () => {

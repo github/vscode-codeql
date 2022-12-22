@@ -43,6 +43,7 @@ import { registerCredentials } from "../../pure/authentication";
 import { QuickPickItem, TextEditor } from "vscode";
 import { WebviewReveal } from "../../interface-utils";
 import { TestCredentials } from "../factories/authentication";
+import { Disposable } from "../../pure/disposable-object";
 
 describe("query-history", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -685,7 +686,7 @@ describe("query-history", () => {
     });
 
     describe("handleCancel", () => {
-      let credentialDisposer: () => void;
+      let credentialDisposer: Disposable;
       let mockCancelRemoteQuery: jest.SpiedFunction<
         typeof ghActionsApiClient.cancelRemoteQuery
       >;
@@ -701,7 +702,7 @@ describe("query-history", () => {
       });
 
       afterEach(() => {
-        credentialDisposer?.();
+        credentialDisposer?.dispose();
       });
 
       describe("if the item is in progress", () => {

@@ -15,8 +15,9 @@ import { response as variantAnalysisJson_response } from "../../../../src/mocks/
 import { response as variantAnalysisRepoJson_response } from "../../../../src/mocks/scenarios/problem-query-success/9-getVariantAnalysisRepo.json";
 import { registerCredentials } from "../../../../src/pure/authentication";
 import { TestCredentials } from "../../../../src/vscode-tests/factories/authentication";
+import { Disposable } from "../../../../src/pure/disposable-object";
 
-let credentialsDisposer: () => void;
+let credentialsDisposer: Disposable;
 const mockServer = new MockGitHubApiServer();
 
 beforeAll(() => {
@@ -28,7 +29,7 @@ beforeAll(() => {
 afterEach(() => mockServer.unloadScenario());
 afterAll(() => {
   mockServer.stopServer();
-  credentialsDisposer();
+  credentialsDisposer.dispose();
 });
 
 const controllerRepoId = variantAnalysisJson_response.body.controller_repo.id;

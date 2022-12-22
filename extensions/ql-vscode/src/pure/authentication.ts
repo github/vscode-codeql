@@ -1,4 +1,5 @@
 import * as Octokit from "@octokit/rest";
+import { Disposable } from "./disposable-object";
 
 let registeredCredentials: Credentials | undefined = undefined;
 
@@ -11,17 +12,21 @@ let registeredCredentials: Credentials | undefined = undefined;
  * @param credentials A credentials instance
  * @returns A callback that can be used to un-register the credentials
  */
-export function registerCredentials(credentials: Credentials): () => void {
+export function registerCredentials(credentials: Credentials): Disposable {
   if (registeredCredentials !== undefined) {
     throw new Error("Credential provider already registered");
   }
   registeredCredentials = credentials;
 
-  return () => {
-    if (registeredCredentials !== credentials) {
-      throw new Error("Registered credentials have been changed by other code");
-    }
-    registeredCredentials = undefined;
+  return {
+    dispose: () => {
+      if (registeredCredentials !== credentials) {
+        throw new Error(
+          "Registered credentials have been changed by other code",
+        );
+      }
+      registeredCredentials = undefined;
+    },
   };
 }
 

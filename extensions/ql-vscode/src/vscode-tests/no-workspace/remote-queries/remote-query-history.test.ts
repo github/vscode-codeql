@@ -33,6 +33,7 @@ import { QueryRunner } from "../../../queryRunner";
 import { VariantAnalysisManager } from "../../../remote-queries/variant-analysis-manager";
 import { registerCredentials } from "../../../pure/authentication";
 import { TestCredentials } from "../../factories/authentication";
+import { Disposable } from "../../../pure/disposable-object";
 
 // set a higher timeout since recursive delete may take a while, expecially on Windows.
 jest.setTimeout(120000);
@@ -257,7 +258,7 @@ describe("Remote queries and query history manager", () => {
   });
 
   describe("AnalysisResultsManager", () => {
-    let credentialDisposer: () => void;
+    let credentialDisposer: Disposable;
     let mockOctokitRequest: jest.Mock;
     let mockLogger: any;
     let mockCliServer: any;
@@ -284,7 +285,7 @@ describe("Remote queries and query history manager", () => {
     });
 
     afterEach(() => {
-      credentialDisposer?.();
+      credentialDisposer?.dispose();
     });
 
     it("should avoid re-downloading an analysis result", async () => {

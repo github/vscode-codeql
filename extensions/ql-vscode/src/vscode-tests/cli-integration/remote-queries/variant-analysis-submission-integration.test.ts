@@ -13,6 +13,7 @@ import {
 import { CodeQLExtensionInterface } from "../../../extension";
 import { MockGitHubApiServer } from "../../../mocks/mock-gh-api-server";
 import { registerCredentials } from "../../../pure/authentication";
+import { Disposable } from "../../../pure/disposable-object";
 import { TestCredentials } from "../../factories/authentication";
 
 jest.setTimeout(10_000);
@@ -35,7 +36,7 @@ describe("Variant Analysis Submission Integration", () => {
   let inputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
   let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
   let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;
-  let credentialDisposer: () => void;
+  let credentialDisposer: Disposable;
 
   beforeEach(async () => {
     const originalGetConfiguration = workspace.getConfiguration;
@@ -116,7 +117,7 @@ describe("Variant Analysis Submission Integration", () => {
   });
 
   afterEach(() => {
-    credentialDisposer?.();
+    credentialDisposer?.dispose();
   });
 
   describe("Successful scenario", () => {

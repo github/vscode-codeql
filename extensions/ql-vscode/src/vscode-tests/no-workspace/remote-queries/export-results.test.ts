@@ -5,10 +5,11 @@ import * as markdownGenerator from "../../../remote-queries/remote-queries-markd
 import * as ghApiClient from "../../../remote-queries/gh-api/gh-api-client";
 import { exportRemoteQueryAnalysisResults } from "../../../remote-queries/export-results";
 import { TestCredentials } from "../../factories/authentication";
+import { Disposable } from "../../../pure/disposable-object";
 
 describe("export results", () => {
   describe("exportRemoteQueryAnalysisResults", () => {
-    let credentialDisposer: () => void;
+    let credentialDisposer: Disposable;
 
     beforeEach(() => {
       jest.spyOn(markdownGenerator, "generateMarkdown").mockReturnValue([]);
@@ -18,7 +19,7 @@ describe("export results", () => {
     });
 
     afterEach(() => {
-      credentialDisposer?.();
+      credentialDisposer?.dispose();
     });
 
     it("should call the GitHub Actions API with the correct gist title", async function () {

@@ -8,12 +8,13 @@ import { RemoteQuery } from "../../../../remote-queries/remote-query";
 import { createMockVariantAnalysis } from "../../../factories/remote-queries/shared/variant-analysis";
 import { VariantAnalysis } from "../../../../remote-queries/shared/variant-analysis";
 import { TestCredentials } from "../../../factories/authentication";
+import { Disposable } from "../../../../pure/disposable-object";
 
 jest.setTimeout(10000);
 
 describe("gh-actions-api-client mock responses", () => {
   const mockRequest = jest.fn();
-  let credentialDisposer: () => void;
+  let credentialDisposer: Disposable;
 
   beforeEach(() => {
     credentialDisposer = registerCredentials(
@@ -22,7 +23,7 @@ describe("gh-actions-api-client mock responses", () => {
   });
 
   afterEach(() => {
-    credentialDisposer?.();
+    credentialDisposer?.dispose();
   });
 
   describe("cancelRemoteQuery", () => {
@@ -96,7 +97,7 @@ describe("gh-actions-api-client mock responses", () => {
 });
 
 describe("gh-actions-api-client real responses", () => {
-  let credentialDisposer: () => void;
+  let credentialDisposer: Disposable;
 
   beforeEach(() => {
     if (!skip()) {
@@ -109,7 +110,7 @@ describe("gh-actions-api-client real responses", () => {
   });
 
   afterEach(() => {
-    credentialDisposer?.();
+    credentialDisposer?.dispose();
   });
 
   it("should get the stargazers for repos", async () => {

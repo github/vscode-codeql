@@ -27,12 +27,13 @@ import { registerCredentials } from "../../../pure/authentication";
 import { createMockVariantAnalysis } from "../../factories/remote-queries/shared/variant-analysis";
 import { VariantAnalysisManager } from "../../../remote-queries/variant-analysis-manager";
 import { TestCredentials } from "../../factories/authentication";
+import { Disposable } from "../../../pure/disposable-object";
 
 jest.setTimeout(60_000);
 
 describe("Variant Analysis Monitor", () => {
   let extension: CodeQLExtensionInterface | Record<string, never>;
-  let credentialDisposer: () => void;
+  let credentialDisposer: Disposable;
   let mockGetVariantAnalysis: jest.SpiedFunction<
     typeof ghApiClient.getVariantAnalysis
   >;
@@ -83,7 +84,7 @@ describe("Variant Analysis Monitor", () => {
   });
 
   afterEach(() => {
-    credentialDisposer?.();
+    credentialDisposer?.dispose();
   });
 
   it("should return early if variant analysis is cancelled", async () => {
