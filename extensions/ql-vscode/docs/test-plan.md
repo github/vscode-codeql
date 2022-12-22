@@ -123,67 +123,96 @@ These are mostly aimed at MRVA, but some of them are also applicable to non-MRVA
 2. The org does not exist
 
 ### Using different types of controller repos
-1. The controller is public 
-  1. Can run queries on public repositories
-  2. Can not run queries on private repositories
-2. The controller is private
-  1. Can run queries on public repositories
-  2. Can run queries on private repositories
-3. The controller repo exists but you do not have write access
-4. The controller repo doesn’t exist
-5. The "config field" for the controller repo is not set
+
+#### Test case 1: Running a query when the controller repository is public
+1. Can run queries on public repositories
+2. Can not run queries on private repositories
+
+#### Test case 2: Running a query when the controller repository is private
+1. Can run queries on public repositories
+2. Can run queries on private repositories
+
+#### Test case 3: Running a query when the controller repo exists but you do not have write access
+1. Cannot run queries
+
+#### Test case 4: Running a query when the controller repo doesn’t exist
+1. Cannot run queries
+
+#### Test case 5: Running a query when the "config field" for the controller repo is not set
+1. Cannot run queries
 
 ### Query History
-1. Query history is loaded when vscode starts
-- Handles when action workflow was cancelled while vscode was closed
-- Starts monitoring variant analyses
-  - When variant analysis state is "pending"
-  - When variant analysis state is "in_progress"
-  - When variant analysis state is "succeded"
-    - All results are downloaded
-    - Not all results are downloaded
-  - When variant analysis state is "failed"
-    - Stops monitoring
-2. Can open query history item
-- Manually by clicking on them
-- Automatically when vscode starts (if they were open when vscode was last used)
+
+This requires running a MRVA query and viewing the query history.
+
+The first test case specifies actions that you can do when the query is first run and is in "pending" state. We start
+with this since it has quite a limited number of actions you can do.
+
+#### Test case 1: When variant analysis state is "pending"
+1. Starts monitoring variant analysis
+2. Cannot open query history item
 3. Can delete a query history item
-- Item is removed from list in UI
-- Files on dist are deleted (can get to files using "open query directory")
+   1. Item is removed from list in UI
+   2. Files on dist are deleted (can get to files using "open query directory")
 4. Can sort query history items
-- By name
-- By query date
-- By result count
-5. Can open query directory
-6. Can open query that produced these results
-- When the file still exists and has not moved
-- When the file does not exist
-7. Can open variant analysis on github
-- Option is not shown before an actions run has been scheduled
-- Option is shown when an actions run has been scheduled
-8. Can copy repository list
-- Option is not shown before all analyses have finished
-- Option is shown once all analyses are finished
-- Text is copied to clipboard
-- Text is a valid repository list
-9. Can export results
-- Option is not shown before all analyses have finished
-- Option is shown once all analyses are finished
-10. Can select to create gist
-- A gist is created
-- The first thing in the gist is a summary
-- Contains a file for each repository with results
-- A popup links you to the gist
-11. Can select to save as markdown
-- A directory is created on disk
-- Contains a summary file
-- Contains a file for each repository with results
-- A popup allows you to open the directory
-12. Can cancel analysis
-- Option is shown when analysis is in progress
-- Option is not shown once all analyses are finished
-- Option is not shown before action run has been started
-- Causes the actions run to be cancelled
+   1. By name
+   2. By query date
+   3. By result count
+5. Cannot open query directory
+6. Can open query that produced these results 
+   1. When the file still exists and has not moved 
+   2. When the file does not exist
+7. Cannot open variant analysis on github
+8. Cannot copy repository list
+9. Cannot export results
+10. Cannot select to create a gist
+11. Cannot select to save as markdown
+12. Cannot cancel analysis
+
+#### Test case 2: When the variant analysis state is not "pending"
+1. Query history is loaded when VSCode starts
+2. Handles when action workflow was cancelled while VSCode was closed
+3. Can open query history item
+    1. Manually by clicking on them
+    2. Automatically when VSCode starts (if they were open when VSCode was last used)
+4. Can delete a query history item
+    1. Item is removed from list in UI
+    2. Files on dist are deleted (can get to files using "open query directory")
+5. Can sort query history items
+    1. By name
+    2. By query date
+    3. By result count
+6. Can open query directory
+7. Can open query that produced these results
+    1. When the file still exists and has not moved
+    2. When the file does not exist
+8. Can open variant analysis on github
+9. Can copy repository list
+   1. Text is copied to clipboard
+   2. Text is a valid repository list
+10. Can export results
+11. Can select to create gist
+    1. A gist is created
+    2. The first thing in the gist is a summary
+    3. Contains a file for each repository with results
+    4. A popup links you to the gist
+12. Can select to save as markdown
+    1. A directory is created on disk
+    2. Contains a summary file
+    3. Contains a file for each repository with results
+    4. A popup allows you to open the directory
+
+#### Test case 3: When variant analysis state is "in_progress"
+1. Starts monitoring variant analysis
+   1. Ready results are downloaded 
+2. Can cancel analysis 
+   1. Causes the actions run to be cancelled
+
+#### Test case 4: When variant analysis state is in final state ("succeeded"/"failed"/"canceled")
+1. Stops monitoring variant analysis
+   1. All results are downloaded if state is succeeded
+   2. Otherwise, ready results are downloaded, if any are available
+2. Cannot cancel analysis
 
 ### Results view
 1. Can open a results view
@@ -194,7 +223,7 @@ These are mostly aimed at MRVA, but some of them are also applicable to non-MRVA
 - When variant analysis state is "canceled"
 2. Results view opens automatically
 - When starting variant analysis run
-- When vscode opens (if view was open when vscode was closed)
+- When VSCode opens (if view was open when VSCode was closed)
 3. Can copy repository list
 See section from query history.
 4. Can export results
