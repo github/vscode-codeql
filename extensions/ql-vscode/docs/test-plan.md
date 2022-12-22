@@ -81,15 +81,15 @@ choose to go through some of the Optional Test Cases.
 
 ### Test Case 5: MRVA - Cancelling a variant analysis run
 
-When running one of the above queries, try cancelling one from within VS Code:
+Run one of the above MRVAs, but cancel it from within VS Code:
 - Check that the query is cancelled and the query history item is updated.
 - Check that the workflow run is also cancelled. 
 - Check that any available results are visible in VS Code.
 
 ### Test Case 6: MRVA - Change to a different colour theme 
 
-When running one of the above queries, try changing to a different colour theme 
-and check that everything looks sensible. Are there any components that are not showing up?
+Open one of the above MRVAs, try changing to a different colour theme and check that everything looks sensible. 
+Are there any components that are not showing up?
 
 ## Optional Test Cases
 
@@ -120,7 +120,7 @@ and check that everything looks sensible. Are there any components that are not 
   1. The org contains repositories that have CodeQL databases
   2. The org contains repositories of the right language but without CodeQL databases
   3. The org contains repositories not of the right language
-  4. The org contains private repositories	that are inaccessible
+  4. The org contains private repositories that are inaccessible
 2. The org does not exist
 
 ### 2. Using different types of controller repos
