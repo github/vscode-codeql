@@ -235,20 +235,7 @@ See section from query history.
     - Some but not all queries failed
     - The variant analysis was cancelled after some queries completed
 
-### 5. Upgrading from non-live to live results
-
-1. When you have an existing non-live remote query history item
-  - Still opens the the non-live results view
-2. When you have a local query history item
-
-### 6. Downgrading from live to non-live results
-
-1. When you have live results query history items
-  - Can still open existing live results query history items. 
-  This depends on the version you downgrade to, 1.7.6 works, but 1.6.12 doesn’t work because of an unsupported query history format
-2. New queries will be non-live remote queries
-
-### 7. Is all copy / text correct?
+### 5. Is all copy / text correct?
 - In prompts when running a query
 - In query history
 - In results view
