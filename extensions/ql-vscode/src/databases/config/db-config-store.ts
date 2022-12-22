@@ -129,6 +129,28 @@ export class DbConfigStore extends DisposableObject {
     await this.writeConfig(config);
   }
 
+  public async addLocalList(listName: string): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot add local list if config is not loaded");
+    }
+
+    if (listName === "") {
+      throw Error("List name cannot be empty");
+    }
+
+    if (this.doesLocalListExist(listName)) {
+      throw Error(`A local list with the name '${listName}' already exists`);
+    }
+
+    const config: DbConfig = cloneDbConfig(this.config);
+    config.databases.local.lists.push({
+      name: listName,
+      databases: [],
+    });
+
+    await this.writeConfig(config);
+  }
+
   public async addRemoteList(listName: string): Promise<void> {
     if (!this.config) {
       throw Error("Cannot add remote list if config is not loaded");

@@ -475,10 +475,7 @@ describe("db panel", () => {
 
       await dbManager.addNewRemoteRepo("owner2/repo2");
 
-      // Read the workspace databases JSON file directly to check that the new repo has been added.
-      // We can't use the dbConfigStore's `read` function here because it depends on the file watcher
-      // picking up changes, and we don't control the timing of that.
-      const dbConfigFileContents = await readJSON(dbConfigFilePath);
+      const dbConfigFileContents = await readDbConfigDirectly();
       expect(dbConfigFileContents.databases.remote.repositories.length).toBe(2);
       expect(dbConfigFileContents.databases.remote.repositories[1]).toEqual(
         "owner2/repo2",
@@ -569,10 +566,7 @@ describe("db panel", () => {
 
       await dbManager.addNewList(DbListKind.Remote, "my-list-2");
 
-      // Read the workspace databases JSON file directly to check that the new list has been added.
-      // We can't use the dbConfigStore's `read` function here because it depends on the file watcher
-      // picking up changes, and we don't control the timing of that.
-      const dbConfigFileContents = await readJSON(dbConfigFilePath);
+      const dbConfigFileContents = await readDbConfigDirectly();
       expect(dbConfigFileContents.databases.remote.repositoryLists.length).toBe(
         2,
       );
@@ -583,12 +577,42 @@ describe("db panel", () => {
     });
 
     it("should throw error when adding a new list to a local node", async () => {
-      const dbConfig: DbConfig = createDbConfig();
+      const dbConfig: DbConfig = createDbConfig({
+        localLists: [
+          {
+            name: "my-list-1",
+            databases: [],
+          },
+        ],
+      });
       await saveDbConfig(dbConfig);
 
-      await expect(dbManager.addNewList(DbListKind.Local, "")).rejects.toThrow(
-        new Error("Cannot add a local list"),
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+
+      const localRootNode = items[1];
+      const localUserDefinedLists = localRootNode.children.filter(
+        (c) => c.dbItem?.kind === DbItemKind.LocalList,
       );
+      const list1 = localRootNode.children.find(
+        (c) =>
+          c.dbItem?.kind === DbItemKind.LocalList &&
+          c.dbItem?.listName === "my-list-1",
+      );
+
+      expect(localUserDefinedLists.length).toBe(1);
+      expect(localUserDefinedLists[0]).toBe(list1);
+
+      await dbManager.addNewList(DbListKind.Local, "my-list-2");
+
+      const dbConfigFileContents = await readDbConfigDirectly();
+      expect(dbConfigFileContents.databases.local.lists.length).toBe(2);
+      expect(dbConfigFileContents.databases.local.lists[1]).toEqual({
+        name: "my-list-2",
+        databases: [],
+      });
     });
   });
 
@@ -834,5 +858,12 @@ describe("db panel", () => {
       treeViewItem.resourceUri?.query === "selected=true" &&
       treeViewItem.contextValue === undefined
     );
+  }
+
+  async function readDbConfigDirectly(): Promise<DbConfig> {
+    // Read the workspace databases JSON file directly to check that the new list has been added.
+    // We can't use the dbConfigStore's `read` function here because it depends on the file watcher
+    // picking up changes, and we don't control the timing of that.
+    return (await readJSON(dbConfigFilePath)) as DbConfig;
   }
 });

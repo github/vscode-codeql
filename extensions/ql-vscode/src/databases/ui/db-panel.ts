@@ -23,6 +23,10 @@ export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   kind: string;
 }
 
+export interface AddListQuickPickItem extends QuickPickItem {
+  kind: DbListKind;
+}
+
 export class DbPanel extends DisposableObject {
   private readonly dataProvider: DbTreeDataProvider;
   private readonly treeView: TreeView<DbTreeViewItem>;
@@ -179,6 +183,8 @@ export class DbPanel extends DisposableObject {
   }
 
   private async addNewList(): Promise<void> {
+    const listKind = await this.getAddNewListKind();
+
     const listName = await window.showInputBox({
       prompt: "Enter a name for the new list",
       placeHolder: "example-list",
@@ -187,23 +193,53 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    const highlightedItem = await this.getHighlightedDbItem();
-
-    // For now: we only support adding remote lists, so if no item is highlighted,
-    // we default to the "RootRemote" kind.
-    // In future: if the highlighted item is undefined, we'll show a quick pick where
-    // a user can select whether to add a remote or local list.
-    const highlightedItemKind = highlightedItem?.kind || DbItemKind.RootRemote;
-    const listKind = remoteDbKinds.includes(highlightedItemKind)
-      ? DbListKind.Remote
-      : DbListKind.Local;
-
     if (this.dbManager.doesListExist(listKind, listName)) {
       void showAndLogErrorMessage(`The list '${listName}' already exists`);
       return;
     }
 
     await this.dbManager.addNewList(listKind, listName);
+  }
+
+  private async getAddNewListKind(): Promise<DbListKind> {
+    const highlightedItem = await this.getHighlightedDbItem();
+    if (highlightedItem) {
+      return remoteDbKinds.includes(highlightedItem.kind)
+        ? DbListKind.Remote
+        : DbListKind.Local;
+    } else {
+      const quickPickItems = [
+        {
+          label: "$(cloud) Remote",
+          detail: "Add a remote database from GitHub",
+          alwaysShow: true,
+          kind: DbListKind.Remote,
+        },
+        {
+          label: "$(database) Local",
+          detail: "Import a database from the cloud or a local file",
+          alwaysShow: true,
+          kind: DbListKind.Local,
+        },
+      ];
+      const selectedOption = await window.showQuickPick<AddListQuickPickItem>(
+        quickPickItems,
+        {
+          title: "Add a new database",
+          ignoreFocusOut: true,
+        },
+      );
+      if (!selectedOption) {
+        // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
+        // We set 'true' to make this a silent exception.
+        throw new UserCancellationException(
+          "No database list kind selected",
+          true,
+        );
+      }
+
+      return selectedOption.kind;
+    }
   }
 
   private async setSelectedItem(treeViewItem: DbTreeViewItem): Promise<void> {
