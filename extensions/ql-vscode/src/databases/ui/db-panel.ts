@@ -145,7 +145,7 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    if (this.dbManager.doesRemoteRepoExist(nwo)) {
+    if (this.dbManager.doesRemoteRepoExist(nwo, parentList)) {
       void showAndLogErrorMessage(`The repository '${nwo}' already exists`);
       return;
     }
