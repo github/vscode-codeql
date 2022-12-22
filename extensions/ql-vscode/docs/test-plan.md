@@ -35,12 +35,14 @@ choose to go through some of the Optional Test Cases.
 4. Check the query history. It should:
    - Show that an item has been added to the query history
    - The item should be marked as “in progress”.
-5. Once the query completes:
-   - Check that a notification is shown with a link to the results view 
+5. Once the query starts:
    - Check the results view 
    - Check the code paths view, including the code paths drop down menu. 
    - Check that the repository filter box works
-   - Click links to files/locations on GitHub.
+   - Click links to files/locations on GitHub
+   - Check that the query history item is updated to show the number of results
+6. Once the query completes:
+   - Check that the query history item is updated to show the query status as "complete"
 
 ### Test Case 2: MRVA - Running a problem query and viewing results
 
@@ -52,7 +54,7 @@ choose to go through some of the Optional Test Cases.
 4. Check the query history. It should:
    - Show that an item has been added to the query history
    - The item should be marked as “in progress”.
-5. Once the query completes:
+5. Once the query starts:
    - Check that a notification is shown with a link to the results view
    - Check that the results are rendered with an alert message and a highlighted code snippet:
 ![highlighted-code-snippet](images/highlighted-code-snippet.png)
@@ -61,7 +63,7 @@ choose to go through some of the Optional Test Cases.
 
 1. Open the [FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
 2. Run it against a single repository (e.g. `google/brotli`).
-3. Once the query is complete:
+3. Once the query starts:
    - Open the query results
    - Check that the results show up in a table:
 ![results-table](images/results-table.png)
