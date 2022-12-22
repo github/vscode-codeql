@@ -1,7 +1,6 @@
 import { faker } from "@faker-js/faker";
 import {
   DbConfig,
-  ExpandedDbItem,
   LocalDatabase,
   LocalList,
   RemoteRepositoryList,
@@ -15,7 +14,6 @@ export function createDbConfig({
   localLists = [],
   localDbs = [],
   selected = undefined,
-  expanded = [],
 }: {
   remoteLists?: RemoteRepositoryList[];
   remoteOwners?: string[];
@@ -23,7 +21,6 @@ export function createDbConfig({
   localLists?: LocalList[];
   localDbs?: LocalDatabase[];
   selected?: SelectedDbItem;
-  expanded?: ExpandedDbItem[];
 } = {}): DbConfig {
   return {
     databases: {
@@ -37,7 +34,6 @@ export function createDbConfig({
         databases: localDbs,
       },
     },
-    expanded,
     selected,
   };
 }

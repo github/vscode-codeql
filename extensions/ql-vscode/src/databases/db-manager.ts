@@ -1,6 +1,7 @@
 import { App } from "../common/app";
 import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
+import { ExpandedDbItem } from "./config/db-config";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbItem, DbListKind } from "./db-item";
 import { calculateNewExpandedState } from "./db-item-expansion";
@@ -14,8 +15,12 @@ import { DbConfigValidationError } from "./db-validation-errors";
 export class DbManager {
   public readonly onDbItemsChanged: AppEvent<void>;
   private readonly onDbItemsChangesEventEmitter: AppEventEmitter<void>;
+  private static readonly DB_EXPANDED_STATE_KEY = "db_expanded";
 
-  constructor(app: App, private readonly dbConfigStore: DbConfigStore) {
+  constructor(
+    private readonly app: App,
+    private readonly dbConfigStore: DbConfigStore,
+  ) {
     this.onDbItemsChangesEventEmitter = app.createEventEmitter<void>();
     this.onDbItemsChanged = this.onDbItemsChangesEventEmitter.event;
 
@@ -40,9 +45,11 @@ export class DbManager {
       return ValueResult.fail(configResult.errors);
     }
 
+    const expandedItems = this.getCurrentExpandedItems();
+
     return ValueResult.ok([
-      createRemoteTree(configResult.value),
-      createLocalTree(configResult.value),
+      createRemoteTree(configResult.value, expandedItems),
+      createLocalTree(configResult.value, expandedItems),
     ]);
   }
 
@@ -66,13 +73,18 @@ export class DbManager {
       throw Error("Cannot update expanded state if config is not loaded");
     }
 
+    const currentExpandedItems = this.getCurrentExpandedItems();
+
     const newExpandedItems = calculateNewExpandedState(
-      configResult.value.expanded,
+      currentExpandedItems,
       dbItem,
       itemExpanded,
     );
 
-    await this.dbConfigStore.updateExpandedState(newExpandedItems);
+    await this.app.workspaceState.update(
+      DbManager.DB_EXPANDED_STATE_KEY,
+      newExpandedItems,
+    );
   }
 
   public async addNewRemoteRepo(
@@ -119,5 +131,13 @@ export class DbManager {
 
   public doesRemoteRepoExist(nwo: string, listName?: string): boolean {
     return this.dbConfigStore.doesRemoteDbExist(nwo, listName);
+  }
+
+  private getCurrentExpandedItems(): ExpandedDbItem[] {
+    const items = this.app.workspaceState.get<ExpandedDbItem[]>(
+      DbManager.DB_EXPANDED_STATE_KEY,
+    );
+
+    return items || [];
   }
 }

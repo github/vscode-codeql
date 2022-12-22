@@ -2,7 +2,6 @@
 
 export interface DbConfig {
   databases: DbConfigDatabases;
-  expanded: ExpandedDbItem[];
   selected?: SelectedDbItem;
 }
 
@@ -140,7 +139,6 @@ export function cloneDbConfig(config: DbConfig): DbConfig {
         databases: config.databases.local.databases.map((db) => ({ ...db })),
       },
     },
-    expanded: config.expanded.map(cloneDbConfigExpandedItem),
     selected: config.selected
       ? cloneDbConfigSelectedItem(config.selected)
       : undefined,
@@ -180,20 +178,6 @@ function cloneDbConfigSelectedItem(selected: SelectedDbItem): SelectedDbItem {
         kind: SelectedDbItemKind.RemoteRepository,
         repositoryName: selected.repositoryName,
         listName: selected.listName,
-      };
-  }
-}
-
-function cloneDbConfigExpandedItem(item: ExpandedDbItem): ExpandedDbItem {
-  switch (item.kind) {
-    case ExpandedDbItemKind.RootLocal:
-    case ExpandedDbItemKind.RootRemote:
-      return { kind: item.kind };
-    case ExpandedDbItemKind.LocalUserDefinedList:
-    case ExpandedDbItemKind.RemoteUserDefinedList:
-      return {
-        kind: item.kind,
-        listName: item.listName,
       };
   }
 }

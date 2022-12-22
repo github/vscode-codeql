@@ -128,62 +128,6 @@
       "required": ["remote", "local"],
       "additionalProperties": false
     },
-    "expanded": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "oneOf": [
-          {
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": ["rootLocal"]
-              }
-            },
-            "required": ["kind"],
-            "additionalProperties": false
-          },
-          {
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": ["localUserDefinedList"]
-              },
-              "listName": {
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": ["kind", "listName"],
-            "additionalProperties": false
-          },
-          {
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": ["rootRemote"]
-              }
-            },
-            "required": ["kind"],
-            "additionalProperties": false
-          },
-          {
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": ["remoteUserDefinedList"]
-              },
-              "listName": {
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": ["kind", "listName"],
-            "additionalProperties": false
-          }
-        ]
-      }
-    },
     "selected": {
       "type": "object",
       "oneOf": [
@@ -281,6 +225,6 @@
       ]
     }
   },
-  "required": ["databases", "expanded"],
+  "required": ["databases"],
   "additionalProperties": false
 }
