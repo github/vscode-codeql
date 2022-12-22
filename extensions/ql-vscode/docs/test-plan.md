@@ -115,11 +115,11 @@ These are mostly aimed at MRVA, but some of them are also applicable to non-MRVA
 2. The repository list is empty
 
 #### Test case 3: Running a query on all repositories in an organization
-1. The org exists
-  1. The org contains repositories that have CodeQL databases
-  2. The org contains repositories of the right language but without CodeQL databases
-  3. The org contains repositories not of the right language
-  4. The org contains private repositories that are inaccessible
+1. The org exists 
+   1. The org contains repositories that have CodeQL databases
+   2. The org contains repositories of the right language but without CodeQL databases
+   3. The org contains repositories not of the right language
+   4. The org contains private repositories that are inaccessible
 2. The org does not exist
 
 ### Using different types of controller repos
