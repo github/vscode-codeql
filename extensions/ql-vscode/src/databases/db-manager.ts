@@ -75,8 +75,11 @@ export class DbManager {
     await this.dbConfigStore.updateExpandedState(newExpandedItems);
   }
 
-  public async addNewRemoteRepo(nwo: string): Promise<void> {
-    await this.dbConfigStore.addRemoteRepo(nwo);
+  public async addNewRemoteRepo(
+    nwo: string,
+    parentList?: string,
+  ): Promise<void> {
+    await this.dbConfigStore.addRemoteRepo(nwo, parentList);
   }
 
   public async addNewRemoteOwner(owner: string): Promise<void> {

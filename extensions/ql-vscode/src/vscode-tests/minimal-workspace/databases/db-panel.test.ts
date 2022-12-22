@@ -447,6 +447,91 @@ describe("db panel", () => {
     }
   });
 
+  describe("addNewRemoteRepo", () => {
+    it("should add a new remote repo", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteRepos: ["owner1/repo1"],
+      });
+
+      await saveDbConfig(dbConfig);
+
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+
+      const remoteRootNode = items[0];
+      const remoteRepos = remoteRootNode.children.filter(
+        (c) => c.dbItem?.kind === DbItemKind.RemoteRepo,
+      );
+      const repo1 = remoteRootNode.children.find(
+        (c) =>
+          c.dbItem?.kind === DbItemKind.RemoteRepo &&
+          c.dbItem?.repoFullName === "owner1/repo1",
+      );
+
+      expect(remoteRepos.length).toBe(1);
+      expect(remoteRepos[0]).toBe(repo1);
+
+      await dbManager.addNewRemoteRepo("owner2/repo2");
+
+      // Read the workspace databases JSON file directly to check that the new repo has been added.
+      // We can't use the dbConfigStore's `read` function here because it depends on the file watcher
+      // picking up changes, and we don't control the timing of that.
+      const dbConfigFileContents = await readJSON(dbConfigFilePath);
+      expect(dbConfigFileContents.databases.remote.repositories.length).toBe(2);
+      expect(dbConfigFileContents.databases.remote.repositories[1]).toEqual(
+        "owner2/repo2",
+      );
+    });
+
+    it("should add a new remote repo to a user defined list", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1"],
+          },
+        ],
+      });
+
+      await saveDbConfig(dbConfig);
+
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+
+      const remoteRootNode = items[0];
+      const remoteUserDefinedLists = remoteRootNode.children.filter(
+        (c) => c.dbItem?.kind === DbItemKind.RemoteUserDefinedList,
+      );
+      const list1 = remoteRootNode.children.find(
+        (c) =>
+          c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+          c.dbItem?.listName === "my-list-1",
+      );
+
+      expect(remoteUserDefinedLists.length).toBe(1);
+      expect(remoteUserDefinedLists[0]).toBe(list1);
+
+      await dbManager.addNewRemoteRepo("owner2/repo2", "my-list-1");
+
+      // Read the workspace databases JSON file directly to check that the new repo has been added.
+      // We can't use the dbConfigStore's `read` function here because it depends on the file watcher
+      // picking up changes, and we don't control the timing of that.
+      const dbConfigFileContents = await readJSON(dbConfigFilePath);
+      expect(dbConfigFileContents.databases.remote.repositoryLists.length).toBe(
+        1,
+      );
+
+      expect(dbConfigFileContents.databases.remote.repositoryLists[0]).toEqual({
+        name: "my-list-1",
+        repositories: ["owner1/repo1", "owner2/repo2"],
+      });
+    });
+  });
+
   describe("addNewList", () => {
     it("should add a new remote list", async () => {
       const dbConfig: DbConfig = createDbConfig({

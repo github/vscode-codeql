@@ -94,7 +94,10 @@ export class DbConfigStore extends DisposableObject {
     await this.writeConfig(config);
   }
 
-  public async addRemoteRepo(repoNwo: string): Promise<void> {
+  public async addRemoteRepo(
+    repoNwo: string,
+    parentList?: string,
+  ): Promise<void> {
     if (!this.config) {
       throw Error("Cannot add remote repo if config is not loaded");
     }
@@ -110,8 +113,18 @@ export class DbConfigStore extends DisposableObject {
     }
 
     const config: DbConfig = cloneDbConfig(this.config);
-    config.databases.remote.repositories.push(repoNwo);
-
+    if (parentList) {
+      const parent = config.databases.remote.repositoryLists.find(
+        (list) => list.name === parentList,
+      );
+      if (!parent) {
+        throw Error(`Cannot find parent list '${parentList}'`);
+      } else {
+        parent.repositories.push(repoNwo);
+      }
+    } else {
+      config.databases.remote.repositories.push(repoNwo);
+    }
     await this.writeConfig(config);
   }
 
