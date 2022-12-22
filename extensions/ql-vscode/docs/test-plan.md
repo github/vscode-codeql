@@ -79,7 +79,7 @@ choose to go through some of the Optional Test Cases.
 3. Open variant analysis on GitHub
    - Check that the correct workflow is opened
 
-### Test Case 5: MRVA - Cancelling a variant analysis run
+### Test Case 5: MRVA - Canceling a variant analysis run
 
 Run one of the above MRVAs, but cancel it from within VS Code:
 - Check that the query is cancelled and the query history item is updated.
