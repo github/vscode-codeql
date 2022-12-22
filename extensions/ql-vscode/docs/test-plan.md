@@ -8,14 +8,6 @@ effort vs value basis).
 #### What this doesn't cover
 We don't need to test features (and permutations of features) that are covered by automated tests.
 
-#### Areas to consider
-1. Running MRVA and viewing results
-2. Running local queries
-3. Interacting with the query history
-4. Exporting MRVA results
-5. Cancelling a MRVA run
-6. Changing colour theme
-
 ### Before releasing the VS Code extension
 - Check major PRs since the previous release for specific one-off things to test.
 - Run a query using the existing version of the extension (to generate an “old” query history item)
