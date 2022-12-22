@@ -13,7 +13,10 @@ import {
   DbListKind,
   LocalDatabaseDbItem,
 } from "../../../databases/db-item";
-import { DbTreeViewItem } from "../../../databases/ui/db-tree-view-item";
+import {
+  DbTreeViewItem,
+  SELECTED_DB_ITEM_RESOURCE_URI,
+} from "../../../databases/ui/db-tree-view-item";
 import { ExtensionApp } from "../../../common/vscode/vscode-app";
 import { createMockExtensionContext } from "../../factories/extension-context";
 import { createDbConfig } from "../../factories/db-config-factories";
@@ -831,8 +834,8 @@ describe("db panel", () => {
 
   function isTreeViewItemSelected(treeViewItem: DbTreeViewItem) {
     return (
-      treeViewItem.resourceUri?.query === "selected=true" &&
-      treeViewItem.contextValue === undefined
+      treeViewItem.resourceUri?.toString(true) ===
+        SELECTED_DB_ITEM_RESOURCE_URI && treeViewItem.contextValue === undefined
     );
   }
 });
