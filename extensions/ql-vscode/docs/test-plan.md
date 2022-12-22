@@ -214,7 +214,7 @@ with this since it has quite a limited number of actions you can do.
    2. Otherwise, ready results are downloaded, if any are available
 2. Cannot cancel analysis
 
-### Results view
+### MRVA results view
 
 This requires running a MRVA query and seeing the results view.
 
