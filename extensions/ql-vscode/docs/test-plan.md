@@ -12,7 +12,7 @@ We don't need to test features (and permutations of features) that are covered b
 - Go through the required test cases listed below
 - Check major PRs since the previous release for specific one-off things to test. Based on that, you might want to 
 choose to go through some of the Optional Test Cases.
-- Run a query using the existing version of the extension (to generate an “old” query history item)
+- Run a query using the existing version of the extension (to generate an "old" query history item)
 
 ## Required Test Cases
 
@@ -34,7 +34,7 @@ choose to go through some of the Optional Test Cases.
 3. Check that a notification message pops up and the results view is opened.
 4. Check the query history. It should:
    - Show that an item has been added to the query history
-   - The item should be marked as “in progress”.
+   - The item should be marked as "in progress".
 5. Once the query starts:
    - Check the results view 
    - Check the code paths view, including the code paths drop down menu. 
@@ -53,7 +53,7 @@ choose to go through some of the Optional Test Cases.
    - Provide a link to the actions workflow
 4. Check the query history. It should:
    - Show that an item has been added to the query history
-   - The item should be marked as “in progress”.
+   - The item should be marked as "in progress".
 5. Once the query starts:
    - Check that a notification is shown with a link to the results view
    - Check that the results are rendered with an alert message and a highlighted code snippet:
@@ -131,25 +131,25 @@ These are mostly aimed at MRVA, but some of them are also applicable to non-MRVA
   2. Can run queries on private repositories
 3. The controller repo exists but you do not have write access
 4. The controller repo doesn’t exist
-5. The “config field” for the controller repo is not set
+5. The "config field" for the controller repo is not set
 
 ### Query History
 1. Query history is loaded when vscode starts
 - Handles when action workflow was cancelled while vscode was closed
 - Starts monitoring variant analyses
-  - When variant analysis state is “pending”
-  - When variant analysis state is “in_progress”
-  - When variant analysis state is “succeded”
+  - When variant analysis state is "pending"
+  - When variant analysis state is "in_progress"
+  - When variant analysis state is "succeded"
     - All results are downloaded
     - Not all results are downloaded
-  - When variant analysis state is “failed”
+  - When variant analysis state is "failed"
     - Stops monitoring
 2. Can open query history item
 - Manually by clicking on them
 - Automatically when vscode starts (if they were open when vscode was last used)
 3. Can delete a query history item
 - Item is removed from list in UI
-- Files on dist are deleted (can get to files using “open query directory”)
+- Files on dist are deleted (can get to files using "open query directory")
 4. Can sort query history items
 - By name
 - By query date
@@ -187,11 +187,11 @@ These are mostly aimed at MRVA, but some of them are also applicable to non-MRVA
 
 ### Results view
 1. Can open a results view
-- When variant analysis state is “pending”
-- When variant analysis state is “in_progress”
-- When variant analysis state is “succeeded”
-- When variant analysis state is “failed”
-- When variant analysis state is “canceled”
+- When variant analysis state is "pending"
+- When variant analysis state is "in_progress"
+- When variant analysis state is "succeeded"
+- When variant analysis state is "failed"
+- When variant analysis state is "canceled"
 2. Results view opens automatically
 - When starting variant analysis run
 - When vscode opens (if view was open when vscode was closed)
@@ -215,10 +215,10 @@ See section from query history.
   - Duration
 13. Can see live results
   - Results appear in extension as soon as each query is completed
-14. Can view interpreted results (i.e. for a “problem” query)
+14. Can view interpreted results (i.e. for a "problem" query)
   - Can view non-path results
-  - Can view code paths for “path-problem” queries
-15. Can view raw results (i.e. for a non “problem” query)
+  - Can view code paths for "path-problem" queries
+15. Can view raw results (i.e. for a non "problem" query)
   - Renders a table
 16. Can see skipped repositories 
   - Can see repos with no db in a tab
@@ -228,7 +228,7 @@ See section from query history.
   - Only shows tab when there are skipped repos
 17. Result downloads
   - All results are downloaded automatically
-  - Download status is indicated by a spinner (Not currently any indication of progress beyond “downloading” and “not downloading”)
+  - Download status is indicated by a spinner (Not currently any indication of progress beyond "downloading" and "not downloading")
   - Only 3 items are downloaded at a time
   - Results for completed queries are still downloaded when
     - Some but not all queries failed
