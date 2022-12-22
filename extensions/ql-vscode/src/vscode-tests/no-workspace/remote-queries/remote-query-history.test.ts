@@ -31,7 +31,7 @@ import { ResultsView } from "../../../interface";
 import { EvalLogViewer } from "../../../eval-log-viewer";
 import { QueryRunner } from "../../../queryRunner";
 import { VariantAnalysisManager } from "../../../remote-queries/variant-analysis-manager";
-import { registerCredentials } from "../../../pure/authentication";
+import { registerCredentials } from "../../../common/authentication";
 import { TestCredentials } from "../../factories/authentication";
 import { Disposable } from "../../../pure/disposable-object";
 

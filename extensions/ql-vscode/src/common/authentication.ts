@@ -1,5 +1,5 @@
 import * as Octokit from "@octokit/rest";
-import { Disposable } from "./disposable-object";
+import { Disposable } from "../pure/disposable-object";
 
 let registeredCredentials: Credentials | undefined = undefined;
 

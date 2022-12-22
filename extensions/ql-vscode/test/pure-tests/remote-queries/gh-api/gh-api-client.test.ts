@@ -13,7 +13,7 @@ import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 import { response } from "../../../../src/mocks/scenarios/problem-query-success/0-getRepo.json";
 import { response as variantAnalysisJson_response } from "../../../../src/mocks/scenarios/problem-query-success/1-submitVariantAnalysis.json";
 import { response as variantAnalysisRepoJson_response } from "../../../../src/mocks/scenarios/problem-query-success/9-getVariantAnalysisRepo.json";
-import { registerCredentials } from "../../../../src/pure/authentication";
+import { registerCredentials } from "../../../../src/common/authentication";
 import { TestCredentials } from "../../../../src/vscode-tests/factories/authentication";
 import { Disposable } from "../../../../src/pure/disposable-object";
 

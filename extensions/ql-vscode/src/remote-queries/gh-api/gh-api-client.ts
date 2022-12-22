@@ -1,4 +1,4 @@
-import { getOctokit } from "../../pure/authentication";
+import { getOctokit } from "../../common/authentication";
 import { OctokitResponse } from "@octokit/types/dist-types";
 import { RemoteQueriesSubmission } from "../shared/remote-queries";
 import { VariantAnalysisSubmission } from "../shared/variant-analysis";

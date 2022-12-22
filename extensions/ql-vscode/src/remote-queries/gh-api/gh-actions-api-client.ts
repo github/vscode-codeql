@@ -5,7 +5,7 @@ import {
   showAndLogWarningMessage,
   tmpDir,
 } from "../../helpers";
-import { getOctokit } from "../../pure/authentication";
+import { getOctokit } from "../../common/authentication";
 import { extLogger } from "../../common";
 import { RemoteQueryWorkflowResult } from "../remote-query-workflow-result";
 import { DownloadLink, createDownloadPath } from "../download-link";

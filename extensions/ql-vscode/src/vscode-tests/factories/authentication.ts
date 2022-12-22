@@ -2,7 +2,7 @@ import { retry } from "@octokit/plugin-retry";
 import * as Octokit from "@octokit/rest";
 import { RequestInterface } from "@octokit/types/dist-types/RequestInterface";
 
-import { Credentials } from "../../pure/authentication";
+import { Credentials } from "../../common/authentication";
 
 export class TestCredentials extends Credentials {
   private octokit: Octokit.Octokit;

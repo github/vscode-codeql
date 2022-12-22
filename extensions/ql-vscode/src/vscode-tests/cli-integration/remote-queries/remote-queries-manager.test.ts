@@ -30,7 +30,7 @@ import {
   restoreWorkspaceReferences,
 } from "../global.helper";
 import { TestCredentials } from "../../factories/authentication";
-import { registerCredentials } from "../../../pure/authentication";
+import { registerCredentials } from "../../../common/authentication";
 import { Disposable } from "../../../pure/disposable-object";
 
 // up to 3 minutes per test

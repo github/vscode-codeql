@@ -39,7 +39,7 @@ import { VariantAnalysisHistoryItem } from "../../remote-queries/variant-analysi
 import { QueryStatus } from "../../query-status";
 import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
 import * as ghActionsApiClient from "../../remote-queries/gh-api/gh-actions-api-client";
-import { registerCredentials } from "../../pure/authentication";
+import { registerCredentials } from "../../common/authentication";
 import { QuickPickItem, TextEditor } from "vscode";
 import { WebviewReveal } from "../../interface-utils";
 import { TestCredentials } from "../factories/authentication";

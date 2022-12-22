@@ -23,7 +23,7 @@ import {
   processScannedRepository,
   processUpdatedVariantAnalysis,
 } from "../../../remote-queries/variant-analysis-processor";
-import { registerCredentials } from "../../../pure/authentication";
+import { registerCredentials } from "../../../common/authentication";
 import { createMockVariantAnalysis } from "../../factories/remote-queries/shared/variant-analysis";
 import { VariantAnalysisManager } from "../../../remote-queries/variant-analysis-manager";
 import { TestCredentials } from "../../factories/authentication";

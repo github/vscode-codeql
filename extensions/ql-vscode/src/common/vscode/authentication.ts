@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as Octokit from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
-import { Credentials } from "./pure/authentication";
+import { Credentials } from "../authentication";
 
 const GITHUB_AUTH_PROVIDER_ID = "github";
 

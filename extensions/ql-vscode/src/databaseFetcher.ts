@@ -20,7 +20,7 @@ import { DatabaseManager, DatabaseItem } from "./databases";
 import { showAndLogInformationMessage, tmpDir } from "./helpers";
 import { reportStreamProgress, ProgressCallback } from "./commandRunner";
 import { extLogger } from "./common";
-import { getOctokit } from "./pure/authentication";
+import { getOctokit } from "./common/authentication";
 import { getErrorMessage } from "./pure/helpers-pure";
 import {
   getNwoFromGitHubUrl,

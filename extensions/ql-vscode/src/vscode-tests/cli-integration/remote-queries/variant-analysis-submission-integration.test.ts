@@ -12,7 +12,7 @@ import {
 
 import { CodeQLExtensionInterface } from "../../../extension";
 import { MockGitHubApiServer } from "../../../mocks/mock-gh-api-server";
-import { registerCredentials } from "../../../pure/authentication";
+import { registerCredentials } from "../../../common/authentication";
 import { Disposable } from "../../../pure/disposable-object";
 import { TestCredentials } from "../../factories/authentication";
 

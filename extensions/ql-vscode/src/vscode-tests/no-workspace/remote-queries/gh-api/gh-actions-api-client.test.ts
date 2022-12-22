@@ -1,4 +1,4 @@
-import { registerCredentials } from "../../../../pure/authentication";
+import { registerCredentials } from "../../../../common/authentication";
 import {
   cancelRemoteQuery,
   cancelVariantAnalysis,

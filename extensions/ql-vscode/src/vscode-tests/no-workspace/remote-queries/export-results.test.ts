@@ -1,6 +1,6 @@
 import { join } from "path";
 import { readFile } from "fs-extra";
-import { registerCredentials } from "../../../pure/authentication";
+import { registerCredentials } from "../../../common/authentication";
 import * as markdownGenerator from "../../../remote-queries/remote-queries-markdown-generation";
 import * as ghApiClient from "../../../remote-queries/gh-api/gh-api-client";
 import { exportRemoteQueryAnalysisResults } from "../../../remote-queries/export-results";

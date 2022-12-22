@@ -19,7 +19,7 @@ import {
 } from "../../../config";
 import * as ghApiClient from "../../../remote-queries/gh-api/gh-api-client";
 import * as ghActionsApiClient from "../../../remote-queries/gh-api/gh-actions-api-client";
-import { registerCredentials } from "../../../pure/authentication";
+import { registerCredentials } from "../../../common/authentication";
 import * as fs from "fs-extra";
 import { join } from "path";
 

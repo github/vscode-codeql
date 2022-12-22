@@ -102,7 +102,7 @@ import {
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
 
-import { getOctokit, registerCredentials } from "./pure/authentication";
+import { getOctokit, registerCredentials } from "./common/authentication";
 import { RemoteQueriesManager } from "./remote-queries/remote-queries-manager";
 import { RemoteQueryResult } from "./remote-queries/remote-query-result";
 import { URLSearchParams } from "url";
@@ -138,7 +138,7 @@ import { VariantAnalysisResultsManager } from "./remote-queries/variant-analysis
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
-import { VSCodeCredentials } from "./authentication";
+import { VSCodeCredentials } from "./common/vscode/authentication";
 
 /**
  * extension.ts
