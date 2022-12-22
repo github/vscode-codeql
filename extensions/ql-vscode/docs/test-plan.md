@@ -23,7 +23,7 @@ choose to go through some of the Optional Test Cases.
 ### Test Case 1: MRVA - Running a problem path query and viewing results
 
 1. Open the [UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
-2. Run it against the following repo list:
+2. Run a MRVA against the following repo list:
 ```
 "test-repo-list": [
     "angular-cn/ng-nice",
@@ -47,7 +47,7 @@ choose to go through some of the Optional Test Cases.
 ### Test Case 2: MRVA - Running a problem query and viewing results
 
 1. Open the [ReDoS query](https://github.com/github/codeql/blob/main/javascript/ql/src/Performance/ReDoS.ql).
-2. Run it against the "Top 10" repositories.
+2. Run a MRVA against the "Top 10" repositories.
 3. Check the notification message. It should:
    - Show the number of repos that are going to be queried
    - Provide a link to the actions workflow
@@ -62,7 +62,7 @@ choose to go through some of the Optional Test Cases.
 ### Test Case 3: MRVA - Running a non-problem query and viewing results
 
 1. Open the [FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
-2. Run it against a single repository (e.g. `google/brotli`).
+2. Run a MRVA against a single repository (e.g. `google/brotli`).
 3. Once the query starts:
    - Open the query results
    - Check that the results show up in a table:
