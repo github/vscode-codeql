@@ -82,8 +82,8 @@ choose to go through some of the Optional Test Cases.
 ### Test Case 5: MRVA - Canceling a variant analysis run
 
 Run one of the above MRVAs, but cancel it from within VS Code:
-- Check that the query is cancelled and the query history item is updated.
-- Check that the workflow run is also cancelled. 
+- Check that the query is canceled and the query history item is updated.
+- Check that the workflow run is also canceled. 
 - Check that any available results are visible in VS Code.
 
 ### Test Case 6: MRVA - Change to a different colour theme 
@@ -171,7 +171,7 @@ with this since it has quite a limited number of actions you can do.
 
 #### Test case 2: When the variant analysis state is not "pending"
 1. Query history is loaded when VSCode starts
-2. Handles when action workflow was cancelled while VSCode was closed
+2. Handles when action workflow was canceled while VSCode was closed
 3. Can open query history item
     1. Manually by clicking on them
     2. Automatically when VSCode starts (if they were open when VSCode was last used)
@@ -206,7 +206,7 @@ with this since it has quite a limited number of actions you can do.
 1. Starts monitoring variant analysis
    1. Ready results are downloaded 
 2. Can cancel analysis 
-   1. Causes the actions run to be cancelled
+   1. Causes the actions run to be canceled
 
 #### Test case 4: When variant analysis state is in final state ("succeeded"/"failed"/"canceled")
 1. Stops monitoring variant analysis
@@ -269,12 +269,12 @@ This requires running a MRVA query and seeing the results view.
     3. Only 3 items are downloaded at a time 
     4. Results for completed queries are still downloaded when 
        1. Some but not all queries failed 
-       2. The variant analysis was cancelled after some queries completed
+       2. The variant analysis was canceled after some queries completed
 
 #### Test case 3: When variant analysis state is in "succeeded" state
 1. Can view logs
 2. All results are downloaded 
 
-#### Test case 4: When variant analysis is in "failed" or "cancelled" state
+#### Test case 4: When variant analysis is in "failed" or "canceled" state
 1. Can view logs
 1. Results for finished queries are still downloaded.
