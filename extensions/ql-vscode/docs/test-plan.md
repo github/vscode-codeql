@@ -215,55 +215,71 @@ with this since it has quite a limited number of actions you can do.
 2. Cannot cancel analysis
 
 ### Results view
+
+This requires running a MRVA query and seeing the results view.
+
+#### Test case 1: When variant analysis state is "pending"
 1. Can open a results view
-- When variant analysis state is "pending"
-- When variant analysis state is "in_progress"
-- When variant analysis state is "succeeded"
-- When variant analysis state is "failed"
-- When variant analysis state is "canceled"
 2. Results view opens automatically
-- When starting variant analysis run
-- When VSCode opens (if view was open when VSCode was closed)
+   - When starting variant analysis run
+   - When VSCode opens (if view was open when VSCode was closed)
+3. Results view is empty
+
+#### Test case 2: When variant analysis state is not "pending"
+1. Can open a results view
+2. Results view opens automatically
+   1. When starting variant analysis run 
+   2. When VSCode opens (if view was open when VSCode was closed)
 3. Can copy repository list
-See section from query history.
+   1. Text is copied to clipboard
+   2. Text is a valid repository list
 4. Can export results
-- Only includes repos that you have selected (also see section from query history)
-5. Can cancel analysis (see section from query history)
-6. Can open query file (see section from query history)
-7. Can open query text
-8. Can view logs when variant analysis in final state (succeeded/failed/cancelled)
-9. Can sort repos
-  - By name
-  - By results
-  - By stars
-  - By last commit
-10. Can filter repos
-11. Shows correct statistics
-  - Total number of results
-  - Total number of repositories
-  - Duration
-13. Can see live results
-  - Results appear in extension as soon as each query is completed
-14. Can view interpreted results (i.e. for a "problem" query)
-  - Can view non-path results
-  - Can view code paths for "path-problem" queries
-15. Can view raw results (i.e. for a non "problem" query)
-  - Renders a table
-16. Can see skipped repositories 
-  - Can see repos with no db in a tab
-    - Shown warning that explains the tab
-  - Can see repos with no access in a tab
-    - Shown warning that explains the tab
-  - Only shows tab when there are skipped repos
-17. Result downloads
-  - All results are downloaded automatically
-  - Download status is indicated by a spinner (Not currently any indication of progress beyond "downloading" and "not downloading")
-  - Only 3 items are downloaded at a time
-  - Results for completed queries are still downloaded when
-    - Some but not all queries failed
-    - The variant analysis was cancelled after some queries completed
+   1. Only includes repos that you have selected (also see section from query history)
+5. Can cancel analysis
+6. Can open query file
+   1. When the file still exists and has not moved
+   2. When the file does not exist
+7. Can open query text 
+8. Can sort repos 
+   1. By name 
+   2. By results 
+   3. By stars 
+   4. By last commit
+9. Can filter repos
+10. Shows correct statistics 
+    1. Total number of results 
+    2. Total number of repositories 
+    3. Duration
+11. Can see live results 
+    1. Results appear in extension as soon as each query is completed
+12. Can view interpreted results (i.e. for a "problem" query)
+    1. Can view non-path results 
+    2. Can view code paths for "path-problem" queries
+13. Can view raw results (i.e. for a non "problem" query)
+    1. Renders a table
+14. Can see skipped repositories 
+    1. Can see repos with no db in a tab 
+       1. Shown warning that explains the tab 
+    2. Can see repos with no access in a tab
+       1. Shown warning that explains the tab 
+    3. Only shows tab when there are skipped repos
+15. Result downloads 
+    1. All results are downloaded automatically 
+    2. Download status is indicated by a spinner (Not currently any indication of progress beyond "downloading" and "not downloading")
+    3. Only 3 items are downloaded at a time 
+    4. Results for completed queries are still downloaded when 
+       1. Some but not all queries failed 
+       2. The variant analysis was cancelled after some queries completed
+
+#### Test case 3: When variant analysis state is in "succeeded" state
+1. Can view logs
+2. All results are downloaded 
+
+#### Test case 4: When variant analysis is in "failed" or "cancelled" state
+1. Can view logs
+1. Results for finished queries are still downloaded.
 
 ### Is all copy / text correct?
-- In prompts when running a query
-- In query history
-- In results view
+1. In prompts when running a query
+2. In query history
+3. In results view
