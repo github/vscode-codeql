@@ -27,7 +27,7 @@ export class Credentials {
   /**
    * Initializes a Credentials instance. This will generate octokit instances
    * authenticated as the user. If there is not already an authenticated GitHub
-   * session availabeT then the user will be prompted to log in.
+   * session available then the user will be prompted to log in.
    *
    * @returns An instance of credentials.
    */
@@ -37,8 +37,8 @@ export class Credentials {
 
   /**
    * Initializes an instance of credentials with an octokit instance using
-   * a specific known token. This method is meant to be used non-interactive
-   * environments such as tests.
+   * a specific known token. This method is meant to be used in
+   * non-interactive environments such as tests.
    *
    * @param overrideToken The GitHub token to use for authentication.
    * @returns An instance of credentials.
