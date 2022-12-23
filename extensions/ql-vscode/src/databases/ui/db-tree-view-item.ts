@@ -12,6 +12,8 @@ import {
   RootRemoteDbItem,
 } from "../db-item";
 
+export const SELECTED_DB_ITEM_RESOURCE_URI = "codeql://databases?selected=true";
+
 /**
  * Represents an item in the database tree view. This item could be
  * representing an actual database item or a warning.
@@ -33,7 +35,7 @@ export class DbTreeViewItem extends vscode.TreeItem {
     if (dbItem && isSelectableDbItem(dbItem)) {
       if (dbItem.selected) {
         // Define the resource id to drive the UI to render this item as selected.
-        this.resourceUri = vscode.Uri.parse("codeql://databases?selected=true");
+        this.resourceUri = vscode.Uri.parse(SELECTED_DB_ITEM_RESOURCE_URI);
       } else {
         // Define a context value to drive the UI to show an action to select the item.
         this.contextValue = "selectableDbItem";
