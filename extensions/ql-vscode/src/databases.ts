@@ -21,6 +21,7 @@ import { DisposableObject } from "./pure/disposable-object";
 import { Logger, extLogger } from "./common";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./queryRunner";
+import { pathsEqual } from "./pure/files";
 
 /**
  * databases.ts
@@ -523,7 +524,11 @@ export class DatabaseItemImpl implements DatabaseItem {
         // database for /one/two/three/test.ql is at /one/two/three/three.testproj
         const testdir = dirname(testPath);
         const testdirbase = basename(testdir);
-        return databasePath == join(testdir, `${testdirbase}.testproj`);
+        return pathsEqual(
+          databasePath,
+          join(testdir, `${testdirbase}.testproj`),
+          process.platform,
+        );
       }
     } catch {
       // No information available for test path - assume database is unaffected.
