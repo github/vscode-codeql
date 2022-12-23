@@ -1,13 +1,13 @@
-import { join, dirname } from "path";
+import { join } from "path";
 
 import {
   gatherQlFiles,
   getDirectoryNamesInsidePath,
-} from "../../src/pure/files";
+} from "../../../src/pure/files";
 
 describe("files", () => {
-  const dataDir = join(dirname(__dirname), "data");
-  const data2Dir = join(dirname(__dirname), "data2");
+  const dataDir = join(__dirname, "data");
+  const data2Dir = join(__dirname, "data2");
 
   describe("gatherQlFiles", () => {
     it("should find one file", async () => {
