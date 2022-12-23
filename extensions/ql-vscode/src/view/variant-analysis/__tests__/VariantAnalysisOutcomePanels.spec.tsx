@@ -10,12 +10,12 @@ import {
   VariantAnalysisOutcomePanelProps,
   VariantAnalysisOutcomePanels,
 } from "../VariantAnalysisOutcomePanels";
-import { createMockVariantAnalysis } from "../../../vscode-tests/factories/remote-queries/shared/variant-analysis";
-import { createMockRepositoryWithMetadata } from "../../../vscode-tests/factories/remote-queries/shared/repository";
+import { createMockVariantAnalysis } from "../../../../test/factories/remote-queries/shared/variant-analysis";
+import { createMockRepositoryWithMetadata } from "../../../../test/factories/remote-queries/shared/repository";
 import {
   createMockScannedRepo,
   createMockScannedRepos,
-} from "../../../vscode-tests/factories/remote-queries/shared/scanned-repositories";
+} from "../../../../test/factories/remote-queries/shared/scanned-repositories";
 import { defaultFilterSortState } from "../../../pure/variant-analysis-filter-sort";
 
 describe(VariantAnalysisOutcomePanels.name, () => {

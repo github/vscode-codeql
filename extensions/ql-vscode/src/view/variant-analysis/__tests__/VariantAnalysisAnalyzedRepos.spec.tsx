@@ -10,9 +10,9 @@ import {
   VariantAnalysisAnalyzedRepos,
   VariantAnalysisAnalyzedReposProps,
 } from "../VariantAnalysisAnalyzedRepos";
-import { createMockVariantAnalysis } from "../../../vscode-tests/factories/remote-queries/shared/variant-analysis";
-import { createMockRepositoryWithMetadata } from "../../../vscode-tests/factories/remote-queries/shared/repository";
-import { createMockScannedRepo } from "../../../vscode-tests/factories/remote-queries/shared/scanned-repositories";
+import { createMockVariantAnalysis } from "../../../../test/factories/remote-queries/shared/variant-analysis";
+import { createMockRepositoryWithMetadata } from "../../../../test/factories/remote-queries/shared/repository";
+import { createMockScannedRepo } from "../../../../test/factories/remote-queries/shared/scanned-repositories";
 import {
   defaultFilterSortState,
   SortKey,

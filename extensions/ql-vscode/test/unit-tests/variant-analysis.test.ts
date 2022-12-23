@@ -7,8 +7,8 @@ import {
   VariantAnalysisRepoStatus,
   getActionsWorkflowRunUrl,
 } from "../../src/remote-queries/shared/variant-analysis";
-import { createMockScannedRepo } from "../../src/vscode-tests/factories/remote-queries/shared/scanned-repositories";
-import { createMockVariantAnalysis } from "../../src/vscode-tests/factories/remote-queries/shared/variant-analysis";
+import { createMockScannedRepo } from "../factories/remote-queries/shared/scanned-repositories";
+import { createMockVariantAnalysis } from "../factories/remote-queries/shared/variant-analysis";
 
 describe("parseVariantAnalysisQueryLanguage", () => {
   it("parses a valid language", () => {
