@@ -7,7 +7,7 @@
 module.exports = {
   projects: [
     "<rootDir>/src/view",
-    "<rootDir>/test",
+    "<rootDir>/test/unit-tests",
     "<rootDir>/src/vscode-tests/cli-integration",
     "<rootDir>/src/vscode-tests/no-workspace",
     "<rootDir>/src/vscode-tests/minimal-workspace",

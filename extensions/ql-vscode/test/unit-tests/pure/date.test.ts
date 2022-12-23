@@ -1,4 +1,4 @@
-import { formatDate } from "../../src/pure/date";
+import { formatDate } from "../../../src/pure/date";
 
 describe("Date", () => {
   it("should return a formatted date", () => {

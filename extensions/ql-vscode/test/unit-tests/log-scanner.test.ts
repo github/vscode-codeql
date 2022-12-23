@@ -40,7 +40,7 @@ describe("log scanners", () => {
     scanners.registerLogScannerProvider(new JoinOrderScannerProvider(() => 50));
     const summaryPath = join(
       __dirname,
-      "evaluator-log-summaries/bad-join-order.jsonl",
+      "data/evaluator-log-summaries/bad-join-order.jsonl",
     );
     const problemReporter = new TestProblemReporter();
     await scanners.scanLog(summaryPath, problemReporter);

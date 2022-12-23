@@ -167,7 +167,7 @@ const config: Config = {
     "^.+\\.tsx?$": [
       "ts-jest",
       {
-        tsconfig: "<rootDir>/tsconfig.json",
+        tsconfig: "<rootDir>/../tsconfig.json",
       },
     ],
     node_modules: [

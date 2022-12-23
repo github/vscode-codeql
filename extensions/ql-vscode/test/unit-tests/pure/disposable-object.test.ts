@@ -1,4 +1,4 @@
-import { DisposableObject } from "../../src/pure/disposable-object";
+import { DisposableObject } from "../../../src/pure/disposable-object";
 
 describe("DisposableObject and DisposeHandler", () => {
   const disposable1 = {

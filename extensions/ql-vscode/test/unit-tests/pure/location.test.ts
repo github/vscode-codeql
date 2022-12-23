@@ -1,7 +1,7 @@
 import {
   tryGetRemoteLocation,
   tryGetResolvableLocation,
-} from "../../src/pure/bqrs-utils";
+} from "../../../src/pure/bqrs-utils";
 
 describe("processing string locations", () => {
   it("should detect Windows whole-file locations", () => {
