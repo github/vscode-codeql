@@ -5,6 +5,7 @@ import {
   checkTypeScript,
   watchCheckTypeScript,
   cleanOutput,
+  copyWasmFiles,
 } from "./typescript";
 import { compileTextMateGrammar } from "./textmate";
 import { compileView, watchView } from "./webpack";
@@ -15,6 +16,7 @@ export const buildWithoutPackage = series(
   cleanOutput,
   parallel(
     compileEsbuild,
+    copyWasmFiles,
     checkTypeScript,
     compileTextMateGrammar,
     compileView,
@@ -30,6 +32,7 @@ export {
   watchCheckTypeScript,
   watchView,
   compileEsbuild,
+  copyWasmFiles,
   checkTypeScript,
   injectAppInsightsKey,
   compileView,
