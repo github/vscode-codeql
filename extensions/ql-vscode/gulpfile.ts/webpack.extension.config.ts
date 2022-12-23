@@ -2,10 +2,11 @@ import { resolve } from "path";
 import * as webpack from "webpack";
 // eslint-disable-next-line import/default -- Not correctly recognized by eslint
 import CopyPlugin from "copy-webpack-plugin";
+import { isDevBuild } from "./dev";
 
 // Based on https://github.com/microsoft/vscode-extension-samples/blob/61d94d731c5351531a7d82f92f775f749203e3b5/webpack-sample/webpack.config.js
 export const config: webpack.Configuration = {
-  mode: "development",
+  mode: isDevBuild ? "development" : "production",
   target: "node16.14", // VSCode's Node version
   entry: {
     extension: "./src/extension.ts",
@@ -18,6 +19,7 @@ export const config: webpack.Configuration = {
   },
   externals: {
     vscode: "commonjs vscode", // the vscode-module is created on-the-fly and must be excluded
+    fsevents: "commonjs fsevents", // fsevents is only available on macOS
     "spawn-sync": "commonjs spawn-sync", // https://github.com/moxystudio/node-cross-spawn/blob/5.1.0/index.js#L32
     "applicationinsights-native-metrics":
       "commonjs applicationinsights-native-metrics", // not used in the extension
@@ -26,7 +28,7 @@ export const config: webpack.Configuration = {
   externalsPresets: {
     node: true,
   },
-  devtool: "inline-source-map",
+  devtool: isDevBuild ? "inline-source-map" : "source-map",
   resolve: {
     extensions: [".js", ".ts", ".tsx", ".json"],
   },
