@@ -104,8 +104,8 @@ export class DbManager {
   ): Promise<void> {
     switch (listKind) {
       case DbListKind.Local:
-        // Adding a local list is not supported yet.
-        throw Error("Cannot add a local list");
+        await this.dbConfigStore.addLocalList(listName);
+        break;
       case DbListKind.Remote:
         await this.dbConfigStore.addRemoteList(listName);
         break;

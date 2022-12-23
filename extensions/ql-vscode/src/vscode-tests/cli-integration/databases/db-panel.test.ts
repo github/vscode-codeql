@@ -4,7 +4,11 @@ import { CodeQLExtensionInterface } from "../../../extension";
 import { readJson } from "fs-extra";
 import * as path from "path";
 import { DbConfig } from "../../../databases/config/db-config";
-import { RemoteDatabaseQuickPickItem } from "../../../databases/ui/db-panel";
+import {
+  AddListQuickPickItem,
+  RemoteDatabaseQuickPickItem,
+} from "../../../databases/ui/db-panel";
+import { DbListKind } from "../../../databases/db-item";
 
 jest.setTimeout(60_000);
 
@@ -25,6 +29,9 @@ describe("Db panel UI commands", () => {
 
   it("should add new remote db list", async () => {
     // Add db list
+    jest.spyOn(window, "showQuickPick").mockResolvedValue({
+      kind: DbListKind.Remote,
+    } as AddListQuickPickItem);
     jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
     await commands.executeCommand("codeQLDatabasesExperimental.addNewList");
 
@@ -33,6 +40,21 @@ describe("Db panel UI commands", () => {
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.remote.repositoryLists).toHaveLength(1);
     expect(dbConfig.databases.remote.repositoryLists[0].name).toBe("my-list-1");
+  });
+
+  it("should add new local db list", async () => {
+    // Add db list
+    jest.spyOn(window, "showQuickPick").mockResolvedValue({
+      kind: DbListKind.Local,
+    } as AddListQuickPickItem);
+    jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
+    await commands.executeCommand("codeQLDatabasesExperimental.addNewList");
+
+    // Check db config
+    const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
+    const dbConfig: DbConfig = await readJson(dbConfigFilePath);
+    expect(dbConfig.databases.local.lists).toHaveLength(1);
+    expect(dbConfig.databases.local.lists[0].name).toBe("my-list-1");
   });
 
   it("should add new remote repository", async () => {
