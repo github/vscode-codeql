@@ -23,8 +23,9 @@ export const config: webpack.Configuration = {
       {
         test: /\.(ts|tsx)$/,
         loader: "ts-loader",
+        exclude: /node_modules/,
         options: {
-          configFile: "src/view/tsconfig.json",
+          configFile: resolve(__dirname, "..", "src/view/tsconfig.json"),
         },
       },
       {

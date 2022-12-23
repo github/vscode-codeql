@@ -1,5 +1,5 @@
 import webpack from "webpack";
-import { config } from "./webpack.config";
+import { config } from "./webpack.webview.config";
 
 export function compileView(cb: (err?: Error) => void) {
   doWebpack(config, true, cb);

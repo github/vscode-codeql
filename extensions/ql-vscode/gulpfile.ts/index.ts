@@ -1,39 +1,30 @@
 import { parallel, series } from "gulp";
-import {
-  compileEsbuild,
-  watchEsbuild,
-  checkTypeScript,
-  watchCheckTypeScript,
-  cleanOutput,
-  copyWasmFiles,
-} from "./typescript";
+import { cleanOutput, copyWasmFiles } from "./typescript";
 import { compileTextMateGrammar } from "./textmate";
-import { compileView, watchView } from "./webpack";
+import { compileView, watchView } from "./webview";
 import { packageExtension } from "./package";
 import { injectAppInsightsKey } from "./appInsights";
+import { compileExtension, watchExtension } from "./extension";
 
 export const buildWithoutPackage = series(
   cleanOutput,
   parallel(
-    compileEsbuild,
+    compileExtension,
     copyWasmFiles,
-    checkTypeScript,
     compileTextMateGrammar,
     compileView,
   ),
 );
 
-export const watch = parallel(watchEsbuild, watchCheckTypeScript, watchView);
+export const watch = parallel(watchExtension, watchView);
 
 export {
   cleanOutput,
   compileTextMateGrammar,
-  watchEsbuild,
-  watchCheckTypeScript,
+  compileExtension,
+  watchExtension,
   watchView,
-  compileEsbuild,
   copyWasmFiles,
-  checkTypeScript,
   injectAppInsightsKey,
   compileView,
 };
