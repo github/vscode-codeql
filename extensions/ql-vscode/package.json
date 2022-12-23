@@ -1285,7 +1285,7 @@
     "watch:webpack": "gulp watchView",
     "watch:files": "gulp watchTestData",
     "test": "npm-run-all -p test:*",
-    "test:unit": "cross-env TZ=UTC LANG=en-US jest --projects test",
+    "test:unit": "cross-env TZ=UTC LANG=en-US jest --projects test/unit-tests",
     "test:view": "jest --projects src/view",
     "integration": "npm-run-all integration:*",
     "integration:no-workspace": "jest --projects src/vscode-tests/no-workspace",

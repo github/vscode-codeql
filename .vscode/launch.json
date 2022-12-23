@@ -38,7 +38,7 @@
       },
       "args": [
         "--projects",
-        "test"
+        "test/unit-tests"
       ],
       "stopOnEntry": false,
       "sourceMaps": true,

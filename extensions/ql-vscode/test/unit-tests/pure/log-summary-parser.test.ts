@@ -1,13 +1,13 @@
 import { join } from "path";
 
-import { parseViewerData } from "../../src/pure/log-summary-parser";
+import { parseViewerData } from "../../../src/pure/log-summary-parser";
 
 describe("Evaluator log summary tests", () => {
   describe("for a valid summary text", () => {
     it("should return only valid EvalLogData objects", async () => {
       const validSummaryPath = join(
         __dirname,
-        "evaluator-log-summaries/valid-summary.jsonl",
+        "../data/evaluator-log-summaries/valid-summary.jsonl",
       );
       const logDataItems = await parseViewerData(validSummaryPath);
       expect(logDataItems).toBeDefined();
@@ -29,7 +29,7 @@ describe("Evaluator log summary tests", () => {
     it("should not parse a summary header object", async () => {
       const invalidHeaderPath = join(
         __dirname,
-        "evaluator-log-summaries/invalid-header.jsonl",
+        "../data/evaluator-log-summaries/invalid-header.jsonl",
       );
       const logDataItems = await parseViewerData(invalidHeaderPath);
       expect(logDataItems.length).toBe(0);
@@ -38,7 +38,7 @@ describe("Evaluator log summary tests", () => {
     it("should not parse a log event missing RA or millis fields", async () => {
       const invalidSummaryPath = join(
         __dirname,
-        "evaluator-log-summaries/invalid-summary.jsonl",
+        "../data/evaluator-log-summaries/invalid-summary.jsonl",
       );
       const logDataItems = await parseViewerData(invalidSummaryPath);
       expect(logDataItems.length).toBe(0);

@@ -1,4 +1,4 @@
-import { formatDecimal } from "../../src/pure/number";
+import { formatDecimal } from "../../../src/pure/number";
 
 describe("Number", () => {
   it("should return a formatted decimal", () => {

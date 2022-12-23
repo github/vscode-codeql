@@ -1,4 +1,4 @@
-import { asyncFilter, getErrorMessage } from "../../src/pure/helpers-pure";
+import { asyncFilter, getErrorMessage } from "../../../src/pure/helpers-pure";
 
 describe("helpers-pure", () => {
   it("should filter asynchronously", async () => {
