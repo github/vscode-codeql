@@ -1,4 +1,4 @@
-import { resolve } from "path";
+import { posix, resolve } from "path";
 import * as webpack from "webpack";
 // eslint-disable-next-line import/default -- Not correctly recognized by eslint
 import CopyPlugin from "copy-webpack-plugin";
@@ -52,12 +52,15 @@ export const config: webpack.Configuration = {
     new CopyPlugin({
       patterns: [
         {
-          from: resolve(
-            __dirname,
-            "..",
-            "node_modules",
-            "source-map",
-            "lib",
+          from: posix.join(
+            // If absolute path is a `glob` we replace backslashes with forward slashes, because only forward slashes can be used in the `glob`
+            resolve(
+              __dirname,
+              "..",
+              "node_modules",
+              "source-map",
+              "lib",
+            ).replace(/\\/g, "/"),
             "*.wasm",
           ),
           to() {
