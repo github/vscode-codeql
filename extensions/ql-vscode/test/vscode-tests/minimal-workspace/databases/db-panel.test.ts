@@ -772,6 +772,7 @@ describe("db panel", () => {
     expect(item.tooltip).toBe(`Top ${n} repositories of a language`);
     expect(item.iconPath).toEqual(new ThemeIcon("github"));
     expect(item.collapsibleState).toBe(TreeItemCollapsibleState.None);
+    checkDbItemActions(item, ["canBeSelected"]);
   }
 
   function checkUserDefinedListItem(
@@ -783,6 +784,7 @@ describe("db panel", () => {
     expect(item.tooltip).toBeUndefined();
     expect(item.iconPath).toBeUndefined();
     expect(item.collapsibleState).toBe(TreeItemCollapsibleState.Collapsed);
+    checkDbItemActions(item, ["canBeSelected", "canBeRenamed", "canBeRemoved"]);
     expect(item.children).toBeTruthy();
     expect(item.children.length).toBe(repos.length);
 
@@ -796,6 +798,11 @@ describe("db panel", () => {
     expect(item.tooltip).toBeUndefined();
     expect(item.iconPath).toEqual(new ThemeIcon("organization"));
     expect(item.collapsibleState).toBe(TreeItemCollapsibleState.None);
+    checkDbItemActions(item, [
+      "canBeSelected",
+      "canBeRemoved",
+      "canBeOpenedOnGitHub",
+    ]);
     expect(item.children).toBeTruthy();
     expect(item.children.length).toBe(0);
   }
@@ -805,6 +812,11 @@ describe("db panel", () => {
     expect(item.tooltip).toBeUndefined();
     expect(item.iconPath).toEqual(new ThemeIcon("database"));
     expect(item.collapsibleState).toBe(TreeItemCollapsibleState.None);
+    checkDbItemActions(item, [
+      "canBeSelected",
+      "canBeRemoved",
+      "canBeOpenedOnGitHub",
+    ]);
   }
 
   function checkLocalListItem(
@@ -816,6 +828,7 @@ describe("db panel", () => {
     expect(item.tooltip).toBeUndefined();
     expect(item.iconPath).toBeUndefined();
     expect(item.collapsibleState).toBe(TreeItemCollapsibleState.Collapsed);
+    checkDbItemActions(item, ["canBeSelected", "canBeRemoved", "canBeRenamed"]);
     expect(item.children).toBeTruthy();
     expect(item.children.length).toBe(databases.length);
 
@@ -832,6 +845,16 @@ describe("db panel", () => {
     expect(item.tooltip).toBe(`Language: ${database.language}`);
     expect(item.iconPath).toEqual(new ThemeIcon("database"));
     expect(item.collapsibleState).toBe(TreeItemCollapsibleState.None);
+    checkDbItemActions(item, ["canBeSelected", "canBeRemoved", "canBeRenamed"]);
+  }
+
+  function checkDbItemActions(item: DbTreeViewItem, actions: string[]): void {
+    const itemActions = item.contextValue?.split(",");
+    expect(itemActions).toBeDefined();
+    expect(itemActions!.length).toBe(actions.length);
+    for (const action of actions) {
+      expect(itemActions).toContain(action);
+    }
   }
 
   function checkErrorItem(
@@ -852,14 +875,16 @@ describe("db panel", () => {
   function isTreeViewItemSelectable(treeViewItem: DbTreeViewItem) {
     return (
       treeViewItem.resourceUri === undefined &&
-      treeViewItem.contextValue === "canBeSelected"
+      treeViewItem.contextValue?.includes("canBeSelected")
     );
   }
 
   function isTreeViewItemSelected(treeViewItem: DbTreeViewItem) {
     return (
       treeViewItem.resourceUri?.toString(true) ===
-        SELECTED_DB_ITEM_RESOURCE_URI && treeViewItem.contextValue === undefined
+        SELECTED_DB_ITEM_RESOURCE_URI &&
+      (treeViewItem.contextValue === undefined ||
+        !treeViewItem.contextValue.includes("canBeSelected"))
     );
   }
 
