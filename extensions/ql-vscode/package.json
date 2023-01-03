@@ -803,7 +803,7 @@
         },
         {
           "command": "codeQLDatabasesExperimental.setSelectedItem",
-          "when": "view == codeQLDatabasesExperimental && viewItem == selectableDbItem",
+          "when": "view == codeQLDatabasesExperimental && viewItem == canBeSelected",
           "group": "inline"
         },
         {

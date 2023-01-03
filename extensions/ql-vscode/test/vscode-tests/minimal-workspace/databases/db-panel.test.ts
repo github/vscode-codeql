@@ -852,7 +852,7 @@ describe("db panel", () => {
   function isTreeViewItemSelectable(treeViewItem: DbTreeViewItem) {
     return (
       treeViewItem.resourceUri === undefined &&
-      treeViewItem.contextValue === "selectableDbItem"
+      treeViewItem.contextValue === "canBeSelected"
     );
   }
 
