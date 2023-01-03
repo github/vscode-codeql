@@ -77,6 +77,12 @@ export class DbPanel extends DisposableObject {
         (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
       ),
     );
+    this.push(
+      commandRunner(
+        "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+        (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
+      ),
+    );
   }
 
   private async openConfigFile(): Promise<void> {

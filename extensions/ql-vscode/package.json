@@ -63,6 +63,7 @@
     "onCommand:codeQLDatabasesExperimental.addNewDatabase",
     "onCommand:codeQLDatabasesExperimental.addNewList",
     "onCommand:codeQLDatabasesExperimental.setSelectedItem",
+    "onCommand:codeQLDatabasesExperimental.setSelectedItemContextMenu",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
@@ -376,6 +377,10 @@
       {
         "command": "codeQLDatabasesExperimental.setSelectedItem",
         "title": "✓"
+      },
+      {
+        "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+        "title": "Select"
       },
       {
         "command": "codeQLDatabases.chooseDatabaseFolder",
@@ -777,6 +782,10 @@
       ],
       "view/item/context": [
         {
+          "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+          "when": "view == codeQLDatabasesExperimental && viewItem == canBeSelected"
+        },
+        {
           "command": "codeQLDatabases.setCurrentDatabase",
           "group": "inline",
           "when": "view == codeQLDatabases && viewItem != currentDatabase"
@@ -1002,6 +1011,10 @@
         },
         {
           "command": "codeQLDatabasesExperimental.setSelectedItem",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
           "when": "false"
         },
         {
