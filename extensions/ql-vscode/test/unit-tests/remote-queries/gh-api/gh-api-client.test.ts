@@ -11,7 +11,7 @@ import {
   submitVariantAnalysis,
 } from "../../../../src/remote-queries/gh-api/gh-api-client";
 import { Credentials } from "../../../../src/authentication";
-import { createMockSubmission } from "../../../../src/vscode-tests/factories/remote-queries/shared/variant-analysis-submission";
+import { createMockSubmission } from "../../../factories/remote-queries/shared/variant-analysis-submission";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 
 import { response } from "../../../../src/mocks/scenarios/problem-query-success/0-getRepo.json";

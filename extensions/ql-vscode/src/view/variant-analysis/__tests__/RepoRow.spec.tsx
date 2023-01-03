@@ -6,7 +6,7 @@ import {
 } from "../../../remote-queries/shared/variant-analysis";
 import userEvent from "@testing-library/user-event";
 import { RepoRow, RepoRowProps } from "../RepoRow";
-import { createMockRepositoryWithMetadata } from "../../../vscode-tests/factories/remote-queries/shared/repository";
+import { createMockRepositoryWithMetadata } from "../../../../test/factories/remote-queries/shared/repository";
 
 describe(RepoRow.name, () => {
   const render = (props: Partial<RepoRowProps> = {}) => {

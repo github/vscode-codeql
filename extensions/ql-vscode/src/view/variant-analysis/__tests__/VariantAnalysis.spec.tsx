@@ -5,7 +5,7 @@ import {
   VariantAnalysisStatus,
 } from "../../../remote-queries/shared/variant-analysis";
 import { VariantAnalysis, VariantAnalysisProps } from "../VariantAnalysis";
-import { createMockVariantAnalysis } from "../../../vscode-tests/factories/remote-queries/shared/variant-analysis";
+import { createMockVariantAnalysis } from "../../../../test/factories/remote-queries/shared/variant-analysis";
 
 describe(VariantAnalysis.name, () => {
   const render = (props: Partial<VariantAnalysisProps> = {}) =>

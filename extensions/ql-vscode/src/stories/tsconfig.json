@@ -7,7 +7,7 @@
     "lib": ["ES2021", "dom"],
     "jsx": "react",
     "sourceMap": true,
-    "rootDir": "..",
+    "rootDir": "../../..",
     "strict": true,
     "noUnusedLocals": true,
     "noImplicitReturns": true,

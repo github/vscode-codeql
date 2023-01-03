@@ -13,11 +13,11 @@ import {
 import {
   createMockScannedRepo,
   createMockScannedRepos,
-} from "../../../src/vscode-tests/factories/remote-queries/gh-api/scanned-repositories";
-import { createMockSkippedRepos } from "../../../src/vscode-tests/factories/remote-queries/gh-api/skipped-repositories";
-import { createMockApiResponse } from "../../../src/vscode-tests/factories/remote-queries/gh-api/variant-analysis-api-response";
-import { createMockSubmission } from "../../../src/vscode-tests/factories/remote-queries/shared/variant-analysis-submission";
-import { createMockVariantAnalysisRepoTask } from "../../../src/vscode-tests/factories/remote-queries/gh-api/variant-analysis-repo-task";
+} from "../../factories/remote-queries/gh-api/scanned-repositories";
+import { createMockSkippedRepos } from "../../factories/remote-queries/gh-api/skipped-repositories";
+import { createMockApiResponse } from "../../factories/remote-queries/gh-api/variant-analysis-api-response";
+import { createMockSubmission } from "../../factories/remote-queries/shared/variant-analysis-submission";
+import { createMockVariantAnalysisRepoTask } from "../../factories/remote-queries/gh-api/variant-analysis-repo-task";
 
 describe(processVariantAnalysis.name, () => {
   const scannedRepos = createMockScannedRepos();

@@ -5,7 +5,7 @@ import { DbConfigValidationErrorKind } from "../../../../src/databases/db-valida
 import {
   createDbConfig,
   createLocalDbConfigItem,
-} from "../../../../src/vscode-tests/factories/db-config-factories";
+} from "../../../factories/db-config-factories";
 
 describe("db config validation", () => {
   const extensionPath = join(__dirname, "../../../..");

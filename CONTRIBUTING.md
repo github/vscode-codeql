@@ -97,12 +97,12 @@ We have several types of tests:
 
 * Unit tests: these live in the `tests/pure-tests/` directory
 * View tests: these live in `src/view/variant-analysis/__tests__/`
-* VSCode integration tests: these live in `src/vscode-tests/no-workspace` and `src/vscode-tests/minimal-workspace`
-* CLI integration tests: these live in `src/vscode-tests/cli-integration`
+* VSCode integration tests: these live in `test/vscode-tests/no-workspace` and `test/vscode-tests/minimal-workspace`
+* CLI integration tests: these live in `test/vscode-tests/cli-integration`
 
 The CLI integration tests require an instance of the CodeQL CLI to run so they will require some extra setup steps. When adding new tests to our test suite, please be mindful of whether they need to be in the cli-integration folder. If the tests don't depend on the CLI, they are better suited to being a VSCode integration test.
 
-Any test data you're using (sample projects, config files, etc.) must go in a `src/vscode-tests/*/data` directory. When you run the tests, the test runner will copy the data directory to `out/vscode-tests/*/data`.
+Any test data you're using (sample projects, config files, etc.) must go in a `test/vscode-tests/*/data` directory. When you run the tests, the test runner will copy the data directory to `out/vscode-tests/*/data`.
 
 #### Running the tests
 
@@ -155,16 +155,16 @@ The CLI integration tests require the CodeQL standard libraries in order to run 
 ##### 1. From the terminal
 
 The easiest way to run a single test is to change the `it` of the test to `it.only` and then run the test command with some additional options
-to only run tests for this specific file. For example, to run the test `src/vscode-tests/cli-integration/run-queries.test.ts`:
+to only run tests for this specific file. For example, to run the test `test/vscode-tests/cli-integration/run-queries.test.ts`:
 
 ```shell
-npm run cli-integration -- --runTestsByPath src/vscode-tests/cli-integration/run-queries.test.ts
+npm run cli-integration -- --runTestsByPath test/vscode-tests/cli-integration/run-queries.test.ts
 ```
 
-You can also use the `--testNamePattern` option to run a specific test within a file. For example, to run the test `src/vscode-tests/cli-integration/run-queries.test.ts`:
+You can also use the `--testNamePattern` option to run a specific test within a file. For example, to run the test `test/vscode-tests/cli-integration/run-queries.test.ts`:
 
 ```shell
-npm run cli-integration -- --runTestsByPath src/vscode-tests/cli-integration/run-queries.test.ts --testNamePattern "should create a QueryEvaluationInfo"
+npm run cli-integration -- --runTestsByPath test/vscode-tests/cli-integration/run-queries.test.ts --testNamePattern "should create a QueryEvaluationInfo"
 ```
 
 ##### 2. From VSCode

@@ -5,17 +5,17 @@ export function copyTestData() {
 }
 
 export function watchTestData() {
-  return watch(["src/vscode-tests/*/data/**/*"], copyTestData);
+  return watch(["test/vscode-tests/*/data/**/*"], copyTestData);
 }
 
 function copyNoWorkspaceData() {
-  return src("src/vscode-tests/no-workspace/data/**/*").pipe(
+  return src("test/vscode-tests/no-workspace/data/**/*").pipe(
     dest("out/vscode-tests/no-workspace/data"),
   );
 }
 
 function copyCliIntegrationData() {
-  return src("src/vscode-tests/cli-integration/data/**/*").pipe(
+  return src("test/vscode-tests/cli-integration/data/**/*").pipe(
     dest("out/vscode-tests/cli-integration/data"),
   );
 }

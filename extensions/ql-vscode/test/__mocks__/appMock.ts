@@ -3,7 +3,7 @@ import { AppEvent, AppEventEmitter } from "../../src/common/events";
 import { Memento } from "../../src/common/memento";
 import { Disposable } from "../../src/pure/disposable-object";
 import { createMockLogger } from "./loggerMock";
-import { createMockMemento } from "../../src/vscode-tests/mock-memento";
+import { createMockMemento } from "../mock-memento";
 
 export function createMockApp({
   extensionPath = "/mock/extension/path",
