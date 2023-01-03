@@ -378,6 +378,10 @@
         "title": "✓"
       },
       {
+        "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+        "title": "Select"
+      },
+      {
         "command": "codeQLDatabases.chooseDatabaseFolder",
         "title": "Choose Database from Folder",
         "icon": {
@@ -777,6 +781,10 @@
       ],
       "view/item/context": [
         {
+          "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+          "when": "view == codeQLDatabasesExperimental && viewItem == canBeSelected"
+        },
+        {
           "command": "codeQLDatabases.setCurrentDatabase",
           "group": "inline",
           "when": "view == codeQLDatabases && viewItem != currentDatabase"
@@ -1002,6 +1010,10 @@
         },
         {
           "command": "codeQLDatabasesExperimental.setSelectedItem",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
           "when": "false"
         },
         {
