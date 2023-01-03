@@ -783,7 +783,7 @@
       "view/item/context": [
         {
           "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
-          "when": "view == codeQLDatabasesExperimental && viewItem == canBeSelected"
+          "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeSelected/"
         },
         {
           "command": "codeQLDatabases.setCurrentDatabase",
@@ -812,7 +812,7 @@
         },
         {
           "command": "codeQLDatabasesExperimental.setSelectedItem",
-          "when": "view == codeQLDatabasesExperimental && viewItem == canBeSelected",
+          "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeSelected/",
           "group": "inline"
         },
         {
