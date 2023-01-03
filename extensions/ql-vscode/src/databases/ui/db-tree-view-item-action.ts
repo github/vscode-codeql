@@ -59,3 +59,14 @@ function canBeRenamed(dbItem: DbItem): boolean {
 function canBeOpenedOnGitHub(dbItem: DbItem): boolean {
   return dbItemKindsThatCanBeOpenedOnGitHub.includes(dbItem.kind);
 }
+
+export function getGitHubUrl(dbItem: DbItem): string | undefined {
+  switch (dbItem.kind) {
+    case DbItemKind.RemoteOwner:
+      return `https://github.com/${dbItem.ownerName}`;
+    case DbItemKind.RemoteRepo:
+      return `https://github.com/${dbItem.repoFullName}`;
+    default:
+      return undefined;
+  }
+}
