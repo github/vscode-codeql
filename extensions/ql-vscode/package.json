@@ -63,6 +63,7 @@
     "onCommand:codeQLDatabasesExperimental.addNewDatabase",
     "onCommand:codeQLDatabasesExperimental.addNewList",
     "onCommand:codeQLDatabasesExperimental.setSelectedItem",
+    "onCommand:codeQLDatabasesExperimental.setSelectedItemContextMenu",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
