@@ -80,10 +80,7 @@ export class DbManager {
       itemExpanded,
     );
 
-    await this.app.workspaceState.update(
-      DbManager.DB_EXPANDED_STATE_KEY,
-      newExpandedItems,
-    );
+    await this.setExpandedItems(newExpandedItems);
   }
 
   public async addNewRemoteRepo(
@@ -138,5 +135,12 @@ export class DbManager {
     );
 
     return items || [];
+  }
+
+  private async setExpandedItems(items: ExpandedDbItem[]): Promise<void> {
+    await this.app.workspaceState.update(
+      DbManager.DB_EXPANDED_STATE_KEY,
+      items,
+    );
   }
 }
