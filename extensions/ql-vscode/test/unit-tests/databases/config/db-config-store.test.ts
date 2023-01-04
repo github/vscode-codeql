@@ -1,6 +1,20 @@
-import { ensureDir, remove, pathExists } from "fs-extra";
+import { ensureDir, remove, pathExists, writeJSON, readJSON } from "fs-extra";
 import { join } from "path";
+import { App } from "../../../../src/common/app";
+import {
+  DbConfig,
+  SelectedDbItemKind,
+} from "../../../../src/databases/config/db-config";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
+import {
+  createDbConfig,
+  createLocalDbConfigItem,
+} from "../../../factories/db-config-factories";
+import {
+  createLocalDatabaseDbItem,
+  createLocalListDbItem,
+  createRemoteUserDefinedListDbItem,
+} from "../../../factories/db-item-factories";
 import { createMockApp } from "../../../__mocks__/appMock";
 
 describe("db config store", () => {
@@ -163,6 +177,190 @@ describe("db config store", () => {
         "codeQLDatabasesExperimental.configError",
         false,
       );
+
+      configStore.dispose();
+    });
+  });
+
+  describe("db and list renaming", () => {
+    let app: App;
+    let configPath: string;
+
+    beforeEach(async () => {
+      app = createMockApp({
+        extensionPath,
+        workspaceStoragePath: tempWorkspaceStoragePath,
+      });
+
+      configPath = join(tempWorkspaceStoragePath, "workspace-databases.json");
+    });
+
+    it("should allow renaming a remote list", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "list1",
+            repositories: ["owner/repo1", "owner/repo2"],
+          },
+        ],
+        selected: {
+          kind: SelectedDbItemKind.RemoteRepository,
+          repositoryName: "owner/repo2",
+          listName: "list1",
+        },
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Rename
+      const currentDbItem = createRemoteUserDefinedListDbItem({
+        listName: "list1",
+      });
+      await configStore.renameRemoteList(currentDbItem, "listRenamed");
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      expect(updatedRemoteDbs.repositoryLists).toHaveLength(1);
+      expect(updatedRemoteDbs.repositoryLists[0].name).toEqual("listRenamed");
+
+      expect(updatedDbConfig.selected).toEqual({
+        kind: SelectedDbItemKind.RemoteRepository,
+        repositoryName: "owner/repo2",
+        listName: "listRenamed",
+      });
+
+      configStore.dispose();
+    });
+
+    it("should allow renaming a local list", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        localLists: [
+          {
+            name: "list1",
+            databases: [
+              createLocalDbConfigItem(),
+              createLocalDbConfigItem(),
+              createLocalDbConfigItem(),
+            ],
+          },
+        ],
+        selected: {
+          kind: SelectedDbItemKind.LocalUserDefinedList,
+          listName: "list1",
+        },
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Rename
+      const currentDbItem = createLocalListDbItem({
+        listName: "list1",
+      });
+      await configStore.renameLocalList(currentDbItem, "listRenamed");
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedLocalDbs = updatedDbConfig.databases.local;
+      expect(updatedLocalDbs.lists).toHaveLength(1);
+      expect(updatedLocalDbs.lists[0].name).toEqual("listRenamed");
+
+      expect(updatedDbConfig.selected).toEqual({
+        kind: SelectedDbItemKind.LocalUserDefinedList,
+        listName: "listRenamed",
+      });
+
+      configStore.dispose();
+    });
+
+    it("should allow renaming of a local db", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        localLists: [
+          {
+            name: "list1",
+            databases: [
+              createLocalDbConfigItem({ name: "db1" }),
+              createLocalDbConfigItem({ name: "db2" }),
+              createLocalDbConfigItem({ name: "db3" }),
+            ],
+          },
+        ],
+        selected: {
+          kind: SelectedDbItemKind.LocalDatabase,
+          databaseName: "db1",
+          listName: "list1",
+        },
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Rename
+      const currentDbItem = createLocalDatabaseDbItem({
+        databaseName: "db1",
+      });
+      await configStore.renameLocalDb(currentDbItem, "dbRenamed", "list1");
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedLocalDbs = updatedDbConfig.databases.local;
+      expect(updatedLocalDbs.lists).toHaveLength(1);
+      expect(updatedLocalDbs.lists[0].name).toEqual("list1");
+      expect(updatedLocalDbs.lists[0].databases.length).toEqual(3);
+      expect(updatedLocalDbs.lists[0].databases[0].name).toEqual("dbRenamed");
+      expect(updatedDbConfig.selected).toEqual({
+        kind: SelectedDbItemKind.LocalDatabase,
+        databaseName: "dbRenamed",
+        listName: "list1",
+      });
+
+      configStore.dispose();
+    });
+
+    it("should throw if the name of a list is taken", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "list1",
+            repositories: ["owner/repo1", "owner/repo2"],
+          },
+          {
+            name: "list2",
+            repositories: ["owner/repo1", "owner/repo2"],
+          },
+        ],
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Rename
+      const currentDbItem = createRemoteUserDefinedListDbItem({
+        listName: "list1",
+      });
+      await expect(
+        configStore.renameRemoteList(currentDbItem, "list2"),
+      ).rejects.toThrow(`A remote list with the name 'list2' already exists`);
 
       configStore.dispose();
     });
