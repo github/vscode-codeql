@@ -94,7 +94,7 @@ export class DbConfigStore extends DisposableObject {
       );
     }
 
-    const config: DbConfig = cloneDbConfig(this.config);
+    const config = cloneDbConfig(this.config);
     if (parentList) {
       const parent = config.databases.remote.repositoryLists.find(
         (list) => list.name === parentList,
@@ -123,7 +123,7 @@ export class DbConfigStore extends DisposableObject {
       throw Error(`A remote owner with the name '${owner}' already exists`);
     }
 
-    const config: DbConfig = cloneDbConfig(this.config);
+    const config = cloneDbConfig(this.config);
     config.databases.remote.owners.push(owner);
 
     await this.writeConfig(config);
@@ -142,7 +142,7 @@ export class DbConfigStore extends DisposableObject {
       throw Error(`A local list with the name '${listName}' already exists`);
     }
 
-    const config: DbConfig = cloneDbConfig(this.config);
+    const config = cloneDbConfig(this.config);
     config.databases.local.lists.push({
       name: listName,
       databases: [],
@@ -164,7 +164,7 @@ export class DbConfigStore extends DisposableObject {
       throw Error(`A remote list with the name '${listName}' already exists`);
     }
 
-    const config: DbConfig = cloneDbConfig(this.config);
+    const config = cloneDbConfig(this.config);
     config.databases.remote.repositoryLists.push({
       name: listName,
       repositories: [],
