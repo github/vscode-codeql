@@ -1,6 +1,13 @@
 import { pathExists, outputJSON, readJSON, readJSONSync } from "fs-extra";
 import { join } from "path";
-import { cloneDbConfig, DbConfig, SelectedDbItem } from "./db-config";
+import {
+  cloneDbConfig,
+  DbConfig,
+  renameLocalDb,
+  renameLocalList,
+  renameRemoteList,
+  SelectedDbItem,
+} from "./db-config";
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
 import { DbConfigValidator } from "./db-config-validator";
@@ -11,6 +18,11 @@ import {
   DbConfigValidationErrorKind,
 } from "../db-validation-errors";
 import { ValueResult } from "../../common/value-result";
+import {
+  LocalDatabaseDbItem,
+  LocalListDbItem,
+  RemoteUserDefinedListDbItem,
+} from "../db-item";
 
 export class DbConfigStore extends DisposableObject {
   public readonly onDidChangeConfig: AppEvent<void>;
@@ -161,6 +173,65 @@ export class DbConfigStore extends DisposableObject {
     await this.writeConfig(config);
   }
 
+  public async renameLocalList(
+    currentDbItem: LocalListDbItem,
+    newName: string,
+  ) {
+    if (!this.config) {
+      throw Error("Cannot rename local list if config is not loaded");
+    }
+
+    this.validateLocalListName(newName);
+
+    const updatedConfig = renameLocalList(
+      this.config,
+      currentDbItem.listName,
+      newName,
+    );
+
+    await this.writeConfig(updatedConfig);
+  }
+
+  public async renameRemoteList(
+    currentDbItem: RemoteUserDefinedListDbItem,
+    newName: string,
+  ) {
+    if (!this.config) {
+      throw Error("Cannot rename remote list if config is not loaded");
+    }
+
+    this.validateRemoteListName(newName);
+
+    const updatedConfig = renameRemoteList(
+      this.config,
+      currentDbItem.listName,
+      newName,
+    );
+
+    await this.writeConfig(updatedConfig);
+  }
+
+  public async renameLocalDb(
+    currentDbItem: LocalDatabaseDbItem,
+    newName: string,
+    parentListName?: string,
+  ): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot rename local db if config is not loaded");
+    }
+
+    this.validateLocalDbName(newName);
+
+    const updatedConfig = renameLocalDb(
+      this.config,
+      currentDbItem.databaseName,
+      newName,
+      parentListName,
+    );
+
+    await this.writeConfig(updatedConfig);
+  }
+
   public doesRemoteListExist(listName: string): boolean {
     if (!this.config) {
       throw Error("Cannot check remote list existence if config is not loaded");
@@ -177,6 +248,23 @@ export class DbConfigStore extends DisposableObject {
     }
 
     return this.config.databases.local.lists.some((l) => l.name === listName);
+  }
+
+  public doesLocalDbExist(dbName: string, listName?: string): boolean {
+    if (!this.config) {
+      throw Error(
+        "Cannot check remote database existence if config is not loaded",
+      );
+    }
+
+    if (listName) {
+      return this.config.databases.local.lists.some(
+        (l) =>
+          l.name === listName && l.databases.some((d) => d.name === dbName),
+      );
+    }
+
+    return this.config.databases.local.databases.some((d) => d.name === dbName);
   }
 
   public doesRemoteDbExist(dbName: string, listName?: string): boolean {
@@ -342,6 +430,16 @@ export class DbConfigStore extends DisposableObject {
 
     if (this.doesRemoteListExist(listName)) {
       throw Error(`A remote list with the name '${listName}' already exists`);
+    }
+  }
+
+  private validateLocalDbName(dbName: string): void {
+    if (dbName === "") {
+      throw Error("Database name cannot be empty");
+    }
+
+    if (this.doesLocalDbExist(dbName)) {
+      throw Error(`A local database with the name '${dbName}' already exists`);
     }
   }
 }

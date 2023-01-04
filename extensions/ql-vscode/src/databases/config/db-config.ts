@@ -114,6 +114,102 @@ export function cloneDbConfig(config: DbConfig): DbConfig {
   };
 }
 
+export function renameLocalList(
+  originalConfig: DbConfig,
+  currentListName: string,
+  newListName: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  const list = config.databases.local.lists.find(
+    (l) => l.name === currentListName,
+  );
+  if (!list) {
+    throw Error(`Cannot find list '${currentListName}' to rename`);
+  }
+  list.name = newListName;
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.LocalUserDefinedList ||
+    config.selected?.kind === SelectedDbItemKind.LocalDatabase
+  ) {
+    if (config.selected.listName === currentListName) {
+      config.selected.listName = newListName;
+    }
+  }
+
+  return config;
+}
+
+export function renameRemoteList(
+  originalConfig: DbConfig,
+  currentListName: string,
+  newListName: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  const list = config.databases.remote.repositoryLists.find(
+    (l) => l.name === currentListName,
+  );
+  if (!list) {
+    throw Error(`Cannot find list '${currentListName}' to rename`);
+  }
+  list.name = newListName;
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.RemoteUserDefinedList ||
+    config.selected?.kind === SelectedDbItemKind.RemoteRepository
+  ) {
+    if (config.selected.listName === currentListName) {
+      config.selected.listName = newListName;
+    }
+  }
+
+  return config;
+}
+
+export function renameLocalDb(
+  originalConfig: DbConfig,
+  currentDbName: string,
+  newDbName: string,
+  parentListName?: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  if (parentListName) {
+    const list = config.databases.local.lists.find(
+      (l) => l.name === parentListName,
+    );
+    if (!list) {
+      throw Error(`Cannot find parent list '${parentListName}'`);
+    }
+    const dbIndex = list.databases.findIndex((db) => db.name === currentDbName);
+    if (dbIndex === -1) {
+      throw Error(
+        `Cannot find database '${currentDbName}' in list '${parentListName}'`,
+      );
+    }
+    list.databases[dbIndex].name = newDbName;
+  } else {
+    const dbIndex = config.databases.local.databases.findIndex(
+      (db) => db.name === currentDbName,
+    );
+    if (dbIndex === -1) {
+      throw Error(`Cannot find database '${currentDbName}' in local databases`);
+    }
+    config.databases.local.databases[dbIndex].name = newDbName;
+  }
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.LocalDatabase &&
+    config.selected.databaseName === currentDbName
+  ) {
+    config.selected.databaseName = newDbName;
+  }
+
+  return config;
+}
+
 function cloneDbConfigSelectedItem(selected: SelectedDbItem): SelectedDbItem {
   switch (selected.kind) {
     case SelectedDbItemKind.LocalUserDefinedList:
