@@ -1,10 +1,9 @@
 import { App } from "../common/app";
 import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
-import { ExpandedDbItem } from "./config/db-config";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbItem, DbListKind } from "./db-item";
-import { calculateNewExpandedState } from "./db-item-expansion";
+import { updateItemInExpandedState, ExpandedDbItem } from "./db-item-expansion";
 import {
   getSelectedDbItem,
   mapDbItemToSelectedDbItem,
@@ -45,7 +44,7 @@ export class DbManager {
       return ValueResult.fail(configResult.errors);
     }
 
-    const expandedItems = this.getCurrentExpandedItems();
+    const expandedItems = this.getExpandedItems();
 
     return ValueResult.ok([
       createRemoteTree(configResult.value, expandedItems),
@@ -68,23 +67,15 @@ export class DbManager {
     dbItem: DbItem,
     itemExpanded: boolean,
   ): Promise<void> {
-    const configResult = this.dbConfigStore.getConfig();
-    if (configResult.isFailure) {
-      throw Error("Cannot update expanded state if config is not loaded");
-    }
+    const currentExpandedItems = this.getExpandedItems();
 
-    const currentExpandedItems = this.getCurrentExpandedItems();
-
-    const newExpandedItems = calculateNewExpandedState(
+    const newExpandedItems = updateItemInExpandedState(
       currentExpandedItems,
       dbItem,
       itemExpanded,
     );
 
-    await this.app.workspaceState.update(
-      DbManager.DB_EXPANDED_STATE_KEY,
-      newExpandedItems,
-    );
+    await this.setExpandedItems(newExpandedItems);
   }
 
   public async addNewRemoteRepo(
@@ -133,11 +124,18 @@ export class DbManager {
     return this.dbConfigStore.doesRemoteDbExist(nwo, listName);
   }
 
-  private getCurrentExpandedItems(): ExpandedDbItem[] {
+  private getExpandedItems(): ExpandedDbItem[] {
     const items = this.app.workspaceState.get<ExpandedDbItem[]>(
       DbManager.DB_EXPANDED_STATE_KEY,
     );
 
     return items || [];
+  }
+
+  private async setExpandedItems(items: ExpandedDbItem[]): Promise<void> {
+    await this.app.workspaceState.update(
+      DbManager.DB_EXPANDED_STATE_KEY,
+      items,
+    );
   }
 }

@@ -1,7 +1,5 @@
 import {
   DbConfig,
-  ExpandedDbItem,
-  ExpandedDbItemKind,
   SelectedDbItemKind,
 } from "../../../src/databases/config/db-config";
 import {
@@ -10,6 +8,10 @@ import {
   isRemoteRepoDbItem,
   isRemoteUserDefinedListDbItem,
 } from "../../../src/databases/db-item";
+import {
+  ExpandedDbItem,
+  ExpandedDbItemKind,
+} from "../../../src/databases/db-item-expansion";
 import {
   createLocalTree,
   createRemoteTree,
