@@ -50,6 +50,24 @@ export function updateItemInExpandedState(
   }
 }
 
+export function replaceItemInExpandedState(
+  currentExpandedItems: ExpandedDbItem[],
+  currentDbItem: DbItem,
+  newDbItem: DbItem,
+): ExpandedDbItem[] {
+  const newExpandedItems: ExpandedDbItem[] = [];
+
+  for (const item of currentExpandedItems) {
+    if (isDbItemEqualToExpandedDbItem(currentDbItem, item)) {
+      newExpandedItems.push(mapDbItemToExpandedDbItem(newDbItem));
+    } else {
+      newExpandedItems.push(item);
+    }
+  }
+
+  return newExpandedItems;
+}
+
 function mapDbItemToExpandedDbItem(dbItem: DbItem): ExpandedDbItem {
   switch (dbItem.kind) {
     case DbItemKind.RootLocal:

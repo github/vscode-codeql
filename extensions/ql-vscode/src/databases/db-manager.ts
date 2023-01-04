@@ -2,8 +2,19 @@ import { App } from "../common/app";
 import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
 import { DbConfigStore } from "./config/db-config-store";
-import { DbItem, DbListKind } from "./db-item";
-import { updateItemInExpandedState, ExpandedDbItem } from "./db-item-expansion";
+import {
+  DbItem,
+  DbItemKind,
+  DbListKind,
+  LocalDatabaseDbItem,
+  LocalListDbItem,
+  RemoteUserDefinedListDbItem,
+} from "./db-item";
+import {
+  updateItemInExpandedState,
+  replaceItemInExpandedState,
+  ExpandedDbItem,
+} from "./db-item-expansion";
 import {
   getSelectedDbItem,
   mapDbItemToSelectedDbItem,
@@ -105,6 +116,37 @@ export class DbManager {
     }
   }
 
+  public async renameList(
+    currentDbItem: LocalListDbItem | RemoteUserDefinedListDbItem,
+    newName: string,
+  ): Promise<void> {
+    if (currentDbItem.kind === DbItemKind.LocalList) {
+      await this.dbConfigStore.renameLocalList(currentDbItem, newName);
+    } else if (currentDbItem.kind === DbItemKind.RemoteUserDefinedList) {
+      await this.dbConfigStore.renameRemoteList(currentDbItem, newName);
+    }
+
+    const newDbItem = { ...currentDbItem, listName: newName };
+    const newExpandedItems = replaceItemInExpandedState(
+      this.getExpandedItems(),
+      currentDbItem,
+      newDbItem,
+    );
+
+    await this.setExpandedItems(newExpandedItems);
+  }
+
+  public async renameLocalDb(
+    currentDbItem: LocalDatabaseDbItem,
+    newName: string,
+  ): Promise<void> {
+    await this.dbConfigStore.renameLocalDb(
+      currentDbItem,
+      newName,
+      currentDbItem.parentListName,
+    );
+  }
+
   public doesListExist(listKind: DbListKind, listName: string): boolean {
     switch (listKind) {
       case DbListKind.Local:
@@ -122,6 +164,10 @@ export class DbManager {
 
   public doesRemoteRepoExist(nwo: string, listName?: string): boolean {
     return this.dbConfigStore.doesRemoteDbExist(nwo, listName);
+  }
+
+  public doesLocalDbExist(dbName: string, listName?: string): boolean {
+    return this.dbConfigStore.doesLocalDbExist(dbName, listName);
   }
 
   private getExpandedItems(): ExpandedDbItem[] {

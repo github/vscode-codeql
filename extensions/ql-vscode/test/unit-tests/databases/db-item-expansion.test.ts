@@ -6,6 +6,7 @@ import {
   updateItemInExpandedState,
   ExpandedDbItem,
   ExpandedDbItemKind,
+  replaceItemInExpandedState,
 } from "../../../src/databases/db-item-expansion";
 import {
   createRemoteUserDefinedListDbItem,
@@ -106,6 +107,61 @@ describe("db item expansion", () => {
       );
 
       expect(newExpandedItems).toEqual([]);
+    });
+  });
+
+  describe("replaceItemInExpandedState", () => {
+    it("should replace the db item", () => {
+      const currentExpandedItems: ExpandedDbItem[] = [
+        {
+          kind: ExpandedDbItemKind.RootRemote,
+        },
+        {
+          kind: ExpandedDbItemKind.RemoteUserDefinedList,
+          listName: "list1",
+        },
+        {
+          kind: ExpandedDbItemKind.RemoteUserDefinedList,
+          listName: "list2",
+        },
+        {
+          kind: ExpandedDbItemKind.LocalUserDefinedList,
+          listName: "list1",
+        },
+      ];
+
+      const currentDbItem = createRemoteUserDefinedListDbItem({
+        listName: "list1",
+      });
+
+      const newDbItem: RemoteUserDefinedListDbItem = {
+        ...currentDbItem,
+        listName: "list1 (renamed)",
+      };
+
+      const newExpandedItems = replaceItemInExpandedState(
+        currentExpandedItems,
+        currentDbItem,
+        newDbItem,
+      );
+
+      expect(newExpandedItems).toEqual([
+        {
+          kind: ExpandedDbItemKind.RootRemote,
+        },
+        {
+          kind: ExpandedDbItemKind.RemoteUserDefinedList,
+          listName: "list1 (renamed)",
+        },
+        {
+          kind: ExpandedDbItemKind.RemoteUserDefinedList,
+          listName: "list2",
+        },
+        {
+          kind: ExpandedDbItemKind.LocalUserDefinedList,
+          listName: "list1",
+        },
+      ]);
     });
   });
 });
