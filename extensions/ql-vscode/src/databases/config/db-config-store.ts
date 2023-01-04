@@ -134,9 +134,7 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot add local list if config is not loaded");
     }
 
-    if (listName === "") {
-      throw Error("List name cannot be empty");
-    }
+    this.validateLocalListName(listName);
 
     if (this.doesLocalListExist(listName)) {
       throw Error(`A local list with the name '${listName}' already exists`);
@@ -156,9 +154,7 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot add remote list if config is not loaded");
     }
 
-    if (listName === "") {
-      throw Error("List name cannot be empty");
-    }
+    this.validateRemoteListName(listName);
 
     if (this.doesRemoteListExist(listName)) {
       throw Error(`A remote list with the name '${listName}' already exists`);
@@ -335,5 +331,25 @@ export class DbConfigStore extends DisposableObject {
         },
       },
     };
+  }
+
+  private validateLocalListName(listName: string): void {
+    if (listName === "") {
+      throw Error("List name cannot be empty");
+    }
+
+    if (this.doesLocalListExist(listName)) {
+      throw Error(`A local list with the name '${listName}' already exists`);
+    }
+  }
+
+  private validateRemoteListName(listName: string): void {
+    if (listName === "") {
+      throw Error("List name cannot be empty");
+    }
+
+    if (this.doesRemoteListExist(listName)) {
+      throw Error(`A remote list with the name '${listName}' already exists`);
+    }
   }
 }
