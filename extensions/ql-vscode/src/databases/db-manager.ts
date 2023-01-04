@@ -44,7 +44,7 @@ export class DbManager {
       return ValueResult.fail(configResult.errors);
     }
 
-    const expandedItems = this.getCurrentExpandedItems();
+    const expandedItems = this.getExpandedItems();
 
     return ValueResult.ok([
       createRemoteTree(configResult.value, expandedItems),
@@ -72,7 +72,7 @@ export class DbManager {
       throw Error("Cannot update expanded state if config is not loaded");
     }
 
-    const currentExpandedItems = this.getCurrentExpandedItems();
+    const currentExpandedItems = this.getExpandedItems();
 
     const newExpandedItems = updateItemInExpandedState(
       currentExpandedItems,
@@ -132,7 +132,7 @@ export class DbManager {
     return this.dbConfigStore.doesRemoteDbExist(nwo, listName);
   }
 
-  private getCurrentExpandedItems(): ExpandedDbItem[] {
+  private getExpandedItems(): ExpandedDbItem[] {
     const items = this.app.workspaceState.get<ExpandedDbItem[]>(
       DbManager.DB_EXPANDED_STATE_KEY,
     );
