@@ -3,7 +3,7 @@ import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbItem, DbListKind } from "./db-item";
-import { calculateNewExpandedState, ExpandedDbItem } from "./db-item-expansion";
+import { updateItemInExpandedState, ExpandedDbItem } from "./db-item-expansion";
 import {
   getSelectedDbItem,
   mapDbItemToSelectedDbItem,
@@ -74,7 +74,7 @@ export class DbManager {
 
     const currentExpandedItems = this.getCurrentExpandedItems();
 
-    const newExpandedItems = calculateNewExpandedState(
+    const newExpandedItems = updateItemInExpandedState(
       currentExpandedItems,
       dbItem,
       itemExpanded,

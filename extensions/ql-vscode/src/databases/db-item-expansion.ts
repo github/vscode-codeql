@@ -31,7 +31,7 @@ export interface RemoteUserDefinedListExpandedDbItem {
   listName: string;
 }
 
-export function calculateNewExpandedState(
+export function updateItemInExpandedState(
   currentExpandedItems: ExpandedDbItem[],
   dbItem: DbItem,
   itemExpanded: boolean,

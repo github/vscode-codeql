@@ -3,7 +3,7 @@ import {
   RootRemoteDbItem,
 } from "../../../src/databases/db-item";
 import {
-  calculateNewExpandedState,
+  updateItemInExpandedState,
   ExpandedDbItem,
   ExpandedDbItemKind,
 } from "../../../src/databases/db-item-expansion";
@@ -29,7 +29,7 @@ describe("db item expansion", () => {
         listName: "list2",
       });
 
-    const newExpandedItems = calculateNewExpandedState(
+    const newExpandedItems = updateItemInExpandedState(
       currentExpandedItems,
       dbItem,
       true,
@@ -50,7 +50,7 @@ describe("db item expansion", () => {
         listName: "list2",
       });
 
-    const newExpandedItems = calculateNewExpandedState([], dbItem, true);
+    const newExpandedItems = updateItemInExpandedState([], dbItem, true);
 
     expect(newExpandedItems).toEqual([
       {
@@ -76,7 +76,7 @@ describe("db item expansion", () => {
         listName: "list1",
       });
 
-    const newExpandedItems = calculateNewExpandedState(
+    const newExpandedItems = updateItemInExpandedState(
       currentExpandedItems,
       dbItem,
       false,
@@ -98,7 +98,7 @@ describe("db item expansion", () => {
 
     const dbItem: RootRemoteDbItem = createRootRemoteDbItem();
 
-    const newExpandedItems = calculateNewExpandedState(
+    const newExpandedItems = updateItemInExpandedState(
       currentExpandedItems,
       dbItem,
       false,
