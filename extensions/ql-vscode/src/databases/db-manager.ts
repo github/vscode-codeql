@@ -1,10 +1,9 @@
 import { App } from "../common/app";
 import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
-import { ExpandedDbItem } from "./config/db-config";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbItem, DbListKind } from "./db-item";
-import { calculateNewExpandedState } from "./db-item-expansion";
+import { calculateNewExpandedState, ExpandedDbItem } from "./db-item-expansion";
 import {
   getSelectedDbItem,
   mapDbItemToSelectedDbItem,

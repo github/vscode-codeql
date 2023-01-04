@@ -1,12 +1,12 @@
 import {
-  ExpandedDbItem,
-  ExpandedDbItemKind,
-} from "../../../src/databases/config/db-config";
-import {
   RemoteUserDefinedListDbItem,
   RootRemoteDbItem,
 } from "../../../src/databases/db-item";
-import { calculateNewExpandedState } from "../../../src/databases/db-item-expansion";
+import {
+  calculateNewExpandedState,
+  ExpandedDbItem,
+  ExpandedDbItemKind,
+} from "../../../src/databases/db-item-expansion";
 import {
   createRemoteUserDefinedListDbItem,
   createRootRemoteDbItem,

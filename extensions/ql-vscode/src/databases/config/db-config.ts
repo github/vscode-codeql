@@ -87,37 +87,6 @@ export interface LocalDatabase {
   storagePath: string;
 }
 
-export type ExpandedDbItem =
-  | RootLocalExpandedDbItem
-  | LocalUserDefinedListExpandedDbItem
-  | RootRemoteExpandedDbItem
-  | RemoteUserDefinedListExpandedDbItem;
-
-export enum ExpandedDbItemKind {
-  RootLocal = "rootLocal",
-  LocalUserDefinedList = "localUserDefinedList",
-  RootRemote = "rootRemote",
-  RemoteUserDefinedList = "remoteUserDefinedList",
-}
-
-export interface RootLocalExpandedDbItem {
-  kind: ExpandedDbItemKind.RootLocal;
-}
-
-export interface LocalUserDefinedListExpandedDbItem {
-  kind: ExpandedDbItemKind.LocalUserDefinedList;
-  listName: string;
-}
-
-export interface RootRemoteExpandedDbItem {
-  kind: ExpandedDbItemKind.RootRemote;
-}
-
-export interface RemoteUserDefinedListExpandedDbItem {
-  kind: ExpandedDbItemKind.RemoteUserDefinedList;
-  listName: string;
-}
-
 export function cloneDbConfig(config: DbConfig): DbConfig {
   return {
     databases: {

@@ -1,5 +1,35 @@
-import { ExpandedDbItem, ExpandedDbItemKind } from "./config/db-config";
 import { DbItem, DbItemKind } from "./db-item";
+
+export type ExpandedDbItem =
+  | RootLocalExpandedDbItem
+  | LocalUserDefinedListExpandedDbItem
+  | RootRemoteExpandedDbItem
+  | RemoteUserDefinedListExpandedDbItem;
+
+export enum ExpandedDbItemKind {
+  RootLocal = "rootLocal",
+  LocalUserDefinedList = "localUserDefinedList",
+  RootRemote = "rootRemote",
+  RemoteUserDefinedList = "remoteUserDefinedList",
+}
+
+export interface RootLocalExpandedDbItem {
+  kind: ExpandedDbItemKind.RootLocal;
+}
+
+export interface LocalUserDefinedListExpandedDbItem {
+  kind: ExpandedDbItemKind.LocalUserDefinedList;
+  listName: string;
+}
+
+export interface RootRemoteExpandedDbItem {
+  kind: ExpandedDbItemKind.RootRemote;
+}
+
+export interface RemoteUserDefinedListExpandedDbItem {
+  kind: ExpandedDbItemKind.RemoteUserDefinedList;
+  listName: string;
+}
 
 export function calculateNewExpandedState(
   currentExpandedItems: ExpandedDbItem[],

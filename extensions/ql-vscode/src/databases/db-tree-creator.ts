@@ -1,7 +1,5 @@
 import {
   DbConfig,
-  ExpandedDbItem,
-  ExpandedDbItemKind,
   LocalDatabase,
   LocalList,
   RemoteRepositoryList,
@@ -18,6 +16,7 @@ import {
   RootLocalDbItem,
   RootRemoteDbItem,
 } from "./db-item";
+import { ExpandedDbItem, ExpandedDbItemKind } from "./db-item-expansion";
 
 export function createRemoteTree(
   dbConfig: DbConfig,
