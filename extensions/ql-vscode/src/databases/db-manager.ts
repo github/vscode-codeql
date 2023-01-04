@@ -67,11 +67,6 @@ export class DbManager {
     dbItem: DbItem,
     itemExpanded: boolean,
   ): Promise<void> {
-    const configResult = this.dbConfigStore.getConfig();
-    if (configResult.isFailure) {
-      throw Error("Cannot update expanded state if config is not loaded");
-    }
-
     const currentExpandedItems = this.getExpandedItems();
 
     const newExpandedItems = updateItemInExpandedState(
