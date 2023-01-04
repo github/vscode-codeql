@@ -80,15 +80,15 @@ export function mapDbItemToSelectedDbItem(
     case DbItemKind.LocalDatabase:
       return {
         kind: SelectedDbItemKind.LocalDatabase,
-        listName: dbItem?.parentListName,
         databaseName: dbItem.databaseName,
+        listName: dbItem?.parentListName,
       };
 
     case DbItemKind.RemoteRepo:
       return {
         kind: SelectedDbItemKind.RemoteRepository,
-        listName: dbItem?.parentListName,
         repositoryName: dbItem.repoFullName,
+        listName: dbItem?.parentListName,
       };
   }
 }

@@ -22,7 +22,10 @@ import {
   LocalDatabaseDbItem,
   LocalListDbItem,
   RemoteUserDefinedListDbItem,
+  DbItem,
+  DbItemKind,
 } from "../db-item";
+import { mapDbItemToSelectedDbItem } from "../db-item-selection";
 
 export class DbConfigStore extends DisposableObject {
   public readonly onDidChangeConfig: AppEvent<void>;
@@ -84,6 +87,84 @@ export class DbConfigStore extends DisposableObject {
       ...this.config,
       selected: dbItem,
     };
+
+    await this.writeConfig(config);
+  }
+
+  public async removeDbItem(dbItem: DbItem): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot remove item if config is not loaded");
+    }
+
+    const config: DbConfig = cloneDbConfig(this.config);
+    const selectedItem: SelectedDbItem | undefined = config.selected;
+
+    // Remove item from databases
+    switch (dbItem.kind) {
+      case DbItemKind.LocalList:
+        config.databases.local.lists = config.databases.local.lists.filter(
+          (list) => list.name !== dbItem.listName,
+        );
+        break;
+      case DbItemKind.RemoteUserDefinedList:
+        config.databases.remote.repositoryLists =
+          config.databases.remote.repositoryLists.filter(
+            (list) => list.name !== dbItem.listName,
+          );
+        break;
+      case DbItemKind.LocalDatabase:
+        if (dbItem.parentListName) {
+          const parent = config.databases.local.lists.find(
+            (list) => list.name === dbItem.parentListName,
+          );
+          if (!parent) {
+            throw Error(`Cannot find parent list '${dbItem.parentListName}'`);
+          } else {
+            parent.databases = parent.databases.filter(
+              (db) => db.name !== dbItem.databaseName,
+            );
+          }
+        }
+        config.databases.local.databases =
+          config.databases.local.databases.filter(
+            (db) => db.name !== dbItem.databaseName,
+          );
+        break;
+      case DbItemKind.RemoteRepo:
+        if (dbItem.parentListName) {
+          const parent = config.databases.remote.repositoryLists.find(
+            (list) => list.name === dbItem.parentListName,
+          );
+          if (!parent) {
+            throw Error(`Cannot find parent list '${dbItem.parentListName}'`);
+          } else {
+            parent.repositories = parent.repositories.filter(
+              (repo) => repo !== dbItem.repoFullName,
+            );
+          }
+        }
+        config.databases.remote.repositories =
+          config.databases.remote.repositories.filter(
+            (repo) => repo !== dbItem.repoFullName,
+          );
+        break;
+      case DbItemKind.RemoteOwner:
+        config.databases.remote.owners = config.databases.remote.owners.filter(
+          (owner) => owner !== dbItem.ownerName,
+        );
+        break;
+      default:
+        throw Error(`Type '${dbItem.kind}' cannot be removed`);
+    }
+
+    // Remove item from selected
+    const mappedItem = mapDbItemToSelectedDbItem(dbItem);
+    if (
+      selectedItem &&
+      JSON.stringify(mappedItem) === JSON.stringify(selectedItem)
+    ) {
+      config.selected = undefined;
+    }
 
     await this.writeConfig(config);
   }
