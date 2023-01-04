@@ -1009,61 +1009,131 @@ describe("Variant Analysis Manager", () => {
         expect(writeTextStub).toBeCalledTimes(1);
       });
 
-      it("should be valid JSON when put in object", async () => {
-        await variantAnalysisManager.copyRepoListToClipboard(
-          variantAnalysis.id,
-        );
+      describe("newQueryRunExperience true", () => {
+        beforeEach(() => {
+          jest
+            .spyOn(config, "isNewQueryRunExperienceEnabled")
+            .mockReturnValue(true);
+        });
 
-        const text = writeTextStub.mock.calls[0][0];
+        it("should be valid JSON when put in object", async () => {
+          await variantAnalysisManager.copyRepoListToClipboard(
+            variantAnalysis.id,
+          );
 
-        const parsed = JSON.parse(`{${text}}`);
+          const text = writeTextStub.mock.calls[0][0];
 
-        expect(parsed).toEqual({
-          "new-repo-list": [
-            scannedRepos[4].repository.fullName,
-            scannedRepos[2].repository.fullName,
-            scannedRepos[0].repository.fullName,
-          ],
+          const parsed = JSON.parse(`${text}`);
+
+          expect(parsed).toEqual({
+            name: "new-repo-list",
+            repositories: [
+              scannedRepos[4].repository.fullName,
+              scannedRepos[2].repository.fullName,
+              scannedRepos[0].repository.fullName,
+            ],
+          });
+        });
+
+        it("should use the sort key", async () => {
+          await variantAnalysisManager.copyRepoListToClipboard(
+            variantAnalysis.id,
+            {
+              ...defaultFilterSortState,
+              sortKey: SortKey.ResultsCount,
+            },
+          );
+
+          const text = writeTextStub.mock.calls[0][0];
+
+          const parsed = JSON.parse(`${text}`);
+
+          expect(parsed).toEqual({
+            name: "new-repo-list",
+            repositories: [
+              scannedRepos[2].repository.fullName,
+              scannedRepos[0].repository.fullName,
+              scannedRepos[4].repository.fullName,
+            ],
+          });
+        });
+
+        it("should use the search value", async () => {
+          await variantAnalysisManager.copyRepoListToClipboard(
+            variantAnalysis.id,
+            {
+              ...defaultFilterSortState,
+              searchValue: "ban",
+            },
+          );
+
+          const text = writeTextStub.mock.calls[0][0];
+
+          const parsed = JSON.parse(`${text}`);
+
+          expect(parsed).toEqual({
+            name: "new-repo-list",
+            repositories: [scannedRepos[4].repository.fullName],
+          });
         });
       });
+      describe("newQueryRunExperience false", () => {
+        it("should be valid JSON when put in object", async () => {
+          await variantAnalysisManager.copyRepoListToClipboard(
+            variantAnalysis.id,
+          );
 
-      it("should use the sort key", async () => {
-        await variantAnalysisManager.copyRepoListToClipboard(
-          variantAnalysis.id,
-          {
-            ...defaultFilterSortState,
-            sortKey: SortKey.ResultsCount,
-          },
-        );
+          const text = writeTextStub.mock.calls[0][0];
 
-        const text = writeTextStub.mock.calls[0][0];
+          const parsed = JSON.parse(`{${text}}`);
 
-        const parsed = JSON.parse(`{${text}}`);
-
-        expect(parsed).toEqual({
-          "new-repo-list": [
-            scannedRepos[2].repository.fullName,
-            scannedRepos[0].repository.fullName,
-            scannedRepos[4].repository.fullName,
-          ],
+          expect(parsed).toEqual({
+            "new-repo-list": [
+              scannedRepos[4].repository.fullName,
+              scannedRepos[2].repository.fullName,
+              scannedRepos[0].repository.fullName,
+            ],
+          });
         });
-      });
 
-      it("should use the search value", async () => {
-        await variantAnalysisManager.copyRepoListToClipboard(
-          variantAnalysis.id,
-          {
-            ...defaultFilterSortState,
-            searchValue: "ban",
-          },
-        );
+        it("should use the sort key", async () => {
+          await variantAnalysisManager.copyRepoListToClipboard(
+            variantAnalysis.id,
+            {
+              ...defaultFilterSortState,
+              sortKey: SortKey.ResultsCount,
+            },
+          );
 
-        const text = writeTextStub.mock.calls[0][0];
+          const text = writeTextStub.mock.calls[0][0];
 
-        const parsed = JSON.parse(`{${text}}`);
+          const parsed = JSON.parse(`{${text}}`);
 
-        expect(parsed).toEqual({
-          "new-repo-list": [scannedRepos[4].repository.fullName],
+          expect(parsed).toEqual({
+            "new-repo-list": [
+              scannedRepos[2].repository.fullName,
+              scannedRepos[0].repository.fullName,
+              scannedRepos[4].repository.fullName,
+            ],
+          });
+        });
+
+        it("should use the search value", async () => {
+          await variantAnalysisManager.copyRepoListToClipboard(
+            variantAnalysis.id,
+            {
+              ...defaultFilterSortState,
+              searchValue: "ban",
+            },
+          );
+
+          const text = writeTextStub.mock.calls[0][0];
+
+          const parsed = JSON.parse(`{${text}}`);
+
+          expect(parsed).toEqual({
+            "new-repo-list": [scannedRepos[4].repository.fullName],
+          });
         });
       });
     });
