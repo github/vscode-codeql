@@ -16,151 +16,155 @@ describe("db config store", () => {
     await remove(tempWorkspaceStoragePath);
   });
 
-  it("should create a new config if one does not exist", async () => {
-    const app = createMockApp({
-      extensionPath,
-      workspaceStoragePath: tempWorkspaceStoragePath,
+  describe("initialize", () => {
+    it("should create a new config if one does not exist", async () => {
+      const app = createMockApp({
+        extensionPath,
+        workspaceStoragePath: tempWorkspaceStoragePath,
+      });
+
+      const configPath = join(
+        tempWorkspaceStoragePath,
+        "workspace-databases.json",
+      );
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      expect(await pathExists(configPath)).toBe(true);
+
+      const config = configStore.getConfig().value;
+      expect(config.databases.remote.repositoryLists).toHaveLength(0);
+      expect(config.databases.remote.owners).toHaveLength(0);
+      expect(config.databases.remote.repositories).toHaveLength(0);
+      expect(config.databases.local.lists).toHaveLength(0);
+      expect(config.databases.local.databases).toHaveLength(0);
+      expect(config.selected).toBeUndefined();
+
+      configStore.dispose();
     });
 
-    const configPath = join(
-      tempWorkspaceStoragePath,
-      "workspace-databases.json",
-    );
+    it("should load an existing config", async () => {
+      const app = createMockApp({
+        extensionPath,
+        workspaceStoragePath: testDataStoragePath,
+      });
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
 
-    const configStore = new DbConfigStore(app);
-    await configStore.initialize();
+      const config = configStore.getConfig().value;
+      expect(config.databases.remote.repositoryLists).toHaveLength(1);
+      expect(config.databases.remote.repositoryLists[0]).toEqual({
+        name: "repoList1",
+        repositories: ["foo/bar", "foo/baz"],
+      });
+      expect(config.databases.remote.owners).toHaveLength(0);
+      expect(config.databases.remote.repositories).toHaveLength(3);
+      expect(config.databases.remote.repositories).toEqual([
+        "owner/repo1",
+        "owner/repo2",
+        "owner/repo3",
+      ]);
+      expect(config.databases.local.lists).toHaveLength(2);
+      expect(config.databases.local.lists[0]).toEqual({
+        name: "localList1",
+        databases: [
+          {
+            name: "foo/bar",
+            dateAdded: 1668096745193,
+            language: "go",
+            storagePath: "/path/to/database/",
+          },
+        ],
+      });
+      expect(config.databases.local.databases).toHaveLength(1);
+      expect(config.databases.local.databases[0]).toEqual({
+        name: "example-db",
+        dateAdded: 1668096927267,
+        language: "ruby",
+        storagePath: "/path/to/database/",
+      });
+      expect(config.selected).toEqual({
+        kind: "remoteUserDefinedList",
+        listName: "repoList1",
+      });
 
-    expect(await pathExists(configPath)).toBe(true);
-
-    const config = configStore.getConfig().value;
-    expect(config.databases.remote.repositoryLists).toHaveLength(0);
-    expect(config.databases.remote.owners).toHaveLength(0);
-    expect(config.databases.remote.repositories).toHaveLength(0);
-    expect(config.databases.local.lists).toHaveLength(0);
-    expect(config.databases.local.databases).toHaveLength(0);
-    expect(config.selected).toBeUndefined();
-
-    configStore.dispose();
-  });
-
-  it("should load an existing config", async () => {
-    const app = createMockApp({
-      extensionPath,
-      workspaceStoragePath: testDataStoragePath,
-    });
-    const configStore = new DbConfigStore(app);
-    await configStore.initialize();
-
-    const config = configStore.getConfig().value;
-    expect(config.databases.remote.repositoryLists).toHaveLength(1);
-    expect(config.databases.remote.repositoryLists[0]).toEqual({
-      name: "repoList1",
-      repositories: ["foo/bar", "foo/baz"],
-    });
-    expect(config.databases.remote.owners).toHaveLength(0);
-    expect(config.databases.remote.repositories).toHaveLength(3);
-    expect(config.databases.remote.repositories).toEqual([
-      "owner/repo1",
-      "owner/repo2",
-      "owner/repo3",
-    ]);
-    expect(config.databases.local.lists).toHaveLength(2);
-    expect(config.databases.local.lists[0]).toEqual({
-      name: "localList1",
-      databases: [
-        {
-          name: "foo/bar",
-          dateAdded: 1668096745193,
-          language: "go",
-          storagePath: "/path/to/database/",
-        },
-      ],
-    });
-    expect(config.databases.local.databases).toHaveLength(1);
-    expect(config.databases.local.databases[0]).toEqual({
-      name: "example-db",
-      dateAdded: 1668096927267,
-      language: "ruby",
-      storagePath: "/path/to/database/",
-    });
-    expect(config.selected).toEqual({
-      kind: "remoteUserDefinedList",
-      listName: "repoList1",
+      configStore.dispose();
     });
 
-    configStore.dispose();
-  });
+    it("should load an existing config without selected db", async () => {
+      const testDataStoragePathWithout = join(
+        __dirname,
+        "data",
+        "without-selected",
+      );
 
-  it("should load an existing config without selected db", async () => {
-    const testDataStoragePathWithout = join(
-      __dirname,
-      "data",
-      "without-selected",
-    );
+      const app = createMockApp({
+        extensionPath,
+        workspaceStoragePath: testDataStoragePathWithout,
+      });
 
-    const app = createMockApp({
-      extensionPath,
-      workspaceStoragePath: testDataStoragePathWithout,
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      const config = configStore.getConfig().value;
+      expect(config.selected).toBeUndefined();
+
+      configStore.dispose();
     });
 
-    const configStore = new DbConfigStore(app);
-    await configStore.initialize();
+    it("should not allow modification of the config", async () => {
+      const app = createMockApp({
+        extensionPath,
+        workspaceStoragePath: testDataStoragePath,
+      });
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
 
-    const config = configStore.getConfig().value;
-    expect(config.selected).toBeUndefined();
+      const config = configStore.getConfig().value;
+      config.databases.remote.repositoryLists = [];
 
-    configStore.dispose();
-  });
+      const reRetrievedConfig = configStore.getConfig().value;
+      expect(reRetrievedConfig.databases.remote.repositoryLists).toHaveLength(
+        1,
+      );
 
-  it("should not allow modification of the config", async () => {
-    const app = createMockApp({
-      extensionPath,
-      workspaceStoragePath: testDataStoragePath,
+      configStore.dispose();
     });
-    const configStore = new DbConfigStore(app);
-    await configStore.initialize();
 
-    const config = configStore.getConfig().value;
-    config.databases.remote.repositoryLists = [];
+    it("should set codeQLDatabasesExperimental.configError to true when config has error", async () => {
+      const testDataStoragePathInvalid = join(__dirname, "data", "invalid");
 
-    const reRetrievedConfig = configStore.getConfig().value;
-    expect(reRetrievedConfig.databases.remote.repositoryLists).toHaveLength(1);
+      const app = createMockApp({
+        extensionPath,
+        workspaceStoragePath: testDataStoragePathInvalid,
+      });
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
 
-    configStore.dispose();
-  });
-
-  it("should set codeQLDatabasesExperimental.configError to true when config has error", async () => {
-    const testDataStoragePathInvalid = join(__dirname, "data", "invalid");
-
-    const app = createMockApp({
-      extensionPath,
-      workspaceStoragePath: testDataStoragePathInvalid,
+      expect(app.executeCommand).toBeCalledWith(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        true,
+      );
+      configStore.dispose();
     });
-    const configStore = new DbConfigStore(app);
-    await configStore.initialize();
 
-    expect(app.executeCommand).toBeCalledWith(
-      "setContext",
-      "codeQLDatabasesExperimental.configError",
-      true,
-    );
-    configStore.dispose();
-  });
+    it("should set codeQLDatabasesExperimental.configError to false when config is valid", async () => {
+      const app = createMockApp({
+        extensionPath,
+        workspaceStoragePath: testDataStoragePath,
+      });
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
 
-  it("should set codeQLDatabasesExperimental.configError to false when config is valid", async () => {
-    const app = createMockApp({
-      extensionPath,
-      workspaceStoragePath: testDataStoragePath,
+      expect(app.executeCommand).toBeCalledWith(
+        "setContext",
+        "codeQLDatabasesExperimental.configError",
+        false,
+      );
+
+      configStore.dispose();
     });
-    const configStore = new DbConfigStore(app);
-    await configStore.initialize();
-
-    expect(app.executeCommand).toBeCalledWith(
-      "setContext",
-      "codeQLDatabasesExperimental.configError",
-      false,
-    );
-
-    configStore.dispose();
   });
 });

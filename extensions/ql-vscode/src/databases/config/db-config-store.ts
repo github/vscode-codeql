@@ -94,7 +94,7 @@ export class DbConfigStore extends DisposableObject {
       );
     }
 
-    const config: DbConfig = cloneDbConfig(this.config);
+    const config = cloneDbConfig(this.config);
     if (parentList) {
       const parent = config.databases.remote.repositoryLists.find(
         (list) => list.name === parentList,
@@ -123,7 +123,7 @@ export class DbConfigStore extends DisposableObject {
       throw Error(`A remote owner with the name '${owner}' already exists`);
     }
 
-    const config: DbConfig = cloneDbConfig(this.config);
+    const config = cloneDbConfig(this.config);
     config.databases.remote.owners.push(owner);
 
     await this.writeConfig(config);
@@ -134,15 +134,9 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot add local list if config is not loaded");
     }
 
-    if (listName === "") {
-      throw Error("List name cannot be empty");
-    }
+    this.validateLocalListName(listName);
 
-    if (this.doesLocalListExist(listName)) {
-      throw Error(`A local list with the name '${listName}' already exists`);
-    }
-
-    const config: DbConfig = cloneDbConfig(this.config);
+    const config = cloneDbConfig(this.config);
     config.databases.local.lists.push({
       name: listName,
       databases: [],
@@ -156,15 +150,9 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot add remote list if config is not loaded");
     }
 
-    if (listName === "") {
-      throw Error("List name cannot be empty");
-    }
+    this.validateRemoteListName(listName);
 
-    if (this.doesRemoteListExist(listName)) {
-      throw Error(`A remote list with the name '${listName}' already exists`);
-    }
-
-    const config: DbConfig = cloneDbConfig(this.config);
+    const config = cloneDbConfig(this.config);
     config.databases.remote.repositoryLists.push({
       name: listName,
       repositories: [],
@@ -335,5 +323,25 @@ export class DbConfigStore extends DisposableObject {
         },
       },
     };
+  }
+
+  private validateLocalListName(listName: string): void {
+    if (listName === "") {
+      throw Error("List name cannot be empty");
+    }
+
+    if (this.doesLocalListExist(listName)) {
+      throw Error(`A local list with the name '${listName}' already exists`);
+    }
+  }
+
+  private validateRemoteListName(listName: string): void {
+    if (listName === "") {
+      throw Error("List name cannot be empty");
+    }
+
+    if (this.doesRemoteListExist(listName)) {
+      throw Error(`A remote list with the name '${listName}' already exists`);
+    }
   }
 }
