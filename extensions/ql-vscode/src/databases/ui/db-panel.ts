@@ -1,7 +1,9 @@
 import {
+  commands,
   QuickPickItem,
   TreeView,
   TreeViewExpansionEvent,
+  Uri,
   window,
   workspace,
 } from "vscode";
@@ -18,6 +20,7 @@ import { DbItem, DbItemKind, DbListKind, remoteDbKinds } from "../db-item";
 import { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
 import { DbTreeViewItem } from "./db-tree-view-item";
+import { getGitHubUrl } from "./db-tree-view-item-action";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   kind: string;
@@ -81,6 +84,12 @@ export class DbPanel extends DisposableObject {
       commandRunner(
         "codeQLDatabasesExperimental.setSelectedItemContextMenu",
         (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
+      ),
+    );
+    this.push(
+      commandRunner(
+        "codeQLDatabasesExperimental.openOnGitHubContextMenu",
+        (treeViewItem: DbTreeViewItem) => this.openOnGitHub(treeViewItem),
       ),
     );
   }
@@ -289,5 +298,19 @@ export class DbPanel extends DisposableObject {
   private async getHighlightedDbItem(): Promise<DbItem | undefined> {
     // You can only select one item at a time, so selection[0] gives the selection
     return this.treeView.selection[0]?.dbItem;
+  }
+
+  private async openOnGitHub(treeViewItem: DbTreeViewItem): Promise<void> {
+    if (treeViewItem.dbItem === undefined) {
+      throw new Error("Unable to open on GitHub. Please select a valid item.");
+    }
+    const githubUrl = getGitHubUrl(treeViewItem.dbItem);
+    if (!githubUrl) {
+      throw new Error(
+        "Unable to open on GitHub. Please select a remote repository or owner.",
+      );
+    }
+
+    await commands.executeCommand("vscode.open", Uri.parse(githubUrl));
   }
 }

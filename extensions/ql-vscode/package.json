@@ -64,6 +64,7 @@
     "onCommand:codeQLDatabasesExperimental.addNewList",
     "onCommand:codeQLDatabasesExperimental.setSelectedItem",
     "onCommand:codeQLDatabasesExperimental.setSelectedItemContextMenu",
+    "onCommand:codeQLDatabasesExperimental.openOnGitHubContextMenu",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
@@ -381,6 +382,10 @@
       {
         "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
         "title": "Select"
+      },
+      {
+        "command": "codeQLDatabasesExperimental.openOnGitHubContextMenu",
+        "title": "Open on GitHub"
       },
       {
         "command": "codeQLDatabases.chooseDatabaseFolder",
@@ -786,6 +791,10 @@
           "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeSelected/"
         },
         {
+          "command": "codeQLDatabasesExperimental.openOnGitHubContextMenu",
+          "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeOpenedOnGitHub/"
+        },
+        {
           "command": "codeQLDatabases.setCurrentDatabase",
           "group": "inline",
           "when": "view == codeQLDatabases && viewItem != currentDatabase"
@@ -1015,6 +1024,10 @@
         },
         {
           "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.openOnGitHubContextMenu",
           "when": "false"
         },
         {

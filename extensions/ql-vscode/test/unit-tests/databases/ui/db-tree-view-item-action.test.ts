@@ -1,4 +1,7 @@
-import { getDbItemActions } from "../../../../src/databases/ui/db-tree-view-item-action";
+import {
+  getDbItemActions,
+  getGitHubUrl,
+} from "../../../../src/databases/ui/db-tree-view-item-action";
 import {
   createLocalDatabaseDbItem,
   createLocalListDbItem,
@@ -105,5 +108,53 @@ describe("getDbItemActions", () => {
     const actions = getDbItemActions(dbItem);
 
     expect(actions.includes("canBeSelected")).toBeFalsy();
+  });
+});
+
+describe("getGitHubUrl", () => {
+  it("should return the correct url for a remote owner", () => {
+    const dbItem = createRemoteOwnerDbItem();
+
+    const actualUrl = getGitHubUrl(dbItem);
+    const expectedUrl = `https://github.com/${dbItem.ownerName}`;
+
+    expect(actualUrl).toEqual(expectedUrl);
+  });
+
+  it("should return the correct url for a remote repo", () => {
+    const dbItem = createRemoteRepoDbItem();
+
+    const actualUrl = getGitHubUrl(dbItem);
+    const expectedUrl = `https://github.com/${dbItem.repoFullName}`;
+
+    expect(actualUrl).toEqual(expectedUrl);
+  });
+
+  it("should return undefined for other remote db items", () => {
+    const dbItem0 = createRootRemoteDbItem();
+    const dbItem1 = createRemoteSystemDefinedListDbItem();
+    const dbItem2 = createRemoteUserDefinedListDbItem();
+
+    const actualUrl0 = getGitHubUrl(dbItem0);
+    const actualUrl1 = getGitHubUrl(dbItem1);
+    const actualUrl2 = getGitHubUrl(dbItem2);
+
+    expect(actualUrl0).toBeUndefined();
+    expect(actualUrl1).toBeUndefined();
+    expect(actualUrl2).toBeUndefined();
+  });
+
+  it("should return undefined for local db items", () => {
+    const dbItem0 = createRootLocalDbItem();
+    const dbItem1 = createLocalDatabaseDbItem();
+    const dbItem2 = createLocalListDbItem();
+
+    const actualUrl0 = getGitHubUrl(dbItem0);
+    const actualUrl1 = getGitHubUrl(dbItem1);
+    const actualUrl2 = getGitHubUrl(dbItem2);
+
+    expect(actualUrl0).toBeUndefined();
+    expect(actualUrl1).toBeUndefined();
+    expect(actualUrl2).toBeUndefined();
   });
 });
