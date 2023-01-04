@@ -136,10 +136,6 @@ export class DbConfigStore extends DisposableObject {
 
     this.validateLocalListName(listName);
 
-    if (this.doesLocalListExist(listName)) {
-      throw Error(`A local list with the name '${listName}' already exists`);
-    }
-
     const config = cloneDbConfig(this.config);
     config.databases.local.lists.push({
       name: listName,
@@ -155,10 +151,6 @@ export class DbConfigStore extends DisposableObject {
     }
 
     this.validateRemoteListName(listName);
-
-    if (this.doesRemoteListExist(listName)) {
-      throw Error(`A remote list with the name '${listName}' already exists`);
-    }
 
     const config = cloneDbConfig(this.config);
     config.databases.remote.repositoryLists.push({
