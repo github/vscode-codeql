@@ -1423,7 +1423,7 @@
     "@vscode/vsce": "^2.15.0",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.3.5",
-    "babel-loader": "^8.2.5",
+    "babel-loader": "^9.1.2",
     "cross-env": "^7.0.3",
     "css-loader": "~3.1.0",
     "del": "^6.0.0",
