@@ -25,6 +25,7 @@ import {
   remoteDbKinds,
   RemoteUserDefinedListDbItem,
 } from "../db-item";
+import { getDbItemName } from "../db-item-naming";
 import { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
 import { DbTreeViewItem } from "./db-tree-view-item";
@@ -288,8 +289,11 @@ export class DbPanel extends DisposableObject {
       );
     }
 
+    const oldName = getDbItemName(dbItem);
+
     const newName = await window.showInputBox({
       prompt: "Enter the new name",
+      value: oldName,
     });
 
     if (newName === undefined || newName === "") {
