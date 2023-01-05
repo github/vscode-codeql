@@ -60,6 +60,7 @@ import {
 } from "../pure/variant-analysis-filter-sort";
 import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
+import { isNewQueryRunExperienceEnabled } from "../config";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -605,12 +606,25 @@ export class VariantAnalysisManager
       return;
     }
 
-    const text = [
-      '"new-repo-list": [',
-      ...fullNames.slice(0, -1).map((repo) => `    "${repo}",`),
-      `    "${fullNames[fullNames.length - 1]}"`,
-      "]",
-    ];
+    let text: string[];
+    if (isNewQueryRunExperienceEnabled()) {
+      text = [
+        "{",
+        `    "name": "new-repo-list",`,
+        `    "repositories": [`,
+        ...fullNames.slice(0, -1).map((repo) => `        "${repo}",`),
+        `        "${fullNames[fullNames.length - 1]}"`,
+        `    ]`,
+        "}",
+      ];
+    } else {
+      text = [
+        '"new-repo-list": [',
+        ...fullNames.slice(0, -1).map((repo) => `    "${repo}",`),
+        `    "${fullNames[fullNames.length - 1]}"`,
+        "]",
+      ];
+    }
 
     await env.clipboard.writeText(text.join(EOL));
   }
