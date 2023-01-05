@@ -64,6 +64,7 @@
     "onCommand:codeQLDatabasesExperimental.addNewList",
     "onCommand:codeQLDatabasesExperimental.setSelectedItem",
     "onCommand:codeQLDatabasesExperimental.setSelectedItemContextMenu",
+    "onCommand:codeQLDatabasesExperimental.renameItemContextMenu",
     "onCommand:codeQLDatabasesExperimental.openOnGitHubContextMenu",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
@@ -382,6 +383,10 @@
       {
         "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
         "title": "Select"
+      },
+      {
+        "command": "codeQLDatabasesExperimental.renameItemContextMenu",
+        "title": "Rename"
       },
       {
         "command": "codeQLDatabasesExperimental.openOnGitHubContextMenu",
@@ -791,6 +796,10 @@
           "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeSelected/"
         },
         {
+          "command": "codeQLDatabasesExperimental.renameItemContextMenu",
+          "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeRenamed/"
+        },
+        {
           "command": "codeQLDatabasesExperimental.openOnGitHubContextMenu",
           "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeOpenedOnGitHub/"
         },
@@ -1024,6 +1033,10 @@
         },
         {
           "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.renameItemContextMenu",
           "when": "false"
         },
         {

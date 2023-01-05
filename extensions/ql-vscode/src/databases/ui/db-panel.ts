@@ -16,7 +16,16 @@ import {
 } from "../../common/github-url-identifier-helper";
 import { showAndLogErrorMessage } from "../../helpers";
 import { DisposableObject } from "../../pure/disposable-object";
-import { DbItem, DbItemKind, DbListKind, remoteDbKinds } from "../db-item";
+import {
+  DbItem,
+  DbItemKind,
+  DbListKind,
+  LocalDatabaseDbItem,
+  LocalListDbItem,
+  remoteDbKinds,
+  RemoteUserDefinedListDbItem,
+} from "../db-item";
+import { getDbItemName } from "../db-item-naming";
 import { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
 import { DbTreeViewItem } from "./db-tree-view-item";
@@ -90,6 +99,12 @@ export class DbPanel extends DisposableObject {
       commandRunner(
         "codeQLDatabasesExperimental.openOnGitHubContextMenu",
         (treeViewItem: DbTreeViewItem) => this.openOnGitHub(treeViewItem),
+      ),
+    );
+    this.push(
+      commandRunner(
+        "codeQLDatabasesExperimental.renameItemContextMenu",
+        (treeViewItem: DbTreeViewItem) => this.renameItem(treeViewItem),
       ),
     );
   }
@@ -264,6 +279,88 @@ export class DbPanel extends DisposableObject {
       );
     }
     await this.dbManager.setSelectedDbItem(treeViewItem.dbItem);
+  }
+
+  private async renameItem(treeViewItem: DbTreeViewItem): Promise<void> {
+    const dbItem = treeViewItem.dbItem;
+    if (dbItem === undefined) {
+      throw new Error(
+        "Not a database item that can be renamed. Please select a valid item.",
+      );
+    }
+
+    const oldName = getDbItemName(dbItem);
+
+    const newName = await window.showInputBox({
+      prompt: "Enter the new name",
+      value: oldName,
+    });
+
+    if (newName === undefined || newName === "") {
+      return;
+    }
+
+    switch (dbItem.kind) {
+      case DbItemKind.LocalList:
+        await this.renameLocalListItem(dbItem, newName);
+        break;
+      case DbItemKind.LocalDatabase:
+        await this.renameLocalDatabaseItem(dbItem, newName);
+        break;
+      case DbItemKind.RemoteUserDefinedList:
+        await this.renameRemoteUserDefinedListItem(dbItem, newName);
+        break;
+      default:
+        throw Error(`Action not allowed for the '${dbItem.kind}' db item kind`);
+    }
+  }
+
+  private async renameLocalListItem(
+    dbItem: LocalListDbItem,
+    newName: string,
+  ): Promise<void> {
+    if (dbItem.listName === newName) {
+      return;
+    }
+
+    if (this.dbManager.doesListExist(DbListKind.Local, newName)) {
+      void showAndLogErrorMessage(`The list '${newName}' already exists`);
+      return;
+    }
+
+    await this.dbManager.renameList(dbItem, newName);
+  }
+
+  private async renameLocalDatabaseItem(
+    dbItem: LocalDatabaseDbItem,
+    newName: string,
+  ): Promise<void> {
+    if (dbItem.databaseName === newName) {
+      return;
+    }
+
+    if (this.dbManager.doesLocalDbExist(newName, dbItem.parentListName)) {
+      void showAndLogErrorMessage(`The database '${newName}' already exists`);
+      return;
+    }
+
+    await this.dbManager.renameLocalDb(dbItem, newName);
+  }
+
+  private async renameRemoteUserDefinedListItem(
+    dbItem: RemoteUserDefinedListDbItem,
+    newName: string,
+  ): Promise<void> {
+    if (dbItem.listName === newName) {
+      return;
+    }
+
+    if (this.dbManager.doesListExist(DbListKind.Remote, newName)) {
+      void showAndLogErrorMessage(`The list '${newName}' already exists`);
+      return;
+    }
+
+    await this.dbManager.renameList(dbItem, newName);
   }
 
   private async onDidCollapseElement(
