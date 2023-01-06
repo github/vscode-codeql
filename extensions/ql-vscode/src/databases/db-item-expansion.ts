@@ -108,7 +108,10 @@ function isDbItemEqualToExpandedDbItem(
         expandedDbItem.kind === ExpandedDbItemKind.RemoteUserDefinedList &&
         expandedDbItem.listName === dbItem.listName
       );
-    default:
-      throw Error(`Unknown db item kind ${dbItem.kind}`);
+    case DbItemKind.LocalDatabase:
+    case DbItemKind.RemoteSystemDefinedList:
+    case DbItemKind.RemoteOwner:
+    case DbItemKind.RemoteRepo:
+      return false;
   }
 }
