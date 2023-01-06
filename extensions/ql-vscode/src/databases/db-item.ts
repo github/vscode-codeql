@@ -149,3 +149,32 @@ const SelectableDbItemKinds = [
   DbItemKind.RemoteOwner,
   DbItemKind.RemoteRepo,
 ];
+
+export function flattenDbItems(dbItems: DbItem[]): DbItem[] {
+  const allItems: DbItem[] = [];
+
+  for (const dbItem of dbItems) {
+    allItems.push(dbItem);
+    switch (dbItem.kind) {
+      case DbItemKind.RootLocal:
+        allItems.push(...flattenDbItems(dbItem.children));
+        break;
+      case DbItemKind.LocalList:
+        allItems.push(...flattenDbItems(dbItem.databases));
+        break;
+      case DbItemKind.RootRemote:
+        allItems.push(...flattenDbItems(dbItem.children));
+        break;
+      case DbItemKind.RemoteUserDefinedList:
+        allItems.push(...dbItem.repos);
+        break;
+      case DbItemKind.LocalDatabase:
+      case DbItemKind.RemoteSystemDefinedList:
+      case DbItemKind.RemoteOwner:
+      case DbItemKind.RemoteRepo:
+        break;
+    }
+  }
+
+  return allItems;
+}

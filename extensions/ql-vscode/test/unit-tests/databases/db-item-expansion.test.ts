@@ -3,9 +3,12 @@ import {
   ExpandedDbItem,
   ExpandedDbItemKind,
   replaceExpandedItem,
+  cleanNonExistentExpandedItems,
 } from "../../../src/databases/db-item-expansion";
 import {
+  createLocalListDbItem,
   createRemoteUserDefinedListDbItem,
+  createRootLocalDbItem,
   createRootRemoteDbItem,
 } from "../../factories/db-item-factories";
 
@@ -145,6 +148,64 @@ describe("db item expansion", () => {
         {
           kind: ExpandedDbItemKind.RemoteUserDefinedList,
           listName: "list1 (renamed)",
+        },
+        {
+          kind: ExpandedDbItemKind.RemoteUserDefinedList,
+          listName: "list2",
+        },
+        {
+          kind: ExpandedDbItemKind.LocalUserDefinedList,
+          listName: "list1",
+        },
+      ]);
+    });
+  });
+
+  describe("cleanNonExistentExpandedItems", () => {
+    it("should remove non-existent items", () => {
+      const currentExpandedItems: ExpandedDbItem[] = [
+        {
+          kind: ExpandedDbItemKind.RootRemote,
+        },
+        {
+          kind: ExpandedDbItemKind.RemoteUserDefinedList,
+          listName: "list1",
+        },
+        {
+          kind: ExpandedDbItemKind.RemoteUserDefinedList,
+          listName: "list2",
+        },
+        {
+          kind: ExpandedDbItemKind.LocalUserDefinedList,
+          listName: "list1",
+        },
+      ];
+
+      const dbItems = [
+        createRootRemoteDbItem({
+          children: [
+            createRemoteUserDefinedListDbItem({
+              listName: "list2",
+            }),
+          ],
+        }),
+        createRootLocalDbItem({
+          children: [
+            createLocalListDbItem({
+              listName: "list1",
+            }),
+          ],
+        }),
+      ];
+
+      const newExpandedItems = cleanNonExistentExpandedItems(
+        currentExpandedItems,
+        dbItems,
+      );
+
+      expect(newExpandedItems).toEqual([
+        {
+          kind: ExpandedDbItemKind.RootRemote,
         },
         {
           kind: ExpandedDbItemKind.RemoteUserDefinedList,

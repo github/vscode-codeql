@@ -1,4 +1,4 @@
-import { DbItem, DbItemKind } from "./db-item";
+import { DbItem, DbItemKind, flattenDbItems } from "./db-item";
 
 export type ExpandedDbItem =
   | RootLocalExpandedDbItem
@@ -66,6 +66,16 @@ export function replaceExpandedItem(
   }
 
   return newExpandedItems;
+}
+
+export function cleanNonExistentExpandedItems(
+  currentExpandedItems: ExpandedDbItem[],
+  dbItems: DbItem[],
+): ExpandedDbItem[] {
+  const flattenedDbItems = flattenDbItems(dbItems);
+  return currentExpandedItems.filter((i) =>
+    flattenedDbItems.some((dbItem) => isDbItemEqualToExpandedDbItem(dbItem, i)),
+  );
 }
 
 function mapDbItemToExpandedDbItem(dbItem: DbItem): ExpandedDbItem {
