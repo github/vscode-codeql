@@ -14,6 +14,7 @@ import {
   updateExpandedItem,
   replaceExpandedItem,
   ExpandedDbItem,
+  cleanNonExistentExpandedItems,
 } from "./db-item-expansion";
 import {
   getSelectedDbItem,
@@ -86,7 +87,7 @@ export class DbManager {
       itemExpanded,
     );
 
-    await this.setExpandedItems(newExpandedItems);
+    await this.updateExpandedItems(newExpandedItems);
   }
 
   public async addNewRemoteRepo(
@@ -133,7 +134,7 @@ export class DbManager {
       newDbItem,
     );
 
-    await this.setExpandedItems(newExpandedItems);
+    await this.updateExpandedItems(newExpandedItems);
   }
 
   public async renameLocalDb(
@@ -183,5 +184,26 @@ export class DbManager {
       DbManager.DB_EXPANDED_STATE_KEY,
       items,
     );
+  }
+
+  private async updateExpandedItems(items: ExpandedDbItem[]): Promise<void> {
+    let itemsToStore;
+
+    const dbItemsResult = this.getDbItems();
+
+    if (dbItemsResult.isFailure) {
+      // Log an error but don't throw an exception since if the db items are failing
+      // to be read, then there is a bigger problem than the expanded state.
+      void this.app.logger.log(
+        `Could not read db items when calculating expanded state: ${JSON.stringify(
+          dbItemsResult.errors,
+        )}`,
+      );
+      itemsToStore = items;
+    } else {
+      itemsToStore = cleanNonExistentExpandedItems(items, dbItemsResult.value);
+    }
+
+    await this.setExpandedItems(itemsToStore);
   }
 }
