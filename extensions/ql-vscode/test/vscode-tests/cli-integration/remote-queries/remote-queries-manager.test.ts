@@ -277,7 +277,7 @@ describe("Remote queries", () => {
 
       // check a few files that we know should exist and others that we know should not
       expect(packFS.fileExists("subfolder/in-pack.ql")).toBe(true);
-      expect(packFS.fileExists("qlpack.yml")).toBe(true);
+      expect(packFS.fileExists("codeql-pack.yml")).toBe(true);
       // depending on the cli version, we should have one of these files
       expect(
         packFS.fileExists("qlpack.lock.yml") ||
@@ -289,13 +289,13 @@ describe("Remote queries", () => {
       // the compiled pack
       verifyQlPack(
         "subfolder/in-pack.ql",
-        packFS.fileContents("qlpack.yml"),
+        packFS.fileContents("codeql-pack.yml"),
         "0.0.0",
       );
 
       // should have generated a correct qlpack file
       const qlpackContents: any = load(
-        packFS.fileContents("qlpack.yml").toString("utf-8"),
+        packFS.fileContents("codeql-pack.yml").toString("utf-8"),
       );
       expect(qlpackContents.name).toBe("codeql-remote/query");
       expect(qlpackContents.version).toBe("0.0.0");
@@ -333,22 +333,27 @@ describe("Remote queries", () => {
     // don't check the build metadata since it is variable
     delete (qlPack as any).buildMetadata;
 
-    expect(qlPack).toEqual({
-      name: "codeql-remote/query",
-      version: packVersion,
-      dependencies: {
-        "codeql/javascript-all": "*",
-      },
-      library: false,
-      defaultSuite: [
-        {
-          description: "Query suite for variant analysis",
+    expect(qlPack).toEqual(
+      expect.objectContaining({
+        name: "codeql-remote/query",
+        version: packVersion,
+        dependencies: {
+          "codeql/javascript-all": "*",
         },
-        {
-          query: queryPath,
-        },
-      ],
-    });
+        defaultSuite: [
+          {
+            description: "Query suite for variant analysis",
+          },
+          {
+            query: queryPath,
+          },
+        ],
+      }),
+    );
+
+    // v2.11.6 and later set this to false.
+    // Earlier versions don't set it at all.
+    expect(qlPack.library).toBeFalsy();
   }
 
   function getFile(file: string): Uri {
