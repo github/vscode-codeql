@@ -3,12 +3,17 @@ import { commands, extensions, window } from "vscode";
 import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { readJson } from "fs-extra";
 import * as path from "path";
-import { DbConfig } from "../../../../src/databases/config/db-config";
+import {
+  DbConfig,
+  SelectedDbItemKind,
+} from "../../../../src/databases/config/db-config";
 import {
   AddListQuickPickItem,
   RemoteDatabaseQuickPickItem,
 } from "../../../../src/databases/ui/db-panel";
 import { DbListKind } from "../../../../src/databases/db-item";
+import { createDbTreeViewItemSystemDefinedList } from "../../../../src/databases/ui/db-tree-view-item";
+import { createRemoteSystemDefinedListDbItem } from "../../../factories/db-item-factories";
 
 jest.setTimeout(60_000);
 
@@ -87,5 +92,28 @@ describe("Db panel UI commands", () => {
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.remote.owners).toHaveLength(1);
     expect(dbConfig.databases.remote.owners[0]).toBe("owner1");
+  });
+
+  it("should select db item", async () => {
+    const listName = "top n repos";
+    const treeViewItem = createDbTreeViewItemSystemDefinedList(
+      createRemoteSystemDefinedListDbItem({ listName }),
+      "label",
+      "tooltip",
+    );
+
+    await commands.executeCommand(
+      "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+      treeViewItem,
+    );
+
+    // Check db config
+    const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
+    const dbConfig: DbConfig = await readJson(dbConfigFilePath);
+    expect(dbConfig.selected).toBeDefined();
+    expect(dbConfig.selected).toEqual({
+      kind: SelectedDbItemKind.RemoteSystemDefinedList,
+      listName,
+    });
   });
 });
