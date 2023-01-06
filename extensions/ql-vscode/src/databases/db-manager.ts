@@ -11,8 +11,8 @@ import {
   RemoteUserDefinedListDbItem,
 } from "./db-item";
 import {
-  updateItemInExpandedState,
-  replaceItemInExpandedState,
+  updateExpandedItem,
+  replaceExpandedItem,
   ExpandedDbItem,
 } from "./db-item-expansion";
 import {
@@ -80,7 +80,7 @@ export class DbManager {
   ): Promise<void> {
     const currentExpandedItems = this.getExpandedItems();
 
-    const newExpandedItems = updateItemInExpandedState(
+    const newExpandedItems = updateExpandedItem(
       currentExpandedItems,
       dbItem,
       itemExpanded,
@@ -127,7 +127,7 @@ export class DbManager {
     }
 
     const newDbItem = { ...currentDbItem, listName: newName };
-    const newExpandedItems = replaceItemInExpandedState(
+    const newExpandedItems = replaceExpandedItem(
       this.getExpandedItems(),
       currentDbItem,
       newDbItem,

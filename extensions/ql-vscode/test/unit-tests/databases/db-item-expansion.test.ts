@@ -1,12 +1,8 @@
 import {
-  RemoteUserDefinedListDbItem,
-  RootRemoteDbItem,
-} from "../../../src/databases/db-item";
-import {
-  updateItemInExpandedState,
+  updateExpandedItem,
   ExpandedDbItem,
   ExpandedDbItemKind,
-  replaceItemInExpandedState,
+  replaceExpandedItem,
 } from "../../../src/databases/db-item-expansion";
 import {
   createRemoteUserDefinedListDbItem,
@@ -14,7 +10,7 @@ import {
 } from "../../factories/db-item-factories";
 
 describe("db item expansion", () => {
-  describe("updateItemInExpandedState", () => {
+  describe("updateExpandedItem", () => {
     it("should add an expanded item to an existing list", () => {
       const currentExpandedItems: ExpandedDbItem[] = [
         {
@@ -26,12 +22,11 @@ describe("db item expansion", () => {
         },
       ];
 
-      const dbItem: RemoteUserDefinedListDbItem =
-        createRemoteUserDefinedListDbItem({
-          listName: "list2",
-        });
+      const dbItem = createRemoteUserDefinedListDbItem({
+        listName: "list2",
+      });
 
-      const newExpandedItems = updateItemInExpandedState(
+      const newExpandedItems = updateExpandedItem(
         currentExpandedItems,
         dbItem,
         true,
@@ -47,12 +42,11 @@ describe("db item expansion", () => {
     });
 
     it("should add an expanded item to an empty list", () => {
-      const dbItem: RemoteUserDefinedListDbItem =
-        createRemoteUserDefinedListDbItem({
-          listName: "list2",
-        });
+      const dbItem = createRemoteUserDefinedListDbItem({
+        listName: "list2",
+      });
 
-      const newExpandedItems = updateItemInExpandedState([], dbItem, true);
+      const newExpandedItems = updateExpandedItem([], dbItem, true);
 
       expect(newExpandedItems).toEqual([
         {
@@ -73,12 +67,11 @@ describe("db item expansion", () => {
         },
       ];
 
-      const dbItem: RemoteUserDefinedListDbItem =
-        createRemoteUserDefinedListDbItem({
-          listName: "list1",
-        });
+      const dbItem = createRemoteUserDefinedListDbItem({
+        listName: "list1",
+      });
 
-      const newExpandedItems = updateItemInExpandedState(
+      const newExpandedItems = updateExpandedItem(
         currentExpandedItems,
         dbItem,
         false,
@@ -98,9 +91,9 @@ describe("db item expansion", () => {
         },
       ];
 
-      const dbItem: RootRemoteDbItem = createRootRemoteDbItem();
+      const dbItem = createRootRemoteDbItem();
 
-      const newExpandedItems = updateItemInExpandedState(
+      const newExpandedItems = updateExpandedItem(
         currentExpandedItems,
         dbItem,
         false,
@@ -110,7 +103,7 @@ describe("db item expansion", () => {
     });
   });
 
-  describe("replaceItemInExpandedState", () => {
+  describe("replaceExpandedItem", () => {
     it("should replace the db item", () => {
       const currentExpandedItems: ExpandedDbItem[] = [
         {
@@ -134,12 +127,12 @@ describe("db item expansion", () => {
         listName: "list1",
       });
 
-      const newDbItem: RemoteUserDefinedListDbItem = {
+      const newDbItem = {
         ...currentDbItem,
         listName: "list1 (renamed)",
       };
 
-      const newExpandedItems = replaceItemInExpandedState(
+      const newExpandedItems = replaceExpandedItem(
         currentExpandedItems,
         currentDbItem,
         newDbItem,
