@@ -31,7 +31,7 @@ export interface RemoteUserDefinedListExpandedDbItem {
   listName: string;
 }
 
-export function updateItemInExpandedState(
+export function updateExpandedItem(
   currentExpandedItems: ExpandedDbItem[],
   dbItem: DbItem,
   itemExpanded: boolean,
@@ -50,7 +50,7 @@ export function updateItemInExpandedState(
   }
 }
 
-export function replaceItemInExpandedState(
+export function replaceExpandedItem(
   currentExpandedItems: ExpandedDbItem[],
   currentDbItem: DbItem,
   newDbItem: DbItem,
