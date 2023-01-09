@@ -23,6 +23,7 @@ import {
   showAndLogInformationMessage,
   showAndLogWarningMessage,
   showBinaryChoiceDialog,
+  showInformationMessageWithAction,
 } from "./helpers";
 import { extLogger } from "./common";
 import { URLSearchParams } from "url";
@@ -946,16 +947,42 @@ export class QueryHistoryManager extends DisposableObject {
   ): Promise<void> {
     // We can remove a Variant Analysis locally, but not remotely.
     // The user must cancel the query on GitHub Actions explicitly.
+    if (item.status === QueryStatus.InProgress) {
+      const response = await showBinaryChoiceDialog(
+        `You are about to delete this query: ${this.labelProvider.getLabel(
+          item,
+        )}. Are you sure?`,
+      );
+      if (!response) return;
+    }
+
     this.treeDataProvider.remove(item);
     void extLogger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
+
     if (item.status === QueryStatus.InProgress) {
-      void extLogger.log(
-        "The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.",
-      );
+      await this.showToastWithWorkflowRunLink(item);
     }
 
     await this.variantAnalysisManager.removeVariantAnalysis(
       item.variantAnalysis,
+    );
+  }
+
+  private async showToastWithWorkflowRunLink(
+    item: VariantAnalysisHistoryItem,
+  ): Promise<void> {
+    void extLogger.log(
+      "The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.",
+    );
+
+    const workflowRunUrl = getActionsWorkflowRunUrl(item);
+    const message = `Remote query has been removed from history. However, the variant analysis is still running on GitHub Actions. To cancel it, you must go to the [workflow run](${workflowRunUrl}) in your browser.`;
+
+    void showInformationMessageWithAction(message, "Go to workflow run").then(
+      async (shouldOpenWorkflowRun) => {
+        if (!shouldOpenWorkflowRun) return;
+        await env.openExternal(Uri.parse(workflowRunUrl));
+      },
     );
   }
 
