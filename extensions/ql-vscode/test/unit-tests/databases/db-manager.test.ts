@@ -44,14 +44,20 @@ describe("db manager", () => {
   );
 
   describe("renaming items", () => {
+    const remoteList = {
+      name: "my-list-1",
+      repositories: ["owner1/repo1", "owner1/repo2"],
+    };
+    const localDb = createLocalDbConfigItem({ name: "db1" });
+    const localList = {
+      name: "my-list-1",
+      databases: [localDb],
+    };
+
     it("should rename remote db list", async () => {
       const dbConfig = createDbConfig({
-        remoteLists: [
-          {
-            name: "my-list-1",
-            repositories: ["owner1/repo1", "owner1/repo2"],
-          },
-        ],
+        remoteLists: [remoteList],
+        localLists: [localList],
       });
 
       await saveDbConfig(dbConfig);
@@ -70,14 +76,9 @@ describe("db manager", () => {
     });
 
     it("should rename local db list", async () => {
-      const localDb = createLocalDbConfigItem();
       const dbConfig = createDbConfig({
-        localLists: [
-          {
-            name: "my-list-1",
-            databases: [localDb],
-          },
-        ],
+        remoteLists: [remoteList],
+        localLists: [localList],
       });
 
       await saveDbConfig(dbConfig);
@@ -96,8 +97,8 @@ describe("db manager", () => {
     });
 
     it("should rename local db outside a list", async () => {
-      const localDb = createLocalDbConfigItem({ name: "db1" });
       const dbConfig = createDbConfig({
+        localLists: [localList],
         localDbs: [localDb],
       });
 
@@ -114,14 +115,9 @@ describe("db manager", () => {
     });
 
     it("should rename local db inside a list", async () => {
-      const localDb = createLocalDbConfigItem({ name: "db1" });
       const dbConfig = createDbConfig({
-        localLists: [
-          {
-            name: "my-list-1",
-            databases: [localDb],
-          },
-        ],
+        localLists: [localList],
+        localDbs: [localDb],
       });
 
       await saveDbConfig(dbConfig);
