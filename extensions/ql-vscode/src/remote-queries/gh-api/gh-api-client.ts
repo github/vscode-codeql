@@ -1,6 +1,6 @@
 import * as t from "io-ts";
-import { PathReporter } from "io-ts/PathReporter";
-import { isLeft } from "fp-ts/Either";
+import { fold, isLeft } from "fp-ts/Either";
+import { pipe } from "fp-ts/function";
 import { Credentials } from "../../authentication";
 import { OctokitResponse } from "@octokit/types/dist-types";
 import { RemoteQueriesSubmission } from "../shared/remote-queries";
@@ -16,6 +16,41 @@ import {
   RemoteQueriesSubmissionRequest,
 } from "./remote-queries";
 
+function stringify(v: any): string {
+  if (typeof v === "function") {
+    return t.getFunctionName(v);
+  }
+  if (typeof v === "number" && !isFinite(v)) {
+    if (isNaN(v)) {
+      return "NaN";
+    }
+    return v > 0 ? "Infinity" : "-Infinity";
+  }
+  return JSON.stringify(v);
+}
+
+function getContextPath(context: t.Context): string {
+  return context.map(({ key }) => key).join(".");
+}
+
+function getMessage(e: t.ValidationError): string {
+  return e.message !== undefined
+    ? e.message
+    : `Invalid value ${stringify(e.value)} supplied to ${getContextPath(
+        e.context,
+      )}`;
+}
+
+const getErrors = <A>(v: t.Validation<A>): string[] => {
+  return pipe(
+    v,
+    fold(
+      (errors) => errors.map(getMessage),
+      () => ["no errors"],
+    ),
+  );
+};
+
 function validateApiResponse<T extends t.Any>(
   data: unknown,
   type: T,
@@ -23,9 +58,7 @@ function validateApiResponse<T extends t.Any>(
   const result = type.decode(data);
   if (isLeft(result)) {
     throw new Error(
-      `Invalid response from GitHub API: ${PathReporter.report(result).join(
-        ", ",
-      )}`,
+      `Invalid response from GitHub API: ${getErrors(result).join(", ")}`,
     );
   }
   return result.right;
