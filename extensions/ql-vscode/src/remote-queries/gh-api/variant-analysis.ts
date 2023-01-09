@@ -25,27 +25,6 @@ export type VariantAnalysisQueryLanguage = t.TypeOf<
   typeof VariantAnalysisQueryLanguage
 >;
 
-export const VariantAnalysis = t.union([
-  t.type({
-    id: t.number,
-    controller_repo: Repository,
-    query_language: VariantAnalysisQueryLanguage,
-    query_pack_url: t.string,
-    created_at: t.string,
-    updated_at: t.string,
-    status: VariantAnalysisStatus,
-  }),
-  t.partial({
-    completed_at: t.string,
-    actions_workflow_run_id: t.number,
-    failure_reason: VariantAnalysisFailureReason,
-    scanned_repositories: t.array(VariantAnalysisScannedRepository),
-    skipped_repositories: VariantAnalysisSkippedRepositories,
-  }),
-]);
-
-export type VariantAnalysis = t.TypeOf<typeof VariantAnalysis>;
-
 export const VariantAnalysisStatus = t.keyof({
   in_progress: null,
   succeeded: null,
@@ -78,7 +57,7 @@ export type VariantAnalysisRepoStatus = t.TypeOf<
   typeof VariantAnalysisRepoStatus
 >;
 
-export const VariantAnalysisScannedRepository = t.union([
+export const VariantAnalysisScannedRepository = t.intersection([
   t.type({
     repository: RepositoryWithMetadata,
     analysis_status: VariantAnalysisRepoStatus,
@@ -112,7 +91,7 @@ export type VariantAnalysisNotFoundRepositoryGroup = t.TypeOf<
   typeof VariantAnalysisNotFoundRepositoryGroup
 >;
 
-export const VariantAnalysisRepoTask = t.union([
+export const VariantAnalysisRepoTask = t.intersection([
   t.type({
     repository: Repository,
     analysis_status: VariantAnalysisRepoStatus,
@@ -139,3 +118,24 @@ export const VariantAnalysisSkippedRepositories = t.partial({
 export type VariantAnalysisSkippedRepositories = t.TypeOf<
   typeof VariantAnalysisSkippedRepositories
 >;
+
+export const VariantAnalysis = t.intersection([
+  t.type({
+    id: t.number,
+    controller_repo: Repository,
+    query_language: VariantAnalysisQueryLanguage,
+    query_pack_url: t.string,
+    created_at: t.string,
+    updated_at: t.string,
+    status: VariantAnalysisStatus,
+  }),
+  t.partial({
+    completed_at: t.string,
+    actions_workflow_run_id: t.number,
+    failure_reason: VariantAnalysisFailureReason,
+    scanned_repositories: t.array(VariantAnalysisScannedRepository),
+    skipped_repositories: VariantAnalysisSkippedRepositories,
+  }),
+]);
+
+export type VariantAnalysis = t.TypeOf<typeof VariantAnalysis>;

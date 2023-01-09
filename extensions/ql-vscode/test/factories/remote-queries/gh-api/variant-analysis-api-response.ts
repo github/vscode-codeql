@@ -5,7 +5,6 @@ import {
   VariantAnalysisSkippedRepositories,
   VariantAnalysisStatus,
 } from "../../../../src/remote-queries/gh-api/variant-analysis";
-import { VariantAnalysisQueryLanguage } from "../../../../src/remote-queries/shared/variant-analysis";
 import { createMockScannedRepos } from "./scanned-repositories";
 import { createMockSkippedRepos } from "./skipped-repositories";
 import { createMockRepository } from "./repository";
@@ -23,7 +22,7 @@ export function createMockApiResponse(
       full_name: "github/pickles",
       private: false,
     },
-    query_language: VariantAnalysisQueryLanguage.Javascript,
+    query_language: "javascript",
     query_pack_url: "https://example.com/foo",
     created_at: faker.date.recent().toISOString(),
     updated_at: faker.date.recent().toISOString(),
