@@ -1,3 +1,6 @@
+import * as t from "io-ts";
+import { PathReporter } from "io-ts/PathReporter";
+import { isLeft } from "fp-ts/Either";
 import { Credentials } from "../../authentication";
 import { OctokitResponse } from "@octokit/types/dist-types";
 import { RemoteQueriesSubmission } from "../shared/remote-queries";
@@ -12,6 +15,21 @@ import {
   RemoteQueriesResponse,
   RemoteQueriesSubmissionRequest,
 } from "./remote-queries";
+
+function validateApiResponse<T extends t.Any>(
+  data: unknown,
+  type: T,
+): t.TypeOf<T> {
+  const result = type.decode(data);
+  if (isLeft(result)) {
+    throw new Error(
+      `Invalid response from GitHub API: ${PathReporter.report(result).join(
+        ", ",
+      )}`,
+    );
+  }
+  return result.right;
+}
 
 export async function submitVariantAnalysis(
   credentials: Credentials,
@@ -31,7 +49,7 @@ export async function submitVariantAnalysis(
     repository_owners: databases.repositoryOwners,
   };
 
-  const response: OctokitResponse<VariantAnalysis> = await octokit.request(
+  const response = await octokit.request(
     "POST /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses",
     {
       controllerRepoId,
@@ -39,7 +57,7 @@ export async function submitVariantAnalysis(
     },
   );
 
-  return response.data;
+  return validateApiResponse(response.data, VariantAnalysis);
 }
 
 export async function getVariantAnalysis(
@@ -49,7 +67,7 @@ export async function getVariantAnalysis(
 ): Promise<VariantAnalysis> {
   const octokit = await credentials.getOctokit();
 
-  const response: OctokitResponse<VariantAnalysis> = await octokit.request(
+  const response = await octokit.request(
     "GET /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId",
     {
       controllerRepoId,
@@ -57,7 +75,7 @@ export async function getVariantAnalysis(
     },
   );
 
-  return response.data;
+  return validateApiResponse(response.data, VariantAnalysis);
 }
 
 export async function getVariantAnalysisRepo(
@@ -68,17 +86,16 @@ export async function getVariantAnalysisRepo(
 ): Promise<VariantAnalysisRepoTask> {
   const octokit = await credentials.getOctokit();
 
-  const response: OctokitResponse<VariantAnalysisRepoTask> =
-    await octokit.request(
-      "GET /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/:repoId",
-      {
-        controllerRepoId,
-        variantAnalysisId,
-        repoId,
-      },
-    );
+  const response = await octokit.request(
+    "GET /repositories/:controllerRepoId/code-scanning/codeql/variant-analyses/:variantAnalysisId/repositories/:repoId",
+    {
+      controllerRepoId,
+      variantAnalysisId,
+      repoId,
+    },
+  );
 
-  return response.data;
+  return validateApiResponse(response.data, VariantAnalysisRepoTask);
 }
 
 export async function getVariantAnalysisRepoResult(
@@ -99,7 +116,7 @@ export async function getRepositoryFromNwo(
   const octokit = await credentials.getOctokit();
 
   const response = await octokit.rest.repos.get({ owner, repo });
-  return response.data as Repository;
+  return validateApiResponse(response.data, Repository);
 }
 
 /**
