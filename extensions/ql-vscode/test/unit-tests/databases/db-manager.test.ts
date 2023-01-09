@@ -67,11 +67,21 @@ describe("db manager", () => {
       await dbManager.renameList(dbItem, "my-list-2");
 
       const dbConfigFileContents = await readDbConfigDirectly();
+
+      // Check that the remote list has been renamed
       const remoteLists = dbConfigFileContents.databases.remote.repositoryLists;
       expect(remoteLists.length).toBe(1);
       expect(remoteLists[0]).toEqual({
         name: "my-list-2",
         repositories: ["owner1/repo1", "owner1/repo2"],
+      });
+
+      // Check that the local list has not been renamed
+      const localLists = dbConfigFileContents.databases.local.lists;
+      expect(localLists.length).toBe(1);
+      expect(localLists[0]).toEqual({
+        name: "my-list-1",
+        databases: [localDb],
       });
     });
 
@@ -88,11 +98,21 @@ describe("db manager", () => {
       await dbManager.renameList(dbItem, "my-list-2");
 
       const dbConfigFileContents = await readDbConfigDirectly();
+
+      // Check that the local list has been renamed
       const localLists = dbConfigFileContents.databases.local.lists;
       expect(localLists.length).toBe(1);
       expect(localLists[0]).toEqual({
         name: "my-list-2",
         databases: [localDb],
+      });
+
+      // Check that the remote list has not been renamed
+      const remoteLists = dbConfigFileContents.databases.remote.repositoryLists;
+      expect(remoteLists.length).toBe(1);
+      expect(remoteLists[0]).toEqual({
+        name: "my-list-1",
+        repositories: ["owner1/repo1", "owner1/repo2"],
       });
     });
 
@@ -109,9 +129,19 @@ describe("db manager", () => {
       await dbManager.renameLocalDb(dbItem, "db2");
 
       const dbConfigFileContents = await readDbConfigDirectly();
+
+      // Check that the db outside of the list has been renamed
       const localDbs = dbConfigFileContents.databases.local.databases;
       expect(localDbs.length).toBe(1);
       expect(localDbs[0].name).toEqual("db2");
+
+      // Check that the db inside the list has not been renamed
+      const localLists = dbConfigFileContents.databases.local.lists;
+      expect(localLists.length).toBe(1);
+      expect(localLists[0]).toEqual({
+        name: "my-list-1",
+        databases: [localDb],
+      });
     });
 
     it("should rename local db inside a list", async () => {
@@ -127,9 +157,17 @@ describe("db manager", () => {
       await dbManager.renameLocalDb(dbItem, "db2");
 
       const dbConfigFileContents = await readDbConfigDirectly();
-      const localDbs = dbConfigFileContents.databases.local.lists[0].databases;
+
+      // Check that the db inside the list has been renamed
+      const localListDbs =
+        dbConfigFileContents.databases.local.lists[0].databases;
+      expect(localListDbs.length).toBe(1);
+      expect(localListDbs[0].name).toEqual("db2");
+
+      // Check that the db outside of the list has not been renamed
+      const localDbs = dbConfigFileContents.databases.local.databases;
       expect(localDbs.length).toBe(1);
-      expect(localDbs[0].name).toEqual("db2");
+      expect(localDbs[0]).toEqual(localDb);
     });
   });
 
