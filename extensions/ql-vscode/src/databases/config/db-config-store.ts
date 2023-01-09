@@ -7,7 +7,9 @@ import {
   renameLocalList,
   renameRemoteList,
   SelectedDbItem,
+  SelectedDbItemKind,
 } from "./db-config";
+import * as lodash from "lodash";
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
 import { DbConfigValidator } from "./db-config-validator";
@@ -113,6 +115,7 @@ export class DbConfigStore extends DisposableObject {
           );
         break;
       case DbItemKind.LocalDatabase:
+        // TODO: Remove databases from Disk once implemented
         if (dbItem.parentListName) {
           const parent = config.databases.local.lists.find(
             (list) => list.name === dbItem.parentListName,
@@ -158,14 +161,25 @@ export class DbConfigStore extends DisposableObject {
     }
 
     // Remove item from selected
-    const mappedItem = mapDbItemToSelectedDbItem(dbItem);
-    if (
-      selectedItem &&
-      JSON.stringify(mappedItem) === JSON.stringify(selectedItem)
-    ) {
-      config.selected = undefined;
+    const removedItem = mapDbItemToSelectedDbItem(dbItem);
+    if (selectedItem) {
+      // if removedItem has a parentList, check if parentList is selectedItem
+      if (
+        removedItem &&
+        (removedItem.kind === SelectedDbItemKind.LocalUserDefinedList ||
+          removedItem.kind === SelectedDbItemKind.RemoteUserDefinedList)
+      ) {
+        if (
+          (selectedItem.kind === SelectedDbItemKind.LocalDatabase ||
+            selectedItem.kind === SelectedDbItemKind.RemoteRepository) &&
+          removedItem.listName === selectedItem.listName
+        ) {
+          config.selected = undefined;
+        }
+      } else if (lodash.isEqual(removedItem, selectedItem)) {
+        config.selected = undefined;
+      }
     }
-
     await this.writeConfig(config);
   }
 
