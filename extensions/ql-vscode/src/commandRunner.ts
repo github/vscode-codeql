@@ -147,7 +147,7 @@ export function commandRunner(
       return undefined;
     } finally {
       const executionTime = Date.now() - startTime;
-      telemetryListener.sendCommandUsage(commandId, executionTime, error);
+      telemetryListener?.sendCommandUsage(commandId, executionTime, error);
     }
   });
 }
@@ -201,7 +201,7 @@ export function commandRunnerWithProgress<R>(
       return undefined;
     } finally {
       const executionTime = Date.now() - startTime;
-      telemetryListener.sendCommandUsage(commandId, executionTime, error);
+      telemetryListener?.sendCommandUsage(commandId, executionTime, error);
     }
   });
 }
