@@ -1,3 +1,4 @@
+import * as t from "io-ts";
 import { Repository, RepositoryWithMetadata } from "./repository";
 
 export interface VariantAnalysisSubmissionRequest {
@@ -9,81 +10,132 @@ export interface VariantAnalysisSubmissionRequest {
   repository_owners?: string[];
 }
 
-export type VariantAnalysisQueryLanguage =
-  | "csharp"
-  | "cpp"
-  | "go"
-  | "java"
-  | "javascript"
-  | "python"
-  | "ruby"
-  | "swift";
+export const VariantAnalysisQueryLanguage = t.keyof({
+  csharp: null,
+  cpp: null,
+  go: null,
+  java: null,
+  javascript: null,
+  python: null,
+  ruby: null,
+  swift: null,
+});
 
-export interface VariantAnalysis {
-  id: number;
-  controller_repo: Repository;
-  query_language: VariantAnalysisQueryLanguage;
-  query_pack_url: string;
-  created_at: string;
-  updated_at: string;
-  status: VariantAnalysisStatus;
-  completed_at?: string;
-  actions_workflow_run_id?: number;
-  failure_reason?: VariantAnalysisFailureReason;
-  scanned_repositories?: VariantAnalysisScannedRepository[];
-  skipped_repositories?: VariantAnalysisSkippedRepositories;
-}
+export type VariantAnalysisQueryLanguage = t.TypeOf<
+  typeof VariantAnalysisQueryLanguage
+>;
 
-export type VariantAnalysisStatus =
-  | "in_progress"
-  | "succeeded"
-  | "failed"
-  | "cancelled";
+export const VariantAnalysis = t.union([
+  t.type({
+    id: t.number,
+    controller_repo: Repository,
+    query_language: VariantAnalysisQueryLanguage,
+    query_pack_url: t.string,
+    created_at: t.string,
+    updated_at: t.string,
+    status: VariantAnalysisStatus,
+  }),
+  t.partial({
+    completed_at: t.string,
+    actions_workflow_run_id: t.number,
+    failure_reason: VariantAnalysisFailureReason,
+    scanned_repositories: t.array(VariantAnalysisScannedRepository),
+    skipped_repositories: VariantAnalysisSkippedRepositories,
+  }),
+]);
 
-export type VariantAnalysisFailureReason =
-  | "no_repos_queried"
-  | "actions_workflow_run_failed"
-  | "internal_error";
+export type VariantAnalysis = t.TypeOf<typeof VariantAnalysis>;
 
-export type VariantAnalysisRepoStatus =
-  | "pending"
-  | "in_progress"
-  | "succeeded"
-  | "failed"
-  | "canceled"
-  | "timed_out";
+export const VariantAnalysisStatus = t.keyof({
+  in_progress: null,
+  succeeded: null,
+  failed: null,
+  cancelled: null,
+});
 
-export interface VariantAnalysisScannedRepository {
-  repository: RepositoryWithMetadata;
-  analysis_status: VariantAnalysisRepoStatus;
-  result_count?: number;
-  artifact_size_in_bytes?: number;
-  failure_message?: string;
-}
+export type VariantAnalysisStatus = t.TypeOf<typeof VariantAnalysisStatus>;
 
-export interface VariantAnalysisSkippedRepositoryGroup {
-  repository_count: number;
-  repositories: RepositoryWithMetadata[];
-}
+export const VariantAnalysisFailureReason = t.keyof({
+  no_repos_queried: null,
+  actions_workflow_run_failed: null,
+  internal_error: null,
+});
 
-export interface VariantAnalysisNotFoundRepositoryGroup {
-  repository_count: number;
-  repository_full_names: string[];
-}
-export interface VariantAnalysisRepoTask {
-  repository: Repository;
-  analysis_status: VariantAnalysisRepoStatus;
-  artifact_size_in_bytes?: number;
-  result_count?: number;
-  failure_message?: string;
-  database_commit_sha?: string;
-  source_location_prefix?: string;
-  artifact_url?: string;
-}
+export type VariantAnalysisFailureReason = t.TypeOf<
+  typeof VariantAnalysisFailureReason
+>;
 
-export interface VariantAnalysisSkippedRepositories {
-  access_mismatch_repos?: VariantAnalysisSkippedRepositoryGroup;
-  not_found_repos?: VariantAnalysisNotFoundRepositoryGroup;
-  no_codeql_db_repos?: VariantAnalysisSkippedRepositoryGroup;
-  over_limit_repos?: VariantAnalysisSkippedRepositoryGroup;
-}
+export const VariantAnalysisRepoStatus = t.keyof({
+  pending: null,
+  in_progress: null,
+  succeeded: null,
+  failed: null,
+  canceled: null,
+  timed_out: null,
+});
+
+export type VariantAnalysisRepoStatus = t.TypeOf<
+  typeof VariantAnalysisRepoStatus
+>;
+
+export const VariantAnalysisScannedRepository = t.union([
+  t.type({
+    repository: RepositoryWithMetadata,
+    analysis_status: VariantAnalysisRepoStatus,
+  }),
+  t.partial({
+    result_count: t.number,
+    artifact_size_in_bytes: t.number,
+    failure_message: t.string,
+  }),
+]);
+
+export type VariantAnalysisScannedRepository = t.TypeOf<
+  typeof VariantAnalysisScannedRepository
+>;
+
+export const VariantAnalysisSkippedRepositoryGroup = t.type({
+  repository_count: t.number,
+  repositories: t.array(RepositoryWithMetadata),
+});
+
+export type VariantAnalysisSkippedRepositoryGroup = t.TypeOf<
+  typeof VariantAnalysisSkippedRepositoryGroup
+>;
+
+export const VariantAnalysisNotFoundRepositoryGroup = t.type({
+  repository_count: t.number,
+  repository_full_names: t.array(t.string),
+});
+
+export type VariantAnalysisNotFoundRepositoryGroup = t.TypeOf<
+  typeof VariantAnalysisNotFoundRepositoryGroup
+>;
+
+export const VariantAnalysisRepoTask = t.union([
+  t.type({
+    repository: Repository,
+    analysis_status: VariantAnalysisRepoStatus,
+  }),
+  t.partial({
+    artifact_size_in_bytes: t.number,
+    result_count: t.number,
+    failure_message: t.string,
+    database_commit_sha: t.string,
+    source_location_prefix: t.string,
+    artifact_url: t.string,
+  }),
+]);
+
+export type VariantAnalysisRepoTask = t.TypeOf<typeof VariantAnalysisRepoTask>;
+
+export const VariantAnalysisSkippedRepositories = t.partial({
+  access_mismatch_repos: VariantAnalysisSkippedRepositoryGroup,
+  not_found_repos: VariantAnalysisNotFoundRepositoryGroup,
+  no_codeql_db_repos: VariantAnalysisSkippedRepositoryGroup,
+  over_limit_repos: VariantAnalysisSkippedRepositoryGroup,
+});
+
+export type VariantAnalysisSkippedRepositories = t.TypeOf<
+  typeof VariantAnalysisSkippedRepositories
+>;
