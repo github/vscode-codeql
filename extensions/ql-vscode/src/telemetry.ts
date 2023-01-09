@@ -95,10 +95,8 @@ export class TelemetryListener extends ConfigListener {
       CANARY_FEATURES.getValue() &&
       !ENABLE_TELEMETRY.getValue()
     ) {
-      await Promise.all([
-        this.setTelemetryRequested(false),
-        this.requestTelemetryPermission(),
-      ]);
+      await this.setTelemetryRequested(false);
+      await this.requestTelemetryPermission();
     }
   }
 
