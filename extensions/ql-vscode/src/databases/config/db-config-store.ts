@@ -9,7 +9,6 @@ import {
   SelectedDbItem,
   SelectedDbItemKind,
 } from "./db-config";
-import * as lodash from "lodash";
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
 import { DbConfigValidator } from "./db-config-validator";
@@ -27,7 +26,10 @@ import {
   DbItem,
   DbItemKind,
 } from "../db-item";
-import { mapDbItemToSelectedDbItem } from "../db-item-selection";
+import {
+  compareSelectedKindIsEqual,
+  mapDbItemToSelectedDbItem,
+} from "../db-item-selection";
 
 export class DbConfigStore extends DisposableObject {
   public readonly onDidChangeConfig: AppEvent<void>;
@@ -98,7 +100,7 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot remove item if config is not loaded");
     }
 
-    const config: DbConfig = cloneDbConfig(this.config);
+    const config = cloneDbConfig(this.config);
     const selectedItem: SelectedDbItem | undefined = config.selected;
 
     // Remove item from databases
@@ -115,7 +117,7 @@ export class DbConfigStore extends DisposableObject {
           );
         break;
       case DbItemKind.LocalDatabase:
-        // TODO: Remove databases from Disk once implemented
+        // When we start using local databases these need to be removed from disk as well.
         if (dbItem.parentListName) {
           const parent = config.databases.local.lists.find(
             (list) => list.name === dbItem.parentListName,
@@ -162,12 +164,11 @@ export class DbConfigStore extends DisposableObject {
 
     // Remove item from selected
     const removedItem = mapDbItemToSelectedDbItem(dbItem);
-    if (selectedItem) {
+    if (selectedItem && removedItem) {
       // if removedItem has a parentList, check if parentList is selectedItem
       if (
-        removedItem &&
-        (removedItem.kind === SelectedDbItemKind.LocalUserDefinedList ||
-          removedItem.kind === SelectedDbItemKind.RemoteUserDefinedList)
+        removedItem.kind === SelectedDbItemKind.LocalUserDefinedList ||
+        removedItem.kind === SelectedDbItemKind.RemoteUserDefinedList
       ) {
         if (
           (selectedItem.kind === SelectedDbItemKind.LocalDatabase ||
@@ -176,7 +177,8 @@ export class DbConfigStore extends DisposableObject {
         ) {
           config.selected = undefined;
         }
-      } else if (lodash.isEqual(removedItem, selectedItem)) {
+      }
+      if (compareSelectedKindIsEqual(removedItem, selectedItem)) {
         config.selected = undefined;
       }
     }

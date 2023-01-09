@@ -13,6 +13,8 @@ import {
 import {
   createLocalDatabaseDbItem,
   createLocalListDbItem,
+  createRemoteOwnerDbItem,
+  createRemoteRepoDbItem,
   createRemoteUserDefinedListDbItem,
 } from "../../../factories/db-item-factories";
 import { createMockApp } from "../../../__mocks__/appMock";
@@ -361,6 +363,135 @@ describe("db config store", () => {
       await expect(
         configStore.renameRemoteList(currentDbItem, "list2"),
       ).rejects.toThrow(`A remote list with the name 'list2' already exists`);
+
+      configStore.dispose();
+    });
+  });
+
+  describe("db and list deletion", () => {
+    let app: App;
+    let configPath: string;
+
+    beforeEach(async () => {
+      app = createMockApp({
+        extensionPath,
+        workspaceStoragePath: tempWorkspaceStoragePath,
+      });
+
+      configPath = join(tempWorkspaceStoragePath, "workspace-databases.json");
+    });
+
+    it("should remove a single db item", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        remoteOwners: ["owner1", "owner2"],
+        selected: {
+          kind: SelectedDbItemKind.RemoteOwner,
+          ownerName: "owner1",
+        },
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Remove
+      const currentDbItem = createRemoteOwnerDbItem({
+        ownerName: "owner1",
+      });
+      await configStore.removeDbItem(currentDbItem);
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      expect(updatedRemoteDbs.owners).toHaveLength(1);
+      expect(updatedRemoteDbs.owners[0]).toEqual("owner2");
+
+      expect(updatedDbConfig.selected).toEqual(undefined);
+
+      configStore.dispose();
+    });
+
+    it("should remove a list db item", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "list1",
+            repositories: ["owner/repo1", "owner/repo2"],
+          },
+        ],
+        selected: {
+          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          listName: "list1",
+        },
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Remove
+      const currentDbItem = createRemoteUserDefinedListDbItem({
+        listName: "list1",
+      });
+      await configStore.removeDbItem(currentDbItem);
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      expect(updatedRemoteDbs.repositoryLists).toHaveLength(0);
+
+      expect(updatedDbConfig.selected).toEqual(undefined);
+
+      configStore.dispose();
+    });
+
+    it("should remove a db item in a list", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "list1",
+            repositories: ["owner/repo1", "owner/repo2"],
+          },
+        ],
+        selected: {
+          kind: SelectedDbItemKind.RemoteRepository,
+          repositoryName: "owner/repo1",
+          listName: "list1",
+        },
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Remove
+      const currentDbItem = createRemoteRepoDbItem({
+        repoFullName: "owner/repo1",
+        parentListName: "list1",
+      });
+      await configStore.removeDbItem(currentDbItem);
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      expect(updatedRemoteDbs.repositoryLists[0].repositories).toHaveLength(1);
+      expect(updatedRemoteDbs.repositoryLists[0].repositories[0]).toEqual(
+        "owner/repo2",
+      );
+
+      expect(updatedDbConfig.selected).toEqual(undefined);
 
       configStore.dispose();
     });

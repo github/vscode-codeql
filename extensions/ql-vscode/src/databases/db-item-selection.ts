@@ -1,5 +1,12 @@
 import { DbItem, DbItemKind, LocalDbItem, RemoteDbItem } from "./db-item";
-import { SelectedDbItem, SelectedDbItemKind } from "./config/db-config";
+import {
+  SelectedDbItem,
+  SelectedDbItemKind,
+  SelectedLocalDatabase,
+  SelectedLocalUserDefinedList,
+  SelectedRemoteOwner,
+  SelectedRemoteRepository,
+} from "./config/db-config";
 
 export function getSelectedDbItem(dbItems: DbItem[]): DbItem | undefined {
   for (const dbItem of dbItems) {
@@ -90,5 +97,41 @@ export function mapDbItemToSelectedDbItem(
         repositoryName: dbItem.repoFullName,
         listName: dbItem?.parentListName,
       };
+  }
+}
+
+export function compareSelectedKindIsEqual(
+  item1: SelectedDbItem,
+  item2: SelectedDbItem,
+): boolean {
+  if (item1.kind === item2.kind) {
+    switch (item1.kind) {
+      case SelectedDbItemKind.LocalUserDefinedList:
+      case SelectedDbItemKind.RemoteUserDefinedList:
+      case SelectedDbItemKind.RemoteSystemDefinedList:
+        return (
+          item1.listName === (item2 as SelectedLocalUserDefinedList).listName
+        );
+      case SelectedDbItemKind.RemoteOwner:
+        return item1.ownerName === (item2 as SelectedRemoteOwner).ownerName;
+      case SelectedDbItemKind.LocalDatabase: {
+        const selectedItem = item2 as SelectedLocalDatabase;
+        return (
+          item1.databaseName === selectedItem.databaseName &&
+          item1.listName === selectedItem.listName
+        );
+      }
+      case SelectedDbItemKind.RemoteRepository: {
+        const selectedItem = item2 as SelectedRemoteRepository;
+        return (
+          item1.repositoryName === selectedItem.repositoryName &&
+          item1.listName === selectedItem.listName
+        );
+      }
+      default:
+        return false;
+    }
+  } else {
+    return false;
   }
 }
