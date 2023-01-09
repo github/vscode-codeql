@@ -43,6 +43,16 @@ describe("submitVariantAnalysis", () => {
     expect(result).toBeDefined();
     expect(result.id).toBe(variantAnalysisId);
   });
+
+  it("throws an error whe the received variant analysis is not valid", async () => {
+    await mockServer.loadScenario("invalid-github-api-response");
+
+    await expect(
+      submitVariantAnalysis(mockCredentials, createMockSubmission()),
+    ).rejects.toThrow(
+      'Invalid response from GitHub API: Invalid value undefined supplied to .0.controller_repo.full_name, Invalid value "yes" supplied to .0.controller_repo.private',
+    );
+  });
 });
 
 describe("getVariantAnalysis", () => {
