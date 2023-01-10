@@ -47,6 +47,7 @@ describe("db manager", () => {
 
   afterEach(async () => {
     await remove(tempWorkspaceStoragePath);
+    dbConfigStore.dispose();
   });
 
   describe("renaming items", () => {
