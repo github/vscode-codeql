@@ -7,6 +7,7 @@ import {
   renameLocalList,
   renameRemoteList,
   SelectedDbItem,
+  SelectedDbItemKind,
 } from "./db-config";
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
@@ -22,7 +23,13 @@ import {
   LocalDatabaseDbItem,
   LocalListDbItem,
   RemoteUserDefinedListDbItem,
+  DbItem,
+  DbItemKind,
 } from "../db-item";
+import {
+  compareSelectedKindIsEqual,
+  mapDbItemToSelectedDbItem,
+} from "../db-item-selection";
 
 export class DbConfigStore extends DisposableObject {
   public readonly onDidChangeConfig: AppEvent<void>;
@@ -85,6 +92,96 @@ export class DbConfigStore extends DisposableObject {
       selected: dbItem,
     };
 
+    await this.writeConfig(config);
+  }
+
+  public async removeDbItem(dbItem: DbItem): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot remove item if config is not loaded");
+    }
+
+    const config = cloneDbConfig(this.config);
+    const selectedItem: SelectedDbItem | undefined = config.selected;
+
+    // Remove item from databases
+    switch (dbItem.kind) {
+      case DbItemKind.LocalList:
+        config.databases.local.lists = config.databases.local.lists.filter(
+          (list) => list.name !== dbItem.listName,
+        );
+        break;
+      case DbItemKind.RemoteUserDefinedList:
+        config.databases.remote.repositoryLists =
+          config.databases.remote.repositoryLists.filter(
+            (list) => list.name !== dbItem.listName,
+          );
+        break;
+      case DbItemKind.LocalDatabase:
+        // When we start using local databases these need to be removed from disk as well.
+        if (dbItem.parentListName) {
+          const parent = config.databases.local.lists.find(
+            (list) => list.name === dbItem.parentListName,
+          );
+          if (!parent) {
+            throw Error(`Cannot find parent list '${dbItem.parentListName}'`);
+          } else {
+            parent.databases = parent.databases.filter(
+              (db) => db.name !== dbItem.databaseName,
+            );
+          }
+        }
+        config.databases.local.databases =
+          config.databases.local.databases.filter(
+            (db) => db.name !== dbItem.databaseName,
+          );
+        break;
+      case DbItemKind.RemoteRepo:
+        if (dbItem.parentListName) {
+          const parent = config.databases.remote.repositoryLists.find(
+            (list) => list.name === dbItem.parentListName,
+          );
+          if (!parent) {
+            throw Error(`Cannot find parent list '${dbItem.parentListName}'`);
+          } else {
+            parent.repositories = parent.repositories.filter(
+              (repo) => repo !== dbItem.repoFullName,
+            );
+          }
+        }
+        config.databases.remote.repositories =
+          config.databases.remote.repositories.filter(
+            (repo) => repo !== dbItem.repoFullName,
+          );
+        break;
+      case DbItemKind.RemoteOwner:
+        config.databases.remote.owners = config.databases.remote.owners.filter(
+          (owner) => owner !== dbItem.ownerName,
+        );
+        break;
+      default:
+        throw Error(`Type '${dbItem.kind}' cannot be removed`);
+    }
+
+    // Remove item from selected
+    const removedItem = mapDbItemToSelectedDbItem(dbItem);
+    if (selectedItem && removedItem) {
+      // if removedItem has a parentList, check if parentList is selectedItem
+      if (
+        removedItem.kind === SelectedDbItemKind.LocalUserDefinedList ||
+        removedItem.kind === SelectedDbItemKind.RemoteUserDefinedList
+      ) {
+        if (
+          (selectedItem.kind === SelectedDbItemKind.LocalDatabase ||
+            selectedItem.kind === SelectedDbItemKind.RemoteRepository) &&
+          removedItem.listName === selectedItem.listName
+        ) {
+          config.selected = undefined;
+        }
+      }
+      if (compareSelectedKindIsEqual(removedItem, selectedItem)) {
+        config.selected = undefined;
+      }
+    }
     await this.writeConfig(config);
   }
 

@@ -107,6 +107,12 @@ export class DbPanel extends DisposableObject {
         (treeViewItem: DbTreeViewItem) => this.renameItem(treeViewItem),
       ),
     );
+    this.push(
+      commandRunner(
+        "codeQLDatabasesExperimental.removeItemContextMenu",
+        (treeViewItem: DbTreeViewItem) => this.removeItem(treeViewItem),
+      ),
+    );
   }
 
   private async openConfigFile(): Promise<void> {
@@ -361,6 +367,15 @@ export class DbPanel extends DisposableObject {
     }
 
     await this.dbManager.renameList(dbItem, newName);
+  }
+
+  private async removeItem(treeViewItem: DbTreeViewItem): Promise<void> {
+    if (treeViewItem.dbItem === undefined) {
+      throw new Error(
+        "Not a removable database item. Please select a valid item.",
+      );
+    }
+    await this.dbManager.removeDbItem(treeViewItem.dbItem);
   }
 
   private async onDidCollapseElement(

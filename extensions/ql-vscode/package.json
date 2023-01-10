@@ -66,6 +66,7 @@
     "onCommand:codeQLDatabasesExperimental.setSelectedItemContextMenu",
     "onCommand:codeQLDatabasesExperimental.renameItemContextMenu",
     "onCommand:codeQLDatabasesExperimental.openOnGitHubContextMenu",
+    "onCommand:codeQLDatabasesExperimental.removeItemContextMenu",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
@@ -391,6 +392,10 @@
       {
         "command": "codeQLDatabasesExperimental.openOnGitHubContextMenu",
         "title": "Open on GitHub"
+      },
+      {
+        "command": "codeQLDatabasesExperimental.removeItemContextMenu",
+        "title": "Remove"
       },
       {
         "command": "codeQLDatabases.chooseDatabaseFolder",
@@ -792,6 +797,10 @@
       ],
       "view/item/context": [
         {
+          "command": "codeQLDatabasesExperimental.removeItemContextMenu",
+          "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeRemoved/"
+        },
+        {
           "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
           "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeSelected/"
         },
@@ -1041,6 +1050,10 @@
         },
         {
           "command": "codeQLDatabasesExperimental.openOnGitHubContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabasesExperimental.removeItemContextMenu",
           "when": "false"
         },
         {
