@@ -95,10 +95,8 @@ export class TelemetryListener extends ConfigListener {
       CANARY_FEATURES.getValue() &&
       !ENABLE_TELEMETRY.getValue()
     ) {
-      await Promise.all([
-        this.setTelemetryRequested(false),
-        this.requestTelemetryPermission(),
-      ]);
+      await this.setTelemetryRequested(false);
+      await this.requestTelemetryPermission();
     }
   }
 
@@ -227,12 +225,15 @@ export class TelemetryListener extends ConfigListener {
 /**
  * The global Telemetry instance
  */
-export let telemetryListener: TelemetryListener;
+export let telemetryListener: TelemetryListener | undefined;
 
 export async function initializeTelemetry(
   extension: Extension<any>,
   ctx: ExtensionContext,
 ): Promise<void> {
+  if (telemetryListener !== undefined) {
+    throw new Error("Telemetry is already initialized");
+  }
   telemetryListener = new TelemetryListener(
     extension.id,
     extension.packageJSON.version,

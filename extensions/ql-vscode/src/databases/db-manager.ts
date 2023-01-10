@@ -75,6 +75,14 @@ export class DbManager {
     }
   }
 
+  public async removeDbItem(dbItem: DbItem): Promise<void> {
+    await this.dbConfigStore.removeDbItem(dbItem);
+
+    // Updating the expanded items takes care of cleaning up
+    // any non-existent items.
+    await this.updateExpandedItems(this.getExpandedItems());
+  }
+
   public async updateDbItemExpandedState(
     dbItem: DbItem,
     itemExpanded: boolean,
