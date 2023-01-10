@@ -1,3 +1,4 @@
+import * as t from "io-ts";
 import { Repository } from "../remote-queries/gh-api/repository";
 import {
   VariantAnalysis,
@@ -15,69 +16,125 @@ export enum RequestKind {
   GetVariantAnalysisRepoResult = "getVariantAnalysisRepoResult",
 }
 
-export interface BasicErorResponse {
-  message: string;
-}
+const buffer = new t.Type<Buffer, Buffer, unknown>(
+  "string",
+  (input: unknown): input is Buffer =>
+    typeof input === "object" && input instanceof Buffer,
+  // `t.success` and `t.failure` are helpers used to build `Either` instances
+  (input, context) =>
+    typeof input === "object" && input instanceof Buffer
+      ? t.success(input)
+      : t.failure(input, context),
+  // `A` and `O` are the same, so `encode` is just the identity function
+  t.identity,
+);
 
-export interface GetRepoRequest {
-  request: {
-    kind: RequestKind.GetRepo;
-  };
-  response: {
-    status: number;
-    body: Repository | BasicErorResponse | undefined;
-  };
-}
+export const BasicErorResponse = t.type({
+  message: t.string,
+});
 
-export interface SubmitVariantAnalysisRequest {
-  request: {
-    kind: RequestKind.SubmitVariantAnalysis;
-  };
-  response: {
-    status: number;
-    body?: VariantAnalysis | BasicErorResponse;
-  };
-}
+export type BasicErorResponse = t.TypeOf<typeof BasicErorResponse>;
 
-export interface GetVariantAnalysisRequest {
-  request: {
-    kind: RequestKind.GetVariantAnalysis;
-  };
-  response: {
-    status: number;
-    body?: VariantAnalysis | BasicErorResponse;
-  };
-}
+export const GetRepoRequest = t.type({
+  request: t.type({
+    kind: t.literal(RequestKind.GetRepo),
+  }),
+  response: t.intersection([
+    t.type({
+      status: t.number,
+    }),
+    t.partial({
+      body: t.union([Repository, BasicErorResponse]),
+    }),
+  ]),
+});
 
-export interface GetVariantAnalysisRepoRequest {
-  request: {
-    kind: RequestKind.GetVariantAnalysisRepo;
-    repositoryId: number;
-  };
-  response: {
-    status: number;
-    body?: VariantAnalysisRepoTask | BasicErorResponse;
-  };
-}
+export type GetRepoRequest = t.TypeOf<typeof GetRepoRequest>;
 
-export interface GetVariantAnalysisRepoResultRequest {
-  request: {
-    kind: RequestKind.GetVariantAnalysisRepoResult;
-    repositoryId: number;
-  };
-  response: {
-    status: number;
-    body?: Buffer | string;
-    contentType: string;
-  };
-}
+export const SubmitVariantAnalysisRequest = t.type({
+  request: t.type({
+    kind: t.literal(RequestKind.SubmitVariantAnalysis),
+  }),
+  response: t.intersection([
+    t.type({
+      status: t.number,
+    }),
+    t.partial({
+      body: t.union([VariantAnalysis, BasicErorResponse]),
+    }),
+  ]),
+});
 
-export type GitHubApiRequest =
-  | GetRepoRequest
-  | SubmitVariantAnalysisRequest
-  | GetVariantAnalysisRequest
-  | GetVariantAnalysisRepoRequest
-  | GetVariantAnalysisRepoResultRequest;
+export type SubmitVariantAnalysisRequest = t.TypeOf<
+  typeof SubmitVariantAnalysisRequest
+>;
+
+export const GetVariantAnalysisRequest = t.type({
+  request: t.type({
+    kind: t.literal(RequestKind.GetVariantAnalysis),
+  }),
+  response: t.intersection([
+    t.type({
+      status: t.number,
+    }),
+    t.partial({
+      body: t.union([VariantAnalysis, BasicErorResponse]),
+    }),
+  ]),
+});
+
+export type GetVariantAnalysisRequest = t.TypeOf<
+  typeof GetVariantAnalysisRequest
+>;
+
+export const GetVariantAnalysisRepoRequest = t.type({
+  request: t.type({
+    kind: t.literal(RequestKind.GetVariantAnalysisRepo),
+    repositoryId: t.number,
+  }),
+  response: t.intersection([
+    t.type({
+      status: t.number,
+    }),
+    t.partial({
+      body: t.union([VariantAnalysisRepoTask, BasicErorResponse]),
+    }),
+  ]),
+});
+
+export type GetVariantAnalysisRepoRequest = t.TypeOf<
+  typeof GetVariantAnalysisRepoRequest
+>;
+
+export const GetVariantAnalysisRepoResultRequest = t.type({
+  request: t.type({
+    kind: t.literal(RequestKind.GetVariantAnalysisRepoResult),
+    repositoryId: t.number,
+  }),
+  response: t.intersection([
+    t.type({
+      status: t.number,
+      contentType: t.string,
+    }),
+    t.partial({
+      body: t.union([t.string, buffer]),
+    }),
+  ]),
+});
+
+export type GetVariantAnalysisRepoResultRequest = t.TypeOf<
+  typeof GetVariantAnalysisRepoResultRequest
+>;
+
+export const GitHubApiRequest = t.union([
+  GetRepoRequest,
+  SubmitVariantAnalysisRequest,
+  GetVariantAnalysisRequest,
+  GetVariantAnalysisRepoRequest,
+  GetVariantAnalysisRepoResultRequest,
+]);
+
+export type GitHubApiRequest = t.TypeOf<typeof GitHubApiRequest>;
 
 export const isGetRepoRequest = (
   request: GitHubApiRequest,

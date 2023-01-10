@@ -1,10 +1,11 @@
 import { pathExists, readFile } from "fs-extra";
 import { resolve, relative } from "path";
 
-import Ajv from "ajv";
-import { createGenerator } from "ts-json-schema-generator";
+import { isLeft } from "fp-ts/Either";
 
 import { getFiles } from "./util/files";
+import { GitHubApiRequest } from "../src/mocks/gh-api-request";
+import { getContextPath, getMessage } from "../src/pure/io-ts";
 
 const extensionDirectory = resolve(__dirname, "..");
 const rootDirectory = resolve(extensionDirectory, "../..");
@@ -13,23 +14,6 @@ const scenariosDirectory = resolve(extensionDirectory, "src/mocks/scenarios");
 const debug = process.env.RUNNER_DEBUG || process.argv.includes("--debug");
 
 async function lintScenarios() {
-  const schema = createGenerator({
-    path: resolve(extensionDirectory, "src/mocks/gh-api-request.ts"),
-    tsconfig: resolve(extensionDirectory, "tsconfig.json"),
-    type: "GitHubApiRequest",
-    skipTypeCheck: true,
-    topRef: true,
-    additionalProperties: true,
-  }).createSchema("GitHubApiRequest");
-
-  const ajv = new Ajv();
-
-  if (!ajv.validateSchema(schema)) {
-    throw new Error(`Invalid schema: ${ajv.errorsText()}`);
-  }
-
-  const validate = await ajv.compile(schema);
-
   let invalidFiles = 0;
 
   if (!(await pathExists(scenariosDirectory))) {
@@ -46,13 +30,15 @@ async function lintScenarios() {
     const contents = await readFile(file, "utf8");
     const data = JSON.parse(contents);
 
-    if (!validate(data)) {
-      validate.errors?.forEach((error) => {
+    const result = GitHubApiRequest.decode(data);
+
+    if (isLeft(result)) {
+      result.left.forEach((error) => {
         // https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-error-message
         console.log(
-          `::error file=${relative(rootDirectory, file)}::${
-            error.instancePath
-          }: ${error.message}`,
+          `::error file=${relative(rootDirectory, file)}::${getContextPath(
+            error.context,
+          )}: ${getMessage(error)}`,
         );
       });
       invalidFiles++;

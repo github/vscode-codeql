@@ -21,7 +21,7 @@ function stringify(v: any): string {
   return JSON.stringify(v);
 }
 
-function getContextPath(context: t.Context): string {
+export function getContextPath(context: t.Context): string {
   if (context.length === 1 && context[0].key === "") {
     return ".";
   }
@@ -29,7 +29,7 @@ function getContextPath(context: t.Context): string {
   return context.map(({ key }) => key).join(".");
 }
 
-function getMessage(e: t.ValidationError): string {
+export function getMessage(e: t.ValidationError): string {
   return e.message !== undefined
     ? e.message
     : `Invalid value ${stringify(e.value)} supplied to ${getContextPath(
@@ -37,7 +37,7 @@ function getMessage(e: t.ValidationError): string {
       )}`;
 }
 
-const getErrors = <A>(v: t.Validation<A>): string[] => {
+export const getErrors = <A>(v: t.Validation<A>): string[] => {
   return pipe(
     v,
     fold(
