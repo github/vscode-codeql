@@ -121,12 +121,7 @@ export function renameLocalList(
 ): DbConfig {
   const config = cloneDbConfig(originalConfig);
 
-  const list = config.databases.local.lists.find(
-    (l) => l.name === currentListName,
-  );
-  if (!list) {
-    throw Error(`Cannot find list '${currentListName}' to rename`);
-  }
+  const list = getLocalList(config, currentListName);
   list.name = newListName;
 
   if (
@@ -148,12 +143,7 @@ export function renameRemoteList(
 ): DbConfig {
   const config = cloneDbConfig(originalConfig);
 
-  const list = config.databases.remote.repositoryLists.find(
-    (l) => l.name === currentListName,
-  );
-  if (!list) {
-    throw Error(`Cannot find list '${currentListName}' to rename`);
-  }
+  const list = getRemoteList(config, currentListName);
   list.name = newListName;
 
   if (
@@ -177,12 +167,7 @@ export function renameLocalDb(
   const config = cloneDbConfig(originalConfig);
 
   if (parentListName) {
-    const list = config.databases.local.lists.find(
-      (l) => l.name === parentListName,
-    );
-    if (!list) {
-      throw Error(`Cannot find parent list '${parentListName}'`);
-    }
+    const list = getLocalList(config, parentListName);
     const dbIndex = list.databases.findIndex((db) => db.name === currentDbName);
     if (dbIndex === -1) {
       throw Error(
@@ -245,4 +230,29 @@ function cloneDbConfigSelectedItem(selected: SelectedDbItem): SelectedDbItem {
         listName: selected.listName,
       };
   }
+}
+
+function getLocalList(config: DbConfig, listName: string): LocalList {
+  const list = config.databases.local.lists.find((l) => l.name === listName);
+
+  if (!list) {
+    throw Error(`Cannot find local list '${listName}'`);
+  }
+
+  return list;
+}
+
+function getRemoteList(
+  config: DbConfig,
+  listName: string,
+): RemoteRepositoryList {
+  const list = config.databases.remote.repositoryLists.find(
+    (l) => l.name === listName,
+  );
+
+  if (!list) {
+    throw Error(`Cannot find remote list '${listName}'`);
+  }
+
+  return list;
 }
