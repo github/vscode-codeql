@@ -184,6 +184,146 @@ describe("db config store", () => {
     });
   });
 
+  describe("add db items", () => {
+    let app: App;
+    let configPath: string;
+
+    beforeEach(async () => {
+      app = createMockApp({
+        extensionPath,
+        workspaceStoragePath: tempWorkspaceStoragePath,
+      });
+
+      configPath = join(tempWorkspaceStoragePath, "workspace-databases.json");
+    });
+
+    it("should add a remote repository", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig();
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Add
+      await configStore.addRemoteRepo("repo1");
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      expect(updatedRemoteDbs.repositories).toHaveLength(1);
+      expect(updatedRemoteDbs.repositories).toEqual(["repo1"]);
+
+      configStore.dispose();
+    });
+
+    it("should add a remote repository to the correct list", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "list1",
+            repositories: [],
+          },
+        ],
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Add
+      await configStore.addRemoteRepo("repo1", "list1");
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      expect(updatedRemoteDbs.repositories).toHaveLength(0);
+      expect(updatedRemoteDbs.repositoryLists).toHaveLength(1);
+      expect(updatedRemoteDbs.repositoryLists[0]).toEqual({
+        name: "list1",
+        repositories: ["repo1"],
+      });
+
+      configStore.dispose();
+    });
+
+    it("should add a remote owner", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig();
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Add
+      await configStore.addRemoteOwner("owner1");
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      expect(updatedRemoteDbs.owners).toHaveLength(1);
+      expect(updatedRemoteDbs.owners).toEqual(["owner1"]);
+
+      configStore.dispose();
+    });
+
+    it("should add a local list", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig();
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Add
+      await configStore.addLocalList("list1");
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedLocalDbs = updatedDbConfig.databases.local;
+      expect(updatedLocalDbs.lists).toHaveLength(1);
+      expect(updatedLocalDbs.lists[0].name).toEqual("list1");
+
+      configStore.dispose();
+    });
+
+    it("should add a remote list", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig();
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Add
+      await configStore.addRemoteList("list1");
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      expect(updatedRemoteDbs.repositoryLists).toHaveLength(1);
+      expect(updatedRemoteDbs.repositoryLists[0].name).toEqual("list1");
+
+      configStore.dispose();
+    });
+  });
+
   describe("db and list renaming", () => {
     let app: App;
     let configPath: string;
