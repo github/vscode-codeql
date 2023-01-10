@@ -195,6 +195,132 @@ export function renameLocalDb(
   return config;
 }
 
+export function removeLocalList(
+  originalConfig: DbConfig,
+  listName: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  config.databases.local.lists = config.databases.local.lists.filter(
+    (list) => list.name !== listName,
+  );
+
+  if (config.selected?.kind === SelectedDbItemKind.LocalUserDefinedList) {
+    config.selected = undefined;
+  }
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.LocalDatabase &&
+    config.selected?.listName === listName
+  ) {
+    config.selected = undefined;
+  }
+
+  return config;
+}
+
+export function removeRemoteList(
+  originalConfig: DbConfig,
+  listName: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  config.databases.remote.repositoryLists =
+    config.databases.remote.repositoryLists.filter(
+      (list) => list.name !== listName,
+    );
+
+  if (config.selected?.kind === SelectedDbItemKind.RemoteUserDefinedList) {
+    config.selected = undefined;
+  }
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.RemoteRepository &&
+    config.selected?.listName === listName
+  ) {
+    config.selected = undefined;
+  }
+
+  return config;
+}
+
+export function removeLocalDb(
+  originalConfig: DbConfig,
+  databaseName: string,
+  parentListName?: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  if (parentListName) {
+    const parentList = getLocalList(config, parentListName);
+    parentList.databases = parentList.databases.filter(
+      (db) => db.name !== databaseName,
+    );
+  } else {
+    config.databases.local.databases = config.databases.local.databases.filter(
+      (db) => db.name !== databaseName,
+    );
+  }
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.LocalDatabase &&
+    config.selected?.databaseName === databaseName &&
+    config.selected?.listName === parentListName
+  ) {
+    config.selected = undefined;
+  }
+
+  return config;
+}
+
+export function removeRemoteRepo(
+  originalConfig: DbConfig,
+  repoFullName: string,
+  parentListName?: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  if (parentListName) {
+    const parentList = getRemoteList(config, parentListName);
+    parentList.repositories = parentList.repositories.filter(
+      (r) => r !== repoFullName,
+    );
+  } else {
+    config.databases.remote.repositories =
+      config.databases.remote.repositories.filter((r) => r !== repoFullName);
+  }
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.RemoteRepository &&
+    config.selected?.repositoryName === repoFullName &&
+    config.selected?.listName === parentListName
+  ) {
+    config.selected = undefined;
+  }
+
+  return config;
+}
+
+export function removeRemoteOwner(
+  originalConfig: DbConfig,
+  ownerName: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  config.databases.remote.owners = config.databases.remote.owners.filter(
+    (o) => o !== ownerName,
+  );
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.RemoteOwner &&
+    config.selected?.ownerName === ownerName
+  ) {
+    config.selected = undefined;
+  }
+
+  return config;
+}
+
 function cloneDbConfigSelectedItem(selected: SelectedDbItem): SelectedDbItem {
   switch (selected.kind) {
     case SelectedDbItemKind.LocalUserDefinedList:
