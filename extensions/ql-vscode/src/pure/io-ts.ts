@@ -5,7 +5,7 @@ import { fold, isLeft } from "fp-ts/Either";
 // Most of these functions are copied from https://github.com/gcanti/io-ts/blob/9103e887387559d5d273036fa0788e67e210a322/src/PathReporter.ts
 // The main difference between the included PathReporter and the one below is that the PathReporter
 // will produce a path in the error message like "{ userId: number, name: string }/userId" whereas
-// the below will produce a path like "userId". For nested structures with intersections/unions,
+// the below will produce a path like ".userId". For nested structures with intersections/unions,
 // this makes the error messages much more readable.
 
 function stringify(v: any): string {
@@ -22,6 +22,10 @@ function stringify(v: any): string {
 }
 
 function getContextPath(context: t.Context): string {
+  if (context.length === 1 && context[0].key === "") {
+    return ".";
+  }
+
   return context.map(({ key }) => key).join(".");
 }
 
