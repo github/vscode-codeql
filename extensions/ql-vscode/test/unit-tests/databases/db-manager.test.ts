@@ -21,27 +21,33 @@ import { createMockApp } from "../../__mocks__/appMock";
 // Note: Although these are "unit tests" (i.e. not integrating with VS Code), they do
 // test the interaction/"integration" between the DbManager and the DbConfigStore.
 describe("db manager", () => {
-  const extensionPath = join(__dirname, "../../..");
-  const tempWorkspaceStoragePath = join(__dirname, "test-workspace");
-  const app = createMockApp({
-    extensionPath,
-    workspaceStoragePath: tempWorkspaceStoragePath,
-  });
-  const dbConfigStore = new DbConfigStore(app);
-  const dbManager = new DbManager(app, dbConfigStore);
+  let dbManager: DbManager;
+  let dbConfigStore: DbConfigStore;
+  let tempWorkspaceStoragePath: string;
+  let dbConfigFilePath: string;
 
   beforeEach(async () => {
+    tempWorkspaceStoragePath = join(__dirname, "test-workspace");
+
+    const extensionPath = join(__dirname, "../../..");
+    const app = createMockApp({
+      extensionPath,
+      workspaceStoragePath: tempWorkspaceStoragePath,
+    });
+
+    dbConfigStore = new DbConfigStore(app);
+    dbManager = new DbManager(app, dbConfigStore);
     await ensureDir(tempWorkspaceStoragePath);
+
+    dbConfigFilePath = join(
+      tempWorkspaceStoragePath,
+      "workspace-databases.json",
+    );
   });
 
   afterEach(async () => {
     await remove(tempWorkspaceStoragePath);
   });
-
-  const dbConfigFilePath = join(
-    tempWorkspaceStoragePath,
-    "workspace-databases.json",
-  );
 
   describe("renaming items", () => {
     const remoteList = {
