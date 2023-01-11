@@ -3,6 +3,7 @@ import { join } from "path";
 import { App } from "../../../../src/common/app";
 import {
   DbConfig,
+  SelectedDbItem,
   SelectedDbItemKind,
 } from "../../../../src/databases/config/db-config";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
@@ -632,6 +633,42 @@ describe("db config store", () => {
       );
 
       expect(updatedDbConfig.selected).toEqual(undefined);
+
+      configStore.dispose();
+    });
+  });
+
+  describe("set selected item", () => {
+    let app: App;
+    let configPath: string;
+
+    beforeEach(async () => {
+      app = createMockApp({
+        extensionPath,
+        workspaceStoragePath: tempWorkspaceStoragePath,
+      });
+
+      configPath = join(tempWorkspaceStoragePath, "workspace-databases.json");
+    });
+
+    it("should set the selected item", async () => {
+      // Initial set up
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Set selected
+      const selectedItem: SelectedDbItem = {
+        kind: SelectedDbItemKind.RemoteOwner,
+        ownerName: "owner2",
+      };
+
+      await configStore.setSelectedDbItem(selectedItem);
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      expect(updatedDbConfig.selected).toEqual(selectedItem);
 
       configStore.dispose();
     });
