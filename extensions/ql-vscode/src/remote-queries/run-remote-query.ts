@@ -34,6 +34,7 @@ import { DbManager } from "../databases/db-manager";
 export interface QlPack {
   name: string;
   version: string;
+  library?: boolean;
   dependencies: { [key: string]: string };
   defaultSuite?: Array<Record<string, unknown>>;
   defaultSuiteFile?: string;
@@ -66,7 +67,7 @@ async function generateQueryPack(
   const targetQueryFileName = join(queryPackDir, packRelativePath);
 
   let language: string | undefined;
-  if (await pathExists(join(originalPackRoot, "qlpack.yml"))) {
+  if (await getExistingPackFile(originalPackRoot)) {
     // don't include ql files. We only want the queryFile to be copied.
     const toCopy = await cliServer.packPacklist(originalPackRoot, false);
 
@@ -162,7 +163,7 @@ async function generateQueryPack(
 async function findPackRoot(queryFile: string): Promise<string> {
   // recursively find the directory containing qlpack.yml
   let dir = dirname(queryFile);
-  while (!(await pathExists(join(dir, "qlpack.yml")))) {
+  while (!(await getExistingPackFile(dir))) {
     dir = dirname(dir);
     if (isFileSystemRoot(dir)) {
       // there is no qlpack.yml in this directory or any parent directory.
@@ -172,6 +173,16 @@ async function findPackRoot(queryFile: string): Promise<string> {
   }
 
   return dir;
+}
+
+async function getExistingPackFile(dir: string) {
+  if (await pathExists(join(dir, "qlpack.yml"))) {
+    return join(dir, "qlpack.yml");
+  }
+  if (await pathExists(join(dir, "codeql-pack.yml"))) {
+    return join(dir, "codeql-pack.yml");
+  }
+  return undefined;
 }
 
 function isFileSystemRoot(dir: string): boolean {
@@ -314,7 +325,14 @@ async function fixPackFile(
   queryPackDir: string,
   packRelativePath: string,
 ): Promise<void> {
-  const packPath = join(queryPackDir, "qlpack.yml");
+  const packPath = await getExistingPackFile(queryPackDir);
+
+  // This should not happen since we create the pack ourselves.
+  if (!packPath) {
+    throw new Error(
+      `Could not find qlpack.yml or codeql-pack.yml file in '${queryPackDir}'`,
+    );
+  }
   const qlpack = load(await readFile(packPath, "utf8")) as QlPack;
 
   // update pack name
