@@ -1337,7 +1337,6 @@
     "test:unit": "cross-env TZ=UTC LANG=en-US jest --projects test/unit-tests",
     "test:view": "jest --projects src/view",
     "integration": "npm-run-all integration:*",
-    "integration:no-workspace": "jest --projects test/vscode-tests/no-workspace",
     "integration:minimal-workspace": "jest --projects test/vscode-tests/minimal-workspace",
     "cli-integration": "jest --projects test/vscode-tests/cli-integration",
     "update-vscode": "node ./node_modules/vscode/bin/install",

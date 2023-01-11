@@ -20,11 +20,9 @@ import { TestOptions } from "@vscode/test-electron/out/runTest";
 const VSCODE_VERSION = "stable";
 
 // List if test dirs
-//   - no-workspace - Tests with no workspace selected upon launch.
 //   - minimal-workspace - Tests with a simple workspace selected upon launch.
 //   - cli-integration - Tests that require a cli to invoke actual commands
 enum TestDir {
-  NoWorksspace = "no-workspace",
   MinimalWorksspace = "minimal-workspace",
   CliIntegration = "cli-integration",
 }
@@ -130,14 +128,6 @@ void main();
 
 function getLaunchArgs(dir: TestDir) {
   switch (dir) {
-    case TestDir.NoWorksspace:
-      return [
-        "--disable-extensions",
-        "--disable-gpu",
-        "--disable-workspace-trust",
-        `--user-data-dir=${join(tmpDir.name, dir, "user-data")}`,
-      ];
-
     case TestDir.MinimalWorksspace:
       return [
         "--disable-extensions",

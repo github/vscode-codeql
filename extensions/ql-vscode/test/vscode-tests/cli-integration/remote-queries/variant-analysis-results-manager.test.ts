@@ -258,7 +258,7 @@ describe(VariantAnalysisResultsManager.name, () => {
             await fs.readJson(
               resolve(
                 __dirname,
-                "../../no-workspace/data/sarif/validSarif.sarif",
+                "../../minimal-workspace/data/sarif/validSarif.sarif",
               ),
             ),
           );
