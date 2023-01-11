@@ -94,16 +94,18 @@ type RawResultsTableProps = {
   sourceLocationPrefix: string;
 };
 
+const filterTableExpandedTelemetry = (v: boolean) => v === true;
+
 const RawResultsTable = ({
   schema,
   results,
   fileLinkPrefix,
   sourceLocationPrefix,
 }: RawResultsTableProps) => {
-  const [tableExpanded, setTableExpanded] = useStateWithTelemetry(
+  const [tableExpanded, setTableExpanded] = useStateWithTelemetry<boolean>(
     false,
     "raw-results-table-expanded",
-    (v) => v === true,
+    filterTableExpandedTelemetry,
   );
   const numOfResultsToShow = tableExpanded
     ? results.rows.length

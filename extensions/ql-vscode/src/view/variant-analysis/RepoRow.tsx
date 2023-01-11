@@ -158,6 +158,8 @@ const isExpandableContentLoaded = (
   return resultsLoaded;
 };
 
+const filterRepoRowExpandedTelemetry = (v: boolean) => v === true;
+
 export const RepoRow = ({
   repository,
   status,
@@ -168,10 +170,10 @@ export const RepoRow = ({
   selected,
   onSelectedChange,
 }: RepoRowProps) => {
-  const [isExpanded, setExpanded] = useStateWithTelemetry(
+  const [isExpanded, setExpanded] = useStateWithTelemetry<boolean>(
     false,
     "variant-analysis-repo-row-expanded",
-    (v) => v === true,
+    filterRepoRowExpandedTelemetry,
   );
   const resultsLoaded = !!interpretedResults || !!rawResults;
   const [resultsLoading, setResultsLoading] = useState(false);
@@ -212,7 +214,7 @@ export const RepoRow = ({
       setResultsLoading(false);
       setExpanded(true);
     }
-  }, [resultsLoaded, resultsLoading]);
+  }, [resultsLoaded, resultsLoading, setExpanded]);
 
   const onClickCheckbox = useCallback((e: React.MouseEvent) => {
     // Prevent calling the onClick event of the container, which would toggle the expanded state

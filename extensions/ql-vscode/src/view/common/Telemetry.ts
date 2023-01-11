@@ -28,25 +28,28 @@ export function useStateWithTelemetry<S>(
   filterTelemetryOnValue?: (value: S) => boolean,
 ): [S, React.Dispatch<S> | React.Dispatch<React.SetStateAction<S>>] {
   const [value, setter] = useState<S>(defaultValue);
-  if (filterTelemetryOnValue === undefined) {
-    const setterWithTelemetry = (x: React.SetStateAction<S>) => {
-      vscode.postMessage({
-        t: "telemetry",
-        action: telemetryAction,
-      });
-      setter(x);
-    };
-    return [value, setterWithTelemetry];
-  } else {
-    const setterWithTelemetry = (x: S) => {
-      if (filterTelemetryOnValue(x)) {
+  const setterWithTelemetry = React.useMemo<
+    React.Dispatch<S> | React.Dispatch<React.SetStateAction<S>>
+  >(() => {
+    if (filterTelemetryOnValue === undefined) {
+      return (x: React.SetStateAction<S>) => {
         vscode.postMessage({
           t: "telemetry",
           action: telemetryAction,
         });
-      }
-      setter(x);
-    };
-    return [value, setterWithTelemetry];
-  }
+        setter(x);
+      };
+    } else {
+      return (x: S) => {
+        if (filterTelemetryOnValue(x)) {
+          vscode.postMessage({
+            t: "telemetry",
+            action: telemetryAction,
+          });
+        }
+        setter(x);
+      };
+    }
+  }, [telemetryAction, filterTelemetryOnValue, setter]);
+  return [value, setterWithTelemetry];
 }

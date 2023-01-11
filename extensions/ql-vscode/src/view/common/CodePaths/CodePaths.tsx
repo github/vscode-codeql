@@ -24,16 +24,18 @@ export type CodePathsProps = {
   severity: ResultSeverity;
 };
 
+const filterIsOpenTelemetry = (v: boolean) => v === true;
+
 export const CodePaths = ({
   codeFlows,
   ruleDescription,
   message,
   severity,
 }: CodePathsProps) => {
-  const [isOpen, setIsOpen] = useStateWithTelemetry(
+  const [isOpen, setIsOpen] = useStateWithTelemetry<boolean>(
     false,
     "code-path-is-open",
-    (v) => v === true,
+    filterIsOpenTelemetry,
   );
 
   const linkRef = useRef<HTMLAnchorElement>(null);
