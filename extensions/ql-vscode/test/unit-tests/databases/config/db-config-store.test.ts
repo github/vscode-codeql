@@ -673,4 +673,144 @@ describe("db config store", () => {
       configStore.dispose();
     });
   });
+
+  describe("does exist methods", () => {
+    let app: App;
+    let configPath: string;
+
+    beforeEach(async () => {
+      app = createMockApp({
+        extensionPath,
+        workspaceStoragePath: tempWorkspaceStoragePath,
+      });
+
+      configPath = join(tempWorkspaceStoragePath, "workspace-databases.json");
+    });
+
+    it("should return true if a remote owner exists", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        remoteOwners: ["owner1", "owner2"],
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Check
+      const doesExist = await configStore.doesRemoteOwnerExist("owner1");
+      expect(doesExist).toEqual(true);
+
+      configStore.dispose();
+    });
+
+    it("should return true if a remote list exists", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "list1",
+            repositories: ["owner/repo1", "owner/repo2"],
+          },
+        ],
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Check
+      const doesExist = await configStore.doesRemoteListExist("list1");
+      expect(doesExist).toEqual(true);
+
+      configStore.dispose();
+    });
+
+    it("should return true if a remote db exists", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "list1",
+            repositories: ["owner/repo1", "owner/repo2"],
+          },
+        ],
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Check
+      const doesExist = await configStore.doesRemoteDbExist(
+        "owner/repo1",
+        "list1",
+      );
+      expect(doesExist).toEqual(true);
+
+      configStore.dispose();
+    });
+
+    it("should return true if a local db and local list exists", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        localLists: [
+          {
+            name: "list1",
+            databases: [createLocalDbConfigItem({ name: "db1" })],
+          },
+        ],
+      });
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Check
+      const doesDbExist = await configStore.doesLocalDbExist("db1", "list1");
+      expect(doesDbExist).toEqual(true);
+      const doesListExist = await configStore.doesLocalListExist("list1");
+      expect(doesListExist).toEqual(true);
+
+      configStore.dispose();
+    });
+
+    it("should return false if items do not exist", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({});
+
+      await writeJSON(configPath, dbConfig);
+
+      const configStore = new DbConfigStore(app);
+      await configStore.initialize();
+
+      // Check
+      const doesLocalDbExist = await configStore.doesLocalDbExist(
+        "db1",
+        "list1",
+      );
+      expect(doesLocalDbExist).toEqual(false);
+      const doesLocalListExist = await configStore.doesLocalListExist("list1");
+      expect(doesLocalListExist).toEqual(false);
+      const doesRemoteDbExist = await configStore.doesRemoteDbExist(
+        "db1",
+        "list1",
+      );
+      expect(doesRemoteDbExist).toEqual(false);
+      const doesRemoteListExist = await configStore.doesRemoteListExist(
+        "list1",
+      );
+      expect(doesRemoteListExist).toEqual(false);
+      const doesRemoteOwnerExist = await configStore.doesRemoteOwnerExist(
+        "owner1",
+      );
+      expect(doesRemoteOwnerExist).toEqual(false);
+
+      configStore.dispose();
+    });
+  });
 });
