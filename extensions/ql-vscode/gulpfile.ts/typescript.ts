@@ -46,6 +46,7 @@ export function compileEsbuild() {
         platform: "node",
         target: "es2020",
         sourcemap: "linked",
+        sourceRoot: "..",
         loader: {
           ".node": "copy",
         },
