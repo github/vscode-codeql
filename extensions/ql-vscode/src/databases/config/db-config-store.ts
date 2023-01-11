@@ -42,7 +42,10 @@ export class DbConfigStore extends DisposableObject {
   private configErrors: DbConfigValidationError[];
   private configWatcher: chokidar.FSWatcher | undefined;
 
-  public constructor(private readonly app: App) {
+  public constructor(
+    private readonly app: App,
+    private readonly shouldWatchConfig = true,
+  ) {
     super();
 
     const storagePath = app.workspaceStoragePath || app.globalStoragePath;
@@ -58,7 +61,9 @@ export class DbConfigStore extends DisposableObject {
 
   public async initialize(): Promise<void> {
     await this.loadConfig();
-    this.watchConfig();
+    if (this.shouldWatchConfig) {
+      this.watchConfig();
+    }
   }
 
   public dispose(disposeHandler?: DisposeHandler): void {
