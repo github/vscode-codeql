@@ -34,7 +34,7 @@ describe("db manager", () => {
   let dbConfigFilePath: string;
 
   beforeEach(async () => {
-    tempWorkspaceStoragePath = join(__dirname, "test-workspace");
+    tempWorkspaceStoragePath = join(__dirname, "db-manager-test-workspace");
 
     const extensionPath = join(__dirname, "../../..");
     const app = createMockApp({
