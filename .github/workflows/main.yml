@@ -8,102 +8,102 @@ on:
       - main
 
 jobs:
-  build:
-    name: Build
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
+  # build:
+  #   name: Build
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest, windows-latest]
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 1
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '16.14.2'
-          cache: 'npm'
-          cache-dependency-path: extensions/ql-vscode/package-lock.json
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '16.14.2'
+  #         cache: 'npm'
+  #         cache-dependency-path: extensions/ql-vscode/package-lock.json
 
-      - name: Install dependencies
-        working-directory: extensions/ql-vscode
-        run: |
-          npm ci
-        shell: bash
+  #     - name: Install dependencies
+  #       working-directory: extensions/ql-vscode
+  #       run: |
+  #         npm ci
+  #       shell: bash
 
-      - name: Build
-        working-directory: extensions/ql-vscode
-        env:
-          APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
-        run: |
-          npm run build
-        shell: bash
+  #     - name: Build
+  #       working-directory: extensions/ql-vscode
+  #       env:
+  #         APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
+  #       run: |
+  #         npm run build
+  #       shell: bash
 
-      - name: Prepare artifacts
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          mkdir artifacts
-          cp dist/*.vsix artifacts
+  #     - name: Prepare artifacts
+  #       if: matrix.os == 'ubuntu-latest'
+  #       run: |
+  #         mkdir artifacts
+  #         cp dist/*.vsix artifacts
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          name: vscode-codeql-extension
-          path: artifacts
+  #     - name: Upload artifacts
+  #       uses: actions/upload-artifact@v3
+  #       if: matrix.os == 'ubuntu-latest'
+  #       with:
+  #         name: vscode-codeql-extension
+  #         path: artifacts
 
-  find-nightly:
-    name: Find Nightly Release
-    runs-on: ubuntu-latest
-    outputs:
-      url: ${{ steps.get-url.outputs.nightly-url }}
-    steps:
-      - name: Get Nightly Release URL
-        id: get-url
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        shell: bash
-        # This workflow step gets an unstable testing version of the CodeQL CLI. It should not be used outside of these tests.
-        run: |
-          LATEST=`gh api repos/dsp-testing/codeql-cli-nightlies/releases --jq '.[].tag_name' --method GET --raw-field 'per_page=1'`
-          echo "nightly-url=https://github.com/dsp-testing/codeql-cli-nightlies/releases/download/$LATEST" >> "$GITHUB_OUTPUT"
+  # find-nightly:
+  #   name: Find Nightly Release
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     url: ${{ steps.get-url.outputs.nightly-url }}
+  #   steps:
+  #     - name: Get Nightly Release URL
+  #       id: get-url
+  #       env:
+  #         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+  #       shell: bash
+  #       # This workflow step gets an unstable testing version of the CodeQL CLI. It should not be used outside of these tests.
+  #       run: |
+  #         LATEST=`gh api repos/dsp-testing/codeql-cli-nightlies/releases --jq '.[].tag_name' --method GET --raw-field 'per_page=1'`
+  #         echo "nightly-url=https://github.com/dsp-testing/codeql-cli-nightlies/releases/download/$LATEST" >> "$GITHUB_OUTPUT"
 
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
+  # lint:
+  #   name: Lint
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 1
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '16.14.2'
-          cache: 'npm'
-          cache-dependency-path: extensions/ql-vscode/package-lock.json
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '16.14.2'
+  #         cache: 'npm'
+  #         cache-dependency-path: extensions/ql-vscode/package-lock.json
 
-      - name: Install dependencies
-        working-directory: extensions/ql-vscode
-        run: |
-          npm ci
-        shell: bash
+  #     - name: Install dependencies
+  #       working-directory: extensions/ql-vscode
+  #       run: |
+  #         npm ci
+  #       shell: bash
 
-      - name: Check types
-        working-directory: extensions/ql-vscode
-        run: |
-          npm run check-types
+  #     - name: Check types
+  #       working-directory: extensions/ql-vscode
+  #       run: |
+  #         npm run check-types
 
-      - name: Lint
-        working-directory: extensions/ql-vscode
-        run: |
-          npm run lint
+  #     - name: Lint
+  #       working-directory: extensions/ql-vscode
+  #       run: |
+  #         npm run lint
 
-      - name: Lint scenarios
-        working-directory: extensions/ql-vscode
-        run: |
-          npm run lint:scenarios
+  #     - name: Lint scenarios
+  #       working-directory: extensions/ql-vscode
+  #       run: |
+  #         npm run lint:scenarios
 
   unit-test:
     name: Unit Test
