@@ -33,23 +33,24 @@ export function useStateWithTelemetry<S>(
   >(() => {
     if (filterTelemetryOnValue === undefined) {
       return (x: React.SetStateAction<S>) => {
-        vscode.postMessage({
-          t: "telemetry",
-          action: telemetryAction,
-        });
+        sendTelemetry(telemetryAction);
         setter(x);
       };
     } else {
       return (x: S) => {
         if (filterTelemetryOnValue(x)) {
-          vscode.postMessage({
-            t: "telemetry",
-            action: telemetryAction,
-          });
+          sendTelemetry(telemetryAction);
         }
         setter(x);
       };
     }
   }, [telemetryAction, filterTelemetryOnValue, setter]);
   return [value, setterWithTelemetry];
+}
+
+export function sendTelemetry(telemetryAction: string) {
+  vscode.postMessage({
+    t: "telemetry",
+    action: telemetryAction,
+  });
 }

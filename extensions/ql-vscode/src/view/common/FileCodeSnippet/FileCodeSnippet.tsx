@@ -12,6 +12,7 @@ import {
 import { createRemoteFileRef } from "../../../pure/location-link-utils";
 import { CodeSnippetMessage } from "./CodeSnippetMessage";
 import { CodeSnippetLine } from "./CodeSnippetLine";
+import { sendTelemetry } from "../Telemetry";
 
 const borderColor = "var(--vscode-editor-snippetFinalTabstopHighlightBorder)";
 
@@ -67,7 +68,12 @@ export const FileCodeSnippet = ({
     return (
       <Container>
         <TitleContainer>
-          <VSCodeLink href={titleFileUri}>{fileLink.filePath}</VSCodeLink>
+          <VSCodeLink
+            onClick={() => sendTelemetry("file-code-snippet-title-link")}
+            href={titleFileUri}
+          >
+            {fileLink.filePath}
+          </VSCodeLink>
         </TitleContainer>
         {message && severity && (
           <CodeSnippetMessage message={message} severity={severity}>
@@ -83,7 +89,12 @@ export const FileCodeSnippet = ({
   return (
     <Container>
       <TitleContainer>
-        <VSCodeLink href={titleFileUri}>{fileLink.filePath}</VSCodeLink>
+        <VSCodeLink
+          onClick={() => sendTelemetry("file-code-snippet-title-link")}
+          href={titleFileUri}
+        >
+          {fileLink.filePath}
+        </VSCodeLink>
       </TitleContainer>
       <CodeContainer>
         {code.map((line, index) => (

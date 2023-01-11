@@ -9,7 +9,7 @@ import {
 import { tryGetRemoteLocation } from "../../pure/bqrs-utils";
 import TextButton from "./TextButton";
 import { convertNonPrintableChars } from "../../text-utils";
-import { useStateWithTelemetry } from "../common/Telemetry";
+import { sendTelemetry, useStateWithTelemetry } from "../common/Telemetry";
 
 const numOfResultsInContractedMode = 5;
 
@@ -59,7 +59,14 @@ const Cell = ({ value, fileLinkPrefix, sourceLocationPrefix }: CellProps) => {
       );
       const safeLabel = convertNonPrintableChars(value.label);
       if (url) {
-        return <VSCodeLink href={url}>{safeLabel}</VSCodeLink>;
+        return (
+          <VSCodeLink
+            onClick={() => sendTelemetry("raw-results-link")}
+            href={url}
+          >
+            {safeLabel}
+          </VSCodeLink>
+        );
       } else {
         return <span>{safeLabel}</span>;
       }
