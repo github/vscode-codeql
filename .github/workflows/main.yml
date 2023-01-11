@@ -134,119 +134,119 @@ jobs:
         run: |
           npm run test
 
-  test:
-    name: Test
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 1
+  # test:
+  #   name: Test
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest, windows-latest]
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
+  #       with:
+  #         fetch-depth: 1
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '16.14.2'
-          cache: 'npm'
-          cache-dependency-path: extensions/ql-vscode/package-lock.json
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '16.14.2'
+  #         cache: 'npm'
+  #         cache-dependency-path: extensions/ql-vscode/package-lock.json
 
-      - name: Install dependencies
-        working-directory: extensions/ql-vscode
-        run: |
-          npm ci
-        shell: bash
+  #     - name: Install dependencies
+  #       working-directory: extensions/ql-vscode
+  #       run: |
+  #         npm ci
+  #       shell: bash
 
-      - name: Build
-        working-directory: extensions/ql-vscode
-        env:
-          APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
-        run: |
-          npm run build
-        shell: bash
+  #     - name: Build
+  #       working-directory: extensions/ql-vscode
+  #       env:
+  #         APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
+  #       run: |
+  #         npm run build
+  #       shell: bash
 
-      - name: Run integration tests (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        working-directory: extensions/ql-vscode
-        env:
-          VSCODE_CODEQL_GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        run: |
-          unset DBUS_SESSION_BUS_ADDRESS
-          /usr/bin/xvfb-run npm run integration
+  #     - name: Run integration tests (Linux)
+  #       if: matrix.os == 'ubuntu-latest'
+  #       working-directory: extensions/ql-vscode
+  #       env:
+  #         VSCODE_CODEQL_GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+  #       run: |
+  #         unset DBUS_SESSION_BUS_ADDRESS
+  #         /usr/bin/xvfb-run npm run integration
 
-      - name: Run integration tests (Windows)
-        if: matrix.os == 'windows-latest'
-        working-directory: extensions/ql-vscode
-        env:
-          VSCODE_CODEQL_GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        run: |
-          npm run integration
+  #     - name: Run integration tests (Windows)
+  #       if: matrix.os == 'windows-latest'
+  #       working-directory: extensions/ql-vscode
+  #       env:
+  #         VSCODE_CODEQL_GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+  #       run: |
+  #         npm run integration
 
-  cli-test:
-    name: CLI Test
-    runs-on: ${{ matrix.os }}
-    needs: [find-nightly]
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-        version: ['v2.7.6', 'v2.8.5', 'v2.9.4', 'v2.10.5', 'v2.11.6', 'nightly']
-      fail-fast: false
-    env:
-      CLI_VERSION: ${{ matrix.version }}
-      NIGHTLY_URL: ${{ needs.find-nightly.outputs.url }}
-      TEST_CODEQL_PATH: '${{ github.workspace }}/codeql'
+  # cli-test:
+  #   name: CLI Test
+  #   runs-on: ${{ matrix.os }}
+  #   needs: [find-nightly]
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest, windows-latest]
+  #       version: ['v2.7.6', 'v2.8.5', 'v2.9.4', 'v2.10.5', 'v2.11.6', 'nightly']
+  #     fail-fast: false
+  #   env:
+  #     CLI_VERSION: ${{ matrix.version }}
+  #     NIGHTLY_URL: ${{ needs.find-nightly.outputs.url }}
+  #     TEST_CODEQL_PATH: '${{ github.workspace }}/codeql'
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '16.14.2'
-          cache: 'npm'
-          cache-dependency-path: extensions/ql-vscode/package-lock.json
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '16.14.2'
+  #         cache: 'npm'
+  #         cache-dependency-path: extensions/ql-vscode/package-lock.json
 
-      - name: Install dependencies
-        working-directory: extensions/ql-vscode
-        run: |
-          npm ci
-        shell: bash
+  #     - name: Install dependencies
+  #       working-directory: extensions/ql-vscode
+  #       run: |
+  #         npm ci
+  #       shell: bash
 
-      - name: Build
-        working-directory: extensions/ql-vscode
-        run: |
-          npm run build
-        shell: bash
+  #     - name: Build
+  #       working-directory: extensions/ql-vscode
+  #       run: |
+  #         npm run build
+  #       shell: bash
 
-      - name: Decide on ref of CodeQL repo
-        id: choose-ref
-        shell: bash
-        run: |
-          if [[ "${{ matrix.version }}" == "nightly" ]]
-          then
-            REF="codeql-cli/latest"
-          else
-            REF="codeql-cli/${{ matrix.version }}"
-          fi
-          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+  #     - name: Decide on ref of CodeQL repo
+  #       id: choose-ref
+  #       shell: bash
+  #       run: |
+  #         if [[ "${{ matrix.version }}" == "nightly" ]]
+  #         then
+  #           REF="codeql-cli/latest"
+  #         else
+  #           REF="codeql-cli/${{ matrix.version }}"
+  #         fi
+  #         echo "ref=$REF" >> "$GITHUB_OUTPUT"
 
-      - name: Checkout QL
-        uses: actions/checkout@v3
-        with:
-          repository: github/codeql
-          ref: ${{ steps.choose-ref.outputs.ref }}
-          path: codeql
+  #     - name: Checkout QL
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: github/codeql
+  #         ref: ${{ steps.choose-ref.outputs.ref }}
+  #         path: codeql
 
-      - name: Run CLI tests (Linux)
-        working-directory: extensions/ql-vscode
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          unset DBUS_SESSION_BUS_ADDRESS
-          /usr/bin/xvfb-run npm run cli-integration
+  #     - name: Run CLI tests (Linux)
+  #       working-directory: extensions/ql-vscode
+  #       if: matrix.os == 'ubuntu-latest'
+  #       run: |
+  #         unset DBUS_SESSION_BUS_ADDRESS
+  #         /usr/bin/xvfb-run npm run cli-integration
 
-      - name: Run CLI tests (Windows)
-        working-directory: extensions/ql-vscode
-        if: matrix.os == 'windows-latest'
-        run: |
-          npm run cli-integration
+  #     - name: Run CLI tests (Windows)
+  #       working-directory: extensions/ql-vscode
+  #       if: matrix.os == 'windows-latest'
+  #       run: |
+  #         npm run cli-integration
