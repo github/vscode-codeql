@@ -34,9 +34,9 @@ export interface RemoteUserDefinedListExpandedDbItem {
 export function updateExpandedItem(
   currentExpandedItems: ExpandedDbItem[],
   dbItem: DbItem,
-  itemExpanded: boolean,
+  addItem: boolean,
 ): ExpandedDbItem[] {
-  if (itemExpanded) {
+  if (addItem) {
     const expandedDbItem = mapDbItemToExpandedDbItem(dbItem);
     const expandedItems = [...currentExpandedItems];
     if (!expandedItems.some((i) => isDbItemEqualToExpandedDbItem(dbItem, i))) {

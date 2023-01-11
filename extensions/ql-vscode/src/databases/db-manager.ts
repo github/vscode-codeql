@@ -185,22 +185,27 @@ export class DbManager {
     );
   }
 
-  private async updateExpandedItems(items: ExpandedDbItem[]): Promise<void> {
+  private async updateExpandedItems(
+    newExpandedItems: ExpandedDbItem[],
+  ): Promise<void> {
     let itemsToStore;
 
-    const dbItemsResult = this.getDbItems();
+    const dbItems = this.getDbItems();
 
-    if (dbItemsResult.isFailure) {
+    if (dbItems.isFailure) {
       // Log an error but don't throw an exception since if the db items are failing
       // to be read, then there is a bigger problem than the expanded state.
       void this.app.logger.log(
         `Could not read db items when calculating expanded state: ${JSON.stringify(
-          dbItemsResult.errors,
+          dbItems.errors,
         )}`,
       );
-      itemsToStore = items;
+      itemsToStore = newExpandedItems;
     } else {
-      itemsToStore = cleanNonExistentExpandedItems(items, dbItemsResult.value);
+      itemsToStore = cleanNonExistentExpandedItems(
+        newExpandedItems,
+        dbItems.value,
+      );
     }
 
     await this.setExpandedItems(itemsToStore);
@@ -208,14 +213,14 @@ export class DbManager {
 
   private async updateDbItemExpandedState(
     dbItem: DbItem,
-    itemExpanded: boolean,
+    addItem: boolean,
   ): Promise<void> {
     const currentExpandedItems = this.getExpandedItems();
 
     const newExpandedItems = updateExpandedItem(
       currentExpandedItems,
       dbItem,
-      itemExpanded,
+      addItem,
     );
 
     await this.updateExpandedItems(newExpandedItems);
