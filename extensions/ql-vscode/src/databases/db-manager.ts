@@ -78,24 +78,15 @@ export class DbManager {
   public async removeDbItem(dbItem: DbItem): Promise<void> {
     await this.dbConfigStore.removeDbItem(dbItem);
 
-    // Updating the expanded items takes care of cleaning up
-    // any non-existent items.
-    await this.updateExpandedItems(this.getExpandedItems());
+    await this.removeDbItemFromExpandedState(dbItem);
   }
 
-  public async updateDbItemExpandedState(
-    dbItem: DbItem,
-    itemExpanded: boolean,
-  ): Promise<void> {
-    const currentExpandedItems = this.getExpandedItems();
+  public async removeDbItemFromExpandedState(dbItem: DbItem): Promise<void> {
+    await this.updateDbItemExpandedState(dbItem, false);
+  }
 
-    const newExpandedItems = updateExpandedItem(
-      currentExpandedItems,
-      dbItem,
-      itemExpanded,
-    );
-
-    await this.updateExpandedItems(newExpandedItems);
+  public async addDbItemToExpandedState(dbItem: DbItem): Promise<void> {
+    await this.updateDbItemExpandedState(dbItem, true);
   }
 
   public async addNewRemoteRepo(
@@ -213,5 +204,20 @@ export class DbManager {
     }
 
     await this.setExpandedItems(itemsToStore);
+  }
+
+  private async updateDbItemExpandedState(
+    dbItem: DbItem,
+    itemExpanded: boolean,
+  ): Promise<void> {
+    const currentExpandedItems = this.getExpandedItems();
+
+    const newExpandedItems = updateExpandedItem(
+      currentExpandedItems,
+      dbItem,
+      itemExpanded,
+    );
+
+    await this.updateExpandedItems(newExpandedItems);
   }
 }
