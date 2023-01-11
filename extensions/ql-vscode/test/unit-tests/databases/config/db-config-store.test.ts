@@ -185,7 +185,7 @@ describe("db config store", () => {
     });
   });
 
-  describe("add db items", () => {
+  describe("db and list addition", () => {
     let app: App;
     let configPath: string;
 
@@ -202,10 +202,7 @@ describe("db config store", () => {
       // Initial set up
       const dbConfig = createDbConfig();
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Add
       await configStore.addRemoteRepo("repo1");
@@ -232,10 +229,7 @@ describe("db config store", () => {
         ],
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Add
       await configStore.addRemoteRepo("repo1", "list1");
@@ -259,10 +253,7 @@ describe("db config store", () => {
       // Initial set up
       const dbConfig = createDbConfig();
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Add
       await configStore.addRemoteOwner("owner1");
@@ -282,10 +273,7 @@ describe("db config store", () => {
       // Initial set up
       const dbConfig = createDbConfig();
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Add
       await configStore.addLocalList("list1");
@@ -305,10 +293,7 @@ describe("db config store", () => {
       // Initial set up
       const dbConfig = createDbConfig();
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Add
       await configStore.addRemoteList("list1");
@@ -354,10 +339,7 @@ describe("db config store", () => {
         },
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app, false);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Rename
       const currentDbItem = createRemoteUserDefinedListDbItem({
@@ -401,10 +383,7 @@ describe("db config store", () => {
         },
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app, false);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Rename
       const currentDbItem = createLocalListDbItem({
@@ -448,10 +427,7 @@ describe("db config store", () => {
         },
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app, false);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Rename
       const currentDbItem = createLocalDatabaseDbItem({
@@ -492,10 +468,7 @@ describe("db config store", () => {
         ],
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app, false);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Rename
       const currentDbItem = createRemoteUserDefinedListDbItem({
@@ -532,10 +505,7 @@ describe("db config store", () => {
         },
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app, false);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Remove
       const currentDbItem = createRemoteOwnerDbItem({
@@ -571,10 +541,7 @@ describe("db config store", () => {
         },
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app, false);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Remove
       const currentDbItem = createRemoteUserDefinedListDbItem({
@@ -610,10 +577,7 @@ describe("db config store", () => {
         },
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app, false);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Remove
       const currentDbItem = createRemoteRepoDbItem({
@@ -674,7 +638,7 @@ describe("db config store", () => {
     });
   });
 
-  describe("does exist methods", () => {
+  describe("existence checks", () => {
     let app: App;
     let configPath: string;
 
@@ -693,10 +657,7 @@ describe("db config store", () => {
         remoteOwners: ["owner1", "owner2"],
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Check
       const doesExist = await configStore.doesRemoteOwnerExist("owner1");
@@ -716,10 +677,7 @@ describe("db config store", () => {
         ],
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Check
       const doesExist = await configStore.doesRemoteListExist("list1");
@@ -739,10 +697,7 @@ describe("db config store", () => {
         ],
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Check
       const doesExist = await configStore.doesRemoteDbExist(
@@ -765,10 +720,7 @@ describe("db config store", () => {
         ],
       });
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Check
       const doesDbExist = await configStore.doesLocalDbExist("db1", "list1");
@@ -783,10 +735,7 @@ describe("db config store", () => {
       // Initial set up
       const dbConfig = createDbConfig({});
 
-      await writeJSON(configPath, dbConfig);
-
-      const configStore = new DbConfigStore(app);
-      await configStore.initialize();
+      const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Check
       const doesLocalDbExist = await configStore.doesLocalDbExist(
@@ -813,4 +762,17 @@ describe("db config store", () => {
       configStore.dispose();
     });
   });
+
+  async function initializeConfig(
+    dbConfig: DbConfig,
+    configPath: string,
+    app: App,
+  ): Promise<DbConfigStore> {
+    await writeJSON(configPath, dbConfig);
+
+    const configStore = new DbConfigStore(app);
+    await configStore.initialize();
+
+    return configStore;
+  }
 });
