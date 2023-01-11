@@ -1166,6 +1166,15 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner(
+      "codeQL.openVariantAnalysisLogs",
+      async (variantAnalysisId: number) => {
+        await variantAnalysisManager.openVariantAnalysisLogs(variantAnalysisId);
+      },
+    ),
+  );
+
+  ctx.subscriptions.push(
+    commandRunner(
       "codeQL.copyVariantAnalysisRepoList",
       async (
         variantAnalysisId: number,
