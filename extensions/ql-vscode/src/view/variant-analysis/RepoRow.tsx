@@ -24,6 +24,7 @@ import { vscode } from "../vscode-api";
 import { AnalyzedRepoItemContent } from "./AnalyzedRepoItemContent";
 import StarCount from "../common/StarCount";
 import { LastUpdated } from "../common/LastUpdated";
+import { useStateWithTelemetry } from "../common/Telemetry";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -167,7 +168,11 @@ export const RepoRow = ({
   selected,
   onSelectedChange,
 }: RepoRowProps) => {
-  const [isExpanded, setExpanded] = useState(false);
+  const [isExpanded, setExpanded] = useStateWithTelemetry(
+    false,
+    "variant-analysis-repo-row-expanded",
+    (v) => v === true,
+  );
   const resultsLoaded = !!interpretedResults || !!rawResults;
   const [resultsLoading, setResultsLoading] = useState(false);
 
@@ -182,7 +187,7 @@ export const RepoRow = ({
       downloadStatus !==
         VariantAnalysisScannedRepositoryDownloadStatus.Succeeded
     ) {
-      setExpanded((oldIsExpanded) => !oldIsExpanded);
+      setExpanded(!isExpanded);
       return;
     }
 
@@ -198,6 +203,8 @@ export const RepoRow = ({
     repository.fullName,
     status,
     downloadStatus,
+    isExpanded,
+    setExpanded,
   ]);
 
   useEffect(() => {

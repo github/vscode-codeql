@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useState } from "react";
 import styled from "styled-components";
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import {
@@ -10,6 +9,7 @@ import {
 import { tryGetRemoteLocation } from "../../pure/bqrs-utils";
 import TextButton from "./TextButton";
 import { convertNonPrintableChars } from "../../text-utils";
+import { useStateWithTelemetry } from "../common/Telemetry";
 
 const numOfResultsInContractedMode = 5;
 
@@ -100,7 +100,11 @@ const RawResultsTable = ({
   fileLinkPrefix,
   sourceLocationPrefix,
 }: RawResultsTableProps) => {
-  const [tableExpanded, setTableExpanded] = useState(false);
+  const [tableExpanded, setTableExpanded] = useStateWithTelemetry(
+    false,
+    "raw-results-table-expanded",
+    (v) => v === true,
+  );
   const numOfResultsToShow = tableExpanded
     ? results.rows.length
     : numOfResultsInContractedMode;

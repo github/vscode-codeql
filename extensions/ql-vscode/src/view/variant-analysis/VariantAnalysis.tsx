@@ -16,6 +16,7 @@ import {
   defaultFilterSortState,
   RepositoriesFilterSortState,
 } from "../../pure/variant-analysis-filter-sort";
+import { useStateWithTelemetry } from "../common/Telemetry";
 
 export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;
@@ -60,11 +61,16 @@ export function VariantAnalysis({
   const [repoResults, setRepoResults] =
     useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
 
-  const [selectedRepositoryIds, setSelectedRepositoryIds] = useState<number[]>(
-    [],
-  );
+  const [selectedRepositoryIds, setSelectedRepositoryIds] =
+    useStateWithTelemetry<number[]>(
+      [],
+      "variant-analysis-selected-repository-ids",
+    );
   const [filterSortState, setFilterSortState] =
-    useState<RepositoriesFilterSortState>(defaultFilterSortState);
+    useStateWithTelemetry<RepositoriesFilterSortState>(
+      defaultFilterSortState,
+      "variant-analysis-filter-sort-state",
+    );
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {

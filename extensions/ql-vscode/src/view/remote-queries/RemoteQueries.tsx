@@ -433,7 +433,7 @@ const AnalysesResults = ({
   sort: Sort;
 }) => {
   const totalAnalysesResults = sumAnalysesResults(analysesResults);
-  const [filterValue, setFilterValue] = React.useState("");
+  const [filterValue, setFilterValue] = useState("");
 
   if (totalResults === 0) {
     return <></>;
