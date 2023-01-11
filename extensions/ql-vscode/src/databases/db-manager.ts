@@ -82,10 +82,16 @@ export class DbManager {
   }
 
   public async removeDbItemFromExpandedState(dbItem: DbItem): Promise<void> {
+    // When collapsing or expanding a list we clean up the expanded state and remove
+    // all items that don't exist anymore.
+
     await this.updateDbItemExpandedState(dbItem, false);
   }
 
   public async addDbItemToExpandedState(dbItem: DbItem): Promise<void> {
+    // When collapsing or expanding a list we clean up the expanded state and remove
+    // all items that don't exist anymore.
+
     await this.updateDbItemExpandedState(dbItem, true);
   }
 
@@ -133,7 +139,7 @@ export class DbManager {
       newDbItem,
     );
 
-    await this.updateExpandedItems(newExpandedItems);
+    await this.setExpandedItems(newExpandedItems);
   }
 
   public async renameLocalDb(
