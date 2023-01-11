@@ -3,11 +3,15 @@ import { join } from "path";
 import {
   cloneDbConfig,
   DbConfig,
+  removeLocalDb,
+  removeLocalList,
+  removeRemoteList,
+  removeRemoteOwner,
+  removeRemoteRepo,
   renameLocalDb,
   renameLocalList,
   renameRemoteList,
   SelectedDbItem,
-  SelectedDbItemKind,
 } from "./db-config";
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
@@ -26,10 +30,6 @@ import {
   DbItem,
   DbItemKind,
 } from "../db-item";
-import {
-  compareSelectedKindIsEqual,
-  mapDbItemToSelectedDbItem,
-} from "../db-item-selection";
 
 export class DbConfigStore extends DisposableObject {
   public readonly onDidChangeConfig: AppEvent<void>;
@@ -87,7 +87,7 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot select database item if config is not loaded");
     }
 
-    const config: DbConfig = {
+    const config = {
       ...this.config,
       selected: dbItem,
     };
@@ -100,88 +100,37 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot remove item if config is not loaded");
     }
 
-    const config = cloneDbConfig(this.config);
-    const selectedItem: SelectedDbItem | undefined = config.selected;
+    let config: DbConfig;
 
-    // Remove item from databases
     switch (dbItem.kind) {
       case DbItemKind.LocalList:
-        config.databases.local.lists = config.databases.local.lists.filter(
-          (list) => list.name !== dbItem.listName,
-        );
+        config = removeLocalList(this.config, dbItem.listName);
         break;
       case DbItemKind.RemoteUserDefinedList:
-        config.databases.remote.repositoryLists =
-          config.databases.remote.repositoryLists.filter(
-            (list) => list.name !== dbItem.listName,
-          );
+        config = removeRemoteList(this.config, dbItem.listName);
         break;
       case DbItemKind.LocalDatabase:
         // When we start using local databases these need to be removed from disk as well.
-        if (dbItem.parentListName) {
-          const parent = config.databases.local.lists.find(
-            (list) => list.name === dbItem.parentListName,
-          );
-          if (!parent) {
-            throw Error(`Cannot find parent list '${dbItem.parentListName}'`);
-          } else {
-            parent.databases = parent.databases.filter(
-              (db) => db.name !== dbItem.databaseName,
-            );
-          }
-        }
-        config.databases.local.databases =
-          config.databases.local.databases.filter(
-            (db) => db.name !== dbItem.databaseName,
-          );
+        config = removeLocalDb(
+          this.config,
+          dbItem.databaseName,
+          dbItem.parentListName,
+        );
         break;
       case DbItemKind.RemoteRepo:
-        if (dbItem.parentListName) {
-          const parent = config.databases.remote.repositoryLists.find(
-            (list) => list.name === dbItem.parentListName,
-          );
-          if (!parent) {
-            throw Error(`Cannot find parent list '${dbItem.parentListName}'`);
-          } else {
-            parent.repositories = parent.repositories.filter(
-              (repo) => repo !== dbItem.repoFullName,
-            );
-          }
-        }
-        config.databases.remote.repositories =
-          config.databases.remote.repositories.filter(
-            (repo) => repo !== dbItem.repoFullName,
-          );
+        config = removeRemoteRepo(
+          this.config,
+          dbItem.repoFullName,
+          dbItem.parentListName,
+        );
         break;
       case DbItemKind.RemoteOwner:
-        config.databases.remote.owners = config.databases.remote.owners.filter(
-          (owner) => owner !== dbItem.ownerName,
-        );
+        config = removeRemoteOwner(this.config, dbItem.ownerName);
         break;
       default:
         throw Error(`Type '${dbItem.kind}' cannot be removed`);
     }
 
-    // Remove item from selected
-    const removedItem = mapDbItemToSelectedDbItem(dbItem);
-    if (selectedItem && removedItem) {
-      // if removedItem has a parentList, check if parentList is selectedItem
-      if (
-        removedItem.kind === SelectedDbItemKind.LocalUserDefinedList ||
-        removedItem.kind === SelectedDbItemKind.RemoteUserDefinedList
-      ) {
-        if (
-          (selectedItem.kind === SelectedDbItemKind.LocalDatabase ||
-            selectedItem.kind === SelectedDbItemKind.RemoteRepository) &&
-          removedItem.listName === selectedItem.listName
-        ) {
-          config.selected = undefined;
-        }
-      }
-      if (compareSelectedKindIsEqual(removedItem, selectedItem)) {
-        config.selected = undefined;
-      }
-    }
     await this.writeConfig(config);
   }
 
