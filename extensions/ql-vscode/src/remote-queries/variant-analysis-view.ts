@@ -17,6 +17,7 @@ import {
   VariantAnalysisViewManager,
 } from "./variant-analysis-view-manager";
 import { showAndLogWarningMessage } from "../helpers";
+import { telemetryListener } from "../telemetry";
 
 export class VariantAnalysisView
   extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage>
@@ -148,6 +149,9 @@ export class VariantAnalysisView
         break;
       case "openLogs":
         await this.openLogs();
+        break;
+      case "telemetry":
+        telemetryListener?.sendUIInteraction(msg.action);
         break;
       default:
         assertNever(msg);

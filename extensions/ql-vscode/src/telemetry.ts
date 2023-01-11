@@ -168,6 +168,23 @@ export class TelemetryListener extends ConfigListener {
     );
   }
 
+  sendUIInteraction(name: string) {
+    if (!this.reporter) {
+      return;
+    }
+
+    const isCanary = (!!CANARY_FEATURES.getValue<boolean>()).toString();
+
+    this.reporter.sendTelemetryEvent(
+      "ui-interaction",
+      {
+        name,
+        isCanary,
+      },
+      {},
+    );
+  }
+
   /**
    * Displays a popup asking the user if they want to enable telemetry
    * for this extension.
