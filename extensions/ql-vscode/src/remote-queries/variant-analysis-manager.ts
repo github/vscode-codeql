@@ -19,6 +19,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { Credentials } from "../authentication";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
 import {
+  getActionsWorkflowRunUrl,
   isVariantAnalysisComplete,
   parseVariantAnalysisQueryLanguage,
   VariantAnalysis,
@@ -583,6 +584,20 @@ export class VariantAnalysisManager
       "Cancelling variant analysis. This may take a while.",
     );
     await cancelVariantAnalysis(credentials, variantAnalysis);
+  }
+
+  public async openVariantAnalysisLogs(variantAnalysisId: number) {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
+
+    await commands.executeCommand(
+      "vscode.open",
+      Uri.parse(actionsWorkflowRunUrl),
+    );
   }
 
   public async copyRepoListToClipboard(
