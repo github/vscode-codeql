@@ -148,7 +148,7 @@ describe("db config store", () => {
       configStore.dispose();
     });
 
-    it("should set codeQLDatabasesExperimental.configError to true when config has error", async () => {
+    it("should set codeQLVariantAnalysisRepositories.configError to true when config has error", async () => {
       const testDataStoragePathInvalid = join(__dirname, "data", "invalid");
 
       const app = createMockApp({
@@ -160,13 +160,13 @@ describe("db config store", () => {
 
       expect(app.executeCommand).toBeCalledWith(
         "setContext",
-        "codeQLDatabasesExperimental.configError",
+        "codeQLVariantAnalysisRepositories.configError",
         true,
       );
       configStore.dispose();
     });
 
-    it("should set codeQLDatabasesExperimental.configError to false when config is valid", async () => {
+    it("should set codeQLVariantAnalysisRepositories.configError to false when config is valid", async () => {
       const app = createMockApp({
         extensionPath,
         workspaceStoragePath: testDataStoragePath,
@@ -176,7 +176,7 @@ describe("db config store", () => {
 
       expect(app.executeCommand).toBeCalledWith(
         "setContext",
-        "codeQLDatabasesExperimental.configError",
+        "codeQLVariantAnalysisRepositories.configError",
         false,
       );
 

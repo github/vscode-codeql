@@ -48,7 +48,7 @@ export class DbPanel extends DisposableObject {
 
     this.dataProvider = new DbTreeDataProvider(dbManager);
 
-    this.treeView = window.createTreeView("codeQLDatabasesExperimental", {
+    this.treeView = window.createTreeView("codeQLVariantAnalysisRepositories", {
       treeDataProvider: this.dataProvider,
       canSelectMany: false,
     });
@@ -69,47 +69,47 @@ export class DbPanel extends DisposableObject {
 
   public async initialize(): Promise<void> {
     this.push(
-      commandRunner("codeQLDatabasesExperimental.openConfigFile", () =>
+      commandRunner("codeQLVariantAnalysisRepositories.openConfigFile", () =>
         this.openConfigFile(),
       ),
     );
     this.push(
-      commandRunner("codeQLDatabasesExperimental.addNewDatabase", () =>
+      commandRunner("codeQLVariantAnalysisRepositories.addNewDatabase", () =>
         this.addNewRemoteDatabase(),
       ),
     );
     this.push(
-      commandRunner("codeQLDatabasesExperimental.addNewList", () =>
+      commandRunner("codeQLVariantAnalysisRepositories.addNewList", () =>
         this.addNewList(),
       ),
     );
     this.push(
       commandRunner(
-        "codeQLDatabasesExperimental.setSelectedItem",
+        "codeQLVariantAnalysisRepositories.setSelectedItem",
         (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
       ),
     );
     this.push(
       commandRunner(
-        "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+        "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
         (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
       ),
     );
     this.push(
       commandRunner(
-        "codeQLDatabasesExperimental.openOnGitHubContextMenu",
+        "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
         (treeViewItem: DbTreeViewItem) => this.openOnGitHub(treeViewItem),
       ),
     );
     this.push(
       commandRunner(
-        "codeQLDatabasesExperimental.renameItemContextMenu",
+        "codeQLVariantAnalysisRepositories.renameItemContextMenu",
         (treeViewItem: DbTreeViewItem) => this.renameItem(treeViewItem),
       ),
     );
     this.push(
       commandRunner(
-        "codeQLDatabasesExperimental.removeItemContextMenu",
+        "codeQLVariantAnalysisRepositories.removeItemContextMenu",
         (treeViewItem: DbTreeViewItem) => this.removeItem(treeViewItem),
       ),
     );

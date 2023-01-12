@@ -38,7 +38,9 @@ describe("Db panel UI commands", () => {
       kind: DbListKind.Remote,
     } as AddListQuickPickItem);
     jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
-    await commands.executeCommand("codeQLDatabasesExperimental.addNewList");
+    await commands.executeCommand(
+      "codeQLVariantAnalysisRepositories.addNewList",
+    );
 
     // Check db config
     const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
@@ -53,7 +55,9 @@ describe("Db panel UI commands", () => {
       kind: DbListKind.Local,
     } as AddListQuickPickItem);
     jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
-    await commands.executeCommand("codeQLDatabasesExperimental.addNewList");
+    await commands.executeCommand(
+      "codeQLVariantAnalysisRepositories.addNewList",
+    );
 
     // Check db config
     const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
@@ -69,7 +73,9 @@ describe("Db panel UI commands", () => {
     } as RemoteDatabaseQuickPickItem);
 
     jest.spyOn(window, "showInputBox").mockResolvedValue("owner1/repo1");
-    await commands.executeCommand("codeQLDatabasesExperimental.addNewDatabase");
+    await commands.executeCommand(
+      "codeQLVariantAnalysisRepositories.addNewDatabase",
+    );
 
     // Check db config
     const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
@@ -85,7 +91,9 @@ describe("Db panel UI commands", () => {
     } as RemoteDatabaseQuickPickItem);
 
     jest.spyOn(window, "showInputBox").mockResolvedValue("owner1");
-    await commands.executeCommand("codeQLDatabasesExperimental.addNewDatabase");
+    await commands.executeCommand(
+      "codeQLVariantAnalysisRepositories.addNewDatabase",
+    );
 
     // Check db config
     const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
@@ -103,7 +111,7 @@ describe("Db panel UI commands", () => {
     );
 
     await commands.executeCommand(
-      "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+      "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
       treeViewItem,
     );
 
