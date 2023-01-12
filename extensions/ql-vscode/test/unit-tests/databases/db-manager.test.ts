@@ -20,7 +20,7 @@ import { createMockApp } from "../../__mocks__/appMock";
 
 // Note: Although these are "unit tests" (i.e. not integrating with VS Code), they do
 // test the interaction/"integration" between the DbManager and the DbConfigStore.
-describe.skip("db manager", () => {
+describe("db manager", () => {
   let dbManager: DbManager;
   let dbConfigStore: DbConfigStore;
   let tempWorkspaceStoragePath: string;
@@ -35,7 +35,9 @@ describe.skip("db manager", () => {
       workspaceStoragePath: tempWorkspaceStoragePath,
     });
 
-    dbConfigStore = new DbConfigStore(app);
+    // We don't need to watch changes to the config file in these tests, so we
+    // pass `false` to the dbConfigStore constructor.
+    dbConfigStore = new DbConfigStore(app, false);
     dbManager = new DbManager(app, dbConfigStore);
     await ensureDir(tempWorkspaceStoragePath);
 

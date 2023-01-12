@@ -44,7 +44,7 @@ describe("db config store", () => {
         "workspace-databases.json",
       );
 
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       expect(await pathExists(configPath)).toBe(true);
@@ -65,7 +65,7 @@ describe("db config store", () => {
         extensionPath,
         workspaceStoragePath: testDataStoragePath,
       });
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       const config = configStore.getConfig().value;
@@ -120,7 +120,7 @@ describe("db config store", () => {
         workspaceStoragePath: testDataStoragePathWithout,
       });
 
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       const config = configStore.getConfig().value;
@@ -134,7 +134,7 @@ describe("db config store", () => {
         extensionPath,
         workspaceStoragePath: testDataStoragePath,
       });
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       const config = configStore.getConfig().value;
@@ -155,7 +155,7 @@ describe("db config store", () => {
         extensionPath,
         workspaceStoragePath: testDataStoragePathInvalid,
       });
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       expect(app.executeCommand).toBeCalledWith(
@@ -171,7 +171,7 @@ describe("db config store", () => {
         extensionPath,
         workspaceStoragePath: testDataStoragePath,
       });
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       expect(app.executeCommand).toBeCalledWith(
@@ -215,7 +215,7 @@ describe("db config store", () => {
 
       await writeJSON(configPath, dbConfig);
 
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       // Rename
@@ -262,7 +262,7 @@ describe("db config store", () => {
 
       await writeJSON(configPath, dbConfig);
 
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       // Rename
@@ -309,7 +309,7 @@ describe("db config store", () => {
 
       await writeJSON(configPath, dbConfig);
 
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       // Rename
@@ -353,7 +353,7 @@ describe("db config store", () => {
 
       await writeJSON(configPath, dbConfig);
 
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       // Rename
@@ -393,7 +393,7 @@ describe("db config store", () => {
 
       await writeJSON(configPath, dbConfig);
 
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       // Remove
@@ -432,7 +432,7 @@ describe("db config store", () => {
 
       await writeJSON(configPath, dbConfig);
 
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       // Remove
@@ -471,7 +471,7 @@ describe("db config store", () => {
 
       await writeJSON(configPath, dbConfig);
 
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       // Remove
