@@ -559,16 +559,15 @@ export function isVariantAnalysisLiveResultsEnabled(): boolean {
 }
 
 /**
- * A flag indicating whether to use the new query run experience which involves
- * using a new database panel.
+ * A flag indicating whether to use the new "variant analysis repositories" panel.
  */
-const NEW_QUERY_RUN_EXPERIENCE = new Setting(
+const VARIANT_ANALYSIS_REPOS_PANEL = new Setting(
   "newQueryRunExperience",
   ROOT_SETTING,
 );
 
-export function isNewQueryRunExperienceEnabled(): boolean {
-  return !!NEW_QUERY_RUN_EXPERIENCE.getValue<boolean>();
+export function isVariantAnalysisReposPanelEnabled(): boolean {
+  return !!VARIANT_ANALYSIS_REPOS_PANEL.getValue<boolean>();
 }
 
 // Settings for mocking the GitHub API.

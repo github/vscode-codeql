@@ -12,10 +12,10 @@ import {
 } from "../../../../src/databases/db-item";
 
 describe("repository selection", () => {
-  describe("newQueryRunExperience true", () => {
+  describe("variantAnalysisReposPanel true", () => {
     beforeEach(() => {
       jest
-        .spyOn(config, "isNewQueryRunExperienceEnabled")
+        .spyOn(config, "isVariantAnalysisReposPanelEnabled")
         .mockReturnValue(true);
     });
 
@@ -115,7 +115,7 @@ describe("repository selection", () => {
     }
   });
 
-  describe("newQueryRunExperience false", () => {
+  describe("variantAnalysisReposPanel false", () => {
     let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
     let showInputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
 

@@ -1009,10 +1009,10 @@ describe("Variant Analysis Manager", () => {
         expect(writeTextStub).toBeCalledTimes(1);
       });
 
-      describe("newQueryRunExperience true", () => {
+      describe("variantAnalysisReposPanel true", () => {
         beforeEach(() => {
           jest
-            .spyOn(config, "isNewQueryRunExperienceEnabled")
+            .spyOn(config, "isVariantAnalysisReposPanelEnabled")
             .mockReturnValue(true);
         });
 
@@ -1077,7 +1077,7 @@ describe("Variant Analysis Manager", () => {
           });
         });
       });
-      describe("newQueryRunExperience false", () => {
+      describe("variantAnalysisReposPanel false", () => {
         it("should be valid JSON when put in object", async () => {
           await variantAnalysisManager.copyRepoListToClipboard(
             variantAnalysis.id,

@@ -642,7 +642,7 @@ async function activateWithInstalledDistribution(
     cliServer,
     variantAnalysisStorageDir,
     variantAnalysisResultsManager,
-    dbModule?.dbManager, // the dbModule is only needed when the newQueryRunExperience is enabled
+    dbModule?.dbManager, // the dbModule is only needed when variantAnalysisReposPanel is enabled
   );
   ctx.subscriptions.push(variantAnalysisManager);
   ctx.subscriptions.push(variantAnalysisResultsManager);

@@ -225,7 +225,7 @@ export async function prepareRemoteQueryRun(
   uri: Uri | undefined,
   progress: ProgressCallback,
   token: CancellationToken,
-  dbManager?: DbManager, // the dbManager is only needed when the newQueryRunExperience is enabled
+  dbManager?: DbManager, // the dbManager is only needed when variantAnalysisReposPanel is enabled
 ): Promise<PreparedRemoteQuery> {
   if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
     throw new Error(
