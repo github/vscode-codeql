@@ -617,7 +617,7 @@ describe("db config store", () => {
 
     it("should set the selected item", async () => {
       // Initial set up
-      const configStore = new DbConfigStore(app);
+      const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
       // Set selected
@@ -770,7 +770,7 @@ describe("db config store", () => {
   ): Promise<DbConfigStore> {
     await writeJSON(configPath, dbConfig);
 
-    const configStore = new DbConfigStore(app);
+    const configStore = new DbConfigStore(app, false);
     await configStore.initialize();
 
     return configStore;
