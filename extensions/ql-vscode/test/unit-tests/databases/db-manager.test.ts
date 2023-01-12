@@ -1,14 +1,21 @@
 import { ensureDir, readJSON, remove, writeJson } from "fs-extra";
 import { join } from "path";
-import { DbConfig } from "../../../src/databases/config/db-config";
+import {
+  DbConfig,
+  SelectedDbItemKind,
+} from "../../../src/databases/config/db-config";
 import { DbConfigStore } from "../../../src/databases/config/db-config-store";
 import {
   flattenDbItems,
   isLocalDatabaseDbItem,
   isLocalListDbItem,
+  isRemoteOwnerDbItem,
+  isRemoteRepoDbItem,
   isRemoteUserDefinedListDbItem,
   LocalDatabaseDbItem,
   LocalListDbItem,
+  RemoteOwnerDbItem,
+  RemoteRepoDbItem,
   RemoteUserDefinedListDbItem,
 } from "../../../src/databases/db-item";
 import { DbManager } from "../../../src/databases/db-manager";
@@ -27,7 +34,7 @@ describe("db manager", () => {
   let dbConfigFilePath: string;
 
   beforeEach(async () => {
-    tempWorkspaceStoragePath = join(__dirname, "test-workspace");
+    tempWorkspaceStoragePath = join(__dirname, "db-manager-test-workspace");
 
     const extensionPath = join(__dirname, "../../..");
     const app = createMockApp({
@@ -63,7 +70,7 @@ describe("db manager", () => {
       databases: [localDb],
     };
 
-    it("should rename remote db list", async () => {
+    it("should rename remote user-defined list", async () => {
       const dbConfig = createDbConfig({
         remoteLists: [remoteList],
         localLists: [localList],
@@ -71,9 +78,10 @@ describe("db manager", () => {
 
       await saveDbConfig(dbConfig);
 
-      const dbItem = getRemoteUserDefinedListDbItem("my-list-1");
+      const remoteListDbItems = getRemoteUserDefinedListDbItems("my-list-1");
+      expect(remoteListDbItems.length).toEqual(1);
 
-      await dbManager.renameList(dbItem, "my-list-2");
+      await dbManager.renameList(remoteListDbItems[0], "my-list-2");
 
       const dbConfigFileContents = await readDbConfigDirectly();
 
@@ -102,9 +110,10 @@ describe("db manager", () => {
 
       await saveDbConfig(dbConfig);
 
-      const dbItem = getLocalListDbItem("my-list-1");
+      const localListDbItems = getLocalListDbItems("my-list-1");
+      expect(localListDbItems.length).toEqual(1);
 
-      await dbManager.renameList(dbItem, "my-list-2");
+      await dbManager.renameList(localListDbItems[0], "my-list-2");
 
       const dbConfigFileContents = await readDbConfigDirectly();
 
@@ -133,9 +142,10 @@ describe("db manager", () => {
 
       await saveDbConfig(dbConfig);
 
-      const dbItem = getLocalDatabaseDbItem("db1");
+      const localDbItems = getLocalDatabaseDbItems("db1");
+      expect(localDbItems.length).toEqual(1);
 
-      await dbManager.renameLocalDb(dbItem, "db2");
+      await dbManager.renameLocalDb(localDbItems[0], "db2");
 
       const dbConfigFileContents = await readDbConfigDirectly();
 
@@ -161,9 +171,10 @@ describe("db manager", () => {
 
       await saveDbConfig(dbConfig);
 
-      const dbItem = getLocalDatabaseDbItem("db1", "my-list-1");
+      const localDbItems = getLocalDatabaseDbItems("db1", "my-list-1");
+      expect(localDbItems.length).toEqual(1);
 
-      await dbManager.renameLocalDb(dbItem, "db2");
+      await dbManager.renameLocalDb(localDbItems[0], "db2");
 
       const dbConfigFileContents = await readDbConfigDirectly();
 
@@ -177,6 +188,173 @@ describe("db manager", () => {
       const localDbs = dbConfigFileContents.databases.local.databases;
       expect(localDbs.length).toBe(1);
       expect(localDbs[0]).toEqual(localDb);
+    });
+  });
+
+  describe("removing items", () => {
+    const remoteRepo1 = "owner1/repo1";
+    const remoteRepo2 = "owner1/repo2";
+    const remoteList = {
+      name: "my-list-1",
+      repositories: [remoteRepo1, remoteRepo2],
+    };
+    const remoteOwner = "owner1";
+    const localDb = createLocalDbConfigItem({ name: "db1" });
+    const localList = {
+      name: "my-list-1",
+      databases: [localDb],
+    };
+    const dbConfig = createDbConfig({
+      remoteLists: [remoteList],
+      remoteOwners: [remoteOwner],
+      remoteRepos: [remoteRepo1, remoteRepo2],
+      localLists: [localList],
+      localDbs: [localDb],
+      selected: {
+        kind: SelectedDbItemKind.RemoteUserDefinedList,
+        listName: remoteList.name,
+      },
+    });
+
+    it("should remove remote user-defined list", async () => {
+      await saveDbConfig(dbConfig);
+
+      const remoteListDbItems = getRemoteUserDefinedListDbItems("my-list-1");
+      expect(remoteListDbItems.length).toEqual(1);
+
+      await dbManager.removeDbItem(remoteListDbItems[0]);
+
+      const dbConfigFileContents = await readDbConfigDirectly();
+
+      expect(dbConfigFileContents).toEqual({
+        databases: {
+          remote: {
+            repositoryLists: [],
+            repositories: [remoteRepo1, remoteRepo2],
+            owners: [remoteOwner],
+          },
+          local: {
+            lists: [localList],
+            databases: [localDb],
+          },
+        },
+      });
+    });
+
+    it("should remove remote repo", async () => {
+      await saveDbConfig(dbConfig);
+
+      const remoteRepoDbItems = getRemoteRepoDbItems("owner1/repo1");
+      expect(remoteRepoDbItems.length).toBe(1);
+
+      await dbManager.removeDbItem(remoteRepoDbItems[0]);
+
+      const dbConfigFileContents = await readDbConfigDirectly();
+
+      expect(dbConfigFileContents).toEqual({
+        databases: {
+          remote: {
+            repositoryLists: [remoteList],
+            repositories: [remoteRepo2],
+            owners: [remoteOwner],
+          },
+          local: {
+            lists: [localList],
+            databases: [localDb],
+          },
+        },
+        selected: {
+          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          listName: remoteList.name,
+        },
+      });
+    });
+
+    it("should remove remote owner", async () => {
+      await saveDbConfig(dbConfig);
+
+      const remoteOwnerDbItems = getRemoteOwnerDbItems("owner1");
+      expect(remoteOwnerDbItems.length).toEqual(1);
+
+      await dbManager.removeDbItem(remoteOwnerDbItems[0]);
+
+      const dbConfigFileContents = await readDbConfigDirectly();
+
+      expect(dbConfigFileContents).toEqual({
+        databases: {
+          remote: {
+            repositoryLists: [remoteList],
+            repositories: [remoteRepo1, remoteRepo2],
+            owners: [],
+          },
+          local: {
+            lists: [localList],
+            databases: [localDb],
+          },
+        },
+        selected: {
+          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          listName: remoteList.name,
+        },
+      });
+    });
+
+    it("should remove local db list", async () => {
+      await saveDbConfig(dbConfig);
+
+      const localListDbItems = getLocalListDbItems("my-list-1");
+      expect(localListDbItems.length).toEqual(1);
+
+      await dbManager.removeDbItem(localListDbItems[0]);
+
+      const dbConfigFileContents = await readDbConfigDirectly();
+
+      expect(dbConfigFileContents).toEqual({
+        databases: {
+          remote: {
+            repositoryLists: [remoteList],
+            repositories: [remoteRepo1, remoteRepo2],
+            owners: [remoteOwner],
+          },
+          local: {
+            lists: [],
+            databases: [localDb],
+          },
+        },
+        selected: {
+          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          listName: remoteList.name,
+        },
+      });
+    });
+
+    it("should remove local database", async () => {
+      await saveDbConfig(dbConfig);
+
+      const localDbItems = getLocalDatabaseDbItems("db1");
+      expect(localDbItems.length).toEqual(1);
+
+      await dbManager.removeDbItem(localDbItems[0]);
+
+      const dbConfigFileContents = await readDbConfigDirectly();
+
+      expect(dbConfigFileContents).toEqual({
+        databases: {
+          remote: {
+            repositoryLists: [remoteList],
+            repositories: [remoteRepo1, remoteRepo2],
+            owners: [remoteOwner],
+          },
+          local: {
+            lists: [localList],
+            databases: [],
+          },
+        },
+        selected: {
+          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          listName: remoteList.name,
+        },
+      });
     });
   });
 
@@ -194,21 +372,20 @@ describe("db manager", () => {
     return (await readJSON(dbConfigFilePath)) as DbConfig;
   }
 
-  function getLocalListDbItem(listName: string): LocalListDbItem {
+  function getLocalListDbItems(listName: string): LocalListDbItem[] {
     const dbItemsResult = dbManager.getDbItems();
     const dbItems = flattenDbItems(dbItemsResult.value);
     const listDbItems = dbItems
       .filter(isLocalListDbItem)
       .filter((i) => i.listName === listName);
 
-    expect(listDbItems.length).toEqual(1);
-    return listDbItems[0];
+    return listDbItems;
   }
 
-  function getLocalDatabaseDbItem(
+  function getLocalDatabaseDbItems(
     dbName: string,
     parentListName?: string,
-  ): LocalDatabaseDbItem {
+  ): LocalDatabaseDbItem[] {
     const dbItemsResult = dbManager.getDbItems();
     const dbItems = flattenDbItems(dbItemsResult.value);
     const localDbItems = dbItems
@@ -217,20 +394,44 @@ describe("db manager", () => {
         (i) => i.databaseName === dbName && i.parentListName === parentListName,
       );
 
-    expect(localDbItems.length).toEqual(1);
-    return localDbItems[0];
+    return localDbItems;
   }
 
-  function getRemoteUserDefinedListDbItem(
+  function getRemoteRepoDbItems(
+    repoName: string,
+    parentListName?: string,
+  ): RemoteRepoDbItem[] {
+    const dbItemsResult = dbManager.getDbItems();
+    const dbItems = flattenDbItems(dbItemsResult.value);
+    const repoDbItems = dbItems
+      .filter(isRemoteRepoDbItem)
+      .filter(
+        (i) =>
+          i.repoFullName === repoName && i.parentListName === parentListName,
+      );
+
+    return repoDbItems;
+  }
+
+  function getRemoteOwnerDbItems(ownerName: string): RemoteOwnerDbItem[] {
+    const dbItemsResult = dbManager.getDbItems();
+    const dbItems = flattenDbItems(dbItemsResult.value);
+    const ownerDbItems = dbItems
+      .filter(isRemoteOwnerDbItem)
+      .filter((i) => i.ownerName === ownerName);
+
+    return ownerDbItems;
+  }
+
+  function getRemoteUserDefinedListDbItems(
     listName: string,
-  ): RemoteUserDefinedListDbItem {
+  ): RemoteUserDefinedListDbItem[] {
     const dbItemsResult = dbManager.getDbItems();
     const dbItems = flattenDbItems(dbItemsResult.value);
     const listDbItems = dbItems
       .filter(isRemoteUserDefinedListDbItem)
       .filter((i) => i.listName === listName);
 
-    expect(listDbItems.length).toEqual(1);
-    return listDbItems[0];
+    return listDbItems;
   }
 });
