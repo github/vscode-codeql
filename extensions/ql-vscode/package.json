@@ -1293,7 +1293,7 @@
         },
         {
           "id": "codeQLDatabasesExperimental",
-          "name": "Databases",
+          "name": "Variant Analysis Repositories",
           "when": "config.codeQL.canary && config.codeQL.newQueryRunExperience"
         },
         {
