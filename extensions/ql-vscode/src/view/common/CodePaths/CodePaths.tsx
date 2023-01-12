@@ -11,7 +11,7 @@ import {
   ResultSeverity,
 } from "../../../remote-queries/shared/analysis-result";
 import { CodePathsOverlay } from "./CodePathsOverlay";
-import { useStateWithTelemetry } from "../Telemetry";
+import { useStateWithTelemetry } from "../telemetry";
 
 const ShowPathsLink = styled(VSCodeLink)`
   cursor: pointer;

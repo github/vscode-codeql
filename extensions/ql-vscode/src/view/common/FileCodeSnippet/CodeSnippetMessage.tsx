@@ -8,7 +8,7 @@ import {
 } from "../../../remote-queries/shared/analysis-result";
 import { createRemoteFileRef } from "../../../pure/location-link-utils";
 import { VerticalSpace } from "../VerticalSpace";
-import { sendTelemetry } from "../Telemetry";
+import { sendTelemetry } from "../telemetry";
 
 const getSeverityColor = (severity: ResultSeverity) => {
   switch (severity) {

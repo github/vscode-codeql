@@ -16,7 +16,7 @@ import {
   defaultFilterSortState,
   RepositoriesFilterSortState,
 } from "../../pure/variant-analysis-filter-sort";
-import { useStateWithTelemetry } from "../common/Telemetry";
+import { useStateWithTelemetry } from "../common/telemetry";
 
 export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;

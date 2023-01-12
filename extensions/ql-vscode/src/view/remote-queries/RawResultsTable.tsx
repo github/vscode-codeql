@@ -9,7 +9,7 @@ import {
 import { tryGetRemoteLocation } from "../../pure/bqrs-utils";
 import TextButton from "./TextButton";
 import { convertNonPrintableChars } from "../../text-utils";
-import { sendTelemetry, useStateWithTelemetry } from "../common/Telemetry";
+import { sendTelemetry, useStateWithTelemetry } from "../common/telemetry";
 
 const numOfResultsInContractedMode = 5;
 

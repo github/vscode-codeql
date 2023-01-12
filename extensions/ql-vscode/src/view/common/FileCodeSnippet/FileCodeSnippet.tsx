@@ -12,7 +12,7 @@ import {
 import { createRemoteFileRef } from "../../../pure/location-link-utils";
 import { CodeSnippetMessage } from "./CodeSnippetMessage";
 import { CodeSnippetLine } from "./CodeSnippetLine";
-import { sendTelemetry } from "../Telemetry";
+import { sendTelemetry } from "../telemetry";
 
 const borderColor = "var(--vscode-editor-snippetFinalTabstopHighlightBorder)";
 

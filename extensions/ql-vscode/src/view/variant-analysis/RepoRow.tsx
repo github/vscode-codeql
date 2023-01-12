@@ -24,7 +24,7 @@ import { vscode } from "../vscode-api";
 import { AnalyzedRepoItemContent } from "./AnalyzedRepoItemContent";
 import StarCount from "../common/StarCount";
 import { LastUpdated } from "../common/LastUpdated";
-import { useStateWithTelemetry } from "../common/Telemetry";
+import { useStateWithTelemetry } from "../common/telemetry";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;

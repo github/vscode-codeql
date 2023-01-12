@@ -6,7 +6,7 @@ import {
   CodeFlow,
   ResultSeverity,
 } from "../../../remote-queries/shared/analysis-result";
-import { useStateWithTelemetry } from "../Telemetry";
+import { useStateWithTelemetry } from "../telemetry";
 import { SectionTitle } from "../SectionTitle";
 import { VerticalSpace } from "../VerticalSpace";
 import { CodeFlowsDropdown } from "./CodeFlowsDropdown";
