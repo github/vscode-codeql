@@ -45,6 +45,8 @@ type CellProps = {
   sourceLocationPrefix: string;
 };
 
+const sendRawResultsLinkTelemetry = () => sendTelemetry("raw-results-link");
+
 const Cell = ({ value, fileLinkPrefix, sourceLocationPrefix }: CellProps) => {
   switch (typeof value) {
     case "string":
@@ -60,10 +62,7 @@ const Cell = ({ value, fileLinkPrefix, sourceLocationPrefix }: CellProps) => {
       const safeLabel = convertNonPrintableChars(value.label);
       if (url) {
         return (
-          <VSCodeLink
-            onClick={() => sendTelemetry("raw-results-link")}
-            href={url}
-          >
+          <VSCodeLink onClick={sendRawResultsLinkTelemetry} href={url}>
             {safeLabel}
           </VSCodeLink>
         );

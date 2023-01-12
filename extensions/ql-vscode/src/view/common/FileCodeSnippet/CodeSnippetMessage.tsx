@@ -50,6 +50,8 @@ type CodeSnippetMessageProps = {
   children: React.ReactNode;
 };
 
+const sendAlertMessageLinkTelemetry = () => sendTelemetry("alert-message-link");
+
 export const CodeSnippetMessage = ({
   message,
   severity,
@@ -66,7 +68,7 @@ export const CodeSnippetMessage = ({
               return (
                 <LocationLink
                   key={index}
-                  onClick={() => sendTelemetry("alert-message-link")}
+                  onClick={sendAlertMessageLinkTelemetry}
                   href={createRemoteFileRef(
                     token.location.fileLink,
                     token.location.highlightedRegion?.startLine,

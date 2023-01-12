@@ -47,6 +47,9 @@ type Props = {
   messageChildren?: React.ReactNode;
 };
 
+const sendCodeSnippetTitleLinkTelemetry = () =>
+  sendTelemetry("file-code-snippet-title-link");
+
 export const FileCodeSnippet = ({
   fileLink,
   codeSnippet,
@@ -69,7 +72,7 @@ export const FileCodeSnippet = ({
       <Container>
         <TitleContainer>
           <VSCodeLink
-            onClick={() => sendTelemetry("file-code-snippet-title-link")}
+            onClick={sendCodeSnippetTitleLinkTelemetry}
             href={titleFileUri}
           >
             {fileLink.filePath}
@@ -90,7 +93,7 @@ export const FileCodeSnippet = ({
     <Container>
       <TitleContainer>
         <VSCodeLink
-          onClick={() => sendTelemetry("file-code-snippet-title-link")}
+          onClick={sendCodeSnippetTitleLinkTelemetry}
           href={titleFileUri}
         >
           {fileLink.filePath}
