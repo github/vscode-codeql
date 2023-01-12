@@ -23,7 +23,7 @@ import {
   LocalDatabaseDbItem,
   LocalListDbItem,
   remoteDbKinds,
-  RemoteUserDefinedListDbItem,
+  VariantAnalysisUserDefinedListDbItem,
 } from "../db-item";
 import { getDbItemName } from "../db-item-naming";
 import { DbManager } from "../db-manager";
@@ -124,7 +124,7 @@ export class DbPanel extends DisposableObject {
   private async addNewRemoteDatabase(): Promise<void> {
     const highlightedItem = await this.getHighlightedDbItem();
 
-    if (highlightedItem?.kind === DbItemKind.RemoteUserDefinedList) {
+    if (highlightedItem?.kind === DbItemKind.VariantAnalysisUserDefinedList) {
       await this.addNewRemoteRepo(highlightedItem.listName);
     } else if (
       highlightedItem?.kind === DbItemKind.RemoteRepo &&
@@ -313,8 +313,8 @@ export class DbPanel extends DisposableObject {
       case DbItemKind.LocalDatabase:
         await this.renameLocalDatabaseItem(dbItem, newName);
         break;
-      case DbItemKind.RemoteUserDefinedList:
-        await this.renameRemoteUserDefinedListItem(dbItem, newName);
+      case DbItemKind.VariantAnalysisUserDefinedList:
+        await this.renameVariantAnalysisUserDefinedListItem(dbItem, newName);
         break;
       default:
         throw Error(`Action not allowed for the '${dbItem.kind}' db item kind`);
@@ -353,8 +353,8 @@ export class DbPanel extends DisposableObject {
     await this.dbManager.renameLocalDb(dbItem, newName);
   }
 
-  private async renameRemoteUserDefinedListItem(
-    dbItem: RemoteUserDefinedListDbItem,
+  private async renameVariantAnalysisUserDefinedListItem(
+    dbItem: VariantAnalysisUserDefinedListDbItem,
     newName: string,
   ): Promise<void> {
     if (dbItem.listName === newName) {

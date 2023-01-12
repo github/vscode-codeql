@@ -16,7 +16,7 @@ import {
   createLocalListDbItem,
   createRemoteOwnerDbItem,
   createRemoteRepoDbItem,
-  createRemoteUserDefinedListDbItem,
+  createVariantAnalysisUserDefinedListDbItem,
 } from "../../../factories/db-item-factories";
 import { createMockApp } from "../../../__mocks__/appMock";
 
@@ -51,9 +51,9 @@ describe("db config store", () => {
       expect(await pathExists(configPath)).toBe(true);
 
       const config = configStore.getConfig().value;
-      expect(config.databases.remote.repositoryLists).toHaveLength(0);
-      expect(config.databases.remote.owners).toHaveLength(0);
-      expect(config.databases.remote.repositories).toHaveLength(0);
+      expect(config.databases.variantAnalysis.repositoryLists).toHaveLength(0);
+      expect(config.databases.variantAnalysis.owners).toHaveLength(0);
+      expect(config.databases.variantAnalysis.repositories).toHaveLength(0);
       expect(config.databases.local.lists).toHaveLength(0);
       expect(config.databases.local.databases).toHaveLength(0);
       expect(config.selected).toBeUndefined();
@@ -70,14 +70,14 @@ describe("db config store", () => {
       await configStore.initialize();
 
       const config = configStore.getConfig().value;
-      expect(config.databases.remote.repositoryLists).toHaveLength(1);
-      expect(config.databases.remote.repositoryLists[0]).toEqual({
+      expect(config.databases.variantAnalysis.repositoryLists).toHaveLength(1);
+      expect(config.databases.variantAnalysis.repositoryLists[0]).toEqual({
         name: "repoList1",
         repositories: ["foo/bar", "foo/baz"],
       });
-      expect(config.databases.remote.owners).toHaveLength(0);
-      expect(config.databases.remote.repositories).toHaveLength(3);
-      expect(config.databases.remote.repositories).toEqual([
+      expect(config.databases.variantAnalysis.owners).toHaveLength(0);
+      expect(config.databases.variantAnalysis.repositories).toHaveLength(3);
+      expect(config.databases.variantAnalysis.repositories).toEqual([
         "owner/repo1",
         "owner/repo2",
         "owner/repo3",
@@ -102,7 +102,7 @@ describe("db config store", () => {
         storagePath: "/path/to/database/",
       });
       expect(config.selected).toEqual({
-        kind: "remoteUserDefinedList",
+        kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
         listName: "repoList1",
       });
 
@@ -139,12 +139,12 @@ describe("db config store", () => {
       await configStore.initialize();
 
       const config = configStore.getConfig().value;
-      config.databases.remote.repositoryLists = [];
+      config.databases.variantAnalysis.repositoryLists = [];
 
       const reRetrievedConfig = configStore.getConfig().value;
-      expect(reRetrievedConfig.databases.remote.repositoryLists).toHaveLength(
-        1,
-      );
+      expect(
+        reRetrievedConfig.databases.variantAnalysis.repositoryLists,
+      ).toHaveLength(1);
 
       configStore.dispose();
     });
@@ -211,7 +211,7 @@ describe("db config store", () => {
       const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
 
       // Check that the config file has been updated
-      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.repositories).toHaveLength(1);
       expect(updatedRemoteDbs.repositories).toEqual(["repo1"]);
 
@@ -238,7 +238,7 @@ describe("db config store", () => {
       const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
 
       // Check that the config file has been updated
-      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.repositories).toHaveLength(0);
       expect(updatedRemoteDbs.repositoryLists).toHaveLength(1);
       expect(updatedRemoteDbs.repositoryLists[0]).toEqual({
@@ -262,7 +262,7 @@ describe("db config store", () => {
       const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
 
       // Check that the config file has been updated
-      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.owners).toHaveLength(1);
       expect(updatedRemoteDbs.owners).toEqual(["owner1"]);
 
@@ -302,7 +302,7 @@ describe("db config store", () => {
       const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
 
       // Check that the config file has been updated
-      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.repositoryLists).toHaveLength(1);
       expect(updatedRemoteDbs.repositoryLists[0].name).toEqual("list1");
 
@@ -333,7 +333,7 @@ describe("db config store", () => {
           },
         ],
         selected: {
-          kind: SelectedDbItemKind.RemoteRepository,
+          kind: SelectedDbItemKind.VariantAnalysisRepository,
           repositoryName: "owner/repo2",
           listName: "list1",
         },
@@ -342,7 +342,7 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Rename
-      const currentDbItem = createRemoteUserDefinedListDbItem({
+      const currentDbItem = createVariantAnalysisUserDefinedListDbItem({
         listName: "list1",
       });
       await configStore.renameRemoteList(currentDbItem, "listRenamed");
@@ -351,12 +351,12 @@ describe("db config store", () => {
       const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
 
       // Check that the config file has been updated
-      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.repositoryLists).toHaveLength(1);
       expect(updatedRemoteDbs.repositoryLists[0].name).toEqual("listRenamed");
 
       expect(updatedDbConfig.selected).toEqual({
-        kind: SelectedDbItemKind.RemoteRepository,
+        kind: SelectedDbItemKind.VariantAnalysisRepository,
         repositoryName: "owner/repo2",
         listName: "listRenamed",
       });
@@ -471,7 +471,7 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Rename
-      const currentDbItem = createRemoteUserDefinedListDbItem({
+      const currentDbItem = createVariantAnalysisUserDefinedListDbItem({
         listName: "list1",
       });
       await expect(
@@ -500,7 +500,7 @@ describe("db config store", () => {
       const dbConfig = createDbConfig({
         remoteOwners: ["owner1", "owner2"],
         selected: {
-          kind: SelectedDbItemKind.RemoteOwner,
+          kind: SelectedDbItemKind.VariantAnalysisOwner,
           ownerName: "owner1",
         },
       });
@@ -517,7 +517,7 @@ describe("db config store", () => {
       const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
 
       // Check that the config file has been updated
-      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.owners).toHaveLength(1);
       expect(updatedRemoteDbs.owners[0]).toEqual("owner2");
 
@@ -536,7 +536,7 @@ describe("db config store", () => {
           },
         ],
         selected: {
-          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
           listName: "list1",
         },
       });
@@ -544,7 +544,7 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Remove
-      const currentDbItem = createRemoteUserDefinedListDbItem({
+      const currentDbItem = createVariantAnalysisUserDefinedListDbItem({
         listName: "list1",
       });
       await configStore.removeDbItem(currentDbItem);
@@ -553,7 +553,7 @@ describe("db config store", () => {
       const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
 
       // Check that the config file has been updated
-      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.repositoryLists).toHaveLength(0);
 
       expect(updatedDbConfig.selected).toEqual(undefined);
@@ -571,7 +571,7 @@ describe("db config store", () => {
           },
         ],
         selected: {
-          kind: SelectedDbItemKind.RemoteRepository,
+          kind: SelectedDbItemKind.VariantAnalysisRepository,
           repositoryName: "owner/repo1",
           listName: "list1",
         },
@@ -590,7 +590,7 @@ describe("db config store", () => {
       const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
 
       // Check that the config file has been updated
-      const updatedRemoteDbs = updatedDbConfig.databases.remote;
+      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.repositoryLists[0].repositories).toHaveLength(1);
       expect(updatedRemoteDbs.repositoryLists[0].repositories[0]).toEqual(
         "owner/repo2",
@@ -622,7 +622,7 @@ describe("db config store", () => {
 
       // Set selected
       const selectedItem: SelectedDbItem = {
-        kind: SelectedDbItemKind.RemoteOwner,
+        kind: SelectedDbItemKind.VariantAnalysisOwner,
         ownerName: "owner2",
       };
 

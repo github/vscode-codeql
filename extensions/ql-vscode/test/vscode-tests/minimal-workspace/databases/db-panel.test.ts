@@ -133,7 +133,7 @@ describe("db panel", () => {
     expect(systemDefinedListItems.length).toBe(3);
 
     const userDefinedListItems = remoteRootNode.children.filter(
-      (item) => item.dbItem?.kind === DbItemKind.RemoteUserDefinedList,
+      (item) => item.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList,
     );
     expect(userDefinedListItems.length).toBe(2);
     checkUserDefinedListItem(userDefinedListItems[0], "my-list-1", [
@@ -358,7 +358,7 @@ describe("db panel", () => {
         },
       ],
       selected: {
-        kind: SelectedDbItemKind.RemoteUserDefinedList,
+        kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
         listName: "my-list-2",
       },
     });
@@ -376,12 +376,12 @@ describe("db panel", () => {
 
     const list1 = remoteRootNode.children.find(
       (c) =>
-        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
         c.dbItem?.listName === "my-list-1",
     );
     const list2 = remoteRootNode.children.find(
       (c) =>
-        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
         c.dbItem?.listName === "my-list-2",
     );
 
@@ -405,7 +405,7 @@ describe("db panel", () => {
       ],
       remoteRepos: ["owner1/repo1"],
       selected: {
-        kind: SelectedDbItemKind.RemoteRepository,
+        kind: SelectedDbItemKind.VariantAnalysisRepository,
         repositoryName: "owner1/repo1",
         listName: "my-list-2",
       },
@@ -424,7 +424,7 @@ describe("db panel", () => {
 
     const list2 = remoteRootNode.children.find(
       (c) =>
-        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
         c.dbItem?.listName === "my-list-2",
     );
     expect(list2).toBeTruthy();
@@ -479,10 +479,12 @@ describe("db panel", () => {
       await dbManager.addNewRemoteRepo("owner2/repo2");
 
       const dbConfigFileContents = await readDbConfigDirectly();
-      expect(dbConfigFileContents.databases.remote.repositories.length).toBe(2);
-      expect(dbConfigFileContents.databases.remote.repositories[1]).toEqual(
-        "owner2/repo2",
-      );
+      expect(
+        dbConfigFileContents.databases.variantAnalysis.repositories.length,
+      ).toBe(2);
+      expect(
+        dbConfigFileContents.databases.variantAnalysis.repositories[1],
+      ).toEqual("owner2/repo2");
     });
 
     it("should add a new remote repo to a user defined list", async () => {
@@ -504,11 +506,11 @@ describe("db panel", () => {
 
       const remoteRootNode = items[0];
       const remoteUserDefinedLists = remoteRootNode.children.filter(
-        (c) => c.dbItem?.kind === DbItemKind.RemoteUserDefinedList,
+        (c) => c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList,
       );
       const list1 = remoteRootNode.children.find(
         (c) =>
-          c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+          c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
           c.dbItem?.listName === "my-list-1",
       );
 
@@ -521,11 +523,13 @@ describe("db panel", () => {
       // We can't use the dbConfigStore's `read` function here because it depends on the file watcher
       // picking up changes, and we don't control the timing of that.
       const dbConfigFileContents = await readJSON(dbConfigFilePath);
-      expect(dbConfigFileContents.databases.remote.repositoryLists.length).toBe(
-        1,
-      );
+      expect(
+        dbConfigFileContents.databases.variantAnalysis.repositoryLists.length,
+      ).toBe(1);
 
-      expect(dbConfigFileContents.databases.remote.repositoryLists[0]).toEqual({
+      expect(
+        dbConfigFileContents.databases.variantAnalysis.repositoryLists[0],
+      ).toEqual({
         name: "my-list-1",
         repositories: ["owner1/repo1", "owner2/repo2"],
       });
@@ -542,7 +546,7 @@ describe("db panel", () => {
           },
         ],
         selected: {
-          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
           listName: "my-list-1",
         },
       });
@@ -556,11 +560,11 @@ describe("db panel", () => {
 
       const remoteRootNode = items[0];
       const remoteUserDefinedLists = remoteRootNode.children.filter(
-        (c) => c.dbItem?.kind === DbItemKind.RemoteUserDefinedList,
+        (c) => c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList,
       );
       const list1 = remoteRootNode.children.find(
         (c) =>
-          c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+          c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
           c.dbItem?.listName === "my-list-1",
       );
 
@@ -570,10 +574,12 @@ describe("db panel", () => {
       await dbManager.addNewList(DbListKind.Remote, "my-list-2");
 
       const dbConfigFileContents = await readDbConfigDirectly();
-      expect(dbConfigFileContents.databases.remote.repositoryLists.length).toBe(
-        2,
-      );
-      expect(dbConfigFileContents.databases.remote.repositoryLists[1]).toEqual({
+      expect(
+        dbConfigFileContents.databases.variantAnalysis.repositoryLists.length,
+      ).toBe(2);
+      expect(
+        dbConfigFileContents.databases.variantAnalysis.repositoryLists[1],
+      ).toEqual({
         name: "my-list-2",
         repositories: [],
       });

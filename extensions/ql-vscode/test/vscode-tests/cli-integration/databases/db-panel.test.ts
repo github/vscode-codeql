@@ -45,8 +45,10 @@ describe("Db panel UI commands", () => {
     // Check db config
     const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
-    expect(dbConfig.databases.remote.repositoryLists).toHaveLength(1);
-    expect(dbConfig.databases.remote.repositoryLists[0].name).toBe("my-list-1");
+    expect(dbConfig.databases.variantAnalysis.repositoryLists).toHaveLength(1);
+    expect(dbConfig.databases.variantAnalysis.repositoryLists[0].name).toBe(
+      "my-list-1",
+    );
   });
 
   it("should add new local db list", async () => {
@@ -80,8 +82,10 @@ describe("Db panel UI commands", () => {
     // Check db config
     const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
-    expect(dbConfig.databases.remote.repositories).toHaveLength(1);
-    expect(dbConfig.databases.remote.repositories[0]).toBe("owner1/repo1");
+    expect(dbConfig.databases.variantAnalysis.repositories).toHaveLength(1);
+    expect(dbConfig.databases.variantAnalysis.repositories[0]).toBe(
+      "owner1/repo1",
+    );
   });
 
   it("should add new remote owner", async () => {
@@ -98,8 +102,8 @@ describe("Db panel UI commands", () => {
     // Check db config
     const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
-    expect(dbConfig.databases.remote.owners).toHaveLength(1);
-    expect(dbConfig.databases.remote.owners[0]).toBe("owner1");
+    expect(dbConfig.databases.variantAnalysis.owners).toHaveLength(1);
+    expect(dbConfig.databases.variantAnalysis.owners[0]).toBe("owner1");
   });
 
   it("should select db item", async () => {
@@ -120,7 +124,7 @@ describe("Db panel UI commands", () => {
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.selected).toBeDefined();
     expect(dbConfig.selected).toEqual({
-      kind: SelectedDbItemKind.RemoteSystemDefinedList,
+      kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList,
       listName,
     });
   });

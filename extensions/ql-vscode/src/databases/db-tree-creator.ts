@@ -12,7 +12,7 @@ import {
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
-  RemoteUserDefinedListDbItem,
+  VariantAnalysisUserDefinedListDbItem,
   RootLocalDbItem,
   RootRemoteDbItem,
 } from "./db-item";
@@ -28,13 +28,14 @@ export function createRemoteTree(
     createSystemDefinedList(1000, dbConfig),
   ];
 
-  const userDefinedRepoLists = dbConfig.databases.remote.repositoryLists.map(
-    (r) => createRemoteUserDefinedList(r, dbConfig, expandedItems),
-  );
-  const owners = dbConfig.databases.remote.owners.map((o) =>
+  const userDefinedRepoLists =
+    dbConfig.databases.variantAnalysis.repositoryLists.map((r) =>
+      createVariantAnalysisUserDefinedList(r, dbConfig, expandedItems),
+    );
+  const owners = dbConfig.databases.variantAnalysis.owners.map((o) =>
     createOwnerItem(o, dbConfig),
   );
-  const repos = dbConfig.databases.remote.repositories.map((r) =>
+  const repos = dbConfig.databases.variantAnalysis.repositories.map((r) =>
     createRepoItem(r, dbConfig),
   );
 
@@ -84,7 +85,8 @@ function createSystemDefinedList(
 
   const selected =
     dbConfig.selected &&
-    dbConfig.selected.kind === SelectedDbItemKind.RemoteSystemDefinedList &&
+    dbConfig.selected.kind ===
+      SelectedDbItemKind.VariantAnalysisSystemDefinedList &&
     dbConfig.selected.listName === listName;
 
   return {
@@ -96,14 +98,15 @@ function createSystemDefinedList(
   };
 }
 
-function createRemoteUserDefinedList(
+function createVariantAnalysisUserDefinedList(
   list: RemoteRepositoryList,
   dbConfig: DbConfig,
   expandedItems: ExpandedDbItem[],
-): RemoteUserDefinedListDbItem {
+): VariantAnalysisUserDefinedListDbItem {
   const selected =
     dbConfig.selected &&
-    dbConfig.selected.kind === SelectedDbItemKind.RemoteUserDefinedList &&
+    dbConfig.selected.kind ===
+      SelectedDbItemKind.VariantAnalysisUserDefinedList &&
     dbConfig.selected.listName === list.name;
 
   const expanded = expandedItems.some(
@@ -113,7 +116,7 @@ function createRemoteUserDefinedList(
   );
 
   return {
-    kind: DbItemKind.RemoteUserDefinedList,
+    kind: DbItemKind.VariantAnalysisUserDefinedList,
     listName: list.name,
     repos: list.repositories.map((r) => createRepoItem(r, dbConfig, list.name)),
     selected: !!selected,
@@ -124,7 +127,7 @@ function createRemoteUserDefinedList(
 function createOwnerItem(owner: string, dbConfig: DbConfig): RemoteOwnerDbItem {
   const selected =
     dbConfig.selected &&
-    dbConfig.selected.kind === SelectedDbItemKind.RemoteOwner &&
+    dbConfig.selected.kind === SelectedDbItemKind.VariantAnalysisOwner &&
     dbConfig.selected.ownerName === owner;
 
   return {
@@ -141,7 +144,7 @@ function createRepoItem(
 ): RemoteRepoDbItem {
   const selected =
     dbConfig.selected &&
-    dbConfig.selected.kind === SelectedDbItemKind.RemoteRepository &&
+    dbConfig.selected.kind === SelectedDbItemKind.VariantAnalysisRepository &&
     dbConfig.selected.repositoryName === repo &&
     dbConfig.selected.listName === listName;
 
