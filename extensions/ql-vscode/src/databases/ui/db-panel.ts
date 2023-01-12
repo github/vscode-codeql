@@ -386,7 +386,7 @@ export class DbPanel extends DisposableObject {
       throw Error("Expected a database item.");
     }
 
-    await this.dbManager.updateDbItemExpandedState(event.element.dbItem, false);
+    await this.dbManager.removeDbItemFromExpandedState(event.element.dbItem);
   }
 
   private async onDidExpandElement(
@@ -397,7 +397,7 @@ export class DbPanel extends DisposableObject {
       throw Error("Expected a database item.");
     }
 
-    await this.dbManager.updateDbItemExpandedState(event.element.dbItem, true);
+    await this.dbManager.addDbItemToExpandedState(event.element.dbItem);
   }
 
   /**
