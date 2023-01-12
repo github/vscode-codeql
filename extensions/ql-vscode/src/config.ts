@@ -562,8 +562,8 @@ export function isVariantAnalysisLiveResultsEnabled(): boolean {
  * A flag indicating whether to use the new "variant analysis repositories" panel.
  */
 const VARIANT_ANALYSIS_REPOS_PANEL = new Setting(
-  "newQueryRunExperience",
-  ROOT_SETTING,
+  "repositoriesPanel",
+  VARIANT_ANALYSIS_SETTING,
 );
 
 export function isVariantAnalysisReposPanelEnabled(): boolean {
