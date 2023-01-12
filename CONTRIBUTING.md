@@ -95,10 +95,13 @@ More information about Storybook can be found inside the **Overview** page once 
 
 We have several types of tests:
 
-* Unit tests: these live in the `tests/pure-tests/` directory
+* Unit tests: these live in the `tests/unit-tests/` directory
 * View tests: these live in `src/view/variant-analysis/__tests__/`
-* VSCode integration tests: these live in `test/vscode-tests/no-workspace` and `test/vscode-tests/minimal-workspace`
+* VSCode integration tests:
+  * `test/vscode-tests/no-workspace` tests: These are intended to cover functionality that is meant to work before you even have a workspace open. 
+  * `test/vscode-tests/minimal-workspace` tests: These are intended to cover functionality that need a workspace but don't require the full extension to be activated.
 * CLI integration tests: these live in `test/vscode-tests/cli-integration`
+  * These tests are intendended to be cover functionality that is related to the integration between the CodeQL CLI and the extension.
 
 The CLI integration tests require an instance of the CodeQL CLI to run so they will require some extra setup steps. When adding new tests to our test suite, please be mindful of whether they need to be in the cli-integration folder. If the tests don't depend on the CLI, they are better suited to being a VSCode integration test.
 
