@@ -37,7 +37,7 @@
     "onLanguage:ql",
     "onLanguage:ql-summary",
     "onView:codeQLDatabases",
-    "onView:codeQLDatabasesExperimental",
+    "onView:codeQLVariantAnalysisRepositories",
     "onView:codeQLQueryHistory",
     "onView:codeQLAstViewer",
     "onView:codeQLEvalLogViewer",
@@ -59,14 +59,14 @@
     "onCommand:codeQL.chooseDatabaseGithub",
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
-    "onCommand:codeQLDatabasesExperimental.openConfigFile",
-    "onCommand:codeQLDatabasesExperimental.addNewDatabase",
-    "onCommand:codeQLDatabasesExperimental.addNewList",
-    "onCommand:codeQLDatabasesExperimental.setSelectedItem",
-    "onCommand:codeQLDatabasesExperimental.setSelectedItemContextMenu",
-    "onCommand:codeQLDatabasesExperimental.renameItemContextMenu",
-    "onCommand:codeQLDatabasesExperimental.openOnGitHubContextMenu",
-    "onCommand:codeQLDatabasesExperimental.removeItemContextMenu",
+    "onCommand:codeQLVariantAnalysisRepositories.openConfigFile",
+    "onCommand:codeQLVariantAnalysisRepositories.addNewDatabase",
+    "onCommand:codeQLVariantAnalysisRepositories.addNewList",
+    "onCommand:codeQLVariantAnalysisRepositories.setSelectedItem",
+    "onCommand:codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
+    "onCommand:codeQLVariantAnalysisRepositories.renameItemContextMenu",
+    "onCommand:codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
+    "onCommand:codeQLVariantAnalysisRepositories.removeItemContextMenu",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
@@ -363,38 +363,38 @@
         "title": "CodeQL: Copy Version Information"
       },
       {
-        "command": "codeQLDatabasesExperimental.openConfigFile",
+        "command": "codeQLVariantAnalysisRepositories.openConfigFile",
         "title": "Open Database Configuration File",
         "icon": "$(edit)"
       },
       {
-        "command": "codeQLDatabasesExperimental.addNewDatabase",
+        "command": "codeQLVariantAnalysisRepositories.addNewDatabase",
         "title": "Add new database",
         "icon": "$(add)"
       },
       {
-        "command": "codeQLDatabasesExperimental.addNewList",
+        "command": "codeQLVariantAnalysisRepositories.addNewList",
         "title": "Add new list",
         "icon": "$(new-folder)"
       },
       {
-        "command": "codeQLDatabasesExperimental.setSelectedItem",
+        "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
         "title": "✓"
       },
       {
-        "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+        "command": "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
         "title": "Select"
       },
       {
-        "command": "codeQLDatabasesExperimental.renameItemContextMenu",
+        "command": "codeQLVariantAnalysisRepositories.renameItemContextMenu",
         "title": "Rename"
       },
       {
-        "command": "codeQLDatabasesExperimental.openOnGitHubContextMenu",
+        "command": "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
         "title": "Open on GitHub"
       },
       {
-        "command": "codeQLDatabasesExperimental.removeItemContextMenu",
+        "command": "codeQLVariantAnalysisRepositories.removeItemContextMenu",
         "title": "Remove"
       },
       {
@@ -780,37 +780,37 @@
           "group": "navigation"
         },
         {
-          "command": "codeQLDatabasesExperimental.openConfigFile",
-          "when": "view == codeQLDatabasesExperimental",
+          "command": "codeQLVariantAnalysisRepositories.openConfigFile",
+          "when": "view == codeQLVariantAnalysisRepositories",
           "group": "navigation"
         },
         {
-          "command": "codeQLDatabasesExperimental.addNewDatabase",
-          "when": "view == codeQLDatabasesExperimental && codeQLDatabasesExperimental.configError == false",
+          "command": "codeQLVariantAnalysisRepositories.addNewDatabase",
+          "when": "view == codeQLVariantAnalysisRepositories && codeQLVariantAnalysisRepositories.configError == false",
           "group": "navigation"
         },
         {
-          "command": "codeQLDatabasesExperimental.addNewList",
-          "when": "view == codeQLDatabasesExperimental && codeQLDatabasesExperimental.configError == false",
+          "command": "codeQLVariantAnalysisRepositories.addNewList",
+          "when": "view == codeQLVariantAnalysisRepositories && codeQLVariantAnalysisRepositories.configError == false",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "codeQLDatabasesExperimental.removeItemContextMenu",
-          "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeRemoved/"
+          "command": "codeQLVariantAnalysisRepositories.removeItemContextMenu",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeRemoved/"
         },
         {
-          "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
-          "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeSelected/"
+          "command": "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/"
         },
         {
-          "command": "codeQLDatabasesExperimental.renameItemContextMenu",
-          "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeRenamed/"
+          "command": "codeQLVariantAnalysisRepositories.renameItemContextMenu",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeRenamed/"
         },
         {
-          "command": "codeQLDatabasesExperimental.openOnGitHubContextMenu",
-          "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeOpenedOnGitHub/"
+          "command": "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeOpenedOnGitHub/"
         },
         {
           "command": "codeQLDatabases.setCurrentDatabase",
@@ -838,8 +838,8 @@
           "when": "view == codeQLDatabases"
         },
         {
-          "command": "codeQLDatabasesExperimental.setSelectedItem",
-          "when": "view == codeQLDatabasesExperimental && viewItem =~ /canBeSelected/",
+          "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/",
           "group": "inline"
         },
         {
@@ -1025,35 +1025,35 @@
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
-          "command": "codeQLDatabasesExperimental.openConfigFile",
+          "command": "codeQLVariantAnalysisRepositories.openConfigFile",
           "when": "false"
         },
         {
-          "command": "codeQLDatabasesExperimental.addNewDatabase",
+          "command": "codeQLVariantAnalysisRepositories.addNewDatabase",
           "when": "false"
         },
         {
-          "command": "codeQLDatabasesExperimental.addNewList",
+          "command": "codeQLVariantAnalysisRepositories.addNewList",
           "when": "false"
         },
         {
-          "command": "codeQLDatabasesExperimental.setSelectedItem",
+          "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
           "when": "false"
         },
         {
-          "command": "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+          "command": "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
           "when": "false"
         },
         {
-          "command": "codeQLDatabasesExperimental.renameItemContextMenu",
+          "command": "codeQLVariantAnalysisRepositories.renameItemContextMenu",
           "when": "false"
         },
         {
-          "command": "codeQLDatabasesExperimental.openOnGitHubContextMenu",
+          "command": "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
           "when": "false"
         },
         {
-          "command": "codeQLDatabasesExperimental.removeItemContextMenu",
+          "command": "codeQLVariantAnalysisRepositories.removeItemContextMenu",
           "when": "false"
         },
         {
@@ -1292,8 +1292,8 @@
           "name": "Databases"
         },
         {
-          "id": "codeQLDatabasesExperimental",
-          "name": "Databases",
+          "id": "codeQLVariantAnalysisRepositories",
+          "name": "Variant Analysis Repositories",
           "when": "config.codeQL.canary && config.codeQL.newQueryRunExperience"
         },
         {

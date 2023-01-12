@@ -383,14 +383,14 @@ export class DbConfigStore extends DisposableObject {
       this.config = newConfig;
       await this.app.executeCommand(
         "setContext",
-        "codeQLDatabasesExperimental.configError",
+        "codeQLVariantAnalysisRepositories.configError",
         false,
       );
     } else {
       this.config = undefined;
       await this.app.executeCommand(
         "setContext",
-        "codeQLDatabasesExperimental.configError",
+        "codeQLVariantAnalysisRepositories.configError",
         true,
       );
     }
@@ -417,14 +417,14 @@ export class DbConfigStore extends DisposableObject {
       this.config = newConfig;
       void this.app.executeCommand(
         "setContext",
-        "codeQLDatabasesExperimental.configError",
+        "codeQLVariantAnalysisRepositories.configError",
         false,
       );
     } else {
       this.config = undefined;
       void this.app.executeCommand(
         "setContext",
-        "codeQLDatabasesExperimental.configError",
+        "codeQLVariantAnalysisRepositories.configError",
         true,
       );
     }
