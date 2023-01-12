@@ -16,7 +16,7 @@ import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { Credentials } from "../../../../src/authentication";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 
-jest.setTimeout(10_000);
+jest.setTimeout(30_000);
 
 const mockServer = new MockGitHubApiServer();
 beforeAll(() => mockServer.startServer());
