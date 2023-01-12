@@ -43,7 +43,7 @@ describe("db panel", () => {
 
     const app = new ExtensionApp(extensionContext);
 
-    dbConfigStore = new DbConfigStore(app);
+    dbConfigStore = new DbConfigStore(app, false);
     dbManager = new DbManager(app, dbConfigStore);
   });
 
