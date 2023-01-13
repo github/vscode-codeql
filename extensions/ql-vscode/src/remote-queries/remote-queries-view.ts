@@ -33,6 +33,7 @@ import { AnalysesResultsManager } from "./analyses-results-manager";
 import { AnalysisResults } from "./shared/analysis-result";
 import { humanizeUnit } from "../pure/time";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
+import { telemetryListener } from "../telemetry";
 
 export class RemoteQueriesView extends AbstractWebview<
   ToRemoteQueriesMessage,
@@ -166,6 +167,9 @@ export class RemoteQueriesView extends AbstractWebview<
           "codeQL.exportRemoteQueryResults",
           msg.queryId,
         );
+        break;
+      case "telemetry":
+        telemetryListener?.sendUIInteraction(msg.action);
         break;
       default:
         assertNever(msg);

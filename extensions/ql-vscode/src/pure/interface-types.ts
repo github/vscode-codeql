@@ -413,7 +413,8 @@ export type FromRemoteQueriesMessage =
   | RemoteQueryDownloadAnalysisResultsMessage
   | RemoteQueryDownloadAllAnalysesResultsMessage
   | RemoteQueryExportResultsMessage
-  | CopyRepoListMessage;
+  | CopyRepoListMessage
+  | TelemetryMessage;
 
 export type ToRemoteQueriesMessage =
   | SetRemoteQueryResultMessage
