@@ -22,21 +22,27 @@ const packageFiles = [
   "language-configuration.json",
   "snippets.json",
   "media",
-  "node_modules",
   "out",
   "workspace-databases-schema.json",
 ];
+
+async function copyDirectory(
+  sourcePath: string,
+  destPath: string,
+): Promise<void> {
+  console.log(`copying ${sourcePath} to ${destPath}`);
+  await copy(sourcePath, destPath);
+}
 
 async function copyPackage(
   sourcePath: string,
   destPath: string,
 ): Promise<void> {
-  for (const file of packageFiles) {
-    console.log(
-      `copying ${resolve(sourcePath, file)} to ${resolve(destPath, file)}`,
-    );
-    await copy(resolve(sourcePath, file), resolve(destPath, file));
-  }
+  await Promise.all(
+    packageFiles.map((file) =>
+      copyDirectory(resolve(sourcePath, file), resolve(destPath, file)),
+    ),
+  );
 }
 
 export async function deployPackage(
@@ -87,6 +93,12 @@ export async function deployPackage(
       `Copying package '${packageJson.name}' and its dependencies to '${distPath}'...`,
     );
     await copyPackage(sourcePath, distPath);
+
+    // This is necessary for vsce to know the dependencies
+    await copyDirectory(
+      resolve(sourcePath, "node_modules"),
+      resolve(distPath, "node_modules"),
+    );
 
     return {
       distPath,

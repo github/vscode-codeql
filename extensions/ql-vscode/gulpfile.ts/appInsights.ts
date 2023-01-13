@@ -13,7 +13,7 @@ export function injectAppInsightsKey() {
   }
 
   // replace the key
-  return src(["out/telemetry.js"])
+  return src(["out/extension.js"])
     .pipe(replace(/REPLACE-APP-INSIGHTS-KEY/, process.env.APP_INSIGHTS_KEY))
     .pipe(dest("out/"));
 }
