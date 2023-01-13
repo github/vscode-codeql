@@ -55,399 +55,404 @@ describe("db panel", () => {
     await remove(workspaceStoragePath);
   });
 
-  it("should render default local and remote nodes when the config is empty", async () => {
-    const dbConfig: DbConfig = createDbConfig();
+  describe("rendering nodes", () => {
+    it("should render default local and remote nodes when the config is empty", async () => {
+      const dbConfig: DbConfig = createDbConfig();
 
-    await saveDbConfig(dbConfig);
+      await saveDbConfig(dbConfig);
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+      expect(items.length).toBe(2);
 
-    const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).toBeTruthy();
-    expect(remoteRootNode.dbItem?.kind).toBe(DbItemKind.RootRemote);
-    expect(remoteRootNode.label).toBe("remote");
-    expect(remoteRootNode.tooltip).toBe("Remote databases");
-    expect(remoteRootNode.collapsibleState).toBe(
-      TreeItemCollapsibleState.Collapsed,
-    );
-    expect(remoteRootNode.children).toBeTruthy();
-    expect(remoteRootNode.children.length).toBe(3);
+      const remoteRootNode = items[0];
+      expect(remoteRootNode.dbItem).toBeTruthy();
+      expect(remoteRootNode.dbItem?.kind).toBe(DbItemKind.RootRemote);
+      expect(remoteRootNode.label).toBe("remote");
+      expect(remoteRootNode.tooltip).toBe("Remote databases");
+      expect(remoteRootNode.collapsibleState).toBe(
+        TreeItemCollapsibleState.Collapsed,
+      );
+      expect(remoteRootNode.children).toBeTruthy();
+      expect(remoteRootNode.children.length).toBe(3);
 
-    const systemDefinedListItems = remoteRootNode.children.filter(
-      (item) => item.dbItem?.kind === DbItemKind.RemoteSystemDefinedList,
-    );
-    expect(systemDefinedListItems.length).toBe(3);
-    checkRemoteSystemDefinedListItem(systemDefinedListItems[0], 10);
-    checkRemoteSystemDefinedListItem(systemDefinedListItems[1], 100);
-    checkRemoteSystemDefinedListItem(systemDefinedListItems[2], 1000);
+      const systemDefinedListItems = remoteRootNode.children.filter(
+        (item) => item.dbItem?.kind === DbItemKind.RemoteSystemDefinedList,
+      );
+      expect(systemDefinedListItems.length).toBe(3);
+      checkRemoteSystemDefinedListItem(systemDefinedListItems[0], 10);
+      checkRemoteSystemDefinedListItem(systemDefinedListItems[1], 100);
+      checkRemoteSystemDefinedListItem(systemDefinedListItems[2], 1000);
 
-    const localRootNode = items[1];
-    expect(localRootNode.dbItem).toBeTruthy();
-    expect(localRootNode.dbItem?.kind).toBe(DbItemKind.RootLocal);
-    expect(localRootNode.label).toBe("local");
-    expect(localRootNode.tooltip).toBe("Local databases");
-    expect(localRootNode.collapsibleState).toBe(
-      TreeItemCollapsibleState.Collapsed,
-    );
-    expect(localRootNode.children).toBeTruthy();
-    expect(localRootNode.children.length).toBe(0);
-  });
-
-  it("should render remote repository list nodes", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      remoteLists: [
-        {
-          name: "my-list-1",
-          repositories: ["owner1/repo1", "owner1/repo2"],
-        },
-        {
-          name: "my-list-2",
-          repositories: ["owner1/repo1", "owner2/repo1", "owner2/repo2"],
-        },
-      ],
+      const localRootNode = items[1];
+      expect(localRootNode.dbItem).toBeTruthy();
+      expect(localRootNode.dbItem?.kind).toBe(DbItemKind.RootLocal);
+      expect(localRootNode.label).toBe("local");
+      expect(localRootNode.tooltip).toBe("Local databases");
+      expect(localRootNode.collapsibleState).toBe(
+        TreeItemCollapsibleState.Collapsed,
+      );
+      expect(localRootNode.children).toBeTruthy();
+      expect(localRootNode.children.length).toBe(0);
     });
 
-    await saveDbConfig(dbConfig);
+    it("should render remote repository list nodes", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1", "owner1/repo2"],
+          },
+          {
+            name: "my-list-2",
+            repositories: ["owner1/repo1", "owner2/repo1", "owner2/repo2"],
+          },
+        ],
+      });
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
+      await saveDbConfig(dbConfig);
 
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).toBeTruthy();
-    expect(remoteRootNode.collapsibleState).toBe(
-      TreeItemCollapsibleState.Collapsed,
-    );
-    expect(remoteRootNode.children).toBeTruthy();
-    expect(remoteRootNode.children.length).toBe(5);
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+      expect(items.length).toBe(2);
 
-    const systemDefinedListItems = remoteRootNode.children.filter(
-      (item) => item.dbItem?.kind === DbItemKind.RemoteSystemDefinedList,
-    );
-    expect(systemDefinedListItems.length).toBe(3);
+      const remoteRootNode = items[0];
+      expect(remoteRootNode.dbItem).toBeTruthy();
+      expect(remoteRootNode.collapsibleState).toBe(
+        TreeItemCollapsibleState.Collapsed,
+      );
+      expect(remoteRootNode.children).toBeTruthy();
+      expect(remoteRootNode.children.length).toBe(5);
 
-    const userDefinedListItems = remoteRootNode.children.filter(
-      (item) => item.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList,
-    );
-    expect(userDefinedListItems.length).toBe(2);
-    checkUserDefinedListItem(userDefinedListItems[0], "my-list-1", [
-      "owner1/repo1",
-      "owner1/repo2",
-    ]);
-    checkUserDefinedListItem(userDefinedListItems[1], "my-list-2", [
-      "owner1/repo1",
-      "owner2/repo1",
-      "owner2/repo2",
-    ]);
-  });
+      const systemDefinedListItems = remoteRootNode.children.filter(
+        (item) => item.dbItem?.kind === DbItemKind.RemoteSystemDefinedList,
+      );
+      expect(systemDefinedListItems.length).toBe(3);
 
-  it("should render owner list nodes", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      remoteOwners: ["owner1", "owner2"],
+      const userDefinedListItems = remoteRootNode.children.filter(
+        (item) =>
+          item.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList,
+      );
+      expect(userDefinedListItems.length).toBe(2);
+      checkUserDefinedListItem(userDefinedListItems[0], "my-list-1", [
+        "owner1/repo1",
+        "owner1/repo2",
+      ]);
+      checkUserDefinedListItem(userDefinedListItems[1], "my-list-2", [
+        "owner1/repo1",
+        "owner2/repo1",
+        "owner2/repo2",
+      ]);
     });
 
-    await saveDbConfig(dbConfig);
+    it("should render owner list nodes", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteOwners: ["owner1", "owner2"],
+      });
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
+      await saveDbConfig(dbConfig);
 
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).toBeTruthy();
-    expect(remoteRootNode.collapsibleState).toBe(
-      TreeItemCollapsibleState.Collapsed,
-    );
-    expect(remoteRootNode.children).toBeTruthy();
-    expect(remoteRootNode.children.length).toBe(5);
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+      expect(items.length).toBe(2);
 
-    const ownerListItems = remoteRootNode.children.filter(
-      (item) => item.dbItem?.kind === DbItemKind.RemoteOwner,
-    );
-    expect(ownerListItems.length).toBe(2);
-    checkOwnerItem(ownerListItems[0], "owner1");
-    checkOwnerItem(ownerListItems[1], "owner2");
-  });
+      const remoteRootNode = items[0];
+      expect(remoteRootNode.dbItem).toBeTruthy();
+      expect(remoteRootNode.collapsibleState).toBe(
+        TreeItemCollapsibleState.Collapsed,
+      );
+      expect(remoteRootNode.children).toBeTruthy();
+      expect(remoteRootNode.children.length).toBe(5);
 
-  it("should render repository nodes", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      remoteRepos: ["owner1/repo1", "owner1/repo2"],
+      const ownerListItems = remoteRootNode.children.filter(
+        (item) => item.dbItem?.kind === DbItemKind.RemoteOwner,
+      );
+      expect(ownerListItems.length).toBe(2);
+      checkOwnerItem(ownerListItems[0], "owner1");
+      checkOwnerItem(ownerListItems[1], "owner2");
     });
 
-    await saveDbConfig(dbConfig);
+    it("should render repository nodes", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteRepos: ["owner1/repo1", "owner1/repo2"],
+      });
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
+      await saveDbConfig(dbConfig);
 
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).toBeTruthy();
-    expect(remoteRootNode.collapsibleState).toBe(
-      TreeItemCollapsibleState.Collapsed,
-    );
-    expect(remoteRootNode.children).toBeTruthy();
-    expect(remoteRootNode.children.length).toBe(5);
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+      expect(items.length).toBe(2);
 
-    const repoItems = remoteRootNode.children.filter(
-      (item) => item.dbItem?.kind === DbItemKind.RemoteRepo,
-    );
-    expect(repoItems.length).toBe(2);
-    checkRemoteRepoItem(repoItems[0], "owner1/repo1");
-    checkRemoteRepoItem(repoItems[1], "owner1/repo2");
-  });
+      const remoteRootNode = items[0];
+      expect(remoteRootNode.dbItem).toBeTruthy();
+      expect(remoteRootNode.collapsibleState).toBe(
+        TreeItemCollapsibleState.Collapsed,
+      );
+      expect(remoteRootNode.children).toBeTruthy();
+      expect(remoteRootNode.children.length).toBe(5);
 
-  it("should render local list nodes", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      localLists: [
+      const repoItems = remoteRootNode.children.filter(
+        (item) => item.dbItem?.kind === DbItemKind.RemoteRepo,
+      );
+      expect(repoItems.length).toBe(2);
+      checkRemoteRepoItem(repoItems[0], "owner1/repo1");
+      checkRemoteRepoItem(repoItems[1], "owner1/repo2");
+    });
+
+    it("should render local list nodes", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        localLists: [
+          {
+            name: "my-list-1",
+            databases: [
+              {
+                name: "db1",
+                dateAdded: 1668428293677,
+                language: "cpp",
+                storagePath: "/path/to/db1/",
+              },
+              {
+                name: "db2",
+                dateAdded: 1668428472731,
+                language: "cpp",
+                storagePath: "/path/to/db2/",
+              },
+            ],
+          },
+          {
+            name: "my-list-2",
+            databases: [
+              {
+                name: "db3",
+                dateAdded: 1668428472731,
+                language: "ruby",
+                storagePath: "/path/to/db3/",
+              },
+            ],
+          },
+        ],
+      });
+
+      await saveDbConfig(dbConfig);
+
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+      expect(items.length).toBe(2);
+
+      const localRootNode = items[1];
+      expect(localRootNode.dbItem).toBeTruthy();
+      expect(localRootNode.collapsibleState).toBe(
+        TreeItemCollapsibleState.Collapsed,
+      );
+      expect(localRootNode.children).toBeTruthy();
+      expect(localRootNode.children.length).toBe(2);
+
+      const localListItems = localRootNode.children.filter(
+        (item) => item.dbItem?.kind === DbItemKind.LocalList,
+      );
+      expect(localListItems.length).toBe(2);
+      checkLocalListItem(localListItems[0], "my-list-1", [
         {
-          name: "my-list-1",
-          databases: [
-            {
-              name: "db1",
-              dateAdded: 1668428293677,
-              language: "cpp",
-              storagePath: "/path/to/db1/",
-            },
-            {
-              name: "db2",
-              dateAdded: 1668428472731,
-              language: "cpp",
-              storagePath: "/path/to/db2/",
-            },
-          ],
+          kind: DbItemKind.LocalDatabase,
+          databaseName: "db1",
+          dateAdded: 1668428293677,
+          language: "cpp",
+          storagePath: "/path/to/db1/",
+          selected: false,
         },
         {
-          name: "my-list-2",
-          databases: [
-            {
-              name: "db3",
-              dateAdded: 1668428472731,
-              language: "ruby",
-              storagePath: "/path/to/db3/",
-            },
-          ],
+          kind: DbItemKind.LocalDatabase,
+          databaseName: "db2",
+          dateAdded: 1668428472731,
+          language: "cpp",
+          storagePath: "/path/to/db2/",
+          selected: false,
         },
-      ],
+      ]);
+      checkLocalListItem(localListItems[1], "my-list-2", [
+        {
+          kind: DbItemKind.LocalDatabase,
+          databaseName: "db3",
+          dateAdded: 1668428472731,
+          language: "ruby",
+          storagePath: "/path/to/db3/",
+          selected: false,
+        },
+      ]);
     });
 
-    await saveDbConfig(dbConfig);
+    it("should render local database nodes", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        localDbs: [
+          {
+            name: "db1",
+            dateAdded: 1668428293677,
+            language: "csharp",
+            storagePath: "/path/to/db1/",
+          },
+          {
+            name: "db2",
+            dateAdded: 1668428472731,
+            language: "go",
+            storagePath: "/path/to/db2/",
+          },
+        ],
+      });
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
+      await saveDbConfig(dbConfig);
 
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    const localRootNode = items[1];
-    expect(localRootNode.dbItem).toBeTruthy();
-    expect(localRootNode.collapsibleState).toBe(
-      TreeItemCollapsibleState.Collapsed,
-    );
-    expect(localRootNode.children).toBeTruthy();
-    expect(localRootNode.children.length).toBe(2);
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+      expect(items.length).toBe(2);
 
-    const localListItems = localRootNode.children.filter(
-      (item) => item.dbItem?.kind === DbItemKind.LocalList,
-    );
-    expect(localListItems.length).toBe(2);
-    checkLocalListItem(localListItems[0], "my-list-1", [
-      {
+      const localRootNode = items[1];
+      expect(localRootNode.dbItem).toBeTruthy();
+      expect(localRootNode.collapsibleState).toBe(
+        TreeItemCollapsibleState.Collapsed,
+      );
+      expect(localRootNode.children).toBeTruthy();
+      expect(localRootNode.children.length).toBe(2);
+
+      const localDatabaseItems = localRootNode.children.filter(
+        (item) => item.dbItem?.kind === DbItemKind.LocalDatabase,
+      );
+      expect(localDatabaseItems.length).toBe(2);
+      checkLocalDatabaseItem(localDatabaseItems[0], {
         kind: DbItemKind.LocalDatabase,
         databaseName: "db1",
         dateAdded: 1668428293677,
-        language: "cpp",
+        language: "csharp",
         storagePath: "/path/to/db1/",
         selected: false,
-      },
-      {
+      });
+      checkLocalDatabaseItem(localDatabaseItems[1], {
         kind: DbItemKind.LocalDatabase,
         databaseName: "db2",
         dateAdded: 1668428472731,
-        language: "cpp",
+        language: "go",
         storagePath: "/path/to/db2/",
         selected: false,
-      },
-    ]);
-    checkLocalListItem(localListItems[1], "my-list-2", [
-      {
-        kind: DbItemKind.LocalDatabase,
-        databaseName: "db3",
-        dateAdded: 1668428472731,
-        language: "ruby",
-        storagePath: "/path/to/db3/",
-        selected: false,
-      },
-    ]);
-  });
-
-  it("should render local database nodes", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      localDbs: [
-        {
-          name: "db1",
-          dateAdded: 1668428293677,
-          language: "csharp",
-          storagePath: "/path/to/db1/",
-        },
-        {
-          name: "db2",
-          dateAdded: 1668428472731,
-          language: "go",
-          storagePath: "/path/to/db2/",
-        },
-      ],
-    });
-
-    await saveDbConfig(dbConfig);
-
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
-
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
-
-    const localRootNode = items[1];
-    expect(localRootNode.dbItem).toBeTruthy();
-    expect(localRootNode.collapsibleState).toBe(
-      TreeItemCollapsibleState.Collapsed,
-    );
-    expect(localRootNode.children).toBeTruthy();
-    expect(localRootNode.children.length).toBe(2);
-
-    const localDatabaseItems = localRootNode.children.filter(
-      (item) => item.dbItem?.kind === DbItemKind.LocalDatabase,
-    );
-    expect(localDatabaseItems.length).toBe(2);
-    checkLocalDatabaseItem(localDatabaseItems[0], {
-      kind: DbItemKind.LocalDatabase,
-      databaseName: "db1",
-      dateAdded: 1668428293677,
-      language: "csharp",
-      storagePath: "/path/to/db1/",
-      selected: false,
-    });
-    checkLocalDatabaseItem(localDatabaseItems[1], {
-      kind: DbItemKind.LocalDatabase,
-      databaseName: "db2",
-      dateAdded: 1668428472731,
-      language: "go",
-      storagePath: "/path/to/db2/",
-      selected: false,
+      });
     });
   });
 
-  it("should mark selected remote db list as selected", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      remoteLists: [
-        {
-          name: "my-list-1",
-          repositories: ["owner1/repo1", "owner1/repo2"],
+  describe("selecting an item", () => {
+    it("should mark selected remote db list as selected", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1", "owner1/repo2"],
+          },
+          {
+            name: "my-list-2",
+            repositories: ["owner2/repo1", "owner2/repo2"],
+          },
+        ],
+        selected: {
+          kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
+          listName: "my-list-2",
         },
-        {
-          name: "my-list-2",
-          repositories: ["owner2/repo1", "owner2/repo2"],
-        },
-      ],
-      selected: {
-        kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
-        listName: "my-list-2",
-      },
+      });
+
+      await saveDbConfig(dbConfig);
+
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+
+      const remoteRootNode = items[0];
+      expect(remoteRootNode.dbItem).toBeTruthy();
+      expect(remoteRootNode.dbItem?.kind).toEqual(DbItemKind.RootRemote);
+
+      const list1 = remoteRootNode.children.find(
+        (c) =>
+          c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
+          c.dbItem?.listName === "my-list-1",
+      );
+      const list2 = remoteRootNode.children.find(
+        (c) =>
+          c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
+          c.dbItem?.listName === "my-list-2",
+      );
+
+      expect(list1).toBeTruthy();
+      expect(list2).toBeTruthy();
+      expect(isTreeViewItemSelectable(list1!)).toBeTruthy();
+      expect(isTreeViewItemSelected(list2!)).toBeTruthy();
     });
 
-    await saveDbConfig(dbConfig);
-
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
-
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-
-    const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).toBeTruthy();
-    expect(remoteRootNode.dbItem?.kind).toEqual(DbItemKind.RootRemote);
-
-    const list1 = remoteRootNode.children.find(
-      (c) =>
-        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
-        c.dbItem?.listName === "my-list-1",
-    );
-    const list2 = remoteRootNode.children.find(
-      (c) =>
-        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
-        c.dbItem?.listName === "my-list-2",
-    );
-
-    expect(list1).toBeTruthy();
-    expect(list2).toBeTruthy();
-    expect(isTreeViewItemSelectable(list1!)).toBeTruthy();
-    expect(isTreeViewItemSelected(list2!)).toBeTruthy();
-  });
-
-  it("should mark selected remote db inside list as selected", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      remoteLists: [
-        {
-          name: "my-list-1",
-          repositories: ["owner1/repo1", "owner1/repo2"],
+    it("should mark selected remote db inside list as selected", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1", "owner1/repo2"],
+          },
+          {
+            name: "my-list-2",
+            repositories: ["owner1/repo1", "owner2/repo2"],
+          },
+        ],
+        remoteRepos: ["owner1/repo1"],
+        selected: {
+          kind: SelectedDbItemKind.VariantAnalysisRepository,
+          repositoryName: "owner1/repo1",
+          listName: "my-list-2",
         },
-        {
-          name: "my-list-2",
-          repositories: ["owner1/repo1", "owner2/repo2"],
-        },
-      ],
-      remoteRepos: ["owner1/repo1"],
-      selected: {
-        kind: SelectedDbItemKind.VariantAnalysisRepository,
-        repositoryName: "owner1/repo1",
-        listName: "my-list-2",
-      },
+      });
+
+      await saveDbConfig(dbConfig);
+
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
+
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+
+      const remoteRootNode = items[0];
+      expect(remoteRootNode.dbItem).toBeTruthy();
+      expect(remoteRootNode.dbItem?.kind).toEqual(DbItemKind.RootRemote);
+
+      const list2 = remoteRootNode.children.find(
+        (c) =>
+          c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
+          c.dbItem?.listName === "my-list-2",
+      );
+      expect(list2).toBeTruthy();
+
+      const repo1Node = list2?.children.find(
+        (c) =>
+          c.dbItem?.kind === DbItemKind.RemoteRepo &&
+          c.dbItem?.repoFullName === "owner1/repo1",
+      );
+      expect(repo1Node).toBeTruthy();
+      expect(isTreeViewItemSelected(repo1Node!)).toBeTruthy();
+
+      const repo2Node = list2?.children.find(
+        (c) =>
+          c.dbItem?.kind === DbItemKind.RemoteRepo &&
+          c.dbItem?.repoFullName === "owner2/repo2",
+      );
+      expect(repo2Node).toBeTruthy();
+      expect(isTreeViewItemSelectable(repo2Node!)).toBeTruthy();
+
+      for (const item of remoteRootNode.children) {
+        expect(isTreeViewItemSelectable(item)).toBeTruthy();
+      }
     });
-
-    await saveDbConfig(dbConfig);
-
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
-
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-
-    const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).toBeTruthy();
-    expect(remoteRootNode.dbItem?.kind).toEqual(DbItemKind.RootRemote);
-
-    const list2 = remoteRootNode.children.find(
-      (c) =>
-        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
-        c.dbItem?.listName === "my-list-2",
-    );
-    expect(list2).toBeTruthy();
-
-    const repo1Node = list2?.children.find(
-      (c) =>
-        c.dbItem?.kind === DbItemKind.RemoteRepo &&
-        c.dbItem?.repoFullName === "owner1/repo1",
-    );
-    expect(repo1Node).toBeTruthy();
-    expect(isTreeViewItemSelected(repo1Node!)).toBeTruthy();
-
-    const repo2Node = list2?.children.find(
-      (c) =>
-        c.dbItem?.kind === DbItemKind.RemoteRepo &&
-        c.dbItem?.repoFullName === "owner2/repo2",
-    );
-    expect(repo2Node).toBeTruthy();
-    expect(isTreeViewItemSelectable(repo2Node!)).toBeTruthy();
-
-    for (const item of remoteRootNode.children) {
-      expect(isTreeViewItemSelectable(item)).toBeTruthy();
-    }
   });
 
   describe("addNewRemoteRepo", () => {
@@ -625,64 +630,66 @@ describe("db panel", () => {
     });
   });
 
-  it("should show error for invalid config", async () => {
-    // We're intentionally bypassing the type check because we'd
-    // like to make sure validation errors are highlighted.
-    const dbConfig = {
-      databases: {},
-    } as any as DbConfig;
+  describe("config errors", () => {
+    it("should show error for invalid config", async () => {
+      // We're intentionally bypassing the type check because we'd
+      // like to make sure validation errors are highlighted.
+      const dbConfig = {
+        databases: {},
+      } as any as DbConfig;
 
-    await saveDbConfig(dbConfig);
+      await saveDbConfig(dbConfig);
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(1);
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+      expect(items.length).toBe(1);
 
-    checkErrorItem(
-      items[0],
-      "Error when reading databases config",
-      "Please open your databases config and address errors",
-    );
-  });
-
-  it("should show errors for duplicate names", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      remoteLists: [
-        {
-          name: "my-list-1",
-          repositories: ["owner1/repo1", "owner1/repo2"],
-        },
-        {
-          name: "my-list-1",
-          repositories: ["owner1/repo1", "owner2/repo2"],
-        },
-      ],
-      remoteRepos: ["owner1/repo1", "owner1/repo1"],
+      checkErrorItem(
+        items[0],
+        "Error when reading databases config",
+        "Please open your databases config and address errors",
+      );
     });
 
-    await saveDbConfig(dbConfig);
+    it("should show errors for duplicate names", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1", "owner1/repo2"],
+          },
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1", "owner2/repo2"],
+          },
+        ],
+        remoteRepos: ["owner1/repo1", "owner1/repo1"],
+      });
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
+      await saveDbConfig(dbConfig);
 
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    checkErrorItem(
-      items[0],
-      "There are database lists with the same name: my-list-1",
-      "Please remove duplicates",
-    );
-    checkErrorItem(
-      items[1],
-      "There are databases with the same name: owner1/repo1",
-      "Please remove duplicates",
-    );
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+      expect(items.length).toBe(2);
+
+      checkErrorItem(
+        items[0],
+        "There are database lists with the same name: my-list-1",
+        "Please remove duplicates",
+      );
+      checkErrorItem(
+        items[1],
+        "There are databases with the same name: owner1/repo1",
+        "Please remove duplicates",
+      );
+    });
   });
 
-  describe("Name validation", () => {
+  describe("name validation", () => {
     it("should not allow adding a new list with empty name", async () => {
       const dbConfig = createDbConfig();
 
