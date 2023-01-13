@@ -45,6 +45,7 @@ import * as ghActionsApiClient from "../../../src/remote-queries/gh-api/gh-actio
 import { Credentials } from "../../../src/authentication";
 import { QuickPickItem, TextEditor } from "vscode";
 import { WebviewReveal } from "../../../src/interface-utils";
+import * as helpers from "../../../src/helpers";
 
 describe("query-history", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -589,6 +590,25 @@ describe("query-history", () => {
       });
 
       describe("when the item is a variant analysis", () => {
+        let showBinaryChoiceDialogSpy: jest.SpiedFunction<
+          typeof helpers.showBinaryChoiceDialog
+        >;
+        let showInformationMessageWithActionSpy: jest.SpiedFunction<
+          typeof helpers.showInformationMessageWithAction
+        >;
+
+        beforeEach(() => {
+          // Choose 'Yes' when asked "Are you sure?"
+          showBinaryChoiceDialogSpy = jest
+            .spyOn(helpers, "showBinaryChoiceDialog")
+            .mockResolvedValue(true);
+
+          showInformationMessageWithActionSpy = jest.spyOn(
+            helpers,
+            "showInformationMessageWithAction",
+          );
+        });
+
         describe("when in progress", () => {
           describe("when the item being removed is not selected", () => {
             let toDelete: VariantAnalysisHistoryItem;
@@ -618,14 +638,14 @@ describe("query-history", () => {
               expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
                 selected,
               );
+            });
 
+            it("should remove the item", async () => {
               // remove an item
               await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
                 toDelete,
               ]);
-            });
 
-            it("should remove the item", () => {
               expect(
                 variantAnalysisManagerStub.removeVariantAnalysis,
               ).toHaveBeenCalledWith(toDelete.variantAnalysis);
@@ -634,13 +654,66 @@ describe("query-history", () => {
               ).not.toContain(toDelete);
             });
 
-            it("should not change the selection", () => {
+            it("should not change the selection", async () => {
+              // remove an item
+              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+                toDelete,
+              ]);
+
               expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
                 selected,
               );
               expect(variantAnalysisManagerStub.showView).toHaveBeenCalledWith(
                 selected.variantAnalysis.id,
               );
+            });
+
+            it("should show a modal asking 'Are you sure?'", async () => {
+              // remove an item
+              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+                toDelete,
+              ]);
+
+              expect(showBinaryChoiceDialogSpy).toHaveBeenCalledWith(
+                "You are about to delete this query: query-name. Are you sure?",
+              );
+            });
+
+            it("should show a toast notification with a link to GitHub Actions", async () => {
+              // remove an item
+              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+                toDelete,
+              ]);
+
+              expect(showInformationMessageWithActionSpy).toHaveBeenCalled();
+            });
+
+            describe("when you choose 'No' in the 'Are you sure?' modal", () => {
+              beforeEach(async () => {
+                showBinaryChoiceDialogSpy.mockResolvedValue(false);
+              });
+
+              it("should not delete the item", async () => {
+                // remove an item
+                await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+                  toDelete,
+                ]);
+
+                expect(
+                  queryHistoryManager.treeDataProvider.allHistory,
+                ).toContain(toDelete);
+              });
+
+              it("should not show a toast notification", async () => {
+                // remove an item
+                await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+                  toDelete,
+                ]);
+
+                expect(
+                  showInformationMessageWithActionSpy,
+                ).not.toHaveBeenCalled();
+              });
             });
           });
 
@@ -681,6 +754,12 @@ describe("query-history", () => {
               );
               expect(variantAnalysisManagerStub.showView).toHaveBeenCalledWith(
                 newSelected.variantAnalysis.id,
+              );
+            });
+
+            it("should show a modal asking 'Are you sure?'", () => {
+              expect(showBinaryChoiceDialogSpy).toHaveBeenCalledWith(
+                "You are about to delete this query: query-name. Are you sure?",
               );
             });
           });
@@ -739,6 +818,10 @@ describe("query-history", () => {
                 selected.variantAnalysis.id,
               );
             });
+
+            it("should not show a modal asking 'Are you sure?'", () => {
+              expect(showBinaryChoiceDialogSpy).not.toHaveBeenCalled();
+            });
           });
 
           describe("when the item being removed is selected", () => {
@@ -779,6 +862,10 @@ describe("query-history", () => {
               expect(variantAnalysisManagerStub.showView).toHaveBeenCalledWith(
                 newSelected.variantAnalysis.id,
               );
+            });
+
+            it("should not show a modal asking 'Are you sure?'", () => {
+              expect(showBinaryChoiceDialogSpy).not.toHaveBeenCalled();
             });
           });
         });
