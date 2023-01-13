@@ -320,7 +320,7 @@
       },
       {
         "command": "codeQL.runQuery",
-        "title": "CodeQL: Run Query"
+        "title": "CodeQL: Run Query on Selected Database"
       },
       {
         "command": "codeQL.runQueryOnMultipleDatabases",
@@ -1318,7 +1318,7 @@
       },
       {
         "view": "codeQLQueryHistory",
-        "contents": "Run the 'CodeQL: Run Query' command on a QL query.\n[Run Query](command:codeQL.runQuery)"
+        "contents": "Run the 'CodeQL: Run Query on Selected Database' command on a QL query.\n[Run Query](command:codeQL.runQuery)"
       },
       {
         "view": "codeQLDatabases",
