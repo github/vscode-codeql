@@ -1,9 +1,10 @@
 import { resolve } from "path";
 import * as webpack from "webpack";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import { isDevBuild } from "./dev";
 
 export const config: webpack.Configuration = {
-  mode: "development",
+  mode: isDevBuild ? "development" : "production",
   entry: {
     webview: "./src/view/webview.tsx",
   },
@@ -11,7 +12,7 @@ export const config: webpack.Configuration = {
     path: resolve(__dirname, "..", "out"),
     filename: "[name].js",
   },
-  devtool: "inline-source-map",
+  devtool: isDevBuild ? "inline-source-map" : "source-map",
   resolve: {
     extensions: [".js", ".ts", ".tsx", ".json"],
     fallback: {
