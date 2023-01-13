@@ -1,3 +1,4 @@
+import { EOL } from "os";
 import { spawn } from "child-process-promise";
 import * as child_process from "child_process";
 import { readFile } from "fs-extra";
@@ -26,6 +27,7 @@ import { Logger, ProgressReporter } from "./common";
 import { CompilationMessage } from "./pure/legacy-messages";
 import { sarifParser } from "./sarif-parser";
 import { dbSchemeToLanguage, walkDirectory } from "./helpers";
+import { Credentials } from "./authentication";
 
 /**
  * The version of the SARIF format that we are using.
@@ -155,6 +157,10 @@ interface BqrsDecodeOptions {
   /** The entity names to retrieve from the bqrs file. Default is url, string */
   entities?: string[];
 }
+
+export type OnLineCallback = (
+  line: string,
+) => Promise<string | undefined> | string | undefined;
 
 /**
  * This class manages a cli server started by `codeql execute cli-server` to
@@ -304,6 +310,7 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
+    onLine?: OnLineCallback,
   ): Promise<string> {
     const stderrBuffers: Buffer[] = [];
     if (this.commandInProcess) {
@@ -328,6 +335,22 @@ export class CodeQLCliServer implements Disposable {
         await new Promise<void>((resolve, reject) => {
           // Start listening to stdout
           process.stdout.addListener("data", (newData: Buffer) => {
+            if (onLine) {
+              void (async () => {
+                const response = await onLine(newData.toString("utf-8"));
+
+                if (!response) {
+                  return;
+                }
+
+                process.stdin.write(`${response}${EOL}`);
+
+                // Remove newData from stdoutBuffers because the data has been consumed
+                // by the onLine callback.
+                stdoutBuffers.splice(stdoutBuffers.indexOf(newData), 1);
+              })();
+            }
+
             stdoutBuffers.push(newData);
             // If the buffer ends in '0' then exit.
             // We don't have to check the middle as no output will be written after the null until
@@ -487,6 +510,7 @@ export class CodeQLCliServer implements Disposable {
    * @param commandArgs The arguments to pass to the `codeql` command.
    * @param description Description of the action being run, to be shown in log and error messages.
    * @param progressReporter Used to output progress messages, e.g. to the status bar.
+   * @param onLine Used for responding to interactive output on stdout/stdin.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
   runCodeQlCliCommand(
@@ -494,6 +518,7 @@ export class CodeQLCliServer implements Disposable {
     commandArgs: string[],
     description: string,
     progressReporter?: ProgressReporter,
+    onLine?: OnLineCallback,
   ): Promise<string> {
     if (progressReporter) {
       progressReporter.report({ message: description });
@@ -503,10 +528,12 @@ export class CodeQLCliServer implements Disposable {
       // Construct the command that actually does the work
       const callback = (): void => {
         try {
-          this.runCodeQlCliInternal(command, commandArgs, description).then(
-            resolve,
-            reject,
-          );
+          this.runCodeQlCliInternal(
+            command,
+            commandArgs,
+            description,
+            onLine,
+          ).then(resolve, reject);
         } catch (err) {
           reject(err);
         }
@@ -528,6 +555,7 @@ export class CodeQLCliServer implements Disposable {
    * @param description Description of the action being run, to be shown in log and error messages.
    * @param addFormat Whether or not to add commandline arguments to specify the format as JSON.
    * @param progressReporter Used to output progress messages, e.g. to the status bar.
+   * @param onLine Used for responding to interactive output on stdout/stdin.
    * @returns The contents of the command's stdout, if the command succeeded.
    */
   async runJsonCodeQlCliCommand<OutputType>(
@@ -536,6 +564,7 @@ export class CodeQLCliServer implements Disposable {
     description: string,
     addFormat = true,
     progressReporter?: ProgressReporter,
+    onLine?: OnLineCallback,
   ): Promise<OutputType> {
     let args: string[] = [];
     if (addFormat)
@@ -547,6 +576,7 @@ export class CodeQLCliServer implements Disposable {
       args,
       description,
       progressReporter,
+      onLine,
     );
     try {
       return JSON.parse(result) as OutputType;
@@ -557,6 +587,44 @@ export class CodeQLCliServer implements Disposable {
         }`,
       );
     }
+  }
+
+  /**
+   * Runs a CodeQL CLI command, returning the output as JSON.
+   * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
+   * @param commandArgs The arguments to pass to the `codeql` command.
+   * @param description Description of the action being run, to be shown in log and error messages.
+   * @param addFormat Whether or not to add commandline arguments to specify the format as JSON.
+   * @param progressReporter Used to output progress messages, e.g. to the status bar.
+   * @returns The contents of the command's stdout, if the command succeeded.
+   */
+  async runJsonCodeQlCliCommandWithAuthentication<OutputType>(
+    command: string[],
+    commandArgs: string[],
+    description: string,
+    addFormat = true,
+    progressReporter?: ProgressReporter,
+  ): Promise<OutputType> {
+    const credentials = await Credentials.initialize();
+
+    const accessToken = await credentials.getExistingAccessToken();
+
+    const extraArgs = accessToken ? ["--github-auth-stdin"] : [];
+
+    return this.runJsonCodeQlCliCommand(
+      command,
+      [...extraArgs, ...commandArgs],
+      description,
+      addFormat,
+      progressReporter,
+      async (line) => {
+        if (line.startsWith("Enter value for --github-auth-stdin")) {
+          return credentials.getAccessToken();
+        }
+
+        return undefined;
+      },
+    );
   }
 
   /**
@@ -1136,7 +1204,7 @@ export class CodeQLCliServer implements Disposable {
    * @param packs The `<package-scope/name[@version]>` of the packs to download.
    */
   async packDownload(packs: string[]) {
-    return this.runJsonCodeQlCliCommand(
+    return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "download"],
       packs,
       "Downloading packs",
@@ -1148,7 +1216,7 @@ export class CodeQLCliServer implements Disposable {
     if (forceUpdate) {
       args.push("--mode", "update");
     }
-    return this.runJsonCodeQlCliCommand(
+    return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "install"],
       args,
       "Installing pack dependencies",
@@ -1169,7 +1237,7 @@ export class CodeQLCliServer implements Disposable {
       ...this.getAdditionalPacksArg(workspaceFolders),
     ];
 
-    return this.runJsonCodeQlCliCommand(
+    return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "bundle"],
       args,
       "Bundling pack",
@@ -1200,7 +1268,7 @@ export class CodeQLCliServer implements Disposable {
   ): Promise<{ [pack: string]: string }> {
     // Uses the default `--mode use-lock`, which creates the lock file if it doesn't exist.
     const results: { [pack: string]: string } =
-      await this.runJsonCodeQlCliCommand(
+      await this.runJsonCodeQlCliCommandWithAuthentication(
         ["pack", "resolve-dependencies"],
         [dir],
         "Resolving pack dependencies",

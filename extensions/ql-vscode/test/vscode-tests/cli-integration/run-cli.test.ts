@@ -1,4 +1,4 @@
-import { extensions, Uri } from "vscode";
+import { authentication, extensions, Uri } from "vscode";
 import { join } from "path";
 import { SemVer } from "semver";
 
@@ -12,6 +12,7 @@ import {
 } from "../../../src/helpers";
 import { resolveQueries } from "../../../src/contextual/queryResolver";
 import { KeyType } from "../../../src/contextual/keyType";
+import { faker } from "@faker-js/faker";
 
 jest.setTimeout(60_000);
 
@@ -104,4 +105,59 @@ describe("Use cli", () => {
       }
     },
   );
+
+  describe("github authentication", () => {
+    itWithCodeQL()(
+      "should not use authentication if there are no credentials",
+      async () => {
+        const getSession = jest
+          .spyOn(authentication, "getSession")
+          .mockResolvedValue(undefined);
+
+        await cli.packDownload(["codeql/tutorial"]);
+        expect(getSession).toHaveBeenCalledTimes(1);
+        expect(getSession).toHaveBeenCalledWith(
+          "github",
+          expect.arrayContaining(["read:packages"]),
+          {
+            createIfNone: false,
+          },
+        );
+      },
+    );
+
+    itWithCodeQL()(
+      "should use authentication if there are credentials",
+      async () => {
+        const getSession = jest
+          .spyOn(authentication, "getSession")
+          .mockResolvedValue({
+            id: faker.datatype.uuid(),
+            accessToken: "gho_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            account: {
+              id: faker.datatype.uuid(),
+              label: "Account",
+            },
+            scopes: ["read:packages"],
+          });
+
+        await cli.packDownload(["codeql/tutorial"]);
+        expect(getSession).toHaveBeenCalledTimes(2);
+        expect(getSession).toHaveBeenCalledWith(
+          "github",
+          expect.arrayContaining(["read:packages"]),
+          {
+            createIfNone: false,
+          },
+        );
+        expect(getSession).toHaveBeenCalledWith(
+          "github",
+          expect.arrayContaining(["read:packages"]),
+          {
+            createIfNone: true,
+          },
+        );
+      },
+    );
+  });
 });
