@@ -68,7 +68,9 @@ export function VariantAnalysis({
   const [filterSortState, setFilterSortState] = useState(
     defaultFilterSortState,
   );
-  useTelemetryOnChange(filterSortState, "variant-analysis-filter-sort-state");
+  useTelemetryOnChange(filterSortState, "variant-analysis-filter-sort-state", {
+    debounceTimeoutMillis: 1000,
+  });
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {

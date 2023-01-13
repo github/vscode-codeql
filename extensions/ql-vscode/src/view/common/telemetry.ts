@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { vscode } from "../vscode-api";
 
 /**
@@ -9,16 +9,34 @@ import { vscode } from "../vscode-api";
  * @param options Extra optional arguments, including:
  *   filterTelemetryOnValue: If provided, only output telemetry events when the
  *       predicate returns true. If not provided always outputs telemetry.
+ *   debounceTimeout: If provided, will not output telemetry events for every change
+ *       but will wait until specified timeout happens with no new events ocurring.
  */
 export function useTelemetryOnChange<S>(
   value: S,
   telemetryAction: string,
   options?: {
     filterTelemetryOnValue?: (value: S) => boolean;
+    debounceTimeoutMillis?: number;
   },
 ) {
   const previousValue = useRef(value);
   const filterTelemetryOnValue = options?.filterTelemetryOnValue;
+  const debounceTimeoutMillis = options?.debounceTimeoutMillis;
+
+  const sendTelemetryFunc = useMemo<() => void>(() => {
+    if (debounceTimeoutMillis === undefined) {
+      return () => sendTelemetry(telemetryAction);
+    } else {
+      let timer: NodeJS.Timeout;
+      return () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          sendTelemetry(telemetryAction);
+        }, debounceTimeoutMillis);
+      };
+    }
+  }, [telemetryAction, debounceTimeoutMillis]);
 
   useEffect(() => {
     if (value === previousValue.current) {
@@ -30,8 +48,8 @@ export function useTelemetryOnChange<S>(
       return;
     }
 
-    sendTelemetry(telemetryAction);
-  }, [telemetryAction, filterTelemetryOnValue, value, previousValue]);
+    sendTelemetryFunc();
+  }, [sendTelemetryFunc, filterTelemetryOnValue, value, previousValue]);
 }
 
 export function sendTelemetry(telemetryAction: string) {
