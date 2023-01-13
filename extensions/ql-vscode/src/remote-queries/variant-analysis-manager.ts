@@ -19,6 +19,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { Credentials } from "../authentication";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
 import {
+  getActionsWorkflowRunUrl,
   isVariantAnalysisComplete,
   parseVariantAnalysisQueryLanguage,
   VariantAnalysis,
@@ -60,6 +61,7 @@ import {
 } from "../pure/variant-analysis-filter-sort";
 import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
+import { isVariantAnalysisReposPanelEnabled } from "../config";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -101,12 +103,11 @@ export class VariantAnalysisManager
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager,
-    private readonly dbManager?: DbManager, // the dbManager is only needed when the newQueryRunExperience is enabled
+    private readonly dbManager?: DbManager, // the dbManager is only needed when variantAnalysisReposPanel is enabled
   ) {
     super();
     this.variantAnalysisMonitor = this.push(
       new VariantAnalysisMonitor(
-        ctx,
         this.shouldCancelMonitorVariantAnalysis.bind(this),
       ),
     );
@@ -125,7 +126,7 @@ export class VariantAnalysisManager
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize(this.ctx);
+    const credentials = await Credentials.initialize();
 
     const {
       actionBranch,
@@ -479,10 +480,7 @@ export class VariantAnalysisManager
 
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
-    const credentials = await Credentials.initialize(this.ctx);
-    if (!credentials) {
-      throw Error("Error authenticating with GitHub");
-    }
+    const credentials = await Credentials.initialize();
 
     if (cancellationToken && cancellationToken.isCancellationRequested) {
       repoState.downloadStatus =
@@ -580,15 +578,26 @@ export class VariantAnalysisManager
       );
     }
 
-    const credentials = await Credentials.initialize(this.ctx);
-    if (!credentials) {
-      throw Error("Error authenticating with GitHub");
-    }
+    const credentials = await Credentials.initialize();
 
     void showAndLogInformationMessage(
       "Cancelling variant analysis. This may take a while.",
     );
     await cancelVariantAnalysis(credentials, variantAnalysis);
+  }
+
+  public async openVariantAnalysisLogs(variantAnalysisId: number) {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
+
+    await commands.executeCommand(
+      "vscode.open",
+      Uri.parse(actionsWorkflowRunUrl),
+    );
   }
 
   public async copyRepoListToClipboard(
@@ -612,12 +621,25 @@ export class VariantAnalysisManager
       return;
     }
 
-    const text = [
-      '"new-repo-list": [',
-      ...fullNames.slice(0, -1).map((repo) => `    "${repo}",`),
-      `    "${fullNames[fullNames.length - 1]}"`,
-      "]",
-    ];
+    let text: string[];
+    if (isVariantAnalysisReposPanelEnabled()) {
+      text = [
+        "{",
+        `    "name": "new-repo-list",`,
+        `    "repositories": [`,
+        ...fullNames.slice(0, -1).map((repo) => `        "${repo}",`),
+        `        "${fullNames[fullNames.length - 1]}"`,
+        `    ]`,
+        "}",
+      ];
+    } else {
+      text = [
+        '"new-repo-list": [',
+        ...fullNames.slice(0, -1).map((repo) => `    "${repo}",`),
+        `    "${fullNames[fullNames.length - 1]}"`,
+        "]",
+      ];
+    }
 
     await env.clipboard.writeText(text.join(EOL));
   }

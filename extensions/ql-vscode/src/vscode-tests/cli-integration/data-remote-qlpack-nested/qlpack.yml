@@ -1,5 +1,0 @@
-name: github/remote-query-pack
-version: 0.0.0
-dependencies:
-  # The workspace reference will be removed before creating the MRVA pack.
-  codeql/javascript-all: '*'

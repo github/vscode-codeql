@@ -3,7 +3,14 @@ import { join } from "path";
 import {
   cloneDbConfig,
   DbConfig,
-  ExpandedDbItem,
+  removeLocalDb,
+  removeLocalList,
+  removeRemoteList,
+  removeRemoteOwner,
+  removeRemoteRepo,
+  renameLocalDb,
+  renameLocalList,
+  renameRemoteList,
   SelectedDbItem,
 } from "./db-config";
 import * as chokidar from "chokidar";
@@ -16,6 +23,13 @@ import {
   DbConfigValidationErrorKind,
 } from "../db-validation-errors";
 import { ValueResult } from "../../common/value-result";
+import {
+  LocalDatabaseDbItem,
+  LocalListDbItem,
+  VariantAnalysisUserDefinedListDbItem,
+  DbItem,
+  DbItemKind,
+} from "../db-item";
 
 export class DbConfigStore extends DisposableObject {
   public readonly onDidChangeConfig: AppEvent<void>;
@@ -28,7 +42,10 @@ export class DbConfigStore extends DisposableObject {
   private configErrors: DbConfigValidationError[];
   private configWatcher: chokidar.FSWatcher | undefined;
 
-  public constructor(private readonly app: App) {
+  public constructor(
+    private readonly app: App,
+    private readonly shouldWatchConfig = true,
+  ) {
     super();
 
     const storagePath = app.workspaceStoragePath || app.globalStoragePath;
@@ -44,7 +61,9 @@ export class DbConfigStore extends DisposableObject {
 
   public async initialize(): Promise<void> {
     await this.loadConfig();
-    this.watchConfig();
+    if (this.shouldWatchConfig) {
+      this.watchConfig();
+    }
   }
 
   public dispose(disposeHandler?: DisposeHandler): void {
@@ -73,7 +92,7 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot select database item if config is not loaded");
     }
 
-    const config: DbConfig = {
+    const config = {
       ...this.config,
       selected: dbItem,
     };
@@ -81,15 +100,110 @@ export class DbConfigStore extends DisposableObject {
     await this.writeConfig(config);
   }
 
-  public async updateExpandedState(expandedItems: ExpandedDbItem[]) {
+  public async removeDbItem(dbItem: DbItem): Promise<void> {
     if (!this.config) {
-      throw Error("Cannot update expansion state if config is not loaded");
+      throw Error("Cannot remove item if config is not loaded");
     }
 
-    const config: DbConfig = {
-      ...this.config,
-      expanded: expandedItems,
-    };
+    let config: DbConfig;
+
+    switch (dbItem.kind) {
+      case DbItemKind.LocalList:
+        config = removeLocalList(this.config, dbItem.listName);
+        break;
+      case DbItemKind.VariantAnalysisUserDefinedList:
+        config = removeRemoteList(this.config, dbItem.listName);
+        break;
+      case DbItemKind.LocalDatabase:
+        // When we start using local databases these need to be removed from disk as well.
+        config = removeLocalDb(
+          this.config,
+          dbItem.databaseName,
+          dbItem.parentListName,
+        );
+        break;
+      case DbItemKind.RemoteRepo:
+        config = removeRemoteRepo(
+          this.config,
+          dbItem.repoFullName,
+          dbItem.parentListName,
+        );
+        break;
+      case DbItemKind.RemoteOwner:
+        config = removeRemoteOwner(this.config, dbItem.ownerName);
+        break;
+      default:
+        throw Error(`Type '${dbItem.kind}' cannot be removed`);
+    }
+
+    await this.writeConfig(config);
+  }
+
+  public async addRemoteRepo(
+    repoNwo: string,
+    parentList?: string,
+  ): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot add remote repo if config is not loaded");
+    }
+
+    if (repoNwo === "") {
+      throw Error("Repository name cannot be empty");
+    }
+
+    if (this.doesRemoteDbExist(repoNwo)) {
+      throw Error(
+        `A remote repository with the name '${repoNwo}' already exists`,
+      );
+    }
+
+    const config = cloneDbConfig(this.config);
+    if (parentList) {
+      const parent = config.databases.variantAnalysis.repositoryLists.find(
+        (list) => list.name === parentList,
+      );
+      if (!parent) {
+        throw Error(`Cannot find parent list '${parentList}'`);
+      } else {
+        parent.repositories.push(repoNwo);
+      }
+    } else {
+      config.databases.variantAnalysis.repositories.push(repoNwo);
+    }
+    await this.writeConfig(config);
+  }
+
+  public async addRemoteOwner(owner: string): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot add remote owner if config is not loaded");
+    }
+
+    if (owner === "") {
+      throw Error("Owner name cannot be empty");
+    }
+
+    if (this.doesRemoteOwnerExist(owner)) {
+      throw Error(`A remote owner with the name '${owner}' already exists`);
+    }
+
+    const config = cloneDbConfig(this.config);
+    config.databases.variantAnalysis.owners.push(owner);
+
+    await this.writeConfig(config);
+  }
+
+  public async addLocalList(listName: string): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot add local list if config is not loaded");
+    }
+
+    this.validateLocalListName(listName);
+
+    const config = cloneDbConfig(this.config);
+    config.databases.local.lists.push({
+      name: listName,
+      databases: [],
+    });
 
     await this.writeConfig(config);
   }
@@ -99,12 +213,10 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot add remote list if config is not loaded");
     }
 
-    if (this.doesRemoteListExist(listName)) {
-      throw Error(`A remote list with the name '${listName}' already exists`);
-    }
+    this.validateRemoteListName(listName);
 
-    const config: DbConfig = cloneDbConfig(this.config);
-    config.databases.remote.repositoryLists.push({
+    const config = cloneDbConfig(this.config);
+    config.databases.variantAnalysis.repositoryLists.push({
       name: listName,
       repositories: [],
     });
@@ -112,14 +224,124 @@ export class DbConfigStore extends DisposableObject {
     await this.writeConfig(config);
   }
 
+  public async renameLocalList(
+    currentDbItem: LocalListDbItem,
+    newName: string,
+  ) {
+    if (!this.config) {
+      throw Error("Cannot rename local list if config is not loaded");
+    }
+
+    this.validateLocalListName(newName);
+
+    const updatedConfig = renameLocalList(
+      this.config,
+      currentDbItem.listName,
+      newName,
+    );
+
+    await this.writeConfig(updatedConfig);
+  }
+
+  public async renameRemoteList(
+    currentDbItem: VariantAnalysisUserDefinedListDbItem,
+    newName: string,
+  ) {
+    if (!this.config) {
+      throw Error("Cannot rename remote list if config is not loaded");
+    }
+
+    this.validateRemoteListName(newName);
+
+    const updatedConfig = renameRemoteList(
+      this.config,
+      currentDbItem.listName,
+      newName,
+    );
+
+    await this.writeConfig(updatedConfig);
+  }
+
+  public async renameLocalDb(
+    currentDbItem: LocalDatabaseDbItem,
+    newName: string,
+    parentListName?: string,
+  ): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot rename local db if config is not loaded");
+    }
+
+    this.validateLocalDbName(newName);
+
+    const updatedConfig = renameLocalDb(
+      this.config,
+      currentDbItem.databaseName,
+      newName,
+      parentListName,
+    );
+
+    await this.writeConfig(updatedConfig);
+  }
+
   public doesRemoteListExist(listName: string): boolean {
     if (!this.config) {
       throw Error("Cannot check remote list existence if config is not loaded");
     }
 
-    return this.config.databases.remote.repositoryLists.some(
+    return this.config.databases.variantAnalysis.repositoryLists.some(
       (l) => l.name === listName,
     );
+  }
+
+  public doesLocalListExist(listName: string): boolean {
+    if (!this.config) {
+      throw Error("Cannot check local list existence if config is not loaded");
+    }
+
+    return this.config.databases.local.lists.some((l) => l.name === listName);
+  }
+
+  public doesLocalDbExist(dbName: string, listName?: string): boolean {
+    if (!this.config) {
+      throw Error(
+        "Cannot check remote database existence if config is not loaded",
+      );
+    }
+
+    if (listName) {
+      return this.config.databases.local.lists.some(
+        (l) =>
+          l.name === listName && l.databases.some((d) => d.name === dbName),
+      );
+    }
+
+    return this.config.databases.local.databases.some((d) => d.name === dbName);
+  }
+
+  public doesRemoteDbExist(dbName: string, listName?: string): boolean {
+    if (!this.config) {
+      throw Error(
+        "Cannot check remote database existence if config is not loaded",
+      );
+    }
+
+    if (listName) {
+      return this.config.databases.variantAnalysis.repositoryLists.some(
+        (l) => l.name === listName && l.repositories.includes(dbName),
+      );
+    }
+
+    return this.config.databases.variantAnalysis.repositories.includes(dbName);
+  }
+
+  public doesRemoteOwnerExist(owner: string): boolean {
+    if (!this.config) {
+      throw Error(
+        "Cannot check remote owner existence if config is not loaded",
+      );
+    }
+
+    return this.config.databases.variantAnalysis.owners.includes(owner);
   }
 
   private async writeConfig(config: DbConfig): Promise<void> {
@@ -161,14 +383,14 @@ export class DbConfigStore extends DisposableObject {
       this.config = newConfig;
       await this.app.executeCommand(
         "setContext",
-        "codeQLDatabasesExperimental.configError",
+        "codeQLVariantAnalysisRepositories.configError",
         false,
       );
     } else {
       this.config = undefined;
       await this.app.executeCommand(
         "setContext",
-        "codeQLDatabasesExperimental.configError",
+        "codeQLVariantAnalysisRepositories.configError",
         true,
       );
     }
@@ -195,14 +417,14 @@ export class DbConfigStore extends DisposableObject {
       this.config = newConfig;
       void this.app.executeCommand(
         "setContext",
-        "codeQLDatabasesExperimental.configError",
+        "codeQLVariantAnalysisRepositories.configError",
         false,
       );
     } else {
       this.config = undefined;
       void this.app.executeCommand(
         "setContext",
-        "codeQLDatabasesExperimental.configError",
+        "codeQLVariantAnalysisRepositories.configError",
         true,
       );
     }
@@ -229,7 +451,7 @@ export class DbConfigStore extends DisposableObject {
   private createEmptyConfig(): DbConfig {
     return {
       databases: {
-        remote: {
+        variantAnalysis: {
           repositoryLists: [],
           owners: [],
           repositories: [],
@@ -239,7 +461,36 @@ export class DbConfigStore extends DisposableObject {
           databases: [],
         },
       },
-      expanded: [],
     };
+  }
+
+  private validateLocalListName(listName: string): void {
+    if (listName === "") {
+      throw Error("List name cannot be empty");
+    }
+
+    if (this.doesLocalListExist(listName)) {
+      throw Error(`A local list with the name '${listName}' already exists`);
+    }
+  }
+
+  private validateRemoteListName(listName: string): void {
+    if (listName === "") {
+      throw Error("List name cannot be empty");
+    }
+
+    if (this.doesRemoteListExist(listName)) {
+      throw Error(`A remote list with the name '${listName}' already exists`);
+    }
+  }
+
+  private validateLocalDbName(dbName: string): void {
+    if (dbName === "") {
+      throw Error("Database name cannot be empty");
+    }
+
+    if (this.doesLocalDbExist(dbName)) {
+      throw Error(`A local database with the name '${dbName}' already exists`);
+    }
   }
 }

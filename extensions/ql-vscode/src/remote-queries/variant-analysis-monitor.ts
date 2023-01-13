@@ -1,9 +1,4 @@
-import {
-  CancellationToken,
-  commands,
-  EventEmitter,
-  ExtensionContext,
-} from "vscode";
+import { CancellationToken, commands, EventEmitter } from "vscode";
 import { Credentials } from "../authentication";
 import { getVariantAnalysis } from "./gh-api/gh-api-client";
 
@@ -32,7 +27,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
   readonly onVariantAnalysisChange = this._onVariantAnalysisChange.event;
 
   constructor(
-    private readonly extensionContext: ExtensionContext,
     private readonly shouldCancelMonitor: (
       variantAnalysisId: number,
     ) => Promise<boolean>,
@@ -44,10 +38,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
     variantAnalysis: VariantAnalysis,
     cancellationToken: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize(this.extensionContext);
-    if (!credentials) {
-      throw Error("Error authenticating with GitHub");
-    }
+    const credentials = await Credentials.initialize();
 
     let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];

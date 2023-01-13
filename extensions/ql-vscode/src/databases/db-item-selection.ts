@@ -33,7 +33,7 @@ function extractSelected(
         }
       }
       break;
-    case DbItemKind.RemoteUserDefinedList:
+    case DbItemKind.VariantAnalysisUserDefinedList:
       for (const repo of dbItem.repos) {
         if (repo.selected) {
           return repo;
@@ -59,36 +59,36 @@ export function mapDbItemToSelectedDbItem(
         listName: dbItem.listName,
       };
 
-    case DbItemKind.RemoteUserDefinedList:
+    case DbItemKind.VariantAnalysisUserDefinedList:
       return {
-        kind: SelectedDbItemKind.RemoteUserDefinedList,
+        kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
         listName: dbItem.listName,
       };
 
     case DbItemKind.RemoteSystemDefinedList:
       return {
-        kind: SelectedDbItemKind.RemoteSystemDefinedList,
+        kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList,
         listName: dbItem.listName,
       };
 
     case DbItemKind.RemoteOwner:
       return {
-        kind: SelectedDbItemKind.RemoteOwner,
+        kind: SelectedDbItemKind.VariantAnalysisOwner,
         ownerName: dbItem.ownerName,
       };
 
     case DbItemKind.LocalDatabase:
       return {
         kind: SelectedDbItemKind.LocalDatabase,
-        listName: dbItem?.parentListName,
         databaseName: dbItem.databaseName,
+        listName: dbItem?.parentListName,
       };
 
     case DbItemKind.RemoteRepo:
       return {
-        kind: SelectedDbItemKind.RemoteRepository,
-        listName: dbItem?.parentListName,
+        kind: SelectedDbItemKind.VariantAnalysisRepository,
         repositoryName: dbItem.repoFullName,
+        listName: dbItem?.parentListName,
       };
   }
 }

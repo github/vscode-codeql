@@ -1,7 +1,7 @@
-import { src, dest } from "gulp";
+import { dest, src } from "gulp";
 import { load } from "js-yaml";
 import { obj } from "through2";
-import * as PluginError from "plugin-error";
+import PluginError from "plugin-error";
 import * as Vinyl from "vinyl";
 
 /**

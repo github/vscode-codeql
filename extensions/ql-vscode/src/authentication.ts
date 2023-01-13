@@ -13,102 +13,59 @@ const SCOPES = ["repo", "gist"];
  * Handles authentication to GitHub, using the VS Code [authentication API](https://code.visualstudio.com/api/references/vscode-api#authentication).
  */
 export class Credentials {
+  /**
+   * A specific octokit to return, otherwise a new authenticated octokit will be created when needed.
+   */
   private octokit: Octokit.Octokit | undefined;
 
   // Explicitly make the constructor private, so that we can't accidentally call the constructor from outside the class
   // without also initializing the class.
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  private constructor() {}
+  private constructor(octokit?: Octokit.Octokit) {
+    this.octokit = octokit;
+  }
 
   /**
-   * Initializes an instance of credentials with an octokit instance.
+   * Initializes a Credentials instance. This will generate octokit instances
+   * authenticated as the user. If there is not already an authenticated GitHub
+   * session available then the user will be prompted to log in.
    *
-   * Do not call this method until you know you actually need an instance of credentials.
-   * since calling this method will require the user to log in.
-   *
-   * @param context The extension context.
    * @returns An instance of credentials.
    */
-  static async initialize(
-    context: vscode.ExtensionContext,
-  ): Promise<Credentials> {
-    const c = new Credentials();
-    c.registerListeners(context);
-    c.octokit = await c.createOctokit(false);
-    return c;
+  static async initialize(): Promise<Credentials> {
+    return new Credentials();
   }
 
   /**
    * Initializes an instance of credentials with an octokit instance using
-   * a token from the user's GitHub account. This method is meant to be
-   * used non-interactive environments such as tests.
+   * a specific known token. This method is meant to be used in
+   * non-interactive environments such as tests.
    *
    * @param overrideToken The GitHub token to use for authentication.
    * @returns An instance of credentials.
    */
   static async initializeWithToken(overrideToken: string) {
-    const c = new Credentials();
-    c.octokit = await c.createOctokit(false, overrideToken);
-    return c;
-  }
-
-  private async createOctokit(
-    createIfNone: boolean,
-    overrideToken?: string,
-  ): Promise<Octokit.Octokit | undefined> {
-    if (overrideToken) {
-      return new Octokit.Octokit({ auth: overrideToken, retry });
-    }
-
-    const session = await vscode.authentication.getSession(
-      GITHUB_AUTH_PROVIDER_ID,
-      SCOPES,
-      { createIfNone },
-    );
-
-    if (session) {
-      return new Octokit.Octokit({
-        auth: session.accessToken,
-        retry,
-      });
-    } else {
-      return undefined;
-    }
-  }
-
-  registerListeners(context: vscode.ExtensionContext): void {
-    // Sessions are changed when a user logs in or logs out.
-    context.subscriptions.push(
-      vscode.authentication.onDidChangeSessions(async (e) => {
-        if (e.provider.id === GITHUB_AUTH_PROVIDER_ID) {
-          this.octokit = await this.createOctokit(false);
-        }
-      }),
-    );
+    return new Credentials(new Octokit.Octokit({ auth: overrideToken, retry }));
   }
 
   /**
    * Creates or returns an instance of Octokit.
    *
-   * @param requireAuthentication Whether the Octokit instance needs to be authenticated as user.
    * @returns An instance of Octokit.
    */
-  async getOctokit(requireAuthentication = true): Promise<Octokit.Octokit> {
+  async getOctokit(): Promise<Octokit.Octokit> {
     if (this.octokit) {
       return this.octokit;
     }
 
-    this.octokit = await this.createOctokit(requireAuthentication);
+    const session = await vscode.authentication.getSession(
+      GITHUB_AUTH_PROVIDER_ID,
+      SCOPES,
+      { createIfNone: true },
+    );
 
-    if (!this.octokit) {
-      if (requireAuthentication) {
-        throw new Error("Did not initialize Octokit.");
-      }
-
-      // We don't want to set this in this.octokit because that would prevent
-      // authenticating when requireCredentials is true.
-      return new Octokit.Octokit({ retry });
-    }
-    return this.octokit;
+    return new Octokit.Octokit({
+      auth: session.accessToken,
+      retry,
+    });
   }
 }

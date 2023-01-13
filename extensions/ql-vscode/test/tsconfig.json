@@ -1,13 +1,11 @@
 {
   "extends": "../tsconfig.json",
-  "include": [
-    "**/*.ts",
-    "../src/vscode-tests/factories/db-config-factories.ts"
-  ],
+  "include": ["**/*.ts", "../src/**/*.ts"],
   "exclude": [],
   "compilerOptions": {
     "noEmit": true,
     "resolveJsonModule": true,
-    "rootDir": ".."
+    "rootDir": "..",
+    "jsx": "react"
   }
 }

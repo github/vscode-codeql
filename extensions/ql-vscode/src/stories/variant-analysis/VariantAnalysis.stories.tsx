@@ -12,8 +12,8 @@ import {
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisStatus,
 } from "../../remote-queries/shared/variant-analysis";
-import { createMockVariantAnalysis } from "../../vscode-tests/factories/remote-queries/shared/variant-analysis";
-import { createMockRepositoryWithMetadata } from "../../vscode-tests/factories/remote-queries/shared/repository";
+import { createMockVariantAnalysis } from "../../../test/factories/remote-queries/shared/variant-analysis";
+import { createMockRepositoryWithMetadata } from "../../../test/factories/remote-queries/shared/repository";
 
 export default {
   title: "Variant Analysis/Variant Analysis",

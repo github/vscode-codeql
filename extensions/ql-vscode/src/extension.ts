@@ -591,7 +591,7 @@ async function activateWithInstalledDistribution(
     qs,
     getContextStoragePath(ctx),
     ctx.extensionPath,
-    () => Credentials.initialize(ctx),
+    () => Credentials.initialize(),
   );
   databaseUI.init();
   ctx.subscriptions.push(databaseUI);
@@ -642,7 +642,7 @@ async function activateWithInstalledDistribution(
     cliServer,
     variantAnalysisStorageDir,
     variantAnalysisResultsManager,
-    dbModule?.dbManager, // the dbModule is only needed when the newQueryRunExperience is enabled
+    dbModule?.dbManager, // the dbModule is only needed when variantAnalysisReposPanel is enabled
   );
   ctx.subscriptions.push(variantAnalysisManager);
   ctx.subscriptions.push(variantAnalysisResultsManager);
@@ -1166,6 +1166,15 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner(
+      "codeQL.openVariantAnalysisLogs",
+      async (variantAnalysisId: number) => {
+        await variantAnalysisManager.openVariantAnalysisLogs(variantAnalysisId);
+      },
+    ),
+  );
+
+  ctx.subscriptions.push(
+    commandRunner(
       "codeQL.copyVariantAnalysisRepoList",
       async (
         variantAnalysisId: number,
@@ -1236,7 +1245,7 @@ async function activateWithInstalledDistribution(
     commandRunner(
       "codeQL.exportRemoteQueryResults",
       async (queryId: string) => {
-        await exportRemoteQueryResults(qhm, rqm, ctx, queryId);
+        await exportRemoteQueryResults(qhm, rqm, queryId);
       },
     ),
   );
@@ -1251,7 +1260,6 @@ async function activateWithInstalledDistribution(
         filterSort?: RepositoriesFilterSortStateWithIds,
       ) => {
         await exportVariantAnalysisResults(
-          ctx,
           variantAnalysisManager,
           variantAnalysisId,
           filterSort,
@@ -1356,7 +1364,7 @@ async function activateWithInstalledDistribution(
       "codeQL.chooseDatabaseGithub",
       async (progress: ProgressCallback, token: CancellationToken) => {
         const credentials = isCanary()
-          ? await Credentials.initialize(ctx)
+          ? await Credentials.initialize()
           : undefined;
         await databaseUI.handleChooseDatabaseGithub(
           credentials,
@@ -1411,7 +1419,7 @@ async function activateWithInstalledDistribution(
        * Credentials for authenticating to GitHub.
        * These are used when making API calls.
        */
-      const credentials = await Credentials.initialize(ctx);
+      const credentials = await Credentials.initialize();
       const octokit = await credentials.getOctokit();
       const userInfo = await octokit.users.getAuthenticated();
       void showAndLogInformationMessage(

@@ -6,9 +6,28 @@ export enum DbItemKind {
   LocalDatabase = "LocalDatabase",
   RootRemote = "RootRemote",
   RemoteSystemDefinedList = "RemoteSystemDefinedList",
-  RemoteUserDefinedList = "RemoteUserDefinedList",
+  VariantAnalysisUserDefinedList = "VariantAnalysisUserDefinedList",
   RemoteOwner = "RemoteOwner",
   RemoteRepo = "RemoteRepo",
+}
+
+export const remoteDbKinds = [
+  DbItemKind.RootRemote,
+  DbItemKind.RemoteSystemDefinedList,
+  DbItemKind.VariantAnalysisUserDefinedList,
+  DbItemKind.RemoteOwner,
+  DbItemKind.RemoteRepo,
+];
+
+export const localDbKinds = [
+  DbItemKind.RootLocal,
+  DbItemKind.LocalList,
+  DbItemKind.LocalDatabase,
+];
+
+export enum DbListKind {
+  Local = "Local",
+  Remote = "Remote",
 }
 
 export interface RootLocalDbItem {
@@ -51,7 +70,7 @@ export type DbItem =
 
 export type RemoteDbItem =
   | RemoteSystemDefinedListDbItem
-  | RemoteUserDefinedListDbItem
+  | VariantAnalysisUserDefinedListDbItem
   | RemoteOwnerDbItem
   | RemoteRepoDbItem;
 
@@ -63,8 +82,8 @@ export interface RemoteSystemDefinedListDbItem {
   listDescription: string;
 }
 
-export interface RemoteUserDefinedListDbItem {
-  kind: DbItemKind.RemoteUserDefinedList;
+export interface VariantAnalysisUserDefinedListDbItem {
+  kind: DbItemKind.VariantAnalysisUserDefinedList;
   expanded: boolean;
   selected: boolean;
   listName: string;
@@ -90,10 +109,10 @@ export function isRemoteSystemDefinedListDbItem(
   return dbItem.kind === DbItemKind.RemoteSystemDefinedList;
 }
 
-export function isRemoteUserDefinedListDbItem(
+export function isVariantAnalysisUserDefinedListDbItem(
   dbItem: DbItem,
-): dbItem is RemoteUserDefinedListDbItem {
-  return dbItem.kind === DbItemKind.RemoteUserDefinedList;
+): dbItem is VariantAnalysisUserDefinedListDbItem {
+  return dbItem.kind === DbItemKind.VariantAnalysisUserDefinedList;
 }
 
 export function isRemoteOwnerDbItem(
@@ -126,7 +145,36 @@ const SelectableDbItemKinds = [
   DbItemKind.LocalList,
   DbItemKind.LocalDatabase,
   DbItemKind.RemoteSystemDefinedList,
-  DbItemKind.RemoteUserDefinedList,
+  DbItemKind.VariantAnalysisUserDefinedList,
   DbItemKind.RemoteOwner,
   DbItemKind.RemoteRepo,
 ];
+
+export function flattenDbItems(dbItems: DbItem[]): DbItem[] {
+  const allItems: DbItem[] = [];
+
+  for (const dbItem of dbItems) {
+    allItems.push(dbItem);
+    switch (dbItem.kind) {
+      case DbItemKind.RootLocal:
+        allItems.push(...flattenDbItems(dbItem.children));
+        break;
+      case DbItemKind.LocalList:
+        allItems.push(...flattenDbItems(dbItem.databases));
+        break;
+      case DbItemKind.RootRemote:
+        allItems.push(...flattenDbItems(dbItem.children));
+        break;
+      case DbItemKind.VariantAnalysisUserDefinedList:
+        allItems.push(...dbItem.repos);
+        break;
+      case DbItemKind.LocalDatabase:
+      case DbItemKind.RemoteSystemDefinedList:
+      case DbItemKind.RemoteOwner:
+      case DbItemKind.RemoteRepo:
+        break;
+    }
+  }
+
+  return allItems;
+}

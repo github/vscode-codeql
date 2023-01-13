@@ -1,5 +1,5 @@
 import { pathExists, stat, remove } from "fs-extra";
-import * as glob from "glob-promise";
+import { promise as glob } from "glob-promise";
 import { join, basename, resolve, relative, dirname, extname } from "path";
 import * as vscode from "vscode";
 import * as cli from "./cli";
@@ -21,6 +21,7 @@ import { DisposableObject } from "./pure/disposable-object";
 import { Logger, extLogger } from "./common";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./queryRunner";
+import { pathsEqual } from "./pure/files";
 
 /**
  * databases.ts
@@ -523,7 +524,11 @@ export class DatabaseItemImpl implements DatabaseItem {
         // database for /one/two/three/test.ql is at /one/two/three/three.testproj
         const testdir = dirname(testPath);
         const testdirbase = basename(testdir);
-        return databasePath == join(testdir, `${testdirbase}.testproj`);
+        return pathsEqual(
+          databasePath,
+          join(testdir, `${testdirbase}.testproj`),
+          process.platform,
+        );
       }
     } catch {
       // No information available for test path - assume database is unaffected.
@@ -924,7 +929,7 @@ export class DatabaseManager extends DisposableObject {
     // Delete folder from file system only if it is controlled by the extension
     if (this.isExtensionControlledLocation(item.databaseUri)) {
       void extLogger.log("Deleting database from filesystem.");
-      remove(item.databaseUri.fsPath).then(
+      await remove(item.databaseUri.fsPath).then(
         () => void extLogger.log(`Deleted '${item.databaseUri.fsPath}'`),
         (e) =>
           void extLogger.log(

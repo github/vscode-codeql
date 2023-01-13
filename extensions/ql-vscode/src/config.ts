@@ -476,7 +476,7 @@ export const NO_CACHE_AST_VIEWER = new Setting(
 );
 
 // Settings for variant analysis
-const REMOTE_QUERIES_SETTING = new Setting("variantAnalysis", ROOT_SETTING);
+const VARIANT_ANALYSIS_SETTING = new Setting("variantAnalysis", ROOT_SETTING);
 
 /**
  * Lists of GitHub repositories that you want to query remotely via the "Run Variant Analysis" command.
@@ -487,7 +487,7 @@ const REMOTE_QUERIES_SETTING = new Setting("variantAnalysis", ROOT_SETTING);
  */
 const REMOTE_REPO_LISTS = new Setting(
   "repositoryLists",
-  REMOTE_QUERIES_SETTING,
+  VARIANT_ANALYSIS_SETTING,
 );
 
 export function getRemoteRepositoryLists():
@@ -513,7 +513,7 @@ export async function setRemoteRepositoryLists(
  */
 const REPO_LISTS_PATH = new Setting(
   "repositoryListsPath",
-  REMOTE_QUERIES_SETTING,
+  VARIANT_ANALYSIS_SETTING,
 );
 
 export function getRemoteRepositoryListsPath(): string | undefined {
@@ -528,7 +528,7 @@ export function getRemoteRepositoryListsPath(): string | undefined {
  */
 const REMOTE_CONTROLLER_REPO = new Setting(
   "controllerRepo",
-  REMOTE_QUERIES_SETTING,
+  VARIANT_ANALYSIS_SETTING,
 );
 
 export function getRemoteControllerRepo(): string | undefined {
@@ -544,7 +544,7 @@ export async function setRemoteControllerRepo(repo: string | undefined) {
  * Default value is "main".
  * Note: This command is only available for internal users.
  */
-const ACTION_BRANCH = new Setting("actionBranch", REMOTE_QUERIES_SETTING);
+const ACTION_BRANCH = new Setting("actionBranch", VARIANT_ANALYSIS_SETTING);
 
 export function getActionBranch(): string {
   return ACTION_BRANCH.getValue<string>() || "main";
@@ -559,16 +559,15 @@ export function isVariantAnalysisLiveResultsEnabled(): boolean {
 }
 
 /**
- * A flag indicating whether to use the new query run experience which involves
- * using a new database panel.
+ * A flag indicating whether to use the new "variant analysis repositories" panel.
  */
-const NEW_QUERY_RUN_EXPERIENCE = new Setting(
-  "newQueryRunExperience",
-  ROOT_SETTING,
+const VARIANT_ANALYSIS_REPOS_PANEL = new Setting(
+  "repositoriesPanel",
+  VARIANT_ANALYSIS_SETTING,
 );
 
-export function isNewQueryRunExperienceEnabled(): boolean {
-  return !!NEW_QUERY_RUN_EXPERIENCE.getValue<boolean>();
+export function isVariantAnalysisReposPanelEnabled(): boolean {
+  return !!VARIANT_ANALYSIS_REPOS_PANEL.getValue<boolean>();
 }
 
 // Settings for mocking the GitHub API.
