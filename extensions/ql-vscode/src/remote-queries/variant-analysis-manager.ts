@@ -61,7 +61,7 @@ import {
 } from "../pure/variant-analysis-filter-sort";
 import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
-import { isNewQueryRunExperienceEnabled } from "../config";
+import { isVariantAnalysisReposPanelEnabled } from "../config";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -103,7 +103,7 @@ export class VariantAnalysisManager
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager,
-    private readonly dbManager?: DbManager, // the dbManager is only needed when the newQueryRunExperience is enabled
+    private readonly dbManager?: DbManager, // the dbManager is only needed when variantAnalysisReposPanel is enabled
   ) {
     super();
     this.variantAnalysisMonitor = this.push(
@@ -622,7 +622,7 @@ export class VariantAnalysisManager
     }
 
     let text: string[];
-    if (isNewQueryRunExperienceEnabled()) {
+    if (isVariantAnalysisReposPanelEnabled()) {
       text = [
         "{",
         `    "name": "new-repo-list",`,

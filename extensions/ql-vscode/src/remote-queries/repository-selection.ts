@@ -4,7 +4,7 @@ import { extLogger } from "../common";
 import {
   getRemoteRepositoryLists,
   getRemoteRepositoryListsPath,
-  isNewQueryRunExperienceEnabled,
+  isVariantAnalysisReposPanelEnabled,
 } from "../config";
 import { OWNER_REGEX, REPO_REGEX } from "../pure/helpers-pure";
 import { UserCancellationException } from "../commandRunner";
@@ -36,7 +36,7 @@ interface RepoList {
 export async function getRepositorySelection(
   dbManager?: DbManager,
 ): Promise<RepositorySelection> {
-  if (isNewQueryRunExperienceEnabled()) {
+  if (isVariantAnalysisReposPanelEnabled()) {
     const selectedDbItem = dbManager?.getSelectedDbItem();
     if (selectedDbItem) {
       switch (selectedDbItem.kind) {
