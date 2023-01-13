@@ -1,0 +1,82 @@
+name: Create a PR if one doesn't exists
+description: >
+  Creates a commit with the current changes to the repo, and opens a PR for that commit. If
+  any PR with the same title exists, then this action is marked as succeeded.
+inputs:
+  commit-message:
+    description: >
+      The message for the commit to be created.
+    required: true
+
+  title:
+    description: >
+      The title of the PR. If empty, the title and body will be determined from the commit message.
+    default: ''
+    required: false
+
+  body:
+    description: >
+      The body (description) of the PR. The `title` input must be specified in order for this input to be used.
+    default: ''
+    required: false
+
+  head-branch:
+    description: >
+      The name of the branch to hold the new commit. If an existing open PR with the same head
+      branch exists, the new branch will be force-pushed to that PR instead of creating a new PR.
+    required: true
+
+  base-branch:
+    description: >
+      The base branch to target with the new PR.
+    required: true
+
+  token:
+    description: |
+      The GitHub token to use. It must have enough privileges to
+      make API calls to create and close pull requests.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Update git config
+      shell: bash
+      run: |
+        git config --global user.email "github-actions@github.com"
+        git config --global user.name "github-actions[bot]"
+    - name: Commit, Push and Open PR
+      shell: bash
+      env:
+        COMMIT_MESSAGE: ${{ inputs.commit-message }}
+        HEAD_BRANCH: ${{ inputs.head-branch }}
+        BASE_BRANCH: ${{ inputs.base-branch }}
+        GH_TOKEN: ${{ inputs.token }}
+        TITLE: ${{ inputs.title }}
+        BODY: ${{ inputs.body }}
+      run: |
+        set -exu
+        if ! [[ $(git diff --stat) != '' ]]; then
+          exit 0 # exit early
+        fi
+        # stage changes in the working tree
+        git add .
+        git commit -m "$COMMIT_MESSAGE"
+        git checkout -b "$HEAD_BRANCH"
+        # CAUTION: gits history changes with the following
+        git push --force origin "$HEAD_BRANCH"
+        PR_JSON=$(gh pr list --state open --json number --head "$HEAD_BRANCH")
+        if [[ $? -ne 0 ]]; then
+          echo "Failed to fetch existing PRs."
+          exit 1
+        fi
+        PR_NUMBERS=$(echo $PR_JSON | jq '. | length')
+        if [[ $PR_NUMBERS -ne 0 ]]; then 
+          echo "Found existing open PR: $PR_NUMBERS"
+          exit 0
+        fi
+        gh pr create --head "$HEAD_BRANCH" --base "$BASE_BRANCH" --title "$TITLE" --body "$BODY" --assignee ${{ github.actor }}
+        if [[ $? -ne 0 ]]; then
+          echo "Failed to create new PR."
+          exit 1
+        fi

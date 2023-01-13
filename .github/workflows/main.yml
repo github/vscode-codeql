@@ -183,14 +183,25 @@ jobs:
         run: |
           npm run integration
 
+  set-matrix:
+    name: Set Matrix for cli-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set the variables
+        id: set-variables
+        run: echo "cli-versions=$(cat ./supported_cli_versions.json | jq -rc)" >> $GITHUB_OUTPUT
+    outputs:
+      cli-versions: ${{ steps.set-variables.outputs.cli-versions }}
   cli-test:
     name: CLI Test
     runs-on: ${{ matrix.os }}
-    needs: [find-nightly]
+    needs: [find-nightly, set-matrix]
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        version: ['v2.7.6', 'v2.8.5', 'v2.9.4', 'v2.10.5', 'v2.11.6', 'nightly']
+        version: ${{ fromJson(needs.set-matrix.outputs.cli-versions) }}
       fail-fast: false
     env:
       CLI_VERSION: ${{ matrix.version }}
