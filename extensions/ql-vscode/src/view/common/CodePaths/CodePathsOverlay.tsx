@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState } from "react";
 import styled from "styled-components";
 
 import {
@@ -6,7 +7,7 @@ import {
   CodeFlow,
   ResultSeverity,
 } from "../../../remote-queries/shared/analysis-result";
-import { useStateWithTelemetry } from "../telemetry";
+import { useTelemetryOnChange } from "../telemetry";
 import { SectionTitle } from "../SectionTitle";
 import { VerticalSpace } from "../VerticalSpace";
 import { CodeFlowsDropdown } from "./CodeFlowsDropdown";
@@ -76,10 +77,8 @@ export const CodePathsOverlay = ({
   severity,
   onClose,
 }: CodePathsOverlayProps) => {
-  const [selectedCodeFlow, setSelectedCodeFlow] = useStateWithTelemetry(
-    codeFlows[0],
-    "code-flow-selected",
-  );
+  const [selectedCodeFlow, setSelectedCodeFlow] = useState(codeFlows[0]);
+  useTelemetryOnChange(selectedCodeFlow, "code-flow-selected");
 
   return (
     <OverlayContainer>

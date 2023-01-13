@@ -12,11 +12,8 @@ import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
 import { VariantAnalysisLoading } from "./VariantAnalysisLoading";
 import { ToVariantAnalysisMessage } from "../../pure/interface-types";
 import { vscode } from "../vscode-api";
-import {
-  defaultFilterSortState,
-  RepositoriesFilterSortState,
-} from "../../pure/variant-analysis-filter-sort";
-import { useStateWithTelemetry } from "../common/telemetry";
+import { defaultFilterSortState } from "../../pure/variant-analysis-filter-sort";
+import { useTelemetryOnChange } from "../common/telemetry";
 
 export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;
@@ -61,16 +58,17 @@ export function VariantAnalysis({
   const [repoResults, setRepoResults] =
     useState<VariantAnalysisScannedRepositoryResult[]>(initialRepoResults);
 
-  const [selectedRepositoryIds, setSelectedRepositoryIds] =
-    useStateWithTelemetry<number[]>(
-      [],
-      "variant-analysis-selected-repository-ids",
-    );
-  const [filterSortState, setFilterSortState] =
-    useStateWithTelemetry<RepositoriesFilterSortState>(
-      defaultFilterSortState,
-      "variant-analysis-filter-sort-state",
-    );
+  const [selectedRepositoryIds, setSelectedRepositoryIds] = useState<number[]>(
+    [],
+  );
+  useTelemetryOnChange(
+    selectedRepositoryIds,
+    "variant-analysis-selected-repository-ids",
+  );
+  const [filterSortState, setFilterSortState] = useState(
+    defaultFilterSortState,
+  );
+  useTelemetryOnChange(filterSortState, "variant-analysis-filter-sort-state");
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {

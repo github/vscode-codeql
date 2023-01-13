@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import styled from "styled-components";
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 
@@ -11,7 +11,7 @@ import {
   ResultSeverity,
 } from "../../../remote-queries/shared/analysis-result";
 import { CodePathsOverlay } from "./CodePathsOverlay";
-import { useStateWithTelemetry } from "../telemetry";
+import { useTelemetryOnChange } from "../telemetry";
 
 const ShowPathsLink = styled(VSCodeLink)`
   cursor: pointer;
@@ -32,11 +32,10 @@ export const CodePaths = ({
   message,
   severity,
 }: CodePathsProps) => {
-  const [isOpen, setIsOpen] = useStateWithTelemetry<boolean>(
-    false,
-    "code-path-is-open",
-    filterIsOpenTelemetry,
-  );
+  const [isOpen, setIsOpen] = useState(false);
+  useTelemetryOnChange(isOpen, "code-path-is-open", {
+    filterTelemetryOnValue: filterIsOpenTelemetry,
+  });
 
   const linkRef = useRef<HTMLAnchorElement>(null);
 
