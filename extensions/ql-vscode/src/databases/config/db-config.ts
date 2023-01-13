@@ -2,12 +2,11 @@
 
 export interface DbConfig {
   databases: DbConfigDatabases;
-  expanded: ExpandedDbItem[];
   selected?: SelectedDbItem;
 }
 
 export interface DbConfigDatabases {
-  remote: RemoteDbConfig;
+  variantAnalysis: RemoteDbConfig;
   local: LocalDbConfig;
 }
 
@@ -15,17 +14,17 @@ export type SelectedDbItem =
   | SelectedLocalUserDefinedList
   | SelectedLocalDatabase
   | SelectedRemoteSystemDefinedList
-  | SelectedRemoteUserDefinedList
+  | SelectedVariantAnalysisUserDefinedList
   | SelectedRemoteOwner
   | SelectedRemoteRepository;
 
 export enum SelectedDbItemKind {
   LocalUserDefinedList = "localUserDefinedList",
   LocalDatabase = "localDatabase",
-  RemoteSystemDefinedList = "remoteSystemDefinedList",
-  RemoteUserDefinedList = "remoteUserDefinedList",
-  RemoteOwner = "remoteOwner",
-  RemoteRepository = "remoteRepository",
+  VariantAnalysisSystemDefinedList = "variantAnalysisSystemDefinedList",
+  VariantAnalysisUserDefinedList = "variantAnalysisUserDefinedList",
+  VariantAnalysisOwner = "variantAnalysisOwner",
+  VariantAnalysisRepository = "variantAnalysisRepository",
 }
 
 export interface SelectedLocalUserDefinedList {
@@ -40,22 +39,22 @@ export interface SelectedLocalDatabase {
 }
 
 export interface SelectedRemoteSystemDefinedList {
-  kind: SelectedDbItemKind.RemoteSystemDefinedList;
+  kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList;
   listName: string;
 }
 
-export interface SelectedRemoteUserDefinedList {
-  kind: SelectedDbItemKind.RemoteUserDefinedList;
+export interface SelectedVariantAnalysisUserDefinedList {
+  kind: SelectedDbItemKind.VariantAnalysisUserDefinedList;
   listName: string;
 }
 
 export interface SelectedRemoteOwner {
-  kind: SelectedDbItemKind.RemoteOwner;
+  kind: SelectedDbItemKind.VariantAnalysisOwner;
   ownerName: string;
 }
 
 export interface SelectedRemoteRepository {
-  kind: SelectedDbItemKind.RemoteRepository;
+  kind: SelectedDbItemKind.VariantAnalysisRepository;
   repositoryName: string;
   listName?: string;
 }
@@ -88,49 +87,18 @@ export interface LocalDatabase {
   storagePath: string;
 }
 
-export type ExpandedDbItem =
-  | RootLocalExpandedDbItem
-  | LocalUserDefinedListExpandedDbItem
-  | RootRemoteExpandedDbItem
-  | RemoteUserDefinedListExpandedDbItem;
-
-export enum ExpandedDbItemKind {
-  RootLocal = "rootLocal",
-  LocalUserDefinedList = "localUserDefinedList",
-  RootRemote = "rootRemote",
-  RemoteUserDefinedList = "remoteUserDefinedList",
-}
-
-export interface RootLocalExpandedDbItem {
-  kind: ExpandedDbItemKind.RootLocal;
-}
-
-export interface LocalUserDefinedListExpandedDbItem {
-  kind: ExpandedDbItemKind.LocalUserDefinedList;
-  listName: string;
-}
-
-export interface RootRemoteExpandedDbItem {
-  kind: ExpandedDbItemKind.RootRemote;
-}
-
-export interface RemoteUserDefinedListExpandedDbItem {
-  kind: ExpandedDbItemKind.RemoteUserDefinedList;
-  listName: string;
-}
-
 export function cloneDbConfig(config: DbConfig): DbConfig {
   return {
     databases: {
-      remote: {
-        repositoryLists: config.databases.remote.repositoryLists.map(
+      variantAnalysis: {
+        repositoryLists: config.databases.variantAnalysis.repositoryLists.map(
           (list) => ({
             name: list.name,
             repositories: [...list.repositories],
           }),
         ),
-        owners: [...config.databases.remote.owners],
-        repositories: [...config.databases.remote.repositories],
+        owners: [...config.databases.variantAnalysis.owners],
+        repositories: [...config.databases.variantAnalysis.repositories],
       },
       local: {
         lists: config.databases.local.lists.map((list) => ({
@@ -140,11 +108,221 @@ export function cloneDbConfig(config: DbConfig): DbConfig {
         databases: config.databases.local.databases.map((db) => ({ ...db })),
       },
     },
-    expanded: config.expanded.map(cloneDbConfigExpandedItem),
     selected: config.selected
       ? cloneDbConfigSelectedItem(config.selected)
       : undefined,
   };
+}
+
+export function renameLocalList(
+  originalConfig: DbConfig,
+  currentListName: string,
+  newListName: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  const list = getLocalList(config, currentListName);
+  list.name = newListName;
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.LocalUserDefinedList ||
+    config.selected?.kind === SelectedDbItemKind.LocalDatabase
+  ) {
+    if (config.selected.listName === currentListName) {
+      config.selected.listName = newListName;
+    }
+  }
+
+  return config;
+}
+
+export function renameRemoteList(
+  originalConfig: DbConfig,
+  currentListName: string,
+  newListName: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  const list = getRemoteList(config, currentListName);
+  list.name = newListName;
+
+  if (
+    config.selected?.kind ===
+      SelectedDbItemKind.VariantAnalysisUserDefinedList ||
+    config.selected?.kind === SelectedDbItemKind.VariantAnalysisRepository
+  ) {
+    if (config.selected.listName === currentListName) {
+      config.selected.listName = newListName;
+    }
+  }
+
+  return config;
+}
+
+export function renameLocalDb(
+  originalConfig: DbConfig,
+  currentDbName: string,
+  newDbName: string,
+  parentListName?: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  if (parentListName) {
+    const list = getLocalList(config, parentListName);
+    const dbIndex = list.databases.findIndex((db) => db.name === currentDbName);
+    if (dbIndex === -1) {
+      throw Error(
+        `Cannot find database '${currentDbName}' in list '${parentListName}'`,
+      );
+    }
+    list.databases[dbIndex].name = newDbName;
+  } else {
+    const dbIndex = config.databases.local.databases.findIndex(
+      (db) => db.name === currentDbName,
+    );
+    if (dbIndex === -1) {
+      throw Error(`Cannot find database '${currentDbName}' in local databases`);
+    }
+    config.databases.local.databases[dbIndex].name = newDbName;
+  }
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.LocalDatabase &&
+    config.selected.databaseName === currentDbName
+  ) {
+    config.selected.databaseName = newDbName;
+  }
+
+  return config;
+}
+
+export function removeLocalList(
+  originalConfig: DbConfig,
+  listName: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  config.databases.local.lists = config.databases.local.lists.filter(
+    (list) => list.name !== listName,
+  );
+
+  if (config.selected?.kind === SelectedDbItemKind.LocalUserDefinedList) {
+    config.selected = undefined;
+  }
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.LocalDatabase &&
+    config.selected?.listName === listName
+  ) {
+    config.selected = undefined;
+  }
+
+  return config;
+}
+
+export function removeRemoteList(
+  originalConfig: DbConfig,
+  listName: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  config.databases.variantAnalysis.repositoryLists =
+    config.databases.variantAnalysis.repositoryLists.filter(
+      (list) => list.name !== listName,
+    );
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.VariantAnalysisUserDefinedList
+  ) {
+    config.selected = undefined;
+  }
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.VariantAnalysisRepository &&
+    config.selected?.listName === listName
+  ) {
+    config.selected = undefined;
+  }
+
+  return config;
+}
+
+export function removeLocalDb(
+  originalConfig: DbConfig,
+  databaseName: string,
+  parentListName?: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  if (parentListName) {
+    const parentList = getLocalList(config, parentListName);
+    parentList.databases = parentList.databases.filter(
+      (db) => db.name !== databaseName,
+    );
+  } else {
+    config.databases.local.databases = config.databases.local.databases.filter(
+      (db) => db.name !== databaseName,
+    );
+  }
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.LocalDatabase &&
+    config.selected?.databaseName === databaseName &&
+    config.selected?.listName === parentListName
+  ) {
+    config.selected = undefined;
+  }
+
+  return config;
+}
+
+export function removeRemoteRepo(
+  originalConfig: DbConfig,
+  repoFullName: string,
+  parentListName?: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  if (parentListName) {
+    const parentList = getRemoteList(config, parentListName);
+    parentList.repositories = parentList.repositories.filter(
+      (r) => r !== repoFullName,
+    );
+  } else {
+    config.databases.variantAnalysis.repositories =
+      config.databases.variantAnalysis.repositories.filter(
+        (r) => r !== repoFullName,
+      );
+  }
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.VariantAnalysisRepository &&
+    config.selected?.repositoryName === repoFullName &&
+    config.selected?.listName === parentListName
+  ) {
+    config.selected = undefined;
+  }
+
+  return config;
+}
+
+export function removeRemoteOwner(
+  originalConfig: DbConfig,
+  ownerName: string,
+): DbConfig {
+  const config = cloneDbConfig(originalConfig);
+
+  config.databases.variantAnalysis.owners =
+    config.databases.variantAnalysis.owners.filter((o) => o !== ownerName);
+
+  if (
+    config.selected?.kind === SelectedDbItemKind.VariantAnalysisOwner &&
+    config.selected?.ownerName === ownerName
+  ) {
+    config.selected = undefined;
+  }
+
+  return config;
 }
 
 function cloneDbConfigSelectedItem(selected: SelectedDbItem): SelectedDbItem {
@@ -160,40 +338,51 @@ function cloneDbConfigSelectedItem(selected: SelectedDbItem): SelectedDbItem {
         databaseName: selected.databaseName,
         listName: selected.listName,
       };
-    case SelectedDbItemKind.RemoteSystemDefinedList:
+    case SelectedDbItemKind.VariantAnalysisSystemDefinedList:
       return {
-        kind: SelectedDbItemKind.RemoteSystemDefinedList,
+        kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList,
         listName: selected.listName,
       };
-    case SelectedDbItemKind.RemoteUserDefinedList:
+    case SelectedDbItemKind.VariantAnalysisUserDefinedList:
       return {
-        kind: SelectedDbItemKind.RemoteUserDefinedList,
+        kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
         listName: selected.listName,
       };
-    case SelectedDbItemKind.RemoteOwner:
+    case SelectedDbItemKind.VariantAnalysisOwner:
       return {
-        kind: SelectedDbItemKind.RemoteOwner,
+        kind: SelectedDbItemKind.VariantAnalysisOwner,
         ownerName: selected.ownerName,
       };
-    case SelectedDbItemKind.RemoteRepository:
+    case SelectedDbItemKind.VariantAnalysisRepository:
       return {
-        kind: SelectedDbItemKind.RemoteRepository,
+        kind: SelectedDbItemKind.VariantAnalysisRepository,
         repositoryName: selected.repositoryName,
         listName: selected.listName,
       };
   }
 }
 
-function cloneDbConfigExpandedItem(item: ExpandedDbItem): ExpandedDbItem {
-  switch (item.kind) {
-    case ExpandedDbItemKind.RootLocal:
-    case ExpandedDbItemKind.RootRemote:
-      return { kind: item.kind };
-    case ExpandedDbItemKind.LocalUserDefinedList:
-    case ExpandedDbItemKind.RemoteUserDefinedList:
-      return {
-        kind: item.kind,
-        listName: item.listName,
-      };
+function getLocalList(config: DbConfig, listName: string): LocalList {
+  const list = config.databases.local.lists.find((l) => l.name === listName);
+
+  if (!list) {
+    throw Error(`Cannot find local list '${listName}'`);
   }
+
+  return list;
+}
+
+function getRemoteList(
+  config: DbConfig,
+  listName: string,
+): RemoteRepositoryList {
+  const list = config.databases.variantAnalysis.repositoryLists.find(
+    (l) => l.name === listName,
+  );
+
+  if (!list) {
+    throw Error(`Cannot find remote list '${listName}'`);
+  }
+
+  return list;
 }

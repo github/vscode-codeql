@@ -3,7 +3,9 @@ import { deployPackage } from "./deploy";
 import { spawn } from "child-process-promise";
 
 export async function packageExtension(): Promise<void> {
-  const deployedPackage = await deployPackage(resolve("package.json"));
+  const deployedPackage = await deployPackage(
+    resolve(__dirname, "../package.json"),
+  );
   console.log(
     `Packaging extension '${deployedPackage.name}@${deployedPackage.version}'...`,
   );
@@ -16,7 +18,7 @@ export async function packageExtension(): Promise<void> {
       `${deployedPackage.name}-${deployedPackage.version}.vsix`,
     ),
   ];
-  const proc = spawn("./node_modules/.bin/vsce", args, {
+  const proc = spawn(resolve(__dirname, "../node_modules/.bin/vsce"), args, {
     cwd: deployedPackage.distPath,
   });
   proc.childProcess.stdout!.on("data", (data) => {

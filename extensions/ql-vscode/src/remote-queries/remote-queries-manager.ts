@@ -81,20 +81,19 @@ export class RemoteQueriesManager extends DisposableObject {
   private readonly view: RemoteQueriesView;
 
   constructor(
-    private readonly ctx: ExtensionContext,
+    ctx: ExtensionContext,
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     logger: Logger,
   ) {
     super();
     this.analysesResultsManager = new AnalysesResultsManager(
-      ctx,
       cliServer,
       storagePath,
       logger,
     );
     this.view = new RemoteQueriesView(ctx, logger, this.analysesResultsManager);
-    this.remoteQueriesMonitor = new RemoteQueriesMonitor(ctx, logger);
+    this.remoteQueriesMonitor = new RemoteQueriesMonitor(logger);
 
     this.remoteQueryAddedEventEmitter = this.push(
       new EventEmitter<NewQueryEvent>(),
@@ -160,7 +159,7 @@ export class RemoteQueriesManager extends DisposableObject {
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize(this.ctx);
+    const credentials = await Credentials.initialize();
 
     const {
       actionBranch,
@@ -218,7 +217,7 @@ export class RemoteQueriesManager extends DisposableObject {
     remoteQuery: RemoteQuery,
     cancellationToken: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize(this.ctx);
+    const credentials = await Credentials.initialize();
 
     const queryWorkflowResult = await this.remoteQueriesMonitor.monitorQuery(
       remoteQuery,

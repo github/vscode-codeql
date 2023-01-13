@@ -1,4 +1,4 @@
-import { commands, ExtensionContext, Uri, ViewColumn } from "vscode";
+import { commands, ExtensionContext, ViewColumn } from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import { extLogger } from "../common";
 import {
@@ -7,7 +7,6 @@ import {
 } from "../pure/interface-types";
 import { assertNever } from "../pure/helpers-pure";
 import {
-  getActionsWorkflowRunUrl,
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
@@ -147,7 +146,10 @@ export class VariantAnalysisView
         );
         break;
       case "openLogs":
-        await this.openLogs();
+        await commands.executeCommand(
+          "codeQL.openVariantAnalysisLogs",
+          this.variantAnalysisId,
+        );
         break;
       default:
         assertNever(msg);
@@ -182,24 +184,5 @@ export class VariantAnalysisView
       t: "setRepoStates",
       repoStates,
     });
-  }
-
-  private async openLogs(): Promise<void> {
-    const variantAnalysis = await this.manager.getVariantAnalysis(
-      this.variantAnalysisId,
-    );
-    if (!variantAnalysis) {
-      void showAndLogWarningMessage(
-        "Could not open variant analysis logs. Variant analysis not found.",
-      );
-      return;
-    }
-
-    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
-
-    await commands.executeCommand(
-      "vscode.open",
-      Uri.parse(actionsWorkflowRunUrl),
-    );
   }
 }

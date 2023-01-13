@@ -1,7 +1,13 @@
-import { series, parallel } from "gulp";
-import { compileTypeScript, watchTypeScript, cleanOutput } from "./typescript";
+import { parallel, series } from "gulp";
+import {
+  compileEsbuild,
+  watchEsbuild,
+  checkTypeScript,
+  watchCheckTypeScript,
+  cleanOutput,
+  copyWasmFiles,
+} from "./typescript";
 import { compileTextMateGrammar } from "./textmate";
-import { copyTestData, watchTestData } from "./tests";
 import { compileView, watchView } from "./webpack";
 import { packageExtension } from "./package";
 import { injectAppInsightsKey } from "./appInsights";
@@ -9,21 +15,25 @@ import { injectAppInsightsKey } from "./appInsights";
 export const buildWithoutPackage = series(
   cleanOutput,
   parallel(
-    compileTypeScript,
+    compileEsbuild,
+    copyWasmFiles,
+    checkTypeScript,
     compileTextMateGrammar,
     compileView,
-    copyTestData,
   ),
 );
+
+export const watch = parallel(watchEsbuild, watchCheckTypeScript, watchView);
 
 export {
   cleanOutput,
   compileTextMateGrammar,
-  watchTypeScript,
+  watchEsbuild,
+  watchCheckTypeScript,
   watchView,
-  compileTypeScript,
-  copyTestData,
-  watchTestData,
+  compileEsbuild,
+  copyWasmFiles,
+  checkTypeScript,
   injectAppInsightsKey,
   compileView,
 };

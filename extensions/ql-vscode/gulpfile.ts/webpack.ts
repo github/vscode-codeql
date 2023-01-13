@@ -1,4 +1,4 @@
-import * as webpack from "webpack";
+import webpack from "webpack";
 import { config } from "./webpack.config";
 
 export function compileView(cb: (err?: Error) => void) {

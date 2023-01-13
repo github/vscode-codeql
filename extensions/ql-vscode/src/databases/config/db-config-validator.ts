@@ -57,7 +57,7 @@ export class DbConfigValidator {
     }
 
     const duplicateRemoteDbLists = findDuplicateStrings(
-      dbConfig.databases.remote.repositoryLists.map((n) => n.name),
+      dbConfig.databases.variantAnalysis.repositoryLists.map((n) => n.name),
     );
     if (duplicateRemoteDbLists.length > 0) {
       errors.push(buildError(duplicateRemoteDbLists));
@@ -83,7 +83,7 @@ export class DbConfigValidator {
     }
 
     const duplicateRemoteDbs = findDuplicateStrings(
-      dbConfig.databases.remote.repositories,
+      dbConfig.databases.variantAnalysis.repositories,
     );
     if (duplicateRemoteDbs.length > 0) {
       errors.push(buildError(duplicateRemoteDbs));
@@ -111,7 +111,7 @@ export class DbConfigValidator {
       }
     }
 
-    for (const list of dbConfig.databases.remote.repositoryLists) {
+    for (const list of dbConfig.databases.variantAnalysis.repositoryLists) {
       const dups = findDuplicateStrings(list.repositories);
       if (dups.length > 0) {
         errors.push(buildError(list.name, dups));
@@ -124,7 +124,9 @@ export class DbConfigValidator {
   private validateOwners(dbConfig: DbConfig): DbConfigValidationError[] {
     const errors: DbConfigValidationError[] = [];
 
-    const dups = findDuplicateStrings(dbConfig.databases.remote.owners);
+    const dups = findDuplicateStrings(
+      dbConfig.databases.variantAnalysis.owners,
+    );
     if (dups.length > 0) {
       errors.push({
         kind: DbConfigValidationErrorKind.DuplicateNames,

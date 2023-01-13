@@ -397,7 +397,7 @@ export class QueryHistoryManager extends DisposableObject {
     private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly evalLogViewer: EvalLogViewer,
     private readonly queryStorageDir: string,
-    private readonly ctx: ExtensionContext,
+    ctx: ExtensionContext,
     private readonly queryHistoryConfigListener: QueryHistoryConfig,
     private readonly labelProvider: HistoryItemLabelProvider,
     private readonly doCompareCallback: (
@@ -633,7 +633,7 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   private getCredentials() {
-    return Credentials.initialize(this.ctx);
+    return Credentials.initialize();
   }
 
   /**

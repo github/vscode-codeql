@@ -6,7 +6,7 @@ import * as sarif from "sarif";
 import { SemVer } from "semver";
 import { Readable } from "stream";
 import { StringDecoder } from "string_decoder";
-import * as tk from "tree-kill";
+import tk from "tree-kill";
 import { promisify } from "util";
 import { CancellationToken, commands, Disposable, Uri } from "vscode";
 

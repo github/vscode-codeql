@@ -14,3 +14,4 @@ gulpfile.js/**
 tsconfig.json
 .prettierrc
 vsc-extension-quickstart.md
+node_modules/**

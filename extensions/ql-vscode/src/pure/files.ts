@@ -1,5 +1,5 @@
 import { pathExists, stat, readdir } from "fs-extra";
-import { join } from "path";
+import { join, resolve } from "path";
 
 /**
  * Recursively finds all .ql files in this set of Uris.
@@ -49,4 +49,21 @@ export async function getDirectoryNamesInsidePath(
     .map((dirent) => dirent.name);
 
   return dirNames;
+}
+
+export function pathsEqual(
+  path1: string,
+  path2: string,
+  platform: NodeJS.Platform,
+): boolean {
+  // On Windows, "C:/", "C:\", and "c:/" are all equivalent. We need
+  // to normalize the paths to ensure they all get resolved to the
+  // same format. On Windows, we also need to do the comparison
+  // case-insensitively.
+  path1 = resolve(path1);
+  path2 = resolve(path2);
+  if (platform === "win32") {
+    return path1.toLowerCase() === path2.toLowerCase();
+  }
+  return path1 === path2;
 }

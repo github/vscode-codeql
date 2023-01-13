@@ -1,0 +1,13 @@
+{
+  "databases": {
+    "variantAnalysis": {
+      "repositoryLists": [],
+      "owners": [],
+      "repositories": []
+    },
+    "local": {
+      "lists": [],
+      "databases": []
+    }
+  }
+}

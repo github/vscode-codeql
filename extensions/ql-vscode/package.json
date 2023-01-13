@@ -37,7 +37,7 @@
     "onLanguage:ql",
     "onLanguage:ql-summary",
     "onView:codeQLDatabases",
-    "onView:codeQLDatabasesExperimental",
+    "onView:codeQLVariantAnalysisRepositories",
     "onView:codeQLQueryHistory",
     "onView:codeQLAstViewer",
     "onView:codeQLEvalLogViewer",
@@ -59,9 +59,14 @@
     "onCommand:codeQL.chooseDatabaseGithub",
     "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQLDatabases.setCurrentDatabase",
-    "onCommand:codeQLDatabasesExperimental.openConfigFile",
-    "onCommand:codeQLDatabasesExperimental.addNewList",
-    "onCommand:codeQLDatabasesExperimental.setSelectedItem",
+    "onCommand:codeQLVariantAnalysisRepositories.openConfigFile",
+    "onCommand:codeQLVariantAnalysisRepositories.addNewDatabase",
+    "onCommand:codeQLVariantAnalysisRepositories.addNewList",
+    "onCommand:codeQLVariantAnalysisRepositories.setSelectedItem",
+    "onCommand:codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
+    "onCommand:codeQLVariantAnalysisRepositories.renameItemContextMenu",
+    "onCommand:codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
+    "onCommand:codeQLVariantAnalysisRepositories.removeItemContextMenu",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
@@ -358,19 +363,39 @@
         "title": "CodeQL: Copy Version Information"
       },
       {
-        "command": "codeQLDatabasesExperimental.openConfigFile",
+        "command": "codeQLVariantAnalysisRepositories.openConfigFile",
         "title": "Open Database Configuration File",
         "icon": "$(edit)"
       },
       {
-        "command": "codeQLDatabasesExperimental.addNewList",
+        "command": "codeQLVariantAnalysisRepositories.addNewDatabase",
+        "title": "Add new database",
+        "icon": "$(add)"
+      },
+      {
+        "command": "codeQLVariantAnalysisRepositories.addNewList",
         "title": "Add new list",
         "icon": "$(new-folder)"
       },
       {
-        "command": "codeQLDatabasesExperimental.setSelectedItem",
-        "title": "Select Item",
-        "icon": "$(circle-small-filled)"
+        "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
+        "title": "✓"
+      },
+      {
+        "command": "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
+        "title": "Select"
+      },
+      {
+        "command": "codeQLVariantAnalysisRepositories.renameItemContextMenu",
+        "title": "Rename"
+      },
+      {
+        "command": "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
+        "title": "Open on GitHub"
+      },
+      {
+        "command": "codeQLVariantAnalysisRepositories.removeItemContextMenu",
+        "title": "Remove"
       },
       {
         "command": "codeQLDatabases.chooseDatabaseFolder",
@@ -755,17 +780,38 @@
           "group": "navigation"
         },
         {
-          "command": "codeQLDatabasesExperimental.openConfigFile",
-          "when": "view == codeQLDatabasesExperimental",
+          "command": "codeQLVariantAnalysisRepositories.openConfigFile",
+          "when": "view == codeQLVariantAnalysisRepositories",
           "group": "navigation"
         },
         {
-          "command": "codeQLDatabasesExperimental.addNewList",
-          "when": "view == codeQLDatabasesExperimental && codeQLDatabasesExperimental.configError == false",
+          "command": "codeQLVariantAnalysisRepositories.addNewDatabase",
+          "when": "view == codeQLVariantAnalysisRepositories && codeQLVariantAnalysisRepositories.configError == false",
+          "group": "navigation"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.addNewList",
+          "when": "view == codeQLVariantAnalysisRepositories && codeQLVariantAnalysisRepositories.configError == false",
           "group": "navigation"
         }
       ],
       "view/item/context": [
+        {
+          "command": "codeQLVariantAnalysisRepositories.removeItemContextMenu",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeRemoved/"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.renameItemContextMenu",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeRenamed/"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeOpenedOnGitHub/"
+        },
         {
           "command": "codeQLDatabases.setCurrentDatabase",
           "group": "inline",
@@ -792,8 +838,8 @@
           "when": "view == codeQLDatabases"
         },
         {
-          "command": "codeQLDatabasesExperimental.setSelectedItem",
-          "when": "view == codeQLDatabasesExperimental && viewItem == selectableDbItem",
+          "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/",
           "group": "inline"
         },
         {
@@ -979,15 +1025,35 @@
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
-          "command": "codeQLDatabasesExperimental.openConfigFile",
+          "command": "codeQLVariantAnalysisRepositories.openConfigFile",
           "when": "false"
         },
         {
-          "command": "codeQLDatabasesExperimental.addNewList",
+          "command": "codeQLVariantAnalysisRepositories.addNewDatabase",
           "when": "false"
         },
         {
-          "command": "codeQLDatabasesExperimental.setSelectedItem",
+          "command": "codeQLVariantAnalysisRepositories.addNewList",
+          "when": "false"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
+          "when": "false"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.renameItemContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.removeItemContextMenu",
           "when": "false"
         },
         {
@@ -1226,9 +1292,9 @@
           "name": "Databases"
         },
         {
-          "id": "codeQLDatabasesExperimental",
-          "name": "Databases",
-          "when": "config.codeQL.canary && config.codeQL.newQueryRunExperience"
+          "id": "codeQLVariantAnalysisRepositories",
+          "name": "Variant Analysis Repositories",
+          "when": "config.codeQL.canary && config.codeQL.variantAnalysis.repositoriesPanel"
         },
         {
           "id": "codeQLQueryHistory",
@@ -1266,17 +1332,14 @@
   },
   "scripts": {
     "build": "gulp",
-    "watch": "npm-run-all -p watch:*",
-    "watch:extension": "tsc --watch",
-    "watch:webpack": "gulp watchView",
-    "watch:files": "gulp watchTestData",
+    "watch": "gulp watch",
     "test": "npm-run-all -p test:*",
-    "test:unit": "cross-env TZ=UTC LANG=en-US jest --projects test",
+    "test:unit": "cross-env TZ=UTC LANG=en-US jest --projects test/unit-tests",
     "test:view": "jest --projects src/view",
     "integration": "npm-run-all integration:*",
-    "integration:no-workspace": "jest --projects src/vscode-tests/no-workspace",
-    "integration:minimal-workspace": "jest --projects src/vscode-tests/minimal-workspace",
-    "cli-integration": "jest --projects src/vscode-tests/cli-integration",
+    "integration:no-workspace": "jest --projects test/vscode-tests/no-workspace",
+    "integration:minimal-workspace": "jest --projects test/vscode-tests/minimal-workspace",
+    "cli-integration": "jest --projects test/vscode-tests/cli-integration",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
@@ -1299,13 +1362,13 @@
     "chokidar": "^3.5.3",
     "classnames": "~2.2.6",
     "d3": "^7.6.1",
-    "d3-graphviz": "^2.6.1",
+    "d3-graphviz": "^5.0.2",
     "fs-extra": "^10.0.1",
     "glob-promise": "^4.2.2",
     "immutable": "^4.0.0",
     "js-yaml": "^4.1.0",
     "minimist": "~1.2.6",
-    "msw": "^0.47.4",
+    "msw": "^0.49.0",
     "nanoid": "^3.2.0",
     "node-fetch": "~2.6.7",
     "p-queue": "^6.0.0",
@@ -1387,6 +1450,7 @@
     "cross-env": "^7.0.3",
     "css-loader": "~3.1.0",
     "del": "^6.0.0",
+    "esbuild": "^0.15.15",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-github": "^4.4.1",
@@ -1398,6 +1462,7 @@
     "file-loader": "^6.2.0",
     "glob": "^7.1.4",
     "gulp": "^4.0.2",
+    "gulp-esbuild": "^0.10.5",
     "gulp-replace": "^1.1.3",
     "gulp-sourcemaps": "^3.0.0",
     "gulp-typescript": "^5.0.1",

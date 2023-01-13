@@ -1,7 +1,7 @@
 import { pathExists } from "fs-extra";
 import { EOL } from "os";
 import { extname } from "path";
-import { CancellationToken, ExtensionContext } from "vscode";
+import { CancellationToken } from "vscode";
 
 import { Credentials } from "../authentication";
 import { Logger } from "../common";
@@ -26,7 +26,6 @@ export class AnalysesResultsManager {
   private readonly analysesResults: Map<string, AnalysisResults[]>;
 
   constructor(
-    private readonly ctx: ExtensionContext,
     private readonly cliServer: CodeQLCliServer,
     readonly storagePath: string,
     private readonly logger: Logger,
@@ -43,7 +42,7 @@ export class AnalysesResultsManager {
       return;
     }
 
-    const credentials = await Credentials.initialize(this.ctx);
+    const credentials = await Credentials.initialize();
 
     void this.logger.log(
       `Downloading and processing results for ${analysisSummary.nwo}`,
@@ -77,7 +76,7 @@ export class AnalysesResultsManager {
       (x) => !this.isAnalysisInMemory(x),
     );
 
-    const credentials = await Credentials.initialize(this.ctx);
+    const credentials = await Credentials.initialize();
 
     void this.logger.log("Downloading and processing analyses results");
 

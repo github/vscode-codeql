@@ -7,10 +7,13 @@ import {
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
-  RemoteUserDefinedListDbItem,
+  VariantAnalysisUserDefinedListDbItem,
   RootLocalDbItem,
   RootRemoteDbItem,
 } from "../db-item";
+import { getDbItemActions } from "./db-tree-view-item-action";
+
+export const SELECTED_DB_ITEM_RESOURCE_URI = "codeql://databases?selected=true";
 
 /**
  * Represents an item in the database tree view. This item could be
@@ -30,16 +33,19 @@ export class DbTreeViewItem extends vscode.TreeItem {
   ) {
     super(label, collapsibleState);
 
-    if (dbItem && isSelectableDbItem(dbItem)) {
-      if (dbItem.selected) {
+    if (dbItem) {
+      this.contextValue = getContextValue(dbItem);
+      if (isSelectableDbItem(dbItem) && dbItem.selected) {
         // Define the resource id to drive the UI to render this item as selected.
-        this.resourceUri = vscode.Uri.parse("codeql://databases?selected=true");
-      } else {
-        // Define a context value to drive the UI to show an action to select the item.
-        this.contextValue = "selectableDbItem";
+        this.resourceUri = vscode.Uri.parse(SELECTED_DB_ITEM_RESOURCE_URI);
       }
     }
   }
+}
+
+function getContextValue(dbItem: DbItem): string | undefined {
+  const actions = getDbItemActions(dbItem);
+  return actions.length > 0 ? actions.join(",") : undefined;
 }
 
 export function createDbTreeViewItemError(
@@ -91,7 +97,7 @@ export function createDbTreeViewItemSystemDefinedList(
 }
 
 export function createDbTreeViewItemUserDefinedList(
-  dbItem: LocalListDbItem | RemoteUserDefinedListDbItem,
+  dbItem: LocalListDbItem | VariantAnalysisUserDefinedListDbItem,
   listName: string,
   children: DbTreeViewItem[],
 ): DbTreeViewItem {
