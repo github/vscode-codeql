@@ -157,7 +157,7 @@ describe("db config", () => {
         "listRenamed",
       );
 
-      expect(updatedConfig.databases.remote.repositoryLists).toEqual([
+      expect(updatedConfig.databases.variantAnalysis.repositoryLists).toEqual([
         {
           name: "listRenamed",
           repositories: [],
@@ -182,7 +182,7 @@ describe("db config", () => {
           },
         ],
         selected: {
-          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
           listName: "list1",
         },
       });
@@ -193,7 +193,7 @@ describe("db config", () => {
         "listRenamed",
       );
 
-      expect(updatedConfig.databases.remote.repositoryLists).toEqual([
+      expect(updatedConfig.databases.variantAnalysis.repositoryLists).toEqual([
         {
           name: "listRenamed",
           repositories: [],
@@ -205,7 +205,7 @@ describe("db config", () => {
       ]);
 
       expect(updatedConfig.selected).toEqual({
-        kind: SelectedDbItemKind.RemoteUserDefinedList,
+        kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
         listName: "listRenamed",
       });
     });
@@ -224,7 +224,7 @@ describe("db config", () => {
           },
         ],
         selected: {
-          kind: SelectedDbItemKind.RemoteRepository,
+          kind: SelectedDbItemKind.VariantAnalysisRepository,
           repositoryName: selectedRemoteRepo,
           listName: "list1",
         },
@@ -236,19 +236,19 @@ describe("db config", () => {
         "listRenamed",
       );
       const updatedRepositoryLists =
-        updatedConfig.databases.remote.repositoryLists;
+        updatedConfig.databases.variantAnalysis.repositoryLists;
 
       expect(updatedRepositoryLists.length).toEqual(2);
       expect(updatedRepositoryLists[0]).toEqual({
-        ...originalConfig.databases.remote.repositoryLists[0],
+        ...originalConfig.databases.variantAnalysis.repositoryLists[0],
         name: "listRenamed",
       });
       expect(updatedRepositoryLists[1]).toEqual(
-        originalConfig.databases.remote.repositoryLists[1],
+        originalConfig.databases.variantAnalysis.repositoryLists[1],
       );
 
       expect(updatedConfig.selected).toEqual({
-        kind: SelectedDbItemKind.RemoteRepository,
+        kind: SelectedDbItemKind.VariantAnalysisRepository,
         repositoryName: selectedRemoteRepo,
         listName: "listRenamed",
       });
@@ -471,7 +471,7 @@ describe("db config", () => {
 
       const updatedConfig = removeRemoteList(originalConfig, "list1");
 
-      expect(updatedConfig.databases.remote.repositoryLists).toEqual([
+      expect(updatedConfig.databases.variantAnalysis.repositoryLists).toEqual([
         {
           name: "list2",
           repositories: [],
@@ -492,14 +492,14 @@ describe("db config", () => {
           },
         ],
         selected: {
-          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
           listName: "list1",
         },
       });
 
       const updatedConfig = removeRemoteList(originalConfig, "list1");
 
-      expect(updatedConfig.databases.remote.repositoryLists).toEqual([
+      expect(updatedConfig.databases.variantAnalysis.repositoryLists).toEqual([
         {
           name: "list2",
           repositories: [],
@@ -523,7 +523,7 @@ describe("db config", () => {
           },
         ],
         selected: {
-          kind: SelectedDbItemKind.RemoteRepository,
+          kind: SelectedDbItemKind.VariantAnalysisRepository,
           repositoryName: selectedRemoteRepo,
           listName: "list1",
         },
@@ -531,11 +531,11 @@ describe("db config", () => {
 
       const updatedConfig = removeRemoteList(originalConfig, "list1");
       const updatedRepositoryLists =
-        updatedConfig.databases.remote.repositoryLists;
+        updatedConfig.databases.variantAnalysis.repositoryLists;
 
       expect(updatedRepositoryLists.length).toEqual(1);
       expect(updatedRepositoryLists[0]).toEqual(
-        originalConfig.databases.remote.repositoryLists[1],
+        originalConfig.databases.variantAnalysis.repositoryLists[1],
       );
       expect(updatedConfig.selected).toBeUndefined();
     });
@@ -661,8 +661,8 @@ describe("db config", () => {
 
       const updatedConfig = removeRemoteRepo(originalConfig, repo1);
 
-      const updatedRemoteDbs = updatedConfig.databases.remote;
-      const originalRemoteDbs = originalConfig.databases.remote;
+      const updatedRemoteDbs = updatedConfig.databases.variantAnalysis;
+      const originalRemoteDbs = originalConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.repositories.length).toEqual(1);
       expect(updatedRemoteDbs.repositories[0]).toEqual(repo2);
       expect(updatedRemoteDbs.repositoryLists).toEqual(
@@ -689,8 +689,8 @@ describe("db config", () => {
       });
 
       const updatedConfig = removeRemoteRepo(originalConfig, repo1, list1.name);
-      const updatedRemoteDbs = updatedConfig.databases.remote;
-      const originalRemoteDbs = originalConfig.databases.remote;
+      const updatedRemoteDbs = updatedConfig.databases.variantAnalysis;
+      const originalRemoteDbs = originalConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.repositories).toEqual(
         originalRemoteDbs.repositories,
       );
@@ -719,15 +719,15 @@ describe("db config", () => {
         ],
         remoteRepos: [repo1, repo2],
         selected: {
-          kind: SelectedDbItemKind.RemoteRepository,
+          kind: SelectedDbItemKind.VariantAnalysisRepository,
           repositoryName: repo1,
         },
       });
 
       const updatedConfig = removeRemoteRepo(originalConfig, repo1);
 
-      const updatedRemoteDbs = updatedConfig.databases.remote;
-      const originalRemoteDbs = originalConfig.databases.remote;
+      const updatedRemoteDbs = updatedConfig.databases.variantAnalysis;
+      const originalRemoteDbs = originalConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.repositories.length).toEqual(1);
       expect(updatedRemoteDbs.repositories[0]).toEqual(repo2);
       expect(updatedRemoteDbs.repositoryLists).toEqual(
@@ -748,7 +748,7 @@ describe("db config", () => {
 
       const updatedConfig = removeRemoteOwner(originalConfig, owner1);
 
-      const updatedRemoteDbs = updatedConfig.databases.remote;
+      const updatedRemoteDbs = updatedConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.owners).toEqual([owner2]);
     });
 
@@ -759,14 +759,14 @@ describe("db config", () => {
       const originalConfig = createDbConfig({
         remoteOwners: [owner1, owner2],
         selected: {
-          kind: SelectedDbItemKind.RemoteOwner,
+          kind: SelectedDbItemKind.VariantAnalysisOwner,
           ownerName: owner1,
         },
       });
 
       const updatedConfig = removeRemoteOwner(originalConfig, owner1);
 
-      const updatedRemoteDbs = updatedConfig.databases.remote;
+      const updatedRemoteDbs = updatedConfig.databases.variantAnalysis;
       expect(updatedRemoteDbs.owners).toEqual([owner2]);
       expect(updatedConfig.selected).toBeUndefined();
     });

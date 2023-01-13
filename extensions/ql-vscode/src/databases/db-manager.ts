@@ -8,7 +8,7 @@ import {
   DbListKind,
   LocalDatabaseDbItem,
   LocalListDbItem,
-  RemoteUserDefinedListDbItem,
+  VariantAnalysisUserDefinedListDbItem,
 } from "./db-item";
 import {
   updateExpandedItem,
@@ -123,12 +123,14 @@ export class DbManager {
   }
 
   public async renameList(
-    currentDbItem: LocalListDbItem | RemoteUserDefinedListDbItem,
+    currentDbItem: LocalListDbItem | VariantAnalysisUserDefinedListDbItem,
     newName: string,
   ): Promise<void> {
     if (currentDbItem.kind === DbItemKind.LocalList) {
       await this.dbConfigStore.renameLocalList(currentDbItem, newName);
-    } else if (currentDbItem.kind === DbItemKind.RemoteUserDefinedList) {
+    } else if (
+      currentDbItem.kind === DbItemKind.VariantAnalysisUserDefinedList
+    ) {
       await this.dbConfigStore.renameRemoteList(currentDbItem, newName);
     }
 

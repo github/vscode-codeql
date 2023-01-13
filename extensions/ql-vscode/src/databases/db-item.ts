@@ -6,7 +6,7 @@ export enum DbItemKind {
   LocalDatabase = "LocalDatabase",
   RootRemote = "RootRemote",
   RemoteSystemDefinedList = "RemoteSystemDefinedList",
-  RemoteUserDefinedList = "RemoteUserDefinedList",
+  VariantAnalysisUserDefinedList = "VariantAnalysisUserDefinedList",
   RemoteOwner = "RemoteOwner",
   RemoteRepo = "RemoteRepo",
 }
@@ -14,7 +14,7 @@ export enum DbItemKind {
 export const remoteDbKinds = [
   DbItemKind.RootRemote,
   DbItemKind.RemoteSystemDefinedList,
-  DbItemKind.RemoteUserDefinedList,
+  DbItemKind.VariantAnalysisUserDefinedList,
   DbItemKind.RemoteOwner,
   DbItemKind.RemoteRepo,
 ];
@@ -70,7 +70,7 @@ export type DbItem =
 
 export type RemoteDbItem =
   | RemoteSystemDefinedListDbItem
-  | RemoteUserDefinedListDbItem
+  | VariantAnalysisUserDefinedListDbItem
   | RemoteOwnerDbItem
   | RemoteRepoDbItem;
 
@@ -82,8 +82,8 @@ export interface RemoteSystemDefinedListDbItem {
   listDescription: string;
 }
 
-export interface RemoteUserDefinedListDbItem {
-  kind: DbItemKind.RemoteUserDefinedList;
+export interface VariantAnalysisUserDefinedListDbItem {
+  kind: DbItemKind.VariantAnalysisUserDefinedList;
   expanded: boolean;
   selected: boolean;
   listName: string;
@@ -109,10 +109,10 @@ export function isRemoteSystemDefinedListDbItem(
   return dbItem.kind === DbItemKind.RemoteSystemDefinedList;
 }
 
-export function isRemoteUserDefinedListDbItem(
+export function isVariantAnalysisUserDefinedListDbItem(
   dbItem: DbItem,
-): dbItem is RemoteUserDefinedListDbItem {
-  return dbItem.kind === DbItemKind.RemoteUserDefinedList;
+): dbItem is VariantAnalysisUserDefinedListDbItem {
+  return dbItem.kind === DbItemKind.VariantAnalysisUserDefinedList;
 }
 
 export function isRemoteOwnerDbItem(
@@ -145,7 +145,7 @@ const SelectableDbItemKinds = [
   DbItemKind.LocalList,
   DbItemKind.LocalDatabase,
   DbItemKind.RemoteSystemDefinedList,
-  DbItemKind.RemoteUserDefinedList,
+  DbItemKind.VariantAnalysisUserDefinedList,
   DbItemKind.RemoteOwner,
   DbItemKind.RemoteRepo,
 ];
@@ -165,7 +165,7 @@ export function flattenDbItems(dbItems: DbItem[]): DbItem[] {
       case DbItemKind.RootRemote:
         allItems.push(...flattenDbItems(dbItem.children));
         break;
-      case DbItemKind.RemoteUserDefinedList:
+      case DbItemKind.VariantAnalysisUserDefinedList:
         allItems.push(...dbItem.repos);
         break;
       case DbItemKind.LocalDatabase:

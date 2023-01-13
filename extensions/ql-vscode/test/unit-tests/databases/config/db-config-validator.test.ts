@@ -16,7 +16,7 @@ describe("db config validation", () => {
     // like to make sure validation errors are highlighted.
     const dbConfig = {
       databases: {
-        remote: {
+        variantAnalysis: {
           repositoryLists: [
             {
               name: "repoList1",
@@ -39,11 +39,12 @@ describe("db config validation", () => {
     });
     expect(validationOutput[1]).toEqual({
       kind: DbConfigValidationErrorKind.InvalidConfig,
-      message: "/databases/remote must have required property 'owners'",
+      message:
+        "/databases/variantAnalysis must have required property 'owners'",
     });
     expect(validationOutput[2]).toEqual({
       kind: DbConfigValidationErrorKind.InvalidConfig,
-      message: "/databases/remote must NOT have additional properties",
+      message: "/databases/variantAnalysis must NOT have additional properties",
     });
   });
 

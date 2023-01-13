@@ -26,7 +26,7 @@ import { ValueResult } from "../../common/value-result";
 import {
   LocalDatabaseDbItem,
   LocalListDbItem,
-  RemoteUserDefinedListDbItem,
+  VariantAnalysisUserDefinedListDbItem,
   DbItem,
   DbItemKind,
 } from "../db-item";
@@ -111,7 +111,7 @@ export class DbConfigStore extends DisposableObject {
       case DbItemKind.LocalList:
         config = removeLocalList(this.config, dbItem.listName);
         break;
-      case DbItemKind.RemoteUserDefinedList:
+      case DbItemKind.VariantAnalysisUserDefinedList:
         config = removeRemoteList(this.config, dbItem.listName);
         break;
       case DbItemKind.LocalDatabase:
@@ -159,7 +159,7 @@ export class DbConfigStore extends DisposableObject {
 
     const config = cloneDbConfig(this.config);
     if (parentList) {
-      const parent = config.databases.remote.repositoryLists.find(
+      const parent = config.databases.variantAnalysis.repositoryLists.find(
         (list) => list.name === parentList,
       );
       if (!parent) {
@@ -168,7 +168,7 @@ export class DbConfigStore extends DisposableObject {
         parent.repositories.push(repoNwo);
       }
     } else {
-      config.databases.remote.repositories.push(repoNwo);
+      config.databases.variantAnalysis.repositories.push(repoNwo);
     }
     await this.writeConfig(config);
   }
@@ -187,7 +187,7 @@ export class DbConfigStore extends DisposableObject {
     }
 
     const config = cloneDbConfig(this.config);
-    config.databases.remote.owners.push(owner);
+    config.databases.variantAnalysis.owners.push(owner);
 
     await this.writeConfig(config);
   }
@@ -216,7 +216,7 @@ export class DbConfigStore extends DisposableObject {
     this.validateRemoteListName(listName);
 
     const config = cloneDbConfig(this.config);
-    config.databases.remote.repositoryLists.push({
+    config.databases.variantAnalysis.repositoryLists.push({
       name: listName,
       repositories: [],
     });
@@ -244,7 +244,7 @@ export class DbConfigStore extends DisposableObject {
   }
 
   public async renameRemoteList(
-    currentDbItem: RemoteUserDefinedListDbItem,
+    currentDbItem: VariantAnalysisUserDefinedListDbItem,
     newName: string,
   ) {
     if (!this.config) {
@@ -288,7 +288,7 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Cannot check remote list existence if config is not loaded");
     }
 
-    return this.config.databases.remote.repositoryLists.some(
+    return this.config.databases.variantAnalysis.repositoryLists.some(
       (l) => l.name === listName,
     );
   }
@@ -326,12 +326,12 @@ export class DbConfigStore extends DisposableObject {
     }
 
     if (listName) {
-      return this.config.databases.remote.repositoryLists.some(
+      return this.config.databases.variantAnalysis.repositoryLists.some(
         (l) => l.name === listName && l.repositories.includes(dbName),
       );
     }
 
-    return this.config.databases.remote.repositories.includes(dbName);
+    return this.config.databases.variantAnalysis.repositories.includes(dbName);
   }
 
   public doesRemoteOwnerExist(owner: string): boolean {
@@ -341,7 +341,7 @@ export class DbConfigStore extends DisposableObject {
       );
     }
 
-    return this.config.databases.remote.owners.includes(owner);
+    return this.config.databases.variantAnalysis.owners.includes(owner);
   }
 
   private async writeConfig(config: DbConfig): Promise<void> {
@@ -451,7 +451,7 @@ export class DbConfigStore extends DisposableObject {
   private createEmptyConfig(): DbConfig {
     return {
       databases: {
-        remote: {
+        variantAnalysis: {
           repositoryLists: [],
           owners: [],
           repositories: [],

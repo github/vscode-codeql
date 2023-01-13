@@ -11,12 +11,12 @@ import {
   isLocalListDbItem,
   isRemoteOwnerDbItem,
   isRemoteRepoDbItem,
-  isRemoteUserDefinedListDbItem,
+  isVariantAnalysisUserDefinedListDbItem,
   LocalDatabaseDbItem,
   LocalListDbItem,
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
-  RemoteUserDefinedListDbItem,
+  VariantAnalysisUserDefinedListDbItem,
 } from "../../../src/databases/db-item";
 import { DbManager } from "../../../src/databases/db-manager";
 import {
@@ -78,7 +78,8 @@ describe("db manager", () => {
 
       await saveDbConfig(dbConfig);
 
-      const remoteListDbItems = getRemoteUserDefinedListDbItems("my-list-1");
+      const remoteListDbItems =
+        getVariantAnalysisUserDefinedListDbItems("my-list-1");
       expect(remoteListDbItems.length).toEqual(1);
 
       await dbManager.renameList(remoteListDbItems[0], "my-list-2");
@@ -86,7 +87,8 @@ describe("db manager", () => {
       const dbConfigFileContents = await readDbConfigDirectly();
 
       // Check that the remote list has been renamed
-      const remoteLists = dbConfigFileContents.databases.remote.repositoryLists;
+      const remoteLists =
+        dbConfigFileContents.databases.variantAnalysis.repositoryLists;
       expect(remoteLists.length).toBe(1);
       expect(remoteLists[0]).toEqual({
         name: "my-list-2",
@@ -126,7 +128,8 @@ describe("db manager", () => {
       });
 
       // Check that the remote list has not been renamed
-      const remoteLists = dbConfigFileContents.databases.remote.repositoryLists;
+      const remoteLists =
+        dbConfigFileContents.databases.variantAnalysis.repositoryLists;
       expect(remoteLists.length).toBe(1);
       expect(remoteLists[0]).toEqual({
         name: "my-list-1",
@@ -211,7 +214,7 @@ describe("db manager", () => {
       localLists: [localList],
       localDbs: [localDb],
       selected: {
-        kind: SelectedDbItemKind.RemoteUserDefinedList,
+        kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
         listName: remoteList.name,
       },
     });
@@ -219,7 +222,8 @@ describe("db manager", () => {
     it("should remove remote user-defined list", async () => {
       await saveDbConfig(dbConfig);
 
-      const remoteListDbItems = getRemoteUserDefinedListDbItems("my-list-1");
+      const remoteListDbItems =
+        getVariantAnalysisUserDefinedListDbItems("my-list-1");
       expect(remoteListDbItems.length).toEqual(1);
 
       await dbManager.removeDbItem(remoteListDbItems[0]);
@@ -228,7 +232,7 @@ describe("db manager", () => {
 
       expect(dbConfigFileContents).toEqual({
         databases: {
-          remote: {
+          variantAnalysis: {
             repositoryLists: [],
             repositories: [remoteRepo1, remoteRepo2],
             owners: [remoteOwner],
@@ -253,7 +257,7 @@ describe("db manager", () => {
 
       expect(dbConfigFileContents).toEqual({
         databases: {
-          remote: {
+          variantAnalysis: {
             repositoryLists: [remoteList],
             repositories: [remoteRepo2],
             owners: [remoteOwner],
@@ -264,7 +268,7 @@ describe("db manager", () => {
           },
         },
         selected: {
-          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
           listName: remoteList.name,
         },
       });
@@ -282,7 +286,7 @@ describe("db manager", () => {
 
       expect(dbConfigFileContents).toEqual({
         databases: {
-          remote: {
+          variantAnalysis: {
             repositoryLists: [remoteList],
             repositories: [remoteRepo1, remoteRepo2],
             owners: [],
@@ -293,7 +297,7 @@ describe("db manager", () => {
           },
         },
         selected: {
-          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
           listName: remoteList.name,
         },
       });
@@ -311,7 +315,7 @@ describe("db manager", () => {
 
       expect(dbConfigFileContents).toEqual({
         databases: {
-          remote: {
+          variantAnalysis: {
             repositoryLists: [remoteList],
             repositories: [remoteRepo1, remoteRepo2],
             owners: [remoteOwner],
@@ -322,7 +326,7 @@ describe("db manager", () => {
           },
         },
         selected: {
-          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
           listName: remoteList.name,
         },
       });
@@ -340,7 +344,7 @@ describe("db manager", () => {
 
       expect(dbConfigFileContents).toEqual({
         databases: {
-          remote: {
+          variantAnalysis: {
             repositoryLists: [remoteList],
             repositories: [remoteRepo1, remoteRepo2],
             owners: [remoteOwner],
@@ -351,7 +355,7 @@ describe("db manager", () => {
           },
         },
         selected: {
-          kind: SelectedDbItemKind.RemoteUserDefinedList,
+          kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
           listName: remoteList.name,
         },
       });
@@ -423,13 +427,13 @@ describe("db manager", () => {
     return ownerDbItems;
   }
 
-  function getRemoteUserDefinedListDbItems(
+  function getVariantAnalysisUserDefinedListDbItems(
     listName: string,
-  ): RemoteUserDefinedListDbItem[] {
+  ): VariantAnalysisUserDefinedListDbItem[] {
     const dbItemsResult = dbManager.getDbItems();
     const dbItems = flattenDbItems(dbItemsResult.value);
     const listDbItems = dbItems
-      .filter(isRemoteUserDefinedListDbItem)
+      .filter(isVariantAnalysisUserDefinedListDbItem)
       .filter((i) => i.listName === listName);
 
     return listDbItems;

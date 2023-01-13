@@ -46,7 +46,7 @@ export async function getRepositorySelection(
           );
         case DbItemKind.RemoteSystemDefinedList:
           return { repositoryLists: [selectedDbItem.listName] };
-        case DbItemKind.RemoteUserDefinedList:
+        case DbItemKind.VariantAnalysisUserDefinedList:
           if (selectedDbItem.repos.length === 0) {
             throw new UserCancellationException(
               "The selected repository list is empty. Please add repositories to it before running a variant analysis.",

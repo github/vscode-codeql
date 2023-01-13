@@ -6,7 +6,7 @@ export interface DbConfig {
 }
 
 export interface DbConfigDatabases {
-  remote: RemoteDbConfig;
+  variantAnalysis: RemoteDbConfig;
   local: LocalDbConfig;
 }
 
@@ -14,17 +14,17 @@ export type SelectedDbItem =
   | SelectedLocalUserDefinedList
   | SelectedLocalDatabase
   | SelectedRemoteSystemDefinedList
-  | SelectedRemoteUserDefinedList
+  | SelectedVariantAnalysisUserDefinedList
   | SelectedRemoteOwner
   | SelectedRemoteRepository;
 
 export enum SelectedDbItemKind {
   LocalUserDefinedList = "localUserDefinedList",
   LocalDatabase = "localDatabase",
-  RemoteSystemDefinedList = "remoteSystemDefinedList",
-  RemoteUserDefinedList = "remoteUserDefinedList",
-  RemoteOwner = "remoteOwner",
-  RemoteRepository = "remoteRepository",
+  VariantAnalysisSystemDefinedList = "variantAnalysisSystemDefinedList",
+  VariantAnalysisUserDefinedList = "variantAnalysisUserDefinedList",
+  VariantAnalysisOwner = "variantAnalysisOwner",
+  VariantAnalysisRepository = "variantAnalysisRepository",
 }
 
 export interface SelectedLocalUserDefinedList {
@@ -39,22 +39,22 @@ export interface SelectedLocalDatabase {
 }
 
 export interface SelectedRemoteSystemDefinedList {
-  kind: SelectedDbItemKind.RemoteSystemDefinedList;
+  kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList;
   listName: string;
 }
 
-export interface SelectedRemoteUserDefinedList {
-  kind: SelectedDbItemKind.RemoteUserDefinedList;
+export interface SelectedVariantAnalysisUserDefinedList {
+  kind: SelectedDbItemKind.VariantAnalysisUserDefinedList;
   listName: string;
 }
 
 export interface SelectedRemoteOwner {
-  kind: SelectedDbItemKind.RemoteOwner;
+  kind: SelectedDbItemKind.VariantAnalysisOwner;
   ownerName: string;
 }
 
 export interface SelectedRemoteRepository {
-  kind: SelectedDbItemKind.RemoteRepository;
+  kind: SelectedDbItemKind.VariantAnalysisRepository;
   repositoryName: string;
   listName?: string;
 }
@@ -90,15 +90,15 @@ export interface LocalDatabase {
 export function cloneDbConfig(config: DbConfig): DbConfig {
   return {
     databases: {
-      remote: {
-        repositoryLists: config.databases.remote.repositoryLists.map(
+      variantAnalysis: {
+        repositoryLists: config.databases.variantAnalysis.repositoryLists.map(
           (list) => ({
             name: list.name,
             repositories: [...list.repositories],
           }),
         ),
-        owners: [...config.databases.remote.owners],
-        repositories: [...config.databases.remote.repositories],
+        owners: [...config.databases.variantAnalysis.owners],
+        repositories: [...config.databases.variantAnalysis.repositories],
       },
       local: {
         lists: config.databases.local.lists.map((list) => ({
@@ -147,8 +147,9 @@ export function renameRemoteList(
   list.name = newListName;
 
   if (
-    config.selected?.kind === SelectedDbItemKind.RemoteUserDefinedList ||
-    config.selected?.kind === SelectedDbItemKind.RemoteRepository
+    config.selected?.kind ===
+      SelectedDbItemKind.VariantAnalysisUserDefinedList ||
+    config.selected?.kind === SelectedDbItemKind.VariantAnalysisRepository
   ) {
     if (config.selected.listName === currentListName) {
       config.selected.listName = newListName;
@@ -225,17 +226,19 @@ export function removeRemoteList(
 ): DbConfig {
   const config = cloneDbConfig(originalConfig);
 
-  config.databases.remote.repositoryLists =
-    config.databases.remote.repositoryLists.filter(
+  config.databases.variantAnalysis.repositoryLists =
+    config.databases.variantAnalysis.repositoryLists.filter(
       (list) => list.name !== listName,
     );
 
-  if (config.selected?.kind === SelectedDbItemKind.RemoteUserDefinedList) {
+  if (
+    config.selected?.kind === SelectedDbItemKind.VariantAnalysisUserDefinedList
+  ) {
     config.selected = undefined;
   }
 
   if (
-    config.selected?.kind === SelectedDbItemKind.RemoteRepository &&
+    config.selected?.kind === SelectedDbItemKind.VariantAnalysisRepository &&
     config.selected?.listName === listName
   ) {
     config.selected = undefined;
@@ -286,12 +289,14 @@ export function removeRemoteRepo(
       (r) => r !== repoFullName,
     );
   } else {
-    config.databases.remote.repositories =
-      config.databases.remote.repositories.filter((r) => r !== repoFullName);
+    config.databases.variantAnalysis.repositories =
+      config.databases.variantAnalysis.repositories.filter(
+        (r) => r !== repoFullName,
+      );
   }
 
   if (
-    config.selected?.kind === SelectedDbItemKind.RemoteRepository &&
+    config.selected?.kind === SelectedDbItemKind.VariantAnalysisRepository &&
     config.selected?.repositoryName === repoFullName &&
     config.selected?.listName === parentListName
   ) {
@@ -307,12 +312,11 @@ export function removeRemoteOwner(
 ): DbConfig {
   const config = cloneDbConfig(originalConfig);
 
-  config.databases.remote.owners = config.databases.remote.owners.filter(
-    (o) => o !== ownerName,
-  );
+  config.databases.variantAnalysis.owners =
+    config.databases.variantAnalysis.owners.filter((o) => o !== ownerName);
 
   if (
-    config.selected?.kind === SelectedDbItemKind.RemoteOwner &&
+    config.selected?.kind === SelectedDbItemKind.VariantAnalysisOwner &&
     config.selected?.ownerName === ownerName
   ) {
     config.selected = undefined;
@@ -334,24 +338,24 @@ function cloneDbConfigSelectedItem(selected: SelectedDbItem): SelectedDbItem {
         databaseName: selected.databaseName,
         listName: selected.listName,
       };
-    case SelectedDbItemKind.RemoteSystemDefinedList:
+    case SelectedDbItemKind.VariantAnalysisSystemDefinedList:
       return {
-        kind: SelectedDbItemKind.RemoteSystemDefinedList,
+        kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList,
         listName: selected.listName,
       };
-    case SelectedDbItemKind.RemoteUserDefinedList:
+    case SelectedDbItemKind.VariantAnalysisUserDefinedList:
       return {
-        kind: SelectedDbItemKind.RemoteUserDefinedList,
+        kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
         listName: selected.listName,
       };
-    case SelectedDbItemKind.RemoteOwner:
+    case SelectedDbItemKind.VariantAnalysisOwner:
       return {
-        kind: SelectedDbItemKind.RemoteOwner,
+        kind: SelectedDbItemKind.VariantAnalysisOwner,
         ownerName: selected.ownerName,
       };
-    case SelectedDbItemKind.RemoteRepository:
+    case SelectedDbItemKind.VariantAnalysisRepository:
       return {
-        kind: SelectedDbItemKind.RemoteRepository,
+        kind: SelectedDbItemKind.VariantAnalysisRepository,
         repositoryName: selected.repositoryName,
         listName: selected.listName,
       };
@@ -372,7 +376,7 @@ function getRemoteList(
   config: DbConfig,
   listName: string,
 ): RemoteRepositoryList {
-  const list = config.databases.remote.repositoryLists.find(
+  const list = config.databases.variantAnalysis.repositoryLists.find(
     (l) => l.name === listName,
   );
 
