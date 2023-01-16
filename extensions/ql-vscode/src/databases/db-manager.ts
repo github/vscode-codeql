@@ -25,8 +25,8 @@ import { DbConfigValidationError } from "./db-validation-errors";
 
 export class DbManager {
   public readonly onDbItemsChanged: AppEvent<void>;
+  public static readonly DB_EXPANDED_STATE_KEY = "db_expanded";
   private readonly onDbItemsChangesEventEmitter: AppEventEmitter<void>;
-  private static readonly DB_EXPANDED_STATE_KEY = "db_expanded";
 
   constructor(
     private readonly app: App,
