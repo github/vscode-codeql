@@ -6,13 +6,13 @@ import { Memento } from "./memento";
 export interface App {
   createEventEmitter<T>(): AppEventEmitter<T>;
   executeCommand(command: string, ...args: any): Thenable<void>;
-  mode: AppMode;
-  logger: Logger;
-  subscriptions: Disposable[];
-  extensionPath: string;
-  globalStoragePath: string;
-  workspaceStoragePath?: string;
-  workspaceState: Memento;
+  readonly mode: AppMode;
+  readonly logger: Logger;
+  readonly subscriptions: Disposable[];
+  readonly extensionPath: string;
+  readonly globalStoragePath: string;
+  readonly workspaceStoragePath?: string;
+  readonly workspaceState: Memento;
 }
 
 export enum AppMode {
