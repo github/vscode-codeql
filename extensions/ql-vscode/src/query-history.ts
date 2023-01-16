@@ -971,10 +971,6 @@ export class QueryHistoryManager extends DisposableObject {
   private async showToastWithWorkflowRunLink(
     item: VariantAnalysisHistoryItem,
   ): Promise<void> {
-    void extLogger.log(
-      "The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.",
-    );
-
     const workflowRunUrl = getActionsWorkflowRunUrl(item);
     const message = `Remote query has been removed from history. However, the variant analysis is still running on GitHub Actions. To cancel it, you must go to the [workflow run](${workflowRunUrl}) in your browser.`;
 
