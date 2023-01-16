@@ -64,6 +64,9 @@ export function VariantAnalysis({
   useTelemetryOnChange(
     selectedRepositoryIds,
     "variant-analysis-selected-repository-ids",
+    {
+      debounceTimeoutMillis: 1000,
+    },
   );
   const [filterSortState, setFilterSortState] = useState(
     defaultFilterSortState,
