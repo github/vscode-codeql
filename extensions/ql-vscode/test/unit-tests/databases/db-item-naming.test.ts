@@ -5,7 +5,7 @@ import {
   createRemoteOwnerDbItem,
   createRemoteRepoDbItem,
   createRemoteSystemDefinedListDbItem,
-  createRemoteUserDefinedListDbItem,
+  createVariantAnalysisUserDefinedListDbItem,
   createRootLocalDbItem,
   createRootRemoteDbItem,
 } from "../../factories/db-item-factories";
@@ -37,7 +37,7 @@ describe("db item naming", () => {
     });
 
     it("return list name for remote user defined list db item", () => {
-      const dbItem = createRemoteUserDefinedListDbItem();
+      const dbItem = createVariantAnalysisUserDefinedListDbItem();
 
       const name = getDbItemName(dbItem);
 

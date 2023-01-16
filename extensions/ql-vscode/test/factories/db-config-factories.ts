@@ -24,7 +24,7 @@ export function createDbConfig({
 } = {}): DbConfig {
   return {
     databases: {
-      remote: {
+      variantAnalysis: {
         repositoryLists: remoteLists,
         owners: remoteOwners,
         repositories: remoteRepos,

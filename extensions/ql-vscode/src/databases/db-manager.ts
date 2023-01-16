@@ -8,7 +8,7 @@ import {
   DbListKind,
   LocalDatabaseDbItem,
   LocalListDbItem,
-  RemoteUserDefinedListDbItem,
+  VariantAnalysisUserDefinedListDbItem,
 } from "./db-item";
 import {
   updateExpandedItem,
@@ -78,24 +78,21 @@ export class DbManager {
   public async removeDbItem(dbItem: DbItem): Promise<void> {
     await this.dbConfigStore.removeDbItem(dbItem);
 
-    // Updating the expanded items takes care of cleaning up
-    // any non-existent items.
-    await this.updateExpandedItems(this.getExpandedItems());
+    await this.removeDbItemFromExpandedState(dbItem);
   }
 
-  public async updateDbItemExpandedState(
-    dbItem: DbItem,
-    itemExpanded: boolean,
-  ): Promise<void> {
-    const currentExpandedItems = this.getExpandedItems();
+  public async removeDbItemFromExpandedState(dbItem: DbItem): Promise<void> {
+    // When collapsing or expanding a list we clean up the expanded state and remove
+    // all items that don't exist anymore.
 
-    const newExpandedItems = updateExpandedItem(
-      currentExpandedItems,
-      dbItem,
-      itemExpanded,
-    );
+    await this.updateDbItemExpandedState(dbItem, false);
+  }
 
-    await this.updateExpandedItems(newExpandedItems);
+  public async addDbItemToExpandedState(dbItem: DbItem): Promise<void> {
+    // When collapsing or expanding a list we clean up the expanded state and remove
+    // all items that don't exist anymore.
+
+    await this.updateDbItemExpandedState(dbItem, true);
   }
 
   public async addNewRemoteRepo(
@@ -126,12 +123,14 @@ export class DbManager {
   }
 
   public async renameList(
-    currentDbItem: LocalListDbItem | RemoteUserDefinedListDbItem,
+    currentDbItem: LocalListDbItem | VariantAnalysisUserDefinedListDbItem,
     newName: string,
   ): Promise<void> {
     if (currentDbItem.kind === DbItemKind.LocalList) {
       await this.dbConfigStore.renameLocalList(currentDbItem, newName);
-    } else if (currentDbItem.kind === DbItemKind.RemoteUserDefinedList) {
+    } else if (
+      currentDbItem.kind === DbItemKind.VariantAnalysisUserDefinedList
+    ) {
       await this.dbConfigStore.renameRemoteList(currentDbItem, newName);
     }
 
@@ -142,7 +141,7 @@ export class DbManager {
       newDbItem,
     );
 
-    await this.updateExpandedItems(newExpandedItems);
+    await this.setExpandedItems(newExpandedItems);
   }
 
   public async renameLocalDb(
@@ -213,5 +212,20 @@ export class DbManager {
     }
 
     await this.setExpandedItems(itemsToStore);
+  }
+
+  private async updateDbItemExpandedState(
+    dbItem: DbItem,
+    itemExpanded: boolean,
+  ): Promise<void> {
+    const currentExpandedItems = this.getExpandedItems();
+
+    const newExpandedItems = updateExpandedItem(
+      currentExpandedItems,
+      dbItem,
+      itemExpanded,
+    );
+
+    await this.updateExpandedItems(newExpandedItems);
   }
 }

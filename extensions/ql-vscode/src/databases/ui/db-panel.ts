@@ -23,7 +23,7 @@ import {
   LocalDatabaseDbItem,
   LocalListDbItem,
   remoteDbKinds,
-  RemoteUserDefinedListDbItem,
+  VariantAnalysisUserDefinedListDbItem,
 } from "../db-item";
 import { getDbItemName } from "../db-item-naming";
 import { DbManager } from "../db-manager";
@@ -48,7 +48,7 @@ export class DbPanel extends DisposableObject {
 
     this.dataProvider = new DbTreeDataProvider(dbManager);
 
-    this.treeView = window.createTreeView("codeQLDatabasesExperimental", {
+    this.treeView = window.createTreeView("codeQLVariantAnalysisRepositories", {
       treeDataProvider: this.dataProvider,
       canSelectMany: false,
     });
@@ -69,47 +69,47 @@ export class DbPanel extends DisposableObject {
 
   public async initialize(): Promise<void> {
     this.push(
-      commandRunner("codeQLDatabasesExperimental.openConfigFile", () =>
+      commandRunner("codeQLVariantAnalysisRepositories.openConfigFile", () =>
         this.openConfigFile(),
       ),
     );
     this.push(
-      commandRunner("codeQLDatabasesExperimental.addNewDatabase", () =>
+      commandRunner("codeQLVariantAnalysisRepositories.addNewDatabase", () =>
         this.addNewRemoteDatabase(),
       ),
     );
     this.push(
-      commandRunner("codeQLDatabasesExperimental.addNewList", () =>
+      commandRunner("codeQLVariantAnalysisRepositories.addNewList", () =>
         this.addNewList(),
       ),
     );
     this.push(
       commandRunner(
-        "codeQLDatabasesExperimental.setSelectedItem",
+        "codeQLVariantAnalysisRepositories.setSelectedItem",
         (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
       ),
     );
     this.push(
       commandRunner(
-        "codeQLDatabasesExperimental.setSelectedItemContextMenu",
+        "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
         (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
       ),
     );
     this.push(
       commandRunner(
-        "codeQLDatabasesExperimental.openOnGitHubContextMenu",
+        "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
         (treeViewItem: DbTreeViewItem) => this.openOnGitHub(treeViewItem),
       ),
     );
     this.push(
       commandRunner(
-        "codeQLDatabasesExperimental.renameItemContextMenu",
+        "codeQLVariantAnalysisRepositories.renameItemContextMenu",
         (treeViewItem: DbTreeViewItem) => this.renameItem(treeViewItem),
       ),
     );
     this.push(
       commandRunner(
-        "codeQLDatabasesExperimental.removeItemContextMenu",
+        "codeQLVariantAnalysisRepositories.removeItemContextMenu",
         (treeViewItem: DbTreeViewItem) => this.removeItem(treeViewItem),
       ),
     );
@@ -124,7 +124,7 @@ export class DbPanel extends DisposableObject {
   private async addNewRemoteDatabase(): Promise<void> {
     const highlightedItem = await this.getHighlightedDbItem();
 
-    if (highlightedItem?.kind === DbItemKind.RemoteUserDefinedList) {
+    if (highlightedItem?.kind === DbItemKind.VariantAnalysisUserDefinedList) {
       await this.addNewRemoteRepo(highlightedItem.listName);
     } else if (
       highlightedItem?.kind === DbItemKind.RemoteRepo &&
@@ -313,8 +313,8 @@ export class DbPanel extends DisposableObject {
       case DbItemKind.LocalDatabase:
         await this.renameLocalDatabaseItem(dbItem, newName);
         break;
-      case DbItemKind.RemoteUserDefinedList:
-        await this.renameRemoteUserDefinedListItem(dbItem, newName);
+      case DbItemKind.VariantAnalysisUserDefinedList:
+        await this.renameVariantAnalysisUserDefinedListItem(dbItem, newName);
         break;
       default:
         throw Error(`Action not allowed for the '${dbItem.kind}' db item kind`);
@@ -353,8 +353,8 @@ export class DbPanel extends DisposableObject {
     await this.dbManager.renameLocalDb(dbItem, newName);
   }
 
-  private async renameRemoteUserDefinedListItem(
-    dbItem: RemoteUserDefinedListDbItem,
+  private async renameVariantAnalysisUserDefinedListItem(
+    dbItem: VariantAnalysisUserDefinedListDbItem,
     newName: string,
   ): Promise<void> {
     if (dbItem.listName === newName) {
@@ -386,7 +386,7 @@ export class DbPanel extends DisposableObject {
       throw Error("Expected a database item.");
     }
 
-    await this.dbManager.updateDbItemExpandedState(event.element.dbItem, false);
+    await this.dbManager.removeDbItemFromExpandedState(event.element.dbItem);
   }
 
   private async onDidExpandElement(
@@ -397,7 +397,7 @@ export class DbPanel extends DisposableObject {
       throw Error("Expected a database item.");
     }
 
-    await this.dbManager.updateDbItemExpandedState(event.element.dbItem, true);
+    await this.dbManager.addDbItemToExpandedState(event.element.dbItem);
   }
 
   /**

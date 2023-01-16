@@ -1,5 +1,8 @@
 import { QuickPickItem, window } from "vscode";
-import * as fs from "fs-extra";
+import { join } from "path";
+import { DirectoryResult } from "tmp-promise";
+import * as tmp from "tmp-promise";
+import { ensureDir, writeFile, writeJson } from "fs-extra";
 import { UserCancellationException } from "../../../../src/commandRunner";
 
 import * as config from "../../../../src/config";
@@ -12,10 +15,10 @@ import {
 } from "../../../../src/databases/db-item";
 
 describe("repository selection", () => {
-  describe("newQueryRunExperience true", () => {
+  describe("variantAnalysisReposPanel true", () => {
     beforeEach(() => {
       jest
-        .spyOn(config, "isNewQueryRunExperienceEnabled")
+        .spyOn(config, "isVariantAnalysisReposPanelEnabled")
         .mockReturnValue(true);
     });
 
@@ -39,7 +42,7 @@ describe("repository selection", () => {
 
     it("should log an error when an empty remote user defined list is selected", async () => {
       const dbManager = setUpDbManager({
-        kind: DbItemKind.RemoteUserDefinedList,
+        kind: DbItemKind.VariantAnalysisUserDefinedList,
         repos: [] as RemoteRepoDbItem[],
       } as DbItem);
 
@@ -63,7 +66,7 @@ describe("repository selection", () => {
 
     it("should return correct selection when remote user defined list is selected", async () => {
       const dbManager = setUpDbManager({
-        kind: DbItemKind.RemoteUserDefinedList,
+        kind: DbItemKind.VariantAnalysisUserDefinedList,
         repos: [
           { repoFullName: "owner1/repo1" },
           { repoFullName: "owner1/repo2" },
@@ -115,7 +118,7 @@ describe("repository selection", () => {
     }
   });
 
-  describe("newQueryRunExperience false", () => {
+  describe("variantAnalysisReposPanel false", () => {
     let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
     let showInputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
 
@@ -125,10 +128,6 @@ describe("repository selection", () => {
     let getRemoteRepositoryListsPathSpy: jest.SpiedFunction<
       typeof config.getRemoteRepositoryListsPath
     >;
-
-    let pathExistsStub: jest.SpiedFunction<typeof fs.pathExists>;
-    let fsStatStub: jest.SpiedFunction<typeof fs.stat>;
-    let fsReadFileStub: jest.SpiedFunction<typeof fs.readFile>;
 
     beforeEach(() => {
       quickPickSpy = jest
@@ -144,16 +143,6 @@ describe("repository selection", () => {
       getRemoteRepositoryListsPathSpy = jest
         .spyOn(config, "getRemoteRepositoryListsPath")
         .mockReturnValue(undefined);
-
-      pathExistsStub = jest
-        .spyOn(fs, "pathExists")
-        .mockImplementation(() => false);
-      fsStatStub = jest
-        .spyOn(fs, "stat")
-        .mockRejectedValue(new Error("not found"));
-      fsReadFileStub = jest
-        .spyOn(fs, "readFile")
-        .mockRejectedValue(new Error("not found"));
     });
     describe("repo lists from settings", () => {
       it("should allow selection from repo lists from your pre-defined config", async () => {
@@ -362,21 +351,31 @@ describe("repository selection", () => {
     });
 
     describe("external repository lists file", () => {
+      let directory: DirectoryResult;
+
+      beforeEach(async () => {
+        directory = await tmp.dir({
+          unsafeCleanup: true,
+        });
+      });
+
+      afterEach(async () => {
+        await directory.cleanup();
+      });
+
       it("should fail if path does not exist", async () => {
-        const fakeFilePath = "/path/that/does/not/exist.json";
-        getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
-        pathExistsStub.mockImplementation(() => false);
+        const nonExistingFile = join(directory.path, "non-existing-file.json");
+        getRemoteRepositoryListsPathSpy.mockReturnValue(nonExistingFile);
 
         await expect(getRepositorySelection()).rejects.toThrow(
-          `External repository lists file does not exist at ${fakeFilePath}`,
+          `External repository lists file does not exist at ${nonExistingFile}`,
         );
       });
 
       it("should fail if path points to directory", async () => {
-        const fakeFilePath = "/path/to/dir";
-        getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
-        pathExistsStub.mockImplementation(() => true);
-        fsStatStub.mockResolvedValue({ isDirectory: () => true } as any);
+        const existingDirectory = join(directory.path, "directory");
+        await ensureDir(existingDirectory);
+        getRemoteRepositoryListsPathSpy.mockReturnValue(existingDirectory);
 
         await expect(getRepositorySelection()).rejects.toThrow(
           "External repository lists path should not point to a directory",
@@ -384,11 +383,9 @@ describe("repository selection", () => {
       });
 
       it("should fail if file does not have valid JSON", async () => {
-        const fakeFilePath = "/path/to/file.json";
-        getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
-        pathExistsStub.mockImplementation(() => true);
-        fsStatStub.mockResolvedValue({ isDirectory: () => false } as any);
-        fsReadFileStub.mockResolvedValue("not-json" as any as Buffer);
+        const existingFile = join(directory.path, "repository-lists.json");
+        await writeFile(existingFile, "not-json");
+        getRemoteRepositoryListsPathSpy.mockReturnValue(existingFile);
 
         await expect(getRepositorySelection()).rejects.toThrow(
           "Invalid repository lists file. It should contain valid JSON.",
@@ -396,11 +393,9 @@ describe("repository selection", () => {
       });
 
       it("should fail if file contains array", async () => {
-        const fakeFilePath = "/path/to/file.json";
-        getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
-        pathExistsStub.mockImplementation(() => true);
-        fsStatStub.mockResolvedValue({ isDirectory: () => false } as any);
-        fsReadFileStub.mockResolvedValue("[]" as any as Buffer);
+        const existingFile = join(directory.path, "repository-lists.json");
+        await writeJson(existingFile, []);
+        getRemoteRepositoryListsPathSpy.mockReturnValue(existingFile);
 
         await expect(getRepositorySelection()).rejects.toThrow(
           "Invalid repository lists file. It should be an object mapping names to a list of repositories.",
@@ -408,16 +403,12 @@ describe("repository selection", () => {
       });
 
       it("should fail if file does not contain repo lists in the right format", async () => {
-        const fakeFilePath = "/path/to/file.json";
-        getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
-        pathExistsStub.mockImplementation(() => true);
-        fsStatStub.mockResolvedValue({ isDirectory: () => false } as any);
+        const existingFile = join(directory.path, "repository-lists.json");
         const repoLists = {
           list1: "owner1/repo1",
         };
-        fsReadFileStub.mockResolvedValue(
-          JSON.stringify(repoLists) as any as Buffer,
-        );
+        await writeJson(existingFile, repoLists);
+        getRemoteRepositoryListsPathSpy.mockReturnValue(existingFile);
 
         await expect(getRepositorySelection()).rejects.toThrow(
           "Invalid repository lists file. It should contain an array of repositories for each list.",
@@ -425,17 +416,13 @@ describe("repository selection", () => {
       });
 
       it("should get repo lists from file", async () => {
-        const fakeFilePath = "/path/to/file.json";
-        getRemoteRepositoryListsPathSpy.mockReturnValue(fakeFilePath);
-        pathExistsStub.mockImplementation(() => true);
-        fsStatStub.mockResolvedValue({ isDirectory: () => false } as any);
+        const existingFile = join(directory.path, "repository-lists.json");
         const repoLists = {
           list1: ["owner1/repo1", "owner2/repo2"],
           list2: ["owner3/repo3"],
         };
-        fsReadFileStub.mockResolvedValue(
-          JSON.stringify(repoLists) as any as Buffer,
-        );
+        await writeJson(existingFile, repoLists);
+        getRemoteRepositoryListsPathSpy.mockReturnValue(existingFile);
         getRemoteRepositoryListsSpy.mockReturnValue({
           list3: ["onwer4/repo4"],
           list4: [],

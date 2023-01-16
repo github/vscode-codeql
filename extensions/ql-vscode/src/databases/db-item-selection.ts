@@ -33,7 +33,7 @@ function extractSelected(
         }
       }
       break;
-    case DbItemKind.RemoteUserDefinedList:
+    case DbItemKind.VariantAnalysisUserDefinedList:
       for (const repo of dbItem.repos) {
         if (repo.selected) {
           return repo;
@@ -59,21 +59,21 @@ export function mapDbItemToSelectedDbItem(
         listName: dbItem.listName,
       };
 
-    case DbItemKind.RemoteUserDefinedList:
+    case DbItemKind.VariantAnalysisUserDefinedList:
       return {
-        kind: SelectedDbItemKind.RemoteUserDefinedList,
+        kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
         listName: dbItem.listName,
       };
 
     case DbItemKind.RemoteSystemDefinedList:
       return {
-        kind: SelectedDbItemKind.RemoteSystemDefinedList,
+        kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList,
         listName: dbItem.listName,
       };
 
     case DbItemKind.RemoteOwner:
       return {
-        kind: SelectedDbItemKind.RemoteOwner,
+        kind: SelectedDbItemKind.VariantAnalysisOwner,
         ownerName: dbItem.ownerName,
       };
 
@@ -86,7 +86,7 @@ export function mapDbItemToSelectedDbItem(
 
     case DbItemKind.RemoteRepo:
       return {
-        kind: SelectedDbItemKind.RemoteRepository,
+        kind: SelectedDbItemKind.VariantAnalysisRepository,
         repositoryName: dbItem.repoFullName,
         listName: dbItem?.parentListName,
       };

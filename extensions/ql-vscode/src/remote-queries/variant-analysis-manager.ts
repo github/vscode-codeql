@@ -19,6 +19,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { Credentials } from "../authentication";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
 import {
+  getActionsWorkflowRunUrl,
   isVariantAnalysisComplete,
   parseVariantAnalysisQueryLanguage,
   VariantAnalysis,
@@ -60,7 +61,7 @@ import {
 } from "../pure/variant-analysis-filter-sort";
 import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
-import { isNewQueryRunExperienceEnabled } from "../config";
+import { isVariantAnalysisReposPanelEnabled } from "../config";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -102,7 +103,7 @@ export class VariantAnalysisManager
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager,
-    private readonly dbManager?: DbManager, // the dbManager is only needed when the newQueryRunExperience is enabled
+    private readonly dbManager?: DbManager, // the dbManager is only needed when variantAnalysisReposPanel is enabled
   ) {
     super();
     this.variantAnalysisMonitor = this.push(
@@ -585,6 +586,20 @@ export class VariantAnalysisManager
     await cancelVariantAnalysis(credentials, variantAnalysis);
   }
 
+  public async openVariantAnalysisLogs(variantAnalysisId: number) {
+    const variantAnalysis = this.variantAnalyses.get(variantAnalysisId);
+    if (!variantAnalysis) {
+      throw new Error(`No variant analysis with id: ${variantAnalysisId}`);
+    }
+
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
+
+    await commands.executeCommand(
+      "vscode.open",
+      Uri.parse(actionsWorkflowRunUrl),
+    );
+  }
+
   public async copyRepoListToClipboard(
     variantAnalysisId: number,
     filterSort: RepositoriesFilterSortStateWithIds = defaultFilterSortState,
@@ -607,7 +622,7 @@ export class VariantAnalysisManager
     }
 
     let text: string[];
-    if (isNewQueryRunExperienceEnabled()) {
+    if (isVariantAnalysisReposPanelEnabled()) {
       text = [
         "{",
         `    "name": "new-repo-list",`,

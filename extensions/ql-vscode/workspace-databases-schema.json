@@ -7,7 +7,7 @@
     "databases": {
       "type": "object",
       "properties": {
-        "remote": {
+        "variantAnalysis": {
           "type": "object",
           "properties": {
             "repositoryLists": {
@@ -125,7 +125,7 @@
           "additionalProperties": false
         }
       },
-      "required": ["remote", "local"],
+      "required": ["variantAnalysis", "local"],
       "additionalProperties": false
     },
     "selected": {
@@ -166,7 +166,7 @@
           "properties": {
             "kind": {
               "type": "string",
-              "enum": ["remoteSystemDefinedList"]
+              "enum": ["variantAnalysisSystemDefinedList"]
             },
             "listName": {
               "type": "string",
@@ -180,7 +180,7 @@
           "properties": {
             "kind": {
               "type": "string",
-              "enum": ["remoteUserDefinedList"]
+              "enum": ["variantAnalysisUserDefinedList"]
             },
             "listName": {
               "type": "string",
@@ -194,7 +194,7 @@
           "properties": {
             "kind": {
               "type": "string",
-              "enum": ["remoteOwner"]
+              "enum": ["variantAnalysisOwner"]
             },
             "ownerName": {
               "type": "string",
@@ -208,7 +208,7 @@
           "properties": {
             "kind": {
               "type": "string",
-              "enum": ["remoteRepository"]
+              "enum": ["variantAnalysisRepository"]
             },
             "repositoryName": {
               "type": "string",

@@ -6,7 +6,7 @@ import {
   createRemoteOwnerDbItem,
   createRemoteRepoDbItem,
   createRemoteSystemDefinedListDbItem,
-  createRemoteUserDefinedListDbItem,
+  createVariantAnalysisUserDefinedListDbItem,
   createRootLocalDbItem,
   createRootRemoteDbItem,
 } from "../../factories/db-item-factories";
@@ -18,7 +18,7 @@ describe("db item selection", () => {
         children: [
           createRemoteSystemDefinedListDbItem(),
           createRemoteOwnerDbItem(),
-          createRemoteUserDefinedListDbItem(),
+          createVariantAnalysisUserDefinedListDbItem(),
         ],
       }),
       createRootLocalDbItem({
@@ -67,7 +67,7 @@ describe("db item selection", () => {
         children: [
           createRemoteSystemDefinedListDbItem(),
           createRemoteOwnerDbItem(),
-          createRemoteUserDefinedListDbItem({
+          createVariantAnalysisUserDefinedListDbItem({
             listName: "my list",
             selected: true,
             repos: [
@@ -80,7 +80,7 @@ describe("db item selection", () => {
     ];
 
     expect(getSelectedDbItem(dbItems)).toEqual({
-      kind: DbItemKind.RemoteUserDefinedList,
+      kind: DbItemKind.VariantAnalysisUserDefinedList,
       expanded: false,
       listName: "my list",
       repos: [
@@ -105,7 +105,7 @@ describe("db item selection", () => {
         children: [
           createRemoteSystemDefinedListDbItem(),
           createRemoteOwnerDbItem(),
-          createRemoteUserDefinedListDbItem(),
+          createVariantAnalysisUserDefinedListDbItem(),
         ],
       }),
       createRemoteSystemDefinedListDbItem({
@@ -131,7 +131,7 @@ describe("db item selection", () => {
         children: [
           createRemoteSystemDefinedListDbItem(),
           createRemoteOwnerDbItem(),
-          createRemoteUserDefinedListDbItem({
+          createVariantAnalysisUserDefinedListDbItem({
             repos: [],
             selected: true,
             listName: "list84",
@@ -141,7 +141,7 @@ describe("db item selection", () => {
     ];
     expect(getSelectedDbItem(dbItems)).toEqual({
       expanded: false,
-      kind: DbItemKind.RemoteUserDefinedList,
+      kind: DbItemKind.VariantAnalysisUserDefinedList,
       listName: "list84",
       repos: [],
       selected: true,

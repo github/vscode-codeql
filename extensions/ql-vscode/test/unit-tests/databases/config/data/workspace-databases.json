@@ -1,6 +1,6 @@
 {
   "databases": {
-    "remote": {
+    "variantAnalysis": {
       "repositoryLists": [
         {
           "name": "repoList1",
@@ -46,7 +46,7 @@
     }
   },
   "selected": {
-    "kind": "remoteUserDefinedList",
+    "kind": "variantAnalysisUserDefinedList",
     "listName": "repoList1"
   }
 }

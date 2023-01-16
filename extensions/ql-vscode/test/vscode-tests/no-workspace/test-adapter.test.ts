@@ -10,6 +10,16 @@ import {
   FullDatabaseOptions,
 } from "../../../src/databases";
 
+jest.mock("fs-extra", () => {
+  const original = jest.requireActual("fs-extra");
+  return {
+    ...original,
+    access: jest.fn(),
+  };
+});
+
+const mockedFsExtra = jest.mocked(fs);
+
 describe("test-adapter", () => {
   let adapter: QLTestAdapter;
   let fakeDatabaseManager: DatabaseManager;
@@ -118,7 +128,7 @@ describe("test-adapter", () => {
   });
 
   it("should reregister testproj databases around test run", async () => {
-    jest.spyOn(fs, "access").mockResolvedValue(undefined);
+    mockedFsExtra.access.mockResolvedValue(undefined);
 
     currentDatabaseItem = preTestDatabaseItem;
     databaseItems = [preTestDatabaseItem];

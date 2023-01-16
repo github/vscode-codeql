@@ -1,6 +1,6 @@
 {
   "databases": {
-    "remote": {
+    "variantAnalysis": {
       "repositoryLists": [],
       "owners": [],
       "repositories": []

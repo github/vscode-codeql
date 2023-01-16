@@ -8,7 +8,7 @@ import {
   createRemoteOwnerDbItem,
   createRemoteRepoDbItem,
   createRemoteSystemDefinedListDbItem,
-  createRemoteUserDefinedListDbItem,
+  createVariantAnalysisUserDefinedListDbItem,
   createRootLocalDbItem,
   createRootRemoteDbItem,
 } from "../../../factories/db-item-factories";
@@ -63,7 +63,7 @@ describe("getDbItemActions", () => {
   });
 
   it("should set canBeSelected, canBeRemoved and canBeRenamed for remote user defined db list", () => {
-    const dbItem = createRemoteUserDefinedListDbItem();
+    const dbItem = createVariantAnalysisUserDefinedListDbItem();
 
     const actions = getDbItemActions(dbItem);
 
@@ -71,7 +71,9 @@ describe("getDbItemActions", () => {
   });
 
   it("should not set canBeSelected for remote user defined db list that is already selected", () => {
-    const dbItem = createRemoteUserDefinedListDbItem({ selected: true });
+    const dbItem = createVariantAnalysisUserDefinedListDbItem({
+      selected: true,
+    });
 
     const actions = getDbItemActions(dbItem);
 
@@ -133,7 +135,7 @@ describe("getGitHubUrl", () => {
   it("should return undefined for other remote db items", () => {
     const dbItem0 = createRootRemoteDbItem();
     const dbItem1 = createRemoteSystemDefinedListDbItem();
-    const dbItem2 = createRemoteUserDefinedListDbItem();
+    const dbItem2 = createVariantAnalysisUserDefinedListDbItem();
 
     const actualUrl0 = getGitHubUrl(dbItem0);
     const actualUrl1 = getGitHubUrl(dbItem1);

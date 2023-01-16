@@ -22,16 +22,21 @@ export const CodeFlowsDropdown = ({
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       const selectedOption = e.target;
-      const selectedIndex = selectedOption.value as unknown as number;
+      const selectedIndex = parseInt(selectedOption.value);
       setSelectedCodeFlow(codeFlows[selectedIndex]);
     },
     [setSelectedCodeFlow, codeFlows],
   );
 
   return (
-    <VSCodeDropdown onChange={handleChange}>
+    <VSCodeDropdown
+      onChange={
+        handleChange as unknown as ((e: Event) => unknown) &
+          React.FormEventHandler<HTMLElement>
+      }
+    >
       {codeFlows.map((codeFlow, index) => (
-        <VSCodeOption key={index} value={index}>
+        <VSCodeOption key={index} value={index.toString()}>
           {getCodeFlowName(codeFlow)}
         </VSCodeOption>
       ))}
