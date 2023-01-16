@@ -37,13 +37,24 @@ export const CodePaths = ({
     filterTelemetryOnValue: filterIsOpenTelemetry,
   });
 
+  const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 });
+  React.useEffect(() => {
+    window.scrollTo(scrollPosition.x, scrollPosition.y);
+  }, [scrollPosition]);
+
   const linkRef = useRef<HTMLAnchorElement>(null);
 
   const closeOverlay = () => setIsOpen(false);
 
   return (
     <>
-      <ShowPathsLink onClick={() => setIsOpen(true)} ref={linkRef}>
+      <ShowPathsLink
+        onClick={() => {
+          setScrollPosition({ x: window.scrollX, y: window.scrollY });
+          setIsOpen(true);
+        }}
+        ref={linkRef}
+      >
         Show paths
       </ShowPathsLink>
       {isOpen && (
