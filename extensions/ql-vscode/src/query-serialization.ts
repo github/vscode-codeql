@@ -112,7 +112,7 @@ export async function slurpQueryHistory(
  * @param queries the list of queries to save.
  * @param fsPath the path to save the queries to.
  */
-export async function splatQueryHistory(
+export async function serializeQueryHistory(
   queries: QueryHistoryInfo[],
   fsPath: string,
 ): Promise<void> {

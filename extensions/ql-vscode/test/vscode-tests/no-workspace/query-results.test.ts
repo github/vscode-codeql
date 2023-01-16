@@ -23,7 +23,7 @@ import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../src/helpers";
 import {
   slurpQueryHistory,
-  splatQueryHistory,
+  serializeQueryHistory,
 } from "../../../src/query-serialization";
 import {
   formatLegacyMessage,
@@ -499,7 +499,7 @@ describe("query-results", () => {
       const allHistoryPath = join(tmpDir.name, "workspace-query-history.json");
 
       // splat and slurp
-      await splatQueryHistory(allHistory, allHistoryPath);
+      await serializeQueryHistory(allHistory, allHistoryPath);
       const allHistoryActual = await slurpQueryHistory(allHistoryPath);
 
       // the dispose methods will be different. Ignore them.
