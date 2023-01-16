@@ -50,7 +50,7 @@ describe("db manager", () => {
 
     dbConfigFilePath = join(
       tempWorkspaceStoragePath,
-      "workspace-databases.json",
+      DbConfigStore.databaseConfigFileName,
     );
   });
 

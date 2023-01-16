@@ -92,8 +92,8 @@
     },
     "jsonValidation": [
       {
-        "fileMatch": "workspace-databases.json",
-        "url": "./workspace-databases-schema.json"
+        "fileMatch": "GitHub.vscode-codeql/databases.json",
+        "url": "./databases-schema.json"
       }
     ],
     "languages": [

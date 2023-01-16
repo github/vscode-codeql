@@ -23,7 +23,7 @@ const packageFiles = [
   "snippets.json",
   "media",
   "out",
-  "workspace-databases-schema.json",
+  "databases-schema.json",
 ];
 
 async function copyDirectory(
