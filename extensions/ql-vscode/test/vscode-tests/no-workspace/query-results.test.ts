@@ -22,7 +22,7 @@ import { CodeQLCliServer, SourceInfo } from "../../../src/cli";
 import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../src/helpers";
 import {
-  slurpQueryHistory,
+  deserializeQueryHistory,
   serializeQueryHistory,
 } from "../../../src/query-serialization";
 import {
@@ -500,7 +500,7 @@ describe("query-results", () => {
 
       // splat and slurp
       await serializeQueryHistory(allHistory, allHistoryPath);
-      const allHistoryActual = await slurpQueryHistory(allHistoryPath);
+      const allHistoryActual = await deserializeQueryHistory(allHistoryPath);
 
       // the dispose methods will be different. Ignore them.
       allHistoryActual.forEach((info) => {
@@ -543,7 +543,7 @@ describe("query-results", () => {
         "utf8",
       );
 
-      const allHistoryActual = await slurpQueryHistory(badPath);
+      const allHistoryActual = await deserializeQueryHistory(badPath);
       // version number is invalid. Should return an empty array.
       expect(allHistoryActual).toEqual([]);
     });

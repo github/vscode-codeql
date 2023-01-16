@@ -13,7 +13,7 @@ import { QueryStatus } from "./query-status";
 import { QueryEvaluationInfo } from "./run-queries-shared";
 import { QueryResultType } from "./pure/legacy-messages";
 
-export async function slurpQueryHistory(
+export async function deserializeQueryHistory(
   fsPath: string,
 ): Promise<QueryHistoryInfo[]> {
   try {

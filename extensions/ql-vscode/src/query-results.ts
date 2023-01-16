@@ -75,7 +75,7 @@ export class CompletedQueryInfo implements QueryWithResults {
   interpretedResultsSortState: InterpretedResultsSortState | undefined;
 
   /**
-   * Note that in the {@link slurpQueryHistory} method, we create a CompletedQueryInfo instance
+   * Note that in the {@link deserializeQueryHistory} method, we create a CompletedQueryInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(evaluation: QueryWithResults) {
@@ -233,7 +233,7 @@ export class LocalQueryInfo {
   public evalLogSummarySymbolsLocation: string | undefined;
 
   /**
-   * Note that in the {@link slurpQueryHistory} method, we create a FullQueryInfo instance
+   * Note that in the {@link deserializeQueryHistory} method, we create a FullQueryInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(
