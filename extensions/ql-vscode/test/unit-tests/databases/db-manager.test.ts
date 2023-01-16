@@ -464,6 +464,40 @@ describe("db manager", () => {
         expandedItems![0] as VariantAnalysisUserDefinedListExpandedDbItem;
       expect(expandedItem.listName).toEqual("new-list-name");
     });
+
+    it("should remove non existent items in expanded state when item is expanded", async () => {
+      // We remove items from the expanded state if they are not in the config
+
+      // Populate expanded state with non existent item
+      const listName = "my-list-4";
+      const variantAnalysisList = {
+        kind: ExpandedDbItemKind.RemoteUserDefinedList,
+        listName,
+      };
+
+      await app.workspaceState.update(DbManager.DB_EXPANDED_STATE_KEY, [
+        variantAnalysisList,
+      ]);
+      let expandedItems = await app.workspaceState.get<ExpandedDbItem[]>(
+        DbManager.DB_EXPANDED_STATE_KEY,
+      );
+      expect(expandedItems?.length).toEqual(1);
+      const expandedItem =
+        expandedItems![0] as VariantAnalysisUserDefinedListExpandedDbItem;
+      expect(expandedItem.listName).toEqual(listName);
+
+      // Trigger adding an item that is not in the config
+      const dbItem = createVariantAnalysisUserDefinedListDbItem({
+        listName: "new-item",
+      });
+
+      await dbManager.addDbItemToExpandedState(dbItem);
+      expandedItems = await app.workspaceState.get<ExpandedDbItem[]>(
+        DbManager.DB_EXPANDED_STATE_KEY,
+      );
+
+      expect(expandedItems?.length).toEqual(0);
+    });
   });
 
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {
