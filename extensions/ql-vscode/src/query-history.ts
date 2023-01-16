@@ -47,7 +47,10 @@ import {
   QueryStatus,
   variantAnalysisStatusToQueryStatus,
 } from "./query-status";
-import { slurpQueryHistory, splatQueryHistory } from "./query-serialization";
+import {
+  deserializeQueryHistory,
+  serializeQueryHistory,
+} from "./query-serialization";
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "./cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
@@ -787,7 +790,9 @@ export class QueryHistoryManager extends DisposableObject {
     void extLogger.log(
       `Reading cached query history from '${this.queryMetadataStorageLocation}'.`,
     );
-    const history = await slurpQueryHistory(this.queryMetadataStorageLocation);
+    const history = await deserializeQueryHistory(
+      this.queryMetadataStorageLocation,
+    );
     this.treeDataProvider.allHistory = history;
     await Promise.all(
       this.treeDataProvider.allHistory.map(async (item) => {
@@ -808,7 +813,7 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async writeQueryHistory(): Promise<void> {
-    await splatQueryHistory(
+    await serializeQueryHistory(
       this.treeDataProvider.allHistory,
       this.queryMetadataStorageLocation,
     );

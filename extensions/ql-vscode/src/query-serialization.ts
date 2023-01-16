@@ -13,7 +13,7 @@ import { QueryStatus } from "./query-status";
 import { QueryEvaluationInfo } from "./run-queries-shared";
 import { QueryResultType } from "./pure/legacy-messages";
 
-export async function slurpQueryHistory(
+export async function deserializeQueryHistory(
   fsPath: string,
 ): Promise<QueryHistoryInfo[]> {
   try {
@@ -48,7 +48,7 @@ export async function slurpQueryHistory(
             q.completedQuery.query,
             QueryEvaluationInfo.prototype,
           );
-          // slurped queries do not need to be disposed
+          // deserialized queries do not need to be disposed
           q.completedQuery.dispose = () => {
             /**/
           };
@@ -83,7 +83,7 @@ export async function slurpQueryHistory(
     // queries aged out.
     return asyncFilter(parsedQueries, async (q) => {
       if (q.t === "remote" || q.t === "variant-analysis") {
-        // the slurper doesn't know where the remote queries are stored
+        // the deserializer doesn't know where the remote queries are stored
         // so we need to assume here that they exist. Later, we check to
         // see if they exist on disk.
         return true;
@@ -112,7 +112,7 @@ export async function slurpQueryHistory(
  * @param queries the list of queries to save.
  * @param fsPath the path to save the queries to.
  */
-export async function splatQueryHistory(
+export async function serializeQueryHistory(
   queries: QueryHistoryInfo[],
   fsPath: string,
 ): Promise<void> {

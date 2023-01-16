@@ -68,7 +68,7 @@ function findQueryEvalLogEndSummaryFile(resultPath: string): string {
 
 export class QueryEvaluationInfo {
   /**
-   * Note that in the {@link slurpQueryHistory} method, we create a QueryEvaluationInfo instance
+   * Note that in the {@link deserializeQueryHistory} method, we create a QueryEvaluationInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(
