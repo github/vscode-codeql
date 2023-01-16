@@ -15,14 +15,15 @@ import { vscode } from "../vscode-api";
 export function useTelemetryOnChange<S>(
   value: S,
   telemetryAction: string,
-  options?: {
+  {
+    filterTelemetryOnValue,
+    debounceTimeoutMillis,
+  }: {
     filterTelemetryOnValue?: (value: S) => boolean;
     debounceTimeoutMillis?: number;
-  },
+  } = {},
 ) {
   const previousValue = useRef(value);
-  const filterTelemetryOnValue = options?.filterTelemetryOnValue;
-  const debounceTimeoutMillis = options?.debounceTimeoutMillis;
 
   const sendTelemetryFunc = useMemo<() => void>(() => {
     if (debounceTimeoutMillis === undefined) {
