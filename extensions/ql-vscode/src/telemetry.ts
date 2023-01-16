@@ -161,7 +161,7 @@ export class TelemetryListener extends ConfigListener {
       {
         name,
         status,
-        isCanary: isCanary(),
+        isCanary: isCanary().toString(),
       },
       { executionTime },
     );
@@ -176,7 +176,7 @@ export class TelemetryListener extends ConfigListener {
       "ui-interaction",
       {
         name,
-        isCanary: isCanary(),
+        isCanary: isCanary().toString(),
       },
       {},
     );
