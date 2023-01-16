@@ -27,7 +27,7 @@ describe("db panel", () => {
   const extensionPath = join(__dirname, "../../../../");
   const dbConfigFilePath = join(
     workspaceStoragePath,
-    "workspace-databases.json",
+    DbConfigStore.databaseConfigFileName,
   );
   let dbTreeDataProvider: DbTreeDataProvider;
   let dbManager: DbManager;

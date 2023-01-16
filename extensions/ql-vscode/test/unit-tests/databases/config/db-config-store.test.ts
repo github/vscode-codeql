@@ -42,7 +42,7 @@ describe("db config store", () => {
 
       const configPath = join(
         tempWorkspaceStoragePath,
-        "workspace-databases.json",
+        DbConfigStore.databaseConfigFileName,
       );
 
       const configStore = new DbConfigStore(app, false);
@@ -195,7 +195,10 @@ describe("db config store", () => {
         workspaceStoragePath: tempWorkspaceStoragePath,
       });
 
-      configPath = join(tempWorkspaceStoragePath, "workspace-databases.json");
+      configPath = join(
+        tempWorkspaceStoragePath,
+        DbConfigStore.databaseConfigFileName,
+      );
     });
 
     it("should add a remote repository", async () => {
@@ -320,7 +323,10 @@ describe("db config store", () => {
         workspaceStoragePath: tempWorkspaceStoragePath,
       });
 
-      configPath = join(tempWorkspaceStoragePath, "workspace-databases.json");
+      configPath = join(
+        tempWorkspaceStoragePath,
+        DbConfigStore.databaseConfigFileName,
+      );
     });
 
     it("should allow renaming a remote list", async () => {
@@ -492,7 +498,10 @@ describe("db config store", () => {
         workspaceStoragePath: tempWorkspaceStoragePath,
       });
 
-      configPath = join(tempWorkspaceStoragePath, "workspace-databases.json");
+      configPath = join(
+        tempWorkspaceStoragePath,
+        DbConfigStore.databaseConfigFileName,
+      );
     });
 
     it("should remove a single db item", async () => {
@@ -612,7 +621,10 @@ describe("db config store", () => {
         workspaceStoragePath: tempWorkspaceStoragePath,
       });
 
-      configPath = join(tempWorkspaceStoragePath, "workspace-databases.json");
+      configPath = join(
+        tempWorkspaceStoragePath,
+        DbConfigStore.databaseConfigFileName,
+      );
     });
 
     it("should set the selected item", async () => {
@@ -648,7 +660,10 @@ describe("db config store", () => {
         workspaceStoragePath: tempWorkspaceStoragePath,
       });
 
-      configPath = join(tempWorkspaceStoragePath, "workspace-databases.json");
+      configPath = join(
+        tempWorkspaceStoragePath,
+        DbConfigStore.databaseConfigFileName,
+      );
     });
 
     it("should return true if a remote owner exists", async () => {

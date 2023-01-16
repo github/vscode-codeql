@@ -14,6 +14,7 @@ import {
 import { DbListKind } from "../../../../src/databases/db-item";
 import { createDbTreeViewItemSystemDefinedList } from "../../../../src/databases/ui/db-tree-view-item";
 import { createRemoteSystemDefinedListDbItem } from "../../../factories/db-item-factories";
+import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 
 jest.setTimeout(60_000);
 
@@ -43,7 +44,10 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
+    const dbConfigFilePath = path.join(
+      storagePath,
+      DbConfigStore.databaseConfigFileName,
+    );
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.repositoryLists).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.repositoryLists[0].name).toBe(
@@ -62,7 +66,10 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
+    const dbConfigFilePath = path.join(
+      storagePath,
+      DbConfigStore.databaseConfigFileName,
+    );
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.local.lists).toHaveLength(1);
     expect(dbConfig.databases.local.lists[0].name).toBe("my-list-1");
@@ -80,7 +87,10 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
+    const dbConfigFilePath = path.join(
+      storagePath,
+      DbConfigStore.databaseConfigFileName,
+    );
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.repositories).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.repositories[0]).toBe(
@@ -100,7 +110,10 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
+    const dbConfigFilePath = path.join(
+      storagePath,
+      DbConfigStore.databaseConfigFileName,
+    );
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.owners).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.owners[0]).toBe("owner1");
@@ -120,7 +133,10 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(storagePath, "workspace-databases.json");
+    const dbConfigFilePath = path.join(
+      storagePath,
+      DbConfigStore.databaseConfigFileName,
+    );
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.selected).toBeDefined();
     expect(dbConfig.selected).toEqual({

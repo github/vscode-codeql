@@ -32,6 +32,8 @@ import {
 } from "../db-item";
 
 export class DbConfigStore extends DisposableObject {
+  static readonly databaseConfigFileName = "workspace-databases.json";
+
   public readonly onDidChangeConfig: AppEvent<void>;
   private readonly onDidChangeConfigEventEmitter: AppEventEmitter<void>;
 
@@ -49,7 +51,7 @@ export class DbConfigStore extends DisposableObject {
     super();
 
     const storagePath = app.workspaceStoragePath || app.globalStoragePath;
-    this.configPath = join(storagePath, "workspace-databases.json");
+    this.configPath = join(storagePath, DbConfigStore.databaseConfigFileName);
 
     this.config = this.createEmptyConfig();
     this.configErrors = [];
