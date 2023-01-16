@@ -423,6 +423,47 @@ describe("db manager", () => {
 
       expect(expandedItems?.length).toEqual(0);
     });
+
+    it("should rename item in expanded state", async () => {
+      // Add item to config
+      const listName = "my-list-3";
+      const dbConfig = createDbConfig({
+        remoteLists: [{ name: listName, repositories: [] }],
+      });
+      await saveDbConfig(dbConfig);
+
+      // Add item to expanded state
+      const variantAnalysisList = {
+        kind: ExpandedDbItemKind.RemoteUserDefinedList,
+        listName,
+      };
+
+      await app.workspaceState.update(DbManager.DB_EXPANDED_STATE_KEY, [
+        variantAnalysisList,
+      ]);
+      let expandedItems = await app.workspaceState.get<ExpandedDbItem[]>(
+        DbManager.DB_EXPANDED_STATE_KEY,
+      );
+      expect(expandedItems?.length).toEqual(1);
+      let expandedItem =
+        expandedItems![0] as VariantAnalysisUserDefinedListExpandedDbItem;
+      expect(expandedItem.listName).toEqual(listName);
+
+      // Rename item
+      const dbItem = createVariantAnalysisUserDefinedListDbItem({
+        listName,
+      });
+
+      await dbManager.renameList(dbItem, "new-list-name");
+      expandedItems = await app.workspaceState.get<ExpandedDbItem[]>(
+        DbManager.DB_EXPANDED_STATE_KEY,
+      );
+
+      expect(expandedItems?.length).toEqual(1);
+      expandedItem =
+        expandedItems![0] as VariantAnalysisUserDefinedListExpandedDbItem;
+      expect(expandedItem.listName).toEqual("new-list-name");
+    });
   });
 
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {
