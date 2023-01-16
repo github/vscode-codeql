@@ -32,7 +32,7 @@ import {
 } from "../db-item";
 
 export class DbConfigStore extends DisposableObject {
-  static readonly databaseConfigFileName = "databases.json";
+  public static readonly databaseConfigFileName = "databases.json";
 
   public readonly onDidChangeConfig: AppEvent<void>;
   private readonly onDidChangeConfigEventEmitter: AppEventEmitter<void>;

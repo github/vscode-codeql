@@ -92,7 +92,7 @@
     },
     "jsonValidation": [
       {
-        "fileMatch": "databases.json",
+        "fileMatch": "GitHub.vscode-codeql/databases.json",
         "url": "./databases-schema.json"
       }
     ],
