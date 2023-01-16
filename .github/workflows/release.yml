@@ -59,6 +59,12 @@ jobs:
           name: vscode-codeql-extension
           path: artifacts
 
+      - name: Upload source maps
+        uses: actions/upload-artifact@v3
+        with:
+          name: vscode-codeql-sourcemaps
+          path: dist/vscode-codeql/out/*.map
+
         # TODO Run tests, or check that a test run on the same branch succeeded.
 
       - name: Create release

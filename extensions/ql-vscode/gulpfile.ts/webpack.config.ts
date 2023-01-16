@@ -54,6 +54,9 @@ export const config: webpack.Configuration = {
           MiniCssExtractPlugin.loader,
           {
             loader: "css-loader",
+            options: {
+              sourceMap: true,
+            },
           },
         ],
       },
