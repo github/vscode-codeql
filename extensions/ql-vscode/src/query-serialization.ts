@@ -48,7 +48,7 @@ export async function deserializeQueryHistory(
             q.completedQuery.query,
             QueryEvaluationInfo.prototype,
           );
-          // slurped queries do not need to be disposed
+          // deserialized queries do not need to be disposed
           q.completedQuery.dispose = () => {
             /**/
           };
@@ -83,7 +83,7 @@ export async function deserializeQueryHistory(
     // queries aged out.
     return asyncFilter(parsedQueries, async (q) => {
       if (q.t === "remote" || q.t === "variant-analysis") {
-        // the slurper doesn't know where the remote queries are stored
+        // the deserializer doesn't know where the remote queries are stored
         // so we need to assume here that they exist. Later, we check to
         // see if they exist on disk.
         return true;

@@ -438,7 +438,7 @@ describe("query-results", () => {
     );
   });
 
-  describe("splat and slurp", () => {
+  describe("serialize and deserialize", () => {
     let infoSuccessRaw: LocalQueryInfo;
     let infoSuccessInterpreted: LocalQueryInfo;
     let infoEarlyFailure: LocalQueryInfo;
@@ -488,7 +488,7 @@ describe("query-results", () => {
       ];
     });
 
-    it("should splat and slurp query history", async () => {
+    it("should serialize and deserialize query history", async () => {
       // the expected results only contains the history with completed queries
       const expectedHistory = [
         infoSuccessRaw,
@@ -498,7 +498,7 @@ describe("query-results", () => {
 
       const allHistoryPath = join(tmpDir.name, "workspace-query-history.json");
 
-      // splat and slurp
+      // serialize and deserialize
       await serializeQueryHistory(allHistory, allHistoryPath);
       const allHistoryActual = await deserializeQueryHistory(allHistoryPath);
 
@@ -508,7 +508,7 @@ describe("query-results", () => {
           const completedQuery = info.completedQuery;
           (completedQuery as any).dispose = undefined;
 
-          // these fields should be missing on the slurped value
+          // these fields should be missing on the deserialized value
           // but they are undefined on the original value
           if (!("logFileLocation" in completedQuery)) {
             (completedQuery as any).logFileLocation = undefined;
