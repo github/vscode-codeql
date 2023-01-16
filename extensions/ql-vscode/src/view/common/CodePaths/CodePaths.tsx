@@ -24,7 +24,7 @@ export type CodePathsProps = {
   severity: ResultSeverity;
 };
 
-const filterIsOpenTelemetry = (v: boolean) => v === true;
+const filterIsOpenTelemetry = (v: boolean) => v;
 
 export const CodePaths = ({
   codeFlows,

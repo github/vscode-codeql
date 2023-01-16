@@ -158,7 +158,7 @@ const isExpandableContentLoaded = (
   return resultsLoaded;
 };
 
-const filterRepoRowExpandedTelemetry = (v: boolean) => v === true;
+const filterRepoRowExpandedTelemetry = (v: boolean) => v;
 
 export const RepoRow = ({
   repository,

@@ -101,7 +101,7 @@ type RawResultsTableProps = {
   sourceLocationPrefix: string;
 };
 
-const filterTableExpandedTelemetry = (v: boolean) => v === true;
+const filterTableExpandedTelemetry = (v: boolean) => v;
 
 const RawResultsTable = ({
   schema,
