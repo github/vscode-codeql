@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Renamed command "CodeQL: Run Query" to "CodeQL: Run Query on Selected Dababase".
+
 ## 1.7.7 - 13 December 2022
 
 - Increase the required version of VS Code to 1.67.0. [#1662](https://github.com/github/vscode-codeql/pull/1662)

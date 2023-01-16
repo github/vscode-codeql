@@ -94,7 +94,7 @@ The instructions below assume that you're using the CodeQL starter workspace, or
 
 1. Expand the `ql` folder and locate a query to run. The standard queries are grouped by target language and then type, for example: `ql/java/ql/src/Likely Bugs`.
 1. Open a query (`.ql`) file.
-1. Right-click in the query window and select **CodeQL: Run Query**. Alternatively, open the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**), type `Run Query`, then select **CodeQL: Run Query**.
+1. Right-click in the query window and select **CodeQL: Run Query on Selected Database**. Alternatively, open the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**), type `Run Query`, then select **CodeQL: Run Query on Selected Database**.
 
 The CodeQL extension runs the query on the current database using the CLI and reports progress in the bottom right corner of the application.
 When the results are ready, they're displayed in the CodeQL Query Results view. Use the dropdown menu to choose between different forms of result output.
