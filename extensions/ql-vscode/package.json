@@ -93,7 +93,7 @@
     "jsonValidation": [
       {
         "fileMatch": "workspace-databases.json",
-        "url": "./workspace-databases-schema.json"
+        "url": "./databases-schema.json"
       }
     ],
     "languages": [

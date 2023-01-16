@@ -12,10 +12,7 @@ export class DbConfigValidator {
   private readonly schema: any;
 
   constructor(extensionPath: string) {
-    const schemaPath = resolve(
-      extensionPath,
-      "workspace-databases-schema.json",
-    );
+    const schemaPath = resolve(extensionPath, "databases-schema.json");
     this.schema = readJsonSync(schemaPath);
   }
 
