@@ -1,0 +1,56 @@
+name: Version Change
+on:
+  workflow_dispatch:
+    inputs:
+      option:
+        description: "Option"
+        required: true
+        default: 'append'
+        type: choice
+        options:
+          - append
+          - prepend
+          - remove
+      version:
+        description: "Version"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+      - name: Remove Version
+        if: ${{ inputs.option == 'remove' }}
+        run: |
+          cat supported_cli_versions.json | jq 'del(.[] | select(. == "${{ inputs.version }}"))' > supported_cli_versions_temp.json
+      - name: Append Version
+        if: ${{ inputs.option == 'append' }}
+        run: |
+          cat supported_cli_versions.json | jq '. += ["${{ inputs.version }}"]' > supported_cli_versions_temp.json
+      - name: Prepend Version
+        if: ${{ inputs.option == 'prepend' }}
+        run: |
+          cat supported_cli_versions.json | jq '. |= ["${{ inputs.version }}"] + .' > supported_cli_versions_temp.json
+      - name: Move temp file to supported_cli_versions.json
+        run: |
+          mv supported_cli_versions_temp.json supported_cli_versions.json
+      - name: Commit, Push and Open a PR
+        uses: ./.github/actions/create-pr
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base-branch: main
+          head-branch: github-action/version-change
+          commit-message: ${{ inputs.option }} ${{ inputs.version }}
+          title: ${{ inputs.option }} ${{ inputs.version }} from/in supported_cli_versions.json
+          body: >
+            ${{ inputs.option }} ${{ inputs.version }} from/in supported_cli_versions.json
