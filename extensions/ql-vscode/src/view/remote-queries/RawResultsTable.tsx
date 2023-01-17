@@ -10,6 +10,7 @@ import {
 import { tryGetRemoteLocation } from "../../pure/bqrs-utils";
 import TextButton from "./TextButton";
 import { convertNonPrintableChars } from "../../text-utils";
+import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";
 
 const numOfResultsInContractedMode = 5;
 
@@ -45,6 +46,8 @@ type CellProps = {
   sourceLocationPrefix: string;
 };
 
+const sendRawResultsLinkTelemetry = () => sendTelemetry("raw-results-link");
+
 const Cell = ({ value, fileLinkPrefix, sourceLocationPrefix }: CellProps) => {
   switch (typeof value) {
     case "string":
@@ -59,7 +62,11 @@ const Cell = ({ value, fileLinkPrefix, sourceLocationPrefix }: CellProps) => {
       );
       const safeLabel = convertNonPrintableChars(value.label);
       if (url) {
-        return <VSCodeLink href={url}>{safeLabel}</VSCodeLink>;
+        return (
+          <VSCodeLink onClick={sendRawResultsLinkTelemetry} href={url}>
+            {safeLabel}
+          </VSCodeLink>
+        );
       } else {
         return <span>{safeLabel}</span>;
       }
@@ -94,6 +101,8 @@ type RawResultsTableProps = {
   sourceLocationPrefix: string;
 };
 
+const filterTableExpandedTelemetry = (v: boolean) => v;
+
 const RawResultsTable = ({
   schema,
   results,
@@ -101,6 +110,9 @@ const RawResultsTable = ({
   sourceLocationPrefix,
 }: RawResultsTableProps) => {
   const [tableExpanded, setTableExpanded] = useState(false);
+  useTelemetryOnChange(tableExpanded, "raw-results-table-expanded", {
+    filterTelemetryOnValue: filterTableExpandedTelemetry,
+  });
   const numOfResultsToShow = tableExpanded
     ? results.rows.length
     : numOfResultsInContractedMode;

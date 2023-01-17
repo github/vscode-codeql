@@ -12,10 +12,8 @@ import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
 import { VariantAnalysisLoading } from "./VariantAnalysisLoading";
 import { ToVariantAnalysisMessage } from "../../pure/interface-types";
 import { vscode } from "../vscode-api";
-import {
-  defaultFilterSortState,
-  RepositoriesFilterSortState,
-} from "../../pure/variant-analysis-filter-sort";
+import { defaultFilterSortState } from "../../pure/variant-analysis-filter-sort";
+import { useTelemetryOnChange } from "../common/telemetry";
 
 export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;
@@ -63,8 +61,19 @@ export function VariantAnalysis({
   const [selectedRepositoryIds, setSelectedRepositoryIds] = useState<number[]>(
     [],
   );
-  const [filterSortState, setFilterSortState] =
-    useState<RepositoriesFilterSortState>(defaultFilterSortState);
+  useTelemetryOnChange(
+    selectedRepositoryIds,
+    "variant-analysis-selected-repository-ids",
+    {
+      debounceTimeoutMillis: 1000,
+    },
+  );
+  const [filterSortState, setFilterSortState] = useState(
+    defaultFilterSortState,
+  );
+  useTelemetryOnChange(filterSortState, "variant-analysis-filter-sort-state", {
+    debounceTimeoutMillis: 1000,
+  });
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {

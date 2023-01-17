@@ -12,6 +12,7 @@ import {
   GLOBAL_ENABLE_TELEMETRY,
   LOG_TELEMETRY,
   isIntegrationTestMode,
+  isCanary,
 } from "./config";
 import * as appInsights from "applicationinsights";
 import { extLogger } from "./common";
@@ -155,16 +156,29 @@ export class TelemetryListener extends ConfigListener {
       ? CommandCompletion.Cancelled
       : CommandCompletion.Failed;
 
-    const isCanary = (!!CANARY_FEATURES.getValue<boolean>()).toString();
-
     this.reporter.sendTelemetryEvent(
       "command-usage",
       {
         name,
         status,
-        isCanary,
+        isCanary: isCanary().toString(),
       },
       { executionTime },
+    );
+  }
+
+  sendUIInteraction(name: string) {
+    if (!this.reporter) {
+      return;
+    }
+
+    this.reporter.sendTelemetryEvent(
+      "ui-interaction",
+      {
+        name,
+        isCanary: isCanary().toString(),
+      },
+      {},
     );
   }
 

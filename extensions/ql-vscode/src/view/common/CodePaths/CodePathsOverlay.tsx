@@ -7,6 +7,7 @@ import {
   CodeFlow,
   ResultSeverity,
 } from "../../../remote-queries/shared/analysis-result";
+import { useTelemetryOnChange } from "../telemetry";
 import { SectionTitle } from "../SectionTitle";
 import { VerticalSpace } from "../VerticalSpace";
 import { CodeFlowsDropdown } from "./CodeFlowsDropdown";
@@ -77,6 +78,7 @@ export const CodePathsOverlay = ({
   onClose,
 }: CodePathsOverlayProps) => {
   const [selectedCodeFlow, setSelectedCodeFlow] = useState(codeFlows[0]);
+  useTelemetryOnChange(selectedCodeFlow, "code-flow-selected");
 
   return (
     <OverlayContainer>

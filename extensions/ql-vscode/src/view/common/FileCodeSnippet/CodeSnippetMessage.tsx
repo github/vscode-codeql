@@ -8,6 +8,7 @@ import {
 } from "../../../remote-queries/shared/analysis-result";
 import { createRemoteFileRef } from "../../../pure/location-link-utils";
 import { VerticalSpace } from "../VerticalSpace";
+import { sendTelemetry } from "../telemetry";
 
 const getSeverityColor = (severity: ResultSeverity) => {
   switch (severity) {
@@ -49,6 +50,8 @@ type CodeSnippetMessageProps = {
   children: React.ReactNode;
 };
 
+const sendAlertMessageLinkTelemetry = () => sendTelemetry("alert-message-link");
+
 export const CodeSnippetMessage = ({
   message,
   severity,
@@ -65,6 +68,7 @@ export const CodeSnippetMessage = ({
               return (
                 <LocationLink
                   key={index}
+                  onClick={sendAlertMessageLinkTelemetry}
                   href={createRemoteFileRef(
                     token.location.fileLink,
                     token.location.highlightedRegion?.startLine,

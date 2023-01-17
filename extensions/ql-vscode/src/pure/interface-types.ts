@@ -413,7 +413,8 @@ export type FromRemoteQueriesMessage =
   | RemoteQueryDownloadAnalysisResultsMessage
   | RemoteQueryDownloadAllAnalysesResultsMessage
   | RemoteQueryExportResultsMessage
-  | CopyRepoListMessage;
+  | CopyRepoListMessage
+  | TelemetryMessage;
 
 export type ToRemoteQueriesMessage =
   | SetRemoteQueryResultMessage
@@ -504,6 +505,11 @@ export interface CancelVariantAnalysisMessage {
   t: "cancelVariantAnalysis";
 }
 
+export interface TelemetryMessage {
+  t: "telemetry";
+  action: string;
+}
+
 export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
   | SetRepoResultsMessage
@@ -517,4 +523,5 @@ export type FromVariantAnalysisMessage =
   | CopyRepositoryListMessage
   | ExportResultsMessage
   | OpenLogsMessage
-  | CancelVariantAnalysisMessage;
+  | CancelVariantAnalysisMessage
+  | TelemetryMessage;

@@ -11,6 +11,7 @@ import {
   ResultSeverity,
 } from "../../../remote-queries/shared/analysis-result";
 import { CodePathsOverlay } from "./CodePathsOverlay";
+import { useTelemetryOnChange } from "../telemetry";
 
 const ShowPathsLink = styled(VSCodeLink)`
   cursor: pointer;
@@ -23,6 +24,8 @@ export type CodePathsProps = {
   severity: ResultSeverity;
 };
 
+const filterIsOpenTelemetry = (v: boolean) => v;
+
 export const CodePaths = ({
   codeFlows,
   ruleDescription,
@@ -30,6 +33,9 @@ export const CodePaths = ({
   severity,
 }: CodePathsProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  useTelemetryOnChange(isOpen, "code-path-is-open", {
+    filterTelemetryOnValue: filterIsOpenTelemetry,
+  });
 
   const linkRef = useRef<HTMLAnchorElement>(null);
 

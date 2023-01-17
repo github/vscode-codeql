@@ -24,6 +24,7 @@ import { vscode } from "../vscode-api";
 import { AnalyzedRepoItemContent } from "./AnalyzedRepoItemContent";
 import StarCount from "../common/StarCount";
 import { LastUpdated } from "../common/LastUpdated";
+import { useTelemetryOnChange } from "../common/telemetry";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -157,6 +158,8 @@ const isExpandableContentLoaded = (
   return resultsLoaded;
 };
 
+const filterRepoRowExpandedTelemetry = (v: boolean) => v;
+
 export const RepoRow = ({
   repository,
   status,
@@ -168,6 +171,9 @@ export const RepoRow = ({
   onSelectedChange,
 }: RepoRowProps) => {
   const [isExpanded, setExpanded] = useState(false);
+  useTelemetryOnChange(isExpanded, "variant-analysis-repo-row-expanded", {
+    filterTelemetryOnValue: filterRepoRowExpandedTelemetry,
+  });
   const resultsLoaded = !!interpretedResults || !!rawResults;
   const [resultsLoading, setResultsLoading] = useState(false);
 
@@ -198,6 +204,7 @@ export const RepoRow = ({
     repository.fullName,
     status,
     downloadStatus,
+    setExpanded,
   ]);
 
   useEffect(() => {
@@ -205,7 +212,7 @@ export const RepoRow = ({
       setResultsLoading(false);
       setExpanded(true);
     }
-  }, [resultsLoaded, resultsLoading]);
+  }, [resultsLoaded, resultsLoading, setExpanded]);
 
   const onClickCheckbox = useCallback((e: React.MouseEvent) => {
     // Prevent calling the onClick event of the container, which would toggle the expanded state
