@@ -8,6 +8,7 @@ import {
   writeFile,
 } from "fs-extra";
 import { resolve, join } from "path";
+import { isDevBuild } from "./dev";
 
 export interface DeployedPackage {
   distPath: string;
@@ -53,8 +54,6 @@ export async function deployPackage(
       await readFile(packageJsonPath, "utf8"),
     );
 
-    // Default to development build; use flag --release to indicate release build.
-    const isDevBuild = !process.argv.includes("--release");
     const distDir = join(__dirname, "../../../dist");
     await mkdirs(distDir);
 
