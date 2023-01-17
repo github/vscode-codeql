@@ -153,7 +153,7 @@ export class DbConfigStore extends DisposableObject {
       throw Error("Repository name cannot be empty");
     }
 
-    if (this.doesRemoteDbExist(repoNwo)) {
+    if (this.doesRemoteDbExist(repoNwo, parentList)) {
       throw Error(
         `A remote repository with the name '${repoNwo}' already exists`,
       );
