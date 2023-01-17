@@ -926,11 +926,6 @@ export class QueryHistoryManager extends DisposableObject {
     );
 
     await this.writeQueryHistory();
-    const current = this.treeDataProvider.getCurrent();
-    if (current !== undefined) {
-      await this.treeView.reveal(current, { select: true });
-      await this.openQueryResults(current);
-    }
   }
 
   private async removeRemoteQuery(item: RemoteQueryHistoryItem): Promise<void> {

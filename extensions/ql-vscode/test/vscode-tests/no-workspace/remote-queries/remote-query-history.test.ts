@@ -185,9 +185,6 @@ describe("Remote queries and query history manager", () => {
       rawQueryHistory[1].remoteQuery,
       rawQueryHistory[1].status,
     );
-    expect(openRemoteQueryResultsStub).toHaveBeenCalledWith(
-      rawQueryHistory[1].queryId,
-    );
     expect(qhm.treeDataProvider.allHistory).toEqual(rawQueryHistory.slice(1));
 
     // Add it back
