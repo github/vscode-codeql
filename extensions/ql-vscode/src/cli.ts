@@ -549,7 +549,7 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
-   * Runs a CodeQL CLI command, returning the output as JSON.
+   * Runs a CodeQL CLI command, parsing the output as JSON.
    * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
    * @param commandArgs The arguments to pass to the `codeql` command.
    * @param description Description of the action being run, to be shown in log and error messages.
@@ -590,7 +590,20 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
-   * Runs a CodeQL CLI command, returning the output as JSON.
+   * Runs a CodeQL CLI command with authentication, parsing the output as JSON.
+   *
+   * This method is intended for use with commands that accept a `--github-auth-stdin` argument. This
+   * will be added to the command line arguments automatically if an access token is available.
+   *
+   * When the argument is given to the command, the CLI server will prompt for the access token on
+   * stdin. This method will automatically respond to the prompt with the access token.
+   *
+   * There are a few race conditions that can potentially happen:
+   * 1. The user logs in after the command has started. In this case, no access token will be given.
+   * 2. The user logs out after the command has started. In this case, the user will be prompted
+   *   to login again. If they cancel the login, the old access token that was present before the
+   *   command was started will be used.
+   *
    * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
    * @param commandArgs The arguments to pass to the `codeql` command.
    * @param description Description of the action being run, to be shown in log and error messages.
