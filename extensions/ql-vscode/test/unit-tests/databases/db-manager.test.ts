@@ -386,7 +386,7 @@ describe("db manager", () => {
       });
 
       await dbManager.addDbItemToExpandedState(dbItem);
-      const expandedItems = await app.workspaceState.get<ExpandedDbItem[]>(
+      const expandedItems = app.workspaceState.get<ExpandedDbItem[]>(
         DbManager.DB_EXPANDED_STATE_KEY,
       );
 
@@ -414,7 +414,7 @@ describe("db manager", () => {
       });
 
       await dbManager.removeDbItemFromExpandedState(dbItem);
-      const expandedItems = await app.workspaceState.get<ExpandedDbItem[]>(
+      const expandedItems = app.workspaceState.get<ExpandedDbItem[]>(
         DbManager.DB_EXPANDED_STATE_KEY,
       );
 
@@ -445,7 +445,7 @@ describe("db manager", () => {
       });
 
       await dbManager.renameList(dbItem, "new-list-name");
-      const expandedItems = await app.workspaceState.get<ExpandedDbItem[]>(
+      const expandedItems = app.workspaceState.get<ExpandedDbItem[]>(
         DbManager.DB_EXPANDED_STATE_KEY,
       );
 
@@ -466,10 +466,6 @@ describe("db manager", () => {
       await saveDbConfig(dbConfig);
 
       // Populate expanded state with item
-      const variantAnalysisList = {
-        kind: ExpandedDbItemKind.RemoteUserDefinedList,
-        listName,
-      };
       const removedListName = "my-list-5";
       const removedVariantAnalysisList = {
         kind: ExpandedDbItemKind.RemoteUserDefinedList,
@@ -478,16 +474,15 @@ describe("db manager", () => {
 
       await app.workspaceState.update(DbManager.DB_EXPANDED_STATE_KEY, [
         removedVariantAnalysisList,
-        variantAnalysisList,
       ]);
 
       // Trigger adding an item that is not in the config
       const dbItem = createVariantAnalysisUserDefinedListDbItem({
-        listName: "new-item",
+        listName,
       });
 
       await dbManager.addDbItemToExpandedState(dbItem);
-      const expandedItems = await app.workspaceState.get<ExpandedDbItem[]>(
+      const expandedItems = app.workspaceState.get<ExpandedDbItem[]>(
         DbManager.DB_EXPANDED_STATE_KEY,
       );
 
