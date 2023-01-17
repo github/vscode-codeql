@@ -619,7 +619,17 @@ export class CodeQLCliServer implements Disposable {
       progressReporter,
       async (line) => {
         if (line.startsWith("Enter value for --github-auth-stdin")) {
-          return credentials.getAccessToken();
+          try {
+            return await credentials.getAccessToken();
+          } catch (e) {
+            // If the user cancels the authentication prompt, we still need to give a value to the CLI.
+            // By giving a potentially invalid value, the user will just get a 401/403 when they try to access a
+            // private package and the access token is invalid.
+            // This code path is very rare to hit. It would only be hit if the user is logged in when
+            // starting the command, then logging out before the getAccessToken() is called again and
+            // then cancelling the authentication prompt.
+            return accessToken;
+          }
         }
 
         return undefined;
