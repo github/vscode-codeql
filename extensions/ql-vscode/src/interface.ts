@@ -256,6 +256,7 @@ export class ResultsView extends AbstractWebview<
         }
         case "changeSort":
           await this.changeRawSortState(msg.resultSetName, msg.sortState);
+          telemetryListener?.sendUIInteraction("local-results-column-sorting");
           break;
         case "changeInterpretedSort":
           await this.changeInterpretedSortState(msg.sortState);
