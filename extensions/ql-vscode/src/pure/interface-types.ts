@@ -200,7 +200,8 @@ export type FromResultsViewMsg =
   | ChangeInterpretedResultsSortMsg
   | ViewLoadedMsg
   | ChangePage
-  | OpenFileMsg;
+  | OpenFileMsg
+  | TelemetryMessage;
 
 /**
  * Message from the results view to open a database source

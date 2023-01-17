@@ -65,6 +65,7 @@ import {
 import { AbstractWebview, WebviewPanelConfig } from "./abstract-webview";
 import { PAGE_SIZE } from "./config";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
+import { telemetryListener } from "./telemetry";
 
 /**
  * interface.ts
@@ -281,6 +282,9 @@ export class ResultsView extends AbstractWebview<
           break;
         case "openFile":
           await this.openFile(msg.filePath);
+          break;
+        case "telemetry":
+          telemetryListener?.sendUIInteraction(msg.action);
           break;
         default:
           assertNever(msg);
