@@ -4,6 +4,7 @@ import { vscode } from "../vscode-api";
 import { RawResultsSortState, SortDirection } from "../../pure/interface-types";
 import { nextSortDirection } from "./result-table-utils";
 import { Column } from "../../pure/bqrs-cli-types";
+import { sendTelemetry } from "../common/telemetry";
 
 interface Props {
   readonly columns: readonly Column[];
@@ -39,6 +40,7 @@ function toggleSortStateForColumn(
     resultSetName: schemaName,
     sortState: nextSortState,
   });
+  sendTelemetry("local-results-column-sorting");
 }
 
 export default function RawTableHeader(props: Props) {

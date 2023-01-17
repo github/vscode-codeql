@@ -154,6 +154,7 @@ export class ResultTables extends React.Component<
       pageNumber: 0,
       selectedTable,
     });
+    sendTelemetry("local-results-table-selection");
   };
 
   private alertTableExtras(): JSX.Element | undefined {
@@ -261,6 +262,7 @@ export class ResultTables extends React.Component<
 
     const openQuery = () => {
       openFile(this.props.queryPath);
+      sendTelemetry("local-results-open-query-file");
     };
     const fileName = FILE_PATH_REGEX.exec(this.props.queryPath)?.[1] || "query";
 
