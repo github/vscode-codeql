@@ -26,6 +26,7 @@ import {
   openFile,
 } from "./result-table-utils";
 import { vscode } from "../vscode-api";
+import { sendTelemetry } from "../common/telemetry";
 
 const FILE_PATH_REGEX = /^(?:.+[\\/])*(.+)$/;
 
@@ -165,6 +166,9 @@ export class ResultTables extends React.Component<
       this.setState({
         problemsViewSelected: e.target.checked,
       });
+      if (e.target.checked) {
+        sendTelemetry("local-results-show-results-in-problems-view");
+      }
       if (resultsPath !== undefined) {
         vscode.postMessage({
           t: "toggleDiagnostics",
@@ -199,6 +203,10 @@ export class ResultTables extends React.Component<
     return parsedResultSets.pageNumber * parsedResultSets.pageSize;
   }
 
+  sendResultsPageChangedTelemetry() {
+    sendTelemetry("local-results-alert-table-page-changed");
+  }
+
   renderPageButtons(): JSX.Element {
     const { parsedResultSets } = this.props;
     const selectedTable = this.state.selectedTable;
@@ -217,6 +225,7 @@ export class ResultTables extends React.Component<
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       this.setState({ selectedPage: e.target.value });
+      this.sendResultsPageChangedTelemetry();
     };
     const choosePage = (input: string) => {
       const pageNumber = parseInt(input);
@@ -239,6 +248,7 @@ export class ResultTables extends React.Component<
         pageNumber: Math.max(parsedResultSets.pageNumber - 1, 0),
         selectedTable,
       });
+      this.sendResultsPageChangedTelemetry();
     };
     const nextPage = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
       vscode.postMessage({
@@ -246,6 +256,7 @@ export class ResultTables extends React.Component<
         pageNumber: Math.min(parsedResultSets.pageNumber + 1, numPages - 1),
         selectedTable,
       });
+      this.sendResultsPageChangedTelemetry();
     };
 
     const openQuery = () => {
@@ -334,6 +345,7 @@ export class ResultTables extends React.Component<
             nonemptyRawResults={nonemptyRawResults}
             showRawResults={() => {
               this.setState({ selectedTable: SELECT_TABLE_NAME });
+              sendTelemetry("local-results-show-raw-results");
             }}
             offset={this.getOffset()}
           />

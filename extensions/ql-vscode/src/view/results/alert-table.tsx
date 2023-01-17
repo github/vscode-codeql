@@ -30,6 +30,7 @@ import {
 import { vscode } from "../vscode-api";
 import { isWholeFileLoc, isLineColumnLoc } from "../../pure/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
+import { sendTelemetry } from "../common/telemetry";
 
 export type PathTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -63,6 +64,9 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
         for (const str of keyStrings) {
           expanded.add(str);
         }
+      }
+      if (expanded) {
+        sendTelemetry("local-results-alert-table-path-expanded");
       }
       return { expanded };
     });
@@ -185,6 +189,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           ...previousState,
           selectedItem: resultKey,
         }));
+        sendTelemetry("local-results-alert-table-path-selected");
       };
     };
 
