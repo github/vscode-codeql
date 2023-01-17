@@ -500,6 +500,7 @@ describe("db panel", () => {
             repositories: ["owner1/repo1"],
           },
         ],
+        remoteRepos: ["owner2/repo2"],
       });
 
       await saveDbConfig(dbConfig);
