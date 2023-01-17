@@ -482,7 +482,9 @@ describe("db config store", () => {
       });
       await expect(
         configStore.renameRemoteList(currentDbItem, "list2"),
-      ).rejects.toThrow(`A remote list with the name 'list2' already exists`);
+      ).rejects.toThrow(
+        `A variant analysis list with the name 'list2' already exists`,
+      );
 
       configStore.dispose();
     });

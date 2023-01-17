@@ -135,14 +135,14 @@ export class DbPanel extends DisposableObject {
       const quickPickItems = [
         {
           label: "$(repo) From a GitHub repository",
-          detail: "Add a remote repository from GitHub",
+          detail: "Add a variant analysis repository from GitHub",
           alwaysShow: true,
           kind: "repo",
         },
         {
           label: "$(organization) All repositories of a GitHub org or owner",
           detail:
-            "Add a remote list of repositories from a GitHub organization/owner",
+            "Add a variant analysis list of repositories from a GitHub organization/owner",
           alwaysShow: true,
           kind: "owner",
         },
@@ -151,7 +151,7 @@ export class DbPanel extends DisposableObject {
         await window.showQuickPick<RemoteDatabaseQuickPickItem>(
           quickPickItems,
           {
-            title: "Add a remote repository",
+            title: "Add a variant analysis repository",
             placeHolder: "Select an option",
             ignoreFocusOut: true,
           },
@@ -171,7 +171,7 @@ export class DbPanel extends DisposableObject {
 
   private async addNewRemoteRepo(parentList?: string): Promise<void> {
     const repoName = await window.showInputBox({
-      title: "Add a remote repository",
+      title: "Add a repository",
       prompt: "Insert a GitHub repository URL or name with owner",
       placeHolder: "github.com/<owner>/<repo> or <owner>/<repo>",
     });
@@ -246,8 +246,8 @@ export class DbPanel extends DisposableObject {
     } else {
       const quickPickItems = [
         {
-          label: "$(cloud) Remote",
-          detail: "Add a remote database from GitHub",
+          label: "$(cloud) Variant Analysis",
+          detail: "Add a repository from GitHub",
           alwaysShow: true,
           kind: DbListKind.Remote,
         },
@@ -419,7 +419,7 @@ export class DbPanel extends DisposableObject {
     const githubUrl = getGitHubUrl(treeViewItem.dbItem);
     if (!githubUrl) {
       throw new Error(
-        "Unable to open on GitHub. Please select a remote repository or owner.",
+        "Unable to open on GitHub. Please select a variant analysis repository or owner.",
       );
     }
 
