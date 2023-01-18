@@ -1,6 +1,8 @@
 .vscode-test/
 node_modules/
 out/
+**/*.proto
+src/proto-generated/*.ts
 
 # Include the Storybook config
 !.storybook
