@@ -7,6 +7,7 @@ import {
 } from "../../../src/databases/config/db-config";
 import { DbConfigStore } from "../../../src/databases/config/db-config-store";
 import {
+  DbListKind,
   flattenDbItems,
   isLocalDatabaseDbItem,
   isLocalListDbItem,
@@ -65,6 +66,189 @@ describe("db manager", () => {
   afterEach(async () => {
     await remove(tempWorkspaceStoragePath);
     dbConfigStore.dispose();
+  });
+
+  describe("adding items", () => {
+    describe("adding a remote repo", () => {
+      it("should add a new remote repo", async () => {
+        const dbConfig: DbConfig = createDbConfig({
+          remoteRepos: ["owner1/repo1"],
+        });
+
+        await saveDbConfig(dbConfig);
+
+        await dbManager.addNewRemoteRepo("owner2/repo2");
+
+        const dbConfigFileContents = await readDbConfigDirectly();
+        expect(
+          dbConfigFileContents.databases.variantAnalysis.repositories.length,
+        ).toBe(2);
+        expect(
+          dbConfigFileContents.databases.variantAnalysis.repositories[1],
+        ).toEqual("owner2/repo2");
+      });
+
+      it("should add a new remote repo to a user defined list", async () => {
+        const dbConfig: DbConfig = createDbConfig({
+          remoteLists: [
+            {
+              name: "my-list-1",
+              repositories: ["owner1/repo1"],
+            },
+          ],
+        });
+
+        await saveDbConfig(dbConfig);
+
+        await dbManager.addNewRemoteRepo("owner2/repo2", "my-list-1");
+
+        const dbConfigFileContents = await readDbConfigDirectly();
+        expect(
+          dbConfigFileContents.databases.variantAnalysis.repositoryLists.length,
+        ).toBe(1);
+
+        expect(
+          dbConfigFileContents.databases.variantAnalysis.repositoryLists[0],
+        ).toEqual({
+          name: "my-list-1",
+          repositories: ["owner1/repo1", "owner2/repo2"],
+        });
+      });
+
+      it("should not allow adding a new remote db with empty name", async () => {
+        const dbConfig = createDbConfig();
+
+        await saveDbConfig(dbConfig);
+
+        await expect(dbManager.addNewRemoteRepo("")).rejects.toThrow(
+          new Error("Repository name cannot be empty"),
+        );
+      });
+
+      it("should not allow adding a remote db with duplicate name", async () => {
+        const dbConfig = createDbConfig({
+          remoteRepos: ["owner1/repo1"],
+        });
+
+        await saveDbConfig(dbConfig);
+
+        await expect(
+          dbManager.addNewRemoteRepo("owner1/repo1"),
+        ).rejects.toThrow(
+          new Error(
+            "A variant analysis repository with the name 'owner1/repo1' already exists",
+          ),
+        );
+      });
+    });
+
+    describe("adding a list", () => {
+      it("should add a new remote list", async () => {
+        const dbConfig: DbConfig = createDbConfig({
+          remoteLists: [
+            {
+              name: "my-list-1",
+              repositories: ["owner1/repo1", "owner1/repo2"],
+            },
+          ],
+          selected: {
+            kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
+            listName: "my-list-1",
+          },
+        });
+
+        await saveDbConfig(dbConfig);
+
+        await dbManager.addNewList(DbListKind.Remote, "my-list-2");
+
+        const dbConfigFileContents = await readDbConfigDirectly();
+        expect(
+          dbConfigFileContents.databases.variantAnalysis.repositoryLists.length,
+        ).toBe(2);
+        expect(
+          dbConfigFileContents.databases.variantAnalysis.repositoryLists[1],
+        ).toEqual({
+          name: "my-list-2",
+          repositories: [],
+        });
+      });
+
+      it("should throw error when adding a new list to a local node", async () => {
+        const dbConfig: DbConfig = createDbConfig({
+          localLists: [
+            {
+              name: "my-list-1",
+              databases: [],
+            },
+          ],
+        });
+        await saveDbConfig(dbConfig);
+
+        await dbManager.addNewList(DbListKind.Local, "my-list-2");
+
+        const dbConfigFileContents = await readDbConfigDirectly();
+        expect(dbConfigFileContents.databases.local.lists.length).toBe(2);
+        expect(dbConfigFileContents.databases.local.lists[1]).toEqual({
+          name: "my-list-2",
+          databases: [],
+        });
+      });
+
+      it("should not allow adding a new list with empty name", async () => {
+        const dbConfig = createDbConfig();
+
+        await saveDbConfig(dbConfig);
+
+        await expect(
+          dbManager.addNewList(DbListKind.Remote, ""),
+        ).rejects.toThrow(new Error("List name cannot be empty"));
+      });
+
+      it("should not allow adding a list with duplicate name", async () => {
+        const dbConfig = createDbConfig({
+          remoteLists: [
+            {
+              name: "my-list-1",
+              repositories: ["owner1/repo1", "owner1/repo2"],
+            },
+          ],
+        });
+
+        await saveDbConfig(dbConfig);
+
+        await expect(
+          dbManager.addNewList(DbListKind.Remote, "my-list-1"),
+        ).rejects.toThrow(
+          new Error(
+            "A variant analysis list with the name 'my-list-1' already exists",
+          ),
+        );
+      });
+    });
+  });
+
+  describe("adding an owner", () => {
+    it("should not allow adding a new remote owner with empty name", async () => {
+      const dbConfig = createDbConfig();
+
+      await saveDbConfig(dbConfig);
+
+      await expect(dbManager.addNewRemoteOwner("")).rejects.toThrow(
+        new Error("Owner name cannot be empty"),
+      );
+    });
+
+    it("should not allow adding a remote owner with duplicate name", async () => {
+      const dbConfig = createDbConfig({
+        remoteOwners: ["owner1"],
+      });
+
+      await saveDbConfig(dbConfig);
+
+      await expect(dbManager.addNewRemoteOwner("owner1")).rejects.toThrow(
+        new Error("An owner with the name 'owner1' already exists"),
+      );
+    });
   });
 
   describe("renaming items", () => {
