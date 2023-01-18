@@ -674,7 +674,7 @@ describe("query-history", () => {
               ]);
             });
 
-            it("should remove the item", () => {
+            it("should remove the item", async () => {
               expect(
                 variantAnalysisManagerStub.removeVariantAnalysis,
               ).toHaveBeenCalledWith(toDelete.variantAnalysis);
@@ -683,7 +683,7 @@ describe("query-history", () => {
               ).not.toContain(toDelete);
             });
 
-            it("should show a modal asking 'Are you sure?'", () => {
+            it("should show a modal asking 'Are you sure?'", async () => {
               expect(showBinaryChoiceDialogSpy).toHaveBeenCalledWith(
                 "You are about to delete this query: query-name. Are you sure?",
               );
@@ -727,7 +727,7 @@ describe("query-history", () => {
               ]);
             });
 
-            it("should remove the item", () => {
+            it("should remove the item", async () => {
               expect(
                 variantAnalysisManagerStub.removeVariantAnalysis,
               ).toHaveBeenCalledWith(toDelete.variantAnalysis);
@@ -736,7 +736,7 @@ describe("query-history", () => {
               ).not.toContain(toDelete);
             });
 
-            it("should not show a modal asking 'Are you sure?'", () => {
+            it("should not show a modal asking 'Are you sure?'", async () => {
               expect(showBinaryChoiceDialogSpy).not.toHaveBeenCalled();
             });
           });
@@ -761,7 +761,7 @@ describe("query-history", () => {
               ]);
             });
 
-            it("should remove the item", () => {
+            it("should remove the item", async () => {
               expect(
                 variantAnalysisManagerStub.removeVariantAnalysis,
               ).toHaveBeenCalledWith(toDelete.variantAnalysis);
@@ -770,7 +770,7 @@ describe("query-history", () => {
               ).not.toContain(toDelete);
             });
 
-            it("should not show a modal asking 'Are you sure?'", () => {
+            it("should not show a modal asking 'Are you sure?'", async () => {
               expect(showBinaryChoiceDialogSpy).not.toHaveBeenCalled();
             });
           });
