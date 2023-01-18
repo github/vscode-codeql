@@ -4,7 +4,6 @@ import {
   ExtensionContext,
   ConfigurationChangeEvent,
 } from "vscode";
-import TelemetryReporter from "vscode-extension-telemetry";
 import {
   ConfigListener,
   CANARY_FEATURES,
@@ -14,10 +13,14 @@ import {
   isIntegrationTestMode,
   isCanary,
 } from "./config";
-import * as appInsights from "applicationinsights";
 import { extLogger } from "./common";
 import { UserCancellationException } from "./commandRunner";
 import { showBinaryChoiceWithUrlDialog } from "./helpers";
+import TelemetryReporter, {
+  ReplacementOption,
+  TelemetryEventMeasurements,
+  TelemetryEventProperties,
+} from "@vscode/extension-telemetry/lib/telemetryReporter";
 
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
 const key = "REPLACE-APP-INSIGHTS-KEY";
@@ -29,25 +32,23 @@ export enum CommandCompletion {
 }
 
 // Avoid sending the following data to App insights since we don't need it.
-const tagsToRemove = [
-  "ai.application.ver",
-  "ai.device.id",
-  "ai.cloud.roleInstance",
-  "ai.cloud.role",
-  "ai.device.id",
-  "ai.device.osArchitecture",
-  "ai.device.osPlatform",
-  "ai.device.osVersion",
-  "ai.internal.sdkVersion",
-  "ai.session.id",
-];
-
-const baseDataPropertiesToRemove = [
-  "common.os",
-  "common.platformversion",
-  "common.remotename",
-  "common.uikind",
-  "common.vscodesessionid",
+// This will be applied to tags and baseData
+const telemetryReplacementOptions: ReplacementOption[] = [
+  { lookup: new RegExp("ai\\.application\\.ver") },
+  { lookup: new RegExp("ai\\.device\\.id") },
+  { lookup: new RegExp("ai\\.cloud\\.roleInstance") },
+  { lookup: new RegExp("ai\\.cloud\\.role") },
+  { lookup: new RegExp("ai\\.device\\.id") },
+  { lookup: new RegExp("ai\\.device\\.osArchitecture") },
+  { lookup: new RegExp("ai\\.device\\.osPlatform") },
+  { lookup: new RegExp("ai\\.device\\.osVersion") },
+  { lookup: new RegExp("ai\\.internal\\.sdkVersion") },
+  { lookup: new RegExp("ai\\.session\\.id") },
+  { lookup: new RegExp("common\\.os") },
+  { lookup: new RegExp("common\\.platformversion") },
+  { lookup: new RegExp("common\\.remotename") },
+  { lookup: new RegExp("common\\.uikind") },
+  { lookup: new RegExp("common\\.vscodesessionid") },
 ];
 
 export class TelemetryListener extends ConfigListener {
@@ -117,28 +118,9 @@ export class TelemetryListener extends ConfigListener {
       this.version,
       this.key,
       /* anonymize stack traces */ true,
+      telemetryReplacementOptions,
     );
     this.push(this.reporter);
-
-    const client = (this.reporter as any)
-      .appInsightsClient as appInsights.TelemetryClient;
-    if (client) {
-      // add a telemetry processor to delete unwanted properties
-      client.addTelemetryProcessor((envelope: any) => {
-        tagsToRemove.forEach((tag) => delete envelope.tags[tag]);
-        const baseDataProperties = (envelope.data as any)?.baseData?.properties;
-        if (baseDataProperties) {
-          baseDataPropertiesToRemove.forEach(
-            (prop) => delete baseDataProperties[prop],
-          );
-        }
-
-        if (LOG_TELEMETRY.getValue<boolean>()) {
-          void extLogger.log(`Telemetry: ${JSON.stringify(envelope)}`);
-        }
-        return true;
-      });
-    }
   }
 
   dispose() {
@@ -146,17 +128,30 @@ export class TelemetryListener extends ConfigListener {
     void this.reporter?.dispose();
   }
 
-  sendCommandUsage(name: string, executionTime: number, error?: Error) {
+  private sendTelemetryEvent(
+    eventName: string,
+    properties?: TelemetryEventProperties,
+    measurements?: TelemetryEventMeasurements,
+  ) {
     if (!this.reporter) {
       return;
     }
+    this.reporter.sendTelemetryEvent(eventName, properties, measurements);
+    if (LOG_TELEMETRY.getValue<boolean>()) {
+      void extLogger.log(
+        `Telemetry: ${JSON.stringify({ eventName, properties, measurements })}`,
+      );
+    }
+  }
+
+  sendCommandUsage(name: string, executionTime: number, error?: Error) {
     const status = !error
       ? CommandCompletion.Success
       : error instanceof UserCancellationException
       ? CommandCompletion.Cancelled
       : CommandCompletion.Failed;
 
-    this.reporter.sendTelemetryEvent(
+    this.sendTelemetryEvent(
       "command-usage",
       {
         name,
@@ -168,11 +163,7 @@ export class TelemetryListener extends ConfigListener {
   }
 
   sendUIInteraction(name: string) {
-    if (!this.reporter) {
-      return;
-    }
-
-    this.reporter.sendTelemetryEvent(
+    this.sendTelemetryEvent(
       "ui-interaction",
       {
         name,
