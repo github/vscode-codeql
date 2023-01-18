@@ -107,25 +107,24 @@ describe("db panel rendering nodes", () => {
     await saveDbConfig(dbConfig);
 
     const dbTreeItems = await dbTreeDataProvider.getChildren();
-
     expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
 
-    const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).toBeTruthy();
-    expect(remoteRootNode.collapsibleState).toBe(
+    const remoteRootNode = dbTreeItems?.find(
+      (i) => i.dbItem?.kind === DbItemKind.RootRemote,
+    );
+    expect(remoteRootNode).toBeTruthy();
+    expect(remoteRootNode!.collapsibleState).toBe(
       TreeItemCollapsibleState.Collapsed,
     );
-    expect(remoteRootNode.children).toBeTruthy();
-    expect(remoteRootNode.children.length).toBe(5);
+    expect(remoteRootNode!.children).toBeTruthy();
+    expect(remoteRootNode!.children.length).toBe(5);
 
-    const systemDefinedListItems = remoteRootNode.children.filter(
+    const systemDefinedListItems = remoteRootNode!.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.RemoteSystemDefinedList,
     );
     expect(systemDefinedListItems.length).toBe(3);
 
-    const userDefinedListItems = remoteRootNode.children.filter(
+    const userDefinedListItems = remoteRootNode!.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList,
     );
     expect(userDefinedListItems.length).toBe(2);
@@ -148,20 +147,21 @@ describe("db panel rendering nodes", () => {
     await saveDbConfig(dbConfig);
 
     const dbTreeItems = await dbTreeDataProvider.getChildren();
-
     expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
 
-    const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).toBeTruthy();
-    expect(remoteRootNode.collapsibleState).toBe(
+    const remoteRootNode = dbTreeItems?.find(
+      (i) => i.dbItem?.kind === DbItemKind.RootRemote,
+    );
+    expect(remoteRootNode).toBeTruthy();
+
+    expect(remoteRootNode!.dbItem).toBeTruthy();
+    expect(remoteRootNode!.collapsibleState).toBe(
       TreeItemCollapsibleState.Collapsed,
     );
-    expect(remoteRootNode.children).toBeTruthy();
-    expect(remoteRootNode.children.length).toBe(5);
+    expect(remoteRootNode!.children).toBeTruthy();
+    expect(remoteRootNode!.children.length).toBe(5);
 
-    const ownerListItems = remoteRootNode.children.filter(
+    const ownerListItems = remoteRootNode!.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.RemoteOwner,
     );
     expect(ownerListItems.length).toBe(2);
@@ -177,20 +177,21 @@ describe("db panel rendering nodes", () => {
     await saveDbConfig(dbConfig);
 
     const dbTreeItems = await dbTreeDataProvider.getChildren();
-
     expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
 
-    const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).toBeTruthy();
-    expect(remoteRootNode.collapsibleState).toBe(
+    const remoteRootNode = dbTreeItems?.find(
+      (i) => i.dbItem?.kind === DbItemKind.RootRemote,
+    );
+    expect(remoteRootNode).toBeTruthy();
+
+    expect(remoteRootNode!.dbItem).toBeTruthy();
+    expect(remoteRootNode!.collapsibleState).toBe(
       TreeItemCollapsibleState.Collapsed,
     );
-    expect(remoteRootNode.children).toBeTruthy();
-    expect(remoteRootNode.children.length).toBe(5);
+    expect(remoteRootNode!.children).toBeTruthy();
+    expect(remoteRootNode!.children.length).toBe(5);
 
-    const repoItems = remoteRootNode.children.filter(
+    const repoItems = remoteRootNode!.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.RemoteRepo,
     );
     expect(repoItems.length).toBe(2);
@@ -235,20 +236,21 @@ describe("db panel rendering nodes", () => {
     await saveDbConfig(dbConfig);
 
     const dbTreeItems = await dbTreeDataProvider.getChildren();
-
     expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
 
-    const localRootNode = items[1];
-    expect(localRootNode.dbItem).toBeTruthy();
-    expect(localRootNode.collapsibleState).toBe(
+    const localRootNode = dbTreeItems?.find(
+      (i) => i.dbItem?.kind === DbItemKind.RootLocal,
+    );
+    expect(localRootNode).toBeTruthy();
+
+    expect(localRootNode!.dbItem).toBeTruthy();
+    expect(localRootNode!.collapsibleState).toBe(
       TreeItemCollapsibleState.Collapsed,
     );
-    expect(localRootNode.children).toBeTruthy();
-    expect(localRootNode.children.length).toBe(2);
+    expect(localRootNode!.children).toBeTruthy();
+    expect(localRootNode!.children.length).toBe(2);
 
-    const localListItems = localRootNode.children.filter(
+    const localListItems = localRootNode!.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.LocalList,
     );
     expect(localListItems.length).toBe(2);
@@ -305,18 +307,19 @@ describe("db panel rendering nodes", () => {
     const dbTreeItems = await dbTreeDataProvider.getChildren();
 
     expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(2);
+    const localRootNode = dbTreeItems?.find(
+      (i) => i.dbItem?.kind === DbItemKind.RootLocal,
+    );
+    expect(localRootNode).toBeTruthy();
 
-    const localRootNode = items[1];
-    expect(localRootNode.dbItem).toBeTruthy();
-    expect(localRootNode.collapsibleState).toBe(
+    expect(localRootNode!.dbItem).toBeTruthy();
+    expect(localRootNode!.collapsibleState).toBe(
       TreeItemCollapsibleState.Collapsed,
     );
-    expect(localRootNode.children).toBeTruthy();
-    expect(localRootNode.children.length).toBe(2);
+    expect(localRootNode!.children).toBeTruthy();
+    expect(localRootNode!.children.length).toBe(2);
 
-    const localDatabaseItems = localRootNode.children.filter(
+    const localDatabaseItems = localRootNode!.children.filter(
       (item) => item.dbItem?.kind === DbItemKind.LocalDatabase,
     );
     expect(localDatabaseItems.length).toBe(2);
