@@ -669,12 +669,13 @@ describe("query-history", () => {
               await queryHistoryManager.treeView.reveal(toDelete, {
                 select: true,
               });
-              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-                toDelete,
-              ]);
             });
 
             it("should remove the item", async () => {
+              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+                toDelete,
+              ]);
+
               expect(
                 variantAnalysisManagerStub.removeVariantAnalysis,
               ).toHaveBeenCalledWith(toDelete.variantAnalysis);
@@ -684,6 +685,10 @@ describe("query-history", () => {
             });
 
             it("should show a modal asking 'Are you sure?'", async () => {
+              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+                toDelete,
+              ]);
+
               expect(showBinaryChoiceDialogSpy).toHaveBeenCalledWith(
                 "You are about to delete this query: query-name. Are you sure?",
               );
@@ -720,14 +725,14 @@ describe("query-history", () => {
               expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
                 selected,
               );
+            });
 
+            it("should remove the item", async () => {
               // remove an item
               await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
                 toDelete,
               ]);
-            });
 
-            it("should remove the item", async () => {
               expect(
                 variantAnalysisManagerStub.removeVariantAnalysis,
               ).toHaveBeenCalledWith(toDelete.variantAnalysis);
@@ -737,6 +742,11 @@ describe("query-history", () => {
             });
 
             it("should not show a modal asking 'Are you sure?'", async () => {
+              // remove an item
+              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+                toDelete,
+              ]);
+
               expect(showBinaryChoiceDialogSpy).not.toHaveBeenCalled();
             });
           });
@@ -756,12 +766,13 @@ describe("query-history", () => {
               await queryHistoryManager.treeView.reveal(toDelete, {
                 select: true,
               });
-              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-                toDelete,
-              ]);
             });
 
             it("should remove the item", async () => {
+              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+                toDelete,
+              ]);
+
               expect(
                 variantAnalysisManagerStub.removeVariantAnalysis,
               ).toHaveBeenCalledWith(toDelete.variantAnalysis);
@@ -771,6 +782,10 @@ describe("query-history", () => {
             });
 
             it("should not show a modal asking 'Are you sure?'", async () => {
+              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
+                toDelete,
+              ]);
+
               expect(showBinaryChoiceDialogSpy).not.toHaveBeenCalled();
             });
           });
