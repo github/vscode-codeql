@@ -18,6 +18,7 @@ import { ResultRow } from "../../pure/bqrs-cli-types";
 import { onNavigation } from "./results";
 import { tryGetResolvableLocation } from "../../pure/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
+import { sendTelemetry } from "../common/telemetry";
 
 export type RawTableProps = ResultTableProps & {
   resultSet: RawTableResultSet;
@@ -44,6 +45,7 @@ export class RawTable extends React.Component<RawTableProps, RawTableState> {
       ...prev,
       selectedItem: { row, column },
     }));
+    sendTelemetry("local-results-raw-results-table-selected");
   }
 
   render(): React.ReactNode {
