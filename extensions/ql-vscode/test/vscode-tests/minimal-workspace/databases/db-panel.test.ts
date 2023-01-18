@@ -715,7 +715,9 @@ describe("db panel", () => {
       await expect(
         dbManager.addNewList(DbListKind.Remote, "my-list-1"),
       ).rejects.toThrow(
-        new Error("A remote list with the name 'my-list-1' already exists"),
+        new Error(
+          "A variant analysis list with the name 'my-list-1' already exists",
+        ),
       );
     });
 
@@ -738,7 +740,7 @@ describe("db panel", () => {
 
       await expect(dbManager.addNewRemoteRepo("owner1/repo1")).rejects.toThrow(
         new Error(
-          "A remote repository with the name 'owner1/repo1' already exists",
+          "A variant analysis repository with the name 'owner1/repo1' already exists",
         ),
       );
     });
@@ -761,7 +763,7 @@ describe("db panel", () => {
       await saveDbConfig(dbConfig);
 
       await expect(dbManager.addNewRemoteOwner("owner1")).rejects.toThrow(
-        new Error("A remote owner with the name 'owner1' already exists"),
+        new Error("An owner with the name 'owner1' already exists"),
       );
     });
   });

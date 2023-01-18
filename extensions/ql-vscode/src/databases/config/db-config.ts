@@ -381,7 +381,7 @@ function getRemoteList(
   );
 
   if (!list) {
-    throw Error(`Cannot find remote list '${listName}'`);
+    throw Error(`Cannot find variant analysis list '${listName}'`);
   }
 
   return list;
