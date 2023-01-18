@@ -11,7 +11,8 @@ on:
           - prepend
           - replace
       version:
-        description: "Version"
+        description: |
+          The version to prepend to the supported versions file. This should be in the form: `vA.B.C`.
         required: false
         type: string
   pull_request:
