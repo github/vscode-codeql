@@ -81,12 +81,12 @@ describe("db panel selection", () => {
 
     const list1 = remoteRootNode.children.find(
       (c) =>
-        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
         c.dbItem?.listName === "my-list-1",
     );
     const list2 = remoteRootNode.children.find(
       (c) =>
-        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
         c.dbItem?.listName === "my-list-2",
     );
 
@@ -129,7 +129,7 @@ describe("db panel selection", () => {
 
     const list2 = remoteRootNode.children.find(
       (c) =>
-        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
         c.dbItem?.listName === "my-list-2",
     );
     expect(list2).toBeTruthy();

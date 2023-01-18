@@ -16,7 +16,7 @@ import {
   createLocalListDbItem,
   createRemoteOwnerDbItem,
   createRemoteRepoDbItem,
-  createVariantAnalysisUserDefinedListDbItem,
+  createRemoteUserDefinedListDbItem,
 } from "../../../factories/db-item-factories";
 import { createMockApp } from "../../../__mocks__/appMock";
 
@@ -348,7 +348,7 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Rename
-      const currentDbItem = createVariantAnalysisUserDefinedListDbItem({
+      const currentDbItem = createRemoteUserDefinedListDbItem({
         listName: "list1",
       });
       await configStore.renameRemoteList(currentDbItem, "listRenamed");
@@ -477,7 +477,7 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Rename
-      const currentDbItem = createVariantAnalysisUserDefinedListDbItem({
+      const currentDbItem = createRemoteUserDefinedListDbItem({
         listName: "list1",
       });
       await expect(
@@ -555,7 +555,7 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Remove
-      const currentDbItem = createVariantAnalysisUserDefinedListDbItem({
+      const currentDbItem = createRemoteUserDefinedListDbItem({
         listName: "list1",
       });
       await configStore.removeDbItem(currentDbItem);

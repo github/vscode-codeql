@@ -13,24 +13,24 @@ import {
   isLocalListDbItem,
   isRemoteOwnerDbItem,
   isRemoteRepoDbItem,
-  isVariantAnalysisUserDefinedListDbItem,
+  isRemoteUserDefinedListDbItem,
   LocalDatabaseDbItem,
   LocalListDbItem,
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
-  VariantAnalysisUserDefinedListDbItem,
+  RemoteUserDefinedListDbItem,
 } from "../../../src/databases/db-item";
 import {
   ExpandedDbItem,
   ExpandedDbItemKind,
-  VariantAnalysisUserDefinedListExpandedDbItem,
+  RemoteUserDefinedListExpandedDbItem,
 } from "../../../src/databases/db-item-expansion";
 import { DbManager } from "../../../src/databases/db-manager";
 import {
   createDbConfig,
   createLocalDbConfigItem,
 } from "../../factories/db-config-factories";
-import { createVariantAnalysisUserDefinedListDbItem } from "../../factories/db-item-factories";
+import { createRemoteUserDefinedListDbItem } from "../../factories/db-item-factories";
 import { createMockApp } from "../../__mocks__/appMock";
 
 // Note: Although these are "unit tests" (i.e. not integrating with VS Code), they do
@@ -270,8 +270,7 @@ describe("db manager", () => {
 
       await saveDbConfig(dbConfig);
 
-      const remoteListDbItems =
-        getVariantAnalysisUserDefinedListDbItems("my-list-1");
+      const remoteListDbItems = getRemoteUserDefinedListDbItems("my-list-1");
       expect(remoteListDbItems.length).toEqual(1);
 
       await dbManager.renameList(remoteListDbItems[0], "my-list-2");
@@ -414,8 +413,7 @@ describe("db manager", () => {
     it("should remove remote user-defined list", async () => {
       await saveDbConfig(dbConfig);
 
-      const remoteListDbItems =
-        getVariantAnalysisUserDefinedListDbItems("my-list-1");
+      const remoteListDbItems = getRemoteUserDefinedListDbItems("my-list-1");
       expect(remoteListDbItems.length).toEqual(1);
 
       await dbManager.removeDbItem(remoteListDbItems[0]);
@@ -565,7 +563,7 @@ describe("db manager", () => {
       await saveDbConfig(dbConfig);
 
       // Add item to expanded state
-      const dbItem = createVariantAnalysisUserDefinedListDbItem({
+      const dbItem = createRemoteUserDefinedListDbItem({
         listName,
       });
 
@@ -576,7 +574,7 @@ describe("db manager", () => {
 
       expect(expandedItems?.length).toEqual(1);
       const expandedItem =
-        expandedItems![0] as VariantAnalysisUserDefinedListExpandedDbItem;
+        expandedItems![0] as RemoteUserDefinedListExpandedDbItem;
       expect(expandedItem.listName).toEqual(listName);
     });
 
@@ -593,7 +591,7 @@ describe("db manager", () => {
       ]);
 
       // Remove item from expanded state
-      const dbItem = createVariantAnalysisUserDefinedListDbItem({
+      const dbItem = createRemoteUserDefinedListDbItem({
         listName,
       });
 
@@ -624,7 +622,7 @@ describe("db manager", () => {
       ]);
 
       // Rename item
-      const dbItem = createVariantAnalysisUserDefinedListDbItem({
+      const dbItem = createRemoteUserDefinedListDbItem({
         listName,
       });
 
@@ -635,7 +633,7 @@ describe("db manager", () => {
 
       expect(expandedItems?.length).toEqual(1);
       const expandedItem =
-        expandedItems![0] as VariantAnalysisUserDefinedListExpandedDbItem;
+        expandedItems![0] as RemoteUserDefinedListExpandedDbItem;
       expect(expandedItem.listName).toEqual("new-list-name");
     });
 
@@ -661,7 +659,7 @@ describe("db manager", () => {
       ]);
 
       // Trigger adding an item that is not in the config
-      const dbItem = createVariantAnalysisUserDefinedListDbItem({
+      const dbItem = createRemoteUserDefinedListDbItem({
         listName,
       });
 
@@ -672,7 +670,7 @@ describe("db manager", () => {
 
       expect(expandedItems?.length).toEqual(1);
       const expandedItem =
-        expandedItems![0] as VariantAnalysisUserDefinedListExpandedDbItem;
+        expandedItems![0] as RemoteUserDefinedListExpandedDbItem;
       expect(expandedItem.listName).toEqual("my-list-4");
     });
   });
@@ -742,13 +740,13 @@ describe("db manager", () => {
     return ownerDbItems;
   }
 
-  function getVariantAnalysisUserDefinedListDbItems(
+  function getRemoteUserDefinedListDbItems(
     listName: string,
-  ): VariantAnalysisUserDefinedListDbItem[] {
+  ): RemoteUserDefinedListDbItem[] {
     const dbItemsResult = dbManager.getDbItems();
     const dbItems = flattenDbItems(dbItemsResult.value);
     const listDbItems = dbItems
-      .filter(isVariantAnalysisUserDefinedListDbItem)
+      .filter(isRemoteUserDefinedListDbItem)
       .filter((i) => i.listName === listName);
 
     return listDbItems;

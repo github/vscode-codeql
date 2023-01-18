@@ -4,7 +4,7 @@ export type ExpandedDbItem =
   | RootLocalExpandedDbItem
   | LocalUserDefinedListExpandedDbItem
   | RootRemoteExpandedDbItem
-  | VariantAnalysisUserDefinedListExpandedDbItem;
+  | RemoteUserDefinedListExpandedDbItem;
 
 export enum ExpandedDbItemKind {
   RootLocal = "rootLocal",
@@ -26,7 +26,7 @@ export interface RootRemoteExpandedDbItem {
   kind: ExpandedDbItemKind.RootRemote;
 }
 
-export interface VariantAnalysisUserDefinedListExpandedDbItem {
+export interface RemoteUserDefinedListExpandedDbItem {
   kind: ExpandedDbItemKind.RemoteUserDefinedList;
   listName: string;
 }
@@ -89,7 +89,7 @@ function mapDbItemToExpandedDbItem(dbItem: DbItem): ExpandedDbItem {
       };
     case DbItemKind.RootRemote:
       return { kind: ExpandedDbItemKind.RootRemote };
-    case DbItemKind.VariantAnalysisUserDefinedList:
+    case DbItemKind.RemoteUserDefinedList:
       return {
         kind: ExpandedDbItemKind.RemoteUserDefinedList,
         listName: dbItem.listName,
@@ -113,7 +113,7 @@ function isDbItemEqualToExpandedDbItem(
       );
     case DbItemKind.RootRemote:
       return expandedDbItem.kind === ExpandedDbItemKind.RootRemote;
-    case DbItemKind.VariantAnalysisUserDefinedList:
+    case DbItemKind.RemoteUserDefinedList:
       return (
         expandedDbItem.kind === ExpandedDbItemKind.RemoteUserDefinedList &&
         expandedDbItem.listName === dbItem.listName

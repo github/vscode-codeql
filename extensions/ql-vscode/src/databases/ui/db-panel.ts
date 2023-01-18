@@ -23,7 +23,7 @@ import {
   LocalDatabaseDbItem,
   LocalListDbItem,
   remoteDbKinds,
-  VariantAnalysisUserDefinedListDbItem,
+  RemoteUserDefinedListDbItem,
 } from "../db-item";
 import { getDbItemName } from "../db-item-naming";
 import { DbManager } from "../db-manager";
@@ -124,7 +124,7 @@ export class DbPanel extends DisposableObject {
   private async addNewRemoteDatabase(): Promise<void> {
     const highlightedItem = await this.getHighlightedDbItem();
 
-    if (highlightedItem?.kind === DbItemKind.VariantAnalysisUserDefinedList) {
+    if (highlightedItem?.kind === DbItemKind.RemoteUserDefinedList) {
       await this.addNewRemoteRepo(highlightedItem.listName);
     } else if (
       highlightedItem?.kind === DbItemKind.RemoteRepo &&
@@ -313,7 +313,7 @@ export class DbPanel extends DisposableObject {
       case DbItemKind.LocalDatabase:
         await this.renameLocalDatabaseItem(dbItem, newName);
         break;
-      case DbItemKind.VariantAnalysisUserDefinedList:
+      case DbItemKind.RemoteUserDefinedList:
         await this.renameVariantAnalysisUserDefinedListItem(dbItem, newName);
         break;
       default:
@@ -354,7 +354,7 @@ export class DbPanel extends DisposableObject {
   }
 
   private async renameVariantAnalysisUserDefinedListItem(
-    dbItem: VariantAnalysisUserDefinedListDbItem,
+    dbItem: RemoteUserDefinedListDbItem,
     newName: string,
   ): Promise<void> {
     if (dbItem.listName === newName) {

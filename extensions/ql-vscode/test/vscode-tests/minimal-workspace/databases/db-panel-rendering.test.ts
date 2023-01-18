@@ -125,7 +125,7 @@ describe("db panel rendering nodes", () => {
     expect(systemDefinedListItems.length).toBe(3);
 
     const userDefinedListItems = remoteRootNode!.children.filter(
-      (item) => item.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList,
+      (item) => item.dbItem?.kind === DbItemKind.RemoteUserDefinedList,
     );
     expect(userDefinedListItems.length).toBe(2);
     checkUserDefinedListItem(userDefinedListItems[0], "my-list-1", [
