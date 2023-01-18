@@ -5,7 +5,6 @@ import { DbConfig } from "../../../../src/databases/config/db-config";
 import { DbManager } from "../../../../src/databases/db-manager";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { DbTreeDataProvider } from "../../../../src/databases/ui/db-tree-data-provider";
-import { DbListKind } from "../../../../src/databases/db-item";
 import { DbTreeViewItem } from "../../../../src/databases/ui/db-tree-view-item";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { createMockExtensionContext } from "../../../factories/extension-context";
@@ -100,85 +99,6 @@ describe("db panel", () => {
         items[1],
         "There are databases with the same name: owner1/repo1",
         "Please remove duplicates",
-      );
-    });
-  });
-
-  describe("name validation", () => {
-    it("should not allow adding a new list with empty name", async () => {
-      const dbConfig = createDbConfig();
-
-      await saveDbConfig(dbConfig);
-
-      await expect(dbManager.addNewList(DbListKind.Remote, "")).rejects.toThrow(
-        new Error("List name cannot be empty"),
-      );
-    });
-
-    it("should not allow adding a list with duplicate name", async () => {
-      const dbConfig = createDbConfig({
-        remoteLists: [
-          {
-            name: "my-list-1",
-            repositories: ["owner1/repo1", "owner1/repo2"],
-          },
-        ],
-      });
-
-      await saveDbConfig(dbConfig);
-
-      await expect(
-        dbManager.addNewList(DbListKind.Remote, "my-list-1"),
-      ).rejects.toThrow(
-        new Error(
-          "A variant analysis list with the name 'my-list-1' already exists",
-        ),
-      );
-    });
-
-    it("should not allow adding a new remote db with empty name", async () => {
-      const dbConfig = createDbConfig();
-
-      await saveDbConfig(dbConfig);
-
-      await expect(dbManager.addNewRemoteRepo("")).rejects.toThrow(
-        new Error("Repository name cannot be empty"),
-      );
-    });
-
-    it("should not allow adding a remote db with duplicate name", async () => {
-      const dbConfig = createDbConfig({
-        remoteRepos: ["owner1/repo1"],
-      });
-
-      await saveDbConfig(dbConfig);
-
-      await expect(dbManager.addNewRemoteRepo("owner1/repo1")).rejects.toThrow(
-        new Error(
-          "A variant analysis repository with the name 'owner1/repo1' already exists",
-        ),
-      );
-    });
-
-    it("should not allow adding a new remote owner with empty name", async () => {
-      const dbConfig = createDbConfig();
-
-      await saveDbConfig(dbConfig);
-
-      await expect(dbManager.addNewRemoteOwner("")).rejects.toThrow(
-        new Error("Owner name cannot be empty"),
-      );
-    });
-
-    it("should not allow adding a remote owner with duplicate name", async () => {
-      const dbConfig = createDbConfig({
-        remoteOwners: ["owner1"],
-      });
-
-      await saveDbConfig(dbConfig);
-
-      await expect(dbManager.addNewRemoteOwner("owner1")).rejects.toThrow(
-        new Error("An owner with the name 'owner1' already exists"),
       );
     });
   });
