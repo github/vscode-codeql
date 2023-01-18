@@ -1,7 +1,6 @@
 import { extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { extLogger } from "../../../../src/common";
-import { Credentials } from "../../../../src/authentication";
 import * as fs from "fs-extra";
 import { join, resolve } from "path";
 
@@ -15,6 +14,8 @@ import {
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepositoryResult,
 } from "../../../../src/remote-queries/shared/variant-analysis";
+import { testCredentialsWithStub } from "../../../factories/authentication";
+import { Credentials } from "../../../../src/common/authentication";
 
 jest.setTimeout(10_000);
 
@@ -34,12 +35,6 @@ describe(VariantAnalysisResultsManager.name, () => {
   });
 
   describe("download", () => {
-    const mockCredentials = {
-      getOctokit: () =>
-        Promise.resolve({
-          request: jest.fn(),
-        }),
-    } as unknown as Credentials;
     let dummyRepoTask: VariantAnalysisRepositoryTask;
     let variantAnalysisStoragePath: string;
     let repoTaskStorageDirectory: string;
@@ -49,6 +44,7 @@ describe(VariantAnalysisResultsManager.name, () => {
       jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
       variantAnalysisResultsManager = new VariantAnalysisResultsManager(
+        testCredentialsWithStub(),
         cli,
         extLogger,
       );
@@ -90,7 +86,6 @@ describe(VariantAnalysisResultsManager.name, () => {
 
         await expect(
           variantAnalysisResultsManager.download(
-            mockCredentials,
             variantAnalysisId,
             dummyRepoTask,
             variantAnalysisStoragePath,
@@ -127,7 +122,6 @@ describe(VariantAnalysisResultsManager.name, () => {
 
       it("should call the API to download the results", async () => {
         await variantAnalysisResultsManager.download(
-          mockCredentials,
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
@@ -138,7 +132,6 @@ describe(VariantAnalysisResultsManager.name, () => {
 
       it("should save the results zip file to disk", async () => {
         await variantAnalysisResultsManager.download(
-          mockCredentials,
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
@@ -151,7 +144,6 @@ describe(VariantAnalysisResultsManager.name, () => {
 
       it("should unzip the results in a `results/` folder", async () => {
         await variantAnalysisResultsManager.download(
-          mockCredentials,
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
@@ -165,7 +157,6 @@ describe(VariantAnalysisResultsManager.name, () => {
       describe("isVariantAnalysisRepoDownloaded", () => {
         it("should return true once results are downloaded", async () => {
           await variantAnalysisResultsManager.download(
-            mockCredentials,
             variantAnalysisId,
             dummyRepoTask,
             variantAnalysisStoragePath,
@@ -194,6 +185,7 @@ describe(VariantAnalysisResultsManager.name, () => {
 
     beforeEach(() => {
       variantAnalysisResultsManager = new VariantAnalysisResultsManager(
+        testCredentialsWithStub(),
         cli,
         extLogger,
       );

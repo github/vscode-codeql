@@ -1,17 +1,14 @@
 import { join } from "path";
 import { readFile } from "fs-extra";
-import { Credentials } from "../../../../src/authentication";
 import * as markdownGenerator from "../../../../src/remote-queries/remote-queries-markdown-generation";
 import * as ghApiClient from "../../../../src/remote-queries/gh-api/gh-api-client";
 import { exportRemoteQueryAnalysisResults } from "../../../../src/remote-queries/export-results";
+import { testCredentialsWithStub } from "../../../factories/authentication";
 
 describe("export results", () => {
   describe("exportRemoteQueryAnalysisResults", () => {
-    const mockCredentials = {} as unknown as Credentials;
-
     beforeEach(() => {
       jest.spyOn(markdownGenerator, "generateMarkdown").mockReturnValue([]);
-      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
     });
 
     it("should call the GitHub Actions API with the correct gist title", async function () {
@@ -43,6 +40,7 @@ describe("export results", () => {
         query,
         analysesResults,
         "gist",
+        testCredentialsWithStub(),
       );
 
       expect(mockCreateGist).toHaveBeenCalledTimes(1);

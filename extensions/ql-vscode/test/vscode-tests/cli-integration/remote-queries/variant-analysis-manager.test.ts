@@ -19,7 +19,6 @@ import {
 } from "../../../../src/config";
 import * as ghApiClient from "../../../../src/remote-queries/gh-api/gh-api-client";
 import * as ghActionsApiClient from "../../../../src/remote-queries/gh-api/gh-actions-api-client";
-import { Credentials } from "../../../../src/authentication";
 import * as fs from "fs-extra";
 import { join } from "path";
 
@@ -58,12 +57,15 @@ import {
   SortKey,
 } from "../../../../src/pure/variant-analysis-filter-sort";
 import { DbManager } from "../../../../src/databases/db-manager";
+import { App } from "../../../../src/common/app";
+import { createMockApp } from "../../../__mocks__/appMock";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
 
 describe("Variant Analysis Manager", () => {
   let cli: CodeQLCliServer;
+  let app: App;
   let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
   let variantAnalysisResultsManager: VariantAnalysisResultsManager;
@@ -91,12 +93,15 @@ describe("Variant Analysis Manager", () => {
       )!
       .activate();
     cli = extension.cliServer;
+    app = createMockApp({});
     variantAnalysisResultsManager = new VariantAnalysisResultsManager(
+      app.credentials,
       cli,
       extLogger,
     );
     variantAnalysisManager = new VariantAnalysisManager(
       extension.ctx,
+      app,
       cli,
       storagePath,
       variantAnalysisResultsManager,
@@ -127,14 +132,6 @@ describe("Variant Analysis Manager", () => {
     }
 
     beforeEach(async () => {
-      const mockCredentials = {
-        getOctokit: () =>
-          Promise.resolve({
-            request: jest.fn(),
-          }),
-      } as unknown as Credentials;
-      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
-
       // Should not have asked for a language
       showQuickPickSpy = jest
         .spyOn(window, "showQuickPick")
@@ -349,14 +346,6 @@ describe("Variant Analysis Manager", () => {
     let repoStatesPath: string;
 
     beforeEach(async () => {
-      const mockCredentials = {
-        getOctokit: () =>
-          Promise.resolve({
-            request: jest.fn(),
-          }),
-      } as unknown as Credentials;
-      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
-
       const sourceFilePath = join(
         __dirname,
         "../data/variant-analysis-results.zip",
@@ -612,16 +601,6 @@ describe("Variant Analysis Manager", () => {
   });
 
   describe("enqueueDownload", () => {
-    beforeEach(async () => {
-      const mockCredentials = {
-        getOctokit: () =>
-          Promise.resolve({
-            request: jest.fn(),
-          }),
-      } as unknown as Credentials;
-      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
-    });
-
     it("should pop download tasks off the queue", async () => {
       const getResultsSpy = jest
         .spyOn(variantAnalysisManager, "autoDownloadVariantAnalysisResult")
@@ -782,8 +761,6 @@ describe("Variant Analysis Manager", () => {
 
     let variantAnalysisStorageLocation: string;
 
-    let mockCredentials: Credentials;
-
     beforeEach(async () => {
       variantAnalysis = createMockVariantAnalysis({});
 
@@ -797,14 +774,6 @@ describe("Variant Analysis Manager", () => {
         );
       await createTimestampFile(variantAnalysisStorageLocation);
       await variantAnalysisManager.rehydrateVariantAnalysis(variantAnalysis);
-
-      mockCredentials = {
-        getOctokit: () =>
-          Promise.resolve({
-            request: jest.fn(),
-          }),
-      } as unknown as Credentials;
-      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
     });
 
     afterEach(() => {
@@ -842,7 +811,7 @@ describe("Variant Analysis Manager", () => {
       await variantAnalysisManager.cancelVariantAnalysis(variantAnalysis.id);
 
       expect(mockCancelVariantAnalysis).toBeCalledWith(
-        mockCredentials,
+        app.credentials,
         variantAnalysis,
       );
     });

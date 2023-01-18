@@ -1,5 +1,5 @@
 import { EOL } from "os";
-import { Credentials } from "../authentication";
+import { Credentials } from "../common/authentication";
 import { RepositorySelection } from "./repository-selection";
 import { Repository } from "./shared/repository";
 import { RemoteQueriesResponse } from "./gh-api/remote-queries";

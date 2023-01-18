@@ -9,7 +9,6 @@ import {
   window,
   workspace,
 } from "vscode";
-import { Credentials } from "../authentication";
 import { ProgressCallback, UserCancellationException } from "../commandRunner";
 import { showInformationMessageWithAction } from "../helpers";
 import { extLogger } from "../common";
@@ -37,6 +36,7 @@ import {
   filterAndSortRepositoriesWithResults,
   RepositoriesFilterSortStateWithIds,
 } from "../pure/variant-analysis-filter-sort";
+import { Credentials } from "../common/authentication";
 
 /**
  * Exports the results of the currently-selected remote query or variant analysis.
@@ -74,6 +74,7 @@ export async function exportRemoteQueryResults(
   queryHistoryManager: QueryHistoryManager,
   remoteQueriesManager: RemoteQueriesManager,
   queryId: string,
+  credentials: Credentials,
 ): Promise<void> {
   const queryHistoryItem = queryHistoryManager.getRemoteQueryById(queryId);
   if (!queryHistoryItem) {
@@ -109,6 +110,7 @@ export async function exportRemoteQueryResults(
     query,
     analysesResults,
     exportFormat,
+    credentials,
   );
 }
 
@@ -117,6 +119,7 @@ export async function exportRemoteQueryAnalysisResults(
   query: RemoteQuery,
   analysesResults: AnalysisResults[],
   exportFormat: "gist" | "local",
+  credentials: Credentials,
 ) {
   const description = buildGistDescription(query, analysesResults);
   const markdownFiles = generateMarkdown(query, analysesResults, exportFormat);
@@ -126,6 +129,7 @@ export async function exportRemoteQueryAnalysisResults(
     description,
     markdownFiles,
     exportFormat,
+    credentials,
   );
 }
 
@@ -139,6 +143,7 @@ export async function exportVariantAnalysisResults(
   variantAnalysisManager: VariantAnalysisManager,
   variantAnalysisId: number,
   filterSort: RepositoriesFilterSortStateWithIds | undefined,
+  credentials: Credentials,
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<void> {
@@ -238,6 +243,7 @@ export async function exportVariantAnalysisResults(
     getAnalysesResults(),
     repositories?.length ?? 0,
     exportFormat,
+    credentials,
     progress,
     token,
   );
@@ -251,6 +257,7 @@ export async function exportVariantAnalysisAnalysisResults(
   >,
   expectedAnalysesResultsCount: number,
   exportFormat: "gist" | "local",
+  credentials: Credentials,
   progress: ProgressCallback,
   token: CancellationToken,
 ) {
@@ -280,6 +287,7 @@ export async function exportVariantAnalysisAnalysisResults(
     description,
     markdownFiles,
     exportFormat,
+    credentials,
     progress,
     token,
   );
@@ -323,6 +331,7 @@ export async function exportResults(
   description: string,
   markdownFiles: MarkdownFile[],
   exportFormat: "gist" | "local",
+  credentials: Credentials,
   progress?: ProgressCallback,
   token?: CancellationToken,
 ) {
@@ -331,7 +340,13 @@ export async function exportResults(
   }
 
   if (exportFormat === "gist") {
-    await exportToGist(description, markdownFiles, progress, token);
+    await exportToGist(
+      description,
+      markdownFiles,
+      credentials,
+      progress,
+      token,
+    );
   } else if (exportFormat === "local") {
     await exportToLocalMarkdown(
       exportedResultsPath,
@@ -345,6 +360,7 @@ export async function exportResults(
 export async function exportToGist(
   description: string,
   markdownFiles: MarkdownFile[],
+  credentials: Credentials,
   progress?: ProgressCallback,
   token?: CancellationToken,
 ) {
@@ -353,8 +369,6 @@ export async function exportToGist(
     step: 2,
     message: "Creating Gist",
   });
-
-  const credentials = await Credentials.initialize();
 
   if (token?.isCancellationRequested) {
     throw new UserCancellationException("Cancelled");

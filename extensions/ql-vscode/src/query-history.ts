@@ -55,7 +55,6 @@ import {
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "./cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
-import { Credentials } from "./authentication";
 import { cancelRemoteQuery } from "./remote-queries/gh-api/gh-actions-api-client";
 import { RemoteQueriesManager } from "./remote-queries/remote-queries-manager";
 import { RemoteQueryHistoryItem } from "./remote-queries/remote-query-history-item";
@@ -69,6 +68,7 @@ import { QueryRunner } from "./queryRunner";
 import { VariantAnalysisManager } from "./remote-queries/variant-analysis-manager";
 import { VariantAnalysisHistoryItem } from "./remote-queries/variant-analysis-history-item";
 import { getTotalResultCount } from "./remote-queries/shared/variant-analysis";
+import { App } from "./common/app";
 
 /**
  * query-history.ts
@@ -394,6 +394,7 @@ export class QueryHistoryManager extends DisposableObject {
   readonly onDidCompleteQuery = this._onDidCompleteQuery.event;
 
   constructor(
+    private readonly app: App,
     private readonly qs: QueryRunner,
     private readonly dbm: DatabaseManager,
     private readonly localQueriesResultsView: ResultsView,
@@ -634,10 +635,6 @@ export class QueryHistoryManager extends DisposableObject {
   public completeQuery(info: LocalQueryInfo, results: QueryWithResults): void {
     info.completeThisQuery(results);
     this._onDidCompleteQuery.fire(info);
-  }
-
-  private getCredentials() {
-    return Credentials.initialize();
   }
 
   /**
@@ -1346,8 +1343,7 @@ export class QueryHistoryManager extends DisposableObject {
           void showAndLogInformationMessage(
             "Cancelling variant analysis. This may take a while.",
           );
-          const credentials = await this.getCredentials();
-          await cancelRemoteQuery(credentials, item.remoteQuery);
+          await cancelRemoteQuery(this.app.credentials, item.remoteQuery);
         } else if (item.t === "variant-analysis") {
           await commands.executeCommand(
             "codeQL.cancelVariantAnalysis",

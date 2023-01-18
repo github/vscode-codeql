@@ -10,7 +10,7 @@ import {
   tryGetQueryMetadata,
   tmpDir,
 } from "../helpers";
-import { Credentials } from "../authentication";
+import { Credentials } from "../common/authentication";
 import * as cli from "../cli";
 import { extLogger } from "../common";
 import {

@@ -23,9 +23,9 @@ import {
   processScannedRepository,
   processUpdatedVariantAnalysis,
 } from "../../../../src/remote-queries/variant-analysis-processor";
-import { Credentials } from "../../../../src/authentication";
 import { createMockVariantAnalysis } from "../../../factories/remote-queries/shared/variant-analysis";
 import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
+import { testCredentialsWithStub } from "../../../factories/authentication";
 
 jest.setTimeout(60_000);
 
@@ -74,14 +74,6 @@ describe("Variant Analysis Monitor", () => {
       .mockRejectedValue(new Error("Not mocked"));
 
     limitNumberOfAttemptsToMonitor();
-
-    const mockCredentials = {
-      getOctokit: () =>
-        Promise.resolve({
-          request: jest.fn(),
-        }),
-    } as unknown as Credentials;
-    jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
   });
 
   it("should return early if variant analysis is cancelled", async () => {
@@ -89,6 +81,7 @@ describe("Variant Analysis Monitor", () => {
 
     await variantAnalysisMonitor.monitorVariantAnalysis(
       variantAnalysis,
+      testCredentialsWithStub(),
       cancellationTokenSource.token,
     );
 
@@ -100,6 +93,7 @@ describe("Variant Analysis Monitor", () => {
 
     await variantAnalysisMonitor.monitorVariantAnalysis(
       variantAnalysis,
+      testCredentialsWithStub(),
       cancellationTokenSource.token,
     );
 
@@ -117,6 +111,7 @@ describe("Variant Analysis Monitor", () => {
     it("should mark as failed and stop monitoring", async () => {
       await variantAnalysisMonitor.monitorVariantAnalysis(
         variantAnalysis,
+        testCredentialsWithStub(),
         cancellationTokenSource.token,
       );
 
@@ -166,6 +161,7 @@ describe("Variant Analysis Monitor", () => {
 
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
+          testCredentialsWithStub(),
           cancellationTokenSource.token,
         );
 
@@ -184,6 +180,7 @@ describe("Variant Analysis Monitor", () => {
       it("should download all available results", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
+          testCredentialsWithStub(),
           cancellationTokenSource.token,
         );
 
@@ -216,6 +213,7 @@ describe("Variant Analysis Monitor", () => {
 
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
+          testCredentialsWithStub(),
           cancellationTokenSource.token,
         );
 
@@ -225,6 +223,7 @@ describe("Variant Analysis Monitor", () => {
       it("should not try to download any repos", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
+          testCredentialsWithStub(),
           cancellationTokenSource.token,
         );
 
@@ -283,6 +282,7 @@ describe("Variant Analysis Monitor", () => {
 
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
+          testCredentialsWithStub(),
           cancellationTokenSource.token,
         );
 
@@ -301,6 +301,7 @@ describe("Variant Analysis Monitor", () => {
       it("should not try to download any repos", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
+          testCredentialsWithStub(),
           cancellationTokenSource.token,
         );
 

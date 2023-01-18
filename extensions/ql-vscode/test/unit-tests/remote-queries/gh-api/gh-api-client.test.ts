@@ -1,6 +1,3 @@
-import { Octokit as Octokit_Octokit } from "@octokit/rest";
-import { retry } from "@octokit/plugin-retry";
-
 import { faker } from "@faker-js/faker";
 
 import {
@@ -10,17 +7,15 @@ import {
   getVariantAnalysisRepoResult,
   submitVariantAnalysis,
 } from "../../../../src/remote-queries/gh-api/gh-api-client";
-import { Credentials } from "../../../../src/authentication";
 import { createMockSubmission } from "../../../factories/remote-queries/shared/variant-analysis-submission";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 
 import { response } from "../../../../src/mocks/scenarios/problem-query-success/0-getRepo.json";
 import { response as variantAnalysisJson_response } from "../../../../src/mocks/scenarios/problem-query-success/1-submitVariantAnalysis.json";
 import { response as variantAnalysisRepoJson_response } from "../../../../src/mocks/scenarios/problem-query-success/9-getVariantAnalysisRepo.json";
+import { testCredentialsWithUnauthenticatedOctokit } from "../../../factories/authentication";
 
-const mockCredentials = {
-  getOctokit: () => Promise.resolve(new Octokit_Octokit({ retry })),
-} as unknown as Credentials;
+const mockCredentials = testCredentialsWithUnauthenticatedOctokit();
 
 const mockServer = new MockGitHubApiServer();
 beforeAll(() => mockServer.startServer());

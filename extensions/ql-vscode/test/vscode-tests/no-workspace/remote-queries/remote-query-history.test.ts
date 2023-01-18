@@ -21,7 +21,6 @@ import { QueryHistoryConfig } from "../../../../src/config";
 import { DatabaseManager } from "../../../../src/databases";
 import { tmpDir, walkDirectory } from "../../../../src/helpers";
 import { QueryHistoryManager } from "../../../../src/query-history";
-import { Credentials } from "../../../../src/authentication";
 import { AnalysesResultsManager } from "../../../../src/remote-queries/analyses-results-manager";
 import { RemoteQueryResult } from "../../../../src/remote-queries/shared/remote-query-result";
 import { DisposableBucket } from "../../disposable-bucket";
@@ -32,6 +31,9 @@ import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
 import { QueryRunner } from "../../../../src/queryRunner";
 import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
+import { App } from "../../../../src/common/app";
+import { createMockApp } from "../../../__mocks__/appMock";
+import { testCredentialsWithStub } from "../../../factories/authentication";
 
 // set a higher timeout since recursive delete may take a while, expecially on Windows.
 jest.setTimeout(120000);
@@ -47,6 +49,8 @@ describe("Remote queries and query history manager", () => {
     /** noop */
   };
 
+  const mockOctokit = jest.fn();
+  let app: App;
   let qhm: QueryHistoryManager;
   const localQueriesResultsViewStub = {
     showResults: jest.fn(),
@@ -107,7 +111,9 @@ describe("Remote queries and query history manager", () => {
       ),
     );
 
+    app = createMockApp({ credentials: testCredentialsWithStub(mockOctokit) });
     qhm = new QueryHistoryManager(
+      app,
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
@@ -256,19 +262,11 @@ describe("Remote queries and query history manager", () => {
   });
 
   describe("AnalysisResultsManager", () => {
-    let mockCredentials: any;
-    let mockOctokit: any;
     let mockLogger: any;
     let mockCliServer: any;
     let arm: AnalysesResultsManager;
 
     beforeEach(() => {
-      mockOctokit = {
-        request: jest.fn(),
-      };
-      mockCredentials = {
-        getOctokit: () => mockOctokit,
-      };
       mockLogger = {
         log: jest.fn(),
       };
@@ -276,9 +274,9 @@ describe("Remote queries and query history manager", () => {
         bqrsInfo: jest.fn(),
         bqrsDecode: jest.fn(),
       };
-      jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
 
       arm = new AnalysesResultsManager(
+        app,
         mockCliServer,
         join(STORAGE_DIR, "queries"),
         mockLogger,
@@ -292,7 +290,7 @@ describe("Remote queries and query history manager", () => {
       await arm.downloadAnalysisResults(analysisSummary, publisher);
 
       // Should not have made the request since the analysis result is already on disk
-      expect(mockOctokit.request).not.toBeCalled();
+      expect(mockOctokit).not.toBeCalled();
 
       // result should have been published twice
       expect(publisher).toHaveBeenCalledTimes(2);

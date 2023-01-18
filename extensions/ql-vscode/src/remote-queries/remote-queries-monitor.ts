@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { Credentials } from "../authentication";
 import { Logger } from "../common";
+import { Credentials } from "../common/authentication";
 import { sleep } from "../pure/time";
 import {
   getWorkflowStatus,
@@ -20,10 +20,9 @@ export class RemoteQueriesMonitor {
 
   public async monitorQuery(
     remoteQuery: RemoteQuery,
+    credentials: Credentials,
     cancellationToken: vscode.CancellationToken,
   ): Promise<RemoteQueryWorkflowResult> {
-    const credentials = await Credentials.initialize();
-
     let attemptCount = 0;
 
     while (attemptCount <= RemoteQueriesMonitor.maxAttemptCount) {

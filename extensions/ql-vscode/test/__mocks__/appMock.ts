@@ -4,6 +4,8 @@ import { Memento } from "../../src/common/memento";
 import { Disposable } from "../../src/pure/disposable-object";
 import { createMockLogger } from "./loggerMock";
 import { createMockMemento } from "../mock-memento";
+import { testCredentialsWithStub } from "../factories/authentication";
+import { Credentials } from "../../src/common/authentication";
 
 export function createMockApp({
   extensionPath = "/mock/extension/path",
@@ -12,6 +14,7 @@ export function createMockApp({
   createEventEmitter = <T>() => new MockAppEventEmitter<T>(),
   executeCommand = jest.fn(() => Promise.resolve()),
   workspaceState = createMockMemento(),
+  credentials = testCredentialsWithStub(),
 }: {
   extensionPath?: string;
   workspaceStoragePath?: string;
@@ -19,6 +22,7 @@ export function createMockApp({
   createEventEmitter?: <T>() => AppEventEmitter<T>;
   executeCommand?: () => Promise<void>;
   workspaceState?: Memento;
+  credentials?: Credentials;
 }): App {
   return {
     mode: AppMode.Test,
@@ -30,6 +34,7 @@ export function createMockApp({
     workspaceState,
     createEventEmitter,
     executeCommand,
+    credentials,
   };
 }
 

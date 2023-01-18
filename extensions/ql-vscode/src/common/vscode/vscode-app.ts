@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { VSCodeCredentials } from "../../authentication";
 import { Disposable } from "../../pure/disposable-object";
 import { App, AppMode } from "../app";
 import { AppEventEmitter } from "../events";
@@ -7,9 +8,13 @@ import { Memento } from "../memento";
 import { VSCodeAppEventEmitter } from "./events";
 
 export class ExtensionApp implements App {
+  public readonly credentials: VSCodeCredentials;
+
   public constructor(
     public readonly extensionContext: vscode.ExtensionContext,
-  ) {}
+  ) {
+    this.credentials = new VSCodeCredentials();
+  }
 
   public get extensionPath(): string {
     return this.extensionContext.extensionPath;
