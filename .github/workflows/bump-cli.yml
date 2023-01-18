@@ -1,6 +1,20 @@
 name: Bump CLI version
 on:
   workflow_dispatch:
+    inputs:
+      option:
+        description: "Option"
+        required: true
+        default: 'replace'
+        type: choice
+        options:
+          - prepend
+          - replace
+      version:
+        description: |
+          The version to prepend to the supported versions file. This should be in the form: `vA.B.C`.
+        required: false
+        type: string
   pull_request:
     branches: [main]
     paths:
@@ -23,10 +37,18 @@ jobs:
         with:
           fetch-depth: 1
       - name: Bump CLI
+        if: ${{ inputs.option == 'replace' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           scripts/replace-cli-version.sh
+      - name: Prepend another version
+        if: ${{ inputs.option == 'prepend' }}
+        run: |
+          cat supported_cli_versions.json | jq '. |= ["${{ inputs.version }}"] + .' > supported_cli_versions_temp.json
+          mv supported_cli_versions_temp.json supported_cli_versions.json
+          echo "LATEST_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+          echo "PREVIOUS_VERSION=`jq -r '.[1]' supported_cli_versions.json`" >> $GITHUB_ENV
       - name: Commit, Push and Open a PR
         uses: ./.github/actions/create-pr
         with:
