@@ -677,7 +677,7 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Check
-      const doesExist = await configStore.doesRemoteOwnerExist("owner1");
+      const doesExist = configStore.doesRemoteOwnerExist("owner1");
       expect(doesExist).toEqual(true);
 
       configStore.dispose();
@@ -697,7 +697,7 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Check
-      const doesExist = await configStore.doesRemoteListExist("list1");
+      const doesExist = configStore.doesRemoteListExist("list1");
       expect(doesExist).toEqual(true);
 
       configStore.dispose();
@@ -717,10 +717,7 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Check
-      const doesExist = await configStore.doesRemoteDbExist(
-        "owner/repo1",
-        "list1",
-      );
+      const doesExist = configStore.doesRemoteDbExist("owner/repo1", "list1");
       expect(doesExist).toEqual(true);
 
       configStore.dispose();
@@ -740,9 +737,9 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Check
-      const doesDbExist = await configStore.doesLocalDbExist("db1", "list1");
+      const doesDbExist = configStore.doesLocalDbExist("db1", "list1");
       expect(doesDbExist).toEqual(true);
-      const doesListExist = await configStore.doesLocalListExist("list1");
+      const doesListExist = configStore.doesLocalListExist("list1");
       expect(doesListExist).toEqual(true);
 
       configStore.dispose();
@@ -755,25 +752,15 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Check
-      const doesLocalDbExist = await configStore.doesLocalDbExist(
-        "db1",
-        "list1",
-      );
+      const doesLocalDbExist = configStore.doesLocalDbExist("db1", "list1");
       expect(doesLocalDbExist).toEqual(false);
-      const doesLocalListExist = await configStore.doesLocalListExist("list1");
+      const doesLocalListExist = configStore.doesLocalListExist("list1");
       expect(doesLocalListExist).toEqual(false);
-      const doesRemoteDbExist = await configStore.doesRemoteDbExist(
-        "db1",
-        "list1",
-      );
+      const doesRemoteDbExist = configStore.doesRemoteDbExist("db1", "list1");
       expect(doesRemoteDbExist).toEqual(false);
-      const doesRemoteListExist = await configStore.doesRemoteListExist(
-        "list1",
-      );
+      const doesRemoteListExist = configStore.doesRemoteListExist("list1");
       expect(doesRemoteListExist).toEqual(false);
-      const doesRemoteOwnerExist = await configStore.doesRemoteOwnerExist(
-        "owner1",
-      );
+      const doesRemoteOwnerExist = configStore.doesRemoteOwnerExist("owner1");
       expect(doesRemoteOwnerExist).toEqual(false);
 
       configStore.dispose();
