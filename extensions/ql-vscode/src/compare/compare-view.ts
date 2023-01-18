@@ -16,9 +16,10 @@ import {
 } from "../pure/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
 import { CompletedLocalQueryInfo } from "../query-results";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { HistoryItemLabelProvider } from "../history-item-label-provider";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
+import { telemetryListener } from "../telemetry";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -118,6 +119,9 @@ export class CompareView extends AbstractWebview<
 
       case "changeCompare":
         await this.changeTable(msg.newResultSetName);
+        telemetryListener?.sendUIInteraction(
+          "compare-view-change-table-to-compare",
+        );
         break;
 
       case "viewSourceFile":
@@ -126,7 +130,17 @@ export class CompareView extends AbstractWebview<
 
       case "openQuery":
         await this.openQuery(msg.kind);
+        telemetryListener?.sendUIInteraction(
+          `compare-view-open-${msg.kind}-query`,
+        );
         break;
+
+      case "telemetry":
+        telemetryListener?.sendUIInteraction(msg.action);
+        break;
+
+      default:
+        assertNever(msg);
     }
   }
 

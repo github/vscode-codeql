@@ -6,6 +6,7 @@ import { className } from "../results/result-table-utils";
 import { ResultRow } from "../../pure/bqrs-cli-types";
 import RawTableRow from "../results/RawTableRow";
 import { vscode } from "../vscode-api";
+import { sendTelemetry } from "../common/telemetry";
 
 interface Props {
   comparison: SetComparisonsMessage;
@@ -31,6 +32,9 @@ export default function CompareTable(props: Props) {
             rowIndex={rowIndex}
             row={row}
             databaseUri={databaseUri}
+            onSelected={() => {
+              sendTelemetry("comapre-view-result-clicked");
+            }}
           />
         ))}
       </tbody>

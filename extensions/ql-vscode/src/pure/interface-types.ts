@@ -307,7 +307,8 @@ export type FromCompareViewMessage =
   | ViewLoadedMsg
   | ChangeCompareMessage
   | ViewSourceFileMsg
-  | OpenQueryMessage;
+  | OpenQueryMessage
+  | TelemetryMessage;
 
 /**
  * Message from the compare view to request opening a query.
