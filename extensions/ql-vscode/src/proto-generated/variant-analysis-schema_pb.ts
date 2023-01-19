@@ -13,6 +13,7 @@ import type {
 } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { RepositorySchema } from "./repository-schema_pb";
+import { VariantAnalysisDatabasesSchema } from "./variant-analysis-databases-schema_pb";
 import { ScannedRepoSchema } from "./scanned-repo-schema_pb";
 import { SkippedRepoSchema } from "./skipped-repo-schema_pb";
 
@@ -36,9 +37,9 @@ export class VariantAnalysisSchema extends Message<VariantAnalysisSchema> {
   query: { [key: string]: string } = {};
 
   /**
-   * @generated from field: map<string, string> databases = 4;
+   * @generated from field: docs.VariantAnalysisDatabasesSchema databases = 4;
    */
-  databases: { [key: string]: string } = {};
+  databases?: VariantAnalysisDatabasesSchema;
 
   /**
    * @generated from field: string createdAt = 5;
@@ -81,9 +82,9 @@ export class VariantAnalysisSchema extends Message<VariantAnalysisSchema> {
   scannedRepos: ScannedRepoSchema[] = [];
 
   /**
-   * @generated from field: repeated docs.SkippedRepoSchema skippedRepos = 13;
+   * @generated from field: optional docs.SkippedRepoSchema skippedRepos = 13;
    */
-  skippedRepos: SkippedRepoSchema[] = [];
+  skippedRepos?: SkippedRepoSchema;
 
   constructor(data?: PartialMessage<VariantAnalysisSchema>) {
     super();
@@ -105,9 +106,8 @@ export class VariantAnalysisSchema extends Message<VariantAnalysisSchema> {
     {
       no: 4,
       name: "databases",
-      kind: "map",
-      K: 9 /* ScalarType.STRING */,
-      V: { kind: "scalar", T: 9 /* ScalarType.STRING */ },
+      kind: "message",
+      T: VariantAnalysisDatabasesSchema,
     },
     { no: 5, name: "createdAt", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "updatedAt", kind: "scalar", T: 9 /* ScalarType.STRING */ },
@@ -151,7 +151,7 @@ export class VariantAnalysisSchema extends Message<VariantAnalysisSchema> {
       name: "skippedRepos",
       kind: "message",
       T: SkippedRepoSchema,
-      repeated: true,
+      opt: true,
     },
   ]);
 

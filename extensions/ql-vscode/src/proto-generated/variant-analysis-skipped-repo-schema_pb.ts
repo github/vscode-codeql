@@ -33,9 +33,9 @@ export class VariantAnalysisSkippedRepoSchema extends Message<VariantAnalysisSki
   private?: boolean;
 
   /**
-   * @generated from field: optional bool stargazersCount = 4;
+   * @generated from field: optional double stargazersCount = 4;
    */
-  stargazersCount?: boolean;
+  stargazersCount?: number;
 
   /**
    * @generated from field: optional string updatedAt = 5;
@@ -69,7 +69,7 @@ export class VariantAnalysisSkippedRepoSchema extends Message<VariantAnalysisSki
       no: 4,
       name: "stargazersCount",
       kind: "scalar",
-      T: 8 /* ScalarType.BOOL */,
+      T: 1 /* ScalarType.DOUBLE */,
       opt: true,
     },
     {

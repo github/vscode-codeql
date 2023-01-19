@@ -2,13 +2,14 @@ syntax = "proto3";
 import "repository-schema.proto";
 import "scanned-repo-schema.proto";
 import "skipped-repo-schema.proto";
+import "variant-analysis-databases-schema.proto";
 package docs;
 
 message VariantAnalysisSchema {
   int64 id = 1;
   RepositorySchema controllerRepo = 2;
   map<string, string> query = 3;
-  map<string, string> databases = 4;
+  VariantAnalysisDatabasesSchema databases = 4;
   string createdAt = 5;
   string updatedAt = 6;
   int64 executionStartTime = 7;
@@ -17,5 +18,5 @@ message VariantAnalysisSchema {
   optional int64 actionsWorkflowRunId = 10;
   optional string failureReason = 11;
   repeated ScannedRepoSchema scannedRepos = 12;
-  repeated SkippedRepoSchema skippedRepos = 13;
+  optional SkippedRepoSchema skippedRepos = 13;
 }

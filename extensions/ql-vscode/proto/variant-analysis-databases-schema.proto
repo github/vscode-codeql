@@ -1,0 +1,9 @@
+syntax = "proto3";
+import "remote-query-schema.proto";
+package docs;
+
+message VariantAnalysisDatabasesSchema {
+  repeated string repositories = 1;
+  repeated string repositoryLists = 2;
+  repeated string repositoryOwners = 3;
+}
