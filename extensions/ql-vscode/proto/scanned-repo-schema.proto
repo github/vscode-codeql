@@ -1,0 +1,11 @@
+syntax = "proto3";
+import "repository-with-metadata-schema.proto";
+package docs;
+
+message ScannedRepoSchema {
+  RepositoryWithMetadataSchema repository = 1;
+  string analysisStatus = 2;
+  optional double resultCount = 3;
+  optional double artifactSizeInBytes = 4;
+  optional string failureMessage = 5;
+}
