@@ -6,7 +6,7 @@ import {
   DbItemKind,
   isRemoteOwnerDbItem,
   isRemoteRepoDbItem,
-  isVariantAnalysisUserDefinedListDbItem,
+  isRemoteUserDefinedListDbItem,
 } from "../../../src/databases/db-item";
 import {
   ExpandedDbItem,
@@ -71,12 +71,12 @@ describe("db tree creator", () => {
       expect(dbTreeRoot).toBeTruthy();
       expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
       const repositoryListNodes = dbTreeRoot.children.filter(
-        isVariantAnalysisUserDefinedListDbItem,
+        isRemoteUserDefinedListDbItem,
       );
 
       expect(repositoryListNodes.length).toBe(2);
       expect(repositoryListNodes[0]).toEqual({
-        kind: DbItemKind.VariantAnalysisUserDefinedList,
+        kind: DbItemKind.RemoteUserDefinedList,
         selected: false,
         expanded: false,
         listName: dbConfig.databases.variantAnalysis.repositoryLists[0].name,
@@ -92,7 +92,7 @@ describe("db tree creator", () => {
           ),
       });
       expect(repositoryListNodes[1]).toEqual({
-        kind: DbItemKind.VariantAnalysisUserDefinedList,
+        kind: DbItemKind.RemoteUserDefinedList,
         selected: false,
         expanded: false,
         listName: dbConfig.databases.variantAnalysis.repositoryLists[1].name,
@@ -182,7 +182,7 @@ describe("db tree creator", () => {
         expect(dbTreeRoot).toBeTruthy();
         expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
         const repositoryListNodes = dbTreeRoot.children.filter(
-          (child) => child.kind === DbItemKind.VariantAnalysisUserDefinedList,
+          (child) => child.kind === DbItemKind.RemoteUserDefinedList,
         );
 
         expect(repositoryListNodes.length).toBe(1);
@@ -252,7 +252,7 @@ describe("db tree creator", () => {
         expect(dbTreeRoot).toBeTruthy();
 
         const listNodes = dbTreeRoot.children.filter(
-          isVariantAnalysisUserDefinedListDbItem,
+          isRemoteUserDefinedListDbItem,
         );
 
         expect(listNodes.length).toBe(1);
@@ -304,7 +304,7 @@ describe("db tree creator", () => {
         expect(dbTreeRoot.kind).toBe(DbItemKind.RootRemote);
         expect(dbTreeRoot.expanded).toBe(true);
         const repositoryListNodes = dbTreeRoot.children.filter(
-          isVariantAnalysisUserDefinedListDbItem,
+          isRemoteUserDefinedListDbItem,
         );
 
         expect(repositoryListNodes.length).toBe(1);

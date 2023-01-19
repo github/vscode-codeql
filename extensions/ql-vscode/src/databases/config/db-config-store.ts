@@ -26,7 +26,7 @@ import { ValueResult } from "../../common/value-result";
 import {
   LocalDatabaseDbItem,
   LocalListDbItem,
-  VariantAnalysisUserDefinedListDbItem,
+  RemoteUserDefinedListDbItem,
   DbItem,
   DbItemKind,
 } from "../db-item";
@@ -113,7 +113,7 @@ export class DbConfigStore extends DisposableObject {
       case DbItemKind.LocalList:
         config = removeLocalList(this.config, dbItem.listName);
         break;
-      case DbItemKind.VariantAnalysisUserDefinedList:
+      case DbItemKind.RemoteUserDefinedList:
         config = removeRemoteList(this.config, dbItem.listName);
         break;
       case DbItemKind.LocalDatabase:
@@ -246,7 +246,7 @@ export class DbConfigStore extends DisposableObject {
   }
 
   public async renameRemoteList(
-    currentDbItem: VariantAnalysisUserDefinedListDbItem,
+    currentDbItem: RemoteUserDefinedListDbItem,
     newName: string,
   ) {
     if (!this.config) {

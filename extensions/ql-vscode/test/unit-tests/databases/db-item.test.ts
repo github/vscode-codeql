@@ -9,7 +9,7 @@ import {
   createRemoteOwnerDbItem,
   createRemoteRepoDbItem,
   createRemoteSystemDefinedListDbItem,
-  createVariantAnalysisUserDefinedListDbItem,
+  createRemoteUserDefinedListDbItem,
   createRootLocalDbItem,
   createRootRemoteDbItem,
 } from "../../factories/db-item-factories";
@@ -22,14 +22,14 @@ describe("DbItem", () => {
           children: [
             createRemoteSystemDefinedListDbItem({ listName: "top10" }),
             createRemoteSystemDefinedListDbItem({ listName: "top100" }),
-            createVariantAnalysisUserDefinedListDbItem({
+            createRemoteUserDefinedListDbItem({
               listName: "remote-list1",
               repos: [
                 createRemoteRepoDbItem({ repoFullName: "owner1/repo1" }),
                 createRemoteRepoDbItem({ repoFullName: "owner1/repo2" }),
               ],
             }),
-            createVariantAnalysisUserDefinedListDbItem({
+            createRemoteUserDefinedListDbItem({
               listName: "remote-list2",
               repos: [
                 createRemoteRepoDbItem({ repoFullName: "owner2/repo1" }),
@@ -82,7 +82,7 @@ describe("DbItem", () => {
       expect(
         items.find(
           (item) =>
-            item.kind === DbItemKind.VariantAnalysisUserDefinedList &&
+            item.kind === DbItemKind.RemoteUserDefinedList &&
             item.listName === name,
         ),
       ).toBeDefined();

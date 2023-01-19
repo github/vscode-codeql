@@ -42,7 +42,7 @@ describe("repository selection", () => {
 
     it("should log an error when an empty remote user defined list is selected", async () => {
       const dbManager = setUpDbManager({
-        kind: DbItemKind.VariantAnalysisUserDefinedList,
+        kind: DbItemKind.RemoteUserDefinedList,
         repos: [] as RemoteRepoDbItem[],
       } as DbItem);
 
@@ -66,7 +66,7 @@ describe("repository selection", () => {
 
     it("should return correct selection when remote user defined list is selected", async () => {
       const dbManager = setUpDbManager({
-        kind: DbItemKind.VariantAnalysisUserDefinedList,
+        kind: DbItemKind.RemoteUserDefinedList,
         repos: [
           { repoFullName: "owner1/repo1" },
           { repoFullName: "owner1/repo2" },

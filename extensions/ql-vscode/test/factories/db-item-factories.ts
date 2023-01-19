@@ -8,7 +8,7 @@ import {
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
-  VariantAnalysisUserDefinedListDbItem,
+  RemoteUserDefinedListDbItem,
   RootLocalDbItem,
   RootRemoteDbItem,
 } from "../../src/databases/db-item";
@@ -79,7 +79,7 @@ export function createRemoteSystemDefinedListDbItem({
   };
 }
 
-export function createVariantAnalysisUserDefinedListDbItem({
+export function createRemoteUserDefinedListDbItem({
   expanded = false,
   selected = false,
   listName = `list${faker.datatype.number()}`,
@@ -93,9 +93,9 @@ export function createVariantAnalysisUserDefinedListDbItem({
   expanded?: boolean;
   selected?: boolean;
   repos?: RemoteRepoDbItem[];
-} = {}): VariantAnalysisUserDefinedListDbItem {
+} = {}): RemoteUserDefinedListDbItem {
   return {
-    kind: DbItemKind.VariantAnalysisUserDefinedList,
+    kind: DbItemKind.RemoteUserDefinedList,
     expanded,
     selected,
     listName,
