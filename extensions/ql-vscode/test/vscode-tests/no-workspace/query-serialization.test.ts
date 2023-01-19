@@ -22,7 +22,7 @@ describe("serialize and deserialize", () => {
   let infoSuccessInterpreted: LocalQueryInfo;
   let infoEarlyFailure: LocalQueryInfo;
   let infoLateFailure: LocalQueryInfo;
-  let infoInprogress: LocalQueryInfo;
+  let infoInProgress: LocalQueryInfo;
 
   let remoteQuery1: RemoteQueryHistoryItem;
   let remoteQuery2: RemoteQueryHistoryItem;
@@ -68,7 +68,7 @@ describe("serialize and deserialize", () => {
         false,
       ),
     );
-    infoInprogress = createMockFullQueryInfo("e");
+    infoInProgress = createMockFullQueryInfo("e");
 
     remoteQuery1 = createMockRemoteQueryHistoryItem({});
     remoteQuery2 = createMockRemoteQueryHistoryItem({});
@@ -81,7 +81,7 @@ describe("serialize and deserialize", () => {
       infoSuccessInterpreted,
       infoEarlyFailure,
       infoLateFailure,
-      infoInprogress,
+      infoInProgress,
       remoteQuery1,
       remoteQuery2,
       variantAnalysis1,
