@@ -2,6 +2,9 @@ syntax = "proto3";
 package docs;
 
 message RepositoryWithMetadataSchema {
-  double stargazersCount = 1;
-  optional string updatedAt = 2;
+  int64 id = 1;
+  string fullName = 2;
+  bool private = 3;
+  double stargazersCount = 4;
+  optional string updatedAt = 5;
 }

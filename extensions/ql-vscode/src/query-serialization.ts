@@ -77,6 +77,8 @@ export async function deserializeQueryHistory(
         }
 
         return SchemaTransformer.fromSchemaRemoteQueryHistoryItem(q);
+      } else if (q.t === "variant-analysis") {
+        return SchemaTransformer.fromSchemaVariantAnalysisHistoryItem(q);
       }
 
       return q;
@@ -130,9 +132,13 @@ export async function serializeQueryHistory(
     );
 
     const finalQueries = filteredQueries.map((q) => {
-      return q.t == "remote"
-        ? SchemaTransformer.toSchemaRemoteQueryHistoryItem(q)
-        : q;
+      if (q.t == "remote") {
+        return SchemaTransformer.toSchemaRemoteQueryHistoryItem(q);
+      } else if (q.t === "variant-analysis") {
+        return SchemaTransformer.toSchemaVariantAnalysisHistoryItem(q);
+      }
+
+      return q;
     });
 
     const data = JSON.stringify(

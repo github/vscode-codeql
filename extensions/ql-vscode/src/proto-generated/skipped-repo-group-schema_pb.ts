@@ -3,14 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type {
-  BinaryReadOptions,
-  FieldList,
-  JsonReadOptions,
-  JsonValue,
-  PartialMessage,
-  PlainMessage,
-} from "@bufbuild/protobuf";
+import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3 } from "@bufbuild/protobuf";
 import { VariantAnalysisSkippedRepoSchema } from "./variant-analysis-skipped-repo-schema_pb";
 
@@ -36,52 +29,24 @@ export class SkippedRepoGroupSchema extends Message<SkippedRepoGroupSchema> {
   static readonly runtime = proto3;
   static readonly typeName = "docs.SkippedRepoGroupSchema";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    {
-      no: 1,
-      name: "repositoryCount",
-      kind: "scalar",
-      T: 1 /* ScalarType.DOUBLE */,
-    },
-    {
-      no: 2,
-      name: "repositories",
-      kind: "message",
-      T: VariantAnalysisSkippedRepoSchema,
-      repeated: true,
-    },
+    { no: 1, name: "repositoryCount", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 2, name: "repositories", kind: "message", T: VariantAnalysisSkippedRepoSchema, repeated: true },
   ]);
 
-  static fromBinary(
-    bytes: Uint8Array,
-    options?: Partial<BinaryReadOptions>,
-  ): SkippedRepoGroupSchema {
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SkippedRepoGroupSchema {
     return new SkippedRepoGroupSchema().fromBinary(bytes, options);
   }
 
-  static fromJson(
-    jsonValue: JsonValue,
-    options?: Partial<JsonReadOptions>,
-  ): SkippedRepoGroupSchema {
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SkippedRepoGroupSchema {
     return new SkippedRepoGroupSchema().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(
-    jsonString: string,
-    options?: Partial<JsonReadOptions>,
-  ): SkippedRepoGroupSchema {
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SkippedRepoGroupSchema {
     return new SkippedRepoGroupSchema().fromJsonString(jsonString, options);
   }
 
-  static equals(
-    a:
-      | SkippedRepoGroupSchema
-      | PlainMessage<SkippedRepoGroupSchema>
-      | undefined,
-    b:
-      | SkippedRepoGroupSchema
-      | PlainMessage<SkippedRepoGroupSchema>
-      | undefined,
-  ): boolean {
+  static equals(a: SkippedRepoGroupSchema | PlainMessage<SkippedRepoGroupSchema> | undefined, b: SkippedRepoGroupSchema | PlainMessage<SkippedRepoGroupSchema> | undefined): boolean {
     return proto3.util.equals(SkippedRepoGroupSchema, a, b);
   }
 }
+

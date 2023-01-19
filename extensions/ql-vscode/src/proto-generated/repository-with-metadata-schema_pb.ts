@@ -3,27 +3,35 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type {
-  BinaryReadOptions,
-  FieldList,
-  JsonReadOptions,
-  JsonValue,
-  PartialMessage,
-  PlainMessage,
-} from "@bufbuild/protobuf";
-import { Message, proto3 } from "@bufbuild/protobuf";
+import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
+import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 
 /**
  * @generated from message docs.RepositoryWithMetadataSchema
  */
 export class RepositoryWithMetadataSchema extends Message<RepositoryWithMetadataSchema> {
   /**
-   * @generated from field: double stargazersCount = 1;
+   * @generated from field: int64 id = 1;
+   */
+  id = protoInt64.zero;
+
+  /**
+   * @generated from field: string fullName = 2;
+   */
+  fullName = "";
+
+  /**
+   * @generated from field: bool private = 3;
+   */
+  private = false;
+
+  /**
+   * @generated from field: double stargazersCount = 4;
    */
   stargazersCount = 0;
 
   /**
-   * @generated from field: optional string updatedAt = 2;
+   * @generated from field: optional string updatedAt = 5;
    */
   updatedAt?: string;
 
@@ -35,55 +43,27 @@ export class RepositoryWithMetadataSchema extends Message<RepositoryWithMetadata
   static readonly runtime = proto3;
   static readonly typeName = "docs.RepositoryWithMetadataSchema";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    {
-      no: 1,
-      name: "stargazersCount",
-      kind: "scalar",
-      T: 1 /* ScalarType.DOUBLE */,
-    },
-    {
-      no: 2,
-      name: "updatedAt",
-      kind: "scalar",
-      T: 9 /* ScalarType.STRING */,
-      opt: true,
-    },
+    { no: 1, name: "id", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 2, name: "fullName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "private", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 4, name: "stargazersCount", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+    { no: 5, name: "updatedAt", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
   ]);
 
-  static fromBinary(
-    bytes: Uint8Array,
-    options?: Partial<BinaryReadOptions>,
-  ): RepositoryWithMetadataSchema {
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RepositoryWithMetadataSchema {
     return new RepositoryWithMetadataSchema().fromBinary(bytes, options);
   }
 
-  static fromJson(
-    jsonValue: JsonValue,
-    options?: Partial<JsonReadOptions>,
-  ): RepositoryWithMetadataSchema {
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RepositoryWithMetadataSchema {
     return new RepositoryWithMetadataSchema().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(
-    jsonString: string,
-    options?: Partial<JsonReadOptions>,
-  ): RepositoryWithMetadataSchema {
-    return new RepositoryWithMetadataSchema().fromJsonString(
-      jsonString,
-      options,
-    );
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RepositoryWithMetadataSchema {
+    return new RepositoryWithMetadataSchema().fromJsonString(jsonString, options);
   }
 
-  static equals(
-    a:
-      | RepositoryWithMetadataSchema
-      | PlainMessage<RepositoryWithMetadataSchema>
-      | undefined,
-    b:
-      | RepositoryWithMetadataSchema
-      | PlainMessage<RepositoryWithMetadataSchema>
-      | undefined,
-  ): boolean {
+  static equals(a: RepositoryWithMetadataSchema | PlainMessage<RepositoryWithMetadataSchema> | undefined, b: RepositoryWithMetadataSchema | PlainMessage<RepositoryWithMetadataSchema> | undefined): boolean {
     return proto3.util.equals(RepositoryWithMetadataSchema, a, b);
   }
 }
+

@@ -3,14 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type {
-  BinaryReadOptions,
-  FieldList,
-  JsonReadOptions,
-  JsonValue,
-  PartialMessage,
-  PlainMessage,
-} from "@bufbuild/protobuf";
+import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 
 /**
@@ -45,31 +38,20 @@ export class RepositorySchema extends Message<RepositorySchema> {
     { no: 3, name: "private", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
-  static fromBinary(
-    bytes: Uint8Array,
-    options?: Partial<BinaryReadOptions>,
-  ): RepositorySchema {
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RepositorySchema {
     return new RepositorySchema().fromBinary(bytes, options);
   }
 
-  static fromJson(
-    jsonValue: JsonValue,
-    options?: Partial<JsonReadOptions>,
-  ): RepositorySchema {
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RepositorySchema {
     return new RepositorySchema().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(
-    jsonString: string,
-    options?: Partial<JsonReadOptions>,
-  ): RepositorySchema {
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RepositorySchema {
     return new RepositorySchema().fromJsonString(jsonString, options);
   }
 
-  static equals(
-    a: RepositorySchema | PlainMessage<RepositorySchema> | undefined,
-    b: RepositorySchema | PlainMessage<RepositorySchema> | undefined,
-  ): boolean {
+  static equals(a: RepositorySchema | PlainMessage<RepositorySchema> | undefined, b: RepositorySchema | PlainMessage<RepositorySchema> | undefined): boolean {
     return proto3.util.equals(RepositorySchema, a, b);
   }
 }
+

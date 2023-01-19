@@ -3,14 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type {
-  BinaryReadOptions,
-  FieldList,
-  JsonReadOptions,
-  JsonValue,
-  PartialMessage,
-  PlainMessage,
-} from "@bufbuild/protobuf";
+import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3 } from "@bufbuild/protobuf";
 import { RepositoryWithMetadataSchema } from "./repository-with-metadata-schema_pb";
 
@@ -51,66 +44,27 @@ export class ScannedRepoSchema extends Message<ScannedRepoSchema> {
   static readonly runtime = proto3;
   static readonly typeName = "docs.ScannedRepoSchema";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    {
-      no: 1,
-      name: "repository",
-      kind: "message",
-      T: RepositoryWithMetadataSchema,
-    },
-    {
-      no: 2,
-      name: "analysisStatus",
-      kind: "scalar",
-      T: 9 /* ScalarType.STRING */,
-    },
-    {
-      no: 3,
-      name: "resultCount",
-      kind: "scalar",
-      T: 1 /* ScalarType.DOUBLE */,
-      opt: true,
-    },
-    {
-      no: 4,
-      name: "artifactSizeInBytes",
-      kind: "scalar",
-      T: 1 /* ScalarType.DOUBLE */,
-      opt: true,
-    },
-    {
-      no: 5,
-      name: "failureMessage",
-      kind: "scalar",
-      T: 9 /* ScalarType.STRING */,
-      opt: true,
-    },
+    { no: 1, name: "repository", kind: "message", T: RepositoryWithMetadataSchema },
+    { no: 2, name: "analysisStatus", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "resultCount", kind: "scalar", T: 1 /* ScalarType.DOUBLE */, opt: true },
+    { no: 4, name: "artifactSizeInBytes", kind: "scalar", T: 1 /* ScalarType.DOUBLE */, opt: true },
+    { no: 5, name: "failureMessage", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
   ]);
 
-  static fromBinary(
-    bytes: Uint8Array,
-    options?: Partial<BinaryReadOptions>,
-  ): ScannedRepoSchema {
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ScannedRepoSchema {
     return new ScannedRepoSchema().fromBinary(bytes, options);
   }
 
-  static fromJson(
-    jsonValue: JsonValue,
-    options?: Partial<JsonReadOptions>,
-  ): ScannedRepoSchema {
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ScannedRepoSchema {
     return new ScannedRepoSchema().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(
-    jsonString: string,
-    options?: Partial<JsonReadOptions>,
-  ): ScannedRepoSchema {
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ScannedRepoSchema {
     return new ScannedRepoSchema().fromJsonString(jsonString, options);
   }
 
-  static equals(
-    a: ScannedRepoSchema | PlainMessage<ScannedRepoSchema> | undefined,
-    b: ScannedRepoSchema | PlainMessage<ScannedRepoSchema> | undefined,
-  ): boolean {
+  static equals(a: ScannedRepoSchema | PlainMessage<ScannedRepoSchema> | undefined, b: ScannedRepoSchema | PlainMessage<ScannedRepoSchema> | undefined): boolean {
     return proto3.util.equals(ScannedRepoSchema, a, b);
   }
 }
+

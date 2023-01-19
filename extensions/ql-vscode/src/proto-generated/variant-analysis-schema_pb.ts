@@ -3,16 +3,10 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type {
-  BinaryReadOptions,
-  FieldList,
-  JsonReadOptions,
-  JsonValue,
-  PartialMessage,
-  PlainMessage,
-} from "@bufbuild/protobuf";
+import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { RepositorySchema } from "./repository-schema_pb";
+import { VariantAnalysisDatabasesSchema } from "./variant-analysis-databases-schema_pb";
 import { ScannedRepoSchema } from "./scanned-repo-schema_pb";
 import { SkippedRepoSchema } from "./skipped-repo-schema_pb";
 
@@ -36,9 +30,9 @@ export class VariantAnalysisSchema extends Message<VariantAnalysisSchema> {
   query: { [key: string]: string } = {};
 
   /**
-   * @generated from field: map<string, string> databases = 4;
+   * @generated from field: docs.VariantAnalysisDatabasesSchema databases = 4;
    */
-  databases: { [key: string]: string } = {};
+  databases?: VariantAnalysisDatabasesSchema;
 
   /**
    * @generated from field: string createdAt = 5;
@@ -81,9 +75,9 @@ export class VariantAnalysisSchema extends Message<VariantAnalysisSchema> {
   scannedRepos: ScannedRepoSchema[] = [];
 
   /**
-   * @generated from field: repeated docs.SkippedRepoSchema skippedRepos = 13;
+   * @generated from field: optional docs.SkippedRepoSchema skippedRepos = 13;
    */
-  skippedRepos: SkippedRepoSchema[] = [];
+  skippedRepos?: SkippedRepoSchema;
 
   constructor(data?: PartialMessage<VariantAnalysisSchema>) {
     super();
@@ -95,91 +89,33 @@ export class VariantAnalysisSchema extends Message<VariantAnalysisSchema> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
     { no: 2, name: "controllerRepo", kind: "message", T: RepositorySchema },
-    {
-      no: 3,
-      name: "query",
-      kind: "map",
-      K: 9 /* ScalarType.STRING */,
-      V: { kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    },
-    {
-      no: 4,
-      name: "databases",
-      kind: "map",
-      K: 9 /* ScalarType.STRING */,
-      V: { kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    },
+    { no: 3, name: "query", kind: "map", K: 9 /* ScalarType.STRING */, V: {kind: "scalar", T: 9 /* ScalarType.STRING */} },
+    { no: 4, name: "databases", kind: "message", T: VariantAnalysisDatabasesSchema },
     { no: 5, name: "createdAt", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 6, name: "updatedAt", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    {
-      no: 7,
-      name: "executionStartTime",
-      kind: "scalar",
-      T: 3 /* ScalarType.INT64 */,
-    },
+    { no: 7, name: "executionStartTime", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
     { no: 8, name: "status", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    {
-      no: 9,
-      name: "completedAt",
-      kind: "scalar",
-      T: 9 /* ScalarType.STRING */,
-      opt: true,
-    },
-    {
-      no: 10,
-      name: "actionsWorkflowRunId",
-      kind: "scalar",
-      T: 3 /* ScalarType.INT64 */,
-      opt: true,
-    },
-    {
-      no: 11,
-      name: "failureReason",
-      kind: "scalar",
-      T: 9 /* ScalarType.STRING */,
-      opt: true,
-    },
-    {
-      no: 12,
-      name: "scannedRepos",
-      kind: "message",
-      T: ScannedRepoSchema,
-      repeated: true,
-    },
-    {
-      no: 13,
-      name: "skippedRepos",
-      kind: "message",
-      T: SkippedRepoSchema,
-      repeated: true,
-    },
+    { no: 9, name: "completedAt", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 10, name: "actionsWorkflowRunId", kind: "scalar", T: 3 /* ScalarType.INT64 */, opt: true },
+    { no: 11, name: "failureReason", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 12, name: "scannedRepos", kind: "message", T: ScannedRepoSchema, repeated: true },
+    { no: 13, name: "skippedRepos", kind: "message", T: SkippedRepoSchema, opt: true },
   ]);
 
-  static fromBinary(
-    bytes: Uint8Array,
-    options?: Partial<BinaryReadOptions>,
-  ): VariantAnalysisSchema {
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): VariantAnalysisSchema {
     return new VariantAnalysisSchema().fromBinary(bytes, options);
   }
 
-  static fromJson(
-    jsonValue: JsonValue,
-    options?: Partial<JsonReadOptions>,
-  ): VariantAnalysisSchema {
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): VariantAnalysisSchema {
     return new VariantAnalysisSchema().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(
-    jsonString: string,
-    options?: Partial<JsonReadOptions>,
-  ): VariantAnalysisSchema {
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): VariantAnalysisSchema {
     return new VariantAnalysisSchema().fromJsonString(jsonString, options);
   }
 
-  static equals(
-    a: VariantAnalysisSchema | PlainMessage<VariantAnalysisSchema> | undefined,
-    b: VariantAnalysisSchema | PlainMessage<VariantAnalysisSchema> | undefined,
-  ): boolean {
+  static equals(a: VariantAnalysisSchema | PlainMessage<VariantAnalysisSchema> | undefined, b: VariantAnalysisSchema | PlainMessage<VariantAnalysisSchema> | undefined): boolean {
     return proto3.util.equals(VariantAnalysisSchema, a, b);
   }
 }
+

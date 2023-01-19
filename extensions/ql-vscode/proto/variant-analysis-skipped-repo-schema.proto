@@ -5,6 +5,6 @@ message VariantAnalysisSkippedRepoSchema {
   optional int64 id = 1;
   string fullName = 2;
   optional bool private = 3;
-  optional bool stargazersCount = 4;
+  optional double stargazersCount = 4;
   optional string updatedAt = 5;
 }

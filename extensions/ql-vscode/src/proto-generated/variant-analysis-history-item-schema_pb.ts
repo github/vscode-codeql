@@ -3,14 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type {
-  BinaryReadOptions,
-  FieldList,
-  JsonReadOptions,
-  JsonValue,
-  PartialMessage,
-  PlainMessage,
-} from "@bufbuild/protobuf";
+import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { VariantAnalysisSchema } from "./variant-analysis-schema_pb";
 
@@ -62,63 +55,28 @@ export class VariantAnalysisHistoryItemSchema extends Message<VariantAnalysisHis
   static readonly typeName = "docs.VariantAnalysisHistoryItemSchema";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "t", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    {
-      no: 2,
-      name: "failureReason",
-      kind: "scalar",
-      T: 9 /* ScalarType.STRING */,
-    },
+    { no: 2, name: "failureReason", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "resultCount", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
     { no: 4, name: "status", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "completed", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    {
-      no: 6,
-      name: "variantAnalysis",
-      kind: "message",
-      T: VariantAnalysisSchema,
-    },
-    {
-      no: 7,
-      name: "userSpecifiedLabel",
-      kind: "scalar",
-      T: 9 /* ScalarType.STRING */,
-    },
+    { no: 6, name: "variantAnalysis", kind: "message", T: VariantAnalysisSchema },
+    { no: 7, name: "userSpecifiedLabel", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
-  static fromBinary(
-    bytes: Uint8Array,
-    options?: Partial<BinaryReadOptions>,
-  ): VariantAnalysisHistoryItemSchema {
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): VariantAnalysisHistoryItemSchema {
     return new VariantAnalysisHistoryItemSchema().fromBinary(bytes, options);
   }
 
-  static fromJson(
-    jsonValue: JsonValue,
-    options?: Partial<JsonReadOptions>,
-  ): VariantAnalysisHistoryItemSchema {
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): VariantAnalysisHistoryItemSchema {
     return new VariantAnalysisHistoryItemSchema().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(
-    jsonString: string,
-    options?: Partial<JsonReadOptions>,
-  ): VariantAnalysisHistoryItemSchema {
-    return new VariantAnalysisHistoryItemSchema().fromJsonString(
-      jsonString,
-      options,
-    );
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): VariantAnalysisHistoryItemSchema {
+    return new VariantAnalysisHistoryItemSchema().fromJsonString(jsonString, options);
   }
 
-  static equals(
-    a:
-      | VariantAnalysisHistoryItemSchema
-      | PlainMessage<VariantAnalysisHistoryItemSchema>
-      | undefined,
-    b:
-      | VariantAnalysisHistoryItemSchema
-      | PlainMessage<VariantAnalysisHistoryItemSchema>
-      | undefined,
-  ): boolean {
+  static equals(a: VariantAnalysisHistoryItemSchema | PlainMessage<VariantAnalysisHistoryItemSchema> | undefined, b: VariantAnalysisHistoryItemSchema | PlainMessage<VariantAnalysisHistoryItemSchema> | undefined): boolean {
     return proto3.util.equals(VariantAnalysisHistoryItemSchema, a, b);
   }
 }
+

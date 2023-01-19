@@ -3,14 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type {
-  BinaryReadOptions,
-  FieldList,
-  JsonReadOptions,
-  JsonValue,
-  PartialMessage,
-  PlainMessage,
-} from "@bufbuild/protobuf";
+import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3, protoInt64 } from "@bufbuild/protobuf";
 import { RemoteRepositorySchema } from "./remote-repository-schema_pb";
 
@@ -67,65 +60,29 @@ export class RemoteQuerySchema extends Message<RemoteQuerySchema> {
   static readonly typeName = "docs.RemoteQuerySchema";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "queryName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    {
-      no: 2,
-      name: "queryFilePath",
-      kind: "scalar",
-      T: 9 /* ScalarType.STRING */,
-    },
+    { no: 2, name: "queryFilePath", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "queryText", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "language", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    {
-      no: 5,
-      name: "controllerRepository",
-      kind: "message",
-      T: RemoteRepositorySchema,
-    },
-    {
-      no: 6,
-      name: "executionStartTime",
-      kind: "scalar",
-      T: 3 /* ScalarType.INT64 */,
-    },
-    {
-      no: 7,
-      name: "actionsWorkflowRunId",
-      kind: "scalar",
-      T: 3 /* ScalarType.INT64 */,
-    },
-    {
-      no: 8,
-      name: "repositoryCount",
-      kind: "scalar",
-      T: 1 /* ScalarType.DOUBLE */,
-    },
+    { no: 5, name: "controllerRepository", kind: "message", T: RemoteRepositorySchema },
+    { no: 6, name: "executionStartTime", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 7, name: "actionsWorkflowRunId", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 8, name: "repositoryCount", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
   ]);
 
-  static fromBinary(
-    bytes: Uint8Array,
-    options?: Partial<BinaryReadOptions>,
-  ): RemoteQuerySchema {
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RemoteQuerySchema {
     return new RemoteQuerySchema().fromBinary(bytes, options);
   }
 
-  static fromJson(
-    jsonValue: JsonValue,
-    options?: Partial<JsonReadOptions>,
-  ): RemoteQuerySchema {
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RemoteQuerySchema {
     return new RemoteQuerySchema().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(
-    jsonString: string,
-    options?: Partial<JsonReadOptions>,
-  ): RemoteQuerySchema {
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RemoteQuerySchema {
     return new RemoteQuerySchema().fromJsonString(jsonString, options);
   }
 
-  static equals(
-    a: RemoteQuerySchema | PlainMessage<RemoteQuerySchema> | undefined,
-    b: RemoteQuerySchema | PlainMessage<RemoteQuerySchema> | undefined,
-  ): boolean {
+  static equals(a: RemoteQuerySchema | PlainMessage<RemoteQuerySchema> | undefined, b: RemoteQuerySchema | PlainMessage<RemoteQuerySchema> | undefined): boolean {
     return proto3.util.equals(RemoteQuerySchema, a, b);
   }
 }
+

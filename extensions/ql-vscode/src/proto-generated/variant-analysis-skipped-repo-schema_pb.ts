@@ -3,14 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type {
-  BinaryReadOptions,
-  FieldList,
-  JsonReadOptions,
-  JsonValue,
-  PartialMessage,
-  PlainMessage,
-} from "@bufbuild/protobuf";
+import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3 } from "@bufbuild/protobuf";
 
 /**
@@ -33,9 +26,9 @@ export class VariantAnalysisSkippedRepoSchema extends Message<VariantAnalysisSki
   private?: boolean;
 
   /**
-   * @generated from field: optional bool stargazersCount = 4;
+   * @generated from field: optional double stargazersCount = 4;
    */
-  stargazersCount?: boolean;
+  stargazersCount?: number;
 
   /**
    * @generated from field: optional string updatedAt = 5;
@@ -50,71 +43,27 @@ export class VariantAnalysisSkippedRepoSchema extends Message<VariantAnalysisSki
   static readonly runtime = proto3;
   static readonly typeName = "docs.VariantAnalysisSkippedRepoSchema";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    {
-      no: 1,
-      name: "id",
-      kind: "scalar",
-      T: 3 /* ScalarType.INT64 */,
-      opt: true,
-    },
+    { no: 1, name: "id", kind: "scalar", T: 3 /* ScalarType.INT64 */, opt: true },
     { no: 2, name: "fullName", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    {
-      no: 3,
-      name: "private",
-      kind: "scalar",
-      T: 8 /* ScalarType.BOOL */,
-      opt: true,
-    },
-    {
-      no: 4,
-      name: "stargazersCount",
-      kind: "scalar",
-      T: 8 /* ScalarType.BOOL */,
-      opt: true,
-    },
-    {
-      no: 5,
-      name: "updatedAt",
-      kind: "scalar",
-      T: 9 /* ScalarType.STRING */,
-      opt: true,
-    },
+    { no: 3, name: "private", kind: "scalar", T: 8 /* ScalarType.BOOL */, opt: true },
+    { no: 4, name: "stargazersCount", kind: "scalar", T: 1 /* ScalarType.DOUBLE */, opt: true },
+    { no: 5, name: "updatedAt", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
   ]);
 
-  static fromBinary(
-    bytes: Uint8Array,
-    options?: Partial<BinaryReadOptions>,
-  ): VariantAnalysisSkippedRepoSchema {
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): VariantAnalysisSkippedRepoSchema {
     return new VariantAnalysisSkippedRepoSchema().fromBinary(bytes, options);
   }
 
-  static fromJson(
-    jsonValue: JsonValue,
-    options?: Partial<JsonReadOptions>,
-  ): VariantAnalysisSkippedRepoSchema {
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): VariantAnalysisSkippedRepoSchema {
     return new VariantAnalysisSkippedRepoSchema().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(
-    jsonString: string,
-    options?: Partial<JsonReadOptions>,
-  ): VariantAnalysisSkippedRepoSchema {
-    return new VariantAnalysisSkippedRepoSchema().fromJsonString(
-      jsonString,
-      options,
-    );
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): VariantAnalysisSkippedRepoSchema {
+    return new VariantAnalysisSkippedRepoSchema().fromJsonString(jsonString, options);
   }
 
-  static equals(
-    a:
-      | VariantAnalysisSkippedRepoSchema
-      | PlainMessage<VariantAnalysisSkippedRepoSchema>
-      | undefined,
-    b:
-      | VariantAnalysisSkippedRepoSchema
-      | PlainMessage<VariantAnalysisSkippedRepoSchema>
-      | undefined,
-  ): boolean {
+  static equals(a: VariantAnalysisSkippedRepoSchema | PlainMessage<VariantAnalysisSkippedRepoSchema> | undefined, b: VariantAnalysisSkippedRepoSchema | PlainMessage<VariantAnalysisSkippedRepoSchema> | undefined): boolean {
     return proto3.util.equals(VariantAnalysisSkippedRepoSchema, a, b);
   }
 }
+

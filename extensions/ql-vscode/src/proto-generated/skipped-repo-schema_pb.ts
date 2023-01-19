@@ -3,14 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import type {
-  BinaryReadOptions,
-  FieldList,
-  JsonReadOptions,
-  JsonValue,
-  PartialMessage,
-  PlainMessage,
-} from "@bufbuild/protobuf";
+import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
 import { Message, proto3 } from "@bufbuild/protobuf";
 import { SkippedRepoGroupSchema } from "./skipped-repo-group-schema_pb";
 
@@ -46,61 +39,26 @@ export class SkippedRepoSchema extends Message<SkippedRepoSchema> {
   static readonly runtime = proto3;
   static readonly typeName = "docs.SkippedRepoSchema";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    {
-      no: 1,
-      name: "accessMismatchRepos",
-      kind: "message",
-      T: SkippedRepoGroupSchema,
-      opt: true,
-    },
-    {
-      no: 2,
-      name: "notFoundRepos",
-      kind: "message",
-      T: SkippedRepoGroupSchema,
-      opt: true,
-    },
-    {
-      no: 3,
-      name: "noCodeqlDbRepos",
-      kind: "message",
-      T: SkippedRepoGroupSchema,
-      opt: true,
-    },
-    {
-      no: 4,
-      name: "overLimitRepos",
-      kind: "message",
-      T: SkippedRepoGroupSchema,
-      opt: true,
-    },
+    { no: 1, name: "accessMismatchRepos", kind: "message", T: SkippedRepoGroupSchema, opt: true },
+    { no: 2, name: "notFoundRepos", kind: "message", T: SkippedRepoGroupSchema, opt: true },
+    { no: 3, name: "noCodeqlDbRepos", kind: "message", T: SkippedRepoGroupSchema, opt: true },
+    { no: 4, name: "overLimitRepos", kind: "message", T: SkippedRepoGroupSchema, opt: true },
   ]);
 
-  static fromBinary(
-    bytes: Uint8Array,
-    options?: Partial<BinaryReadOptions>,
-  ): SkippedRepoSchema {
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SkippedRepoSchema {
     return new SkippedRepoSchema().fromBinary(bytes, options);
   }
 
-  static fromJson(
-    jsonValue: JsonValue,
-    options?: Partial<JsonReadOptions>,
-  ): SkippedRepoSchema {
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SkippedRepoSchema {
     return new SkippedRepoSchema().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(
-    jsonString: string,
-    options?: Partial<JsonReadOptions>,
-  ): SkippedRepoSchema {
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SkippedRepoSchema {
     return new SkippedRepoSchema().fromJsonString(jsonString, options);
   }
 
-  static equals(
-    a: SkippedRepoSchema | PlainMessage<SkippedRepoSchema> | undefined,
-    b: SkippedRepoSchema | PlainMessage<SkippedRepoSchema> | undefined,
-  ): boolean {
+  static equals(a: SkippedRepoSchema | PlainMessage<SkippedRepoSchema> | undefined, b: SkippedRepoSchema | PlainMessage<SkippedRepoSchema> | undefined): boolean {
     return proto3.util.equals(SkippedRepoSchema, a, b);
   }
 }
+
