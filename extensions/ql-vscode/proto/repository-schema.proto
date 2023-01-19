@@ -1,0 +1,8 @@
+syntax = "proto3";
+package docs;
+
+message RepositorySchema {
+  int64 id = 1;
+  string fullName = 2;
+  bool private = 3;
+}

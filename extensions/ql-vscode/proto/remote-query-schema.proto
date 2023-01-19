@@ -1,0 +1,14 @@
+syntax = "proto3";
+import "remote-repository-schema.proto";
+package docs;
+
+message RemoteQuerySchema {
+  string queryName = 1;
+  string queryFilePath = 2;
+  string queryText = 3;
+  string language = 4;
+  RemoteRepositorySchema controllerRepository = 5;
+  int64 executionStartTime = 6;
+  int64 actionsWorkflowRunId = 7;
+  double repositoryCount = 8;
+}

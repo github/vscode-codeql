@@ -1,0 +1,10 @@
+syntax = "proto3";
+import "skipped-repo-group-schema.proto";
+package docs;
+
+message SkippedRepoSchema {
+  optional SkippedRepoGroupSchema accessMismatchRepos = 1;
+  optional SkippedRepoGroupSchema notFoundRepos = 2;
+  optional SkippedRepoGroupSchema noCodeqlDbRepos = 3;
+  optional SkippedRepoGroupSchema overLimitRepos = 4;
+}

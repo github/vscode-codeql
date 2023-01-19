@@ -1,0 +1,8 @@
+syntax = "proto3";
+import "variant-analysis-skipped-repo-schema.proto";
+package docs;
+
+message SkippedRepoGroupSchema {
+  double repositoryCount = 1;
+  repeated VariantAnalysisSkippedRepoSchema repositories = 2;
+}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+import "variant-analysis-schema.proto";
+package docs;
+
+message VariantAnalysisHistoryItemSchema {
+  string t = 1;
+  string failureReason = 2;
+  int64 resultCount = 3;
+  string status = 4;
+  bool completed = 5;
+  VariantAnalysisSchema variantAnalysis = 6;
+  string userSpecifiedLabel = 7;
+}

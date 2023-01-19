@@ -1,0 +1,14 @@
+syntax = "proto3";
+import "remote-query-schema.proto";
+package docs;
+
+message RemoteQueryHistoryItemSchema {
+  string t = 1;
+  optional string failureReason = 2;
+  optional double resultCount = 3;
+  string status = 4;
+  bool completed = 5;
+  string queryId = 6;
+  RemoteQuerySchema remoteQuery = 7;
+  optional string userSpecifiedLabel = 8;
+}
