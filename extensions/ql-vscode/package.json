@@ -1348,7 +1348,8 @@
     "build-storybook": "build-storybook",
     "lint:scenarios": "ts-node scripts/lint-scenarios.ts",
     "check-types": "find . -type f -name \"tsconfig.json\" -not -path \"./node_modules/*\" | sed -r 's|/[^/]+$||' | sort | uniq | xargs -I {} sh -c \"echo Checking types in {} && cd {} && npx tsc --noEmit\"",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "generate:schemas": "buf generate proto && find ./src/proto-generated -name '*.ts' | xargs -I{} sed -ibak 's/_pb\\.js/_pb/g' {} && find ./src/proto-generated -name '*tsbak' | xargs -I{} rm -rf {}"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^1.0.0",
