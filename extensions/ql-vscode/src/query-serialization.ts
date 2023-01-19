@@ -12,6 +12,7 @@ import { QueryHistoryInfo } from "./query-history-info";
 import { QueryStatus } from "./query-status";
 import { QueryEvaluationInfo } from "./run-queries-shared";
 import { QueryResultType } from "./pure/legacy-messages";
+import { SchemaTransformer } from "./schema-transformer";
 
 export async function deserializeQueryHistory(
   fsPath: string,
@@ -31,7 +32,7 @@ export async function deserializeQueryHistory(
     }
 
     const queries = obj.queries;
-    const parsedQueries = queries.map((q: QueryHistoryInfo) => {
+    const parsedQueries = queries.map((q: any) => {
       // Need to explicitly set prototype since reading in from JSON will not
       // do this automatically. Note that we can't call the constructor here since
       // the constructor invokes extra logic that we don't want to do.
@@ -74,7 +75,10 @@ export async function deserializeQueryHistory(
         if (q.status === QueryStatus.Completed) {
           q.completed = true;
         }
+
+        return SchemaTransformer.fromSchemaRemoteQueryHistoryItem(q);
       }
+
       return q;
     });
 
@@ -124,17 +128,25 @@ export async function serializeQueryHistory(
     const filteredQueries = queries.filter((q) =>
       q.t === "local" ? q.completedQuery !== undefined : true,
     );
+
+    const finalQueries = filteredQueries.map((q) => {
+      return q.t == "remote"
+        ? SchemaTransformer.toSchemaRemoteQueryHistoryItem(q)
+        : q;
+    });
+
     const data = JSON.stringify(
       {
         // version 2:
         // - adds the `variant-analysis` type
         // - ensures a `successful` property exists on completedQuery
         version: 2,
-        queries: filteredQueries,
+        queries: finalQueries,
       },
       null,
       2,
     );
+
     await writeFile(fsPath, data);
   } catch (e) {
     throw new Error(
