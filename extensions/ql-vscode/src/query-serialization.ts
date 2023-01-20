@@ -75,13 +75,11 @@ export async function deserializeQueryHistory(
         if (q.status === QueryStatus.Completed) {
           q.completed = true;
         }
-
-        return SchemaTransformer.fromSchemaRemoteQueryHistoryItem(q);
-      } else if (q.t === "variant-analysis") {
-        return SchemaTransformer.fromSchemaVariantAnalysisHistoryItem(q);
       }
 
-      return q;
+      return ["remote", "variant-analysis"].includes(q.t)
+        ? SchemaTransformer.fromSchema(q)
+        : q;
     });
 
     // filter out queries that have been deleted on disk
@@ -132,13 +130,9 @@ export async function serializeQueryHistory(
     );
 
     const finalQueries = filteredQueries.map((q) => {
-      if (q.t == "remote") {
-        return SchemaTransformer.toSchemaRemoteQueryHistoryItem(q);
-      } else if (q.t === "variant-analysis") {
-        return SchemaTransformer.toSchemaVariantAnalysisHistoryItem(q);
-      }
-
-      return q;
+      return ["remote", "variant-analysis"].includes(q.t)
+        ? SchemaTransformer.toSchema(q)
+        : q;
     });
 
     const data = JSON.stringify(

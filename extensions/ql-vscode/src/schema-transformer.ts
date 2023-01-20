@@ -48,6 +48,26 @@ export class SchemaTransformer {
     });
   }
 
+  public static isA<T>(value: any, property: keyof T): value is T {
+    return (value as T)[property] !== undefined;
+  }
+
+  public static toSchema(item: any) {
+    if (this.isA<RemoteQueryHistoryItem>(item, "remoteQuery")) {
+      return this.toSchemaRemoteQueryHistoryItem(item);
+    }
+
+    return this.toSchemaVariantAnalysisHistoryItem(item);
+  }
+
+  public static fromSchema(item: any) {
+    if (this.isA<RemoteQueryHistoryItemSchema>(item, "remoteQuery")) {
+      return this.fromSchemaRemoteQueryHistoryItem(item);
+    }
+
+    return this.fromSchemaVariantAnalysisHistoryItem(item);
+  }
+
   public static fromSchemaRemoteQueryHistoryItem(
     item: RemoteQueryHistoryItemSchema,
   ): RemoteQueryHistoryItem {
