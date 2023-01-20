@@ -2,5 +2,9 @@
 node_modules/
 out/
 
+# This file gets written by an actions workflow.
+# Don't try to format it.
+supported_cli_versions.json
+
 # Include the Storybook config
 !.storybook
