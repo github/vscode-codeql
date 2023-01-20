@@ -31,18 +31,14 @@ describe("db config validation", () => {
 
     const validationOutput = configValidator.validate(dbConfig);
 
-    expect(validationOutput).toHaveLength(3);
+    expect(validationOutput).toHaveLength(2);
 
     expect(validationOutput[0]).toEqual({
-      kind: DbConfigValidationErrorKind.InvalidConfig,
-      message: "/databases must have required property 'local'",
-    });
-    expect(validationOutput[1]).toEqual({
       kind: DbConfigValidationErrorKind.InvalidConfig,
       message:
         "/databases/variantAnalysis must have required property 'owners'",
     });
-    expect(validationOutput[2]).toEqual({
+    expect(validationOutput[1]).toEqual({
       kind: DbConfigValidationErrorKind.InvalidConfig,
       message: "/databases/variantAnalysis must NOT have additional properties",
     });

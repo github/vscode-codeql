@@ -1,7 +1,7 @@
 import { readJsonSync } from "fs-extra";
 import { resolve } from "path";
 import Ajv from "ajv";
-import { DbConfig } from "./db-config";
+import { clearLocalDbConfig, DbConfig } from "./db-config";
 import { findDuplicateStrings } from "../../text-utils";
 import {
   DbConfigValidationError,
@@ -18,6 +18,9 @@ export class DbConfigValidator {
 
   public validate(dbConfig: DbConfig): DbConfigValidationError[] {
     const ajv = new Ajv({ allErrors: true });
+
+    const localDbs = clearLocalDbConfig(dbConfig);
+
     ajv.validate(this.schema, dbConfig);
 
     if (ajv.errors) {
@@ -25,6 +28,13 @@ export class DbConfigValidator {
         kind: DbConfigValidationErrorKind.InvalidConfig,
         message: `${error.instancePath} ${error.message}`,
       }));
+    }
+
+    // Add any local db config back so that we have a config
+    // object that respects its type and validation can happen
+    // as normal.
+    if (localDbs) {
+      dbConfig.databases.local = localDbs;
     }
 
     return [
