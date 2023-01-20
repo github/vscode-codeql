@@ -843,7 +843,7 @@
         },
         {
           "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
-          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/ && false",
           "group": "inline"
         },
         {
