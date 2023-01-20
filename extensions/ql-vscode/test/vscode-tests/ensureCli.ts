@@ -6,6 +6,7 @@ import {
   codeQlLauncherName,
 } from "../../src/pure/distribution";
 import fetch from "node-fetch";
+import data from "../../supported_cli_versions.json";
 
 /**
  * This module ensures that the proper CLI is available for tests of the extension.
@@ -38,7 +39,7 @@ const _10MB = _1MB * 10;
 
 // CLI version to test. Hard code the latest as default. And be sure
 // to update the env if it is not otherwise set.
-const CLI_VERSION = process.env.CLI_VERSION || "v2.11.6";
+const CLI_VERSION = process.env.CLI_VERSION || data[0];
 process.env.CLI_VERSION = CLI_VERSION;
 
 // Base dir where CLIs will be downloaded into
