@@ -173,7 +173,7 @@ describe("db manager", () => {
         });
       });
 
-      it("should throw error when adding a new list to a local node", async () => {
+      it.skip("should add a new local list", async () => {
         const dbConfig: DbConfig = createDbConfig({
           localLists: [
             {
@@ -285,17 +285,9 @@ describe("db manager", () => {
         name: "my-list-2",
         repositories: ["owner1/repo1", "owner1/repo2"],
       });
-
-      // Check that the local list has not been renamed
-      const localLists = dbConfigFileContents.databases.local.lists;
-      expect(localLists.length).toBe(1);
-      expect(localLists[0]).toEqual({
-        name: "my-list-1",
-        databases: [localDb],
-      });
     });
 
-    it("should rename local db list", async () => {
+    it.skip("should rename local db list", async () => {
       const dbConfig = createDbConfig({
         remoteLists: [remoteList],
         localLists: [localList],
@@ -328,7 +320,7 @@ describe("db manager", () => {
       });
     });
 
-    it("should rename local db outside a list", async () => {
+    it.skip("should rename local db outside a list", async () => {
       const dbConfig = createDbConfig({
         localLists: [localList],
         localDbs: [localDb],
@@ -357,7 +349,7 @@ describe("db manager", () => {
       });
     });
 
-    it("should rename local db inside a list", async () => {
+    it.skip("should rename local db inside a list", async () => {
       const dbConfig = createDbConfig({
         localLists: [localList],
         localDbs: [localDb],
@@ -427,10 +419,6 @@ describe("db manager", () => {
             repositories: [remoteRepo1, remoteRepo2],
             owners: [remoteOwner],
           },
-          local: {
-            lists: [localList],
-            databases: [localDb],
-          },
         },
       });
     });
@@ -451,10 +439,6 @@ describe("db manager", () => {
             repositoryLists: [remoteList],
             repositories: [remoteRepo2],
             owners: [remoteOwner],
-          },
-          local: {
-            lists: [localList],
-            databases: [localDb],
           },
         },
         selected: {
@@ -481,10 +465,6 @@ describe("db manager", () => {
             repositories: [remoteRepo1, remoteRepo2],
             owners: [],
           },
-          local: {
-            lists: [localList],
-            databases: [localDb],
-          },
         },
         selected: {
           kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
@@ -493,7 +473,7 @@ describe("db manager", () => {
       });
     });
 
-    it("should remove local db list", async () => {
+    it.skip("should remove local db list", async () => {
       await saveDbConfig(dbConfig);
 
       const localListDbItems = getLocalListDbItems("my-list-1");
@@ -522,7 +502,7 @@ describe("db manager", () => {
       });
     });
 
-    it("should remove local database", async () => {
+    it.skip("should remove local database", async () => {
       await saveDbConfig(dbConfig);
 
       const localDbItems = getLocalDatabaseDbItems("db1");

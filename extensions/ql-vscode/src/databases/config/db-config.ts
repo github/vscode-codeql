@@ -325,6 +325,38 @@ export function removeRemoteOwner(
   return config;
 }
 
+/**
+ * Removes local db config from a db config object, if one is set.
+ * We do this because we don't want to expose this feature to users
+ * yet (since it's only partially implemented), but we also don't want
+ * to remove all the code we've already implemented.
+ * @param config The config object to change.
+ * @returns Any removed local db config.
+ */
+export function clearLocalDbConfig(
+  config: DbConfig,
+): LocalDbConfig | undefined {
+  let localDbs = undefined;
+
+  if (config && config.databases && config.databases.local) {
+    localDbs = config.databases.local;
+    delete (config.databases as any).local;
+  }
+
+  return localDbs;
+}
+
+/**
+ * Initializes the local db config, if the config object contains
+ * database configuration.
+ * @param config The config object to change.
+ */
+export function initializeLocalDbConfig(config: DbConfig): void {
+  if (config.databases) {
+    config.databases.local = { lists: [], databases: [] };
+  }
+}
+
 function cloneDbConfigSelectedItem(selected: SelectedDbItem): SelectedDbItem {
   switch (selected.kind) {
     case SelectedDbItemKind.LocalUserDefinedList:

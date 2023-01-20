@@ -1,8 +1,10 @@
 import { pathExists, outputJSON, readJSON, readJSONSync } from "fs-extra";
 import { join } from "path";
 import {
+  clearLocalDbConfig,
   cloneDbConfig,
   DbConfig,
+  initializeLocalDbConfig,
   removeLocalDb,
   removeLocalList,
   removeRemoteList,
@@ -349,6 +351,7 @@ export class DbConfigStore extends DisposableObject {
   }
 
   private async writeConfig(config: DbConfig): Promise<void> {
+    clearLocalDbConfig(config);
     await outputJSON(this.configPath, config, {
       spaces: 2,
     });
@@ -380,6 +383,7 @@ export class DbConfigStore extends DisposableObject {
     }
 
     if (newConfig) {
+      initializeLocalDbConfig(newConfig);
       this.configErrors = this.configValidator.validate(newConfig);
     }
 
@@ -414,6 +418,7 @@ export class DbConfigStore extends DisposableObject {
     }
 
     if (newConfig) {
+      initializeLocalDbConfig(newConfig);
       this.configErrors = this.configValidator.validate(newConfig);
     }
 
