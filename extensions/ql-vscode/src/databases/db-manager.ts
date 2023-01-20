@@ -58,9 +58,8 @@ export class DbManager {
 
     const expandedItems = this.getExpandedItems();
 
-    return ValueResult.ok([
-      createRemoteTree(configResult.value, expandedItems),
-    ]);
+    const remoteTree = createRemoteTree(configResult.value, expandedItems);
+    return ValueResult.ok(remoteTree.children);
   }
 
   public getConfigPath(): string {
