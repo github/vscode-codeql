@@ -75,7 +75,7 @@ runs:
           echo "Found existing open PR: $PR_NUMBERS"
           exit 0
         fi
-        gh pr create --head "$HEAD_BRANCH" --base "$BASE_BRANCH" --title "$TITLE" --body "$BODY" --assignee ${{ github.actor }}
+        gh pr create --head "$HEAD_BRANCH" --base "$BASE_BRANCH" --title "$TITLE" --body "$BODY" --assignee ${{ github.actor }} --draft
         if [[ $? -ne 0 ]]; then
           echo "Failed to create new PR."
           exit 1
