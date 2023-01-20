@@ -11,14 +11,26 @@ import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../src/helpers";
 import { QueryResultType } from "../../../src/pure/legacy-messages";
 import { QueryInProgress } from "../../../src/legacy-query-server/run-queries";
+import { RemoteQueryHistoryItem } from "../../../src/remote-queries/remote-query-history-item";
+import { VariantAnalysisHistoryItem } from "../../../src/remote-queries/variant-analysis-history-item";
+import { QueryHistoryInfo } from "../../../src/query-history-info";
+import { createMockRemoteQueryHistoryItem } from "../../factories/remote-queries/remote-query-history-item";
+import { createMockVariantAnalysisHistoryItem } from "../../factories/remote-queries/variant-analysis-history-item";
 
 describe("serialize and deserialize", () => {
   let infoSuccessRaw: LocalQueryInfo;
   let infoSuccessInterpreted: LocalQueryInfo;
   let infoEarlyFailure: LocalQueryInfo;
   let infoLateFailure: LocalQueryInfo;
-  let infoInprogress: LocalQueryInfo;
-  let allHistory: LocalQueryInfo[];
+  let infoInProgress: LocalQueryInfo;
+
+  let remoteQuery1: RemoteQueryHistoryItem;
+  let remoteQuery2: RemoteQueryHistoryItem;
+
+  let variantAnalysis1: VariantAnalysisHistoryItem;
+  let variantAnalysis2: VariantAnalysisHistoryItem;
+
+  let allHistory: QueryHistoryInfo[];
   let queryPath: string;
   let cnt = 0;
 
@@ -56,13 +68,24 @@ describe("serialize and deserialize", () => {
         false,
       ),
     );
-    infoInprogress = createMockFullQueryInfo("e");
+    infoInProgress = createMockFullQueryInfo("e");
+
+    remoteQuery1 = createMockRemoteQueryHistoryItem({});
+    remoteQuery2 = createMockRemoteQueryHistoryItem({});
+
+    variantAnalysis1 = createMockVariantAnalysisHistoryItem({});
+    variantAnalysis2 = createMockVariantAnalysisHistoryItem({});
+
     allHistory = [
       infoSuccessRaw,
       infoSuccessInterpreted,
       infoEarlyFailure,
       infoLateFailure,
-      infoInprogress,
+      infoInProgress,
+      remoteQuery1,
+      remoteQuery2,
+      variantAnalysis1,
+      variantAnalysis2,
     ];
   });
 
@@ -72,6 +95,10 @@ describe("serialize and deserialize", () => {
       infoSuccessRaw,
       infoSuccessInterpreted,
       infoLateFailure,
+      remoteQuery1,
+      remoteQuery2,
+      variantAnalysis1,
+      variantAnalysis2,
     ];
 
     const allHistoryPath = join(tmpDir.name, "workspace-query-history.json");
@@ -98,7 +125,7 @@ describe("serialize and deserialize", () => {
       }
     });
     expectedHistory.forEach((info) => {
-      if (info.completedQuery) {
+      if (info.t == "local" && info.completedQuery) {
         (info.completedQuery as any).dispose = undefined;
       }
     });
