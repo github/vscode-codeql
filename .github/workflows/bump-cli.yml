@@ -45,10 +45,10 @@ jobs:
       - name: Prepend another version
         if: ${{ inputs.option == 'prepend' }}
         run: |
-          cat supported_cli_versions.json | jq '. |= ["${{ inputs.version }}"] + .' > supported_cli_versions_temp.json
-          mv supported_cli_versions_temp.json supported_cli_versions.json
+          cat extensions/ql-vscode/supported_cli_versions.json | jq '. |= ["${{ inputs.version }}"] + .' > supported_cli_versions_temp.json
+          mv supported_cli_versions_temp.json extensions/ql-vscode/supported_cli_versions.json
           echo "LATEST_VERSION=${{ inputs.version }}" >> $GITHUB_ENV
-          echo "PREVIOUS_VERSION=`jq -r '.[1]' supported_cli_versions.json`" >> $GITHUB_ENV
+          echo "PREVIOUS_VERSION=`jq -r '.[1]' extensions/ql-vscode/supported_cli_versions.json`" >> $GITHUB_ENV
       - name: Commit, Push and Open a PR
         uses: ./.github/actions/create-pr
         with:
