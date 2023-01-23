@@ -22,9 +22,6 @@ describe("queryResolver", () => {
 
   const mockCli = {
     resolveQueriesInSuite: jest.fn(),
-    cliConstraints: {
-      supportsAllowLibraryPacksInResolveQueries: jest.fn(),
-    },
   };
 
   beforeEach(() => {
@@ -40,10 +37,6 @@ describe("queryResolver", () => {
 
     jest.spyOn(helpers, "getOnDiskWorkspaceFolders").mockReturnValue([]);
     jest.spyOn(helpers, "showAndLogErrorMessage").mockResolvedValue(undefined);
-
-    mockCli.cliConstraints.supportsAllowLibraryPacksInResolveQueries.mockReturnValue(
-      true,
-    );
   });
 
   describe("resolveQueries", () => {
@@ -66,42 +59,6 @@ describe("queryResolver", () => {
       expect(load(await fs.readFile(fileName, "utf-8"))).toEqual([
         {
           from: "my-qlpack",
-          queries: ".",
-          include: {
-            kind: "definitions",
-            "tags contain": "ide-contextual-queries/local-definitions",
-          },
-        },
-      ]);
-    });
-
-    it("should resolve a query from the queries pack if this is an old CLI", async () => {
-      // pretend this is an older CLI
-      mockCli.cliConstraints.supportsAllowLibraryPacksInResolveQueries.mockReturnValue(
-        false,
-      );
-      mockCli.resolveQueriesInSuite.mockReturnValue(["a", "b"]);
-      const result = await resolveQueries(
-        mockCli as unknown as CodeQLCliServer,
-        {
-          dbschemePackIsLibraryPack: true,
-          dbschemePack: "my-qlpack",
-          queryPack: "my-qlpack2",
-        },
-        KeyType.DefinitionQuery,
-      );
-      expect(result).toEqual(["a", "b"]);
-
-      expect(mockCli.resolveQueriesInSuite).toHaveBeenCalledWith(
-        expect.stringMatching(/\.qls$/),
-        [],
-      );
-
-      const fileName = mockCli.resolveQueriesInSuite.mock.calls[0][0];
-
-      expect(load(await fs.readFile(fileName, "utf-8"))).toEqual([
-        {
-          from: "my-qlpack2",
           queries: ".",
           include: {
             kind: "definitions",

@@ -74,39 +74,12 @@ export async function resolveQueries(
   qlpacks: QlPacksForLanguage,
   keyType: KeyType,
 ): Promise<string[]> {
-  const cliCanHandleLibraryPack =
-    await cli.cliConstraints.supportsAllowLibraryPacksInResolveQueries();
   const packsToSearch: string[] = [];
-  let blameCli: boolean;
 
-  if (cliCanHandleLibraryPack) {
-    // The CLI can handle both library packs and query packs, so search both packs in order.
-    packsToSearch.push(qlpacks.dbschemePack);
-    if (qlpacks.queryPack !== undefined) {
-      packsToSearch.push(qlpacks.queryPack);
-    }
-    // If we don't find the query, it's because it's not there, not because the CLI was unable to
-    // search the pack.
-    blameCli = false;
-  } else {
-    // Older CLIs can't handle `codeql resolve queries` with a suite that references a library pack.
-    if (qlpacks.dbschemePackIsLibraryPack) {
-      if (qlpacks.queryPack !== undefined) {
-        // Just search the query pack, because some older library/query releases still had the
-        // contextual queries in the query pack.
-        packsToSearch.push(qlpacks.queryPack);
-      }
-      // If we don't find it, it's because the CLI was unable to search the library pack that
-      // actually contains the query. Blame any failure on the CLI, not the packs.
-      blameCli = true;
-    } else {
-      // We have an old CLI, but the dbscheme pack is old enough that it's still a unified pack with
-      // both libraries and queries. Just search that pack.
-      packsToSearch.push(qlpacks.dbschemePack);
-      // Any CLI should be able to search the single query pack, so if we don't find it, it's
-      // because the language doesn't support it.
-      blameCli = false;
-    }
+  // The CLI can handle both library packs and query packs, so search both packs in order.
+  packsToSearch.push(qlpacks.dbschemePack);
+  if (qlpacks.queryPack !== undefined) {
+    packsToSearch.push(qlpacks.queryPack);
   }
 
   const queries = await resolveQueriesFromPacks(cli, packsToSearch, keyType);
@@ -115,15 +88,11 @@ export async function resolveQueries(
   }
 
   // No queries found. Determine the correct error message for the various scenarios.
-  const errorMessage = blameCli
-    ? `Your current version of the CodeQL CLI, '${
-        (await cli.getVersion()).version
-      }', \
-    is unable to use contextual queries from recent versions of the standard CodeQL libraries. \
-    Please upgrade to the latest version of the CodeQL CLI.`
-    : `No ${nameOfKeyType(keyType)} queries (tagged "${tagOfKeyType(
-        keyType,
-      )}") could be found in the current library path. \
+  const errorMessage = `No ${nameOfKeyType(
+    keyType,
+  )} queries (tagged "${tagOfKeyType(
+    keyType,
+  )}") could be found in the current library path. \
     Try upgrading the CodeQL libraries. If that doesn't work, then ${nameOfKeyType(
       keyType,
     )} queries are not yet available \

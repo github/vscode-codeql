@@ -84,10 +84,7 @@ export class NewQueryRunner extends QueryRunner {
     token: CancellationToken,
     dbItem: DatabaseItem,
   ): Promise<void> {
-    if (
-      dbItem.contents &&
-      (await this.qs.cliServer.cliConstraints.supportsDatabaseRegistration())
-    ) {
+    if (dbItem.contents) {
       const databases: string[] = [dbItem.databaseUri.fsPath];
       await this.qs.sendRequest(
         deregisterDatabases,
@@ -102,10 +99,7 @@ export class NewQueryRunner extends QueryRunner {
     token: CancellationToken,
     dbItem: DatabaseItem,
   ): Promise<void> {
-    if (
-      dbItem.contents &&
-      (await this.qs.cliServer.cliConstraints.supportsDatabaseRegistration())
-    ) {
+    if (dbItem.contents) {
       const databases: string[] = [dbItem.databaseUri.fsPath];
       await this.qs.sendRequest(
         registerDatabases,
@@ -129,7 +123,7 @@ export class NewQueryRunner extends QueryRunner {
     const noItem = { title: "No", isCloseAffordance: true };
     const dialogOptions: vscode.MessageItem[] = [yesItem, noItem];
 
-    const message = `Should the database ${dbItem.databaseUri.fsPath} be destructively upgraded?\n\nThis should not be necessary to run queries 
+    const message = `Should the database ${dbItem.databaseUri.fsPath} be destructively upgraded?\n\nThis should not be necessary to run queries
     as we will non-destructively update it anyway.`;
     const chosenItem = await vscode.window.showInformationMessage(
       message,

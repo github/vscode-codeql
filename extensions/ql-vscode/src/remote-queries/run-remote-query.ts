@@ -137,7 +137,7 @@ async function generateQueryPack(
       "--no-default-compilation-cache",
       `--compilation-cache=${ccache}`,
     ];
-  } else if (await cliServer.cliConstraints.supportsNoPrecompile()) {
+  } else {
     precompilationOpts = ["--no-precompile"];
   }
 
@@ -227,12 +227,6 @@ export async function prepareRemoteQueryRun(
   token: CancellationToken,
   dbManager?: DbManager, // the dbManager is only needed when variantAnalysisReposPanel is enabled
 ): Promise<PreparedRemoteQuery> {
-  if (!(await cliServer.cliConstraints.supportsRemoteQueries())) {
-    throw new Error(
-      `Variant analysis is not supported by this version of CodeQL. Please upgrade to v${cli.CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES} or later.`,
-    );
-  }
-
   if (!uri?.fsPath.endsWith(".ql")) {
     throw new UserCancellationException("Not a CodeQL query file.");
   }
