@@ -43,6 +43,8 @@ beforeAll(async () => {
         });
       });
     });
+
+    console.log(`!!!!! Finished downloading test database`);
   }
 
   // Create the temp directory to be used as extension local storage.
@@ -54,8 +56,10 @@ beforeAll(async () => {
       storagePath.substring(1);
   }
   setStoragePath(storagePath);
+  console.log(`!!!!!!!! storagePath written`);
 
   removeStorage = dir.removeCallback;
+  console.log(`!!!!!!!! removeCallback`);
 
   // check that the codeql folder is found in the workspace
   const folders = workspace.workspaceFolders;
@@ -74,6 +78,7 @@ beforeAll(async () => {
     }
   }
 
+  console.log(`!!!!!!!! Activating extension`);
   // Activate the extension
   await extensions.getExtension("GitHub.vscode-codeql")?.activate();
 });
