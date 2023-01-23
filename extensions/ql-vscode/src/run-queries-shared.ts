@@ -33,7 +33,7 @@ import { DatabaseManager } from "./databases";
 import { DecodedBqrsChunk } from "./pure/bqrs-cli-types";
 import { extLogger, Logger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
-import { asError } from "./pure/helpers-pure";
+import { getErrorMessage } from "./pure/helpers-pure";
 
 /**
  * run-queries.ts
@@ -270,9 +270,10 @@ export class QueryEvaluationInfo {
       );
       return this.evalLogSummaryPath;
     } catch (e) {
-      const err = asError(e);
       void showAndLogWarningMessage(
-        `Failed to generate human-readable structured evaluator log summary. Reason: ${err.message}`,
+        `Failed to generate human-readable structured evaluator log summary. Reason: ${getErrorMessage(
+          e,
+        )}`,
       );
       return undefined;
     }

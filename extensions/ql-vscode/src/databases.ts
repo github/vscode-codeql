@@ -19,7 +19,7 @@ import {
 } from "./archive-filesystem-provider";
 import { DisposableObject } from "./pure/disposable-object";
 import { Logger, extLogger } from "./common";
-import { getErrorMessage } from "./pure/helpers-pure";
+import { asError, getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./queryRunner";
 import { pathsEqual } from "./pure/files";
 
@@ -370,7 +370,7 @@ export class DatabaseItemImpl implements DatabaseItem {
         this._error = undefined;
       } catch (e) {
         this._contents = undefined;
-        this._error = e instanceof Error ? e : new Error(String(e));
+        this._error = asError(e);
         throw e;
       }
     } finally {
