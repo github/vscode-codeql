@@ -46,14 +46,14 @@ export const REPO_REGEX = /^[a-zA-Z0-9-_\.]+\/[a-zA-Z0-9-_\.]+$/;
  */
 export const OWNER_REGEX = /^[a-zA-Z0-9-_\.]+$/;
 
-export function getErrorMessage(e: any) {
+export function getErrorMessage(e: unknown) {
   return e instanceof Error ? e.message : String(e);
 }
 
-export function getErrorStack(e: any) {
+export function getErrorStack(e: unknown) {
   return e instanceof Error ? e.stack ?? "" : "";
 }
 
-export function asError(e: any): Error {
+export function asError(e: unknown): Error {
   return e instanceof Error ? e : new Error(String(e));
 }

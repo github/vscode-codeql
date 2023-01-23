@@ -8,7 +8,7 @@ import {
 } from "vscode";
 import { showAndLogErrorMessage, showAndLogWarningMessage } from "./helpers";
 import { extLogger } from "./common";
-import { getErrorMessage, getErrorStack } from "./pure/helpers-pure";
+import { asError, getErrorMessage, getErrorStack } from "./pure/helpers-pure";
 import { telemetryListener } from "./telemetry";
 
 export class UserCancellationException extends Error {
@@ -126,7 +126,7 @@ export function commandRunner(
       return await task(...args);
     } catch (e) {
       const errorMessage = `${getErrorMessage(e) || e} (${commandId})`;
-      error = e instanceof Error ? e : new Error(errorMessage);
+      error = asError(e);
       const errorStack = getErrorStack(e);
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
@@ -179,7 +179,7 @@ export function commandRunnerWithProgress<R>(
       return await withProgress(progressOptionsWithDefaults, task, ...args);
     } catch (e) {
       const errorMessage = `${getErrorMessage(e) || e} (${commandId})`;
-      error = e instanceof Error ? e : new Error(errorMessage);
+      error = asError(e);
       const errorStack = getErrorStack(e);
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
