@@ -73,7 +73,7 @@ import {
   showInformationMessageWithAction,
   tmpDir,
 } from "./helpers";
-import { assertNever, getErrorMessage } from "./pure/helpers-pure";
+import { asError, assertNever, getErrorMessage } from "./pure/helpers-pure";
 import { spawnIdeServer } from "./ide-server";
 import { ResultsView } from "./interface";
 import { WebviewReveal } from "./interface-utils";
@@ -771,7 +771,9 @@ async function activateWithInstalledDistribution(
         // Note we must update the query history view after showing results as the
         // display and sorting might depend on the number of results
       } catch (e) {
-        item.failureReason = `Error running query: ${getErrorMessage(e)}`;
+        const err = asError(e);
+        err.message = `Error running query: ${err.message}`;
+        item.failureReason = err.message;
         throw e;
       } finally {
         await qhm.refreshTreeView();
