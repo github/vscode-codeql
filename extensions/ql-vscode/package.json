@@ -1322,7 +1322,7 @@
       },
       {
         "view": "codeQLQueryHistory",
-        "contents": "Run the 'CodeQL: Run Query on Selected Database' command on a QL query.\n[Run Query](command:codeQL.runQuery)"
+        "contents": "You have no query history items at the moment.\n\nSelect a database to run a CodeQL query and get your first results."
       },
       {
         "view": "codeQLDatabases",
