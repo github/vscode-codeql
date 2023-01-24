@@ -59,7 +59,7 @@ beforeAll(async () => {
   console.log(`!!!!!!!! storagePath written`);
 
   removeStorage = dir.removeCallback;
-  console.log(`!!!!!!!!!!!!!!! removeCallback`);
+  console.log(`!!!!!!!!!!!!!!!!! removeCallback`);
 
   // check that the codeql folder is found in the workspace
   const folders = workspace.workspaceFolders;
