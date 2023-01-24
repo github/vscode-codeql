@@ -12,10 +12,10 @@ import { tmpDir } from "../../../src/helpers";
 import { QueryResultType } from "../../../src/pure/legacy-messages";
 import { QueryInProgress } from "../../../src/legacy-query-server/run-queries";
 import { RemoteQueryHistoryItem } from "../../../src/remote-queries/remote-query-history-item";
-import { VariantAnalysisHistoryItem } from "../../../src/remote-queries/variant-analysis-history-item";
-import { QueryHistoryInfo } from "../../../src/query-history-info";
-import { createMockRemoteQueryHistoryItem } from "../../factories/remote-queries/remote-query-history-item";
-import { createMockVariantAnalysisHistoryItem } from "../../factories/remote-queries/variant-analysis-history-item";
+import { VariantAnalysisHistoryItem } from "../../../src/query-history/variant-analysis-history-item";
+import { QueryHistoryInfo } from "../../../src/query-history/query-history-info";
+import { createMockRemoteQueryHistoryItem } from "../../factories/query-history/remote-query-history-item";
+import { createMockVariantAnalysisHistoryItem } from "../../factories/query-history/variant-analysis-history-item";
 
 describe("serialize and deserialize", () => {
   let infoSuccessRaw: LocalQueryInfo;

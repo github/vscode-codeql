@@ -2,50 +2,50 @@ import { readdirSync, mkdirSync, writeFileSync } from "fs-extra";
 import { join } from "path";
 import * as vscode from "vscode";
 
-import { extLogger } from "../../../src/common";
-import { registerQueryHistoryScrubber } from "../../../src/query-history-scrubber";
+import { extLogger } from "../../../../src/common";
+import { registerQueryHistoryScrubber } from "../../../../src/query-history/query-history-scrubber";
 import {
   HistoryTreeDataProvider,
   QueryHistoryManager,
   SortOrder,
-} from "../../../src/query-history";
+} from "../../../../src/query-history/query-history";
 import {
   QueryHistoryConfig,
   QueryHistoryConfigListener,
-} from "../../../src/config";
-import { LocalQueryInfo } from "../../../src/query-results";
-import { DatabaseManager } from "../../../src/databases";
+} from "../../../../src/config";
+import { LocalQueryInfo } from "../../../../src/query-results";
+import { DatabaseManager } from "../../../../src/databases";
 import { dirSync } from "tmp-promise";
 import {
   ONE_DAY_IN_MS,
   ONE_HOUR_IN_MS,
   THREE_HOURS_IN_MS,
   TWO_HOURS_IN_MS,
-} from "../../../src/pure/time";
-import { tmpDir } from "../../../src/helpers";
-import { HistoryItemLabelProvider } from "../../../src/history-item-label-provider";
-import { RemoteQueriesManager } from "../../../src/remote-queries/remote-queries-manager";
-import { ResultsView } from "../../../src/interface";
-import { EvalLogViewer } from "../../../src/eval-log-viewer";
-import { QueryRunner } from "../../../src/queryRunner";
-import { VariantAnalysisManager } from "../../../src/remote-queries/variant-analysis-manager";
-import { QueryHistoryInfo } from "../../../src/query-history-info";
+} from "../../../../src/pure/time";
+import { tmpDir } from "../../../../src/helpers";
+import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
+import { RemoteQueriesManager } from "../../../../src/remote-queries/remote-queries-manager";
+import { ResultsView } from "../../../../src/interface";
+import { EvalLogViewer } from "../../../../src/eval-log-viewer";
+import { QueryRunner } from "../../../../src/queryRunner";
+import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
+import { QueryHistoryInfo } from "../../../../src/query-history/query-history-info";
 import {
   createMockLocalQueryInfo,
   createMockQueryWithResults,
-} from "../../factories/local-queries/local-query-history-item";
-import { createMockRemoteQueryHistoryItem } from "../../factories/remote-queries/remote-query-history-item";
-import { RemoteQueryHistoryItem } from "../../../src/remote-queries/remote-query-history-item";
-import { shuffleHistoryItems } from "../utils/query-history-helpers";
-import { createMockVariantAnalysisHistoryItem } from "../../factories/remote-queries/variant-analysis-history-item";
-import { VariantAnalysisHistoryItem } from "../../../src/remote-queries/variant-analysis-history-item";
-import { QueryStatus } from "../../../src/query-status";
-import { VariantAnalysisStatus } from "../../../src/remote-queries/shared/variant-analysis";
-import * as ghActionsApiClient from "../../../src/remote-queries/gh-api/gh-actions-api-client";
-import { Credentials } from "../../../src/authentication";
+} from "../../../factories/query-history/local-query-history-item";
+import { createMockRemoteQueryHistoryItem } from "../../../factories/query-history/remote-query-history-item";
+import { RemoteQueryHistoryItem } from "../../../../src/remote-queries/remote-query-history-item";
+import { shuffleHistoryItems } from "../../utils/query-history-helpers";
+import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
+import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
+import { QueryStatus } from "../../../../src/query-status";
+import { VariantAnalysisStatus } from "../../../../src/remote-queries/shared/variant-analysis";
+import * as ghActionsApiClient from "../../../../src/remote-queries/gh-api/gh-actions-api-client";
+import { Credentials } from "../../../../src/authentication";
 import { QuickPickItem, TextEditor } from "vscode";
-import { WebviewReveal } from "../../../src/interface-utils";
-import * as helpers from "../../../src/helpers";
+import { WebviewReveal } from "../../../../src/interface-utils";
+import * as helpers from "../../../../src/helpers";
 
 describe("query-history", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");

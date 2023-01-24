@@ -17,7 +17,7 @@ import {
 import resultsDiff from "./resultsDiff";
 import { CompletedLocalQueryInfo } from "../query-results";
 import { assertNever, getErrorMessage } from "../pure/helpers-pure";
-import { HistoryItemLabelProvider } from "../history-item-label-provider";
+import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import { telemetryListener } from "../telemetry";
 
