@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Renamed command "CodeQL: Run Query" to "CodeQL: Run Query on Selected Dababase".
+- Remove support for CodeQL CLI versions older than 2.7.6. [#1788](https://github.com/github/vscode-codeql/pull/1788)
 
 ## 1.7.7 - 13 December 2022
 

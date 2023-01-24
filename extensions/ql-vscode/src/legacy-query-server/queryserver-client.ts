@@ -141,14 +141,9 @@ export class QueryServerClient extends DisposableObject {
       args.push(this.config.cacheSize.toString());
     }
 
-    if (await this.cliServer.cliConstraints.supportsDatabaseRegistration()) {
-      args.push("--require-db-registration");
-    }
+    args.push("--require-db-registration");
 
-    if (
-      (await this.cliServer.cliConstraints.supportsOldEvalStats()) &&
-      !(await this.cliServer.cliConstraints.supportsPerQueryEvalLog())
-    ) {
+    if (!(await this.cliServer.cliConstraints.supportsPerQueryEvalLog())) {
       args.push("--old-eval-stats");
     }
 

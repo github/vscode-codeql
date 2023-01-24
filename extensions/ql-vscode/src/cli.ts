@@ -1125,10 +1125,7 @@ export class CodeQLCliServer implements Disposable {
     ];
     if (targetDbScheme) {
       args.push("--target-dbscheme", targetDbScheme);
-      if (
-        allowDowngradesIfPossible &&
-        (await this.cliConstraints.supportsDowngrades())
-      ) {
+      if (allowDowngradesIfPossible) {
         args.push("--allow-downgrades");
       }
     }
@@ -1210,10 +1207,8 @@ export class CodeQLCliServer implements Disposable {
     if (searchPath !== undefined) {
       args.push("--search-path", join(...searchPath));
     }
-    if (await this.cliConstraints.supportsAllowLibraryPacksInResolveQueries()) {
-      // All of our usage of `codeql resolve queries` needs to handle library packs.
-      args.push("--allow-library-packs");
-    }
+    // All of our usage of `codeql resolve queries` needs to handle library packs.
+    args.push("--allow-library-packs");
     args.push(suite);
     return this.runJsonCodeQlCliCommand<string[]>(
       ["resolve", "queries"],
@@ -1300,12 +1295,9 @@ export class CodeQLCliServer implements Disposable {
   }
 
   async generateDil(qloFile: string, outFile: string): Promise<void> {
-    const extraArgs = (await this.cliConstraints.supportsDecompileDil())
-      ? ["--kind", "dil", "-o", outFile, qloFile]
-      : ["-o", outFile, qloFile];
     await this.runCodeQlCliCommand(
       ["query", "decompile"],
-      extraArgs,
+      ["--kind", "dil", "-o", outFile, qloFile],
       "Generating DIL",
     );
   }
@@ -1584,56 +1576,6 @@ export function shouldDebugCliServer() {
 
 export class CliVersionConstraint {
   /**
-   * CLI version where --kind=DIL was introduced
-   */
-  public static CLI_VERSION_WITH_DECOMPILE_KIND_DIL = new SemVer("2.3.0");
-
-  /**
-   * CLI version where languages are exposed during a `codeql resolve database` command.
-   */
-  public static CLI_VERSION_WITH_LANGUAGE = new SemVer("2.4.1");
-
-  public static CLI_VERSION_WITH_NONDESTURCTIVE_UPGRADES = new SemVer("2.4.2");
-
-  /**
-   * CLI version where `codeql resolve upgrades` supports
-   * the `--allow-downgrades` flag
-   */
-  public static CLI_VERSION_WITH_DOWNGRADES = new SemVer("2.4.4");
-
-  /**
-   * CLI version where the `codeql resolve qlref` command is available.
-   */
-  public static CLI_VERSION_WITH_RESOLVE_QLREF = new SemVer("2.5.1");
-
-  /**
-   * CLI version where database registration was introduced
-   */
-  public static CLI_VERSION_WITH_DB_REGISTRATION = new SemVer("2.4.1");
-
-  /**
-   * CLI version where the `--allow-library-packs` option to `codeql resolve queries` was
-   * introduced.
-   */
-  public static CLI_VERSION_WITH_ALLOW_LIBRARY_PACKS_IN_RESOLVE_QUERIES =
-    new SemVer("2.6.1");
-
-  /**
-   * CLI version where the `database unbundle` subcommand was introduced.
-   */
-  public static CLI_VERSION_WITH_DATABASE_UNBUNDLE = new SemVer("2.6.0");
-
-  /**
-   * CLI version where the `--no-precompile` option for pack creation was introduced.
-   */
-  public static CLI_VERSION_WITH_NO_PRECOMPILE = new SemVer("2.7.1");
-
-  /**
-   * CLI version where remote queries (variant analysis) are supported.
-   */
-  public static CLI_VERSION_REMOTE_QUERIES = new SemVer("2.6.3");
-
-  /**
    * CLI version where building QLX packs for remote queries is supported.
    * (The options were _accepted_ by a few earlier versions, but only from
    * 2.11.3 will it actually use the existing compilation cache correctly).
@@ -1641,26 +1583,11 @@ export class CliVersionConstraint {
   public static CLI_VERSION_QLX_REMOTE = new SemVer("2.11.3");
 
   /**
-   * CLI version where the `resolve ml-models` subcommand was introduced.
-   */
-  public static CLI_VERSION_WITH_RESOLVE_ML_MODELS = new SemVer("2.7.3");
-
-  /**
    * CLI version where the `resolve ml-models` subcommand was enhanced to work with packaging.
    */
   public static CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS = new SemVer(
     "2.10.0",
   );
-
-  /**
-   * CLI version where the `--old-eval-stats` option to the query server was introduced.
-   */
-  public static CLI_VERSION_WITH_OLD_EVAL_STATS = new SemVer("2.7.4");
-
-  /**
-   * CLI version where packaging was introduced.
-   */
-  public static CLI_VERSION_WITH_PACKAGING = new SemVer("2.6.0");
 
   /**
    * CLI version where the `--evaluator-log` and related options to the query server were introduced,
@@ -1702,91 +1629,13 @@ export class CliVersionConstraint {
     return (await this.cli.getVersion()).compare(v) >= 0;
   }
 
-  public async supportsDecompileDil() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_DECOMPILE_KIND_DIL,
-    );
-  }
-
-  public async supportsLanguageName() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_LANGUAGE,
-    );
-  }
-
-  public async supportsNonDestructiveUpgrades() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_NONDESTURCTIVE_UPGRADES,
-    );
-  }
-
-  public async supportsDowngrades() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_DOWNGRADES,
-    );
-  }
-
-  public async supportsResolveQlref() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_QLREF,
-    );
-  }
-
-  public async supportsAllowLibraryPacksInResolveQueries() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_ALLOW_LIBRARY_PACKS_IN_RESOLVE_QUERIES,
-    );
-  }
-
-  async supportsDatabaseRegistration() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_DB_REGISTRATION,
-    );
-  }
-
-  async supportsDatabaseUnbundle() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_DATABASE_UNBUNDLE,
-    );
-  }
-
-  async supportsNoPrecompile() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_NO_PRECOMPILE,
-    );
-  }
-
-  async supportsRemoteQueries() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_REMOTE_QUERIES,
-    );
-  }
-
   async supportsQlxRemote() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_QLX_REMOTE);
-  }
-
-  async supportsResolveMlModels() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_ML_MODELS,
-    );
   }
 
   async supportsPreciseResolveMlModels() {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS,
-    );
-  }
-
-  async supportsOldEvalStats() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_OLD_EVAL_STATS,
-    );
-  }
-
-  async supportsPackaging() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_PACKAGING,
     );
   }
 

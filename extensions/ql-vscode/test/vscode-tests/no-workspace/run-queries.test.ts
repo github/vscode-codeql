@@ -222,11 +222,7 @@ describe("run-queries", () => {
 
   describe("register", () => {
     it("should register", async () => {
-      const qs = createMockQueryServerClient({
-        cliConstraints: {
-          supportsDatabaseRegistration: () => true,
-        },
-      } as any);
+      const qs = createMockQueryServerClient();
       const runner = new LegacyQueryRunner(qs);
       const mockProgress = "progress-monitor";
       const mockCancel = "cancel-token";
@@ -261,11 +257,7 @@ describe("run-queries", () => {
     });
 
     it("should deregister", async () => {
-      const qs = createMockQueryServerClient({
-        cliConstraints: {
-          supportsDatabaseRegistration: () => true,
-        },
-      } as any);
+      const qs = createMockQueryServerClient();
       const runner = new LegacyQueryRunner(qs);
       const mockProgress = "progress-monitor";
       const mockCancel = "cancel-token";
@@ -297,54 +289,6 @@ describe("run-queries", () => {
         mockCancel,
         mockProgress,
       );
-    });
-
-    it("should not register if unsupported", async () => {
-      const qs = createMockQueryServerClient({
-        cliConstraints: {
-          supportsDatabaseRegistration: () => false,
-        },
-      } as any);
-      const runner = new LegacyQueryRunner(qs);
-      const mockProgress = "progress-monitor";
-      const mockCancel = "cancel-token";
-      const datasetUri = Uri.file("dataset-uri");
-
-      const dbItem: DatabaseItem = {
-        contents: {
-          datasetUri,
-        },
-      } as any;
-      await runner.registerDatabase(
-        mockProgress as any,
-        mockCancel as any,
-        dbItem,
-      );
-      expect(qs.sendRequest).not.toHaveBeenCalled();
-    });
-
-    it("should not deregister if unsupported", async () => {
-      const qs = createMockQueryServerClient({
-        cliConstraints: {
-          supportsDatabaseRegistration: () => false,
-        },
-      } as any);
-      const runner = new LegacyQueryRunner(qs);
-      const mockProgress = "progress-monitor";
-      const mockCancel = "cancel-token";
-      const datasetUri = Uri.file("dataset-uri");
-
-      const dbItem: DatabaseItem = {
-        contents: {
-          datasetUri,
-        },
-      } as any;
-      await runner.registerDatabase(
-        mockProgress as any,
-        mockCancel as any,
-        dbItem,
-      );
-      expect(qs.sendRequest).not.toBeCalled();
     });
   });
 

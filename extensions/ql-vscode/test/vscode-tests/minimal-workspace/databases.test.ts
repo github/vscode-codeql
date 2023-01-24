@@ -33,7 +33,6 @@ describe("databases", () => {
   let updateSpy: jest.Mock<Promise<void>, []>;
   let registerSpy: jest.Mock<Promise<void>, []>;
   let deregisterSpy: jest.Mock<Promise<void>, []>;
-  let supportsLanguageNameSpy: jest.Mock<Promise<boolean>, []>;
   let resolveDatabaseSpy: jest.Mock<Promise<DbInfo>, []>;
 
   let dir: tmp.DirResult;
@@ -44,7 +43,6 @@ describe("databases", () => {
     updateSpy = jest.fn(() => Promise.resolve(undefined));
     registerSpy = jest.fn(() => Promise.resolve(undefined));
     deregisterSpy = jest.fn(() => Promise.resolve(undefined));
-    supportsLanguageNameSpy = jest.fn(() => Promise.resolve(true));
     resolveDatabaseSpy = jest.fn(() => Promise.resolve({} as DbInfo));
 
     databaseManager = new DatabaseManager(
@@ -65,10 +63,6 @@ describe("databases", () => {
         },
       } as unknown as QueryRunner,
       {
-        cliConstraints: {
-          supportsLanguageName: supportsLanguageNameSpy,
-          supportsDatabaseRegistration: () => true,
-        },
         resolveDatabase: resolveDatabaseSpy,
       } as unknown as CodeQLCliServer,
       {
@@ -384,15 +378,7 @@ describe("databases", () => {
     });
   });
 
-  it("should not support the primary language", async () => {
-    supportsLanguageNameSpy.mockResolvedValue(false);
-
-    const result = await (databaseManager as any).getPrimaryLanguage("hucairz");
-    expect(result).toBeUndefined();
-  });
-
   it("should get the primary language", async () => {
-    supportsLanguageNameSpy.mockResolvedValue(true);
     resolveDatabaseSpy.mockResolvedValue({
       languages: ["python"],
     } as unknown as DbInfo);
@@ -401,7 +387,6 @@ describe("databases", () => {
   });
 
   it("should handle missing the primary language", async () => {
-    supportsLanguageNameSpy.mockResolvedValue(true);
     resolveDatabaseSpy.mockResolvedValue({
       languages: [],
     } as unknown as DbInfo);
