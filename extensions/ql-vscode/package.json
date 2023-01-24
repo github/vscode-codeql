@@ -1340,7 +1340,7 @@
     "@primer/react": "^35.0.0",
     "@vscode/codicons": "^0.0.31",
     "@vscode/webview-ui-toolkit": "^1.0.1",
-    "ajv": "^8.11.0",
+    "ajv": "^8.12.0",
     "child-process-promise": "^2.2.1",
     "chokidar": "^3.5.3",
     "classnames": "~2.2.6",
