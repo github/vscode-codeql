@@ -91,10 +91,6 @@ describe("gh-actions-api-client mock responses", () => {
 
 describe("gh-actions-api-client real responses", () => {
   it("should get the stargazers for repos", async () => {
-    if (skip()) {
-      return;
-    }
-
     const credentials = await Credentials.initializeWithToken(
       process.env.VSCODE_CODEQL_GITHUB_TOKEN!,
     );
@@ -119,20 +115,4 @@ describe("gh-actions-api-client real responses", () => {
       "rails/rails",
     ]);
   });
-
-  function skip() {
-    if (!process.env.VSCODE_CODEQL_GITHUB_TOKEN) {
-      if (process.env.CI) {
-        throw new Error(
-          "The VSCODE_CODEQL_GITHUB_TOKEN must be set to a valid GITHUB token on CI",
-        );
-      } else {
-        console.log(
-          "Skipping gh-actions-api-client real responses tests. To run these tests, set the value VSCODE_CODEQL_GITHUB_TOKEN to a GitHub token.",
-        );
-      }
-      return true;
-    }
-    return false;
-  }
 });
