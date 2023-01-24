@@ -18,6 +18,10 @@ function makeTestOctokit(octokit: Octokit.Octokit): Credentials {
   };
 }
 
+/**
+ * Get a Credentials instance that calls a stub function instead
+ * of making real HTTP requests.
+ */
 export function testCredentialsWithStub(
   requestSpy?: jest.SpyInstance<RequestInterface<object>>,
 ): Credentials {
@@ -29,6 +33,10 @@ export function testCredentialsWithStub(
   return makeTestOctokit({ request } as any);
 }
 
+/**
+ * Get a Credentials instance that returns a real octokit instance,
+ * optionally authenticated with a given token.
+ */
 export function testCredentialsWithRealOctokit(token?: string): Credentials {
   return makeTestOctokit(new Octokit.Octokit({ auth: token, retry }));
 }
