@@ -78,7 +78,7 @@ beforeAll(async () => {
     }
   }
 
-  console.log(`!!!!!!!! Activating extension`);
+  console.log(`!!!!!!!!! Activating extension`);
   // Activate the extension
   await extensions.getExtension("GitHub.vscode-codeql")?.activate();
 });
