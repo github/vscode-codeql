@@ -1322,7 +1322,7 @@
     "integration": "npm-run-all integration:*",
     "integration:no-workspace": "jest --projects test/vscode-tests/no-workspace",
     "integration:minimal-workspace": "jest --projects test/vscode-tests/minimal-workspace",
-    "cli-integration": "jest --projects test/vscode-tests/cli-integration",
+    "cli-integration": "jest --projects test/vscode-tests/cli-integration --runInBand",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
     "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
