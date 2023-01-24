@@ -13,9 +13,7 @@ import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 import { response } from "../../../../src/mocks/scenarios/problem-query-success/0-getRepo.json";
 import { response as variantAnalysisJson_response } from "../../../../src/mocks/scenarios/problem-query-success/1-submitVariantAnalysis.json";
 import { response as variantAnalysisRepoJson_response } from "../../../../src/mocks/scenarios/problem-query-success/9-getVariantAnalysisRepo.json";
-import { testCredentialsWithUnauthenticatedOctokit } from "../../../factories/authentication";
-
-const mockCredentials = testCredentialsWithUnauthenticatedOctokit();
+import { testCredentialsWithRealOctokit } from "../../../factories/authentication";
 
 const mockServer = new MockGitHubApiServer();
 beforeAll(() => mockServer.startServer());
@@ -31,7 +29,7 @@ describe("submitVariantAnalysis", () => {
     await mockServer.loadScenario("problem-query-success");
 
     const result = await submitVariantAnalysis(
-      mockCredentials,
+      testCredentialsWithRealOctokit(),
       createMockSubmission(),
     );
 
@@ -45,7 +43,7 @@ describe("getVariantAnalysis", () => {
     await mockServer.loadScenario("problem-query-success");
 
     const result = await getVariantAnalysis(
-      mockCredentials,
+      testCredentialsWithRealOctokit(),
       controllerRepoId,
       variantAnalysisId,
     );
@@ -60,7 +58,7 @@ describe("getVariantAnalysisRepo", () => {
     await mockServer.loadScenario("problem-query-success");
 
     const result = await getVariantAnalysisRepo(
-      mockCredentials,
+      testCredentialsWithRealOctokit(),
       controllerRepoId,
       variantAnalysisId,
       repoTaskId,
@@ -76,7 +74,7 @@ describe("getVariantAnalysisRepoResult", () => {
     await mockServer.loadScenario("problem-query-success");
 
     const result = await getVariantAnalysisRepoResult(
-      mockCredentials,
+      testCredentialsWithRealOctokit(),
       `https://objects-origin.githubusercontent.com/codeql-query-console/codeql-variant-analysis-repo-tasks/${variantAnalysisId}/${repoTaskId}/${faker.datatype.uuid()}`,
     );
 
@@ -93,7 +91,7 @@ describe("getRepositoryFromNwo", () => {
     await mockServer.loadScenario("problem-query-success");
 
     const result = await getRepositoryFromNwo(
-      mockCredentials,
+      testCredentialsWithRealOctokit(),
       "github",
       "mrva-demo-controller-repo",
     );

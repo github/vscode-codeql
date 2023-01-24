@@ -8,7 +8,7 @@ import { createMockVariantAnalysis } from "../../../../factories/remote-queries/
 import { VariantAnalysis } from "../../../../../src/remote-queries/shared/variant-analysis";
 import {
   testCredentialsWithStub,
-  testCredentialsWithToken,
+  testCredentialsWithRealOctokit,
 } from "../../../../factories/authentication";
 
 jest.setTimeout(10000);
@@ -93,7 +93,7 @@ describe("gh-actions-api-client real responses", () => {
       return;
     }
 
-    const credentials = testCredentialsWithToken(
+    const credentials = testCredentialsWithRealOctokit(
       process.env.VSCODE_CODEQL_GITHUB_TOKEN!,
     );
     const stargazers = await getRepositoriesMetadata(

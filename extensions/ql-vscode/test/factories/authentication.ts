@@ -29,10 +29,6 @@ export function testCredentialsWithStub(
   return makeTestOctokit({ request } as any);
 }
 
-export function testCredentialsWithUnauthenticatedOctokit(): Credentials {
-  return makeTestOctokit(new Octokit.Octokit({ retry }));
-}
-
-export function testCredentialsWithToken(token: string): Credentials {
+export function testCredentialsWithRealOctokit(token?: string): Credentials {
   return makeTestOctokit(new Octokit.Octokit({ auth: token, retry }));
 }
