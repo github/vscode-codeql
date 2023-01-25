@@ -1331,7 +1331,8 @@
     "build-storybook": "build-storybook",
     "lint:scenarios": "ts-node scripts/lint-scenarios.ts",
     "check-types": "find . -type f -name \"tsconfig.json\" -not -path \"./node_modules/*\" | sed -r 's|/[^/]+$||' | sort | uniq | xargs -I {} sh -c \"echo Checking types in {} && cd {} && npx tsc --noEmit\"",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "generate:schemas": "rm -rf src/data-serialization/generated-schemas && mkdir src/data-serialization/generated-schemas && ts-node ./src/data-serialization/schema-generator.ts"
   },
   "dependencies": {
     "@octokit/plugin-retry": "^3.0.9",
