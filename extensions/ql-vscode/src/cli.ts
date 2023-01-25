@@ -27,7 +27,7 @@ import { Logger, ProgressReporter } from "./common";
 import { CompilationMessage } from "./pure/legacy-messages";
 import { sarifParser } from "./sarif-parser";
 import { dbSchemeToLanguage, walkDirectory } from "./helpers";
-import { Credentials } from "./authentication";
+import { App } from "./common/app";
 
 /**
  * The version of the SARIF format that we are using.
@@ -197,6 +197,7 @@ export class CodeQLCliServer implements Disposable {
   public quiet = false;
 
   constructor(
+    private readonly app: App,
     private distributionProvider: DistributionProvider,
     private cliConfig: CliConfig,
     private logger: Logger,
@@ -618,9 +619,7 @@ export class CodeQLCliServer implements Disposable {
     addFormat = true,
     progressReporter?: ProgressReporter,
   ): Promise<OutputType> {
-    const credentials = await Credentials.initialize();
-
-    const accessToken = await credentials.getExistingAccessToken();
+    const accessToken = await this.app.credentials.getExistingAccessToken();
 
     const extraArgs = accessToken ? ["--github-auth-stdin"] : [];
 
@@ -633,7 +632,7 @@ export class CodeQLCliServer implements Disposable {
       async (line) => {
         if (line.startsWith("Enter value for --github-auth-stdin")) {
           try {
-            return await credentials.getAccessToken();
+            return await this.app.credentials.getAccessToken();
           } catch (e) {
             // If the user cancels the authentication prompt, we still need to give a value to the CLI.
             // By giving a potentially invalid value, the user will just get a 401/403 when they try to access a

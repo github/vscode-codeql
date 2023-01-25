@@ -1,5 +1,5 @@
-import { Credentials } from "../../authentication";
 import { OctokitResponse } from "@octokit/types/dist-types";
+import { Credentials } from "../../common/authentication";
 import { RemoteQueriesSubmission } from "../shared/remote-queries";
 import { VariantAnalysisSubmission } from "../shared/variant-analysis";
 import {

@@ -1,3 +1,4 @@
+import { Credentials } from "./authentication";
 import { Disposable } from "../pure/disposable-object";
 import { AppEventEmitter } from "./events";
 import { Logger } from "./logging";
@@ -13,6 +14,7 @@ export interface App {
   readonly globalStoragePath: string;
   readonly workspaceStoragePath?: string;
   readonly workspaceState: Memento;
+  readonly credentials: Credentials;
 }
 
 export enum AppMode {

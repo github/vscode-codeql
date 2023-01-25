@@ -9,11 +9,8 @@ import {
   window,
   workspace,
 } from "vscode";
-import { Octokit } from "@octokit/rest";
-import { retry } from "@octokit/plugin-retry";
 
 import { CodeQLExtensionInterface } from "../../../../src/extension";
-import { Credentials } from "../../../../src/authentication";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 
 jest.setTimeout(30_000);
@@ -92,11 +89,6 @@ describe("Variant Analysis Submission Integration", () => {
         label: "test",
       },
     });
-
-    const mockCredentials = {
-      getOctokit: () => Promise.resolve(new Octokit({ retry })),
-    } as unknown as Credentials;
-    jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
 
     quickPickSpy = jest
       .spyOn(window, "showQuickPick")

@@ -35,9 +35,10 @@ import {
   promptImportInternetDatabase,
 } from "./databaseFetcher";
 import { asyncFilter, getErrorMessage } from "./pure/helpers-pure";
-import { Credentials } from "./authentication";
 import { QueryRunner } from "./queryRunner";
 import { isCanary } from "./config";
+import { App } from "./common/app";
+import { Credentials } from "./common/authentication";
 
 type ThemableIconPath = { light: string; dark: string } | string;
 
@@ -220,11 +221,11 @@ export class DatabaseUI extends DisposableObject {
   private treeDataProvider: DatabaseTreeDataProvider;
 
   public constructor(
+    private app: App,
     private databaseManager: DatabaseManager,
     private readonly queryServer: QueryRunner | undefined,
     private readonly storagePath: string,
     readonly extensionPath: string,
-    private readonly getCredentials: () => Promise<Credentials>,
   ) {
     super();
 
@@ -297,9 +298,7 @@ export class DatabaseUI extends DisposableObject {
       commandRunnerWithProgress(
         "codeQLDatabases.chooseDatabaseGithub",
         async (progress: ProgressCallback, token: CancellationToken) => {
-          const credentials = isCanary()
-            ? await this.getCredentials()
-            : undefined;
+          const credentials = isCanary() ? this.app.credentials : undefined;
           await this.handleChooseDatabaseGithub(credentials, progress, token);
         },
         {

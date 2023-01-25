@@ -11,7 +11,7 @@ import { Uri } from "vscode";
 
 import { DatabaseUI } from "../../../src/databases-ui";
 import { testDisposeHandler } from "../test-dispose-handler";
-import { Credentials } from "../../../src/authentication";
+import { createMockApp } from "../../__mocks__/appMock";
 
 describe("databases-ui", () => {
   describe("fixDbUri", () => {
@@ -82,7 +82,9 @@ describe("databases-ui", () => {
       "codeql-database.yml",
     );
 
+    const app = createMockApp({});
     const databaseUI = new DatabaseUI(
+      app,
       {
         databaseItems: [{ databaseUri: Uri.file(db1) }],
         onDidChangeDatabaseItem: () => {
@@ -95,7 +97,6 @@ describe("databases-ui", () => {
       {} as any,
       storageDir,
       storageDir,
-      () => Promise.resolve({} as Credentials),
     );
 
     await databaseUI.handleRemoveOrphanedDatabases();

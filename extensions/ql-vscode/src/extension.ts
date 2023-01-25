@@ -102,7 +102,6 @@ import {
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
 
-import { Credentials } from "./authentication";
 import { RemoteQueriesManager } from "./remote-queries/remote-queries-manager";
 import { RemoteQueryResult } from "./remote-queries/remote-query-result";
 import { URLSearchParams } from "url";
@@ -546,6 +545,8 @@ async function activateWithInstalledDistribution(
   // of activation.
   errorStubs.forEach((stub) => stub.dispose());
 
+  const app = new ExtensionApp(ctx);
+
   void extLogger.log("Initializing configuration listener...");
   const qlConfigurationListener =
     await QueryServerConfigListener.createQueryServerConfigListener(
@@ -555,6 +556,7 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing CodeQL cli server...");
   const cliServer = new CodeQLCliServer(
+    app,
     distributionManager,
     new CliConfigListener(),
     extLogger,
@@ -587,11 +589,11 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(dbm);
   void extLogger.log("Initializing database panel.");
   const databaseUI = new DatabaseUI(
+    app,
     dbm,
     qs,
     getContextStoragePath(ctx),
     ctx.extensionPath,
-    () => Credentials.initialize(),
   );
   databaseUI.init();
   ctx.subscriptions.push(databaseUI);
@@ -623,8 +625,6 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing variant analysis manager.");
 
-  const app = new ExtensionApp(ctx);
-
   const dbModule = await DbModule.initialize(app);
 
   const variantAnalysisStorageDir = join(
@@ -633,12 +633,14 @@ async function activateWithInstalledDistribution(
   );
   await ensureDir(variantAnalysisStorageDir);
   const variantAnalysisResultsManager = new VariantAnalysisResultsManager(
+    app.credentials,
     cliServer,
     extLogger,
   );
 
   const variantAnalysisManager = new VariantAnalysisManager(
     ctx,
+    app,
     cliServer,
     variantAnalysisStorageDir,
     variantAnalysisResultsManager,
@@ -656,6 +658,7 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Initializing remote queries manager.");
   const rqm = new RemoteQueriesManager(
     ctx,
+    app,
     cliServer,
     queryStorageDir,
     extLogger,
@@ -664,6 +667,7 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing query history.");
   const qhm = new QueryHistoryManager(
+    app,
     qs,
     dbm,
     localQueryResultsView,
@@ -1224,7 +1228,7 @@ async function activateWithInstalledDistribution(
     commandRunner(
       "codeQL.exportRemoteQueryResults",
       async (queryId: string) => {
-        await exportRemoteQueryResults(qhm, rqm, queryId);
+        await exportRemoteQueryResults(qhm, rqm, queryId, app.credentials);
       },
     ),
   );
@@ -1242,6 +1246,7 @@ async function activateWithInstalledDistribution(
           variantAnalysisManager,
           variantAnalysisId,
           filterSort,
+          app.credentials,
           progress,
           token,
         );
@@ -1342,9 +1347,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseGithub",
       async (progress: ProgressCallback, token: CancellationToken) => {
-        const credentials = isCanary()
-          ? await Credentials.initialize()
-          : undefined;
+        const credentials = isCanary() ? app.credentials : undefined;
         await databaseUI.handleChooseDatabaseGithub(
           credentials,
           progress,
@@ -1398,8 +1401,7 @@ async function activateWithInstalledDistribution(
        * Credentials for authenticating to GitHub.
        * These are used when making API calls.
        */
-      const credentials = await Credentials.initialize();
-      const octokit = await credentials.getOctokit();
+      const octokit = await app.credentials.getOctokit();
       const userInfo = await octokit.users.getAuthenticated();
       void showAndLogInformationMessage(
         `Authenticated to GitHub as user: ${userInfo.data.login}`,

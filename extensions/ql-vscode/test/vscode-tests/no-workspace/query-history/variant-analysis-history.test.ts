@@ -21,6 +21,8 @@ import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
 import { QueryRunner } from "../../../../src/queryRunner";
 import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
+import { App } from "../../../../src/common/app";
+import { createMockApp } from "../../../__mocks__/appMock";
 
 // set a higher timeout since recursive delete may take a while, expecially on Windows.
 jest.setTimeout(120000);
@@ -36,6 +38,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     /** noop */
   };
 
+  let app: App;
   let qhm: QueryHistoryManager;
   let rawQueryHistory: any;
   let disposables: DisposableBucket;
@@ -77,7 +80,10 @@ describe("Variant Analyses and QueryHistoryManager", () => {
       join(STORAGE_DIR, "workspace-query-history.json"),
     ).queries;
 
+    app = createMockApp({});
+
     qhm = new QueryHistoryManager(
+      app,
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,

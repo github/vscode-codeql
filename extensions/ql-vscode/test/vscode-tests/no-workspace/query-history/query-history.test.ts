@@ -42,10 +42,12 @@ import { VariantAnalysisHistoryItem } from "../../../../src/query-history/varian
 import { QueryStatus } from "../../../../src/query-status";
 import { VariantAnalysisStatus } from "../../../../src/remote-queries/shared/variant-analysis";
 import * as ghActionsApiClient from "../../../../src/remote-queries/gh-api/gh-actions-api-client";
-import { Credentials } from "../../../../src/authentication";
 import { QuickPickItem, TextEditor } from "vscode";
 import { WebviewReveal } from "../../../../src/interface-utils";
 import * as helpers from "../../../../src/helpers";
+import { testCredentialsWithStub } from "../../../factories/authentication";
+import { Credentials } from "../../../../src/common/authentication";
+import { createMockApp } from "../../../__mocks__/appMock";
 
 describe("query-history", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -873,23 +875,13 @@ describe("query-history", () => {
     });
 
     describe("handleCancel", () => {
-      let mockCredentials: Credentials;
       let mockCancelRemoteQuery: jest.SpiedFunction<
         typeof ghActionsApiClient.cancelRemoteQuery
       >;
       const getOctokitStub = jest.fn();
+      const mockCredentials = testCredentialsWithStub(getOctokitStub);
 
       beforeEach(async () => {
-        mockCredentials = {
-          getOctokit: () =>
-            Promise.resolve({
-              request: getOctokitStub,
-            }),
-        } as unknown as Credentials;
-        jest
-          .spyOn(Credentials, "initialize")
-          .mockResolvedValue(mockCredentials);
-
         mockCancelRemoteQuery = jest
           .spyOn(ghActionsApiClient, "cancelRemoteQuery")
           .mockResolvedValue();
@@ -897,7 +889,10 @@ describe("query-history", () => {
 
       describe("if the item is in progress", () => {
         it("should cancel a single local query", async () => {
-          queryHistoryManager = await createMockQueryHistory(localQueryHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            localQueryHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const inProgress1 = localQueryHistory[4];
@@ -908,7 +903,10 @@ describe("query-history", () => {
         });
 
         it("should cancel multiple local queries", async () => {
-          queryHistoryManager = await createMockQueryHistory(localQueryHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            localQueryHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const inProgress1 = localQueryHistory[4];
@@ -926,7 +924,10 @@ describe("query-history", () => {
         });
 
         it("should cancel a single remote query", async () => {
-          queryHistoryManager = await createMockQueryHistory(allHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            allHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const inProgress1 = remoteQueryHistory[2];
@@ -939,7 +940,10 @@ describe("query-history", () => {
         });
 
         it("should cancel multiple remote queries", async () => {
-          queryHistoryManager = await createMockQueryHistory(allHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            allHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const inProgress1 = remoteQueryHistory[2];
@@ -960,7 +964,10 @@ describe("query-history", () => {
         });
 
         it("should cancel a single variant analysis", async () => {
-          queryHistoryManager = await createMockQueryHistory(allHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            allHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const inProgress1 = variantAnalysisHistory[1];
@@ -973,7 +980,10 @@ describe("query-history", () => {
         });
 
         it("should cancel multiple variant analyses", async () => {
-          queryHistoryManager = await createMockQueryHistory(allHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            allHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const inProgress1 = variantAnalysisHistory[1];
@@ -996,7 +1006,10 @@ describe("query-history", () => {
 
       describe("if the item is not in progress", () => {
         it("should not cancel a single local query", async () => {
-          queryHistoryManager = await createMockQueryHistory(localQueryHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            localQueryHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const completed = localQueryHistory[0];
@@ -1007,7 +1020,10 @@ describe("query-history", () => {
         });
 
         it("should not cancel multiple local queries", async () => {
-          queryHistoryManager = await createMockQueryHistory(localQueryHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            localQueryHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const completed = localQueryHistory[0];
@@ -1025,7 +1041,10 @@ describe("query-history", () => {
         });
 
         it("should not cancel a single remote query", async () => {
-          queryHistoryManager = await createMockQueryHistory(allHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            allHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const completed = remoteQueryHistory[0];
@@ -1038,7 +1057,10 @@ describe("query-history", () => {
         });
 
         it("should not cancel multiple remote queries", async () => {
-          queryHistoryManager = await createMockQueryHistory(allHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            allHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const completed = remoteQueryHistory[0];
@@ -1059,7 +1081,10 @@ describe("query-history", () => {
         });
 
         it("should not cancel a single variant analysis", async () => {
-          queryHistoryManager = await createMockQueryHistory(allHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            allHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const completedVariantAnalysis = variantAnalysisHistory[0];
@@ -1074,7 +1099,10 @@ describe("query-history", () => {
         });
 
         it("should not cancel multiple variant analyses", async () => {
-          queryHistoryManager = await createMockQueryHistory(allHistory);
+          queryHistoryManager = await createMockQueryHistory(
+            allHistory,
+            mockCredentials,
+          );
 
           // cancelling the selected item
           const completedVariantAnalysis = variantAnalysisHistory[0];
@@ -1984,8 +2012,12 @@ describe("query-history", () => {
     });
   });
 
-  async function createMockQueryHistory(allHistory: QueryHistoryInfo[]) {
+  async function createMockQueryHistory(
+    allHistory: QueryHistoryInfo[],
+    credentials?: Credentials,
+  ) {
     const qhm = new QueryHistoryManager(
+      createMockApp({ credentials }),
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,

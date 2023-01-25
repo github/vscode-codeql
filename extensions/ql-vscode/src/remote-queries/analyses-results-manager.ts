@@ -3,7 +3,6 @@ import { EOL } from "os";
 import { extname } from "path";
 import { CancellationToken } from "vscode";
 
-import { Credentials } from "../authentication";
 import { Logger } from "../common";
 import { downloadArtifactFromLink } from "./gh-api/gh-actions-api-client";
 import { AnalysisSummary } from "./shared/remote-query-result";
@@ -19,6 +18,7 @@ import { CodeQLCliServer } from "../cli";
 import { extractRawResults } from "./bqrs-processing";
 import { asyncFilter, getErrorMessage } from "../pure/helpers-pure";
 import { createDownloadPath } from "./download-link";
+import { App } from "../common/app";
 
 export class AnalysesResultsManager {
   // Store for the results of various analyses for each remote query.
@@ -26,6 +26,7 @@ export class AnalysesResultsManager {
   private readonly analysesResults: Map<string, AnalysisResults[]>;
 
   constructor(
+    private readonly app: App,
     private readonly cliServer: CodeQLCliServer,
     readonly storagePath: string,
     private readonly logger: Logger,
@@ -42,17 +43,11 @@ export class AnalysesResultsManager {
       return;
     }
 
-    const credentials = await Credentials.initialize();
-
     void this.logger.log(
       `Downloading and processing results for ${analysisSummary.nwo}`,
     );
 
-    await this.downloadSingleAnalysisResults(
-      analysisSummary,
-      credentials,
-      publishResults,
-    );
+    await this.downloadSingleAnalysisResults(analysisSummary, publishResults);
   }
 
   /**
@@ -76,8 +71,6 @@ export class AnalysesResultsManager {
       (x) => !this.isAnalysisInMemory(x),
     );
 
-    const credentials = await Credentials.initialize();
-
     void this.logger.log("Downloading and processing analyses results");
 
     const batchSize = 3;
@@ -94,11 +87,7 @@ export class AnalysesResultsManager {
 
       const batch = analysesToDownload.slice(i, i + batchSize);
       const batchTasks = batch.map((analysis) =>
-        this.downloadSingleAnalysisResults(
-          analysis,
-          credentials,
-          publishResults,
-        ),
+        this.downloadSingleAnalysisResults(analysis, publishResults),
       );
 
       const nwos = batch.map((a) => a.nwo).join(", ");
@@ -138,7 +127,6 @@ export class AnalysesResultsManager {
 
   private async downloadSingleAnalysisResults(
     analysis: AnalysisSummary,
-    credentials: Credentials,
     publishResults: (analysesResults: AnalysisResults[]) => Promise<void>,
   ): Promise<void> {
     const analysisResults: AnalysisResults = {
@@ -159,7 +147,7 @@ export class AnalysesResultsManager {
     let artifactPath;
     try {
       artifactPath = await downloadArtifactFromLink(
-        credentials,
+        this.app.credentials,
         this.storagePath,
         analysis.downloadLink,
       );

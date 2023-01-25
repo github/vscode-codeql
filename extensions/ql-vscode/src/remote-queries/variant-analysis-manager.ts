@@ -16,7 +16,6 @@ import {
   workspace,
 } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
-import { Credentials } from "../authentication";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
 import {
   getActionsWorkflowRunUrl,
@@ -62,6 +61,7 @@ import {
 import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { isVariantAnalysisReposPanelEnabled } from "../config";
+import { App } from "../common/app";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -100,6 +100,7 @@ export class VariantAnalysisManager
 
   constructor(
     private readonly ctx: ExtensionContext,
+    private readonly app: App,
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager,
@@ -126,8 +127,6 @@ export class VariantAnalysisManager
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize();
-
     const {
       actionBranch,
       base64Pack,
@@ -139,7 +138,7 @@ export class VariantAnalysisManager
       language,
     } = await prepareRemoteQueryRun(
       this.cliServer,
-      credentials,
+      this.app.credentials,
       uri,
       progress,
       token,
@@ -175,7 +174,7 @@ export class VariantAnalysisManager
     };
 
     const variantAnalysisResponse = await submitVariantAnalysis(
-      credentials,
+      this.app.credentials,
       variantAnalysisSubmission,
     );
 
@@ -456,6 +455,7 @@ export class VariantAnalysisManager
   ): Promise<void> {
     await this.variantAnalysisMonitor.monitorVariantAnalysis(
       variantAnalysis,
+      this.app.credentials,
       cancellationToken,
     );
   }
@@ -480,8 +480,6 @@ export class VariantAnalysisManager
 
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
-    const credentials = await Credentials.initialize();
-
     if (cancellationToken && cancellationToken.isCancellationRequested) {
       repoState.downloadStatus =
         VariantAnalysisScannedRepositoryDownloadStatus.Failed;
@@ -492,7 +490,7 @@ export class VariantAnalysisManager
     let repoTask: VariantAnalysisRepositoryTask;
     try {
       const repoTaskResponse = await getVariantAnalysisRepo(
-        credentials,
+        this.app.credentials,
         variantAnalysis.controllerRepo.id,
         variantAnalysis.id,
         scannedRepo.repository.id,
@@ -517,7 +515,6 @@ export class VariantAnalysisManager
 
       try {
         await this.variantAnalysisResultsManager.download(
-          credentials,
           variantAnalysis.id,
           repoTask,
           this.getVariantAnalysisStorageLocation(variantAnalysis.id),
@@ -578,12 +575,10 @@ export class VariantAnalysisManager
       );
     }
 
-    const credentials = await Credentials.initialize();
-
     void showAndLogInformationMessage(
       "Cancelling variant analysis. This may take a while.",
     );
-    await cancelVariantAnalysis(credentials, variantAnalysis);
+    await cancelVariantAnalysis(this.app.credentials, variantAnalysis);
   }
 
   public async openVariantAnalysisLogs(variantAnalysisId: number) {

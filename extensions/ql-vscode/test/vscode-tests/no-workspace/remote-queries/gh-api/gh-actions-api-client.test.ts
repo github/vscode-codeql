@@ -1,4 +1,3 @@
-import { Credentials } from "../../../../../src/authentication";
 import {
   cancelRemoteQuery,
   cancelVariantAnalysis,
@@ -7,17 +6,16 @@ import {
 import { RemoteQuery } from "../../../../../src/remote-queries/remote-query";
 import { createMockVariantAnalysis } from "../../../../factories/remote-queries/shared/variant-analysis";
 import { VariantAnalysis } from "../../../../../src/remote-queries/shared/variant-analysis";
+import {
+  testCredentialsWithStub,
+  testCredentialsWithRealOctokit,
+} from "../../../../factories/authentication";
 
 jest.setTimeout(10000);
 
 describe("gh-actions-api-client mock responses", () => {
   const mockRequest = jest.fn();
-  const mockCredentials = {
-    getOctokit: () =>
-      Promise.resolve({
-        request: mockRequest,
-      }),
-  } as unknown as Credentials;
+  const mockCredentials = testCredentialsWithStub(mockRequest);
 
   describe("cancelRemoteQuery", () => {
     it("should cancel a remote query", async () => {
@@ -95,7 +93,7 @@ describe("gh-actions-api-client real responses", () => {
       return;
     }
 
-    const credentials = await Credentials.initializeWithToken(
+    const credentials = testCredentialsWithRealOctokit(
       process.env.VSCODE_CODEQL_GITHUB_TOKEN!,
     );
     const stargazers = await getRepositoriesMetadata(

@@ -11,7 +11,6 @@ import { join } from "path";
 import { writeFile, readFile, remove, pathExists } from "fs-extra";
 import { EOL } from "os";
 
-import { Credentials } from "../authentication";
 import { CodeQLCliServer } from "../cli";
 import { ProgressCallback } from "../commandRunner";
 import {
@@ -42,6 +41,7 @@ import { QueryStatus } from "../query-status";
 import { DisposableObject } from "../pure/disposable-object";
 import { AnalysisResults } from "./shared/analysis-result";
 import { runRemoteQueriesApiRequest } from "./remote-queries-api";
+import { App } from "../common/app";
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
@@ -82,12 +82,14 @@ export class RemoteQueriesManager extends DisposableObject {
 
   constructor(
     ctx: ExtensionContext,
+    private readonly app: App,
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     logger: Logger,
   ) {
     super();
     this.analysesResultsManager = new AnalysesResultsManager(
+      app,
       cliServer,
       storagePath,
       logger,
@@ -159,8 +161,6 @@ export class RemoteQueriesManager extends DisposableObject {
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize();
-
     const {
       actionBranch,
       base64Pack,
@@ -172,14 +172,14 @@ export class RemoteQueriesManager extends DisposableObject {
       language,
     } = await prepareRemoteQueryRun(
       this.cliServer,
-      credentials,
+      this.app.credentials,
       uri,
       progress,
       token,
     );
 
     const apiResponse = await runRemoteQueriesApiRequest(
-      credentials,
+      this.app.credentials,
       actionBranch,
       language,
       repoSelection,
@@ -217,10 +217,9 @@ export class RemoteQueriesManager extends DisposableObject {
     remoteQuery: RemoteQuery,
     cancellationToken: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize();
-
     const queryWorkflowResult = await this.remoteQueriesMonitor.monitorQuery(
       remoteQuery,
+      this.app.credentials,
       cancellationToken,
     );
 
@@ -230,7 +229,6 @@ export class RemoteQueriesManager extends DisposableObject {
       await this.downloadAvailableResults(
         queryId,
         remoteQuery,
-        credentials,
         executionEndTime,
       );
     } else if (queryWorkflowResult.status === "CompletedUnsuccessfully") {
@@ -244,7 +242,6 @@ export class RemoteQueriesManager extends DisposableObject {
         await this.downloadAvailableResults(
           queryId,
           remoteQuery,
-          credentials,
           executionEndTime,
         );
         void showAndLogInformationMessage("Variant analysis was cancelled");
@@ -267,7 +264,6 @@ export class RemoteQueriesManager extends DisposableObject {
       await this.downloadAvailableResults(
         queryId,
         remoteQuery,
-        credentials,
         executionEndTime,
       );
       void showAndLogInformationMessage("Variant analysis was cancelled");
@@ -444,15 +440,14 @@ export class RemoteQueriesManager extends DisposableObject {
   private async downloadAvailableResults(
     queryId: string,
     remoteQuery: RemoteQuery,
-    credentials: Credentials,
     executionEndTime: number,
   ): Promise<void> {
-    const resultIndex = await getRemoteQueryIndex(credentials, remoteQuery);
+    const resultIndex = await getRemoteQueryIndex(
+      this.app.credentials,
+      remoteQuery,
+    );
     if (resultIndex) {
-      const metadata = await this.getRepositoriesMetadata(
-        resultIndex,
-        credentials,
-      );
+      const metadata = await this.getRepositoriesMetadata(resultIndex);
       const queryResult = this.mapQueryResult(
         executionEndTime,
         resultIndex,
@@ -494,12 +489,9 @@ export class RemoteQueriesManager extends DisposableObject {
     }
   }
 
-  private async getRepositoriesMetadata(
-    resultIndex: RemoteQueryResultIndex,
-    credentials: Credentials,
-  ) {
+  private async getRepositoriesMetadata(resultIndex: RemoteQueryResultIndex) {
     const nwos = resultIndex.successes.map((s) => s.nwo);
-    return await getRepositoriesMetadata(credentials, nwos);
+    return await getRepositoriesMetadata(this.app.credentials, nwos);
   }
 
   // Pulled from the analysis results manager, so that we can get access to

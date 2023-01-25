@@ -20,12 +20,12 @@ import { DatabaseManager, DatabaseItem } from "./databases";
 import { showAndLogInformationMessage, tmpDir } from "./helpers";
 import { reportStreamProgress, ProgressCallback } from "./commandRunner";
 import { extLogger } from "./common";
-import { Credentials } from "./authentication";
 import { getErrorMessage } from "./pure/helpers-pure";
 import {
   getNwoFromGitHubUrl,
   isValidGitHubNwo,
 } from "./common/github-url-identifier-helper";
+import { Credentials } from "./common/authentication";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.

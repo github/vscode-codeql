@@ -1,5 +1,4 @@
 import { CancellationToken, commands, EventEmitter } from "vscode";
-import { Credentials } from "../authentication";
 import { getVariantAnalysis } from "./gh-api/gh-api-client";
 
 import {
@@ -14,6 +13,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { sleep } from "../pure/time";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { showAndLogWarningMessage } from "../helpers";
+import { Credentials } from "../common/authentication";
 
 export class VariantAnalysisMonitor extends DisposableObject {
   // With a sleep of 5 seconds, the maximum number of attempts takes
@@ -36,10 +36,9 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
   public async monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
+    credentials: Credentials,
     cancellationToken: CancellationToken,
   ): Promise<void> {
-    const credentials = await Credentials.initialize();
-
     let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];
 

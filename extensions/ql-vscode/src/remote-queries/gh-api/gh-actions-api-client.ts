@@ -5,7 +5,7 @@ import {
   showAndLogWarningMessage,
   tmpDir,
 } from "../../helpers";
-import { Credentials } from "../../authentication";
+import { Credentials } from "../../common/authentication";
 import { extLogger } from "../../common";
 import { RemoteQueryWorkflowResult } from "../remote-query-workflow-result";
 import { DownloadLink, createDownloadPath } from "../download-link";

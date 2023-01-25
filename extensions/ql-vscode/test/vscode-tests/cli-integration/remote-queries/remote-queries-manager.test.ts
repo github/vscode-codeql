@@ -25,11 +25,12 @@ import { OutputChannelLogger } from "../../../../src/common";
 import { RemoteQueriesSubmission } from "../../../../src/remote-queries/shared/remote-queries";
 import { readBundledPack } from "../../utils/bundled-pack-helpers";
 import { RemoteQueriesManager } from "../../../../src/remote-queries/remote-queries-manager";
-import { Credentials } from "../../../../src/authentication";
 import {
   fixWorkspaceReferences,
   restoreWorkspaceReferences,
 } from "../global.helper";
+import { createMockApp } from "../../../__mocks__/appMock";
+import { App } from "../../../../src/common/app";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -50,6 +51,7 @@ describe("Remote queries", () => {
   >;
   let ctx: ExtensionContext;
   let logger: any;
+  let app: App;
   let remoteQueriesManager: RemoteQueriesManager;
 
   let originalDeps: Record<string, string> | undefined;
@@ -74,8 +76,10 @@ describe("Remote queries", () => {
     ctx = createMockExtensionContext();
 
     logger = new OutputChannelLogger("test-logger");
+    app = createMockApp({});
     remoteQueriesManager = new RemoteQueriesManager(
       ctx,
+      app,
       cli,
       "fake-storage-dir",
       logger,
@@ -103,14 +107,6 @@ describe("Remote queries", () => {
     await setRemoteRepositoryLists({
       "vscode-codeql": ["github/vscode-codeql"],
     });
-
-    const mockCredentials = {
-      getOctokit: () =>
-        Promise.resolve({
-          request: undefined,
-        }),
-    } as unknown as Credentials;
-    jest.spyOn(Credentials, "initialize").mockResolvedValue(mockCredentials);
 
     // Only new version support `${workspace}` in qlpack.yml
     originalDeps = await fixWorkspaceReferences(

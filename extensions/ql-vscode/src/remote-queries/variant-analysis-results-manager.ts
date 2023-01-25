@@ -8,7 +8,7 @@ import {
 import { EOL } from "os";
 import { join } from "path";
 
-import { Credentials } from "../authentication";
+import { Credentials } from "../common/authentication";
 import { Logger } from "../common";
 import { AnalysisAlert, AnalysisRawResults } from "./shared/analysis-result";
 import { sarifParser } from "../sarif-parser";
@@ -63,6 +63,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
   readonly onResultLoaded = this._onResultLoaded.event;
 
   constructor(
+    private readonly credentials: Credentials,
     private readonly cliServer: CodeQLCliServer,
     private readonly logger: Logger,
   ) {
@@ -71,7 +72,6 @@ export class VariantAnalysisResultsManager extends DisposableObject {
   }
 
   public async download(
-    credentials: Credentials,
     variantAnalysisId: number,
     repoTask: VariantAnalysisRepositoryTask,
     variantAnalysisStoragePath: string,
@@ -86,7 +86,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     );
 
     const result = await getVariantAnalysisRepoResult(
-      credentials,
+      this.credentials,
       repoTask.artifactUrl,
     );
 
