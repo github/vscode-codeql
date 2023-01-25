@@ -1683,9 +1683,7 @@ describe("query-history", () => {
         });
         expect(treeItem.label).toContain("query-file.ql");
         expect(treeItem.contextValue).toBe("rawResultsItem");
-        expect(treeItem.iconPath).toEqual(
-          vscode.Uri.file(`${mockExtensionLocation}/media/drive.svg`).fsPath,
-        );
+        expect(treeItem.iconPath).toEqual(new vscode.ThemeIcon("database"));
       });
 
       it("should get a tree item with interpreted results", async () => {
@@ -1701,9 +1699,7 @@ describe("query-history", () => {
           mockQueryWithInterpretedResults,
         );
         expect(treeItem.contextValue).toBe("interpretedResultsItem");
-        expect(treeItem.iconPath).toEqual(
-          vscode.Uri.file(`${mockExtensionLocation}/media/drive.svg`).fsPath,
-        );
+        expect(treeItem.iconPath).toEqual(new vscode.ThemeIcon("database"));
       });
 
       it("should get a tree item that did not complete successfully", async () => {

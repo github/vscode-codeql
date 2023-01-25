@@ -102,11 +102,6 @@ const SHOW_QUERY_TEXT_QUICK_EVAL_MSG = `\
 `;
 
 /**
- * Path to icon to display next to a successful local run.
- */
-const LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON = "media/drive.svg";
-
-/**
  * Path to icon to display next to a successful remote run.
  */
 const REMOTE_SUCCESS_QUERY_HISTORY_ITEM_ICON = "media/globe.svg";
@@ -153,8 +148,6 @@ export class HistoryTreeDataProvider
 
   private history: QueryHistoryInfo[] = [];
 
-  private localSuccessIconPath: string;
-
   private remoteSuccessIconPath: string;
 
   private current: QueryHistoryInfo | undefined;
@@ -164,10 +157,6 @@ export class HistoryTreeDataProvider
     private readonly labelProvider: HistoryItemLabelProvider,
   ) {
     super();
-    this.localSuccessIconPath = join(
-      extensionPath,
-      LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON,
-    );
     this.remoteSuccessIconPath = join(
       extensionPath,
       REMOTE_SUCCESS_QUERY_HISTORY_ITEM_ICON,
@@ -198,7 +187,7 @@ export class HistoryTreeDataProvider
         return new ThemeIcon("sync~spin");
       case QueryStatus.Completed:
         if (element.t === "local") {
-          return this.localSuccessIconPath;
+          return new ThemeIcon("database");
         } else {
           return this.remoteSuccessIconPath;
         }
