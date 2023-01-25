@@ -547,27 +547,15 @@
       },
       {
         "command": "codeQLQueryHistory.sortByName",
-        "title": "Sort by Name",
-        "icon": {
-          "light": "media/light/sort-alpha.svg",
-          "dark": "media/dark/sort-alpha.svg"
-        }
+        "title": "Sort by Name"
       },
       {
         "command": "codeQLQueryHistory.sortByDate",
-        "title": "Sort by Query Date",
-        "icon": {
-          "light": "media/light/sort-date.svg",
-          "dark": "media/dark/sort-date.svg"
-        }
+        "title": "Sort by Query Date"
       },
       {
         "command": "codeQLQueryHistory.sortByCount",
-        "title": "Sort by Results Count",
-        "icon": {
-          "light": "media/light/sort-num.svg",
-          "dark": "media/dark/sort-num.svg"
-        }
+        "title": "Sort by Results Count"
       },
       {
         "command": "codeQLQueryHistory.showQueryLog",
@@ -757,17 +745,17 @@
         {
           "command": "codeQLQueryHistory.sortByName",
           "when": "view == codeQLQueryHistory",
-          "group": "navigation"
+          "group": "1_queryHistory@0"
         },
         {
           "command": "codeQLQueryHistory.sortByDate",
           "when": "view == codeQLQueryHistory",
-          "group": "navigation"
+          "group": "1_queryHistory@1"
         },
         {
           "command": "codeQLQueryHistory.sortByCount",
           "when": "view == codeQLQueryHistory",
-          "group": "navigation"
+          "group": "1_queryHistory@2"
         },
         {
           "command": "codeQLAstViewer.clear",
