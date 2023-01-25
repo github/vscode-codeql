@@ -33,7 +33,7 @@ import {
   zipArchiveScheme,
 } from "./archive-filesystem-provider";
 import QuickEvalCodeLensProvider from "./quickEvalCodeLensProvider";
-import { CodeQLCliServer, CliVersionConstraint } from "./cli";
+import { CodeQLCliServer } from "./cli";
 import {
   CliConfigListener,
   DistributionConfigListener,
@@ -83,7 +83,7 @@ import {
   ProgressReporter,
   queryServerLogger,
 } from "./common";
-import { QueryHistoryManager } from "./query-history";
+import { QueryHistoryManager } from "./query-history/query-history";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
 import { QueryServerClient as LegacyQueryServerClient } from "./legacy-query-server/queryserver-client";
 import { QueryServerClient } from "./query-server/queryserver-client";
@@ -109,7 +109,7 @@ import {
   handleDownloadPacks,
   handleInstallPackDependencies,
 } from "./packaging";
-import { HistoryItemLabelProvider } from "./history-item-label-provider";
+import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import {
   exportRemoteQueryResults,
   exportSelectedRemoteQueryResults,
@@ -824,17 +824,9 @@ async function activateWithInstalledDistribution(
     const path =
       selectedQuery?.fsPath || window.activeTextEditor?.document.uri.fsPath;
     if (qs !== undefined && path) {
-      if (await cliServer.cliConstraints.supportsResolveQlref()) {
-        const resolved = await cliServer.resolveQlref(path);
-        const uri = Uri.file(resolved.resolvedPath);
-        await window.showTextDocument(uri, { preview: false });
-      } else {
-        void showAndLogErrorMessage(
-          "Jumping from a .qlref file to the .ql file it references is not " +
-            "supported with the CLI version you are running.\n" +
-            `Please upgrade your CLI to version ${CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_QLREF} or later to use this feature.`,
-        );
-      }
+      const resolved = await cliServer.resolveQlref(path);
+      const uri = Uri.file(resolved.resolvedPath);
+      await window.showTextDocument(uri, { preview: false });
     }
   }
 
@@ -1016,19 +1008,6 @@ async function activateWithInstalledDistribution(
             ...update,
             message,
           });
-        }
-
-        if (
-          queryUris.length > 1 &&
-          !(await cliServer.cliConstraints.supportsNonDestructiveUpgrades())
-        ) {
-          // Try to upgrade the current database before running any queries
-          // so that the user isn't confronted with multiple upgrade
-          // requests for each query to run.
-          // Only do it if running multiple queries since this check is
-          // performed on each query run anyway.
-          // Don't do this with non destructive upgrades as the user won't see anything anyway.
-          await databaseUI.tryUpgradeCurrentDatabase(progress, token);
         }
 
         wrappedProgress({

@@ -22,8 +22,7 @@ import {
   DbListKind,
   LocalDatabaseDbItem,
   LocalListDbItem,
-  remoteDbKinds,
-  VariantAnalysisUserDefinedListDbItem,
+  RemoteUserDefinedListDbItem,
 } from "../db-item";
 import { getDbItemName } from "../db-item-naming";
 import { DbManager } from "../db-manager";
@@ -124,7 +123,7 @@ export class DbPanel extends DisposableObject {
   private async addNewRemoteDatabase(): Promise<void> {
     const highlightedItem = await this.getHighlightedDbItem();
 
-    if (highlightedItem?.kind === DbItemKind.VariantAnalysisUserDefinedList) {
+    if (highlightedItem?.kind === DbItemKind.RemoteUserDefinedList) {
       await this.addNewRemoteRepo(highlightedItem.listName);
     } else if (
       highlightedItem?.kind === DbItemKind.RemoteRepo &&
@@ -219,7 +218,7 @@ export class DbPanel extends DisposableObject {
   }
 
   private async addNewList(): Promise<void> {
-    const listKind = await this.getAddNewListKind();
+    const listKind = DbListKind.Remote;
 
     const listName = await window.showInputBox({
       prompt: "Enter a name for the new list",
@@ -235,47 +234,6 @@ export class DbPanel extends DisposableObject {
     }
 
     await this.dbManager.addNewList(listKind, listName);
-  }
-
-  private async getAddNewListKind(): Promise<DbListKind> {
-    const highlightedItem = await this.getHighlightedDbItem();
-    if (highlightedItem) {
-      return remoteDbKinds.includes(highlightedItem.kind)
-        ? DbListKind.Remote
-        : DbListKind.Local;
-    } else {
-      const quickPickItems = [
-        {
-          label: "$(cloud) Variant Analysis",
-          detail: "Add a repository from GitHub",
-          alwaysShow: true,
-          kind: DbListKind.Remote,
-        },
-        {
-          label: "$(database) Local",
-          detail: "Import a database from the cloud or a local file",
-          alwaysShow: true,
-          kind: DbListKind.Local,
-        },
-      ];
-      const selectedOption = await window.showQuickPick<AddListQuickPickItem>(
-        quickPickItems,
-        {
-          title: "Add a new database",
-          ignoreFocusOut: true,
-        },
-      );
-      if (!selectedOption) {
-        // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
-        // We set 'true' to make this a silent exception.
-        throw new UserCancellationException(
-          "No database list kind selected",
-          true,
-        );
-      }
-
-      return selectedOption.kind;
-    }
   }
 
   private async setSelectedItem(treeViewItem: DbTreeViewItem): Promise<void> {
@@ -313,7 +271,7 @@ export class DbPanel extends DisposableObject {
       case DbItemKind.LocalDatabase:
         await this.renameLocalDatabaseItem(dbItem, newName);
         break;
-      case DbItemKind.VariantAnalysisUserDefinedList:
+      case DbItemKind.RemoteUserDefinedList:
         await this.renameVariantAnalysisUserDefinedListItem(dbItem, newName);
         break;
       default:
@@ -354,7 +312,7 @@ export class DbPanel extends DisposableObject {
   }
 
   private async renameVariantAnalysisUserDefinedListItem(
-    dbItem: VariantAnalysisUserDefinedListDbItem,
+    dbItem: RemoteUserDefinedListDbItem,
     newName: string,
   ): Promise<void> {
     if (dbItem.listName === newName) {

@@ -64,7 +64,7 @@ import {
 } from "./pure/bqrs-cli-types";
 import { AbstractWebview, WebviewPanelConfig } from "./abstract-webview";
 import { PAGE_SIZE } from "./config";
-import { HistoryItemLabelProvider } from "./history-item-label-provider";
+import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { telemetryListener } from "./telemetry";
 
 /**

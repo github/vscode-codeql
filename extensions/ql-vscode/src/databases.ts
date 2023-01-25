@@ -19,7 +19,7 @@ import {
 } from "./archive-filesystem-provider";
 import { DisposableObject } from "./pure/disposable-object";
 import { Logger, extLogger } from "./common";
-import { getErrorMessage } from "./pure/helpers-pure";
+import { asError, getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./queryRunner";
 import { pathsEqual } from "./pure/files";
 
@@ -370,7 +370,7 @@ export class DatabaseItemImpl implements DatabaseItem {
         this._error = undefined;
       } catch (e) {
         this._contents = undefined;
-        this._error = e instanceof Error ? e : new Error(String(e));
+        this._error = asError(e);
         throw e;
       }
     } finally {
@@ -990,12 +990,6 @@ export class DatabaseManager extends DisposableObject {
   }
 
   private async getPrimaryLanguage(dbPath: string) {
-    if (!(await this.cli.cliConstraints.supportsLanguageName())) {
-      // return undefined so that we recalculate on restart until the cli is at a version that
-      // supports this feature. This recalculation is cheap since we avoid calling into the cli
-      // unless we know it can return the langauges property.
-      return undefined;
-    }
     const dbInfo = await this.cli.resolveDatabase(dbPath);
     return dbInfo.languages?.[0] || "";
   }

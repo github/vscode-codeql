@@ -12,7 +12,7 @@ import {
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
-  VariantAnalysisUserDefinedListDbItem,
+  RemoteUserDefinedListDbItem,
   RootLocalDbItem,
   RootRemoteDbItem,
 } from "./db-item";
@@ -102,7 +102,7 @@ function createVariantAnalysisUserDefinedList(
   list: RemoteRepositoryList,
   dbConfig: DbConfig,
   expandedItems: ExpandedDbItem[],
-): VariantAnalysisUserDefinedListDbItem {
+): RemoteUserDefinedListDbItem {
   const selected =
     dbConfig.selected &&
     dbConfig.selected.kind ===
@@ -116,7 +116,7 @@ function createVariantAnalysisUserDefinedList(
   );
 
   return {
-    kind: DbItemKind.VariantAnalysisUserDefinedList,
+    kind: DbItemKind.RemoteUserDefinedList,
     listName: list.name,
     repos: list.repositories.map((r) => createRepoItem(r, dbConfig, list.name)),
     selected: !!selected,

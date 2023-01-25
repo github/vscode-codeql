@@ -48,120 +48,14 @@
           },
           "required": ["repositoryLists", "owners", "repositories"],
           "additionalProperties": false
-        },
-        "local": {
-          "type": "object",
-          "properties": {
-            "lists": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "databases": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "dateAdded": {
-                          "type": "number"
-                        },
-                        "language": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "storagePath": {
-                          "type": "string",
-                          "minLength": 1
-                        }
-                      },
-                      "required": [
-                        "name",
-                        "dateAdded",
-                        "language",
-                        "storagePath"
-                      ],
-                      "additionalProperties": false
-                    }
-                  }
-                },
-                "required": ["name", "databases"],
-                "additionalProperties": false
-              }
-            },
-            "databases": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "dateAdded": {
-                    "type": "number"
-                  },
-                  "language": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "storagePath": {
-                    "type": "string",
-                    "minLength": 1
-                  }
-                },
-                "required": ["name", "dateAdded", "language", "storagePath"],
-                "additionalProperties": false
-              }
-            }
-          },
-          "required": ["lists", "databases"],
-          "additionalProperties": false
         }
       },
-      "required": ["variantAnalysis", "local"],
+      "required": ["variantAnalysis"],
       "additionalProperties": false
     },
     "selected": {
       "type": "object",
       "oneOf": [
-        {
-          "properties": {
-            "kind": {
-              "type": "string",
-              "enum": ["localUserDefinedList"]
-            },
-            "listName": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "required": ["kind", "listName"],
-          "additionalProperties": false
-        },
-        {
-          "properties": {
-            "kind": {
-              "type": "string",
-              "enum": ["localDatabase"]
-            },
-            "databaseName": {
-              "type": "string"
-            },
-            "listName": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "required": ["kind", "databaseName"],
-          "additionalProperties": false
-        },
         {
           "properties": {
             "kind": {

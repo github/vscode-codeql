@@ -12,7 +12,7 @@ import {
 import { ProgressCallback, UserCancellationException } from "../commandRunner";
 import { showInformationMessageWithAction } from "../helpers";
 import { extLogger } from "../common";
-import { QueryHistoryManager } from "../query-history";
+import { QueryHistoryManager } from "../query-history/query-history";
 import { createGist } from "./gh-api/gh-api-client";
 import { RemoteQueriesManager } from "./remote-queries-manager";
 import {

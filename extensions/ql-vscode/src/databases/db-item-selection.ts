@@ -33,7 +33,7 @@ function extractSelected(
         }
       }
       break;
-    case DbItemKind.VariantAnalysisUserDefinedList:
+    case DbItemKind.RemoteUserDefinedList:
       for (const repo of dbItem.repos) {
         if (repo.selected) {
           return repo;
@@ -59,7 +59,7 @@ export function mapDbItemToSelectedDbItem(
         listName: dbItem.listName,
       };
 
-    case DbItemKind.VariantAnalysisUserDefinedList:
+    case DbItemKind.RemoteUserDefinedList:
       return {
         kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
         listName: dbItem.listName,

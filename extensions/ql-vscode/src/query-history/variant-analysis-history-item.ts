@@ -1,5 +1,5 @@
 import { QueryStatus } from "../query-status";
-import { VariantAnalysis } from "./shared/variant-analysis";
+import { VariantAnalysis } from "../remote-queries/shared/variant-analysis";
 
 /**
  * Information about a variant analysis.

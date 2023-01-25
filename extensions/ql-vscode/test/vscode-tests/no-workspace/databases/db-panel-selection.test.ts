@@ -75,18 +75,14 @@ describe("db panel selection", () => {
     expect(dbTreeItems).toBeTruthy();
     const items = dbTreeItems!;
 
-    const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).toBeTruthy();
-    expect(remoteRootNode.dbItem?.kind).toEqual(DbItemKind.RootRemote);
-
-    const list1 = remoteRootNode.children.find(
+    const list1 = items.find(
       (c) =>
-        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
         c.dbItem?.listName === "my-list-1",
     );
-    const list2 = remoteRootNode.children.find(
+    const list2 = items.find(
       (c) =>
-        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
         c.dbItem?.listName === "my-list-2",
     );
 
@@ -123,13 +119,9 @@ describe("db panel selection", () => {
     expect(dbTreeItems).toBeTruthy();
     const items = dbTreeItems!;
 
-    const remoteRootNode = items[0];
-    expect(remoteRootNode.dbItem).toBeTruthy();
-    expect(remoteRootNode.dbItem?.kind).toEqual(DbItemKind.RootRemote);
-
-    const list2 = remoteRootNode.children.find(
+    const list2 = items.find(
       (c) =>
-        c.dbItem?.kind === DbItemKind.VariantAnalysisUserDefinedList &&
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
         c.dbItem?.listName === "my-list-2",
     );
     expect(list2).toBeTruthy();
@@ -150,7 +142,7 @@ describe("db panel selection", () => {
     expect(repo2Node).toBeTruthy();
     expect(isTreeViewItemSelectable(repo2Node!)).toBeTruthy();
 
-    for (const item of remoteRootNode.children) {
+    for (const item of items) {
       expect(isTreeViewItemSelectable(item)).toBeTruthy();
     }
   });

@@ -35,9 +35,6 @@ describe("Db panel UI commands", () => {
 
   it("should add new remote db list", async () => {
     // Add db list
-    jest.spyOn(window, "showQuickPick").mockResolvedValue({
-      kind: DbListKind.Remote,
-    } as AddListQuickPickItem);
     jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
     await commands.executeCommand(
       "codeQLVariantAnalysisRepositories.addNewList",
@@ -55,7 +52,7 @@ describe("Db panel UI commands", () => {
     );
   });
 
-  it("should add new local db list", async () => {
+  it.skip("should add new local db list", async () => {
     // Add db list
     jest.spyOn(window, "showQuickPick").mockResolvedValue({
       kind: DbListKind.Local,

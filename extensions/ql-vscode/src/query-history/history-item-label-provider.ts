@@ -1,17 +1,17 @@
 import { env } from "vscode";
 import { basename } from "path";
-import { QueryHistoryConfig } from "./config";
-import { LocalQueryInfo } from "./query-results";
+import { QueryHistoryConfig } from "../config";
+import { LocalQueryInfo } from "../query-results";
 import {
   buildRepoLabel,
   getRawQueryName,
   QueryHistoryInfo,
 } from "./query-history-info";
-import { RemoteQueryHistoryItem } from "./remote-queries/remote-query-history-item";
-import { VariantAnalysisHistoryItem } from "./remote-queries/variant-analysis-history-item";
-import { assertNever } from "./pure/helpers-pure";
-import { pluralize } from "./pure/word";
-import { humanizeQueryStatus } from "./query-status";
+import { RemoteQueryHistoryItem } from "../remote-queries/remote-query-history-item";
+import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
+import { assertNever } from "../pure/helpers-pure";
+import { pluralize } from "../pure/word";
+import { humanizeQueryStatus } from "../query-status";
 
 interface InterpolateReplacements {
   t: string; // Start time

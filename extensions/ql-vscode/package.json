@@ -798,19 +798,23 @@
       "view/item/context": [
         {
           "command": "codeQLVariantAnalysisRepositories.removeItemContextMenu",
-          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeRemoved/"
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeRemoved/",
+          "group": "2_qlContextMenu@3"
         },
         {
           "command": "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
-          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/"
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/",
+          "group": "1_qlContextMenu@1"
         },
         {
           "command": "codeQLVariantAnalysisRepositories.renameItemContextMenu",
-          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeRenamed/"
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeRenamed/",
+          "group": "2_qlContextMenu@2"
         },
         {
           "command": "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
-          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeOpenedOnGitHub/"
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeOpenedOnGitHub/",
+          "group": "2_qlContextMenu@1"
         },
         {
           "command": "codeQLDatabases.setCurrentDatabase",
@@ -839,7 +843,7 @@
         },
         {
           "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
-          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/ && false",
           "group": "inline"
         },
         {
@@ -1318,7 +1322,7 @@
       },
       {
         "view": "codeQLQueryHistory",
-        "contents": "Run the 'CodeQL: Run Query on Selected Database' command on a QL query.\n[Run Query](command:codeQL.runQuery)"
+        "contents": "You have no query history items at the moment.\n\nSelect a database to run a CodeQL query and get your first results."
       },
       {
         "view": "codeQLDatabases",

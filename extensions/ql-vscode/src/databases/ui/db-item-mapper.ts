@@ -34,7 +34,7 @@ export function mapDbItemToTreeViewItem(dbItem: DbItem): DbTreeViewItem {
         dbItem.listDescription,
       );
 
-    case DbItemKind.VariantAnalysisUserDefinedList:
+    case DbItemKind.RemoteUserDefinedList:
       return createDbTreeViewItemUserDefinedList(
         dbItem,
         dbItem.listName,

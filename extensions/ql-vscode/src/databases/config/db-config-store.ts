@@ -1,8 +1,10 @@
 import { pathExists, outputJSON, readJSON, readJSONSync } from "fs-extra";
 import { join } from "path";
 import {
+  clearLocalDbConfig,
   cloneDbConfig,
   DbConfig,
+  initializeLocalDbConfig,
   removeLocalDb,
   removeLocalList,
   removeRemoteList,
@@ -26,7 +28,7 @@ import { ValueResult } from "../../common/value-result";
 import {
   LocalDatabaseDbItem,
   LocalListDbItem,
-  VariantAnalysisUserDefinedListDbItem,
+  RemoteUserDefinedListDbItem,
   DbItem,
   DbItemKind,
 } from "../db-item";
@@ -113,7 +115,7 @@ export class DbConfigStore extends DisposableObject {
       case DbItemKind.LocalList:
         config = removeLocalList(this.config, dbItem.listName);
         break;
-      case DbItemKind.VariantAnalysisUserDefinedList:
+      case DbItemKind.RemoteUserDefinedList:
         config = removeRemoteList(this.config, dbItem.listName);
         break;
       case DbItemKind.LocalDatabase:
@@ -246,7 +248,7 @@ export class DbConfigStore extends DisposableObject {
   }
 
   public async renameRemoteList(
-    currentDbItem: VariantAnalysisUserDefinedListDbItem,
+    currentDbItem: RemoteUserDefinedListDbItem,
     newName: string,
   ) {
     if (!this.config) {
@@ -349,6 +351,7 @@ export class DbConfigStore extends DisposableObject {
   }
 
   private async writeConfig(config: DbConfig): Promise<void> {
+    clearLocalDbConfig(config);
     await outputJSON(this.configPath, config, {
       spaces: 2,
     });
@@ -380,6 +383,7 @@ export class DbConfigStore extends DisposableObject {
     }
 
     if (newConfig) {
+      initializeLocalDbConfig(newConfig);
       this.configErrors = this.configValidator.validate(newConfig);
     }
 
@@ -414,6 +418,7 @@ export class DbConfigStore extends DisposableObject {
     }
 
     if (newConfig) {
+      initializeLocalDbConfig(newConfig);
       this.configErrors = this.configValidator.validate(newConfig);
     }
 

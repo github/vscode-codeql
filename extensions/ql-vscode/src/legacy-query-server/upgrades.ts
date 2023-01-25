@@ -37,11 +37,6 @@ export async function compileDatabaseUpgradeSequence(
   ) {
     throw new Error("Database is invalid, and cannot be upgraded.");
   }
-  if (!(await qs.cliServer.cliConstraints.supportsNonDestructiveUpgrades())) {
-    throw new Error(
-      "The version of codeql is too old to run non-destructive upgrades.",
-    );
-  }
   // If possible just compile the upgrade sequence
   return await qs.sendRequest(
     messages.compileUpgradeSequence,

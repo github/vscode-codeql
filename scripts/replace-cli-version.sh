@@ -9,5 +9,4 @@ PREVIOUS_VERSION=$(echo $VERSIONS | awk '{ print $2 }')
 echo "LATEST_VERSION=$LATEST_VERSION" >> $GITHUB_ENV
 echo "PREVIOUS_VERSION=$PREVIOUS_VERSION" >> $GITHUB_ENV
 
-sed -i "s/$PREVIOUS_VERSION/$LATEST_VERSION/g" supported_cli_versions.json
-sed -i "s/$PREVIOUS_VERSION/$LATEST_VERSION/g" extensions/ql-vscode/test/vscode-tests/ensureCli.ts
+sed -i "s/$PREVIOUS_VERSION/$LATEST_VERSION/g" extensions/ql-vscode/supported_cli_versions.json

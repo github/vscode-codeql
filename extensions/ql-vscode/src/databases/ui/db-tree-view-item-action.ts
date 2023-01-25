@@ -27,7 +27,7 @@ export function getDbItemActions(dbItem: DbItem): DbTreeViewItemAction[] {
 
 const dbItemKindsThatCanBeRemoved = [
   DbItemKind.LocalList,
-  DbItemKind.VariantAnalysisUserDefinedList,
+  DbItemKind.RemoteUserDefinedList,
   DbItemKind.LocalDatabase,
   DbItemKind.RemoteRepo,
   DbItemKind.RemoteOwner,
@@ -35,7 +35,7 @@ const dbItemKindsThatCanBeRemoved = [
 
 const dbItemKindsThatCanBeRenamed = [
   DbItemKind.LocalList,
-  DbItemKind.VariantAnalysisUserDefinedList,
+  DbItemKind.RemoteUserDefinedList,
   DbItemKind.LocalDatabase,
 ];
 

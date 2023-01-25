@@ -321,7 +321,7 @@ async function readAndUnzip(
     step: 9,
     message: `Unzipping into ${basename(unzipPath)}`,
   });
-  if (cli && (await cli.cliConstraints.supportsDatabaseUnbundle())) {
+  if (cli) {
     // Use the `database unbundle` command if the installed cli version supports it
     await cli.databaseUnbundle(zipFile, unzipPath);
   } else {

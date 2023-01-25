@@ -8,7 +8,7 @@ import {
   DbListKind,
   LocalDatabaseDbItem,
   LocalListDbItem,
-  VariantAnalysisUserDefinedListDbItem,
+  RemoteUserDefinedListDbItem,
 } from "./db-item";
 import {
   updateExpandedItem,
@@ -20,7 +20,7 @@ import {
   getSelectedDbItem,
   mapDbItemToSelectedDbItem,
 } from "./db-item-selection";
-import { createLocalTree, createRemoteTree } from "./db-tree-creator";
+import { createRemoteTree } from "./db-tree-creator";
 import { DbConfigValidationError } from "./db-validation-errors";
 
 export class DbManager {
@@ -58,10 +58,8 @@ export class DbManager {
 
     const expandedItems = this.getExpandedItems();
 
-    return ValueResult.ok([
-      createRemoteTree(configResult.value, expandedItems),
-      createLocalTree(configResult.value, expandedItems),
-    ]);
+    const remoteTree = createRemoteTree(configResult.value, expandedItems);
+    return ValueResult.ok(remoteTree.children);
   }
 
   public getConfigPath(): string {
@@ -123,14 +121,12 @@ export class DbManager {
   }
 
   public async renameList(
-    currentDbItem: LocalListDbItem | VariantAnalysisUserDefinedListDbItem,
+    currentDbItem: LocalListDbItem | RemoteUserDefinedListDbItem,
     newName: string,
   ): Promise<void> {
     if (currentDbItem.kind === DbItemKind.LocalList) {
       await this.dbConfigStore.renameLocalList(currentDbItem, newName);
-    } else if (
-      currentDbItem.kind === DbItemKind.VariantAnalysisUserDefinedList
-    ) {
+    } else if (currentDbItem.kind === DbItemKind.RemoteUserDefinedList) {
       await this.dbConfigStore.renameRemoteList(currentDbItem, newName);
     }
 

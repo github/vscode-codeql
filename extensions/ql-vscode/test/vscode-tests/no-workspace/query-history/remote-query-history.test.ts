@@ -20,12 +20,12 @@ import {
 import { QueryHistoryConfig } from "../../../../src/config";
 import { DatabaseManager } from "../../../../src/databases";
 import { tmpDir, walkDirectory } from "../../../../src/helpers";
-import { QueryHistoryManager } from "../../../../src/query-history";
+import { QueryHistoryManager } from "../../../../src/query-history/query-history";
 import { AnalysesResultsManager } from "../../../../src/remote-queries/analyses-results-manager";
 import { RemoteQueryResult } from "../../../../src/remote-queries/shared/remote-query-result";
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
-import { HistoryItemLabelProvider } from "../../../../src/history-item-label-provider";
+import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { RemoteQueriesManager } from "../../../../src/remote-queries/remote-queries-manager";
 import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";

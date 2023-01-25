@@ -1,7 +1,7 @@
 import { Diagnostic, DiagnosticSeverity, languages, Range, Uri } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
-import { QueryHistoryManager } from "../query-history";
-import { QueryHistoryInfo } from "../query-history-info";
+import { QueryHistoryManager } from "../query-history/query-history";
+import { QueryHistoryInfo } from "../query-history/query-history-info";
 import {
   EvaluationLogProblemReporter,
   EvaluationLogScannerSet,

@@ -1,7 +1,7 @@
-import { VariantAnalysisHistoryItem } from "../../../src/remote-queries/variant-analysis-history-item";
+import { VariantAnalysisHistoryItem } from "../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../src/query-status";
 import { VariantAnalysisStatus } from "../../../src/remote-queries/shared/variant-analysis";
-import { createMockVariantAnalysis } from "./shared/variant-analysis";
+import { createMockVariantAnalysis } from "../remote-queries/shared/variant-analysis";
 
 export function createMockVariantAnalysisHistoryItem({
   historyItemStatus = QueryStatus.InProgress,

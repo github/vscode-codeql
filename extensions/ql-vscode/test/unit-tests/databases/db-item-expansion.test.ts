@@ -7,7 +7,7 @@ import {
 } from "../../../src/databases/db-item-expansion";
 import {
   createLocalListDbItem,
-  createVariantAnalysisUserDefinedListDbItem,
+  createRemoteUserDefinedListDbItem,
   createRootLocalDbItem,
   createRootRemoteDbItem,
 } from "../../factories/db-item-factories";
@@ -25,7 +25,7 @@ describe("db item expansion", () => {
         },
       ];
 
-      const dbItem = createVariantAnalysisUserDefinedListDbItem({
+      const dbItem = createRemoteUserDefinedListDbItem({
         listName: "list2",
       });
 
@@ -45,7 +45,7 @@ describe("db item expansion", () => {
     });
 
     it("should add an expanded item to an empty list", () => {
-      const dbItem = createVariantAnalysisUserDefinedListDbItem({
+      const dbItem = createRemoteUserDefinedListDbItem({
         listName: "list2",
       });
 
@@ -70,7 +70,7 @@ describe("db item expansion", () => {
         },
       ];
 
-      const dbItem = createVariantAnalysisUserDefinedListDbItem({
+      const dbItem = createRemoteUserDefinedListDbItem({
         listName: "list1",
       });
 
@@ -126,7 +126,7 @@ describe("db item expansion", () => {
         },
       ];
 
-      const currentDbItem = createVariantAnalysisUserDefinedListDbItem({
+      const currentDbItem = createRemoteUserDefinedListDbItem({
         listName: "list1",
       });
 
@@ -184,7 +184,7 @@ describe("db item expansion", () => {
       const dbItems = [
         createRootRemoteDbItem({
           children: [
-            createVariantAnalysisUserDefinedListDbItem({
+            createRemoteUserDefinedListDbItem({
               listName: "list2",
             }),
           ],

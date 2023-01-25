@@ -6,7 +6,7 @@ export function getDbItemName(dbItem: DbItem): string | undefined {
     case DbItemKind.RootRemote:
       return undefined;
     case DbItemKind.LocalList:
-    case DbItemKind.VariantAnalysisUserDefinedList:
+    case DbItemKind.RemoteUserDefinedList:
     case DbItemKind.RemoteSystemDefinedList:
       return dbItem.listName;
     case DbItemKind.RemoteOwner:

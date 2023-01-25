@@ -7,7 +7,7 @@ import {
   RemoteOwnerDbItem,
   RemoteRepoDbItem,
   RemoteSystemDefinedListDbItem,
-  VariantAnalysisUserDefinedListDbItem,
+  RemoteUserDefinedListDbItem,
   RootLocalDbItem,
   RootRemoteDbItem,
 } from "../db-item";
@@ -97,7 +97,7 @@ export function createDbTreeViewItemSystemDefinedList(
 }
 
 export function createDbTreeViewItemUserDefinedList(
-  dbItem: LocalListDbItem | VariantAnalysisUserDefinedListDbItem,
+  dbItem: LocalListDbItem | RemoteUserDefinedListDbItem,
   listName: string,
   children: DbTreeViewItem[],
 ): DbTreeViewItem {
