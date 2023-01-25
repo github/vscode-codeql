@@ -12,7 +12,6 @@ import { commands, ExtensionContext, Uri } from "vscode";
 import { QueryHistoryConfig } from "../../../../src/config";
 import { DatabaseManager } from "../../../../src/databases";
 import { tmpDir, walkDirectory } from "../../../../src/helpers";
-import { QueryHistoryManager } from "../../../../src/query-history/query-history";
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
@@ -23,6 +22,7 @@ import { QueryRunner } from "../../../../src/queryRunner";
 import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
 import { App } from "../../../../src/common/app";
 import { createMockApp } from "../../../__mocks__/appMock";
+import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 
 // set a higher timeout since recursive delete may take a while, expecially on Windows.
 jest.setTimeout(120000);

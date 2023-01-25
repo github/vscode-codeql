@@ -3,7 +3,7 @@ import { EOL } from "os";
 import { join } from "path";
 import { Disposable, ExtensionContext } from "vscode";
 import { extLogger } from "../common";
-import { QueryHistoryManager } from "./query-history";
+import { QueryHistoryManager } from "./query-history-manager";
 
 const LAST_SCRUB_TIME_KEY = "lastScrubTime";
 

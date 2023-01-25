@@ -83,7 +83,7 @@ import {
   ProgressReporter,
   queryServerLogger,
 } from "./common";
-import { QueryHistoryManager } from "./query-history/query-history";
+import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
 import { QueryServerClient as LegacyQueryServerClient } from "./legacy-query-server/queryserver-client";
 import { QueryServerClient } from "./query-server/queryserver-client";
@@ -1639,7 +1639,7 @@ const checkForUpdatesCommand = "codeQL.checkForUpdatesToCLI";
 /**
  * This text provider lets us open readonly files in the editor.
  *
- * TODO: Consolidate this with the 'codeql' text provider in query-history.ts.
+ * TODO: Consolidate this with the 'codeql' text provider in history-tree-data-provider.ts.
  */
 function registerRemoteQueryTextProvider() {
   workspace.registerTextDocumentContentProvider("remote-query", {

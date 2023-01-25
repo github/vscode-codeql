@@ -28,7 +28,7 @@ import {
 } from "./shared/remote-query-result";
 import { showAndLogWarningMessage } from "../helpers";
 import { URLSearchParams } from "url";
-import { SHOW_QUERY_TEXT_MSG } from "../query-history/query-history";
+import { SHOW_QUERY_TEXT_MSG } from "../query-history/query-history-manager";
 import { AnalysesResultsManager } from "./analyses-results-manager";
 import { AnalysisResults } from "./shared/analysis-result";
 import { humanizeUnit } from "../pure/time";
