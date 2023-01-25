@@ -532,10 +532,7 @@
       {
         "command": "codeQLQueryHistory.itemClicked",
         "title": "Open Query Results",
-        "icon": {
-          "light": "media/light/preview.svg",
-          "dark": "media/dark/preview.svg"
-        }
+        "icon": "$(preview)"
       },
       {
         "command": "codeQLQueryHistory.removeHistoryItem",
