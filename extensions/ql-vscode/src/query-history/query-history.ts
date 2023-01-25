@@ -8,6 +8,7 @@ import {
   ExtensionContext,
   ProviderResult,
   Range,
+  ThemeColor,
   ThemeIcon,
   TreeDataProvider,
   TreeItem,
@@ -101,21 +102,6 @@ const SHOW_QUERY_TEXT_QUICK_EVAL_MSG = `\
 
 `;
 
-/**
- * Path to icon to display next to a failed query history item.
- */
-const FAILED_QUERY_HISTORY_ITEM_ICON = "media/red-x.svg";
-
-/**
- * Path to icon to display next to a successful local run.
- */
-const LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON = "media/drive.svg";
-
-/**
- * Path to icon to display next to a successful remote run.
- */
-const REMOTE_SUCCESS_QUERY_HISTORY_ITEM_ICON = "media/globe.svg";
-
 export enum SortOrder {
   NameAsc = "NameAsc",
   NameDesc = "NameDesc",
@@ -158,28 +144,10 @@ export class HistoryTreeDataProvider
 
   private history: QueryHistoryInfo[] = [];
 
-  private failedIconPath: string;
-
-  private localSuccessIconPath: string;
-
-  private remoteSuccessIconPath: string;
-
   private current: QueryHistoryInfo | undefined;
 
-  constructor(
-    extensionPath: string,
-    private readonly labelProvider: HistoryItemLabelProvider,
-  ) {
+  constructor(private readonly labelProvider: HistoryItemLabelProvider) {
     super();
-    this.failedIconPath = join(extensionPath, FAILED_QUERY_HISTORY_ITEM_ICON);
-    this.localSuccessIconPath = join(
-      extensionPath,
-      LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON,
-    );
-    this.remoteSuccessIconPath = join(
-      extensionPath,
-      REMOTE_SUCCESS_QUERY_HISTORY_ITEM_ICON,
-    );
   }
 
   async getTreeItem(element: QueryHistoryInfo): Promise<TreeItem> {
@@ -206,12 +174,12 @@ export class HistoryTreeDataProvider
         return new ThemeIcon("sync~spin");
       case QueryStatus.Completed:
         if (element.t === "local") {
-          return this.localSuccessIconPath;
+          return new ThemeIcon("database");
         } else {
-          return this.remoteSuccessIconPath;
+          return new ThemeIcon("cloud");
         }
       case QueryStatus.Failed:
-        return this.failedIconPath;
+        return new ThemeIcon("error", new ThemeColor("errorForeground"));
       default:
         assertNever(element.status);
     }
@@ -421,7 +389,7 @@ export class QueryHistoryManager extends DisposableObject {
     );
 
     this.treeDataProvider = this.push(
-      new HistoryTreeDataProvider(ctx.extensionPath, this.labelProvider),
+      new HistoryTreeDataProvider(this.labelProvider),
     );
     this.treeView = this.push(
       window.createTreeView("codeQLQueryHistory", {

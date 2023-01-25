@@ -1652,10 +1652,7 @@ describe("query-history", () => {
       labelProvider = new HistoryItemLabelProvider({
         /**/
       } as QueryHistoryConfig);
-      historyTreeDataProvider = new HistoryTreeDataProvider(
-        vscode.Uri.file(mockExtensionLocation).fsPath,
-        labelProvider,
-      );
+      historyTreeDataProvider = new HistoryTreeDataProvider(labelProvider);
     });
 
     afterEach(() => {
@@ -1683,9 +1680,7 @@ describe("query-history", () => {
         });
         expect(treeItem.label).toContain("query-file.ql");
         expect(treeItem.contextValue).toBe("rawResultsItem");
-        expect(treeItem.iconPath).toEqual(
-          vscode.Uri.file(`${mockExtensionLocation}/media/drive.svg`).fsPath,
-        );
+        expect(treeItem.iconPath).toEqual(new vscode.ThemeIcon("database"));
       });
 
       it("should get a tree item with interpreted results", async () => {
@@ -1701,9 +1696,7 @@ describe("query-history", () => {
           mockQueryWithInterpretedResults,
         );
         expect(treeItem.contextValue).toBe("interpretedResultsItem");
-        expect(treeItem.iconPath).toEqual(
-          vscode.Uri.file(`${mockExtensionLocation}/media/drive.svg`).fsPath,
-        );
+        expect(treeItem.iconPath).toEqual(new vscode.ThemeIcon("database"));
       });
 
       it("should get a tree item that did not complete successfully", async () => {
@@ -1716,8 +1709,11 @@ describe("query-history", () => {
         });
 
         const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
-        expect(treeItem.iconPath).toBe(
-          vscode.Uri.file(`${mockExtensionLocation}/media/red-x.svg`).fsPath,
+        expect(treeItem.iconPath).toEqual(
+          new vscode.ThemeIcon(
+            "error",
+            new vscode.ThemeColor("errorForeground"),
+          ),
         );
       });
 
@@ -1728,8 +1724,11 @@ describe("query-history", () => {
         });
 
         const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
-        expect(treeItem.iconPath).toBe(
-          vscode.Uri.file(`${mockExtensionLocation}/media/red-x.svg`).fsPath,
+        expect(treeItem.iconPath).toEqual(
+          new vscode.ThemeIcon(
+            "error",
+            new vscode.ThemeColor("errorForeground"),
+          ),
         );
       });
 
