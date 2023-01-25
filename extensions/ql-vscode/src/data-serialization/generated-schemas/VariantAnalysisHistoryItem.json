@@ -1,0 +1,413 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/VariantAnalysisHistoryItem",
+  "definitions": {
+    "VariantAnalysisHistoryItem": {
+      "type": "object",
+      "properties": {
+        "t": {
+          "type": "string",
+          "const": "variant-analysis"
+        },
+        "failureReason": {
+          "type": "string"
+        },
+        "resultCount": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "InProgress",
+            "Completed",
+            "Failed"
+          ]
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "variantAnalysis": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "number"
+            },
+            "controllerRepo": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "number"
+                },
+                "fullName": {
+                  "type": "string"
+                },
+                "private": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "fullName",
+                "private"
+              ],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "filePath": {
+                  "type": "string"
+                },
+                "language": {
+                  "type": "string",
+                  "enum": [
+                    "csharp",
+                    "cpp",
+                    "go",
+                    "java",
+                    "javascript",
+                    "python",
+                    "ruby",
+                    "swift"
+                  ]
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "filePath",
+                "language",
+                "text"
+              ],
+              "additionalProperties": false
+            },
+            "databases": {
+              "type": "object",
+              "properties": {
+                "repositories": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "repositoryLists": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "repositoryOwners": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "createdAt": {
+              "type": "string"
+            },
+            "updatedAt": {
+              "type": "string"
+            },
+            "executionStartTime": {
+              "type": "number"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "inProgress",
+                "succeeded",
+                "failed",
+                "canceled"
+              ]
+            },
+            "completedAt": {
+              "type": "string"
+            },
+            "actionsWorkflowRunId": {
+              "type": "number"
+            },
+            "failureReason": {
+              "type": "string",
+              "enum": [
+                "noReposQueried",
+                "actionsWorkflowRunFailed",
+                "internalError"
+              ]
+            },
+            "scannedRepos": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "repository": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number"
+                      },
+                      "fullName": {
+                        "type": "string"
+                      },
+                      "private": {
+                        "type": "boolean"
+                      },
+                      "stargazersCount": {
+                        "type": "number"
+                      },
+                      "updatedAt": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "fullName",
+                      "id",
+                      "private",
+                      "stargazersCount",
+                      "updatedAt"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "analysisStatus": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "inProgress",
+                      "succeeded",
+                      "failed",
+                      "canceled",
+                      "timedOut"
+                    ]
+                  },
+                  "resultCount": {
+                    "type": "number"
+                  },
+                  "artifactSizeInBytes": {
+                    "type": "number"
+                  },
+                  "failureMessage": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "repository",
+                  "analysisStatus"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "skippedRepos": {
+              "type": "object",
+              "properties": {
+                "accessMismatchRepos": {
+                  "type": "object",
+                  "properties": {
+                    "repositoryCount": {
+                      "type": "number"
+                    },
+                    "repositories": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "fullName": {
+                            "type": "string"
+                          },
+                          "private": {
+                            "type": "boolean"
+                          },
+                          "stargazersCount": {
+                            "type": "number"
+                          },
+                          "updatedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "fullName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "repositoryCount",
+                    "repositories"
+                  ],
+                  "additionalProperties": false
+                },
+                "notFoundRepos": {
+                  "type": "object",
+                  "properties": {
+                    "repositoryCount": {
+                      "type": "number"
+                    },
+                    "repositories": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "fullName": {
+                            "type": "string"
+                          },
+                          "private": {
+                            "type": "boolean"
+                          },
+                          "stargazersCount": {
+                            "type": "number"
+                          },
+                          "updatedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "fullName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "repositoryCount",
+                    "repositories"
+                  ],
+                  "additionalProperties": false
+                },
+                "noCodeqlDbRepos": {
+                  "type": "object",
+                  "properties": {
+                    "repositoryCount": {
+                      "type": "number"
+                    },
+                    "repositories": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "fullName": {
+                            "type": "string"
+                          },
+                          "private": {
+                            "type": "boolean"
+                          },
+                          "stargazersCount": {
+                            "type": "number"
+                          },
+                          "updatedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "fullName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "repositoryCount",
+                    "repositories"
+                  ],
+                  "additionalProperties": false
+                },
+                "overLimitRepos": {
+                  "type": "object",
+                  "properties": {
+                    "repositoryCount": {
+                      "type": "number"
+                    },
+                    "repositories": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "fullName": {
+                            "type": "string"
+                          },
+                          "private": {
+                            "type": "boolean"
+                          },
+                          "stargazersCount": {
+                            "type": "number"
+                          },
+                          "updatedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "fullName"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "repositoryCount",
+                    "repositories"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "id",
+            "controllerRepo",
+            "query",
+            "databases",
+            "createdAt",
+            "updatedAt",
+            "executionStartTime",
+            "status"
+          ],
+          "additionalProperties": false
+        },
+        "userSpecifiedLabel": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "t",
+        "status",
+        "completed",
+        "variantAnalysis"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
