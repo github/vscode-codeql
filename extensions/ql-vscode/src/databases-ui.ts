@@ -10,6 +10,8 @@ import {
   window,
   env,
   CancellationToken,
+  ThemeIcon,
+  ThemeColor,
 } from "vscode";
 import { pathExists, stat, readdir, remove } from "fs-extra";
 
@@ -39,33 +41,6 @@ import { Credentials } from "./authentication";
 import { QueryRunner } from "./queryRunner";
 import { isCanary } from "./config";
 
-type ThemableIconPath = { light: string; dark: string } | string;
-
-/**
- * Path to icons to display next to currently selected database.
- */
-const SELECTED_DATABASE_ICON: ThemableIconPath = {
-  light: "media/light/check.svg",
-  dark: "media/dark/check.svg",
-};
-
-/**
- * Path to icon to display next to an invalid database.
- */
-const INVALID_DATABASE_ICON: ThemableIconPath = "media/red-x.svg";
-
-function joinThemableIconPath(
-  base: string,
-  iconPath: ThemableIconPath,
-): ThemableIconPath {
-  if (typeof iconPath == "object")
-    return {
-      light: join(base, iconPath.light),
-      dark: join(base, iconPath.dark),
-    };
-  else return join(base, iconPath);
-}
-
 enum SortOrder {
   NameAsc = "NameAsc",
   NameDesc = "NameDesc",
@@ -87,10 +62,7 @@ class DatabaseTreeDataProvider
   );
   private currentDatabaseItem: DatabaseItem | undefined;
 
-  constructor(
-    private databaseManager: DatabaseManager,
-    private readonly extensionPath: string,
-  ) {
+  constructor(private databaseManager: DatabaseManager) {
     super();
 
     this.currentDatabaseItem = databaseManager.currentDatabaseItem;
@@ -135,16 +107,11 @@ class DatabaseTreeDataProvider
   public getTreeItem(element: DatabaseItem): TreeItem {
     const item = new TreeItem(element.name);
     if (element === this.currentDatabaseItem) {
-      item.iconPath = joinThemableIconPath(
-        this.extensionPath,
-        SELECTED_DATABASE_ICON,
-      );
+      item.iconPath = new ThemeIcon("check");
+
       item.contextValue = "currentDatabase";
     } else if (element.error !== undefined) {
-      item.iconPath = joinThemableIconPath(
-        this.extensionPath,
-        INVALID_DATABASE_ICON,
-      );
+      item.iconPath = new ThemeIcon("error", new ThemeColor("errorForeground"));
     }
     item.tooltip = element.databaseUri.fsPath;
     item.description = element.language;
@@ -229,7 +196,7 @@ export class DatabaseUI extends DisposableObject {
     super();
 
     this.treeDataProvider = this.push(
-      new DatabaseTreeDataProvider(databaseManager, extensionPath),
+      new DatabaseTreeDataProvider(databaseManager),
     );
     this.push(
       window.createTreeView("codeQLDatabases", {
