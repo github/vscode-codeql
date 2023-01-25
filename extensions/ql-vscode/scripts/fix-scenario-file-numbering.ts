@@ -72,7 +72,7 @@ async function fixScenarioFiles() {
   }
 }
 
-fixScenarioFiles().catch((e) => {
+fixScenarioFiles().catch((e: unknown) => {
   console.error(e);
   process.exit(2);
 });

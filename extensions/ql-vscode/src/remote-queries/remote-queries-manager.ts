@@ -36,7 +36,7 @@ import {
 } from "./remote-query-result";
 import { DownloadLink } from "./download-link";
 import { AnalysesResultsManager } from "./analyses-results-manager";
-import { assertNever } from "../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { QueryStatus } from "../query-status";
 import { DisposableObject } from "../pure/disposable-object";
 import { AnalysisResults } from "./shared/analysis-result";
@@ -149,7 +149,7 @@ export class RemoteQueriesManager extends DisposableObject {
       // Open results in the background
       void this.openResults(remoteQuery, remoteQueryResult).then(
         noop,
-        (err) => void showAndLogErrorMessage(err),
+        (err: unknown) => void showAndLogErrorMessage(getErrorMessage(err)),
       );
     } catch (e) {
       void showAndLogErrorMessage(`Could not open query results. ${e}`);
@@ -473,9 +473,12 @@ export class RemoteQueriesManager extends DisposableObject {
       );
 
       // Ask if the user wants to open the results in the background.
-      void this.askToOpenResults(remoteQuery, queryResult).then(noop, (err) => {
-        void showAndLogErrorMessage(err);
-      });
+      void this.askToOpenResults(remoteQuery, queryResult).then(
+        noop,
+        (err: unknown) => {
+          void showAndLogErrorMessage(getErrorMessage(err));
+        },
+      );
     } else {
       const controllerRepo = `${remoteQuery.controllerRepository.owner}/${remoteQuery.controllerRepository.name}`;
       const workflowRunUrl = `https://github.com/${controllerRepo}/actions/runs/${remoteQuery.actionsWorkflowRunId}`;

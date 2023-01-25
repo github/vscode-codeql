@@ -931,7 +931,7 @@ export class DatabaseManager extends DisposableObject {
       void extLogger.log("Deleting database from filesystem.");
       await remove(item.databaseUri.fsPath).then(
         () => void extLogger.log(`Deleted '${item.databaseUri.fsPath}'`),
-        (e) =>
+        (e: unknown) =>
           void extLogger.log(
             `Failed to delete '${
               item.databaseUri.fsPath
