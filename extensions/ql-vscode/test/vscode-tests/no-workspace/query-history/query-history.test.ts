@@ -1652,10 +1652,7 @@ describe("query-history", () => {
       labelProvider = new HistoryItemLabelProvider({
         /**/
       } as QueryHistoryConfig);
-      historyTreeDataProvider = new HistoryTreeDataProvider(
-        vscode.Uri.file(mockExtensionLocation).fsPath,
-        labelProvider,
-      );
+      historyTreeDataProvider = new HistoryTreeDataProvider(labelProvider);
     });
 
     afterEach(() => {
