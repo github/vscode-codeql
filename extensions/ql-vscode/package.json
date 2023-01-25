@@ -540,10 +540,7 @@
       {
         "command": "codeQLQueryHistory.removeHistoryItem",
         "title": "Remove History Item(s)",
-        "icon": {
-          "light": "media/light/trash.svg",
-          "dark": "media/dark/trash.svg"
-        }
+        "icon": "$(trash)"
       },
       {
         "command": "codeQLQueryHistory.sortByName",
