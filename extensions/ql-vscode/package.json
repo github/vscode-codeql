@@ -523,11 +523,8 @@
       },
       {
         "command": "codeQLQueryHistory.openQuery",
-        "title": "Open the Query that Produced these Results",
-        "icon": {
-          "light": "media/light/edit.svg",
-          "dark": "media/dark/edit.svg"
-        }
+        "title": "Open Query",
+        "icon": "$(edit)"
       },
       {
         "command": "codeQLQueryHistory.itemClicked",
