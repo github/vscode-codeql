@@ -1,10 +1,4 @@
-import {
-  appendFileSync,
-  pathExists,
-  mkdir,
-  outputJson,
-  readJson,
-} from "fs-extra";
+import { appendFile, pathExists, mkdir, outputJson, readJson } from "fs-extra";
 import fetch from "node-fetch";
 import { EOL } from "os";
 import { join } from "path";
@@ -98,7 +92,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     const response = await fetch(repoTask.artifactUrl);
     let amountDownloaded = 0;
     for await (const chunk of response.body) {
-      appendFileSync(zipFilePath, Buffer.from(chunk));
+      await appendFile(zipFilePath, Buffer.from(chunk));
       amountDownloaded += chunk.length;
       await onDownloadPercentageChanged(
         Math.floor((amountDownloaded / response.size) * 100),
