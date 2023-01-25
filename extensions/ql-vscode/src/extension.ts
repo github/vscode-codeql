@@ -83,7 +83,7 @@ import {
   ProgressReporter,
   queryServerLogger,
 } from "./common";
-import { QueryHistoryManager } from "./query-history";
+import { QueryHistoryManager } from "./query-history/query-history";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
 import { QueryServerClient as LegacyQueryServerClient } from "./legacy-query-server/queryserver-client";
 import { QueryServerClient } from "./query-server/queryserver-client";
@@ -110,7 +110,7 @@ import {
   handleDownloadPacks,
   handleInstallPackDependencies,
 } from "./packaging";
-import { HistoryItemLabelProvider } from "./history-item-label-provider";
+import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import {
   exportRemoteQueryResults,
   exportSelectedRemoteQueryResults,

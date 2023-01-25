@@ -8,7 +8,7 @@ import {
   getErrorStack,
 } from "./pure/helpers-pure";
 import { CompletedQueryInfo, LocalQueryInfo } from "./query-results";
-import { QueryHistoryInfo } from "./query-history-info";
+import { QueryHistoryInfo } from "./query-history/query-history-info";
 import { QueryStatus } from "./query-status";
 import { QueryEvaluationInfo } from "./run-queries-shared";
 import { QueryResultType } from "./pure/legacy-messages";

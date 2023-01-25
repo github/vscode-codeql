@@ -17,58 +17,58 @@ import {
   window,
   workspace,
 } from "vscode";
-import { QueryHistoryConfig } from "./config";
+import { QueryHistoryConfig } from "../config";
 import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
   showBinaryChoiceDialog,
   showInformationMessageWithAction,
-} from "./helpers";
-import { extLogger } from "./common";
+} from "../helpers";
+import { extLogger } from "../common";
 import { URLSearchParams } from "url";
-import { DisposableObject } from "./pure/disposable-object";
-import { commandRunner } from "./commandRunner";
-import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "./pure/time";
+import { DisposableObject } from "../pure/disposable-object";
+import { commandRunner } from "../commandRunner";
+import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../pure/time";
 import {
   assertNever,
   getErrorMessage,
   getErrorStack,
-} from "./pure/helpers-pure";
-import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
+} from "../pure/helpers-pure";
+import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import {
   getActionsWorkflowRunUrl,
   getQueryId,
   getQueryText,
   QueryHistoryInfo,
 } from "./query-history-info";
-import { DatabaseManager } from "./databases";
+import { DatabaseManager } from "../databases";
 import { registerQueryHistoryScrubber } from "./query-history-scrubber";
 import {
   QueryStatus,
   variantAnalysisStatusToQueryStatus,
-} from "./query-status";
+} from "../query-status";
 import {
   deserializeQueryHistory,
   serializeQueryHistory,
-} from "./query-serialization";
+} from "../query-serialization";
 import { pathExists } from "fs-extra";
-import { CliVersionConstraint } from "./cli";
+import { CliVersionConstraint } from "../cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
-import { Credentials } from "./authentication";
-import { cancelRemoteQuery } from "./remote-queries/gh-api/gh-actions-api-client";
-import { RemoteQueriesManager } from "./remote-queries/remote-queries-manager";
-import { RemoteQueryHistoryItem } from "./remote-queries/remote-query-history-item";
-import { ResultsView } from "./interface";
-import { WebviewReveal } from "./interface-utils";
-import { EvalLogViewer } from "./eval-log-viewer";
-import EvalLogTreeBuilder from "./eval-log-tree-builder";
-import { EvalLogData, parseViewerData } from "./pure/log-summary-parser";
-import { QueryWithResults } from "./run-queries-shared";
-import { QueryRunner } from "./queryRunner";
-import { VariantAnalysisManager } from "./remote-queries/variant-analysis-manager";
-import { VariantAnalysisHistoryItem } from "./remote-queries/variant-analysis-history-item";
-import { getTotalResultCount } from "./remote-queries/shared/variant-analysis";
+import { Credentials } from "../authentication";
+import { cancelRemoteQuery } from "../remote-queries/gh-api/gh-actions-api-client";
+import { RemoteQueriesManager } from "../remote-queries/remote-queries-manager";
+import { RemoteQueryHistoryItem } from "../remote-queries/remote-query-history-item";
+import { ResultsView } from "../interface";
+import { WebviewReveal } from "../interface-utils";
+import { EvalLogViewer } from "../eval-log-viewer";
+import EvalLogTreeBuilder from "../eval-log-tree-builder";
+import { EvalLogData, parseViewerData } from "../pure/log-summary-parser";
+import { QueryWithResults } from "../run-queries-shared";
+import { QueryRunner } from "../queryRunner";
+import { VariantAnalysisManager } from "../remote-queries/variant-analysis-manager";
+import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
+import { getTotalResultCount } from "../remote-queries/shared/variant-analysis";
 
 /**
  * query-history.ts
@@ -1705,6 +1705,7 @@ the file in the file explorer and dragging it into the workspace.`,
       throw new Error("No other queries available to compare with.");
     }
     const choice = await window.showQuickPick(comparableQueryLabels);
+
     return choice?.query;
   }
 

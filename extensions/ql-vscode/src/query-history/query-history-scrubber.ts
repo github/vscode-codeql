@@ -2,7 +2,7 @@ import { pathExists, readdir, stat, remove, readFile } from "fs-extra";
 import { EOL } from "os";
 import { join } from "path";
 import { Disposable, ExtensionContext } from "vscode";
-import { extLogger } from "./common";
+import { extLogger } from "../common";
 import { QueryHistoryManager } from "./query-history";
 
 const LAST_SCRUB_TIME_KEY = "lastScrubTime";

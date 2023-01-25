@@ -1,9 +1,9 @@
 import { env } from "vscode";
-import { QueryHistoryConfig } from "../../../src/config";
-import { HistoryItemLabelProvider } from "../../../src/history-item-label-provider";
-import { createMockLocalQueryInfo } from "../../factories/local-queries/local-query-history-item";
-import { createMockRemoteQueryHistoryItem } from "../../factories/remote-queries/remote-query-history-item";
-import { QueryStatus } from "../../../src/query-status";
+import { QueryHistoryConfig } from "../../../../src/config";
+import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
+import { createMockLocalQueryInfo } from "../../../factories/query-history/local-query-history-item";
+import { createMockRemoteQueryHistoryItem } from "../../../factories/query-history/remote-query-history-item";
+import { QueryStatus } from "../../../../src/query-status";
 
 describe("HistoryItemLabelProvider", () => {
   let labelProvider: HistoryItemLabelProvider;
