@@ -533,7 +533,7 @@
       },
       {
         "command": "codeQLQueryHistory.removeHistoryItem",
-        "title": "Remove History Item(s)",
+        "title": "Remove from History",
         "icon": "$(trash)"
       },
       {
@@ -542,7 +542,7 @@
       },
       {
         "command": "codeQLQueryHistory.sortByDate",
-        "title": "Sort by Query Date"
+        "title": "Sort by Date"
       },
       {
         "command": "codeQLQueryHistory.sortByCount",
