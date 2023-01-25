@@ -1,6 +1,7 @@
 .vscode-test/
 node_modules/
 out/
+src/data-serialization/generated-schemas/*.json
 
 # Include the Storybook config
 !.storybook
