@@ -102,11 +102,6 @@ const SHOW_QUERY_TEXT_QUICK_EVAL_MSG = `\
 `;
 
 /**
- * Path to icon to display next to a failed query history item.
- */
-const FAILED_QUERY_HISTORY_ITEM_ICON = "media/red-x.svg";
-
-/**
  * Path to icon to display next to a successful local run.
  */
 const LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON = "media/drive.svg";
@@ -158,8 +153,6 @@ export class HistoryTreeDataProvider
 
   private history: QueryHistoryInfo[] = [];
 
-  private failedIconPath: string;
-
   private localSuccessIconPath: string;
 
   private remoteSuccessIconPath: string;
@@ -171,7 +164,6 @@ export class HistoryTreeDataProvider
     private readonly labelProvider: HistoryItemLabelProvider,
   ) {
     super();
-    this.failedIconPath = join(extensionPath, FAILED_QUERY_HISTORY_ITEM_ICON);
     this.localSuccessIconPath = join(
       extensionPath,
       LOCAL_SUCCESS_QUERY_HISTORY_ITEM_ICON,
@@ -211,7 +203,7 @@ export class HistoryTreeDataProvider
           return this.remoteSuccessIconPath;
         }
       case QueryStatus.Failed:
-        return this.failedIconPath;
+        return new ThemeIcon("error");
       default:
         assertNever(element.status);
     }

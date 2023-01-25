@@ -1716,9 +1716,7 @@ describe("query-history", () => {
         });
 
         const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
-        expect(treeItem.iconPath).toBe(
-          vscode.Uri.file(`${mockExtensionLocation}/media/red-x.svg`).fsPath,
-        );
+        expect(treeItem.iconPath).toEqual(new vscode.ThemeIcon("error"));
       });
 
       it("should get a tree item that failed before creating any results", async () => {
@@ -1728,9 +1726,7 @@ describe("query-history", () => {
         });
 
         const treeItem = await historyTreeDataProvider.getTreeItem(mockQuery);
-        expect(treeItem.iconPath).toBe(
-          vscode.Uri.file(`${mockExtensionLocation}/media/red-x.svg`).fsPath,
-        );
+        expect(treeItem.iconPath).toEqual(new vscode.ThemeIcon("error"));
       });
 
       it("should get a tree item that is in progress", async () => {
