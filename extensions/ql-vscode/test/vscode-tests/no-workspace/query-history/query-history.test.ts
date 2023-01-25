@@ -46,6 +46,8 @@ import { QuickPickItem, TextEditor } from "vscode";
 import { WebviewReveal } from "../../../../src/interface-utils";
 import * as helpers from "../../../../src/helpers";
 import { testCredentialsWithStub } from "../../../factories/authentication";
+import { Credentials } from "../../../../src/common/authentication";
+import { createMockApp } from "../../../__mocks__/appMock";
 
 describe("query-history", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
