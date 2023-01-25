@@ -131,7 +131,7 @@ export function createDbTreeViewItemRepo(
 ): DbTreeViewItem {
   return new DbTreeViewItem(
     dbItem,
-    new vscode.ThemeIcon("database"),
+    new vscode.ThemeIcon("cloud"),
     repoName,
     undefined,
     vscode.TreeItemCollapsibleState.None,
