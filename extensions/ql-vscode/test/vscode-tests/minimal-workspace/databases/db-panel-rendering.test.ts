@@ -340,7 +340,7 @@ describe("db panel rendering nodes", () => {
   function checkRemoteRepoItem(item: DbTreeViewItem, repoName: string): void {
     expect(item.label).toBe(repoName);
     expect(item.tooltip).toBeUndefined();
-    expect(item.iconPath).toEqual(new ThemeIcon("database"));
+    expect(item.iconPath).toEqual(new ThemeIcon("cloud"));
     expect(item.collapsibleState).toBe(TreeItemCollapsibleState.None);
     checkDbItemActions(item, [
       "canBeSelected",
