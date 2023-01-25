@@ -19,7 +19,7 @@ import {
 } from "vscode";
 import { CodeQLCliServer, QlpacksInfo } from "./cli";
 import { UserCancellationException } from "./commandRunner";
-import { extLogger } from "./common";
+import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
 
 // Shared temporary folder for the extension.
@@ -43,6 +43,12 @@ export const tmpDirDisposal = {
   },
 };
 
+interface ShowAndLogOptions {
+  outputLogger?: OutputChannelLogger;
+  items?: string[];
+  fullMessage?: string;
+}
+
 /**
  * Show an error message and log it to the console
  *
@@ -57,18 +63,12 @@ export const tmpDirDisposal = {
  */
 export async function showAndLogErrorMessage(
   message: string,
-  {
-    outputLogger = extLogger,
-    items = [] as string[],
-    fullMessage = undefined as string | undefined,
-  } = {},
+  options?: ShowAndLogOptions,
 ): Promise<string | undefined> {
   return internalShowAndLog(
     dropLinesExceptInitial(message),
-    items,
-    outputLogger,
     Window.showErrorMessage,
-    fullMessage,
+    options,
   );
 }
 
@@ -82,40 +82,36 @@ function dropLinesExceptInitial(message: string, n = 2) {
  * @param message The message to show.
  * @param options.outputLogger The output logger that will receive the message
  * @param options.items A set of items that will be rendered as actions in the message.
+ * @param options.fullMessage An alternate message that is added to the log, but not displayed
+ *                           in the popup. This is useful for adding extra detail to the logs
+ *                           that would be too noisy for the popup.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
 export async function showAndLogWarningMessage(
   message: string,
-  { outputLogger = extLogger, items = [] as string[] } = {},
+  options?: ShowAndLogOptions,
 ): Promise<string | undefined> {
-  return internalShowAndLog(
-    message,
-    items,
-    outputLogger,
-    Window.showWarningMessage,
-  );
+  return internalShowAndLog(message, Window.showWarningMessage, options);
 }
+
 /**
  * Show an information message and log it to the console
  *
  * @param message The message to show.
  * @param options.outputLogger The output logger that will receive the message
  * @param options.items A set of items that will be rendered as actions in the message.
+ * @param options.fullMessage An alternate message that is added to the log, but not displayed
+ *                           in the popup. This is useful for adding extra detail to the logs
+ *                           that would be too noisy for the popup.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
 export async function showAndLogInformationMessage(
   message: string,
-  { outputLogger = extLogger, items = [] as string[], fullMessage = "" } = {},
+  options?: ShowAndLogOptions,
 ): Promise<string | undefined> {
-  return internalShowAndLog(
-    message,
-    items,
-    outputLogger,
-    Window.showInformationMessage,
-    fullMessage,
-  );
+  return internalShowAndLog(message, Window.showInformationMessage, options);
 }
 
 type ShowMessageFn = (
@@ -125,10 +121,8 @@ type ShowMessageFn = (
 
 async function internalShowAndLog(
   message: string,
-  items: string[],
-  outputLogger = extLogger,
   fn: ShowMessageFn,
-  fullMessage?: string,
+  { items = [], outputLogger = extLogger, fullMessage }: ShowAndLogOptions = {},
 ): Promise<string | undefined> {
   const label = "Show Log";
   void outputLogger.log(fullMessage || message);
