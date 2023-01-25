@@ -12,14 +12,24 @@ import { QueryHistoryInfo } from "./query-history/query-history-info";
 import { QueryStatus } from "./query-status";
 import { QueryEvaluationInfo } from "./run-queries-shared";
 import { QueryResultType } from "./pure/legacy-messages";
+import { JsonValidator } from "./data-serialization/json-validator";
+import { RemoteQueryHistoryItem } from "./data-serialization/source-schemas-types/remote-query-history-item";
+import { VariantAnalysisHistoryItem } from "./data-serialization/source-schemas-types/variant-analysis-history-item";
+
+type SerializableHistoryItems =
+  | LocalQueryInfo
+  | RemoteQueryHistoryItem
+  | VariantAnalysisHistoryItem;
 
 export async function deserializeQueryHistory(
   fsPath: string,
-): Promise<QueryHistoryInfo[]> {
+): Promise<SerializableHistoryItems[]> {
   try {
     if (!(await pathExists(fsPath))) {
       return [];
     }
+
+    const jsonValidator = new JsonValidator();
 
     const data = await readFile(fsPath, "utf8");
     const obj = JSON.parse(data);
@@ -31,7 +41,7 @@ export async function deserializeQueryHistory(
     }
 
     const queries = obj.queries;
-    const parsedQueries = queries.map((q: QueryHistoryInfo) => {
+    const parsedQueries = queries.map((q: SerializableHistoryItems) => {
       // Need to explicitly set prototype since reading in from JSON will not
       // do this automatically. Note that we can't call the constructor here since
       // the constructor invokes extra logic that we don't want to do.
@@ -74,7 +84,12 @@ export async function deserializeQueryHistory(
         if (q.status === QueryStatus.Completed) {
           q.completed = true;
         }
+
+        return jsonValidator.validate(q, "RemoteQueryHistoryItem");
+      } else if (q.t === "variant-analysis") {
+        return jsonValidator.validate(q, "VariantAnalysisHistoryItem");
       }
+
       return q;
     });
 
