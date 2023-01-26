@@ -3,6 +3,7 @@ import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { extLogger } from "../../../../src/common";
 import * as fs from "fs-extra";
 import { join, resolve } from "path";
+import { Readable } from "stream";
 import { Response, RequestInfo, RequestInit } from "node-fetch";
 import * as fetchModule from "node-fetch";
 
@@ -94,24 +95,23 @@ describe(VariantAnalysisResultsManager.name, () => {
     });
 
     describe("when the artifact_url is present", () => {
-      let arrayBuffer: ArrayBuffer;
-
       let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
         typeof fetchModule.default
       >;
+      let fileContents: Buffer;
 
       beforeEach(async () => {
         const sourceFilePath = join(
           __dirname,
           "../data/variant-analysis-results.zip",
         );
-        arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
+        fileContents = fs.readFileSync(sourceFilePath);
 
         getVariantAnalysisRepoResultStub = jest
           .spyOn(fetchModule, "default")
           .mockImplementation((url: RequestInfo, _init?: RequestInit) => {
             if (url === dummyRepoTask.artifactUrl) {
-              return Promise.resolve(new Response(arrayBuffer));
+              return Promise.resolve(new Response(Readable.from(fileContents)));
             }
             return Promise.reject(new Error("Unexpected artifact URL"));
           });
