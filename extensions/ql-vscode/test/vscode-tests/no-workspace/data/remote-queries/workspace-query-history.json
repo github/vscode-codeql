@@ -6,23 +6,19 @@
       "status": "Completed",
       "completed": true,
       "queryId": "MRVA Integration test 1-6sBi6oaky_fxqXW2NA4bx",
-      "label": "MRVA Integration test 1",
+      "userSpecifiedLabel": "MRVA Integration test 1",
       "remoteQuery": {
         "queryName": "MRVA Integration test 1",
         "queryFilePath": "PLACEHOLDER/q0.ql",
         "queryText": "/**\n * @name MRVA Integration test 1\n * @kind problem\n * @problem.severity warning\n * @id javascript/integration-test-1\n */\nimport javascript\n\nfrom MemberDeclaration md\nwhere md.getName() = \"dispose\"\nselect md, \"Dispose method\"\n",
+        "language": "Ruby",
         "controllerRepository": {
           "owner": "dsp-testing",
           "name": "qc-run2"
         },
-        "repositories": [
-          {
-            "owner": "github",
-            "name": "vscode-codeql"
-          }
-        ],
         "executionStartTime": 1645644967533,
-        "actionsWorkflowRunId": 1889315769
+        "actionsWorkflowRunId": 1889315769,
+        "repositoryCount": 2
       }
     },
     {
@@ -30,23 +26,19 @@
       "status": "Completed",
       "completed": true,
       "queryId": "MRVA Integration test 2-UL-vbKAjP8ffObxjsp7hN",
-      "label": "MRVA Integration test 2",
+      "userSpecifiedLabel": "MRVA Integration test 2",
       "remoteQuery": {
         "queryName": "MRVA Integration test 2",
         "queryFilePath": "PLACEHOLDER/q1.ql",
         "queryText": "/**\n * @name MRVA Integration test 2\n * @kind problem\n * @problem.severity warning\n * @id javascript/integration-test-2\n */\nimport javascript\n\nfrom MemberDeclaration md\nwhere md.getName() = \"refresh\"\nselect md, \"Refresh method\"\n",
+        "language": "Ruby",
         "controllerRepository": {
           "owner": "dsp-testing",
           "name": "qc-run2"
         },
-        "repositories": [
-          {
-            "owner": "github",
-            "name": "vscode-codeql"
-          }
-        ],
         "executionStartTime": 1645644973911,
-        "actionsWorkflowRunId": 1889316048
+        "actionsWorkflowRunId": 1889316048,
+        "repositoryCount": 2
       }
     }
   ]
