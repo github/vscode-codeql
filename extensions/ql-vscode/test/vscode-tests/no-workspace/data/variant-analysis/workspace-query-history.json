@@ -7,7 +7,11 @@
       "completed": true,
       "variantAnalysis": {
         "id": 98574321397,
-        "controllerRepoId": 128321,
+        "controllerRepo": {
+          "id": 128321,
+          "fullName": "test/repo",
+          "private": false
+        },
         "query": {
           "name": "Variant Analysis Integration Test 1",
           "filePath": "PLACEHOLDER/q2.ql",
@@ -30,7 +34,11 @@
       "completed": true,
       "variantAnalysis": {
         "id": 98574321397,
-        "controllerRepoId": 128321,
+        "controllerRepo": {
+          "id": 128321,
+          "fullName": "test/repo2",
+          "private": false
+        },
         "query": {
           "name": "Variant Analysis Integration Test 2",
           "filePath": "PLACEHOLDER/q2.ql",
