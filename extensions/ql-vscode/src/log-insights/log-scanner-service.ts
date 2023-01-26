@@ -1,6 +1,5 @@
 import { Diagnostic, DiagnosticSeverity, languages, Range, Uri } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
-import { QueryHistoryManager } from "../query-history/query-history";
 import { QueryHistoryInfo } from "../query-history/query-history-info";
 import {
   EvaluationLogProblemReporter,
@@ -9,6 +8,7 @@ import {
 import { PipelineInfo, SummarySymbols } from "./summary-parser";
 import { readFile } from "fs-extra";
 import { extLogger } from "../common";
+import { QueryHistoryManager } from "../query-history/query-history-manager";
 
 /**
  * Compute the key used to find a predicate in the summary symbols.
