@@ -1639,7 +1639,7 @@ const checkForUpdatesCommand = "codeQL.checkForUpdatesToCLI";
 /**
  * This text provider lets us open readonly files in the editor.
  *
- * TODO: Consolidate this with the 'codeql' text provider in history-tree-data-provider.ts.
+ * TODO: Consolidate this with the 'codeql' text provider in query-history-manager.ts.
  */
 function registerRemoteQueryTextProvider() {
   workspace.registerTextDocumentContentProvider("remote-query", {

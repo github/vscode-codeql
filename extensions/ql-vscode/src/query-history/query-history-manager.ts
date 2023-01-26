@@ -68,7 +68,7 @@ import { App } from "../common/app";
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
 
 /**
- * history-tree-data-provider.ts
+ * query-history-manager.ts
  * ------------
  * Managing state of previous queries that we've executed.
  *
