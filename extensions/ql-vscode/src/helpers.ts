@@ -44,8 +44,14 @@ export const tmpDirDisposal = {
 };
 
 interface ShowAndLogOptions {
+  /** The output logger that will receive the message. */
   outputLogger?: OutputChannelLogger;
+  /** A set of items that will be rendered as actions in the message. */
   items?: string[];
+  /**
+   * An alternate message that is added to the log, but not displayed in the popup.
+   * This is useful for adding extra detail to the logs that would be too noisy for the popup.
+   */
   fullMessage?: string;
 }
 
@@ -53,11 +59,7 @@ interface ShowAndLogOptions {
  * Show an error message and log it to the console
  *
  * @param message The message to show.
- * @param options.outputLogger The output logger that will receive the message
- * @param options.items A set of items that will be rendered as actions in the message.
- * @param options.fullMessage An alternate message that is added to the log, but not displayed
- *                           in the popup. This is useful for adding extra detail to the logs
- *                           that would be too noisy for the popup.
+ * @param options See indivual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
@@ -80,11 +82,7 @@ function dropLinesExceptInitial(message: string, n = 2) {
  * Show a warning message and log it to the console
  *
  * @param message The message to show.
- * @param options.outputLogger The output logger that will receive the message
- * @param options.items A set of items that will be rendered as actions in the message.
- * @param options.fullMessage An alternate message that is added to the log, but not displayed
- *                           in the popup. This is useful for adding extra detail to the logs
- *                           that would be too noisy for the popup.
+ * @param options See indivual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
@@ -99,11 +97,7 @@ export async function showAndLogWarningMessage(
  * Show an information message and log it to the console
  *
  * @param message The message to show.
- * @param options.outputLogger The output logger that will receive the message
- * @param options.items A set of items that will be rendered as actions in the message.
- * @param options.fullMessage An alternate message that is added to the log, but not displayed
- *                           in the popup. This is useful for adding extra detail to the logs
- *                           that would be too noisy for the popup.
+ * @param options See indivual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
