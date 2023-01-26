@@ -51,7 +51,7 @@ export class SchemaGenerator {
 
 const generator = new SchemaGenerator();
 
-generator.generateSchemas().catch((e) => {
+generator.generateSchemas().catch((e: unknown) => {
   console.error(e);
   process.exit(2);
 });
