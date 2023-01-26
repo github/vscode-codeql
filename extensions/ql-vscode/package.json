@@ -1310,6 +1310,11 @@
       {
         "view": "codeQLEvalLogViewer",
         "contents": "Run the 'Show Evaluator Log (UI)' command on a CodeQL query run in the Query History view."
+      },
+      {
+        "view": "codeQLVariantAnalysisRepositories",
+        "contents": "Set up a controller repository to start using variant analysis.\n[Set up controller repository](command:codeQLVariantAnalysisRepositories.setupControllerRepository)",
+        "when": "!config.codeQL.variantAnalysis.controllerRepo"
       }
     ]
   },

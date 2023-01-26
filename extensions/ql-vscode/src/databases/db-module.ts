@@ -24,7 +24,7 @@ export class DbModule extends DisposableObject {
       const dbModule = new DbModule(app);
       app.subscriptions.push(dbModule);
 
-      await dbModule.initialize();
+      await dbModule.initialize(app);
       return dbModule;
     }
 
@@ -39,12 +39,12 @@ export class DbModule extends DisposableObject {
     return isCanary() && isVariantAnalysisReposPanelEnabled();
   }
 
-  private async initialize(): Promise<void> {
+  private async initialize(app: App): Promise<void> {
     void extLogger.log("Initializing database module");
 
     await this.dbConfigStore.initialize();
 
-    const dbPanel = new DbPanel(this.dbManager);
+    const dbPanel = new DbPanel(this.dbManager, app.credentials);
     await dbPanel.initialize();
 
     this.push(dbPanel);
