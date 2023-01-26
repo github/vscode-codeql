@@ -33,9 +33,8 @@ export default class JestRunnerCliIntegration extends VSCodeTestRunner {
           ?.config as RunnerOptions) ?? {};
 
       const { version, platform } = options;
-      const versionKey = `${version}-${platform}`;
 
-      if (installedOnVsCodeVersions.has(versionKey)) {
+      if (installedOnVsCodeVersions.has(`${version}-${platform}`)) {
         continue;
       }
 
@@ -64,7 +63,7 @@ export default class JestRunnerCliIntegration extends VSCodeTestRunner {
         },
       );
 
-      installedOnVsCodeVersions.add(versionKey);
+      installedOnVsCodeVersions.add(`${version}-${platform}`);
     }
 
     await ensureCli(true);
