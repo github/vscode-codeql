@@ -21,6 +21,7 @@ import * as ghApiClient from "../../../../src/remote-queries/gh-api/gh-api-clien
 import * as ghActionsApiClient from "../../../../src/remote-queries/gh-api/gh-actions-api-client";
 import * as fs from "fs-extra";
 import { join } from "path";
+import { Readable } from "stream";
 import { Response } from "node-fetch";
 import * as fetchModule from "node-fetch";
 
@@ -389,10 +390,10 @@ describe("Variant Analysis Manager", () => {
           __dirname,
           "../data/variant-analysis-results.zip",
         );
-        const arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
-        getVariantAnalysisRepoResultStub.mockResolvedValue(
-          new Response(arrayBuffer),
-        );
+        const fileContents = fs.readFileSync(sourceFilePath);
+        const response = new Response(Readable.from(fileContents));
+        response.size = fileContents.length;
+        getVariantAnalysisRepoResultStub.mockResolvedValue(response);
       });
 
       it("should return early if variant analysis is cancelled", async () => {
