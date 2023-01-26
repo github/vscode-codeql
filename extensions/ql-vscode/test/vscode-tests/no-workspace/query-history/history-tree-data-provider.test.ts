@@ -3,10 +3,6 @@ import * as vscode from "vscode";
 
 import { extLogger } from "../../../../src/common";
 import {
-  HistoryTreeDataProvider,
-  SortOrder,
-} from "../../../../src/query-history/history-tree-data-provider";
-import {
   QueryHistoryConfig,
   QueryHistoryConfigListener,
 } from "../../../../src/config";
@@ -31,6 +27,12 @@ import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-h
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-status";
 import { VariantAnalysisStatus } from "../../../../src/remote-queries/shared/variant-analysis";
+import { Credentials } from "../../../../src/common/authentication";
+import { createMockApp } from "../../../__mocks__/appMock";
+import {
+  HistoryTreeDataProvider,
+  SortOrder,
+} from "../../../../src/query-history/history-tree-data-provider";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 
 describe("HistoryTreeDataProvider", () => {
@@ -470,8 +472,12 @@ describe("HistoryTreeDataProvider", () => {
     });
   });
 
-  async function createMockQueryHistory(allHistory: QueryHistoryInfo[]) {
+  async function createMockQueryHistory(
+    allHistory: QueryHistoryInfo[],
+    credentials?: Credentials,
+  ) {
     const qhm = new QueryHistoryManager(
+      createMockApp({ credentials }),
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
