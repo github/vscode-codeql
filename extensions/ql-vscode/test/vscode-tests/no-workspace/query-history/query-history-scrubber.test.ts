@@ -27,8 +27,6 @@ describe("query history scrubber", () => {
     unsafeCleanup: true,
   });
 
-  let queryHistoryManager: QueryHistoryManager;
-
   beforeEach(() => {
     jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
@@ -57,10 +55,6 @@ describe("query history scrubber", () => {
   });
 
   afterEach(() => {
-    if (queryHistoryManager) {
-      queryHistoryManager.dispose();
-    }
-
     if (deregister) {
       deregister.dispose();
       deregister = undefined;
