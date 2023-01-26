@@ -29,7 +29,7 @@ import {
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisSubmission,
 } from "./shared/variant-analysis";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { VariantAnalysisView } from "./variant-analysis-view";
 import { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
 import {
@@ -44,7 +44,7 @@ import {
 import PQueue from "p-queue";
 import {
   createTimestampFile,
-  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "../helpers";
@@ -261,8 +261,9 @@ export class VariantAnalysisManager
 
   public async showView(variantAnalysisId: number): Promise<void> {
     if (!this.variantAnalyses.get(variantAnalysisId)) {
-      void showAndLogErrorMessage(
-        `No variant analysis found with id: ${variantAnalysisId}.`,
+      void showAndLogExceptionWithTelemetry(
+        asError(`No variant analysis found with id: ${variantAnalysisId}.`),
+        "variant_analysis_manager_id_not_found",
       );
     }
     if (!this.views.has(variantAnalysisId)) {

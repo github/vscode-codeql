@@ -72,6 +72,7 @@ import {
   showAndLogInformationMessage,
   showInformationMessageWithAction,
   tmpDir,
+  showAndLogExceptionWithTelemetry,
 } from "./helpers";
 import { asError, assertNever, getErrorMessage } from "./pure/helpers-pure";
 import { spawnIdeServer } from "./ide-server";
@@ -714,7 +715,10 @@ async function activateWithInstalledDistribution(
     try {
       await compareView.showResults(from, to);
     } catch (e) {
-      void showAndLogErrorMessage(getErrorMessage(e));
+      void showAndLogExceptionWithTelemetry(
+        asError(e),
+        "compare_view_show_results",
+      );
     }
   }
 
@@ -812,9 +816,14 @@ async function activateWithInstalledDistribution(
         )
           ? `Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
           : `Could not open a preview of the generated file (${absolutePathToMd}).`;
-        void showAndLogErrorMessage(errorMessage, {
-          fullMessage: `${errorMessage}\n${e}`,
-        });
+        void showAndLogExceptionWithTelemetry(
+          asError(e),
+          "preview_query_help",
+          {
+            notificationMessage: errorMessage,
+            fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
+          },
+        );
       }
     }
   }

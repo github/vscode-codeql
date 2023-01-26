@@ -25,7 +25,8 @@ import {
 } from "./pure/bqrs-utils";
 import { commandRunner } from "./commandRunner";
 import { DisposableObject } from "./pure/disposable-object";
-import { showAndLogErrorMessage } from "./helpers";
+import { showAndLogExceptionWithTelemetry } from "./helpers";
+import { asError } from "./pure/helpers-pure";
 
 export interface AstItem {
   id: BqrsId;
@@ -146,7 +147,8 @@ export class AstViewer extends DisposableObject {
       () => {
         /**/
       },
-      (err) => showAndLogErrorMessage(err),
+      (error: unknown) =>
+        showAndLogExceptionWithTelemetry(asError(error), "AST_viewer_reveal"),
     );
   }
 
@@ -204,7 +206,11 @@ export class AstViewer extends DisposableObject {
           () => {
             /**/
           },
-          (err) => showAndLogErrorMessage(err),
+          (error: unknown) =>
+            showAndLogExceptionWithTelemetry(
+              asError(error),
+              "AST_viewer_reveal",
+            ),
         );
       }
     }

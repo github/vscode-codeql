@@ -5,7 +5,7 @@ import { ProgressCallback } from "../commandRunner";
 import { DatabaseItem } from "../databases";
 import {
   getOnDiskWorkspaceFolders,
-  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
   tryGetQueryMetadata,
 } from "../helpers";
@@ -15,6 +15,7 @@ import { QueryResultType } from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
 import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
 import * as qsClient from "./queryserver-client";
+import { asError } from "../pure/helpers-pure";
 
 /**
  * run-queries.ts
@@ -111,7 +112,10 @@ export async function compileAndRunQueryAgainstDatabase(
   if (result.resultType !== messages.QueryResultType.SUCCESS) {
     const message = result.message || "Failed to run query";
     void extLogger.log(message);
-    void showAndLogErrorMessage(message);
+    void showAndLogExceptionWithTelemetry(
+      asError(message),
+      "query_server_run_queries",
+    );
   }
   let message;
   switch (result.resultType) {

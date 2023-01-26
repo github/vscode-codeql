@@ -8,6 +8,7 @@ import { DatabaseItem } from "../databases";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
   tryGetQueryMetadata,
   upgradesTmpDir,
@@ -18,7 +19,7 @@ import { extLogger } from "../common";
 import * as messages from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
 import * as qsClient from "./queryserver-client";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { compileDatabaseUpgradeSequence } from "./upgrades";
 import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
 
@@ -367,10 +368,16 @@ export async function compileAndRunQueryAgainstDatabase(
       void extLogger.log("Did not find any available ML models.");
     }
   } catch (e) {
-    const message =
+    const notificationMessage =
       `Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the ` +
       `query without any ML models: ${e}.`;
-    void showAndLogErrorMessage(message);
+    void showAndLogExceptionWithTelemetry(
+      asError(e),
+      "legacy_query_server_ml_models_not_found",
+      {
+        notificationMessage,
+      },
+    );
   }
 
   const hasMetadataFile = await dbItem.hasMetadataFile();
@@ -424,7 +431,10 @@ export async function compileAndRunQueryAgainstDatabase(
       if (result.resultType !== messages.QueryResultType.SUCCESS) {
         const message = result.message || "Failed to run query";
         void extLogger.log(message);
-        void showAndLogErrorMessage(message);
+        void showAndLogExceptionWithTelemetry(
+          asError(message),
+          "legacy_query_server_run_queries",
+        );
       }
       const message = formatLegacyMessage(result);
 

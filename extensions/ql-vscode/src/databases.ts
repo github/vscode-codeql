@@ -5,10 +5,10 @@ import * as vscode from "vscode";
 import * as cli from "./cli";
 import { ExtensionContext } from "vscode";
 import {
-  showAndLogErrorMessage,
   showAndLogWarningMessage,
   showAndLogInformationMessage,
   isLikelyDatabaseRoot,
+  showAndLogExceptionWithTelemetry,
 } from "./helpers";
 import { ProgressCallback, withProgress } from "./commandRunner";
 import {
@@ -794,8 +794,14 @@ export class DatabaseManager extends DisposableObject {
           await this.updatePersistedDatabaseList();
         } catch (e) {
           // database list had an unexpected type - nothing to be done?
-          void showAndLogErrorMessage(
-            `Database list loading failed: ${getErrorMessage(e)}`,
+          void showAndLogExceptionWithTelemetry(
+            asError(e),
+            "databases_load_persisted_state",
+            {
+              notificationMessage: `Database list loading failed: ${getErrorMessage(
+                e,
+              )}`,
+            },
           );
         }
 

@@ -28,6 +28,38 @@ export enum CommandCompletion {
   Cancelled = "Cancelled",
 }
 
+export type ErrorType =
+  | "AST_viewer_reveal"
+  | "command_failed"
+  | "compare_view_show_results"
+  | "databases_load_persisted_state"
+  | "databases_ui_choose_and_set_database"
+  | "databases_ui_remove_orphaned_database"
+  | "database_upgrade"
+  | "database_upgrade_compilation"
+  | "eval_log_viewer_reveal"
+  | "gh_actions_api_client_get_repositories_metadata"
+  | "legacy_query_server_ml_models_not_found"
+  | "legacy_query_server_run_queries"
+  | "packaging_download_packs"
+  | "preview_query_help"
+  | "query_history_deserialization"
+  | "query_history_manager_compare_with"
+  | "query_history_manager_reveal_file_in_os"
+  | "query_history_manager_show_text_document"
+  | "query_serialization_unsupported_format"
+  | "query_server_run_queries"
+  | "remote_queries_submit"
+  | "remote_queries_manager_open_results"
+  | "remote_queries_manager_monitor_unexpectd_status"
+  | "remote_queries_manager_download_missing_index"
+  | "resolve_queries"
+  | "results_view_on_message"
+  | "results_view_interpret_results_info"
+  | "results_view_displayed_query_undefined"
+  | "test_adapter_remove_databases_before_tests"
+  | "variant_analysis_manager_id_not_found";
+
 // Avoid sending the following data to App insights since we don't need it.
 const tagsToRemove = [
   "ai.application.ver",
@@ -180,6 +212,26 @@ export class TelemetryListener extends ConfigListener {
       },
       {},
     );
+  }
+
+  sendError(
+    errorType: ErrorType,
+    stack?: string,
+    extraProperties?: { [key: string]: string },
+  ) {
+    if (!this.reporter) {
+      return;
+    }
+
+    const properties: { [key: string]: string } = {
+      type: errorType,
+      ...extraProperties,
+    };
+    if (stack && stack !== "") {
+      properties.stack = stack;
+    }
+
+    this.reporter.sendTelemetryEvent("error", properties, {});
   }
 
   /**

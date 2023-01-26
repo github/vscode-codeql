@@ -13,8 +13,9 @@ import {
 import * as cli from "./cli";
 import { CodeQLCliServer } from "./cli";
 import { DatabaseEventKind, DatabaseItem, DatabaseManager } from "./databases";
-import { showAndLogErrorMessage } from "./helpers";
+import { showAndLogExceptionWithTelemetry } from "./helpers";
 import {
+  asError,
   assertNever,
   getErrorMessage,
   getErrorStack,
@@ -291,9 +292,13 @@ export class ResultsView extends AbstractWebview<
           assertNever(msg);
       }
     } catch (e) {
-      void showAndLogErrorMessage(getErrorMessage(e), {
-        fullMessage: getErrorStack(e),
-      });
+      void showAndLogExceptionWithTelemetry(
+        asError(e),
+        "results_view_on_message",
+        {
+          fullMessage: getErrorStack(e),
+        },
+      );
     }
   }
 
@@ -335,8 +340,9 @@ export class ResultsView extends AbstractWebview<
     sortState: InterpretedResultsSortState | undefined,
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
-      void showAndLogErrorMessage(
-        "Failed to sort results since evaluation info was unknown.",
+      void showAndLogExceptionWithTelemetry(
+        asError("Failed to sort results since evaluation info was unknown."),
+        "results_view_displayed_query_undefined",
       );
       return;
     }
@@ -353,8 +359,9 @@ export class ResultsView extends AbstractWebview<
     sortState: RawResultsSortState | undefined,
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
-      void showAndLogErrorMessage(
-        "Failed to sort results since evaluation info was unknown.",
+      void showAndLogExceptionWithTelemetry(
+        asError("Failed to sort results since evaluation info was unknown."),
+        "results_view_displayed_query_undefined",
       );
       return;
     }
@@ -762,10 +769,14 @@ export class ResultsView extends AbstractWebview<
       } catch (e) {
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
-        void showAndLogErrorMessage(
-          `Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
-            e,
-          )}`,
+        void showAndLogExceptionWithTelemetry(
+          asError(e),
+          "results_view_interpret_results_info",
+          {
+            notificationMessage: `Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
+              e,
+            )}`,
+          },
         );
       }
     }

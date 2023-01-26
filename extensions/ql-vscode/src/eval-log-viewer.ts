@@ -10,7 +10,8 @@ import {
 } from "vscode";
 import { commandRunner } from "./commandRunner";
 import { DisposableObject } from "./pure/disposable-object";
-import { showAndLogErrorMessage } from "./helpers";
+import { showAndLogExceptionWithTelemetry } from "./helpers";
+import { asError } from "./pure/helpers-pure";
 
 export interface EvalLogTreeItem {
   label?: string;
@@ -104,7 +105,11 @@ export class EvalLogViewer extends DisposableObject {
       () => {
         /**/
       },
-      (err) => showAndLogErrorMessage(err),
+      (err: unknown) =>
+        showAndLogExceptionWithTelemetry(
+          asError(err),
+          "eval_log_viewer_reveal",
+        ),
     );
   }
 }

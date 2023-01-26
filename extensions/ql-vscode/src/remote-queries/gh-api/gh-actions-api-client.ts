@@ -1,7 +1,7 @@
 import { join } from "path";
 import { pathExists, readFile, writeFile } from "fs-extra";
 import {
-  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
   tmpDir,
 } from "../../helpers";
@@ -15,7 +15,7 @@ import {
   RemoteQueryResultIndex,
   RemoteQuerySuccessIndexItem,
 } from "../remote-query-result-index";
-import { getErrorMessage } from "../../pure/helpers-pure";
+import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { unzipFile } from "../../pure/zip";
 import { VariantAnalysis } from "../shared/variant-analysis";
 
@@ -492,10 +492,14 @@ export async function getRepositoriesMetadata(
       }
     } while (cursor);
   } catch (e) {
-    void showAndLogErrorMessage(
-      `Error retrieving repository metadata for variant analysis: ${getErrorMessage(
-        e,
-      )}`,
+    void showAndLogExceptionWithTelemetry(
+      asError(e),
+      "gh_actions_api_client_get_repositories_metadata",
+      {
+        notificationMessage: `Error retrieving repository metadata for variant analysis: ${getErrorMessage(
+          e,
+        )}`,
+      },
     );
   }
 

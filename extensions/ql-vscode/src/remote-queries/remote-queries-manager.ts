@@ -16,6 +16,7 @@ import { ProgressCallback } from "../commandRunner";
 import {
   createTimestampFile,
   showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showInformationMessageWithAction,
 } from "../helpers";
@@ -36,7 +37,7 @@ import {
 } from "./remote-query-result";
 import { DownloadLink } from "./download-link";
 import { AnalysesResultsManager } from "./analyses-results-manager";
-import { assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { asError, assertNever } from "../pure/helpers-pure";
 import { QueryStatus } from "../query-status";
 import { DisposableObject } from "../pure/disposable-object";
 import { AnalysisResults } from "./shared/analysis-result";
@@ -149,10 +150,23 @@ export class RemoteQueriesManager extends DisposableObject {
       // Open results in the background
       void this.openResults(remoteQuery, remoteQueryResult).then(
         noop,
-        (err: unknown) => void showAndLogErrorMessage(getErrorMessage(err)),
+        (e: unknown) =>
+          void showAndLogExceptionWithTelemetry(
+            asError(e),
+            "remote_queries_manager_open_results",
+            {
+              notificationMessage: `Could not open query results. ${e}`,
+            },
+          ),
       );
     } catch (e) {
-      void showAndLogErrorMessage(`Could not open query results. ${e}`);
+      void showAndLogExceptionWithTelemetry(
+        asError(e),
+        "remote_queries_manager_open_results",
+        {
+          notificationMessage: `Could not open query results. ${e}`,
+        },
+      );
     }
   }
 
@@ -269,8 +283,9 @@ export class RemoteQueriesManager extends DisposableObject {
       void showAndLogInformationMessage("Variant analysis was cancelled");
     } else if (queryWorkflowResult.status === "InProgress") {
       // Should not get here. Only including this to ensure `assertNever` uses proper type checking.
-      void showAndLogErrorMessage(
-        `Unexpected status: ${queryWorkflowResult.status}`,
+      void showAndLogExceptionWithTelemetry(
+        asError(`Unexpected status: ${queryWorkflowResult.status}`),
+        "remote_queries_manager_monitor_unexpectd_status",
       );
     } else {
       // Ensure all cases are covered
@@ -475,15 +490,23 @@ export class RemoteQueriesManager extends DisposableObject {
       // Ask if the user wants to open the results in the background.
       void this.askToOpenResults(remoteQuery, queryResult).then(
         noop,
-        (err: unknown) => {
-          void showAndLogErrorMessage(getErrorMessage(err));
-        },
+        (e: unknown) =>
+          void showAndLogExceptionWithTelemetry(
+            asError(e),
+            "remote_queries_manager_open_results",
+            {
+              notificationMessage: `Could not open query results. ${e}`,
+            },
+          ),
       );
     } else {
       const controllerRepo = `${remoteQuery.controllerRepository.owner}/${remoteQuery.controllerRepository.name}`;
       const workflowRunUrl = `https://github.com/${controllerRepo}/actions/runs/${remoteQuery.actionsWorkflowRunId}`;
-      void showAndLogErrorMessage(
-        `There was an issue retrieving the result for the query [${remoteQuery.queryName}](${workflowRunUrl}).`,
+      void showAndLogExceptionWithTelemetry(
+        asError(
+          `There was an issue retrieving the result for the query [${remoteQuery.queryName}](${workflowRunUrl}).`,
+        ),
+        "remote_queries_manager_download_missing_index",
       );
       this.remoteQueryStatusUpdateEventEmitter.fire({
         queryId,

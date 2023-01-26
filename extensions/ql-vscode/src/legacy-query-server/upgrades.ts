@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import {
   getOnDiskWorkspaceFolders,
-  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   tmpDir,
 } from "../helpers";
 import { ProgressCallback, UserCancellationException } from "../commandRunner";
@@ -11,6 +11,7 @@ import * as qsClient from "./queryserver-client";
 import * as tmp from "tmp-promise";
 import { dirname } from "path";
 import { DatabaseItem } from "../databases";
+import { asError } from "../pure/helpers-pure";
 
 /**
  * Maximum number of lines to include from database upgrade message,
@@ -209,8 +210,12 @@ export async function upgradeDatabaseExplicit(
         token,
       );
     } catch (e) {
-      void showAndLogErrorMessage(
-        `Compilation of database upgrades failed: ${e}`,
+      void showAndLogExceptionWithTelemetry(
+        asError(e),
+        "database_upgrade_compilation",
+        {
+          notificationMessage: `Compilation of database upgrades failed: ${e}`,
+        },
       );
       return;
     } finally {
@@ -220,8 +225,9 @@ export async function upgradeDatabaseExplicit(
     if (!compileUpgradeResult.compiledUpgrades) {
       const error =
         compileUpgradeResult.error || "[no error message available]";
-      void showAndLogErrorMessage(
-        `Compilation of database upgrades failed: ${error}`,
+      void showAndLogExceptionWithTelemetry(
+        asError(`Compilation of database upgrades failed: ${error}`),
+        "database_upgrade_compilation",
       );
       return;
     }
@@ -253,7 +259,9 @@ export async function upgradeDatabaseExplicit(
       await qs.restartQueryServer(progress, token);
       return result;
     } catch (e) {
-      void showAndLogErrorMessage(`Database upgrade failed: ${e}`);
+      void showAndLogExceptionWithTelemetry(asError(e), "database_upgrade", {
+        notificationMessage: `Database upgrade failed: ${e}`,
+      });
       return;
     } finally {
       void qs.logger.log("Done running database upgrade.");

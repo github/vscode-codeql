@@ -1,8 +1,9 @@
 import { pathExists, readFile, remove, mkdir, writeFile } from "fs-extra";
 import { dirname } from "path";
 
-import { showAndLogErrorMessage } from "./helpers";
+import { showAndLogExceptionWithTelemetry } from "./helpers";
 import {
+  asError,
   asyncFilter,
   getErrorMessage,
   getErrorStack,
@@ -24,8 +25,11 @@ export async function deserializeQueryHistory(
     const data = await readFile(fsPath, "utf8");
     const obj = JSON.parse(data);
     if (![1, 2].includes(obj.version)) {
-      void showAndLogErrorMessage(
-        `Can't parse query history. Unsupported query history format: v${obj.version}. `,
+      void showAndLogExceptionWithTelemetry(
+        asError(
+          `Can't parse query history. Unsupported query history format: v${obj.version}.`,
+        ),
+        "query_serialization_unsupported_format",
       );
       return [];
     }
@@ -92,11 +96,14 @@ export async function deserializeQueryHistory(
       return !!resultsPath && (await pathExists(resultsPath));
     });
   } catch (e) {
-    void showAndLogErrorMessage("Error loading query history.", {
-      fullMessage: ["Error loading query history.", getErrorStack(e)].join(
-        "\n",
-      ),
-    });
+    void showAndLogExceptionWithTelemetry(
+      asError(e),
+      "query_history_deserialization",
+      {
+        notificationMessage: "Error loading query history.",
+        fullMessage: `Error loading query history.\n${getErrorStack(e)}`,
+      },
+    );
     // since the query history is invalid, it should be deleted so this error does not happen on next startup.
     await remove(fsPath);
     return [];

@@ -30,11 +30,12 @@ import { DisposableObject } from "./pure/disposable-object";
 import { CodeQLCliServer } from "./cli";
 import {
   getOnDiskWorkspaceFolders,
-  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "./helpers";
 import { testLogger } from "./common";
 import { DatabaseItem, DatabaseManager } from "./databases";
+import { asError } from "./pure/helpers-pure";
 
 /**
  * Get the full path of the `.expected` file for the specified QL test.
@@ -278,8 +279,12 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
         // This method is invoked from Test Explorer UI, and testing indicates that Test
         // Explorer UI swallows any thrown exception without reporting it to the user.
         // So we need to display the error message ourselves and then rethrow.
-        void showAndLogErrorMessage(
-          `Cannot remove database ${database.name}: ${e}`,
+        void showAndLogExceptionWithTelemetry(
+          asError(e),
+          "test_adapter_remove_databases_before_tests",
+          {
+            notificationMessage: `Cannot remove database ${database.name}: ${e}`,
+          },
         );
         throw e;
       }

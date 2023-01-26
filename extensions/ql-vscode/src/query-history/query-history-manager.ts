@@ -16,6 +16,7 @@ import {
 import { QueryHistoryConfig } from "../config";
 import {
   showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
   showBinaryChoiceDialog,
@@ -27,6 +28,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { commandRunner } from "../commandRunner";
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../pure/time";
 import {
+  asError,
   assertNever,
   getErrorMessage,
   getErrorStack,
@@ -809,7 +811,10 @@ export class QueryHistoryManager extends DisposableObject {
         );
       }
     } catch (e) {
-      void showAndLogErrorMessage(getErrorMessage(e));
+      void showAndLogExceptionWithTelemetry(
+        asError(e),
+        "query_history_manager_compare_with",
+      );
     }
   }
 
@@ -1374,13 +1379,21 @@ the file in the file explorer and dragging it into the workspace.`,
           try {
             await commands.executeCommand("revealFileInOS", uri);
           } catch (e) {
-            void showAndLogErrorMessage(getErrorMessage(e));
+            void showAndLogExceptionWithTelemetry(
+              asError(e),
+              "query_history_manager_reveal_file_in_os",
+            );
           }
         }
       } else {
-        void showAndLogErrorMessage(`Could not open file ${fileLocation}`);
-        void extLogger.log(getErrorMessage(e));
-        void extLogger.log(getErrorStack(e));
+        void showAndLogExceptionWithTelemetry(
+          asError(e),
+          "query_history_manager_show_text_document",
+          {
+            notificationMessage: `Could not open file ${fileLocation}`,
+            fullMessage: `${getErrorMessage(e)}\n${getErrorStack(e)}`,
+          },
+        );
       }
     }
   }

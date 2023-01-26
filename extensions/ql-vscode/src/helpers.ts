@@ -21,6 +21,7 @@ import { CodeQLCliServer, QlpacksInfo } from "./cli";
 import { UserCancellationException } from "./commandRunner";
 import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
+import { ErrorType, telemetryListener } from "./telemetry";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -43,6 +44,13 @@ export const tmpDirDisposal = {
   },
 };
 
+interface ShowAndLogExceptionOptions extends ShowAndLogOptions {
+  /** Custom properties to include in the telemetry report. */
+  extraTelemetryProperties?: { [key: string]: string };
+  /** An alternate message to use for the notification instead of the message from the `Error`. */
+  notificationMessage?: string;
+}
+
 interface ShowAndLogOptions {
   /** The output logger that will receive the message. */
   outputLogger?: OutputChannelLogger;
@@ -53,6 +61,33 @@ interface ShowAndLogOptions {
    * This is useful for adding extra detail to the logs that would be too noisy for the popup.
    */
   fullMessage?: string;
+}
+
+/**
+ * Show an error message and log it to the console
+ *
+ * @param error The error message to show, either as a Error or string. Will not be included in the
+ *              telemetry event, and therefore may safely include sensitive information.
+ * @param telemetryErrorType A safe string that identifies the error, to be included in the
+ *                           telemetry event. If not provided, then no telemetry event will be sent.
+ * @param options See indivual fields on `ShowAndLogExceptionOptions` type.
+ *
+ * @return A promise that resolves to the selected item or undefined when being dismissed.
+ */
+export async function showAndLogExceptionWithTelemetry(
+  error: Error,
+  telemetryErrorType: ErrorType,
+  options: ShowAndLogExceptionOptions = {},
+): Promise<string | undefined> {
+  telemetryListener?.sendError(
+    telemetryErrorType,
+    error.stack,
+    options.extraTelemetryProperties,
+  );
+  return showAndLogErrorMessage(
+    options.notificationMessage ?? error.message,
+    options,
+  );
 }
 
 /**

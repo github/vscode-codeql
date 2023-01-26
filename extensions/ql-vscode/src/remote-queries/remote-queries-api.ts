@@ -6,9 +6,10 @@ import { RemoteQueriesResponse } from "./gh-api/remote-queries";
 import { submitRemoteQueries } from "./gh-api/gh-api-client";
 import {
   showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
 } from "../helpers";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { asError } from "../pure/helpers-pure";
 import { pluralize } from "../pure/word";
 
 export async function runRemoteQueriesApiRequest(
@@ -43,7 +44,10 @@ export async function runRemoteQueriesApiRequest(
         `Controller repository was not found. Please make sure it's a valid repo name.${eol}`,
       );
     } else {
-      void showAndLogErrorMessage(getErrorMessage(error));
+      void showAndLogExceptionWithTelemetry(
+        asError(error),
+        "remote_queries_submit",
+      );
     }
   }
 }
