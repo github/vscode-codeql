@@ -135,17 +135,30 @@ export async function serializeQueryHistory(
     if (!(await pathExists(fsPath))) {
       await mkdir(dirname(fsPath), { recursive: true });
     }
+
     // remove incomplete local queries since they cannot be recreated on restart
     const filteredQueries = queries.filter((q) =>
       q.t === "local" ? q.completedQuery !== undefined : true,
     );
+
+    const jsonValidator = new JsonValidator();
+
+    const finalQueries = filteredQueries.map((q) => {
+      if (q.t == "remote") {
+        return jsonValidator.validate(q, "RemoteQueryHistoryItem");
+      } else if (q.t == "variant-analysis") {
+        return jsonValidator.validate(q, "VariantAnalysisHistoryItem");
+      }
+      return q;
+    });
+
     const data = JSON.stringify(
       {
         // version 2:
         // - adds the `variant-analysis` type
         // - ensures a `successful` property exists on completedQuery
         version: 2,
-        queries: filteredQueries,
+        queries: finalQueries,
       },
       null,
       2,
