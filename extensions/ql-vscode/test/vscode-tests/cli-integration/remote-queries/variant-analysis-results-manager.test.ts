@@ -154,6 +154,47 @@ describe(VariantAnalysisResultsManager.name, () => {
         ).toBe(true);
       });
 
+      it("should report download progress", async () => {
+        // This generates a "fake" stream which "downloads" the file in 5 chunks,
+        // rather than in 1 chunk. This is used for testing that we actually get
+        // multiple progress reports.
+        async function* generateInParts() {
+          const partLength = fileContents.length / 5;
+          for (let i = 0; i < 5; i++) {
+            yield fileContents.slice(i * partLength, (i + 1) * partLength);
+          }
+        }
+
+        getVariantAnalysisRepoResultStub.mockImplementation(
+          (url: RequestInfo, _init?: RequestInit) => {
+            if (url === dummyRepoTask.artifactUrl) {
+              const response = new Response(Readable.from(generateInParts()));
+              response.size = fileContents.length;
+              return Promise.resolve(response);
+            }
+            return Promise.reject(new Error("Unexpected artifact URL"));
+          },
+        );
+
+        const downloadPercentageChanged = jest
+          .fn()
+          .mockResolvedValue(undefined);
+
+        await variantAnalysisResultsManager.download(
+          variantAnalysisId,
+          dummyRepoTask,
+          variantAnalysisStoragePath,
+          downloadPercentageChanged,
+        );
+
+        expect(downloadPercentageChanged).toHaveBeenCalledTimes(5);
+        expect(downloadPercentageChanged).toHaveBeenCalledWith(20);
+        expect(downloadPercentageChanged).toHaveBeenCalledWith(40);
+        expect(downloadPercentageChanged).toHaveBeenCalledWith(60);
+        expect(downloadPercentageChanged).toHaveBeenCalledWith(80);
+        expect(downloadPercentageChanged).toHaveBeenCalledWith(100);
+      });
+
       describe("isVariantAnalysisRepoDownloaded", () => {
         it("should return true once results are downloaded", async () => {
           await variantAnalysisResultsManager.download(
