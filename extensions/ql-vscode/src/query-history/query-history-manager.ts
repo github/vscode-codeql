@@ -236,8 +236,8 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
-        "codeQLQueryHistory.setLabel",
-        this.handleSetLabel.bind(this),
+        "codeQLQueryHistory.renameItem",
+        this.handleRenameItem.bind(this),
       ),
     );
     this.push(
@@ -749,7 +749,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async handleSetLabel(
+  async handleRenameItem(
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[],
   ): Promise<void> {

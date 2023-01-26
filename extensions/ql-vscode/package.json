@@ -523,7 +523,7 @@
       },
       {
         "command": "codeQLQueryHistory.openQuery",
-        "title": "Open Query",
+        "title": "View Query",
         "icon": "$(edit)"
       },
       {
@@ -533,7 +533,7 @@
       },
       {
         "command": "codeQLQueryHistory.removeHistoryItem",
-        "title": "Remove from History",
+        "title": "Delete",
         "icon": "$(trash)"
       },
       {
@@ -550,11 +550,11 @@
       },
       {
         "command": "codeQLQueryHistory.showQueryLog",
-        "title": "Show Query Log"
+        "title": "View Query Log"
       },
       {
         "command": "codeQLQueryHistory.openQueryDirectory",
-        "title": "Open Query Directory"
+        "title": "Open Results Directory"
       },
       {
         "command": "codeQLQueryHistory.showEvalLog",
@@ -574,7 +574,7 @@
       },
       {
         "command": "codeQLQueryHistory.showQueryText",
-        "title": "Show Query Text"
+        "title": "View Query Text"
       },
       {
         "command": "codeQLQueryHistory.exportResults",
@@ -597,8 +597,8 @@
         "title": "View DIL"
       },
       {
-        "command": "codeQLQueryHistory.setLabel",
-        "title": "Set Label"
+        "command": "codeQLQueryHistory.renameItem",
+        "title": "Rename"
       },
       {
         "command": "codeQLQueryHistory.compareWith",
@@ -606,7 +606,7 @@
       },
       {
         "command": "codeQLQueryHistory.openOnGithub",
-        "title": "Open Variant Analysis on GitHub"
+        "title": "View Logs"
       },
       {
         "command": "codeQLQueryHistory.copyRepoList",
@@ -827,57 +827,57 @@
         },
         {
           "command": "codeQLQueryHistory.openQuery",
-          "group": "9_qlCommands",
+          "group": "2_queryHistory@0",
           "when": "view == codeQLQueryHistory"
         },
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
-          "group": "9_qlCommands",
+          "group": "7_queryHistory@0",
           "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
-          "command": "codeQLQueryHistory.setLabel",
-          "group": "9_qlCommands",
+          "command": "codeQLQueryHistory.renameItem",
+          "group": "6_queryHistory@0",
           "when": "view == codeQLQueryHistory"
         },
         {
           "command": "codeQLQueryHistory.compareWith",
-          "group": "9_qlCommands",
+          "group": "3_queryHistory@0",
           "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showQueryLog",
-          "group": "9_qlCommands",
+          "group": "4_queryHistory@4",
           "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem"
         },
         {
           "command": "codeQLQueryHistory.openQueryDirectory",
-          "group": "9_qlCommands",
+          "group": "2_queryHistory@4",
           "when": "view == codeQLQueryHistory && !hasRemoteServer"
         },
         {
           "command": "codeQLQueryHistory.showEvalLog",
-          "group": "9_qlCommands",
+          "group": "4_queryHistory@1",
           "when": "codeql.supportsEvalLog && viewItem == rawResultsItem || codeql.supportsEvalLog && viewItem == interpretedResultsItem || codeql.supportsEvalLog && viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showEvalLogSummary",
-          "group": "9_qlCommands",
+          "group": "4_queryHistory@2",
           "when": "codeql.supportsEvalLog && viewItem == rawResultsItem || codeql.supportsEvalLog && viewItem == interpretedResultsItem || codeql.supportsEvalLog && viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showEvalLogViewer",
-          "group": "9_qlCommands",
+          "group": "4_queryHistory@3",
           "when": "config.codeQL.canary && codeql.supportsEvalLog && viewItem == rawResultsItem || config.codeQL.canary && codeql.supportsEvalLog && viewItem == interpretedResultsItem || config.codeQL.canary && codeql.supportsEvalLog && viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showQueryText",
-          "group": "9_qlCommands",
+          "group": "2_queryHistory@2",
           "when": "view == codeQLQueryHistory"
         },
         {
           "command": "codeQLQueryHistory.exportResults",
-          "group": "9_qlCommands",
+          "group": "1_queryHistory@0",
           "when": "view == codeQLQueryHistory && viewItem == remoteResultsItem"
         },
         {
@@ -887,17 +887,17 @@
         },
         {
           "command": "codeQLQueryHistory.viewCsvAlerts",
-          "group": "9_qlCommands",
+          "group": "5_queryHistory@0",
           "when": "viewItem == interpretedResultsItem"
         },
         {
           "command": "codeQLQueryHistory.viewSarifAlerts",
-          "group": "9_qlCommands",
+          "group": "5_queryHistory@1",
           "when": "viewItem == interpretedResultsItem"
         },
         {
           "command": "codeQLQueryHistory.viewDil",
-          "group": "9_qlCommands",
+          "group": "5_queryHistory@2",
           "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem"
         },
         {
@@ -907,12 +907,12 @@
         },
         {
           "command": "codeQLQueryHistory.openOnGithub",
-          "group": "9_qlCommands",
+          "group": "2_queryHistory@3",
           "when": "viewItem == remoteResultsItem || viewItem == inProgressRemoteResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
           "command": "codeQLQueryHistory.copyRepoList",
-          "group": "9_qlCommands",
+          "group": "1_queryHistory@1",
           "when": "viewItem == remoteResultsItem"
         },
         {
@@ -1160,7 +1160,7 @@
           "when": "false"
         },
         {
-          "command": "codeQLQueryHistory.setLabel",
+          "command": "codeQLQueryHistory.renameItem",
           "when": "false"
         },
         {
