@@ -1,5 +1,6 @@
 import { DisposableObject } from "./pure/disposable-object";
 import { extLogger } from "./common";
+import { getErrorMessage } from "./pure/helpers-pure";
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of
@@ -61,8 +62,10 @@ export abstract class Discovery<T> extends DisposableObject {
         }
       })
 
-      .catch((err) => {
-        void extLogger.log(`${this.name} failed. Reason: ${err.message}`);
+      .catch((err: unknown) => {
+        void extLogger.log(
+          `${this.name} failed. Reason: ${getErrorMessage(err)}`,
+        );
       })
 
       .finally(() => {

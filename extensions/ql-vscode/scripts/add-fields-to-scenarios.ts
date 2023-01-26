@@ -136,7 +136,7 @@ async function addFieldsToScenarios() {
   }
 }
 
-addFieldsToScenarios().catch((e) => {
+addFieldsToScenarios().catch((e: unknown) => {
   console.error(e);
   process.exit(2);
 });

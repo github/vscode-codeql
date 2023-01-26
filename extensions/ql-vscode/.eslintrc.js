@@ -7,7 +7,8 @@ module.exports = {
   },
   plugins: [
     "github",
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "etc"
   ],
   env: {
     node: true,
@@ -45,6 +46,7 @@ module.exports = {
     "camelcase": "off",
     "eqeqeq": "off",
     "escompat/no-regexp-lookbehind": "off",
+    "etc/no-implicit-any-catch": "error",
     "filenames/match-regex": "off",
     "filenames/match-regexp": "off",
     "func-style": "off",

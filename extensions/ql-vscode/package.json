@@ -1436,6 +1436,7 @@
     "esbuild": "^0.15.15",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-etc": "^2.0.2",
     "eslint-plugin-github": "^4.4.1",
     "eslint-plugin-jest-dom": "^4.0.2",
     "eslint-plugin-prettier": "^4.2.1",

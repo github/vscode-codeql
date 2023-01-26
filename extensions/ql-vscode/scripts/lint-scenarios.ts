@@ -66,7 +66,7 @@ async function lintScenarios() {
   }
 }
 
-lintScenarios().catch((e) => {
+lintScenarios().catch((e: unknown) => {
   console.error(e);
   process.exit(2);
 });
