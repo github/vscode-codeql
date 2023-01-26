@@ -169,7 +169,10 @@ describe(VariantAnalysisResultsManager.name, () => {
           (url: RequestInfo, _init?: RequestInit) => {
             if (url === dummyRepoTask.artifactUrl) {
               const response = new Response(Readable.from(generateInParts()));
-              response.size = fileContents.length;
+              response.headers.set(
+                "Content-Length",
+                fileContents.length.toString(),
+              );
               return Promise.resolve(response);
             }
             return Promise.reject(new Error("Unexpected artifact URL"));
