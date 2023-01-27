@@ -70,7 +70,7 @@ interface ShowAndLogOptions {
  *              telemetry event, and therefore may safely include sensitive information.
  * @param telemetryErrorType A safe string that identifies the error, to be included in the
  *                           telemetry event. If not provided, then no telemetry event will be sent.
- * @param options See indivual fields on `ShowAndLogExceptionOptions` type.
+ * @param options See individual fields on `ShowAndLogExceptionOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
@@ -94,7 +94,7 @@ export async function showAndLogExceptionWithTelemetry(
  * Show an error message and log it to the console
  *
  * @param message The message to show.
- * @param options See indivual fields on `ShowAndLogOptions` type.
+ * @param options See individual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
@@ -117,7 +117,7 @@ function dropLinesExceptInitial(message: string, n = 2) {
  * Show a warning message and log it to the console
  *
  * @param message The message to show.
- * @param options See indivual fields on `ShowAndLogOptions` type.
+ * @param options See individual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
@@ -132,7 +132,7 @@ export async function showAndLogWarningMessage(
  * Show an information message and log it to the console
  *
  * @param message The message to show.
- * @param options See indivual fields on `ShowAndLogOptions` type.
+ * @param options See individual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
