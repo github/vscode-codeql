@@ -3,6 +3,20 @@ import { join } from "path";
 import { ConfigurationTarget } from "vscode";
 import { ALL_SETTINGS, InspectionResult, Setting } from "../../src/config";
 
+console.log("Adding unhandledRejection listener!!!!!!!");
+
+process.on("unhandledRejection", (err, promise) => {
+  console.log("inside process.on unhandledRejection!!!!!!!!");
+  const stack = err instanceof Error ? err.stack : "";
+  const message = err instanceof Error ? err.message : err;
+
+  console.log("Unhandled promise rejection", {
+    message,
+    stack,
+    promise,
+  });
+});
+
 class TestSetting<T> {
   private initialSettingState: InspectionResult<T> | undefined;
 

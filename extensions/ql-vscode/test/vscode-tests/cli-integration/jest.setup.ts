@@ -19,6 +19,24 @@ export default baseJestSetup;
 // create an extension storage location
 let removeStorage: tmp.DirResult["removeCallback"] | undefined;
 
+// process.on("unhandledRejection", (e) => {
+//   console.error("Unhandled rejection.");
+//   console.error(e);
+//   // Must use a setTimeout in order to ensure the log is fully flushed before exiting
+//   setTimeout(() => {
+//     process.exit(-1);
+//   }, 2000);
+// });
+
+process.addListener("unhandledRejection", (e) => {
+  console.error("Unhandled rejection.");
+  console.error(e);
+  // Must use a setTimeout in order to ensure the log is fully flushed before exiting
+  setTimeout(() => {
+    process.exit(-1);
+  }, 2000);
+});
+
 beforeAll(async () => {
   // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
   await getTestSetting(CUSTOM_CODEQL_PATH_SETTING)?.setInitialTestValue(
