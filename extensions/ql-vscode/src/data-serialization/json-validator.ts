@@ -21,7 +21,9 @@ export class JsonValidator {
 
     if (!valid) {
       throw new Error(
-        `Object does not match the "${typeName}" schema: ${validate.errors}`,
+        `Object does not match the "${typeName}" schema: ${this.ajv.errorsText(
+          validate.errors,
+        )}`,
       );
     }
     return object;
