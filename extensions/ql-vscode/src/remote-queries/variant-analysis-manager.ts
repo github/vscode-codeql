@@ -68,7 +68,7 @@ export class VariantAnalysisManager
   implements VariantAnalysisViewManager<VariantAnalysisView>
 {
   private static readonly REPO_STATES_FILENAME = "repo_states.json";
-  private static readonly DOWNLOAD_PERCENTAGE_UPDATE_DELAY_MS = 3000;
+  private static readonly DOWNLOAD_PERCENTAGE_UPDATE_DELAY_MS = 500;
 
   private readonly _onVariantAnalysisAdded = this.push(
     new EventEmitter<VariantAnalysis>(),

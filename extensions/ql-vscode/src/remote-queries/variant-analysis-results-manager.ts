@@ -90,12 +90,18 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     const zipFilePath = join(resultDirectory, "results.zip");
 
     const response = await fetch(repoTask.artifactUrl);
+
+    let responseSize = parseInt(response.headers.get("content-length") || "0");
+    if (responseSize === 0 && response.size > 0) {
+      responseSize = response.size;
+    }
+
     let amountDownloaded = 0;
     for await (const chunk of response.body) {
       await appendFile(zipFilePath, Buffer.from(chunk));
       amountDownloaded += chunk.length;
       await onDownloadPercentageChanged(
-        Math.floor((amountDownloaded / response.size) * 100),
+        Math.floor((amountDownloaded / responseSize) * 100),
       );
     }
 

@@ -26,6 +26,7 @@ import { AnalyzedRepoItemContent } from "./AnalyzedRepoItemContent";
 import StarCount from "../common/StarCount";
 import { LastUpdated } from "../common/LastUpdated";
 import { useTelemetryOnChange } from "../common/telemetry";
+import { DeterminateProgressRing } from "../common/DeterminateProgressRing";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -284,12 +285,8 @@ export const RepoRow = ({
         </span>
         {downloadState?.downloadStatus ===
           VariantAnalysisScannedRepositoryDownloadStatus.InProgress && (
-          <LoadingIcon
-            label={
-              downloadState.downloadPercentage !== undefined
-                ? `Downloading: ${downloadState.downloadPercentage}%`
-                : "Downloading"
-            }
+          <DeterminateProgressRing
+            percent={downloadState.downloadPercentage ?? 0}
           />
         )}
         {downloadState?.downloadStatus ===
