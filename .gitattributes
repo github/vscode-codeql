@@ -26,3 +26,6 @@ extensions/ql-vscode/src/stories/remote-queries/data/*.json     linguist-generat
 
 # Always use LF line endings, also on Windows
 * text=auto eol=lf
+
+# Mark JSON schema files as generated so they are not included as part of diffs
+extensions/ql-vscode/src/data-serialization/generated-schemas/*.json     linguist-generated
