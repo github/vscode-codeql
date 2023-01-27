@@ -1,7 +1,4 @@
-import {
-  deserializeQueryHistory,
-  serializeQueryHistory,
-} from "../../../src/query-serialization";
+import { QueryHistorySerializer } from "../../../src/query-serialization";
 import { join } from "path";
 import { writeFileSync, mkdirpSync } from "fs-extra";
 import { LocalQueryInfo, InitialQueryInfo } from "../../../src/query-results";
@@ -16,6 +13,8 @@ import { VariantAnalysisHistoryItem } from "../../../src/query-history/variant-a
 import { QueryHistoryInfo } from "../../../src/query-history/query-history-info";
 import { createMockRemoteQueryHistoryItem } from "../../factories/query-history/remote-query-history-item";
 import { createMockVariantAnalysisHistoryItem } from "../../factories/query-history/variant-analysis-history-item";
+import { createMockApp } from "../../__mocks__/appMock";
+import { App } from "../../../src/common/app";
 
 describe("serialize and deserialize", () => {
   let infoSuccessRaw: LocalQueryInfo;
@@ -33,8 +32,12 @@ describe("serialize and deserialize", () => {
   let allHistory: QueryHistoryInfo[];
   let queryPath: string;
   let cnt = 0;
+  let queryHistorySerializer: QueryHistorySerializer;
+  let app: App;
 
   beforeEach(() => {
+    app = createMockApp({});
+
     queryPath = join(Uri.file(tmpDir.name).fsPath, `query-${cnt++}`);
 
     infoSuccessRaw = createMockFullQueryInfo(
@@ -100,12 +103,12 @@ describe("serialize and deserialize", () => {
       variantAnalysis1,
       variantAnalysis2,
     ];
-
     const allHistoryPath = join(tmpDir.name, "workspace-query-history.json");
 
     // serialize and deserialize
-    await serializeQueryHistory(allHistory, allHistoryPath);
-    const allHistoryActual = await deserializeQueryHistory(allHistoryPath);
+    queryHistorySerializer = new QueryHistorySerializer(allHistoryPath, app);
+    await queryHistorySerializer.serialize(allHistory);
+    const allHistoryActual = await queryHistorySerializer.deserialize();
 
     // the dispose methods will be different. Ignore them.
     allHistoryActual.forEach((info) => {
@@ -148,7 +151,9 @@ describe("serialize and deserialize", () => {
       "utf8",
     );
 
-    const allHistoryActual = await deserializeQueryHistory(badPath);
+    queryHistorySerializer = new QueryHistorySerializer(badPath, app);
+    const allHistoryActual = await queryHistorySerializer.deserialize();
+
     // version number is invalid. Should return an empty array.
     expect(allHistoryActual).toEqual([]);
   });
