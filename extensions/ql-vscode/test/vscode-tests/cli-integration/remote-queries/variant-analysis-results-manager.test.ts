@@ -3,19 +3,19 @@ import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { extLogger } from "../../../../src/common";
 import * as fs from "fs-extra";
 import { join, resolve } from "path";
+import { Readable } from "stream";
+import { Response, RequestInfo, RequestInit } from "node-fetch";
+import * as fetchModule from "node-fetch";
 
 import { VariantAnalysisResultsManager } from "../../../../src/remote-queries/variant-analysis-results-manager";
 import { CodeQLCliServer } from "../../../../src/cli";
 import { storagePath } from "../global.helper";
 import { faker } from "@faker-js/faker";
-import * as ghApiClient from "../../../../src/remote-queries/gh-api/gh-api-client";
 import { createMockVariantAnalysisRepositoryTask } from "../../../factories/remote-queries/shared/variant-analysis-repo-tasks";
 import {
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepositoryResult,
 } from "../../../../src/remote-queries/shared/variant-analysis";
-import { testCredentialsWithStub } from "../../../factories/authentication";
-import { Credentials } from "../../../../src/common/authentication";
 
 jest.setTimeout(10_000);
 
@@ -44,7 +44,6 @@ describe(VariantAnalysisResultsManager.name, () => {
       jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
       variantAnalysisResultsManager = new VariantAnalysisResultsManager(
-        testCredentialsWithStub(),
         cli,
         extLogger,
       );
@@ -89,35 +88,33 @@ describe(VariantAnalysisResultsManager.name, () => {
             variantAnalysisId,
             dummyRepoTask,
             variantAnalysisStoragePath,
+            () => Promise.resolve(),
           ),
         ).rejects.toThrow("Missing artifact URL");
       });
     });
 
     describe("when the artifact_url is present", () => {
-      let arrayBuffer: ArrayBuffer;
-
       let getVariantAnalysisRepoResultStub: jest.SpiedFunction<
-        typeof ghApiClient.getVariantAnalysisRepoResult
+        typeof fetchModule.default
       >;
+      let fileContents: Buffer;
 
       beforeEach(async () => {
         const sourceFilePath = join(
           __dirname,
           "../data/variant-analysis-results.zip",
         );
-        arrayBuffer = fs.readFileSync(sourceFilePath).buffer;
+        fileContents = fs.readFileSync(sourceFilePath);
 
         getVariantAnalysisRepoResultStub = jest
-          .spyOn(ghApiClient, "getVariantAnalysisRepoResult")
-          .mockImplementation(
-            (_credentials: Credentials, downloadUrl: string) => {
-              if (downloadUrl === dummyRepoTask.artifactUrl) {
-                return Promise.resolve(arrayBuffer);
-              }
-              return Promise.reject(new Error("Unexpected artifact URL"));
-            },
-          );
+          .spyOn(fetchModule, "default")
+          .mockImplementation((url: RequestInfo, _init?: RequestInit) => {
+            if (url === dummyRepoTask.artifactUrl) {
+              return Promise.resolve(new Response(Readable.from(fileContents)));
+            }
+            return Promise.reject(new Error("Unexpected artifact URL"));
+          });
       });
 
       it("should call the API to download the results", async () => {
@@ -125,6 +122,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
+          () => Promise.resolve(),
         );
 
         expect(getVariantAnalysisRepoResultStub).toHaveBeenCalledTimes(1);
@@ -135,6 +133,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
+          () => Promise.resolve(),
         );
 
         expect(fs.existsSync(`${repoTaskStorageDirectory}/results.zip`)).toBe(
@@ -147,11 +146,53 @@ describe(VariantAnalysisResultsManager.name, () => {
           variantAnalysisId,
           dummyRepoTask,
           variantAnalysisStoragePath,
+          () => Promise.resolve(),
         );
 
         expect(
           fs.existsSync(`${repoTaskStorageDirectory}/results/results.sarif`),
         ).toBe(true);
+      });
+
+      it("should report download progress", async () => {
+        // This generates a "fake" stream which "downloads" the file in 5 chunks,
+        // rather than in 1 chunk. This is used for testing that we actually get
+        // multiple progress reports.
+        async function* generateInParts() {
+          const partLength = fileContents.length / 5;
+          for (let i = 0; i < 5; i++) {
+            yield fileContents.slice(i * partLength, (i + 1) * partLength);
+          }
+        }
+
+        getVariantAnalysisRepoResultStub.mockImplementation(
+          (url: RequestInfo, _init?: RequestInit) => {
+            if (url === dummyRepoTask.artifactUrl) {
+              const response = new Response(Readable.from(generateInParts()));
+              response.size = fileContents.length;
+              return Promise.resolve(response);
+            }
+            return Promise.reject(new Error("Unexpected artifact URL"));
+          },
+        );
+
+        const downloadPercentageChanged = jest
+          .fn()
+          .mockResolvedValue(undefined);
+
+        await variantAnalysisResultsManager.download(
+          variantAnalysisId,
+          dummyRepoTask,
+          variantAnalysisStoragePath,
+          downloadPercentageChanged,
+        );
+
+        expect(downloadPercentageChanged).toHaveBeenCalledTimes(5);
+        expect(downloadPercentageChanged).toHaveBeenCalledWith(20);
+        expect(downloadPercentageChanged).toHaveBeenCalledWith(40);
+        expect(downloadPercentageChanged).toHaveBeenCalledWith(60);
+        expect(downloadPercentageChanged).toHaveBeenCalledWith(80);
+        expect(downloadPercentageChanged).toHaveBeenCalledWith(100);
       });
 
       describe("isVariantAnalysisRepoDownloaded", () => {
@@ -160,6 +201,7 @@ describe(VariantAnalysisResultsManager.name, () => {
             variantAnalysisId,
             dummyRepoTask,
             variantAnalysisStoragePath,
+            () => Promise.resolve(),
           );
 
           expect(
@@ -185,7 +227,6 @@ describe(VariantAnalysisResultsManager.name, () => {
 
     beforeEach(() => {
       variantAnalysisResultsManager = new VariantAnalysisResultsManager(
-        testCredentialsWithStub(),
         cli,
         extLogger,
       );
