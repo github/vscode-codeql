@@ -6,6 +6,7 @@ import { createMockLogger } from "./loggerMock";
 import { createMockMemento } from "../mock-memento";
 import { testCredentialsWithStub } from "../factories/authentication";
 import { Credentials } from "../../src/common/authentication";
+import { JsonValidator } from "../../src/data-serialization/json-validator";
 
 export function createMockApp({
   extensionPath = "/mock/extension/path",
@@ -15,6 +16,7 @@ export function createMockApp({
   executeCommand = jest.fn(() => Promise.resolve()),
   workspaceState = createMockMemento(),
   credentials = testCredentialsWithStub(),
+  jsonValidator = new JsonValidator(),
 }: {
   extensionPath?: string;
   workspaceStoragePath?: string;
@@ -23,6 +25,7 @@ export function createMockApp({
   executeCommand?: () => Promise<void>;
   workspaceState?: Memento;
   credentials?: Credentials;
+  jsonValidator?: JsonValidator;
 }): App {
   return {
     mode: AppMode.Test,
@@ -35,6 +38,7 @@ export function createMockApp({
     createEventEmitter,
     executeCommand,
     credentials,
+    jsonValidator,
   };
 }
 

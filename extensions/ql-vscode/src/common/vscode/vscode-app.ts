@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { VSCodeCredentials } from "../../authentication";
+import { JsonValidator } from "../../data-serialization/json-validator";
 import { Disposable } from "../../pure/disposable-object";
 import { App, AppMode } from "../app";
 import { AppEventEmitter } from "../events";
@@ -9,6 +10,7 @@ import { VSCodeAppEventEmitter } from "./events";
 
 export class ExtensionApp implements App {
   public readonly credentials: VSCodeCredentials;
+  public readonly jsonValidator: JsonValidator = new JsonValidator();
 
   public constructor(
     public readonly extensionContext: vscode.ExtensionContext,

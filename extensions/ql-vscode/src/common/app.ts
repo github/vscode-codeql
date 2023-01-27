@@ -3,6 +3,7 @@ import { Disposable } from "../pure/disposable-object";
 import { AppEventEmitter } from "./events";
 import { Logger } from "./logging";
 import { Memento } from "./memento";
+import { JsonValidator } from "../data-serialization/json-validator";
 
 export interface App {
   createEventEmitter<T>(): AppEventEmitter<T>;
@@ -15,6 +16,7 @@ export interface App {
   readonly workspaceStoragePath?: string;
   readonly workspaceState: Memento;
   readonly credentials: Credentials;
+  readonly jsonValidator: JsonValidator;
 }
 
 export enum AppMode {
