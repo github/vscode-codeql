@@ -44,10 +44,7 @@ import {
   QueryStatus,
   variantAnalysisStatusToQueryStatus,
 } from "../query-status";
-import {
-  deserializeQueryHistory,
-  serializeQueryHistory,
-} from "../query-serialization";
+import { QueryHistorySerializer } from "../query-serialization";
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
@@ -122,6 +119,7 @@ export class QueryHistoryManager extends DisposableObject {
   compareWithItem: LocalQueryInfo | undefined;
   queryHistoryScrubber: Disposable | undefined;
   private queryMetadataStorageLocation;
+  private queryHistorySerializer: QueryHistorySerializer;
 
   private readonly _onDidChangeCurrentQueryItem = super.push(
     new EventEmitter<QueryHistoryInfo | undefined>(),
@@ -170,6 +168,10 @@ export class QueryHistoryManager extends DisposableObject {
         treeDataProvider: this.treeDataProvider,
         canSelectMany: true,
       }),
+    );
+
+    this.queryHistorySerializer = this.push(
+      new QueryHistorySerializer(this.queryMetadataStorageLocation, app),
     );
 
     // Forward any change of current history item from the tree data.
@@ -529,9 +531,7 @@ export class QueryHistoryManager extends DisposableObject {
     void extLogger.log(
       `Reading cached query history from '${this.queryMetadataStorageLocation}'.`,
     );
-    const history = await deserializeQueryHistory(
-      this.queryMetadataStorageLocation,
-    );
+    const history = await this.queryHistorySerializer.deserialize();
     this.treeDataProvider.allHistory = history;
     await Promise.all(
       this.treeDataProvider.allHistory.map(async (item) => {
@@ -552,9 +552,8 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async writeQueryHistory(): Promise<void> {
-    await serializeQueryHistory(
+    await this.queryHistorySerializer.serialize(
       this.treeDataProvider.allHistory,
-      this.queryMetadataStorageLocation,
     );
   }
 
