@@ -13,7 +13,7 @@ import { QueryHistoryInfo } from "./query-history/query-history-info";
 import { QueryStatus } from "./query-status";
 import { QueryEvaluationInfo } from "./run-queries-shared";
 import { QueryResultType } from "./pure/legacy-messages";
-import { redactableErrorMessage } from "./pure/errors";
+import { redactableError } from "./pure/errors";
 
 export async function deserializeQueryHistory(
   fsPath: string,
@@ -27,10 +27,7 @@ export async function deserializeQueryHistory(
     const obj = JSON.parse(data);
     if (![1, 2].includes(obj.version)) {
       void showAndLogExceptionWithTelemetry(
-        asError(
-          `Can't parse query history. Unsupported query history format: v${obj.version}.`,
-        ),
-        redactableErrorMessage`Can't parse query history. Unsupported query history format: v${obj.version}.`,
+        redactableError`Can't parse query history. Unsupported query history format: v${obj.version}.`,
       );
       return [];
     }
@@ -98,8 +95,7 @@ export async function deserializeQueryHistory(
     });
   } catch (e) {
     void showAndLogExceptionWithTelemetry(
-      asError(e),
-      redactableErrorMessage`Error loading query history.`,
+      redactableError(asError(e))`Error loading query history.`,
       {
         fullMessage: `Error loading query history.\n${getErrorStack(e)}`,
       },

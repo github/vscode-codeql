@@ -22,7 +22,7 @@ import * as qsClient from "./queryserver-client";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { compileDatabaseUpgradeSequence } from "./upgrades";
 import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
-import { redactableErrorMessage } from "../pure/errors";
+import { redactableError } from "../pure/errors";
 
 /**
  * A collection of evaluation-time information about a query,
@@ -369,8 +369,11 @@ export async function compileAndRunQueryAgainstDatabase(
       void extLogger.log("Did not find any available ML models.");
     }
   } catch (e) {
-    const notificationMessage = redactableErrorMessage`Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the query without any ML models: ${e}.`;
-    void showAndLogExceptionWithTelemetry(asError(e), notificationMessage);
+    void showAndLogExceptionWithTelemetry(
+      redactableError(
+        asError(e),
+      )`Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the query without any ML models: ${e}.`,
+    );
   }
 
   const hasMetadataFile = await dbItem.hasMetadataFile();
@@ -422,14 +425,11 @@ export async function compileAndRunQueryAgainstDatabase(
         queryInfo,
       );
       if (result.resultType !== messages.QueryResultType.SUCCESS) {
-        const message = result.message
-          ? redactableErrorMessage`${result.message}`
-          : redactableErrorMessage`Failed to run query`;
-        void extLogger.log(message.fullMessage);
-        void showAndLogExceptionWithTelemetry(
-          asError(message),
-          redactableErrorMessage`Failed to run query: ${message}`,
-        );
+        const error = result.message
+          ? redactableError`${result.message}`
+          : redactableError`Failed to run query`;
+        void extLogger.log(error.fullMessage);
+        void showAndLogExceptionWithTelemetry(error);
       }
       const message = formatLegacyMessage(result);
 

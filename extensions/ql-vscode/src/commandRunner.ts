@@ -13,7 +13,7 @@ import {
 import { extLogger } from "./common";
 import { asError, getErrorMessage, getErrorStack } from "./pure/helpers-pure";
 import { telemetryListener } from "./telemetry";
-import { redactableErrorMessage } from "./pure/errors";
+import { redactableError } from "./pure/errors";
 
 export class UserCancellationException extends Error {
   /**
@@ -129,10 +129,10 @@ export function commandRunner(
     try {
       return await task(...args);
     } catch (e) {
-      const errorMessage = redactableErrorMessage`${
+      error = asError(e);
+      const errorMessage = redactableError(error)`${
         getErrorMessage(e) || e
       } (${commandId})`;
-      error = asError(e);
       const errorStack = getErrorStack(e);
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
@@ -146,7 +146,7 @@ export function commandRunner(
         const fullMessage = errorStack
           ? `${errorMessage.fullMessage}\n${errorStack}`
           : errorMessage.fullMessage;
-        void showAndLogExceptionWithTelemetry(error, errorMessage, {
+        void showAndLogExceptionWithTelemetry(errorMessage, {
           fullMessage,
           extraTelemetryProperties: {
             command: commandId,
@@ -187,10 +187,10 @@ export function commandRunnerWithProgress<R>(
     try {
       return await withProgress(progressOptionsWithDefaults, task, ...args);
     } catch (e) {
-      const errorMessage = redactableErrorMessage`${
+      error = asError(e);
+      const errorMessage = redactableError`${
         getErrorMessage(e) || e
       } (${commandId})`;
-      error = asError(e);
       const errorStack = getErrorStack(e);
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
@@ -206,7 +206,7 @@ export function commandRunnerWithProgress<R>(
         const fullMessage = errorStack
           ? `${errorMessage.fullMessage}\n${errorStack}`
           : errorMessage.fullMessage;
-        void showAndLogExceptionWithTelemetry(error, errorMessage, {
+        void showAndLogExceptionWithTelemetry(errorMessage, {
           outputLogger,
           fullMessage,
           extraTelemetryProperties: {

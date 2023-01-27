@@ -68,7 +68,7 @@ import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../remote-queries/shared/variant-analysis";
 import { App } from "../common/app";
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
-import { redactableErrorMessage } from "../pure/errors";
+import { redactableError } from "../pure/errors";
 
 /**
  * query-history-manager.ts
@@ -813,10 +813,9 @@ export class QueryHistoryManager extends DisposableObject {
       }
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
-        asError(e),
-        redactableErrorMessage`Failed to compare queries: ${getErrorMessage(
-          e,
-        )}`,
+        redactableError(
+          asError(e),
+        )`Failed to compare queries: ${getErrorMessage(e)}`,
       );
     }
   }
@@ -1383,17 +1382,15 @@ the file in the file explorer and dragging it into the workspace.`,
             await commands.executeCommand("revealFileInOS", uri);
           } catch (e) {
             void showAndLogExceptionWithTelemetry(
-              asError(e),
-              redactableErrorMessage`Failed to reveal file in OS: ${getErrorMessage(
-                e,
-              )}`,
+              redactableError(
+                asError(e),
+              )`Failed to reveal file in OS: ${getErrorMessage(e)}`,
             );
           }
         }
       } else {
         void showAndLogExceptionWithTelemetry(
-          asError(e),
-          redactableErrorMessage`Could not open file ${fileLocation}`,
+          redactableError(asError(e))`Could not open file ${fileLocation}`,
           {
             fullMessage: `${getErrorMessage(e)}\n${getErrorStack(e)}`,
           },

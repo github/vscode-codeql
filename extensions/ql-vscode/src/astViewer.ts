@@ -27,7 +27,7 @@ import { commandRunner } from "./commandRunner";
 import { DisposableObject } from "./pure/disposable-object";
 import { showAndLogExceptionWithTelemetry } from "./helpers";
 import { asError, getErrorMessage } from "./pure/helpers-pure";
-import { redactableErrorMessage } from "./pure/errors";
+import { redactableError } from "./pure/errors";
 
 export interface AstItem {
   id: BqrsId;
@@ -150,10 +150,9 @@ export class AstViewer extends DisposableObject {
       },
       (error: unknown) =>
         showAndLogExceptionWithTelemetry(
-          asError(error),
-          redactableErrorMessage`Failed to reveal AST: ${getErrorMessage(
-            error,
-          )}`,
+          redactableError(
+            asError(error),
+          )`Failed to reveal AST: ${getErrorMessage(error)}`,
         ),
     );
   }
@@ -214,10 +213,9 @@ export class AstViewer extends DisposableObject {
           },
           (error: unknown) =>
             showAndLogExceptionWithTelemetry(
-              asError(error),
-              redactableErrorMessage`Failed to reveal AST: ${getErrorMessage(
-                error,
-              )}`,
+              redactableError(
+                asError(error),
+              )`Failed to reveal AST: ${getErrorMessage(error)}`,
             ),
         );
       }

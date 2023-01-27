@@ -42,7 +42,7 @@ import { QueryRunner } from "./queryRunner";
 import { isCanary } from "./config";
 import { App } from "./common/app";
 import { Credentials } from "./common/authentication";
-import { redactableErrorMessage } from "./pure/errors";
+import { redactableError } from "./pure/errors";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -347,10 +347,9 @@ export class DatabaseUI extends DisposableObject {
       await this.chooseAndSetDatabase(true, progress, token);
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
-        asError(e),
-        redactableErrorMessage`Failed to choose and set database: ${getErrorMessage(
-          e,
-        )}`,
+        redactableError(
+          asError(e),
+        )`Failed to choose and set database: ${getErrorMessage(e)}`,
       );
     }
   };
@@ -401,10 +400,9 @@ export class DatabaseUI extends DisposableObject {
           await remove(dbDir);
         } catch (e) {
           void showAndLogExceptionWithTelemetry(
-            asError(e),
-            redactableErrorMessage`Failed to delete orphaned database: ${getErrorMessage(
-              e,
-            )}`,
+            redactableError(
+              asError(e),
+            )`Failed to delete orphaned database: ${getErrorMessage(e)}`,
           );
           failures.push(`${basename(dbDir)}`);
         }
@@ -429,10 +427,9 @@ export class DatabaseUI extends DisposableObject {
       await this.chooseAndSetDatabase(false, progress, token);
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
-        asError(e),
-        redactableErrorMessage`Failed to choose and set database: ${getErrorMessage(
-          e,
-        )}`,
+        redactableError(
+          asError(e),
+        )`Failed to choose and set database: ${getErrorMessage(e)}`,
       );
     }
   };

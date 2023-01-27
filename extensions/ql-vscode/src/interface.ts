@@ -67,7 +67,7 @@ import { AbstractWebview, WebviewPanelConfig } from "./abstract-webview";
 import { PAGE_SIZE } from "./config";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { telemetryListener } from "./telemetry";
-import { redactableErrorMessage } from "./pure/errors";
+import { redactableError } from "./pure/errors";
 
 /**
  * interface.ts
@@ -294,10 +294,9 @@ export class ResultsView extends AbstractWebview<
       }
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
-        asError(e),
-        redactableErrorMessage`Error handling message from results view: ${getErrorMessage(
-          e,
-        )}`,
+        redactableError(
+          asError(e),
+        )`Error handling message from results view: ${getErrorMessage(e)}`,
         {
           fullMessage: getErrorStack(e),
         },
@@ -344,8 +343,7 @@ export class ResultsView extends AbstractWebview<
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
       void showAndLogExceptionWithTelemetry(
-        asError("Failed to sort results since evaluation info was unknown."),
-        redactableErrorMessage`Failed to sort results since evaluation info was unknown.`,
+        redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
     }
@@ -363,8 +361,7 @@ export class ResultsView extends AbstractWebview<
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
       void showAndLogExceptionWithTelemetry(
-        asError("Failed to sort results since evaluation info was unknown."),
-        redactableErrorMessage`Failed to sort results since evaluation info was unknown.`,
+        redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
     }
@@ -773,8 +770,9 @@ export class ResultsView extends AbstractWebview<
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
         void showAndLogExceptionWithTelemetry(
-          asError(e),
-          redactableErrorMessage`Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
+          redactableError(
+            asError(e),
+          )`Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
             e,
           )}`,
         );

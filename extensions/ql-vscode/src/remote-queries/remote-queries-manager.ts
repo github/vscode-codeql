@@ -43,7 +43,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { AnalysisResults } from "./shared/analysis-result";
 import { runRemoteQueriesApiRequest } from "./remote-queries-api";
 import { App } from "../common/app";
-import { redactableErrorMessage } from "../pure/errors";
+import { redactableError } from "../pure/errors";
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
@@ -153,18 +153,16 @@ export class RemoteQueriesManager extends DisposableObject {
         noop,
         (e: unknown) =>
           void showAndLogExceptionWithTelemetry(
-            asError(e),
-            redactableErrorMessage`Could not open query results. ${getErrorMessage(
-              e,
-            )}`,
+            redactableError(
+              asError(e),
+            )`Could not open query results. ${getErrorMessage(e)}`,
           ),
       );
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
-        asError(e),
-        redactableErrorMessage`Could not open query results. ${getErrorMessage(
-          e,
-        )}`,
+        redactableError(
+          asError(e),
+        )`Could not open query results. ${getErrorMessage(e)}`,
       );
     }
   }
@@ -283,8 +281,7 @@ export class RemoteQueriesManager extends DisposableObject {
     } else if (queryWorkflowResult.status === "InProgress") {
       // Should not get here. Only including this to ensure `assertNever` uses proper type checking.
       void showAndLogExceptionWithTelemetry(
-        asError(`Unexpected status: ${queryWorkflowResult.status}`),
-        redactableErrorMessage`Unexpected status: ${queryWorkflowResult.status}`,
+        redactableError`Unexpected status: ${queryWorkflowResult.status}`,
       );
     } else {
       // Ensure all cases are covered
@@ -491,20 +488,16 @@ export class RemoteQueriesManager extends DisposableObject {
         noop,
         (e: unknown) =>
           void showAndLogExceptionWithTelemetry(
-            asError(e),
-            redactableErrorMessage`Could not open query results. ${getErrorMessage(
-              e,
-            )}`,
+            redactableError(
+              asError(e),
+            )`Could not open query results. ${getErrorMessage(e)}`,
           ),
       );
     } else {
       const controllerRepo = `${remoteQuery.controllerRepository.owner}/${remoteQuery.controllerRepository.name}`;
       const workflowRunUrl = `https://github.com/${controllerRepo}/actions/runs/${remoteQuery.actionsWorkflowRunId}`;
       void showAndLogExceptionWithTelemetry(
-        asError(
-          `There was an issue retrieving the result for the query [${remoteQuery.queryName}](${workflowRunUrl}).`,
-        ),
-        redactableErrorMessage`There was an issue retrieving the result for the query [${remoteQuery.queryName}](${workflowRunUrl}).`,
+        redactableError`There was an issue retrieving the result for the query [${remoteQuery.queryName}](${workflowRunUrl}).`,
       );
       this.remoteQueryStatusUpdateEventEmitter.fire({
         queryId,

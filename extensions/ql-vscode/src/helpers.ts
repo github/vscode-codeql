@@ -22,7 +22,7 @@ import { UserCancellationException } from "./commandRunner";
 import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
-import { RedactableErrorMessage } from "./pure/errors";
+import { RedactableError } from "./pure/errors";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -63,27 +63,19 @@ interface ShowAndLogOptions {
 }
 
 /**
- * Show an error message and log it to the console
+ * Show an error message, log it to the console, and emit redacted information as telemetry
  *
- * @param error The error message to show, either as a Error or string. Will not be included in the
- *              telemetry event, and therefore may safely include sensitive information.
- * @param message A message to show to the user. Will also be included in the telemetry event,
- *              but only the redacated message will be sent.
+ * @param error The error to show. Only redacted information will be included in the telemetry.
  * @param options See individual fields on `ShowAndLogExceptionOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
 export async function showAndLogExceptionWithTelemetry(
-  error: Error,
-  message: RedactableErrorMessage,
+  error: RedactableError,
   options: ShowAndLogExceptionOptions = {},
 ): Promise<string | undefined> {
-  telemetryListener?.sendError(
-    message,
-    error.stack,
-    options.extraTelemetryProperties,
-  );
-  return showAndLogErrorMessage(message.fullMessage, options);
+  telemetryListener?.sendError(error, options.extraTelemetryProperties);
+  return showAndLogErrorMessage(error.fullMessage, options);
 }
 
 /**

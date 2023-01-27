@@ -29,7 +29,7 @@ import {
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisSubmission,
 } from "./shared/variant-analysis";
-import { asError, getErrorMessage } from "../pure/helpers-pure";
+import { getErrorMessage } from "../pure/helpers-pure";
 import { VariantAnalysisView } from "./variant-analysis-view";
 import { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
 import {
@@ -62,7 +62,7 @@ import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { isVariantAnalysisReposPanelEnabled } from "../config";
 import { App } from "../common/app";
-import { redactableErrorMessage } from "../pure/errors";
+import { redactableError } from "../pure/errors";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -263,8 +263,7 @@ export class VariantAnalysisManager
   public async showView(variantAnalysisId: number): Promise<void> {
     if (!this.variantAnalyses.get(variantAnalysisId)) {
       void showAndLogExceptionWithTelemetry(
-        asError(`No variant analysis found with id: ${variantAnalysisId}.`),
-        redactableErrorMessage`No variant analysis found with id: ${variantAnalysisId}.`,
+        redactableError`No variant analysis found with id: ${variantAnalysisId}.`,
       );
     }
     if (!this.views.has(variantAnalysisId)) {

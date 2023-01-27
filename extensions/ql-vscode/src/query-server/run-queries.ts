@@ -15,8 +15,7 @@ import { QueryResultType } from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
 import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
 import * as qsClient from "./queryserver-client";
-import { asError } from "../pure/helpers-pure";
-import { redactableErrorMessage } from "../pure/errors";
+import { redactableError } from "../pure/errors";
 
 /**
  * run-queries.ts
@@ -112,12 +111,11 @@ export async function compileAndRunQueryAgainstDatabase(
 
   if (result.resultType !== messages.QueryResultType.SUCCESS) {
     const message = result?.message
-      ? redactableErrorMessage`${result.message}`
-      : redactableErrorMessage`Failed to run query`;
+      ? redactableError`${result.message}`
+      : redactableError`Failed to run query`;
     void extLogger.log(message.fullMessage);
     void showAndLogExceptionWithTelemetry(
-      asError(message),
-      redactableErrorMessage`Failed to run query: ${message}`,
+      redactableError`Failed to run query: ${message}`,
     );
   }
   let message;

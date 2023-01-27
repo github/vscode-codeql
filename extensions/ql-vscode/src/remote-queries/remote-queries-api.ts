@@ -11,7 +11,7 @@ import {
 } from "../helpers";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { pluralize } from "../pure/word";
-import { redactableErrorMessage } from "../pure/errors";
+import { redactableError } from "../pure/errors";
 
 export async function runRemoteQueriesApiRequest(
   credentials: Credentials,
@@ -46,10 +46,9 @@ export async function runRemoteQueriesApiRequest(
       );
     } else {
       void showAndLogExceptionWithTelemetry(
-        asError(error),
-        redactableErrorMessage`Error submitting remote queries request: ${getErrorMessage(
-          error,
-        )}`,
+        redactableError(
+          asError(error),
+        )`Error submitting remote queries request: ${getErrorMessage(error)}`,
       );
     }
   }
