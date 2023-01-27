@@ -68,6 +68,7 @@ import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../remote-queries/shared/variant-analysis";
 import { App } from "../common/app";
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
+import { redactableErrorMessage } from "../pure/errors";
 
 /**
  * query-history-manager.ts
@@ -813,7 +814,9 @@ export class QueryHistoryManager extends DisposableObject {
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         asError(e),
-        "query_history_manager_compare_with",
+        redactableErrorMessage`Failed to compare queries: ${getErrorMessage(
+          e,
+        )}`,
       );
     }
   }
@@ -1381,16 +1384,17 @@ the file in the file explorer and dragging it into the workspace.`,
           } catch (e) {
             void showAndLogExceptionWithTelemetry(
               asError(e),
-              "query_history_manager_reveal_file_in_os",
+              redactableErrorMessage`Failed to reveal file in OS: ${getErrorMessage(
+                e,
+              )}`,
             );
           }
         }
       } else {
         void showAndLogExceptionWithTelemetry(
           asError(e),
-          "query_history_manager_show_text_document",
+          redactableErrorMessage`Could not open file ${fileLocation}`,
           {
-            notificationMessage: `Could not open file ${fileLocation}`,
             fullMessage: `${getErrorMessage(e)}\n${getErrorStack(e)}`,
           },
         );

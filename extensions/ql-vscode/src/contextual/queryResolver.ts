@@ -18,6 +18,7 @@ import { createInitialQueryInfo } from "../run-queries-shared";
 import { CancellationToken, Uri } from "vscode";
 import { ProgressCallback } from "../commandRunner";
 import { QueryRunner } from "../queryRunner";
+import { redactableErrorMessage } from "../pure/errors";
 
 export async function qlpackOfDatabase(
   cli: CodeQLCliServer,
@@ -91,13 +92,13 @@ export async function resolveQueries(
   const keyTypeName = nameOfKeyType(keyType);
   const keyTypeTag = tagOfKeyType(keyType);
   const joinedPacksToSearch = packsToSearch.join(", ");
-  const errorMessage = `No ${keyTypeName} queries (tagged "${keyTypeTag}") could be found in the \
+  const errorMessage = redactableErrorMessage`No ${keyTypeName} queries (tagged "${keyTypeTag}") could be found in the \
     current library path (tried searching the following packs: ${joinedPacksToSearch}). \
     Try upgrading the CodeQL libraries. If that doesn't work, then ${keyTypeName} queries are not yet available \
     for this language.`;
 
-  const e = new Error(errorMessage);
-  void showAndLogExceptionWithTelemetry(e, "resolve_queries");
+  const e = new Error(errorMessage.fullMessage);
+  void showAndLogExceptionWithTelemetry(e, errorMessage);
   throw e;
 }
 

@@ -8,6 +8,7 @@ import { QuickPickItem, window } from "vscode";
 import { ProgressCallback, UserCancellationException } from "./commandRunner";
 import { extLogger } from "./common";
 import { asError, getErrorStack } from "./pure/helpers-pure";
+import { redactableErrorMessage } from "./pure/errors";
 
 const QUERY_PACKS = [
   "codeql/cpp-queries",
@@ -69,10 +70,8 @@ export async function handleDownloadPacks(
     } catch (error) {
       void showAndLogExceptionWithTelemetry(
         asError(error),
-        "packaging_download_packs",
+        redactableErrorMessage`Unable to download all packs. See log for more details.`,
         {
-          notificationMessage:
-            "Unable to download all packs. See log for more details.",
           fullMessage: getErrorStack(error),
         },
       );

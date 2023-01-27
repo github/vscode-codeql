@@ -37,12 +37,13 @@ import {
 } from "./remote-query-result";
 import { DownloadLink } from "./download-link";
 import { AnalysesResultsManager } from "./analyses-results-manager";
-import { asError, assertNever } from "../pure/helpers-pure";
+import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { QueryStatus } from "../query-status";
 import { DisposableObject } from "../pure/disposable-object";
 import { AnalysisResults } from "./shared/analysis-result";
 import { runRemoteQueriesApiRequest } from "./remote-queries-api";
 import { App } from "../common/app";
+import { redactableErrorMessage } from "../pure/errors";
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
@@ -153,19 +154,17 @@ export class RemoteQueriesManager extends DisposableObject {
         (e: unknown) =>
           void showAndLogExceptionWithTelemetry(
             asError(e),
-            "remote_queries_manager_open_results",
-            {
-              notificationMessage: `Could not open query results. ${e}`,
-            },
+            redactableErrorMessage`Could not open query results. ${getErrorMessage(
+              e,
+            )}`,
           ),
       );
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         asError(e),
-        "remote_queries_manager_open_results",
-        {
-          notificationMessage: `Could not open query results. ${e}`,
-        },
+        redactableErrorMessage`Could not open query results. ${getErrorMessage(
+          e,
+        )}`,
       );
     }
   }
@@ -285,7 +284,7 @@ export class RemoteQueriesManager extends DisposableObject {
       // Should not get here. Only including this to ensure `assertNever` uses proper type checking.
       void showAndLogExceptionWithTelemetry(
         asError(`Unexpected status: ${queryWorkflowResult.status}`),
-        "remote_queries_manager_monitor_unexpectd_status",
+        redactableErrorMessage`Unexpected status: ${queryWorkflowResult.status}`,
       );
     } else {
       // Ensure all cases are covered
@@ -493,10 +492,9 @@ export class RemoteQueriesManager extends DisposableObject {
         (e: unknown) =>
           void showAndLogExceptionWithTelemetry(
             asError(e),
-            "remote_queries_manager_open_results",
-            {
-              notificationMessage: `Could not open query results. ${e}`,
-            },
+            redactableErrorMessage`Could not open query results. ${getErrorMessage(
+              e,
+            )}`,
           ),
       );
     } else {
@@ -506,7 +504,7 @@ export class RemoteQueriesManager extends DisposableObject {
         asError(
           `There was an issue retrieving the result for the query [${remoteQuery.queryName}](${workflowRunUrl}).`,
         ),
-        "remote_queries_manager_download_missing_index",
+        redactableErrorMessage`There was an issue retrieving the result for the query [${remoteQuery.queryName}](${workflowRunUrl}).`,
       );
       this.remoteQueryStatusUpdateEventEmitter.fire({
         queryId,

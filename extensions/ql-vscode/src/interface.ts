@@ -67,6 +67,7 @@ import { AbstractWebview, WebviewPanelConfig } from "./abstract-webview";
 import { PAGE_SIZE } from "./config";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { telemetryListener } from "./telemetry";
+import { redactableErrorMessage } from "./pure/errors";
 
 /**
  * interface.ts
@@ -294,7 +295,9 @@ export class ResultsView extends AbstractWebview<
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         asError(e),
-        "results_view_on_message",
+        redactableErrorMessage`Error handling message from results view: ${getErrorMessage(
+          e,
+        )}`,
         {
           fullMessage: getErrorStack(e),
         },
@@ -342,7 +345,7 @@ export class ResultsView extends AbstractWebview<
     if (this._displayedQuery === undefined) {
       void showAndLogExceptionWithTelemetry(
         asError("Failed to sort results since evaluation info was unknown."),
-        "results_view_displayed_query_undefined",
+        redactableErrorMessage`Failed to sort results since evaluation info was unknown.`,
       );
       return;
     }
@@ -361,7 +364,7 @@ export class ResultsView extends AbstractWebview<
     if (this._displayedQuery === undefined) {
       void showAndLogExceptionWithTelemetry(
         asError("Failed to sort results since evaluation info was unknown."),
-        "results_view_displayed_query_undefined",
+        redactableErrorMessage`Failed to sort results since evaluation info was unknown.`,
       );
       return;
     }
@@ -771,12 +774,9 @@ export class ResultsView extends AbstractWebview<
         // trying to render uninterpreted results anyway.
         void showAndLogExceptionWithTelemetry(
           asError(e),
-          "results_view_interpret_results_info",
-          {
-            notificationMessage: `Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
-              e,
-            )}`,
-          },
+          redactableErrorMessage`Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
+            e,
+          )}`,
         );
       }
     }

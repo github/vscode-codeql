@@ -42,6 +42,7 @@ import { QueryRunner } from "./queryRunner";
 import { isCanary } from "./config";
 import { App } from "./common/app";
 import { Credentials } from "./common/authentication";
+import { redactableErrorMessage } from "./pure/errors";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -347,7 +348,9 @@ export class DatabaseUI extends DisposableObject {
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         asError(e),
-        "databases_ui_choose_and_set_database",
+        redactableErrorMessage`Failed to choose and set database: ${getErrorMessage(
+          e,
+        )}`,
       );
     }
   };
@@ -399,7 +402,9 @@ export class DatabaseUI extends DisposableObject {
         } catch (e) {
           void showAndLogExceptionWithTelemetry(
             asError(e),
-            "databases_ui_remove_orphaned_database",
+            redactableErrorMessage`Failed to delete orphaned database: ${getErrorMessage(
+              e,
+            )}`,
           );
           failures.push(`${basename(dbDir)}`);
         }
@@ -425,7 +430,9 @@ export class DatabaseUI extends DisposableObject {
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
         asError(e),
-        "databases_ui_choose_and_set_database",
+        redactableErrorMessage`Failed to choose and set database: ${getErrorMessage(
+          e,
+        )}`,
       );
     }
   };

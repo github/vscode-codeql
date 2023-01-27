@@ -62,6 +62,7 @@ import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { isVariantAnalysisReposPanelEnabled } from "../config";
 import { App } from "../common/app";
+import { redactableErrorMessage } from "../pure/errors";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -263,7 +264,7 @@ export class VariantAnalysisManager
     if (!this.variantAnalyses.get(variantAnalysisId)) {
       void showAndLogExceptionWithTelemetry(
         asError(`No variant analysis found with id: ${variantAnalysisId}.`),
-        "variant_analysis_manager_id_not_found",
+        redactableErrorMessage`No variant analysis found with id: ${variantAnalysisId}.`,
       );
     }
     if (!this.views.has(variantAnalysisId)) {

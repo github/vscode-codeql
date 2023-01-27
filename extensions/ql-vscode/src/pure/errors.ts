@@ -16,12 +16,24 @@ export class RedactableErrorMessage {
 
   public get redactedMessage(): string {
     return this.strings
-      .map((s, i) => s + (this.hasValue(i) ? "[REDACTED]" : ""))
+      .map((s, i) => s + (this.hasValue(i) ? this.getRedactedValue(i) : ""))
       .join("");
   }
 
   private getValue(index: number): unknown {
-    return this.values[index];
+    const value = this.values[index];
+    if (value instanceof RedactableErrorMessage) {
+      return value.fullMessage;
+    }
+    return value;
+  }
+
+  private getRedactedValue(index: number): unknown {
+    const value = this.values[index];
+    if (value instanceof RedactableErrorMessage) {
+      return value.redactedMessage;
+    }
+    return "[REDACTED]";
   }
 
   private hasValue(index: number): boolean {
@@ -29,7 +41,7 @@ export class RedactableErrorMessage {
   }
 }
 
-export function errorMessage(
+export function redactableErrorMessage(
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): RedactableErrorMessage {

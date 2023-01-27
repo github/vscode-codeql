@@ -11,7 +11,8 @@ import {
 import { commandRunner } from "./commandRunner";
 import { DisposableObject } from "./pure/disposable-object";
 import { showAndLogExceptionWithTelemetry } from "./helpers";
-import { asError } from "./pure/helpers-pure";
+import { asError, getErrorMessage } from "./pure/helpers-pure";
+import { redactableErrorMessage } from "./pure/errors";
 
 export interface EvalLogTreeItem {
   label?: string;
@@ -108,7 +109,9 @@ export class EvalLogViewer extends DisposableObject {
       (err: unknown) =>
         showAndLogExceptionWithTelemetry(
           asError(err),
-          "eval_log_viewer_reveal",
+          redactableErrorMessage`Failed to reveal tree view: ${getErrorMessage(
+            err,
+          )}`,
         ),
     );
   }

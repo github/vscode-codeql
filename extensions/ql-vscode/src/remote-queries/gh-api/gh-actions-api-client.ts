@@ -18,6 +18,7 @@ import {
 import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { unzipFile } from "../../pure/zip";
 import { VariantAnalysis } from "../shared/variant-analysis";
+import { redactableErrorMessage } from "../../pure/errors";
 
 export const RESULT_INDEX_ARTIFACT_NAME = "result-index";
 
@@ -494,12 +495,9 @@ export async function getRepositoriesMetadata(
   } catch (e) {
     void showAndLogExceptionWithTelemetry(
       asError(e),
-      "gh_actions_api_client_get_repositories_metadata",
-      {
-        notificationMessage: `Error retrieving repository metadata for variant analysis: ${getErrorMessage(
-          e,
-        )}`,
-      },
+      redactableErrorMessage`Error retrieving repository metadata for variant analysis: ${getErrorMessage(
+        e,
+      )}`,
     );
   }
 

@@ -13,6 +13,7 @@ import {
 import { extLogger } from "./common";
 import { asError, getErrorMessage, getErrorStack } from "./pure/helpers-pure";
 import { telemetryListener } from "./telemetry";
+import { redactableErrorMessage } from "./pure/errors";
 
 export class UserCancellationException extends Error {
   /**
@@ -128,23 +129,24 @@ export function commandRunner(
     try {
       return await task(...args);
     } catch (e) {
-      const notificationMessage = `${getErrorMessage(e) || e} (${commandId})`;
+      const errorMessage = redactableErrorMessage`${
+        getErrorMessage(e) || e
+      } (${commandId})`;
       error = asError(e);
       const errorStack = getErrorStack(e);
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
-          void extLogger.log(notificationMessage);
+          void extLogger.log(errorMessage.fullMessage);
         } else {
-          void showAndLogWarningMessage(notificationMessage);
+          void showAndLogWarningMessage(errorMessage.fullMessage);
         }
       } else {
         // Include the full stack in the error log only.
         const fullMessage = errorStack
-          ? `${notificationMessage}\n${errorStack}`
-          : notificationMessage;
-        void showAndLogExceptionWithTelemetry(error, "command_failed", {
-          notificationMessage,
+          ? `${errorMessage.fullMessage}\n${errorStack}`
+          : errorMessage.fullMessage;
+        void showAndLogExceptionWithTelemetry(error, errorMessage, {
           fullMessage,
           extraTelemetryProperties: {
             command: commandId,
@@ -185,24 +187,27 @@ export function commandRunnerWithProgress<R>(
     try {
       return await withProgress(progressOptionsWithDefaults, task, ...args);
     } catch (e) {
-      const notificationMessage = `${getErrorMessage(e) || e} (${commandId})`;
+      const errorMessage = redactableErrorMessage`${
+        getErrorMessage(e) || e
+      } (${commandId})`;
       error = asError(e);
       const errorStack = getErrorStack(e);
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
-          void outputLogger.log(notificationMessage);
+          void outputLogger.log(errorMessage.fullMessage);
         } else {
-          void showAndLogWarningMessage(notificationMessage, { outputLogger });
+          void showAndLogWarningMessage(errorMessage.fullMessage, {
+            outputLogger,
+          });
         }
       } else {
         // Include the full stack in the error log only.
         const fullMessage = errorStack
-          ? `${notificationMessage}\n${errorStack}`
-          : notificationMessage;
-        void showAndLogExceptionWithTelemetry(error, "command_failed", {
+          ? `${errorMessage.fullMessage}\n${errorStack}`
+          : errorMessage.fullMessage;
+        void showAndLogExceptionWithTelemetry(error, errorMessage, {
           outputLogger,
-          notificationMessage,
           fullMessage,
           extraTelemetryProperties: {
             command: commandId,

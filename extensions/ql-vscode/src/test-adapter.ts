@@ -35,7 +35,8 @@ import {
 } from "./helpers";
 import { testLogger } from "./common";
 import { DatabaseItem, DatabaseManager } from "./databases";
-import { asError } from "./pure/helpers-pure";
+import { asError, getErrorMessage } from "./pure/helpers-pure";
+import { redactableErrorMessage } from "./pure/errors";
 
 /**
  * Get the full path of the `.expected` file for the specified QL test.
@@ -281,10 +282,9 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
         // So we need to display the error message ourselves and then rethrow.
         void showAndLogExceptionWithTelemetry(
           asError(e),
-          "test_adapter_remove_databases_before_tests",
-          {
-            notificationMessage: `Cannot remove database ${database.name}: ${e}`,
-          },
+          redactableErrorMessage`Cannot remove database ${
+            database.name
+          }: ${getErrorMessage(e)}`,
         );
         throw e;
       }

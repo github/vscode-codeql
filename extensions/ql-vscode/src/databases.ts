@@ -22,6 +22,7 @@ import { Logger, extLogger } from "./common";
 import { asError, getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./queryRunner";
 import { pathsEqual } from "./pure/files";
+import { redactableErrorMessage } from "./pure/errors";
 
 /**
  * databases.ts
@@ -796,12 +797,9 @@ export class DatabaseManager extends DisposableObject {
           // database list had an unexpected type - nothing to be done?
           void showAndLogExceptionWithTelemetry(
             asError(e),
-            "databases_load_persisted_state",
-            {
-              notificationMessage: `Database list loading failed: ${getErrorMessage(
-                e,
-              )}`,
-            },
+            redactableErrorMessage`Database list loading failed: ${getErrorMessage(
+              e,
+            )}`,
           );
         }
 

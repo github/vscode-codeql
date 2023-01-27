@@ -138,6 +138,7 @@ import { VariantAnalysisResultsManager } from "./remote-queries/variant-analysis
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
+import { redactableErrorMessage } from "./pure/errors";
 
 /**
  * extension.ts
@@ -717,7 +718,7 @@ async function activateWithInstalledDistribution(
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         asError(e),
-        "compare_view_show_results",
+        redactableErrorMessage`Failed to show results: ${getErrorMessage(e)}`,
       );
     }
   }
@@ -814,16 +815,11 @@ async function activateWithInstalledDistribution(
         const errorMessage = getErrorMessage(e).includes(
           "Generating qhelp in markdown",
         )
-          ? `Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
-          : `Could not open a preview of the generated file (${absolutePathToMd}).`;
-        void showAndLogExceptionWithTelemetry(
-          asError(e),
-          "preview_query_help",
-          {
-            notificationMessage: errorMessage,
-            fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
-          },
-        );
+          ? redactableErrorMessage`Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
+          : redactableErrorMessage`Could not open a preview of the generated file (${absolutePathToMd}).`;
+        void showAndLogExceptionWithTelemetry(asError(e), errorMessage, {
+          fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
+        });
       }
     }
   }

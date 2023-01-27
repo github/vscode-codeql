@@ -21,7 +21,8 @@ import { CodeQLCliServer, QlpacksInfo } from "./cli";
 import { UserCancellationException } from "./commandRunner";
 import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
-import { ErrorType, telemetryListener } from "./telemetry";
+import { telemetryListener } from "./telemetry";
+import { RedactableErrorMessage } from "./pure/errors";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -47,8 +48,6 @@ export const tmpDirDisposal = {
 interface ShowAndLogExceptionOptions extends ShowAndLogOptions {
   /** Custom properties to include in the telemetry report. */
   extraTelemetryProperties?: { [key: string]: string };
-  /** An alternate message to use for the notification instead of the message from the `Error`. */
-  notificationMessage?: string;
 }
 
 interface ShowAndLogOptions {
@@ -68,26 +67,23 @@ interface ShowAndLogOptions {
  *
  * @param error The error message to show, either as a Error or string. Will not be included in the
  *              telemetry event, and therefore may safely include sensitive information.
- * @param telemetryErrorType A safe string that identifies the error, to be included in the
- *                           telemetry event. If not provided, then no telemetry event will be sent.
+ * @param message A message to show to the user. Will also be included in the telemetry event,
+ *              but only the redacated message will be sent.
  * @param options See individual fields on `ShowAndLogExceptionOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
 export async function showAndLogExceptionWithTelemetry(
   error: Error,
-  telemetryErrorType: ErrorType,
+  message: RedactableErrorMessage,
   options: ShowAndLogExceptionOptions = {},
 ): Promise<string | undefined> {
   telemetryListener?.sendError(
-    telemetryErrorType,
+    message,
     error.stack,
     options.extraTelemetryProperties,
   );
-  return showAndLogErrorMessage(
-    options.notificationMessage ?? error.message,
-    options,
-  );
+  return showAndLogErrorMessage(message.fullMessage, options);
 }
 
 /**

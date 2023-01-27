@@ -11,7 +11,8 @@ import * as qsClient from "./queryserver-client";
 import * as tmp from "tmp-promise";
 import { dirname } from "path";
 import { DatabaseItem } from "../databases";
-import { asError } from "../pure/helpers-pure";
+import { asError, getErrorMessage } from "../pure/helpers-pure";
+import { redactableErrorMessage } from "../pure/errors";
 
 /**
  * Maximum number of lines to include from database upgrade message,
@@ -212,10 +213,9 @@ export async function upgradeDatabaseExplicit(
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         asError(e),
-        "database_upgrade_compilation",
-        {
-          notificationMessage: `Compilation of database upgrades failed: ${e}`,
-        },
+        redactableErrorMessage`Compilation of database upgrades failed: ${getErrorMessage(
+          e,
+        )}`,
       );
       return;
     } finally {
@@ -224,10 +224,13 @@ export async function upgradeDatabaseExplicit(
 
     if (!compileUpgradeResult.compiledUpgrades) {
       const error =
-        compileUpgradeResult.error || "[no error message available]";
+        redactableErrorMessage`${compileUpgradeResult.error}` ||
+        redactableErrorMessage`[no error message available]`;
       void showAndLogExceptionWithTelemetry(
-        asError(`Compilation of database upgrades failed: ${error}`),
-        "database_upgrade_compilation",
+        asError(
+          `Compilation of database upgrades failed: ${error.fullMessage}`,
+        ),
+        redactableErrorMessage`Compilation of database upgrades failed: ${error}`,
       );
       return;
     }
@@ -259,9 +262,10 @@ export async function upgradeDatabaseExplicit(
       await qs.restartQueryServer(progress, token);
       return result;
     } catch (e) {
-      void showAndLogExceptionWithTelemetry(asError(e), "database_upgrade", {
-        notificationMessage: `Database upgrade failed: ${e}`,
-      });
+      void showAndLogExceptionWithTelemetry(
+        asError(e),
+        redactableErrorMessage`Database upgrade failed: ${getErrorMessage(e)}`,
+      );
       return;
     } finally {
       void qs.logger.log("Done running database upgrade.");
