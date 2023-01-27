@@ -43,9 +43,7 @@ export class SchemaGenerator {
   public async writeSchema(typeName: string, schemaContents: string) {
     const output_path = `${this.outputFilePath}/${typeName}.json`;
 
-    fs.writeFile(output_path, schemaContents, (err) => {
-      if (err) throw err;
-    });
+    fs.writeFileSync(output_path, schemaContents);
   }
 }
 
