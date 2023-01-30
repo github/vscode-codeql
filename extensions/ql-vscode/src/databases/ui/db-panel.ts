@@ -172,7 +172,7 @@ export class DbPanel extends DisposableObject {
     const repoName = await window.showInputBox({
       title: "Add a repository",
       prompt: "Insert a GitHub repository URL or name with owner",
-      placeHolder: "github.com/<owner>/<repo> or <owner>/<repo>",
+      placeHolder: "<owner>/<repo> or https://github.com/<owner>/<repo>",
     });
     if (!repoName) {
       return;
@@ -196,7 +196,7 @@ export class DbPanel extends DisposableObject {
     const ownerName = await window.showInputBox({
       title: "Add all repositories of a GitHub org or owner",
       prompt: "Insert a GitHub organization or owner name",
-      placeHolder: "github.com/<owner> or <owner>",
+      placeHolder: "<owner> or https://github.com/<owner>",
     });
 
     if (!ownerName) {
