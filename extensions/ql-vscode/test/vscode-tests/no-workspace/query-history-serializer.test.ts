@@ -1,4 +1,4 @@
-import { QueryHistorySerializer } from "../../../src/query-serialization";
+import { QueryHistorySerializer } from "../../../src/query-history-serializater";
 import { join } from "path";
 import { writeFileSync, mkdirpSync } from "fs-extra";
 import { LocalQueryInfo, InitialQueryInfo } from "../../../src/query-results";

@@ -44,7 +44,7 @@ import {
   QueryStatus,
   variantAnalysisStatusToQueryStatus,
 } from "../query-status";
-import { QueryHistorySerializer } from "../query-serialization";
+import { QueryHistorySerializer } from "../query-history-serializater";
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
