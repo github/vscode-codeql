@@ -836,6 +836,11 @@
           "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
+          "command": "codeQLQueryHistory.removeHistoryItem",
+          "group": "inline",
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
+        },
+        {
           "command": "codeQLQueryHistory.renameItem",
           "group": "6_queryHistory@0",
           "when": "view == codeQLQueryHistory"
