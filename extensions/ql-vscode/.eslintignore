@@ -1,6 +1,7 @@
 .vscode-test/
 node_modules/
 out/
+build/
 
 # Include the Storybook config
 !.storybook

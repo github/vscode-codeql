@@ -1330,7 +1330,7 @@
     "cli-integration": "jest --projects test/vscode-tests/cli-integration",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
-    "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
+    "lint": "eslint . --ext .js,.ts,.tsx --max-warnings=0",
     "format-staged": "lint-staged",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
