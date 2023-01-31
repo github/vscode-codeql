@@ -1,5 +1,8 @@
 import { join } from "path";
-import { DbConfig } from "../../../../src/databases/config/db-config";
+import {
+  DbConfig,
+  SUPPORTED_DB_CONFIG_VERSION,
+} from "../../../../src/databases/config/db-config";
 import { DbConfigValidator } from "../../../../src/databases/config/db-config-validator";
 import { DbConfigValidationErrorKind } from "../../../../src/databases/db-validation-errors";
 import {
@@ -15,6 +18,7 @@ describe("db config validation", () => {
     // We're intentionally bypassing the type check because we'd
     // like to make sure validation errors are highlighted.
     const dbConfig = {
+      version: SUPPORTED_DB_CONFIG_VERSION,
       databases: {
         variantAnalysis: {
           repositoryLists: [
