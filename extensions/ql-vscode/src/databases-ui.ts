@@ -366,10 +366,10 @@ export class DatabaseUI extends DisposableObject {
       if (workspace.workspaceFolders === undefined) {
         throw new Error("No workspace folder is open.");
       } else {
-        const codespaceRootFolderUri = workspace.workspaceFolders[0].uri;
-
+        // This specifically refers to the database folder in
+        // https://github.com/github/codespaces-codeql
         const uri = Uri.parse(
-          `${codespaceRootFolderUri}/codeql-tutorial-database`,
+          `${workspace.workspaceFolders[0].uri}/codeql-tutorial-database`,
         );
 
         let databaseItem = this.databaseManager.findDatabaseItem(uri);
