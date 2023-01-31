@@ -1,15 +1,20 @@
-module.exports = {
+const { resolve } = require("path");
+
+const baseConfig = {
   parser: "@typescript-eslint/parser",
   parserOptions: {
     ecmaVersion: 2018,
     sourceType: "module",
-    project: ["tsconfig.json", "./src/**/tsconfig.json", "./test/**/tsconfig.json", "./gulpfile.ts/tsconfig.json", "./scripts/tsconfig.json", "./.storybook/tsconfig.json"],
+    project: [
+      resolve(__dirname, "tsconfig.lint.json"),
+      resolve(__dirname, "src/**/tsconfig.json"),
+      resolve(__dirname, "test/**/tsconfig.json"),
+      resolve(__dirname, "gulpfile.ts/tsconfig.json"),
+      resolve(__dirname, "scripts/tsconfig.json"),
+      resolve(__dirname, ".storybook/tsconfig.json"),
+    ],
   },
-  plugins: [
-    "github",
-    "@typescript-eslint",
-    "etc"
-  ],
+  plugins: ["github", "@typescript-eslint", "etc"],
   env: {
     node: true,
     es6: true,
@@ -21,7 +26,7 @@ module.exports = {
     "plugin:github/typescript",
     "plugin:jest-dom/recommended",
     "plugin:prettier/recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
   ],
   rules: {
     "@typescript-eslint/no-use-before-define": 0,
@@ -37,14 +42,14 @@ module.exports = {
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-floating-promises": [ "error", { ignoreVoid: true } ],
+    "@typescript-eslint/no-floating-promises": ["error", { ignoreVoid: true }],
     "@typescript-eslint/no-invalid-this": "off",
     "@typescript-eslint/no-shadow": "off",
     "prefer-const": ["warn", { destructuring: "all" }],
     "@typescript-eslint/no-throw-literal": "error",
     "no-useless-escape": 0,
-    "camelcase": "off",
-    "eqeqeq": "off",
+    camelcase: "off",
+    eqeqeq: "off",
     "escompat/no-regexp-lookbehind": "off",
     "etc/no-implicit-any-catch": "error",
     "filenames/match-regex": "off",
@@ -71,4 +76,103 @@ module.exports = {
     "github/array-foreach": "off",
     "github/no-then": "off",
   },
+};
+
+module.exports = {
+  root: true,
+  ...baseConfig,
+  overrides: [
+    {
+      files: ["src/stories/**/*"],
+      parserOptions: {
+        project: resolve(__dirname, "src/stories/tsconfig.json"),
+      },
+      extends: [
+        ...baseConfig.extends,
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended",
+        "plugin:storybook/recommended",
+      ],
+      rules: {
+        ...baseConfig.rules,
+      },
+      settings: {
+        react: {
+          version: "detect",
+        },
+      },
+    },
+    {
+      files: ["src/view/**/*"],
+      parserOptions: {
+        project: resolve(__dirname, "src/view/tsconfig.json"),
+      },
+      extends: [
+        ...baseConfig.extends,
+        "plugin:react/recommended",
+        "plugin:react-hooks/recommended",
+      ],
+      rules: {
+        ...baseConfig.rules,
+      },
+      settings: {
+        react: {
+          version: "detect",
+        },
+      },
+    },
+    {
+      files: ["test/**/*"],
+      parserOptions: {
+        project: resolve(__dirname, "test/tsconfig.json"),
+      },
+      env: {
+        jest: true,
+      },
+    },
+    {
+      files: ["test/vscode-tests/**/*"],
+      parserOptions: {
+        project: resolve(__dirname, "test/tsconfig.json"),
+      },
+      env: {
+        jest: true,
+      },
+      rules: {
+        ...baseConfig.rules,
+        "@typescript-eslint/ban-types": [
+          "error",
+          {
+            // For a full list of the default banned types, see:
+            // https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/docs/rules/ban-types.md
+            extendDefaults: true,
+            types: {
+              // Don't complain about the `Function` type in test files. (Default is `true`.)
+              Function: false,
+            },
+          },
+        ],
+      },
+    },
+    {
+      files: [
+        ".eslintrc.js",
+        "test/**/jest-runner-vscode.config.js",
+        "test/**/jest-runner-vscode.config.base.js",
+      ],
+      parser: undefined,
+      plugins: ["github"],
+      extends: [
+        "eslint:recommended",
+        "plugin:github/recommended",
+        "plugin:prettier/recommended",
+      ],
+      rules: {
+        "import/no-commonjs": "off",
+        "prefer-template": "off",
+        "filenames/match-regex": "off",
+        "@typescript-eslint/no-var-requires": "off",
+      },
+    },
+  ],
 };

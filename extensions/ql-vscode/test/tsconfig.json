@@ -1,6 +1,6 @@
 {
   "extends": "../tsconfig.json",
-  "include": ["**/*.ts", "../src/**/*.ts"],
+  "include": ["**/*.ts", "../src/**/*.ts", "**/.eslintrc.js", "**/*.config.js"],
   "exclude": [],
   "compilerOptions": {
     "noEmit": true,
