@@ -363,7 +363,7 @@ export class DatabaseUI extends DisposableObject {
     token: CancellationToken,
   ): Promise<void> => {
     try {
-      if (workspace.workspaceFolders === undefined) {
+      if (!workspace.workspaceFolders?.length) {
         throw new Error("No workspace folder is open.");
       } else {
         // This specifically refers to the database folder in
