@@ -190,7 +190,7 @@ export class VariantAnalysisView
 
   private getTitle(variantAnalysis: VariantAnalysis | undefined): string {
     return variantAnalysis
-      ? `${variantAnalysis.query.name} - CodeQL Query Results`
-      : `Variant analysis ${this.variantAnalysisId} - CodeQL Query Results`;
+      ? `${variantAnalysis.query.name} - Variant Analysis Results`
+      : `Variant Analysis ${this.variantAnalysisId} - Results`;
   }
 }
