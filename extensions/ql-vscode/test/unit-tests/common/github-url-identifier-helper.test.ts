@@ -24,7 +24,6 @@ describe("github url identifier helper", () => {
   describe("getNwoFromGitHubUrl method", () => {
     it("should handle invalid urls", () => {
       expect(getNwoFromGitHubUrl("")).toBe(undefined);
-      expect(getNwoFromGitHubUrl("http://github.com/foo/bar")).toBe(undefined);
       expect(getNwoFromGitHubUrl("https://ww.github.com/foo/bar")).toBe(
         undefined,
       );
@@ -35,6 +34,7 @@ describe("github url identifier helper", () => {
 
     it("should handle valid urls", () => {
       expect(getNwoFromGitHubUrl("https://github.com/foo/bar")).toBe("foo/bar");
+      expect(getNwoFromGitHubUrl("http://github.com/foo/bar")).toBe("foo/bar");
       expect(getNwoFromGitHubUrl("https://www.github.com/foo/bar")).toBe(
         "foo/bar",
       );
@@ -47,9 +47,6 @@ describe("github url identifier helper", () => {
   describe("getOwnerFromGitHubUrl method", () => {
     it("should handle invalid urls", () => {
       expect(getOwnerFromGitHubUrl("")).toBe(undefined);
-      expect(getOwnerFromGitHubUrl("http://github.com/foo/bar")).toBe(
-        undefined,
-      );
       expect(getOwnerFromGitHubUrl("https://ww.github.com/foo/bar")).toBe(
         undefined,
       );
@@ -58,6 +55,7 @@ describe("github url identifier helper", () => {
     });
 
     it("should handle valid urls", () => {
+      expect(getOwnerFromGitHubUrl("http://github.com/foo/bar")).toBe("foo");
       expect(getOwnerFromGitHubUrl("https://github.com/foo/bar")).toBe("foo");
       expect(getOwnerFromGitHubUrl("https://www.github.com/foo/bar")).toBe(
         "foo",

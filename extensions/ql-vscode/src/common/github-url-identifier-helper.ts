@@ -51,9 +51,6 @@ function getNwoOrOwnerFromGitHubUrl(
 ): string | undefined {
   try {
     const uri = new URL(githubUrl);
-    if (uri.protocol !== "https:") {
-      return;
-    }
     if (uri.hostname !== "github.com" && uri.hostname !== "www.github.com") {
       return;
     }
