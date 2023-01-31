@@ -43,252 +43,287 @@ describe("db panel rendering nodes", () => {
 
   beforeEach(async () => {
     await ensureDir(workspaceStoragePath);
-
-    mockConfiguration({
-      values: {
-        "codeQL.variantAnalysis": {
-          controllerRepo: "github/codeql",
-        },
-      },
-    });
   });
 
   afterEach(async () => {
     await remove(workspaceStoragePath);
   });
 
-  it("should render default remote nodes when the config is empty", async () => {
-    const dbConfig: DbConfig = createDbConfig();
-
-    await saveDbConfig(dbConfig);
-
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
-
-    expect(dbTreeItems).toBeTruthy();
-    const items = dbTreeItems!;
-    expect(items.length).toBe(3);
-
-    checkRemoteSystemDefinedListItem(items[0], 10);
-    checkRemoteSystemDefinedListItem(items[1], 100);
-    checkRemoteSystemDefinedListItem(items[2], 1000);
-  });
-
-  it("should render remote repository list nodes", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      remoteLists: [
-        {
-          name: "my-list-1",
-          repositories: ["owner1/repo1", "owner1/repo2"],
+  describe("when controller repo is not set", () => {
+    mockConfiguration({
+      values: {
+        "codeQL.variantAnalysis": {
+          controllerRepo: undefined,
         },
-        {
-          name: "my-list-2",
-          repositories: ["owner1/repo1", "owner2/repo1", "owner2/repo2"],
-        },
-      ],
+      },
     });
 
-    await saveDbConfig(dbConfig);
+    it("should not have any items", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1", "owner1/repo2"],
+          },
+          {
+            name: "my-list-2",
+            repositories: ["owner2/repo1", "owner2/repo2"],
+          },
+        ],
+      });
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
-    expect(dbTreeItems).toBeTruthy();
+      await saveDbConfig(dbConfig);
 
-    const systemDefinedListItems = dbTreeItems!.filter(
-      (item) => item.dbItem?.kind === DbItemKind.RemoteSystemDefinedList,
-    );
-    expect(systemDefinedListItems.length).toBe(3);
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    const userDefinedListItems = dbTreeItems!.filter(
-      (item) => item.dbItem?.kind === DbItemKind.RemoteUserDefinedList,
-    );
-    expect(userDefinedListItems.length).toBe(2);
-    checkUserDefinedListItem(userDefinedListItems[0], "my-list-1", [
-      "owner1/repo1",
-      "owner1/repo2",
-    ]);
-    checkUserDefinedListItem(userDefinedListItems[1], "my-list-2", [
-      "owner1/repo1",
-      "owner2/repo1",
-      "owner2/repo2",
-    ]);
+      expect(dbTreeItems).toHaveLength(0);
+    });
   });
 
-  it("should render owner list nodes", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      remoteOwners: ["owner1", "owner2"],
+  describe("when controller repo is set", () => {
+    beforeEach(() => {
+      mockConfiguration({
+        values: {
+          "codeQL.variantAnalysis": {
+            controllerRepo: "github/codeql",
+          },
+        },
+      });
     });
 
-    await saveDbConfig(dbConfig);
+    it("should render default remote nodes when the config is empty", async () => {
+      const dbConfig: DbConfig = createDbConfig();
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
-    expect(dbTreeItems).toBeTruthy();
-    expect(dbTreeItems?.length).toBe(5);
+      await saveDbConfig(dbConfig);
 
-    const ownerListItems = dbTreeItems!.filter(
-      (item) => item.dbItem?.kind === DbItemKind.RemoteOwner,
-    );
-    expect(ownerListItems.length).toBe(2);
-    checkOwnerItem(ownerListItems[0], "owner1");
-    checkOwnerItem(ownerListItems[1], "owner2");
-  });
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-  it("should render repository nodes", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      remoteRepos: ["owner1/repo1", "owner1/repo2"],
+      expect(dbTreeItems).toBeTruthy();
+      const items = dbTreeItems!;
+      expect(items.length).toBe(3);
+
+      checkRemoteSystemDefinedListItem(items[0], 10);
+      checkRemoteSystemDefinedListItem(items[1], 100);
+      checkRemoteSystemDefinedListItem(items[2], 1000);
     });
 
-    await saveDbConfig(dbConfig);
+    it("should render remote repository list nodes", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "my-list-1",
+            repositories: ["owner1/repo1", "owner1/repo2"],
+          },
+          {
+            name: "my-list-2",
+            repositories: ["owner1/repo1", "owner2/repo1", "owner2/repo2"],
+          },
+        ],
+      });
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
-    expect(dbTreeItems).toBeTruthy();
-    expect(dbTreeItems!.length).toBe(5);
+      await saveDbConfig(dbConfig);
 
-    const repoItems = dbTreeItems!.filter(
-      (item) => item.dbItem?.kind === DbItemKind.RemoteRepo,
-    );
-    expect(repoItems.length).toBe(2);
-    checkRemoteRepoItem(repoItems[0], "owner1/repo1");
-    checkRemoteRepoItem(repoItems[1], "owner1/repo2");
-  });
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
+      expect(dbTreeItems).toBeTruthy();
 
-  it.skip("should render local list nodes", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      localLists: [
+      const systemDefinedListItems = dbTreeItems!.filter(
+        (item) => item.dbItem?.kind === DbItemKind.RemoteSystemDefinedList,
+      );
+      expect(systemDefinedListItems.length).toBe(3);
+
+      const userDefinedListItems = dbTreeItems!.filter(
+        (item) => item.dbItem?.kind === DbItemKind.RemoteUserDefinedList,
+      );
+      expect(userDefinedListItems.length).toBe(2);
+      checkUserDefinedListItem(userDefinedListItems[0], "my-list-1", [
+        "owner1/repo1",
+        "owner1/repo2",
+      ]);
+      checkUserDefinedListItem(userDefinedListItems[1], "my-list-2", [
+        "owner1/repo1",
+        "owner2/repo1",
+        "owner2/repo2",
+      ]);
+    });
+
+    it("should render owner list nodes", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteOwners: ["owner1", "owner2"],
+      });
+
+      await saveDbConfig(dbConfig);
+
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
+      expect(dbTreeItems).toBeTruthy();
+      expect(dbTreeItems?.length).toBe(5);
+
+      const ownerListItems = dbTreeItems!.filter(
+        (item) => item.dbItem?.kind === DbItemKind.RemoteOwner,
+      );
+      expect(ownerListItems.length).toBe(2);
+      checkOwnerItem(ownerListItems[0], "owner1");
+      checkOwnerItem(ownerListItems[1], "owner2");
+    });
+
+    it("should render repository nodes", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        remoteRepos: ["owner1/repo1", "owner1/repo2"],
+      });
+
+      await saveDbConfig(dbConfig);
+
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
+      expect(dbTreeItems).toBeTruthy();
+      expect(dbTreeItems!.length).toBe(5);
+
+      const repoItems = dbTreeItems!.filter(
+        (item) => item.dbItem?.kind === DbItemKind.RemoteRepo,
+      );
+      expect(repoItems.length).toBe(2);
+      checkRemoteRepoItem(repoItems[0], "owner1/repo1");
+      checkRemoteRepoItem(repoItems[1], "owner1/repo2");
+    });
+
+    it.skip("should render local list nodes", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        localLists: [
+          {
+            name: "my-list-1",
+            databases: [
+              {
+                name: "db1",
+                dateAdded: 1668428293677,
+                language: "cpp",
+                storagePath: "/path/to/db1/",
+              },
+              {
+                name: "db2",
+                dateAdded: 1668428472731,
+                language: "cpp",
+                storagePath: "/path/to/db2/",
+              },
+            ],
+          },
+          {
+            name: "my-list-2",
+            databases: [
+              {
+                name: "db3",
+                dateAdded: 1668428472731,
+                language: "ruby",
+                storagePath: "/path/to/db3/",
+              },
+            ],
+          },
+        ],
+      });
+
+      await saveDbConfig(dbConfig);
+
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
+      expect(dbTreeItems).toBeTruthy();
+
+      const localRootNode = dbTreeItems?.find(
+        (i) => i.dbItem?.kind === DbItemKind.RootLocal,
+      );
+      expect(localRootNode).toBeTruthy();
+
+      expect(localRootNode!.dbItem).toBeTruthy();
+      expect(localRootNode!.collapsibleState).toBe(
+        TreeItemCollapsibleState.Collapsed,
+      );
+      expect(localRootNode!.children).toBeTruthy();
+      expect(localRootNode!.children.length).toBe(2);
+
+      const localListItems = localRootNode!.children.filter(
+        (item) => item.dbItem?.kind === DbItemKind.LocalList,
+      );
+      expect(localListItems.length).toBe(2);
+      checkLocalListItem(localListItems[0], "my-list-1", [
         {
-          name: "my-list-1",
-          databases: [
-            {
-              name: "db1",
-              dateAdded: 1668428293677,
-              language: "cpp",
-              storagePath: "/path/to/db1/",
-            },
-            {
-              name: "db2",
-              dateAdded: 1668428472731,
-              language: "cpp",
-              storagePath: "/path/to/db2/",
-            },
-          ],
+          kind: DbItemKind.LocalDatabase,
+          databaseName: "db1",
+          dateAdded: 1668428293677,
+          language: "cpp",
+          storagePath: "/path/to/db1/",
+          selected: false,
         },
         {
-          name: "my-list-2",
-          databases: [
-            {
-              name: "db3",
-              dateAdded: 1668428472731,
-              language: "ruby",
-              storagePath: "/path/to/db3/",
-            },
-          ],
+          kind: DbItemKind.LocalDatabase,
+          databaseName: "db2",
+          dateAdded: 1668428472731,
+          language: "cpp",
+          storagePath: "/path/to/db2/",
+          selected: false,
         },
-      ],
+      ]);
+      checkLocalListItem(localListItems[1], "my-list-2", [
+        {
+          kind: DbItemKind.LocalDatabase,
+          databaseName: "db3",
+          dateAdded: 1668428472731,
+          language: "ruby",
+          storagePath: "/path/to/db3/",
+          selected: false,
+        },
+      ]);
     });
 
-    await saveDbConfig(dbConfig);
+    it.skip("should render local database nodes", async () => {
+      const dbConfig: DbConfig = createDbConfig({
+        localDbs: [
+          {
+            name: "db1",
+            dateAdded: 1668428293677,
+            language: "csharp",
+            storagePath: "/path/to/db1/",
+          },
+          {
+            name: "db2",
+            dateAdded: 1668428472731,
+            language: "go",
+            storagePath: "/path/to/db2/",
+          },
+        ],
+      });
 
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
-    expect(dbTreeItems).toBeTruthy();
+      await saveDbConfig(dbConfig);
 
-    const localRootNode = dbTreeItems?.find(
-      (i) => i.dbItem?.kind === DbItemKind.RootLocal,
-    );
-    expect(localRootNode).toBeTruthy();
+      const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-    expect(localRootNode!.dbItem).toBeTruthy();
-    expect(localRootNode!.collapsibleState).toBe(
-      TreeItemCollapsibleState.Collapsed,
-    );
-    expect(localRootNode!.children).toBeTruthy();
-    expect(localRootNode!.children.length).toBe(2);
+      expect(dbTreeItems).toBeTruthy();
+      const localRootNode = dbTreeItems?.find(
+        (i) => i.dbItem?.kind === DbItemKind.RootLocal,
+      );
+      expect(localRootNode).toBeTruthy();
 
-    const localListItems = localRootNode!.children.filter(
-      (item) => item.dbItem?.kind === DbItemKind.LocalList,
-    );
-    expect(localListItems.length).toBe(2);
-    checkLocalListItem(localListItems[0], "my-list-1", [
-      {
+      expect(localRootNode!.dbItem).toBeTruthy();
+      expect(localRootNode!.collapsibleState).toBe(
+        TreeItemCollapsibleState.Collapsed,
+      );
+      expect(localRootNode!.children).toBeTruthy();
+      expect(localRootNode!.children.length).toBe(2);
+
+      const localDatabaseItems = localRootNode!.children.filter(
+        (item) => item.dbItem?.kind === DbItemKind.LocalDatabase,
+      );
+      expect(localDatabaseItems.length).toBe(2);
+      checkLocalDatabaseItem(localDatabaseItems[0], {
         kind: DbItemKind.LocalDatabase,
         databaseName: "db1",
         dateAdded: 1668428293677,
-        language: "cpp",
+        language: "csharp",
         storagePath: "/path/to/db1/",
         selected: false,
-      },
-      {
+      });
+      checkLocalDatabaseItem(localDatabaseItems[1], {
         kind: DbItemKind.LocalDatabase,
         databaseName: "db2",
         dateAdded: 1668428472731,
-        language: "cpp",
+        language: "go",
         storagePath: "/path/to/db2/",
         selected: false,
-      },
-    ]);
-    checkLocalListItem(localListItems[1], "my-list-2", [
-      {
-        kind: DbItemKind.LocalDatabase,
-        databaseName: "db3",
-        dateAdded: 1668428472731,
-        language: "ruby",
-        storagePath: "/path/to/db3/",
-        selected: false,
-      },
-    ]);
-  });
-
-  it.skip("should render local database nodes", async () => {
-    const dbConfig: DbConfig = createDbConfig({
-      localDbs: [
-        {
-          name: "db1",
-          dateAdded: 1668428293677,
-          language: "csharp",
-          storagePath: "/path/to/db1/",
-        },
-        {
-          name: "db2",
-          dateAdded: 1668428472731,
-          language: "go",
-          storagePath: "/path/to/db2/",
-        },
-      ],
-    });
-
-    await saveDbConfig(dbConfig);
-
-    const dbTreeItems = await dbTreeDataProvider.getChildren();
-
-    expect(dbTreeItems).toBeTruthy();
-    const localRootNode = dbTreeItems?.find(
-      (i) => i.dbItem?.kind === DbItemKind.RootLocal,
-    );
-    expect(localRootNode).toBeTruthy();
-
-    expect(localRootNode!.dbItem).toBeTruthy();
-    expect(localRootNode!.collapsibleState).toBe(
-      TreeItemCollapsibleState.Collapsed,
-    );
-    expect(localRootNode!.children).toBeTruthy();
-    expect(localRootNode!.children.length).toBe(2);
-
-    const localDatabaseItems = localRootNode!.children.filter(
-      (item) => item.dbItem?.kind === DbItemKind.LocalDatabase,
-    );
-    expect(localDatabaseItems.length).toBe(2);
-    checkLocalDatabaseItem(localDatabaseItems[0], {
-      kind: DbItemKind.LocalDatabase,
-      databaseName: "db1",
-      dateAdded: 1668428293677,
-      language: "csharp",
-      storagePath: "/path/to/db1/",
-      selected: false,
-    });
-    checkLocalDatabaseItem(localDatabaseItems[1], {
-      kind: DbItemKind.LocalDatabase,
-      databaseName: "db2",
-      dateAdded: 1668428472731,
-      language: "go",
-      storagePath: "/path/to/db2/",
-      selected: false,
+      });
     });
   });
 

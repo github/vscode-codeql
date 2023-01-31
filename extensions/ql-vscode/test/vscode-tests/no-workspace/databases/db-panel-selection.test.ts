@@ -45,156 +45,115 @@ describe("db panel selection", () => {
 
   beforeEach(async () => {
     await ensureDir(workspaceStoragePath);
+
+    mockConfiguration({
+      values: {
+        "codeQL.variantAnalysis": {
+          controllerRepo: "github/codeql",
+        },
+      },
+    });
   });
 
   afterEach(async () => {
     await remove(workspaceStoragePath);
   });
 
-  describe("when controller repo is not set", () => {
-    beforeEach(() => {
-      mockConfiguration({
-        values: {
-          "codeQL.variantAnalysis": {
-            controllerRepo: undefined,
-          },
+  it("should mark selected remote db list as selected", async () => {
+    const dbConfig: DbConfig = createDbConfig({
+      remoteLists: [
+        {
+          name: "my-list-1",
+          repositories: ["owner1/repo1", "owner1/repo2"],
         },
-      });
+        {
+          name: "my-list-2",
+          repositories: ["owner2/repo1", "owner2/repo2"],
+        },
+      ],
+      selected: {
+        kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
+        listName: "my-list-2",
+      },
     });
 
-    it("should not have any items", async () => {
-      const dbConfig: DbConfig = createDbConfig({
-        remoteLists: [
-          {
-            name: "my-list-1",
-            repositories: ["owner1/repo1", "owner1/repo2"],
-          },
-          {
-            name: "my-list-2",
-            repositories: ["owner2/repo1", "owner2/repo2"],
-          },
-        ],
-        selected: {
-          kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
-          listName: "my-list-2",
-        },
-      });
+    await saveDbConfig(dbConfig);
 
-      await saveDbConfig(dbConfig);
+    const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-      const dbTreeItems = await dbTreeDataProvider.getChildren();
+    expect(dbTreeItems).toBeTruthy();
+    const items = dbTreeItems!;
 
-      expect(dbTreeItems).toHaveLength(0);
-    });
+    const list1 = items.find(
+      (c) =>
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+        c.dbItem?.listName === "my-list-1",
+    );
+    const list2 = items.find(
+      (c) =>
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+        c.dbItem?.listName === "my-list-2",
+    );
+
+    expect(list1).toBeTruthy();
+    expect(list2).toBeTruthy();
+    expect(isTreeViewItemSelectable(list1!)).toBeTruthy();
+    expect(isTreeViewItemSelected(list2!)).toBeTruthy();
   });
 
-  describe("when controller repo is set", () => {
-    beforeEach(() => {
-      mockConfiguration({
-        values: {
-          "codeQL.variantAnalysis": {
-            controllerRepo: "github/codeql",
-          },
+  it("should mark selected remote db inside list as selected", async () => {
+    const dbConfig: DbConfig = createDbConfig({
+      remoteLists: [
+        {
+          name: "my-list-1",
+          repositories: ["owner1/repo1", "owner1/repo2"],
         },
-      });
+        {
+          name: "my-list-2",
+          repositories: ["owner1/repo1", "owner2/repo2"],
+        },
+      ],
+      remoteRepos: ["owner1/repo1"],
+      selected: {
+        kind: SelectedDbItemKind.VariantAnalysisRepository,
+        repositoryName: "owner1/repo1",
+        listName: "my-list-2",
+      },
     });
 
-    it("should mark selected remote db list as selected", async () => {
-      const dbConfig: DbConfig = createDbConfig({
-        remoteLists: [
-          {
-            name: "my-list-1",
-            repositories: ["owner1/repo1", "owner1/repo2"],
-          },
-          {
-            name: "my-list-2",
-            repositories: ["owner2/repo1", "owner2/repo2"],
-          },
-        ],
-        selected: {
-          kind: SelectedDbItemKind.VariantAnalysisUserDefinedList,
-          listName: "my-list-2",
-        },
-      });
+    await saveDbConfig(dbConfig);
 
-      await saveDbConfig(dbConfig);
+    const dbTreeItems = await dbTreeDataProvider.getChildren();
 
-      const dbTreeItems = await dbTreeDataProvider.getChildren();
+    expect(dbTreeItems).toBeTruthy();
+    const items = dbTreeItems!;
 
-      expect(dbTreeItems).toBeTruthy();
-      const items = dbTreeItems!;
+    const list2 = items.find(
+      (c) =>
+        c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
+        c.dbItem?.listName === "my-list-2",
+    );
+    expect(list2).toBeTruthy();
 
-      const list1 = items.find(
-        (c) =>
-          c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
-          c.dbItem?.listName === "my-list-1",
-      );
-      const list2 = items.find(
-        (c) =>
-          c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
-          c.dbItem?.listName === "my-list-2",
-      );
+    const repo1Node = list2?.children.find(
+      (c) =>
+        c.dbItem?.kind === DbItemKind.RemoteRepo &&
+        c.dbItem?.repoFullName === "owner1/repo1",
+    );
+    expect(repo1Node).toBeTruthy();
+    expect(isTreeViewItemSelected(repo1Node!)).toBeTruthy();
 
-      expect(list1).toBeTruthy();
-      expect(list2).toBeTruthy();
-      expect(isTreeViewItemSelectable(list1!)).toBeTruthy();
-      expect(isTreeViewItemSelected(list2!)).toBeTruthy();
-    });
+    const repo2Node = list2?.children.find(
+      (c) =>
+        c.dbItem?.kind === DbItemKind.RemoteRepo &&
+        c.dbItem?.repoFullName === "owner2/repo2",
+    );
+    expect(repo2Node).toBeTruthy();
+    expect(isTreeViewItemSelectable(repo2Node!)).toBeTruthy();
 
-    it("should mark selected remote db inside list as selected", async () => {
-      const dbConfig: DbConfig = createDbConfig({
-        remoteLists: [
-          {
-            name: "my-list-1",
-            repositories: ["owner1/repo1", "owner1/repo2"],
-          },
-          {
-            name: "my-list-2",
-            repositories: ["owner1/repo1", "owner2/repo2"],
-          },
-        ],
-        remoteRepos: ["owner1/repo1"],
-        selected: {
-          kind: SelectedDbItemKind.VariantAnalysisRepository,
-          repositoryName: "owner1/repo1",
-          listName: "my-list-2",
-        },
-      });
-
-      await saveDbConfig(dbConfig);
-
-      const dbTreeItems = await dbTreeDataProvider.getChildren();
-
-      expect(dbTreeItems).toBeTruthy();
-      const items = dbTreeItems!;
-
-      const list2 = items.find(
-        (c) =>
-          c.dbItem?.kind === DbItemKind.RemoteUserDefinedList &&
-          c.dbItem?.listName === "my-list-2",
-      );
-      expect(list2).toBeTruthy();
-
-      const repo1Node = list2?.children.find(
-        (c) =>
-          c.dbItem?.kind === DbItemKind.RemoteRepo &&
-          c.dbItem?.repoFullName === "owner1/repo1",
-      );
-      expect(repo1Node).toBeTruthy();
-      expect(isTreeViewItemSelected(repo1Node!)).toBeTruthy();
-
-      const repo2Node = list2?.children.find(
-        (c) =>
-          c.dbItem?.kind === DbItemKind.RemoteRepo &&
-          c.dbItem?.repoFullName === "owner2/repo2",
-      );
-      expect(repo2Node).toBeTruthy();
-      expect(isTreeViewItemSelectable(repo2Node!)).toBeTruthy();
-
-      for (const item of items) {
-        expect(isTreeViewItemSelectable(item)).toBeTruthy();
-      }
-    });
+    for (const item of items) {
+      expect(isTreeViewItemSelectable(item)).toBeTruthy();
+    }
   });
 
   async function saveDbConfig(dbConfig: DbConfig): Promise<void> {
