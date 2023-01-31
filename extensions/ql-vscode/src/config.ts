@@ -539,6 +539,27 @@ export async function setRemoteControllerRepo(repo: string | undefined) {
   await REMOTE_CONTROLLER_REPO.updateValue(repo, ConfigurationTarget.Global);
 }
 
+export interface VariantAnalysisConfig {
+  controllerRepo: string | undefined;
+  onDidChangeConfiguration?: Event<void>;
+}
+
+export class VariantAnalysisConfigListener
+  extends ConfigListener
+  implements VariantAnalysisConfig
+{
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings(
+      [VARIANT_ANALYSIS_SETTING],
+      e,
+    );
+  }
+
+  public get controllerRepo(): string | undefined {
+    return getRemoteControllerRepo();
+  }
+}
+
 /**
  * The branch of "github/codeql-variant-analysis-action" to use with the "Run Variant Analysis" command.
  * Default value is "main".

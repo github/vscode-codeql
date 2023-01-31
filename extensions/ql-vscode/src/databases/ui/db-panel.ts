@@ -29,6 +29,9 @@ import { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
 import { DbTreeViewItem } from "./db-tree-view-item";
 import { getGitHubUrl } from "./db-tree-view-item-action";
+import { getControllerRepo } from "../../remote-queries/run-remote-query";
+import { getErrorMessage } from "../../pure/helpers-pure";
+import { Credentials } from "../../common/authentication";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   kind: string;
@@ -42,7 +45,10 @@ export class DbPanel extends DisposableObject {
   private readonly dataProvider: DbTreeDataProvider;
   private readonly treeView: TreeView<DbTreeViewItem>;
 
-  public constructor(private readonly dbManager: DbManager) {
+  public constructor(
+    private readonly dbManager: DbManager,
+    private readonly credentials: Credentials,
+  ) {
     super();
 
     this.dataProvider = new DbTreeDataProvider(dbManager);
@@ -110,6 +116,12 @@ export class DbPanel extends DisposableObject {
       commandRunner(
         "codeQLVariantAnalysisRepositories.removeItemContextMenu",
         (treeViewItem: DbTreeViewItem) => this.removeItem(treeViewItem),
+      ),
+    );
+    this.push(
+      commandRunner(
+        "codeQLVariantAnalysisRepositories.setupControllerRepository",
+        () => this.setupControllerRepository(),
       ),
     );
   }
@@ -382,5 +394,22 @@ export class DbPanel extends DisposableObject {
     }
 
     await commands.executeCommand("vscode.open", Uri.parse(githubUrl));
+  }
+
+  private async setupControllerRepository(): Promise<void> {
+    try {
+      // This will also validate that the controller repository is valid
+      await getControllerRepo(this.credentials);
+    } catch (e: unknown) {
+      if (e instanceof UserCancellationException) {
+        return;
+      }
+
+      void showAndLogErrorMessage(
+        `An error occurred while setting up the controller repository: ${getErrorMessage(
+          e,
+        )}`,
+      );
+    }
   }
 }

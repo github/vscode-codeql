@@ -376,10 +376,10 @@ export async function getControllerRepo(
     );
     controllerRepoNwo = await window.showInputBox({
       title:
-        "Controller repository in which to run the GitHub Actions workflow for this variant analysis",
+        "Controller repository in which to run GitHub Actions workflows for variant analyses",
       placeHolder: "<owner>/<repo>",
       prompt:
-        "Enter the name of a GitHub repository in the format <owner>/<repo>",
+        "Enter the name of a GitHub repository in the format <owner>/<repo>. You can change this in the extension settings.",
       ignoreFocusOut: true,
     });
     if (!controllerRepoNwo) {
