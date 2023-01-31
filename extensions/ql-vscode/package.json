@@ -395,7 +395,7 @@
       },
       {
         "command": "codeQLVariantAnalysisRepositories.removeItemContextMenu",
-        "title": "Remove"
+        "title": "Delete"
       },
       {
         "command": "codeQLDatabases.chooseDatabaseFolder",
