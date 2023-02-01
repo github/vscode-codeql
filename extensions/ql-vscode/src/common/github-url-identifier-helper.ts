@@ -50,11 +50,16 @@ function getNwoOrOwnerFromGitHubUrl(
   kind: "owner" | "nwo",
 ): string | undefined {
   try {
-    const uri = new URL(githubUrl);
-    if (uri.hostname !== "github.com" && uri.hostname !== "www.github.com") {
-      return;
+    let paths: string[];
+    if (githubUrl.split("/")[0] === "github.com") {
+      paths = githubUrl.split("/").slice(1);
+    } else {
+      const uri = new URL(githubUrl);
+      if (uri.hostname !== "github.com" && uri.hostname !== "www.github.com") {
+        return;
+      }
+      paths = uri.pathname.split("/").filter((segment: string) => segment);
     }
-    const paths = uri.pathname.split("/").filter((segment: string) => segment);
     const owner = `${paths[0]}`;
     if (kind === "owner") {
       return owner ? owner : undefined;
