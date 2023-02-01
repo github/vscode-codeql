@@ -384,7 +384,11 @@ export class DatabaseUI extends DisposableObject {
       }
     } catch (e) {
       // rethrow and let this be handled by default error handling.
-      throw new Error(`Could not set database: ${getErrorMessage(e)}`);
+      throw new Error(
+        `Could not set the database for the Code Tour. Please make sure you are using the default workspace in your codespace: ${getErrorMessage(
+          e,
+        )}`,
+      );
     }
   };
 
