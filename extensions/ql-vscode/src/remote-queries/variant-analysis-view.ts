@@ -52,7 +52,7 @@ export class VariantAnalysisView
     });
 
     const panel = await this.getPanel();
-    panel.title = `${variantAnalysis.query.name} - CodeQL Query Results`;
+    panel.title = this.getTitle(variantAnalysis);
   }
 
   public async updateRepoState(
@@ -88,9 +88,7 @@ export class VariantAnalysisView
 
     return {
       viewId: VariantAnalysisView.viewType,
-      title: variantAnalysis
-        ? `${variantAnalysis.query.name} - CodeQL Query Results`
-        : `Variant analysis ${this.variantAnalysisId} - CodeQL Query Results`,
+      title: this.getTitle(variantAnalysis),
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
       view: "variant-analysis",
@@ -188,5 +186,11 @@ export class VariantAnalysisView
       t: "setRepoStates",
       repoStates,
     });
+  }
+
+  private getTitle(variantAnalysis: VariantAnalysis | undefined): string {
+    return variantAnalysis
+      ? `${variantAnalysis.query.name} - Variant Analysis Results`
+      : `Variant Analysis ${this.variantAnalysisId} - Results`;
   }
 }
