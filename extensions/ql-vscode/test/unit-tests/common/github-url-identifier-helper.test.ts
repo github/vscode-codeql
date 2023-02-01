@@ -34,6 +34,7 @@ describe("github url identifier helper", () => {
 
     it("should handle valid urls", () => {
       expect(getNwoFromGitHubUrl("github.com/foo/bar")).toBe("foo/bar");
+      expect(getNwoFromGitHubUrl("www.github.com/foo/bar")).toBe("foo/bar");
       expect(getNwoFromGitHubUrl("https://github.com/foo/bar")).toBe("foo/bar");
       expect(getNwoFromGitHubUrl("http://github.com/foo/bar")).toBe("foo/bar");
       expect(getNwoFromGitHubUrl("https://www.github.com/foo/bar")).toBe(
@@ -66,6 +67,7 @@ describe("github url identifier helper", () => {
       ).toBe("foo");
       expect(getOwnerFromGitHubUrl("https://www.github.com/foo")).toBe("foo");
       expect(getOwnerFromGitHubUrl("github.com/foo")).toBe("foo");
+      expect(getOwnerFromGitHubUrl("www.github.com/foo")).toBe("foo");
     });
   });
 });

@@ -51,7 +51,11 @@ function getNwoOrOwnerFromGitHubUrl(
 ): string | undefined {
   try {
     let paths: string[];
-    if (githubUrl.split("/")[0] === "github.com") {
+    const urlElements = githubUrl.split("/");
+    if (
+      urlElements[0] === "github.com" ||
+      urlElements[0] === "www.github.com"
+    ) {
       paths = githubUrl.split("/").slice(1);
     } else {
       const uri = new URL(githubUrl);
