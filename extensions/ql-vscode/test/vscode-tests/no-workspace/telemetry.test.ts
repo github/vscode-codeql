@@ -11,6 +11,7 @@ import {
 } from "../../../src/telemetry";
 import { UserCancellationException } from "../../../src/commandRunner";
 import { ENABLE_TELEMETRY } from "../../../src/config";
+import * as Config from "../../../src/config";
 import { createMockExtensionContext } from "./index";
 
 // setting preferences can trigger lots of background activity
@@ -386,6 +387,37 @@ describe("telemetry reporting", () => {
     // now, we should have to click through the telemetry requestor again
     expect(ctx.globalState.get("telemetry-request-viewed")).toBe(false);
     expect(showInformationMessageSpy).toBeCalledTimes(1);
+  });
+
+  describe("when new telementry is not enabled", () => {
+    it("should not send a telementry event", async () => {
+      await telemetryListener.initialize();
+
+      telemetryListener.sendUIInteraction("test");
+
+      expect(sendTelemetryEventSpy).not.toBeCalled();
+    });
+  });
+
+  describe("when new telementry is enabled", () => {
+    beforeEach(async () => {
+      jest.spyOn(Config, "newTelemetryEnabled").mockReturnValue(true);
+    });
+
+    it("should not send a telementry event", async () => {
+      await telemetryListener.initialize();
+
+      telemetryListener.sendUIInteraction("test");
+
+      expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+        "ui-interaction",
+        {
+          name: "test",
+          isCanary,
+        },
+        {},
+      );
+    });
   });
 
   async function enableTelemetry(section: string, value: boolean | undefined) {

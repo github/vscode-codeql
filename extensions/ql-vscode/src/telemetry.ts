@@ -13,6 +13,7 @@ import {
   LOG_TELEMETRY,
   isIntegrationTestMode,
   isCanary,
+  newTelemetryEnabled,
 } from "./config";
 import * as appInsights from "applicationinsights";
 import { extLogger } from "./common";
@@ -169,6 +170,10 @@ export class TelemetryListener extends ConfigListener {
 
   sendUIInteraction(name: string) {
     if (!this.reporter) {
+      return;
+    }
+
+    if (!newTelemetryEnabled()) {
       return;
     }
 
