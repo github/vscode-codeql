@@ -13,7 +13,7 @@ import { DbTreeViewItem } from "../../../../src/databases/ui/db-tree-view-item";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { createMockExtensionContext } from "../../../factories/extension-context";
 import { createDbConfig } from "../../../factories/db-config-factories";
-import { mockConfiguration } from "../../utils/configuration-helpers";
+import { setRemoteControllerRepo } from "../../../../src/config";
 
 describe("db panel rendering nodes", () => {
   const workspaceStoragePath = join(__dirname, "test-workspace-storage");
@@ -50,12 +50,8 @@ describe("db panel rendering nodes", () => {
   });
 
   describe("when controller repo is not set", () => {
-    mockConfiguration({
-      values: {
-        "codeQL.variantAnalysis": {
-          controllerRepo: undefined,
-        },
-      },
+    beforeEach(async () => {
+      await setRemoteControllerRepo(undefined);
     });
 
     it("should not have any items", async () => {
@@ -81,14 +77,8 @@ describe("db panel rendering nodes", () => {
   });
 
   describe("when controller repo is set", () => {
-    beforeEach(() => {
-      mockConfiguration({
-        values: {
-          "codeQL.variantAnalysis": {
-            controllerRepo: "github/codeql",
-          },
-        },
-      });
+    beforeEach(async () => {
+      await setRemoteControllerRepo("github/codeql");
     });
 
     it("should render default remote nodes when the config is empty", async () => {

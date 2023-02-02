@@ -8,23 +8,24 @@ import { dirname } from "path";
 import fetch from "node-fetch";
 import { DB_URL, dbLoc, setStoragePath, storagePath } from "./global.helper";
 import * as tmp from "tmp";
-import { getTestSetting } from "../test-config";
 import { CUSTOM_CODEQL_PATH_SETTING } from "../../../src/config";
-import { extensions, workspace } from "vscode";
+import { ConfigurationTarget, env, extensions, workspace } from "vscode";
+import { beforeEachAction } from "../test-config";
 
-import baseJestSetup from "../jest.setup";
-
-export default baseJestSetup;
+(env as any).openExternal = () => {
+  /**/
+};
 
 // create an extension storage location
 let removeStorage: tmp.DirResult["removeCallback"] | undefined;
 
 beforeAll(async () => {
   // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
-  await getTestSetting(CUSTOM_CODEQL_PATH_SETTING)?.setInitialTestValue(
+  await beforeEachAction();
+  await CUSTOM_CODEQL_PATH_SETTING.updateValue(
     process.env.CLI_PATH,
+    ConfigurationTarget.Workspace,
   );
-  await getTestSetting(CUSTOM_CODEQL_PATH_SETTING)?.setup();
 
   // ensure the test database is downloaded
   mkdirpSync(dirname(dbLoc));
@@ -76,6 +77,15 @@ beforeAll(async () => {
 
   // Activate the extension
   await extensions.getExtension("GitHub.vscode-codeql")?.activate();
+});
+
+beforeEach(async () => {
+  await beforeEachAction();
+
+  await CUSTOM_CODEQL_PATH_SETTING.updateValue(
+    process.env.CLI_PATH,
+    ConfigurationTarget.Global,
+  );
 });
 
 // ensure extension is cleaned up.

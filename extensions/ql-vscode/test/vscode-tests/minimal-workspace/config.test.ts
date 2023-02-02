@@ -6,8 +6,13 @@ import {
   QueryHistoryConfigListener,
   QueryServerConfigListener,
 } from "../../../src/config";
+import { vscodeGetConfigurationMock } from "../test-config";
 
 describe("config listeners", () => {
+  beforeEach(() => {
+    vscodeGetConfigurationMock.mockRestore();
+  });
+
   interface TestConfig<T> {
     clazz: new () => ConfigListener;
     settings: Array<{

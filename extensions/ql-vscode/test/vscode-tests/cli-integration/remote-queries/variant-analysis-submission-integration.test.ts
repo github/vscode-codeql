@@ -3,6 +3,7 @@ import { resolve } from "path";
 import {
   authentication,
   commands,
+  ConfigurationTarget,
   extensions,
   QuickPickItem,
   TextDocument,
@@ -12,7 +13,10 @@ import {
 
 import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
-import { mockConfiguration } from "../../utils/configuration-helpers";
+import {
+  CANARY_FEATURES,
+  setRemoteControllerRepo,
+} from "../../../../src/config";
 
 jest.setTimeout(30_000);
 
@@ -36,17 +40,8 @@ describe("Variant Analysis Submission Integration", () => {
   let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;
 
   beforeEach(async () => {
-    mockConfiguration({
-      values: {
-        codeQL: {
-          canary: true,
-        },
-        "codeQL.variantAnalysis": {
-          liveResults: true,
-          controllerRepo: "github/vscode-codeql",
-        },
-      },
-    });
+    await CANARY_FEATURES.updateValue(true, ConfigurationTarget.Global);
+    await setRemoteControllerRepo("github/vscode-codeql");
 
     jest.spyOn(authentication, "getSession").mockResolvedValue({
       id: "test",

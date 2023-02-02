@@ -9,7 +9,7 @@ import { DbTreeViewItem } from "../../../../src/databases/ui/db-tree-view-item";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { createMockExtensionContext } from "../../../factories/extension-context";
 import { createDbConfig } from "../../../factories/db-config-factories";
-import { mockConfiguration } from "../../utils/configuration-helpers";
+import { setRemoteControllerRepo } from "../../../../src/config";
 
 describe("db panel", () => {
   const workspaceStoragePath = join(__dirname, "test-workspace-storage");
@@ -40,13 +40,7 @@ describe("db panel", () => {
   beforeEach(async () => {
     await ensureDir(workspaceStoragePath);
 
-    mockConfiguration({
-      values: {
-        "codeQL.variantAnalysis": {
-          controllerRepo: "github/codeql",
-        },
-      },
-    });
+    await setRemoteControllerRepo("github/codeql");
   });
 
   afterEach(async () => {
