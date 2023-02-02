@@ -13,6 +13,7 @@ import { UserCancellationException } from "../../../src/commandRunner";
 import { ENABLE_TELEMETRY } from "../../../src/config";
 import * as Config from "../../../src/config";
 import { createMockExtensionContext } from "./index";
+import { redactableError } from "../../../src/pure/errors";
 
 // setting preferences can trigger lots of background activity
 // so need to bump up the timeout of this test.
@@ -390,10 +391,18 @@ describe("telemetry reporting", () => {
   });
 
   describe("when new telementry is not enabled", () => {
-    it("should not send a telementry event", async () => {
+    it("should not send a ui-interaction telementry event", async () => {
       await telemetryListener.initialize();
 
       telemetryListener.sendUIInteraction("test");
+
+      expect(sendTelemetryEventSpy).not.toBeCalled();
+    });
+
+    it("should not send an error telementry event", async () => {
+      await telemetryListener.initialize();
+
+      telemetryListener.sendError(redactableError`test`);
 
       expect(sendTelemetryEventSpy).not.toBeCalled();
     });
@@ -404,7 +413,7 @@ describe("telemetry reporting", () => {
       jest.spyOn(Config, "newTelemetryEnabled").mockReturnValue(true);
     });
 
-    it("should not send a telementry event", async () => {
+    it("should send a ui-interaction telementry event", async () => {
       await telemetryListener.initialize();
 
       telemetryListener.sendUIInteraction("test");
@@ -414,6 +423,22 @@ describe("telemetry reporting", () => {
         {
           name: "test",
           isCanary,
+        },
+        {},
+      );
+    });
+
+    it("should send an error telementry event", async () => {
+      await telemetryListener.initialize();
+
+      telemetryListener.sendError(redactableError`test`);
+
+      expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+        "error",
+        {
+          message: "test",
+          isCanary,
+          stack: expect.any(String),
         },
         {},
       );

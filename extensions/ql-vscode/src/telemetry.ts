@@ -196,7 +196,12 @@ export class TelemetryListener extends ConfigListener {
       return;
     }
 
+    if (!newTelemetryEnabled()) {
+      return;
+    }
+
     const properties: { [key: string]: string } = {
+      isCanary: isCanary().toString(),
       message: error.redactedMessage,
       ...extraProperties,
     };
