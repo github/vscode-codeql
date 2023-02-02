@@ -2,7 +2,7 @@
 
 ## 1.7.8 - 2 February 2023
 
-- Renamed command "CodeQL: Run Query" to "CodeQL: Run Query on Selected Database".
+- Renamed command "CodeQL: Run Query" to "CodeQL: Run Query on Selected Database". [#1962](https://github.com/github/vscode-codeql/pull/1962)
 - Remove support for CodeQL CLI versions older than 2.7.6. [#1788](https://github.com/github/vscode-codeql/pull/1788)
 
 ## 1.7.7 - 13 December 2022
