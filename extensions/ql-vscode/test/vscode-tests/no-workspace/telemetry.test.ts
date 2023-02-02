@@ -445,6 +445,26 @@ describe("telemetry reporting", () => {
     });
   });
 
+  it("should redact error message contents", async () => {
+    jest.spyOn(Config, "newTelemetryEnabled").mockReturnValue(true);
+    await telemetryListener.initialize();
+
+    telemetryListener.sendError(
+      redactableError`test message with secret information: ${42} and more ${"secret"} parts`,
+    );
+
+    expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+      "error",
+      {
+        message:
+          "test message with secret information: [REDACTED] and more [REDACTED] parts",
+        isCanary,
+        stack: expect.any(String),
+      },
+      {},
+    );
+  });
+
   async function enableTelemetry(section: string, value: boolean | undefined) {
     await workspace
       .getConfiguration(section)
