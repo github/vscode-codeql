@@ -4,6 +4,9 @@
     "$schema": {
       "type": "string"
     },
+    "version": {
+      "type": "integer"
+    },
     "databases": {
       "type": "object",
       "properties": {
@@ -119,6 +122,6 @@
       ]
     }
   },
-  "required": ["databases"],
+  "required": ["databases", "version"],
   "additionalProperties": false
 }
