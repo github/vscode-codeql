@@ -14,7 +14,7 @@ import {
   renameLocalList,
   renameRemoteList,
   SelectedDbItem,
-  SUPPORTED_DB_CONFIG_VERSION,
+  DB_CONFIG_VERSION,
 } from "./db-config";
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
@@ -460,7 +460,7 @@ export class DbConfigStore extends DisposableObject {
 
   private createEmptyConfig(): DbConfig {
     return {
-      version: SUPPORTED_DB_CONFIG_VERSION,
+      version: DB_CONFIG_VERSION,
       databases: {
         variantAnalysis: {
           repositoryLists: [],

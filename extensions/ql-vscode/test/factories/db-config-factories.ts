@@ -5,7 +5,7 @@ import {
   LocalList,
   RemoteRepositoryList,
   SelectedDbItem,
-  SUPPORTED_DB_CONFIG_VERSION,
+  DB_CONFIG_VERSION,
 } from "../../src/databases/config/db-config";
 
 export function createDbConfig({
@@ -24,7 +24,7 @@ export function createDbConfig({
   selected?: SelectedDbItem;
 } = {}): DbConfig {
   return {
-    version: SUPPORTED_DB_CONFIG_VERSION,
+    version: DB_CONFIG_VERSION,
     databases: {
       variantAnalysis: {
         repositoryLists: remoteLists,

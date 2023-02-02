@@ -1,7 +1,7 @@
 // Contains models and consts for the data we want to store in the database config.
 // Changes to these models should be done carefully and account for backwards compatibility of data.
 
-export const SUPPORTED_DB_CONFIG_VERSION = 1;
+export const DB_CONFIG_VERSION = 1;
 
 export interface DbConfig {
   version: number;
