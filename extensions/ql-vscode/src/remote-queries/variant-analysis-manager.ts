@@ -69,6 +69,7 @@ export class VariantAnalysisManager
   implements VariantAnalysisViewManager<VariantAnalysisView>
 {
   private static readonly REPO_STATES_FILENAME = "repo_states.json";
+  private static readonly DOWNLOAD_PERCENTAGE_UPDATE_DELAY_MS = 500;
 
   private readonly _onVariantAnalysisAdded = this.push(
     new EventEmitter<VariantAnalysis>(),
@@ -515,10 +516,27 @@ export class VariantAnalysisManager
       await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
       try {
+        let lastRepoStateUpdate = 0;
+        const updateRepoStateCallback = async (downloadPercentage: number) => {
+          const now = new Date().getTime();
+          if (
+            lastRepoStateUpdate <
+            now - VariantAnalysisManager.DOWNLOAD_PERCENTAGE_UPDATE_DELAY_MS
+          ) {
+            lastRepoStateUpdate = now;
+            await this.onRepoStateUpdated(variantAnalysis.id, {
+              repositoryId: scannedRepo.repository.id,
+              downloadStatus:
+                VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
+              downloadPercentage,
+            });
+          }
+        };
         await this.variantAnalysisResultsManager.download(
           variantAnalysis.id,
           repoTask,
           this.getVariantAnalysisStorageLocation(variantAnalysis.id),
+          updateRepoStateCallback,
         );
       } catch (e) {
         repoState.downloadStatus =

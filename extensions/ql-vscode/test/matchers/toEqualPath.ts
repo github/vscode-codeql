@@ -2,7 +2,6 @@ import { expect } from "@jest/globals";
 import type { MatcherFunction } from "expect";
 import { pathsEqual } from "../../src/pure/files";
 
-// eslint-disable-next-line func-style -- We need to have access to this and specify the type of the function
 const toEqualPath: MatcherFunction<[expectedPath: unknown]> = function (
   actual,
   expectedPath,
@@ -15,20 +14,16 @@ const toEqualPath: MatcherFunction<[expectedPath: unknown]> = function (
   if (pass) {
     return {
       message: () =>
-        // eslint-disable-next-line @typescript-eslint/no-invalid-this
         `expected ${this.utils.printReceived(
           actual,
-          // eslint-disable-next-line @typescript-eslint/no-invalid-this
         )} to equal path ${this.utils.printExpected(expectedPath)}`,
       pass: true,
     };
   } else {
     return {
       message: () =>
-        // eslint-disable-next-line @typescript-eslint/no-invalid-this
         `expected ${this.utils.printReceived(
           actual,
-          // eslint-disable-next-line @typescript-eslint/no-invalid-this
         )} to equal path ${this.utils.printExpected(expectedPath)}`,
       pass: false,
     };

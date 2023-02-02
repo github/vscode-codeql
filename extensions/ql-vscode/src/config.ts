@@ -92,6 +92,15 @@ export const GLOBAL_ENABLE_TELEMETRY = new Setting(
   GLOBAL_TELEMETRY_SETTING,
 );
 
+const ENABLE_NEW_TELEMETRY = new Setting(
+  "enableNewTelemetry",
+  TELEMETRY_SETTING,
+);
+
+export function newTelemetryEnabled(): boolean {
+  return ENABLE_NEW_TELEMETRY.getValue<boolean>();
+}
+
 // Distribution configuration
 const DISTRIBUTION_SETTING = new Setting("cli", ROOT_SETTING);
 export const CUSTOM_CODEQL_PATH_SETTING = new Setting(
@@ -537,6 +546,27 @@ export function getRemoteControllerRepo(): string | undefined {
 
 export async function setRemoteControllerRepo(repo: string | undefined) {
   await REMOTE_CONTROLLER_REPO.updateValue(repo, ConfigurationTarget.Global);
+}
+
+export interface VariantAnalysisConfig {
+  controllerRepo: string | undefined;
+  onDidChangeConfiguration?: Event<void>;
+}
+
+export class VariantAnalysisConfigListener
+  extends ConfigListener
+  implements VariantAnalysisConfig
+{
+  protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {
+    this.handleDidChangeConfigurationForRelevantSettings(
+      [VARIANT_ANALYSIS_SETTING],
+      e,
+    );
+  }
+
+  public get controllerRepo(): string | undefined {
+    return getRemoteControllerRepo();
+  }
 }
 
 /**

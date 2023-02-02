@@ -12,6 +12,7 @@ import {
 
 import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
+import { mockConfiguration } from "../../utils/configuration-helpers";
 
 jest.setTimeout(30_000);
 
@@ -35,50 +36,17 @@ describe("Variant Analysis Submission Integration", () => {
   let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;
 
   beforeEach(async () => {
-    const originalGetConfiguration = workspace.getConfiguration;
-
-    jest
-      .spyOn(workspace, "getConfiguration")
-      .mockImplementation((section, scope) => {
-        const configuration = originalGetConfiguration(section, scope);
-
-        return {
-          get(key: string, defaultValue?: unknown) {
-            if (section === "codeQL.variantAnalysis" && key === "liveResults") {
-              return true;
-            }
-            if (section === "codeQL" && key == "canary") {
-              return true;
-            }
-            if (
-              section === "codeQL.variantAnalysis" &&
-              key === "controllerRepo"
-            ) {
-              return "github/vscode-codeql";
-            }
-            return configuration.get(key, defaultValue);
-          },
-          has(key: string) {
-            return configuration.has(key);
-          },
-          inspect(key: string) {
-            return configuration.inspect(key);
-          },
-          update(
-            key: string,
-            value: unknown,
-            configurationTarget?: boolean,
-            overrideInLanguage?: boolean,
-          ) {
-            return configuration.update(
-              key,
-              value,
-              configurationTarget,
-              overrideInLanguage,
-            );
-          },
-        };
-      });
+    mockConfiguration({
+      values: {
+        codeQL: {
+          canary: true,
+        },
+        "codeQL.variantAnalysis": {
+          liveResults: true,
+          controllerRepo: "github/vscode-codeql",
+        },
+      },
+    });
 
     jest.spyOn(authentication, "getSession").mockResolvedValue({
       id: "test",

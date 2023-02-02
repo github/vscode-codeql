@@ -13,6 +13,7 @@ import {
   DbConfigValidationError,
   DbConfigValidationErrorKind,
 } from "../db-validation-errors";
+import { VariantAnalysisConfigListener } from "../../config";
 
 export class DbTreeDataProvider
   extends DisposableObject
@@ -27,8 +28,17 @@ export class DbTreeDataProvider
   );
   private dbTreeItems: DbTreeViewItem[];
 
+  private variantAnalysisConfig: VariantAnalysisConfigListener;
+
   public constructor(private readonly dbManager: DbManager) {
     super();
+
+    this.variantAnalysisConfig = this.push(new VariantAnalysisConfigListener());
+    this.variantAnalysisConfig.onDidChangeConfiguration(() => {
+      this.dbTreeItems = this.createTree();
+      this._onDidChangeTreeData.fire(undefined);
+    });
+
     this.dbTreeItems = this.createTree();
     this.onDidChangeTreeData = this._onDidChangeTreeData.event;
 
@@ -62,6 +72,11 @@ export class DbTreeDataProvider
   }
 
   private createTree(): DbTreeViewItem[] {
+    // Returning an empty tree here will show the welcome view
+    if (!this.variantAnalysisConfig.controllerRepo) {
+      return [];
+    }
+
     const dbItemsResult = this.dbManager.getDbItems();
 
     if (dbItemsResult.isFailure) {

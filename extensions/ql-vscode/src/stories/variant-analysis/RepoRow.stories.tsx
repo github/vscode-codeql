@@ -15,7 +15,7 @@ import { createMockRepositoryWithMetadata } from "../../../test/factories/remote
 
 import * as analysesResults from "../remote-queries/data/analysesResultsMessage.json";
 import * as rawResults from "../remote-queries/data/rawResults.json";
-import { RepoRow } from "../../view/variant-analysis/RepoRow";
+import { RepoRow, RepoRowProps } from "../../view/variant-analysis/RepoRow";
 
 export default {
   title: "Variant Analysis/Repo Row",
@@ -29,7 +29,7 @@ export default {
   ],
 } as ComponentMeta<typeof RepoRow>;
 
-const Template: ComponentStory<typeof RepoRow> = (args) => (
+const Template: ComponentStory<typeof RepoRow> = (args: RepoRowProps) => (
   <RepoRow {...args} />
 );
 
@@ -77,7 +77,22 @@ SucceededDownloading.args = {
   ...Pending.args,
   status: VariantAnalysisRepoStatus.Succeeded,
   resultCount: 198,
-  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
+  downloadState: {
+    repositoryId: 63537249,
+    downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
+  },
+};
+
+export const SucceededDownloadingWithPercentage = Template.bind({});
+SucceededDownloadingWithPercentage.args = {
+  ...Pending.args,
+  status: VariantAnalysisRepoStatus.Succeeded,
+  resultCount: 198,
+  downloadState: {
+    repositoryId: 63537249,
+    downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.InProgress,
+    downloadPercentage: 42,
+  },
 };
 
 export const SucceededSuccessfulDownload = Template.bind({});
@@ -85,7 +100,10 @@ SucceededSuccessfulDownload.args = {
   ...Pending.args,
   status: VariantAnalysisRepoStatus.Succeeded,
   resultCount: 198,
-  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+  downloadState: {
+    repositoryId: 63537249,
+    downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Succeeded,
+  },
 };
 
 export const SucceededFailedDownload = Template.bind({});
@@ -93,7 +111,10 @@ SucceededFailedDownload.args = {
   ...Pending.args,
   status: VariantAnalysisRepoStatus.Succeeded,
   resultCount: 198,
-  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Failed,
+  downloadState: {
+    repositoryId: 63537249,
+    downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus.Failed,
+  },
 };
 
 export const InterpretedResults = Template.bind({});

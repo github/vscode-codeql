@@ -1,14 +1,8 @@
-import {
-  pathExists,
-  mkdir,
-  outputJson,
-  writeFileSync,
-  readJson,
-} from "fs-extra";
+import { appendFile, pathExists, mkdir, outputJson, readJson } from "fs-extra";
+import fetch from "node-fetch";
 import { EOL } from "os";
 import { join } from "path";
 
-import { Credentials } from "../common/authentication";
 import { Logger } from "../common";
 import { AnalysisAlert, AnalysisRawResults } from "./shared/analysis-result";
 import { sarifParser } from "../sarif-parser";
@@ -21,7 +15,6 @@ import {
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
 import { DisposableObject, DisposeHandler } from "../pure/disposable-object";
-import { getVariantAnalysisRepoResult } from "./gh-api/gh-api-client";
 import { EventEmitter } from "vscode";
 import { unzipFile } from "../pure/zip";
 
@@ -63,7 +56,6 @@ export class VariantAnalysisResultsManager extends DisposableObject {
   readonly onResultLoaded = this._onResultLoaded.event;
 
   constructor(
-    private readonly credentials: Credentials,
     private readonly cliServer: CodeQLCliServer,
     private readonly logger: Logger,
   ) {
@@ -75,6 +67,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     variantAnalysisId: number,
     repoTask: VariantAnalysisRepositoryTask,
     variantAnalysisStoragePath: string,
+    onDownloadPercentageChanged: (downloadPercentage: number) => Promise<void>,
   ): Promise<void> {
     if (!repoTask.artifactUrl) {
       throw new Error("Missing artifact URL");
@@ -83,11 +76,6 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     const resultDirectory = this.getRepoStorageDirectory(
       variantAnalysisStoragePath,
       repoTask.repository.fullName,
-    );
-
-    const result = await getVariantAnalysisRepoResult(
-      this.credentials,
-      repoTask.artifactUrl,
     );
 
     if (!(await pathExists(resultDirectory))) {
@@ -100,12 +88,28 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     );
 
     const zipFilePath = join(resultDirectory, "results.zip");
+
+    const response = await fetch(repoTask.artifactUrl);
+
+    let responseSize = parseInt(response.headers.get("content-length") || "0");
+    if (responseSize === 0 && response.size > 0) {
+      responseSize = response.size;
+    }
+
+    let amountDownloaded = 0;
+    for await (const chunk of response.body) {
+      await appendFile(zipFilePath, Buffer.from(chunk));
+      amountDownloaded += chunk.length;
+      await onDownloadPercentageChanged(
+        Math.floor((amountDownloaded / responseSize) * 100),
+      );
+    }
+
     const unzippedFilesDirectory = join(
       resultDirectory,
       VariantAnalysisResultsManager.RESULTS_DIRECTORY,
     );
 
-    writeFileSync(zipFilePath, Buffer.from(result));
     await unzipFile(zipFilePath, unzippedFilesDirectory);
 
     this._onResultDownloaded.fire({
