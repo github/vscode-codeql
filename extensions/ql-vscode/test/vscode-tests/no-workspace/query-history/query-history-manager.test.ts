@@ -838,7 +838,7 @@ describe("QueryHistoryManager", () => {
             ).not.toContain(toDelete);
           });
 
-          it.skip("should change the selection", async () => {
+          it("should change the selection", async () => {
             expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
               newSelected,
             );
