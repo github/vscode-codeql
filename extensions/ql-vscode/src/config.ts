@@ -647,3 +647,16 @@ export class MockGitHubApiConfigListener
 export function getMockGitHubApiServerScenariosPath(): string | undefined {
   return MOCK_GH_API_SERVER_SCENARIOS_PATH.getValue<string>();
 }
+
+/**
+ * Enables features that are specific to the codespaces-codeql template workspace from
+ * https://github.com/github/codespaces-codeql.
+ */
+export const CODESPACES_CODE_TOUR = new Setting(
+  "codespacesTemplate",
+  ROOT_SETTING,
+);
+
+export function isCodespacesTemplate() {
+  return !!CODESPACES_CODE_TOUR.getValue<boolean>();
+}
