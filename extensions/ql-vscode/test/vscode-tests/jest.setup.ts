@@ -1,10 +1,8 @@
 import { env } from "vscode";
 import { beforeEachAction } from "./test-config";
 
-(env as any).openExternal = () => {
-  /**/
-};
-
 beforeEach(async () => {
+  jest.spyOn(env, "openExternal").mockResolvedValue(false);
+
   await beforeEachAction();
 });

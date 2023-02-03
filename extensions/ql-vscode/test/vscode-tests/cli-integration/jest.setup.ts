@@ -12,10 +12,6 @@ import { CUSTOM_CODEQL_PATH_SETTING } from "../../../src/config";
 import { ConfigurationTarget, env, extensions, workspace } from "vscode";
 import { beforeEachAction } from "../test-config";
 
-(env as any).openExternal = () => {
-  /**/
-};
-
 // create an extension storage location
 let removeStorage: tmp.DirResult["removeCallback"] | undefined;
 
@@ -80,6 +76,8 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  jest.spyOn(env, "openExternal").mockResolvedValue(false);
+
   await beforeEachAction();
 
   await CUSTOM_CODEQL_PATH_SETTING.updateValue(
