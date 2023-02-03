@@ -447,6 +447,9 @@ describe("QueryHistoryManager", () => {
           await queryHistoryManager.treeView.reveal(toDelete, {
             select: true,
           });
+          expect(queryHistoryManager.treeDataProvider.getCurrent()).toBe(
+            toDelete,
+          );
           await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
             toDelete,
           ]);
@@ -547,6 +550,9 @@ describe("QueryHistoryManager", () => {
           await queryHistoryManager.treeView.reveal(toDelete, {
             select: true,
           });
+          expect(queryHistoryManager.treeDataProvider.getCurrent()).toBe(
+            toDelete,
+          );
           await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
             toDelete,
           ]);
