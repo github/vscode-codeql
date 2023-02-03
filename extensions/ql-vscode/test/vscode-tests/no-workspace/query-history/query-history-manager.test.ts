@@ -409,14 +409,14 @@ describe("QueryHistoryManager", () => {
           ]);
         });
 
-        it("should remove the item", () => {
+        it("should remove the item", async () => {
           expect(toDelete.completedQuery!.dispose).toBeCalledTimes(1);
           expect(queryHistoryManager.treeDataProvider.allHistory).toEqual(
             expect.not.arrayContaining([toDelete]),
           );
         });
 
-        it("should not change the selection", () => {
+        it("should not change the selection", async () => {
           expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
             selected,
           );
@@ -452,14 +452,14 @@ describe("QueryHistoryManager", () => {
           ]);
         });
 
-        it("should remove the item", () => {
+        it("should remove the item", async () => {
           expect(toDelete.completedQuery!.dispose).toBeCalledTimes(1);
           expect(queryHistoryManager.treeDataProvider.allHistory).toEqual(
             expect.not.arrayContaining([toDelete]),
           );
         });
 
-        it("should change the selection", () => {
+        it("should change the selection", async () => {
           expect(queryHistoryManager.treeDataProvider.getCurrent()).toBe(
             newSelected,
           );
@@ -510,7 +510,7 @@ describe("QueryHistoryManager", () => {
           ]);
         });
 
-        it("should remove the item", () => {
+        it("should remove the item", async () => {
           expect(
             remoteQueriesManagerStub.removeRemoteQuery,
           ).toHaveBeenCalledWith(toDelete.queryId);
@@ -519,7 +519,7 @@ describe("QueryHistoryManager", () => {
           );
         });
 
-        it("should not change the selection", () => {
+        it("should not change the selection", async () => {
           expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
             selected,
           );
@@ -552,7 +552,7 @@ describe("QueryHistoryManager", () => {
           ]);
         });
 
-        it("should remove the item", () => {
+        it("should remove the item", async () => {
           expect(
             remoteQueriesManagerStub.removeRemoteQuery,
           ).toHaveBeenCalledWith(toDelete.queryId);
@@ -561,7 +561,7 @@ describe("QueryHistoryManager", () => {
           );
         });
 
-        it("should change the selection", () => {
+        it("should change the selection", async () => {
           expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
             newSelected,
           );
@@ -722,7 +722,7 @@ describe("QueryHistoryManager", () => {
             ]);
           });
 
-          it("should remove the item", () => {
+          it("should remove the item", async () => {
             expect(
               variantAnalysisManagerStub.removeVariantAnalysis,
             ).toHaveBeenCalledWith(toDelete.variantAnalysis);
@@ -731,7 +731,7 @@ describe("QueryHistoryManager", () => {
             ).not.toContain(toDelete);
           });
 
-          it.skip("should change the selection", () => {
+          it("should change the selection", async () => {
             expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
               newSelected,
             );
@@ -740,7 +740,7 @@ describe("QueryHistoryManager", () => {
             );
           });
 
-          it("should show a modal asking 'Are you sure?'", () => {
+          it("should show a modal asking 'Are you sure?'", async () => {
             expect(showBinaryChoiceDialogSpy).toHaveBeenCalledWith(
               "You are about to delete this query: query-name. Are you sure?",
             );
@@ -784,7 +784,7 @@ describe("QueryHistoryManager", () => {
             ]);
           });
 
-          it("should remove the item", () => {
+          it("should remove the item", async () => {
             expect(
               variantAnalysisManagerStub.removeVariantAnalysis,
             ).toHaveBeenCalledWith(toDelete.variantAnalysis);
@@ -793,7 +793,7 @@ describe("QueryHistoryManager", () => {
             ).not.toContain(toDelete);
           });
 
-          it("should not change the selection", () => {
+          it("should not change the selection", async () => {
             expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
               selected,
             );
@@ -802,7 +802,7 @@ describe("QueryHistoryManager", () => {
             );
           });
 
-          it("should not show a modal asking 'Are you sure?'", () => {
+          it("should not show a modal asking 'Are you sure?'", async () => {
             expect(showBinaryChoiceDialogSpy).not.toHaveBeenCalled();
           });
         });
@@ -829,7 +829,7 @@ describe("QueryHistoryManager", () => {
             ]);
           });
 
-          it("should remove the item", () => {
+          it("should remove the item", async () => {
             expect(
               variantAnalysisManagerStub.removeVariantAnalysis,
             ).toHaveBeenCalledWith(toDelete.variantAnalysis);
@@ -838,7 +838,7 @@ describe("QueryHistoryManager", () => {
             ).not.toContain(toDelete);
           });
 
-          it.skip("should change the selection", () => {
+          it.skip("should change the selection", async () => {
             expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
               newSelected,
             );
@@ -847,7 +847,7 @@ describe("QueryHistoryManager", () => {
             );
           });
 
-          it("should not show a modal asking 'Are you sure?'", () => {
+          it("should not show a modal asking 'Are you sure?'", async () => {
             expect(showBinaryChoiceDialogSpy).not.toHaveBeenCalled();
           });
         });
