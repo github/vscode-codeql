@@ -122,29 +122,31 @@ describe("databases", () => {
     });
   });
 
-  it("should rename a db item and emit an event", async () => {
-    const mockDbItem = createMockDB();
-    const onDidChangeDatabaseItem = jest.fn();
-    databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
-    await (databaseManager as any).addDatabaseItem(
-      {} as ProgressCallback,
-      {} as CancellationToken,
-      mockDbItem,
-    );
+  describe("renameDatabaseItem", () => {
+    it("should rename a db item and emit an event", async () => {
+      const mockDbItem = createMockDB();
+      const onDidChangeDatabaseItem = jest.fn();
+      databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
+      await (databaseManager as any).addDatabaseItem(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem,
+      );
 
-    await databaseManager.renameDatabaseItem(mockDbItem, "new name");
+      await databaseManager.renameDatabaseItem(mockDbItem, "new name");
 
-    expect(mockDbItem.name).toBe("new name");
-    expect(updateSpy).toBeCalledWith("databaseList", [
-      {
-        options: { ...MOCK_DB_OPTIONS, displayName: "new name" },
-        uri: dbLocationUri().toString(true),
-      },
-    ]);
+      expect(mockDbItem.name).toBe("new name");
+      expect(updateSpy).toBeCalledWith("databaseList", [
+        {
+          options: { ...MOCK_DB_OPTIONS, displayName: "new name" },
+          uri: dbLocationUri().toString(true),
+        },
+      ]);
 
-    expect(onDidChangeDatabaseItem).toBeCalledWith({
-      item: undefined,
-      kind: DatabaseEventKind.Rename,
+      expect(onDidChangeDatabaseItem).toBeCalledWith({
+        item: undefined,
+        kind: DatabaseEventKind.Rename,
+      });
     });
   });
 
@@ -378,20 +380,26 @@ describe("databases", () => {
     });
   });
 
-  it("should get the primary language", async () => {
-    resolveDatabaseSpy.mockResolvedValue({
-      languages: ["python"],
-    } as unknown as DbInfo);
-    const result = await (databaseManager as any).getPrimaryLanguage("hucairz");
-    expect(result).toBe("python");
-  });
+  describe("getPrimaryLanguage", () => {
+    it("should get the primary language", async () => {
+      resolveDatabaseSpy.mockResolvedValue({
+        languages: ["python"],
+      } as unknown as DbInfo);
+      const result = await (databaseManager as any).getPrimaryLanguage(
+        "hucairz",
+      );
+      expect(result).toBe("python");
+    });
 
-  it("should handle missing the primary language", async () => {
-    resolveDatabaseSpy.mockResolvedValue({
-      languages: [],
-    } as unknown as DbInfo);
-    const result = await (databaseManager as any).getPrimaryLanguage("hucairz");
-    expect(result).toBe("");
+    it("should handle missing the primary language", async () => {
+      resolveDatabaseSpy.mockResolvedValue({
+        languages: [],
+      } as unknown as DbInfo);
+      const result = await (databaseManager as any).getPrimaryLanguage(
+        "hucairz",
+      );
+      expect(result).toBe("");
+    });
   });
 
   describe("isAffectedByTest", () => {
