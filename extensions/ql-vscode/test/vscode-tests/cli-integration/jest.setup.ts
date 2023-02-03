@@ -82,7 +82,7 @@ beforeEach(async () => {
 
   await CUSTOM_CODEQL_PATH_SETTING.updateValue(
     process.env.CLI_PATH,
-    ConfigurationTarget.Global,
+    ConfigurationTarget.Workspace,
   );
 });
 
