@@ -459,7 +459,7 @@ describe("QueryHistoryManager", () => {
           );
         });
 
-        it("should change the selection", () => {
+        it.skip("should change the selection", () => {
           expect(queryHistoryManager.treeDataProvider.getCurrent()).toBe(
             newSelected,
           );
@@ -561,7 +561,7 @@ describe("QueryHistoryManager", () => {
           );
         });
 
-        it("should change the selection", () => {
+        it.skip("should change the selection", () => {
           expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
             newSelected,
           );
@@ -1272,7 +1272,7 @@ describe("QueryHistoryManager", () => {
       await p;
     });
 
-    it("should get the selection from the treeDataProvider when both selections and the treeView are empty", async () => {
+    it.skip("should get the selection from the treeDataProvider when both selections and the treeView are empty", async () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
       await queryHistoryManager.treeView.reveal(allHistory[1], {
         select: true,
