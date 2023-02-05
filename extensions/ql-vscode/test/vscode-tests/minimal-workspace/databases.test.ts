@@ -289,7 +289,10 @@ describe("databases", () => {
 
   describe("resolveSourceFile", () => {
     it("should fail to resolve when not a uri", () => {
-      const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        Uri.parse("file:/sourceArchive-uri/"),
+      );
       (db as any)._contents.sourceArchiveUri = undefined;
       expect(() => db.resolveSourceFile("abc")).toThrowError(
         "Scheme is missing",
@@ -297,7 +300,10 @@ describe("databases", () => {
     });
 
     it("should fail to resolve when not a file uri", () => {
-      const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        Uri.parse("file:/sourceArchive-uri/"),
+      );
       (db as any)._contents.sourceArchiveUri = undefined;
       expect(() => db.resolveSourceFile("http://abc")).toThrowError(
         "Invalid uri scheme",
@@ -306,14 +312,20 @@ describe("databases", () => {
 
     describe("no source archive", () => {
       it("should resolve undefined", () => {
-        const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
+        const db = createMockDB(
+          MOCK_DB_OPTIONS,
+          Uri.parse("file:/sourceArchive-uri/"),
+        );
         (db as any)._contents.sourceArchiveUri = undefined;
         const resolved = db.resolveSourceFile(undefined);
         expect(resolved.toString(true)).toBe(dbLocationUri().toString(true));
       });
 
       it("should resolve an empty file", () => {
-        const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
+        const db = createMockDB(
+          MOCK_DB_OPTIONS,
+          Uri.parse("file:/sourceArchive-uri/"),
+        );
         (db as any)._contents.sourceArchiveUri = undefined;
         const resolved = db.resolveSourceFile("file:");
         expect(resolved.toString()).toBe("file:///");
@@ -323,6 +335,7 @@ describe("databases", () => {
     describe("zipped source archive", () => {
       it("should encode a source archive url", () => {
         const db = createMockDB(
+          MOCK_DB_OPTIONS,
           encodeSourceArchiveUri({
             sourceArchiveZipPath: "sourceArchive-uri",
             pathWithinSourceArchive: "def",
@@ -342,6 +355,7 @@ describe("databases", () => {
 
       it("should encode a source archive url with trailing slash", () => {
         const db = createMockDB(
+          MOCK_DB_OPTIONS,
           encodeSourceArchiveUri({
             sourceArchiveZipPath: "sourceArchive-uri",
             pathWithinSourceArchive: "def/",
@@ -361,6 +375,7 @@ describe("databases", () => {
 
       it("should encode an empty source archive url", () => {
         const db = createMockDB(
+          MOCK_DB_OPTIONS,
           encodeSourceArchiveUri({
             sourceArchiveZipPath: "sourceArchive-uri",
             pathWithinSourceArchive: "def",
@@ -374,7 +389,10 @@ describe("databases", () => {
     });
 
     it("should handle an empty file", () => {
-      const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        Uri.parse("file:/sourceArchive-uri/"),
+      );
       const resolved = db.resolveSourceFile("");
       expect(resolved.toString()).toBe("file:///sourceArchive-uri/");
     });
@@ -417,12 +435,17 @@ describe("databases", () => {
     });
 
     it("should return true for testproj database in test directory", async () => {
-      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        sourceLocationUri(),
+        Uri.file(projectPath),
+      );
       expect(await db.isAffectedByTest(directoryPath)).toBe(true);
     });
 
     it("should return false for non-existent test directory", async () => {
       const db = createMockDB(
+        MOCK_DB_OPTIONS,
         sourceLocationUri(),
         Uri.file(join(dir.name, "non-existent/non-existent.testproj")),
       );
@@ -436,6 +459,7 @@ describe("databases", () => {
       await fs.writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
+        MOCK_DB_OPTIONS,
         sourceLocationUri(),
         Uri.file(anotherProjectPath),
       );
@@ -449,6 +473,7 @@ describe("databases", () => {
       await fs.writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
+        MOCK_DB_OPTIONS,
         sourceLocationUri(),
         Uri.file(anotherProjectPath),
       );
@@ -456,20 +481,32 @@ describe("databases", () => {
     });
 
     it("should return false for testproj database for prefix directory", async () => {
-      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        sourceLocationUri(),
+        Uri.file(projectPath),
+      );
       // /d is a prefix of /dir/dir.testproj, but
       // /dir/dir.testproj is not under /d
       expect(await db.isAffectedByTest(join(directoryPath, "d"))).toBe(false);
     });
 
     it("should return true for testproj database for test file", async () => {
-      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        sourceLocationUri(),
+        Uri.file(projectPath),
+      );
       expect(await db.isAffectedByTest(qlFilePath)).toBe(true);
     });
 
     it("should return false for non-existent test file", async () => {
       const otherTestFile = join(directoryPath, "other-test.ql");
-      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        sourceLocationUri(),
+        Uri.file(projectPath),
+      );
       expect(await db.isAffectedByTest(otherTestFile)).toBe(false);
     });
 
@@ -478,6 +515,7 @@ describe("databases", () => {
       await fs.writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
+        MOCK_DB_OPTIONS,
         sourceLocationUri(),
         Uri.file(anotherProjectPath),
       );
@@ -488,7 +526,11 @@ describe("databases", () => {
       const otherTestFile = join(dir.name, "test.ql");
       await fs.writeFile(otherTestFile, "");
 
-      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        sourceLocationUri(),
+        Uri.file(projectPath),
+      );
       expect(await db.isAffectedByTest(otherTestFile)).toBe(false);
     });
   });
@@ -533,6 +575,7 @@ describe("databases", () => {
   });
 
   function createMockDB(
+    mockDbOptions = MOCK_DB_OPTIONS,
     // source archive location must be a real(-ish) location since
     // tests will add this to the workspace location
     sourceArchiveUri = sourceLocationUri(),
@@ -544,7 +587,7 @@ describe("databases", () => {
         sourceArchiveUri,
         datasetUri: databaseUri,
       } as DatabaseContents,
-      MOCK_DB_OPTIONS,
+      mockDbOptions,
       () => void 0,
     );
   }
