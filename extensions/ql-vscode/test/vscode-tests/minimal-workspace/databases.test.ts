@@ -10,6 +10,7 @@ import {
   DatabaseContents,
   FullDatabaseOptions,
   findSourceArchive,
+  DatabaseResolver,
 } from "../../../src/databases";
 import { Logger } from "../../../src/common";
 import { ProgressCallback } from "../../../src/commandRunner";
@@ -21,6 +22,7 @@ import {
 import { testDisposeHandler } from "../test-dispose-handler";
 import { QueryRunner } from "../../../src/queryRunner";
 import * as helpers from "../../../src/helpers";
+import { Setting } from "../../../src/config";
 
 describe("databases", () => {
   const MOCK_DB_OPTIONS: FullDatabaseOptions = {
@@ -619,6 +621,98 @@ describe("databases", () => {
         expect(logSpy).toHaveBeenCalledWith(
           "Could not create QL pack because no database is selected. Please add a database.",
         );
+      });
+    });
+  });
+
+  describe("openDatabase", () => {
+    let createSkeletonPacksSpy: jest.SpyInstance;
+    let resolveDatabaseContentsSpy: jest.SpyInstance;
+    let addDatabaseSourceArchiveFolderSpy: jest.SpyInstance;
+    let mockDbItem: DatabaseItemImpl;
+
+    beforeEach(() => {
+      createSkeletonPacksSpy = jest
+        .spyOn(databaseManager, "createSkeletonPacks")
+        .mockImplementation(async () => {
+          /* no-op */
+        });
+
+      resolveDatabaseContentsSpy = jest
+        .spyOn(DatabaseResolver, "resolveDatabaseContents")
+        .mockResolvedValue({} as DatabaseContents);
+
+      addDatabaseSourceArchiveFolderSpy = jest.spyOn(
+        databaseManager,
+        "addDatabaseSourceArchiveFolder",
+      );
+
+      jest.mock("fs", () => ({
+        promises: {
+          pathExists: jest.fn().mockResolvedValue(true),
+        },
+      }));
+
+      mockDbItem = createMockDB();
+    });
+
+    it("should resolve the database contents", async () => {
+      await databaseManager.openDatabase(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem.databaseUri,
+      );
+
+      expect(resolveDatabaseContentsSpy).toBeCalledTimes(1);
+    });
+
+    it("should add database source archive folder", async () => {
+      await databaseManager.openDatabase(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem.databaseUri,
+      );
+
+      expect(addDatabaseSourceArchiveFolderSpy).toBeCalledTimes(1);
+    });
+
+    describe("when codeQL.codespacesTemplate is set to true", () => {
+      it("should create a skeleton QL pack", async () => {
+        jest.spyOn(Setting.prototype, "getValue").mockReturnValue(true);
+
+        await databaseManager.openDatabase(
+          {} as ProgressCallback,
+          {} as CancellationToken,
+          mockDbItem.databaseUri,
+        );
+
+        expect(createSkeletonPacksSpy).toBeCalledTimes(1);
+      });
+    });
+
+    describe("when codeQL.codespacesTemplate is set to false", () => {
+      it("should not create a skeleton QL pack", async () => {
+        jest.spyOn(Setting.prototype, "getValue").mockReturnValue(false);
+
+        await databaseManager.openDatabase(
+          {} as ProgressCallback,
+          {} as CancellationToken,
+          mockDbItem.databaseUri,
+        );
+        expect(createSkeletonPacksSpy).toBeCalledTimes(0);
+      });
+    });
+
+    describe("when codeQL.codespacesTemplate is not set", () => {
+      it("should not create a skeleton QL pack", async () => {
+        jest.spyOn(Setting.prototype, "getValue").mockReturnValue(undefined);
+
+        await databaseManager.openDatabase(
+          {} as ProgressCallback,
+          {} as CancellationToken,
+          mockDbItem.databaseUri,
+        );
+        expect(createSkeletonPacksSpy).toBeCalledTimes(0);
       });
     });
   });
