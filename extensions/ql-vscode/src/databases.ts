@@ -9,6 +9,8 @@ import {
   showAndLogInformationMessage,
   isLikelyDatabaseRoot,
   showAndLogExceptionWithTelemetry,
+  isFolderAlreadyInWorkspace,
+  showBinaryChoiceDialog,
 } from "./helpers";
 import { ProgressCallback, withProgress } from "./commandRunner";
 import {
@@ -23,6 +25,7 @@ import { asError, getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./queryRunner";
 import { pathsEqual } from "./pure/files";
 import { redactableError } from "./pure/errors";
+import { isCodespacesTemplate } from "./config";
 
 /**
  * databases.ts
@@ -621,7 +624,36 @@ export class DatabaseManager extends DisposableObject {
     await this.addDatabaseItem(progress, token, databaseItem);
     await this.addDatabaseSourceArchiveFolder(databaseItem);
 
+    if (isCodespacesTemplate()) {
+      await this.createSkeletonPacks(databaseItem);
+    }
+
     return databaseItem;
+  }
+
+  public async createSkeletonPacks(databaseItem: DatabaseItem) {
+    if (databaseItem === undefined) {
+      void this.logger.log(
+        "Could not create QL pack as no database is selected. Please select a database.",
+      );
+      return;
+    }
+
+    if (databaseItem.language == "") {
+      void this.logger.log(
+        "Could not create skeleton QL pack because the selected database's language is not set.",
+      );
+      return;
+    }
+
+    const folderName = `codeql-custom-queries-${databaseItem.language}`;
+    if (isFolderAlreadyInWorkspace(folderName)) {
+      return;
+    }
+
+    await showBinaryChoiceDialog(
+      "We've noticed you don't have QL packs downloaded to analyze this database. Can we set it up for you?",
+    );
   }
 
   private async reregisterDatabases(

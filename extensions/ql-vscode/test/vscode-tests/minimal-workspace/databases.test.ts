@@ -20,6 +20,7 @@ import {
 } from "../../../src/archive-filesystem-provider";
 import { testDisposeHandler } from "../test-dispose-handler";
 import { QueryRunner } from "../../../src/queryRunner";
+import * as helpers from "../../../src/helpers";
 
 describe("databases", () => {
   const MOCK_DB_OPTIONS: FullDatabaseOptions = {
@@ -34,6 +35,11 @@ describe("databases", () => {
   let registerSpy: jest.Mock<Promise<void>, []>;
   let deregisterSpy: jest.Mock<Promise<void>, []>;
   let resolveDatabaseSpy: jest.Mock<Promise<DbInfo>, []>;
+  let logSpy: jest.Mock<any, []>;
+
+  let showBinaryChoiceDialogSpy: jest.SpiedFunction<
+    typeof helpers.showBinaryChoiceDialog
+  >;
 
   let dir: tmp.DirResult;
 
@@ -44,6 +50,13 @@ describe("databases", () => {
     registerSpy = jest.fn(() => Promise.resolve(undefined));
     deregisterSpy = jest.fn(() => Promise.resolve(undefined));
     resolveDatabaseSpy = jest.fn(() => Promise.resolve({} as DbInfo));
+    logSpy = jest.fn(() => {
+      /* */
+    });
+
+    showBinaryChoiceDialogSpy = jest
+      .spyOn(helpers, "showBinaryChoiceDialog")
+      .mockResolvedValue(true);
 
     databaseManager = new DatabaseManager(
       {
@@ -66,9 +79,7 @@ describe("databases", () => {
         resolveDatabase: resolveDatabaseSpy,
       } as unknown as CodeQLCliServer,
       {
-        log: () => {
-          /**/
-        },
+        log: logSpy,
       } as unknown as Logger,
     );
 
@@ -571,6 +582,44 @@ describe("databases", () => {
 
       const resultUri = await findSourceArchive(dir.name);
       expect(resultUri!.fsPath).toBe(uriSrc.fsPath);
+    });
+  });
+
+  describe("createSkeletonPacks", () => {
+    let mockDbItem: DatabaseItemImpl;
+
+    describe("when the language is set", () => {
+      it("should offer the user to set up a skeleton QL pack", async () => {
+        const options: FullDatabaseOptions = {
+          dateAdded: 123,
+          ignoreSourceArchive: false,
+          language: "ruby",
+        };
+        mockDbItem = createMockDB(options);
+
+        await (databaseManager as any).createSkeletonPacks(mockDbItem);
+
+        expect(showBinaryChoiceDialogSpy).toBeCalledTimes(1);
+      });
+    });
+
+    describe("when the language is not set", () => {
+      it("should fail gracefully", async () => {
+        mockDbItem = createMockDB();
+        await (databaseManager as any).createSkeletonPacks(mockDbItem);
+        expect(logSpy).toHaveBeenCalledWith(
+          "Could not create skeleton QL pack because the selected database's language is not set.",
+        );
+      });
+    });
+
+    describe("when the databaseItem is not set", () => {
+      it("should fail gracefully", async () => {
+        await (databaseManager as any).createSkeletonPacks(undefined);
+        expect(logSpy).toHaveBeenCalledWith(
+          "Could not create QL pack as no database is selected. Please select a database.",
+        );
+      });
     });
   });
 
