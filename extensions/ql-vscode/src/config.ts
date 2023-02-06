@@ -652,11 +652,11 @@ export function getMockGitHubApiServerScenariosPath(): string | undefined {
  * Enables features that are specific to the codespaces-codeql template workspace from
  * https://github.com/github/codespaces-codeql.
  */
-export const CODESPACES_CODE_TOUR = new Setting(
+export const CODESPACES_TEMPLATE = new Setting(
   "codespacesTemplate",
   ROOT_SETTING,
 );
 
 export function isCodespacesTemplate() {
-  return !!CODESPACES_CODE_TOUR.getValue<boolean>();
+  return !!CODESPACES_TEMPLATE.getValue<boolean>();
 }
