@@ -92,7 +92,7 @@ export class ResultTables extends React.Component<
       // @ts-ignore 2783
       this.props.rawResultSets.map((rs) => ({ t: "RawResultSet", ...rs }));
 
-    if (this.props.interpretation != undefined) {
+    if (this.props.interpretation !== undefined) {
       const tableName = this.getInterpretedTableName();
       resultSets.push({
         t: "InterpretedResultSet",
@@ -307,10 +307,11 @@ export class ResultTables extends React.Component<
     const resultSetNames = this.getResultSetNames();
 
     const resultSet = resultSets.find(
-      (resultSet) => resultSet.schema.name == selectedTable,
+      (resultSet) => resultSet.schema.name === selectedTable,
     );
     const nonemptyRawResults = resultSets.some(
-      (resultSet) => resultSet.t == "RawResultSet" && resultSet.rows.length > 0,
+      (resultSet) =>
+        resultSet.t === "RawResultSet" && resultSet.rows.length > 0,
     );
     const numberOfResults = resultSet && renderResultCountString(resultSet);
 

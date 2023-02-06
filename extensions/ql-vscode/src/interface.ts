@@ -110,7 +110,7 @@ function sortInterpretedResults(
 function interpretedPageSize(
   interpretation: Interpretation | undefined,
 ): number {
-  if (interpretation?.data.t == "GraphInterpretationData") {
+  if (interpretation?.data.t === "GraphInterpretationData") {
     // Graph views always have one result per page.
     return 1;
   }
@@ -124,7 +124,7 @@ function numPagesOfResultSet(
   const pageSize = interpretedPageSize(interpretation);
 
   const n =
-    interpretation?.data.t == "GraphInterpretationData"
+    interpretation?.data.t === "GraphInterpretationData"
       ? interpretation.data.dot.length
       : resultSet.schema.rows;
 
@@ -141,7 +141,7 @@ function numInterpretedPages(
   const pageSize = interpretedPageSize(interpretation);
 
   const n =
-    interpretation.data.t == "GraphInterpretationData"
+    interpretation.data.t === "GraphInterpretationData"
       ? interpretation.data.dot.length
       : interpretation.data.runs[0].results?.length || 0;
 
@@ -446,7 +446,7 @@ export class ResultsView extends AbstractWebview<
 
     const selectedTable = getDefaultResultSetName(resultSetNames);
     const schema = resultSetSchemas.find(
-      (resultSet) => resultSet.name == selectedTable,
+      (resultSet) => resultSet.name === selectedTable,
     )!;
 
     // Use sorted results path if it exists. This may happen if we are
@@ -590,7 +590,7 @@ export class ResultsView extends AbstractWebview<
     const resultSetNames = allResultSetSchemas.map((schema) => schema.name);
 
     const schema = resultSetSchemas.find(
-      (resultSet) => resultSet.name == selectedTable,
+      (resultSet) => resultSet.name === selectedTable,
     )!;
     if (schema === undefined)
       throw new Error(`Query result set '${selectedTable}' not found.`);

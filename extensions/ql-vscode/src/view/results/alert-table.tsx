@@ -177,7 +177,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       msg: string | undefined,
       locationHint: string,
     ): JSX.Element | undefined {
-      if (msg == undefined) return undefined;
+      if (msg === undefined) return undefined;
       return <span title={locationHint}>{msg}</span>;
     }
 
@@ -304,7 +304,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
           const paths: Sarif.ThreadFlow[] = Keys.getAllPaths(result);
 
           const indices =
-            paths.length == 1
+            paths.length === 1
               ? [resultKey, { ...resultKey, pathIndex: 0 }]
               : /* if there's exactly one path, auto-expand
                  * the path when expanding the result */
