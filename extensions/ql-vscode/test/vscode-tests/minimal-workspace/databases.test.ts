@@ -617,7 +617,7 @@ describe("databases", () => {
       it("should fail gracefully", async () => {
         await (databaseManager as any).createSkeletonPacks(undefined);
         expect(logSpy).toHaveBeenCalledWith(
-          "Could not create QL pack as no database is selected. Please select a database.",
+          "Could not create QL pack because no database is selected. Please add a database.",
         );
       });
     });

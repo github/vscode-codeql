@@ -634,7 +634,7 @@ export class DatabaseManager extends DisposableObject {
   public async createSkeletonPacks(databaseItem: DatabaseItem) {
     if (databaseItem === undefined) {
       void this.logger.log(
-        "Could not create QL pack as no database is selected. Please select a database.",
+        "Could not create QL pack because no database is selected. Please add a database.",
       );
       return;
     }
