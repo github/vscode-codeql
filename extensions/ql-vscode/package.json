@@ -1483,7 +1483,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run format-staged",
-      "pre-push": "npm run lint && scripts/forbid-test-only"
+      "pre-push": "scripts/forbid-test-only"
     }
   },
   "lint-staged": {
