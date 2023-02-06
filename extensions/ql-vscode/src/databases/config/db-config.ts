@@ -1,6 +1,10 @@
-// Contains models for the data we want to store in the database config
+// Contains models and consts for the data we want to store in the database config.
+// Changes to these models should be done carefully and account for backwards compatibility of data.
+
+export const DB_CONFIG_VERSION = 1;
 
 export interface DbConfig {
+  version: number;
   databases: DbConfigDatabases;
   selected?: SelectedDbItem;
 }
@@ -89,6 +93,7 @@ export interface LocalDatabase {
 
 export function cloneDbConfig(config: DbConfig): DbConfig {
   return {
+    version: config.version,
     databases: {
       variantAnalysis: {
         repositoryLists: config.databases.variantAnalysis.repositoryLists.map(
