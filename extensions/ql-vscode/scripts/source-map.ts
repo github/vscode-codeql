@@ -4,6 +4,7 @@
  * works with released extensions.
  *
  * Usage: npx ts-node scripts/source-map.ts <version-number> <filename>:<line>:<column>
+ * For example: npx ts-node scripts/source-map.ts v1.7.8 "/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131164:13"
  */
 
 import { spawnSync } from "child_process";
