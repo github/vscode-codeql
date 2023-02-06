@@ -652,7 +652,7 @@ export class DatabaseManager extends DisposableObject {
     }
 
     await showBinaryChoiceDialog(
-      "We've noticed you don't have QL packs downloaded to analyze this database. Can we set it up for you?",
+      `We've noticed you don't have a QL pack downloaded to analyze this database. Can we set up a ${databaseItem.language} query pack for you`,
     );
   }
 
