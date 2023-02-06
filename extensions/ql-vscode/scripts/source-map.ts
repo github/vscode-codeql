@@ -87,8 +87,8 @@ async function extractSourceMap() {
           null,
           async function (consumer) {
             return consumer.originalPositionFor({
-              line: parseInt(line),
-              column: parseInt(column),
+              line: parseInt(line, 10),
+              column: parseInt(column, 10),
             });
           },
         );
@@ -126,8 +126,8 @@ async function extractSourceMap() {
       null,
       async function (consumer) {
         return consumer.originalPositionFor({
-          line: parseInt(line),
-          column: parseInt(column),
+          line: parseInt(line, 10),
+          column: parseInt(column, 10),
         });
       },
     );
