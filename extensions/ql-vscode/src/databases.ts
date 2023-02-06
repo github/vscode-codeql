@@ -639,7 +639,7 @@ export class DatabaseManager extends DisposableObject {
       return;
     }
 
-    if (databaseItem.language == "") {
+    if (databaseItem.language === "") {
       void this.logger.log(
         "Could not create skeleton QL pack because the selected database's language is not set.",
       );

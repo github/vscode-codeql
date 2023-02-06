@@ -260,7 +260,7 @@ export function isFolderAlreadyInWorkspace(folderName: string) {
   const workspaceFolders = workspace.workspaceFolders || [];
 
   return !!workspaceFolders.find(
-    (workspaceFolder) => workspaceFolder.name == folderName,
+    (workspaceFolder) => workspaceFolder.name === folderName,
   );
 }
 
