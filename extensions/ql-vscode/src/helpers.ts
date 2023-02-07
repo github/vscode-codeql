@@ -387,17 +387,22 @@ async function findDbschemePack(
 ): Promise<{ name: string; isLibraryPack: boolean }> {
   for (const { packDir, packName } of packs) {
     if (packDir !== undefined) {
-      const qlpack = load(
-        await readFile(join(packDir, "qlpack.yml"), "utf8"),
-      ) as { dbscheme?: string; library?: boolean };
-      if (
-        qlpack.dbscheme !== undefined &&
-        basename(qlpack.dbscheme) === basename(dbschemePath)
-      ) {
-        return {
-          name: packName,
-          isLibraryPack: qlpack.library === true,
+      const qlpackPath = await getQlPackPath(packDir);
+
+      if (qlpackPath !== undefined) {
+        const qlpack = load(await readFile(qlpackPath, "utf8")) as {
+          dbscheme?: string;
+          library?: boolean;
         };
+        if (
+          qlpack.dbscheme !== undefined &&
+          basename(qlpack.dbscheme) === basename(dbschemePath)
+        ) {
+          return {
+            name: packName,
+            isLibraryPack: qlpack.library === true,
+          };
+        }
       }
     }
   }
@@ -736,4 +741,21 @@ export async function* walkDirectory(
       yield entry;
     }
   }
+}
+
+export const QLPACK_FILENAMES = ["qlpack.yml", "codeql-pack.yml"];
+export const FALLBACK_QLPACK_FILENAME = QLPACK_FILENAMES[0];
+
+export async function getQlPackPath(
+  packRoot: string,
+): Promise<string | undefined> {
+  for (const filename of QLPACK_FILENAMES) {
+    const path = join(packRoot, filename);
+
+    if (await pathExists(path)) {
+      return path;
+    }
+  }
+
+  return undefined;
 }

@@ -12,9 +12,11 @@ import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 import { CodeQLCliServer } from "./cli";
 import { DatabaseUI } from "./databases-ui";
 import {
+  FALLBACK_QLPACK_FILENAME,
   getInitialQueryContents,
   getPrimaryDbscheme,
   getQlPackForDbscheme,
+  getQlPackPath,
   showBinaryChoiceDialog,
 } from "./helpers";
 import { ProgressCallback, UserCancellationException } from "./commandRunner";
@@ -112,7 +114,7 @@ export async function displayQuickQuery(
     const dbscheme = await getPrimaryDbscheme(datasetFolder);
     const qlpack = (await getQlPackForDbscheme(cliServer, dbscheme))
       .dbschemePack;
-    const qlPackFile = join(queriesDir, "qlpack.yml");
+    const qlPackFile = await getQlPackPath(queriesDir);
     const qlFile = join(queriesDir, QUICK_QUERY_QUERY_NAME);
     const shouldRewrite = await checkShouldRewrite(qlPackFile, qlpack);
 
@@ -126,7 +128,7 @@ export async function displayQuickQuery(
         },
       };
       await writeFile(
-        qlPackFile,
+        qlPackFile ?? join(queriesDir, FALLBACK_QLPACK_FILENAME),
         QLPACK_FILE_HEADER + dump(quickQueryQlpackYaml),
         "utf8",
       );
@@ -158,7 +160,13 @@ export async function displayQuickQuery(
   }
 }
 
-async function checkShouldRewrite(qlPackFile: string, newDependency: string) {
+async function checkShouldRewrite(
+  qlPackFile: string | undefined,
+  newDependency: string,
+) {
+  if (!qlPackFile) {
+    return true;
+  }
   if (!(await pathExists(qlPackFile))) {
     return true;
   }

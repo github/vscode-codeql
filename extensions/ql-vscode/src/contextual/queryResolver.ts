@@ -9,6 +9,7 @@ import {
   getOnDiskWorkspaceFolders,
   QlPacksForLanguage,
   showAndLogExceptionWithTelemetry,
+  QLPACK_FILENAMES,
 } from "../helpers";
 import { KeyType, kindOfKeyType, nameOfKeyType, tagOfKeyType } from "./keyType";
 import { CodeQLCliServer } from "../cli";
@@ -113,7 +114,7 @@ async function resolveContextualQuery(
   // Work out the enclosing pack.
   const packContents = await cli.packPacklist(query, false);
   const packFilePath = packContents.find((p) =>
-    ["codeql-pack.yml", "qlpack.yml"].includes(basename(p)),
+    QLPACK_FILENAMES.includes(basename(p)),
   );
   if (packFilePath === undefined) {
     // Should not happen; we already resolved this query.
