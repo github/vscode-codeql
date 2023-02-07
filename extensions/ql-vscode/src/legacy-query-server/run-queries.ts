@@ -321,7 +321,7 @@ export async function compileAndRunQueryAgainstDatabase(
   // This test will produce confusing results if we ever change the name of the database schema files.
   const querySchemaName = basename(packConfig.dbscheme);
   const dbSchemaName = basename(dbItem.contents.dbSchemeUri.fsPath);
-  if (querySchemaName != dbSchemaName) {
+  if (querySchemaName !== dbSchemaName) {
     void extLogger.log(
       `Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`,
     );
@@ -403,7 +403,7 @@ export async function compileAndRunQueryAgainstDatabase(
     } catch (e) {
       if (
         e instanceof ResponseError &&
-        e.code == LSPErrorCodes.RequestCancelled
+        e.code === LSPErrorCodes.RequestCancelled
       ) {
         return createSyntheticResult(query, "Query cancelled");
       } else {
@@ -432,7 +432,7 @@ export async function compileAndRunQueryAgainstDatabase(
         query: query.queryEvalInfo,
         message,
         result,
-        successful: result.resultType == messages.QueryResultType.SUCCESS,
+        successful: result.resultType === messages.QueryResultType.SUCCESS,
         logFileLocation: result.logFileLocation,
         dispose: () => {
           qs.logger.removeAdditionalLogLocation(result.logFileLocation);

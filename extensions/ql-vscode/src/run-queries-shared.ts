@@ -517,7 +517,7 @@ export async function determineSelectedQuery(
   let quickEvalPosition: messages.Position | undefined = undefined;
   let quickEvalText: string | undefined = undefined;
   if (quickEval) {
-    if (editor == undefined) {
+    if (editor === undefined) {
       throw new Error("Can't run quick evaluation without an active editor.");
     }
     if (editor.document.fileName !== queryPath) {

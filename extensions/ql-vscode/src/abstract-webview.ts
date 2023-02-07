@@ -51,7 +51,7 @@ export abstract class AbstractWebview<
   }
 
   protected async getPanel(): Promise<WebviewPanel> {
-    if (this.panel == undefined) {
+    if (this.panel === undefined) {
       const { ctx } = this;
 
       // This is an async method, so in theory this method can be called concurrently. To ensure that we don't

@@ -650,10 +650,10 @@ export class ReleasesApiConsumer {
       redirectCount < ReleasesApiConsumer._maxRedirects
     ) {
       const parsedRedirectUrl = parse(redirectUrl);
-      if (parsedRedirectUrl.protocol != "https:") {
+      if (parsedRedirectUrl.protocol !== "https:") {
         throw new Error("Encountered a non-https redirect, rejecting");
       }
-      if (parsedRedirectUrl.host != "api.github.com") {
+      if (parsedRedirectUrl.host !== "api.github.com") {
         // Remove authorization header if we are redirected outside of the GitHub API.
         //
         // This is necessary to stream release assets since AWS fails if more than one auth
