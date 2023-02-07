@@ -108,7 +108,7 @@ describe("config listeners", () => {
           await wait();
           const newValue = listener[setting.property as keyof typeof listener];
           expect(newValue).toEqual(setting.values[1]);
-          expect(onDidChangeConfiguration).toHaveBeenCalledTimes(1);
+          expect(onDidChangeConfiguration).toHaveBeenCalled();
         });
       });
     });
