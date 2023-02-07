@@ -13,6 +13,8 @@ const config = {
     "--extensions-dir=" + path.join(rootDir, ".vscode-test", "extensions"),
   ],
   extensionDevelopmentPath: rootDir,
+  // Hide VSCode stdout, but show console.log
+  filterOutput: true,
 };
 
 if (process.env.VSCODE_INSPECTOR_OPTIONS) {
