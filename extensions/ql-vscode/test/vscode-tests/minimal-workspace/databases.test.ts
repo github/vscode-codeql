@@ -23,6 +23,7 @@ import { testDisposeHandler } from "../test-dispose-handler";
 import { QueryRunner } from "../../../src/queryRunner";
 import * as helpers from "../../../src/helpers";
 import { Setting } from "../../../src/config";
+import { QlPackGenerator } from "../../../src/qlpack-generator";
 
 describe("databases", () => {
   const MOCK_DB_OPTIONS: FullDatabaseOptions = {
@@ -37,6 +38,7 @@ describe("databases", () => {
   let registerSpy: jest.Mock<Promise<void>, []>;
   let deregisterSpy: jest.Mock<Promise<void>, []>;
   let resolveDatabaseSpy: jest.Mock<Promise<DbInfo>, []>;
+  let packAddSpy: jest.Mock<any, []>;
   let logSpy: jest.Mock<any, []>;
 
   let showBinaryChoiceDialogSpy: jest.SpiedFunction<
@@ -52,6 +54,7 @@ describe("databases", () => {
     registerSpy = jest.fn(() => Promise.resolve(undefined));
     deregisterSpy = jest.fn(() => Promise.resolve(undefined));
     resolveDatabaseSpy = jest.fn(() => Promise.resolve({} as DbInfo));
+    packAddSpy = jest.fn();
     logSpy = jest.fn(() => {
       /* */
     });
@@ -79,6 +82,7 @@ describe("databases", () => {
       } as unknown as QueryRunner,
       {
         resolveDatabase: resolveDatabaseSpy,
+        packAdd: packAddSpy,
       } as unknown as CodeQLCliServer,
       {
         log: logSpy,
@@ -589,19 +593,65 @@ describe("databases", () => {
 
   describe("createSkeletonPacks", () => {
     let mockDbItem: DatabaseItemImpl;
+    let packfolderName: string;
+    let qlPackYamlFilePath: string;
+    let exampleQlFilePath: string;
+    let language: string;
+
+    beforeEach(() => {
+      language = "ruby";
+
+      const options: FullDatabaseOptions = {
+        dateAdded: 123,
+        ignoreSourceArchive: false,
+        language,
+      };
+      mockDbItem = createMockDB(options);
+
+      packfolderName = `codeql-custom-queries-${mockDbItem.language}`;
+      qlPackYamlFilePath = join(packfolderName, "qlpack.yml");
+      exampleQlFilePath = join(packfolderName, "example.ql");
+    });
+
+    afterEach(async () => {
+      try {
+        fs.rmdirSync(packfolderName, { recursive: true });
+      } catch (e) {
+        // ignore
+      }
+    });
 
     describe("when the language is set", () => {
       it("should offer the user to set up a skeleton QL pack", async () => {
-        const options: FullDatabaseOptions = {
-          dateAdded: 123,
-          ignoreSourceArchive: false,
-          language: "ruby",
-        };
-        mockDbItem = createMockDB(options);
-
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
         expect(showBinaryChoiceDialogSpy).toBeCalledTimes(1);
+      });
+
+      it("should return early if the user refuses help", async () => {
+        showBinaryChoiceDialogSpy = jest
+          .spyOn(helpers, "showBinaryChoiceDialog")
+          .mockResolvedValue(false);
+
+        const generateSpy = jest.spyOn(QlPackGenerator.prototype, "generate");
+
+        await (databaseManager as any).createSkeletonPacks(mockDbItem);
+
+        expect(generateSpy).not.toBeCalled();
+      });
+
+      it("should create the skeleton QL pack for the user", async () => {
+        expect(fs.existsSync(packfolderName)).toBe(false);
+        expect(fs.existsSync(qlPackYamlFilePath)).toBe(false);
+        expect(fs.existsSync(exampleQlFilePath)).toBe(false);
+
+        await (databaseManager as any).createSkeletonPacks(mockDbItem);
+
+        expect(fs.existsSync(packfolderName)).toBe(true);
+        expect(fs.existsSync(qlPackYamlFilePath)).toBe(true);
+        expect(fs.existsSync(exampleQlFilePath)).toBe(true);
+
+        expect(packAddSpy).toHaveBeenCalledWith(packfolderName, language);
       });
     });
 
