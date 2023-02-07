@@ -154,67 +154,69 @@ export async function findSourceArchive(
   return undefined;
 }
 
-async function resolveDatabase(
-  databasePath: string,
-): Promise<DatabaseContents> {
-  const name = basename(databasePath);
-
-  // Look for dataset and source archive.
-  const datasetUri = await findDataset(databasePath);
-  const sourceArchiveUri = await findSourceArchive(databasePath);
-
-  return {
-    kind: DatabaseKind.Database,
-    name,
-    datasetUri,
-    sourceArchiveUri,
-  };
-}
-
 /** Gets the relative paths of all `.dbscheme` files in the given directory. */
 async function getDbSchemeFiles(dbDirectory: string): Promise<string[]> {
   return await glob("*.dbscheme", { cwd: dbDirectory });
 }
 
-async function resolveDatabaseContents(
-  uri: vscode.Uri,
-): Promise<DatabaseContents> {
-  if (uri.scheme !== "file") {
-    throw new Error(
-      `Database URI scheme '${uri.scheme}' not supported; only 'file' URIs are supported.`,
-    );
-  }
-  const databasePath = uri.fsPath;
-  if (!(await pathExists(databasePath))) {
-    throw new InvalidDatabaseError(
-      `Database '${databasePath}' does not exist.`,
-    );
+export class DatabaseResolver {
+  public static async resolveDatabaseContents(
+    uri: vscode.Uri,
+  ): Promise<DatabaseContents> {
+    if (uri.scheme !== "file") {
+      throw new Error(
+        `Database URI scheme '${uri.scheme}' not supported; only 'file' URIs are supported.`,
+      );
+    }
+    const databasePath = uri.fsPath;
+    if (!(await pathExists(databasePath))) {
+      throw new InvalidDatabaseError(
+        `Database '${databasePath}' does not exist.`,
+      );
+    }
+
+    const contents = await this.resolveDatabase(databasePath);
+
+    if (contents === undefined) {
+      throw new InvalidDatabaseError(
+        `'${databasePath}' is not a valid database.`,
+      );
+    }
+
+    // Look for a single dbscheme file within the database.
+    // This should be found in the dataset directory, regardless of the form of database.
+    const dbPath = contents.datasetUri.fsPath;
+    const dbSchemeFiles = await getDbSchemeFiles(dbPath);
+    if (dbSchemeFiles.length === 0) {
+      throw new InvalidDatabaseError(
+        `Database '${databasePath}' does not contain a CodeQL dbscheme under '${dbPath}'.`,
+      );
+    } else if (dbSchemeFiles.length > 1) {
+      throw new InvalidDatabaseError(
+        `Database '${databasePath}' contains multiple CodeQL dbschemes under '${dbPath}'.`,
+      );
+    } else {
+      contents.dbSchemeUri = vscode.Uri.file(resolve(dbPath, dbSchemeFiles[0]));
+    }
+    return contents;
   }
 
-  const contents = await resolveDatabase(databasePath);
+  public static async resolveDatabase(
+    databasePath: string,
+  ): Promise<DatabaseContents> {
+    const name = basename(databasePath);
 
-  if (contents === undefined) {
-    throw new InvalidDatabaseError(
-      `'${databasePath}' is not a valid database.`,
-    );
-  }
+    // Look for dataset and source archive.
+    const datasetUri = await findDataset(databasePath);
+    const sourceArchiveUri = await findSourceArchive(databasePath);
 
-  // Look for a single dbscheme file within the database.
-  // This should be found in the dataset directory, regardless of the form of database.
-  const dbPath = contents.datasetUri.fsPath;
-  const dbSchemeFiles = await getDbSchemeFiles(dbPath);
-  if (dbSchemeFiles.length === 0) {
-    throw new InvalidDatabaseError(
-      `Database '${databasePath}' does not contain a CodeQL dbscheme under '${dbPath}'.`,
-    );
-  } else if (dbSchemeFiles.length > 1) {
-    throw new InvalidDatabaseError(
-      `Database '${databasePath}' contains multiple CodeQL dbschemes under '${dbPath}'.`,
-    );
-  } else {
-    contents.dbSchemeUri = vscode.Uri.file(resolve(dbPath, dbSchemeFiles[0]));
+    return {
+      kind: DatabaseKind.Database,
+      name,
+      datasetUri,
+      sourceArchiveUri,
+    };
   }
-  return contents;
 }
 
 /** An item in the list of available databases */
@@ -370,7 +372,9 @@ export class DatabaseItemImpl implements DatabaseItem {
   public async refresh(): Promise<void> {
     try {
       try {
-        this._contents = await resolveDatabaseContents(this.databaseUri);
+        this._contents = await DatabaseResolver.resolveDatabaseContents(
+          this.databaseUri,
+        );
         this._error = undefined;
       } catch (e) {
         this._contents = undefined;
@@ -602,7 +606,7 @@ export class DatabaseManager extends DisposableObject {
     uri: vscode.Uri,
     displayName?: string,
   ): Promise<DatabaseItem> {
-    const contents = await resolveDatabaseContents(uri);
+    const contents = await DatabaseResolver.resolveDatabaseContents(uri);
     // Ignore the source archive for QLTest databases by default.
     const isQLTestDatabase = extname(uri.fsPath) === ".testproj";
     const fullOptions: FullDatabaseOptions = {
