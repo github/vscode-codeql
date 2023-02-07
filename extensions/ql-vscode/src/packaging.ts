@@ -1,12 +1,14 @@
 import { CodeQLCliServer } from "./cli";
 import {
   getOnDiskWorkspaceFolders,
-  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
 } from "./helpers";
 import { QuickPickItem, window } from "vscode";
 import { ProgressCallback, UserCancellationException } from "./commandRunner";
 import { extLogger } from "./common";
+import { asError, getErrorStack } from "./pure/helpers-pure";
+import { redactableError } from "./pure/errors";
 
 const QUERY_PACKS = [
   "codeql/cpp-queries",
@@ -66,8 +68,13 @@ export async function handleDownloadPacks(
       await cliServer.packDownload(packsToDownload);
       void showAndLogInformationMessage("Finished downloading packs.");
     } catch (error) {
-      void showAndLogErrorMessage(
-        "Unable to download all packs. See log for more details.",
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(error),
+        )`Unable to download all packs. See log for more details.`,
+        {
+          fullMessage: getErrorStack(error),
+        },
       );
     }
   }

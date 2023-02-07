@@ -16,6 +16,7 @@ import { ProgressCallback } from "../commandRunner";
 import {
   createTimestampFile,
   showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showInformationMessageWithAction,
 } from "../helpers";
@@ -36,12 +37,13 @@ import {
 } from "./remote-query-result";
 import { DownloadLink } from "./download-link";
 import { AnalysesResultsManager } from "./analyses-results-manager";
-import { assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { QueryStatus } from "../query-status";
 import { DisposableObject } from "../pure/disposable-object";
 import { AnalysisResults } from "./shared/analysis-result";
 import { runRemoteQueriesApiRequest } from "./remote-queries-api";
 import { App } from "../common/app";
+import { redactableError } from "../pure/errors";
 
 const autoDownloadMaxSize = 300 * 1024;
 const autoDownloadMaxCount = 100;
@@ -149,10 +151,19 @@ export class RemoteQueriesManager extends DisposableObject {
       // Open results in the background
       void this.openResults(remoteQuery, remoteQueryResult).then(
         noop,
-        (err: unknown) => void showAndLogErrorMessage(getErrorMessage(err)),
+        (e: unknown) =>
+          void showAndLogExceptionWithTelemetry(
+            redactableError(
+              asError(e),
+            )`Could not open query results. ${getErrorMessage(e)}`,
+          ),
       );
     } catch (e) {
-      void showAndLogErrorMessage(`Could not open query results. ${e}`);
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(e),
+        )`Could not open query results. ${getErrorMessage(e)}`,
+      );
     }
   }
 
@@ -269,8 +280,8 @@ export class RemoteQueriesManager extends DisposableObject {
       void showAndLogInformationMessage("Variant analysis was cancelled");
     } else if (queryWorkflowResult.status === "InProgress") {
       // Should not get here. Only including this to ensure `assertNever` uses proper type checking.
-      void showAndLogErrorMessage(
-        `Unexpected status: ${queryWorkflowResult.status}`,
+      void showAndLogExceptionWithTelemetry(
+        redactableError`Unexpected status: ${queryWorkflowResult.status}`,
       );
     } else {
       // Ensure all cases are covered
@@ -475,15 +486,18 @@ export class RemoteQueriesManager extends DisposableObject {
       // Ask if the user wants to open the results in the background.
       void this.askToOpenResults(remoteQuery, queryResult).then(
         noop,
-        (err: unknown) => {
-          void showAndLogErrorMessage(getErrorMessage(err));
-        },
+        (e: unknown) =>
+          void showAndLogExceptionWithTelemetry(
+            redactableError(
+              asError(e),
+            )`Could not open query results. ${getErrorMessage(e)}`,
+          ),
       );
     } else {
       const controllerRepo = `${remoteQuery.controllerRepository.owner}/${remoteQuery.controllerRepository.name}`;
       const workflowRunUrl = `https://github.com/${controllerRepo}/actions/runs/${remoteQuery.actionsWorkflowRunId}`;
-      void showAndLogErrorMessage(
-        `There was an issue retrieving the result for the query [${remoteQuery.queryName}](${workflowRunUrl}).`,
+      void showAndLogExceptionWithTelemetry(
+        redactableError`There was an issue retrieving the result for the query [${remoteQuery.queryName}](${workflowRunUrl}).`,
       );
       this.remoteQueryStatusUpdateEventEmitter.fire({
         queryId,

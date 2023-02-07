@@ -15,7 +15,7 @@ jest.setTimeout(60_000);
 /**
  * Run various integration tests for databases
  */
-describe("Databases", () => {
+describe("DatabaseFetcher", () => {
   let databaseManager: DatabaseManager;
   let inputBoxStub: jest.SpiedFunction<typeof window.showInputBox>;
   let cli: CodeQLCliServer;
@@ -49,39 +49,44 @@ describe("Databases", () => {
     await cleanDatabases(databaseManager);
   });
 
-  it("should add a database from a folder", async () => {
-    const uri = Uri.file(dbLoc);
-    let dbItem = await importArchiveDatabase(
-      uri.toString(true),
-      databaseManager,
-      storagePath,
-      progressCallback,
-      {} as CancellationToken,
-      cli,
-    );
-    expect(dbItem).toBe(databaseManager.currentDatabaseItem);
-    expect(dbItem).toBe(databaseManager.databaseItems[0]);
-    expect(dbItem).toBeDefined();
-    dbItem = dbItem!;
-    expect(dbItem.name).toBe("db");
-    expect(dbItem.databaseUri.fsPath).toBe(join(storagePath, "db", "db"));
+  describe("importArchiveDatabase", () => {
+    it("should add a database from a folder", async () => {
+      const uri = Uri.file(dbLoc);
+      let dbItem = await importArchiveDatabase(
+        uri.toString(true),
+        databaseManager,
+        storagePath,
+        progressCallback,
+        {} as CancellationToken,
+        cli,
+      );
+      expect(dbItem).toBe(databaseManager.currentDatabaseItem);
+      expect(dbItem).toBe(databaseManager.databaseItems[0]);
+      expect(dbItem).toBeDefined();
+      dbItem = dbItem!;
+      expect(dbItem.name).toBe("db");
+      expect(dbItem.databaseUri.fsPath).toBe(join(storagePath, "db", "db"));
+    });
   });
 
-  it("should add a database from a url", async () => {
-    inputBoxStub.mockResolvedValue(DB_URL);
+  describe("promptImportInternetDatabase", () => {
+    it("should add a database from a url", async () => {
+      // Provide a database URL when prompted
+      inputBoxStub.mockResolvedValue(DB_URL);
 
-    let dbItem = await promptImportInternetDatabase(
-      databaseManager,
-      storagePath,
-      progressCallback,
-      {} as CancellationToken,
-      cli,
-    );
-    expect(dbItem).toBeDefined();
-    dbItem = dbItem!;
-    expect(dbItem.name).toBe("db");
-    expect(dbItem.databaseUri.fsPath).toBe(
-      join(storagePath, "simple-db", "db"),
-    );
+      let dbItem = await promptImportInternetDatabase(
+        databaseManager,
+        storagePath,
+        progressCallback,
+        {} as CancellationToken,
+        cli,
+      );
+      expect(dbItem).toBeDefined();
+      dbItem = dbItem!;
+      expect(dbItem.name).toBe("db");
+      expect(dbItem.databaseUri.fsPath).toBe(
+        join(storagePath, "simple-db", "db"),
+      );
+    });
   });
 });

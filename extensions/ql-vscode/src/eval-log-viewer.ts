@@ -10,7 +10,9 @@ import {
 } from "vscode";
 import { commandRunner } from "./commandRunner";
 import { DisposableObject } from "./pure/disposable-object";
-import { showAndLogErrorMessage } from "./helpers";
+import { showAndLogExceptionWithTelemetry } from "./helpers";
+import { asError, getErrorMessage } from "./pure/helpers-pure";
+import { redactableError } from "./pure/errors";
 
 export interface EvalLogTreeItem {
   label?: string;
@@ -104,7 +106,12 @@ export class EvalLogViewer extends DisposableObject {
       () => {
         /**/
       },
-      (err) => showAndLogErrorMessage(err),
+      (err: unknown) =>
+        showAndLogExceptionWithTelemetry(
+          redactableError(
+            asError(err),
+          )`Failed to reveal tree view: ${getErrorMessage(err)}`,
+        ),
     );
   }
 }
