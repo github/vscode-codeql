@@ -16,6 +16,7 @@ import {
 import { QueryHistoryConfig } from "../config";
 import {
   showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
   showBinaryChoiceDialog,
@@ -27,6 +28,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { commandRunner } from "../commandRunner";
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../pure/time";
 import {
+  asError,
   assertNever,
   getErrorMessage,
   getErrorStack,
@@ -66,6 +68,7 @@ import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../remote-queries/shared/variant-analysis";
 import { App } from "../common/app";
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
+import { redactableError } from "../pure/errors";
 
 /**
  * query-history-manager.ts
@@ -621,7 +624,7 @@ export class QueryHistoryManager extends DisposableObject {
     await Promise.all(
       this.treeDataProvider.allHistory.map(async (item) => {
         if (
-          item.t == "local" &&
+          item.t === "local" &&
           item.completedQuery &&
           !(await pathExists(item.completedQuery?.query.querySaveDir))
         ) {
@@ -809,7 +812,11 @@ export class QueryHistoryManager extends DisposableObject {
         );
       }
     } catch (e) {
-      void showAndLogErrorMessage(getErrorMessage(e));
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(e),
+        )`Failed to compare queries: ${getErrorMessage(e)}`,
+      );
     }
   }
 
@@ -834,7 +841,7 @@ export class QueryHistoryManager extends DisposableObject {
     if (
       prevItemClick !== undefined &&
       now.valueOf() - prevItemClick.time.valueOf() < DOUBLE_CLICK_TIME &&
-      finalSingleItem == prevItemClick.item
+      finalSingleItem === prevItemClick.item
     ) {
       // show original query file on double click
       await this.handleOpenQuery(finalSingleItem, [finalSingleItem]);
@@ -1043,7 +1050,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     // If the JSON summary file location wasn't saved, display error
-    if (finalSingleItem.jsonEvalLogSummaryLocation == undefined) {
+    if (finalSingleItem.jsonEvalLogSummaryLocation === undefined) {
       this.warnInProgressEvalLogViewer();
       return;
     }
@@ -1342,7 +1349,7 @@ export class QueryHistoryManager extends DisposableObject {
   private updateTreeViewSelectionIfVisible() {
     if (this.treeView.visible) {
       const current = this.treeDataProvider.getCurrent();
-      if (current != undefined) {
+      if (current !== undefined) {
         // We must fire the onDidChangeTreeData event to ensure the current element can be selected
         // using `reveal` if the tree view was not visible when the current element was added.
         this.treeDataProvider.refresh();
@@ -1374,13 +1381,20 @@ the file in the file explorer and dragging it into the workspace.`,
           try {
             await commands.executeCommand("revealFileInOS", uri);
           } catch (e) {
-            void showAndLogErrorMessage(getErrorMessage(e));
+            void showAndLogExceptionWithTelemetry(
+              redactableError(
+                asError(e),
+              )`Failed to reveal file in OS: ${getErrorMessage(e)}`,
+            );
           }
         }
       } else {
-        void showAndLogErrorMessage(`Could not open file ${fileLocation}`);
-        void extLogger.log(getErrorMessage(e));
-        void extLogger.log(getErrorStack(e));
+        void showAndLogExceptionWithTelemetry(
+          redactableError(asError(e))`Could not open file ${fileLocation}`,
+          {
+            fullMessage: `${getErrorMessage(e)}\n${getErrorStack(e)}`,
+          },
+        );
       }
     }
   }

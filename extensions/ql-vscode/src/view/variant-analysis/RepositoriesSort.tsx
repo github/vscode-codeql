@@ -32,7 +32,7 @@ export const RepositoriesSort = ({ value, onChange, className }: Props) => {
       <VSCodeOption value={SortKey.Name}>Name</VSCodeOption>
       <VSCodeOption value={SortKey.ResultsCount}>Results</VSCodeOption>
       <VSCodeOption value={SortKey.Stars}>Stars</VSCodeOption>
-      <VSCodeOption value={SortKey.LastUpdated}>Last commit</VSCodeOption>
+      <VSCodeOption value={SortKey.LastUpdated}>Last updated</VSCodeOption>
     </Dropdown>
   );
 };

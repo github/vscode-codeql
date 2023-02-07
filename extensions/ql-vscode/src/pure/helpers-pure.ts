@@ -5,6 +5,8 @@
  * Helper functions that don't depend on vscode or the CLI and therefore can be used by the front-end and pure unit tests.
  */
 
+import { RedactableError } from "./errors";
+
 /**
  * This error is used to indicate a runtime failure of an exhaustivity check enforced at compile time.
  */
@@ -46,14 +48,22 @@ export const REPO_REGEX = /^[a-zA-Z0-9-_\.]+\/[a-zA-Z0-9-_\.]+$/;
  */
 export const OWNER_REGEX = /^[a-zA-Z0-9-_\.]+$/;
 
-export function getErrorMessage(e: unknown) {
+export function getErrorMessage(e: unknown): string {
+  if (e instanceof RedactableError) {
+    return e.fullMessage;
+  }
+
   return e instanceof Error ? e.message : String(e);
 }
 
-export function getErrorStack(e: unknown) {
+export function getErrorStack(e: unknown): string {
   return e instanceof Error ? e.stack ?? "" : "";
 }
 
 export function asError(e: unknown): Error {
+  if (e instanceof RedactableError) {
+    return new Error(e.fullMessage);
+  }
+
   return e instanceof Error ? e : new Error(String(e));
 }

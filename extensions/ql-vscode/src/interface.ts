@@ -13,8 +13,9 @@ import {
 import * as cli from "./cli";
 import { CodeQLCliServer } from "./cli";
 import { DatabaseEventKind, DatabaseItem, DatabaseManager } from "./databases";
-import { showAndLogErrorMessage } from "./helpers";
+import { showAndLogExceptionWithTelemetry } from "./helpers";
 import {
+  asError,
   assertNever,
   getErrorMessage,
   getErrorStack,
@@ -66,6 +67,7 @@ import { AbstractWebview, WebviewPanelConfig } from "./abstract-webview";
 import { PAGE_SIZE } from "./config";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { telemetryListener } from "./telemetry";
+import { redactableError } from "./pure/errors";
 
 /**
  * interface.ts
@@ -110,7 +112,7 @@ function sortInterpretedResults(
 function interpretedPageSize(
   interpretation: Interpretation | undefined,
 ): number {
-  if (interpretation?.data.t == "GraphInterpretationData") {
+  if (interpretation?.data.t === "GraphInterpretationData") {
     // Graph views always have one result per page.
     return 1;
   }
@@ -124,7 +126,7 @@ function numPagesOfResultSet(
   const pageSize = interpretedPageSize(interpretation);
 
   const n =
-    interpretation?.data.t == "GraphInterpretationData"
+    interpretation?.data.t === "GraphInterpretationData"
       ? interpretation.data.dot.length
       : resultSet.schema.rows;
 
@@ -141,7 +143,7 @@ function numInterpretedPages(
   const pageSize = interpretedPageSize(interpretation);
 
   const n =
-    interpretation.data.t == "GraphInterpretationData"
+    interpretation.data.t === "GraphInterpretationData"
       ? interpretation.data.dot.length
       : interpretation.data.runs[0].results?.length || 0;
 
@@ -291,9 +293,14 @@ export class ResultsView extends AbstractWebview<
           assertNever(msg);
       }
     } catch (e) {
-      void showAndLogErrorMessage(getErrorMessage(e), {
-        fullMessage: getErrorStack(e),
-      });
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(e),
+        )`Error handling message from results view: ${getErrorMessage(e)}`,
+        {
+          fullMessage: getErrorStack(e),
+        },
+      );
     }
   }
 
@@ -335,8 +342,8 @@ export class ResultsView extends AbstractWebview<
     sortState: InterpretedResultsSortState | undefined,
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
-      void showAndLogErrorMessage(
-        "Failed to sort results since evaluation info was unknown.",
+      void showAndLogExceptionWithTelemetry(
+        redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
     }
@@ -353,8 +360,8 @@ export class ResultsView extends AbstractWebview<
     sortState: RawResultsSortState | undefined,
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
-      void showAndLogErrorMessage(
-        "Failed to sort results since evaluation info was unknown.",
+      void showAndLogExceptionWithTelemetry(
+        redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
     }
@@ -446,7 +453,7 @@ export class ResultsView extends AbstractWebview<
 
     const selectedTable = getDefaultResultSetName(resultSetNames);
     const schema = resultSetSchemas.find(
-      (resultSet) => resultSet.name == selectedTable,
+      (resultSet) => resultSet.name === selectedTable,
     )!;
 
     // Use sorted results path if it exists. This may happen if we are
@@ -590,7 +597,7 @@ export class ResultsView extends AbstractWebview<
     const resultSetNames = allResultSetSchemas.map((schema) => schema.name);
 
     const schema = resultSetSchemas.find(
-      (resultSet) => resultSet.name == selectedTable,
+      (resultSet) => resultSet.name === selectedTable,
     )!;
     if (schema === undefined)
       throw new Error(`Query result set '${selectedTable}' not found.`);
@@ -762,8 +769,10 @@ export class ResultsView extends AbstractWebview<
       } catch (e) {
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
-        void showAndLogErrorMessage(
-          `Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
+        void showAndLogExceptionWithTelemetry(
+          redactableError(
+            asError(e),
+          )`Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
             e,
           )}`,
         );

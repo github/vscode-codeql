@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import {
   getOnDiskWorkspaceFolders,
-  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   tmpDir,
 } from "../helpers";
 import { ProgressCallback, UserCancellationException } from "../commandRunner";
@@ -11,6 +11,8 @@ import * as qsClient from "./queryserver-client";
 import * as tmp from "tmp-promise";
 import { dirname } from "path";
 import { DatabaseItem } from "../databases";
+import { asError, getErrorMessage } from "../pure/helpers-pure";
+import { redactableError } from "../pure/errors";
 
 /**
  * Maximum number of lines to include from database upgrade message,
@@ -209,8 +211,10 @@ export async function upgradeDatabaseExplicit(
         token,
       );
     } catch (e) {
-      void showAndLogErrorMessage(
-        `Compilation of database upgrades failed: ${e}`,
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(e),
+        )`Compilation of database upgrades failed: ${getErrorMessage(e)}`,
       );
       return;
     } finally {
@@ -218,10 +222,11 @@ export async function upgradeDatabaseExplicit(
     }
 
     if (!compileUpgradeResult.compiledUpgrades) {
-      const error =
-        compileUpgradeResult.error || "[no error message available]";
-      void showAndLogErrorMessage(
-        `Compilation of database upgrades failed: ${error}`,
+      const error = compileUpgradeResult.error
+        ? redactableError`${compileUpgradeResult.error}`
+        : redactableError`[no error message available]`;
+      void showAndLogExceptionWithTelemetry(
+        redactableError`Compilation of database upgrades failed: ${error}`,
       );
       return;
     }
@@ -253,7 +258,11 @@ export async function upgradeDatabaseExplicit(
       await qs.restartQueryServer(progress, token);
       return result;
     } catch (e) {
-      void showAndLogErrorMessage(`Database upgrade failed: ${e}`);
+      void showAndLogExceptionWithTelemetry(
+        redactableError(asError(e))`Database upgrade failed: ${getErrorMessage(
+          e,
+        )}`,
+      );
       return;
     } finally {
       void qs.logger.log("Done running database upgrade.");

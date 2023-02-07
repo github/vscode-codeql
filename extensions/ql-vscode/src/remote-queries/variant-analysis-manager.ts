@@ -44,7 +44,7 @@ import {
 import PQueue from "p-queue";
 import {
   createTimestampFile,
-  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "../helpers";
@@ -62,6 +62,7 @@ import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { isVariantAnalysisReposPanelEnabled } from "../config";
 import { App } from "../common/app";
+import { redactableError } from "../pure/errors";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -262,8 +263,8 @@ export class VariantAnalysisManager
 
   public async showView(variantAnalysisId: number): Promise<void> {
     if (!this.variantAnalyses.get(variantAnalysisId)) {
-      void showAndLogErrorMessage(
-        `No variant analysis found with id: ${variantAnalysisId}.`,
+      void showAndLogExceptionWithTelemetry(
+        redactableError`No variant analysis found with id: ${variantAnalysisId}.`,
       );
     }
     if (!this.views.has(variantAnalysisId)) {

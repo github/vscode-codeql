@@ -9,6 +9,8 @@ import {
   SecretStorageChangeEvent,
   Uri,
   window,
+  workspace,
+  WorkspaceFolder,
 } from "vscode";
 import { dump } from "js-yaml";
 import * as tmp from "tmp";
@@ -19,6 +21,7 @@ import { DirResult } from "tmp";
 import {
   getInitialQueryContents,
   InvocationRateLimiter,
+  isFolderAlreadyInWorkspace,
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
   showBinaryChoiceDialog,
@@ -531,5 +534,23 @@ describe("walkDirectory", () => {
 
     // Only real files should be returned.
     expect(files.sort()).toEqual([file1, file2, file3, file4, file5, file6]);
+  });
+});
+
+describe("isFolderAlreadyInWorkspace", () => {
+  beforeEach(() => {
+    const folders = [
+      { name: "/first/path" },
+      { name: "/second/path" },
+    ] as WorkspaceFolder[];
+
+    jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue(folders);
+  });
+  it("should return true if the folder is already in the workspace", () => {
+    expect(isFolderAlreadyInWorkspace("/first/path")).toBe(true);
+  });
+
+  it("should return false if the folder is not in the workspace", () => {
+    expect(isFolderAlreadyInWorkspace("/third/path")).toBe(false);
   });
 });

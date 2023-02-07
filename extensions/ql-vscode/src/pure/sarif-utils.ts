@@ -192,8 +192,8 @@ export function shouldHighlightLine(
     return false;
   }
 
-  if (highlightedRegion.endLine == undefined) {
-    return lineNumber == highlightedRegion.startLine;
+  if (highlightedRegion.endLine === undefined) {
+    return lineNumber === highlightedRegion.startLine;
   }
 
   return lineNumber <= highlightedRegion.endLine;
