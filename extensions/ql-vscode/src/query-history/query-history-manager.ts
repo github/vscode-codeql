@@ -624,7 +624,7 @@ export class QueryHistoryManager extends DisposableObject {
     await Promise.all(
       this.treeDataProvider.allHistory.map(async (item) => {
         if (
-          item.t == "local" &&
+          item.t === "local" &&
           item.completedQuery &&
           !(await pathExists(item.completedQuery?.query.querySaveDir))
         ) {
@@ -841,7 +841,7 @@ export class QueryHistoryManager extends DisposableObject {
     if (
       prevItemClick !== undefined &&
       now.valueOf() - prevItemClick.time.valueOf() < DOUBLE_CLICK_TIME &&
-      finalSingleItem == prevItemClick.item
+      finalSingleItem === prevItemClick.item
     ) {
       // show original query file on double click
       await this.handleOpenQuery(finalSingleItem, [finalSingleItem]);
@@ -1050,7 +1050,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     // If the JSON summary file location wasn't saved, display error
-    if (finalSingleItem.jsonEvalLogSummaryLocation == undefined) {
+    if (finalSingleItem.jsonEvalLogSummaryLocation === undefined) {
       this.warnInProgressEvalLogViewer();
       return;
     }
@@ -1349,7 +1349,7 @@ export class QueryHistoryManager extends DisposableObject {
   private updateTreeViewSelectionIfVisible() {
     if (this.treeView.visible) {
       const current = this.treeDataProvider.getCurrent();
-      if (current != undefined) {
+      if (current !== undefined) {
         // We must fire the onDidChangeTreeData event to ensure the current element can be selected
         // using `reveal` if the tree view was not visible when the current element was added.
         this.treeDataProvider.refresh();

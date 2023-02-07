@@ -413,6 +413,7 @@ describe("db manager", () => {
       const dbConfigFileContents = await readDbConfigDirectly();
 
       expect(dbConfigFileContents).toEqual({
+        version: dbConfig.version,
         databases: {
           variantAnalysis: {
             repositoryLists: [],
@@ -434,6 +435,7 @@ describe("db manager", () => {
       const dbConfigFileContents = await readDbConfigDirectly();
 
       expect(dbConfigFileContents).toEqual({
+        version: dbConfig.version,
         databases: {
           variantAnalysis: {
             repositoryLists: [remoteList],
@@ -459,6 +461,7 @@ describe("db manager", () => {
       const dbConfigFileContents = await readDbConfigDirectly();
 
       expect(dbConfigFileContents).toEqual({
+        version: dbConfig.version,
         databases: {
           variantAnalysis: {
             repositoryLists: [remoteList],
@@ -484,6 +487,7 @@ describe("db manager", () => {
       const dbConfigFileContents = await readDbConfigDirectly();
 
       expect(dbConfigFileContents).toEqual({
+        version: dbConfig.version,
         databases: {
           variantAnalysis: {
             repositoryLists: [remoteList],
@@ -513,6 +517,7 @@ describe("db manager", () => {
       const dbConfigFileContents = await readDbConfigDirectly();
 
       expect(dbConfigFileContents).toEqual({
+        version: dbConfig.version,
         databases: {
           variantAnalysis: {
             repositoryLists: [remoteList],

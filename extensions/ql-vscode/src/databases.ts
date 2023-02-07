@@ -906,7 +906,7 @@ export class DatabaseManager extends DisposableObject {
     token: vscode.CancellationToken,
     item: DatabaseItem,
   ) {
-    if (this._currentDatabaseItem == item) {
+    if (this._currentDatabaseItem === item) {
       this._currentDatabaseItem = undefined;
     }
     const index = this.databaseItems.findIndex(

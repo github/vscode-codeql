@@ -384,7 +384,7 @@ export class CodeQLCliServer implements Disposable {
         this.killProcessIfRunning();
         // Report the error (if there is a stderr then use that otherwise just report the error cod or nodejs error)
         const newError =
-          stderrBuffers.length == 0
+          stderrBuffers.length === 0
             ? new Error(`${description} failed: ${err}`)
             : new Error(
                 `${description} failed: ${Buffer.concat(stderrBuffers).toString(

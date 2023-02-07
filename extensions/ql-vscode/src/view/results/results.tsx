@@ -289,7 +289,7 @@ export class ResultsApp extends React.Component<
           }
           sortStates={displayedResults.results.sortStates}
           interpretedSortState={
-            data?.t == "SarifInterpretationData" ? data.sortState : undefined
+            data?.t === "SarifInterpretationData" ? data.sortState : undefined
           }
           isLoadingNewResults={
             this.state.isExpectingResultsUpdate ||

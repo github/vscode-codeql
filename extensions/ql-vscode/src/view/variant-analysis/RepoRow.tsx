@@ -130,7 +130,7 @@ const canSelect = (
   status: VariantAnalysisRepoStatus | undefined,
   downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus | undefined,
 ) =>
-  status == VariantAnalysisRepoStatus.Succeeded &&
+  status === VariantAnalysisRepoStatus.Succeeded &&
   downloadStatus === VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
 
 const isExpandableContentLoaded = (

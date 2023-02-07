@@ -153,7 +153,7 @@ export function tryGetRule(
   }
 
   const ruleIndex = resultRule.index;
-  if (ruleIndex != undefined) {
+  if (ruleIndex !== undefined) {
     const toolComponentIndex = result.rule?.toolComponent?.index;
     const toolExtensions = sarifRun.tool.extensions;
     if (toolComponentIndex !== undefined && toolExtensions !== undefined) {

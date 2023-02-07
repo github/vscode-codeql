@@ -310,7 +310,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
             reopenedDatabase,
             closedDatabase.name,
           );
-          if (currentDatabaseUri == uri) {
+          if (currentDatabaseUri?.toString() === uri.toString()) {
             await this.databaseManager.setCurrentDatabaseItem(
               reopenedDatabase,
               true,

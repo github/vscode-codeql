@@ -12,6 +12,7 @@ import {
   CancellationToken,
   ThemeIcon,
   ThemeColor,
+  workspace,
 } from "vscode";
 import { pathExists, stat, readdir, remove } from "fs-extra";
 
@@ -222,6 +223,15 @@ export class DatabaseUI extends DisposableObject {
     );
     this.push(
       commandRunnerWithProgress(
+        "codeQL.setDefaultTourDatabase",
+        this.handleSetDefaultTourDatabase,
+        {
+          title: "Set Default Database for Codespace CodeQL Tour",
+        },
+      ),
+    );
+    this.push(
+      commandRunnerWithProgress(
         "codeQL.upgradeCurrentDatabase",
         this.handleUpgradeCurrentDatabase,
         {
@@ -350,6 +360,40 @@ export class DatabaseUI extends DisposableObject {
         redactableError(
           asError(e),
         )`Failed to choose and set database: ${getErrorMessage(e)}`,
+      );
+    }
+  };
+
+  private handleSetDefaultTourDatabase = async (
+    progress: ProgressCallback,
+    token: CancellationToken,
+  ): Promise<void> => {
+    try {
+      if (!workspace.workspaceFolders?.length) {
+        throw new Error("No workspace folder is open.");
+      } else {
+        // This specifically refers to the database folder in
+        // https://github.com/github/codespaces-codeql
+        const uri = Uri.parse(
+          `${workspace.workspaceFolders[0].uri}/codeql-tutorial-database`,
+        );
+
+        let databaseItem = this.databaseManager.findDatabaseItem(uri);
+        if (databaseItem === undefined) {
+          databaseItem = await this.databaseManager.openDatabase(
+            progress,
+            token,
+            uri,
+          );
+        }
+        await this.databaseManager.setCurrentDatabaseItem(databaseItem);
+      }
+    } catch (e) {
+      // rethrow and let this be handled by default error handling.
+      throw new Error(
+        `Could not set the database for the Code Tour. Please make sure you are using the default workspace in your codespace: ${getErrorMessage(
+          e,
+        )}`,
       );
     }
   };
