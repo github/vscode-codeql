@@ -255,6 +255,15 @@ export function getOnDiskWorkspaceFolders() {
   return diskWorkspaceFolders;
 }
 
+/** Check if folder is already present in workspace */
+export function isFolderAlreadyInWorkspace(folderName: string) {
+  const workspaceFolders = workspace.workspaceFolders || [];
+
+  return !!workspaceFolders.find(
+    (workspaceFolder) => workspaceFolder.name === folderName,
+  );
+}
+
 /**
  * Provides a utility method to invoke a function only if a minimum time interval has elapsed since
  * the last invocation of that function.

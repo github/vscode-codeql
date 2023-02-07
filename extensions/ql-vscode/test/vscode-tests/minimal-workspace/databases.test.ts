@@ -20,6 +20,7 @@ import {
 } from "../../../src/archive-filesystem-provider";
 import { testDisposeHandler } from "../test-dispose-handler";
 import { QueryRunner } from "../../../src/queryRunner";
+import * as helpers from "../../../src/helpers";
 
 describe("databases", () => {
   const MOCK_DB_OPTIONS: FullDatabaseOptions = {
@@ -34,6 +35,11 @@ describe("databases", () => {
   let registerSpy: jest.Mock<Promise<void>, []>;
   let deregisterSpy: jest.Mock<Promise<void>, []>;
   let resolveDatabaseSpy: jest.Mock<Promise<DbInfo>, []>;
+  let logSpy: jest.Mock<any, []>;
+
+  let showBinaryChoiceDialogSpy: jest.SpiedFunction<
+    typeof helpers.showBinaryChoiceDialog
+  >;
 
   let dir: tmp.DirResult;
 
@@ -44,6 +50,13 @@ describe("databases", () => {
     registerSpy = jest.fn(() => Promise.resolve(undefined));
     deregisterSpy = jest.fn(() => Promise.resolve(undefined));
     resolveDatabaseSpy = jest.fn(() => Promise.resolve({} as DbInfo));
+    logSpy = jest.fn(() => {
+      /* */
+    });
+
+    showBinaryChoiceDialogSpy = jest
+      .spyOn(helpers, "showBinaryChoiceDialog")
+      .mockResolvedValue(true);
 
     databaseManager = new DatabaseManager(
       {
@@ -66,9 +79,7 @@ describe("databases", () => {
         resolveDatabase: resolveDatabaseSpy,
       } as unknown as CodeQLCliServer,
       {
-        log: () => {
-          /**/
-        },
+        log: logSpy,
       } as unknown as Logger,
     );
 
@@ -122,29 +133,31 @@ describe("databases", () => {
     });
   });
 
-  it("should rename a db item and emit an event", async () => {
-    const mockDbItem = createMockDB();
-    const onDidChangeDatabaseItem = jest.fn();
-    databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
-    await (databaseManager as any).addDatabaseItem(
-      {} as ProgressCallback,
-      {} as CancellationToken,
-      mockDbItem,
-    );
+  describe("renameDatabaseItem", () => {
+    it("should rename a db item and emit an event", async () => {
+      const mockDbItem = createMockDB();
+      const onDidChangeDatabaseItem = jest.fn();
+      databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
+      await (databaseManager as any).addDatabaseItem(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem,
+      );
 
-    await databaseManager.renameDatabaseItem(mockDbItem, "new name");
+      await databaseManager.renameDatabaseItem(mockDbItem, "new name");
 
-    expect(mockDbItem.name).toBe("new name");
-    expect(updateSpy).toBeCalledWith("databaseList", [
-      {
-        options: { ...MOCK_DB_OPTIONS, displayName: "new name" },
-        uri: dbLocationUri().toString(true),
-      },
-    ]);
+      expect(mockDbItem.name).toBe("new name");
+      expect(updateSpy).toBeCalledWith("databaseList", [
+        {
+          options: { ...MOCK_DB_OPTIONS, displayName: "new name" },
+          uri: dbLocationUri().toString(true),
+        },
+      ]);
 
-    expect(onDidChangeDatabaseItem).toBeCalledWith({
-      item: undefined,
-      kind: DatabaseEventKind.Rename,
+      expect(onDidChangeDatabaseItem).toBeCalledWith({
+        item: undefined,
+        kind: DatabaseEventKind.Rename,
+      });
     });
   });
 
@@ -287,7 +300,10 @@ describe("databases", () => {
 
   describe("resolveSourceFile", () => {
     it("should fail to resolve when not a uri", () => {
-      const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        Uri.parse("file:/sourceArchive-uri/"),
+      );
       (db as any)._contents.sourceArchiveUri = undefined;
       expect(() => db.resolveSourceFile("abc")).toThrowError(
         "Scheme is missing",
@@ -295,7 +311,10 @@ describe("databases", () => {
     });
 
     it("should fail to resolve when not a file uri", () => {
-      const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        Uri.parse("file:/sourceArchive-uri/"),
+      );
       (db as any)._contents.sourceArchiveUri = undefined;
       expect(() => db.resolveSourceFile("http://abc")).toThrowError(
         "Invalid uri scheme",
@@ -304,14 +323,20 @@ describe("databases", () => {
 
     describe("no source archive", () => {
       it("should resolve undefined", () => {
-        const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
+        const db = createMockDB(
+          MOCK_DB_OPTIONS,
+          Uri.parse("file:/sourceArchive-uri/"),
+        );
         (db as any)._contents.sourceArchiveUri = undefined;
         const resolved = db.resolveSourceFile(undefined);
         expect(resolved.toString(true)).toBe(dbLocationUri().toString(true));
       });
 
       it("should resolve an empty file", () => {
-        const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
+        const db = createMockDB(
+          MOCK_DB_OPTIONS,
+          Uri.parse("file:/sourceArchive-uri/"),
+        );
         (db as any)._contents.sourceArchiveUri = undefined;
         const resolved = db.resolveSourceFile("file:");
         expect(resolved.toString()).toBe("file:///");
@@ -321,6 +346,7 @@ describe("databases", () => {
     describe("zipped source archive", () => {
       it("should encode a source archive url", () => {
         const db = createMockDB(
+          MOCK_DB_OPTIONS,
           encodeSourceArchiveUri({
             sourceArchiveZipPath: "sourceArchive-uri",
             pathWithinSourceArchive: "def",
@@ -340,6 +366,7 @@ describe("databases", () => {
 
       it("should encode a source archive url with trailing slash", () => {
         const db = createMockDB(
+          MOCK_DB_OPTIONS,
           encodeSourceArchiveUri({
             sourceArchiveZipPath: "sourceArchive-uri",
             pathWithinSourceArchive: "def/",
@@ -359,6 +386,7 @@ describe("databases", () => {
 
       it("should encode an empty source archive url", () => {
         const db = createMockDB(
+          MOCK_DB_OPTIONS,
           encodeSourceArchiveUri({
             sourceArchiveZipPath: "sourceArchive-uri",
             pathWithinSourceArchive: "def",
@@ -372,26 +400,35 @@ describe("databases", () => {
     });
 
     it("should handle an empty file", () => {
-      const db = createMockDB(Uri.parse("file:/sourceArchive-uri/"));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        Uri.parse("file:/sourceArchive-uri/"),
+      );
       const resolved = db.resolveSourceFile("");
       expect(resolved.toString()).toBe("file:///sourceArchive-uri/");
     });
   });
 
-  it("should get the primary language", async () => {
-    resolveDatabaseSpy.mockResolvedValue({
-      languages: ["python"],
-    } as unknown as DbInfo);
-    const result = await (databaseManager as any).getPrimaryLanguage("hucairz");
-    expect(result).toBe("python");
-  });
+  describe("getPrimaryLanguage", () => {
+    it("should get the primary language", async () => {
+      resolveDatabaseSpy.mockResolvedValue({
+        languages: ["python"],
+      } as unknown as DbInfo);
+      const result = await (databaseManager as any).getPrimaryLanguage(
+        "hucairz",
+      );
+      expect(result).toBe("python");
+    });
 
-  it("should handle missing the primary language", async () => {
-    resolveDatabaseSpy.mockResolvedValue({
-      languages: [],
-    } as unknown as DbInfo);
-    const result = await (databaseManager as any).getPrimaryLanguage("hucairz");
-    expect(result).toBe("");
+    it("should handle missing the primary language", async () => {
+      resolveDatabaseSpy.mockResolvedValue({
+        languages: [],
+      } as unknown as DbInfo);
+      const result = await (databaseManager as any).getPrimaryLanguage(
+        "hucairz",
+      );
+      expect(result).toBe("");
+    });
   });
 
   describe("isAffectedByTest", () => {
@@ -409,12 +446,17 @@ describe("databases", () => {
     });
 
     it("should return true for testproj database in test directory", async () => {
-      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        sourceLocationUri(),
+        Uri.file(projectPath),
+      );
       expect(await db.isAffectedByTest(directoryPath)).toBe(true);
     });
 
     it("should return false for non-existent test directory", async () => {
       const db = createMockDB(
+        MOCK_DB_OPTIONS,
         sourceLocationUri(),
         Uri.file(join(dir.name, "non-existent/non-existent.testproj")),
       );
@@ -428,6 +470,7 @@ describe("databases", () => {
       await fs.writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
+        MOCK_DB_OPTIONS,
         sourceLocationUri(),
         Uri.file(anotherProjectPath),
       );
@@ -441,6 +484,7 @@ describe("databases", () => {
       await fs.writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
+        MOCK_DB_OPTIONS,
         sourceLocationUri(),
         Uri.file(anotherProjectPath),
       );
@@ -448,20 +492,32 @@ describe("databases", () => {
     });
 
     it("should return false for testproj database for prefix directory", async () => {
-      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        sourceLocationUri(),
+        Uri.file(projectPath),
+      );
       // /d is a prefix of /dir/dir.testproj, but
       // /dir/dir.testproj is not under /d
       expect(await db.isAffectedByTest(join(directoryPath, "d"))).toBe(false);
     });
 
     it("should return true for testproj database for test file", async () => {
-      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        sourceLocationUri(),
+        Uri.file(projectPath),
+      );
       expect(await db.isAffectedByTest(qlFilePath)).toBe(true);
     });
 
     it("should return false for non-existent test file", async () => {
       const otherTestFile = join(directoryPath, "other-test.ql");
-      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        sourceLocationUri(),
+        Uri.file(projectPath),
+      );
       expect(await db.isAffectedByTest(otherTestFile)).toBe(false);
     });
 
@@ -470,6 +526,7 @@ describe("databases", () => {
       await fs.writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
+        MOCK_DB_OPTIONS,
         sourceLocationUri(),
         Uri.file(anotherProjectPath),
       );
@@ -480,7 +537,11 @@ describe("databases", () => {
       const otherTestFile = join(dir.name, "test.ql");
       await fs.writeFile(otherTestFile, "");
 
-      const db = createMockDB(sourceLocationUri(), Uri.file(projectPath));
+      const db = createMockDB(
+        MOCK_DB_OPTIONS,
+        sourceLocationUri(),
+        Uri.file(projectPath),
+      );
       expect(await db.isAffectedByTest(otherTestFile)).toBe(false);
     });
   });
@@ -524,7 +585,46 @@ describe("databases", () => {
     });
   });
 
+  describe("createSkeletonPacks", () => {
+    let mockDbItem: DatabaseItemImpl;
+
+    describe("when the language is set", () => {
+      it("should offer the user to set up a skeleton QL pack", async () => {
+        const options: FullDatabaseOptions = {
+          dateAdded: 123,
+          ignoreSourceArchive: false,
+          language: "ruby",
+        };
+        mockDbItem = createMockDB(options);
+
+        await (databaseManager as any).createSkeletonPacks(mockDbItem);
+
+        expect(showBinaryChoiceDialogSpy).toBeCalledTimes(1);
+      });
+    });
+
+    describe("when the language is not set", () => {
+      it("should fail gracefully", async () => {
+        mockDbItem = createMockDB();
+        await (databaseManager as any).createSkeletonPacks(mockDbItem);
+        expect(logSpy).toHaveBeenCalledWith(
+          "Could not create skeleton QL pack because the selected database's language is not set.",
+        );
+      });
+    });
+
+    describe("when the databaseItem is not set", () => {
+      it("should fail gracefully", async () => {
+        await (databaseManager as any).createSkeletonPacks(undefined);
+        expect(logSpy).toHaveBeenCalledWith(
+          "Could not create QL pack because no database is selected. Please add a database.",
+        );
+      });
+    });
+  });
+
   function createMockDB(
+    mockDbOptions = MOCK_DB_OPTIONS,
     // source archive location must be a real(-ish) location since
     // tests will add this to the workspace location
     sourceArchiveUri = sourceLocationUri(),
@@ -536,7 +636,7 @@ describe("databases", () => {
         sourceArchiveUri,
         datasetUri: databaseUri,
       } as DatabaseContents,
-      MOCK_DB_OPTIONS,
+      mockDbOptions,
       () => void 0,
     );
   }
