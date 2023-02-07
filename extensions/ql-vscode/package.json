@@ -383,7 +383,7 @@
       },
       {
         "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
-        "title": "✓"
+        "title": "Select"
       },
       {
         "command": "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
@@ -826,7 +826,7 @@
         },
         {
           "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
-          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/ && false",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/",
           "group": "inline"
         },
         {
