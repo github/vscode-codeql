@@ -60,7 +60,7 @@ export function getPath(
   for (const codeFlows of result.codeFlows) {
     for (const threadFlow of codeFlows.threadFlows) {
       ++index;
-      if (index == key.pathIndex) return threadFlow;
+      if (index === key.pathIndex) return threadFlow;
     }
   }
   return undefined;

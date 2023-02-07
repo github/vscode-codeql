@@ -125,7 +125,7 @@ describe("serialize and deserialize", () => {
       }
     });
     expectedHistory.forEach((info) => {
-      if (info.t == "local" && info.completedQuery) {
+      if (info.t === "local" && info.completedQuery) {
         (info.completedQuery as any).dispose = undefined;
       }
     });

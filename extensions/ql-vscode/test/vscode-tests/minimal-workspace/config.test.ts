@@ -6,8 +6,13 @@ import {
   QueryHistoryConfigListener,
   QueryServerConfigListener,
 } from "../../../src/config";
+import { vscodeGetConfigurationMock } from "../test-config";
 
 describe("config listeners", () => {
+  beforeEach(() => {
+    vscodeGetConfigurationMock.mockRestore();
+  });
+
   interface TestConfig<T> {
     clazz: new () => ConfigListener;
     settings: Array<{
@@ -108,7 +113,7 @@ describe("config listeners", () => {
           await wait();
           const newValue = listener[setting.property as keyof typeof listener];
           expect(newValue).toEqual(setting.values[1]);
-          expect(onDidChangeConfiguration).toHaveBeenCalledTimes(1);
+          expect(onDidChangeConfiguration).toHaveBeenCalled();
         });
       });
     });

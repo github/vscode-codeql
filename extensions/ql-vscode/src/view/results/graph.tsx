@@ -80,7 +80,7 @@ export class Graph extends React.Component<GraphProps> {
     graphviz(`#${graphId}`)
       .options(options)
       .attributer(function (d) {
-        if (d.tag == "a") {
+        if (d.tag === "a") {
           const url = d.attributes["xlink:href"] || d.attributes["href"];
           const loc = tryGetLocationFromString(url);
           if (loc !== undefined) {
@@ -94,13 +94,13 @@ export class Graph extends React.Component<GraphProps> {
         }
 
         if ("fill" in d.attributes) {
-          d.attributes.fill = d.tag == "text" ? color : backgroundColor;
+          d.attributes.fill = d.tag === "text" ? color : backgroundColor;
         }
         if ("stroke" in d.attributes) {
           // There is no proper way to identify the element containing the graph (which we
           // don't want a border around), as it is just has tag 'polygon'. Instead we assume
           // that the first polygon we see is that element
-          if (d.tag != "polygon" || !firstPolygon) {
+          if (d.tag !== "polygon" || !firstPolygon) {
             d.attributes.stroke = borderColor;
           } else {
             firstPolygon = false;

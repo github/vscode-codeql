@@ -8,6 +8,7 @@ import { DatabaseItem } from "../databases";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
   tryGetQueryMetadata,
   upgradesTmpDir,
@@ -18,9 +19,10 @@ import { extLogger } from "../common";
 import * as messages from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
 import * as qsClient from "./queryserver-client";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { compileDatabaseUpgradeSequence } from "./upgrades";
 import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
+import { redactableError } from "../pure/errors";
 
 /**
  * A collection of evaluation-time information about a query,
@@ -321,7 +323,7 @@ export async function compileAndRunQueryAgainstDatabase(
   // This test will produce confusing results if we ever change the name of the database schema files.
   const querySchemaName = basename(packConfig.dbscheme);
   const dbSchemaName = basename(dbItem.contents.dbSchemeUri.fsPath);
-  if (querySchemaName != dbSchemaName) {
+  if (querySchemaName !== dbSchemaName) {
     void extLogger.log(
       `Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`,
     );
@@ -367,10 +369,11 @@ export async function compileAndRunQueryAgainstDatabase(
       void extLogger.log("Did not find any available ML models.");
     }
   } catch (e) {
-    const message =
-      `Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the ` +
-      `query without any ML models: ${e}.`;
-    void showAndLogErrorMessage(message);
+    void showAndLogExceptionWithTelemetry(
+      redactableError(
+        asError(e),
+      )`Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the query without any ML models: ${e}.`,
+    );
   }
 
   const hasMetadataFile = await dbItem.hasMetadataFile();
@@ -403,7 +406,7 @@ export async function compileAndRunQueryAgainstDatabase(
     } catch (e) {
       if (
         e instanceof ResponseError &&
-        e.code == LSPErrorCodes.RequestCancelled
+        e.code === LSPErrorCodes.RequestCancelled
       ) {
         return createSyntheticResult(query, "Query cancelled");
       } else {
@@ -422,9 +425,11 @@ export async function compileAndRunQueryAgainstDatabase(
         queryInfo,
       );
       if (result.resultType !== messages.QueryResultType.SUCCESS) {
-        const message = result.message || "Failed to run query";
-        void extLogger.log(message);
-        void showAndLogErrorMessage(message);
+        const error = result.message
+          ? redactableError`${result.message}`
+          : redactableError`Failed to run query`;
+        void extLogger.log(error.fullMessage);
+        void showAndLogExceptionWithTelemetry(error);
       }
       const message = formatLegacyMessage(result);
 
@@ -432,7 +437,7 @@ export async function compileAndRunQueryAgainstDatabase(
         query: query.queryEvalInfo,
         message,
         result,
-        successful: result.resultType == messages.QueryResultType.SUCCESS,
+        successful: result.resultType === messages.QueryResultType.SUCCESS,
         logFileLocation: result.logFileLocation,
         dispose: () => {
           qs.logger.removeAdditionalLogLocation(result.logFileLocation);

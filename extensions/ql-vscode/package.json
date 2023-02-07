@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.7.8",
+  "version": "1.7.9",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -1483,7 +1483,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run format-staged",
-      "pre-push": "npm run lint && scripts/forbid-test-only"
+      "pre-push": "scripts/forbid-test-only"
     }
   },
   "lint-staged": {

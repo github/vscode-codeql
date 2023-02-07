@@ -338,7 +338,7 @@ class JoinOrderScanner implements EvaluationLogScanner {
           inLayerEvent.predicateIterationMillis.length <= iteration
             ? -1
             : inLayerEvent.predicateIterationMillis[iteration];
-        if (iterationTime != -1) {
+        if (iterationTime !== -1) {
           const run: PipelineRun =
             inLayerEvent.pipelineRuns[nextPipeline[predicate]++];
           func(inLayerEvent, run, iteration);

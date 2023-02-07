@@ -19,8 +19,8 @@ describe("Packaging commands", () => {
   const progress = jest.fn();
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let inputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
-  let showAndLogErrorMessageSpy: jest.SpiedFunction<
-    typeof helpers.showAndLogErrorMessage
+  let showAndLogExceptionWithTelemetrySpy: jest.SpiedFunction<
+    typeof helpers.showAndLogExceptionWithTelemetry
   >;
   let showAndLogInformationMessageSpy: jest.SpiedFunction<
     typeof helpers.showAndLogInformationMessage
@@ -33,8 +33,8 @@ describe("Packaging commands", () => {
     inputBoxSpy = jest
       .spyOn(window, "showInputBox")
       .mockResolvedValue(undefined);
-    showAndLogErrorMessageSpy = jest
-      .spyOn(helpers, "showAndLogErrorMessage")
+    showAndLogExceptionWithTelemetrySpy = jest
+      .spyOn(helpers, "showAndLogExceptionWithTelemetry")
       .mockResolvedValue(undefined);
     showAndLogInformationMessageSpy = jest
       .spyOn(helpers, "showAndLogInformationMessage")
@@ -85,9 +85,10 @@ describe("Packaging commands", () => {
 
     await handleDownloadPacks(cli, progress);
 
-    expect(showAndLogErrorMessageSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Unable to download all packs."),
-    );
+    expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalled();
+    expect(
+      showAndLogExceptionWithTelemetrySpy.mock.calls[0][0].fullMessage,
+    ).toEqual("Unable to download all packs. See log for more details.");
   });
 
   it("should install valid workspace pack", async () => {

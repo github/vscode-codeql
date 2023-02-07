@@ -4,7 +4,16 @@
  * works with released extensions.
  *
  * Usage: npx ts-node scripts/source-map.ts <version-number> <filename>:<line>:<column>
+ * For example: npx ts-node scripts/source-map.ts v1.7.8 "/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131164:13"
+ *
  * Alternative usage: npx ts-node scripts/source-map.ts <version-number> <multi-line-stacktrace>
+ * For example: npx ts-node scripts/source-map.ts v1.7.8 'Error: Failed to find CodeQL distribution.
+ *     at CodeQLCliServer.getCodeQlPath (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131164:13)
+ *     at CodeQLCliServer.launchProcess (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131169:24)
+ *     at CodeQLCliServer.runCodeQlCliInternal (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131194:24)
+ *     at CodeQLCliServer.runJsonCodeQlCliCommand (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131330:20)
+ *     at CodeQLCliServer.resolveRam (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131455:12)
+ *     at QueryServerClient2.startQueryServerImpl (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:138618:21)'
  */
 
 import { spawnSync } from "child_process";

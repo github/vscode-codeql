@@ -56,15 +56,6 @@ export class Setting {
       .getConfiguration(this.parent.qualifiedName)
       .update(this.name, value, target);
   }
-
-  inspect<T>(): InspectionResult<T> | undefined {
-    if (this.parent === undefined) {
-      throw new Error("Cannot update the value of a root setting.");
-    }
-    return workspace
-      .getConfiguration(this.parent.qualifiedName)
-      .inspect(this.name);
-  }
 }
 
 export interface InspectionResult<T> {
@@ -357,7 +348,7 @@ export class QueryServerConfigListener
     if (memory === null) {
       return undefined;
     }
-    if (memory == 0 || typeof memory !== "number") {
+    if (memory === 0 || typeof memory !== "number") {
       void extLogger.log(
         `Ignoring value '${memory}' for setting ${MEMORY_SETTING.qualifiedName}`,
       );
@@ -646,4 +637,17 @@ export class MockGitHubApiConfigListener
 
 export function getMockGitHubApiServerScenariosPath(): string | undefined {
   return MOCK_GH_API_SERVER_SCENARIOS_PATH.getValue<string>();
+}
+
+/**
+ * Enables features that are specific to the codespaces-codeql template workspace from
+ * https://github.com/github/codespaces-codeql.
+ */
+export const CODESPACES_TEMPLATE = new Setting(
+  "codespacesTemplate",
+  ROOT_SETTING,
+);
+
+export function isCodespacesTemplate() {
+  return !!CODESPACES_TEMPLATE.getValue<boolean>();
 }
