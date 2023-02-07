@@ -72,6 +72,7 @@ import {
   showAndLogInformationMessage,
   showInformationMessageWithAction,
   tmpDir,
+  showAndLogExceptionWithTelemetry,
 } from "./helpers";
 import { asError, assertNever, getErrorMessage } from "./pure/helpers-pure";
 import { spawnIdeServer } from "./ide-server";
@@ -137,6 +138,7 @@ import { VariantAnalysisResultsManager } from "./remote-queries/variant-analysis
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
+import { redactableError } from "./pure/errors";
 
 /**
  * extension.ts
@@ -713,7 +715,11 @@ async function activateWithInstalledDistribution(
     try {
       await compareView.showResults(from, to);
     } catch (e) {
-      void showAndLogErrorMessage(getErrorMessage(e));
+      void showAndLogExceptionWithTelemetry(
+        redactableError(asError(e))`Failed to show results: ${getErrorMessage(
+          e,
+        )}`,
+      );
     }
   }
 
@@ -809,10 +815,10 @@ async function activateWithInstalledDistribution(
         const errorMessage = getErrorMessage(e).includes(
           "Generating qhelp in markdown",
         )
-          ? `Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
-          : `Could not open a preview of the generated file (${absolutePathToMd}).`;
-        void showAndLogErrorMessage(errorMessage, {
-          fullMessage: `${errorMessage}\n${e}`,
+          ? redactableError`Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
+          : redactableError`Could not open a preview of the generated file (${absolutePathToMd}).`;
+        void showAndLogExceptionWithTelemetry(errorMessage, {
+          fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
         });
       }
     }

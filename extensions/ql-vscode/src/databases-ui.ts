@@ -30,6 +30,7 @@ import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
   showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
 } from "./helpers";
 import { extLogger } from "./common";
 import {
@@ -37,11 +38,12 @@ import {
   promptImportGithubDatabase,
   promptImportInternetDatabase,
 } from "./databaseFetcher";
-import { asyncFilter, getErrorMessage } from "./pure/helpers-pure";
+import { asError, asyncFilter, getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./queryRunner";
 import { isCanary } from "./config";
 import { App } from "./common/app";
 import { Credentials } from "./common/authentication";
+import { redactableError } from "./pure/errors";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -354,7 +356,11 @@ export class DatabaseUI extends DisposableObject {
     try {
       await this.chooseAndSetDatabase(true, progress, token);
     } catch (e) {
-      void showAndLogErrorMessage(getErrorMessage(e));
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(e),
+        )`Failed to choose and set database: ${getErrorMessage(e)}`,
+      );
     }
   };
 
@@ -437,6 +443,11 @@ export class DatabaseUI extends DisposableObject {
           void extLogger.log(`Deleting orphaned database '${dbDir}'.`);
           await remove(dbDir);
         } catch (e) {
+          void showAndLogExceptionWithTelemetry(
+            redactableError(
+              asError(e),
+            )`Failed to delete orphaned database: ${getErrorMessage(e)}`,
+          );
           failures.push(`${basename(dbDir)}`);
         }
       }),
@@ -458,8 +469,12 @@ export class DatabaseUI extends DisposableObject {
   ): Promise<void> => {
     try {
       await this.chooseAndSetDatabase(false, progress, token);
-    } catch (e) {
-      void showAndLogErrorMessage(getErrorMessage(e));
+    } catch (e: unknown) {
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(e),
+        )`Failed to choose and set database: ${getErrorMessage(e)}`,
+      );
     }
   };
 

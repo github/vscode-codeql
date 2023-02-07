@@ -13,8 +13,9 @@ import {
 import * as cli from "./cli";
 import { CodeQLCliServer } from "./cli";
 import { DatabaseEventKind, DatabaseItem, DatabaseManager } from "./databases";
-import { showAndLogErrorMessage } from "./helpers";
+import { showAndLogExceptionWithTelemetry } from "./helpers";
 import {
+  asError,
   assertNever,
   getErrorMessage,
   getErrorStack,
@@ -66,6 +67,7 @@ import { AbstractWebview, WebviewPanelConfig } from "./abstract-webview";
 import { PAGE_SIZE } from "./config";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { telemetryListener } from "./telemetry";
+import { redactableError } from "./pure/errors";
 
 /**
  * interface.ts
@@ -291,9 +293,14 @@ export class ResultsView extends AbstractWebview<
           assertNever(msg);
       }
     } catch (e) {
-      void showAndLogErrorMessage(getErrorMessage(e), {
-        fullMessage: getErrorStack(e),
-      });
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(e),
+        )`Error handling message from results view: ${getErrorMessage(e)}`,
+        {
+          fullMessage: getErrorStack(e),
+        },
+      );
     }
   }
 
@@ -335,8 +342,8 @@ export class ResultsView extends AbstractWebview<
     sortState: InterpretedResultsSortState | undefined,
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
-      void showAndLogErrorMessage(
-        "Failed to sort results since evaluation info was unknown.",
+      void showAndLogExceptionWithTelemetry(
+        redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
     }
@@ -353,8 +360,8 @@ export class ResultsView extends AbstractWebview<
     sortState: RawResultsSortState | undefined,
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
-      void showAndLogErrorMessage(
-        "Failed to sort results since evaluation info was unknown.",
+      void showAndLogExceptionWithTelemetry(
+        redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
     }
@@ -762,8 +769,10 @@ export class ResultsView extends AbstractWebview<
       } catch (e) {
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
-        void showAndLogErrorMessage(
-          `Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
+        void showAndLogExceptionWithTelemetry(
+          redactableError(
+            asError(e),
+          )`Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
             e,
           )}`,
         );

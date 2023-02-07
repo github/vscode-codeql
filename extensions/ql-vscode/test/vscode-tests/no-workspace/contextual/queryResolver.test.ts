@@ -81,7 +81,7 @@ describe("queryResolver", () => {
         expect(true).toBe(false);
       } catch (e) {
         expect(getErrorMessage(e)).toBe(
-          "Couldn't find any queries tagged ide-contextual-queries/local-definitions in any of the following packs: my-qlpack.",
+          'No definitions queries (tagged "ide-contextual-queries/local-definitions") could be found in the current library path (tried searching the following packs: my-qlpack). Try upgrading the CodeQL libraries. If that doesn\'t work, then definitions queries are not yet available for this language.',
         );
       }
     });

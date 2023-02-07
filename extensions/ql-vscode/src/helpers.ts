@@ -21,6 +21,8 @@ import { CodeQLCliServer, QlpacksInfo } from "./cli";
 import { UserCancellationException } from "./commandRunner";
 import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
+import { telemetryListener } from "./telemetry";
+import { RedactableError } from "./pure/errors";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -43,6 +45,11 @@ export const tmpDirDisposal = {
   },
 };
 
+interface ShowAndLogExceptionOptions extends ShowAndLogOptions {
+  /** Custom properties to include in the telemetry report. */
+  extraTelemetryProperties?: { [key: string]: string };
+}
+
 interface ShowAndLogOptions {
   /** The output logger that will receive the message. */
   outputLogger?: OutputChannelLogger;
@@ -56,10 +63,26 @@ interface ShowAndLogOptions {
 }
 
 /**
+ * Show an error message, log it to the console, and emit redacted information as telemetry
+ *
+ * @param error The error to show. Only redacted information will be included in the telemetry.
+ * @param options See individual fields on `ShowAndLogExceptionOptions` type.
+ *
+ * @return A promise that resolves to the selected item or undefined when being dismissed.
+ */
+export async function showAndLogExceptionWithTelemetry(
+  error: RedactableError,
+  options: ShowAndLogExceptionOptions = {},
+): Promise<string | undefined> {
+  telemetryListener?.sendError(error, options.extraTelemetryProperties);
+  return showAndLogErrorMessage(error.fullMessage, options);
+}
+
+/**
  * Show an error message and log it to the console
  *
  * @param message The message to show.
- * @param options See indivual fields on `ShowAndLogOptions` type.
+ * @param options See individual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
@@ -82,7 +105,7 @@ function dropLinesExceptInitial(message: string, n = 2) {
  * Show a warning message and log it to the console
  *
  * @param message The message to show.
- * @param options See indivual fields on `ShowAndLogOptions` type.
+ * @param options See individual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
@@ -97,7 +120,7 @@ export async function showAndLogWarningMessage(
  * Show an information message and log it to the console
  *
  * @param message The message to show.
- * @param options See indivual fields on `ShowAndLogOptions` type.
+ * @param options See individual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */

@@ -1,7 +1,7 @@
 import { join } from "path";
 import { pathExists, readFile, writeFile } from "fs-extra";
 import {
-  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
   tmpDir,
 } from "../../helpers";
@@ -15,9 +15,10 @@ import {
   RemoteQueryResultIndex,
   RemoteQuerySuccessIndexItem,
 } from "../remote-query-result-index";
-import { getErrorMessage } from "../../pure/helpers-pure";
+import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { unzipFile } from "../../pure/zip";
 import { VariantAnalysis } from "../shared/variant-analysis";
+import { redactableError } from "../../pure/errors";
 
 export const RESULT_INDEX_ARTIFACT_NAME = "result-index";
 
@@ -492,8 +493,10 @@ export async function getRepositoriesMetadata(
       }
     } while (cursor);
   } catch (e) {
-    void showAndLogErrorMessage(
-      `Error retrieving repository metadata for variant analysis: ${getErrorMessage(
+    void showAndLogExceptionWithTelemetry(
+      redactableError(
+        asError(e),
+      )`Error retrieving repository metadata for variant analysis: ${getErrorMessage(
         e,
       )}`,
     );
