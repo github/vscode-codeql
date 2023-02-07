@@ -13,6 +13,7 @@ import { UserCancellationException } from "../../../src/commandRunner";
 import { ENABLE_TELEMETRY } from "../../../src/config";
 import * as Config from "../../../src/config";
 import { createMockExtensionContext } from "./index";
+import { vscodeGetConfigurationMock } from "../test-config";
 import { redactableError } from "../../../src/pure/errors";
 
 // setting preferences can trigger lots of background activity
@@ -41,6 +42,8 @@ describe("telemetry reporting", () => {
   >;
 
   beforeEach(async () => {
+    vscodeGetConfigurationMock.mockRestore();
+
     try {
       // in case a previous test has accidentally activated this extension,
       // need to disable it first.
