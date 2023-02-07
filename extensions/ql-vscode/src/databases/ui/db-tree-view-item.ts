@@ -40,6 +40,12 @@ export class DbTreeViewItem extends vscode.TreeItem {
         this.resourceUri = vscode.Uri.parse(SELECTED_DB_ITEM_RESOURCE_URI);
       }
     }
+
+    this.command = {
+      title: "Database Item",
+      command: "codeQLVariantAnalysisRepositories.itemDoubleClicked",
+      arguments: [this],
+    };
   }
 }
 

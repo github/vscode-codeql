@@ -378,6 +378,10 @@
         "icon": "$(new-folder)"
       },
       {
+        "command": "codeQLVariantAnalysisRepositories.itemDoubleClicked",
+        "title": "Select"
+      },
+      {
         "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
         "title": "✓"
       },
@@ -1022,6 +1026,10 @@
         },
         {
           "command": "codeQLVariantAnalysisRepositories.addNewList",
+          "when": "false"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.itemDoubleClicked",
           "when": "false"
         },
         {

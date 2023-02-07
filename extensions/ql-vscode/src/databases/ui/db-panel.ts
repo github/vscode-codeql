@@ -124,6 +124,12 @@ export class DbPanel extends DisposableObject {
         () => this.setupControllerRepository(),
       ),
     );
+    this.push(
+      commandRunner(
+        "codeQLVariantAnalysisRepositories.itemDoubleClicked",
+        (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
+      ),
+    );
   }
 
   private async openConfigFile(): Promise<void> {
