@@ -5,12 +5,21 @@
  *
  * Usage: npx ts-node scripts/source-map.ts <version-number> <filename>:<line>:<column>
  * For example: npx ts-node scripts/source-map.ts v1.7.8 "/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131164:13"
+ *
+ * Alternative usage: npx ts-node scripts/source-map.ts <version-number> <multi-line-stacktrace>
+ * For example: npx ts-node scripts/source-map.ts v1.7.8 'Error: Failed to find CodeQL distribution.
+ *     at CodeQLCliServer.getCodeQlPath (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131164:13)
+ *     at CodeQLCliServer.launchProcess (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131169:24)
+ *     at CodeQLCliServer.runCodeQlCliInternal (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131194:24)
+ *     at CodeQLCliServer.runJsonCodeQlCliCommand (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131330:20)
+ *     at CodeQLCliServer.resolveRam (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:131455:12)
+ *     at QueryServerClient2.startQueryServerImpl (/Users/user/.vscode/extensions/github.vscode-codeql-1.7.8/out/extension.js:138618:21)'
  */
 
 import { spawnSync } from "child_process";
 import { basename, resolve } from "path";
 import { pathExists, readJSON } from "fs-extra";
-import { SourceMapConsumer } from "source-map";
+import { RawSourceMap, SourceMapConsumer } from "source-map";
 
 if (process.argv.length !== 4) {
   console.error(
@@ -18,10 +27,13 @@ if (process.argv.length !== 4) {
   );
 }
 
+const stackLineRegex =
+  /at (?<name>.*)? \((?<file>.*):(?<line>\d+):(?<column>\d+)\)/gm;
+
 const versionNumber = process.argv[2].startsWith("v")
   ? process.argv[2]
   : `v${process.argv[2]}`;
-const filenameAndLine = process.argv[3];
+const stacktrace = process.argv[3];
 
 async function extractSourceMap() {
   const sourceMapsDirectory = resolve(
@@ -65,39 +77,80 @@ async function extractSourceMap() {
     ]);
   }
 
-  const [filename, line, column] = filenameAndLine.split(":", 3);
+  if (stacktrace.includes("at")) {
+    const rawSourceMaps = new Map<string, RawSourceMap>();
 
-  const fileBasename = basename(filename);
+    const mappedStacktrace = await replaceAsync(
+      stacktrace,
+      stackLineRegex,
+      async (match, name, file, line, column) => {
+        if (!rawSourceMaps.has(file)) {
+          const rawSourceMap: RawSourceMap = await readJSON(
+            resolve(sourceMapsDirectory, `${basename(file)}.map`),
+          );
+          rawSourceMaps.set(file, rawSourceMap);
+        }
 
-  const sourcemapName = `${fileBasename}.map`;
-  const sourcemapPath = resolve(sourceMapsDirectory, sourcemapName);
+        const originalPosition = await SourceMapConsumer.with(
+          rawSourceMaps.get(file) as RawSourceMap,
+          null,
+          async function (consumer) {
+            return consumer.originalPositionFor({
+              line: parseInt(line, 10),
+              column: parseInt(column, 10),
+            });
+          },
+        );
 
-  if (!(await pathExists(sourcemapPath))) {
-    throw new Error(`No source map found for ${fileBasename}`);
+        if (!originalPosition.source) {
+          return match;
+        }
+
+        const originalFilename = resolve(file, "..", originalPosition.source);
+
+        return `at ${originalPosition.name ?? name} (${originalFilename}:${
+          originalPosition.line
+        }:${originalPosition.column})`;
+      },
+    );
+
+    console.log(mappedStacktrace);
+  } else {
+    // This means it's just a filename:line:column
+    const [filename, line, column] = stacktrace.split(":", 3);
+
+    const fileBasename = basename(filename);
+
+    const sourcemapName = `${fileBasename}.map`;
+    const sourcemapPath = resolve(sourceMapsDirectory, sourcemapName);
+
+    if (!(await pathExists(sourcemapPath))) {
+      throw new Error(`No source map found for ${fileBasename}`);
+    }
+
+    const rawSourceMap: RawSourceMap = await readJSON(sourcemapPath);
+
+    const originalPosition = await SourceMapConsumer.with(
+      rawSourceMap,
+      null,
+      async function (consumer) {
+        return consumer.originalPositionFor({
+          line: parseInt(line, 10),
+          column: parseInt(column, 10),
+        });
+      },
+    );
+
+    if (!originalPosition.source) {
+      throw new Error(`No source found for ${stacktrace}`);
+    }
+
+    const originalFilename = resolve(filename, "..", originalPosition.source);
+
+    console.log(
+      `${originalFilename}:${originalPosition.line}:${originalPosition.column}`,
+    );
   }
-
-  const rawSourceMap = await readJSON(sourcemapPath);
-
-  const originalPosition = await SourceMapConsumer.with(
-    rawSourceMap,
-    null,
-    async function (consumer) {
-      return consumer.originalPositionFor({
-        line: parseInt(line),
-        column: parseInt(column),
-      });
-    },
-  );
-
-  if (!originalPosition.source) {
-    throw new Error(`No source found for ${filenameAndLine}`);
-  }
-
-  const originalFilename = resolve(filename, "..", originalPosition.source);
-
-  console.log(
-    `${originalFilename}:${originalPosition.line}:${originalPosition.column}`,
-  );
 }
 
 extractSourceMap().catch((e: unknown) => {
@@ -123,3 +176,18 @@ type WorkflowRunListItem = {
   databaseId: number;
   number: number;
 };
+
+async function replaceAsync(
+  str: string,
+  regex: RegExp,
+  replacer: (substring: string, ...args: any[]) => Promise<string>,
+) {
+  const promises: Array<Promise<string>> = [];
+  str.replace(regex, (match, ...args) => {
+    const promise = replacer(match, ...args);
+    promises.push(promise);
+    return match;
+  });
+  const data = await Promise.all(promises);
+  return str.replace(regex, () => data.shift() as string);
+}
