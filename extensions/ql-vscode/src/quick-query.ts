@@ -149,7 +149,7 @@ export async function displayQuickQuery(
   } catch (e) {
     if (
       e instanceof ResponseError &&
-      e.code == LSPErrorCodes.RequestCancelled
+      e.code === LSPErrorCodes.RequestCancelled
     ) {
       throw new UserCancellationException(getErrorMessage(e));
     } else {

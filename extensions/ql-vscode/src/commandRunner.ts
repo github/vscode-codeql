@@ -6,10 +6,14 @@ import {
   Disposable,
   ProgressLocation,
 } from "vscode";
-import { showAndLogErrorMessage, showAndLogWarningMessage } from "./helpers";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "./helpers";
 import { extLogger } from "./common";
 import { asError, getErrorMessage, getErrorStack } from "./pure/helpers-pure";
 import { telemetryListener } from "./telemetry";
+import { redactableError } from "./pure/errors";
 
 export class UserCancellationException extends Error {
   /**
@@ -125,23 +129,28 @@ export function commandRunner(
     try {
       return await task(...args);
     } catch (e) {
-      const errorMessage = `${getErrorMessage(e) || e} (${commandId})`;
       error = asError(e);
+      const errorMessage = redactableError(error)`${
+        getErrorMessage(e) || e
+      } (${commandId})`;
       const errorStack = getErrorStack(e);
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
-          void extLogger.log(errorMessage);
+          void extLogger.log(errorMessage.fullMessage);
         } else {
-          void showAndLogWarningMessage(errorMessage);
+          void showAndLogWarningMessage(errorMessage.fullMessage);
         }
       } else {
         // Include the full stack in the error log only.
         const fullMessage = errorStack
-          ? `${errorMessage}\n${errorStack}`
-          : errorMessage;
-        void showAndLogErrorMessage(errorMessage, {
+          ? `${errorMessage.fullMessage}\n${errorStack}`
+          : errorMessage.fullMessage;
+        void showAndLogExceptionWithTelemetry(errorMessage, {
           fullMessage,
+          extraTelemetryProperties: {
+            command: commandId,
+          },
         });
       }
       return undefined;
@@ -178,24 +187,31 @@ export function commandRunnerWithProgress<R>(
     try {
       return await withProgress(progressOptionsWithDefaults, task, ...args);
     } catch (e) {
-      const errorMessage = `${getErrorMessage(e) || e} (${commandId})`;
       error = asError(e);
+      const errorMessage = redactableError`${
+        getErrorMessage(e) || e
+      } (${commandId})`;
       const errorStack = getErrorStack(e);
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
-          void outputLogger.log(errorMessage);
+          void outputLogger.log(errorMessage.fullMessage);
         } else {
-          void showAndLogWarningMessage(errorMessage, { outputLogger });
+          void showAndLogWarningMessage(errorMessage.fullMessage, {
+            outputLogger,
+          });
         }
       } else {
         // Include the full stack in the error log only.
         const fullMessage = errorStack
-          ? `${errorMessage}\n${errorStack}`
-          : errorMessage;
-        void showAndLogErrorMessage(errorMessage, {
+          ? `${errorMessage.fullMessage}\n${errorStack}`
+          : errorMessage.fullMessage;
+        void showAndLogExceptionWithTelemetry(errorMessage, {
           outputLogger,
           fullMessage,
+          extraTelemetryProperties: {
+            command: commandId,
+          },
         });
       }
       return undefined;

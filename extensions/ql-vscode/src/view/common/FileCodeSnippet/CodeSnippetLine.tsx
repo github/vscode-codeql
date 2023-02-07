@@ -53,7 +53,7 @@ export const CodeSnippetLine = ({
     message &&
     severity &&
     highlightedRegion &&
-    highlightedRegion.endLine == startingLineIndex + lineIndex;
+    highlightedRegion.endLine === startingLineIndex + lineIndex;
 
   return (
     <div>

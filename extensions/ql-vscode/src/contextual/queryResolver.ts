@@ -7,8 +7,8 @@ import {
   getPrimaryDbscheme,
   getQlPackForDbscheme,
   getOnDiskWorkspaceFolders,
-  showAndLogErrorMessage,
   QlPacksForLanguage,
+  showAndLogExceptionWithTelemetry,
 } from "../helpers";
 import { KeyType, kindOfKeyType, nameOfKeyType, tagOfKeyType } from "./keyType";
 import { CodeQLCliServer } from "../cli";
@@ -18,6 +18,7 @@ import { createInitialQueryInfo } from "../run-queries-shared";
 import { CancellationToken, Uri } from "vscode";
 import { ProgressCallback } from "../commandRunner";
 import { QueryRunner } from "../queryRunner";
+import { redactableError } from "../pure/errors";
 
 export async function qlpackOfDatabase(
   cli: CodeQLCliServer,
@@ -88,22 +89,16 @@ export async function resolveQueries(
   }
 
   // No queries found. Determine the correct error message for the various scenarios.
-  const errorMessage = `No ${nameOfKeyType(
-    keyType,
-  )} queries (tagged "${tagOfKeyType(
-    keyType,
-  )}") could be found in the current library path. \
-    Try upgrading the CodeQL libraries. If that doesn't work, then ${nameOfKeyType(
-      keyType,
-    )} queries are not yet available \
-    for this language.`;
+  const keyTypeName = nameOfKeyType(keyType);
+  const keyTypeTag = tagOfKeyType(keyType);
+  const joinedPacksToSearch = packsToSearch.join(", ");
+  const error = redactableError`No ${keyTypeName} queries (tagged "${keyTypeTag}") could be found in the \
+current library path (tried searching the following packs: ${joinedPacksToSearch}). \
+Try upgrading the CodeQL libraries. If that doesn't work, then ${keyTypeName} queries are not yet available \
+for this language.`;
 
-  void showAndLogErrorMessage(errorMessage);
-  throw new Error(
-    `Couldn't find any queries tagged ${tagOfKeyType(
-      keyType,
-    )} in any of the following packs: ${packsToSearch.join(", ")}.`,
-  );
+  void showAndLogExceptionWithTelemetry(error);
+  throw error;
 }
 
 async function resolveContextualQuery(

@@ -27,13 +27,15 @@ export const VariantAnalysisStatusStats = ({
   completedAt,
   onViewLogsClick,
 }: VariantAnalysisStatusStatsProps) => {
-  if (variantAnalysisStatus === VariantAnalysisStatus.InProgress) {
-    return <Icon className="codicon codicon-loading codicon-modifier-spin" />;
-  }
-
   return (
     <Container>
-      <span>{completedAt !== undefined ? formatDate(completedAt) : "-"}</span>
+      {variantAnalysisStatus === VariantAnalysisStatus.InProgress ? (
+        <div>
+          <Icon className="codicon codicon-loading codicon-modifier-spin" />
+        </div>
+      ) : (
+        <span>{completedAt !== undefined ? formatDate(completedAt) : "-"}</span>
+      )}
       {onViewLogsClick && (
         <VSCodeLink onClick={onViewLogsClick}>View logs</VSCodeLink>
       )}

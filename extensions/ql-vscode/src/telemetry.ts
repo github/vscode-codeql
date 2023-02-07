@@ -19,6 +19,7 @@ import * as appInsights from "applicationinsights";
 import { extLogger } from "./common";
 import { UserCancellationException } from "./commandRunner";
 import { showBinaryChoiceWithUrlDialog } from "./helpers";
+import { RedactableError } from "./pure/errors";
 
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
 const key = "REPLACE-APP-INSIGHTS-KEY";
@@ -185,6 +186,30 @@ export class TelemetryListener extends ConfigListener {
       },
       {},
     );
+  }
+
+  sendError(
+    error: RedactableError,
+    extraProperties?: { [key: string]: string },
+  ) {
+    if (!this.reporter) {
+      return;
+    }
+
+    if (!newTelemetryEnabled()) {
+      return;
+    }
+
+    const properties: { [key: string]: string } = {
+      isCanary: isCanary().toString(),
+      message: error.redactedMessage,
+      ...extraProperties,
+    };
+    if (error.stack && error.stack !== "") {
+      properties.stack = error.stack;
+    }
+
+    this.reporter.sendTelemetryEvent("error", properties, {});
   }
 
   /**

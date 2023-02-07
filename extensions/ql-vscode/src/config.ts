@@ -357,7 +357,7 @@ export class QueryServerConfigListener
     if (memory === null) {
       return undefined;
     }
-    if (memory == 0 || typeof memory !== "number") {
+    if (memory === 0 || typeof memory !== "number") {
       void extLogger.log(
         `Ignoring value '${memory}' for setting ${MEMORY_SETTING.qualifiedName}`,
       );
