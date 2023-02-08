@@ -28,7 +28,7 @@ import { RemoteQueriesManager } from "../../../../src/remote-queries/remote-quer
 import {
   fixWorkspaceReferences,
   restoreWorkspaceReferences,
-} from "../global.helper";
+} from "../../global.helper";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { App } from "../../../../src/common/app";
 

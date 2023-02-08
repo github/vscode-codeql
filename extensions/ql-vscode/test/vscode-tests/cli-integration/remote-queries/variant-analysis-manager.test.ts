@@ -31,7 +31,7 @@ import {
   fixWorkspaceReferences,
   restoreWorkspaceReferences,
   storagePath,
-} from "../global.helper";
+} from "../../global.helper";
 import { VariantAnalysisResultsManager } from "../../../../src/remote-queries/variant-analysis-results-manager";
 import { createMockVariantAnalysis } from "../../../factories/remote-queries/shared/variant-analysis";
 import * as VariantAnalysisModule from "../../../../src/remote-queries/shared/variant-analysis";
