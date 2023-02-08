@@ -98,10 +98,11 @@ We have several types of tests:
 * Unit tests: these live in the `tests/unit-tests/` directory
 * View tests: these live in `src/view/variant-analysis/__tests__/`
 * VSCode integration tests:
-  * `test/vscode-tests/no-workspace` tests: These are intended to cover functionality that is meant to work before you even have a workspace open. 
+  * `test/vscode-tests/activated-extension` tests: These are intended to cover functionality that require the full extension to be activated but don't require the CLI. This suite is not run against multiple versions of the CLI in CI.
+  * `test/vscode-tests/no-workspace` tests: These are intended to cover functionality that is meant to work before you even have a workspace open but don't require the extension to be activated.
   * `test/vscode-tests/minimal-workspace` tests: These are intended to cover functionality that need a workspace but don't require the full extension to be activated.
 * CLI integration tests: these live in `test/vscode-tests/cli-integration`
-  * These tests are intendended to be cover functionality that is related to the integration between the CodeQL CLI and the extension.
+  * These tests are intended to be cover functionality that is related to the integration between the CodeQL CLI and the extension. These tests are run against all supported versions of the CLI in CI.
 
 The CLI integration tests require an instance of the CodeQL CLI to run so they will require some extra setup steps. When adding new tests to our test suite, please be mindful of whether they need to be in the cli-integration folder. If the tests don't depend on the CLI, they are better suited to being a VSCode integration test.
 
@@ -119,7 +120,7 @@ Then, from the `extensions/ql-vscode` directory, use the appropriate command to 
 
 * Unit tests: `npm run test:unit`
 * View Tests: `npm test:view`
-* VSCode integration tests: `npm run integration`
+* VSCode integration tests: `npm run test:vscode-integration`
 
 ###### CLI integration tests
 
@@ -130,7 +131,7 @@ The CLI integration tests require the CodeQL standard libraries in order to run 
 2. Run your test command:
 
 ```shell
-cd extensions/ql-vscode && npm run cli-integration
+cd extensions/ql-vscode && npm run test:cli-integration
 ```
 
 ##### 2. From VSCode
@@ -161,13 +162,13 @@ The easiest way to run a single test is to change the `it` of the test to `it.on
 to only run tests for this specific file. For example, to run the test `test/vscode-tests/cli-integration/run-queries.test.ts`:
 
 ```shell
-npm run cli-integration -- --runTestsByPath test/vscode-tests/cli-integration/run-queries.test.ts
+npm run test:cli-integration -- --runTestsByPath test/vscode-tests/cli-integration/run-queries.test.ts
 ```
 
 You can also use the `--testNamePattern` option to run a specific test within a file. For example, to run the test `test/vscode-tests/cli-integration/run-queries.test.ts`:
 
 ```shell
-npm run cli-integration -- --runTestsByPath test/vscode-tests/cli-integration/run-queries.test.ts --testNamePattern "should create a QueryEvaluationInfo"
+npm run test:cli-integration -- --runTestsByPath test/vscode-tests/cli-integration/run-queries.test.ts --testNamePattern "should create a QueryEvaluationInfo"
 ```
 
 ##### 2. From VSCode
