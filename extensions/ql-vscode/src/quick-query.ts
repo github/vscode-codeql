@@ -12,15 +12,14 @@ import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 import { CodeQLCliServer } from "./cli";
 import { DatabaseUI } from "./databases-ui";
 import {
-  FALLBACK_QLPACK_FILENAME,
   getInitialQueryContents,
   getPrimaryDbscheme,
   getQlPackForDbscheme,
-  getQlPackPath,
   showBinaryChoiceDialog,
 } from "./helpers";
 import { ProgressCallback, UserCancellationException } from "./commandRunner";
 import { getErrorMessage } from "./pure/helpers-pure";
+import { FALLBACK_QLPACK_FILENAME, getQlPackPath } from "./pure/ql";
 
 const QUICK_QUERIES_DIR_NAME = "quick-queries";
 const QUICK_QUERY_QUERY_NAME = "quick-query.ql";

@@ -9,7 +9,6 @@ import {
   getOnDiskWorkspaceFolders,
   QlPacksForLanguage,
   showAndLogExceptionWithTelemetry,
-  QLPACK_FILENAMES,
 } from "../helpers";
 import { KeyType, kindOfKeyType, nameOfKeyType, tagOfKeyType } from "./keyType";
 import { CodeQLCliServer } from "../cli";
@@ -20,6 +19,7 @@ import { CancellationToken, Uri } from "vscode";
 import { ProgressCallback } from "../commandRunner";
 import { QueryRunner } from "../queryRunner";
 import { redactableError } from "../pure/errors";
+import { QLPACK_FILENAMES } from "../pure/ql";
 
 export async function qlpackOfDatabase(
   cli: CodeQLCliServer,

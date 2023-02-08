@@ -23,6 +23,7 @@ import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
+import { getQlPackPath } from "./pure/ql";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -741,21 +742,4 @@ export async function* walkDirectory(
       yield entry;
     }
   }
-}
-
-export const QLPACK_FILENAMES = ["qlpack.yml", "codeql-pack.yml"];
-export const FALLBACK_QLPACK_FILENAME = QLPACK_FILENAMES[0];
-
-export async function getQlPackPath(
-  packRoot: string,
-): Promise<string | undefined> {
-  for (const filename of QLPACK_FILENAMES) {
-    const path = join(packRoot, filename);
-
-    if (await pathExists(path)) {
-      return path;
-    }
-  }
-
-  return undefined;
 }

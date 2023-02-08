@@ -9,9 +9,6 @@ import {
   getOnDiskWorkspaceFolders,
   tryGetQueryMetadata,
   tmpDir,
-  FALLBACK_QLPACK_FILENAME,
-  getQlPackPath,
-  QLPACK_FILENAMES,
 } from "../helpers";
 import { Credentials } from "../common/authentication";
 import * as cli from "../cli";
@@ -33,6 +30,11 @@ import {
 } from "./repository-selection";
 import { Repository } from "./shared/repository";
 import { DbManager } from "../databases/db-manager";
+import {
+  getQlPackPath,
+  FALLBACK_QLPACK_FILENAME,
+  QLPACK_FILENAMES,
+} from "../pure/ql";
 
 export interface QlPack {
   name: string;
