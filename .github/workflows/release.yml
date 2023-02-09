@@ -94,6 +94,23 @@ jobs:
           asset_name: ${{ format('vscode-codeql-{0}.vsix', steps.prepare-artifacts.outputs.ref_name) }}
           asset_content_type: application/zip
 
+      - name: Create sourcemap ZIP file
+        run: |
+          cd dist/vscode-codeql/out
+          zip -r ../../vscode-codeql-sourcemaps.zip *.map
+
+      - name: Upload sourcemap ZIP file
+        uses: actions/upload-release-asset@v1.0.1
+        if: success()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Get the `upload_url` from the `create-release` step above.
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: dist/vscode-codeql-sourcemaps.zip
+          asset_name: ${{ format('vscode-codeql-sourcemaps-{0}.zip', steps.prepare-artifacts.outputs.ref_name) }}
+          asset_content_type: application/zip
+
       ###
       # Do Post release work: version bump and changelog PR
       # Only do this if we are running from a PR (ie- this is part of the release process)
