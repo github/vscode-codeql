@@ -1230,7 +1230,7 @@ export class CodeQLCliServer implements Disposable {
     return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "add"],
       args,
-      "Adding pack dependencies and installing them",
+      "Adding and installing pack dependencies.",
     );
   }
 
