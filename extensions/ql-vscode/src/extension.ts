@@ -845,6 +845,7 @@ async function activateWithInstalledDistribution(
       documentSelector: [
         { language: "ql", scheme: "file" },
         { language: "yaml", scheme: "file", pattern: "**/qlpack.yml" },
+        { language: "yaml", scheme: "file", pattern: "**/codeql-pack.yml" },
       ],
       synchronize: {
         configurationSection: "codeQL",
