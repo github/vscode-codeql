@@ -657,7 +657,7 @@ export class DatabaseManager extends DisposableObject {
     }
 
     const answer = await showBinaryChoiceDialog(
-      `We've noticed you don't have a QL pack downloaded to analyze this database. Can we set up a query pack for you?`,
+      `We've noticed you don't have a CodeQL pack available to analyze this database. Can we set up a query pack for you?`,
     );
 
     if (!answer) {
