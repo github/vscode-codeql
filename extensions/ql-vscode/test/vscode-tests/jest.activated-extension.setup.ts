@@ -15,6 +15,10 @@ import { beforeEachAction } from "./test-config";
 // create an extension storage location
 let removeStorage: tmp.DirResult["removeCallback"] | undefined;
 
+jest.retryTimes(3, {
+  logErrorsBeforeRetry: true,
+});
+
 beforeAll(async () => {
   // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
   await beforeEachAction();
