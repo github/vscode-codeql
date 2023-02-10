@@ -365,7 +365,7 @@
       {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
         "title": "Open Database Configuration File",
-        "icon": "$(edit)"
+        "icon": "$(json)"
       },
       {
         "command": "codeQLVariantAnalysisRepositories.addNewDatabase",
