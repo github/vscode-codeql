@@ -63,6 +63,7 @@ export class QlPackGenerator {
 
     const exampleQl = `
 /**
+ * This is an automatically generated file
  * @name Empty block
  * @kind problem
  * @problem.severity warning
