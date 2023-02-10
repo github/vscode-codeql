@@ -463,7 +463,7 @@
       },
       {
         "command": "codeQLDatabases.setCurrentDatabase",
-        "title": "Set Current Database"
+        "title": "Select"
       },
       {
         "command": "codeQLDatabases.removeDatabase",
