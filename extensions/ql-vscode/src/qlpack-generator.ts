@@ -71,9 +71,7 @@ export class QlPackGenerator {
 
 import ${this.queryLanguage}
 
-from BlockStmt b
-where b.getNumStmt() = 0
-select b, "This is an empty block."
+select "Hello, world!"
 `.trim();
 
     await writeFile(exampleQlFile, exampleQl, "utf8");
