@@ -364,7 +364,7 @@
       },
       {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
-        "title": "Open Database Configuration File",
+        "title": "Open database configuration file",
         "icon": "$(json)"
       },
       {
