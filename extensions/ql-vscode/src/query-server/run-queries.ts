@@ -70,6 +70,10 @@ export async function compileAndRunQueryAgainstDatabase(
     : { query: {} };
 
   const diskWorkspaceFolders = getOnDiskWorkspaceFolders();
+  const extensionPacks = (await qs.cliServer.useExtensionPacks())
+    ? Object.keys(await qs.cliServer.resolveQlpacks(diskWorkspaceFolders, true))
+    : undefined;
+
   const db = dbItem.databaseUri.fsPath;
   const logPath = queryInfo ? query.evalLogPath : undefined;
   const queryToRun: messages.RunQueryParams = {
@@ -82,6 +86,7 @@ export async function compileAndRunQueryAgainstDatabase(
     dilPath: query.dilPath,
     logPath,
     target,
+    extensionPacks,
   };
   await query.createTimestampFile();
   let result: messages.RunQueryResult | undefined;

@@ -146,6 +146,10 @@ const DEBUG_SETTING = new Setting("debug", RUNNING_QUERIES_SETTING);
 const MAX_PATHS = new Setting("maxPaths", RUNNING_QUERIES_SETTING);
 const RUNNING_TESTS_SETTING = new Setting("runningTests", ROOT_SETTING);
 const RESULTS_DISPLAY_SETTING = new Setting("resultsDisplay", ROOT_SETTING);
+const USE_EXTENSION_PACKS = new Setting(
+  "useExtensionPacks",
+  RUNNING_QUERIES_SETTING,
+);
 
 export const ADDITIONAL_TEST_ARGUMENTS_SETTING = new Setting(
   "additionalTestArguments",
@@ -205,6 +209,7 @@ const CLI_SETTINGS = [
   NUMBER_OF_TEST_THREADS_SETTING,
   NUMBER_OF_THREADS_SETTING,
   MAX_PATHS,
+  USE_EXTENSION_PACKS,
 ];
 
 export interface CliConfig {
@@ -212,7 +217,9 @@ export interface CliConfig {
   numberTestThreads: number;
   numberThreads: number;
   maxPaths: number;
+  useExtensionPacks: boolean;
   onDidChangeConfiguration?: Event<void>;
+  setUseExtensionPacks: (useExtensionPacks: boolean) => Promise<void>;
 }
 
 export abstract class ConfigListener extends DisposableObject {
@@ -407,6 +414,19 @@ export class CliConfigListener extends ConfigListener implements CliConfig {
 
   public get maxPaths(): number {
     return MAX_PATHS.getValue<number>();
+  }
+
+  public get useExtensionPacks(): boolean {
+    // currently, we are restricting the values of this setting to 'all' or 'none'.
+    return USE_EXTENSION_PACKS.getValue() === "all";
+  }
+
+  // Exposed for testing only
+  public async setUseExtensionPacks(newUseExtensionPacks: boolean) {
+    await USE_EXTENSION_PACKS.updateValue(
+      newUseExtensionPacks ? "all" : "none",
+      ConfigurationTarget.Global,
+    );
   }
 
   protected handleDidChangeConfiguration(e: ConfigurationChangeEvent): void {

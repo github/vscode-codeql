@@ -1,0 +1,8 @@
+name: semmle/targets-extension
+library: true
+version: 0.0.0
+extensionTargets:
+  semmle/has-extension: '*'
+
+dataExtensions:
+  - ext/*

@@ -18,6 +18,7 @@ const config = {
     "--disable-extension",
     "github.copilot",
     path.resolve(rootDir, "test/data"),
+    path.resolve(rootDir, "test/data-extensions"), // folder containing the extension packs and packs that are targeted by the extension pack
     // CLI integration tests requires a multi-root workspace so that the data and the QL sources are accessible.
     ...(process.env.TEST_CODEQL_PATH ? [process.env.TEST_CODEQL_PATH] : []),
   ],

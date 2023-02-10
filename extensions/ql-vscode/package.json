@@ -239,6 +239,19 @@
           "default": true,
           "description": "Enable the 'Quick Evaluation' CodeLens."
         },
+        "codeQL.runningQueries.useExtensionPacks": {
+          "type": "string",
+          "default": "none",
+          "enum": [
+            "none",
+            "all"
+          ],
+          "enumDescriptions": [
+            "Do not use extension packs.",
+            "Use all extension packs found in the workspace."
+          ],
+          "description": "Choose whether or not to run queries using extension packs. Requires CodeQL CLI v2.12.3 or later."
+        },
         "codeQL.resultsDisplay.pageSize": {
           "type": "integer",
           "default": 200,
