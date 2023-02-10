@@ -44,10 +44,18 @@
   },
   "jestrunner.debugOptions": {
     // Uncomment to debug integration tests
-    // "attachSimplePort": 9223,
+    "attachSimplePort": 9223,
     "env": {
       "LANG": "en-US",
       "TZ": "UTC",
+
+      // Uncomment to set a custom path to a CodeQL checkout.
+      // "TEST_CODEQL_PATH": "../codeql",
+
+      // Uncomment to set a custom path to a CodeQL CLI executable.
+      // This is the CodeQL version that will be used in the tests.
+      // "CLI_PATH": "/path/to/customg/codeql",
+
       // Uncomment to debug integration tests
       // "VSCODE_WAIT_FOR_DEBUGGER": "true",
     }
