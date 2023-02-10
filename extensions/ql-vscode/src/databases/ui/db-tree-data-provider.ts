@@ -49,6 +49,28 @@ export class DbTreeDataProvider
   }
 
   /**
+   * Updates the selected item and re-renders the tree.
+   * @param selectedItem The item to select.
+   */
+  public async updateSelectedItem(selectedItem: DbTreeViewItem): Promise<void> {
+    const items = await this.getChildren();
+    if (items === undefined || items === null) {
+      return;
+    }
+
+    // Unselect all items
+    for (const item of items) {
+      item.setAsUnselected();
+    }
+
+    // Select the new item
+    selectedItem.setAsSelected();
+
+    // Re-render the tree
+    this._onDidChangeTreeData.fire(undefined);
+  }
+
+  /**
    * Called when expanding a node (including the root node).
    * @param node The node to expand.
    * @returns The children of the node.

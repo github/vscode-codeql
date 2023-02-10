@@ -36,10 +36,18 @@ export class DbTreeViewItem extends vscode.TreeItem {
     if (dbItem) {
       this.contextValue = getContextValue(dbItem);
       if (isSelectableDbItem(dbItem) && dbItem.selected) {
-        // Define the resource id to drive the UI to render this item as selected.
-        this.resourceUri = vscode.Uri.parse(SELECTED_DB_ITEM_RESOURCE_URI);
+        this.setAsSelected();
       }
     }
+  }
+
+  public setAsSelected(): void {
+    // Define the resource id to drive the UI to render this item as selected.
+    this.resourceUri = vscode.Uri.parse(SELECTED_DB_ITEM_RESOURCE_URI);
+  }
+
+  public setAsUnselected(): void {
+    this.resourceUri = undefined;
   }
 }
 
