@@ -124,7 +124,7 @@ InterpretedResults.args = {
   resultCount: 198,
   interpretedResults: analysesResults.analysesResults.find(
     (v) => v.nwo === "facebook/create-react-app",
-  )?.interpretedResults as unknown as AnalysisAlert[],
+  )?.interpretedResults as AnalysisAlert[],
 };
 
 export const RawResults = Template.bind({});
@@ -132,7 +132,7 @@ RawResults.args = {
   ...InterpretedResults.args,
   interpretedResults: undefined,
   resultCount: 1,
-  rawResults: rawResults as unknown as AnalysisRawResults,
+  rawResults: rawResults as AnalysisRawResults,
 };
 
 export const SkippedOnlyFullName = Template.bind({});
