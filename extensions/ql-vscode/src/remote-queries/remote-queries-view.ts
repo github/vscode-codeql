@@ -4,7 +4,6 @@ import {
   ViewColumn,
   Uri,
   workspace,
-  commands,
 } from "vscode";
 import { basename } from "path";
 
@@ -162,10 +161,6 @@ export class RemoteQueriesView extends AbstractWebview<
         await this.downloadAllAnalysesResults(msg);
         break;
       case "remoteQueryExportResults":
-        await commands.executeCommand(
-          "codeQL.exportRemoteQueryResults",
-          msg.queryId,
-        );
         break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);

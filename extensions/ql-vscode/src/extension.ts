@@ -110,7 +110,6 @@ import {
 } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import {
-  exportRemoteQueryResults,
   exportSelectedRemoteQueryResults,
   exportVariantAnalysisResults,
 } from "./remote-queries/export-results";
@@ -1193,15 +1192,6 @@ async function activateWithInstalledDistribution(
     commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
       await exportSelectedRemoteQueryResults(qhm);
     }),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.exportRemoteQueryResults",
-      async (queryId: string) => {
-        await exportRemoteQueryResults(qhm, rqm, queryId, app.credentials);
-      },
-    ),
   );
 
   ctx.subscriptions.push(

@@ -1312,10 +1312,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     // Remote queries and variant analysis only
     if (finalSingleItem.t === "remote") {
-      await commands.executeCommand(
-        "codeQL.exportRemoteQueryResults",
-        finalSingleItem.queryId,
-      );
+      // Do nothing. TODO: Remove this case once remote queries are removed.
     } else if (finalSingleItem.t === "variant-analysis") {
       await commands.executeCommand(
         "codeQL.exportVariantAnalysisResults",
