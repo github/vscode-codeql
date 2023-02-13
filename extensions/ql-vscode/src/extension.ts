@@ -103,7 +103,6 @@ import {
 import { CodeQlStatusBarHandler } from "./status-bar";
 
 import { RemoteQueriesManager } from "./remote-queries/remote-queries-manager";
-import { RemoteQueryResult } from "./remote-queries/remote-query-result";
 import { URLSearchParams } from "url";
 import {
   handleDownloadPacks,
@@ -1186,15 +1185,6 @@ async function activateWithInstalledDistribution(
       "codeQL.cancelVariantAnalysis",
       async (variantAnalysisId: number) => {
         await variantAnalysisManager.cancelVariantAnalysis(variantAnalysisId);
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.autoDownloadRemoteQueryResults",
-      async (queryResult: RemoteQueryResult, token: CancellationToken) => {
-        await rqm.autoDownloadRemoteQueryResults(queryResult, token);
       },
     ),
   );

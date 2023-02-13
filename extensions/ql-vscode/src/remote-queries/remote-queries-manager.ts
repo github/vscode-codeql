@@ -1,4 +1,4 @@
-import { CancellationToken, EventEmitter, ExtensionContext } from "vscode";
+import { EventEmitter, ExtensionContext } from "vscode";
 import { join } from "path";
 import { pathExists, readFile, remove } from "fs-extra";
 
@@ -15,9 +15,6 @@ import { DisposableObject } from "../pure/disposable-object";
 import { AnalysisResults } from "./shared/analysis-result";
 import { App } from "../common/app";
 import { redactableError } from "../pure/errors";
-
-const autoDownloadMaxSize = 300 * 1024;
-const autoDownloadMaxCount = 100;
 
 const noop = () => {
   /* do nothing */
@@ -126,29 +123,6 @@ export class RemoteQueriesManager extends DisposableObject {
         )`Could not open query results. ${getErrorMessage(e)}`,
       );
     }
-  }
-
-  public async autoDownloadRemoteQueryResults(
-    queryResult: RemoteQueryResult,
-    token: CancellationToken,
-  ): Promise<void> {
-    const analysesToDownload = queryResult.analysisSummaries
-      .filter((a) => a.fileSizeInBytes < autoDownloadMaxSize)
-      .slice(0, autoDownloadMaxCount)
-      .map((a) => ({
-        nwo: a.nwo,
-        databaseSha: a.databaseSha,
-        resultCount: a.resultCount,
-        sourceLocationPrefix: a.sourceLocationPrefix,
-        downloadLink: a.downloadLink,
-        fileSize: String(a.fileSizeInBytes),
-      }));
-
-    await this.analysesResultsManager.loadAnalysesResults(
-      analysesToDownload,
-      token,
-      (results) => this.view.setAnalysisResults(results, queryResult.queryId),
-    );
   }
 
   public async openResults(query: RemoteQuery, queryResult: RemoteQueryResult) {
