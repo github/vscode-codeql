@@ -256,8 +256,8 @@ export class DbPanel extends DisposableObject {
     }
 
     // Optimistically update the UI to select the item that the user
-    // to avoid delay in the UI.
-    await this.dataProvider.updateSelectedItem(treeViewItem);
+    // selected to avoid delay in the UI.
+    this.dataProvider.updateSelectedItem(treeViewItem);
 
     await this.dbManager.setSelectedDbItem(treeViewItem.dbItem);
   }

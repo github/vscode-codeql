@@ -52,14 +52,9 @@ export class DbTreeDataProvider
    * Updates the selected item and re-renders the tree.
    * @param selectedItem The item to select.
    */
-  public async updateSelectedItem(selectedItem: DbTreeViewItem): Promise<void> {
-    const items = await this.getChildren();
-    if (items === undefined || items === null) {
-      return;
-    }
-
+  public updateSelectedItem(selectedItem: DbTreeViewItem): void {
     // Unselect all items
-    for (const item of items) {
+    for (const item of this.dbTreeItems) {
       item.setAsUnselected();
     }
 
