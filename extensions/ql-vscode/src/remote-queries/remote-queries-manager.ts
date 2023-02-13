@@ -1,29 +1,24 @@
 import {
   CancellationToken,
   commands,
+  env,
   EventEmitter,
   ExtensionContext,
-  Uri,
-  env,
 } from "vscode";
-import { nanoid } from "nanoid";
 import { join } from "path";
-import { writeFile, readFile, remove, pathExists } from "fs-extra";
+import { pathExists, readFile, remove, writeFile } from "fs-extra";
 import { EOL } from "os";
 
 import { CodeQLCliServer } from "../cli";
-import { ProgressCallback } from "../commandRunner";
 import {
-  createTimestampFile,
   showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showInformationMessageWithAction,
 } from "../helpers";
 import { Logger } from "../common";
-import { prepareRemoteQueryRun } from "./run-remote-query";
 import { RemoteQueriesView } from "./remote-queries-view";
-import { buildRemoteQueryEntity, RemoteQuery } from "./remote-query";
+import { RemoteQuery } from "./remote-query";
 import { RemoteQueriesMonitor } from "./remote-queries-monitor";
 import {
   getRemoteQueryIndex,
@@ -41,7 +36,6 @@ import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { QueryStatus } from "../query-status";
 import { DisposableObject } from "../pure/disposable-object";
 import { AnalysisResults } from "./shared/analysis-result";
-import { runRemoteQueriesApiRequest } from "./remote-queries-api";
 import { App } from "../common/app";
 import { redactableError } from "../pure/errors";
 
@@ -85,7 +79,7 @@ export class RemoteQueriesManager extends DisposableObject {
   constructor(
     ctx: ExtensionContext,
     private readonly app: App,
-    private readonly cliServer: CodeQLCliServer,
+    cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     logger: Logger,
   ) {
@@ -165,62 +159,6 @@ export class RemoteQueriesManager extends DisposableObject {
         )`Could not open query results. ${getErrorMessage(e)}`,
       );
     }
-  }
-
-  public async runRemoteQuery(
-    uri: Uri | undefined,
-    progress: ProgressCallback,
-    token: CancellationToken,
-  ): Promise<void> {
-    const {
-      actionBranch,
-      base64Pack,
-      repoSelection,
-      queryFile,
-      queryMetadata,
-      controllerRepo,
-      queryStartTime,
-      language,
-    } = await prepareRemoteQueryRun(
-      this.cliServer,
-      this.app.credentials,
-      uri,
-      progress,
-      token,
-    );
-
-    const apiResponse = await runRemoteQueriesApiRequest(
-      this.app.credentials,
-      actionBranch,
-      language,
-      repoSelection,
-      controllerRepo,
-      base64Pack,
-    );
-
-    if (!apiResponse) {
-      return;
-    }
-
-    const workflowRunId = apiResponse.workflow_run_id;
-    const repositoryCount = apiResponse.repositories_queried.length;
-    const query = await buildRemoteQueryEntity(
-      queryFile,
-      queryMetadata,
-      controllerRepo,
-      queryStartTime,
-      workflowRunId,
-      language,
-      repositoryCount,
-    );
-
-    const queryId = this.createQueryId();
-
-    await this.prepareStorageDirectory(queryId);
-    await this.storeJsonFile(queryId, "query.json", query);
-
-    this.remoteQueryAddedEventEmitter.fire({ queryId, query });
-    void commands.executeCommand("codeQL.monitorRemoteQuery", queryId, query);
   }
 
   public async monitorRemoteQuery(
@@ -387,25 +325,6 @@ export class RemoteQueriesManager extends DisposableObject {
     if (shouldOpenView) {
       await this.openResults(query, queryResult);
     }
-  }
-
-  /**
-   * Generates a unique id for this query, suitable for determining the storage location for the downloaded query artifacts.
-   * @returns A unique id for this query.
-   */
-  private createQueryId(): string {
-    return nanoid();
-  }
-
-  /**
-   * Prepares a directory for storing analysis results for a single query run.
-   * This directory contains a timestamp file, which will be
-   * used by the query history manager to determine when the directory
-   * should be deleted.
-   *
-   */
-  private async prepareStorageDirectory(queryId: string): Promise<void> {
-    await createTimestampFile(join(this.storagePath, queryId));
   }
 
   private async getRemoteQueryResult(
