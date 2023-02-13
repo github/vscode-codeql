@@ -163,6 +163,9 @@ async function createNewQueryPack(
     },
     defaultSuite: generateDefaultSuite(packRelativePath),
   };
+  if (await cliServer.useExtensionPacks()) {
+    injectExtensionPacks(cliServer, syntheticQueryPack, workspaceFolders);
+  }
   await writeFile(
     join(queryPackDir, FALLBACK_QLPACK_FILENAME),
     dump(syntheticQueryPack),
@@ -382,10 +385,36 @@ async function fixPackFile(
   qlpack.name = QUERY_PACK_NAME;
   updateDefaultSuite(qlpack, packRelativePath);
   removeWorkspaceRefs(qlpack);
+  if (await cliServer.useExtensionPacks()) {
+    injectExtensionPacks(cliServer, qlpack, workspaceFolders);
+  }
 
   await writeFile(packPath, dump(qlpack));
 }
 
+function injectExtensionPacks(
+  cliServer: cli.CodeQLCliServer,
+  qlpack: QlPack,
+  workspaceFolders: string[],
+) {
+  const extensionPacks = cliServer.resolveQlpacks(workspaceFolders, true);
+  Object.entries(extensionPacks).forEach(([name, paths]) => {
+    // We are guaranteed that there is at least one path found for each extension pack.
+    // If there are multiple paths, then we have a problem. This means that there is
+    // ambiguity in which path to use. This is an error.
+    if (paths.length > 1) {
+      throw new Error(
+        `Multiple versions of extension pack '${name}' found: ${paths.join(
+          ", ",
+        )}`,
+      );
+    }
+    // Add this extension pack as a dependency. It doesn't matter which
+    // version we specify, since we are guaranteed that the extension pack
+    // is resolved from source at the given path.
+    qlpack.dependencies[name] = "*";
+  });
+}
 
 function updateDefaultSuite(qlpack: QlPack, packRelativePath: string) {
   delete qlpack.defaultSuiteFile;
