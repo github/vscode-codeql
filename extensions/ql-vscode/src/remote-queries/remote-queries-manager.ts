@@ -1,7 +1,6 @@
-import { CancellationToken, env, EventEmitter, ExtensionContext } from "vscode";
+import { CancellationToken, EventEmitter, ExtensionContext } from "vscode";
 import { join } from "path";
 import { pathExists, readFile, remove } from "fs-extra";
-import { EOL } from "os";
 
 import { CodeQLCliServer } from "../cli";
 import { showAndLogExceptionWithTelemetry } from "../helpers";
@@ -152,35 +151,8 @@ export class RemoteQueriesManager extends DisposableObject {
     );
   }
 
-  public async copyRemoteQueryRepoListToClipboard(queryId: string) {
-    const queryResult = await this.getRemoteQueryResult(queryId);
-    const repos = queryResult.analysisSummaries
-      .filter((a) => a.resultCount > 0)
-      .map((a) => a.nwo);
-
-    if (repos.length > 0) {
-      const text = [
-        '"new-repo-list": [',
-        ...repos.slice(0, -1).map((repo) => `    "${repo}",`),
-        `    "${repos[repos.length - 1]}"`,
-        "]",
-      ];
-
-      await env.clipboard.writeText(text.join(EOL));
-    }
-  }
-
   public async openResults(query: RemoteQuery, queryResult: RemoteQueryResult) {
     await this.view.showResults(query, queryResult);
-  }
-
-  private async getRemoteQueryResult(
-    queryId: string,
-  ): Promise<RemoteQueryResult> {
-    return await this.retrieveJsonFile<RemoteQueryResult>(
-      queryId,
-      "query-result.json",
-    );
   }
 
   private async retrieveJsonFile<T>(

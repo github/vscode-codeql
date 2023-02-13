@@ -154,7 +154,6 @@ export class RemoteQueriesView extends AbstractWebview<
         await this.openVirtualFile(msg.queryText);
         break;
       case "copyRepoList":
-        await commands.executeCommand("codeQL.copyRepoList", msg.queryId);
         break;
       case "remoteQueryDownloadAnalysisResults":
         await this.downloadAnalysisResults(msg);

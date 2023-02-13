@@ -1289,12 +1289,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    if (finalSingleItem.t === "remote") {
-      await commands.executeCommand(
-        "codeQL.copyRepoList",
-        finalSingleItem.queryId,
-      );
-    } else if (finalSingleItem.t === "variant-analysis") {
+    if (finalSingleItem.t === "variant-analysis") {
       await commands.executeCommand(
         "codeQL.copyVariantAnalysisRepoList",
         finalSingleItem.variantAnalysis.id,

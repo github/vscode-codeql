@@ -1129,12 +1129,6 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner("codeQL.copyRepoList", async (queryId: string) => {
-      await rqm.copyRemoteQueryRepoListToClipboard(queryId);
-    }),
-  );
-
-  ctx.subscriptions.push(
     commandRunner(
       "codeQL.openVariantAnalysisLogs",
       async (variantAnalysisId: number) => {
