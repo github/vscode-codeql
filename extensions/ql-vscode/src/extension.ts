@@ -101,8 +101,6 @@ import {
   withProgress,
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
-
-import { RemoteQueriesManager } from "./remote-queries/remote-queries-manager";
 import { URLSearchParams } from "url";
 import {
   handleDownloadPacks,
@@ -652,23 +650,12 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  void extLogger.log("Initializing remote queries manager.");
-  const rqm = new RemoteQueriesManager(
-    ctx,
-    app,
-    cliServer,
-    queryStorageDir,
-    extLogger,
-  );
-  ctx.subscriptions.push(rqm);
-
   void extLogger.log("Initializing query history.");
   const qhm = new QueryHistoryManager(
     app,
     qs,
     dbm,
     localQueryResultsView,
-    rqm,
     variantAnalysisManager,
     evalLogViewer,
     queryStorageDir,

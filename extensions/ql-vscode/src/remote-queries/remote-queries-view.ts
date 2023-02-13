@@ -1,17 +1,15 @@
 import {
   ExtensionContext,
-  window as Window,
-  ViewColumn,
   Uri,
+  ViewColumn,
+  window as Window,
   workspace,
 } from "vscode";
 import { basename } from "path";
 
 import {
-  ToRemoteQueriesMessage,
   FromRemoteQueriesMessage,
-  RemoteQueryDownloadAnalysisResultsMessage,
-  RemoteQueryDownloadAllAnalysesResultsMessage,
+  ToRemoteQueriesMessage,
 } from "../pure/interface-types";
 import { Logger } from "../common";
 import { assertNever } from "../pure/helpers-pure";
@@ -28,8 +26,6 @@ import {
 import { showAndLogWarningMessage } from "../helpers";
 import { URLSearchParams } from "url";
 import { SHOW_QUERY_TEXT_MSG } from "../query-history/query-history-manager";
-import { AnalysesResultsManager } from "./analyses-results-manager";
-import { AnalysisResults } from "./shared/analysis-result";
 import { humanizeUnit } from "../pure/time";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import { telemetryListener } from "../telemetry";
@@ -38,13 +34,7 @@ export class RemoteQueriesView extends AbstractWebview<
   ToRemoteQueriesMessage,
   FromRemoteQueriesMessage
 > {
-  private currentQueryId: string | undefined;
-
-  constructor(
-    ctx: ExtensionContext,
-    private readonly logger: Logger,
-    private readonly analysesResultsManager: AnalysesResultsManager,
-  ) {
+  constructor(ctx: ExtensionContext, private readonly logger: Logger) {
     super(ctx);
     this.panelLoadedCallBacks.push(() => {
       void logger.log("Variant analysis results view loaded");
@@ -57,22 +47,11 @@ export class RemoteQueriesView extends AbstractWebview<
 
     await this.waitForPanelLoaded();
     const model = this.buildViewModel(query, queryResult);
-    this.currentQueryId = queryResult.queryId;
 
     await this.postMessage({
       t: "setRemoteQueryResult",
       queryResult: model,
     });
-
-    // Ensure all pre-downloaded artifacts are loaded into memory
-    await this.analysesResultsManager.loadDownloadedAnalyses(
-      model.analysisSummaries,
-    );
-
-    await this.setAnalysisResults(
-      this.analysesResultsManager.getAnalysesResults(queryResult.queryId),
-      queryResult.queryId,
-    );
   }
 
   /**
@@ -129,13 +108,13 @@ export class RemoteQueriesView extends AbstractWebview<
       preserveFocus: true,
       view: "remote-queries",
       additionalOptions: {
-        localResourceRoots: [Uri.file(this.analysesResultsManager.storagePath)],
+        localResourceRoots: [],
       },
     };
   }
 
   protected onPanelDispose(): void {
-    this.currentQueryId = undefined;
+    // No-op
   }
 
   protected async onMessage(msg: FromRemoteQueriesMessage): Promise<void> {
@@ -155,10 +134,8 @@ export class RemoteQueriesView extends AbstractWebview<
       case "copyRepoList":
         break;
       case "remoteQueryDownloadAnalysisResults":
-        await this.downloadAnalysisResults(msg);
         break;
       case "remoteQueryDownloadAllAnalysesResults":
-        await this.downloadAllAnalysesResults(msg);
         break;
       case "remoteQueryExportResults":
         break;
@@ -192,39 +169,6 @@ export class RemoteQueriesView extends AbstractWebview<
       await Window.showTextDocument(doc, { preview: false });
     } catch (error) {
       void showAndLogWarningMessage("Could not open query text");
-    }
-  }
-
-  private async downloadAnalysisResults(
-    msg: RemoteQueryDownloadAnalysisResultsMessage,
-  ): Promise<void> {
-    const queryId = this.currentQueryId;
-    await this.analysesResultsManager.downloadAnalysisResults(
-      msg.analysisSummary,
-      (results) => this.setAnalysisResults(results, queryId),
-    );
-  }
-
-  private async downloadAllAnalysesResults(
-    msg: RemoteQueryDownloadAllAnalysesResultsMessage,
-  ): Promise<void> {
-    const queryId = this.currentQueryId;
-    await this.analysesResultsManager.loadAnalysesResults(
-      msg.analysisSummaries,
-      undefined,
-      (results) => this.setAnalysisResults(results, queryId),
-    );
-  }
-
-  public async setAnalysisResults(
-    analysesResults: AnalysisResults[],
-    queryId: string | undefined,
-  ): Promise<void> {
-    if (this.panel?.active && this.currentQueryId === queryId) {
-      await this.postMessage({
-        t: "setAnalysesResults",
-        analysesResults,
-      });
     }
   }
 
