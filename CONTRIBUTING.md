@@ -99,7 +99,7 @@ We have several types of tests:
 * View tests: these live in `src/view/variant-analysis/__tests__/`
 * VSCode integration tests:
   * `test/vscode-tests/activated-extension` tests: These are intended to cover functionality that require the full extension to be activated but don't require the CLI. This suite is not run against multiple versions of the CLI in CI.
-  * `test/vscode-tests/no-workspace` tests: These are intended to cover functionality that is meant to work before you even have a workspace open but don't require the extension to be activated.
+  * `test/vscode-tests/no-workspace` tests: These are intended to cover functionality around not having a workspace. The extension is not activated in these tests.
   * `test/vscode-tests/minimal-workspace` tests: These are intended to cover functionality that need a workspace but don't require the full extension to be activated.
 * CLI integration tests: these live in `test/vscode-tests/cli-integration`
   * These tests are intended to be cover functionality that is related to the integration between the CodeQL CLI and the extension. These tests are run against all supported versions of the CLI in CI.
