@@ -44,7 +44,7 @@
   },
   "jestrunner.debugOptions": {
     // Uncomment to debug integration tests
-    "attachSimplePort": 9223,
+    // "attachSimplePort": 9223,
     "env": {
       "LANG": "en-US",
       "TZ": "UTC",
