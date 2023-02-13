@@ -102,7 +102,7 @@ We have several types of tests:
   * `test/vscode-tests/no-workspace` tests: These are intended to cover functionality around not having a workspace. The extension is not activated in these tests.
   * `test/vscode-tests/minimal-workspace` tests: These are intended to cover functionality that need a workspace but don't require the full extension to be activated.
 * CLI integration tests: these live in `test/vscode-tests/cli-integration`
-  * These tests are intended to be cover functionality that is related to the integration between the CodeQL CLI and the extension. These tests are run against all supported versions of the CLI in CI.
+  * These tests are intended to cover functionality that is related to the integration between the CodeQL CLI and the extension. These tests are run against each supported versions of the CLI in CI.
 
 The CLI integration tests require an instance of the CodeQL CLI to run so they will require some extra setup steps. When adding new tests to our test suite, please be mindful of whether they need to be in the cli-integration folder. If the tests don't depend on the CLI, they are better suited to being a VSCode integration test.
 
