@@ -1,6 +1,7 @@
 import { join } from "path";
 import { existsSync } from "fs";
-import { QlPackGenerator, QueryLanguage } from "../../../src/qlpack-generator";
+import { QlPackGenerator } from "../../../src/qlpack-generator";
+import { QueryLanguage } from "../../../src/types/query-language";
 import { CodeQLCliServer } from "../../../src/cli";
 import { Uri, workspace } from "vscode";
 import { getErrorMessage } from "../../../src/pure/helpers-pure";
