@@ -4,28 +4,28 @@ import {
   CancellationTokenSource,
   commands,
   Disposable,
+  env,
   ExtensionContext,
   extensions,
   languages,
   ProgressLocation,
   ProgressOptions,
-  Uri,
-  window as Window,
-  env,
-  window,
+  ProviderResult,
   QuickPickItem,
   Range,
-  workspace,
-  ProviderResult,
+  Uri,
   version as vscodeVersion,
+  window as Window,
+  window,
+  workspace,
 } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
-import { platform, arch } from "os";
+import { arch, platform } from "os";
 import { ensureDir } from "fs-extra";
-import { join, basename } from "path";
+import { basename, join } from "path";
 import { dirSync } from "tmp-promise";
 import { testExplorerExtensionId, TestHub } from "vscode-test-adapter-api";
-import { parse, lt } from "semver";
+import { lt, parse } from "semver";
 
 import { AstViewer } from "./astViewer";
 import {
@@ -47,10 +47,10 @@ import { install } from "./languageSupport";
 import { DatabaseItem, DatabaseManager } from "./databases";
 import { DatabaseUI } from "./databases-ui";
 import {
-  TemplateQueryDefinitionProvider,
-  TemplateQueryReferenceProvider,
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
+  TemplateQueryDefinitionProvider,
+  TemplateQueryReferenceProvider,
 } from "./contextual/templateProvider";
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
@@ -64,22 +64,22 @@ import {
 } from "./distribution";
 import {
   findLanguage,
-  tmpDirDisposal,
-  showBinaryChoiceDialog,
   showAndLogErrorMessage,
-  showAndLogWarningMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
+  showAndLogWarningMessage,
+  showBinaryChoiceDialog,
   showInformationMessageWithAction,
   tmpDir,
-  showAndLogExceptionWithTelemetry,
+  tmpDirDisposal,
 } from "./helpers";
 import { asError, assertNever, getErrorMessage } from "./pure/helpers-pure";
 import { spawnIdeServer } from "./ide-server";
 import { ResultsView } from "./interface";
 import { WebviewReveal } from "./interface-utils";
 import {
-  ideServerLogger,
   extLogger,
+  ideServerLogger,
   ProgressReporter,
   queryServerLogger,
 } from "./common";
@@ -97,8 +97,8 @@ import {
   commandRunner,
   commandRunnerWithProgress,
   ProgressCallback,
-  withProgress,
   ProgressUpdate,
+  withProgress,
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
 
@@ -115,7 +115,6 @@ import {
   exportSelectedRemoteQueryResults,
   exportVariantAnalysisResults,
 } from "./remote-queries/export-results";
-import { RemoteQuery } from "./remote-queries/remote-query";
 import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
@@ -1125,15 +1124,6 @@ async function activateWithInstalledDistribution(
       {
         title: "Run Variant Analysis",
         cancellable: true,
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.monitorRemoteQuery",
-      async (queryId: string, query: RemoteQuery, token: CancellationToken) => {
-        await rqm.monitorRemoteQuery(queryId, query, token);
       },
     ),
   );

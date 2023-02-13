@@ -539,11 +539,7 @@ export class QueryHistoryManager extends DisposableObject {
     await Promise.all(
       this.treeDataProvider.allHistory.map(async (item) => {
         if (item.t === "remote") {
-          await this.remoteQueriesManager.rehydrateRemoteQuery(
-            item.queryId,
-            item.remoteQuery,
-            item.status,
-          );
+          await this.remoteQueriesManager.rehydrateRemoteQuery(item.queryId);
         }
         if (item.t === "variant-analysis") {
           await this.variantAnalysisManager.rehydrateVariantAnalysis(
