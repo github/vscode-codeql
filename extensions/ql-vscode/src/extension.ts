@@ -38,7 +38,6 @@ import {
   CliConfigListener,
   DistributionConfigListener,
   isCanary,
-  isVariantAnalysisLiveResultsEnabled,
   joinOrderWarningThreshold,
   MAX_QUERIES,
   QueryHistoryConfigListener,
@@ -1112,19 +1111,11 @@ async function activateWithInstalledDistribution(
             message: "Getting credentials",
           });
 
-          if (isVariantAnalysisLiveResultsEnabled()) {
-            await variantAnalysisManager.runVariantAnalysis(
-              uri || window.activeTextEditor?.document.uri,
-              progress,
-              token,
-            );
-          } else {
-            await rqm.runRemoteQuery(
-              uri || window.activeTextEditor?.document.uri,
-              progress,
-              token,
-            );
-          }
+          await variantAnalysisManager.runVariantAnalysis(
+            uri || window.activeTextEditor?.document.uri,
+            progress,
+            token,
+          );
         } else {
           throw new Error(
             "Variant analysis requires the CodeQL Canary version to run.",
