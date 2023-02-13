@@ -3,16 +3,7 @@ import { dump } from "js-yaml";
 import { join } from "path";
 import { Uri, workspace } from "vscode";
 import { CodeQLCliServer } from "./cli";
-
-export type QueryLanguage =
-  | "csharp"
-  | "cpp"
-  | "go"
-  | "java"
-  | "javascript"
-  | "python"
-  | "ruby"
-  | "swift";
+import { QueryLanguage } from "./types/query-language";
 
 export class QlPackGenerator {
   private readonly qlpackName: string;
