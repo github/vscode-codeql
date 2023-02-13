@@ -99,7 +99,7 @@ describeWithCodeQL()("Queries", () => {
   });
 
   describe("extension packs", () => {
-    skipIfTrue(qs.cliServer.cliConstraints.supportsQlpacksKind());
+    skipIfTrue(qs.cliServer.cliConstraints.supportsQlpacksKind);
 
     const queryUsingExtensionPath = join(
       __dirname,
