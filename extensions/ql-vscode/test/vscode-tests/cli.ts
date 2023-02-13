@@ -44,5 +44,9 @@ export function itWithCodeQL() {
 }
 
 export async function skipIfTrue(condition: Thenable<boolean>) {
-  return (await condition) ? beforeEach(() => {}) : beforeEach.skip(() => {});
+  return beforeEach(async () => {
+    if (await condition) {
+      pending();
+    }
+  });
 }

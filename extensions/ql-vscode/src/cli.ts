@@ -1138,8 +1138,8 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Gets information about available qlpacks
    * @param additionalPacks A list of directories to search for qlpacks before searching in `searchPath`.
-   * @param searchPath A list of directories to search for packs not found in `additionalPacks`. If undefined,
-   *   the default CLI search path is used.
+   * @param extensionPacksOnly Whether to only search for extension packs. If true, only extension packs will
+   *    be returned. If false, all packs will be returned.
    * @returns A dictionary mapping qlpack name to the directory it comes from
    */
   async resolveQlpacks(
