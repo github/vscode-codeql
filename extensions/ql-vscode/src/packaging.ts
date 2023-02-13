@@ -9,18 +9,23 @@ import { ProgressCallback, UserCancellationException } from "./commandRunner";
 import { extLogger } from "./common";
 import { asError, getErrorStack } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
+import { QueryLanguage } from "./types/query-language";
 
-const QUERY_PACKS = [
-  "codeql/cpp-queries",
-  "codeql/csharp-queries",
-  "codeql/go-queries",
-  "codeql/java-queries",
-  "codeql/javascript-queries",
-  "codeql/python-queries",
-  "codeql/ruby-queries",
-  "codeql/csharp-solorigate-queries",
-  "codeql/javascript-experimental-atm-queries",
-];
+const PACKS_BY_QUERY_LANGUAGE = {
+  [QueryLanguage.Cpp]: ["codeql/cpp-queries"],
+  [QueryLanguage.CSharp]: [
+    "codeql/csharp-queries",
+    "codeql/csharp-solorigate-queries",
+  ],
+  [QueryLanguage.Go]: ["codeql/go-queries"],
+  [QueryLanguage.Java]: ["codeql/java-queries"],
+  [QueryLanguage.Javascript]: [
+    "codeql/javascript-queries",
+    "codeql/javascript-experimental-atm-queries",
+  ],
+  [QueryLanguage.Python]: ["codeql/python-queries"],
+  [QueryLanguage.Ruby]: ["codeql/ruby-queries"],
+};
 
 /**
  * Prompts user to choose packs to download, and downloads them.
@@ -45,7 +50,7 @@ export async function handleDownloadPacks(
     { ignoreFocusOut: true },
   );
   if (quickpick === queryPackOption) {
-    packsToDownload = QUERY_PACKS;
+    packsToDownload = Object.values(PACKS_BY_QUERY_LANGUAGE).flat();
   } else if (quickpick === customPackOption) {
     const customPack = await window.showInputBox({
       prompt:
