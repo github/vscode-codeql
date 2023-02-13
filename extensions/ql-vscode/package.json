@@ -1326,7 +1326,7 @@
   "scripts": {
     "build": "gulp",
     "watch": "gulp watch",
-    "test": "npm-run-all -p test:*",
+    "test": "npm-run-all test:*",
     "test:unit": "cross-env TZ=UTC LANG=en-US jest --projects test/unit-tests",
     "test:view": "jest --projects src/view",
     "test:vscode-integration": "npm-run-all test:vscode-integration:*",
