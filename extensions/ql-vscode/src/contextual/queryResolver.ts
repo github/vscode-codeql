@@ -19,6 +19,7 @@ import { CancellationToken, Uri } from "vscode";
 import { ProgressCallback } from "../commandRunner";
 import { QueryRunner } from "../queryRunner";
 import { redactableError } from "../pure/errors";
+import { QLPACK_FILENAMES } from "../pure/ql";
 
 export async function qlpackOfDatabase(
   cli: CodeQLCliServer,
@@ -113,7 +114,7 @@ async function resolveContextualQuery(
   // Work out the enclosing pack.
   const packContents = await cli.packPacklist(query, false);
   const packFilePath = packContents.find((p) =>
-    ["codeql-pack.yml", "qlpack.yml"].includes(basename(p)),
+    QLPACK_FILENAMES.includes(basename(p)),
   );
   if (packFilePath === undefined) {
     // Should not happen; we already resolved this query.

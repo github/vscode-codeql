@@ -365,7 +365,7 @@
       {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
         "title": "Open Database Configuration File",
-        "icon": "$(edit)"
+        "icon": "$(json)"
       },
       {
         "command": "codeQLVariantAnalysisRepositories.addNewDatabase",
@@ -379,7 +379,7 @@
       },
       {
         "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
-        "title": "✓"
+        "title": "Select"
       },
       {
         "command": "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
@@ -822,7 +822,7 @@
         },
         {
           "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
-          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/ && false",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/",
           "group": "inline"
         },
         {
