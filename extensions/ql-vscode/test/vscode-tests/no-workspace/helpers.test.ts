@@ -30,6 +30,7 @@ import {
   walkDirectory,
 } from "../../../src/helpers";
 import { reportStreamProgress } from "../../../src/commandRunner";
+import { QueryLanguage } from "../../../src/types/query-language";
 
 describe("helpers", () => {
   describe("Invocation rate limiter", () => {
@@ -146,10 +147,14 @@ describe("helpers", () => {
 
   describe("codeql-database.yml tests", () => {
     let dir: tmp.DirResult;
+    let language: QueryLanguage;
+
     beforeEach(() => {
       dir = tmp.dirSync();
+      language = QueryLanguage.Cpp;
+
       const contents = dump({
-        primaryLanguage: "cpp",
+        primaryLanguage: language,
       });
       writeFileSync(join(dir.name, "codeql-database.yml"), contents, "utf8");
     });
@@ -159,7 +164,7 @@ describe("helpers", () => {
     });
 
     it("should get initial query contents when language is known", () => {
-      expect(getInitialQueryContents("cpp", "hucairz")).toBe(
+      expect(getInitialQueryContents(language, "hucairz")).toBe(
         'import cpp\n\nselect ""',
       );
     });

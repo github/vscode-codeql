@@ -26,9 +26,9 @@ import { QueryMetadata, SortDirection } from "./pure/interface-types";
 import { Logger, ProgressReporter } from "./common";
 import { CompilationMessage } from "./pure/legacy-messages";
 import { sarifParser } from "./sarif-parser";
-import { dbSchemeToLanguage, walkDirectory } from "./helpers";
+import { walkDirectory } from "./helpers";
 import { App } from "./common/app";
-import { QueryLanguage } from "./qlpack-generator";
+import { QueryLanguage } from "./types/query-language";
 
 /**
  * The version of the SARIF format that we are using.
@@ -1179,9 +1179,11 @@ export class CodeQLCliServer implements Disposable {
    */
   public async getSupportedLanguages(): Promise<string[]> {
     if (!this._supportedLanguages) {
-      // Get the intersection of resolveLanguages with the list of hardcoded languages in dbSchemeToLanguage.
+      // Get the intersection of resolveLanguages with the list of languages in QueryLanguage.
       const resolvedLanguages = Object.keys(await this.resolveLanguages());
-      const hardcodedLanguages = Object.values(dbSchemeToLanguage);
+      const hardcodedLanguages = Object.values(QueryLanguage).map((s) =>
+        s.toString(),
+      );
 
       this._supportedLanguages = resolvedLanguages.filter((lang) =>
         hardcodedLanguages.includes(lang),
