@@ -2,8 +2,7 @@ import { join } from "path";
 import { existsSync } from "fs";
 import { QlPackGenerator, QueryLanguage } from "../../../src/qlpack-generator";
 import { CodeQLCliServer } from "../../../src/cli";
-import { isFolderAlreadyInWorkspace } from "../../../src/helpers";
-import { workspace } from "vscode";
+import { Uri, workspace } from "vscode";
 import { getErrorMessage } from "../../../src/pure/helpers-pure";
 import * as tmp from "tmp";
 
@@ -22,7 +21,7 @@ describe("QlPackGenerator", () => {
 
     language = "ruby";
     packFolderName = `test-ql-pack-${language}`;
-    packFolderPath = join(dir.name, packFolderName);
+    packFolderPath = Uri.file(join(dir.name, packFolderName)).fsPath;
 
     qlPackYamlFilePath = join(packFolderPath, "qlpack.yml");
     exampleQlFilePath = join(packFolderPath, "example.ql");
@@ -60,15 +59,16 @@ describe("QlPackGenerator", () => {
   });
 
   it("should generate a QL pack", async () => {
-    expect(isFolderAlreadyInWorkspace(packFolderName)).toBe(false);
+    expect(existsSync(packFolderPath)).toBe(false);
     expect(existsSync(qlPackYamlFilePath)).toBe(false);
     expect(existsSync(exampleQlFilePath)).toBe(false);
 
     await generator.generate();
 
-    expect(isFolderAlreadyInWorkspace(packFolderName)).toBe(true);
+    expect(existsSync(packFolderPath)).toBe(true);
     expect(existsSync(qlPackYamlFilePath)).toBe(true);
     expect(existsSync(exampleQlFilePath)).toBe(true);
+
     expect(packAddSpy).toHaveBeenCalledWith(packFolderPath, language);
   });
 });

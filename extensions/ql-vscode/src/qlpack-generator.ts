@@ -64,7 +64,7 @@ export class QlPackGenerator {
   }
 
   private async createQlPackYaml() {
-    const qlPackFilePath = join(this.folderUri.path, this.qlpackFileName);
+    const qlPackFilePath = join(this.folderUri.fsPath, this.qlpackFileName);
 
     const qlPackYml = {
       name: this.qlpackName,
@@ -78,7 +78,7 @@ export class QlPackGenerator {
   }
 
   private async createExampleQlFile() {
-    const exampleQlFilePath = join(this.folderUri.path, "example.ql");
+    const exampleQlFilePath = join(this.folderUri.fsPath, "example.ql");
 
     const exampleQl = `
 /**
@@ -98,6 +98,6 @@ select "Hello, world!"
   }
 
   private async createCodeqlPackLockYaml() {
-    await this.cliServer.packAdd(this.folderUri.path, this.queryLanguage);
+    await this.cliServer.packAdd(this.folderUri.fsPath, this.queryLanguage);
   }
 }
