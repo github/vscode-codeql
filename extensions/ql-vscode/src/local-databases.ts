@@ -26,7 +26,8 @@ import { QueryRunner } from "./queryRunner";
 import { pathsEqual } from "./pure/files";
 import { redactableError } from "./pure/errors";
 import { isCodespacesTemplate } from "./config";
-import { QlPackGenerator, QueryLanguage } from "./qlpack-generator";
+import { QlPackGenerator } from "./qlpack-generator";
+import { QueryLanguage } from "./types/query-language";
 
 /**
  * databases.ts
