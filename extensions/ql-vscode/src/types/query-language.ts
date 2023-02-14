@@ -24,3 +24,14 @@ export const PACKS_BY_QUERY_LANGUAGE = {
   [QueryLanguage.Python]: ["codeql/python-queries"],
   [QueryLanguage.Ruby]: ["codeql/ruby-queries"],
 };
+
+export const dbSchemeToLanguage = {
+  "semmlecode.javascript.dbscheme": "javascript",
+  "semmlecode.cpp.dbscheme": "cpp",
+  "semmlecode.dbscheme": "java",
+  "semmlecode.python.dbscheme": "python",
+  "semmlecode.csharp.dbscheme": "csharp",
+  "go.dbscheme": "go",
+  "ruby.dbscheme": "ruby",
+  "swift.dbscheme": "swift",
+};

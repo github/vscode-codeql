@@ -24,6 +24,7 @@ import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
 import { getQlPackPath } from "./pure/ql";
+import { dbSchemeToLanguage } from "./types/query-language";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -568,16 +569,6 @@ export class CachedOperation<U> {
  *
  * @see cli.CodeQLCliServer.resolveDatabase
  */
-export const dbSchemeToLanguage = {
-  "semmlecode.javascript.dbscheme": "javascript",
-  "semmlecode.cpp.dbscheme": "cpp",
-  "semmlecode.dbscheme": "java",
-  "semmlecode.python.dbscheme": "python",
-  "semmlecode.csharp.dbscheme": "csharp",
-  "go.dbscheme": "go",
-  "ruby.dbscheme": "ruby",
-  "swift.dbscheme": "swift",
-};
 
 export const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce(
   (acc, [k, v]) => {
