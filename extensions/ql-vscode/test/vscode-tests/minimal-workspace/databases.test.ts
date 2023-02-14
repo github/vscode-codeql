@@ -33,6 +33,7 @@ describe("databases", () => {
   };
 
   let databaseManager: DatabaseManager;
+  let extensionContext: ExtensionContext;
 
   let updateSpy: jest.Mock<Promise<void>, []>;
   let registerSpy: jest.Mock<Promise<void>, []>;
@@ -63,16 +64,19 @@ describe("databases", () => {
       .spyOn(helpers, "showBinaryChoiceDialog")
       .mockResolvedValue(true);
 
+    extensionContext = {
+      workspaceState: {
+        update: updateSpy,
+        get: () => [],
+      },
+      // pretend like databases added in the temp dir are controlled by the extension
+      // so that they are deleted upon removal
+      storagePath: dir.name,
+      storageUri: Uri.parse(dir.name),
+    } as unknown as ExtensionContext;
+
     databaseManager = new DatabaseManager(
-      {
-        workspaceState: {
-          update: updateSpy,
-          get: () => [],
-        },
-        // pretend like databases added in the temp dir are controlled by the extension
-        // so that they are deleted upon removal
-        storagePath: dir.name,
-      } as unknown as ExtensionContext,
+      extensionContext,
       {
         registerDatabase: registerSpy,
         deregisterDatabase: deregisterSpy,
