@@ -652,7 +652,6 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing query history.");
   const qhm = new QueryHistoryManager(
-    app,
     qs,
     dbm,
     localQueryResultsView,

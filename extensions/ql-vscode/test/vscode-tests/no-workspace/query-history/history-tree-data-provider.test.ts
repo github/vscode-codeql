@@ -19,15 +19,11 @@ import {
   createMockLocalQueryInfo,
   createMockQueryWithResults,
 } from "../../../factories/query-history/local-query-history-item";
-import { createMockRemoteQueryHistoryItem } from "../../../factories/query-history/remote-query-history-item";
-import { RemoteQueryHistoryItem } from "../../../../src/remote-queries/remote-query-history-item";
 import { shuffleHistoryItems } from "../../utils/query-history-helpers";
 import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-status";
 import { VariantAnalysisStatus } from "../../../../src/remote-queries/shared/variant-analysis";
-import { Credentials } from "../../../../src/common/authentication";
-import { createMockApp } from "../../../__mocks__/appMock";
 import {
   HistoryTreeDataProvider,
   SortOrder,
@@ -46,7 +42,6 @@ describe("HistoryTreeDataProvider", () => {
 
   let allHistory: QueryHistoryInfo[];
   let localQueryHistory: LocalQueryInfo[];
-  let remoteQueryHistory: RemoteQueryHistoryItem[];
   let variantAnalysisHistory: VariantAnalysisHistoryItem[];
 
   let historyTreeDataProvider: HistoryTreeDataProvider;
@@ -102,12 +97,6 @@ describe("HistoryTreeDataProvider", () => {
       // in progress
       createMockLocalQueryInfo({ resultCount: 0 }),
     ];
-    remoteQueryHistory = [
-      createMockRemoteQueryHistoryItem({ status: QueryStatus.Completed }),
-      createMockRemoteQueryHistoryItem({ status: QueryStatus.Failed }),
-      createMockRemoteQueryHistoryItem({ status: QueryStatus.InProgress }),
-      createMockRemoteQueryHistoryItem({ status: QueryStatus.InProgress }),
-    ];
     variantAnalysisHistory = [
       createMockVariantAnalysisHistoryItem({
         historyItemStatus: QueryStatus.Completed,
@@ -128,7 +117,6 @@ describe("HistoryTreeDataProvider", () => {
     ];
     allHistory = shuffleHistoryItems([
       ...localQueryHistory,
-      ...remoteQueryHistory,
       ...variantAnalysisHistory,
     ]);
 
@@ -233,12 +221,6 @@ describe("HistoryTreeDataProvider", () => {
 
     describe("sorting", () => {
       const history = [
-        createMockRemoteQueryHistoryItem({
-          userSpecifiedLabel: "a",
-          executionStartTime: 2,
-          resultCount: 24,
-          status: QueryStatus.Completed,
-        }),
         createMockLocalQueryInfo({
           userSpecifiedLabel: "b",
           startTime: new Date(10),
@@ -275,12 +257,6 @@ describe("HistoryTreeDataProvider", () => {
           historyItemStatus: QueryStatus.Failed,
           variantAnalysisStatus: VariantAnalysisStatus.Failed,
         }),
-        createMockRemoteQueryHistoryItem({
-          userSpecifiedLabel: "h",
-          executionStartTime: 6,
-          resultCount: 5,
-          status: QueryStatus.InProgress,
-        }),
       ];
 
       let treeDataProvider: HistoryTreeDataProvider;
@@ -309,14 +285,12 @@ describe("HistoryTreeDataProvider", () => {
 
       it("should get children for date ascending", async () => {
         const expected = [
+          history[4],
+          history[2],
           history[5],
           history[0],
-          history[3],
-          history[7],
-          history[6],
           history[1],
-          history[2],
-          history[4],
+          history[3],
         ];
         treeDataProvider.sortOrder = SortOrder.DateAsc;
 
@@ -326,14 +300,12 @@ describe("HistoryTreeDataProvider", () => {
 
       it("should get children for date descending", async () => {
         const expected = [
+          history[4],
+          history[2],
           history[5],
           history[0],
-          history[3],
-          history[7],
-          history[6],
           history[1],
-          history[2],
-          history[4],
+          history[3],
         ].reverse();
 
         treeDataProvider.sortOrder = SortOrder.DateDesc;
@@ -344,14 +316,12 @@ describe("HistoryTreeDataProvider", () => {
 
       it("should get children for result count ascending", async () => {
         const expected = [
-          history[7],
-          history[5],
           history[4],
-          history[1],
-          history[0],
           history[3],
-          history[6],
+          history[0],
           history[2],
+          history[5],
+          history[1],
         ];
         treeDataProvider.sortOrder = SortOrder.CountAsc;
 
@@ -362,14 +332,12 @@ describe("HistoryTreeDataProvider", () => {
 
       it("should get children for result count descending", async () => {
         const expected = [
-          history[7],
-          history[5],
           history[4],
-          history[1],
-          history[0],
           history[3],
-          history[6],
+          history[0],
           history[2],
+          history[5],
+          history[1],
         ].reverse();
         treeDataProvider.sortOrder = SortOrder.CountDesc;
 
@@ -394,12 +362,6 @@ describe("HistoryTreeDataProvider", () => {
             resultCount: 0,
             historyItemStatus: QueryStatus.Completed,
             variantAnalysisStatus: VariantAnalysisStatus.Failed,
-          }),
-          createMockRemoteQueryHistoryItem({
-            userSpecifiedLabel: "d",
-            resultCount: 0,
-            executionStartTime: 50,
-            status: QueryStatus.Completed,
           }),
           createMockVariantAnalysisHistoryItem({
             userSpecifiedLabel: "e",
@@ -438,12 +400,6 @@ describe("HistoryTreeDataProvider", () => {
             historyItemStatus: QueryStatus.Completed,
             variantAnalysisStatus: VariantAnalysisStatus.Failed,
           }),
-          createMockRemoteQueryHistoryItem({
-            userSpecifiedLabel: "d",
-            resultCount: 0,
-            executionStartTime: 50,
-            status: QueryStatus.Completed,
-          }),
           createMockVariantAnalysisHistoryItem({
             userSpecifiedLabel: "e",
             resultCount: 0,
@@ -463,12 +419,8 @@ describe("HistoryTreeDataProvider", () => {
     });
   });
 
-  async function createMockQueryHistory(
-    allHistory: QueryHistoryInfo[],
-    credentials?: Credentials,
-  ) {
+  async function createMockQueryHistory(allHistory: QueryHistoryInfo[]) {
     const qhm = new QueryHistoryManager(
-      createMockApp({ credentials }),
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
