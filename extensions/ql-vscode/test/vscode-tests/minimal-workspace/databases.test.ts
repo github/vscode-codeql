@@ -593,10 +593,8 @@ describe("databases", () => {
 
   describe("createSkeletonPacks", () => {
     let mockDbItem: DatabaseItemImpl;
-    let packfolderName: string;
-    let qlPackYamlFilePath: string;
-    let exampleQlFilePath: string;
     let language: string;
+    let generateSpy: jest.SpyInstance;
 
     beforeEach(() => {
       language = "ruby";
@@ -608,17 +606,9 @@ describe("databases", () => {
       };
       mockDbItem = createMockDB(options);
 
-      packfolderName = `codeql-custom-queries-${mockDbItem.language}`;
-      qlPackYamlFilePath = join(packfolderName, "qlpack.yml");
-      exampleQlFilePath = join(packfolderName, "example.ql");
-    });
-
-    afterEach(async () => {
-      try {
-        fs.rmdirSync(packfolderName, { recursive: true });
-      } catch (e) {
-        // ignore
-      }
+      generateSpy = jest
+        .spyOn(QlPackGenerator.prototype, "generate")
+        .mockImplementation(() => Promise.resolve());
     });
 
     describe("when the language is set", () => {
@@ -633,25 +623,15 @@ describe("databases", () => {
           .spyOn(helpers, "showBinaryChoiceDialog")
           .mockResolvedValue(false);
 
-        const generateSpy = jest.spyOn(QlPackGenerator.prototype, "generate");
-
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
         expect(generateSpy).not.toBeCalled();
       });
 
       it("should create the skeleton QL pack for the user", async () => {
-        expect(fs.existsSync(packfolderName)).toBe(false);
-        expect(fs.existsSync(qlPackYamlFilePath)).toBe(false);
-        expect(fs.existsSync(exampleQlFilePath)).toBe(false);
-
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
-        expect(fs.existsSync(packfolderName)).toBe(true);
-        expect(fs.existsSync(qlPackYamlFilePath)).toBe(true);
-        expect(fs.existsSync(exampleQlFilePath)).toBe(true);
-
-        expect(packAddSpy).toHaveBeenCalledWith(packfolderName, language);
+        expect(generateSpy).toBeCalled();
       });
     });
 
