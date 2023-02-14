@@ -53,8 +53,6 @@ import {
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
-import { cancelRemoteQuery } from "../remote-queries/gh-api/gh-actions-api-client";
-import { RemoteQueryHistoryItem } from "../remote-queries/remote-query-history-item";
 import { ResultsView } from "../interface";
 import { WebviewReveal } from "../interface-utils";
 import { EvalLogViewer } from "../eval-log-viewer";
@@ -65,7 +63,6 @@ import { QueryRunner } from "../queryRunner";
 import { VariantAnalysisManager } from "../remote-queries/variant-analysis-manager";
 import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../remote-queries/shared/variant-analysis";
-import { App } from "../common/app";
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
 import { redactableError } from "../pure/errors";
 
@@ -137,7 +134,6 @@ export class QueryHistoryManager extends DisposableObject {
   readonly onDidCompleteQuery = this._onDidCompleteQuery.event;
 
   constructor(
-    private readonly app: App,
     private readonly qs: QueryRunner,
     private readonly dbm: DatabaseManager,
     private readonly localQueriesResultsView: ResultsView,
@@ -525,9 +521,6 @@ export class QueryHistoryManager extends DisposableObject {
       case "local":
         queryPath = finalSingleItem.initialInfo.queryPath;
         break;
-      case "remote":
-        queryPath = finalSingleItem.remoteQuery.queryFilePath;
-        break;
       default:
         assertNever(finalSingleItem);
     }
@@ -551,12 +544,6 @@ export class QueryHistoryManager extends DisposableObject {
 
   getCurrentQueryHistoryItem(): QueryHistoryInfo | undefined {
     return this.treeDataProvider.getCurrent();
-  }
-
-  getRemoteQueryById(queryId: string): RemoteQueryHistoryItem | undefined {
-    return this.treeDataProvider.allHistory.find(
-      (i) => i.t === "remote" && i.queryId === queryId,
-    ) as RemoteQueryHistoryItem;
   }
 
   async removeDeletedQueries() {
@@ -595,8 +582,6 @@ export class QueryHistoryManager extends DisposableObject {
             // We need to delete it from disk as well.
             await item.completedQuery?.query.deleteQuery();
           }
-        } else if (item.t === "remote") {
-          // Do nothing. TODO: Remove once remote queries are no longer supported.
         } else if (item.t === "variant-analysis") {
           await this.removeVariantAnalysis(item);
         } else {
@@ -808,8 +793,6 @@ export class QueryHistoryManager extends DisposableObject {
       if (queryHistoryItem.completedQuery) {
         return queryHistoryItem.completedQuery.query.querySaveDir;
       }
-    } else if (queryHistoryItem.t === "remote") {
-      return join(this.queryStorageDir, queryHistoryItem.queryId);
     } else if (queryHistoryItem.t === "variant-analysis") {
       return this.variantAnalysisManager.getVariantAnalysisStorageLocation(
         queryHistoryItem.variantAnalysis.id,
@@ -840,12 +823,6 @@ export class QueryHistoryManager extends DisposableObject {
           "timestamp",
         );
       }
-    } else if (finalSingleItem.t === "remote") {
-      externalFilePath = join(
-        this.queryStorageDir,
-        finalSingleItem.queryId,
-        "timestamp",
-      );
     } else if (finalSingleItem.t === "variant-analysis") {
       externalFilePath = join(
         this.variantAnalysisManager.getVariantAnalysisStorageLocation(
@@ -1012,11 +989,6 @@ export class QueryHistoryManager extends DisposableObject {
       if (item.status === QueryStatus.InProgress) {
         if (item.t === "local") {
           item.cancel();
-        } else if (item.t === "remote") {
-          void showAndLogInformationMessage(
-            "Cancelling variant analysis. This may take a while.",
-          );
-          await cancelRemoteQuery(this.app.credentials, item.remoteQuery);
         } else if (item.t === "variant-analysis") {
           await commands.executeCommand(
             "codeQL.cancelVariantAnalysis",
@@ -1239,10 +1211,8 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    // Remote queries and variant analysis only
-    if (finalSingleItem.t === "remote") {
-      // Do nothing. TODO: Remove this case once remote queries are removed.
-    } else if (finalSingleItem.t === "variant-analysis") {
+    // Variant analysis only
+    if (finalSingleItem.t === "variant-analysis") {
       await commands.executeCommand(
         "codeQL.exportVariantAnalysisResults",
         finalSingleItem.variantAnalysis.id,
@@ -1475,8 +1445,6 @@ the file in the file explorer and dragging it into the workspace.`,
         WebviewReveal.Forced,
         false,
       );
-    } else if (item.t === "remote") {
-      // Do nothing. TODO: Remove when remote queries is no longer supported.
     } else if (item.t === "variant-analysis") {
       await this.variantAnalysisManager.showView(item.variantAnalysis.id);
     } else {

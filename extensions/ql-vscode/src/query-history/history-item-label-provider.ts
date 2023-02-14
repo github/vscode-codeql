@@ -7,7 +7,6 @@ import {
   getRawQueryName,
   QueryHistoryInfo,
 } from "./query-history-info";
-import { RemoteQueryHistoryItem } from "../remote-queries/remote-query-history-item";
 import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { assertNever } from "../pure/helpers-pure";
 import { pluralize } from "../pure/word";
@@ -33,9 +32,6 @@ export class HistoryItemLabelProvider {
     switch (item.t) {
       case "local":
         replacements = this.getLocalInterpolateReplacements(item);
-        break;
-      case "remote":
-        replacements = this.getRemoteInterpolateReplacements(item);
         break;
       case "variant-analysis":
         replacements = this.getVariantAnalysisInterpolateReplacements(item);
@@ -88,25 +84,6 @@ export class HistoryItemLabelProvider {
       r: `(${resultCount} results)`,
       s: statusString,
       f: item.getQueryFileName(),
-      "%": "%",
-    };
-  }
-
-  private getRemoteInterpolateReplacements(
-    item: RemoteQueryHistoryItem,
-  ): InterpolateReplacements {
-    const resultCount = item.resultCount
-      ? `(${pluralize(item.resultCount, "result", "results")})`
-      : "";
-    return {
-      t: new Date(item.remoteQuery.executionStartTime).toLocaleString(
-        env.language,
-      ),
-      q: `${item.remoteQuery.queryName} (${item.remoteQuery.language})`,
-      d: buildRepoLabel(item),
-      r: resultCount,
-      s: humanizeQueryStatus(item.status),
-      f: basename(item.remoteQuery.queryFilePath),
       "%": "%",
     };
   }

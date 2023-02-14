@@ -47,9 +47,7 @@ export async function exportSelectedRemoteQueryResults(
     );
   }
 
-  if (queryHistoryItem.t === "remote") {
-    // Do nothing. TODO: Remove this branch once we stop supporting remote queries.
-  } else if (queryHistoryItem.t === "variant-analysis") {
+  if (queryHistoryItem.t === "variant-analysis") {
     return commands.executeCommand(
       "codeQL.exportVariantAnalysisResults",
       queryHistoryItem.variantAnalysis.id,
