@@ -19,8 +19,8 @@ import { DatabaseItem, DatabaseManager } from "../../../src/databases";
 import { CodeQLExtensionInterface } from "../../../src/extension";
 import { cleanDatabases, dbLoc, storagePath } from "./global.helper";
 import { importArchiveDatabase } from "../../../src/databaseFetcher";
-import { CodeQLCliServer } from "../../../src/cli";
-import { describeWithCodeQL, skipIfTrue } from "../cli";
+import { CliVersionConstraint, CodeQLCliServer } from "../../../src/cli";
+import { describeWithCodeQL } from "../cli";
 import { tmpDir } from "../../../src/helpers";
 import { createInitialQueryInfo } from "../../../src/run-queries-shared";
 import { QueryRunner } from "../../../src/queryRunner";
@@ -99,8 +99,6 @@ describeWithCodeQL()("Queries", () => {
   });
 
   describe("extension packs", () => {
-    skipIfTrue(qs.cliServer.cliConstraints.supportsQlpacksKind);
-
     const queryUsingExtensionPath = join(
       __dirname,
       "../..",
@@ -110,16 +108,37 @@ describeWithCodeQL()("Queries", () => {
     );
 
     it("should run a query that has an extension without looking for extensions in the workspace", async () => {
+      if (!(await supportsExtensionPacks())) {
+        console.log(
+          `Skipping test because it is only supported for CodeQL CLI versions < ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND}`,
+        );
+        return;
+      }
+
       await cli.setUseExtensionPacks(false);
       const parsedResults = await runQueryWithExtensions();
       expect(parsedResults).toEqual([1]);
     });
 
     it("should run a query that has an extension and look for extensions in the workspace", async () => {
+      if (!(await supportsExtensionPacks())) {
+        return;
+      }
+
       await cli.setUseExtensionPacks(true);
       const parsedResults = await runQueryWithExtensions();
       expect(parsedResults).toEqual([1, 2, 3, 4]);
     });
+
+    async function supportsExtensionPacks(): Promise<boolean> {
+      if (await qs.cliServer.cliConstraints.supportsQlpacksKind()) {
+        return true;
+      }
+      console.log(
+        `Skipping test because it is only supported for CodeQL CLI versions < ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND}`,
+      );
+      return false;
+    }
 
     async function runQueryWithExtensions() {
       const result = new CompletedQueryInfo(

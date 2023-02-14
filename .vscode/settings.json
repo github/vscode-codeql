@@ -42,6 +42,9 @@
     "LANG": "en-US",
     "TZ": "UTC"
   },
+
+  // These options are used by the `jestrunner.debug` command.
+  // They are not used by the `jestrunner.run` command.
   "jestrunner.debugOptions": {
     // Uncomment to debug integration tests
     // "attachSimplePort": 9223,
