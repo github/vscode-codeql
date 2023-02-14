@@ -539,11 +539,7 @@ export class QueryHistoryManager extends DisposableObject {
     await Promise.all(
       this.treeDataProvider.allHistory.map(async (item) => {
         if (item.t === "remote") {
-          await this.remoteQueriesManager.rehydrateRemoteQuery(
-            item.queryId,
-            item.remoteQuery,
-            item.status,
-          );
+          await this.remoteQueriesManager.rehydrateRemoteQuery(item.queryId);
         }
         if (item.t === "variant-analysis") {
           await this.variantAnalysisManager.rehydrateVariantAnalysis(
@@ -1293,12 +1289,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    if (finalSingleItem.t === "remote") {
-      await commands.executeCommand(
-        "codeQL.copyRepoList",
-        finalSingleItem.queryId,
-      );
-    } else if (finalSingleItem.t === "variant-analysis") {
+    if (finalSingleItem.t === "variant-analysis") {
       await commands.executeCommand(
         "codeQL.copyVariantAnalysisRepoList",
         finalSingleItem.variantAnalysis.id,
@@ -1321,10 +1312,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     // Remote queries and variant analysis only
     if (finalSingleItem.t === "remote") {
-      await commands.executeCommand(
-        "codeQL.exportRemoteQueryResults",
-        finalSingleItem.queryId,
-      );
+      // Do nothing. TODO: Remove this case once remote queries are removed.
     } else if (finalSingleItem.t === "variant-analysis") {
       await commands.executeCommand(
         "codeQL.exportVariantAnalysisResults",

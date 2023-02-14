@@ -4,7 +4,6 @@ import {
   ViewColumn,
   Uri,
   workspace,
-  commands,
 } from "vscode";
 import { basename } from "path";
 
@@ -154,7 +153,6 @@ export class RemoteQueriesView extends AbstractWebview<
         await this.openVirtualFile(msg.queryText);
         break;
       case "copyRepoList":
-        await commands.executeCommand("codeQL.copyRepoList", msg.queryId);
         break;
       case "remoteQueryDownloadAnalysisResults":
         await this.downloadAnalysisResults(msg);
@@ -163,10 +161,6 @@ export class RemoteQueriesView extends AbstractWebview<
         await this.downloadAllAnalysesResults(msg);
         break;
       case "remoteQueryExportResults":
-        await commands.executeCommand(
-          "codeQL.exportRemoteQueryResults",
-          msg.queryId,
-        );
         break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);

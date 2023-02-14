@@ -1109,26 +1109,6 @@ describe("QueryHistoryManager", () => {
       expect(executeCommandSpy).not.toBeCalled();
     });
 
-    it("should copy repo list for a single remote query", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      const item = remoteQueryHistory[1];
-      await queryHistoryManager.handleCopyRepoList(item, [item]);
-      expect(executeCommandSpy).toBeCalledWith(
-        "codeQL.copyRepoList",
-        item.queryId,
-      );
-    });
-
-    it("should not copy repo list for multiple remote queries", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      const item1 = remoteQueryHistory[1];
-      const item2 = remoteQueryHistory[3];
-      await queryHistoryManager.handleCopyRepoList(item1, [item1, item2]);
-      expect(executeCommandSpy).not.toBeCalled();
-    });
-
     it("should copy repo list for a single variant analysis", async () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
 
@@ -1157,26 +1137,6 @@ describe("QueryHistoryManager", () => {
       const item = localQueryHistory[4];
       await queryHistoryManager.handleExportResults(item, [item]);
 
-      expect(executeCommandSpy).not.toBeCalled();
-    });
-
-    it("should export results for a single remote query", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      const item = remoteQueryHistory[1];
-      await queryHistoryManager.handleExportResults(item, [item]);
-      expect(executeCommandSpy).toBeCalledWith(
-        "codeQL.exportRemoteQueryResults",
-        item.queryId,
-      );
-    });
-
-    it("should not export results for multiple remote queries", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      const item1 = remoteQueryHistory[1];
-      const item2 = remoteQueryHistory[3];
-      await queryHistoryManager.handleExportResults(item1, [item1, item2]);
       expect(executeCommandSpy).not.toBeCalled();
     });
 

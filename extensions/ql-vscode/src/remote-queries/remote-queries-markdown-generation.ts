@@ -3,14 +3,11 @@ import { tryGetRemoteLocation } from "../pure/bqrs-utils";
 import { createRemoteFileRef } from "../pure/location-link-utils";
 import { parseHighlightedLine, shouldHighlightLine } from "../pure/sarif-utils";
 import { convertNonPrintableChars } from "../text-utils";
-import { RemoteQuery } from "./remote-query";
 import {
   AnalysisAlert,
   AnalysisRawResults,
-  AnalysisResults,
   CodeSnippet,
   FileLink,
-  getAnalysisResultCount,
   HighlightedRegion,
 } from "./shared/analysis-result";
 import {
@@ -25,54 +22,6 @@ export type MarkdownLinkType = "local" | "gist";
 export interface MarkdownFile {
   fileName: string;
   content: string[]; // Each array item is a line of the markdown file.
-}
-
-/**
- * Generates markdown files with variant analysis results.
- */
-export function generateMarkdown(
-  query: RemoteQuery,
-  analysesResults: AnalysisResults[],
-  linkType: MarkdownLinkType,
-): MarkdownFile[] {
-  const resultsFiles: MarkdownFile[] = [];
-  // Generate summary file with links to individual files
-  const summaryFile: MarkdownFile = generateMarkdownSummary(query);
-  for (const analysisResult of analysesResults) {
-    const resultsCount = getAnalysisResultCount(analysisResult);
-    if (resultsCount === 0) {
-      continue;
-    }
-
-    // Append nwo and results count to the summary table
-    const nwo = analysisResult.nwo;
-    const fileName = createFileName(nwo);
-    const link = createRelativeLink(fileName, linkType);
-    summaryFile.content.push(
-      `| ${nwo} | [${resultsCount} result(s)](${link}) |`,
-    );
-
-    // Generate individual markdown file for each repository
-    const resultsFileContent = [`### ${analysisResult.nwo}`, ""];
-    for (const interpretedResult of analysisResult.interpretedResults) {
-      const individualResult = generateMarkdownForInterpretedResult(
-        interpretedResult,
-        query.language,
-      );
-      resultsFileContent.push(...individualResult);
-    }
-    if (analysisResult.rawResults) {
-      const rawResultTable = generateMarkdownForRawResults(
-        analysisResult.rawResults,
-      );
-      resultsFileContent.push(...rawResultTable);
-    }
-    resultsFiles.push({
-      fileName,
-      content: resultsFileContent,
-    });
-  }
-  return [summaryFile, ...resultsFiles];
 }
 
 export interface RepositorySummary {
@@ -150,27 +99,6 @@ export async function generateVariantAnalysisMarkdown(
   return {
     markdownFiles: [summaryFile, ...resultsFiles],
     summaries,
-  };
-}
-
-export function generateMarkdownSummary(query: RemoteQuery): MarkdownFile {
-  const lines: string[] = [];
-  // Title
-  lines.push(`### Results for "${query.queryName}"`, "");
-
-  // Expandable section containing query text
-  const queryCodeBlock = ["```ql", ...query.queryText.split("\n"), "```"];
-  lines.push(...buildExpandableMarkdownSection("Query", queryCodeBlock));
-
-  // Padding between sections
-  lines.push("<br />", "");
-
-  // Summary table
-  lines.push("### Summary", "", "| Repository | Results |", "| --- | --- |");
-  // nwo and result count will be appended to this table
-  return {
-    fileName: "_summary",
-    content: lines,
   };
 }
 
