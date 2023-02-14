@@ -2,11 +2,11 @@ import * as React from "react";
 
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import AnalysisAlertResult from "../../view/remote-queries/AnalysisAlertResult";
+import AnalysisAlertResult from "../../view/variant-analysis/AnalysisAlertResult";
 import type { AnalysisAlert } from "../../remote-queries/shared/analysis-result";
 
 export default {
-  title: "Analysis Alert Result",
+  title: "Variant Analysis/Analysis Alert Result",
   component: AnalysisAlertResult,
 } as ComponentMeta<typeof AnalysisAlertResult>;
 

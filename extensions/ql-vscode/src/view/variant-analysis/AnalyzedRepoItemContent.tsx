@@ -4,8 +4,8 @@ import {
   AnalysisAlert,
   AnalysisRawResults,
 } from "../../remote-queries/shared/analysis-result";
-import AnalysisAlertResult from "../remote-queries/AnalysisAlertResult";
-import RawResultsTable from "../remote-queries/RawResultsTable";
+import AnalysisAlertResult from "./AnalysisAlertResult";
+import RawResultsTable from "./RawResultsTable";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,

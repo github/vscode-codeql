@@ -29,8 +29,8 @@ import {
   RepoIcon,
   TerminalIcon,
 } from "@primer/octicons-react";
-import AnalysisAlertResult from "./AnalysisAlertResult";
-import RawResultsTable from "./RawResultsTable";
+import AnalysisAlertResult from "../variant-analysis/AnalysisAlertResult";
+import RawResultsTable from "../variant-analysis/RawResultsTable";
 import RepositoriesSearch from "./RepositoriesSearch";
 import StarCount from "../common/StarCount";
 import SortRepoFilter, { Sort, sorter } from "./SortRepoFilter";

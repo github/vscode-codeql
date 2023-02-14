@@ -8,7 +8,7 @@ import {
   ResultSetSchema,
 } from "../../pure/bqrs-cli-types";
 import { tryGetRemoteLocation } from "../../pure/bqrs-utils";
-import TextButton from "./TextButton";
+import TextButton from "../common/TextButton";
 import { convertNonPrintableChars } from "../../text-utils";
 import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";
 
