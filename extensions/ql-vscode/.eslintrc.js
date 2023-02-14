@@ -29,6 +29,7 @@ const baseConfig = {
     "plugin:@typescript-eslint/recommended",
   ],
   rules: {
+    "@typescript-eslint/await-thenable": "error",
     "@typescript-eslint/no-use-before-define": 0,
     "@typescript-eslint/no-unused-vars": [
       "warn",
