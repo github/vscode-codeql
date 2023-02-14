@@ -35,7 +35,7 @@ export class QlPackGenerator {
     this.header = "# This is an automatically generated file.\n\n";
 
     this.qlpackFileName = "qlpack.yml";
-    this.folderUri = Uri.parse(join(this.storagePath, this.folderName));
+    this.folderUri = Uri.file(join(this.storagePath, this.folderName));
   }
 
   public async generate() {
