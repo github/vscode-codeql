@@ -1,10 +1,11 @@
 import { join } from "path";
-import { existsSync, rmSync } from "fs";
+import { existsSync } from "fs";
 import { QlPackGenerator, QueryLanguage } from "../../../src/qlpack-generator";
 import { CodeQLCliServer } from "../../../src/cli";
 import { isFolderAlreadyInWorkspace } from "../../../src/helpers";
 import { workspace } from "vscode";
 import { getErrorMessage } from "../../../src/pure/helpers-pure";
+import * as tmp from "tmp";
 
 describe("QlPackGenerator", () => {
   let packFolderName: string;
@@ -14,11 +15,14 @@ describe("QlPackGenerator", () => {
   let language: string;
   let generator: QlPackGenerator;
   let packAddSpy: jest.SpyInstance;
+  let dir: tmp.DirResult;
 
   beforeEach(async () => {
+    dir = tmp.dirSync();
+
     language = "ruby";
     packFolderName = `test-ql-pack-${language}`;
-    packFolderPath = join(__dirname, packFolderName);
+    packFolderPath = join(dir.name, packFolderName);
 
     qlPackYamlFilePath = join(packFolderPath, "qlpack.yml");
     exampleQlFilePath = join(packFolderPath, "example.ql");
@@ -32,13 +36,13 @@ describe("QlPackGenerator", () => {
       packFolderName,
       language as QueryLanguage,
       mockCli,
-      __dirname,
+      dir.name,
     );
   });
 
   afterEach(async () => {
     try {
-      rmSync(packFolderPath, { recursive: true });
+      dir.removeCallback();
 
       const end = (workspace.workspaceFolders || []).length;
       workspace.updateWorkspaceFolders(end - 1, 1);
