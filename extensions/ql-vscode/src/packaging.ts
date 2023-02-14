@@ -9,23 +9,7 @@ import { ProgressCallback, UserCancellationException } from "./commandRunner";
 import { extLogger } from "./common";
 import { asError, getErrorStack } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
-import { QueryLanguage } from "./types/query-language";
-
-const PACKS_BY_QUERY_LANGUAGE = {
-  [QueryLanguage.Cpp]: ["codeql/cpp-queries"],
-  [QueryLanguage.CSharp]: [
-    "codeql/csharp-queries",
-    "codeql/csharp-solorigate-queries",
-  ],
-  [QueryLanguage.Go]: ["codeql/go-queries"],
-  [QueryLanguage.Java]: ["codeql/java-queries"],
-  [QueryLanguage.Javascript]: [
-    "codeql/javascript-queries",
-    "codeql/javascript-experimental-atm-queries",
-  ],
-  [QueryLanguage.Python]: ["codeql/python-queries"],
-  [QueryLanguage.Ruby]: ["codeql/ruby-queries"],
-};
+import { PACKS_BY_QUERY_LANGUAGE } from "./types/query-language";
 
 /**
  * Prompts user to choose packs to download, and downloads them.
