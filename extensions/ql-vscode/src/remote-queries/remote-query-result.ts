@@ -18,12 +18,3 @@ export interface AnalysisSummary {
   starCount?: number;
   lastUpdated?: number;
 }
-
-/**
- * Sums up the number of results for all repos queried via a remote query.
- */
-export const sumAnalysisSummariesResults = (
-  analysisSummaries: AnalysisSummary[],
-): number => {
-  return analysisSummaries.reduce((acc, cur) => acc + cur.resultCount, 0);
-};

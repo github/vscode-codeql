@@ -10,7 +10,6 @@ import { LocalQueryInfo } from "../../../../src/query-results";
 import { DatabaseManager } from "../../../../src/databases";
 import { tmpDir } from "../../../../src/helpers";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
-import { RemoteQueriesManager } from "../../../../src/remote-queries/remote-queries-manager";
 import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
 import { QueryRunner } from "../../../../src/queryRunner";
@@ -43,7 +42,6 @@ describe("HistoryTreeDataProvider", () => {
   let queryHistoryManager: QueryHistoryManager;
 
   let localQueriesResultsViewStub: ResultsView;
-  let remoteQueriesManagerStub: RemoteQueriesManager;
   let variantAnalysisManagerStub: VariantAnalysisManager;
 
   let allHistory: QueryHistoryInfo[];
@@ -61,13 +59,6 @@ describe("HistoryTreeDataProvider", () => {
     localQueriesResultsViewStub = {
       showResults: jest.fn(),
     } as any as ResultsView;
-    remoteQueriesManagerStub = {
-      onRemoteQueryAdded: jest.fn(),
-      onRemoteQueryRemoved: jest.fn(),
-      onRemoteQueryStatusUpdate: jest.fn(),
-      removeRemoteQuery: jest.fn(),
-      openRemoteQueryResults: jest.fn(),
-    } as any as RemoteQueriesManager;
 
     variantAnalysisManagerStub = {
       onVariantAnalysisAdded: jest.fn(),
@@ -481,7 +472,6 @@ describe("HistoryTreeDataProvider", () => {
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
-      remoteQueriesManagerStub,
       variantAnalysisManagerStub,
       {} as EvalLogViewer,
       "xxx",
