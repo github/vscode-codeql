@@ -44,8 +44,14 @@ describe("QlPackGenerator", () => {
     try {
       dir.removeCallback();
 
-      const end = (workspace.workspaceFolders || []).length;
-      workspace.updateWorkspaceFolders(end - 1, 1);
+      const workspaceFolders = workspace.workspaceFolders || [];
+      const folderIndex = workspaceFolders.findIndex(
+        (workspaceFolder) => workspaceFolder.name === dir.name,
+      );
+
+      if (folderIndex !== undefined) {
+        workspace.updateWorkspaceFolders(folderIndex, 1);
+      }
     } catch (e) {
       console.log(
         `Could not remove folder from workspace: ${getErrorMessage(e)}`,
@@ -63,7 +69,6 @@ describe("QlPackGenerator", () => {
     expect(isFolderAlreadyInWorkspace(packFolderName)).toBe(true);
     expect(existsSync(qlPackYamlFilePath)).toBe(true);
     expect(existsSync(exampleQlFilePath)).toBe(true);
-
     expect(packAddSpy).toHaveBeenCalledWith(packFolderPath, language);
   });
 });
