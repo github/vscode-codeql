@@ -31,7 +31,7 @@ export const CodeFlowsDropdown = ({
   return (
     <VSCodeDropdown
       onChange={
-        handleChange as unknown as ((e: Event) => unknown) &
+        handleChange as ((e: Event) => unknown) &
           React.FormEventHandler<HTMLElement>
       }
     >

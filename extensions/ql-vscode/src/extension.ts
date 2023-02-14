@@ -4,28 +4,28 @@ import {
   CancellationTokenSource,
   commands,
   Disposable,
+  env,
   ExtensionContext,
   extensions,
   languages,
   ProgressLocation,
   ProgressOptions,
-  Uri,
-  window as Window,
-  env,
-  window,
+  ProviderResult,
   QuickPickItem,
   Range,
-  workspace,
-  ProviderResult,
+  Uri,
   version as vscodeVersion,
+  window as Window,
+  window,
+  workspace,
 } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
-import { platform, arch } from "os";
+import { arch, platform } from "os";
 import { ensureDir } from "fs-extra";
-import { join, basename } from "path";
+import { basename, join } from "path";
 import { dirSync } from "tmp-promise";
 import { testExplorerExtensionId, TestHub } from "vscode-test-adapter-api";
-import { parse, lt } from "semver";
+import { lt, parse } from "semver";
 
 import { AstViewer } from "./astViewer";
 import {
@@ -38,7 +38,6 @@ import {
   CliConfigListener,
   DistributionConfigListener,
   isCanary,
-  isVariantAnalysisLiveResultsEnabled,
   joinOrderWarningThreshold,
   MAX_QUERIES,
   QueryHistoryConfigListener,
@@ -48,10 +47,10 @@ import { install } from "./languageSupport";
 import { DatabaseItem, DatabaseManager } from "./databases";
 import { DatabaseUI } from "./databases-ui";
 import {
-  TemplateQueryDefinitionProvider,
-  TemplateQueryReferenceProvider,
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
+  TemplateQueryDefinitionProvider,
+  TemplateQueryReferenceProvider,
 } from "./contextual/templateProvider";
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
@@ -65,22 +64,22 @@ import {
 } from "./distribution";
 import {
   findLanguage,
-  tmpDirDisposal,
-  showBinaryChoiceDialog,
   showAndLogErrorMessage,
-  showAndLogWarningMessage,
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
+  showAndLogWarningMessage,
+  showBinaryChoiceDialog,
   showInformationMessageWithAction,
   tmpDir,
-  showAndLogExceptionWithTelemetry,
+  tmpDirDisposal,
 } from "./helpers";
 import { asError, assertNever, getErrorMessage } from "./pure/helpers-pure";
 import { spawnIdeServer } from "./ide-server";
 import { ResultsView } from "./interface";
 import { WebviewReveal } from "./interface-utils";
 import {
-  ideServerLogger,
   extLogger,
+  ideServerLogger,
   ProgressReporter,
   queryServerLogger,
 } from "./common";
@@ -98,13 +97,10 @@ import {
   commandRunner,
   commandRunnerWithProgress,
   ProgressCallback,
-  withProgress,
   ProgressUpdate,
+  withProgress,
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
-
-import { RemoteQueriesManager } from "./remote-queries/remote-queries-manager";
-import { RemoteQueryResult } from "./remote-queries/remote-query-result";
 import { URLSearchParams } from "url";
 import {
   handleDownloadPacks,
@@ -112,11 +108,9 @@ import {
 } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import {
-  exportRemoteQueryResults,
   exportSelectedRemoteQueryResults,
   exportVariantAnalysisResults,
 } from "./remote-queries/export-results";
-import { RemoteQuery } from "./remote-queries/remote-query";
 import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
@@ -656,23 +650,11 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  void extLogger.log("Initializing remote queries manager.");
-  const rqm = new RemoteQueriesManager(
-    ctx,
-    app,
-    cliServer,
-    queryStorageDir,
-    extLogger,
-  );
-  ctx.subscriptions.push(rqm);
-
   void extLogger.log("Initializing query history.");
   const qhm = new QueryHistoryManager(
-    app,
     qs,
     dbm,
     localQueryResultsView,
-    rqm,
     variantAnalysisManager,
     evalLogViewer,
     queryStorageDir,
@@ -1112,19 +1094,11 @@ async function activateWithInstalledDistribution(
             message: "Getting credentials",
           });
 
-          if (isVariantAnalysisLiveResultsEnabled()) {
-            await variantAnalysisManager.runVariantAnalysis(
-              uri || window.activeTextEditor?.document.uri,
-              progress,
-              token,
-            );
-          } else {
-            await rqm.runRemoteQuery(
-              uri || window.activeTextEditor?.document.uri,
-              progress,
-              token,
-            );
-          }
+          await variantAnalysisManager.runVariantAnalysis(
+            uri || window.activeTextEditor?.document.uri,
+            progress,
+            token,
+          );
         } else {
           throw new Error(
             "Variant analysis requires the CodeQL Canary version to run.",
@@ -1136,21 +1110,6 @@ async function activateWithInstalledDistribution(
         cancellable: true,
       },
     ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.monitorRemoteQuery",
-      async (queryId: string, query: RemoteQuery, token: CancellationToken) => {
-        await rqm.monitorRemoteQuery(queryId, query, token);
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.copyRepoList", async (queryId: string) => {
-      await rqm.copyRemoteQueryRepoListToClipboard(queryId);
-    }),
   );
 
   ctx.subscriptions.push(
@@ -1216,27 +1175,9 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.autoDownloadRemoteQueryResults",
-      async (queryResult: RemoteQueryResult, token: CancellationToken) => {
-        await rqm.autoDownloadRemoteQueryResults(queryResult, token);
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
     commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
       await exportSelectedRemoteQueryResults(qhm);
     }),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.exportRemoteQueryResults",
-      async (queryId: string) => {
-        await exportRemoteQueryResults(qhm, rqm, queryId, app.credentials);
-      },
-    ),
   );
 
   ctx.subscriptions.push(

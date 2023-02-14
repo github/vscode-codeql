@@ -38,7 +38,7 @@ const interpretedResultsForRepo = (
   nwo: string,
 ): AnalysisAlert[] | undefined => {
   return analysesResults.analysesResults.find((v) => v.nwo === nwo)
-    ?.interpretedResults as unknown as AnalysisAlert[];
+    ?.interpretedResults as AnalysisAlert[];
 };
 
 export const Example = Template.bind({});

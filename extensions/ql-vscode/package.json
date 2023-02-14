@@ -377,7 +377,7 @@
       },
       {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
-        "title": "Open Database Configuration File",
+        "title": "Open database configuration file",
         "icon": "$(json)"
       },
       {
@@ -476,7 +476,7 @@
       },
       {
         "command": "codeQLDatabases.setCurrentDatabase",
-        "title": "Set Current Database"
+        "title": "Select"
       },
       {
         "command": "codeQLDatabases.removeDatabase",
