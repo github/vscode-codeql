@@ -1,6 +1,7 @@
-import { mkdir, writeFile } from "fs-extra";
+import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { join } from "path";
+import { Uri, workspace } from "vscode";
 import { CodeQLCliServer } from "./cli";
 
 export type QueryLanguage =
@@ -18,21 +19,28 @@ export class QlPackGenerator {
   private readonly qlpackVersion: string;
   private readonly header: string;
   private readonly qlpackFileName: string;
+  private readonly folderUri: Uri;
 
   constructor(
     private readonly folderName: string,
     private readonly queryLanguage: QueryLanguage,
     private readonly cliServer: CodeQLCliServer,
+    private readonly storagePath: string | undefined,
   ) {
+    if (this.storagePath === undefined) {
+      throw new Error("Workspace storage path is undefined");
+    }
     this.qlpackName = `getting-started/codeql-extra-queries-${this.queryLanguage}`;
     this.qlpackVersion = "1.0.0";
     this.header = "# This is an automatically generated file.\n\n";
 
     this.qlpackFileName = "qlpack.yml";
+    this.folderUri = Uri.parse(join(this.storagePath, this.folderName));
   }
 
   public async generate() {
-    await mkdir(this.folderName);
+    // create QL pack folder and add to workspace
+    await this.createWorkspaceFolder();
 
     // create qlpack.yml
     await this.createQlPackYaml();
@@ -44,8 +52,19 @@ export class QlPackGenerator {
     await this.createCodeqlPackLockYaml();
   }
 
+  private async createWorkspaceFolder() {
+    await workspace.fs.createDirectory(this.folderUri);
+
+    const end = (workspace.workspaceFolders || []).length;
+
+    await workspace.updateWorkspaceFolders(end, 0, {
+      name: this.folderName,
+      uri: this.folderUri,
+    });
+  }
+
   private async createQlPackYaml() {
-    const qlPackFile = join(this.folderName, this.qlpackFileName);
+    const qlPackFilePath = join(this.folderUri.path, this.qlpackFileName);
 
     const qlPackYml = {
       name: this.qlpackName,
@@ -55,11 +74,11 @@ export class QlPackGenerator {
       },
     };
 
-    await writeFile(qlPackFile, this.header + dump(qlPackYml), "utf8");
+    await writeFile(qlPackFilePath, this.header + dump(qlPackYml), "utf8");
   }
 
   private async createExampleQlFile() {
-    const exampleQlFile = join(this.folderName, "example.ql");
+    const exampleQlFilePath = join(this.folderUri.path, "example.ql");
 
     const exampleQl = `
 /**
@@ -75,10 +94,10 @@ import ${this.queryLanguage}
 select "Hello, world!"
 `.trim();
 
-    await writeFile(exampleQlFile, exampleQl, "utf8");
+    await writeFile(exampleQlFilePath, exampleQl, "utf8");
   }
 
   private async createCodeqlPackLockYaml() {
-    await this.cliServer.packAdd(this.folderName, this.queryLanguage);
+    await this.cliServer.packAdd(this.folderUri.path, this.queryLanguage);
   }
 }

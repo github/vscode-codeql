@@ -1,10 +1,14 @@
 import { join } from "path";
-import { existsSync, rmdirSync } from "fs";
+import { existsSync, rmSync } from "fs";
 import { QlPackGenerator, QueryLanguage } from "../../../src/qlpack-generator";
 import { CodeQLCliServer } from "../../../src/cli";
+import { isFolderAlreadyInWorkspace } from "../../../src/helpers";
+import { workspace } from "vscode";
+import { getErrorMessage } from "../../../src/pure/helpers-pure";
 
 describe("QlPackGenerator", () => {
-  let packfolderName: string;
+  let packFolderName: string;
+  let packFolderPath: string;
   let qlPackYamlFilePath: string;
   let exampleQlFilePath: string;
   let language: string;
@@ -13,9 +17,11 @@ describe("QlPackGenerator", () => {
 
   beforeEach(async () => {
     language = "ruby";
-    packfolderName = `test-ql-pack-${language}`;
-    qlPackYamlFilePath = join(packfolderName, "qlpack.yml");
-    exampleQlFilePath = join(packfolderName, "example.ql");
+    packFolderName = `test-ql-pack-${language}`;
+    packFolderPath = join(__dirname, packFolderName);
+
+    qlPackYamlFilePath = join(packFolderPath, "qlpack.yml");
+    exampleQlFilePath = join(packFolderPath, "example.ql");
 
     packAddSpy = jest.fn();
     const mockCli = {
@@ -23,31 +29,37 @@ describe("QlPackGenerator", () => {
     } as unknown as CodeQLCliServer;
 
     generator = new QlPackGenerator(
-      packfolderName,
+      packFolderName,
       language as QueryLanguage,
       mockCli,
+      __dirname,
     );
   });
 
   afterEach(async () => {
     try {
-      rmdirSync(packfolderName, { recursive: true });
+      rmSync(packFolderPath, { recursive: true });
+
+      const end = (workspace.workspaceFolders || []).length;
+      workspace.updateWorkspaceFolders(end - 1, 1);
     } catch (e) {
-      // ignore
+      console.log(
+        `Could not remove folder from workspace: ${getErrorMessage(e)}`,
+      );
     }
   });
 
   it("should generate a QL pack", async () => {
-    expect(existsSync(packfolderName)).toBe(false);
+    expect(isFolderAlreadyInWorkspace(packFolderName)).toBe(false);
     expect(existsSync(qlPackYamlFilePath)).toBe(false);
     expect(existsSync(exampleQlFilePath)).toBe(false);
 
     await generator.generate();
 
-    expect(existsSync(packfolderName)).toBe(true);
+    expect(isFolderAlreadyInWorkspace(packFolderName)).toBe(true);
     expect(existsSync(qlPackYamlFilePath)).toBe(true);
     expect(existsSync(exampleQlFilePath)).toBe(true);
 
-    expect(packAddSpy).toHaveBeenCalledWith(packfolderName, language);
+    expect(packAddSpy).toHaveBeenCalledWith(packFolderPath, language);
   });
 });

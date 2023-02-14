@@ -669,6 +669,7 @@ export class DatabaseManager extends DisposableObject {
         folderName,
         databaseItem.language as QueryLanguage,
         this.cli,
+        this.ctx.storageUri?.fsPath,
       );
       await qlPackGenerator.generate();
     } catch (e: unknown) {
