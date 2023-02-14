@@ -54,7 +54,6 @@ import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
 import { cancelRemoteQuery } from "../remote-queries/gh-api/gh-actions-api-client";
-import { RemoteQueriesManager } from "../remote-queries/remote-queries-manager";
 import { RemoteQueryHistoryItem } from "../remote-queries/remote-query-history-item";
 import { ResultsView } from "../interface";
 import { WebviewReveal } from "../interface-utils";
@@ -142,7 +141,6 @@ export class QueryHistoryManager extends DisposableObject {
     private readonly qs: QueryRunner,
     private readonly dbm: DatabaseManager,
     private readonly localQueriesResultsView: ResultsView,
-    private readonly remoteQueriesManager: RemoteQueriesManager,
     private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly evalLogViewer: EvalLogViewer,
     private readonly queryStorageDir: string,
@@ -372,7 +370,6 @@ export class QueryHistoryManager extends DisposableObject {
     );
 
     this.registerQueryHistoryScrubber(queryHistoryConfigListener, this, ctx);
-    this.registerToRemoteQueriesEvents();
     this.registerToVariantAnalysisEvents();
   }
 
@@ -477,57 +474,6 @@ export class QueryHistoryManager extends DisposableObject {
     this.push(variantAnalysisRemovedSubscription);
   }
 
-  private registerToRemoteQueriesEvents() {
-    const queryAddedSubscription = this.remoteQueriesManager.onRemoteQueryAdded(
-      async (event) => {
-        this.addQuery({
-          t: "remote",
-          status: QueryStatus.InProgress,
-          completed: false,
-          queryId: event.queryId,
-          remoteQuery: event.query,
-        });
-
-        await this.refreshTreeView();
-      },
-    );
-
-    const queryRemovedSubscription =
-      this.remoteQueriesManager.onRemoteQueryRemoved(async (event) => {
-        const item = this.treeDataProvider.allHistory.find(
-          (i) => i.t === "remote" && i.queryId === event.queryId,
-        );
-        if (item) {
-          await this.removeRemoteQuery(item as RemoteQueryHistoryItem);
-        }
-      });
-
-    const queryStatusUpdateSubscription =
-      this.remoteQueriesManager.onRemoteQueryStatusUpdate(async (event) => {
-        const item = this.treeDataProvider.allHistory.find(
-          (i) => i.t === "remote" && i.queryId === event.queryId,
-        );
-        if (item) {
-          const remoteQueryHistoryItem = item as RemoteQueryHistoryItem;
-          remoteQueryHistoryItem.status = event.status;
-          remoteQueryHistoryItem.failureReason = event.failureReason;
-          remoteQueryHistoryItem.resultCount = event.resultCount;
-          if (event.status === QueryStatus.Completed) {
-            remoteQueryHistoryItem.completed = true;
-          }
-          await this.refreshTreeView();
-        } else {
-          void extLogger.log(
-            "Variant analysis status update event received for unknown variant analysis",
-          );
-        }
-      });
-
-    this.push(queryAddedSubscription);
-    this.push(queryRemovedSubscription);
-    this.push(queryStatusUpdateSubscription);
-  }
-
   async readQueryHistory(): Promise<void> {
     void extLogger.log(
       `Reading cached query history from '${this.queryMetadataStorageLocation}'.`,
@@ -538,13 +484,6 @@ export class QueryHistoryManager extends DisposableObject {
     this.treeDataProvider.allHistory = history;
     await Promise.all(
       this.treeDataProvider.allHistory.map(async (item) => {
-        if (item.t === "remote") {
-          await this.remoteQueriesManager.rehydrateRemoteQuery(
-            item.queryId,
-            item.remoteQuery,
-            item.status,
-          );
-        }
         if (item.t === "variant-analysis") {
           await this.variantAnalysisManager.rehydrateVariantAnalysis(
             item.variantAnalysis,
@@ -657,7 +596,7 @@ export class QueryHistoryManager extends DisposableObject {
             await item.completedQuery?.query.deleteQuery();
           }
         } else if (item.t === "remote") {
-          await this.removeRemoteQuery(item);
+          // Do nothing. TODO: Remove once remote queries are no longer supported.
         } else if (item.t === "variant-analysis") {
           await this.removeVariantAnalysis(item);
         } else {
@@ -672,20 +611,6 @@ export class QueryHistoryManager extends DisposableObject {
       await this.treeView.reveal(current, { select: true });
       await this.openQueryResults(current);
     }
-  }
-
-  private async removeRemoteQuery(item: RemoteQueryHistoryItem): Promise<void> {
-    // Remote queries can be removed locally, but not remotely.
-    // The user must cancel the query on GitHub Actions explicitly.
-    this.treeDataProvider.remove(item);
-    void extLogger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
-    if (item.status === QueryStatus.InProgress) {
-      void extLogger.log(
-        "The variant analysis is still running on GitHub Actions. To cancel there, you must go to the workflow run in your browser.",
-      );
-    }
-
-    await this.remoteQueriesManager.removeRemoteQuery(item.queryId);
   }
 
   private async removeVariantAnalysis(
@@ -1293,12 +1218,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    if (finalSingleItem.t === "remote") {
-      await commands.executeCommand(
-        "codeQL.copyRepoList",
-        finalSingleItem.queryId,
-      );
-    } else if (finalSingleItem.t === "variant-analysis") {
+    if (finalSingleItem.t === "variant-analysis") {
       await commands.executeCommand(
         "codeQL.copyVariantAnalysisRepoList",
         finalSingleItem.variantAnalysis.id,
@@ -1321,10 +1241,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     // Remote queries and variant analysis only
     if (finalSingleItem.t === "remote") {
-      await commands.executeCommand(
-        "codeQL.exportRemoteQueryResults",
-        finalSingleItem.queryId,
-      );
+      // Do nothing. TODO: Remove this case once remote queries are removed.
     } else if (finalSingleItem.t === "variant-analysis") {
       await commands.executeCommand(
         "codeQL.exportVariantAnalysisResults",
@@ -1559,9 +1476,11 @@ the file in the file explorer and dragging it into the workspace.`,
         false,
       );
     } else if (item.t === "remote") {
-      await this.remoteQueriesManager.openRemoteQueryResults(item.queryId);
+      // Do nothing. TODO: Remove when remote queries is no longer supported.
     } else if (item.t === "variant-analysis") {
       await this.variantAnalysisManager.showView(item.variantAnalysis.id);
+    } else {
+      assertNever(item);
     }
   }
 }

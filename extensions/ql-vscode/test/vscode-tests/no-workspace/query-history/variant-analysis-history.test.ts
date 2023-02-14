@@ -15,7 +15,6 @@ import { tmpDir, walkDirectory } from "../../../../src/helpers";
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
-import { RemoteQueriesManager } from "../../../../src/remote-queries/remote-queries-manager";
 import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
 import { QueryRunner } from "../../../../src/queryRunner";
@@ -50,14 +49,6 @@ describe("Variant Analyses and QueryHistoryManager", () => {
   const localQueriesResultsViewStub = {
     showResults: jest.fn(),
   } as any as ResultsView;
-  const remoteQueriesManagerStub = {
-    onRemoteQueryAdded: jest.fn(),
-    onRemoteQueryRemoved: jest.fn(),
-    onRemoteQueryStatusUpdate: jest.fn(),
-    rehydrateRemoteQuery: jest.fn(),
-    removeRemoteQuery: jest.fn(),
-    openRemoteQueryResults: jest.fn(),
-  } as any as RemoteQueriesManager;
   const variantAnalysisManagerStub = {
     onVariantAnalysisAdded: jest.fn(),
     onVariantAnalysisRemoved: jest.fn(),
@@ -87,7 +78,6 @@ describe("Variant Analyses and QueryHistoryManager", () => {
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
-      remoteQueriesManagerStub,
       variantAnalysisManagerStub,
       {} as EvalLogViewer,
       STORAGE_DIR,
