@@ -50,11 +50,11 @@ class Checkpoint<T> {
   }
 
   async resolve(): Promise<void> {
-    await this.res();
+    this.res();
   }
 
   async reject(e: Error): Promise<void> {
-    await this.rej(e);
+    this.rej(e);
   }
 }
 

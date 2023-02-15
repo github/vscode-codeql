@@ -462,7 +462,7 @@ export async function activate(
     ) {
       registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
         const installActionName = "Install CodeQL CLI";
-        const chosenAction = await void showAndLogErrorMessage(
+        const chosenAction = await showAndLogErrorMessage(
           `Can't execute ${command}: missing CodeQL CLI.`,
           {
             items: [installActionName],

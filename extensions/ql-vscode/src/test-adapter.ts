@@ -356,15 +356,11 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     tests: string[],
     cancellationToken: CancellationToken,
   ): Promise<void> {
-    const workspacePaths = await getOnDiskWorkspaceFolders();
-    for await (const event of await this.cliServer.runTests(
-      tests,
-      workspacePaths,
-      {
-        cancellationToken,
-        logger: testLogger,
-      },
-    )) {
+    const workspacePaths = getOnDiskWorkspaceFolders();
+    for await (const event of this.cliServer.runTests(tests, workspacePaths, {
+      cancellationToken,
+      logger: testLogger,
+    })) {
       const state = event.pass
         ? "passed"
         : event.messages?.length
