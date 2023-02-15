@@ -379,11 +379,14 @@ export class DatabaseUI extends DisposableObject {
         );
 
         let databaseItem = this.databaseManager.findDatabaseItem(uri);
+        const isTutorialDatabase = true;
         if (databaseItem === undefined) {
           databaseItem = await this.databaseManager.openDatabase(
             progress,
             token,
             uri,
+            "CodeQL Tutorial Database",
+            isTutorialDatabase,
           );
         }
         await this.databaseManager.setCurrentDatabaseItem(databaseItem);

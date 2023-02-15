@@ -711,16 +711,36 @@ describe("databases", () => {
     });
 
     describe("when codeQL.codespacesTemplate is set to true", () => {
-      it("should create a skeleton QL pack", async () => {
-        jest.spyOn(Setting.prototype, "getValue").mockReturnValue(true);
+      describe("when we add the tutorial database to the codespace", () => {
+        it("should not offer to create a skeleton QL pack", async () => {
+          jest.spyOn(Setting.prototype, "getValue").mockReturnValue(true);
 
-        await databaseManager.openDatabase(
-          {} as ProgressCallback,
-          {} as CancellationToken,
-          mockDbItem.databaseUri,
-        );
+          const isTutorialDatabase = true;
 
-        expect(createSkeletonPacksSpy).toBeCalledTimes(1);
+          await databaseManager.openDatabase(
+            {} as ProgressCallback,
+            {} as CancellationToken,
+            mockDbItem.databaseUri,
+            "CodeQL Tutorial Database",
+            isTutorialDatabase,
+          );
+
+          expect(createSkeletonPacksSpy).toBeCalledTimes(0);
+        });
+      });
+
+      describe("when we add a new database that isn't the tutorial one", () => {
+        it("should create a skeleton QL pack", async () => {
+          jest.spyOn(Setting.prototype, "getValue").mockReturnValue(true);
+
+          await databaseManager.openDatabase(
+            {} as ProgressCallback,
+            {} as CancellationToken,
+            mockDbItem.databaseUri,
+          );
+
+          expect(createSkeletonPacksSpy).toBeCalledTimes(1);
+        });
       });
     });
 
