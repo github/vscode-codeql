@@ -57,7 +57,7 @@ export class QlPackGenerator {
 
     const end = (workspace.workspaceFolders || []).length;
 
-    await workspace.updateWorkspaceFolders(end, 0, {
+    workspace.updateWorkspaceFolders(end, 0, {
       name: this.folderName,
       uri: this.folderUri,
     });
