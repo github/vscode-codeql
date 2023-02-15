@@ -2,20 +2,20 @@ import { CellValue } from "../pure/bqrs-cli-types";
 import { tryGetRemoteLocation } from "../pure/bqrs-utils";
 import { createRemoteFileRef } from "../pure/location-link-utils";
 import { parseHighlightedLine, shouldHighlightLine } from "../pure/sarif-utils";
-import { convertNonPrintableChars } from "../text-utils";
-import {
+import { convertNonPrintableChars } from "../pure/text-utils";
+import type {
   AnalysisAlert,
   AnalysisRawResults,
   CodeSnippet,
   FileLink,
   HighlightedRegion,
 } from "./shared/analysis-result";
-import {
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
-import { RepositoryWithMetadata } from "./shared/repository";
+import type { RepositoryWithMetadata } from "./shared/repository";
 
 export type MarkdownLinkType = "local" | "gist";
 

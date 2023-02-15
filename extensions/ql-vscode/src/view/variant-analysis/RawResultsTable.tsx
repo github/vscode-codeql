@@ -9,7 +9,7 @@ import {
 } from "../../pure/bqrs-cli-types";
 import { tryGetRemoteLocation } from "../../pure/bqrs-utils";
 import TextButton from "../common/TextButton";
-import { convertNonPrintableChars } from "../../text-utils";
+import { convertNonPrintableChars } from "../../pure/text-utils";
 import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";
 
 const numOfResultsInContractedMode = 5;
