@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import TextButtonComponent from "../../view/remote-queries/TextButton";
+import TextButtonComponent from "../../view/common/TextButton";
 
 export default {
   title: "Text Button",

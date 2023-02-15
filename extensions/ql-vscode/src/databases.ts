@@ -26,6 +26,7 @@ import { QueryRunner } from "./queryRunner";
 import { pathsEqual } from "./pure/files";
 import { redactableError } from "./pure/errors";
 import { isCodespacesTemplate } from "./config";
+import { QlPackGenerator, QueryLanguage } from "./qlpack-generator";
 
 /**
  * databases.ts
@@ -655,9 +656,27 @@ export class DatabaseManager extends DisposableObject {
       return;
     }
 
-    await showBinaryChoiceDialog(
-      `We've noticed you don't have a QL pack downloaded to analyze this database. Can we set up a ${databaseItem.language} query pack for you`,
+    const answer = await showBinaryChoiceDialog(
+      `We've noticed you don't have a CodeQL pack available to analyze this database. Can we set up a query pack for you?`,
     );
+
+    if (!answer) {
+      return;
+    }
+
+    try {
+      const qlPackGenerator = new QlPackGenerator(
+        folderName,
+        databaseItem.language as QueryLanguage,
+        this.cli,
+        this.ctx.storageUri?.fsPath,
+      );
+      await qlPackGenerator.generate();
+    } catch (e: unknown) {
+      void this.logger.log(
+        `Could not create skeleton QL pack: ${getErrorMessage(e)}`,
+      );
+    }
   }
 
   private async reregisterDatabases(

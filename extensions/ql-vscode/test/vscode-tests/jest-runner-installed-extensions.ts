@@ -8,9 +8,9 @@ import {
   downloadAndUnzipVSCode,
   resolveCliArgsFromVSCodeExecutablePath,
 } from "@vscode/test-electron";
-import { ensureCli } from "../ensureCli";
+import { ensureCli } from "./ensureCli";
 
-export default class JestRunnerCliIntegration extends VSCodeTestRunner {
+export default class JestRunnerInstalledExtensions extends VSCodeTestRunner {
   async runTests(
     tests: JestRunner.Test[],
     watcher: JestRunner.TestWatcher,

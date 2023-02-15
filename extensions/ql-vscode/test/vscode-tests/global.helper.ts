@@ -2,11 +2,11 @@ import { join } from "path";
 import { load, dump } from "js-yaml";
 import { realpathSync, readFileSync, writeFileSync } from "fs-extra";
 import { commands } from "vscode";
-import { DatabaseManager } from "../../../src/databases";
-import { CodeQLCliServer } from "../../../src/cli";
-import { removeWorkspaceRefs } from "../../../src/remote-queries/run-remote-query";
+import { DatabaseManager } from "../../src/databases";
+import { CodeQLCliServer } from "../../src/cli";
+import { removeWorkspaceRefs } from "../../src/remote-queries/run-remote-query";
 
-// This file contains helpers shared between actual tests.
+// This file contains helpers shared between tests that work with an activated extension.
 
 export const DB_URL =
   "https://github.com/github/vscode-codeql/files/5586722/simple-db.zip";

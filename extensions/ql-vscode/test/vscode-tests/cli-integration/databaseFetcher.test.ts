@@ -8,7 +8,7 @@ import {
   importArchiveDatabase,
   promptImportInternetDatabase,
 } from "../../../src/databaseFetcher";
-import { cleanDatabases, dbLoc, DB_URL, storagePath } from "./global.helper";
+import { cleanDatabases, dbLoc, DB_URL, storagePath } from "../global.helper";
 
 jest.setTimeout(60_000);
 

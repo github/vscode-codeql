@@ -23,6 +23,7 @@ import { testDisposeHandler } from "../test-dispose-handler";
 import { QueryRunner } from "../../../src/queryRunner";
 import * as helpers from "../../../src/helpers";
 import { Setting } from "../../../src/config";
+import { QlPackGenerator } from "../../../src/qlpack-generator";
 
 describe("databases", () => {
   const MOCK_DB_OPTIONS: FullDatabaseOptions = {
@@ -32,11 +33,13 @@ describe("databases", () => {
   };
 
   let databaseManager: DatabaseManager;
+  let extensionContext: ExtensionContext;
 
   let updateSpy: jest.Mock<Promise<void>, []>;
   let registerSpy: jest.Mock<Promise<void>, []>;
   let deregisterSpy: jest.Mock<Promise<void>, []>;
   let resolveDatabaseSpy: jest.Mock<Promise<DbInfo>, []>;
+  let packAddSpy: jest.Mock<any, []>;
   let logSpy: jest.Mock<any, []>;
 
   let showBinaryChoiceDialogSpy: jest.SpiedFunction<
@@ -52,6 +55,7 @@ describe("databases", () => {
     registerSpy = jest.fn(() => Promise.resolve(undefined));
     deregisterSpy = jest.fn(() => Promise.resolve(undefined));
     resolveDatabaseSpy = jest.fn(() => Promise.resolve({} as DbInfo));
+    packAddSpy = jest.fn();
     logSpy = jest.fn(() => {
       /* */
     });
@@ -60,16 +64,19 @@ describe("databases", () => {
       .spyOn(helpers, "showBinaryChoiceDialog")
       .mockResolvedValue(true);
 
+    extensionContext = {
+      workspaceState: {
+        update: updateSpy,
+        get: () => [],
+      },
+      // pretend like databases added in the temp dir are controlled by the extension
+      // so that they are deleted upon removal
+      storagePath: dir.name,
+      storageUri: Uri.parse(dir.name),
+    } as unknown as ExtensionContext;
+
     databaseManager = new DatabaseManager(
-      {
-        workspaceState: {
-          update: updateSpy,
-          get: () => [],
-        },
-        // pretend like databases added in the temp dir are controlled by the extension
-        // so that they are deleted upon removal
-        storagePath: dir.name,
-      } as unknown as ExtensionContext,
+      extensionContext,
       {
         registerDatabase: registerSpy,
         deregisterDatabase: deregisterSpy,
@@ -79,6 +86,7 @@ describe("databases", () => {
       } as unknown as QueryRunner,
       {
         resolveDatabase: resolveDatabaseSpy,
+        packAdd: packAddSpy,
       } as unknown as CodeQLCliServer,
       {
         log: logSpy,
@@ -589,19 +597,45 @@ describe("databases", () => {
 
   describe("createSkeletonPacks", () => {
     let mockDbItem: DatabaseItemImpl;
+    let language: string;
+    let generateSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      language = "ruby";
+
+      const options: FullDatabaseOptions = {
+        dateAdded: 123,
+        ignoreSourceArchive: false,
+        language,
+      };
+      mockDbItem = createMockDB(options);
+
+      generateSpy = jest
+        .spyOn(QlPackGenerator.prototype, "generate")
+        .mockImplementation(() => Promise.resolve());
+    });
 
     describe("when the language is set", () => {
       it("should offer the user to set up a skeleton QL pack", async () => {
-        const options: FullDatabaseOptions = {
-          dateAdded: 123,
-          ignoreSourceArchive: false,
-          language: "ruby",
-        };
-        mockDbItem = createMockDB(options);
-
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
         expect(showBinaryChoiceDialogSpy).toBeCalledTimes(1);
+      });
+
+      it("should return early if the user refuses help", async () => {
+        showBinaryChoiceDialogSpy = jest
+          .spyOn(helpers, "showBinaryChoiceDialog")
+          .mockResolvedValue(false);
+
+        await (databaseManager as any).createSkeletonPacks(mockDbItem);
+
+        expect(generateSpy).not.toBeCalled();
+      });
+
+      it("should create the skeleton QL pack for the user", async () => {
+        await (databaseManager as any).createSkeletonPacks(mockDbItem);
+
+        expect(generateSpy).toBeCalled();
       });
     });
 

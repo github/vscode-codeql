@@ -13,8 +13,8 @@ import {
 } from "../../remote-queries/shared/analysis-result";
 import { createMockRepositoryWithMetadata } from "../../../test/factories/remote-queries/shared/repository";
 
-import * as analysesResults from "../remote-queries/data/analysesResultsMessage.json";
-import * as rawResults from "../remote-queries/data/rawResults.json";
+import * as analysesResults from "../data/analysesResultsMessage.json";
+import * as rawResults from "../data/rawResults.json";
 import { RepoRow, RepoRowProps } from "../../view/variant-analysis/RepoRow";
 
 export default {

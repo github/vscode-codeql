@@ -1,28 +1,24 @@
+import { workspace } from "vscode";
+
 import {
-  mkdirpSync,
-  existsSync,
+  beforeAllAction,
+  beforeEachAction,
+} from "../jest.activated-extension.setup";
+import * as tmp from "tmp";
+import {
   createWriteStream,
+  existsSync,
+  mkdirpSync,
   realpathSync,
 } from "fs-extra";
 import { dirname } from "path";
+import { DB_URL, dbLoc, setStoragePath, storagePath } from "../global.helper";
 import fetch from "node-fetch";
-import { DB_URL, dbLoc, setStoragePath, storagePath } from "./global.helper";
-import * as tmp from "tmp";
-import { CUSTOM_CODEQL_PATH_SETTING } from "../../../src/config";
-import { ConfigurationTarget, env, extensions, workspace } from "vscode";
-import { beforeEachAction } from "../test-config";
 
 // create an extension storage location
 let removeStorage: tmp.DirResult["removeCallback"] | undefined;
 
 beforeAll(async () => {
-  // Set the CLI version here before activation to ensure we don't accidentally try to download a cli
-  await beforeEachAction();
-  await CUSTOM_CODEQL_PATH_SETTING.updateValue(
-    process.env.CLI_PATH,
-    ConfigurationTarget.Workspace,
-  );
-
   // ensure the test database is downloaded
   mkdirpSync(dirname(dbLoc));
   if (!existsSync(dbLoc)) {
@@ -54,6 +50,14 @@ beforeAll(async () => {
 
   removeStorage = dir.removeCallback;
 
+  await beforeAllAction();
+});
+
+beforeEach(async () => {
+  await beforeEachAction();
+});
+
+beforeAll(() => {
   // check that the codeql folder is found in the workspace
   const folders = workspace.workspaceFolders;
   if (!folders) {
@@ -70,20 +74,6 @@ beforeAll(async () => {
       );
     }
   }
-
-  // Activate the extension
-  await extensions.getExtension("GitHub.vscode-codeql")?.activate();
-});
-
-beforeEach(async () => {
-  jest.spyOn(env, "openExternal").mockResolvedValue(false);
-
-  await beforeEachAction();
-
-  await CUSTOM_CODEQL_PATH_SETTING.updateValue(
-    process.env.CLI_PATH,
-    ConfigurationTarget.Workspace,
-  );
 });
 
 // ensure extension is cleaned up.

@@ -16,7 +16,7 @@ import { createMockVariantAnalysis } from "../../../test/factories/remote-querie
 import { createMockRepositoryWithMetadata } from "../../../test/factories/remote-queries/shared/repository";
 import { createMockScannedRepo } from "../../../test/factories/remote-queries/shared/scanned-repositories";
 
-import * as analysesResults from "../remote-queries/data/analysesResultsMessage.json";
+import * as analysesResults from "../data/analysesResultsMessage.json";
 
 export default {
   title: "Variant Analysis/Analyzed Repos",
