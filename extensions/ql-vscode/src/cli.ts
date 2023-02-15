@@ -28,6 +28,7 @@ import { CompilationMessage } from "./pure/legacy-messages";
 import { sarifParser } from "./sarif-parser";
 import { dbSchemeToLanguage, walkDirectory } from "./helpers";
 import { App } from "./common/app";
+import { QueryLanguage } from "./qlpack-generator";
 
 /**
  * The version of the SARIF format that we are using.
@@ -1213,6 +1214,23 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "queries"],
       args,
       "Resolving queries",
+    );
+  }
+
+  /**
+   * Adds a core language QL library pack for the given query language as a dependency
+   * of the current package, and then installs them. This command modifies the qlpack.yml
+   * file of the current package. Formatting and comments will be removed.
+   * @param dir The directory where QL pack exists.
+   * @param language The language of the QL pack.
+   */
+  async packAdd(dir: string, queryLanguage: QueryLanguage) {
+    const args = ["--dir", dir];
+    args.push(`codeql/${queryLanguage}-all`);
+    return this.runJsonCodeQlCliCommandWithAuthentication(
+      ["pack", "add"],
+      args,
+      `Adding and installing ${queryLanguage} pack dependency.`,
     );
   }
 
