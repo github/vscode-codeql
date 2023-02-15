@@ -163,7 +163,7 @@ export function getHtmlForWebview(
   /*
    * Content security policy:
    * default-src: allow nothing by default.
-   * script-src: allow only the given script, using the nonce.
+   * script-src: allow the given script, using the nonce. also allow loading WebAssembly modules.
    * style-src: allow only the given stylesheet, using the nonce.
    * connect-src: only allow fetch calls to webview resource URIs
    * (this is used to load BQRS result files).
@@ -172,7 +172,7 @@ export function getHtmlForWebview(
 <html>
   <head>
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'none'; script-src 'nonce-${nonce}'; font-src ${fontSrc}; style-src ${styleSrc}; connect-src ${
+          content="default-src 'none'; script-src 'nonce-${nonce}' 'wasm-unsafe-eval'; font-src ${fontSrc}; style-src ${styleSrc}; connect-src ${
     webview.cspSource
   };">
         ${stylesheetsHtmlLines.join(`    ${EOL}`)}
