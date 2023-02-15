@@ -284,37 +284,37 @@ This requires running a MRVA query and seeing the results view.
 
 ### MRVA repositories panel
 
-- [ ] Add a list
-- [ ] Add a database at the top level
-- [ ] Add a database to a list
-- [ ] Add a the same database at a top-level and in a list
-- [ ] Delete a list
-- [ ] Delete a database from the top level
-- [ ] Delete a database from a list
-- [ ] Add an owner
-- [ ] Remove an owner
-- [ ] Rename a list
-- [ ] Open on GitHub
-- [ ] Select a list (via "Select" button and via context menu action)
-- [ ] Run MRVA against a user-defined list
-- [ ] Run MRVA against a top-N list
-- [ ] Run MRVA against an owner
-- [ ] Run MRVA against a database
-- [ ] Copy repo list
-- [ ] Open config file
-- [ ] Make changes via config file (ensure JSON schema is helping out)
-- [ ] Close and re-open VS Code (ensure lists are there)
-- [ ] Collapse/expand tree nodes
+1. Add a list
+1. Add a database at the top level
+1. Add a database to a list
+1. Add a the same database at a top-level and in a list
+1. Delete a list
+1. Delete a database from the top level
+1. Delete a database from a list
+1. Add an owner
+1. Remove an owner
+1. Rename a list
+1. Open on GitHub
+1. Select a list (via "Select" button and via context menu action)
+1. Run MRVA against a user-defined list
+1. Run MRVA against a top-N list
+1. Run MRVA against an owner
+1. Run MRVA against a database
+1. Copy repo list
+1. Open config file
+1. Make changes via config file (ensure JSON schema is helping out)
+1. Close and re-open VS Code (ensure lists are there)
+1. Collapse/expand tree nodes
 
 Error cases that trigger an error notification:
-- [ ] Try to add a list with a name that already exists 
-- [ ] Try to add a top-level database that already exists
-- [ ] Try to add a database in a list that already exists in the list
+1. Try to add a list with a name that already exists 
+1. Try to add a top-level database that already exists
+1. Try to add a database in a list that already exists in the list
 
 Error cases that show an error in the panel (and only the edit button should be visible):
-- [ ] Edit the db config file directly and save invalid JSON
-- [ ] Edit the db config file directly and save valid JSON but invalid config (e.g. add an unknown property)
-- [ ] Edit the db config file directly and save two lists with the same name 
+1. Edit the db config file directly and save invalid JSON
+1. Edit the db config file directly and save valid JSON but invalid config (e.g. add an unknown property)
+1. Edit the db config file directly and save two lists with the same name 
 
 Cases where there the welcome view is shown:
-- [ ] No controller repo is set in the user's settings JSON. 
+1. No controller repo is set in the user's settings JSON. 
