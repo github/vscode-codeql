@@ -108,7 +108,7 @@ import {
 } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import {
-  exportSelectedRemoteQueryResults,
+  exportSelectedVariantAnalysisResults,
   exportVariantAnalysisResults,
 } from "./remote-queries/export-results";
 import { EvalLogViewer } from "./eval-log-viewer";
@@ -1176,7 +1176,7 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
-      await exportSelectedRemoteQueryResults(qhm);
+      await exportSelectedVariantAnalysisResults(qhm);
     }),
   );
 
