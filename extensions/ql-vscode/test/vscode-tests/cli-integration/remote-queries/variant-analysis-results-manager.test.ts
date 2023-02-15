@@ -9,7 +9,7 @@ import * as fetchModule from "node-fetch";
 
 import { VariantAnalysisResultsManager } from "../../../../src/remote-queries/variant-analysis-results-manager";
 import { CodeQLCliServer } from "../../../../src/cli";
-import { storagePath } from "../global.helper";
+import { storagePath } from "../../global.helper";
 import { faker } from "@faker-js/faker";
 import { createMockVariantAnalysisRepositoryTask } from "../../../factories/remote-queries/shared/variant-analysis-repo-tasks";
 import {

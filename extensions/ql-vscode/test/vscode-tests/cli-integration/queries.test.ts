@@ -17,7 +17,7 @@ import { load, dump } from "js-yaml";
 
 import { DatabaseItem, DatabaseManager } from "../../../src/databases";
 import { CodeQLExtensionInterface } from "../../../src/extension";
-import { cleanDatabases, dbLoc, storagePath } from "./global.helper";
+import { cleanDatabases, dbLoc, storagePath } from "../global.helper";
 import { importArchiveDatabase } from "../../../src/databaseFetcher";
 import { CodeQLCliServer } from "../../../src/cli";
 import { describeWithCodeQL } from "../cli";

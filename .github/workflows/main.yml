@@ -132,7 +132,12 @@ jobs:
       - name: Run unit tests
         working-directory: extensions/ql-vscode
         run: |
-          npm run test
+          npm run test:unit
+
+      - name: Run view tests
+        working-directory: extensions/ql-vscode
+        run: |
+          npm run test:view
 
   test:
     name: Test
@@ -173,7 +178,7 @@ jobs:
           VSCODE_CODEQL_GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         run: |
           unset DBUS_SESSION_BUS_ADDRESS
-          /usr/bin/xvfb-run npm run integration
+          /usr/bin/xvfb-run npm run test:vscode-integration
 
       - name: Run integration tests (Windows)
         if: matrix.os == 'windows-latest'
@@ -181,7 +186,7 @@ jobs:
         env:
           VSCODE_CODEQL_GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         run: |
-          npm run integration
+          npm run test:vscode-integration
 
   set-matrix:
     name: Set Matrix for cli-test
@@ -254,10 +259,10 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           unset DBUS_SESSION_BUS_ADDRESS
-          /usr/bin/xvfb-run npm run cli-integration
+          /usr/bin/xvfb-run npm run test:cli-integration
 
       - name: Run CLI tests (Windows)
         working-directory: extensions/ql-vscode
         if: matrix.os == 'windows-latest'
         run: |
-          npm run cli-integration
+          npm run test:cli-integration
