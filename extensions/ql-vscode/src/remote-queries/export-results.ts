@@ -18,7 +18,7 @@ import {
   generateVariantAnalysisMarkdown,
   MarkdownFile,
   RepositorySummary,
-} from "./remote-queries-markdown-generation";
+} from "./markdown-generation";
 import { pluralize } from "../pure/word";
 import { VariantAnalysisManager } from "./variant-analysis-manager";
 import { assertNever } from "../pure/helpers-pure";

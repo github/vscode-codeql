@@ -1,0 +1,198 @@
+[
+  {
+    "repository": {
+      "id": 143040428,
+      "fullName": "github/codeql",
+      "private": false,
+      "stargazersCount": 5703,
+      "updatedAt": "2023-02-15T10:11:45Z"
+    },
+    "analysisStatus": "succeeded",
+    "resultCount": 1,
+    "artifactSizeInBytes": 1038,
+    "interpretedResults": [
+      {
+        "message": {
+          "tokens": [
+            {
+              "t": "text",
+              "text": "This part of the regular expression may cause exponential backtracking on strings containing many repetitions of 'aa'."
+            }
+          ]
+        },
+        "shortDescription": "This part of the regular expression may cause exponential backtracking on strings containing many repetitions of 'aa'.",
+        "fileLink": {
+          "fileLinkPrefix": "https://github.com/github/codeql/blob/d094bbc06d063d0da8d0303676943c345e61de53",
+          "filePath": "javascript/extractor/tests/regexp/input/multipart.js"
+        },
+        "severity": "Warning",
+        "codeSnippet": {
+          "startLine": 15,
+          "endLine": 22,
+          "text": "\nvar bad95 = new RegExp(\n    \"(a\" + \n    \"|\" + \n    \"aa)*\" + \n    \"b$\"\n);\n\n"
+        },
+        "highlightedRegion": {
+          "startLine": 17,
+          "startColumn": 6,
+          "endLine": 20,
+          "endColumn": 6
+        },
+        "codeFlows": []
+      }
+    ]
+  },
+  {
+    "repository": {
+      "id": 3214406,
+      "fullName": "meteor/meteor",
+      "private": false,
+      "stargazersCount": 43274,
+      "updatedAt": "2023-02-14T21:06:55Z"
+    },
+    "analysisStatus": "succeeded",
+    "resultCount": 5,
+    "artifactSizeInBytes": 3478,
+    "interpretedResults": [
+      {
+        "message": {
+          "tokens": [
+            {
+              "t": "text",
+              "text": "This part of the regular expression may cause exponential backtracking on strings containing many repetitions of '----'."
+            }
+          ]
+        },
+        "shortDescription": "This part of the regular expression may cause exponential backtracking on strings containing many repetitions of '----'.",
+        "fileLink": {
+          "fileLinkPrefix": "https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12",
+          "filePath": "packages/deprecated/markdown/showdown.js"
+        },
+        "severity": "Warning",
+        "codeSnippet": {
+          "startLine": 413,
+          "endLine": 417,
+          "text": "\t\t/g,hashElement);\n\t*/\n\ttext = text.replace(/(\\n\\n[ ]{0,3}<!(--[^\\r]*?--\\s*)+>[ \\t]*(?=\\n{2,}))/g,hashElement);\n\n\t// PHP and ASP-style processor instructions (<?...?> and <%...%>)\n"
+        },
+        "highlightedRegion": {
+          "startLine": 415,
+          "startColumn": 41,
+          "endLine": 415,
+          "endColumn": 48
+        },
+        "codeFlows": []
+      },
+      {
+        "message": {
+          "tokens": [
+            {
+              "t": "text",
+              "text": "This part of the regular expression may cause exponential backtracking on strings starting with '<!--' and containing many repetitions of '----'."
+            }
+          ]
+        },
+        "shortDescription": "This part of the regular expression may cause exponential backtracking on strings starting with '<!--' and containing many repetitions of '----'.",
+        "fileLink": {
+          "fileLinkPrefix": "https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12",
+          "filePath": "packages/deprecated/markdown/showdown.js"
+        },
+        "severity": "Warning",
+        "codeSnippet": {
+          "startLine": 521,
+          "endLine": 525,
+          "text": "\t// Build a regex to find HTML tags and comments.  See Friedl's\n\t// \"Mastering Regular Expressions\", 2nd Ed., pp. 200-201.\n\tvar regex = /(<[a-z\\/!$](\"[^\"]*\"|'[^']*'|[^'\">])*>|<!(--.*?--\\s*)+>)/gi;\n\n\ttext = text.replace(regex, function(wholeMatch) {\n"
+        },
+        "highlightedRegion": {
+          "startLine": 523,
+          "startColumn": 58,
+          "endLine": 523,
+          "endColumn": 61
+        },
+        "codeFlows": []
+      },
+      {
+        "message": {
+          "tokens": [
+            {
+              "t": "text",
+              "text": "This part of the regular expression may cause exponential backtracking on strings starting with ''' and containing many repetitions of '\\&'."
+            }
+          ]
+        },
+        "shortDescription": "This part of the regular expression may cause exponential backtracking on strings starting with ''' and containing many repetitions of '\\&'.",
+        "fileLink": {
+          "fileLinkPrefix": "https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12",
+          "filePath": "tools/tests/apps/modules/imports/links/acorn/src/parseutil.js"
+        },
+        "severity": "Warning",
+        "codeSnippet": {
+          "startLine": 7,
+          "endLine": 11,
+          "text": "// ## Parser utilities\n\nconst literal = /^(?:'((?:\\\\.|[^'])*?)'|\"((?:\\\\.|[^\"])*?)\")/\npp.strictDirective = function(start) {\n  for (;;) {\n"
+        },
+        "highlightedRegion": {
+          "startLine": 9,
+          "startColumn": 24,
+          "endLine": 9,
+          "endColumn": 38
+        },
+        "codeFlows": []
+      },
+      {
+        "message": {
+          "tokens": [
+            {
+              "t": "text",
+              "text": "This part of the regular expression may cause exponential backtracking on strings starting with '\"' and containing many repetitions of '\\!'."
+            }
+          ]
+        },
+        "shortDescription": "This part of the regular expression may cause exponential backtracking on strings starting with '\"' and containing many repetitions of '\\!'.",
+        "fileLink": {
+          "fileLinkPrefix": "https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12",
+          "filePath": "tools/tests/apps/modules/imports/links/acorn/src/parseutil.js"
+        },
+        "severity": "Warning",
+        "codeSnippet": {
+          "startLine": 9,
+          "endLine": 9,
+          "text": "const literal = /^(?:'((?:\\\\.|[^'])*?)'|\"((?:\\\\.|[^\"])*?)\")/"
+        },
+        "highlightedRegion": {
+          "startLine": 9,
+          "startColumn": 43,
+          "endLine": 9,
+          "endColumn": 57
+        },
+        "codeFlows": []
+      },
+      {
+        "message": {
+          "tokens": [
+            {
+              "t": "text",
+              "text": "This component is implicitly exported."
+            }
+          ]
+        },
+        "shortDescription": "This component is implicitly exported.",
+        "fileLink": {
+          "fileLinkPrefix": "https://github.com/AlexRogalskiy/android-nrf-toolbox/blob/034cf3aa7d2a3a4145177de32546ca518a462a66",
+          "filePath": "app/src/main/AndroidManifest.xml"
+        },
+        "severity": "Warning",
+        "codeSnippet": {
+          "startLine": 237,
+          "endLine": 251,
+          "text": "\t\t</service>\n\n\t\t<activity\n\t\t\tandroid:name=\"no.nordicsemi.android.nrftoolbox.dfu.DfuInitiatorActivity\"\n\t\t\tandroid:label=\"@string/dfu_service_title\"\n\t\t\tandroid:noHistory=\"true\"\n\t\t\tandroid:theme=\"@style/AppTheme.Translucent\" >\n\t\t\t<intent-filter>\n\t\t\t\t<action android:name=\"no.nordicsemi.android.action.DFU_UPLOAD\" />\n\n\t\t\t\t<category android:name=\"android.intent.category.DEFAULT\" />\n\t\t\t</intent-filter>\n\t\t</activity>\n\n\t\t<service\n"
+        },
+        "highlightedRegion": {
+          "startLine": 239,
+          "startColumn": 3,
+          "endLine": 249,
+          "endColumn": 15
+        },
+        "codeFlows": []
+      }
+    ]
+  }
+]

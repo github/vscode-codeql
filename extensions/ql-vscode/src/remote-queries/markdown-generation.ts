@@ -2,20 +2,20 @@ import { CellValue } from "../pure/bqrs-cli-types";
 import { tryGetRemoteLocation } from "../pure/bqrs-utils";
 import { createRemoteFileRef } from "../pure/location-link-utils";
 import { parseHighlightedLine, shouldHighlightLine } from "../pure/sarif-utils";
-import { convertNonPrintableChars } from "../text-utils";
-import {
+import { convertNonPrintableChars } from "../pure/text-utils";
+import type {
   AnalysisAlert,
   AnalysisRawResults,
   CodeSnippet,
   FileLink,
   HighlightedRegion,
 } from "./shared/analysis-result";
-import {
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
-import { RepositoryWithMetadata } from "./shared/repository";
+import type { RepositoryWithMetadata } from "./shared/repository";
 
 export type MarkdownLinkType = "local" | "gist";
 
@@ -39,7 +39,7 @@ export interface VariantAnalysisMarkdown {
  * Generates markdown files with variant analysis results.
  */
 export async function generateVariantAnalysisMarkdown(
-  variantAnalysis: VariantAnalysis,
+  variantAnalysis: Pick<VariantAnalysis, "query">,
   results: AsyncIterable<
     [VariantAnalysisScannedRepository, VariantAnalysisScannedRepositoryResult]
   >,
@@ -91,7 +91,7 @@ export async function generateVariantAnalysisMarkdown(
 
   // Generate summary file with links to individual files
   const summaryFile: MarkdownFile = generateVariantAnalysisMarkdownSummary(
-    variantAnalysis,
+    variantAnalysis.query,
     summaries,
     linkType,
   );
@@ -103,20 +103,16 @@ export async function generateVariantAnalysisMarkdown(
 }
 
 export function generateVariantAnalysisMarkdownSummary(
-  variantAnalysis: VariantAnalysis,
+  query: VariantAnalysis["query"],
   summaries: RepositorySummary[],
   linkType: MarkdownLinkType,
 ): MarkdownFile {
   const lines: string[] = [];
   // Title
-  lines.push(`### Results for "${variantAnalysis.query.name}"`, "");
+  lines.push(`### Results for "${query.name}"`, "");
 
   // Expandable section containing query text
-  const queryCodeBlock = [
-    "```ql",
-    ...variantAnalysis.query.text.split("\n"),
-    "```",
-  ];
+  const queryCodeBlock = ["```ql", ...query.text.split("\n"), "```"];
   lines.push(...buildExpandableMarkdownSection("Query", queryCodeBlock));
 
   // Padding between sections

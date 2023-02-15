@@ -9,7 +9,7 @@ import {
 } from "../../pure/interface-types";
 import { assertNever } from "../../pure/helpers-pure";
 import { vscode } from "../vscode-api";
-import { convertNonPrintableChars } from "../../text-utils";
+import { convertNonPrintableChars } from "../../pure/text-utils";
 import { sendTelemetry } from "../common/telemetry";
 
 export interface ResultTableProps {
