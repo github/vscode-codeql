@@ -61,7 +61,8 @@ import {
 } from "../../../../src/pure/variant-analysis-filter-sort";
 import { DbManager } from "../../../../src/databases/db-manager";
 import { App } from "../../../../src/common/app";
-import { createMockApp } from "../../../__mocks__/appMock";
+import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
+import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -93,7 +94,8 @@ describe("Variant Analysis Manager", () => {
       )!
       .activate();
     cli = extension.cliServer;
-    app = createMockApp({});
+    app = new ExtensionApp(extension.ctx);
+    dbManager = new DbManager(app, new DbConfigStore(app));
     variantAnalysisResultsManager = new VariantAnalysisResultsManager(
       cli,
       extLogger,
