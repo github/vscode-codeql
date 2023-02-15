@@ -143,7 +143,12 @@ describe("repository selection", () => {
       getRemoteRepositoryListsPathSpy = jest
         .spyOn(config, "getRemoteRepositoryListsPath")
         .mockReturnValue(undefined);
+
+      jest
+        .spyOn(config, "isVariantAnalysisReposPanelEnabled")
+        .mockReturnValue(false);
     });
+
     describe("repo lists from settings", () => {
       it("should allow selection from repo lists from your pre-defined config", async () => {
         // Fake return values
