@@ -755,14 +755,12 @@ export class QueryHistoryManager extends DisposableObject {
     ) {
       // show original query file on double click
       await this.handleOpenQuery(finalSingleItem, [finalSingleItem]);
-    } else {
+    } else if (
+      finalSingleItem.t === "variant-analysis" ||
+      finalSingleItem.status === QueryStatus.Completed
+    ) {
       // show results on single click (if results view is available)
-      if (
-        finalSingleItem.t === "variant-analysis" ||
-        finalSingleItem.status === QueryStatus.Completed
-      ) {
-        await this.openQueryResults(finalSingleItem);
-      }
+      await this.openQueryResults(finalSingleItem);
     }
   }
 
@@ -797,6 +795,8 @@ export class QueryHistoryManager extends DisposableObject {
       return this.variantAnalysisManager.getVariantAnalysisStorageLocation(
         queryHistoryItem.variantAnalysis.id,
       );
+    } else {
+      assertNever(queryHistoryItem);
     }
 
     throw new Error("Unable to get query directory");
@@ -830,6 +830,8 @@ export class QueryHistoryManager extends DisposableObject {
         ),
         "timestamp",
       );
+    } else {
+      assertNever(finalSingleItem);
     }
 
     if (externalFilePath) {
@@ -994,6 +996,8 @@ export class QueryHistoryManager extends DisposableObject {
             "codeQL.cancelVariantAnalysis",
             item.variantAnalysis.id,
           );
+        } else {
+          assertNever(item);
         }
       }
     });
@@ -1185,17 +1189,19 @@ export class QueryHistoryManager extends DisposableObject {
       multiSelect,
     );
 
-    // Remote queries only
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
+    // Variant analyses only
+    if (
+      !this.assertSingleQuery(finalMultiSelect) ||
+      !finalSingleItem ||
+      finalSingleItem.t !== "variant-analysis"
+    ) {
       return;
     }
 
-    if (finalSingleItem.t === "variant-analysis") {
-      await commands.executeCommand(
-        "codeQL.copyVariantAnalysisRepoList",
-        finalSingleItem.variantAnalysis.id,
-      );
-    }
+    await commands.executeCommand(
+      "codeQL.copyVariantAnalysisRepoList",
+      finalSingleItem.variantAnalysis.id,
+    );
   }
 
   async handleExportResults(
@@ -1207,17 +1213,19 @@ export class QueryHistoryManager extends DisposableObject {
       multiSelect,
     );
 
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
+    // Variant analysis only
+    if (
+      !this.assertSingleQuery(finalMultiSelect) ||
+      !finalSingleItem ||
+      finalSingleItem.t !== "variant-analysis"
+    ) {
       return;
     }
 
-    // Variant analysis only
-    if (finalSingleItem.t === "variant-analysis") {
-      await commands.executeCommand(
-        "codeQL.exportVariantAnalysisResults",
-        finalSingleItem.variantAnalysis.id,
-      );
-    }
+    await commands.executeCommand(
+      "codeQL.exportVariantAnalysisResults",
+      finalSingleItem.variantAnalysis.id,
+    );
   }
 
   addQuery(item: QueryHistoryInfo) {
@@ -1290,7 +1298,7 @@ the file in the file explorer and dragging it into the workspace.`,
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[],
   ): Promise<CompletedLocalQueryInfo | undefined> {
-    // Remote queries cannot be compared
+    // Variant analyses cannot be compared
     if (
       singleItem.t !== "local" ||
       multiSelect.some((s) => s.t !== "local") ||
