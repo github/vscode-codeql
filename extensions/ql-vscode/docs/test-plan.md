@@ -25,11 +25,14 @@ choose to go through some of the Optional Test Cases.
 1. Open the [UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
 2. Run a MRVA against the following repo list:
 ```
-"test-repo-list": [
-    "angular-cn/ng-nice",
-    "apache/hadoop",
-    "apache/hive"
-]
+{
+   "name": "test-repo-list",
+   "repositories": [
+      "angular-cn/ng-nice",
+      "apache/hadoop",
+      "apache/hive"
+   ]
+}
 ```
 3. Check that a notification message pops up and the results view is opened.
 4. Check the query history. It should:
@@ -278,3 +281,40 @@ This requires running a MRVA query and seeing the results view.
 #### Test case 4: When variant analysis is in "failed" or "canceled" state
 1. Can view logs
 1. Results for finished queries are still downloaded.
+
+### MRVA repositories panel
+
+- [ ] Add a list
+- [ ] Add a database at the top level
+- [ ] Add a database to a list
+- [ ] Add a the same database at a top-level and in a list
+- [ ] Delete a list
+- [ ] Delete a database from the top level
+- [ ] Delete a database from a list
+- [ ] Add an owner
+- [ ] Remove an owner
+- [ ] Rename a list
+- [ ] Open on GitHub
+- [ ] Select a list (via "Select" button and via context menu action)
+- [ ] Run MRVA against a user-defined list
+- [ ] Run MRVA against a top-N list
+- [ ] Run MRVA against an owner
+- [ ] Run MRVA against a database
+- [ ] Copy repo list
+- [ ] Open config file
+- [ ] Make changes via config file (ensure JSON schema is helping out)
+- [ ] Close and re-open VS Code (ensure lists are there)
+- [ ] Collapse/expand tree nodes
+
+Error cases that trigger an error notification:
+- [ ] Try to add a list with a name that already exists 
+- [ ] Try to add a top-level database that already exists
+- [ ] Try to add a database in a list that already exists in the list
+
+Error cases that show an error in the panel (and only the edit button should be visible):
+- [ ] Edit the db config file directly and save invalid JSON
+- [ ] Edit the db config file directly and save valid JSON but invalid config (e.g. add an unknown property)
+- [ ] Edit the db config file directly and save two lists with the same name 
+
+Cases where there the welcome view is shown:
+- [ ] No controller repo is set in the user's settings JSON. 
