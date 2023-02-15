@@ -1218,8 +1218,8 @@ export class CodeQLCliServer implements Disposable {
   }
 
   /**
-   * Adds a list of QL library packs with optional version ranges as dependencies of
-   * the current package, and then installs them. This command modifies the qlpack.yml
+   * Adds a core language QL library pack for the given query language as a dependency
+   * of the current package, and then installs them. This command modifies the qlpack.yml
    * file of the current package. Formatting and comments will be removed.
    * @param dir The directory where QL pack exists.
    * @param language The language of the QL pack.
@@ -1230,7 +1230,7 @@ export class CodeQLCliServer implements Disposable {
     return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "add"],
       args,
-      "Adding and installing pack dependencies.",
+      `Adding and installing ${queryLanguage} pack dependency.`,
     );
   }
 

@@ -69,9 +69,7 @@ export class QlPackGenerator {
     const qlPackYml = {
       name: this.qlpackName,
       version: this.qlpackVersion,
-      dependencies: {
-        [`codeql/${this.queryLanguage}-all`]: "*",
-      },
+      dependencies: {},
     };
 
     await writeFile(qlPackFilePath, this.header + dump(qlPackYml), "utf8");
