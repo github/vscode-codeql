@@ -1227,10 +1227,12 @@ export class CodeQLCliServer implements Disposable {
   async packAdd(dir: string, queryLanguage: QueryLanguage) {
     const args = ["--dir", dir];
     args.push(`codeql/${queryLanguage}-all`);
+    const addFormat = false;
     return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "add"],
       args,
       `Adding and installing ${queryLanguage} pack dependency.`,
+      addFormat,
     );
   }
 
