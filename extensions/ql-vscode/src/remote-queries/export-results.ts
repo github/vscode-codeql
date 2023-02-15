@@ -34,7 +34,7 @@ import {
 import { Credentials } from "../common/authentication";
 
 /**
- * Exports the results of the currently-selected remote query or variant analysis.
+ * Exports the results of the currently-selected variant analysis.
  */
 export async function exportSelectedVariantAnalysisResults(
   queryHistoryManager: QueryHistoryManager,
@@ -55,7 +55,7 @@ export async function exportSelectedVariantAnalysisResults(
 const MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS = 2;
 
 /**
- * Exports the results of the given or currently-selected remote query.
+ * Exports the results of the given or currently-selected variant analysis.
  * The user is prompted to select the export format.
  */
 export async function exportVariantAnalysisResults(
