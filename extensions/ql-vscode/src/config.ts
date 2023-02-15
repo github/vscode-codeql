@@ -579,16 +579,8 @@ export function isVariantAnalysisLiveResultsEnabled(): boolean {
   return true;
 }
 
-/**
- * A flag indicating whether to use the new "variant analysis repositories" panel.
- */
-const VARIANT_ANALYSIS_REPOS_PANEL = new Setting(
-  "repositoriesPanel",
-  VARIANT_ANALYSIS_SETTING,
-);
-
 export function isVariantAnalysisReposPanelEnabled(): boolean {
-  return !!VARIANT_ANALYSIS_REPOS_PANEL.getValue<boolean>();
+  return true;
 }
 
 // Settings for mocking the GitHub API.
