@@ -11,6 +11,7 @@
         "--extensionDevelopmentPath=${workspaceRoot}/extensions/ql-vscode",
         // Add a reference to a workspace to open. Eg-
         // "${workspaceRoot}/../vscode-codeql-starter/vscode-codeql-starter.code-workspace"
+        // "${workspaceRoot}/../codespaces-codeql/tutorial.code-workspace"
       ],
       "sourceMaps": true,
       "outFiles": [
