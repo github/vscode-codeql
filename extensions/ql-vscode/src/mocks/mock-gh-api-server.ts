@@ -96,8 +96,8 @@ export class MockGitHubApiServer extends DisposableObject {
   }
 
   public async stopRecording(): Promise<void> {
-    await this.recorder.stop();
-    await this.recorder.clear();
+    this.recorder.stop();
+    this.recorder.clear();
   }
 
   public async getScenarioNames(scenariosPath?: string): Promise<string[]> {

@@ -35,11 +35,11 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
   }
 
   public async startServer(): Promise<void> {
-    await this.server.startServer();
+    this.server.startServer();
   }
 
   public async stopServer(): Promise<void> {
-    await this.server.stopServer();
+    this.server.stopServer();
 
     await commands.executeCommand(
       "setContext",

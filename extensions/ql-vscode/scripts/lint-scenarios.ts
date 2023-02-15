@@ -28,7 +28,7 @@ async function lintScenarios() {
     throw new Error(`Invalid schema: ${ajv.errorsText()}`);
   }
 
-  const validate = await ajv.compile(schema);
+  const validate = ajv.compile(schema);
 
   let invalidFiles = 0;
 

@@ -295,7 +295,7 @@ export class CodeQLCliServer implements Disposable {
       );
     }
 
-    return await spawnServer(
+    return spawnServer(
       codeQlPath,
       "CodeQL CLI Server",
       ["execute", "cli-server"],
@@ -455,7 +455,7 @@ export class CodeQLCliServer implements Disposable {
         void logStream(child.stderr!, logger);
       }
 
-      for await (const event of await splitStreamAtSeparators(child.stdout!, [
+      for await (const event of splitStreamAtSeparators(child.stdout!, [
         "\0",
       ])) {
         yield event;
@@ -487,7 +487,7 @@ export class CodeQLCliServer implements Disposable {
     cancellationToken?: CancellationToken,
     logger?: Logger,
   ): AsyncGenerator<EventType, void, unknown> {
-    for await (const event of await this.runAsyncCodeQlCliCommandInternal(
+    for await (const event of this.runAsyncCodeQlCliCommandInternal(
       command,
       commandArgs,
       cancellationToken,
@@ -750,7 +750,7 @@ export class CodeQLCliServer implements Disposable {
       ...testPaths,
     ]);
 
-    for await (const event of await this.runAsyncCodeQlCliCommand<TestCompleted>(
+    for await (const event of this.runAsyncCodeQlCliCommand<TestCompleted>(
       ["test", "run"],
       subcommandArgs,
       "Run CodeQL Tests",
@@ -1543,7 +1543,7 @@ const lineEndings = ["\r\n", "\r", "\n"];
  * @param logger The logger that will consume the stream output.
  */
 async function logStream(stream: Readable, logger: Logger): Promise<void> {
-  for await (const line of await splitStreamAtSeparators(stream, lineEndings)) {
+  for await (const line of splitStreamAtSeparators(stream, lineEndings)) {
     // Await the result of log here in order to ensure the logs are written in the correct order.
     await logger.log(line);
   }
