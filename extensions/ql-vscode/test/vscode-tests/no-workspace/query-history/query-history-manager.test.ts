@@ -11,7 +11,6 @@ import { LocalQueryInfo } from "../../../../src/query-results";
 import { DatabaseManager } from "../../../../src/databases";
 import { tmpDir } from "../../../../src/helpers";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
-import { RemoteQueriesManager } from "../../../../src/remote-queries/remote-queries-manager";
 import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
 import { QueryRunner } from "../../../../src/queryRunner";
@@ -21,20 +20,14 @@ import {
   createMockLocalQueryInfo,
   createMockQueryWithResults,
 } from "../../../factories/query-history/local-query-history-item";
-import { createMockRemoteQueryHistoryItem } from "../../../factories/query-history/remote-query-history-item";
-import { RemoteQueryHistoryItem } from "../../../../src/remote-queries/remote-query-history-item";
 import { shuffleHistoryItems } from "../../utils/query-history-helpers";
 import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-status";
 import { VariantAnalysisStatus } from "../../../../src/remote-queries/shared/variant-analysis";
-import * as ghActionsApiClient from "../../../../src/remote-queries/gh-api/gh-actions-api-client";
 import { QuickPickItem, TextEditor } from "vscode";
 import { WebviewReveal } from "../../../../src/interface-utils";
 import * as helpers from "../../../../src/helpers";
-import { testCredentialsWithStub } from "../../../factories/authentication";
-import { Credentials } from "../../../../src/common/authentication";
-import { createMockApp } from "../../../__mocks__/appMock";
 
 describe("QueryHistoryManager", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -54,14 +47,12 @@ describe("QueryHistoryManager", () => {
   let queryHistoryManager: QueryHistoryManager;
 
   let localQueriesResultsViewStub: ResultsView;
-  let remoteQueriesManagerStub: RemoteQueriesManager;
   let variantAnalysisManagerStub: VariantAnalysisManager;
 
   let tryOpenExternalFile: Function;
 
   let allHistory: QueryHistoryInfo[];
   let localQueryHistory: LocalQueryInfo[];
-  let remoteQueryHistory: RemoteQueryHistoryItem[];
   let variantAnalysisHistory: VariantAnalysisHistoryItem[];
 
   beforeEach(() => {
@@ -86,13 +77,6 @@ describe("QueryHistoryManager", () => {
     localQueriesResultsViewStub = {
       showResults: jest.fn(),
     } as any as ResultsView;
-    remoteQueriesManagerStub = {
-      onRemoteQueryAdded: jest.fn(),
-      onRemoteQueryRemoved: jest.fn(),
-      onRemoteQueryStatusUpdate: jest.fn(),
-      removeRemoteQuery: jest.fn(),
-      openRemoteQueryResults: jest.fn(),
-    } as any as RemoteQueriesManager;
 
     variantAnalysisManagerStub = {
       onVariantAnalysisAdded: jest.fn(),
@@ -136,12 +120,6 @@ describe("QueryHistoryManager", () => {
       // in progress
       createMockLocalQueryInfo({ resultCount: 0 }),
     ];
-    remoteQueryHistory = [
-      createMockRemoteQueryHistoryItem({ status: QueryStatus.Completed }),
-      createMockRemoteQueryHistoryItem({ status: QueryStatus.Failed }),
-      createMockRemoteQueryHistoryItem({ status: QueryStatus.InProgress }),
-      createMockRemoteQueryHistoryItem({ status: QueryStatus.InProgress }),
-    ];
     variantAnalysisHistory = [
       createMockVariantAnalysisHistoryItem({
         historyItemStatus: QueryStatus.Completed,
@@ -162,7 +140,6 @@ describe("QueryHistoryManager", () => {
     ];
     allHistory = shuffleHistoryItems([
       ...localQueryHistory,
-      ...remoteQueryHistory,
       ...variantAnalysisHistory,
     ]);
   });
@@ -256,42 +233,6 @@ describe("QueryHistoryManager", () => {
         });
       });
 
-      describe("remote query", () => {
-        describe("when complete", () => {
-          it("should show results", async () => {
-            queryHistoryManager = await createMockQueryHistory(allHistory);
-            const itemClicked = remoteQueryHistory[0];
-            await queryHistoryManager.handleItemClicked(itemClicked, [
-              itemClicked,
-            ]);
-
-            expect(
-              remoteQueriesManagerStub.openRemoteQueryResults,
-            ).toHaveBeenCalledTimes(1);
-            expect(
-              remoteQueriesManagerStub.openRemoteQueryResults,
-            ).toHaveBeenCalledWith(itemClicked.queryId);
-            expect(queryHistoryManager.treeDataProvider.getCurrent()).toBe(
-              itemClicked,
-            );
-          });
-        });
-
-        describe("when incomplete", () => {
-          it("should do nothing", async () => {
-            queryHistoryManager = await createMockQueryHistory(allHistory);
-            const itemClicked = remoteQueryHistory[2];
-            await queryHistoryManager.handleItemClicked(itemClicked, [
-              itemClicked,
-            ]);
-
-            expect(
-              remoteQueriesManagerStub.openRemoteQueryResults,
-            ).not.toBeCalledWith(itemClicked.queryId);
-          });
-        });
-      });
-
       describe("variant analysis", () => {
         describe("when complete", () => {
           it("should show results", async () => {
@@ -347,9 +288,6 @@ describe("QueryHistoryManager", () => {
         ]);
 
         expect(localQueriesResultsViewStub.showResults).not.toHaveBeenCalled();
-        expect(
-          remoteQueriesManagerStub.openRemoteQueryResults,
-        ).not.toHaveBeenCalled();
         expect(variantAnalysisManagerStub.showView).not.toBeCalled();
         expect(
           queryHistoryManager.treeDataProvider.getCurrent(),
@@ -364,9 +302,6 @@ describe("QueryHistoryManager", () => {
         await queryHistoryManager.handleItemClicked(undefined!, []);
 
         expect(localQueriesResultsViewStub.showResults).not.toHaveBeenCalled();
-        expect(
-          remoteQueriesManagerStub.openRemoteQueryResults,
-        ).not.toHaveBeenCalled();
         expect(variantAnalysisManagerStub.showView).not.toHaveBeenCalled();
         expect(
           queryHistoryManager.treeDataProvider.getCurrent(),
@@ -472,102 +407,6 @@ describe("QueryHistoryManager", () => {
             WebviewReveal.Forced,
             false,
           );
-        });
-      });
-    });
-
-    describe("when the item is a remote query", () => {
-      describe("when the item being removed is not selected", () => {
-        let toDelete: RemoteQueryHistoryItem;
-        let selected: RemoteQueryHistoryItem;
-
-        beforeEach(async () => {
-          // deleting the first item when a different item is selected
-          // will not change the selection
-          toDelete = remoteQueryHistory[1];
-          selected = remoteQueryHistory[3];
-
-          queryHistoryManager = await createMockQueryHistory(allHistory);
-
-          // initialize the selection
-          await queryHistoryManager.treeView.reveal(remoteQueryHistory[0], {
-            select: true,
-          });
-
-          // select the item we want
-          await queryHistoryManager.treeView.reveal(selected, {
-            select: true,
-          });
-
-          // should be selected
-          expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
-            selected,
-          );
-
-          // remove an item
-          await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-            toDelete,
-          ]);
-        });
-
-        it("should remove the item", () => {
-          expect(
-            remoteQueriesManagerStub.removeRemoteQuery,
-          ).toHaveBeenCalledWith(toDelete.queryId);
-          expect(queryHistoryManager.treeDataProvider.allHistory).not.toContain(
-            toDelete,
-          );
-        });
-
-        it("should not change the selection", () => {
-          expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
-            selected,
-          );
-
-          expect(
-            remoteQueriesManagerStub.openRemoteQueryResults,
-          ).toHaveBeenCalledWith(selected.queryId);
-        });
-      });
-
-      describe("when the item being removed is selected", () => {
-        let toDelete: RemoteQueryHistoryItem;
-        let newSelected: RemoteQueryHistoryItem;
-
-        beforeEach(async () => {
-          // deleting the selected item automatically selects next item
-          toDelete = remoteQueryHistory[1];
-          newSelected = remoteQueryHistory[2];
-
-          queryHistoryManager = await createMockQueryHistory(
-            remoteQueryHistory,
-          );
-
-          // select the item we want
-          await queryHistoryManager.treeView.reveal(toDelete, {
-            select: true,
-          });
-          await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-            toDelete,
-          ]);
-        });
-
-        it("should remove the item", () => {
-          expect(
-            remoteQueriesManagerStub.removeRemoteQuery,
-          ).toHaveBeenCalledWith(toDelete.queryId);
-          expect(queryHistoryManager.treeDataProvider.allHistory).not.toContain(
-            toDelete,
-          );
-        });
-
-        it.skip("should change the selection", () => {
-          expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
-            newSelected,
-          );
-          expect(
-            remoteQueriesManagerStub.openRemoteQueryResults,
-          ).toHaveBeenCalledWith(newSelected.queryId);
         });
       });
     });
@@ -856,24 +695,9 @@ describe("QueryHistoryManager", () => {
   });
 
   describe("handleCancel", () => {
-    let mockCancelRemoteQuery: jest.SpiedFunction<
-      typeof ghActionsApiClient.cancelRemoteQuery
-    >;
-    const getOctokitStub = jest.fn();
-    const mockCredentials = testCredentialsWithStub(getOctokitStub);
-
-    beforeEach(async () => {
-      mockCancelRemoteQuery = jest
-        .spyOn(ghActionsApiClient, "cancelRemoteQuery")
-        .mockResolvedValue();
-    });
-
     describe("if the item is in progress", () => {
       it("should cancel a single local query", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
+        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
         // cancelling the selected item
         const inProgress1 = localQueryHistory[4];
@@ -884,10 +708,7 @@ describe("QueryHistoryManager", () => {
       });
 
       it("should cancel multiple local queries", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
+        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
         // cancelling the selected item
         const inProgress1 = localQueryHistory[4];
@@ -904,51 +725,8 @@ describe("QueryHistoryManager", () => {
         expect(cancelSpy2).toBeCalled();
       });
 
-      it("should cancel a single remote query", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
-
-        // cancelling the selected item
-        const inProgress1 = remoteQueryHistory[2];
-
-        await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
-        expect(mockCancelRemoteQuery).toBeCalledWith(
-          mockCredentials,
-          inProgress1.remoteQuery,
-        );
-      });
-
-      it("should cancel multiple remote queries", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
-
-        // cancelling the selected item
-        const inProgress1 = remoteQueryHistory[2];
-        const inProgress2 = remoteQueryHistory[3];
-
-        await queryHistoryManager.handleCancel(inProgress1, [
-          inProgress1,
-          inProgress2,
-        ]);
-        expect(mockCancelRemoteQuery).toBeCalledWith(
-          mockCredentials,
-          inProgress1.remoteQuery,
-        );
-        expect(mockCancelRemoteQuery).toBeCalledWith(
-          mockCredentials,
-          inProgress2.remoteQuery,
-        );
-      });
-
       it("should cancel a single variant analysis", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
+        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
         // cancelling the selected item
         const inProgress1 = variantAnalysisHistory[1];
@@ -961,10 +739,7 @@ describe("QueryHistoryManager", () => {
       });
 
       it("should cancel multiple variant analyses", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
+        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
         // cancelling the selected item
         const inProgress1 = variantAnalysisHistory[1];
@@ -987,10 +762,7 @@ describe("QueryHistoryManager", () => {
 
     describe("if the item is not in progress", () => {
       it("should not cancel a single local query", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
+        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
         // cancelling the selected item
         const completed = localQueryHistory[0];
@@ -1001,10 +773,7 @@ describe("QueryHistoryManager", () => {
       });
 
       it("should not cancel multiple local queries", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
+        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
         // cancelling the selected item
         const completed = localQueryHistory[0];
@@ -1018,48 +787,8 @@ describe("QueryHistoryManager", () => {
         expect(cancelSpy2).not.toBeCalledTimes(1);
       });
 
-      it("should not cancel a single remote query", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
-
-        // cancelling the selected item
-        const completed = remoteQueryHistory[0];
-
-        await queryHistoryManager.handleCancel(completed, [completed]);
-        expect(mockCancelRemoteQuery).not.toBeCalledWith(
-          mockCredentials,
-          completed.remoteQuery,
-        );
-      });
-
-      it("should not cancel multiple remote queries", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
-
-        // cancelling the selected item
-        const completed = remoteQueryHistory[0];
-        const failed = remoteQueryHistory[1];
-
-        await queryHistoryManager.handleCancel(completed, [completed, failed]);
-        expect(mockCancelRemoteQuery).not.toBeCalledWith(
-          mockCredentials,
-          completed.remoteQuery,
-        );
-        expect(mockCancelRemoteQuery).not.toBeCalledWith(
-          mockCredentials,
-          failed.remoteQuery,
-        );
-      });
-
       it("should not cancel a single variant analysis", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
+        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
         // cancelling the selected item
         const completedVariantAnalysis = variantAnalysisHistory[0];
@@ -1074,10 +803,7 @@ describe("QueryHistoryManager", () => {
       });
 
       it("should not cancel multiple variant analyses", async () => {
-        queryHistoryManager = await createMockQueryHistory(
-          localQueryHistory,
-          mockCredentials,
-        );
+        queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
         // cancelling the selected item
         const completedVariantAnalysis = variantAnalysisHistory[0];
@@ -1109,26 +835,6 @@ describe("QueryHistoryManager", () => {
       expect(executeCommandSpy).not.toBeCalled();
     });
 
-    it("should copy repo list for a single remote query", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      const item = remoteQueryHistory[1];
-      await queryHistoryManager.handleCopyRepoList(item, [item]);
-      expect(executeCommandSpy).toBeCalledWith(
-        "codeQL.copyRepoList",
-        item.queryId,
-      );
-    });
-
-    it("should not copy repo list for multiple remote queries", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      const item1 = remoteQueryHistory[1];
-      const item2 = remoteQueryHistory[3];
-      await queryHistoryManager.handleCopyRepoList(item1, [item1, item2]);
-      expect(executeCommandSpy).not.toBeCalled();
-    });
-
     it("should copy repo list for a single variant analysis", async () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
 
@@ -1157,26 +863,6 @@ describe("QueryHistoryManager", () => {
       const item = localQueryHistory[4];
       await queryHistoryManager.handleExportResults(item, [item]);
 
-      expect(executeCommandSpy).not.toBeCalled();
-    });
-
-    it("should export results for a single remote query", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      const item = remoteQueryHistory[1];
-      await queryHistoryManager.handleExportResults(item, [item]);
-      expect(executeCommandSpy).toBeCalledWith(
-        "codeQL.exportRemoteQueryResults",
-        item.queryId,
-      );
-    });
-
-    it("should not export results for multiple remote queries", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      const item1 = remoteQueryHistory[1];
-      const item2 = remoteQueryHistory[3];
-      await queryHistoryManager.handleExportResults(item1, [item1, item2]);
       expect(executeCommandSpy).not.toBeCalled();
     });
 
@@ -1459,16 +1145,11 @@ describe("QueryHistoryManager", () => {
     });
   });
 
-  async function createMockQueryHistory(
-    allHistory: QueryHistoryInfo[],
-    credentials?: Credentials,
-  ) {
+  async function createMockQueryHistory(allHistory: QueryHistoryInfo[]) {
     const qhm = new QueryHistoryManager(
-      createMockApp({ credentials }),
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
-      remoteQueriesManagerStub,
       variantAnalysisManagerStub,
       {} as EvalLogViewer,
       "xxx",

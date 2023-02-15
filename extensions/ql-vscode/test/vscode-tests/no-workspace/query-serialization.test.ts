@@ -3,7 +3,7 @@ import {
   serializeQueryHistory,
 } from "../../../src/query-serialization";
 import { join } from "path";
-import { writeFileSync, mkdirpSync } from "fs-extra";
+import { writeFileSync, mkdirpSync, writeFile } from "fs-extra";
 import { LocalQueryInfo, InitialQueryInfo } from "../../../src/query-results";
 import { QueryWithResults } from "../../../src/run-queries-shared";
 import { DatabaseInfo } from "../../../src/pure/interface-types";
@@ -11,11 +11,10 @@ import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../src/helpers";
 import { QueryResultType } from "../../../src/pure/legacy-messages";
 import { QueryInProgress } from "../../../src/legacy-query-server/run-queries";
-import { RemoteQueryHistoryItem } from "../../../src/remote-queries/remote-query-history-item";
 import { VariantAnalysisHistoryItem } from "../../../src/query-history/variant-analysis-history-item";
 import { QueryHistoryInfo } from "../../../src/query-history/query-history-info";
-import { createMockRemoteQueryHistoryItem } from "../../factories/query-history/remote-query-history-item";
 import { createMockVariantAnalysisHistoryItem } from "../../factories/query-history/variant-analysis-history-item";
+import { nanoid } from "nanoid";
 
 describe("serialize and deserialize", () => {
   let infoSuccessRaw: LocalQueryInfo;
@@ -24,13 +23,11 @@ describe("serialize and deserialize", () => {
   let infoLateFailure: LocalQueryInfo;
   let infoInProgress: LocalQueryInfo;
 
-  let remoteQuery1: RemoteQueryHistoryItem;
-  let remoteQuery2: RemoteQueryHistoryItem;
-
   let variantAnalysis1: VariantAnalysisHistoryItem;
   let variantAnalysis2: VariantAnalysisHistoryItem;
 
   let allHistory: QueryHistoryInfo[];
+  let expectedHistory: QueryHistoryInfo[];
   let queryPath: string;
   let cnt = 0;
 
@@ -70,9 +67,6 @@ describe("serialize and deserialize", () => {
     );
     infoInProgress = createMockFullQueryInfo("e");
 
-    remoteQuery1 = createMockRemoteQueryHistoryItem({});
-    remoteQuery2 = createMockRemoteQueryHistoryItem({});
-
     variantAnalysis1 = createMockVariantAnalysisHistoryItem({});
     variantAnalysis2 = createMockVariantAnalysisHistoryItem({});
 
@@ -82,25 +76,21 @@ describe("serialize and deserialize", () => {
       infoEarlyFailure,
       infoLateFailure,
       infoInProgress,
-      remoteQuery1,
-      remoteQuery2,
+      variantAnalysis1,
+      variantAnalysis2,
+    ];
+
+    // the expected results only contains the history with completed queries
+    expectedHistory = [
+      infoSuccessRaw,
+      infoSuccessInterpreted,
+      infoLateFailure,
       variantAnalysis1,
       variantAnalysis2,
     ];
   });
 
   it("should serialize and deserialize query history", async () => {
-    // the expected results only contains the history with completed queries
-    const expectedHistory = [
-      infoSuccessRaw,
-      infoSuccessInterpreted,
-      infoLateFailure,
-      remoteQuery1,
-      remoteQuery2,
-      variantAnalysis1,
-      variantAnalysis2,
-    ];
-
     const allHistoryPath = join(tmpDir.name, "workspace-query-history.json");
 
     // serialize and deserialize
@@ -135,6 +125,61 @@ describe("serialize and deserialize", () => {
       expect(allHistoryActual[i]).toEqual(expectedHistory[i]);
     }
     expect(allHistoryActual.length).toEqual(expectedHistory.length);
+  });
+
+  it("should remove remote queries from the history", async () => {
+    const path = join(tmpDir.name, "query-history-with-remote.json");
+    await writeFile(
+      path,
+      JSON.stringify({
+        version: 2,
+        queries: [
+          ...allHistory,
+          {
+            t: "remote",
+            status: "InProgress",
+            completed: false,
+            queryId: nanoid(),
+            remoteQuery: {
+              queryName: "query-name",
+              queryFilePath: "query-file.ql",
+              queryText: "select 1",
+              language: "javascript",
+              controllerRepository: {
+                owner: "github",
+                name: "vscode-codeql-integration-tests",
+              },
+              executionStartTime: Date.now(),
+              actionsWorkflowRunId: 1,
+              repositoryCount: 0,
+            },
+          },
+          {
+            t: "remote",
+            status: "Completed",
+            completed: true,
+            queryId: nanoid(),
+            remoteQuery: {
+              queryName: "query-name",
+              queryFilePath: "query-file.ql",
+              queryText: "select 1",
+              language: "javascript",
+              controllerRepository: {
+                owner: "github",
+                name: "vscode-codeql-integration-tests",
+              },
+              executionStartTime: Date.now(),
+              actionsWorkflowRunId: 1,
+              repositoryCount: 0,
+            },
+          },
+        ],
+      }),
+      "utf8",
+    );
+
+    const actual = await deserializeQueryHistory(path);
+    expect(actual.length).toEqual(expectedHistory.length);
   });
 
   it("should handle an invalid query history version", async () => {

@@ -99,10 +99,10 @@ We have several types of tests:
 * View tests: these live in `src/view/variant-analysis/__tests__/`
 * VSCode integration tests:
   * `test/vscode-tests/activated-extension` tests: These are intended to cover functionality that require the full extension to be activated but don't require the CLI. This suite is not run against multiple versions of the CLI in CI.
-  * `test/vscode-tests/no-workspace` tests: These are intended to cover functionality that is meant to work before you even have a workspace open but don't require the extension to be activated.
+  * `test/vscode-tests/no-workspace` tests: These are intended to cover functionality around not having a workspace. The extension is not activated in these tests.
   * `test/vscode-tests/minimal-workspace` tests: These are intended to cover functionality that need a workspace but don't require the full extension to be activated.
 * CLI integration tests: these live in `test/vscode-tests/cli-integration`
-  * These tests are intended to be cover functionality that is related to the integration between the CodeQL CLI and the extension. These tests are run against all supported versions of the CLI in CI.
+  * These tests are intended to cover functionality that is related to the integration between the CodeQL CLI and the extension. These tests are run against each supported versions of the CLI in CI.
 
 The CLI integration tests require an instance of the CodeQL CLI to run so they will require some extra setup steps. When adding new tests to our test suite, please be mindful of whether they need to be in the cli-integration folder. If the tests don't depend on the CLI, they are better suited to being a VSCode integration test.
 
@@ -229,6 +229,13 @@ Pre-recorded scenarios are stored in `./src/mocks/scenarios`. However, it's poss
 1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
     * Go through all recent PRs and make sure they are properly accounted for.
     * Make sure all changelog entries have links back to their PR(s) if appropriate.
+    * For picking the new version number, we default to increasing the patch version number, but make our own judgement about whether a change is big enough to warrant a minor version bump. Common reasons for a minor bump could include:
+      * Making substantial new features available to all users. This can include lifting a feature flag.
+      * Breakage in compatibility with recent versions of the CLI.
+      * Minimum required version of VS Code is increased.
+      * New telemetry events are added.
+      * Deprecation or removal of commands.
+      * Accumulation of many changes, none of which are individually big enough to warrant a minor bump, but which together are. This does not include changes which are purely internal to the extension, such as refactoring, or which are only available behind a feature flag.
 1. Double-check that the node version we're using matches the one used for VS Code. If it doesn't, you will then need to update the node version in the following files:
     * `.nvmrc` - this will enable `nvm` to automatically switch to the correct node version when you're in the project folder
     * `.github/workflows/main.yml` - all the "node-version: <version>" settings

@@ -2,8 +2,8 @@ import { join } from "path";
 import { ensureDir, writeFile } from "fs-extra";
 
 import {
-  commands,
   CancellationToken,
+  commands,
   Uri,
   ViewColumn,
   window,
@@ -14,15 +14,11 @@ import { showInformationMessageWithAction } from "../helpers";
 import { extLogger } from "../common";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
 import { createGist } from "./gh-api/gh-api-client";
-import { RemoteQueriesManager } from "./remote-queries-manager";
 import {
-  generateMarkdown,
   generateVariantAnalysisMarkdown,
   MarkdownFile,
   RepositorySummary,
 } from "./remote-queries-markdown-generation";
-import { RemoteQuery } from "./remote-query";
-import { AnalysisResults, sumAnalysesResults } from "./shared/analysis-result";
 import { pluralize } from "../pure/word";
 import { VariantAnalysisManager } from "./variant-analysis-manager";
 import { assertNever } from "../pure/helpers-pure";
@@ -51,12 +47,7 @@ export async function exportSelectedRemoteQueryResults(
     );
   }
 
-  if (queryHistoryItem.t === "remote") {
-    return commands.executeCommand(
-      "codeQL.exportRemoteQueryResults",
-      queryHistoryItem.queryId,
-    );
-  } else if (queryHistoryItem.t === "variant-analysis") {
+  if (queryHistoryItem.t === "variant-analysis") {
     return commands.executeCommand(
       "codeQL.exportVariantAnalysisResults",
       queryHistoryItem.variantAnalysis.id,
@@ -64,73 +55,6 @@ export async function exportSelectedRemoteQueryResults(
   } else {
     assertNever(queryHistoryItem);
   }
-}
-
-/**
- * Exports the results of the given remote query.
- * The user is prompted to select the export format.
- */
-export async function exportRemoteQueryResults(
-  queryHistoryManager: QueryHistoryManager,
-  remoteQueriesManager: RemoteQueriesManager,
-  queryId: string,
-  credentials: Credentials,
-): Promise<void> {
-  const queryHistoryItem = queryHistoryManager.getRemoteQueryById(queryId);
-  if (!queryHistoryItem) {
-    void extLogger.log(`Could not find query with id ${queryId}`);
-    throw new Error(
-      "There was an error when trying to retrieve variant analysis information",
-    );
-  }
-
-  if (!queryHistoryItem.completed) {
-    throw new Error("Variant analysis results are not yet available.");
-  }
-
-  void extLogger.log(
-    `Exporting variant analysis results for query: ${queryHistoryItem.queryId}`,
-  );
-  const query = queryHistoryItem.remoteQuery;
-  const analysesResults = remoteQueriesManager.getAnalysesResults(
-    queryHistoryItem.queryId,
-  );
-
-  const exportFormat = await determineExportFormat();
-  if (!exportFormat) {
-    return;
-  }
-
-  const exportDirectory =
-    await queryHistoryManager.getQueryHistoryItemDirectory(queryHistoryItem);
-  const exportedResultsDirectory = join(exportDirectory, "exported-results");
-
-  await exportRemoteQueryAnalysisResults(
-    exportedResultsDirectory,
-    query,
-    analysesResults,
-    exportFormat,
-    credentials,
-  );
-}
-
-export async function exportRemoteQueryAnalysisResults(
-  exportedResultsPath: string,
-  query: RemoteQuery,
-  analysesResults: AnalysisResults[],
-  exportFormat: "gist" | "local",
-  credentials: Credentials,
-) {
-  const description = buildGistDescription(query, analysesResults);
-  const markdownFiles = generateMarkdown(query, analysesResults, exportFormat);
-
-  await exportResults(
-    exportedResultsPath,
-    description,
-    markdownFiles,
-    exportFormat,
-    credentials,
-  );
 }
 
 const MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS = 2;
@@ -395,22 +319,6 @@ export async function exportToGist(
     });
   }
 }
-
-/**
- * Builds Gist description
- * Ex: Empty Block (Go) x results (y repositories)
- */
-const buildGistDescription = (
-  query: RemoteQuery,
-  analysesResults: AnalysisResults[],
-) => {
-  const resultCount = sumAnalysesResults(analysesResults);
-  const resultLabel = pluralize(resultCount, "result", "results");
-  const repositoryLabel = query.repositoryCount
-    ? `(${pluralize(query.repositoryCount, "repository", "repositories")})`
-    : "";
-  return `${query.queryName} (${query.language}) ${resultLabel} ${repositoryLabel}`;
-};
 
 /**
  * Builds Gist description

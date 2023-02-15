@@ -23,6 +23,7 @@ import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
+import { getQlPackPath } from "./pure/ql";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -387,17 +388,22 @@ async function findDbschemePack(
 ): Promise<{ name: string; isLibraryPack: boolean }> {
   for (const { packDir, packName } of packs) {
     if (packDir !== undefined) {
-      const qlpack = load(
-        await readFile(join(packDir, "qlpack.yml"), "utf8"),
-      ) as { dbscheme?: string; library?: boolean };
-      if (
-        qlpack.dbscheme !== undefined &&
-        basename(qlpack.dbscheme) === basename(dbschemePath)
-      ) {
-        return {
-          name: packName,
-          isLibraryPack: qlpack.library === true,
+      const qlpackPath = await getQlPackPath(packDir);
+
+      if (qlpackPath !== undefined) {
+        const qlpack = load(await readFile(qlpackPath, "utf8")) as {
+          dbscheme?: string;
+          library?: boolean;
         };
+        if (
+          qlpack.dbscheme !== undefined &&
+          basename(qlpack.dbscheme) === basename(dbschemePath)
+        ) {
+          return {
+            name: packName,
+            isLibraryPack: qlpack.library === true,
+          };
+        }
       }
     }
   }

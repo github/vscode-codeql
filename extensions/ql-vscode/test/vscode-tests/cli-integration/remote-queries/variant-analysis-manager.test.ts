@@ -78,9 +78,6 @@ describe("Variant Analysis Manager", () => {
 
   beforeEach(async () => {
     jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
-    jest
-      .spyOn(config, "isVariantAnalysisLiveResultsEnabled")
-      .mockReturnValue(false);
 
     cancellationTokenSource = new CancellationTokenSource();
 

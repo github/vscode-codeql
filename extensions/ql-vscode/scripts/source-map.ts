@@ -20,6 +20,7 @@ import { spawnSync } from "child_process";
 import { basename, resolve } from "path";
 import { pathExists, readJSON } from "fs-extra";
 import { RawSourceMap, SourceMapConsumer } from "source-map";
+import { Open } from "unzipper";
 
 if (process.argv.length !== 4) {
   console.error(
@@ -36,6 +37,12 @@ const versionNumber = process.argv[2].startsWith("v")
 const stacktrace = process.argv[3];
 
 async function extractSourceMap() {
+  const releaseAssetsDirectory = resolve(
+    __dirname,
+    "..",
+    "release-assets",
+    versionNumber,
+  );
   const sourceMapsDirectory = resolve(
     __dirname,
     "..",
@@ -47,34 +54,64 @@ async function extractSourceMap() {
   if (!(await pathExists(sourceMapsDirectory))) {
     console.log("Downloading source maps...");
 
-    const workflowRuns = runGhJSON<WorkflowRunListItem[]>([
-      "run",
-      "list",
-      "--workflow",
-      "release.yml",
-      "--branch",
+    const release = runGhJSON<Release>([
+      "release",
+      "view",
       versionNumber,
       "--json",
-      "databaseId,number",
+      "id,name,assets",
     ]);
 
-    if (workflowRuns.length !== 1) {
-      throw new Error(
-        `Expected exactly one workflow run for ${versionNumber}, got ${workflowRuns.length}`,
+    const sourcemapAsset = release.assets.find(
+      (asset) => asset.name === `vscode-codeql-sourcemaps-${versionNumber}.zip`,
+    );
+
+    if (sourcemapAsset) {
+      // This downloads a ZIP file of the source maps
+      runGh([
+        "release",
+        "download",
+        versionNumber,
+        "--pattern",
+        sourcemapAsset.name,
+        "--dir",
+        releaseAssetsDirectory,
+      ]);
+
+      const file = await Open.file(
+        resolve(releaseAssetsDirectory, sourcemapAsset.name),
       );
+      await file.extract({ path: sourceMapsDirectory });
+    } else {
+      const workflowRuns = runGhJSON<WorkflowRunListItem[]>([
+        "run",
+        "list",
+        "--workflow",
+        "release.yml",
+        "--branch",
+        versionNumber,
+        "--json",
+        "databaseId,number",
+      ]);
+
+      if (workflowRuns.length !== 1) {
+        throw new Error(
+          `Expected exactly one workflow run for ${versionNumber}, got ${workflowRuns.length}`,
+        );
+      }
+
+      const workflowRun = workflowRuns[0];
+
+      runGh([
+        "run",
+        "download",
+        workflowRun.databaseId.toString(),
+        "--name",
+        "vscode-codeql-sourcemaps",
+        "--dir",
+        sourceMapsDirectory,
+      ]);
     }
-
-    const workflowRun = workflowRuns[0];
-
-    runGh([
-      "run",
-      "download",
-      workflowRun.databaseId.toString(),
-      "--name",
-      "vscode-codeql-sourcemaps",
-      "--dir",
-      sourceMapsDirectory,
-    ]);
   }
 
   if (stacktrace.includes("at")) {
@@ -171,6 +208,17 @@ function runGh(args: readonly string[]): string {
 function runGhJSON<T>(args: readonly string[]): T {
   return JSON.parse(runGh(args));
 }
+
+type ReleaseAsset = {
+  id: string;
+  name: string;
+};
+
+type Release = {
+  id: string;
+  name: string;
+  assets: ReleaseAsset[];
+};
 
 type WorkflowRunListItem = {
   databaseId: number;

@@ -1,6 +1,5 @@
 import { CancellationTokenSource, commands, extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../../../src/extension";
-import * as config from "../../../../src/config";
 
 import * as ghApiClient from "../../../../src/remote-queries/gh-api/gh-api-client";
 import { VariantAnalysisMonitor } from "../../../../src/remote-queries/variant-analysis-monitor";
@@ -46,10 +45,6 @@ describe("Variant Analysis Monitor", () => {
   const onVariantAnalysisChangeSpy = jest.fn();
 
   beforeEach(async () => {
-    jest
-      .spyOn(config, "isVariantAnalysisLiveResultsEnabled")
-      .mockReturnValue(false);
-
     cancellationTokenSource = new CancellationTokenSource();
 
     variantAnalysis = createMockVariantAnalysis({});

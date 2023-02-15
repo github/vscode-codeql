@@ -236,8 +236,6 @@ export class HistoryTreeDataProvider
     switch (item.t) {
       case "local":
         return item.initialInfo.start.getTime();
-      case "remote":
-        return item.remoteQuery.executionStartTime;
       case "variant-analysis":
         return item.variantAnalysis.executionStartTime;
       default:

@@ -254,6 +254,11 @@ export class DbPanel extends DisposableObject {
         "Not a selectable database item. Please select a valid item.",
       );
     }
+
+    // Optimistically update the UI to select the item that the user
+    // selected to avoid delay in the UI.
+    this.dataProvider.updateSelectedItem(treeViewItem);
+
     await this.dbManager.setSelectedDbItem(treeViewItem.dbItem);
   }
 

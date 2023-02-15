@@ -364,8 +364,8 @@
       },
       {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
-        "title": "Open Database Configuration File",
-        "icon": "$(edit)"
+        "title": "Open database configuration file",
+        "icon": "$(json)"
       },
       {
         "command": "codeQLVariantAnalysisRepositories.addNewDatabase",
@@ -379,7 +379,7 @@
       },
       {
         "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
-        "title": "✓"
+        "title": "Select"
       },
       {
         "command": "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
@@ -463,7 +463,7 @@
       },
       {
         "command": "codeQLDatabases.setCurrentDatabase",
-        "title": "Set Current Database"
+        "title": "Select"
       },
       {
         "command": "codeQLDatabases.removeDatabase",
@@ -822,7 +822,7 @@
         },
         {
           "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
-          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/ && false",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeSelected/",
           "group": "inline"
         },
         {
@@ -1326,7 +1326,7 @@
   "scripts": {
     "build": "gulp",
     "watch": "gulp watch",
-    "test": "npm-run-all -p test:*",
+    "test": "npm-run-all test:*",
     "test:unit": "cross-env TZ=UTC LANG=en-US jest --projects test/unit-tests",
     "test:view": "jest --projects src/view",
     "test:vscode-integration": "npm-run-all test:vscode-integration:*",
