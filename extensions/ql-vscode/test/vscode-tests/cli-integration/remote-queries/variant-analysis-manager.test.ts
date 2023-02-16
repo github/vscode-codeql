@@ -112,7 +112,6 @@ describe("Variant Analysis Manager", () => {
 
   describe("runVariantAnalysis", () => {
     const progress = jest.fn();
-    let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
     let mockGetRepositoryFromNwo: jest.SpiedFunction<
       typeof ghApiClient.getRepositoryFromNwo
     >;
@@ -133,12 +132,8 @@ describe("Variant Analysis Manager", () => {
     }
 
     beforeEach(async () => {
-      // Should not have asked for a language
-      showQuickPickSpy = jest
+      jest
         .spyOn(window, "showQuickPick")
-        .mockResolvedValueOnce({
-          repositories: ["github/vscode-codeql"],
-        } as unknown as QuickPickItem)
         .mockResolvedValueOnce("javascript" as unknown as QuickPickItem);
 
       cancellationTokenSource = new CancellationTokenSource();
@@ -196,8 +191,6 @@ describe("Variant Analysis Manager", () => {
           status: VariantAnalysisStatus.InProgress,
         }),
       );
-
-      expect(showQuickPickSpy).toBeCalledTimes(1);
 
       expect(mockGetRepositoryFromNwo).toBeCalledTimes(1);
       expect(mockSubmitVariantAnalysis).toBeCalledTimes(1);
@@ -991,6 +984,12 @@ describe("Variant Analysis Manager", () => {
         });
       });
       describe("variantAnalysisReposPanel false", () => {
+        beforeEach(() => {
+          jest
+            .spyOn(config, "isVariantAnalysisReposPanelEnabled")
+            .mockReturnValue(false);
+        });
+
         it("should be valid JSON when put in object", async () => {
           await variantAnalysisManager.copyRepoListToClipboard(
             variantAnalysis.id,
