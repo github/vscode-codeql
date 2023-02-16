@@ -15,6 +15,7 @@ import {
   renameRemoteList,
   SelectedDbItem,
   DB_CONFIG_VERSION,
+  SelectedDbItemKind,
 } from "./db-config";
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
@@ -471,6 +472,10 @@ export class DbConfigStore extends DisposableObject {
           lists: [],
           databases: [],
         },
+      },
+      selected: {
+        kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList,
+        listName: "top_10",
       },
     };
   }
