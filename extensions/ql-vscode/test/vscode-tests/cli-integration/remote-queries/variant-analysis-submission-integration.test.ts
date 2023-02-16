@@ -35,7 +35,6 @@ async function showQlDocument(name: string): Promise<TextDocument> {
 
 describe("Variant Analysis Submission Integration", () => {
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
-  let inputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
   let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
   let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;
 
@@ -55,9 +54,6 @@ describe("Variant Analysis Submission Integration", () => {
 
     quickPickSpy = jest
       .spyOn(window, "showQuickPick")
-      .mockResolvedValue(undefined);
-    inputBoxSpy = jest
-      .spyOn(window, "showInputBox")
       .mockResolvedValue(undefined);
     executeCommandSpy = jest.spyOn(commands, "executeCommand");
     showErrorMessageSpy = jest
@@ -79,12 +75,6 @@ describe("Variant Analysis Submission Integration", () => {
     it("opens the variant analysis view", async () => {
       await showQlDocument("query.ql");
 
-      // Select a repository list
-      quickPickSpy.mockResolvedValueOnce({
-        useCustomRepo: true,
-      } as unknown as QuickPickItem);
-      // Enter a GitHub repository
-      inputBoxSpy.mockResolvedValueOnce("github/codeql");
       // Select target language for your query
       quickPickSpy.mockResolvedValueOnce(
         "javascript" as unknown as QuickPickItem,
@@ -107,13 +97,6 @@ describe("Variant Analysis Submission Integration", () => {
     it("shows the error message", async () => {
       await showQlDocument("query.ql");
 
-      // Select a repository list
-      quickPickSpy.mockResolvedValueOnce({
-        useCustomRepo: true,
-      } as unknown as QuickPickItem);
-      // Enter a GitHub repository
-      inputBoxSpy.mockResolvedValueOnce("github/codeql");
-
       await commands.executeCommand("codeQL.runVariantAnalysis");
 
       expect(showErrorMessageSpy).toHaveBeenCalledWith(
@@ -133,12 +116,6 @@ describe("Variant Analysis Submission Integration", () => {
     it("shows the error message", async () => {
       await showQlDocument("query.ql");
 
-      // Select a repository list
-      quickPickSpy.mockResolvedValueOnce({
-        useCustomRepo: true,
-      } as unknown as QuickPickItem);
-      // Enter a GitHub repository
-      inputBoxSpy.mockResolvedValueOnce("github/codeql");
       // Select target language for your query
       quickPickSpy.mockResolvedValueOnce(
         "javascript" as unknown as QuickPickItem,
