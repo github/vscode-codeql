@@ -10,7 +10,6 @@ import {
   languages,
   ProgressLocation,
   ProgressOptions,
-  ProviderResult,
   QuickPickItem,
   Range,
   Uri,
@@ -101,14 +100,13 @@ import {
   withProgress,
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
-import { URLSearchParams } from "url";
 import {
   handleDownloadPacks,
   handleInstallPackDependencies,
 } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import {
-  exportSelectedRemoteQueryResults,
+  exportSelectedVariantAnalysisResults,
   exportVariantAnalysisResults,
 } from "./remote-queries/export-results";
 import { EvalLogViewer } from "./eval-log-viewer";
@@ -1077,8 +1075,6 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  registerRemoteQueryTextProvider();
-
   // The "runVariantAnalysis" command is internal-only.
   ctx.subscriptions.push(
     commandRunnerWithProgress(
@@ -1177,7 +1173,7 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
-      await exportSelectedRemoteQueryResults(qhm);
+      await exportSelectedVariantAnalysisResults(qhm);
     }),
   );
 
@@ -1612,21 +1608,6 @@ async function initializeLogging(ctx: ExtensionContext): Promise<void> {
 }
 
 const checkForUpdatesCommand = "codeQL.checkForUpdatesToCLI";
-
-/**
- * This text provider lets us open readonly files in the editor.
- *
- * TODO: Consolidate this with the 'codeql' text provider in query-history-manager.ts.
- */
-function registerRemoteQueryTextProvider() {
-  workspace.registerTextDocumentContentProvider("remote-query", {
-    provideTextDocumentContent(uri: Uri): ProviderResult<string> {
-      const params = new URLSearchParams(uri.query);
-
-      return params.get("queryText");
-    },
-  });
-}
 
 const avoidVersionCheck = "avoid-version-check-at-startup";
 const lastVersionChecked = "last-version-checked";

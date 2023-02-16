@@ -1,9 +1,4 @@
 import * as sarif from "sarif";
-import { AnalysisResults } from "../remote-queries/shared/analysis-result";
-import {
-  AnalysisSummary,
-  RemoteQueryResult,
-} from "../remote-queries/shared/remote-query-result";
 import {
   RawResultSet,
   ResultRow,
@@ -56,13 +51,6 @@ export interface QueryMetadata {
   id?: string;
   kind?: string;
   scored?: string;
-}
-
-export interface PreviousExecution {
-  queryName: string;
-  time: string;
-  databaseName: string;
-  durationSeconds: number;
 }
 
 export type SarifInterpretationData = {
@@ -222,11 +210,6 @@ export interface OpenFileMsg {
   filePath: string;
 }
 
-export interface OpenVirtualFileMsg {
-  t: "openVirtualFile";
-  queryText: string;
-}
-
 /**
  * Message from the results view to toggle the display of
  * query diagnostics.
@@ -353,12 +336,6 @@ export interface SetComparisonsMessage {
   readonly databaseUri: string;
 }
 
-export enum DiffKind {
-  Add = "Add",
-  Remove = "Remove",
-  Change = "Change",
-}
-
 /**
  * from is the set of rows that have changes in the "from" query.
  * to is the set of rows that have changes in the "to" query.
@@ -405,56 +382,6 @@ export interface ParsedResultSets {
   selectedTable?: string; // when undefined, means 'show default table'
   resultSetNames: string[];
   resultSet: ResultSet;
-}
-
-export type FromRemoteQueriesMessage =
-  | ViewLoadedMsg
-  | RemoteQueryErrorMessage
-  | OpenFileMsg
-  | OpenVirtualFileMsg
-  | RemoteQueryDownloadAnalysisResultsMessage
-  | RemoteQueryDownloadAllAnalysesResultsMessage
-  | RemoteQueryExportResultsMessage
-  | CopyRepoListMessage
-  | TelemetryMessage;
-
-export type ToRemoteQueriesMessage =
-  | SetRemoteQueryResultMessage
-  | SetAnalysesResultsMessage;
-
-export interface SetRemoteQueryResultMessage {
-  t: "setRemoteQueryResult";
-  queryResult: RemoteQueryResult;
-}
-
-export interface SetAnalysesResultsMessage {
-  t: "setAnalysesResults";
-  analysesResults: AnalysisResults[];
-}
-
-export interface RemoteQueryErrorMessage {
-  t: "remoteQueryError";
-  error: string;
-}
-
-export interface RemoteQueryDownloadAnalysisResultsMessage {
-  t: "remoteQueryDownloadAnalysisResults";
-  analysisSummary: AnalysisSummary;
-}
-
-export interface RemoteQueryDownloadAllAnalysesResultsMessage {
-  t: "remoteQueryDownloadAllAnalysesResults";
-  analysisSummaries: AnalysisSummary[];
-}
-
-export interface RemoteQueryExportResultsMessage {
-  t: "remoteQueryExportResults";
-  queryId: string;
-}
-
-export interface CopyRepoListMessage {
-  t: "copyRepoList";
-  queryId: string;
 }
 
 export interface SetVariantAnalysisMessage {

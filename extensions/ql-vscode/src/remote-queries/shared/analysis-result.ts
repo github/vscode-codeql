@@ -1,17 +1,5 @@
 import { RawResultSet, ResultSetSchema } from "../../pure/bqrs-cli-types";
 
-export type AnalysisResultStatus = "InProgress" | "Completed" | "Failed";
-
-export interface AnalysisResults {
-  nwo: string;
-  status: AnalysisResultStatus;
-  interpretedResults: AnalysisAlert[];
-  rawResults?: AnalysisRawResults;
-  resultCount: number;
-  starCount?: number;
-  lastUpdated?: number;
-}
-
 export interface AnalysisRawResults {
   schema: ResultSetSchema;
   resultSet: RawResultSet;
@@ -82,19 +70,3 @@ export interface AnalysisMessageLocationToken {
 }
 
 export type ResultSeverity = "Recommendation" | "Warning" | "Error";
-
-/**
- * Returns the number of (raw + interpreted) results for an analysis.
- */
-export const getAnalysisResultCount = (
-  analysisResults: AnalysisResults,
-): number => {
-  const rawResultCount = analysisResults.rawResults?.resultSet.rows.length || 0;
-  return analysisResults.interpretedResults.length + rawResultCount;
-};
-
-/**
- * Returns the total number of results for an analysis by adding all individual repo results.
- */
-export const sumAnalysesResults = (analysesResults: AnalysisResults[]) =>
-  analysesResults.reduce((acc, curr) => acc + getAnalysisResultCount(curr), 0);

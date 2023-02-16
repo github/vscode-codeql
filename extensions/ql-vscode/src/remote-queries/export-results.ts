@@ -21,7 +21,6 @@ import {
 } from "./markdown-generation";
 import { pluralize } from "../pure/word";
 import { VariantAnalysisManager } from "./variant-analysis-manager";
-import { assertNever } from "../pure/helpers-pure";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
@@ -35,32 +34,28 @@ import {
 import { Credentials } from "../common/authentication";
 
 /**
- * Exports the results of the currently-selected remote query or variant analysis.
+ * Exports the results of the currently-selected variant analysis.
  */
-export async function exportSelectedRemoteQueryResults(
+export async function exportSelectedVariantAnalysisResults(
   queryHistoryManager: QueryHistoryManager,
 ): Promise<void> {
   const queryHistoryItem = queryHistoryManager.getCurrentQueryHistoryItem();
-  if (!queryHistoryItem || queryHistoryItem.t === "local") {
+  if (!queryHistoryItem || queryHistoryItem.t !== "variant-analysis") {
     throw new Error(
       "No variant analysis results currently open. To open results, click an item in the query history view.",
     );
   }
 
-  if (queryHistoryItem.t === "variant-analysis") {
-    return commands.executeCommand(
-      "codeQL.exportVariantAnalysisResults",
-      queryHistoryItem.variantAnalysis.id,
-    );
-  } else {
-    assertNever(queryHistoryItem);
-  }
+  return commands.executeCommand(
+    "codeQL.exportVariantAnalysisResults",
+    queryHistoryItem.variantAnalysis.id,
+  );
 }
 
 const MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS = 2;
 
 /**
- * Exports the results of the given or currently-selected remote query.
+ * Exports the results of the given or currently-selected variant analysis.
  * The user is prompted to select the export format.
  */
 export async function exportVariantAnalysisResults(
