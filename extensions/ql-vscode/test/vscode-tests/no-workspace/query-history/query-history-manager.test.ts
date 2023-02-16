@@ -497,7 +497,7 @@ describe("QueryHistoryManager", () => {
             ]);
 
             expect(showBinaryChoiceDialogSpy).toHaveBeenCalledWith(
-              "You are about to delete this query: query-name. Are you sure?",
+              "You are about to delete this query: a-query-name (javascript). Are you sure?",
             );
           });
 
@@ -581,7 +581,7 @@ describe("QueryHistoryManager", () => {
 
           it("should show a modal asking 'Are you sure?'", () => {
             expect(showBinaryChoiceDialogSpy).toHaveBeenCalledWith(
-              "You are about to delete this query: query-name. Are you sure?",
+              "You are about to delete this query: a-query-name (javascript). Are you sure?",
             );
           });
         });

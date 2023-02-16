@@ -15,7 +15,7 @@ import { humanizeQueryStatus } from "../query-status";
 interface InterpolateReplacements {
   t: string; // Start time
   q: string; // Query name
-  d: string; // Database/Controller repo name
+  d: string; // Database/repositories count
   r: string; // Result count/Empty
   s: string; // Status
   f: string; // Query file name
