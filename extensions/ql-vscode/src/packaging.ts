@@ -9,7 +9,7 @@ import { ProgressCallback, UserCancellationException } from "./commandRunner";
 import { extLogger } from "./common";
 import { asError, getErrorStack } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
-import { PACKS_BY_QUERY_LANGUAGE } from "./types/query-language";
+import { PACKS_BY_QUERY_LANGUAGE } from "./common/query-language";
 
 /**
  * Prompts user to choose packs to download, and downloads them.

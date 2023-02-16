@@ -24,7 +24,7 @@ import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
 import { getQlPackPath } from "./pure/ql";
-import { dbSchemeToLanguage } from "./types/query-language";
+import { dbSchemeToLanguage } from "./common/query-language";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({

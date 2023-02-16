@@ -8,7 +8,7 @@ import {
 import { createMockScannedRepos } from "./scanned-repositories";
 import { createMockSkippedRepos } from "./skipped-repositories";
 import { createMockRepository } from "./repository";
-import { QueryLanguage } from "../../../../src/types/query-language";
+import { QueryLanguage } from "../../../../src/common/query-languagee";
 
 export function createMockVariantAnalysis({
   status = VariantAnalysisStatus.InProgress,

@@ -10,7 +10,7 @@ import {
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
 } from "../../../src/variant-analysis/shared/variant-analysis";
-import { QueryLanguage } from "../../../src/types/query-language";
+import { QueryLanguage } from "../../../src/common/query-language";
 import {
   AnalysisAlert,
   AnalysisRawResults,

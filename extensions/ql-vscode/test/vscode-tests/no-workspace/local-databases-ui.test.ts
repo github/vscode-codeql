@@ -12,7 +12,7 @@ import { Uri } from "vscode";
 import { DatabaseUI } from "../../../src/local-databases-ui";
 import { testDisposeHandler } from "../test-dispose-handler";
 import { createMockApp } from "../../__mocks__/appMock";
-import { QueryLanguage } from "../../../src/types/query-language";
+import { QueryLanguage } from "../../../src/common/query-languagee";
 
 describe("local-databases-ui", () => {
   describe("fixDbUri", () => {

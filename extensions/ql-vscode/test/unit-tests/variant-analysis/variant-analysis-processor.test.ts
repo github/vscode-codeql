@@ -17,7 +17,7 @@ import { createMockSkippedRepos } from "../../factories/variant-analysis/gh-api/
 import { createMockApiResponse } from "../../factories/variant-analysis/gh-api/variant-analysis-api-response";
 import { createMockSubmission } from "../../factories/variant-analysis/shared/variant-analysis-submission";
 import { createMockVariantAnalysisRepoTask } from "../../factories/variant-analysis/gh-api/variant-analysis-repo-task";
-import { QueryLanguage } from "../../../src/types/query-language";
+import { QueryLanguage } from "../../../src/common/query-language";
 
 describe(processVariantAnalysis.name, () => {
   const scannedRepos = createMockScannedRepos();

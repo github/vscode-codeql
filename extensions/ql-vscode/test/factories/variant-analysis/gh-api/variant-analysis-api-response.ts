@@ -5,7 +5,7 @@ import {
   VariantAnalysisSkippedRepositories,
   VariantAnalysisStatus,
 } from "../../../../src/variant-analysis/gh-api/variant-analysis";
-import { QueryLanguage } from "../../../../src/types/query-language";
+import { QueryLanguage } from "../../../../src/common/query-language";
 import { createMockScannedRepos } from "./scanned-repositories";
 import { createMockSkippedRepos } from "./skipped-repositories";
 import { createMockRepository } from "./repository";

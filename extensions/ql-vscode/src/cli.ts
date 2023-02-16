@@ -28,7 +28,7 @@ import { CompilationMessage } from "./pure/legacy-messages";
 import { sarifParser } from "./sarif-parser";
 import { walkDirectory } from "./helpers";
 import { App } from "./common/app";
-import { QueryLanguage } from "./types/query-language";
+import { QueryLanguage } from "./common/query-language";
 
 /**
  * The version of the SARIF format that we are using.

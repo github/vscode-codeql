@@ -27,7 +27,7 @@ import { pathsEqual } from "./pure/files";
 import { redactableError } from "./pure/errors";
 import { isCodespacesTemplate } from "./config";
 import { QlPackGenerator } from "./qlpack-generator";
-import { QueryLanguage } from "./types/query-language";
+import { QueryLanguage } from "./common/query-language";
 
 /**
  * databases.ts

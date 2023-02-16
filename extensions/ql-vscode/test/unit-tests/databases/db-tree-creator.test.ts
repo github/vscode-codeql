@@ -16,7 +16,7 @@ import {
   createLocalTree,
   createRemoteTree,
 } from "../../../src/databases/db-tree-creator";
-import { QueryLanguage } from "../../../src/types/query-language";
+import { QueryLanguage } from "../../../src/common/query-languagee";
 import { createDbConfig } from "../../factories/db-config-factories";
 
 describe("db tree creator", () => {

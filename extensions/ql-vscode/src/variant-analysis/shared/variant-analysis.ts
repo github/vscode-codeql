@@ -1,6 +1,6 @@
 import { Repository, RepositoryWithMetadata } from "./repository";
 import { AnalysisAlert, AnalysisRawResults } from "./analysis-result";
-import { QueryLanguage } from "../../types/query-language";
+import { QueryLanguage } from "../../common/query-language";
 
 export interface VariantAnalysis {
   id: number;
