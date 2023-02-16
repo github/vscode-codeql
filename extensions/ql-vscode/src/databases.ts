@@ -606,6 +606,7 @@ export class DatabaseManager extends DisposableObject {
     token: vscode.CancellationToken,
     uri: vscode.Uri,
     displayName?: string,
+    isTutorialDatabase?: boolean,
   ): Promise<DatabaseItem> {
     const contents = await DatabaseResolver.resolveDatabaseContents(uri);
     // Ignore the source archive for QLTest databases by default.
@@ -629,7 +630,7 @@ export class DatabaseManager extends DisposableObject {
     await this.addDatabaseItem(progress, token, databaseItem);
     await this.addDatabaseSourceArchiveFolder(databaseItem);
 
-    if (isCodespacesTemplate()) {
+    if (isCodespacesTemplate() && !isTutorialDatabase) {
       await this.createSkeletonPacks(databaseItem);
     }
 
