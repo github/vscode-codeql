@@ -9,11 +9,11 @@ import {
 } from "fs-extra";
 import { Uri } from "vscode";
 
-import { DatabaseUI } from "../../../src/databases-ui";
+import { DatabaseUI } from "../../../src/local-databases-ui";
 import { testDisposeHandler } from "../test-dispose-handler";
 import { createMockApp } from "../../__mocks__/appMock";
 
-describe("databases-ui", () => {
+describe("local-databases-ui", () => {
   describe("fixDbUri", () => {
     const fixDbUri = (DatabaseUI.prototype as any).fixDbUri;
     it("should choose current directory direcory normally", async () => {
