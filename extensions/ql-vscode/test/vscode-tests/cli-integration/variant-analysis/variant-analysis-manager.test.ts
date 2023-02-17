@@ -12,7 +12,6 @@ import {
 } from "vscode";
 import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { extLogger } from "../../../../src/common";
-import * as config from "../../../../src/config";
 import {
   setRemoteControllerRepo,
   setRemoteRepositoryLists,
@@ -915,137 +914,64 @@ describe("Variant Analysis Manager", () => {
         expect(writeTextStub).toBeCalledTimes(1);
       });
 
-      describe("variantAnalysisReposPanel true", () => {
-        beforeEach(() => {
-          jest
-            .spyOn(config, "isVariantAnalysisReposPanelEnabled")
-            .mockReturnValue(true);
-        });
+      it("should be valid JSON when put in object", async () => {
+        await variantAnalysisManager.copyRepoListToClipboard(
+          variantAnalysis.id,
+        );
 
-        it("should be valid JSON when put in object", async () => {
-          await variantAnalysisManager.copyRepoListToClipboard(
-            variantAnalysis.id,
-          );
+        const text = writeTextStub.mock.calls[0][0];
 
-          const text = writeTextStub.mock.calls[0][0];
+        const parsed = JSON.parse(`${text}`);
 
-          const parsed = JSON.parse(`${text}`);
-
-          expect(parsed).toEqual({
-            name: "new-repo-list",
-            repositories: [
-              scannedRepos[4].repository.fullName,
-              scannedRepos[2].repository.fullName,
-              scannedRepos[0].repository.fullName,
-            ],
-          });
-        });
-
-        it("should use the sort key", async () => {
-          await variantAnalysisManager.copyRepoListToClipboard(
-            variantAnalysis.id,
-            {
-              ...defaultFilterSortState,
-              sortKey: SortKey.ResultsCount,
-            },
-          );
-
-          const text = writeTextStub.mock.calls[0][0];
-
-          const parsed = JSON.parse(`${text}`);
-
-          expect(parsed).toEqual({
-            name: "new-repo-list",
-            repositories: [
-              scannedRepos[2].repository.fullName,
-              scannedRepos[0].repository.fullName,
-              scannedRepos[4].repository.fullName,
-            ],
-          });
-        });
-
-        it("should use the search value", async () => {
-          await variantAnalysisManager.copyRepoListToClipboard(
-            variantAnalysis.id,
-            {
-              ...defaultFilterSortState,
-              searchValue: "ban",
-            },
-          );
-
-          const text = writeTextStub.mock.calls[0][0];
-
-          const parsed = JSON.parse(`${text}`);
-
-          expect(parsed).toEqual({
-            name: "new-repo-list",
-            repositories: [scannedRepos[4].repository.fullName],
-          });
+        expect(parsed).toEqual({
+          name: "new-repo-list",
+          repositories: [
+            scannedRepos[4].repository.fullName,
+            scannedRepos[2].repository.fullName,
+            scannedRepos[0].repository.fullName,
+          ],
         });
       });
-      describe("variantAnalysisReposPanel false", () => {
-        beforeEach(() => {
-          jest
-            .spyOn(config, "isVariantAnalysisReposPanelEnabled")
-            .mockReturnValue(false);
+
+      it("should use the sort key", async () => {
+        await variantAnalysisManager.copyRepoListToClipboard(
+          variantAnalysis.id,
+          {
+            ...defaultFilterSortState,
+            sortKey: SortKey.ResultsCount,
+          },
+        );
+
+        const text = writeTextStub.mock.calls[0][0];
+
+        const parsed = JSON.parse(`${text}`);
+
+        expect(parsed).toEqual({
+          name: "new-repo-list",
+          repositories: [
+            scannedRepos[2].repository.fullName,
+            scannedRepos[0].repository.fullName,
+            scannedRepos[4].repository.fullName,
+          ],
         });
+      });
 
-        it("should be valid JSON when put in object", async () => {
-          await variantAnalysisManager.copyRepoListToClipboard(
-            variantAnalysis.id,
-          );
+      it("should use the search value", async () => {
+        await variantAnalysisManager.copyRepoListToClipboard(
+          variantAnalysis.id,
+          {
+            ...defaultFilterSortState,
+            searchValue: "ban",
+          },
+        );
 
-          const text = writeTextStub.mock.calls[0][0];
+        const text = writeTextStub.mock.calls[0][0];
 
-          const parsed = JSON.parse(`{${text}}`);
+        const parsed = JSON.parse(`${text}`);
 
-          expect(parsed).toEqual({
-            "new-repo-list": [
-              scannedRepos[4].repository.fullName,
-              scannedRepos[2].repository.fullName,
-              scannedRepos[0].repository.fullName,
-            ],
-          });
-        });
-
-        it("should use the sort key", async () => {
-          await variantAnalysisManager.copyRepoListToClipboard(
-            variantAnalysis.id,
-            {
-              ...defaultFilterSortState,
-              sortKey: SortKey.ResultsCount,
-            },
-          );
-
-          const text = writeTextStub.mock.calls[0][0];
-
-          const parsed = JSON.parse(`{${text}}`);
-
-          expect(parsed).toEqual({
-            "new-repo-list": [
-              scannedRepos[2].repository.fullName,
-              scannedRepos[0].repository.fullName,
-              scannedRepos[4].repository.fullName,
-            ],
-          });
-        });
-
-        it("should use the search value", async () => {
-          await variantAnalysisManager.copyRepoListToClipboard(
-            variantAnalysis.id,
-            {
-              ...defaultFilterSortState,
-              searchValue: "ban",
-            },
-          );
-
-          const text = writeTextStub.mock.calls[0][0];
-
-          const parsed = JSON.parse(`{${text}}`);
-
-          expect(parsed).toEqual({
-            "new-repo-list": [scannedRepos[4].repository.fullName],
-          });
+        expect(parsed).toEqual({
+          name: "new-repo-list",
+          repositories: [scannedRepos[4].repository.fullName],
         });
       });
     });

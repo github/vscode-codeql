@@ -60,7 +60,6 @@ import {
 } from "../pure/variant-analysis-filter-sort";
 import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
-import { isVariantAnalysisReposPanelEnabled } from "../config";
 import { App } from "../common/app";
 import { redactableError } from "../pure/errors";
 
@@ -106,7 +105,7 @@ export class VariantAnalysisManager
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager,
-    private readonly dbManager?: DbManager, // the dbManager is only needed when variantAnalysisReposPanel is enabled
+    private readonly dbManager?: DbManager,
   ) {
     super();
     this.variantAnalysisMonitor = this.push(
@@ -635,25 +634,15 @@ export class VariantAnalysisManager
       return;
     }
 
-    let text: string[];
-    if (isVariantAnalysisReposPanelEnabled()) {
-      text = [
-        "{",
-        `    "name": "new-repo-list",`,
-        `    "repositories": [`,
-        ...fullNames.slice(0, -1).map((repo) => `        "${repo}",`),
-        `        "${fullNames[fullNames.length - 1]}"`,
-        `    ]`,
-        "}",
-      ];
-    } else {
-      text = [
-        '"new-repo-list": [',
-        ...fullNames.slice(0, -1).map((repo) => `    "${repo}",`),
-        `    "${fullNames[fullNames.length - 1]}"`,
-        "]",
-      ];
-    }
+    const text = [
+      "{",
+      `    "name": "new-repo-list",`,
+      `    "repositories": [`,
+      ...fullNames.slice(0, -1).map((repo) => `        "${repo}",`),
+      `        "${fullNames[fullNames.length - 1]}"`,
+      `    ]`,
+      "}",
+    ];
 
     await env.clipboard.writeText(text.join(EOL));
   }

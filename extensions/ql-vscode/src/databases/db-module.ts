@@ -6,7 +6,7 @@ import { DbConfigStore } from "./config/db-config-store";
 import { DbManager } from "./db-manager";
 import { DbPanel } from "./ui/db-panel";
 import { DbSelectionDecorationProvider } from "./ui/db-selection-decoration-provider";
-import { isCanary, isVariantAnalysisReposPanelEnabled } from "../config";
+import { isCanary } from "../config";
 
 export class DbModule extends DisposableObject {
   public readonly dbManager: DbManager;
@@ -36,7 +36,7 @@ export class DbModule extends DisposableObject {
       return true;
     }
 
-    return isCanary() && isVariantAnalysisReposPanelEnabled();
+    return isCanary();
   }
 
   private async initialize(app: App): Promise<void> {
