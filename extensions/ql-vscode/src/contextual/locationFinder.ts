@@ -9,7 +9,7 @@ import {
   ResultSetSchema,
 } from "../pure/bqrs-cli-types";
 import { CodeQLCliServer } from "../cli";
-import { DatabaseManager, DatabaseItem } from "../databases";
+import { DatabaseManager, DatabaseItem } from "../local-databases";
 import fileRangeFromURI from "./fileRangeFromURI";
 import { ProgressCallback } from "../commandRunner";
 import { KeyType } from "./keyType";

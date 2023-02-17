@@ -17,7 +17,7 @@ import {
   zipArchiveScheme,
 } from "../archive-filesystem-provider";
 import { CodeQLCliServer } from "../cli";
-import { DatabaseManager } from "../databases";
+import { DatabaseManager } from "../local-databases";
 import { CachedOperation } from "../helpers";
 import { ProgressCallback, withProgress } from "../commandRunner";
 import AstBuilder from "./astBuilder";

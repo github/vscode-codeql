@@ -12,7 +12,7 @@ import {
 } from "../helpers";
 import { KeyType, kindOfKeyType, nameOfKeyType, tagOfKeyType } from "./keyType";
 import { CodeQLCliServer } from "../cli";
-import { DatabaseItem } from "../databases";
+import { DatabaseItem } from "../local-databases";
 import { extLogger } from "../common";
 import { createInitialQueryInfo } from "../run-queries-shared";
 import { CancellationToken, Uri } from "vscode";
