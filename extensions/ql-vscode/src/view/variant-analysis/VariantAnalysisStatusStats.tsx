@@ -2,7 +2,7 @@ import * as React from "react";
 import styled from "styled-components";
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import { formatDate } from "../../pure/date";
-import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 
 export type VariantAnalysisStatusStatsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;

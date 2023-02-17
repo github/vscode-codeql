@@ -6,9 +6,9 @@ import {
   isVariantAnalysisComplete,
   VariantAnalysisRepoStatus,
   getActionsWorkflowRunUrl,
-} from "../../src/remote-queries/shared/variant-analysis";
-import { createMockScannedRepo } from "../factories/remote-queries/shared/scanned-repositories";
-import { createMockVariantAnalysis } from "../factories/remote-queries/shared/variant-analysis";
+} from "../../src/variant-analysis/shared/variant-analysis";
+import { createMockScannedRepo } from "../factories/variant-analysis/shared/scanned-repositories";
+import { createMockVariantAnalysis } from "../factories/variant-analysis/shared/variant-analysis";
 
 describe("parseVariantAnalysisQueryLanguage", () => {
   it("parses a valid language", () => {

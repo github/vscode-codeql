@@ -60,9 +60,9 @@ import EvalLogTreeBuilder from "../eval-log-tree-builder";
 import { EvalLogData, parseViewerData } from "../pure/log-summary-parser";
 import { QueryWithResults } from "../run-queries-shared";
 import { QueryRunner } from "../queryRunner";
-import { VariantAnalysisManager } from "../remote-queries/variant-analysis-manager";
+import { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
-import { getTotalResultCount } from "../remote-queries/shared/variant-analysis";
+import { getTotalResultCount } from "../variant-analysis/shared/variant-analysis";
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
 import { redactableError } from "../pure/errors";
 

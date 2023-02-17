@@ -13,7 +13,7 @@ import { HistoryItemLabelProvider } from "../../../../src/query-history/history-
 import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
 import { QueryRunner } from "../../../../src/queryRunner";
-import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
+import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryInfo } from "../../../../src/query-history/query-history-info";
 import {
   createMockLocalQueryInfo,
@@ -23,7 +23,7 @@ import { shuffleHistoryItems } from "../../utils/query-history-helpers";
 import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-status";
-import { VariantAnalysisStatus } from "../../../../src/remote-queries/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import {
   HistoryTreeDataProvider,
   SortOrder,

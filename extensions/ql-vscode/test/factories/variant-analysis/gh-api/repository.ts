@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import {
   Repository,
   RepositoryWithMetadata,
-} from "../../../../src/remote-queries/gh-api/repository";
+} from "../../../../src/variant-analysis/gh-api/repository";
 
 export function createMockRepository(name = faker.random.word()): Repository {
   return {

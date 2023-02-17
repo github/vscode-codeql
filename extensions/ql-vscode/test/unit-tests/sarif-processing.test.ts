@@ -3,11 +3,11 @@ import {
   extractAnalysisAlerts,
   tryGetRule,
   tryGetSeverity,
-} from "../../src/remote-queries/sarif-processing";
+} from "../../src/variant-analysis/sarif-processing";
 import {
   AnalysisMessage,
   AnalysisMessageLocationToken,
-} from "../../src/remote-queries/shared/analysis-result";
+} from "../../src/variant-analysis/shared/analysis-result";
 
 describe("SARIF processing", () => {
   describe("tryGetRule", () => {

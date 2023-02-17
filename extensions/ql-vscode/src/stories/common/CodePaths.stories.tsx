@@ -4,7 +4,7 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 import { ThemeProvider } from "@primer/react";
 
 import { CodePaths } from "../../view/common";
-import type { CodeFlow } from "../../remote-queries/shared/analysis-result";
+import type { CodeFlow } from "../../variant-analysis/shared/analysis-result";
 
 export default {
   title: "Code Paths",

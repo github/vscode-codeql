@@ -3,7 +3,7 @@ import { render as reactRender, screen } from "@testing-library/react";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
-} from "../../../remote-queries/shared/variant-analysis";
+} from "../../../variant-analysis/shared/variant-analysis";
 import {
   AnalyzedRepoItemContent,
   AnalyzedRepoItemContentProps,

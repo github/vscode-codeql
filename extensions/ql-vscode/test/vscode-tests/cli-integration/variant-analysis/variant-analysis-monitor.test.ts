@@ -1,29 +1,29 @@
 import { CancellationTokenSource, commands, extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../../../src/extension";
 
-import * as ghApiClient from "../../../../src/remote-queries/gh-api/gh-api-client";
-import { VariantAnalysisMonitor } from "../../../../src/remote-queries/variant-analysis-monitor";
+import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
+import { VariantAnalysisMonitor } from "../../../../src/variant-analysis/variant-analysis-monitor";
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
   VariantAnalysisFailureReason,
   VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository,
-} from "../../../../src/remote-queries/gh-api/variant-analysis";
+} from "../../../../src/variant-analysis/gh-api/variant-analysis";
 import {
   createFailedMockApiResponse,
   createMockApiResponse,
-} from "../../../factories/remote-queries/gh-api/variant-analysis-api-response";
+} from "../../../factories/variant-analysis/gh-api/variant-analysis-api-response";
 import {
   VariantAnalysis,
   VariantAnalysisStatus,
-} from "../../../../src/remote-queries/shared/variant-analysis";
-import { createMockScannedRepos } from "../../../factories/remote-queries/gh-api/scanned-repositories";
+} from "../../../../src/variant-analysis/shared/variant-analysis";
+import { createMockScannedRepos } from "../../../factories/variant-analysis/gh-api/scanned-repositories";
 import {
   processFailureReason,
   processScannedRepository,
   processUpdatedVariantAnalysis,
-} from "../../../../src/remote-queries/variant-analysis-processor";
-import { createMockVariantAnalysis } from "../../../factories/remote-queries/shared/variant-analysis";
-import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
+} from "../../../../src/variant-analysis/variant-analysis-processor";
+import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
+import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { testCredentialsWithStub } from "../../../factories/authentication";
 
 jest.setTimeout(60_000);

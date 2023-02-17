@@ -1,23 +1,23 @@
 import { faker } from "@faker-js/faker";
-import { VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository } from "../../../src/remote-queries/gh-api/variant-analysis";
+import { VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository } from "../../../src/variant-analysis/gh-api/variant-analysis";
 import {
   VariantAnalysisQueryLanguage,
   VariantAnalysisScannedRepository,
   VariantAnalysisRepoStatus,
-} from "../../../src/remote-queries/shared/variant-analysis";
+} from "../../../src/variant-analysis/shared/variant-analysis";
 import {
   processScannedRepository,
   processVariantAnalysis,
   processVariantAnalysisRepositoryTask,
-} from "../../../src/remote-queries/variant-analysis-processor";
+} from "../../../src/variant-analysis/variant-analysis-processor";
 import {
   createMockScannedRepo,
   createMockScannedRepos,
-} from "../../factories/remote-queries/gh-api/scanned-repositories";
-import { createMockSkippedRepos } from "../../factories/remote-queries/gh-api/skipped-repositories";
-import { createMockApiResponse } from "../../factories/remote-queries/gh-api/variant-analysis-api-response";
-import { createMockSubmission } from "../../factories/remote-queries/shared/variant-analysis-submission";
-import { createMockVariantAnalysisRepoTask } from "../../factories/remote-queries/gh-api/variant-analysis-repo-task";
+} from "../../factories/variant-analysis/gh-api/scanned-repositories";
+import { createMockSkippedRepos } from "../../factories/variant-analysis/gh-api/skipped-repositories";
+import { createMockApiResponse } from "../../factories/variant-analysis/gh-api/variant-analysis-api-response";
+import { createMockSubmission } from "../../factories/variant-analysis/shared/variant-analysis-submission";
+import { createMockVariantAnalysisRepoTask } from "../../factories/variant-analysis/gh-api/variant-analysis-repo-task";
 
 describe(processVariantAnalysis.name, () => {
   const scannedRepos = createMockScannedRepos();

@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import {
   VariantAnalysisQueryLanguage,
   VariantAnalysisSubmission,
-} from "../../../../src/remote-queries/shared/variant-analysis";
+} from "../../../../src/variant-analysis/shared/variant-analysis";
 
 export function createMockSubmission(): VariantAnalysisSubmission {
   return {

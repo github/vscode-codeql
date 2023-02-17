@@ -1,4 +1,4 @@
-import { AnalysisMessage } from "../../../../src/remote-queries/shared/analysis-result";
+import { AnalysisMessage } from "../../../../src/variant-analysis/shared/analysis-result";
 
 export function createMockAnalysisMessage(): AnalysisMessage {
   return {

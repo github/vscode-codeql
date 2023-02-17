@@ -29,7 +29,7 @@ import { DbManager } from "../db-manager";
 import { DbTreeDataProvider } from "./db-tree-data-provider";
 import { DbTreeViewItem } from "./db-tree-view-item";
 import { getGitHubUrl } from "./db-tree-view-item-action";
-import { getControllerRepo } from "../../remote-queries/run-remote-query";
+import { getControllerRepo } from "../../variant-analysis/run-remote-query";
 import { getErrorMessage } from "../../pure/helpers-pure";
 import { Credentials } from "../../common/authentication";
 

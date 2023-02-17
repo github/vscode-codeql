@@ -17,44 +17,44 @@ import {
   setRemoteControllerRepo,
   setRemoteRepositoryLists,
 } from "../../../../src/config";
-import * as ghApiClient from "../../../../src/remote-queries/gh-api/gh-api-client";
-import * as ghActionsApiClient from "../../../../src/remote-queries/gh-api/gh-actions-api-client";
+import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
+import * as ghActionsApiClient from "../../../../src/variant-analysis/gh-api/gh-actions-api-client";
 import * as fs from "fs-extra";
 import { join } from "path";
 import { Readable } from "stream";
 import { Response } from "node-fetch";
 import * as fetchModule from "node-fetch";
 
-import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
+import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { CodeQLCliServer } from "../../../../src/cli";
 import {
   fixWorkspaceReferences,
   restoreWorkspaceReferences,
   storagePath,
 } from "../../global.helper";
-import { VariantAnalysisResultsManager } from "../../../../src/remote-queries/variant-analysis-results-manager";
-import { createMockVariantAnalysis } from "../../../factories/remote-queries/shared/variant-analysis";
-import * as VariantAnalysisModule from "../../../../src/remote-queries/shared/variant-analysis";
+import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
+import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
+import * as VariantAnalysisModule from "../../../../src/variant-analysis/shared/variant-analysis";
 import {
   createMockScannedRepo,
   createMockScannedRepos,
-} from "../../../factories/remote-queries/shared/scanned-repositories";
+} from "../../../factories/variant-analysis/shared/scanned-repositories";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisStatus,
-} from "../../../../src/remote-queries/shared/variant-analysis";
+} from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createTimestampFile } from "../../../../src/helpers";
-import { createMockVariantAnalysisRepoTask } from "../../../factories/remote-queries/gh-api/variant-analysis-repo-task";
+import { createMockVariantAnalysisRepoTask } from "../../../factories/variant-analysis/gh-api/variant-analysis-repo-task";
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
   VariantAnalysisRepoTask,
-} from "../../../../src/remote-queries/gh-api/variant-analysis";
-import { createMockApiResponse } from "../../../factories/remote-queries/gh-api/variant-analysis-api-response";
+} from "../../../../src/variant-analysis/gh-api/variant-analysis";
+import { createMockApiResponse } from "../../../factories/variant-analysis/gh-api/variant-analysis-api-response";
 import { UserCancellationException } from "../../../../src/commandRunner";
-import { Repository } from "../../../../src/remote-queries/gh-api/repository";
+import { Repository } from "../../../../src/variant-analysis/gh-api/repository";
 import {
   defaultFilterSortState,
   SortKey,

@@ -3,7 +3,7 @@ import * as React from "react";
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 
 import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
-import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 import { VariantAnalysisActions } from "../../view/variant-analysis/VariantAnalysisActions";
 
 export default {

@@ -3,9 +3,9 @@ import { render as reactRender, screen } from "@testing-library/react";
 import {
   VariantAnalysisFailureReason,
   VariantAnalysisStatus,
-} from "../../../remote-queries/shared/variant-analysis";
+} from "../../../variant-analysis/shared/variant-analysis";
 import { VariantAnalysis, VariantAnalysisProps } from "../VariantAnalysis";
-import { createMockVariantAnalysis } from "../../../../test/factories/remote-queries/shared/variant-analysis";
+import { createMockVariantAnalysis } from "../../../../test/factories/variant-analysis/shared/variant-analysis";
 
 describe(VariantAnalysis.name, () => {
   const render = (props: Partial<VariantAnalysisProps> = {}) =>

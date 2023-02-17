@@ -7,15 +7,15 @@ import { Readable } from "stream";
 import { Response, RequestInfo, RequestInit } from "node-fetch";
 import * as fetchModule from "node-fetch";
 
-import { VariantAnalysisResultsManager } from "../../../../src/remote-queries/variant-analysis-results-manager";
+import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
 import { CodeQLCliServer } from "../../../../src/cli";
 import { storagePath } from "../../global.helper";
 import { faker } from "@faker-js/faker";
-import { createMockVariantAnalysisRepositoryTask } from "../../../factories/remote-queries/shared/variant-analysis-repo-tasks";
+import { createMockVariantAnalysisRepositoryTask } from "../../../factories/variant-analysis/shared/variant-analysis-repo-tasks";
 import {
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepositoryResult,
-} from "../../../../src/remote-queries/shared/variant-analysis";
+} from "../../../../src/variant-analysis/shared/variant-analysis";
 
 jest.setTimeout(10_000);
 

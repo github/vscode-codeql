@@ -3,8 +3,8 @@ import { render as reactRender, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CodePaths, CodePathsProps } from "../CodePaths";
 
-import { createMockCodeFlows } from "../../../../../test/factories/remote-queries/shared/CodeFlow";
-import { createMockAnalysisMessage } from "../../../../../test/factories/remote-queries/shared/AnalysisMessage";
+import { createMockCodeFlows } from "../../../../../test/factories/variant-analysis/shared/CodeFlow";
+import { createMockAnalysisMessage } from "../../../../../test/factories/variant-analysis/shared/AnalysisMessage";
 
 describe(CodePaths.name, () => {
   const render = (props?: CodePathsProps) =>

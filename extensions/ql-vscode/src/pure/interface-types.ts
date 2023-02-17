@@ -10,7 +10,7 @@ import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
-} from "../remote-queries/shared/variant-analysis";
+} from "../variant-analysis/shared/variant-analysis";
 import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
 
 /**

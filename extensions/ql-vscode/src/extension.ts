@@ -108,7 +108,7 @@ import { HistoryItemLabelProvider } from "./query-history/history-item-label-pro
 import {
   exportSelectedVariantAnalysisResults,
   exportVariantAnalysisResults,
-} from "./remote-queries/export-results";
+} from "./variant-analysis/export-results";
 import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
@@ -117,16 +117,16 @@ import { createInitialQueryInfo } from "./run-queries-shared";
 import { LegacyQueryRunner } from "./legacy-query-server/legacyRunner";
 import { NewQueryRunner } from "./query-server/query-runner";
 import { QueryRunner } from "./queryRunner";
-import { VariantAnalysisView } from "./remote-queries/variant-analysis-view";
-import { VariantAnalysisViewSerializer } from "./remote-queries/variant-analysis-view-serializer";
+import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
+import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
-} from "./remote-queries/shared/variant-analysis";
-import { VariantAnalysisManager } from "./remote-queries/variant-analysis-manager";
-import { createVariantAnalysisContentProvider } from "./remote-queries/variant-analysis-content-provider";
+} from "./variant-analysis/shared/variant-analysis";
+import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
+import { createVariantAnalysisContentProvider } from "./variant-analysis/variant-analysis-content-provider";
 import { VSCodeMockGitHubApiServer } from "./mocks/vscode-mock-gh-api-server";
-import { VariantAnalysisResultsManager } from "./remote-queries/variant-analysis-results-manager";
+import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";

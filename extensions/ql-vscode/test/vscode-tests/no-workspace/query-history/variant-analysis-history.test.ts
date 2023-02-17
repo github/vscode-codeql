@@ -18,7 +18,7 @@ import { HistoryItemLabelProvider } from "../../../../src/query-history/history-
 import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
 import { QueryRunner } from "../../../../src/queryRunner";
-import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
+import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 
 // set a higher timeout since recursive delete may take a while, expecially on Windows.

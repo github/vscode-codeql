@@ -1,4 +1,4 @@
-import { CodeFlow } from "../../../../src/remote-queries/shared/analysis-result";
+import { CodeFlow } from "../../../../src/variant-analysis/shared/analysis-result";
 import { createMockAnalysisMessage } from "./AnalysisMessage";
 
 export function createMockCodeFlows(): CodeFlow[] {

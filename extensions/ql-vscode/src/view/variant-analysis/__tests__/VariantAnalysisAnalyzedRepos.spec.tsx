@@ -5,14 +5,14 @@ import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisStatus,
-} from "../../../remote-queries/shared/variant-analysis";
+} from "../../../variant-analysis/shared/variant-analysis";
 import {
   VariantAnalysisAnalyzedRepos,
   VariantAnalysisAnalyzedReposProps,
 } from "../VariantAnalysisAnalyzedRepos";
-import { createMockVariantAnalysis } from "../../../../test/factories/remote-queries/shared/variant-analysis";
-import { createMockRepositoryWithMetadata } from "../../../../test/factories/remote-queries/shared/repository";
-import { createMockScannedRepo } from "../../../../test/factories/remote-queries/shared/scanned-repositories";
+import { createMockVariantAnalysis } from "../../../../test/factories/variant-analysis/shared/variant-analysis";
+import { createMockRepositoryWithMetadata } from "../../../../test/factories/variant-analysis/shared/repository";
+import { createMockScannedRepo } from "../../../../test/factories/variant-analysis/shared/scanned-repositories";
 import {
   defaultFilterSortState,
   SortKey,

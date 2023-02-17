@@ -13,7 +13,7 @@ import {
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisStatus,
-} from "../../remote-queries/shared/variant-analysis";
+} from "../../variant-analysis/shared/variant-analysis";
 import { VariantAnalysisAnalyzedRepos } from "./VariantAnalysisAnalyzedRepos";
 import { Alert } from "../common";
 import { VariantAnalysisSkippedRepositoriesTab } from "./VariantAnalysisSkippedRepositoriesTab";

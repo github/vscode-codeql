@@ -2,7 +2,7 @@ import * as React from "react";
 import { ChangeEvent, SetStateAction, useCallback } from "react";
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
 
-import { CodeFlow } from "../../../remote-queries/shared/analysis-result";
+import { CodeFlow } from "../../../variant-analysis/shared/analysis-result";
 
 const getCodeFlowName = (codeFlow: CodeFlow) => {
   const filePath =

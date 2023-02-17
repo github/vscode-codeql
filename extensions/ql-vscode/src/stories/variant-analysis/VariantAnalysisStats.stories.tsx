@@ -4,7 +4,7 @@ import { ComponentStory, ComponentMeta } from "@storybook/react";
 
 import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
 import { VariantAnalysisStats } from "../../view/variant-analysis/VariantAnalysisStats";
-import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 
 export default {
   title: "Variant Analysis/Variant Analysis Stats",

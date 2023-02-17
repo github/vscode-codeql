@@ -6,12 +6,12 @@ import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAna
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
-} from "../../remote-queries/shared/variant-analysis";
+} from "../../variant-analysis/shared/variant-analysis";
 import {
   AnalysisAlert,
   AnalysisRawResults,
-} from "../../remote-queries/shared/analysis-result";
-import { createMockRepositoryWithMetadata } from "../../../test/factories/remote-queries/shared/repository";
+} from "../../variant-analysis/shared/analysis-result";
+import { createMockRepositoryWithMetadata } from "../../../test/factories/variant-analysis/shared/repository";
 
 import * as analysesResults from "../data/analysesResultsMessage.json";
 import * as rawResults from "../data/rawResults.json";

@@ -1,5 +1,5 @@
 import { assertNever } from "./pure/helpers-pure";
-import { VariantAnalysisStatus } from "./remote-queries/shared/variant-analysis";
+import { VariantAnalysisStatus } from "./variant-analysis/shared/variant-analysis";
 
 export enum QueryStatus {
   InProgress = "InProgress",

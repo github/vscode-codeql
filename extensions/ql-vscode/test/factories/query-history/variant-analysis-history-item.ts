@@ -3,8 +3,8 @@ import { QueryStatus } from "../../../src/query-status";
 import {
   VariantAnalysis,
   VariantAnalysisStatus,
-} from "../../../src/remote-queries/shared/variant-analysis";
-import { createMockVariantAnalysis } from "../remote-queries/shared/variant-analysis";
+} from "../../../src/variant-analysis/shared/variant-analysis";
+import { createMockVariantAnalysis } from "../variant-analysis/shared/variant-analysis";
 
 export function createMockVariantAnalysisHistoryItem({
   historyItemStatus = QueryStatus.InProgress,

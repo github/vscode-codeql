@@ -7,9 +7,9 @@ import { VariantAnalysisHeader } from "../../view/variant-analysis/VariantAnalys
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisStatus,
-} from "../../remote-queries/shared/variant-analysis";
-import { createMockVariantAnalysis } from "../../../test/factories/remote-queries/shared/variant-analysis";
-import { createMockScannedRepo } from "../../../test/factories/remote-queries/shared/scanned-repositories";
+} from "../../variant-analysis/shared/variant-analysis";
+import { createMockVariantAnalysis } from "../../../test/factories/variant-analysis/shared/variant-analysis";
+import { createMockScannedRepo } from "../../../test/factories/variant-analysis/shared/scanned-repositories";
 
 export default {
   title: "Variant Analysis/Variant Analysis Header",

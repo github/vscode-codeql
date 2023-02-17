@@ -5,7 +5,7 @@ import {
   AnalysisMessage,
   HighlightedRegion,
   ResultSeverity,
-} from "../../../remote-queries/shared/analysis-result";
+} from "../../../variant-analysis/shared/analysis-result";
 import { CodeSnippetCode } from "./CodeSnippetCode";
 import { CodeSnippetMessage } from "./CodeSnippetMessage";
 
