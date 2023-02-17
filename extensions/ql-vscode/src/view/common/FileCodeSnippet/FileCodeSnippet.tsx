@@ -8,7 +8,7 @@ import {
   FileLink,
   HighlightedRegion,
   ResultSeverity,
-} from "../../../remote-queries/shared/analysis-result";
+} from "../../../variant-analysis/shared/analysis-result";
 import { createRemoteFileRef } from "../../../pure/location-link-utils";
 import { CodeSnippetMessage } from "./CodeSnippetMessage";
 import { CodeSnippetLine } from "./CodeSnippetLine";

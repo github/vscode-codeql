@@ -3,7 +3,7 @@ import * as React from "react";
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
 import AnalysisAlertResult from "../../view/variant-analysis/AnalysisAlertResult";
-import type { AnalysisAlert } from "../../remote-queries/shared/analysis-result";
+import type { AnalysisAlert } from "../../variant-analysis/shared/analysis-result";
 
 export default {
   title: "Variant Analysis/Analysis Alert Result",

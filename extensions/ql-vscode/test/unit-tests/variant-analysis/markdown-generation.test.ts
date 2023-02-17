@@ -4,17 +4,17 @@ import { readdir, readFile } from "fs-extra";
 import {
   generateVariantAnalysisMarkdown,
   MarkdownFile,
-} from "../../../src/remote-queries/markdown-generation";
+} from "../../../src/variant-analysis/markdown-generation";
 import {
   VariantAnalysisQueryLanguage,
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
-} from "../../../src/remote-queries/shared/variant-analysis";
+} from "../../../src/variant-analysis/shared/variant-analysis";
 import {
   AnalysisAlert,
   AnalysisRawResults,
-} from "../../../src/remote-queries/shared/analysis-result";
+} from "../../../src/variant-analysis/shared/analysis-result";
 
 import pathProblemAnalysesResults from "../data/markdown-generation/interpreted-results/path-problem/analyses-results.json";
 import problemAnalysesResults from "../data/markdown-generation/interpreted-results/problem/analyses-results.json";

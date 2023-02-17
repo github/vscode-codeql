@@ -8,10 +8,10 @@ import { VariantAnalysisOutcomePanels } from "../../view/variant-analysis/Varian
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisStatus,
-} from "../../remote-queries/shared/variant-analysis";
-import { createMockScannedRepo } from "../../../test/factories/remote-queries/shared/scanned-repositories";
-import { createMockVariantAnalysis } from "../../../test/factories/remote-queries/shared/variant-analysis";
-import { createMockRepositoryWithMetadata } from "../../../test/factories/remote-queries/shared/repository";
+} from "../../variant-analysis/shared/variant-analysis";
+import { createMockScannedRepo } from "../../../test/factories/variant-analysis/shared/scanned-repositories";
+import { createMockVariantAnalysis } from "../../../test/factories/variant-analysis/shared/variant-analysis";
+import { createMockRepositoryWithMetadata } from "../../../test/factories/variant-analysis/shared/repository";
 import {
   defaultFilterSortState,
   RepositoriesFilterSortState,

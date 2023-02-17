@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AnalysisAlert } from "../../remote-queries/shared/analysis-result";
+import { AnalysisAlert } from "../../variant-analysis/shared/analysis-result";
 import { CodePaths, FileCodeSnippet } from "../common";
 
 const AnalysisAlertResult = ({ alert }: { alert: AnalysisAlert }) => {

@@ -4,8 +4,8 @@ import {
   VariantAnalysisScannedRepository,
   VariantAnalysisSkippedRepositories,
   VariantAnalysisStatus,
-} from "../../../../src/remote-queries/gh-api/variant-analysis";
-import { VariantAnalysisQueryLanguage } from "../../../../src/remote-queries/shared/variant-analysis";
+} from "../../../../src/variant-analysis/gh-api/variant-analysis";
+import { VariantAnalysisQueryLanguage } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createMockScannedRepos } from "./scanned-repositories";
 import { createMockSkippedRepos } from "./skipped-repositories";
 import { createMockRepository } from "./repository";

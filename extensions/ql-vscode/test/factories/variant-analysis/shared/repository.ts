@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import {
   Repository,
   RepositoryWithMetadata,
-} from "../../../../src/remote-queries/shared/repository";
+} from "../../../../src/variant-analysis/shared/repository";
 
 export function createMockRepository(): Repository {
   return {

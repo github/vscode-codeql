@@ -1,7 +1,7 @@
 import {
   Repository,
   RepositoryWithMetadata,
-} from "../remote-queries/shared/repository";
+} from "../variant-analysis/shared/repository";
 import { parseDate } from "./date";
 
 export enum SortKey {

@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepository,
-} from "../../../../src/remote-queries/shared/variant-analysis";
+} from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createMockRepositoryWithMetadata } from "./repository";
 
 export function createMockScannedRepo(

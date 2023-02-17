@@ -4,7 +4,7 @@ import { realpathSync, readFileSync, writeFileSync } from "fs-extra";
 import { commands } from "vscode";
 import { DatabaseManager } from "../../src/databases";
 import { CodeQLCliServer } from "../../src/cli";
-import { removeWorkspaceRefs } from "../../src/remote-queries/run-remote-query";
+import { removeWorkspaceRefs } from "../../src/variant-analysis/run-remote-query";
 
 // This file contains helpers shared between tests that work with an activated extension.
 

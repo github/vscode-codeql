@@ -3,10 +3,10 @@ import { render as reactRender, screen, waitFor } from "@testing-library/react";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
-} from "../../../remote-queries/shared/variant-analysis";
+} from "../../../variant-analysis/shared/variant-analysis";
 import userEvent from "@testing-library/user-event";
 import { RepoRow, RepoRowProps } from "../RepoRow";
-import { createMockRepositoryWithMetadata } from "../../../../test/factories/remote-queries/shared/repository";
+import { createMockRepositoryWithMetadata } from "../../../../test/factories/variant-analysis/shared/repository";
 
 describe(RepoRow.name, () => {
   const render = (props: Partial<RepoRowProps> = {}) => {

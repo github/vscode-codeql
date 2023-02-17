@@ -3,8 +3,8 @@ import {
   getVariantAnalysis,
   getVariantAnalysisRepo,
   submitVariantAnalysis,
-} from "../../../../src/remote-queries/gh-api/gh-api-client";
-import { createMockSubmission } from "../../../factories/remote-queries/shared/variant-analysis-submission";
+} from "../../../../src/variant-analysis/gh-api/gh-api-client";
+import { createMockSubmission } from "../../../factories/variant-analysis/shared/variant-analysis-submission";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 
 import { response } from "../../../../src/mocks/scenarios/problem-query-success/0-getRepo.json";

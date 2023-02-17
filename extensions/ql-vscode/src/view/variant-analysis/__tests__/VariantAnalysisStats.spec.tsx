@@ -1,6 +1,6 @@
 import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
-import { VariantAnalysisStatus } from "../../../remote-queries/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../../variant-analysis/shared/variant-analysis";
 import {
   VariantAnalysisStats,
   VariantAnalysisStatsProps,

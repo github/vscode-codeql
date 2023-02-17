@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
-import { VariantAnalysisRepoTask } from "../../../../src/remote-queries/gh-api/variant-analysis";
-import { VariantAnalysisRepoStatus } from "../../../../src/remote-queries/shared/variant-analysis";
+import { VariantAnalysisRepoTask } from "../../../../src/variant-analysis/gh-api/variant-analysis";
+import { VariantAnalysisRepoStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createMockRepository } from "./repository";
 
 export function createMockVariantAnalysisRepoTask(): VariantAnalysisRepoTask {

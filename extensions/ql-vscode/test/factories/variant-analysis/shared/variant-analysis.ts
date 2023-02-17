@@ -5,7 +5,7 @@ import {
   VariantAnalysisScannedRepository,
   VariantAnalysisSkippedRepositories,
   VariantAnalysisStatus,
-} from "../../../../src/remote-queries/shared/variant-analysis";
+} from "../../../../src/variant-analysis/shared/variant-analysis";
 import { createMockScannedRepos } from "./scanned-repositories";
 import { createMockSkippedRepos } from "./skipped-repositories";
 import { createMockRepository } from "./repository";

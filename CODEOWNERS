@@ -1,4 +1,3 @@
 **/* @github/codeql-vscode-reviewers
-**/remote-queries/ @github/code-scanning-secexp-reviewers
 **/variant-analysis/ @github/code-scanning-secexp-reviewers
 **/databases/ @github/code-scanning-secexp-reviewers

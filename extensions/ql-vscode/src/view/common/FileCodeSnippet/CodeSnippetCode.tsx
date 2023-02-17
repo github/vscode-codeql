@@ -1,7 +1,7 @@
 import * as React from "react";
 import styled from "styled-components";
 
-import { HighlightedRegion } from "../../../remote-queries/shared/analysis-result";
+import { HighlightedRegion } from "../../../variant-analysis/shared/analysis-result";
 import {
   parseHighlightedLine,
   shouldHighlightLine,

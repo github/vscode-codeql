@@ -3,7 +3,7 @@ import {
   VariantAnalysisNotFoundRepositoryGroup,
   VariantAnalysisSkippedRepositories,
   VariantAnalysisSkippedRepositoryGroup,
-} from "../../../../src/remote-queries/gh-api/variant-analysis";
+} from "../../../../src/variant-analysis/gh-api/variant-analysis";
 import { createMockRepositoryWithMetadata } from "./repository";
 
 export function createMockSkippedRepos(): VariantAnalysisSkippedRepositories {

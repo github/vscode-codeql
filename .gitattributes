@@ -22,7 +22,7 @@ CHANGELOG.md                merge=union
 
 # Mark some JSON files containing test data as generated so they are not included
 # as part of diffs or language statistics.
-extensions/ql-vscode/src/stories/remote-queries/data/*.json     linguist-generated
+extensions/ql-vscode/src/stories/variant-analysis/data/*.json     linguist-generated
 
 # Always use LF line endings, also on Windows
 * text=auto eol=lf

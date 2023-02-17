@@ -7,9 +7,9 @@ import { QueryStatus } from "../../../../src/query-status";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisStatus,
-} from "../../../../src/remote-queries/shared/variant-analysis";
-import { createMockVariantAnalysis } from "../../../factories/remote-queries/shared/variant-analysis";
-import { createMockScannedRepos } from "../../../factories/remote-queries/shared/scanned-repositories";
+} from "../../../../src/variant-analysis/shared/variant-analysis";
+import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
+import { createMockScannedRepos } from "../../../factories/variant-analysis/shared/scanned-repositories";
 
 describe("HistoryItemLabelProvider", () => {
   let labelProvider: HistoryItemLabelProvider;

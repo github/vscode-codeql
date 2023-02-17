@@ -6,7 +6,7 @@ import {
   AnalysisMessage,
   ResultSeverity,
   ThreadFlow,
-} from "../../../remote-queries/shared/analysis-result";
+} from "../../../variant-analysis/shared/analysis-result";
 import { SectionTitle } from "../SectionTitle";
 import { FileCodeSnippet } from "../FileCodeSnippet";
 

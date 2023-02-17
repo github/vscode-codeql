@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useMemo } from "react";
 import styled from "styled-components";
-import { VariantAnalysisStatus } from "../../remote-queries/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 import { StatItem } from "./StatItem";
 import { formatDecimal } from "../../pure/number";
 import { humanizeUnit } from "../../pure/time";

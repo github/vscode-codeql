@@ -6,7 +6,7 @@ import { ensureDir, writeFile, writeJson } from "fs-extra";
 import { UserCancellationException } from "../../../../src/commandRunner";
 
 import * as config from "../../../../src/config";
-import { getRepositorySelection } from "../../../../src/remote-queries/repository-selection";
+import { getRepositorySelection } from "../../../../src/variant-analysis/repository-selection";
 import { DbManager } from "../../../../src/databases/db-manager";
 import {
   DbItem,
