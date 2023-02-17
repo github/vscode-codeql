@@ -1,6 +1,6 @@
 import { readJsonSync } from "fs-extra";
 import { resolve } from "path";
-import Ajv from "ajv";
+import Ajv, { ValidateFunction } from "ajv";
 import { clearLocalDbConfig, DbConfig } from "./db-config";
 import { findDuplicateStrings } from "../../pure/text-utils";
 import {
@@ -9,22 +9,22 @@ import {
 } from "../db-validation-errors";
 
 export class DbConfigValidator {
-  private readonly schema: any;
+  private readonly validateSchemaFn: ValidateFunction;
 
   constructor(extensionPath: string) {
     const schemaPath = resolve(extensionPath, "databases-schema.json");
-    this.schema = readJsonSync(schemaPath);
+    const schema = readJsonSync(schemaPath);
+    const schemaValidator = new Ajv({ allErrors: true });
+    this.validateSchemaFn = schemaValidator.compile(schema);
   }
 
   public validate(dbConfig: DbConfig): DbConfigValidationError[] {
-    const ajv = new Ajv({ allErrors: true });
-
     const localDbs = clearLocalDbConfig(dbConfig);
 
-    ajv.validate(this.schema, dbConfig);
+    this.validateSchemaFn(dbConfig);
 
-    if (ajv.errors) {
-      return ajv.errors.map((error) => ({
+    if (this.validateSchemaFn.errors) {
+      return this.validateSchemaFn.errors.map((error) => ({
         kind: DbConfigValidationErrorKind.InvalidConfig,
         message: `${error.instancePath} ${error.message}`,
       }));
