@@ -1,7 +1,6 @@
 import {
   VariantAnalysis,
   parseVariantAnalysisQueryLanguage,
-  VariantAnalysisQueryLanguage,
   VariantAnalysisStatus,
   isVariantAnalysisComplete,
   VariantAnalysisRepoStatus,
@@ -9,11 +8,12 @@ import {
 } from "../../src/variant-analysis/shared/variant-analysis";
 import { createMockScannedRepo } from "../factories/variant-analysis/shared/scanned-repositories";
 import { createMockVariantAnalysis } from "../factories/variant-analysis/shared/variant-analysis";
+import { QueryLanguage } from "../../src/common/query-language";
 
 describe("parseVariantAnalysisQueryLanguage", () => {
   it("parses a valid language", () => {
     expect(parseVariantAnalysisQueryLanguage("javascript")).toBe(
-      VariantAnalysisQueryLanguage.Javascript,
+      QueryLanguage.Javascript,
     );
   });
 

@@ -1,7 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { VariantAnalysisScannedRepository as ApiVariantAnalysisScannedRepository } from "../../../src/variant-analysis/gh-api/variant-analysis";
 import {
-  VariantAnalysisQueryLanguage,
   VariantAnalysisScannedRepository,
   VariantAnalysisRepoStatus,
 } from "../../../src/variant-analysis/shared/variant-analysis";
@@ -18,6 +17,7 @@ import { createMockSkippedRepos } from "../../factories/variant-analysis/gh-api/
 import { createMockApiResponse } from "../../factories/variant-analysis/gh-api/variant-analysis-api-response";
 import { createMockSubmission } from "../../factories/variant-analysis/shared/variant-analysis-submission";
 import { createMockVariantAnalysisRepoTask } from "../../factories/variant-analysis/gh-api/variant-analysis-repo-task";
+import { QueryLanguage } from "../../../src/common/query-language";
 
 describe(processVariantAnalysis.name, () => {
   const scannedRepos = createMockScannedRepos();
@@ -48,7 +48,7 @@ describe(processVariantAnalysis.name, () => {
       },
       query: {
         filePath: "query-file-path",
-        language: VariantAnalysisQueryLanguage.Javascript,
+        language: QueryLanguage.Javascript,
         name: "query-name",
         text: mockSubmission.query.text,
       },

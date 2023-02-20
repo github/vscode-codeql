@@ -1,28 +1,19 @@
+import { QueryLanguage } from "../../common/query-language";
 import { Repository, RepositoryWithMetadata } from "./repository";
 
 export interface VariantAnalysisSubmissionRequest {
   action_repo_ref: string;
-  language: VariantAnalysisQueryLanguage;
+  language: QueryLanguage;
   query_pack: string;
   repositories?: string[];
   repository_lists?: string[];
   repository_owners?: string[];
 }
 
-export type VariantAnalysisQueryLanguage =
-  | "csharp"
-  | "cpp"
-  | "go"
-  | "java"
-  | "javascript"
-  | "python"
-  | "ruby"
-  | "swift";
-
 export interface VariantAnalysis {
   id: number;
   controller_repo: Repository;
-  query_language: VariantAnalysisQueryLanguage;
+  query_language: QueryLanguage;
   query_pack_url: string;
   created_at: string;
   updated_at: string;

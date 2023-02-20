@@ -1,5 +1,6 @@
 import { Repository, RepositoryWithMetadata } from "./repository";
 import { AnalysisAlert, AnalysisRawResults } from "./analysis-result";
+import { QueryLanguage } from "../../common/query-language";
 
 export interface VariantAnalysis {
   id: number;
@@ -7,7 +8,7 @@ export interface VariantAnalysis {
   query: {
     name: string;
     filePath: string;
-    language: VariantAnalysisQueryLanguage;
+    language: QueryLanguage;
     text: string;
   };
   databases: {
@@ -26,23 +27,10 @@ export interface VariantAnalysis {
   skippedRepos?: VariantAnalysisSkippedRepositories;
 }
 
-export enum VariantAnalysisQueryLanguage {
-  CSharp = "csharp",
-  Cpp = "cpp",
-  Go = "go",
-  Java = "java",
-  Javascript = "javascript",
-  Python = "python",
-  Ruby = "ruby",
-  Swift = "swift",
-}
-
 export function parseVariantAnalysisQueryLanguage(
   language: string,
-): VariantAnalysisQueryLanguage | undefined {
-  return Object.values(VariantAnalysisQueryLanguage).find(
-    (x) => x === language,
-  );
+): QueryLanguage | undefined {
+  return Object.values(QueryLanguage).find((x) => x === language);
 }
 
 export enum VariantAnalysisStatus {
@@ -148,7 +136,7 @@ export interface VariantAnalysisSubmission {
   query: {
     name: string;
     filePath: string;
-    language: VariantAnalysisQueryLanguage;
+    language: QueryLanguage;
     text: string;
 
     // Base64 encoded query pack.

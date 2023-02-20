@@ -12,6 +12,7 @@ import { Uri } from "vscode";
 import { DatabaseUI } from "../../../src/local-databases-ui";
 import { testDisposeHandler } from "../test-dispose-handler";
 import { createMockApp } from "../../__mocks__/appMock";
+import { QueryLanguage } from "../../../src/common/query-language";
 
 describe("local-databases-ui", () => {
   describe("fixDbUri", () => {
@@ -64,21 +65,25 @@ describe("local-databases-ui", () => {
 
   it("should delete orphaned databases", async () => {
     const storageDir = dirSync().name;
-    const db1 = createDatabase(storageDir, "db1-imported", "cpp");
-    const db2 = createDatabase(storageDir, "db2-notimported", "cpp");
+    const db1 = createDatabase(storageDir, "db1-imported", QueryLanguage.Cpp);
+    const db2 = createDatabase(
+      storageDir,
+      "db2-notimported",
+      QueryLanguage.Cpp,
+    );
     const db3 = createDatabase(storageDir, "db3-invalidlanguage", "hucairz");
 
     // these two should be deleted
     const db4 = createDatabase(
       storageDir,
       "db2-notimported-with-db-info",
-      "cpp",
+      QueryLanguage.Cpp,
       ".dbinfo",
     );
     const db5 = createDatabase(
       storageDir,
       "db2-notimported-with-codeql-database.yml",
-      "cpp",
+      QueryLanguage.Cpp,
       "codeql-database.yml",
     );
 

@@ -1,7 +1,6 @@
 import { faker } from "@faker-js/faker";
 import {
   VariantAnalysis,
-  VariantAnalysisQueryLanguage,
   VariantAnalysisScannedRepository,
   VariantAnalysisSkippedRepositories,
   VariantAnalysisStatus,
@@ -9,6 +8,7 @@ import {
 import { createMockScannedRepos } from "./scanned-repositories";
 import { createMockSkippedRepos } from "./skipped-repositories";
 import { createMockRepository } from "./repository";
+import { QueryLanguage } from "../../../../src/common/query-language";
 
 export function createMockVariantAnalysis({
   status = VariantAnalysisStatus.InProgress,
@@ -32,7 +32,7 @@ export function createMockVariantAnalysis({
     query: {
       name: "a-query-name",
       filePath: "a-query-file-path",
-      language: VariantAnalysisQueryLanguage.Javascript,
+      language: QueryLanguage.Javascript,
       text: "a-query-text",
     },
     databases: {
