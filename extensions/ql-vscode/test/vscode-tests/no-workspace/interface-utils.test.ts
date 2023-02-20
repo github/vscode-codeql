@@ -14,7 +14,7 @@ import {
   tryResolveLocation,
 } from "../../../src/interface-utils";
 import { getDefaultResultSetName } from "../../../src/pure/interface-types";
-import { DatabaseItem } from "../../../src/databases";
+import { DatabaseItem } from "../../../src/local-databases";
 
 describe("interface-utils", () => {
   describe("webview uri conversion", () => {

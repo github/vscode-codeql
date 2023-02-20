@@ -10,7 +10,7 @@ import {
   resolveQueries,
 } from "../../../../src/contextual/queryResolver";
 import { CodeQLCliServer } from "../../../../src/cli";
-import { DatabaseItem } from "../../../../src/databases";
+import { DatabaseItem } from "../../../../src/local-databases";
 
 describe("queryResolver", () => {
   let getQlPackForDbschemeSpy: jest.SpiedFunction<

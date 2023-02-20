@@ -3,7 +3,7 @@ import { load } from "js-yaml";
 
 import { AstViewer, AstItem } from "../../../src/astViewer";
 import { commands, Range, Uri } from "vscode";
-import { DatabaseItem } from "../../../src/databases";
+import { DatabaseItem } from "../../../src/local-databases";
 import { testDisposeHandler } from "../test-dispose-handler";
 
 describe("AstViewer", () => {

@@ -15,7 +15,7 @@ import { CodeQLCliServer } from "../../../src/cli";
 import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
 import { QueryInProgress } from "../../../src/legacy-query-server/run-queries";
 import { LegacyQueryRunner } from "../../../src/legacy-query-server/legacyRunner";
-import { DatabaseItem } from "../../../src/databases";
+import { DatabaseItem } from "../../../src/local-databases";
 
 describe("run-queries", () => {
   let isCanarySpy: jest.SpiedFunction<typeof config.isCanary>;

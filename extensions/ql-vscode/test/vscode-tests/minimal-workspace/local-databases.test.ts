@@ -11,7 +11,7 @@ import {
   FullDatabaseOptions,
   findSourceArchive,
   DatabaseResolver,
-} from "../../../src/databases";
+} from "../../../src/local-databases";
 import { Logger } from "../../../src/common";
 import { ProgressCallback } from "../../../src/commandRunner";
 import { CodeQLCliServer, DbInfo } from "../../../src/cli";
@@ -25,7 +25,7 @@ import * as helpers from "../../../src/helpers";
 import { Setting } from "../../../src/config";
 import { QlPackGenerator } from "../../../src/qlpack-generator";
 
-describe("databases", () => {
+describe("local databases", () => {
   const MOCK_DB_OPTIONS: FullDatabaseOptions = {
     dateAdded: 123,
     ignoreSourceArchive: false,

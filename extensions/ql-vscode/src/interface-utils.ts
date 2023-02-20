@@ -15,7 +15,7 @@ import {
   ThemeColor,
 } from "vscode";
 import { tryGetResolvableLocation, isLineColumnLoc } from "./pure/bqrs-utils";
-import { DatabaseItem, DatabaseManager } from "./databases";
+import { DatabaseItem, DatabaseManager } from "./local-databases";
 import { ViewSourceFileMsg } from "./pure/interface-types";
 import { Logger } from "./common";
 import {

@@ -4,7 +4,7 @@ import { CancellationToken, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 
 import * as cli from "../cli";
-import { DatabaseItem } from "../databases";
+import { DatabaseItem } from "../local-databases";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,

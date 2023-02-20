@@ -1,7 +1,7 @@
 import { Uri, Range } from "vscode";
 
 import fileRangeFromURI from "../../../../src/contextual/fileRangeFromURI";
-import { DatabaseItem } from "../../../../src/databases";
+import { DatabaseItem } from "../../../../src/local-databases";
 import {
   WholeFileLocation,
   LineColumnLocation,

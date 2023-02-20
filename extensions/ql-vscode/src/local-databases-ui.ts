@@ -20,7 +20,7 @@ import {
   DatabaseChangedEvent,
   DatabaseItem,
   DatabaseManager,
-} from "./databases";
+} from "./local-databases";
 import {
   commandRunner,
   commandRunnerWithProgress,

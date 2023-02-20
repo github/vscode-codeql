@@ -34,7 +34,7 @@ import {
   showAndLogWarningMessage,
 } from "./helpers";
 import { testLogger } from "./common";
-import { DatabaseItem, DatabaseManager } from "./databases";
+import { DatabaseItem, DatabaseManager } from "./local-databases";
 import { asError, getErrorMessage } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
 

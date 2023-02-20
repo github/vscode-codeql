@@ -8,7 +8,7 @@ import {
   DatabaseItemImpl,
   DatabaseManager,
   FullDatabaseOptions,
-} from "../../../src/databases";
+} from "../../../src/local-databases";
 
 jest.mock("fs-extra", () => {
   const original = jest.requireActual("fs-extra");

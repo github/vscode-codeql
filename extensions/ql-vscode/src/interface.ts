@@ -12,7 +12,11 @@ import {
 } from "vscode";
 import * as cli from "./cli";
 import { CodeQLCliServer } from "./cli";
-import { DatabaseEventKind, DatabaseItem, DatabaseManager } from "./databases";
+import {
+  DatabaseEventKind,
+  DatabaseItem,
+  DatabaseManager,
+} from "./local-databases";
 import { showAndLogExceptionWithTelemetry } from "./helpers";
 import {
   asError,

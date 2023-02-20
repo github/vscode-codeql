@@ -1,6 +1,6 @@
 import { CodeQLCliServer } from "../cli";
 import { DecodedBqrsChunk, BqrsId, EntityValue } from "../pure/bqrs-cli-types";
-import { DatabaseItem } from "../databases";
+import { DatabaseItem } from "../local-databases";
 import { ChildAstItem, AstItem } from "../astViewer";
 import fileRangeFromURI from "./fileRangeFromURI";
 import { Uri } from "vscode";

@@ -29,7 +29,7 @@ import { isQuickQueryPath } from "./quick-query";
 import { nanoid } from "nanoid";
 import { CodeQLCliServer } from "./cli";
 import { SELECT_QUERY_NAME } from "./contextual/locationFinder";
-import { DatabaseManager } from "./databases";
+import { DatabaseManager } from "./local-databases";
 import { DecodedBqrsChunk } from "./pure/bqrs-cli-types";
 import { extLogger, Logger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";

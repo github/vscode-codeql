@@ -43,8 +43,8 @@ import {
   QueryServerConfigListener,
 } from "./config";
 import { install } from "./languageSupport";
-import { DatabaseItem, DatabaseManager } from "./databases";
-import { DatabaseUI } from "./databases-ui";
+import { DatabaseItem, DatabaseManager } from "./local-databases";
+import { DatabaseUI } from "./local-databases-ui";
 import {
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
