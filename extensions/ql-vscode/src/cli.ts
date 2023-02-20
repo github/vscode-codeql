@@ -125,14 +125,6 @@ export interface SourceInfo {
 export type ResolvedTests = string[];
 
 /**
- * Options for `codeql test run`.
- */
-export interface TestRunOptions {
-  cancellationToken?: CancellationToken;
-  logger?: Logger;
-}
-
-/**
  * Event fired by `codeql test run`.
  */
 export interface TestCompleted {
@@ -485,8 +477,13 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
-    cancellationToken?: CancellationToken,
-    logger?: Logger,
+    {
+      cancellationToken,
+      logger,
+    }: {
+      cancellationToken?: CancellationToken;
+      logger?: Logger;
+    } = {},
   ): AsyncGenerator<EventType, void, unknown> {
     for await (const event of this.runAsyncCodeQlCliCommandInternal(
       command,
@@ -519,8 +516,13 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
-    progressReporter?: ProgressReporter,
-    onLine?: OnLineCallback,
+    {
+      progressReporter,
+      onLine,
+    }: {
+      progressReporter?: ProgressReporter;
+      onLine?: OnLineCallback;
+    } = {},
   ): Promise<string> {
     if (progressReporter) {
       progressReporter.report({ message: description });
@@ -579,13 +581,10 @@ export class CodeQLCliServer implements Disposable {
       // Add format argument first, in case commandArgs contains positional parameters.
       args = args.concat(["--format", "json"]);
     args = args.concat(commandArgs);
-    const result = await this.runCodeQlCliCommand(
-      command,
-      args,
-      description,
+    const result = await this.runCodeQlCliCommand(command, args, description, {
       progressReporter,
       onLine,
-    );
+    });
     try {
       return JSON.parse(result) as OutputType;
     } catch (err) {
@@ -757,7 +756,13 @@ export class CodeQLCliServer implements Disposable {
   public async *runTests(
     testPaths: string[],
     workspaces: string[],
-    options: TestRunOptions,
+    {
+      cancellationToken,
+      logger,
+    }: {
+      cancellationToken?: CancellationToken;
+      logger?: Logger;
+    },
   ): AsyncGenerator<TestCompleted, void, unknown> {
     const subcommandArgs = this.cliConfig.additionalTestArguments.concat([
       ...this.getAdditionalPacksArg(workspaces),
@@ -770,8 +775,10 @@ export class CodeQLCliServer implements Disposable {
       ["test", "run"],
       subcommandArgs,
       "Run CodeQL Tests",
-      options.cancellationToken,
-      options.logger,
+      {
+        cancellationToken,
+        logger,
+      },
     )) {
       yield event;
     }
