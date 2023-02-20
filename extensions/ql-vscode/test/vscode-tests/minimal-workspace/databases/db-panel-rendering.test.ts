@@ -14,7 +14,7 @@ import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { createMockExtensionContext } from "../../../factories/extension-context";
 import { createDbConfig } from "../../../factories/db-config-factories";
 import { setRemoteControllerRepo } from "../../../../src/config";
-import { QueryLanguage } from "../../../../src/common/query-languagee";
+import { QueryLanguage } from "../../../../src/common/query-language";
 
 describe("db panel rendering nodes", () => {
   const workspaceStoragePath = join(__dirname, "test-workspace-storage");

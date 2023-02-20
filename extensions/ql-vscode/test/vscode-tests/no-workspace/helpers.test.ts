@@ -30,7 +30,7 @@ import {
   walkDirectory,
 } from "../../../src/helpers";
 import { reportStreamProgress } from "../../../src/commandRunner";
-import { QueryLanguage } from "../../../src/common/query-languagee";
+import { QueryLanguage } from "../../../src/common/query-language";
 
 describe("helpers", () => {
   describe("Invocation rate limiter", () => {
