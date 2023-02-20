@@ -12,10 +12,7 @@ import {
 } from "vscode";
 import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { extLogger } from "../../../../src/common";
-import {
-  setRemoteControllerRepo,
-  setRemoteRepositoryLists,
-} from "../../../../src/config";
+import { setRemoteControllerRepo } from "../../../../src/config";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import * as ghActionsApiClient from "../../../../src/variant-analysis/gh-api/gh-actions-api-client";
 import * as fs from "fs-extra";
@@ -156,9 +153,6 @@ describe("Variant Analysis Manager", () => {
 
       // always run in the vscode-codeql repo
       await setRemoteControllerRepo("github/vscode-codeql");
-      await setRemoteRepositoryLists({
-        "vscode-codeql": ["github/vscode-codeql"],
-      });
 
       // Only new version support `${workspace}` in qlpack.yml
       originalDeps = await fixWorkspaceReferences(
