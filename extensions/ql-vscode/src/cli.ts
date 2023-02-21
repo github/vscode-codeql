@@ -125,14 +125,6 @@ export interface SourceInfo {
 export type ResolvedTests = string[];
 
 /**
- * Options for `codeql test run`.
- */
-export interface TestRunOptions {
-  cancellationToken?: CancellationToken;
-  logger?: Logger;
-}
-
-/**
  * Event fired by `codeql test run`.
  */
 export interface TestCompleted {
@@ -485,8 +477,13 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
-    cancellationToken?: CancellationToken,
-    logger?: Logger,
+    {
+      cancellationToken,
+      logger,
+    }: {
+      cancellationToken?: CancellationToken;
+      logger?: Logger;
+    } = {},
   ): AsyncGenerator<EventType, void, unknown> {
     for await (const event of this.runAsyncCodeQlCliCommandInternal(
       command,
@@ -519,8 +516,13 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
-    progressReporter?: ProgressReporter,
-    onLine?: OnLineCallback,
+    {
+      progressReporter,
+      onLine,
+    }: {
+      progressReporter?: ProgressReporter;
+      onLine?: OnLineCallback;
+    } = {},
   ): Promise<string> {
     if (progressReporter) {
       progressReporter.report({ message: description });
@@ -564,22 +566,25 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
-    addFormat = true,
-    progressReporter?: ProgressReporter,
-    onLine?: OnLineCallback,
+    {
+      addFormat = true,
+      progressReporter,
+      onLine,
+    }: {
+      addFormat?: boolean;
+      progressReporter?: ProgressReporter;
+      onLine?: OnLineCallback;
+    } = {},
   ): Promise<OutputType> {
     let args: string[] = [];
     if (addFormat)
       // Add format argument first, in case commandArgs contains positional parameters.
       args = args.concat(["--format", "json"]);
     args = args.concat(commandArgs);
-    const result = await this.runCodeQlCliCommand(
-      command,
-      args,
-      description,
+    const result = await this.runCodeQlCliCommand(command, args, description, {
       progressReporter,
       onLine,
-    );
+    });
     try {
       return JSON.parse(result) as OutputType;
     } catch (err) {
@@ -617,8 +622,13 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
-    addFormat = true,
-    progressReporter?: ProgressReporter,
+    {
+      addFormat,
+      progressReporter,
+    }: {
+      addFormat?: boolean;
+      progressReporter?: ProgressReporter;
+    } = {},
   ): Promise<OutputType> {
     const accessToken = await this.app.credentials.getExistingAccessToken();
 
@@ -628,24 +638,26 @@ export class CodeQLCliServer implements Disposable {
       command,
       [...extraArgs, ...commandArgs],
       description,
-      addFormat,
-      progressReporter,
-      async (line) => {
-        if (line.startsWith("Enter value for --github-auth-stdin")) {
-          try {
-            return await this.app.credentials.getAccessToken();
-          } catch (e) {
-            // If the user cancels the authentication prompt, we still need to give a value to the CLI.
-            // By giving a potentially invalid value, the user will just get a 401/403 when they try to access a
-            // private package and the access token is invalid.
-            // This code path is very rare to hit. It would only be hit if the user is logged in when
-            // starting the command, then logging out before the getAccessToken() is called again and
-            // then cancelling the authentication prompt.
-            return accessToken;
+      {
+        addFormat,
+        progressReporter,
+        onLine: async (line) => {
+          if (line.startsWith("Enter value for --github-auth-stdin")) {
+            try {
+              return await this.app.credentials.getAccessToken();
+            } catch (e) {
+              // If the user cancels the authentication prompt, we still need to give a value to the CLI.
+              // By giving a potentially invalid value, the user will just get a 401/403 when they try to access a
+              // private package and the access token is invalid.
+              // This code path is very rare to hit. It would only be hit if the user is logged in when
+              // starting the command, then logging out before the getAccessToken() is called again and
+              // then cancelling the authentication prompt.
+              return accessToken;
+            }
           }
-        }
 
-        return undefined;
+          return undefined;
+        },
       },
     );
   }
@@ -714,7 +726,9 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "qlref"],
       subcommandArgs,
       "Resolving qlref",
-      false,
+      {
+        addFormat: false,
+      },
     );
   }
 
@@ -742,7 +756,13 @@ export class CodeQLCliServer implements Disposable {
   public async *runTests(
     testPaths: string[],
     workspaces: string[],
-    options: TestRunOptions,
+    {
+      cancellationToken,
+      logger,
+    }: {
+      cancellationToken?: CancellationToken;
+      logger?: Logger;
+    },
   ): AsyncGenerator<TestCompleted, void, unknown> {
     const subcommandArgs = this.cliConfig.additionalTestArguments.concat([
       ...this.getAdditionalPacksArg(workspaces),
@@ -755,8 +775,10 @@ export class CodeQLCliServer implements Disposable {
       ["test", "run"],
       subcommandArgs,
       "Run CodeQL Tests",
-      options.cancellationToken,
-      options.logger,
+      {
+        cancellationToken,
+        logger,
+      },
     )) {
       yield event;
     }
@@ -787,7 +809,9 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "ml-models"],
       args,
       "Resolving ML models",
-      false,
+      {
+        addFormat: false,
+      },
     );
   }
 
@@ -811,8 +835,9 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "ram"],
       args,
       "Resolving RAM settings",
-      true,
-      progressReporter,
+      {
+        progressReporter,
+      },
     );
   }
   /**
@@ -1229,12 +1254,13 @@ export class CodeQLCliServer implements Disposable {
   async packAdd(dir: string, queryLanguage: QueryLanguage) {
     const args = ["--dir", dir];
     args.push(`codeql/${queryLanguage}-all`);
-    const addFormat = false;
     return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "add"],
       args,
       `Adding and installing ${queryLanguage} pack dependency.`,
-      addFormat,
+      {
+        addFormat: false,
+      },
     );
   }
 
