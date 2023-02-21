@@ -579,10 +579,6 @@ export function isVariantAnalysisLiveResultsEnabled(): boolean {
   return true;
 }
 
-export function isVariantAnalysisReposPanelEnabled(): boolean {
-  return true;
-}
-
 // Settings for mocking the GitHub API.
 const MOCK_GH_API_SERVER = new Setting("mockGitHubApiServer", ROOT_SETTING);
 

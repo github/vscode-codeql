@@ -638,7 +638,7 @@ async function activateWithInstalledDistribution(
     cliServer,
     variantAnalysisStorageDir,
     variantAnalysisResultsManager,
-    dbModule?.dbManager, // the dbModule is only needed when variantAnalysisReposPanel is enabled
+    dbModule?.dbManager,
   );
   ctx.subscriptions.push(variantAnalysisManager);
   ctx.subscriptions.push(variantAnalysisResultsManager);
