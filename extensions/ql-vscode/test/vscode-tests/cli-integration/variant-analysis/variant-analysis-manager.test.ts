@@ -59,6 +59,7 @@ import { DbManager } from "../../../../src/databases/db-manager";
 import { App } from "../../../../src/common/app";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
+import { mockedObject } from "../../utils/mocking.helpers";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -992,10 +993,10 @@ describe("Variant Analysis Manager", () => {
 
       showTextDocumentSpy = jest
         .spyOn(window, "showTextDocument")
-        .mockResolvedValue(undefined as unknown as TextEditor);
+        .mockResolvedValue(mockedObject<TextEditor>({}));
       openTextDocumentSpy = jest
         .spyOn(workspace, "openTextDocument")
-        .mockResolvedValue(undefined as unknown as TextDocument);
+        .mockResolvedValue(mockedObject<TextDocument>({}));
     });
 
     afterEach(() => {
@@ -1005,8 +1006,8 @@ describe("Variant Analysis Manager", () => {
     it("opens the query text", async () => {
       await variantAnalysisManager.openQueryText(variantAnalysis.id);
 
-      expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
       expect(openTextDocumentSpy).toHaveBeenCalledTimes(1);
+      expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
 
       const uri: Uri = openTextDocumentSpy.mock.calls[0][0] as Uri;
       expect(uri.scheme).toEqual("codeql-variant-analysis");
@@ -1040,10 +1041,10 @@ describe("Variant Analysis Manager", () => {
 
       showTextDocumentSpy = jest
         .spyOn(window, "showTextDocument")
-        .mockResolvedValue(undefined as unknown as TextEditor);
+        .mockResolvedValue(mockedObject<TextEditor>({}));
       openTextDocumentSpy = jest
         .spyOn(workspace, "openTextDocument")
-        .mockResolvedValue(undefined as unknown as TextDocument);
+        .mockResolvedValue(mockedObject<TextDocument>({}));
     });
 
     afterEach(() => {

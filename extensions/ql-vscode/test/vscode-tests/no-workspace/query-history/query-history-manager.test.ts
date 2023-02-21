@@ -28,6 +28,7 @@ import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/v
 import { QuickPickItem, TextEditor } from "vscode";
 import { WebviewReveal } from "../../../../src/interface-utils";
 import * as helpers from "../../../../src/helpers";
+import { mockedObject } from "../../utils/mocking.helpers";
 
 describe("QueryHistoryManager", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -58,7 +59,7 @@ describe("QueryHistoryManager", () => {
   beforeEach(() => {
     showTextDocumentSpy = jest
       .spyOn(vscode.window, "showTextDocument")
-      .mockResolvedValue(undefined as unknown as TextEditor);
+      .mockResolvedValue(mockedObject<TextEditor>({}));
     showInformationMessageSpy = jest
       .spyOn(vscode.window, "showInformationMessage")
       .mockResolvedValue(undefined);
