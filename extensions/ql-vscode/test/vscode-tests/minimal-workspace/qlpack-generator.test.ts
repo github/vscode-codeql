@@ -6,6 +6,7 @@ import { CodeQLCliServer } from "../../../src/cli";
 import { Uri, workspace } from "vscode";
 import { getErrorMessage } from "../../../src/pure/helpers-pure";
 import * as tmp from "tmp";
+import { mockedObject } from "../utils/mocking.helpers";
 
 describe("QlPackGenerator", () => {
   let packFolderName: string;
@@ -14,7 +15,7 @@ describe("QlPackGenerator", () => {
   let exampleQlFilePath: string;
   let language: string;
   let generator: QlPackGenerator;
-  let packAddSpy: jest.SpyInstance;
+  let packAddSpy: jest.Mock<any, []>;
   let dir: tmp.DirResult;
 
   beforeEach(async () => {
@@ -28,9 +29,9 @@ describe("QlPackGenerator", () => {
     exampleQlFilePath = join(packFolderPath, "example.ql");
 
     packAddSpy = jest.fn();
-    const mockCli = {
+    const mockCli = mockedObject<CodeQLCliServer>({
       packAdd: packAddSpy,
-    } as unknown as CodeQLCliServer;
+    });
 
     generator = new QlPackGenerator(
       packFolderName,

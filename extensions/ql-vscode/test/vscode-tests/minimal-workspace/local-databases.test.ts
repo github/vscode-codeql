@@ -4,13 +4,13 @@ import { join } from "path";
 import { CancellationToken, ExtensionContext, Uri, workspace } from "vscode";
 
 import {
-  DatabaseEventKind,
-  DatabaseManager,
-  DatabaseItemImpl,
   DatabaseContents,
-  FullDatabaseOptions,
-  findSourceArchive,
+  DatabaseEventKind,
+  DatabaseItemImpl,
+  DatabaseManager,
   DatabaseResolver,
+  findSourceArchive,
+  FullDatabaseOptions,
 } from "../../../src/local-databases";
 import { Logger } from "../../../src/common";
 import { ProgressCallback } from "../../../src/commandRunner";
@@ -24,6 +24,7 @@ import { QueryRunner } from "../../../src/queryRunner";
 import * as helpers from "../../../src/helpers";
 import { Setting } from "../../../src/config";
 import { QlPackGenerator } from "../../../src/qlpack-generator";
+import { mockedObject } from "../utils/mocking.helpers";
 
 describe("local databases", () => {
   const MOCK_DB_OPTIONS: FullDatabaseOptions = {
@@ -77,20 +78,20 @@ describe("local databases", () => {
 
     databaseManager = new DatabaseManager(
       extensionContext,
-      {
+      mockedObject<QueryRunner>({
         registerDatabase: registerSpy,
         deregisterDatabase: deregisterSpy,
         onStart: () => {
           /**/
         },
-      } as unknown as QueryRunner,
-      {
+      }),
+      mockedObject<CodeQLCliServer>({
         resolveDatabase: resolveDatabaseSpy,
         packAdd: packAddSpy,
-      } as unknown as CodeQLCliServer,
-      {
+      }),
+      mockedObject<Logger>({
         log: logSpy,
-      } as unknown as Logger,
+      }),
     );
 
     // Unfortunately, during a test it is not possible to convert from
