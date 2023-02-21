@@ -72,15 +72,16 @@ export class QlPackGenerator {
     const exampleQl = `
 /**
  * This is an automatically generated file
- * @name Empty block
+ * @name Hello world
  * @kind problem
  * @problem.severity warning
- * @id ${this.queryLanguage}/example/empty-block
+ * @id ${this.queryLanguage}/example/hello-world
  */
 
 import ${this.queryLanguage}
 
-select "Hello, world!"
+from File f
+select f, "Hello, world!"
 `.trim();
 
     await writeFile(exampleQlFilePath, exampleQl, "utf8");
