@@ -37,6 +37,7 @@ import {
   CliConfigListener,
   DistributionConfigListener,
   isCanary,
+  isCodespacesTemplate,
   joinOrderWarningThreshold,
   MAX_QUERIES,
   QueryHistoryConfigListener,
@@ -234,7 +235,10 @@ export async function activate(
   const distributionConfigListener = new DistributionConfigListener();
   await initializeLogging(ctx);
   await initializeTelemetry(extension, ctx);
-  addUnhandledRejectionListener();
+  if (!isCodespacesTemplate()) {
+    addUnhandledRejectionListener();
+  }
+
   install();
 
   const codelensProvider = new QuickEvalCodeLensProvider();
