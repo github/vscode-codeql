@@ -533,6 +533,11 @@
         "icon": "$(preview)"
       },
       {
+        "command": "codeQLQueryHistory.profileQueryPerformance",
+        "title": "Profile Query Performance",
+        "icon": "$(watch)"
+      },
+      {
         "command": "codeQLQueryHistory.removeHistoryItem",
         "title": "Delete",
         "icon": "$(trash)"
@@ -730,6 +735,11 @@
           "group": "navigation"
         },
         {
+          "command": "codeQLQueryHistory.profileQueryPerformance",
+          "when": "view == codeQLQueryHistory",
+          "group": "navigation"
+        },
+        {
           "command": "codeQLQueryHistory.removeHistoryItem",
           "when": "view == codeQLQueryHistory",
           "group": "navigation"
@@ -830,6 +840,16 @@
           "command": "codeQLQueryHistory.openQuery",
           "group": "2_queryHistory@0",
           "when": "view == codeQLQueryHistory"
+        },
+        {
+          "command": "codeQLQueryHistory.profileQueryPerformance",
+          "group": "7_queryHistory@0",
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.profileQueryPerformance",
+          "group": "inline",
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
@@ -1099,6 +1119,10 @@
         },
         {
           "command": "codeQLQueryHistory.openQuery",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.profileQueryPerformance",
           "when": "false"
         },
         {

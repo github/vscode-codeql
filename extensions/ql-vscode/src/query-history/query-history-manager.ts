@@ -162,6 +162,7 @@ export class QueryHistoryManager extends DisposableObject {
     this.treeDataProvider = this.push(
       new HistoryTreeDataProvider(this.labelProvider),
     );
+
     this.treeView = this.push(
       window.createTreeView("codeQLQueryHistory", {
         treeDataProvider: this.treeDataProvider,
@@ -332,6 +333,13 @@ export class QueryHistoryManager extends DisposableObject {
       commandRunner(
         "codeQLQueryHistory.copyRepoList",
         this.handleCopyRepoList.bind(this),
+      ),
+    );
+
+    this.push(
+      commandRunner(
+        "codeQLQueryHistory.profileQueryPerformance",
+        this.profileQueryPerformance.bind(this),
       ),
     );
 
@@ -1202,6 +1210,28 @@ export class QueryHistoryManager extends DisposableObject {
       "codeQL.copyVariantAnalysisRepoList",
       finalSingleItem.variantAnalysis.id,
     );
+  }
+
+  async profileQueryPerformance(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[],
+  ) {
+    console.log("Profile performance clicked....");
+    this.determineSelection(singleItem, multiSelect);
+
+    // // Variant analyses only
+    // if (
+    //   !this.assertSingleQuery(finalMultiSelect) ||
+    //   !finalSingleItem ||
+    //   finalSingleItem.t !== "variant-analysis"
+    // ) {
+    //   return;
+    // }
+
+    // await commands.executeCommand(
+    //   "codeQL.copyVariantAnalysisRepoList",
+    //   finalSingleItem.variantAnalysis.id,
+    // );
   }
 
   async handleExportResults(
