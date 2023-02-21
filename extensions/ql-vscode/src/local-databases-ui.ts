@@ -380,12 +380,7 @@ export class DatabaseUI extends DisposableObject {
 
         let databaseItem = this.databaseManager.findDatabaseItem(uri);
         if (databaseItem === undefined) {
-          databaseItem = await this.databaseManager.openDatabase(
-            progress,
-            token,
-            uri,
-            "CodeQL Tutorial Database",
-          );
+          databaseItem = await this.openTutorialDatabase(progress, token, uri);
         }
         await this.databaseManager.setCurrentDatabaseItem(databaseItem);
       }
@@ -397,6 +392,22 @@ export class DatabaseUI extends DisposableObject {
         )}`,
       );
     }
+  };
+
+  // Opens the tutorial database for the CodeQL Tour.
+  // We set the database name as "CodeQL Tutorial Database" in purpose. This means
+  // we won't attempt to create a skeleton QL pack for this database.
+  openTutorialDatabase = async (
+    progress: ProgressCallback,
+    token: CancellationToken,
+    uri: Uri,
+  ): Promise<DatabaseItem> => {
+    return await this.databaseManager.openDatabase(
+      progress,
+      token,
+      uri,
+      "CodeQL Tutorial Database",
+    );
   };
 
   handleRemoveOrphanedDatabases = async (): Promise<void> => {

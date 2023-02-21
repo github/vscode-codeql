@@ -7,12 +7,14 @@ import {
   createFileSync,
   pathExistsSync,
 } from "fs-extra";
-import { Uri } from "vscode";
+import { CancellationToken, Uri } from "vscode";
 
 import { DatabaseUI } from "../../../src/local-databases-ui";
 import { testDisposeHandler } from "../test-dispose-handler";
 import { createMockApp } from "../../__mocks__/appMock";
 import { QueryLanguage } from "../../../src/common/query-language";
+import { App } from "../../../src/common/app";
+import { ProgressCallback } from "../../../src/commandRunner";
 
 describe("local-databases-ui", () => {
   describe("fixDbUri", () => {
@@ -114,6 +116,51 @@ describe("local-databases-ui", () => {
     expect(pathExistsSync(db5)).toBe(false);
 
     databaseUI.dispose(testDisposeHandler);
+  });
+
+  describe("openTutorialDatabase", () => {
+    let app: App;
+    let databaseUI: DatabaseUI;
+    let openDatabaseSpy: jest.SpyInstance;
+    let databaseManager: any;
+
+    beforeEach(async () => {
+      app = createMockApp({});
+      openDatabaseSpy = jest.fn();
+
+      databaseManager = {
+        databaseItems: [],
+        openDatabase: openDatabaseSpy,
+        onDidChangeDatabaseItem: () => {
+          /**/
+        },
+        onDidChangeCurrentDatabaseItem: () => {
+          /**/
+        },
+      };
+      databaseUI = new DatabaseUI(
+        app,
+        databaseManager as any,
+        {} as any,
+        "",
+        "",
+      );
+    });
+
+    it("should call openDatase with 'CodeQL Tutorial Database' as displayName", async () => {
+      await databaseUI.openTutorialDatabase(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        Uri.parse(""),
+      );
+
+      expect(openDatabaseSpy).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+        "CodeQL Tutorial Database",
+      );
+    });
   });
 
   function createDatabase(
