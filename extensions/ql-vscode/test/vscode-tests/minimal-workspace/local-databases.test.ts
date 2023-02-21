@@ -715,14 +715,11 @@ describe("local databases", () => {
         it("should not offer to create a skeleton QL pack", async () => {
           jest.spyOn(Setting.prototype, "getValue").mockReturnValue(true);
 
-          const isTutorialDatabase = true;
-
           await databaseManager.openDatabase(
             {} as ProgressCallback,
             {} as CancellationToken,
             mockDbItem.databaseUri,
             "CodeQL Tutorial Database",
-            isTutorialDatabase,
           );
 
           expect(createSkeletonPacksSpy).toBeCalledTimes(0);
