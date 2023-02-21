@@ -3,10 +3,7 @@ import * as vscode from "vscode";
 
 import { extLogger } from "../../../../src/common";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
-import {
-  QueryHistoryConfig,
-  QueryHistoryConfigListener,
-} from "../../../../src/config";
+import { QueryHistoryConfigListener } from "../../../../src/config";
 import { LocalQueryInfo } from "../../../../src/query-results";
 import { DatabaseManager } from "../../../../src/local-databases";
 import { tmpDir } from "../../../../src/helpers";
@@ -1159,7 +1156,11 @@ describe("QueryHistoryManager", () => {
         extensionPath: vscode.Uri.file("/x/y/z").fsPath,
       } as vscode.ExtensionContext,
       configListener,
-      new HistoryItemLabelProvider({} as QueryHistoryConfig),
+      new HistoryItemLabelProvider({
+        format: "",
+        ttlInMillis: 0,
+        onDidChangeConfiguration: jest.fn(),
+      }),
       doCompareCallback,
     );
     (qhm.treeDataProvider as any).history = [...allHistory];

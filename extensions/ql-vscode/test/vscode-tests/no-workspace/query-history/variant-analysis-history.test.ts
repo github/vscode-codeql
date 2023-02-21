@@ -9,7 +9,6 @@ import {
 import { join } from "path";
 
 import { commands, ExtensionContext, Uri } from "vscode";
-import { QueryHistoryConfig } from "../../../../src/config";
 import { DatabaseManager } from "../../../../src/local-databases";
 import { tmpDir, walkDirectory } from "../../../../src/helpers";
 import { DisposableBucket } from "../../disposable-bucket";
@@ -82,9 +81,15 @@ describe("Variant Analyses and QueryHistoryManager", () => {
         extensionPath: EXTENSION_PATH,
       }),
       {
+        format: "",
+        ttlInMillis: 0,
         onDidChangeConfiguration: () => new DisposableBucket(),
-      } as unknown as QueryHistoryConfig,
-      new HistoryItemLabelProvider({} as QueryHistoryConfig),
+      },
+      new HistoryItemLabelProvider({
+        format: "",
+        ttlInMillis: 0,
+        onDidChangeConfiguration: jest.fn(),
+      }),
       asyncNoop,
     );
     disposables.push(qhm);

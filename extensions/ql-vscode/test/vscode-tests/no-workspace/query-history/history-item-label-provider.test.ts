@@ -22,7 +22,9 @@ describe("HistoryItemLabelProvider", () => {
   beforeEach(() => {
     config = {
       format: "xxx %q xxx",
-    } as unknown as QueryHistoryConfig;
+      ttlInMillis: 0,
+      onDidChangeConfiguration: jest.fn(),
+    };
     labelProvider = new HistoryItemLabelProvider(config);
   });
 
