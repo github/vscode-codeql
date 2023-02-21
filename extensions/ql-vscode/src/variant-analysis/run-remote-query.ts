@@ -57,8 +57,8 @@ export interface GeneratedQueryPack {
 
 /**
  * Two possibilities:
- * 1. There is no qlpack.yml in this directory. Assume this is a lone query and generate a synthetic qlpack for it.
- * 2. There is a qlpack.yml in this directory. Assume this is a query pack and use the yml to pack the query before uploading it.
+ * 1. There is no qlpack.yml (or codeql-pack.yml) in this directory. Assume this is a lone query and generate a synthetic qlpack for it.
+ * 2. There is a qlpack.yml (or codeql-pack.yml) in this directory. Assume this is a query pack and use the yml to pack the query before uploading it.
  *
  * @returns the entire qlpack as a base64 string.
  */
@@ -169,12 +169,12 @@ async function generateQueryPack(
 }
 
 async function findPackRoot(queryFile: string): Promise<string> {
-  // recursively find the directory containing qlpack.yml
+  // recursively find the directory containing qlpack.yml or codeql-pack.yml
   let dir = dirname(queryFile);
   while (!(await getQlPackPath(dir))) {
     dir = dirname(dir);
     if (isFileSystemRoot(dir)) {
-      // there is no qlpack.yml in this directory or any parent directory.
+      // there is no qlpack.yml or codeql-pack.yml in this directory or any parent directory.
       // just use the query file's directory as the pack root.
       return dirname(queryFile);
     }
@@ -300,14 +300,14 @@ export async function prepareRemoteQueryRun(
 }
 
 /**
- * Fixes the qlpack.yml file to be correct in the context of the MRVA request.
+ * Fixes the qlpack.yml or codeql-pack.yml file to be correct in the context of the MRVA request.
  *
  * Performs the following fixes:
  *
  * - Updates the default suite of the query pack. This is used to ensure
  *   only the specified query is run.
  * - Ensures the query pack name is set to the name expected by the server.
- * - Removes any `${workspace}` version references from the qlpack.yml file. Converts them
+ * - Removes any `${workspace}` version references from the qlpack.yml or codeql-pack.yml file. Converts them
  *   to `*` versions.
  *
  * @param queryPackDir The directory containing the query pack
