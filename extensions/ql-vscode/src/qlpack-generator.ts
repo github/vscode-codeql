@@ -25,7 +25,7 @@ export class QlPackGenerator {
     this.qlpackVersion = "1.0.0";
     this.header = "# This is an automatically generated file.\n\n";
 
-    this.qlpackFileName = "qlpack.yml";
+    this.qlpackFileName = "codeql-pack.yml";
     this.folderUri = Uri.file(join(this.storagePath, this.folderName));
   }
 
@@ -33,7 +33,7 @@ export class QlPackGenerator {
     // create QL pack folder and add to workspace
     await this.createWorkspaceFolder();
 
-    // create qlpack.yml
+    // create codeql-pack.yml
     await this.createQlPackYaml();
 
     // create example.ql

@@ -30,12 +30,12 @@ export async function cleanDatabases(databaseManager: DatabaseManager) {
 }
 
 /**
- * Conditionally removes `${workspace}` references from a qlpack.yml file.
+ * Conditionally removes `${workspace}` references from a qlpack.yml or codeql-pack.yml file.
  * CLI versions earlier than 2.11.3 do not support `${workspace}` references in the dependencies block.
- * If workspace references are removed, the qlpack.yml file is re-written to disk
+ * If workspace references are removed, the qlpack.yml or codeql-pack.yml file is re-written to disk
  * without the `${workspace}` references and the original dependencies are returned.
  *
- * @param qlpackFileWithWorkspaceRefs The qlpack.yml file with workspace refs
+ * @param qlpackFileWithWorkspaceRefs The qlpack.yml or codeql-pack.yml file with workspace refs
  * @param cli The cli to use to check version constraints
  * @returns The original dependencies with workspace refs, or undefined if the CLI version supports workspace refs and no changes were made
  */
@@ -55,10 +55,10 @@ export async function fixWorkspaceReferences(
 }
 
 /**
- * Restores the original dependencies with `${workspace}` refs to a qlpack.yml file.
+ * Restores the original dependencies with `${workspace}` refs to a qlpack.yml or codeql-pack.yml file.
  * See `fixWorkspaceReferences` for more details.
  *
- * @param qlpackFileWithWorkspaceRefs The qlpack.yml file to restore workspace refs
+ * @param qlpackFileWithWorkspaceRefs The qlpack.yml or codeql-pack.yml file to restore workspace refs
  * @param originalDeps the original dependencies with workspace refs or undefined if
  *  no changes were made.
  */

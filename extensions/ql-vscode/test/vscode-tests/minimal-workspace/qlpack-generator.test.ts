@@ -24,7 +24,7 @@ describe("QlPackGenerator", () => {
     packFolderName = `test-ql-pack-${language}`;
     packFolderPath = Uri.file(join(dir.name, packFolderName)).fsPath;
 
-    qlPackYamlFilePath = join(packFolderPath, "qlpack.yml");
+    qlPackYamlFilePath = join(packFolderPath, "codeql-pack.yml");
     exampleQlFilePath = join(packFolderPath, "example.ql");
 
     packAddSpy = jest.fn();
