@@ -390,6 +390,7 @@ export class DatabaseUI extends DisposableObject {
           );
         }
         await this.databaseManager.setCurrentDatabaseItem(databaseItem);
+        await this.handleTourDependencies();
       }
     } catch (e) {
       // rethrow and let this be handled by default error handling.
@@ -398,6 +399,23 @@ export class DatabaseUI extends DisposableObject {
           e,
         )}`,
       );
+    }
+  };
+
+  private handleTourDependencies = async (): Promise<void> => {
+    // find workspace root folder
+    if (!workspace.workspaceFolders?.length) {
+      throw new Error("No workspace folder is open.");
+    } else {
+      // find tutorial queries folder
+      const tutorialQueriesPath = Uri.parse(
+        `${workspace.workspaceFolders?.[0].uri}/tutorial-queries`,
+      );
+      const cli = this.queryServer?.cliServer;
+      if (!cli) {
+        throw new Error("No CLI server found");
+      }
+      await cli.packInstall(tutorialQueriesPath.fsPath);
     }
   };
 
