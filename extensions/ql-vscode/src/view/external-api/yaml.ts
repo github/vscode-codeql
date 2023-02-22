@@ -81,7 +81,6 @@ const definitions: Record<
     generateMethodDefinition: (method) => [
       method.method.packageName,
       method.method.typeName,
-      true,
       method.method.methodName,
       method.method.methodParameters,
       "manual",
