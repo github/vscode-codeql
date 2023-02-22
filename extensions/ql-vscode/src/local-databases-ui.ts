@@ -407,7 +407,8 @@ export class DatabaseUI extends DisposableObject {
       throw new Error("No workspace folder is open.");
     } else {
       const tutorialQueriesPath = join(
-        `${workspace.workspaceFolders[0].uri.fsPath}/tutorial-queries`,
+        workspace.workspaceFolders[0].uri.fsPath,
+        "tutorial-queries",
       );
       const cli = this.queryServer?.cliServer;
       if (!cli) {
