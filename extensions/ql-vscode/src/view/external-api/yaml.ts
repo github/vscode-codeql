@@ -74,7 +74,7 @@ const definitions: Record<
     ],
   },
   neutral: {
-    extensible: "summaryModel",
+    extensible: "neutralModel",
     // extensible predicate neutralModel(
     //   string package, string type, string name, string signature, string provenance
     // );
