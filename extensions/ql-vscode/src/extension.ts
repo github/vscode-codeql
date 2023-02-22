@@ -234,7 +234,6 @@ export async function activate(
   const distributionConfigListener = new DistributionConfigListener();
   await initializeLogging(ctx);
   await initializeTelemetry(extension, ctx);
-  addUnhandledRejectionListener();
   install();
 
   const codelensProvider = new QuickEvalCodeLensProvider();
@@ -1524,35 +1523,6 @@ async function activateWithInstalledDistribution(
       ctx.subscriptions.forEach((d) => d.dispose());
     },
   };
-}
-
-function addUnhandledRejectionListener() {
-  const handler = (error: unknown) => {
-    const message = redactableError(
-      asError(error),
-    )`Unhandled error: ${getErrorMessage(error)}`;
-    // Add a catch so that showAndLogExceptionWithTelemetry fails, we avoid
-    // triggering "unhandledRejection" and avoid an infinite loop
-    showAndLogExceptionWithTelemetry(message).catch(
-      (telemetryError: unknown) => {
-        void extLogger.log(
-          `Failed to send error telemetry: ${getErrorMessage(telemetryError)}`,
-        );
-        void extLogger.log(message.fullMessage);
-      },
-    );
-  };
-
-  // "uncaughtException" will trigger whenever an exception reaches the top level.
-  // This covers extension initialization and any code within a `setTimeout`.
-  // Notably this does not include exceptions thrown when executing commands,
-  // because `commandRunner` wraps the command body and handles errors.
-  process.addListener("uncaughtException", handler);
-
-  // "unhandledRejection" will trigger whenever any promise is rejected and it is
-  // not handled by a "catch" somewhere in the promise chain. This includes when
-  // a promise is used with the "void" operator.
-  process.addListener("unhandledRejection", handler);
 }
 
 async function createQueryServer(
