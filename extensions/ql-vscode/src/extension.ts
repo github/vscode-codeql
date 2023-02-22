@@ -861,7 +861,15 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(localQueries);
 
-  const externalApiModule = new ExternalApiModule(ctx);
+  const externalApiQueryStorageDir = join(tmpDir.name, "external-api-results");
+  await ensureDir(externalApiQueryStorageDir);
+  const externalApiModule = new ExternalApiModule(
+    ctx,
+    dbm,
+    cliServer,
+    qs,
+    externalApiQueryStorageDir,
+  );
 
   void extLogger.log("Initializing QLTest interface.");
   const testExplorerExtension = extensions.getExtension<TestHub>(
