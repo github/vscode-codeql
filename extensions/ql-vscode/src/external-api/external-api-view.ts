@@ -83,6 +83,10 @@ export class ExternalApiView extends AbstractWebview<
 
     void extLogger.log(`BQRS path: ${bqrsPath}`);
 
+    const results = await this.getResults(bqrsPath);
+
+    void extLogger.log(`Results: ${JSON.stringify(results)}`);
+
     // await this.postMessage({
     //   t: "setVariantAnalysis",
     //   variantAnalysis,
@@ -151,5 +155,19 @@ export class ExternalApiView extends AbstractWebview<
       () => void 0,
       tokenSource.token,
     );
+  }
+
+  private async getResults(bqrsPath: string) {
+    const bqrsInfo = await this.cli.bqrsInfo(bqrsPath);
+    if (bqrsInfo["result-sets"].length !== 1) {
+      void extLogger.log(
+        `Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
+      );
+      return undefined;
+    }
+
+    const resultSet = bqrsInfo["result-sets"][0];
+
+    return this.cli.bqrsDecode(bqrsPath, resultSet.name);
   }
 }
