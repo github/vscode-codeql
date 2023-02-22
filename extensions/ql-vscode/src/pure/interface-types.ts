@@ -5,6 +5,7 @@ import {
   ResultSetSchema,
   Column,
   ResolvableLocationValue,
+  DecodedBqrsChunk,
 } from "./bqrs-cli-types";
 import {
   VariantAnalysis,
@@ -457,8 +458,9 @@ export type FromVariantAnalysisMessage =
 
 export interface SetExternalApiResultsMessage {
   t: "setExternalApiRepoResults";
+  results: DecodedBqrsChunk;
 }
 
-export type ToExternalApiMessage = SetRepoResultsMessage;
+export type ToExternalApiMessage = SetExternalApiResultsMessage;
 
 export type FromExternalApiMessage = ViewLoadedMsg;

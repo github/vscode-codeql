@@ -84,13 +84,16 @@ export class ExternalApiView extends AbstractWebview<
     void extLogger.log(`BQRS path: ${bqrsPath}`);
 
     const results = await this.getResults(bqrsPath);
+    if (!results) {
+      return;
+    }
 
     void extLogger.log(`Results: ${JSON.stringify(results)}`);
 
-    // await this.postMessage({
-    //   t: "setVariantAnalysis",
-    //   variantAnalysis,
-    // });
+    await this.postMessage({
+      t: "setExternalApiRepoResults",
+      results,
+    });
   }
 
   private async runQuery(): Promise<QueryWithResults | undefined> {
