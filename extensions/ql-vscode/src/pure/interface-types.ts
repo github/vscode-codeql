@@ -478,3 +478,11 @@ export interface SetDataFlowPathsMessage {
 export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
 
 export type FromDataFlowPathsMessage = CommonFromViewMessages;
+
+export interface SetExternalApiResultsMessage {
+  t: "setExternalApiRepoResults";
+}
+
+export type ToExternalApiMessage = SetRepoResultsMessage;
+
+export type FromExternalApiMessage = ViewLoadedMsg;

@@ -113,7 +113,8 @@ export type WebviewView =
   | "results"
   | "compare"
   | "variant-analysis"
-  | "data-flow-paths";
+  | "data-flow-paths"
+  | "external-api";
 
 export interface WebviewMessage {
   t: string;
