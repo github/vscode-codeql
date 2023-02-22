@@ -62,8 +62,9 @@ export class ExternalApiView extends AbstractWebview<
         await this.onWebViewLoaded();
 
         break;
-      case "saveDataExtensionYaml":
+      case "applyDataExtensionYaml":
         await this.saveYaml(msg.yaml);
+        await this.loadExternalApiUsages();
 
         break;
       default:
@@ -74,6 +75,10 @@ export class ExternalApiView extends AbstractWebview<
   protected async onWebViewLoaded() {
     super.onWebViewLoaded();
 
+    await this.loadExternalApiUsages();
+  }
+
+  protected async loadExternalApiUsages(): Promise<void> {
     const queryResult = await this.runQuery();
     if (!queryResult) {
       return;
