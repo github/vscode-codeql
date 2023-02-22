@@ -1,15 +1,39 @@
-import { ExtensionContext, ViewColumn } from "vscode";
+import {
+  CancellationTokenSource,
+  ExtensionContext,
+  Uri,
+  ViewColumn,
+} from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import {
-  ToExternalApiMessage,
   FromExternalApiMessage,
+  ToExternalApiMessage,
 } from "../pure/interface-types";
+import { qlpackOfDatabase } from "../contextual/queryResolver";
+import { CodeQLCliServer } from "../cli";
+import { file } from "tmp-promise";
+import { writeFile } from "fs-extra";
+import { dump } from "js-yaml";
+import { getOnDiskWorkspaceFolders } from "../helpers";
+import { extLogger } from "../common";
+import { DatabaseManager } from "../local-databases";
+import { QueryRunner } from "../queryRunner";
+import {
+  createInitialQueryInfo,
+  QueryWithResults,
+} from "../run-queries-shared";
 
 export class ExternalApiView extends AbstractWebview<
   ToExternalApiMessage,
   FromExternalApiMessage
 > {
-  public constructor(ctx: ExtensionContext) {
+  public constructor(
+    ctx: ExtensionContext,
+    private readonly cli: CodeQLCliServer,
+    private readonly databaseManager: DatabaseManager,
+    private readonly queryRunner: QueryRunner,
+    private readonly queryStorageDir: string,
+  ) {
     super(ctx);
   }
 
@@ -48,9 +72,84 @@ export class ExternalApiView extends AbstractWebview<
   protected async onWebViewLoaded() {
     super.onWebViewLoaded();
 
+    const queryResult = await this.runQuery();
+    if (!queryResult) {
+      return;
+    }
+
+    void extLogger.log(`Query result: ${JSON.stringify(queryResult)}`);
+
+    const bqrsPath = queryResult.query.resultsPaths.resultsPath;
+
+    void extLogger.log(`BQRS path: ${bqrsPath}`);
+
     // await this.postMessage({
     //   t: "setVariantAnalysis",
     //   variantAnalysis,
     // });
+  }
+
+  private async runQuery(): Promise<QueryWithResults | undefined> {
+    const db = this.databaseManager.currentDatabaseItem;
+    if (!db) {
+      void extLogger.log("No database selected");
+      return undefined;
+    }
+
+    const qlpacks = await qlpackOfDatabase(this.cli, db);
+
+    const packsToSearch = [qlpacks.dbschemePack];
+    if (qlpacks.queryPack) {
+      packsToSearch.push(qlpacks.queryPack);
+    }
+
+    const suiteFile = (
+      await file({
+        postfix: ".qls",
+      })
+    ).path;
+    const suiteYaml = [];
+    for (const qlpack of packsToSearch) {
+      suiteYaml.push({
+        from: qlpack,
+        queries: ".",
+        include: {
+          kind: "metric",
+          id: `${db.language}/telemetry/unsupported-external-api`,
+        },
+      });
+    }
+    await writeFile(suiteFile, dump(suiteYaml), "utf8");
+
+    const queries = await this.cli.resolveQueriesInSuite(
+      suiteFile,
+      getOnDiskWorkspaceFolders(),
+    );
+
+    if (queries.length !== 1) {
+      void extLogger.log(`Expected exactly one query, got ${queries.length}`);
+      return;
+    }
+
+    const query = queries[0];
+
+    const initialInfo = await createInitialQueryInfo(
+      Uri.file(query),
+      {
+        name: db.name,
+        databaseUri: db.databaseUri.toString(),
+      },
+      false,
+    );
+
+    const tokenSource = new CancellationTokenSource();
+
+    return this.queryRunner.compileAndRunQueryAgainstDatabase(
+      db,
+      initialInfo,
+      this.queryStorageDir,
+      () => void 0,
+      tokenSource.token,
+    );
   }
 }

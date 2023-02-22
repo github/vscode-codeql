@@ -1226,7 +1226,16 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner("codeQL.openExternalApi", async () => {
-      const view = new ExternalApiView(ctx);
+      const queryStorageDir = join(tmpDir.name, "external-api-results");
+      await ensureDir(queryStorageDir);
+
+      const view = new ExternalApiView(
+        ctx,
+        cliServer,
+        dbm,
+        qs,
+        queryStorageDir,
+      );
       await view.openView();
     }),
   );
