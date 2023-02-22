@@ -454,3 +454,11 @@ export type FromVariantAnalysisMessage =
   | OpenLogsMessage
   | CancelVariantAnalysisMessage
   | TelemetryMessage;
+
+export interface SetExternalApiResultsMessage {
+  t: "setExternalApiRepoResults";
+}
+
+export type ToExternalApiMessage = SetRepoResultsMessage;
+
+export type FromExternalApiMessage = ViewLoadedMsg;

@@ -131,6 +131,7 @@ import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
+import { ExternalApiView } from "./external-api/external-api-view";
 
 /**
  * extension.ts
@@ -1221,6 +1222,13 @@ async function activateWithInstalledDistribution(
         await variantAnalysisManager.showView(variantAnalysisId);
       },
     ),
+  );
+
+  ctx.subscriptions.push(
+    commandRunner("codeQL.openExternalApi", async () => {
+      const view = new ExternalApiView(ctx);
+      await view.openView();
+    }),
   );
 
   ctx.subscriptions.push(

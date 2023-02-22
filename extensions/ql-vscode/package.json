@@ -315,6 +315,10 @@
     },
     "commands": [
       {
+        "command": "codeQL.openExternalApi",
+        "title": "CodeQL: Show External Api Results"
+      },
+      {
         "command": "codeQL.authenticateToGitHub",
         "title": "CodeQL: Authenticate to GitHub"
       },
