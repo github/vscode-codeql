@@ -1,4 +1,10 @@
-import { CancellationTokenSource, ExtensionContext, ViewColumn } from "vscode";
+import {
+  CancellationTokenSource,
+  ExtensionContext,
+  Uri,
+  ViewColumn,
+  workspace,
+} from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import {
   FromExternalApiMessage,
@@ -13,6 +19,7 @@ import { getOnDiskWorkspaceFolders } from "../helpers";
 import { extLogger, TeeLogger } from "../common";
 import { DatabaseManager } from "../local-databases";
 import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
+import { assertNever } from "../pure/helpers-pure";
 
 export class ExternalApiView extends AbstractWebview<
   ToExternalApiMessage,
@@ -55,8 +62,12 @@ export class ExternalApiView extends AbstractWebview<
         await this.onWebViewLoaded();
 
         break;
+      case "saveDataExtensionYaml":
+        await this.saveYaml(msg.yaml);
+
+        break;
       default:
-        throw new Error("Unknown message type");
+        assertNever(msg);
     }
   }
 
@@ -85,6 +96,28 @@ export class ExternalApiView extends AbstractWebview<
       t: "setExternalApiRepoResults",
       results,
     });
+  }
+
+  protected async saveYaml(yaml: string): Promise<void> {
+    void extLogger.log(`Saving data extension YAML: ${yaml}`);
+
+    const workspaceFolder = workspace.workspaceFolders?.find(
+      (folder) => folder.name === "ql",
+    );
+    if (!workspaceFolder) {
+      void extLogger.log("No workspace folder 'ql' found");
+
+      return;
+    }
+
+    const path = Uri.joinPath(
+      workspaceFolder.uri,
+      "java/ql/lib/ext/vscode.model.yml",
+    ).fsPath;
+
+    await writeFile(path, yaml);
+
+    void extLogger.log(`Saved data extension YAML to ${path}`);
   }
 
   private async runQuery(): Promise<CoreCompletedQuery | undefined> {

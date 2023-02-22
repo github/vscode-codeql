@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { DecodedBqrsChunk } from "../../pure/bqrs-cli-types";
 import { ToExternalApiMessage } from "../../pure/interface-types";
 import {
+  VSCodeButton,
   VSCodeDataGrid,
   VSCodeDataGridCell,
   VSCodeDataGridRow,
@@ -11,6 +12,7 @@ import styled from "styled-components";
 import { ExternalApiUsage, ModeledMethod } from "./interface";
 import { MethodRow } from "./MethodRow";
 import { createDataExtensionYaml } from "./yaml";
+import { vscode } from "../vscode-api";
 
 export const ExternalApiContainer = styled.div``;
 
@@ -94,8 +96,17 @@ export function ExternalApi(): JSX.Element {
     [],
   );
 
+  const onApplyClick = useCallback(() => {
+    vscode.postMessage({
+      t: "saveDataExtensionYaml",
+      yaml: yamlString,
+    });
+  }, [yamlString]);
+
   return (
     <ExternalApiContainer>
+      <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+
       <VSCodeDataGrid>
         <VSCodeDataGridRow rowType="header">
           <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
