@@ -49,7 +49,7 @@ export class ExternalApiView extends AbstractWebview<
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
     return {
       viewId: "external-api-view",
-      title: "lol",
+      title: "External API usage",
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
       view: "external-api",
