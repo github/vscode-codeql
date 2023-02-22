@@ -66,8 +66,9 @@ export class ExternalApiView extends AbstractWebview<
         await this.onWebViewLoaded();
 
         break;
-      case "saveDataExtensionYaml":
+      case "applyDataExtensionYaml":
         await this.saveYaml(msg.yaml);
+        await this.loadExternalApiUsages();
 
         break;
       default:
@@ -78,28 +79,7 @@ export class ExternalApiView extends AbstractWebview<
   protected async onWebViewLoaded() {
     super.onWebViewLoaded();
 
-    const queryResult = await this.runQuery();
-    if (!queryResult) {
-      return;
-    }
-
-    void extLogger.log(`Query result: ${JSON.stringify(queryResult)}`);
-
-    const bqrsPath = queryResult.query.resultsPaths.resultsPath;
-
-    void extLogger.log(`BQRS path: ${bqrsPath}`);
-
-    const results = await this.getResults(bqrsPath);
-    if (!results) {
-      return;
-    }
-
-    void extLogger.log(`Results: ${JSON.stringify(results)}`);
-
-    await this.postMessage({
-      t: "setExternalApiRepoResults",
-      results,
-    });
+    await this.loadExternalApiUsages();
   }
 
   protected async saveYaml(yaml: string): Promise<void> {
@@ -122,6 +102,31 @@ export class ExternalApiView extends AbstractWebview<
     await writeFile(path, yaml);
 
     void extLogger.log(`Saved data extension YAML to ${path}`);
+  }
+
+  protected async loadExternalApiUsages(): Promise<void> {
+    const queryResult = await this.runQuery();
+    if (!queryResult) {
+      return;
+    }
+
+    void extLogger.log(`Query result: ${JSON.stringify(queryResult)}`);
+
+    const bqrsPath = queryResult.query.resultsPaths.resultsPath;
+
+    void extLogger.log(`BQRS path: ${bqrsPath}`);
+
+    const results = await this.getResults(bqrsPath);
+    if (!results) {
+      return;
+    }
+
+    void extLogger.log(`Results: ${JSON.stringify(results)}`);
+
+    await this.postMessage({
+      t: "setExternalApiRepoResults",
+      results,
+    });
   }
 
   private async runQuery(): Promise<QueryWithResults | undefined> {

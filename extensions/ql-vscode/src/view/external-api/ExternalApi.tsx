@@ -98,7 +98,7 @@ export function ExternalApi(): JSX.Element {
 
   const onApplyClick = useCallback(() => {
     vscode.postMessage({
-      t: "saveDataExtensionYaml",
+      t: "applyDataExtensionYaml",
       yaml: yamlString,
     });
   }, [yamlString]);

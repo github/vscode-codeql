@@ -461,8 +461,8 @@ export interface SetExternalApiResultsMessage {
   results: DecodedBqrsChunk;
 }
 
-export interface SaveDataExtensionYamlMessage {
-  t: "saveDataExtensionYaml";
+export interface ApplyDataExtensionYamlMessage {
+  t: "applyDataExtensionYaml";
   yaml: string;
 }
 
@@ -470,4 +470,4 @@ export type ToExternalApiMessage = SetExternalApiResultsMessage;
 
 export type FromExternalApiMessage =
   | ViewLoadedMsg
-  | SaveDataExtensionYamlMessage;
+  | ApplyDataExtensionYamlMessage;
