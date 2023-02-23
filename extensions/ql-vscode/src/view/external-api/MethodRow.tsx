@@ -136,7 +136,7 @@ export const MethodRow = ({ method, model, onChange }: Props) => {
         </UsagesButton>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={4}>
-        {!method.supported && (
+        {(!method.supported || (model && model?.type !== "none")) && (
           <Dropdown value={model?.type ?? "none"} onInput={handleTypeInput}>
             <VSCodeOption value="none">Unmodelled</VSCodeOption>
             <VSCodeOption value="source">Source</VSCodeOption>
