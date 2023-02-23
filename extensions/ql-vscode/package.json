@@ -281,22 +281,6 @@
           "scope": "application",
           "description": "Specifies whether or not to write telemetry events to the extension log."
         },
-        "codeQL.variantAnalysis.repositoryLists": {
-          "type": [
-            "object",
-            null
-          ],
-          "patternProperties": {
-            ".*": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "default": null,
-          "markdownDescription": "[For internal use only] Lists of GitHub repositories that you want to run variant analysis against. This should be a JSON object where each key is a user-specified name for this repository list, and the value is an array of GitHub repositories (of the form `<owner>/<repo>`)."
-        },
         "codeQL.variantAnalysis.controllerRepo": {
           "type": "string",
           "default": "",
