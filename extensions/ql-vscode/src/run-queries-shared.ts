@@ -240,13 +240,13 @@ export class QueryEvaluationInfo {
     queryInfo.evalLogSummaryLocation =
       await this.generateHumanReadableLogSummary(cliServer);
     void this.logEndSummary(queryInfo.evalLogSummaryLocation, logger); // Logged asynchrnously
+    await cliServer.generateJsonLogSummary(
+      this.evalLogPath,
+      this.jsonEvalLogSummaryPath,
+    );
+    queryInfo.jsonEvalLogSummaryLocation = this.jsonEvalLogSummaryPath;
+
     if (isCanary()) {
-      // Generate JSON summary for viewer.
-      await cliServer.generateJsonLogSummary(
-        this.evalLogPath,
-        this.jsonEvalLogSummaryPath,
-      );
-      queryInfo.jsonEvalLogSummaryLocation = this.jsonEvalLogSummaryPath;
       await generateSummarySymbolsFile(
         this.evalLogSummaryPath,
         this.evalLogSummarySymbolsPath,

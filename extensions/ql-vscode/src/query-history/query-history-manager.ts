@@ -40,6 +40,7 @@ import {
   getQueryText,
   QueryHistoryInfo,
 } from "./query-history-info";
+//import { DatabaseItem, DatabaseManager } from "../local-databases";
 import { DatabaseManager } from "../local-databases";
 import { registerQueryHistoryScrubber } from "./query-history-scrubber";
 import {
@@ -65,6 +66,7 @@ import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../variant-analysis/shared/variant-analysis";
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
 import { redactableError } from "../pure/errors";
+import { convertJSONSummaryEvaluatorLog } from "./profileConverter";
 
 /**
  * query-history-manager.ts
@@ -1216,22 +1218,62 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[],
   ) {
-    console.log("Profile performance clicked....");
-    this.determineSelection(singleItem, multiSelect);
+    void extLogger.log("Profiling performance of selected query...");
 
-    // // Variant analyses only
-    // if (
-    //   !this.assertSingleQuery(finalMultiSelect) ||
-    //   !finalSingleItem ||
-    //   finalSingleItem.t !== "variant-analysis"
-    // ) {
-    //   return;
-    // }
+    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
+      singleItem,
+      multiSelect,
+    );
 
-    // await commands.executeCommand(
-    //   "codeQL.copyVariantAnalysisRepoList",
-    //   finalSingleItem.variantAnalysis.id,
-    // );
+    // Only applicable to an individual local query
+    if (
+      !this.assertSingleQuery(finalMultiSelect) ||
+      !finalSingleItem ||
+      finalSingleItem.t !== "local"
+    ) {
+      return;
+    }
+
+    if (finalSingleItem.jsonEvalLogSummaryLocation) {
+      const cpuProfile = `${finalSingleItem.jsonEvalLogSummaryLocation}.cpuprofile`;
+      // check if it already exists
+      if (!(await pathExists(cpuProfile)))
+        convertJSONSummaryEvaluatorLog(
+          finalSingleItem.jsonEvalLogSummaryLocation,
+          cpuProfile,
+        );
+
+      await commands.executeCommand("vscode.open", Uri.file(cpuProfile));
+
+      // for debugging purposes open the evaluator log so we knows it's real.
+      //await this.tryOpenExternalFile(cpuProfile);
+      // const summaryLog = await commands.executeCommand<string>(
+      //   "codeQL.buildEvaluatorLogSummary",
+      //   finalSingleItem.evalLogLocation,
+      // );
+      // once the database has been built, run the query on it. Note that we
+      // don't do any explicit caching here and instead the caching mechanism
+      // is simply the cache mechanism the general query evaluation feature
+      // relies on.
+    } else {
+      this.warnNoEvalLogs();
+    }
+
+    /**
+     * Note here is how to run multiple queries: 
+     * 
+     * await Promise.all(
+          queryUris.map(async (uri) =>
+            compileAndRunQuery(
+              false,
+              uri,
+              wrappedProgress,
+              token,
+              undefined,
+            ).then(() => queriesRemaining--),
+          ),
+        );
+     */
   }
 
   async handleExportResults(

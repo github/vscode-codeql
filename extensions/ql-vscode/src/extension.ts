@@ -772,6 +772,32 @@ async function activateWithInstalledDistribution(
     }
   }
 
+  // async function buildEvaluatorLogSummary(
+  //   evaluatorLog: Uri,
+  //   progress: ProgressCallback,
+  //   token: CancellationToken,
+  // ): Promise<void> {
+  //   // handle cancellation from the history view.
+  //   const source = new CancellationTokenSource();
+  //   token.onCancellationRequested(() => source.cancel());
+
+  //   // convert the evaluator log via `codeql generate log-summary in.jsonl out.json`
+
+  //   try {
+  //     await qs.cliServer.generateJsonLogSummary(
+  //       evaluatorLog.toString(),
+  //       jsonSummaryLog,
+  //     );
+  //   } catch (e) {
+  //     const err = asError(e);
+  //     err.message = `Error running query: ${err.message}`;
+  //     throw e;
+  //   } finally {
+  //     await qhm.refreshTreeView();
+  //     source.dispose();
+  //   }
+  // }
+
   const qhelpTmpDir = dirSync({
     prefix: "qhelp_",
     keep: false,
@@ -1040,6 +1066,43 @@ async function activateWithInstalledDistribution(
       queryServerLogger,
     ),
   );
+
+  // ctx.subscriptions.push(
+  //   commandRunnerWithProgress(
+  //     "codeQL.buildQueryPerformanceDataDatabase",
+  //     async (
+  //       progress: ProgressCallback,
+  //       token: CancellationToken,
+  //       uri: Uri | undefined,
+  //     ) =>
+  //       await buildQueryPerformanceDataDatabase(
+  //         true,
+  //         uri,
+  //         progress,
+  //         token,
+  //         undefined,
+  //       ),
+  //     {
+  //       title: "Building performance data database",
+  //       cancellable: true,
+  //     },
+  //   ),
+  // );
+
+  // ctx.subscriptions.push(
+  //   commandRunnerWithProgress(
+  //     "codeQL.buildEvaluatorLogSummary",
+  //     async (
+  //       progress: ProgressCallback,
+  //       token: CancellationToken,
+  //       uri: Uri | undefined,
+  //     ) => await buildEvaluatorLogSummary(uri, progress, token),
+  //     {
+  //       title: "Building performance summary",
+  //       cancellable: true,
+  //     },
+  //   ),
+  // );
 
   ctx.subscriptions.push(
     commandRunnerWithProgress(
