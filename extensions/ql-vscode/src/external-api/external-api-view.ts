@@ -20,9 +20,13 @@ import { getOnDiskWorkspaceFolders } from "../helpers";
 import { extLogger, TeeLogger } from "../common";
 import { DatabaseManager } from "../local-databases";
 import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
-import { assertNever } from "../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
 import { showResolvableLocation } from "../interface-utils";
+import { App } from "../common/app";
+import { promptImportGithubDatabase } from "../databaseFetcher";
+import { promisify } from "util";
+import * as child_process from "child_process";
 
 export class ExternalApiView extends AbstractWebview<
   ToExternalApiMessage,
@@ -30,6 +34,7 @@ export class ExternalApiView extends AbstractWebview<
 > {
   public constructor(
     ctx: ExtensionContext,
+    private readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
@@ -74,6 +79,10 @@ export class ExternalApiView extends AbstractWebview<
         await this.jumpToUsage(msg.location);
 
         break;
+      case "generateExternalApi":
+        await this.generateExternalApi();
+
+        break;
       default:
         assertNever(msg);
     }
@@ -108,6 +117,56 @@ export class ExternalApiView extends AbstractWebview<
       } else {
         void extLogger.log(`Unable to handleMsgFromView: ${e}`);
       }
+    }
+  }
+
+  protected async generateExternalApi(): Promise<void> {
+    const tokenSource = new CancellationTokenSource();
+
+    const database = await promptImportGithubDatabase(
+      this.app.commands,
+      this.databaseManager,
+      this.app.workspaceStoragePath ?? this.app.globalStoragePath,
+      this.app.credentials,
+      () => void 0,
+      tokenSource.token,
+      this.cliServer,
+    );
+    if (!database) {
+      void extLogger.log("No database chosen");
+
+      return;
+    }
+
+    const workspaceFolder = workspace.workspaceFolders?.find(
+      (folder) => folder.name === "ql",
+    );
+    if (!workspaceFolder) {
+      void extLogger.log("No workspace folder 'ql' found");
+
+      return;
+    }
+
+    const base = "python3";
+    const args = [
+      Uri.joinPath(
+        workspaceFolder.uri,
+        "java/ql/src/utils/modelgenerator/GenerateFlowModel.py",
+      ).fsPath,
+      database.databaseUri.fsPath,
+      database.name.replaceAll("/", "."),
+    ];
+
+    void extLogger.log(`Running ${base} ${args.join(" ")}`);
+
+    try {
+      const result = await promisify(child_process.execFile)(base, args, {
+        cwd: workspaceFolder.uri.fsPath,
+      });
+      void extLogger.log(`stdout: ${result.stdout}`);
+      void extLogger.log(`stdout: ${result.stderr}`);
+    } catch (e: unknown) {
+      void extLogger.log(`Error: ${getErrorMessage(e)}`);
     }
   }
 

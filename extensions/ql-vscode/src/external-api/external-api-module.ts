@@ -4,10 +4,12 @@ import { ExternalApiCommands } from "../common/commands";
 import { DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
 import { QueryRunner } from "../queryRunner";
+import { App } from "../common/app";
 
 export class ExternalApiModule {
   public constructor(
     private readonly ctx: ExtensionContext,
+    private readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
@@ -19,6 +21,7 @@ export class ExternalApiModule {
       "codeQL.openExternalApi": async () => {
         const view = new ExternalApiView(
           this.ctx,
+          this.app,
           this.databaseManager,
           this.cliServer,
           this.queryRunner,

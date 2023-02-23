@@ -865,6 +865,7 @@ async function activateWithInstalledDistribution(
   await ensureDir(externalApiQueryStorageDir);
   const externalApiModule = new ExternalApiModule(
     ctx,
+    app,
     dbm,
     cliServer,
     qs,
