@@ -205,7 +205,6 @@ export function ExternalApi(): JSX.Element {
           </VSCodeDataGrid>
         </>
       )}
-      <pre>{yamlString}</pre>
     </ExternalApiContainer>
   );
 }
