@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+## [UNRELEASED]
+
 # 1.7.10 - 23 February 2023
 
 - Fix bug that was causing unwanted error notifications.
