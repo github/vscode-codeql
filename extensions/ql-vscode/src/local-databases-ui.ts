@@ -375,7 +375,7 @@ export class DatabaseUI extends DisposableObject {
         // This specifically refers to the database folder in
         // https://github.com/github/codespaces-codeql
         const uri = Uri.parse(
-          `${workspace.workspaceFolders[0].uri}/codeql-tutorial-database`,
+          `${workspace.workspaceFolders[0].uri}/.tours/codeql-tutorial-database`,
         );
 
         let databaseItem = this.databaseManager.findDatabaseItem(uri);
