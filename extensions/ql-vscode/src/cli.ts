@@ -930,7 +930,12 @@ export class CodeQLCliServer implements Disposable {
     inputPath: string,
     outputPath: string,
   ): Promise<string> {
-    const subcommandArgs = ["--format=predicates", inputPath, outputPath];
+    const subcommandArgs = [
+      "--format=predicates",
+      "--minify-output",
+      inputPath,
+      outputPath,
+    ];
     return await this.runCodeQlCliCommand(
       ["generate", "log-summary"],
       subcommandArgs,
