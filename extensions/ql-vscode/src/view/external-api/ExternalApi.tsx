@@ -1,7 +1,10 @@
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DecodedBqrsChunk } from "../../pure/bqrs-cli-types";
-import { ToExternalApiMessage } from "../../pure/interface-types";
+import {
+  ShowProgressMessage,
+  ToExternalApiMessage,
+} from "../../pure/interface-types";
 import {
   VSCodeButton,
   VSCodeDataGrid,
@@ -13,8 +16,22 @@ import { Call, ExternalApiUsage, ModeledMethod } from "./interface";
 import { MethodRow } from "./MethodRow";
 import { createDataExtensionYaml } from "./yaml";
 import { vscode } from "../vscode-api";
+import { assertNever } from "../../pure/helpers-pure";
 
-export const ExternalApiContainer = styled.div``;
+export const ExternalApiContainer = styled.div`
+  margin-top: 1rem;
+`;
+
+type ProgressBarProps = {
+  completion: number;
+};
+
+const ProgressBar = styled.div<ProgressBarProps>`
+  height: 10px;
+  width: ${(props) => props.completion * 100}%;
+
+  background-color: var(--vscode-progressBar-background);
+`;
 
 export function ExternalApi(): JSX.Element {
   const [results, setResults] = useState<DecodedBqrsChunk | undefined>(
@@ -23,13 +40,25 @@ export function ExternalApi(): JSX.Element {
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
   >({});
+  const [progress, setProgress] = useState<Omit<ShowProgressMessage, "t">>({
+    step: 0,
+    maxStep: 0,
+    message: "",
+  });
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
         const msg: ToExternalApiMessage = evt.data;
-        if (msg.t === "setExternalApiRepoResults") {
-          setResults(msg.results);
+        switch (msg.t) {
+          case "setExternalApiRepoResults":
+            setResults(msg.results);
+            break;
+          case "showProgress":
+            setProgress(msg);
+            break;
+          default:
+            assertNever(msg);
         }
       } else {
         // sanitize origin
@@ -127,44 +156,55 @@ export function ExternalApi(): JSX.Element {
 
   return (
     <ExternalApiContainer>
-      <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
-      <VSCodeButton onClick={onGenerateClick}>
-        Download and generate
-      </VSCodeButton>
+      {progress.maxStep > 0 && (
+        <p>
+          <ProgressBar completion={progress.step / progress.maxStep} />{" "}
+          {progress.message}
+        </p>
+      )}
 
-      <VSCodeDataGrid>
-        <VSCodeDataGridRow rowType="header">
-          <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
-            Type
-          </VSCodeDataGridCell>
-          <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
-            Method
-          </VSCodeDataGridCell>
-          <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
-            Usages
-          </VSCodeDataGridCell>
-          <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
-            Model type
-          </VSCodeDataGridCell>
-          <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
-            Input
-          </VSCodeDataGridCell>
-          <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
-            Output
-          </VSCodeDataGridCell>
-          <VSCodeDataGridCell cellType="columnheader" gridColumn={7}>
-            Kind
-          </VSCodeDataGridCell>
-        </VSCodeDataGridRow>
-        {methods?.map((method) => (
-          <MethodRow
-            key={method.externalApiInfo}
-            method={method}
-            model={modeledMethods[method.externalApiInfo]}
-            onChange={onChange}
-          />
-        ))}
-      </VSCodeDataGrid>
+      {methods.length > 0 && (
+        <>
+          <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+          <VSCodeButton onClick={onGenerateClick}>
+            Download and generate
+          </VSCodeButton>
+
+          <VSCodeDataGrid>
+            <VSCodeDataGridRow rowType="header">
+              <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
+                Type
+              </VSCodeDataGridCell>
+              <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
+                Method
+              </VSCodeDataGridCell>
+              <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
+                Usages
+              </VSCodeDataGridCell>
+              <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
+                Model type
+              </VSCodeDataGridCell>
+              <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
+                Input
+              </VSCodeDataGridCell>
+              <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
+                Output
+              </VSCodeDataGridCell>
+              <VSCodeDataGridCell cellType="columnheader" gridColumn={7}>
+                Kind
+              </VSCodeDataGridCell>
+            </VSCodeDataGridRow>
+            {methods.map((method) => (
+              <MethodRow
+                key={method.externalApiInfo}
+                method={method}
+                model={modeledMethods[method.externalApiInfo]}
+                onChange={onChange}
+              />
+            ))}
+          </VSCodeDataGrid>
+        </>
+      )}
       <pre>{yamlString}</pre>
     </ExternalApiContainer>
   );
