@@ -124,7 +124,6 @@ export function ExternalApi(): JSX.Element {
   }, [results]);
 
   const supportedPercentage = useMemo(() => {
-    console.log("*******", methods);
     return (methods.filter((m) => m.supported).length / methods.length) * 100;
   }, [methods]);
 
@@ -174,47 +173,56 @@ export function ExternalApi(): JSX.Element {
 
       {methods.length > 0 && (
         <>
-          <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
-          <VSCodeButton onClick={onGenerateClick}>
-            Download and generate
-          </VSCodeButton>
-
-          <p>Supported: {supportedPercentage.toFixed(2)}%</p>
-          <p>Unsupported: {unsupportedPercentage.toFixed(2)}%</p>
-
-          <VSCodeDataGrid>
-            <VSCodeDataGridRow rowType="header">
-              <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
-                Type
-              </VSCodeDataGridCell>
-              <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
-                Method
-              </VSCodeDataGridCell>
-              <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
-                Usages
-              </VSCodeDataGridCell>
-              <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
-                Model type
-              </VSCodeDataGridCell>
-              <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
-                Input
-              </VSCodeDataGridCell>
-              <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
-                Output
-              </VSCodeDataGridCell>
-              <VSCodeDataGridCell cellType="columnheader" gridColumn={7}>
-                Kind
-              </VSCodeDataGridCell>
-            </VSCodeDataGridRow>
-            {methods.map((method) => (
-              <MethodRow
-                key={method.externalApiInfo}
-                method={method}
-                model={modeledMethods[method.externalApiInfo]}
-                onChange={onChange}
-              />
-            ))}
-          </VSCodeDataGrid>
+          <div>
+            <h3>External API support stats</h3>
+            <ul>
+              <li>Supported: {supportedPercentage.toFixed(2)}%</li>
+              <li>Unsupported: {unsupportedPercentage.toFixed(2)}%</li>
+            </ul>
+          </div>
+          <div>
+            <h3>External API modelling</h3>
+            <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+            &nbsp;
+            <VSCodeButton onClick={onGenerateClick}>
+              Download and generate
+            </VSCodeButton>
+            <br />
+            <br />
+            <VSCodeDataGrid>
+              <VSCodeDataGridRow rowType="header">
+                <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
+                  Type
+                </VSCodeDataGridCell>
+                <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
+                  Method
+                </VSCodeDataGridCell>
+                <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
+                  Usages
+                </VSCodeDataGridCell>
+                <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
+                  Model type
+                </VSCodeDataGridCell>
+                <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
+                  Input
+                </VSCodeDataGridCell>
+                <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
+                  Output
+                </VSCodeDataGridCell>
+                <VSCodeDataGridCell cellType="columnheader" gridColumn={7}>
+                  Kind
+                </VSCodeDataGridCell>
+              </VSCodeDataGridRow>
+              {methods.map((method) => (
+                <MethodRow
+                  key={method.externalApiInfo}
+                  method={method}
+                  model={modeledMethods[method.externalApiInfo]}
+                  onChange={onChange}
+                />
+              ))}
+            </VSCodeDataGrid>
+          </div>
         </>
       )}
     </ExternalApiContainer>
