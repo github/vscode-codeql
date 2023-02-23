@@ -14,8 +14,8 @@ import {
 import { qlpackOfDatabase } from "../contextual/queryResolver";
 import { CodeQLCliServer } from "../cli";
 import { file } from "tmp-promise";
-import { writeFile } from "fs-extra";
-import { dump } from "js-yaml";
+import { readFile, writeFile } from "fs-extra";
+import { dump, load } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../helpers";
 import { extLogger } from "../common";
 import { DatabaseItem } from "../local-databases";
@@ -98,29 +98,42 @@ export class ExternalApiView extends AbstractWebview<
   protected async onWebViewLoaded() {
     super.onWebViewLoaded();
 
-    await this.loadExternalApiUsages();
+    await Promise.all([this.loadExternalApiUsages(), this.readExistingYaml()]);
   }
 
   protected async saveYaml(yaml: string): Promise<void> {
     void extLogger.log(`Saving data extension YAML: ${yaml}`);
 
-    const workspaceFolder = workspace.workspaceFolders?.find(
-      (folder) => folder.name === "ql",
-    );
-    if (!workspaceFolder) {
-      void extLogger.log("No workspace folder 'ql' found");
-
+    const modelFilename = this.modelFileName;
+    if (!modelFilename) {
       return;
     }
 
-    const path = Uri.joinPath(
-      workspaceFolder.uri,
-      "java/ql/lib/ext/vscode.model.yml",
-    ).fsPath;
+    await writeFile(modelFilename, yaml);
 
-    await writeFile(path, yaml);
+    void extLogger.log(`Saved data extension YAML to ${modelFilename}`);
+  }
 
-    void extLogger.log(`Saved data extension YAML to ${path}`);
+  protected async readExistingYaml(): Promise<void> {
+    const modelFilename = this.modelFileName;
+    if (!modelFilename) {
+      return;
+    }
+
+    try {
+      const yaml = await readFile(modelFilename, "utf8");
+
+      const data = load(yaml, {
+        filename: modelFilename,
+      });
+
+      await this.postMessage({
+        t: "setExistingYamlData",
+        data,
+      });
+    } catch (e: unknown) {
+      void extLogger.log(`Unable to read data extension YAML: ${e}`);
+    }
   }
 
   protected async jumpToUsage(
@@ -331,5 +344,22 @@ export class ExternalApiView extends AbstractWebview<
       maxStep: 0,
       message: "",
     });
+  }
+
+  private get modelFileName(): string | undefined {
+    const workspaceFolder = workspace.workspaceFolders?.find(
+      (folder) => folder.name === "ql",
+    );
+    if (!workspaceFolder) {
+      void extLogger.log("No workspace folder 'ql' found");
+
+      return;
+    }
+
+    return Uri.joinPath(
+      workspaceFolder.uri,
+      "java/ql/lib/ext",
+      `${this.databaseItem.name.replaceAll("/", ".")}.model.yml`,
+    ).fsPath;
   }
 }

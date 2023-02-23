@@ -468,6 +468,11 @@ export interface ShowProgressMessage {
   message: string;
 }
 
+export interface SetExistingYamlDataMessage {
+  t: "setExistingYamlData";
+  data: any;
+}
+
 export interface ApplyDataExtensionYamlMessage {
   t: "applyDataExtensionYaml";
   yaml: string;
@@ -484,7 +489,8 @@ export interface GenerateExternalApiMessage {
 
 export type ToExternalApiMessage =
   | SetExternalApiResultsMessage
-  | ShowProgressMessage;
+  | ShowProgressMessage
+  | SetExistingYamlDataMessage;
 
 export type FromExternalApiMessage =
   | ViewLoadedMsg

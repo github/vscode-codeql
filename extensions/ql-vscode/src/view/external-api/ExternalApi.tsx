@@ -14,7 +14,7 @@ import {
 import styled from "styled-components";
 import { Call, ExternalApiUsage, ModeledMethod } from "./interface";
 import { MethodRow } from "./MethodRow";
-import { createDataExtensionYaml } from "./yaml";
+import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { vscode } from "../vscode-api";
 import { assertNever } from "../../pure/helpers-pure";
 
@@ -56,6 +56,17 @@ export function ExternalApi(): JSX.Element {
             break;
           case "showProgress":
             setProgress(msg);
+            break;
+          case "setExistingYamlData":
+            setModeledMethods((oldModeledMethods) => {
+              const existingModeledMethods = loadDataExtensionYaml(msg.data);
+
+              return {
+                ...existingModeledMethods,
+                ...oldModeledMethods,
+              };
+            });
+
             break;
           default:
             assertNever(msg);
@@ -161,6 +172,10 @@ export function ExternalApi(): JSX.Element {
       t: "generateExternalApi",
     });
   }, []);
+
+  useEffect(() => {
+    console.log(modeledMethods);
+  }, [modeledMethods]);
 
   return (
     <ExternalApiContainer>
