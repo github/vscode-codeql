@@ -86,6 +86,7 @@ export class ExternalApiView extends AbstractWebview<
         break;
       case "generateExternalApi":
         await this.generateExternalApi();
+        await this.loadExternalApiUsages();
 
         break;
       default:
