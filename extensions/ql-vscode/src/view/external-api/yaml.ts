@@ -118,7 +118,7 @@ const definitions: Record<
       "manual",
     ],
     readModeledMethod: (row) => [
-      readRowToMethod(row),
+      `${row[0]}.${row[1]}#${row[2]}${row[3]}`,
       {
         type: "neutral",
         input: "",
