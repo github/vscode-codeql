@@ -9,6 +9,7 @@ import {
 import * as React from "react";
 import { useCallback, useMemo } from "react";
 import styled from "styled-components";
+import { vscode } from "../vscode-api";
 
 const Dropdown = styled(VSCodeDropdown)`
   width: 100%;
@@ -16,6 +17,21 @@ const Dropdown = styled(VSCodeDropdown)`
 
 const TextField = styled(VSCodeTextField)`
   width: 100%;
+`;
+
+type SupportedUnsupportedSpanProps = {
+  supported: boolean;
+};
+
+const SupportedUnsupportedSpan = styled.span<SupportedUnsupportedSpanProps>`
+  color: ${(props) => (props.supported ? "green" : "red")};
+`;
+
+const UsagesButton = styled.button`
+  color: var(--vscode-editor-foreground);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
 `;
 
 type Props = {
@@ -94,24 +110,41 @@ export const MethodRow = ({ method, model, onChange }: Props) => {
     [onChange, method, model],
   );
 
+  const jumpToUsage = useCallback(() => {
+    vscode.postMessage({
+      t: "jumpToUsage",
+      location: method.usages[0].url,
+    });
+  }, [method]);
+
   return (
     <VSCodeDataGridRow>
       <VSCodeDataGridCell gridColumn={1}>
-        {method.packageName}.{method.typeName}
+        <SupportedUnsupportedSpan supported={method.supported}>
+          {method.packageName}.{method.typeName}
+        </SupportedUnsupportedSpan>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={2}>
-        {method.methodName}
-        {method.methodParameters}
+        <SupportedUnsupportedSpan supported={method.supported}>
+          {method.methodName}
+          {method.methodParameters}
+        </SupportedUnsupportedSpan>
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={3}>{method.usages}</VSCodeDataGridCell>
+      <VSCodeDataGridCell gridColumn={3}>
+        <UsagesButton onClick={jumpToUsage}>
+          {method.usages.length}
+        </UsagesButton>
+      </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={4}>
-        <Dropdown value={model?.type ?? "none"} onInput={handleTypeInput}>
-          <VSCodeOption value="none">Unmodelled</VSCodeOption>
-          <VSCodeOption value="source">Source</VSCodeOption>
-          <VSCodeOption value="sink">Sink</VSCodeOption>
-          <VSCodeOption value="summary">Flow summary</VSCodeOption>
-          <VSCodeOption value="neutral">Neutral</VSCodeOption>
-        </Dropdown>
+        {!method.supported && (
+          <Dropdown value={model?.type ?? "none"} onInput={handleTypeInput}>
+            <VSCodeOption value="none">Unmodelled</VSCodeOption>
+            <VSCodeOption value="source">Source</VSCodeOption>
+            <VSCodeOption value="sink">Sink</VSCodeOption>
+            <VSCodeOption value="summary">Flow summary</VSCodeOption>
+            <VSCodeOption value="neutral">Neutral</VSCodeOption>
+          </Dropdown>
+        )}
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={5}>
         {model?.type && ["sink", "summary"].includes(model?.type) && (

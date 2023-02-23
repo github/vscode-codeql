@@ -3,6 +3,7 @@ import {
   ExtensionContext,
   Uri,
   ViewColumn,
+  window as Window,
   workspace,
 } from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
@@ -24,6 +25,8 @@ import {
   QueryWithResults,
 } from "../run-queries-shared";
 import { assertNever } from "../pure/helpers-pure";
+import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
+import { showResolvableLocation } from "../interface-utils";
 
 export class ExternalApiView extends AbstractWebview<
   ToExternalApiMessage,
@@ -71,6 +74,10 @@ export class ExternalApiView extends AbstractWebview<
         await this.loadExternalApiUsages();
 
         break;
+      case "jumpToUsage":
+        await this.jumpToUsage(msg.location);
+
+        break;
       default:
         assertNever(msg);
     }
@@ -102,6 +109,32 @@ export class ExternalApiView extends AbstractWebview<
     await writeFile(path, yaml);
 
     void extLogger.log(`Saved data extension YAML to ${path}`);
+  }
+
+  protected async jumpToUsage(
+    location: ResolvableLocationValue,
+  ): Promise<void> {
+    const db = this.databaseManager.currentDatabaseItem;
+    if (!db) {
+      void extLogger.log("No database selected");
+      return undefined;
+    }
+
+    try {
+      await showResolvableLocation(location, db);
+    } catch (e) {
+      if (e instanceof Error) {
+        if (e.message.match(/File not found/)) {
+          void Window.showErrorMessage(
+            "Original file of this result is not in the database's source archive.",
+          );
+        } else {
+          void extLogger.log(`Unable to handleMsgFromView: ${e.message}`);
+        }
+      } else {
+        void extLogger.log(`Unable to handleMsgFromView: ${e}`);
+      }
+    }
   }
 
   protected async loadExternalApiUsages(): Promise<void> {
@@ -155,7 +188,7 @@ export class ExternalApiView extends AbstractWebview<
         queries: ".",
         include: {
           kind: "metric",
-          id: `${db.language}/telemetry/unsupported-external-api`,
+          id: `${db.language}/telemetry/fetch-external-apis`,
         },
       });
     }
