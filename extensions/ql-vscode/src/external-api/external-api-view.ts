@@ -183,7 +183,6 @@ export class ExternalApiView extends AbstractWebview<
         from: qlpack,
         queries: ".",
         include: {
-          kind: "metric",
           id: `${db.language}/telemetry/fetch-external-apis`,
         },
       });
