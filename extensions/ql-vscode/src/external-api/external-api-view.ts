@@ -18,7 +18,7 @@ import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../helpers";
 import { extLogger } from "../common";
-import { DatabaseManager } from "../local-databases";
+import { DatabaseItem } from "../local-databases";
 import { QueryRunner } from "../queryRunner";
 import {
   createInitialQueryInfo,
@@ -40,10 +40,10 @@ export class ExternalApiView extends AbstractWebview<
     ctx: ExtensionContext,
     private readonly app: App,
     private readonly cli: CodeQLCliServer,
-    private readonly databaseManager: DatabaseManager,
     private readonly queryRunner: QueryRunner,
     private readonly databaseUI: DatabaseUI,
     private readonly queryStorageDir: string,
+    private readonly databaseItem: DatabaseItem,
   ) {
     super(ctx);
   }
@@ -125,14 +125,8 @@ export class ExternalApiView extends AbstractWebview<
   protected async jumpToUsage(
     location: ResolvableLocationValue,
   ): Promise<void> {
-    const db = this.databaseManager.currentDatabaseItem;
-    if (!db) {
-      void extLogger.log("No database selected");
-      return undefined;
-    }
-
     try {
-      await showResolvableLocation(location, db);
+      await showResolvableLocation(location, this.databaseItem);
     } catch (e) {
       if (e instanceof Error) {
         if (e.message.match(/File not found/)) {
@@ -220,13 +214,7 @@ export class ExternalApiView extends AbstractWebview<
   }
 
   private async runQuery(): Promise<QueryWithResults | undefined> {
-    const db = this.databaseManager.currentDatabaseItem;
-    if (!db) {
-      void extLogger.log("No database selected");
-      return undefined;
-    }
-
-    const qlpacks = await qlpackOfDatabase(this.cli, db);
+    const qlpacks = await qlpackOfDatabase(this.cli, this.databaseItem);
 
     const packsToSearch = [qlpacks.dbschemePack];
     if (qlpacks.queryPack) {
@@ -244,7 +232,7 @@ export class ExternalApiView extends AbstractWebview<
         from: qlpack,
         queries: ".",
         include: {
-          id: `${db.language}/telemetry/fetch-external-apis`,
+          id: `${this.databaseItem.language}/telemetry/fetch-external-apis`,
         },
       });
     }
@@ -265,8 +253,8 @@ export class ExternalApiView extends AbstractWebview<
     const initialInfo = await createInitialQueryInfo(
       Uri.file(query),
       {
-        name: db.name,
-        databaseUri: db.databaseUri.toString(),
+        name: this.databaseItem.name,
+        databaseUri: this.databaseItem.databaseUri.toString(),
       },
       false,
     );
@@ -274,7 +262,7 @@ export class ExternalApiView extends AbstractWebview<
     const tokenSource = new CancellationTokenSource();
 
     return this.queryRunner.compileAndRunQueryAgainstDatabase(
-      db,
+      this.databaseItem,
       initialInfo,
       this.queryStorageDir,
       () => void 0,

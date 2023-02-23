@@ -1229,14 +1229,20 @@ async function activateWithInstalledDistribution(
       const queryStorageDir = join(tmpDir.name, "external-api-results");
       await ensureDir(queryStorageDir);
 
+      const db = dbm.currentDatabaseItem;
+      if (!db) {
+        void extLogger.log("No database selected");
+        return;
+      }
+
       const view = new ExternalApiView(
         ctx,
         app,
         cliServer,
-        dbm,
         qs,
         databaseUI,
         queryStorageDir,
+        db,
       );
       await view.openView();
     }),
