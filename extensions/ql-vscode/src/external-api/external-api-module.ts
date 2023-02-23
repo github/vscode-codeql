@@ -5,6 +5,7 @@ import { DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
 import { QueryRunner } from "../queryRunner";
 import { App } from "../common/app";
+import { extLogger } from "../common";
 
 export class ExternalApiModule {
   public constructor(
@@ -19,6 +20,12 @@ export class ExternalApiModule {
   public getCommands(): ExternalApiCommands {
     return {
       "codeQL.openExternalApi": async () => {
+        const db = this.databaseManager.currentDatabaseItem;
+        if (!db) {
+          void extLogger.log("No database selected");
+          return;
+        }
+
         const view = new ExternalApiView(
           this.ctx,
           this.app,
@@ -26,6 +33,7 @@ export class ExternalApiModule {
           this.cliServer,
           this.queryRunner,
           this.queryStorageDir,
+          db,
         );
         await view.openView();
       },
