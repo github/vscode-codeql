@@ -490,8 +490,14 @@ export interface ApplyDataExtensionYamlMessage {
   yaml: string;
 }
 
+export interface JumpToUsageMessage {
+  t: "jumpToUsage";
+  location: ResolvableLocationValue;
+}
+
 export type ToExternalApiMessage = SetExternalApiResultsMessage;
 
 export type FromExternalApiMessage =
   | ViewLoadedMsg
-  | ApplyDataExtensionYamlMessage;
+  | ApplyDataExtensionYamlMessage
+  | JumpToUsageMessage;

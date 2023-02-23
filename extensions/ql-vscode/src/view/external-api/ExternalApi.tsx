@@ -9,7 +9,7 @@ import {
   VSCodeDataGridRow,
 } from "@vscode/webview-ui-toolkit/react";
 import styled from "styled-components";
-import { ExternalApiUsage, ModeledMethod } from "./interface";
+import { Call, ExternalApiUsage, ModeledMethod } from "./interface";
 import { MethodRow } from "./MethodRow";
 import { createDataExtensionYaml } from "./yaml";
 import { vscode } from "../vscode-api";
@@ -45,9 +45,12 @@ export function ExternalApi(): JSX.Element {
   }, []);
 
   const methods = useMemo(() => {
-    return results?.tuples.map((tuple): ExternalApiUsage => {
+    const methodsByApiName = new Map<string, ExternalApiUsage>();
+
+    results?.tuples.forEach((tuple) => {
       const externalApiInfo = tuple[0] as string;
-      const usages = tuple[1] as number;
+      const supported = tuple[1] as boolean;
+      const usage = tuple[2] as Call;
 
       const [packageWithType, methodDeclaration] = externalApiInfo.split("#");
 
@@ -67,15 +70,28 @@ export function ExternalApi(): JSX.Element {
         methodDeclaration.indexOf("("),
       );
 
-      return {
-        externalApiInfo,
-        packageName,
-        typeName,
-        methodName,
-        methodParameters,
-        usages,
-      };
+      if (!methodsByApiName.has(externalApiInfo)) {
+        methodsByApiName.set(externalApiInfo, {
+          externalApiInfo,
+          packageName,
+          typeName,
+          methodName,
+          methodParameters,
+          supported,
+          usages: [],
+        });
+      }
+
+      const method = methodsByApiName.get(externalApiInfo)!;
+      method.usages.push(usage);
     });
+
+    const externalApiUsages = Array.from(methodsByApiName.values());
+    externalApiUsages.sort((a, b) => {
+      // Sort by number of usages descending
+      return b.usages.length - a.usages.length;
+    });
+    return externalApiUsages;
   }, [results]);
 
   const yamlString = useMemo(() => {
