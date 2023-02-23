@@ -96,7 +96,7 @@ export function convertJSONSummaryEvaluatorLog(
 
     for (const k in e.dependencies) {
       if (raDatabase.has(e.dependencies[k])) {
-        deps["k"] = e.dependencies[k];
+        deps[k] = e.dependencies[k];
       }
     }
 
