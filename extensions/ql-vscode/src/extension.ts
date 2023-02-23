@@ -1231,9 +1231,11 @@ async function activateWithInstalledDistribution(
 
       const view = new ExternalApiView(
         ctx,
+        app,
         cliServer,
         dbm,
         qs,
+        databaseUI,
         queryStorageDir,
       );
       await view.openView();

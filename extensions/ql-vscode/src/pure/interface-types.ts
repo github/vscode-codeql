@@ -471,9 +471,14 @@ export interface JumpToUsageMessage {
   location: ResolvableLocationValue;
 }
 
+export interface GenerateExternalApiMessage {
+  t: "generateExternalApi";
+}
+
 export type ToExternalApiMessage = SetExternalApiResultsMessage;
 
 export type FromExternalApiMessage =
   | ViewLoadedMsg
   | ApplyDataExtensionYamlMessage
-  | JumpToUsageMessage;
+  | JumpToUsageMessage
+  | GenerateExternalApiMessage;

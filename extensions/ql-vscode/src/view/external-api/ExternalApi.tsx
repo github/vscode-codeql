@@ -119,9 +119,18 @@ export function ExternalApi(): JSX.Element {
     });
   }, [yamlString]);
 
+  const onGenerateClick = useCallback(() => {
+    vscode.postMessage({
+      t: "generateExternalApi",
+    });
+  }, []);
+
   return (
     <ExternalApiContainer>
       <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+      <VSCodeButton onClick={onGenerateClick}>
+        Download and generate
+      </VSCodeButton>
 
       <VSCodeDataGrid>
         <VSCodeDataGridRow rowType="header">
