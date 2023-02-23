@@ -31,6 +31,7 @@ import { DatabaseUI } from "../local-databases-ui";
 import { App } from "../common/app";
 import child_process from "child_process";
 import { promisify } from "util";
+import { ProgressUpdate } from "../commandRunner";
 
 export class ExternalApiView extends AbstractWebview<
   ToExternalApiMessage,
@@ -147,10 +148,11 @@ export class ExternalApiView extends AbstractWebview<
 
     const database = await this.databaseUI.handleChooseDatabaseGithub(
       this.app.credentials,
-      () => void 0,
+      (update) => this.showProgress(update),
       tokenSource.token,
     );
     if (!database) {
+      await this.clearProgress();
       void extLogger.log("No database chosen");
 
       return;
@@ -164,6 +166,12 @@ export class ExternalApiView extends AbstractWebview<
 
       return;
     }
+
+    await this.showProgress({
+      step: 1,
+      maxStep: 4,
+      message: "Generating external API",
+    });
 
     const base = "python3";
     const args = [
@@ -186,13 +194,22 @@ export class ExternalApiView extends AbstractWebview<
     } catch (e: unknown) {
       void extLogger.log(`Error: ${getErrorMessage(e)}`);
     }
+
+    await this.clearProgress();
   }
 
   protected async loadExternalApiUsages(): Promise<void> {
     const queryResult = await this.runQuery();
     if (!queryResult) {
+      await this.clearProgress();
       return;
     }
+
+    await this.showProgress({
+      message: "Loading results",
+      step: 1100,
+      maxStep: 1500,
+    });
 
     void extLogger.log(`Query result: ${JSON.stringify(queryResult)}`);
 
@@ -202,8 +219,15 @@ export class ExternalApiView extends AbstractWebview<
 
     const results = await this.getResults(bqrsPath);
     if (!results) {
+      await this.clearProgress();
       return;
     }
+
+    await this.showProgress({
+      message: "Finalizing results",
+      step: 1450,
+      maxStep: 1500,
+    });
 
     void extLogger.log(`Results: ${JSON.stringify(results)}`);
 
@@ -211,6 +235,8 @@ export class ExternalApiView extends AbstractWebview<
       t: "setExternalApiRepoResults",
       results,
     });
+
+    await this.clearProgress();
   }
 
   private async runQuery(): Promise<QueryWithResults | undefined> {
@@ -265,7 +291,7 @@ export class ExternalApiView extends AbstractWebview<
       this.databaseItem,
       initialInfo,
       this.queryStorageDir,
-      () => void 0,
+      (update) => this.showProgress(update, 1500),
       tokenSource.token,
     );
   }
@@ -281,6 +307,29 @@ export class ExternalApiView extends AbstractWebview<
 
     const resultSet = bqrsInfo["result-sets"][0];
 
+    await this.showProgress({
+      message: "Decoding results",
+      step: 1200,
+      maxStep: 1500,
+    });
+
     return this.cli.bqrsDecode(bqrsPath, resultSet.name);
+  }
+
+  private async showProgress(update: ProgressUpdate, maxStep?: number) {
+    await this.postMessage({
+      t: "showProgress",
+      step: update.step,
+      maxStep: maxStep ?? update.maxStep,
+      message: update.message,
+    });
+  }
+
+  private async clearProgress() {
+    await this.showProgress({
+      step: 0,
+      maxStep: 0,
+      message: "",
+    });
   }
 }

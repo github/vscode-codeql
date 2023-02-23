@@ -461,6 +461,13 @@ export interface SetExternalApiResultsMessage {
   results: DecodedBqrsChunk;
 }
 
+export interface ShowProgressMessage {
+  t: "showProgress";
+  step: number;
+  maxStep: number;
+  message: string;
+}
+
 export interface ApplyDataExtensionYamlMessage {
   t: "applyDataExtensionYaml";
   yaml: string;
@@ -475,7 +482,9 @@ export interface GenerateExternalApiMessage {
   t: "generateExternalApi";
 }
 
-export type ToExternalApiMessage = SetExternalApiResultsMessage;
+export type ToExternalApiMessage =
+  | SetExternalApiResultsMessage
+  | ShowProgressMessage;
 
 export type FromExternalApiMessage =
   | ViewLoadedMsg
