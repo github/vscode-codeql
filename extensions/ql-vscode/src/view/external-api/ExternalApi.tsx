@@ -123,6 +123,15 @@ export function ExternalApi(): JSX.Element {
     return externalApiUsages;
   }, [results]);
 
+  const supportedPercentage = useMemo(() => {
+    console.log("*******", methods);
+    return (methods.filter((m) => m.supported).length / methods.length) * 100;
+  }, [methods]);
+
+  const unsupportedPercentage = useMemo(() => {
+    return (methods.filter((m) => !m.supported).length / methods.length) * 100;
+  }, [methods]);
+
   const yamlString = useMemo(() => {
     if (!methods) {
       return "";
@@ -169,6 +178,9 @@ export function ExternalApi(): JSX.Element {
           <VSCodeButton onClick={onGenerateClick}>
             Download and generate
           </VSCodeButton>
+
+          <p>Supported: {supportedPercentage.toFixed(2)}%</p>
+          <p>Unsupported: {unsupportedPercentage.toFixed(2)}%</p>
 
           <VSCodeDataGrid>
             <VSCodeDataGridRow rowType="header">
