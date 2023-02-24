@@ -19,7 +19,7 @@ function readRowToMethod(row: any[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;
 }
 
-const definitions: Record<
+export const definitions: Record<
   Exclude<ModeledMethodType, "none">,
   DataExtensionDefinition
 > = {

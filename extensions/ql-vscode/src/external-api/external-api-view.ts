@@ -25,9 +25,9 @@ import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
 import { showResolvableLocation } from "../interface-utils";
 import { App } from "../common/app";
 import { promptImportGithubDatabase } from "../databaseFetcher";
-import { promisify } from "util";
-import * as child_process from "child_process";
 import { ProgressUpdate } from "../progress";
+import { ModeledMethod } from "./interface";
+import { generateFlowModel } from "./generate-flow-model";
 
 export class ExternalApiView extends AbstractWebview<
   ToExternalApiMessage,
@@ -83,7 +83,6 @@ export class ExternalApiView extends AbstractWebview<
         break;
       case "generateExternalApi":
         await this.generateExternalApi();
-        await this.loadExternalApiUsages();
 
         break;
       default:
@@ -146,29 +145,33 @@ export class ExternalApiView extends AbstractWebview<
     }
 
     await this.showProgress({
-      step: 1,
-      maxStep: 4,
+      step: 0,
+      maxStep: 4000,
       message: "Generating external API",
     });
 
-    const base = "python3";
-    const args = [
-      Uri.joinPath(
-        workspaceFolder.uri,
-        "java/ql/src/utils/modelgenerator/GenerateFlowModel.py",
-      ).fsPath,
-      database.databaseUri.fsPath,
-      database.name.replaceAll("/", "."),
-    ];
-
-    void extLogger.log(`Running ${base} ${args.join(" ")}`);
-
     try {
-      const result = await promisify(child_process.execFile)(base, args, {
-        cwd: workspaceFolder.uri.fsPath,
-      });
-      void extLogger.log(`stdout: ${result.stdout}`);
-      void extLogger.log(`stdout: ${result.stderr}`);
+      await generateFlowModel(
+        this.cliServer,
+        this.queryRunner,
+        this.queryStorageDir,
+        workspaceFolder.uri.fsPath,
+        database,
+        async (results) => {
+          const modeledMethodsByName: Record<string, ModeledMethod> = {};
+
+          for (const result of results) {
+            modeledMethodsByName[result[0]] = result[1];
+          }
+
+          await this.postMessage({
+            t: "addModeledMethods",
+            modeledMethods: modeledMethodsByName,
+          });
+        },
+        (update) => this.showProgress(update),
+        tokenSource.token,
+      );
     } catch (e: unknown) {
       void extLogger.log(`Error: ${getErrorMessage(e)}`);
     }
