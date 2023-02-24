@@ -18,7 +18,7 @@ import { readFile, writeFile } from "fs-extra";
 import { dump, load } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../helpers";
 import { extLogger } from "../common";
-import { DatabaseItem } from "../local-databases";
+import { DatabaseItem, DatabaseManager } from "../local-databases";
 import { QueryRunner } from "../queryRunner";
 import {
   createInitialQueryInfo,
@@ -42,6 +42,7 @@ export class ExternalApiView extends AbstractWebview<
     private readonly app: App,
     private readonly cli: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
+    private readonly databaseManager: DatabaseManager,
     private readonly databaseUI: DatabaseUI,
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
@@ -158,6 +159,8 @@ export class ExternalApiView extends AbstractWebview<
   protected async generateExternalApi(): Promise<void> {
     const tokenSource = new CancellationTokenSource();
 
+    const selectedDatabase = this.databaseManager.currentDatabaseItem;
+
     const database = await this.databaseUI.handleChooseDatabaseGithub(
       this.app.credentials,
       (update) => this.showProgress(update),
@@ -169,6 +172,8 @@ export class ExternalApiView extends AbstractWebview<
 
       return;
     }
+
+    await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
 
     const workspaceFolder = workspace.workspaceFolders?.find(
       (folder) => folder.name === "ql",
@@ -210,6 +215,17 @@ export class ExternalApiView extends AbstractWebview<
     } catch (e: unknown) {
       void extLogger.log(`Error: ${getErrorMessage(e)}`);
     }
+
+    await this.databaseManager.removeDatabaseItem(
+      () =>
+        this.showProgress({
+          step: 3900,
+          maxStep: 4000,
+          message: "Removing temporary database",
+        }),
+      tokenSource.token,
+      database,
+    );
 
     await this.clearProgress();
   }

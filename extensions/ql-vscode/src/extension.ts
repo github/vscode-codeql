@@ -1240,6 +1240,7 @@ async function activateWithInstalledDistribution(
         app,
         cliServer,
         qs,
+        dbm,
         databaseUI,
         queryStorageDir,
         db,
