@@ -30,6 +30,7 @@ import {
   QueryResultType,
 } from "../../../src/pure/legacy-messages";
 import { sleep } from "../../../src/pure/time";
+import { mockedObject } from "../utils/mocking.helpers";
 
 describe("query-results", () => {
   let queryPath: string;
@@ -139,9 +140,9 @@ describe("query-results", () => {
       const completedQuery = fqi.completedQuery!;
 
       const spy = jest.fn();
-      const mockServer = {
+      const mockServer = mockedObject<CodeQLCliServer>({
         sortBqrs: spy,
-      } as unknown as CodeQLCliServer;
+      });
       const sortState = {
         columnIndex: 1,
         sortDirection: SortDirection.desc,
@@ -196,9 +197,9 @@ describe("query-results", () => {
 
       await ensureDir(basename(interpretedResultsPath));
 
-      mockServer = {
+      mockServer = mockedObject<CodeQLCliServer>({
         interpretBqrsSarif: spy,
-      } as unknown as CodeQLCliServer;
+      });
     });
 
     afterEach(async () => {

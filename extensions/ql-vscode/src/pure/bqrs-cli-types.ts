@@ -105,7 +105,7 @@ export function transformBqrsResultSet(
   };
 }
 
-type BqrsKind =
+export type BqrsKind =
   | "String"
   | "Float"
   | "Integer"

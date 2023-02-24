@@ -5,6 +5,7 @@ import { CodeQLCliServer } from "../../../../src/cli";
 import { DatabaseItem } from "../../../../src/local-databases";
 import { Uri } from "vscode";
 import { QueryWithResults } from "../../../../src/run-queries-shared";
+import { mockedObject } from "../../utils/mocking.helpers";
 
 /**
  *
@@ -32,7 +33,7 @@ describe("AstBuilder", () => {
   let overrides: Record<string, Record<string, unknown> | undefined>;
 
   beforeEach(() => {
-    mockCli = {
+    mockCli = mockedObject<CodeQLCliServer>({
       bqrsDecode: jest
         .fn()
         .mockImplementation(
@@ -40,7 +41,7 @@ describe("AstBuilder", () => {
             return mockDecode(resultSet);
           },
         ),
-    } as unknown as CodeQLCliServer;
+    });
     overrides = {
       nodes: undefined,
       edges: undefined,
