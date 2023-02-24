@@ -119,6 +119,8 @@ export class ExternalApiView extends AbstractWebview<
   protected async generateExternalApi(): Promise<void> {
     const tokenSource = new CancellationTokenSource();
 
+    const selectedDatabase = this.databaseManager.currentDatabaseItem;
+
     const database = await promptImportGithubDatabase(
       this.app.commands,
       this.databaseManager,
@@ -134,6 +136,8 @@ export class ExternalApiView extends AbstractWebview<
 
       return;
     }
+
+    await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
 
     const workspaceFolder = workspace.workspaceFolders?.find(
       (folder) => folder.name === "ql",
@@ -175,6 +179,17 @@ export class ExternalApiView extends AbstractWebview<
     } catch (e: unknown) {
       void extLogger.log(`Error: ${getErrorMessage(e)}`);
     }
+
+    await this.databaseManager.removeDatabaseItem(
+      () =>
+        this.showProgress({
+          step: 3900,
+          maxStep: 4000,
+          message: "Removing temporary database",
+        }),
+      tokenSource.token,
+      database,
+    );
 
     await this.clearProgress();
   }
