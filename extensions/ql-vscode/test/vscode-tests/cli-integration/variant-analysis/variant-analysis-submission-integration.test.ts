@@ -3,7 +3,6 @@ import { resolve } from "path";
 import {
   authentication,
   commands,
-  ConfigurationTarget,
   extensions,
   TextDocument,
   window,
@@ -13,10 +12,7 @@ import {
 import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
-import {
-  CANARY_FEATURES,
-  setRemoteControllerRepo,
-} from "../../../../src/config";
+import { setRemoteControllerRepo } from "../../../../src/config";
 
 jest.setTimeout(30_000);
 
@@ -39,7 +35,6 @@ describe("Variant Analysis Submission Integration", () => {
   let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;
 
   beforeEach(async () => {
-    await CANARY_FEATURES.updateValue(true, ConfigurationTarget.Global);
     await setRemoteControllerRepo("github/vscode-codeql");
 
     jest.spyOn(authentication, "getSession").mockResolvedValue({

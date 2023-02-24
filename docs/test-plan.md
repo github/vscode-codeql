@@ -18,10 +18,6 @@ choose to go through some of the Optional Test Cases.
 
 ## Required Test Cases
 
-### Pre-requisites
-
-- Flip the `codeQL.canary` flag. This will enable MRVA in the extension.
-
 ### Test Case 1: MRVA - Running a problem path query and viewing results
 
 1. Open the [UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
