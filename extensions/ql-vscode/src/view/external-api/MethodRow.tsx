@@ -161,7 +161,7 @@ export const MethodRow = ({ method, model, onChange }: Props) => {
       <VSCodeDataGridCell gridColumn={6}>
         {model?.type && ["source", "summary"].includes(model?.type) && (
           <Dropdown value={model?.output} onInput={handleOutputInput}>
-            <VSCodeOption value="ReturnType">ReturnType</VSCodeOption>
+            <VSCodeOption value="ReturnValue">ReturnValue</VSCodeOption>
             <VSCodeOption value="Argument[-1]">Argument[-1]: this</VSCodeOption>
             {argumentsList.map((argument, index) => (
               <VSCodeOption key={argument} value={`Argument[${index}]`}>
