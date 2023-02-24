@@ -1281,8 +1281,7 @@
         },
         {
           "id": "codeQLVariantAnalysisRepositories",
-          "name": "Variant Analysis Repositories",
-          "when": "config.codeQL.canary"
+          "name": "Variant Analysis Repositories"
         },
         {
           "id": "codeQLQueryHistory",
