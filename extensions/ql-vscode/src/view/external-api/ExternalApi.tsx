@@ -12,9 +12,16 @@ import {
   VSCodeDataGridRow,
 } from "@vscode/webview-ui-toolkit/react";
 import styled from "styled-components";
-import { Call, ExternalApiUsage, ModeledMethod } from "./interface";
+import {
+  Call,
+  ExternalApiUsage,
+  ModeledMethod,
+} from "../../external-api/interface";
 import { MethodRow } from "./MethodRow";
-import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
+import {
+  createDataExtensionYaml,
+  loadDataExtensionYaml,
+} from "../../external-api/yaml";
 import { vscode } from "../vscode-api";
 import { assertNever } from "../../pure/helpers-pure";
 
@@ -67,6 +74,20 @@ export function ExternalApi(): JSX.Element {
               };
             });
 
+            break;
+          case "addModeledMethods":
+            setModeledMethods((oldModeledMethods) => {
+              const filteredOldModeledMethods = Object.fromEntries(
+                Object.entries(oldModeledMethods).filter(
+                  ([, value]) => value.type !== "none",
+                ),
+              );
+
+              return {
+                ...msg.modeledMethods,
+                ...filteredOldModeledMethods,
+              };
+            });
             break;
           default:
             assertNever(msg);

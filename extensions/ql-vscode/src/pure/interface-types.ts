@@ -13,6 +13,7 @@ import {
   VariantAnalysisScannedRepositoryState,
 } from "../variant-analysis/shared/variant-analysis";
 import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
+import { ModeledMethod } from "../external-api/interface";
 
 /**
  * This module contains types and code that are shared between
@@ -478,6 +479,11 @@ export interface ApplyDataExtensionYamlMessage {
   yaml: string;
 }
 
+export interface AddModeledMethodsMessage {
+  t: "addModeledMethods";
+  modeledMethods: Record<string, ModeledMethod>;
+}
+
 export interface JumpToUsageMessage {
   t: "jumpToUsage";
   location: ResolvableLocationValue;
@@ -490,7 +496,8 @@ export interface GenerateExternalApiMessage {
 export type ToExternalApiMessage =
   | SetExternalApiResultsMessage
   | ShowProgressMessage
-  | SetExistingYamlDataMessage;
+  | SetExistingYamlDataMessage
+  | AddModeledMethodsMessage;
 
 export type FromExternalApiMessage =
   | ViewLoadedMsg
