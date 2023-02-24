@@ -772,31 +772,100 @@ async function activateWithInstalledDistribution(
     }
   }
 
-  // async function buildEvaluatorLogSummary(
-  //   evaluatorLog: Uri,
-  //   progress: ProgressCallback,
-  //   token: CancellationToken,
-  // ): Promise<void> {
-  //   // handle cancellation from the history view.
-  //   const source = new CancellationTokenSource();
-  //   token.onCancellationRequested(() => source.cancel());
+  async function runPerformanceQueryOnDB(
+    inputPath: Uri,
+    dbPath: Uri,
+    bqrsPath: Uri,
+    csvOut: Uri,
+    progress: ProgressCallback,
+    token: CancellationToken,
+  ): Promise<void> {
+    // handle cancellation from the history view.
+    const source = new CancellationTokenSource();
+    token.onCancellationRequested(() => source.cancel());
 
-  //   // convert the evaluator log via `codeql generate log-summary in.jsonl out.json`
+    function wrappedProgress(update: ProgressUpdate) {
+      const message = update.message;
+      progress({
+        ...update,
+        message,
+      });
+    }
 
-  //   try {
-  //     await qs.cliServer.generateJsonLogSummary(
-  //       evaluatorLog.toString(),
-  //       jsonSummaryLog,
-  //     );
-  //   } catch (e) {
-  //     const err = asError(e);
-  //     err.message = `Error running query: ${err.message}`;
-  //     throw e;
-  //   } finally {
-  //     await qhm.refreshTreeView();
-  //     source.dispose();
-  //   }
-  // }
+    wrappedProgress({
+      maxStep: 2,
+      step: 1,
+      message: "Preparing to run performance query on database...",
+    });
+
+    try {
+      await qs.cliServer.runPerformanceQueryOnDB(
+        inputPath.toString(),
+        dbPath.toString(),
+        bqrsPath.toString(),
+        csvOut.toString(),
+      );
+
+      wrappedProgress({
+        maxStep: 2,
+        step: 2,
+        message: "Finished",
+      });
+    } catch (e) {
+      const err = asError(e);
+      err.message = `Error running performance queries: ${err.message}`;
+      throw e;
+    } finally {
+      await qhm.refreshTreeView();
+      source.dispose();
+    }
+  }
+
+  async function buildQueryPerformanceDataDatabase(
+    inputDirectory: Uri,
+    outputDirectory: Uri,
+    progress: ProgressCallback,
+    token: CancellationToken,
+  ): Promise<void> {
+    // handle cancellation from the history view.
+    const source = new CancellationTokenSource();
+    token.onCancellationRequested(() => source.cancel());
+
+    function wrappedProgress(update: ProgressUpdate) {
+      const message = update.message;
+      progress({
+        ...update,
+        message,
+      });
+    }
+
+    wrappedProgress({
+      maxStep: 2,
+      step: 1,
+      message: "Preparing to build database...",
+    });
+
+    // convert the evaluator log via `codeql generate log-summary in.jsonl out.json`
+    try {
+      await qs.cliServer.compileQLForQLDatabase(
+        inputDirectory.toString(),
+        outputDirectory.toString(),
+      );
+
+      wrappedProgress({
+        maxStep: 2,
+        step: 2,
+        message: "Finished",
+      });
+    } catch (e) {
+      const err = asError(e);
+      err.message = `Error building performance database: ${err.message}`;
+      throw e;
+    } finally {
+      await qhm.refreshTreeView();
+      source.dispose();
+    }
+  }
 
   const qhelpTmpDir = dirSync({
     prefix: "qhelp_",
@@ -1067,42 +1136,53 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  // ctx.subscriptions.push(
-  //   commandRunnerWithProgress(
-  //     "codeQL.buildQueryPerformanceDataDatabase",
-  //     async (
-  //       progress: ProgressCallback,
-  //       token: CancellationToken,
-  //       uri: Uri | undefined,
-  //     ) =>
-  //       await buildQueryPerformanceDataDatabase(
-  //         true,
-  //         uri,
-  //         progress,
-  //         token,
-  //         undefined,
-  //       ),
-  //     {
-  //       title: "Building performance data database",
-  //       cancellable: true,
-  //     },
-  //   ),
-  // );
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.buildQueryPerformanceDataDatabase",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        inputDirectory: Uri,
+        outputDirectory: Uri,
+      ) =>
+        await buildQueryPerformanceDataDatabase(
+          inputDirectory,
+          outputDirectory,
+          progress,
+          token,
+        ),
+      {
+        title: "Building performance data database",
+        cancellable: true,
+      },
+    ),
+  );
 
-  // ctx.subscriptions.push(
-  //   commandRunnerWithProgress(
-  //     "codeQL.buildEvaluatorLogSummary",
-  //     async (
-  //       progress: ProgressCallback,
-  //       token: CancellationToken,
-  //       uri: Uri | undefined,
-  //     ) => await buildEvaluatorLogSummary(uri, progress, token),
-  //     {
-  //       title: "Building performance summary",
-  //       cancellable: true,
-  //     },
-  //   ),
-  // );
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.runPerformanceQueryOnDB",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        inputPath: Uri,
+        dbPath: Uri,
+        bqrsPath: Uri,
+        csvOut: Uri,
+      ) =>
+        await runPerformanceQueryOnDB(
+          inputPath,
+          dbPath,
+          bqrsPath,
+          csvOut,
+          progress,
+          token,
+        ),
+      {
+        title: "Running performance queries",
+        cancellable: true,
+      },
+    ),
+  );
 
   ctx.subscriptions.push(
     commandRunnerWithProgress(

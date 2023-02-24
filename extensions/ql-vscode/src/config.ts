@@ -144,6 +144,15 @@ const TIMEOUT_SETTING = new Setting("timeout", RUNNING_QUERIES_SETTING);
 const MEMORY_SETTING = new Setting("memory", RUNNING_QUERIES_SETTING);
 const DEBUG_SETTING = new Setting("debug", RUNNING_QUERIES_SETTING);
 const MAX_PATHS = new Setting("maxPaths", RUNNING_QUERIES_SETTING);
+const ADDITIONAL_EXTRACTOR_PATH = new Setting(
+  "additionalExtractorPath",
+  RUNNING_QUERIES_SETTING,
+);
+const ADDITIONAL_EXTRACTOR_QUERIES = new Setting(
+  "additionalExtractorQueries",
+  RUNNING_QUERIES_SETTING,
+);
+
 const RUNNING_TESTS_SETTING = new Setting("runningTests", ROOT_SETTING);
 const RESULTS_DISPLAY_SETTING = new Setting("resultsDisplay", ROOT_SETTING);
 
@@ -395,6 +404,13 @@ export class QueryHistoryConfigListener
 export class CliConfigListener extends ConfigListener implements CliConfig {
   public get additionalTestArguments(): string[] {
     return ADDITIONAL_TEST_ARGUMENTS_SETTING.getValue();
+  }
+
+  public get additionalExtractorPath(): string | undefined {
+    return ADDITIONAL_EXTRACTOR_PATH.getValue<string>() || undefined;
+  }
+  public get additionalExtractorQueries(): string | undefined {
+    return ADDITIONAL_EXTRACTOR_QUERIES.getValue<string>() || undefined;
   }
 
   public get numberTestThreads(): number {

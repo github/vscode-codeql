@@ -1,4 +1,4 @@
-import { join, dirname } from "path";
+import { join, dirname, basename } from "path";
 import {
   commands,
   Disposable,
@@ -13,7 +13,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { QueryHistoryConfig } from "../config";
+import { CliConfigListener, QueryHistoryConfig } from "../config";
 import {
   showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
@@ -51,7 +51,7 @@ import {
   deserializeQueryHistory,
   serializeQueryHistory,
 } from "../query-serialization";
-import { pathExists } from "fs-extra";
+import { pathExists, mkdir, copyFile } from "fs-extra";
 import { CliVersionConstraint } from "../cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
 import { ResultsView } from "../interface";
@@ -1234,8 +1234,19 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    if (finalSingleItem.jsonEvalLogSummaryLocation) {
+    if (
+      finalSingleItem.jsonEvalLogSummaryLocation &&
+      finalSingleItem.jsonMinEvalLogSummaryLocation
+    ) {
+      // stores the ql-for-ql database we use during queries
+      const qlForQlSrc = `${finalSingleItem.jsonMinEvalLogSummaryLocation}.src`;
+      // stores the ql-for-ql database we use during queries
+      const qlForQlDB = `${finalSingleItem.jsonMinEvalLogSummaryLocation}.db`;
+      // stores the .cpuprofile we generate
       const cpuProfile = `${finalSingleItem.jsonEvalLogSummaryLocation}.cpuprofile`;
+      // root of all the results
+      const resultRoot = dirname(finalSingleItem.jsonEvalLogSummaryLocation);
+
       // check if it already exists
       if (!(await pathExists(cpuProfile)))
         convertJSONSummaryEvaluatorLog(
@@ -1243,18 +1254,64 @@ export class QueryHistoryManager extends DisposableObject {
           cpuProfile,
         );
 
+      // it is necessary to use this command to ensure the associated editor
+      // opens the file
       await commands.executeCommand("vscode.open", Uri.file(cpuProfile));
 
-      // for debugging purposes open the evaluator log so we knows it's real.
-      //await this.tryOpenExternalFile(cpuProfile);
-      // const summaryLog = await commands.executeCommand<string>(
-      //   "codeQL.buildEvaluatorLogSummary",
-      //   finalSingleItem.evalLogLocation,
-      // );
-      // once the database has been built, run the query on it. Note that we
-      // don't do any explicit caching here and instead the caching mechanism
-      // is simply the cache mechanism the general query evaluation feature
-      // relies on.
+      const config: CliConfigListener = new CliConfigListener();
+      // optionally execute queries using the custom extractor
+      if (
+        config.additionalExtractorPath &&
+        config.additionalExtractorQueries &&
+        (await pathExists(config.additionalExtractorPath)) &&
+        (await pathExists(config.additionalExtractorQueries))
+      ) {
+        const extractorQueryOutputDirectory = join(
+          resultRoot,
+          `${basename(config.additionalExtractorQueries)}.out`,
+        );
+        const csvOut = join(extractorQueryOutputDirectory, "out.csv");
+        const bqrsOut = join(extractorQueryOutputDirectory, "out.bqrs");
+
+        if (!(await pathExists(extractorQueryOutputDirectory))) {
+          await mkdir(extractorQueryOutputDirectory);
+        }
+
+        // setup the database directory source
+        if (!(await pathExists(qlForQlSrc))) {
+          // create the directory
+          await mkdir(qlForQlSrc);
+          // copy the log file into it
+          await copyFile(
+            finalSingleItem.jsonEvalLogSummaryLocation,
+            join(
+              qlForQlSrc,
+              basename(finalSingleItem.jsonMinEvalLogSummaryLocation),
+            ),
+          );
+        }
+
+        // build the actual database
+        if (!(await pathExists(qlForQlDB))) {
+          await commands.executeCommand<void>(
+            "codeQL.buildQueryPerformanceDataDatabase",
+            qlForQlSrc,
+            qlForQlDB,
+          );
+        }
+        // run the query against the newly created database -- hard coded until we work out a way
+        // to be able to store all the analysis queries :(
+        await commands.executeCommand<void>(
+          "codeQL.runPerformanceQueryOnDB",
+          config.additionalExtractorQueries,
+          qlForQlDB,
+          bqrsOut,
+          csvOut,
+        );
+
+        // display in a text editor
+        await commands.executeCommand("vscode.open", Uri.file(csvOut));
+      }
     } else {
       this.warnNoEvalLogs();
     }

@@ -57,6 +57,9 @@ function findQueryEvalLogSummaryFile(resultPath: string): string {
 function findJsonQueryEvalLogSummaryFile(resultPath: string): string {
   return join(resultPath, "evaluator-log.summary.jsonl");
 }
+function findJsonMinQueryEvalLogSummaryFile(resultPath: string): string {
+  return join(resultPath, "evaluator-log.summary.min.jsonl");
+}
 
 function findQueryEvalLogSummarySymbolsFile(resultPath: string): string {
   return join(resultPath, "evaluator-log.summary.symbols.json");
@@ -110,6 +113,10 @@ export class QueryEvaluationInfo {
 
   get jsonEvalLogSummaryPath() {
     return findJsonQueryEvalLogSummaryFile(this.querySaveDir);
+  }
+
+  get jsonMinEvalLogSummaryPath() {
+    return findJsonMinQueryEvalLogSummaryFile(this.querySaveDir);
   }
 
   get evalLogSummarySymbolsPath() {
@@ -245,6 +252,13 @@ export class QueryEvaluationInfo {
       this.jsonEvalLogSummaryPath,
     );
     queryInfo.jsonEvalLogSummaryLocation = this.jsonEvalLogSummaryPath;
+
+    await cliServer.generateJsonLogSummary(
+      this.evalLogPath,
+      this.jsonMinEvalLogSummaryPath,
+      true,
+    );
+    queryInfo.jsonMinEvalLogSummaryLocation = this.jsonMinEvalLogSummaryPath;
 
     if (isCanary()) {
       await generateSummarySymbolsFile(

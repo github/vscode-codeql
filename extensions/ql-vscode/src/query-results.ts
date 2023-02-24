@@ -230,6 +230,7 @@ export class LocalQueryInfo {
   public evalLogLocation: string | undefined;
   public evalLogSummaryLocation: string | undefined;
   public jsonEvalLogSummaryLocation: string | undefined;
+  public jsonMinEvalLogSummaryLocation: string | undefined;
   public evalLogSummarySymbolsLocation: string | undefined;
 
   /**

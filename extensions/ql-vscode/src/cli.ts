@@ -12,7 +12,7 @@ import { promisify } from "util";
 import { CancellationToken, commands, Disposable, Uri } from "vscode";
 
 import { BQRSInfo, DecodedBqrsChunk } from "./pure/bqrs-cli-types";
-import { allowCanaryQueryServer, CliConfig } from "./config";
+import { allowCanaryQueryServer, CliConfig, CliConfigListener } from "./config";
 import {
   DistributionProvider,
   FindDistributionResultKind,
@@ -929,17 +929,85 @@ export class CodeQLCliServer implements Disposable {
   async generateJsonLogSummary(
     inputPath: string,
     outputPath: string,
+    minify = false,
   ): Promise<string> {
-    const subcommandArgs = [
-      "--format=predicates",
-      "--minify-output",
-      inputPath,
-      outputPath,
-    ];
+    const subcommandArgs = ["--format=predicates"];
+
+    if (minify) {
+      subcommandArgs.push("--minify-output");
+    }
+
+    subcommandArgs.push(inputPath);
+    subcommandArgs.push(outputPath);
+
     return await this.runCodeQlCliCommand(
       ["generate", "log-summary"],
       subcommandArgs,
       "Generating JSON log summary",
+    );
+  }
+
+  /**
+   * Generate a new codeql database from a summary of an evaluation log. It should be contained
+   * within its own directory.
+   * @param inputPath The path of an evaluation event log directory.
+   * @param outputPath The path to write a database to.
+   */
+  async compileQLForQLDatabase(
+    inputPath: string,
+    outputPath: string,
+  ): Promise<string> {
+    // this isn't the right way to do this but running out of time on this hackathon :)
+    const config: CliConfigListener = new CliConfigListener();
+    const extractorPath = config.additionalExtractorPath;
+
+    const subcommandArgs = [
+      "--language=ql",
+      `--source-root=${inputPath}`,
+      `--search-path=${extractorPath}`,
+      outputPath,
+    ];
+    return await this.runCodeQlCliCommand(
+      ["database", "create"],
+      subcommandArgs,
+      "Building QL-for-QL database",
+    );
+  }
+
+  /**
+   * Run a specified query file and produce a csv suitable for display.
+   * @param inputPath  The query to run.
+   * @param dbPath The database to use for the query.
+   * @param bqrsPath Location to write the bqrs file.
+   * @param csvOut Location of the converted CSV.
+   */
+  async runPerformanceQueryOnDB(
+    inputPath: string,
+    dbPath: string,
+    bqrsPath: string,
+    csvOut: string,
+  ): Promise<string> {
+    const subcommandArgsQuery = [
+      `--database=${dbPath}`,
+      `--output=${bqrsPath}`,
+      inputPath,
+    ];
+    await this.runCodeQlCliCommand(
+      ["query", "run"],
+      subcommandArgsQuery,
+      "Running analysis query",
+    );
+
+    const subcommandArgsDecode = [
+      `--format=csv`,
+      `--output=${csvOut}`,
+      bqrsPath,
+    ];
+
+    return await this.runCodeQlCliCommand(
+      ["bqrs", "decode"],
+      subcommandArgsDecode,
+      "Decoding BQRS file",
     );
   }
 
