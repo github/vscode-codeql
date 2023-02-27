@@ -394,6 +394,10 @@ describe("telemetry reporting", () => {
   });
 
   describe("when new telementry is not enabled", () => {
+    beforeEach(async () => {
+      jest.spyOn(Config, "newTelemetryEnabled").mockReturnValue(false);
+    });
+
     it("should not send a ui-interaction telementry event", async () => {
       await telemetryListener.initialize();
 
