@@ -6,15 +6,34 @@
  * @description Using each VS Code command from only one location makes
  * our telemtry more useful because we can differentiate more user
  * interactions and know which features of the UI users are using.
+ * To fix this alert, new commands will need to be made so that each one
+ * is only used from one location. The commands should share the same
+ * implementation so we do not introduce duplicate code.
+ * When fixing this alert, search the codebase for all other references
+ * to the commnad name. The location of the alert is an arbitrarily
+ * chosen usage of the command, and may not necessarily be the location
+ * that should be changed to fix the alert.
  */
 
  import javascript
 
+ /**
+  * The name of a VS Code command.
+  */
  class CommandName extends string {
    CommandName() { exists(CommandUsage e | e.getCommandName() = this) }
  
+   /**
+    * In how many ways is this command used. Will always be at least 1.
+    */
    int getNumberOfUsages() { result = count(CommandUsage e | e.getCommandName() = this | e) }
  
+   /**
+    * Get the canonical first usage of this command, to use for the location
+    * of the alert. The implementation of this ordering of usages is arbitrary
+    * and the usage given may not be the one that should be changed when fixing
+    * the alert.
+    */
    CommandUsage getFirstUsage() {
      result.getCommandName() = this and
      forall(CommandUsage e | e.getCommandName() = this |
@@ -23,9 +42,17 @@
    }
  }
  
+ /**
+  * Represents a single usage of a command, either from within code or
+  * from the command's definition in package.json
+  */
  abstract class CommandUsage extends Locatable {
    abstract string getCommandName();
  
+   /**
+    * Used as a way of ordering locations. The implementation is basically
+    * arbitrary, so long as the ordering is consistent across analyses.
+    */
    string getLocationOrdinal() {
      result =
        this.getFile().getRelativePath() + ":" + this.getLocation().getStartLine() + ":" +
@@ -33,6 +60,9 @@
    }
  }
  
+ /**
+  * A usage of a command from the typescript code, by calling `executeCommand`.
+  */
  class CommandUsageCallExpr extends CommandUsage, CallExpr {
    CommandUsageCallExpr() {
      this.getCalleeName() = "executeCommand" and
@@ -43,6 +73,11 @@
    override string getCommandName() { result = this.getArgument(0).(StringLiteral).getValue() }
  }
  
+ /**
+  * A usage of a command from any menu that isn't the command palette.
+  * This means a user could invoke the command by clicking on a button in a
+  * something like a menu or a dropdown.
+  */
  class CommandUsagePackageJsonMenuItem extends CommandUsage, JsonObject {
    CommandUsagePackageJsonMenuItem() {
      exists(this.getPropValue("command")) and
@@ -59,6 +94,10 @@
    override string getCommandName() { result = this.getPropValue("command").getStringValue() }
  }
  
+ /**
+  * Is the given command disabled for use in the command palette by
+  * a block with a `"when": "false"` field.
+  */
  predicate isDisabledInCommandPalette(string commandName) {
    exists(PackageJson packageJson, JsonObject commandPaletteObject |
      packageJson
@@ -71,6 +110,10 @@
    )
  }
  
+ /**
+  * Represents a command being usable from the command palette.
+  * This means that a user could choose to manually invoke the command.
+  */
  class CommandUsagePackageJsonCommandPalette extends CommandUsage, JsonObject {
    CommandUsagePackageJsonCommandPalette() {
      this.getFile().getBaseName() = "package.json" and
