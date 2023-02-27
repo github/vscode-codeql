@@ -40,7 +40,15 @@
     * the alert.
     */
    CommandUsage getFirstUsage() {
-     result = max(CommandUsage use | use = this.getAUse() | use order by use.getLocationOrdinal())
+     result =
+       max(CommandUsage use |
+         use = this.getAUse()
+       |
+         use
+         order by
+           use.getFile().getRelativePath(), use.getLocation().getStartLine(),
+           use.getLocation().getStartColumn()
+       )
    }
  }
  
@@ -50,16 +58,6 @@
   */
  abstract class CommandUsage extends Locatable {
    abstract string getCommandName();
- 
-   /**
-    * Used as a way of ordering locations. The implementation is basically
-    * arbitrary, so long as the ordering is consistent across analyses.
-    */
-   string getLocationOrdinal() {
-     result =
-       this.getFile().getRelativePath() + ":" + this.getLocation().getStartLine() + ":" +
-         this.getLocation().getStartColumn()
-   }
  }
  
  /**
