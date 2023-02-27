@@ -51,9 +51,7 @@ choose to go through some of the Optional Test Cases.
 
 1. Open the [ReDoS query](https://github.com/github/codeql/blob/main/javascript/ql/src/Performance/ReDoS.ql).
 2. Run a MRVA against the "Top 10" repositories.
-3. Check the notification message. It should:
-   - Show the number of repos that are going to be queried
-   - Provide a link to the actions workflow
+3. Check that there is a notification message.
 4. Check the query history. It should:
    - Show that an item has been added to the query history
    - The item should be marked as "in progress".
@@ -77,9 +75,9 @@ choose to go through some of the Optional Test Cases.
    - Check that exporting results works
    - Check that sorting results works
    - Check that copying repo lists works 
-2. Open the query directory (containing results):
+2. Open the query results directory:
    - Check that the correct directory is opened and there are results in it
-3. Open variant analysis on GitHub
+3. View logs
    - Check that the correct workflow is opened
 
 ### Test Case 5: MRVA - Canceling a variant analysis run
@@ -165,7 +163,7 @@ with this since it has quite a limited number of actions you can do.
 6. Can open query that produced these results 
    1. When the file still exists and has not moved 
    2. When the file does not exist
-7. Cannot open variant analysis on github
+7. Cannot view logs
 8. Cannot copy repository list
 9. Cannot export results
 10. Cannot select to create a gist
@@ -189,7 +187,7 @@ with this since it has quite a limited number of actions you can do.
 7. Can open query that produced these results
     1. When the file still exists and has not moved
     2. When the file does not exist
-8. Can open variant analysis on github
+8. Can view logs
 9. Can copy repository list
    1. Text is copied to clipboard
    2. Text is a valid repository list
