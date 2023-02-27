@@ -771,6 +771,74 @@ async function activateWithInstalledDistribution(
     }
   }
 
+  async function compileAndRunQueryOnMultipleDatabases(
+    progress: ProgressCallback,
+    token: CancellationToken,
+    uri: Uri | undefined,
+  ): Promise<void> {
+    let filteredDBs = dbm.databaseItems;
+    if (filteredDBs.length === 0) {
+      void showAndLogErrorMessage(
+        "No databases found. Please add a suitable database to your workspace.",
+      );
+      return;
+    }
+    // If possible, only show databases with the right language (otherwise show all databases).
+    const queryLanguage = await findLanguage(cliServer, uri);
+    if (queryLanguage) {
+      filteredDBs = dbm.databaseItems.filter(
+        (db) => db.language === queryLanguage,
+      );
+      if (filteredDBs.length === 0) {
+        void showAndLogErrorMessage(
+          `No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`,
+        );
+        return;
+      }
+    }
+    const quickPickItems = filteredDBs.map<DatabaseQuickPickItem>((dbItem) => ({
+      databaseItem: dbItem,
+      label: dbItem.name,
+      description: dbItem.language,
+    }));
+    /**
+     * Databases that were selected in the quick pick menu.
+     */
+    const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
+      quickPickItems,
+      { canPickMany: true, ignoreFocusOut: true },
+    );
+    if (quickpick !== undefined) {
+      // Collect all skipped databases and display them at the end (instead of popping up individual errors)
+      const skippedDatabases = [];
+      const errors = [];
+      for (const item of quickpick) {
+        try {
+          await compileAndRunQuery(
+            false,
+            uri,
+            progress,
+            token,
+            item.databaseItem,
+          );
+        } catch (e) {
+          skippedDatabases.push(item.label);
+          errors.push(getErrorMessage(e));
+        }
+      }
+      if (skippedDatabases.length > 0) {
+        void extLogger.log(`Errors:\n${errors.join("\n")}`);
+        void showAndLogWarningMessage(
+          `The following databases were skipped:\n${skippedDatabases.join(
+            "\n",
+          )}.\nFor details about the errors, see the logs.`,
+        );
+      }
+    } else {
+      void showAndLogErrorMessage("No databases selected.");
+    }
+  }
+
   const qhelpTmpDir = dirSync({
     prefix: "qhelp_",
     keep: false,
@@ -871,6 +939,25 @@ async function activateWithInstalledDistribution(
       queryServerLogger,
     ),
   );
+
+  // Since we are tracking extension usage through commands, this command mirrors the runQuery command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.runQueryContextEditor",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        uri: Uri | undefined,
+      ) => await compileAndRunQuery(false, uri, progress, token, undefined),
+      {
+        title: "Running query",
+        cancellable: true,
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger,
+    ),
+  );
   interface DatabaseQuickPickItem extends QuickPickItem {
     databaseItem: DatabaseItem;
   }
@@ -881,71 +968,22 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => {
-        let filteredDBs = dbm.databaseItems;
-        if (filteredDBs.length === 0) {
-          void showAndLogErrorMessage(
-            "No databases found. Please add a suitable database to your workspace.",
-          );
-          return;
-        }
-        // If possible, only show databases with the right language (otherwise show all databases).
-        const queryLanguage = await findLanguage(cliServer, uri);
-        if (queryLanguage) {
-          filteredDBs = dbm.databaseItems.filter(
-            (db) => db.language === queryLanguage,
-          );
-          if (filteredDBs.length === 0) {
-            void showAndLogErrorMessage(
-              `No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`,
-            );
-            return;
-          }
-        }
-        const quickPickItems = filteredDBs.map<DatabaseQuickPickItem>(
-          (dbItem) => ({
-            databaseItem: dbItem,
-            label: dbItem.name,
-            description: dbItem.language,
-          }),
-        );
-        /**
-         * Databases that were selected in the quick pick menu.
-         */
-        const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
-          quickPickItems,
-          { canPickMany: true, ignoreFocusOut: true },
-        );
-        if (quickpick !== undefined) {
-          // Collect all skipped databases and display them at the end (instead of popping up individual errors)
-          const skippedDatabases = [];
-          const errors = [];
-          for (const item of quickpick) {
-            try {
-              await compileAndRunQuery(
-                false,
-                uri,
-                progress,
-                token,
-                item.databaseItem,
-              );
-            } catch (e) {
-              skippedDatabases.push(item.label);
-              errors.push(getErrorMessage(e));
-            }
-          }
-          if (skippedDatabases.length > 0) {
-            void extLogger.log(`Errors:\n${errors.join("\n")}`);
-            void showAndLogWarningMessage(
-              `The following databases were skipped:\n${skippedDatabases.join(
-                "\n",
-              )}.\nFor details about the errors, see the logs.`,
-            );
-          }
-        } else {
-          void showAndLogErrorMessage("No databases selected.");
-        }
+      ) => await compileAndRunQueryOnMultipleDatabases(progress, token, uri),
+      {
+        title: "Running query on selected databases",
+        cancellable: true,
       },
+    ),
+  );
+  // Since we are tracking extension usage through commands, this command mirrors the runQueryOnMultipleDatabases command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.runQueryOnMultipleDatabasesContextEditor",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        uri: Uri | undefined,
+      ) => await compileAndRunQueryOnMultipleDatabases(progress, token, uri),
       {
         title: "Running query on selected databases",
         cancellable: true,
