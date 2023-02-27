@@ -1,8 +1,9 @@
-import { pathExists, readdir, stat, remove, readFile } from "fs-extra";
+import { pathExists, stat, remove, readFile } from "fs-extra";
 import { EOL } from "os";
 import { join } from "path";
 import { Disposable, ExtensionContext } from "vscode";
 import { extLogger } from "../common";
+import { readDirFullPaths } from "../pure/files";
 import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryManager } from "./query-history-manager";
 
@@ -75,18 +76,33 @@ async function scrubQueries(
     let scrubCount = 0; // total number of directories deleted
     try {
       counter?.increment();
-      void extLogger.log("Scrubbing query directory. Removing old queries.");
+      void extLogger.log(
+        "Cleaning up query history directories. Removing old entries.",
+      );
+
       if (!(await pathExists(queryHistoryDirs.localQueriesDirPath))) {
         void extLogger.log(
-          `Cannot scrub. Query directory does not exist: ${queryHistoryDirs.localQueriesDirPath}`,
+          `Cannot clean up query history directories. Local queries directory does not exist: ${queryHistoryDirs.localQueriesDirPath}`,
+        );
+        return;
+      }
+      if (!(await pathExists(queryHistoryDirs.variantAnalysesDirPath))) {
+        void extLogger.log(
+          `Cannot clean up query history directories. Variant analyses directory does not exist: ${queryHistoryDirs.variantAnalysesDirPath}`,
         );
         return;
       }
 
-      const baseNames = await readdir(queryHistoryDirs.localQueriesDirPath);
+      const localQueryDirPaths = await readDirFullPaths(
+        queryHistoryDirs.localQueriesDirPath,
+      );
+      const variantAnalysisDirPaths = await readDirFullPaths(
+        queryHistoryDirs.variantAnalysesDirPath,
+      );
+      const allDirPaths = [...localQueryDirPaths, ...variantAnalysisDirPaths];
+
       const errors: string[] = [];
-      for (const baseName of baseNames) {
-        const dir = join(queryHistoryDirs.localQueriesDirPath, baseName);
+      for (const dir of allDirPaths) {
         const scrubResult = await scrubDirectory(dir, now, maxQueryTime);
         if (scrubResult.errorMsg) {
           errors.push(scrubResult.errorMsg);
