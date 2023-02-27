@@ -65,6 +65,7 @@ import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../variant-analysis/shared/variant-analysis";
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
 import { redactableError } from "../pure/errors";
+import { QueryHistoryDirs } from "./query-history-dirs";
 
 /**
  * query-history-manager.ts
@@ -139,7 +140,7 @@ export class QueryHistoryManager extends DisposableObject {
     private readonly localQueriesResultsView: ResultsView,
     private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly evalLogViewer: EvalLogViewer,
-    private readonly queryStorageDir: string,
+    private readonly queryHistoryDirs: QueryHistoryDirs,
     ctx: ExtensionContext,
     private readonly queryHistoryConfigListener: QueryHistoryConfig,
     private readonly labelProvider: HistoryItemLabelProvider,
@@ -389,7 +390,7 @@ export class QueryHistoryManager extends DisposableObject {
         ONE_HOUR_IN_MS,
         TWO_HOURS_IN_MS,
         queryHistoryConfigListener.ttlInMillis,
-        this.queryStorageDir,
+        this.queryHistoryDirs,
         qhm,
         ctx,
       ),

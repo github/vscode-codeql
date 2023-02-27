@@ -3,6 +3,7 @@ import { EOL } from "os";
 import { join } from "path";
 import { Disposable, ExtensionContext } from "vscode";
 import { extLogger } from "../common";
+import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryManager } from "./query-history-manager";
 
 const LAST_SCRUB_TIME_KEY = "lastScrubTime";
@@ -23,14 +24,14 @@ type Counter = {
  * @param wakeInterval How often to check to see if the job should run.
  * @param throttleTime How often to actually run the job.
  * @param maxQueryTime The maximum age of a query before is ready for deletion.
- * @param queryDirectory The directory containing all queries.
+ * @param queryHistoryDirs The directories containing all query history information.
  * @param ctx The extension context.
  */
 export function registerQueryHistoryScrubber(
   wakeInterval: number,
   throttleTime: number,
   maxQueryTime: number,
-  queryDirectory: string,
+  queryHistoryDirs: QueryHistoryDirs,
   qhm: QueryHistoryManager,
   ctx: ExtensionContext,
 
@@ -42,7 +43,7 @@ export function registerQueryHistoryScrubber(
     wakeInterval,
     throttleTime,
     maxQueryTime,
-    queryDirectory,
+    queryHistoryDirs,
     qhm,
     ctx,
     counter,
@@ -58,7 +59,7 @@ export function registerQueryHistoryScrubber(
 async function scrubQueries(
   throttleTime: number,
   maxQueryTime: number,
-  queryDirectory: string,
+  queryHistoryDirs: QueryHistoryDirs,
   qhm: QueryHistoryManager,
   ctx: ExtensionContext,
   counter?: Counter,
@@ -75,17 +76,17 @@ async function scrubQueries(
     try {
       counter?.increment();
       void extLogger.log("Scrubbing query directory. Removing old queries.");
-      if (!(await pathExists(queryDirectory))) {
+      if (!(await pathExists(queryHistoryDirs.localQueriesDirPath))) {
         void extLogger.log(
-          `Cannot scrub. Query directory does not exist: ${queryDirectory}`,
+          `Cannot scrub. Query directory does not exist: ${queryHistoryDirs.localQueriesDirPath}`,
         );
         return;
       }
 
-      const baseNames = await readdir(queryDirectory);
+      const baseNames = await readdir(queryHistoryDirs.localQueriesDirPath);
       const errors: string[] = [];
       for (const baseName of baseNames) {
-        const dir = join(queryDirectory, baseName);
+        const dir = join(queryHistoryDirs.localQueriesDirPath, baseName);
         const scrubResult = await scrubDirectory(dir, now, maxQueryTime);
         if (scrubResult.errorMsg) {
           errors.push(scrubResult.errorMsg);
