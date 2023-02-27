@@ -4,13 +4,13 @@
  * @problem.severity warning
  * @id vscode-codeql/unique-command-use
  * @description Using each VS Code command from only one location makes
- * our telemtry more useful because we can differentiate more user
- * interactions and know which features of the UI users are using.
+ * our telemetry more useful, because we can differentiate more user
+ * interactions and know which features of the UI our users are using.
  * To fix this alert, new commands will need to be made so that each one
  * is only used from one location. The commands should share the same
  * implementation so we do not introduce duplicate code.
  * When fixing this alert, search the codebase for all other references
- * to the commnad name. The location of the alert is an arbitrarily
+ * to the command name. The location of the alert is an arbitrarily
  * chosen usage of the command, and may not necessarily be the location
  * that should be changed to fix the alert.
  */
@@ -75,7 +75,7 @@
  
  /**
   * A usage of a command from any menu that isn't the command palette.
-  * This means a user could invoke the command by clicking on a button in a
+  * This means a user could invoke the command by clicking on a button in
   * something like a menu or a dropdown.
   */
  class CommandUsagePackageJsonMenuItem extends CommandUsage, JsonObject {
