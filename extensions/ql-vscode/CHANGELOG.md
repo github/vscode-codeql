@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-## [UNRELEASED]
+- Enable collection of telemetry for UI interactions in webviews. [#2114](https://github.com/github/vscode-codeql/pull/2114)
 
 # 1.7.10 - 23 February 2023
 
