@@ -364,10 +364,11 @@ export function getQueryName(
 export async function getControllerRepo(
   credentials: Credentials,
 ): Promise<Repository> {
-  let shouldSetControllerRepo = false;
-
   // Get the controller repo from the config, if it exists.
-  // If it doesn't exist, prompt the user to enter it, and save that value to the config.
+  // If it doesn't exist, prompt the user to enter it, check
+  // whether the repo exists, and save the nwo to the config.
+
+  let shouldSetControllerRepo = false;
   let controllerRepoNwo: string | undefined;
   controllerRepoNwo = getRemoteControllerRepo();
   if (!controllerRepoNwo || !REPO_REGEX.test(controllerRepoNwo)) {
