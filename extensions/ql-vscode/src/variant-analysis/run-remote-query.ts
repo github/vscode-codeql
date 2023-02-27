@@ -364,6 +364,8 @@ export function getQueryName(
 export async function getControllerRepo(
   credentials: Credentials,
 ): Promise<Repository> {
+  let shouldSetControllerRepo = false;
+
   // Get the controller repo from the config, if it exists.
   // If it doesn't exist, prompt the user to enter it, and save that value to the config.
   let controllerRepoNwo: string | undefined;
@@ -390,15 +392,31 @@ export async function getControllerRepo(
         "Invalid repository format. Must be a valid GitHub repository in the format <owner>/<repo>.",
       );
     }
+
+    shouldSetControllerRepo = true;
+  }
+
+  void extLogger.log(`Using controller repository: ${controllerRepoNwo}`);
+  const controllerRepo = await getControllerRepoFromApi(
+    credentials,
+    controllerRepoNwo,
+  );
+
+  if (shouldSetControllerRepo) {
     void extLogger.log(
       `Setting the controller repository as: ${controllerRepoNwo}`,
     );
     await setRemoteControllerRepo(controllerRepoNwo);
   }
 
-  void extLogger.log(`Using controller repository: ${controllerRepoNwo}`);
-  const [owner, repo] = controllerRepoNwo.split("/");
+  return controllerRepo;
+}
 
+async function getControllerRepoFromApi(
+  credentials: Credentials,
+  nwo: string,
+): Promise<Repository> {
+  const [owner, repo] = nwo.split("/");
   try {
     const controllerRepo = await getRepositoryFromNwo(credentials, owner, repo);
     void extLogger.log(`Controller repository ID: ${controllerRepo.id}`);
@@ -419,6 +437,7 @@ export async function getControllerRepo(
     }
   }
 }
+
 export function removeWorkspaceRefs(qlpack: QlPack) {
   for (const [key, value] of Object.entries(qlpack.dependencies || {})) {
     if (value === "${workspace}") {
