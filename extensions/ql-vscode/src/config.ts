@@ -83,13 +83,8 @@ export const GLOBAL_ENABLE_TELEMETRY = new Setting(
   GLOBAL_TELEMETRY_SETTING,
 );
 
-const ENABLE_NEW_TELEMETRY = new Setting(
-  "enableNewTelemetry",
-  TELEMETRY_SETTING,
-);
-
 export function newTelemetryEnabled(): boolean {
-  return ENABLE_NEW_TELEMETRY.getValue<boolean>();
+  return true;
 }
 
 // Distribution configuration
