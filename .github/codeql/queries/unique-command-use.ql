@@ -42,11 +42,9 @@
  
  class CommandUsagePackageJsonMenuItem extends CommandUsage, JsonObject {
    CommandUsagePackageJsonMenuItem() {
-     this.getFile().getBaseName() = "package.json" and
      exists(this.getPropValue("command")) and
-     exists(JsonObject topObject, string menuName |
-       not exists(topObject.getParent()) and
-       topObject
+     exists(PackageJson packageJson, string menuName |
+       packageJson
            .getPropValue("contributes")
            .getPropValue("menus")
            .getPropValue(menuName)
@@ -59,9 +57,8 @@
  }
  
  predicate isDisabledInCommandPalette(string commandName) {
-   exists(JsonObject topObject, JsonObject commandPaletteObject |
-     not exists(topObject.getParent()) and
-     topObject
+   exists(PackageJson packageJson, JsonObject commandPaletteObject |
+     packageJson
          .getPropValue("contributes")
          .getPropValue("menus")
          .getPropValue("commandPalette")
@@ -75,9 +72,8 @@
    CommandUsagePackageJsonCommandPalette() {
      this.getFile().getBaseName() = "package.json" and
      exists(this.getPropValue("command")) and
-     exists(JsonObject topObject |
-       not exists(topObject.getParent()) and
-       topObject.getPropValue("contributes").getPropValue("commands").getElementValue(_) = this
+     exists(PackageJson packageJson |
+       packageJson.getPropValue("contributes").getPropValue("commands").getElementValue(_) = this
      ) and
      not isDisabledInCommandPalette(this.getPropValue("command").getStringValue())
    }
