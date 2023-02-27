@@ -26,7 +26,12 @@
    /**
     * In how many ways is this command used. Will always be at least 1.
     */
-   int getNumberOfUsages() { result = count(CommandUsage e | e.getCommandName() = this | e) }
+   int getNumberOfUsages() { result = count(this.getAUse()) }
+
+   /**
+    * Get a usage of this command.
+    */
+   CommandUsage getAUse() { result.getCommandName() = this }
  
    /**
     * Get the canonical first usage of this command, to use for the location
@@ -35,10 +40,7 @@
     * the alert.
     */
    CommandUsage getFirstUsage() {
-     result.getCommandName() = this and
-     forall(CommandUsage e | e.getCommandName() = this |
-       e.getLocationOrdinal() >= result.getLocationOrdinal()
-     )
+     result = max(CommandUsage use | use = this.getAUse() | use order by use.getLocationOrdinal())
    }
  }
  
