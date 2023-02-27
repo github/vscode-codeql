@@ -10,18 +10,21 @@
 
  import javascript
 
- abstract class CommandUsage extends Locatable {
-   abstract string getCommandName();
+ class CommandName extends string {
+   CommandName() { exists(CommandUsage e | e.getCommandName() = this) }
  
-   predicate isUsedFromOtherPlace() {
-     exists(CommandUsage e | e != this and e.getCommandName() = this.getCommandName())
-   }
+   int getNumberOfUsages() { result = count(CommandUsage e | e.getCommandName() = this | e) }
  
-   predicate isFirstUsage() {
-     forall(CommandUsage e | e.getCommandName() = this.getCommandName() |
-       e.getLocationOrdinal() >= this.getLocationOrdinal()
+   CommandUsage getFirstUsage() {
+     result.getCommandName() = this and
+     forall(CommandUsage e | e.getCommandName() = this |
+       e.getLocationOrdinal() >= result.getLocationOrdinal()
      )
    }
+ }
+ 
+ abstract class CommandUsage extends Locatable {
+   abstract string getCommandName();
  
    string getLocationOrdinal() {
      result =
@@ -81,9 +84,8 @@
    override string getCommandName() { result = this.getPropValue("command").getStringValue() }
  }
  
- from CommandUsage e
- where
-   e.isUsedFromOtherPlace() and
-   not e.isFirstUsage()
- select e, "The " + e.getCommandName() + " command is used from another location"
+ from CommandName c
+ where c.getNumberOfUsages() > 1
+ select c.getFirstUsage(),
+   "The " + c + " command is used from " + c.getNumberOfUsages() + " locations"
  
