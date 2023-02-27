@@ -30,6 +30,13 @@ export function mockedObject<T extends object>(
       if (dynamicProperties && prop in dynamicProperties) {
         return (dynamicProperties as any)[prop]();
       }
+
+      // The `then` method is accessed by `Promise.resolve` to check if the object is a thenable.
+      // We don't want to throw an error when this happens.
+      if (prop === "then") {
+        return undefined;
+      }
+
       throw new Error(`Method ${String(prop)} not mocked`);
     },
   });
