@@ -3,6 +3,8 @@
 ## [UNRELEASED]
 
 - Send telemetry about unhandled errors happening within the extension. [#2125](https://github.com/github/vscode-codeql/pull/2125)
+- Enable multi-repository variant analysis. [#2121](https://github.com/github/vscode-codeql/pull/2121)
+- Enable collection of telemetry concerning interactions with UI elements, including buttons, links, and other inputs. [#2114](https://github.com/github/vscode-codeql/pull/2114)
 
 ## 1.7.11 - 1 March 2023
 
