@@ -221,6 +221,8 @@ export class ResultsView extends AbstractWebview<
       viewColumn: this.chooseColumnForWebview(),
       preserveFocus: true,
       view: "results",
+      // Required for the graph viewer which is using d3-graphviz WASM module
+      allowWasmEval: true,
     };
   }
 
