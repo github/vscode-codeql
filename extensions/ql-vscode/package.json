@@ -69,8 +69,6 @@
     "onCommand:codeQLVariantAnalysisRepositories.removeItemContextMenu",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
-    "onCommand:codeql.runQueryContextEditor",
-    "onCommand:codeql.runQueryOnMultipleDatabasesContextEditor",
     "onWebviewPanel:resultsView",
     "onWebviewPanel:codeQL.variantAnalysis",
     "onFileSystem:codeql-zip-archive"
@@ -309,12 +307,12 @@
         "title": "CodeQL: Run Query on Selected Database"
       },
       {
-        "command": "codeQL.runQueryOnMultipleDatabases",
-        "title": "CodeQL: Run Query on Multiple Databases"
-      },
-      {
         "command": "codeQL.runQueryContextEditor",
         "title": "CodeQL: Run Query on Selected Database"
+      },
+      {
+        "command": "codeQL.runQueryOnMultipleDatabases",
+        "title": "CodeQL: Run Query on Multiple Databases"
       },
       {
         "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",
