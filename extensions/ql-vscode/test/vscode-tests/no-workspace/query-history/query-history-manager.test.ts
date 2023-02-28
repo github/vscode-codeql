@@ -3,10 +3,7 @@ import * as vscode from "vscode";
 
 import { extLogger } from "../../../../src/common";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
-import {
-  QueryHistoryConfig,
-  QueryHistoryConfigListener,
-} from "../../../../src/config";
+import { QueryHistoryConfigListener } from "../../../../src/config";
 import { LocalQueryInfo } from "../../../../src/query-results";
 import { DatabaseManager } from "../../../../src/local-databases";
 import { tmpDir } from "../../../../src/helpers";
@@ -28,6 +25,7 @@ import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/v
 import { QuickPickItem, TextEditor } from "vscode";
 import { WebviewReveal } from "../../../../src/interface-utils";
 import * as helpers from "../../../../src/helpers";
+import { mockedObject } from "../../utils/mocking.helpers";
 
 describe("QueryHistoryManager", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -58,7 +56,7 @@ describe("QueryHistoryManager", () => {
   beforeEach(() => {
     showTextDocumentSpy = jest
       .spyOn(vscode.window, "showTextDocument")
-      .mockResolvedValue(undefined as unknown as TextEditor);
+      .mockResolvedValue(mockedObject<TextEditor>({}));
     showInformationMessageSpy = jest
       .spyOn(vscode.window, "showInformationMessage")
       .mockResolvedValue(undefined);
@@ -1158,7 +1156,11 @@ describe("QueryHistoryManager", () => {
         extensionPath: vscode.Uri.file("/x/y/z").fsPath,
       } as vscode.ExtensionContext,
       configListener,
-      new HistoryItemLabelProvider({} as QueryHistoryConfig),
+      new HistoryItemLabelProvider({
+        format: "",
+        ttlInMillis: 0,
+        onDidChangeConfiguration: jest.fn(),
+      }),
       doCompareCallback,
     );
     (qhm.treeDataProvider as any).history = [...allHistory];

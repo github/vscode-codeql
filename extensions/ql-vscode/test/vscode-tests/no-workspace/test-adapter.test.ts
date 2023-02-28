@@ -59,18 +59,20 @@ describe("test-adapter", () => {
     setCurrentDatabaseItemSpy.mockResolvedValue(undefined);
     resolveQlpacksSpy.mockResolvedValue({});
     resolveTestsSpy.mockResolvedValue([]);
-    fakeDatabaseManager = {
-      openDatabase: openDatabaseSpy,
-      removeDatabaseItem: removeDatabaseItemSpy,
-      renameDatabaseItem: renameDatabaseItemSpy,
-      setCurrentDatabaseItem: setCurrentDatabaseItemSpy,
-    } as unknown as DatabaseManager;
-    Object.defineProperty(fakeDatabaseManager, "currentDatabaseItem", {
-      get: () => currentDatabaseItem,
-    });
-    Object.defineProperty(fakeDatabaseManager, "databaseItems", {
-      get: () => databaseItems,
-    });
+    fakeDatabaseManager = mockedObject<DatabaseManager>(
+      {
+        openDatabase: openDatabaseSpy,
+        removeDatabaseItem: removeDatabaseItemSpy,
+        renameDatabaseItem: renameDatabaseItemSpy,
+        setCurrentDatabaseItem: setCurrentDatabaseItemSpy,
+      },
+      {
+        dynamicProperties: {
+          currentDatabaseItem: () => currentDatabaseItem,
+          databaseItems: () => databaseItems,
+        },
+      },
+    );
 
     jest.spyOn(preTestDatabaseItem, "isAffectedByTest").mockResolvedValue(true);
 

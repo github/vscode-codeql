@@ -48,6 +48,7 @@ describe("local databases", () => {
   >;
 
   let dir: tmp.DirResult;
+  let extensionContextStoragePath: string;
 
   beforeEach(() => {
     dir = tmp.dirSync();
@@ -65,16 +66,24 @@ describe("local databases", () => {
       .spyOn(helpers, "showBinaryChoiceDialog")
       .mockResolvedValue(true);
 
-    extensionContext = {
-      workspaceState: {
-        update: updateSpy,
-        get: () => [],
+    extensionContextStoragePath = dir.name;
+
+    extensionContext = mockedObject<ExtensionContext>(
+      {
+        workspaceState: {
+          update: updateSpy,
+          get: () => [],
+        },
       },
-      // pretend like databases added in the temp dir are controlled by the extension
-      // so that they are deleted upon removal
-      storagePath: dir.name,
-      storageUri: Uri.parse(dir.name),
-    } as unknown as ExtensionContext;
+      {
+        dynamicProperties: {
+          // pretend like databases added in the temp dir are controlled by the extension
+          // so that they are deleted upon removal
+          storagePath: () => extensionContextStoragePath,
+          storageUri: () => Uri.parse(extensionContextStoragePath),
+        },
+      },
+    );
 
     databaseManager = new DatabaseManager(
       extensionContext,
@@ -267,6 +276,7 @@ describe("local databases", () => {
 
       // pretend that the database location is not controlled by the extension
       (databaseManager as any).ctx.storagePath = "hucairz";
+      extensionContextStoragePath = "hucairz";
 
       await databaseManager.removeDatabaseItem(
         {} as ProgressCallback,
