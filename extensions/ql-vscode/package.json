@@ -1318,7 +1318,7 @@
       },
       {
         "view": "codeQLVariantAnalysisRepositories",
-        "contents": "Set up a controller repository to start using variant analysis.\n[Set up controller repository](command:codeQLVariantAnalysisRepositories.setupControllerRepository)",
+        "contents": "Set up a controller repository to start using variant analysis. [Learn more](https://codeql.github.com/docs/codeql-for-visual-studio-code/running-codeql-queries-at-scale-with-mrva#controller-repository) about controller repositories. \n[Set up controller repository](command:codeQLVariantAnalysisRepositories.setupControllerRepository)",
         "when": "!config.codeQL.variantAnalysis.controllerRepo"
       }
     ]
