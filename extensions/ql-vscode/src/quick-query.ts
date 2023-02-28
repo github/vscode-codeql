@@ -143,7 +143,7 @@ export async function displayQuickQuery(
 
     if (shouldRewrite) {
       await cliServer.clearCache();
-      await cliServer.packInstall(queriesDir, true);
+      await cliServer.packInstall(queriesDir, { forceUpdate: true });
     }
 
     await Window.showTextDocument(await workspace.openTextDocument(qlFile));

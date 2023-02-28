@@ -1,0 +1,12 @@
+extensions:
+  - addsTo:
+      pack: codeql/javascript-all
+      extensible: sourceModel
+    data:
+      - [ "@example/read-write-user-data", "Member[readUserData].ReturnValue.Awaited", "remote" ]
+
+  - addsTo:
+      pack: codeql/javascript-all
+      extensible: sinkModel
+    data:
+      - [ "@example/read-write-user-data", "Member[writeUserData].Argument[0]", "command-line-injection" ]

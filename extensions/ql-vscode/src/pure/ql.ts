@@ -2,6 +2,10 @@ import { join } from "path";
 import { pathExists } from "fs-extra";
 
 export const QLPACK_FILENAMES = ["qlpack.yml", "codeql-pack.yml"];
+export const QLPACK_LOCK_FILENAMES = [
+  "qlpack.lock.yml",
+  "codeql-pack.lock.yml",
+];
 export const FALLBACK_QLPACK_FILENAME = QLPACK_FILENAMES[0];
 
 export async function getQlPackPath(
