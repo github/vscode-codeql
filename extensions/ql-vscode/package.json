@@ -965,8 +965,16 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
+          "command": "codeQL.runQueryContextEditor",
+          "when": "false"
+        },
+        {
           "command": "codeQL.runQueryOnMultipleDatabases",
           "when": "resourceLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",
+          "when": "false"
         },
         {
           "command": "codeQL.runVariantAnalysis",
