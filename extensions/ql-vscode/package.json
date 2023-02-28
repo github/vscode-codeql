@@ -307,7 +307,15 @@
         "title": "CodeQL: Run Query on Selected Database"
       },
       {
+        "command": "codeQL.runQueryContextEditor",
+        "title": "CodeQL: Run Query on Selected Database"
+      },
+      {
         "command": "codeQL.runQueryOnMultipleDatabases",
+        "title": "CodeQL: Run Query on Multiple Databases"
+      },
+      {
+        "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",
         "title": "CodeQL: Run Query on Multiple Databases"
       },
       {
@@ -1211,11 +1219,11 @@
       ],
       "editor/context": [
         {
-          "command": "codeQL.runQuery",
+          "command": "codeQL.runQueryContextEditor",
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.runQueryOnMultipleDatabases",
+          "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
