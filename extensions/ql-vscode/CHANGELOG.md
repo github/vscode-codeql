@@ -1,10 +1,11 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.7.11 - 1 March 2023
 
 - Enable collection of telemetry concerning interactions with UI elements, including buttons, links, and other inputs. [#2114](https://github.com/github/vscode-codeql/pull/2114)
+- Prevent the installation of CodeQL CLI version 2.12.3 from being automatically to avoid a bug in the language server. [#2126](https://github.com/github/vscode-codeql/pull/2126)
 
-# 1.7.10 - 23 February 2023
+## 1.7.10 - 23 February 2023
 
 - Fix bug that was causing unwanted error notifications.
 
