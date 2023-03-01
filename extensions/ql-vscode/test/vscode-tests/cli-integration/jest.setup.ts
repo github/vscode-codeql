@@ -1,22 +1,14 @@
 import { workspace } from "vscode";
 
 import {
+  afterAllAction,
   beforeAllAction,
   beforeEachAction,
 } from "../jest.activated-extension.setup";
-import * as tmp from "tmp";
-import {
-  createWriteStream,
-  existsSync,
-  mkdirpSync,
-  realpathSync,
-} from "fs-extra";
+import { createWriteStream, existsSync, mkdirpSync } from "fs-extra";
 import { dirname } from "path";
-import { DB_URL, dbLoc, setStoragePath, storagePath } from "../global.helper";
+import { DB_URL, dbLoc } from "../global.helper";
 import fetch from "node-fetch";
-
-// create an extension storage location
-let removeStorage: tmp.DirResult["removeCallback"] | undefined;
 
 beforeAll(async () => {
   // ensure the test database is downloaded
@@ -37,18 +29,6 @@ beforeAll(async () => {
       });
     });
   }
-
-  // Create the temp directory to be used as extension local storage.
-  const dir = tmp.dirSync();
-  let storagePath = realpathSync(dir.name);
-  if (storagePath.substring(0, 2).match(/[A-Z]:/)) {
-    storagePath =
-      storagePath.substring(0, 1).toLocaleLowerCase() +
-      storagePath.substring(1);
-  }
-  setStoragePath(storagePath);
-
-  removeStorage = dir.removeCallback;
 
   await beforeAllAction();
 });
@@ -76,14 +56,6 @@ beforeAll(() => {
   }
 });
 
-// ensure extension is cleaned up.
 afterAll(async () => {
-  // ensure temp directory is cleaned up.
-  try {
-    removeStorage?.();
-  } catch (e) {
-    // we are exiting anyway so don't worry about it.
-    // most likely the directory this is a test on Windows and some files are locked.
-    console.warn(`Failed to remove storage directory '${storagePath}': ${e}`);
-  }
+  await afterAllAction();
 });
