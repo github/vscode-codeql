@@ -3,7 +3,6 @@ import {
   commands,
   env,
   extensions,
-  QuickPickItem,
   TextDocument,
   TextEditor,
   Uri,
@@ -59,7 +58,7 @@ import { DbManager } from "../../../../src/databases/db-manager";
 import { App } from "../../../../src/common/app";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
-import { mockedObject } from "../../utils/mocking.helpers";
+import { mockedObject, mockedQuickPickItem } from "../../utils/mocking.helpers";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -131,7 +130,7 @@ describe("Variant Analysis Manager", () => {
     beforeEach(async () => {
       jest
         .spyOn(window, "showQuickPick")
-        .mockResolvedValueOnce("javascript" as unknown as QuickPickItem);
+        .mockResolvedValueOnce(mockedQuickPickItem("javascript"));
 
       cancellationTokenSource = new CancellationTokenSource();
 

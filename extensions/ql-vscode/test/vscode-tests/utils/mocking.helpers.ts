@@ -1,3 +1,5 @@
+import { QuickPickItem, window } from "vscode";
+
 export type DeepPartial<T> = T extends object
   ? {
       [P in keyof T]?: DeepPartial<T[P]>;
@@ -40,4 +42,10 @@ export function mockedObject<T extends object>(
       throw new Error(`Method ${String(prop)} not mocked`);
     },
   });
+}
+
+export function mockedQuickPickItem<T extends QuickPickItem | string>(
+  value: T | T[],
+): Awaited<ReturnType<typeof window.showQuickPick>> {
+  return value as Awaited<ReturnType<typeof window.showQuickPick>>;
 }

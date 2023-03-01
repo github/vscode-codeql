@@ -4,7 +4,6 @@ import {
   authentication,
   commands,
   extensions,
-  QuickPickItem,
   TextDocument,
   window,
   workspace,
@@ -13,6 +12,7 @@ import {
 import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 import { setRemoteControllerRepo } from "../../../../src/config";
+import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 
 jest.setTimeout(30_000);
 
@@ -71,9 +71,7 @@ describe("Variant Analysis Submission Integration", () => {
       await showQlDocument("query.ql");
 
       // Select target language for your query
-      quickPickSpy.mockResolvedValueOnce(
-        "javascript" as unknown as QuickPickItem,
-      );
+      quickPickSpy.mockResolvedValueOnce(mockedQuickPickItem("javascript"));
 
       await commands.executeCommand("codeQL.runVariantAnalysis");
 
@@ -112,9 +110,7 @@ describe("Variant Analysis Submission Integration", () => {
       await showQlDocument("query.ql");
 
       // Select target language for your query
-      quickPickSpy.mockResolvedValueOnce(
-        "javascript" as unknown as QuickPickItem,
-      );
+      quickPickSpy.mockResolvedValueOnce(mockedQuickPickItem("javascript"));
 
       await commands.executeCommand("codeQL.runVariantAnalysis");
 

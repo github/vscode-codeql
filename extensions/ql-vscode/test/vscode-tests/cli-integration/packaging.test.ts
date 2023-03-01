@@ -1,4 +1,4 @@
-import { extensions, QuickPickItem, window } from "vscode";
+import { extensions, window } from "vscode";
 import { join } from "path";
 
 import { CodeQLCliServer } from "../../../src/cli";
@@ -10,6 +10,7 @@ import {
   handleDownloadPacks,
   handleInstallPackDependencies,
 } from "../../../src/packaging";
+import { mockedQuickPickItem } from "../utils/mocking.helpers";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -56,7 +57,7 @@ describe("Packaging commands", () => {
 
   it("should download all core query packs", async () => {
     quickPickSpy.mockResolvedValue(
-      "Download all core query packs" as unknown as QuickPickItem,
+      mockedQuickPickItem("Download all core query packs"),
     );
 
     await handleDownloadPacks(cli, progress);
@@ -67,7 +68,7 @@ describe("Packaging commands", () => {
 
   it("should download valid user-specified pack", async () => {
     quickPickSpy.mockResolvedValue(
-      "Download custom specified pack" as unknown as QuickPickItem,
+      mockedQuickPickItem("Download custom specified pack"),
     );
     inputBoxSpy.mockResolvedValue("codeql/csharp-solorigate-queries");
 
@@ -79,7 +80,7 @@ describe("Packaging commands", () => {
 
   it("should show error when downloading invalid user-specified pack", async () => {
     quickPickSpy.mockResolvedValue(
-      "Download custom specified pack" as unknown as QuickPickItem,
+      mockedQuickPickItem("Download custom specified pack"),
     );
     inputBoxSpy.mockResolvedValue("foo/not-a-real-pack@0.0.1");
 
@@ -93,12 +94,14 @@ describe("Packaging commands", () => {
 
   it("should install valid workspace pack", async () => {
     const rootDir = join(__dirname, "./data");
-    quickPickSpy.mockResolvedValue([
-      {
-        label: "integration-test-queries-javascript",
-        packRootDir: [rootDir],
-      },
-    ] as unknown as QuickPickItem);
+    quickPickSpy.mockResolvedValue(
+      mockedQuickPickItem([
+        {
+          label: "integration-test-queries-javascript",
+          packRootDir: [rootDir],
+        },
+      ]),
+    );
 
     await handleInstallPackDependencies(cli, progress);
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
@@ -108,12 +111,14 @@ describe("Packaging commands", () => {
 
   it("should throw an error when installing invalid workspace pack", async () => {
     const rootDir = join(__dirname, "../data-invalid-pack");
-    quickPickSpy.mockResolvedValue([
-      {
-        label: "foo/bar",
-        packRootDir: [rootDir],
-      },
-    ] as unknown as QuickPickItem);
+    quickPickSpy.mockResolvedValue(
+      mockedQuickPickItem([
+        {
+          label: "foo/bar",
+          packRootDir: [rootDir],
+        },
+      ]),
+    );
 
     try {
       // expect this to throw an error
