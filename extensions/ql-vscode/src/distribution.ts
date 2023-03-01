@@ -315,6 +315,15 @@ class ExtensionSpecificDistributionManager {
     const extensionSpecificRelease = this.getInstalledRelease();
     const latestRelease = await this.getLatestRelease();
 
+    // v2.12.3 was released with a bug that causes the extension to fail
+    // so we force the extension to ignore it.
+    if (
+      extensionSpecificRelease &&
+      extensionSpecificRelease.name === "v2.12.3"
+    ) {
+      return createUpdateAvailableResult(latestRelease);
+    }
+
     if (
       extensionSpecificRelease !== undefined &&
       codeQlPath !== undefined &&
@@ -430,6 +439,12 @@ class ExtensionSpecificDistributionManager {
       this.versionRange,
       this.config.includePrerelease,
       (release) => {
+        // v2.12.3 was released with a bug that causes the extension to fail
+        // so we force the extension to ignore it.
+        if (release.name === "v2.12.3") {
+          return false;
+        }
+
         const matchingAssets = release.assets.filter(
           (asset) => asset.name === requiredAssetName,
         );
