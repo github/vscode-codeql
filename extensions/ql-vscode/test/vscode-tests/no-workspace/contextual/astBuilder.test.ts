@@ -2,10 +2,9 @@ import { readFileSync } from "fs-extra";
 
 import AstBuilder from "../../../../src/contextual/astBuilder";
 import { CodeQLCliServer } from "../../../../src/cli";
-import { DatabaseItem } from "../../../../src/local-databases";
 import { Uri } from "vscode";
 import { QueryWithResults } from "../../../../src/run-queries-shared";
-import { mockedObject } from "../../utils/mocking.helpers";
+import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
 
 /**
  *
@@ -146,7 +145,9 @@ describe("AstBuilder", () => {
         },
       } as QueryWithResults,
       mockCli,
-      {} as DatabaseItem,
+      mockDatabaseItem({
+        resolveSourceFile: undefined,
+      }),
       Uri.file(""),
     );
   }
