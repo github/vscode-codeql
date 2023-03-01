@@ -658,7 +658,7 @@ export class ResultsView extends AbstractWebview<
     }
     let data;
     let numTotalResults;
-    // Graph results are only supported in canary mode because the graph viewer is unsupported
+    // Graph results are only supported in canary mode because the graph viewer is not actively supported
     if (metadata?.kind === GRAPH_TABLE_NAME && isCanary()) {
       data = await interpretGraphResults(
         this.cliServer,

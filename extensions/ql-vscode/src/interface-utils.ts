@@ -166,7 +166,9 @@ export function getHtmlForWebview(
   /*
    * Content security policy:
    * default-src: allow nothing by default.
-   * script-src: allow the given script, using the nonce. also allow loading WebAssembly modules.
+   * script-src:
+   *   - allow the given script, using the nonce.
+   *   - 'wasm-unsafe-eval: allow loading WebAssembly modules if necessary.
    * style-src: allow only the given stylesheet, using the nonce.
    * connect-src: only allow fetch calls to webview resource URIs
    * (this is used to load BQRS result files).
