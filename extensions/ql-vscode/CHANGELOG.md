@@ -3,7 +3,7 @@
 ## 1.7.11 - 1 March 2023
 
 - Enable collection of telemetry concerning interactions with UI elements, including buttons, links, and other inputs. [#2114](https://github.com/github/vscode-codeql/pull/2114)
-- Prevent the installation of CodeQL CLI version 2.12.3 from being automatically to avoid a bug in the language server. [#2126](https://github.com/github/vscode-codeql/pull/2126)
+- Prevent the automatic installation of CodeQL CLI version 2.12.3 to avoid a bug in the language server. CodeQL CLI 2.12.2 will be used instead. [#2126](https://github.com/github/vscode-codeql/pull/2126)
 
 ## 1.7.10 - 23 February 2023
 
