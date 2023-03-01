@@ -978,11 +978,10 @@
         },
         {
           "command": "codeQL.runVariantAnalysis",
-          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
+          "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.exportSelectedVariantAnalysisResults",
-          "when": "config.codeQL.canary"
+          "command": "codeQL.exportSelectedVariantAnalysisResults"
         },
         {
           "command": "codeQL.runQueries",
@@ -1236,7 +1235,7 @@
         },
         {
           "command": "codeQL.runVariantAnalysis",
-          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
+          "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
           "command": "codeQL.viewAst",
@@ -1281,8 +1280,7 @@
         },
         {
           "id": "codeQLVariantAnalysisRepositories",
-          "name": "Variant Analysis Repositories",
-          "when": "config.codeQL.canary"
+          "name": "Variant Analysis Repositories"
         },
         {
           "id": "codeQLQueryHistory",
