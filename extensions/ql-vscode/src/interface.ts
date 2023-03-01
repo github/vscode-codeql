@@ -64,7 +64,7 @@ import {
   ResultSetSchema,
 } from "./pure/bqrs-cli-types";
 import { AbstractWebview, WebviewPanelConfig } from "./abstract-webview";
-import { PAGE_SIZE } from "./config";
+import { isCanary, PAGE_SIZE } from "./config";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { telemetryListener } from "./telemetry";
 import { redactableError } from "./pure/errors";
@@ -221,8 +221,8 @@ export class ResultsView extends AbstractWebview<
       viewColumn: this.chooseColumnForWebview(),
       preserveFocus: true,
       view: "results",
-      // Required for the graph viewer which is using d3-graphviz WASM module
-      allowWasmEval: true,
+      // Required for the graph viewer which is using d3-graphviz WASM module. Only supported in canary mode.
+      allowWasmEval: isCanary(),
     };
   }
 
@@ -658,7 +658,8 @@ export class ResultsView extends AbstractWebview<
     }
     let data;
     let numTotalResults;
-    if (metadata?.kind === GRAPH_TABLE_NAME) {
+    // Graph results are only supported in canary mode because the graph viewer is unsupported
+    if (metadata?.kind === GRAPH_TABLE_NAME && isCanary()) {
       data = await interpretGraphResults(
         this.cliServer,
         metadata,
