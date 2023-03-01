@@ -1,11 +1,9 @@
-import { extensions } from "vscode";
-import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { extLogger } from "../../../../src/common";
 import * as fs from "fs-extra";
 import { join, resolve } from "path";
 import { Readable } from "stream";
-import { Response, RequestInfo, RequestInit } from "node-fetch";
 import * as fetchModule from "node-fetch";
+import { RequestInfo, RequestInit, Response } from "node-fetch";
 
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
 import { CodeQLCliServer } from "../../../../src/cli";
@@ -16,37 +14,31 @@ import {
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepositoryResult,
 } from "../../../../src/variant-analysis/shared/variant-analysis";
+import { mockedObject } from "../../utils/mocking.helpers";
 
 jest.setTimeout(10_000);
 
 describe(VariantAnalysisResultsManager.name, () => {
-  let cli: CodeQLCliServer;
   let variantAnalysisId: number;
+  let variantAnalysisResultsManager: VariantAnalysisResultsManager;
 
   beforeEach(async () => {
     variantAnalysisId = faker.datatype.number();
 
-    const extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
-    cli = extension.cliServer;
+    const cli = mockedObject<CodeQLCliServer>({});
+    variantAnalysisResultsManager = new VariantAnalysisResultsManager(
+      cli,
+      extLogger,
+    );
   });
 
   describe("download", () => {
     let dummyRepoTask: VariantAnalysisRepositoryTask;
     let variantAnalysisStoragePath: string;
     let repoTaskStorageDirectory: string;
-    let variantAnalysisResultsManager: VariantAnalysisResultsManager;
 
     beforeEach(async () => {
       jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
-
-      variantAnalysisResultsManager = new VariantAnalysisResultsManager(
-        cli,
-        extLogger,
-      );
 
       dummyRepoTask = createMockVariantAnalysisRepositoryTask();
 
@@ -103,7 +95,7 @@ describe(VariantAnalysisResultsManager.name, () => {
       beforeEach(async () => {
         const sourceFilePath = join(
           __dirname,
-          "../data/variant-analysis-results.zip",
+          "../../cli-integration/data/variant-analysis-results.zip",
         );
         fileContents = fs.readFileSync(sourceFilePath);
 
@@ -222,17 +214,12 @@ describe(VariantAnalysisResultsManager.name, () => {
     let dummyRepoTask: VariantAnalysisRepositoryTask;
     let variantAnalysisStoragePath: string;
     let repoTaskStorageDirectory: string;
-    let variantAnalysisResultsManager: VariantAnalysisResultsManager;
     let onResultLoadedSpy: jest.Mock<
       void,
       [VariantAnalysisScannedRepositoryResult]
     >;
 
     beforeEach(() => {
-      variantAnalysisResultsManager = new VariantAnalysisResultsManager(
-        cli,
-        extLogger,
-      );
       onResultLoadedSpy = jest.fn();
       variantAnalysisResultsManager.onResultLoaded(onResultLoadedSpy);
 
