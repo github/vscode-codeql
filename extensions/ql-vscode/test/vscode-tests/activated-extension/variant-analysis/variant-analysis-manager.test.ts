@@ -220,7 +220,7 @@ describe("Variant Analysis Manager", () => {
 
         const sourceFilePath = join(
           __dirname,
-          "../../cli-integration/data/variant-analysis-results.zip",
+          "data/variant-analysis-results.zip",
         );
         const fileContents = fs.readFileSync(sourceFilePath);
         const response = new Response(Readable.from(fileContents));

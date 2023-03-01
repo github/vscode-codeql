@@ -95,7 +95,7 @@ describe(VariantAnalysisResultsManager.name, () => {
       beforeEach(async () => {
         const sourceFilePath = join(
           __dirname,
-          "../../cli-integration/data/variant-analysis-results.zip",
+          "data/variant-analysis-results.zip",
         );
         fileContents = fs.readFileSync(sourceFilePath);
 
