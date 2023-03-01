@@ -117,7 +117,7 @@ export abstract class AbstractWebview<
       config.view,
       {
         allowInlineStyles: true,
-        allowWasmEval: config.allowWasmEval ?? false,
+        allowWasmEval: !!config.allowWasmEval,
       },
     );
     this.push(
