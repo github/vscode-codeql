@@ -1,0 +1,15 @@
+{
+  "name": "vscode-codeql-root",
+  "workspaces": [
+    "extensions/ql-vscode"
+  ],
+  "devDependencies": {
+    "husky": "~4.3.8"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run format-staged --workspaces --if-present",
+      "pre-push": "npm run pre-push-hook --workspaces --if-present"
+    }
+  }
+}
