@@ -1399,8 +1399,16 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       "codeQL.installPackDependencies",
-      async (progress: ProgressCallback) =>
-        await handleInstallPackDependencies(cliServer, progress),
+      async (
+        progress: ProgressCallback,
+        _token: CancellationToken,
+        relativeDirectoryPath: string | undefined,
+      ) =>
+        await handleInstallPackDependencies(
+          cliServer,
+          progress,
+          relativeDirectoryPath,
+        ),
       {
         title: "Installing pack dependencies",
       },

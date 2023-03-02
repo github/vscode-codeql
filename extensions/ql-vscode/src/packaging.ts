@@ -4,12 +4,13 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
 } from "./helpers";
-import { QuickPickItem, window } from "vscode";
+import { QuickPickItem, window, workspace } from "vscode";
 import { ProgressCallback, UserCancellationException } from "./commandRunner";
 import { extLogger } from "./common";
 import { asError, getErrorStack } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
 import { PACKS_BY_QUERY_LANGUAGE } from "./common/query-language";
+import { join, resolve } from "path";
 
 /**
  * Prompts user to choose packs to download, and downloads them.
@@ -82,26 +83,44 @@ interface QLPackQuickPickItem extends QuickPickItem {
 export async function handleInstallPackDependencies(
   cliServer: CodeQLCliServer,
   progress: ProgressCallback,
+  relativeDirectoryPath?: string,
 ): Promise<void> {
   progress({
     message: "Choose packs to install dependencies for",
     step: 1,
     maxStep: 2,
   });
-  const workspacePacks = await cliServer.resolveQlpacks(
-    getOnDiskWorkspaceFolders(),
-  );
-  const quickPickItems = Object.entries(
-    workspacePacks,
-  ).map<QLPackQuickPickItem>(([key, value]) => ({
-    label: key,
-    packRootDir: value,
-  }));
-  const packsToInstall = await window.showQuickPick(quickPickItems, {
-    placeHolder: "Select packs to install dependencies for",
-    canPickMany: true,
-    ignoreFocusOut: true,
-  });
+
+  let packsToInstall: QLPackQuickPickItem[] | undefined;
+
+  if (relativeDirectoryPath) {
+    const dirPath = resolve(
+      join(workspace.rootPath || "", relativeDirectoryPath),
+    );
+
+    packsToInstall = [
+      {
+        label: relativeDirectoryPath,
+        packRootDir: [dirPath],
+      },
+    ];
+  } else {
+    const workspacePacks = await cliServer.resolveQlpacks(
+      getOnDiskWorkspaceFolders(),
+    );
+    const quickPickItems = Object.entries(
+      workspacePacks,
+    ).map<QLPackQuickPickItem>(([key, value]) => ({
+      label: key,
+      packRootDir: value,
+    }));
+    packsToInstall = await window.showQuickPick(quickPickItems, {
+      placeHolder: "Select packs to install dependencies for",
+      canPickMany: true,
+      ignoreFocusOut: true,
+    });
+  }
+
   const numberOfPacks = packsToInstall?.length || 0;
   if (packsToInstall && numberOfPacks > 0) {
     const failedPacks = [];

@@ -1,5 +1,5 @@
 import { extensions, QuickPickItem, window } from "vscode";
-import { join } from "path";
+import { join, resolve } from "path";
 
 import { CodeQLCliServer } from "../../../src/cli";
 import { CodeQLExtensionInterface } from "../../../src/extension";
@@ -25,6 +25,7 @@ describe("Packaging commands", () => {
   let showAndLogInformationMessageSpy: jest.SpiedFunction<
     typeof helpers.showAndLogInformationMessage
   >;
+  let packInstallSpy: jest.SpiedFunction<typeof cli.packInstall>;
 
   beforeEach(async () => {
     quickPickSpy = jest
@@ -52,6 +53,10 @@ describe("Packaging commands", () => {
         "Extension not initialized. Make sure cli is downloaded and installed properly.",
       );
     }
+
+    packInstallSpy = jest
+      .spyOn(cli, "packInstall")
+      .mockResolvedValue(undefined);
   });
 
   it("should download all core query packs", async () => {
@@ -125,5 +130,15 @@ describe("Packaging commands", () => {
         "Unable to install pack dependencies",
       );
     }
+  });
+
+  describe("when provided with a custom directory", () => {
+    it("should install dependencies in the provided directory", async () => {
+      await handleInstallPackDependencies(cli, progress, "custom-dir");
+      expect(packInstallSpy).toHaveBeenCalledWith(resolve("custom-dir"));
+      expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Finished installing pack dependencies."),
+      );
+    });
   });
 });
