@@ -24,6 +24,7 @@ export type WebviewPanelConfig = {
   view: WebviewView;
   preserveFocus?: boolean;
   additionalOptions?: WebviewPanelOptions & WebviewOptions;
+  allowWasmEval?: boolean;
 };
 
 export abstract class AbstractWebview<
@@ -116,6 +117,7 @@ export abstract class AbstractWebview<
       config.view,
       {
         allowInlineStyles: true,
+        allowWasmEval: !!config.allowWasmEval,
       },
     );
     this.push(
