@@ -1,8 +1,10 @@
-import { pathExists, readdir, stat, remove, readFile } from "fs-extra";
+import { pathExists, stat, remove, readFile } from "fs-extra";
 import { EOL } from "os";
 import { join } from "path";
 import { Disposable, ExtensionContext } from "vscode";
 import { extLogger } from "../common";
+import { readDirFullPaths } from "../pure/files";
+import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryManager } from "./query-history-manager";
 
 const LAST_SCRUB_TIME_KEY = "lastScrubTime";
@@ -23,14 +25,14 @@ type Counter = {
  * @param wakeInterval How often to check to see if the job should run.
  * @param throttleTime How often to actually run the job.
  * @param maxQueryTime The maximum age of a query before is ready for deletion.
- * @param queryDirectory The directory containing all queries.
+ * @param queryHistoryDirs The directories containing all query history information.
  * @param ctx The extension context.
  */
 export function registerQueryHistoryScrubber(
   wakeInterval: number,
   throttleTime: number,
   maxQueryTime: number,
-  queryDirectory: string,
+  queryHistoryDirs: QueryHistoryDirs,
   qhm: QueryHistoryManager,
   ctx: ExtensionContext,
 
@@ -42,7 +44,7 @@ export function registerQueryHistoryScrubber(
     wakeInterval,
     throttleTime,
     maxQueryTime,
-    queryDirectory,
+    queryHistoryDirs,
     qhm,
     ctx,
     counter,
@@ -58,7 +60,7 @@ export function registerQueryHistoryScrubber(
 async function scrubQueries(
   throttleTime: number,
   maxQueryTime: number,
-  queryDirectory: string,
+  queryHistoryDirs: QueryHistoryDirs,
   qhm: QueryHistoryManager,
   ctx: ExtensionContext,
   counter?: Counter,
@@ -74,18 +76,33 @@ async function scrubQueries(
     let scrubCount = 0; // total number of directories deleted
     try {
       counter?.increment();
-      void extLogger.log("Scrubbing query directory. Removing old queries.");
-      if (!(await pathExists(queryDirectory))) {
+      void extLogger.log(
+        "Cleaning up query history directories. Removing old entries.",
+      );
+
+      if (!(await pathExists(queryHistoryDirs.localQueriesDirPath))) {
         void extLogger.log(
-          `Cannot scrub. Query directory does not exist: ${queryDirectory}`,
+          `Cannot clean up query history directories. Local queries directory does not exist: ${queryHistoryDirs.localQueriesDirPath}`,
+        );
+        return;
+      }
+      if (!(await pathExists(queryHistoryDirs.variantAnalysesDirPath))) {
+        void extLogger.log(
+          `Cannot clean up query history directories. Variant analyses directory does not exist: ${queryHistoryDirs.variantAnalysesDirPath}`,
         );
         return;
       }
 
-      const baseNames = await readdir(queryDirectory);
+      const localQueryDirPaths = await readDirFullPaths(
+        queryHistoryDirs.localQueriesDirPath,
+      );
+      const variantAnalysisDirPaths = await readDirFullPaths(
+        queryHistoryDirs.variantAnalysesDirPath,
+      );
+      const allDirPaths = [...localQueryDirPaths, ...variantAnalysisDirPaths];
+
       const errors: string[] = [];
-      for (const baseName of baseNames) {
-        const dir = join(queryDirectory, baseName);
+      for (const dir of allDirPaths) {
         const scrubResult = await scrubDirectory(dir, now, maxQueryTime);
         if (scrubResult.errorMsg) {
           errors.push(scrubResult.errorMsg);

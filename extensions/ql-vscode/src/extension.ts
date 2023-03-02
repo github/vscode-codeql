@@ -131,6 +131,7 @@ import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
+import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 
 /**
  * extension.ts
@@ -649,13 +650,18 @@ async function activateWithInstalledDistribution(
   );
 
   void extLogger.log("Initializing query history.");
+  const queryHistoryDirs: QueryHistoryDirs = {
+    localQueriesDirPath: queryStorageDir,
+    variantAnalysesDirPath: variantAnalysisStorageDir,
+  };
+
   const qhm = new QueryHistoryManager(
     qs,
     dbm,
     localQueryResultsView,
     variantAnalysisManager,
     evalLogViewer,
-    queryStorageDir,
+    queryHistoryDirs,
     ctx,
     queryHistoryConfigurationListener,
     labelProvider,

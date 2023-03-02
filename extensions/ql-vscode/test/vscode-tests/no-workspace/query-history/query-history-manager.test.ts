@@ -26,6 +26,7 @@ import { QuickPickItem, TextEditor } from "vscode";
 import { WebviewReveal } from "../../../../src/interface-utils";
 import * as helpers from "../../../../src/helpers";
 import { mockedObject } from "../../utils/mocking.helpers";
+import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 
 describe("QueryHistoryManager", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -1150,7 +1151,7 @@ describe("QueryHistoryManager", () => {
       localQueriesResultsViewStub,
       variantAnalysisManagerStub,
       {} as EvalLogViewer,
-      "xxx",
+      createMockQueryHistoryDirs(),
       {
         globalStorageUri: vscode.Uri.file(mockExtensionLocation),
         extensionPath: vscode.Uri.file("/x/y/z").fsPath,

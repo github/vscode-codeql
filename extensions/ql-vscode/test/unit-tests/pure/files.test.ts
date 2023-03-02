@@ -4,6 +4,7 @@ import {
   gatherQlFiles,
   getDirectoryNamesInsidePath,
   pathsEqual,
+  readDirFullPaths,
 } from "../../../src/pure/files";
 
 describe("files", () => {
@@ -98,6 +99,20 @@ describe("files", () => {
     it("should find sub-folders", async () => {
       const result = await getDirectoryNamesInsidePath(data2Dir);
       expect(result).toEqual(["sub-folder"]);
+    });
+  });
+
+  describe("readDirFullPaths", () => {
+    it("should return all files with full path", async () => {
+      const file1 = join(dataDir, "compute-default-strings.ql");
+      const file2 = join(dataDir, "multiple-result-sets.ql");
+      const file3 = join(dataDir, "query.ql");
+
+      const paths = await readDirFullPaths(dataDir);
+
+      expect(paths.some((path) => path === file1)).toBe(true);
+      expect(paths.some((path) => path === file2)).toBe(true);
+      expect(paths.some((path) => path === file3)).toBe(true);
     });
   });
 });
