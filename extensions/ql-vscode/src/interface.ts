@@ -399,7 +399,7 @@ export class ResultsView extends AbstractWebview<
     forceReveal: WebviewReveal,
     shouldKeepOldResultsWhileRendering = false,
   ): Promise<void> {
-    if (!fullQuery.completedQuery.successful) {
+    if (!fullQuery.completedQuery?.successful) {
       return;
     }
 
