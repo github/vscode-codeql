@@ -37,7 +37,7 @@ describe("test-adapter", () => {
   const preTestDatabaseItem = new DatabaseItemImpl(
     Uri.file("/path/to/test/dir/dir.testproj"),
     undefined,
-    { displayName: "custom display name" } as unknown as FullDatabaseOptions,
+    mockedObject<FullDatabaseOptions>({ displayName: "custom display name" }),
     (_) => {
       /* no change event listener */
     },
@@ -45,7 +45,7 @@ describe("test-adapter", () => {
   const postTestDatabaseItem = new DatabaseItemImpl(
     Uri.file("/path/to/test/dir/dir.testproj"),
     undefined,
-    { displayName: "default name" } as unknown as FullDatabaseOptions,
+    mockedObject<FullDatabaseOptions>({ displayName: "default name" }),
     (_) => {
       /* no change event listener */
     },

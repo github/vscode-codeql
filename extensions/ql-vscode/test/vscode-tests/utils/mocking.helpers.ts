@@ -1,3 +1,6 @@
+import { DatabaseItem } from "../../../src/local-databases";
+import { Uri } from "vscode";
+
 export type DeepPartial<T> = T extends object
   ? {
       [P in keyof T]?: DeepPartial<T[P]>;
@@ -39,5 +42,18 @@ export function mockedObject<T extends object>(
 
       throw new Error(`Method ${String(prop)} not mocked`);
     },
+  });
+}
+
+export function mockDatabaseItem(
+  props: DeepPartial<DatabaseItem> = {},
+): DatabaseItem {
+  return mockedObject<DatabaseItem>({
+    databaseUri: Uri.file("abc"),
+    name: "github/codeql",
+    language: "javascript",
+    sourceArchive: undefined,
+    resolveSourceFile: jest.fn().mockReturnValue(Uri.file("abc")),
+    ...props,
   });
 }

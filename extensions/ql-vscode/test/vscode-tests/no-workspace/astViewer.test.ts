@@ -3,8 +3,8 @@ import { load } from "js-yaml";
 
 import { AstViewer, AstItem } from "../../../src/astViewer";
 import { commands, Range, Uri } from "vscode";
-import { DatabaseItem } from "../../../src/local-databases";
 import { testDisposeHandler } from "../test-dispose-handler";
+import { mockDatabaseItem } from "../utils/mocking.helpers";
 
 describe("AstViewer", () => {
   let astRoots: AstItem[];
@@ -31,7 +31,7 @@ describe("AstViewer", () => {
   });
 
   it("should update the viewer roots", () => {
-    const item = {} as DatabaseItem;
+    const item = mockDatabaseItem();
     viewer = new AstViewer();
     viewer.updateRoots(astRoots, item, Uri.file("def/abc"));
 
@@ -71,7 +71,7 @@ describe("AstViewer", () => {
     selectionRange: Range | undefined,
     fileUri = defaultUri,
   ) {
-    const item = {} as DatabaseItem;
+    const item = mockDatabaseItem();
     viewer = new AstViewer();
     viewer.updateRoots(astRoots, item, defaultUri);
 

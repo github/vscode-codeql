@@ -10,8 +10,7 @@ import {
   resolveQueries,
 } from "../../../../src/contextual/queryResolver";
 import { CodeQLCliServer } from "../../../../src/cli";
-import { DatabaseItem } from "../../../../src/local-databases";
-import { mockedObject } from "../../utils/mocking.helpers";
+import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
 
 describe("queryResolver", () => {
   let getQlPackForDbschemeSpy: jest.SpiedFunction<
@@ -96,13 +95,13 @@ describe("queryResolver", () => {
         dbschemePack: "my-qlpack",
         dbschemePackIsLibraryPack: false,
       });
-      const db = {
+      const db = mockDatabaseItem({
         contents: {
           datasetUri: {
             fsPath: "/path/to/database",
           },
         },
-      } as unknown as DatabaseItem;
+      });
       const result = await qlpackOfDatabase(mockCli, db);
       expect(result).toEqual({
         dbschemePack: "my-qlpack",

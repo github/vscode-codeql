@@ -6,6 +6,7 @@ import {
   WholeFileLocation,
   LineColumnLocation,
 } from "../../../../src/pure/bqrs-cli-types";
+import { mockDatabaseItem } from "../../utils/mocking.helpers";
 
 describe("fileRangeFromURI", () => {
   it("should return undefined when value is not a file URI", () => {
@@ -92,8 +93,8 @@ describe("fileRangeFromURI", () => {
   });
 
   function createMockDatabaseItem(): DatabaseItem {
-    return {
+    return mockDatabaseItem({
       resolveSourceFile: (file: string) => Uri.parse(file),
-    } as DatabaseItem;
+    });
   }
 });
