@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.7.11",
+  "version": "1.7.12",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -978,10 +978,11 @@
         },
         {
           "command": "codeQL.runVariantAnalysis",
-          "when": "editorLangId == ql && resourceExtname == .ql"
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.exportSelectedVariantAnalysisResults"
+          "command": "codeQL.exportSelectedVariantAnalysisResults",
+          "when": "config.codeQL.canary"
         },
         {
           "command": "codeQL.runQueries",
@@ -1235,7 +1236,7 @@
         },
         {
           "command": "codeQL.runVariantAnalysis",
-          "when": "editorLangId == ql && resourceExtname == .ql"
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql"
         },
         {
           "command": "codeQL.viewAst",
@@ -1280,7 +1281,8 @@
         },
         {
           "id": "codeQLVariantAnalysisRepositories",
-          "name": "Variant Analysis Repositories"
+          "name": "Variant Analysis Repositories",
+          "when": "config.codeQL.canary"
         },
         {
           "id": "codeQLQueryHistory",
@@ -1316,7 +1318,7 @@
       },
       {
         "view": "codeQLVariantAnalysisRepositories",
-        "contents": "Set up a controller repository to start using variant analysis. [Learn more](https://codeql.github.com/docs/codeql-for-visual-studio-code/running-codeql-queries-at-scale-with-mrva#controller-repository) about controller repositories. \n[Set up controller repository](command:codeQLVariantAnalysisRepositories.setupControllerRepository)",
+        "contents": "Set up a controller repository to start using variant analysis.\n[Set up controller repository](command:codeQLVariantAnalysisRepositories.setupControllerRepository)",
         "when": "!config.codeQL.variantAnalysis.controllerRepo"
       }
     ]

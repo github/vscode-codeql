@@ -125,10 +125,13 @@ export function getHtmlForWebview(
   view: WebviewView,
   {
     allowInlineStyles,
+    allowWasmEval,
   }: {
     allowInlineStyles?: boolean;
+    allowWasmEval?: boolean;
   } = {
     allowInlineStyles: false,
+    allowWasmEval: false,
   },
 ): string {
   const scriptUriOnDisk = Uri.file(ctx.asAbsolutePath("out/webview.js"));
@@ -159,7 +162,9 @@ export function getHtmlForWebview(
   /*
    * Content security policy:
    * default-src: allow nothing by default.
-   * script-src: allow only the given script, using the nonce.
+   * script-src:
+   *   - allow the given script, using the nonce.
+   *   - 'wasm-unsafe-eval: allow loading WebAssembly modules if necessary.
    * style-src: allow only the given stylesheet, using the nonce.
    * connect-src: only allow fetch calls to webview resource URIs
    * (this is used to load BQRS result files).
@@ -168,7 +173,9 @@ export function getHtmlForWebview(
 <html>
   <head>
     <meta http-equiv="Content-Security-Policy"
-          content="default-src 'none'; script-src 'nonce-${nonce}'; font-src ${fontSrc}; style-src ${styleSrc}; connect-src ${
+          content="default-src 'none'; script-src 'nonce-${nonce}'${
+    allowWasmEval ? " 'wasm-unsafe-eval'" : ""
+  }; font-src ${fontSrc}; style-src ${styleSrc}; connect-src ${
     webview.cspSource
   };">
         ${stylesheetsHtmlLines.join(`    ${EOL}`)}

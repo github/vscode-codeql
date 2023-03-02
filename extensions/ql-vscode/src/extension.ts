@@ -131,6 +131,7 @@ import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
+import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 
 /**
  * extension.ts
@@ -637,7 +638,7 @@ async function activateWithInstalledDistribution(
     cliServer,
     variantAnalysisStorageDir,
     variantAnalysisResultsManager,
-    dbModule.dbManager,
+    dbModule?.dbManager,
   );
   ctx.subscriptions.push(variantAnalysisManager);
   ctx.subscriptions.push(variantAnalysisResultsManager);
@@ -649,13 +650,18 @@ async function activateWithInstalledDistribution(
   );
 
   void extLogger.log("Initializing query history.");
+  const queryHistoryDirs: QueryHistoryDirs = {
+    localQueriesDirPath: queryStorageDir,
+    variantAnalysesDirPath: variantAnalysisStorageDir,
+  };
+
   const qhm = new QueryHistoryManager(
     qs,
     dbm,
     localQueryResultsView,
     variantAnalysisManager,
     evalLogViewer,
-    queryStorageDir,
+    queryHistoryDirs,
     ctx,
     queryHistoryConfigurationListener,
     labelProvider,
@@ -1121,17 +1127,23 @@ async function activateWithInstalledDistribution(
         token: CancellationToken,
         uri: Uri | undefined,
       ) => {
-        progress({
-          maxStep: 5,
-          step: 0,
-          message: "Getting credentials",
-        });
+        if (isCanary()) {
+          progress({
+            maxStep: 5,
+            step: 0,
+            message: "Getting credentials",
+          });
 
-        await variantAnalysisManager.runVariantAnalysis(
-          uri || window.activeTextEditor?.document.uri,
-          progress,
-          token,
-        );
+          await variantAnalysisManager.runVariantAnalysis(
+            uri || window.activeTextEditor?.document.uri,
+            progress,
+            token,
+          );
+        } else {
+          throw new Error(
+            "Variant analysis requires the CodeQL Canary version to run.",
+          );
+        }
       },
       {
         title: "Run Variant Analysis",

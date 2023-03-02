@@ -14,7 +14,7 @@ import {
   tryResolveLocation,
 } from "../../../src/interface-utils";
 import { getDefaultResultSetName } from "../../../src/pure/interface-types";
-import { DatabaseItem } from "../../../src/local-databases";
+import { mockDatabaseItem } from "../utils/mocking.helpers";
 
 describe("interface-utils", () => {
   describe("webview uri conversion", () => {
@@ -84,27 +84,21 @@ describe("interface-utils", () => {
 
   describe("resolveWholeFileLocation", () => {
     it("should resolve a whole file location", () => {
-      const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(Uri.file("abc")),
-      } as unknown as DatabaseItem;
+      const databaseItem = mockDatabaseItem();
       expect(
-        tryResolveLocation("file://hucairz:0:0:0:0", mockDatabaseItem),
+        tryResolveLocation("file://hucairz:0:0:0:0", databaseItem),
       ).toEqual(new Location(Uri.file("abc"), new Range(0, 0, 0, 0)));
     });
 
     it("should resolve a five-part location edge case", () => {
-      const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(Uri.file("abc")),
-      } as unknown as DatabaseItem;
+      const databaseItem = mockDatabaseItem();
       expect(
-        tryResolveLocation("file://hucairz:1:1:1:1", mockDatabaseItem),
+        tryResolveLocation("file://hucairz:1:1:1:1", databaseItem),
       ).toEqual(new Location(Uri.file("abc"), new Range(0, 0, 0, 1)));
     });
 
     it("should resolve a five-part location", () => {
-      const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(Uri.parse("abc")),
-      } as unknown as DatabaseItem;
+      const databaseItem = mockDatabaseItem();
 
       expect(
         tryResolveLocation(
@@ -115,7 +109,7 @@ describe("interface-utils", () => {
             endLine: 5,
             uri: "hucairz",
           },
-          mockDatabaseItem,
+          databaseItem,
         ),
       ).toEqual(
         new Location(
@@ -123,16 +117,12 @@ describe("interface-utils", () => {
           new Range(new Position(4, 3), new Position(3, 0)),
         ),
       );
-      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
-      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledWith(
-        "hucairz",
-      );
+      expect(databaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
+      expect(databaseItem.resolveSourceFile).toHaveBeenCalledWith("hucairz");
     });
 
     it("should resolve a five-part location with an empty path", () => {
-      const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(Uri.parse("abc")),
-      } as unknown as DatabaseItem;
+      const databaseItem = mockDatabaseItem();
 
       expect(
         tryResolveLocation(
@@ -143,51 +133,41 @@ describe("interface-utils", () => {
             endLine: 5,
             uri: "",
           },
-          mockDatabaseItem,
+          databaseItem,
         ),
       ).toBeUndefined();
     });
 
     it("should resolve a string location for whole file", () => {
-      const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(Uri.parse("abc")),
-      } as unknown as DatabaseItem;
+      const databaseItem = mockDatabaseItem();
 
       expect(
-        tryResolveLocation("file://hucairz:0:0:0:0", mockDatabaseItem),
+        tryResolveLocation("file://hucairz:0:0:0:0", databaseItem),
       ).toEqual(new Location(Uri.parse("abc"), new Range(0, 0, 0, 0)));
-      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
-      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledWith(
-        "hucairz",
-      );
+      expect(databaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
+      expect(databaseItem.resolveSourceFile).toHaveBeenCalledWith("hucairz");
     });
 
     it("should resolve a string location for five-part location", () => {
-      const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(Uri.parse("abc")),
-      } as unknown as DatabaseItem;
+      const databaseItem = mockDatabaseItem();
 
       expect(
-        tryResolveLocation("file://hucairz:5:4:3:2", mockDatabaseItem),
+        tryResolveLocation("file://hucairz:5:4:3:2", databaseItem),
       ).toEqual(
         new Location(
           Uri.parse("abc"),
           new Range(new Position(4, 3), new Position(2, 2)),
         ),
       );
-      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
-      expect(mockDatabaseItem.resolveSourceFile).toHaveBeenCalledWith(
-        "hucairz",
-      );
+      expect(databaseItem.resolveSourceFile).toHaveBeenCalledTimes(1);
+      expect(databaseItem.resolveSourceFile).toHaveBeenCalledWith("hucairz");
     });
 
     it("should resolve a string location for invalid string", () => {
-      const mockDatabaseItem: DatabaseItem = {
-        resolveSourceFile: jest.fn().mockReturnValue(Uri.parse("abc")),
-      } as unknown as DatabaseItem;
+      const databaseItem = mockDatabaseItem();
 
       expect(
-        tryResolveLocation("file://hucairz:x:y:z:a", mockDatabaseItem),
+        tryResolveLocation("file://hucairz:x:y:z:a", databaseItem),
       ).toBeUndefined();
     });
   });

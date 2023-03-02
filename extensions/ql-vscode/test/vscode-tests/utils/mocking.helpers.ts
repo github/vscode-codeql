@@ -1,4 +1,5 @@
-import { QuickPickItem, window } from "vscode";
+import { QuickPickItem, window, Uri } from "vscode";
+import { DatabaseItem } from "../../../src/local-databases";
 
 export type DeepPartial<T> = T extends object
   ? {
@@ -41,6 +42,19 @@ export function mockedObject<T extends object>(
 
       throw new Error(`Method ${String(prop)} not mocked`);
     },
+  });
+}
+
+export function mockDatabaseItem(
+  props: DeepPartial<DatabaseItem> = {},
+): DatabaseItem {
+  return mockedObject<DatabaseItem>({
+    databaseUri: Uri.file("abc"),
+    name: "github/codeql",
+    language: "javascript",
+    sourceArchive: undefined,
+    resolveSourceFile: jest.fn().mockReturnValue(Uri.file("abc")),
+    ...props,
   });
 }
 

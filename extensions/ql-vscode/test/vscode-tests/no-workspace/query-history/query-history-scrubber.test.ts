@@ -181,7 +181,7 @@ describe("query history scrubber", () => {
       ONE_HOUR_IN_MS,
       TWO_HOURS_IN_MS,
       LESS_THAN_ONE_DAY,
-      dir,
+      { localQueriesDirPath: dir, variantAnalysesDirPath: dir },
       mockedObject<QueryHistoryManager>({
         removeDeletedQueries: () => {
           return Promise.resolve();

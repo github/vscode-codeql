@@ -20,6 +20,7 @@ import { QueryRunner } from "../../../../src/queryRunner";
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { mockedObject } from "../../utils/mocking.helpers";
+import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 
 // set a higher timeout since recursive delete may take a while, expecially on Windows.
 jest.setTimeout(120000);
@@ -74,7 +75,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
       localQueriesResultsViewStub,
       variantAnalysisManagerStub,
       {} as EvalLogViewer,
-      STORAGE_DIR,
+      createMockQueryHistoryDirs({ localQueriesDirPath: STORAGE_DIR }),
       mockedObject<ExtensionContext>({
         globalStorageUri: Uri.file(STORAGE_DIR),
         storageUri: undefined,
