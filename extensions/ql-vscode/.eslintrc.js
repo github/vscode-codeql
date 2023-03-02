@@ -14,7 +14,7 @@ const baseConfig = {
       resolve(__dirname, ".storybook/tsconfig.json"),
     ],
   },
-  plugins: ["github", "@typescript-eslint", "etc"],
+  plugins: ["github", "@typescript-eslint", "etc", "vscode-codeql"],
   env: {
     node: true,
     es6: true,
@@ -29,6 +29,7 @@ const baseConfig = {
     "plugin:@typescript-eslint/recommended",
   ],
   rules: {
+    "vscode-codeql/no-as-unknown": "error",
     "@typescript-eslint/await-thenable": "error",
     "@typescript-eslint/no-use-before-define": 0,
     "@typescript-eslint/no-unused-vars": [

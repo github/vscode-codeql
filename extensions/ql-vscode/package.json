@@ -1455,6 +1455,7 @@
     "eslint-plugin-react": "^7.31.8",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-storybook": "^0.6.4",
+    "eslint-plugin-vscode-codeql": "*",
     "file-loader": "^6.2.0",
     "glob": "^7.1.4",
     "gulp": "^4.0.2",

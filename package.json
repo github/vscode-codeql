@@ -1,7 +1,8 @@
 {
   "name": "vscode-codeql-root",
   "workspaces": [
-    "extensions/ql-vscode"
+    "extensions/ql-vscode",
+    "packages/eslint-plugin-vscode-codeql"
   ],
   "devDependencies": {
     "husky": "^8.0.0"
