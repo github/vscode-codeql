@@ -54,7 +54,7 @@ jobs:
           echo "ref_name=$REF_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: vscode-codeql-extension
           path: artifacts
