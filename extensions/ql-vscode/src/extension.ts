@@ -887,6 +887,7 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing CodeQL language server.");
   const client = new LanguageClient(
+    "codeQL.lsp",
     "CodeQL Language Server",
     () => spawnIdeServer(qlConfigurationListener),
     {
