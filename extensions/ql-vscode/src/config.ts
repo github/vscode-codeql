@@ -83,10 +83,6 @@ export const GLOBAL_ENABLE_TELEMETRY = new Setting(
   GLOBAL_TELEMETRY_SETTING,
 );
 
-export function newTelemetryEnabled(): boolean {
-  return true;
-}
-
 // Distribution configuration
 const DISTRIBUTION_SETTING = new Setting("cli", ROOT_SETTING);
 export const CUSTOM_CODEQL_PATH_SETTING = new Setting(
