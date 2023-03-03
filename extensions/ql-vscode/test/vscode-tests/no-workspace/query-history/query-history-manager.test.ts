@@ -22,10 +22,10 @@ import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-h
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-status";
 import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
-import { QuickPickItem, TextEditor } from "vscode";
+import { TextEditor } from "vscode";
 import { WebviewReveal } from "../../../../src/interface-utils";
 import * as helpers from "../../../../src/helpers";
-import { mockedObject } from "../../utils/mocking.helpers";
+import { mockedObject, mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 
 describe("QueryHistoryManager", () => {
@@ -978,9 +978,12 @@ describe("QueryHistoryManager", () => {
       it("should find the second query to compare when one is selected", async () => {
         const thisQuery = localQueryHistory[3];
         queryHistoryManager = await createMockQueryHistory(allHistory);
-        showQuickPickSpy.mockResolvedValue({
-          query: localQueryHistory[0],
-        } as unknown as QuickPickItem);
+        showQuickPickSpy.mockResolvedValue(
+          mockedQuickPickItem({
+            label: "Query 1",
+            query: localQueryHistory[0],
+          }),
+        );
 
         const otherQuery = await (
           queryHistoryManager as any

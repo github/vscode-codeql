@@ -1,13 +1,14 @@
 import { join } from "path";
 import { createFileSync, mkdirSync } from "fs-extra";
 import * as tmp from "tmp";
-import { QuickPickItem, window } from "vscode";
+import { window } from "vscode";
 
 import {
   convertGithubNwoToDatabaseUrl,
   findDirWithFile,
 } from "../../../src/databaseFetcher";
 import * as Octokit from "@octokit/rest";
+import { mockedQuickPickItem } from "../utils/mocking.helpers";
 
 // These tests make API calls and may need extra time to complete.
 jest.setTimeout(10000);
@@ -71,7 +72,7 @@ describe("databaseFetcher", () => {
         ],
       };
       mockRequest.mockResolvedValue(mockApiResponse);
-      quickPickSpy.mockResolvedValue("javascript" as unknown as QuickPickItem);
+      quickPickSpy.mockResolvedValue(mockedQuickPickItem("javascript"));
       const githubRepo = "github/codeql";
       const result = await convertGithubNwoToDatabaseUrl(
         githubRepo,

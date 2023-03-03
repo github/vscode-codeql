@@ -1,5 +1,5 @@
+import { QuickPickItem, window, Uri } from "vscode";
 import { DatabaseItem } from "../../../src/local-databases";
-import { Uri } from "vscode";
 
 export type DeepPartial<T> = T extends object
   ? {
@@ -56,4 +56,10 @@ export function mockDatabaseItem(
     resolveSourceFile: jest.fn().mockReturnValue(Uri.file("abc")),
     ...props,
   });
+}
+
+export function mockedQuickPickItem<T extends QuickPickItem | string>(
+  value: T | T[],
+): Awaited<ReturnType<typeof window.showQuickPick>> {
+  return value as Awaited<ReturnType<typeof window.showQuickPick>>;
 }

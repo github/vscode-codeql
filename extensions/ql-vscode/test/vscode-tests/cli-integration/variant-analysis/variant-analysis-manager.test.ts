@@ -2,7 +2,6 @@ import {
   CancellationTokenSource,
   commands,
   extensions,
-  QuickPickItem,
   Uri,
   window,
 } from "vscode";
@@ -28,6 +27,7 @@ import { Repository } from "../../../../src/variant-analysis/gh-api/repository";
 import { DbManager } from "../../../../src/databases/db-manager";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
+import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -88,7 +88,7 @@ describe("Variant Analysis Manager", () => {
     beforeEach(async () => {
       jest
         .spyOn(window, "showQuickPick")
-        .mockResolvedValueOnce("javascript" as unknown as QuickPickItem);
+        .mockResolvedValueOnce(mockedQuickPickItem("javascript"));
 
       cancellationTokenSource = new CancellationTokenSource();
 

@@ -5,7 +5,6 @@ import {
   commands,
   ConfigurationTarget,
   extensions,
-  QuickPickItem,
   TextDocument,
   window,
   workspace,
@@ -13,6 +12,7 @@ import {
 
 import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
+import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import {
   CANARY_FEATURES,
   setRemoteControllerRepo,
@@ -76,9 +76,7 @@ describe("Variant Analysis Submission Integration", () => {
       await showQlDocument("query.ql");
 
       // Select target language for your query
-      quickPickSpy.mockResolvedValueOnce(
-        "javascript" as unknown as QuickPickItem,
-      );
+      quickPickSpy.mockResolvedValueOnce(mockedQuickPickItem("javascript"));
 
       await commands.executeCommand("codeQL.runVariantAnalysis");
 
@@ -117,9 +115,7 @@ describe("Variant Analysis Submission Integration", () => {
       await showQlDocument("query.ql");
 
       // Select target language for your query
-      quickPickSpy.mockResolvedValueOnce(
-        "javascript" as unknown as QuickPickItem,
-      );
+      quickPickSpy.mockResolvedValueOnce(mockedQuickPickItem("javascript"));
 
       await commands.executeCommand("codeQL.runVariantAnalysis");
 
