@@ -12,7 +12,11 @@ import {
 } from "vscode";
 import * as cli from "./cli";
 import { CodeQLCliServer } from "./cli";
-import { DatabaseEventKind, DatabaseItem, DatabaseManager } from "./databases";
+import {
+  DatabaseEventKind,
+  DatabaseItem,
+  DatabaseManager,
+} from "./local-databases";
 import { showAndLogExceptionWithTelemetry } from "./helpers";
 import {
   asError,
@@ -64,7 +68,7 @@ import {
   ResultSetSchema,
 } from "./pure/bqrs-cli-types";
 import { AbstractWebview, WebviewPanelConfig } from "./abstract-webview";
-import { PAGE_SIZE } from "./config";
+import { isCanary, PAGE_SIZE } from "./config";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { telemetryListener } from "./telemetry";
 import { redactableError } from "./pure/errors";
@@ -221,6 +225,8 @@ export class ResultsView extends AbstractWebview<
       viewColumn: this.chooseColumnForWebview(),
       preserveFocus: true,
       view: "results",
+      // Required for the graph viewer which is using d3-graphviz WASM module. Only supported in canary mode.
+      allowWasmEval: isCanary(),
     };
   }
 
@@ -393,7 +399,7 @@ export class ResultsView extends AbstractWebview<
     forceReveal: WebviewReveal,
     shouldKeepOldResultsWhileRendering = false,
   ): Promise<void> {
-    if (!fullQuery.completedQuery.successful) {
+    if (!fullQuery.completedQuery?.successful) {
       return;
     }
 
@@ -656,7 +662,8 @@ export class ResultsView extends AbstractWebview<
     }
     let data;
     let numTotalResults;
-    if (metadata?.kind === GRAPH_TABLE_NAME) {
+    // Graph results are only supported in canary mode because the graph viewer is not actively supported
+    if (metadata?.kind === GRAPH_TABLE_NAME && isCanary()) {
       data = await interpretGraphResults(
         this.cliServer,
         metadata,

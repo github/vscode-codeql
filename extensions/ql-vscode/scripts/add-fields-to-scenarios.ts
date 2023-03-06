@@ -20,8 +20,8 @@ import { throttling } from "@octokit/plugin-throttling";
 import { getFiles } from "./util/files";
 import type { GitHubApiRequest } from "../src/mocks/gh-api-request";
 import { isGetVariantAnalysisRequest } from "../src/mocks/gh-api-request";
-import { VariantAnalysis } from "../src/remote-queries/gh-api/variant-analysis";
-import { RepositoryWithMetadata } from "../src/remote-queries/gh-api/repository";
+import { VariantAnalysis } from "../src/variant-analysis/gh-api/variant-analysis";
+import { RepositoryWithMetadata } from "../src/variant-analysis/gh-api/repository";
 
 const extensionDirectory = resolve(__dirname, "..");
 const scenariosDirectory = resolve(extensionDirectory, "src/mocks/scenarios");

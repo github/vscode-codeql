@@ -5,7 +5,7 @@ import {
   InterpretedResultSet,
   GraphInterpretationData,
 } from "../../pure/interface-types";
-import { graphviz } from "d3-graphviz";
+import { graphviz, GraphvizOptions } from "d3-graphviz";
 import { tryGetLocationFromString } from "../../pure/bqrs-utils";
 export type GraphProps = ResultTableProps & {
   resultSet: InterpretedResultSet<GraphInterpretationData>;
@@ -59,11 +59,12 @@ export class Graph extends React.Component<GraphProps> {
       return;
     }
 
-    const options = {
+    const options: GraphvizOptions = {
       fit: true,
       fade: false,
       growEnteringEdges: false,
       zoom: true,
+      useWorker: false,
     };
 
     const element = document.querySelector(`#${graphId}`);
@@ -77,8 +78,7 @@ export class Graph extends React.Component<GraphProps> {
     const borderColor = getComputedStyle(element).borderColor;
     let firstPolygon = true;
 
-    graphviz(`#${graphId}`)
-      .options(options)
+    graphviz(`#${graphId}`, options)
       .attributer(function (d) {
         if (d.tag === "a") {
           const url = d.attributes["xlink:href"] || d.attributes["href"];

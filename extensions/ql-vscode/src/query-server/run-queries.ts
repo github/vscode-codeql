@@ -2,7 +2,7 @@ import { join } from "path";
 import { CancellationToken } from "vscode";
 import * as cli from "../cli";
 import { ProgressCallback } from "../commandRunner";
-import { DatabaseItem } from "../databases";
+import { DatabaseItem } from "../local-databases";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,

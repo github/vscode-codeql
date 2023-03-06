@@ -14,6 +14,7 @@ import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { createMockExtensionContext } from "../../../factories/extension-context";
 import { createDbConfig } from "../../../factories/db-config-factories";
 import { setRemoteControllerRepo } from "../../../../src/config";
+import { QueryLanguage } from "../../../../src/common/query-language";
 
 describe("db panel rendering nodes", () => {
   const workspaceStoragePath = join(__dirname, "test-workspace-storage");
@@ -183,13 +184,13 @@ describe("db panel rendering nodes", () => {
               {
                 name: "db1",
                 dateAdded: 1668428293677,
-                language: "cpp",
+                language: QueryLanguage.Cpp,
                 storagePath: "/path/to/db1/",
               },
               {
                 name: "db2",
                 dateAdded: 1668428472731,
-                language: "cpp",
+                language: QueryLanguage.Cpp,
                 storagePath: "/path/to/db2/",
               },
             ],
@@ -234,7 +235,7 @@ describe("db panel rendering nodes", () => {
           kind: DbItemKind.LocalDatabase,
           databaseName: "db1",
           dateAdded: 1668428293677,
-          language: "cpp",
+          language: QueryLanguage.Cpp,
           storagePath: "/path/to/db1/",
           selected: false,
         },
@@ -242,7 +243,7 @@ describe("db panel rendering nodes", () => {
           kind: DbItemKind.LocalDatabase,
           databaseName: "db2",
           dateAdded: 1668428472731,
-          language: "cpp",
+          language: QueryLanguage.Cpp,
           storagePath: "/path/to/db2/",
           selected: false,
         },

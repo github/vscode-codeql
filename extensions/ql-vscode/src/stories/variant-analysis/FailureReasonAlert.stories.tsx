@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { ComponentMeta, ComponentStory } from "@storybook/react";
-import { VariantAnalysisFailureReason } from "../../remote-queries/shared/variant-analysis";
+import { VariantAnalysisFailureReason } from "../../variant-analysis/shared/variant-analysis";
 import { FailureReasonAlert } from "../../view/variant-analysis/FailureReasonAlert";
 
 export default {

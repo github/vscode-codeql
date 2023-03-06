@@ -11,7 +11,7 @@ import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../../src/query-server/queryserver-client";
 import { extLogger, ProgressReporter } from "../../../src/common";
 import { QueryResultType } from "../../../src/pure/new-messages";
-import { cleanDatabases, dbLoc, storagePath } from "./global.helper";
+import { cleanDatabases, dbLoc, storagePath } from "../global.helper";
 import { importArchiveDatabase } from "../../../src/databaseFetcher";
 
 const baseDir = join(__dirname, "../../../test/data");
@@ -50,11 +50,11 @@ class Checkpoint<T> {
   }
 
   async resolve(): Promise<void> {
-    await this.res();
+    this.res();
   }
 
   async reject(e: Error): Promise<void> {
-    await this.rej(e);
+    this.rej(e);
   }
 }
 

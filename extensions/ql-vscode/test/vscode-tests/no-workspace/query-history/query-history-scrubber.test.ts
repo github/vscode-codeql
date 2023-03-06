@@ -12,6 +12,7 @@ import {
   THREE_HOURS_IN_MS,
   TWO_HOURS_IN_MS,
 } from "../../../../src/pure/time";
+import { mockedObject } from "../../utils/mocking.helpers";
 
 describe("query history scrubber", () => {
   const now = Date.now();
@@ -180,12 +181,12 @@ describe("query history scrubber", () => {
       ONE_HOUR_IN_MS,
       TWO_HOURS_IN_MS,
       LESS_THAN_ONE_DAY,
-      dir,
-      {
+      { localQueriesDirPath: dir, variantAnalysesDirPath: dir },
+      mockedObject<QueryHistoryManager>({
         removeDeletedQueries: () => {
           return Promise.resolve();
         },
-      } as QueryHistoryManager,
+      }),
       mockCtx,
       {
         increment: () => runCount++,

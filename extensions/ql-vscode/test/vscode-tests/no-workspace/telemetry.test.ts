@@ -11,7 +11,6 @@ import {
 } from "../../../src/telemetry";
 import { UserCancellationException } from "../../../src/commandRunner";
 import { ENABLE_TELEMETRY } from "../../../src/config";
-import * as Config from "../../../src/config";
 import { createMockExtensionContext } from "./index";
 import { vscodeGetConfigurationMock } from "../test-config";
 import { redactableError } from "../../../src/pure/errors";
@@ -393,63 +392,38 @@ describe("telemetry reporting", () => {
     expect(showInformationMessageSpy).toBeCalledTimes(1);
   });
 
-  describe("when new telementry is not enabled", () => {
-    it("should not send a ui-interaction telementry event", async () => {
-      await telemetryListener.initialize();
+  it("should send a ui-interaction telementry event", async () => {
+    await telemetryListener.initialize();
 
-      telemetryListener.sendUIInteraction("test");
+    telemetryListener.sendUIInteraction("test");
 
-      expect(sendTelemetryEventSpy).not.toBeCalled();
-    });
-
-    it("should not send an error telementry event", async () => {
-      await telemetryListener.initialize();
-
-      telemetryListener.sendError(redactableError`test`);
-
-      expect(sendTelemetryEventSpy).not.toBeCalled();
-    });
+    expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+      "ui-interaction",
+      {
+        name: "test",
+        isCanary,
+      },
+      {},
+    );
   });
 
-  describe("when new telementry is enabled", () => {
-    beforeEach(async () => {
-      jest.spyOn(Config, "newTelemetryEnabled").mockReturnValue(true);
-    });
+  it("should send an error telementry event", async () => {
+    await telemetryListener.initialize();
 
-    it("should send a ui-interaction telementry event", async () => {
-      await telemetryListener.initialize();
+    telemetryListener.sendError(redactableError`test`);
 
-      telemetryListener.sendUIInteraction("test");
-
-      expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
-        "ui-interaction",
-        {
-          name: "test",
-          isCanary,
-        },
-        {},
-      );
-    });
-
-    it("should send an error telementry event", async () => {
-      await telemetryListener.initialize();
-
-      telemetryListener.sendError(redactableError`test`);
-
-      expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
-        "error",
-        {
-          message: "test",
-          isCanary,
-          stack: expect.any(String),
-        },
-        {},
-      );
-    });
+    expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+      "error",
+      {
+        message: "test",
+        isCanary,
+        stack: expect.any(String),
+      },
+      {},
+    );
   });
 
   it("should redact error message contents", async () => {
-    jest.spyOn(Config, "newTelemetryEnabled").mockReturnValue(true);
     await telemetryListener.initialize();
 
     telemetryListener.sendError(

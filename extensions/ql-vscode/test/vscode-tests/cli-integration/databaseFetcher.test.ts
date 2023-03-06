@@ -3,12 +3,12 @@ import { extensions, CancellationToken, Uri, window } from "vscode";
 
 import { CodeQLExtensionInterface } from "../../../src/extension";
 import { CodeQLCliServer } from "../../../src/cli";
-import { DatabaseManager } from "../../../src/databases";
+import { DatabaseManager } from "../../../src/local-databases";
 import {
   importArchiveDatabase,
   promptImportInternetDatabase,
 } from "../../../src/databaseFetcher";
-import { cleanDatabases, dbLoc, DB_URL, storagePath } from "./global.helper";
+import { cleanDatabases, dbLoc, DB_URL, storagePath } from "../global.helper";
 
 jest.setTimeout(60_000);
 

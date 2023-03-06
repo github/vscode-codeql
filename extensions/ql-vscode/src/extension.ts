@@ -10,7 +10,6 @@ import {
   languages,
   ProgressLocation,
   ProgressOptions,
-  ProviderResult,
   QuickPickItem,
   Range,
   Uri,
@@ -44,8 +43,8 @@ import {
   QueryServerConfigListener,
 } from "./config";
 import { install } from "./languageSupport";
-import { DatabaseItem, DatabaseManager } from "./databases";
-import { DatabaseUI } from "./databases-ui";
+import { DatabaseItem, DatabaseManager } from "./local-databases";
+import { DatabaseUI } from "./local-databases-ui";
 import {
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
@@ -73,7 +72,12 @@ import {
   tmpDir,
   tmpDirDisposal,
 } from "./helpers";
-import { asError, assertNever, getErrorMessage } from "./pure/helpers-pure";
+import {
+  asError,
+  assertNever,
+  getErrorMessage,
+  getErrorStack,
+} from "./pure/helpers-pure";
 import { spawnIdeServer } from "./ide-server";
 import { ResultsView } from "./interface";
 import { WebviewReveal } from "./interface-utils";
@@ -101,16 +105,15 @@ import {
   withProgress,
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
-import { URLSearchParams } from "url";
 import {
   handleDownloadPacks,
   handleInstallPackDependencies,
 } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import {
-  exportSelectedRemoteQueryResults,
+  exportSelectedVariantAnalysisResults,
   exportVariantAnalysisResults,
-} from "./remote-queries/export-results";
+} from "./variant-analysis/export-results";
 import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
@@ -119,20 +122,21 @@ import { createInitialQueryInfo } from "./run-queries-shared";
 import { LegacyQueryRunner } from "./legacy-query-server/legacyRunner";
 import { NewQueryRunner } from "./query-server/query-runner";
 import { QueryRunner } from "./queryRunner";
-import { VariantAnalysisView } from "./remote-queries/variant-analysis-view";
-import { VariantAnalysisViewSerializer } from "./remote-queries/variant-analysis-view-serializer";
+import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
+import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
-} from "./remote-queries/shared/variant-analysis";
-import { VariantAnalysisManager } from "./remote-queries/variant-analysis-manager";
-import { createVariantAnalysisContentProvider } from "./remote-queries/variant-analysis-content-provider";
+} from "./variant-analysis/shared/variant-analysis";
+import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
+import { createVariantAnalysisContentProvider } from "./variant-analysis/variant-analysis-content-provider";
 import { VSCodeMockGitHubApiServer } from "./mocks/vscode-mock-gh-api-server";
-import { VariantAnalysisResultsManager } from "./remote-queries/variant-analysis-results-manager";
+import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
+import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 
 /**
  * extension.ts
@@ -236,6 +240,7 @@ export async function activate(
   const distributionConfigListener = new DistributionConfigListener();
   await initializeLogging(ctx);
   await initializeTelemetry(extension, ctx);
+  addUnhandledRejectionListener();
   install();
 
   const codelensProvider = new QuickEvalCodeLensProvider();
@@ -462,7 +467,7 @@ export async function activate(
     ) {
       registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
         const installActionName = "Install CodeQL CLI";
-        const chosenAction = await void showAndLogErrorMessage(
+        const chosenAction = await showAndLogErrorMessage(
           `Can't execute ${command}: missing CodeQL CLI.`,
           {
             items: [installActionName],
@@ -639,7 +644,7 @@ async function activateWithInstalledDistribution(
     cliServer,
     variantAnalysisStorageDir,
     variantAnalysisResultsManager,
-    dbModule?.dbManager, // the dbModule is only needed when variantAnalysisReposPanel is enabled
+    dbModule?.dbManager,
   );
   ctx.subscriptions.push(variantAnalysisManager);
   ctx.subscriptions.push(variantAnalysisResultsManager);
@@ -651,13 +656,18 @@ async function activateWithInstalledDistribution(
   );
 
   void extLogger.log("Initializing query history.");
+  const queryHistoryDirs: QueryHistoryDirs = {
+    localQueriesDirPath: queryStorageDir,
+    variantAnalysesDirPath: variantAnalysisStorageDir,
+  };
+
   const qhm = new QueryHistoryManager(
     qs,
     dbm,
     localQueryResultsView,
     variantAnalysisManager,
     evalLogViewer,
-    queryStorageDir,
+    queryHistoryDirs,
     ctx,
     queryHistoryConfigurationListener,
     labelProvider,
@@ -773,6 +783,74 @@ async function activateWithInstalledDistribution(
     }
   }
 
+  async function compileAndRunQueryOnMultipleDatabases(
+    progress: ProgressCallback,
+    token: CancellationToken,
+    uri: Uri | undefined,
+  ): Promise<void> {
+    let filteredDBs = dbm.databaseItems;
+    if (filteredDBs.length === 0) {
+      void showAndLogErrorMessage(
+        "No databases found. Please add a suitable database to your workspace.",
+      );
+      return;
+    }
+    // If possible, only show databases with the right language (otherwise show all databases).
+    const queryLanguage = await findLanguage(cliServer, uri);
+    if (queryLanguage) {
+      filteredDBs = dbm.databaseItems.filter(
+        (db) => db.language === queryLanguage,
+      );
+      if (filteredDBs.length === 0) {
+        void showAndLogErrorMessage(
+          `No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`,
+        );
+        return;
+      }
+    }
+    const quickPickItems = filteredDBs.map<DatabaseQuickPickItem>((dbItem) => ({
+      databaseItem: dbItem,
+      label: dbItem.name,
+      description: dbItem.language,
+    }));
+    /**
+     * Databases that were selected in the quick pick menu.
+     */
+    const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
+      quickPickItems,
+      { canPickMany: true, ignoreFocusOut: true },
+    );
+    if (quickpick !== undefined) {
+      // Collect all skipped databases and display them at the end (instead of popping up individual errors)
+      const skippedDatabases = [];
+      const errors = [];
+      for (const item of quickpick) {
+        try {
+          await compileAndRunQuery(
+            false,
+            uri,
+            progress,
+            token,
+            item.databaseItem,
+          );
+        } catch (e) {
+          skippedDatabases.push(item.label);
+          errors.push(getErrorMessage(e));
+        }
+      }
+      if (skippedDatabases.length > 0) {
+        void extLogger.log(`Errors:\n${errors.join("\n")}`);
+        void showAndLogWarningMessage(
+          `The following databases were skipped:\n${skippedDatabases.join(
+            "\n",
+          )}.\nFor details about the errors, see the logs.`,
+        );
+      }
+    } else {
+      void showAndLogErrorMessage("No databases selected.");
+    }
+  }
+
   const qhelpTmpDir = dirSync({
     prefix: "qhelp_",
     keep: false,
@@ -821,6 +899,7 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing CodeQL language server.");
   const client = new LanguageClient(
+    "codeQL.lsp",
     "CodeQL Language Server",
     () => spawnIdeServer(qlConfigurationListener),
     {
@@ -873,6 +952,25 @@ async function activateWithInstalledDistribution(
       queryServerLogger,
     ),
   );
+
+  // Since we are tracking extension usage through commands, this command mirrors the runQuery command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.runQueryContextEditor",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        uri: Uri | undefined,
+      ) => await compileAndRunQuery(false, uri, progress, token, undefined),
+      {
+        title: "Running query",
+        cancellable: true,
+      },
+
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger,
+    ),
+  );
   interface DatabaseQuickPickItem extends QuickPickItem {
     databaseItem: DatabaseItem;
   }
@@ -883,71 +981,22 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => {
-        let filteredDBs = dbm.databaseItems;
-        if (filteredDBs.length === 0) {
-          void showAndLogErrorMessage(
-            "No databases found. Please add a suitable database to your workspace.",
-          );
-          return;
-        }
-        // If possible, only show databases with the right language (otherwise show all databases).
-        const queryLanguage = await findLanguage(cliServer, uri);
-        if (queryLanguage) {
-          filteredDBs = dbm.databaseItems.filter(
-            (db) => db.language === queryLanguage,
-          );
-          if (filteredDBs.length === 0) {
-            void showAndLogErrorMessage(
-              `No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`,
-            );
-            return;
-          }
-        }
-        const quickPickItems = filteredDBs.map<DatabaseQuickPickItem>(
-          (dbItem) => ({
-            databaseItem: dbItem,
-            label: dbItem.name,
-            description: dbItem.language,
-          }),
-        );
-        /**
-         * Databases that were selected in the quick pick menu.
-         */
-        const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
-          quickPickItems,
-          { canPickMany: true, ignoreFocusOut: true },
-        );
-        if (quickpick !== undefined) {
-          // Collect all skipped databases and display them at the end (instead of popping up individual errors)
-          const skippedDatabases = [];
-          const errors = [];
-          for (const item of quickpick) {
-            try {
-              await compileAndRunQuery(
-                false,
-                uri,
-                progress,
-                token,
-                item.databaseItem,
-              );
-            } catch (e) {
-              skippedDatabases.push(item.label);
-              errors.push(getErrorMessage(e));
-            }
-          }
-          if (skippedDatabases.length > 0) {
-            void extLogger.log(`Errors:\n${errors.join("\n")}`);
-            void showAndLogWarningMessage(
-              `The following databases were skipped:\n${skippedDatabases.join(
-                "\n",
-              )}.\nFor details about the errors, see the logs.`,
-            );
-          }
-        } else {
-          void showAndLogErrorMessage("No databases selected.");
-        }
+      ) => await compileAndRunQueryOnMultipleDatabases(progress, token, uri),
+      {
+        title: "Running query on selected databases",
+        cancellable: true,
       },
+    ),
+  );
+  // Since we are tracking extension usage through commands, this command mirrors the runQueryOnMultipleDatabases command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.runQueryOnMultipleDatabasesContextEditor",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        uri: Uri | undefined,
+      ) => await compileAndRunQueryOnMultipleDatabases(progress, token, uri),
       {
         title: "Running query on selected databases",
         cancellable: true,
@@ -1076,8 +1125,6 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  registerRemoteQueryTextProvider();
-
   // The "runVariantAnalysis" command is internal-only.
   ctx.subscriptions.push(
     commandRunnerWithProgress(
@@ -1176,7 +1223,7 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
-      await exportSelectedRemoteQueryResults(qhm);
+      await exportSelectedVariantAnalysisResults(qhm);
     }),
   );
 
@@ -1529,6 +1576,49 @@ async function activateWithInstalledDistribution(
   };
 }
 
+function addUnhandledRejectionListener() {
+  const handler = (error: unknown) => {
+    // This listener will be triggered for errors from other extensions as
+    // well as errors from this extension. We don't want to flood the user
+    // with popups about errors from other extensions, and we don't want to
+    // report them in our telemetry.
+    //
+    // The stack trace gets redacted before being sent as telemetry, but at
+    // this point in the code we have the full unredacted information.
+    const isFromThisExtension =
+      extension && getErrorStack(error).includes(extension.extensionPath);
+
+    if (isFromThisExtension) {
+      const message = redactableError(
+        asError(error),
+      )`Unhandled error: ${getErrorMessage(error)}`;
+      // Add a catch so that showAndLogExceptionWithTelemetry fails, we avoid
+      // triggering "unhandledRejection" and avoid an infinite loop
+      showAndLogExceptionWithTelemetry(message).catch(
+        (telemetryError: unknown) => {
+          void extLogger.log(
+            `Failed to send error telemetry: ${getErrorMessage(
+              telemetryError,
+            )}`,
+          );
+          void extLogger.log(message.fullMessage);
+        },
+      );
+    }
+  };
+
+  // "uncaughtException" will trigger whenever an exception reaches the top level.
+  // This covers extension initialization and any code within a `setTimeout`.
+  // Notably this does not include exceptions thrown when executing commands,
+  // because `commandRunner` wraps the command body and handles errors.
+  process.addListener("uncaughtException", handler);
+
+  // "unhandledRejection" will trigger whenever any promise is rejected and it is
+  // not handled by a "catch" somewhere in the promise chain. This includes when
+  // a promise is used with the "void" operator.
+  process.addListener("unhandledRejection", handler);
+}
+
 async function createQueryServer(
   qlConfigurationListener: QueryServerConfigListener,
   cliServer: CodeQLCliServer,
@@ -1582,21 +1672,6 @@ async function initializeLogging(ctx: ExtensionContext): Promise<void> {
 }
 
 const checkForUpdatesCommand = "codeQL.checkForUpdatesToCLI";
-
-/**
- * This text provider lets us open readonly files in the editor.
- *
- * TODO: Consolidate this with the 'codeql' text provider in query-history-manager.ts.
- */
-function registerRemoteQueryTextProvider() {
-  workspace.registerTextDocumentContentProvider("remote-query", {
-    provideTextDocumentContent(uri: Uri): ProviderResult<string> {
-      const params = new URLSearchParams(uri.query);
-
-      return params.get("queryText");
-    },
-  });
-}
 
 const avoidVersionCheck = "avoid-version-check-at-startup";
 const lastVersionChecked = "last-version-checked";

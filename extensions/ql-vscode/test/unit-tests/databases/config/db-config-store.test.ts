@@ -56,7 +56,10 @@ describe("db config store", () => {
       expect(config.databases.variantAnalysis.repositories).toHaveLength(0);
       expect(config.databases.local.lists).toHaveLength(0);
       expect(config.databases.local.databases).toHaveLength(0);
-      expect(config.selected).toBeUndefined();
+      expect(config.selected).toEqual({
+        kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList,
+        listName: "top_10",
+      });
 
       configStore.dispose();
     });

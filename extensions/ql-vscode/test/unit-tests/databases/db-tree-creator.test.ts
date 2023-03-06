@@ -16,6 +16,7 @@ import {
   createLocalTree,
   createRemoteTree,
 } from "../../../src/databases/db-tree-creator";
+import { QueryLanguage } from "../../../src/common/query-language";
 import { createDbConfig } from "../../factories/db-config-factories";
 
 describe("db tree creator", () => {
@@ -334,7 +335,7 @@ describe("db tree creator", () => {
               {
                 name: "db1",
                 dateAdded: 1668428293677,
-                language: "cpp",
+                language: QueryLanguage.Cpp,
                 storagePath: "/path/to/db1/",
               },
               {

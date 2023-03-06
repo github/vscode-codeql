@@ -15,7 +15,9 @@ import { CodeQLCliServer } from "../../../src/cli";
 import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
 import { QueryInProgress } from "../../../src/legacy-query-server/run-queries";
 import { LegacyQueryRunner } from "../../../src/legacy-query-server/legacyRunner";
-import { DatabaseItem } from "../../../src/databases";
+import { DatabaseItem } from "../../../src/local-databases";
+import { DeepPartial, mockedObject } from "../utils/mocking.helpers";
+import { BqrsKind } from "../../../src/pure/bqrs-cli-types";
 
 describe("run-queries", () => {
   let isCanarySpy: jest.SpiedFunction<typeof config.isCanary>;
@@ -77,7 +79,7 @@ describe("run-queries", () => {
         ],
         bqrsDecode: [
           {
-            columns: [{ kind: "NotString" }, { kind: "String" }],
+            columns: [{ kind: "NotString" as BqrsKind }, { kind: "String" }],
             tuples: [
               ["a", "b"],
               ["c", "d"],
@@ -89,8 +91,8 @@ describe("run-queries", () => {
             // this won't happen with the real CLI, but it's a good test
             columns: [
               { kind: "String" },
-              { kind: "NotString" },
-              { kind: "StillNotString" },
+              { kind: "NotString" as BqrsKind },
+              { kind: "StillNotString" as BqrsKind },
             ],
             tuples: [["a", "b", "c"]],
           },
@@ -125,7 +127,7 @@ describe("run-queries", () => {
       ],
       bqrsDecode: [
         {
-          columns: [{ kind: "NotString" }, { kind: "String" }],
+          columns: [{ kind: "NotString" as BqrsKind }, { kind: "String" }],
           // We only escape string columns. In practice, we will only see quotes in strings, but
           // it is a good test anyway.
           tuples: [
@@ -312,7 +314,7 @@ describe("run-queries", () => {
   function createMockQueryServerClient(
     cliServer?: CodeQLCliServer,
   ): QueryServerClient {
-    return {
+    return mockedObject<QueryServerClient>({
       config: {
         timeoutSecs: 5,
       },
@@ -326,20 +328,32 @@ describe("run-queries", () => {
         log: jest.fn(),
       },
       cliServer,
-    } as unknown as QueryServerClient;
+    });
   }
 
+  // A type that represents the mocked methods of a CodeQLCliServer. Exclude any non-methods.
+  // This allows passing in an array of return values for a single method.
+  type MockedCLIMethods = {
+    [K in keyof CodeQLCliServer]: CodeQLCliServer[K] extends (
+      ...args: any
+    ) => any
+      ? Array<DeepPartial<Awaited<ReturnType<CodeQLCliServer[K]>>>>
+      : never;
+  };
+
   function createMockCliServer(
-    mockOperations: Record<string, any[]>,
+    mockOperations: Partial<MockedCLIMethods>,
   ): CodeQLCliServer {
-    const mockServer: Record<string, any> = {};
+    const mockedMethods: Record<string, jest.Mock> = {};
+
     for (const [operation, returns] of Object.entries(mockOperations)) {
-      mockServer[operation] = jest.fn();
-      returns.forEach((returnValue) => {
-        mockServer[operation].mockResolvedValueOnce(returnValue);
+      const fn = jest.fn();
+      returns.forEach((returnValue: any) => {
+        fn.mockResolvedValueOnce(returnValue);
       });
+      mockedMethods[operation] = fn;
     }
 
-    return mockServer as unknown as CodeQLCliServer;
+    return mockedObject<CodeQLCliServer>(mockedMethods);
   }
 });

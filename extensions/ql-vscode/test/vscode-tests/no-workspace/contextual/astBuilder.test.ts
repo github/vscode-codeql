@@ -2,9 +2,9 @@ import { readFileSync } from "fs-extra";
 
 import AstBuilder from "../../../../src/contextual/astBuilder";
 import { CodeQLCliServer } from "../../../../src/cli";
-import { DatabaseItem } from "../../../../src/databases";
 import { Uri } from "vscode";
 import { QueryWithResults } from "../../../../src/run-queries-shared";
+import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
 
 /**
  *
@@ -32,7 +32,7 @@ describe("AstBuilder", () => {
   let overrides: Record<string, Record<string, unknown> | undefined>;
 
   beforeEach(() => {
-    mockCli = {
+    mockCli = mockedObject<CodeQLCliServer>({
       bqrsDecode: jest
         .fn()
         .mockImplementation(
@@ -40,7 +40,7 @@ describe("AstBuilder", () => {
             return mockDecode(resultSet);
           },
         ),
-    } as unknown as CodeQLCliServer;
+    });
     overrides = {
       nodes: undefined,
       edges: undefined,
@@ -145,7 +145,9 @@ describe("AstBuilder", () => {
         },
       } as QueryWithResults,
       mockCli,
-      {} as DatabaseItem,
+      mockDatabaseItem({
+        resolveSourceFile: undefined,
+      }),
       Uri.file(""),
     );
   }

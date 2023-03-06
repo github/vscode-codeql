@@ -1,6 +1,5 @@
 import {
   FromCompareViewMessage,
-  FromRemoteQueriesMessage,
   FromResultsViewMsg,
   FromVariantAnalysisMessage,
   VariantAnalysisState,
@@ -14,7 +13,6 @@ export interface VsCodeApi {
     msg:
       | FromResultsViewMsg
       | FromCompareViewMessage
-      | FromRemoteQueriesMessage
       | FromVariantAnalysisMessage,
   ): void;
 

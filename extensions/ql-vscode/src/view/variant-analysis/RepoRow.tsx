@@ -7,7 +7,7 @@ import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryState,
-} from "../../remote-queries/shared/variant-analysis";
+} from "../../variant-analysis/shared/variant-analysis";
 import { formatDecimal } from "../../pure/number";
 import {
   Codicon,
@@ -16,11 +16,11 @@ import {
   SuccessIcon,
   WarningIcon,
 } from "../common";
-import { RepositoryWithMetadata } from "../../remote-queries/shared/repository";
+import { RepositoryWithMetadata } from "../../variant-analysis/shared/repository";
 import {
   AnalysisAlert,
   AnalysisRawResults,
-} from "../../remote-queries/shared/analysis-result";
+} from "../../variant-analysis/shared/analysis-result";
 import { vscode } from "../vscode-api";
 import { AnalyzedRepoItemContent } from "./AnalyzedRepoItemContent";
 import StarCount from "../common/StarCount";

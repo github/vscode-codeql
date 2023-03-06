@@ -83,15 +83,6 @@ export const GLOBAL_ENABLE_TELEMETRY = new Setting(
   GLOBAL_TELEMETRY_SETTING,
 );
 
-const ENABLE_NEW_TELEMETRY = new Setting(
-  "enableNewTelemetry",
-  TELEMETRY_SETTING,
-);
-
-export function newTelemetryEnabled(): boolean {
-  return ENABLE_NEW_TELEMETRY.getValue<boolean>();
-}
-
 // Distribution configuration
 const DISTRIBUTION_SETTING = new Setting("cli", ROOT_SETTING);
 export const CUSTOM_CODEQL_PATH_SETTING = new Setting(
@@ -499,48 +490,6 @@ export const NO_CACHE_AST_VIEWER = new Setting(
 const VARIANT_ANALYSIS_SETTING = new Setting("variantAnalysis", ROOT_SETTING);
 
 /**
- * Lists of GitHub repositories that you want to query remotely via the "Run Variant Analysis" command.
- * Note: This command is only available for internal users.
- *
- * This setting should be a JSON object where each key is a user-specified name (string),
- * and the value is an array of GitHub repositories (of the form `<owner>/<repo>`).
- */
-const REMOTE_REPO_LISTS = new Setting(
-  "repositoryLists",
-  VARIANT_ANALYSIS_SETTING,
-);
-
-export function getRemoteRepositoryLists():
-  | Record<string, string[]>
-  | undefined {
-  return REMOTE_REPO_LISTS.getValue<Record<string, string[]>>() || undefined;
-}
-
-export async function setRemoteRepositoryLists(
-  lists: Record<string, string[]> | undefined,
-) {
-  await REMOTE_REPO_LISTS.updateValue(lists, ConfigurationTarget.Global);
-}
-
-/**
- * Path to a file that contains lists of GitHub repositories that you want to query remotely via
- * the "Run Variant Analysis" command.
- * Note: This command is only available for internal users.
- *
- * This setting should be a path to a JSON file that contains a JSON object where each key is a
- * user-specified name (string), and the value is an array of GitHub repositories
- * (of the form `<owner>/<repo>`).
- */
-const REPO_LISTS_PATH = new Setting(
-  "repositoryListsPath",
-  VARIANT_ANALYSIS_SETTING,
-);
-
-export function getRemoteRepositoryListsPath(): string | undefined {
-  return REPO_LISTS_PATH.getValue<string>() || undefined;
-}
-
-/**
  * The name of the "controller" repository that you want to use with the "Run Variant Analysis" command.
  * Note: This command is only available for internal users.
  *
@@ -597,18 +546,6 @@ export function isIntegrationTestMode() {
 
 export function isVariantAnalysisLiveResultsEnabled(): boolean {
   return true;
-}
-
-/**
- * A flag indicating whether to use the new "variant analysis repositories" panel.
- */
-const VARIANT_ANALYSIS_REPOS_PANEL = new Setting(
-  "repositoriesPanel",
-  VARIANT_ANALYSIS_SETTING,
-);
-
-export function isVariantAnalysisReposPanelEnabled(): boolean {
-  return !!VARIANT_ANALYSIS_REPOS_PANEL.getValue<boolean>();
 }
 
 // Settings for mocking the GitHub API.

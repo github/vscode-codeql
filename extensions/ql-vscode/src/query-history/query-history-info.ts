@@ -5,7 +5,7 @@ import { pluralize } from "../pure/word";
 import {
   hasRepoScanCompleted,
   getActionsWorkflowRunUrl as getVariantAnalysisActionsWorkflowRunUrl,
-} from "../remote-queries/shared/variant-analysis";
+} from "../variant-analysis/shared/variant-analysis";
 
 export type QueryHistoryInfo = LocalQueryInfo | VariantAnalysisHistoryItem;
 
@@ -22,7 +22,7 @@ export function getRawQueryName(item: QueryHistoryInfo): string {
 
 /**
  * Gets an identifier for the query history item which could be
- * a local/remote query or a variant analysis. This id isn't guaranteed
+ * a local query or a variant analysis. This id isn't guaranteed
  * to be unique for each item in the query history.
  * @param item the history item.
  * @returns the id of the query or variant analysis.

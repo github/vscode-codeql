@@ -4,7 +4,7 @@ import { ComponentMeta, ComponentStory } from "@storybook/react";
 
 import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
 import { VariantAnalysisSkippedRepositoriesTab } from "../../view/variant-analysis/VariantAnalysisSkippedRepositoriesTab";
-import { createMockRepositoryWithMetadata } from "../../../test/factories/remote-queries/shared/repository";
+import { createMockRepositoryWithMetadata } from "../../../test/factories/variant-analysis/shared/repository";
 
 export default {
   title: "Variant Analysis/Variant Analysis Skipped Repositories Tab",

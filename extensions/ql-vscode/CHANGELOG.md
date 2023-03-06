@@ -2,6 +2,21 @@
 
 ## [UNRELEASED]
 
+- Send telemetry about unhandled errors happening within the extension. [#2125](https://github.com/github/vscode-codeql/pull/2125)
+
+## 1.7.11 - 1 March 2023
+
+- Enable collection of telemetry concerning interactions with UI elements, including buttons, links, and other inputs. [#2114](https://github.com/github/vscode-codeql/pull/2114)
+- Prevent the automatic installation of CodeQL CLI version 2.12.3 to avoid a bug in the language server. CodeQL CLI 2.12.2 will be used instead. [#2126](https://github.com/github/vscode-codeql/pull/2126)
+
+## 1.7.10 - 23 February 2023
+
+- Fix bug that was causing unwanted error notifications.
+
+## 1.7.9 - 20 February 2023
+
+No user facing changes.
+
 ## 1.7.8 - 2 February 2023
 
 - Renamed command "CodeQL: Run Query" to "CodeQL: Run Query on Selected Database". [#1962](https://github.com/github/vscode-codeql/pull/1962)

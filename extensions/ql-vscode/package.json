@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.7.9",
+  "version": "1.7.12",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -294,22 +294,6 @@
           "scope": "application",
           "description": "Specifies whether or not to write telemetry events to the extension log."
         },
-        "codeQL.variantAnalysis.repositoryLists": {
-          "type": [
-            "object",
-            null
-          ],
-          "patternProperties": {
-            ".*": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "default": null,
-          "markdownDescription": "[For internal use only] Lists of GitHub repositories that you want to run variant analysis against. This should be a JSON object where each key is a user-specified name for this repository list, and the value is an array of GitHub repositories (of the form `<owner>/<repo>`)."
-        },
         "codeQL.variantAnalysis.controllerRepo": {
           "type": "string",
           "default": "",
@@ -336,7 +320,15 @@
         "title": "CodeQL: Run Query on Selected Database"
       },
       {
+        "command": "codeQL.runQueryContextEditor",
+        "title": "CodeQL: Run Query on Selected Database"
+      },
+      {
         "command": "codeQL.runQueryOnMultipleDatabases",
+        "title": "CodeQL: Run Query on Multiple Databases"
+      },
+      {
+        "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",
         "title": "CodeQL: Run Query on Multiple Databases"
       },
       {
@@ -986,8 +978,16 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
+          "command": "codeQL.runQueryContextEditor",
+          "when": "false"
+        },
+        {
           "command": "codeQL.runQueryOnMultipleDatabases",
           "when": "resourceLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",
+          "when": "false"
         },
         {
           "command": "codeQL.runVariantAnalysis",
@@ -1240,11 +1240,11 @@
       ],
       "editor/context": [
         {
-          "command": "codeQL.runQuery",
+          "command": "codeQL.runQueryContextEditor",
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.runQueryOnMultipleDatabases",
+          "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
@@ -1295,7 +1295,7 @@
         {
           "id": "codeQLVariantAnalysisRepositories",
           "name": "Variant Analysis Repositories",
-          "when": "config.codeQL.canary && config.codeQL.variantAnalysis.repositoriesPanel"
+          "when": "config.codeQL.canary"
         },
         {
           "id": "codeQLQueryHistory",
@@ -1339,13 +1339,14 @@
   "scripts": {
     "build": "gulp",
     "watch": "gulp watch",
-    "test": "npm-run-all -p test:*",
+    "test": "npm-run-all test:*",
     "test:unit": "cross-env TZ=UTC LANG=en-US jest --projects test/unit-tests",
     "test:view": "jest --projects src/view",
-    "integration": "npm-run-all integration:*",
-    "integration:no-workspace": "jest --projects test/vscode-tests/no-workspace",
-    "integration:minimal-workspace": "jest --projects test/vscode-tests/minimal-workspace",
-    "cli-integration": "jest --projects test/vscode-tests/cli-integration",
+    "test:vscode-integration": "npm-run-all test:vscode-integration:*",
+    "test:vscode-integration:activated-extension": "jest --projects test/vscode-tests/activated-extension",
+    "test:vscode-integration:no-workspace": "jest --projects test/vscode-tests/no-workspace",
+    "test:vscode-integration:minimal-workspace": "jest --projects test/vscode-tests/minimal-workspace",
+    "test:cli-integration": "jest --projects test/vscode-tests/cli-integration",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
     "lint": "eslint . --ext .js,.ts,.tsx --max-warnings=0",

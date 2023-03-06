@@ -7,6 +7,7 @@ import { DirectoryResult } from "tmp-promise";
 import * as tmp from "tmp-promise";
 
 import "../../matchers/toEqualPath";
+import { mockedObject } from "../utils/mocking.helpers";
 
 describe("qltest-discovery", () => {
   describe("discoverTests", () => {
@@ -34,10 +35,10 @@ describe("qltest-discovery", () => {
       iFile = join(hDir, "i.ql");
 
       qlTestDiscover = new QLTestDiscovery(
-        {
+        mockedObject<WorkspaceFolder>({
           uri: baseUri,
           name: "My tests",
-        } as unknown as WorkspaceFolder,
+        }),
         {
           resolveTests() {
             return [dFile, eFile, iFile];

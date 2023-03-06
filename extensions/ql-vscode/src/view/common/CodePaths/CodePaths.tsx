@@ -9,7 +9,7 @@ import {
   AnalysisMessage,
   CodeFlow,
   ResultSeverity,
-} from "../../../remote-queries/shared/analysis-result";
+} from "../../../variant-analysis/shared/analysis-result";
 import { CodePathsOverlay } from "./CodePathsOverlay";
 import { useTelemetryOnChange } from "../telemetry";
 

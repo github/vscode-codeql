@@ -26,8 +26,9 @@ import { QueryMetadata, SortDirection } from "./pure/interface-types";
 import { Logger, ProgressReporter } from "./common";
 import { CompilationMessage } from "./pure/legacy-messages";
 import { sarifParser } from "./sarif-parser";
-import { dbSchemeToLanguage, walkDirectory } from "./helpers";
+import { walkDirectory } from "./helpers";
 import { App } from "./common/app";
+import { QueryLanguage } from "./common/query-language";
 
 /**
  * The version of the SARIF format that we are using.
@@ -122,14 +123,6 @@ export interface SourceInfo {
  * The expected output of `codeql resolve tests`.
  */
 export type ResolvedTests = string[];
-
-/**
- * Options for `codeql test run`.
- */
-export interface TestRunOptions {
-  cancellationToken?: CancellationToken;
-  logger?: Logger;
-}
 
 /**
  * Event fired by `codeql test run`.
@@ -295,7 +288,7 @@ export class CodeQLCliServer implements Disposable {
       );
     }
 
-    return await spawnServer(
+    return spawnServer(
       codeQlPath,
       "CodeQL CLI Server",
       ["execute", "cli-server"],
@@ -455,7 +448,7 @@ export class CodeQLCliServer implements Disposable {
         void logStream(child.stderr!, logger);
       }
 
-      for await (const event of await splitStreamAtSeparators(child.stdout!, [
+      for await (const event of splitStreamAtSeparators(child.stdout!, [
         "\0",
       ])) {
         yield event;
@@ -484,10 +477,15 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
-    cancellationToken?: CancellationToken,
-    logger?: Logger,
+    {
+      cancellationToken,
+      logger,
+    }: {
+      cancellationToken?: CancellationToken;
+      logger?: Logger;
+    } = {},
   ): AsyncGenerator<EventType, void, unknown> {
-    for await (const event of await this.runAsyncCodeQlCliCommandInternal(
+    for await (const event of this.runAsyncCodeQlCliCommandInternal(
       command,
       commandArgs,
       cancellationToken,
@@ -518,8 +516,13 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
-    progressReporter?: ProgressReporter,
-    onLine?: OnLineCallback,
+    {
+      progressReporter,
+      onLine,
+    }: {
+      progressReporter?: ProgressReporter;
+      onLine?: OnLineCallback;
+    } = {},
   ): Promise<string> {
     if (progressReporter) {
       progressReporter.report({ message: description });
@@ -563,22 +566,25 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
-    addFormat = true,
-    progressReporter?: ProgressReporter,
-    onLine?: OnLineCallback,
+    {
+      addFormat = true,
+      progressReporter,
+      onLine,
+    }: {
+      addFormat?: boolean;
+      progressReporter?: ProgressReporter;
+      onLine?: OnLineCallback;
+    } = {},
   ): Promise<OutputType> {
     let args: string[] = [];
     if (addFormat)
       // Add format argument first, in case commandArgs contains positional parameters.
       args = args.concat(["--format", "json"]);
     args = args.concat(commandArgs);
-    const result = await this.runCodeQlCliCommand(
-      command,
-      args,
-      description,
+    const result = await this.runCodeQlCliCommand(command, args, description, {
       progressReporter,
       onLine,
-    );
+    });
     try {
       return JSON.parse(result) as OutputType;
     } catch (err) {
@@ -616,8 +622,13 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     description: string,
-    addFormat = true,
-    progressReporter?: ProgressReporter,
+    {
+      addFormat,
+      progressReporter,
+    }: {
+      addFormat?: boolean;
+      progressReporter?: ProgressReporter;
+    } = {},
   ): Promise<OutputType> {
     const accessToken = await this.app.credentials.getExistingAccessToken();
 
@@ -627,24 +638,26 @@ export class CodeQLCliServer implements Disposable {
       command,
       [...extraArgs, ...commandArgs],
       description,
-      addFormat,
-      progressReporter,
-      async (line) => {
-        if (line.startsWith("Enter value for --github-auth-stdin")) {
-          try {
-            return await this.app.credentials.getAccessToken();
-          } catch (e) {
-            // If the user cancels the authentication prompt, we still need to give a value to the CLI.
-            // By giving a potentially invalid value, the user will just get a 401/403 when they try to access a
-            // private package and the access token is invalid.
-            // This code path is very rare to hit. It would only be hit if the user is logged in when
-            // starting the command, then logging out before the getAccessToken() is called again and
-            // then cancelling the authentication prompt.
-            return accessToken;
+      {
+        addFormat,
+        progressReporter,
+        onLine: async (line) => {
+          if (line.startsWith("Enter value for --github-auth-stdin")) {
+            try {
+              return await this.app.credentials.getAccessToken();
+            } catch (e) {
+              // If the user cancels the authentication prompt, we still need to give a value to the CLI.
+              // By giving a potentially invalid value, the user will just get a 401/403 when they try to access a
+              // private package and the access token is invalid.
+              // This code path is very rare to hit. It would only be hit if the user is logged in when
+              // starting the command, then logging out before the getAccessToken() is called again and
+              // then cancelling the authentication prompt.
+              return accessToken;
+            }
           }
-        }
 
-        return undefined;
+          return undefined;
+        },
       },
     );
   }
@@ -713,7 +726,9 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "qlref"],
       subcommandArgs,
       "Resolving qlref",
-      false,
+      {
+        addFormat: false,
+      },
     );
   }
 
@@ -741,7 +756,13 @@ export class CodeQLCliServer implements Disposable {
   public async *runTests(
     testPaths: string[],
     workspaces: string[],
-    options: TestRunOptions,
+    {
+      cancellationToken,
+      logger,
+    }: {
+      cancellationToken?: CancellationToken;
+      logger?: Logger;
+    },
   ): AsyncGenerator<TestCompleted, void, unknown> {
     const subcommandArgs = this.cliConfig.additionalTestArguments.concat([
       ...this.getAdditionalPacksArg(workspaces),
@@ -750,12 +771,14 @@ export class CodeQLCliServer implements Disposable {
       ...testPaths,
     ]);
 
-    for await (const event of await this.runAsyncCodeQlCliCommand<TestCompleted>(
+    for await (const event of this.runAsyncCodeQlCliCommand<TestCompleted>(
       ["test", "run"],
       subcommandArgs,
       "Run CodeQL Tests",
-      options.cancellationToken,
-      options.logger,
+      {
+        cancellationToken,
+        logger,
+      },
     )) {
       yield event;
     }
@@ -786,7 +809,9 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "ml-models"],
       args,
       "Resolving ML models",
-      false,
+      {
+        addFormat: false,
+      },
     );
   }
 
@@ -810,8 +835,9 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "ram"],
       args,
       "Resolving RAM settings",
-      true,
-      progressReporter,
+      {
+        progressReporter,
+      },
     );
   }
   /**
@@ -1186,9 +1212,11 @@ export class CodeQLCliServer implements Disposable {
    */
   public async getSupportedLanguages(): Promise<string[]> {
     if (!this._supportedLanguages) {
-      // Get the intersection of resolveLanguages with the list of hardcoded languages in dbSchemeToLanguage.
+      // Get the intersection of resolveLanguages with the list of languages in QueryLanguage.
       const resolvedLanguages = Object.keys(await this.resolveLanguages());
-      const hardcodedLanguages = Object.values(dbSchemeToLanguage);
+      const hardcodedLanguages = Object.values(QueryLanguage).map((s) =>
+        s.toString(),
+      );
 
       this._supportedLanguages = resolvedLanguages.filter((lang) =>
         hardcodedLanguages.includes(lang),
@@ -1221,6 +1249,26 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "queries"],
       args,
       "Resolving queries",
+    );
+  }
+
+  /**
+   * Adds a core language QL library pack for the given query language as a dependency
+   * of the current package, and then installs them. This command modifies the qlpack.yml
+   * file of the current package. Formatting and comments will be removed.
+   * @param dir The directory where QL pack exists.
+   * @param language The language of the QL pack.
+   */
+  async packAdd(dir: string, queryLanguage: QueryLanguage) {
+    const args = ["--dir", dir];
+    args.push(`codeql/${queryLanguage}-all`);
+    return this.runJsonCodeQlCliCommandWithAuthentication(
+      ["pack", "add"],
+      args,
+      `Adding and installing ${queryLanguage} pack dependency.`,
+      {
+        addFormat: false,
+      },
     );
   }
 
@@ -1562,7 +1610,7 @@ const lineEndings = ["\r\n", "\r", "\n"];
  * @param logger The logger that will consume the stream output.
  */
 async function logStream(stream: Readable, logger: Logger): Promise<void> {
-  for await (const line of await splitStreamAtSeparators(stream, lineEndings)) {
+  for await (const line of splitStreamAtSeparators(stream, lineEndings)) {
     // Await the result of log here in order to ensure the logs are written in the correct order.
     await logger.log(line);
   }

@@ -6,7 +6,7 @@ import {
   AnalysisMessage,
   CodeFlow,
   ResultSeverity,
-} from "../../../remote-queries/shared/analysis-result";
+} from "../../../variant-analysis/shared/analysis-result";
 import { useTelemetryOnChange } from "../telemetry";
 import { SectionTitle } from "../SectionTitle";
 import { VerticalSpace } from "../VerticalSpace";

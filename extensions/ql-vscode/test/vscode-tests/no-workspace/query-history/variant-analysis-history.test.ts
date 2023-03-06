@@ -9,8 +9,7 @@ import {
 import { join } from "path";
 
 import { commands, ExtensionContext, Uri } from "vscode";
-import { QueryHistoryConfig } from "../../../../src/config";
-import { DatabaseManager } from "../../../../src/databases";
+import { DatabaseManager } from "../../../../src/local-databases";
 import { tmpDir, walkDirectory } from "../../../../src/helpers";
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
@@ -18,8 +17,10 @@ import { HistoryItemLabelProvider } from "../../../../src/query-history/history-
 import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
 import { QueryRunner } from "../../../../src/queryRunner";
-import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
+import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
+import { mockedObject } from "../../utils/mocking.helpers";
+import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 
 // set a higher timeout since recursive delete may take a while, expecially on Windows.
 jest.setTimeout(120000);
@@ -74,15 +75,22 @@ describe("Variant Analyses and QueryHistoryManager", () => {
       localQueriesResultsViewStub,
       variantAnalysisManagerStub,
       {} as EvalLogViewer,
-      STORAGE_DIR,
-      {
+      createMockQueryHistoryDirs({ localQueriesDirPath: STORAGE_DIR }),
+      mockedObject<ExtensionContext>({
         globalStorageUri: Uri.file(STORAGE_DIR),
+        storageUri: undefined,
         extensionPath: EXTENSION_PATH,
-      } as ExtensionContext,
+      }),
       {
+        format: "",
+        ttlInMillis: 0,
         onDidChangeConfiguration: () => new DisposableBucket(),
-      } as unknown as QueryHistoryConfig,
-      new HistoryItemLabelProvider({} as QueryHistoryConfig),
+      },
+      new HistoryItemLabelProvider({
+        format: "",
+        ttlInMillis: 0,
+        onDidChangeConfiguration: jest.fn(),
+      }),
       asyncNoop,
     );
     disposables.push(qhm);

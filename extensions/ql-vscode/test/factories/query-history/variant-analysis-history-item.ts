@@ -1,15 +1,19 @@
 import { VariantAnalysisHistoryItem } from "../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../src/query-status";
-import { VariantAnalysisStatus } from "../../../src/remote-queries/shared/variant-analysis";
-import { createMockVariantAnalysis } from "../remote-queries/shared/variant-analysis";
+import {
+  VariantAnalysis,
+  VariantAnalysisStatus,
+} from "../../../src/variant-analysis/shared/variant-analysis";
+import { createMockVariantAnalysis } from "../variant-analysis/shared/variant-analysis";
 
 export function createMockVariantAnalysisHistoryItem({
   historyItemStatus = QueryStatus.InProgress,
   variantAnalysisStatus = VariantAnalysisStatus.Succeeded,
   failureReason = undefined,
   resultCount = 0,
-  userSpecifiedLabel = "query-name",
+  userSpecifiedLabel = undefined,
   executionStartTime = undefined,
+  variantAnalysis = undefined,
 }: {
   historyItemStatus?: QueryStatus;
   variantAnalysisStatus?: VariantAnalysisStatus;
@@ -17,6 +21,7 @@ export function createMockVariantAnalysisHistoryItem({
   resultCount?: number;
   userSpecifiedLabel?: string;
   executionStartTime?: number;
+  variantAnalysis?: VariantAnalysis;
 }): VariantAnalysisHistoryItem {
   return {
     t: "variant-analysis",
@@ -24,10 +29,12 @@ export function createMockVariantAnalysisHistoryItem({
     resultCount,
     status: historyItemStatus,
     completed: false,
-    variantAnalysis: createMockVariantAnalysis({
-      status: variantAnalysisStatus,
-      executionStartTime,
-    }),
+    variantAnalysis:
+      variantAnalysis ??
+      createMockVariantAnalysis({
+        status: variantAnalysisStatus,
+        executionStartTime,
+      }),
     userSpecifiedLabel,
   };
 }

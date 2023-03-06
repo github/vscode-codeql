@@ -15,7 +15,7 @@ import {
 } from "vscode";
 import { basename } from "path";
 
-import { DatabaseItem } from "./databases";
+import { DatabaseItem } from "./local-databases";
 import { UrlValue, BqrsId } from "./pure/bqrs-cli-types";
 import { showLocation } from "./interface-utils";
 import {

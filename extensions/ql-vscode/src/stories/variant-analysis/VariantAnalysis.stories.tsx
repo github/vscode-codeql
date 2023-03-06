@@ -11,9 +11,9 @@ import {
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisStatus,
-} from "../../remote-queries/shared/variant-analysis";
-import { createMockVariantAnalysis } from "../../../test/factories/remote-queries/shared/variant-analysis";
-import { createMockRepositoryWithMetadata } from "../../../test/factories/remote-queries/shared/repository";
+} from "../../variant-analysis/shared/variant-analysis";
+import { createMockVariantAnalysis } from "../../../test/factories/variant-analysis/shared/variant-analysis";
+import { createMockRepositoryWithMetadata } from "../../../test/factories/variant-analysis/shared/repository";
 
 export default {
   title: "Variant Analysis/Variant Analysis",

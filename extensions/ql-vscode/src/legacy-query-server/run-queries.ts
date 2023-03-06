@@ -4,7 +4,7 @@ import { CancellationToken, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 
 import * as cli from "../cli";
-import { DatabaseItem } from "../databases";
+import { DatabaseItem } from "../local-databases";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
@@ -313,7 +313,7 @@ export async function compileAndRunQueryAgainstDatabase(
 
   if (!packConfig.dbscheme) {
     throw new Error(
-      "Could not find a database scheme for this query. Please check that you have a valid qlpack.yml file for this query, which refers to a database scheme either in the `dbscheme` field or through one of its dependencies.",
+      "Could not find a database scheme for this query. Please check that you have a valid qlpack.yml or codeql-pack.yml file for this query, which refers to a database scheme either in the `dbscheme` field or through one of its dependencies.",
     );
   }
 

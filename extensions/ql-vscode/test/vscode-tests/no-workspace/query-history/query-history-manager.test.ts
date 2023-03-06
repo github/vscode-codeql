@@ -3,18 +3,15 @@ import * as vscode from "vscode";
 
 import { extLogger } from "../../../../src/common";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
-import {
-  QueryHistoryConfig,
-  QueryHistoryConfigListener,
-} from "../../../../src/config";
+import { QueryHistoryConfigListener } from "../../../../src/config";
 import { LocalQueryInfo } from "../../../../src/query-results";
-import { DatabaseManager } from "../../../../src/databases";
+import { DatabaseManager } from "../../../../src/local-databases";
 import { tmpDir } from "../../../../src/helpers";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
 import { QueryRunner } from "../../../../src/queryRunner";
-import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
+import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryInfo } from "../../../../src/query-history/query-history-info";
 import {
   createMockLocalQueryInfo,
@@ -24,10 +21,12 @@ import { shuffleHistoryItems } from "../../utils/query-history-helpers";
 import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-status";
-import { VariantAnalysisStatus } from "../../../../src/remote-queries/shared/variant-analysis";
-import { QuickPickItem, TextEditor } from "vscode";
+import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
+import { TextEditor } from "vscode";
 import { WebviewReveal } from "../../../../src/interface-utils";
 import * as helpers from "../../../../src/helpers";
+import { mockedObject, mockedQuickPickItem } from "../../utils/mocking.helpers";
+import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 
 describe("QueryHistoryManager", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -58,7 +57,7 @@ describe("QueryHistoryManager", () => {
   beforeEach(() => {
     showTextDocumentSpy = jest
       .spyOn(vscode.window, "showTextDocument")
-      .mockResolvedValue(undefined as unknown as TextEditor);
+      .mockResolvedValue(mockedObject<TextEditor>({}));
     showInformationMessageSpy = jest
       .spyOn(vscode.window, "showInformationMessage")
       .mockResolvedValue(undefined);
@@ -497,7 +496,7 @@ describe("QueryHistoryManager", () => {
             ]);
 
             expect(showBinaryChoiceDialogSpy).toHaveBeenCalledWith(
-              "You are about to delete this query: query-name. Are you sure?",
+              "You are about to delete this query: a-query-name (javascript). Are you sure?",
             );
           });
 
@@ -581,7 +580,7 @@ describe("QueryHistoryManager", () => {
 
           it("should show a modal asking 'Are you sure?'", () => {
             expect(showBinaryChoiceDialogSpy).toHaveBeenCalledWith(
-              "You are about to delete this query: query-name. Are you sure?",
+              "You are about to delete this query: a-query-name (javascript). Are you sure?",
             );
           });
         });
@@ -979,9 +978,12 @@ describe("QueryHistoryManager", () => {
       it("should find the second query to compare when one is selected", async () => {
         const thisQuery = localQueryHistory[3];
         queryHistoryManager = await createMockQueryHistory(allHistory);
-        showQuickPickSpy.mockResolvedValue({
-          query: localQueryHistory[0],
-        } as unknown as QuickPickItem);
+        showQuickPickSpy.mockResolvedValue(
+          mockedQuickPickItem({
+            label: "Query 1",
+            query: localQueryHistory[0],
+          }),
+        );
 
         const otherQuery = await (
           queryHistoryManager as any
@@ -1152,13 +1154,17 @@ describe("QueryHistoryManager", () => {
       localQueriesResultsViewStub,
       variantAnalysisManagerStub,
       {} as EvalLogViewer,
-      "xxx",
+      createMockQueryHistoryDirs(),
       {
         globalStorageUri: vscode.Uri.file(mockExtensionLocation),
         extensionPath: vscode.Uri.file("/x/y/z").fsPath,
       } as vscode.ExtensionContext,
       configListener,
-      new HistoryItemLabelProvider({} as QueryHistoryConfig),
+      new HistoryItemLabelProvider({
+        format: "",
+        ttlInMillis: 0,
+        onDidChangeConfiguration: jest.fn(),
+      }),
       doCompareCallback,
     );
     (qhm.treeDataProvider as any).history = [...allHistory];

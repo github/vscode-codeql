@@ -2,18 +2,15 @@ import { join } from "path";
 import * as vscode from "vscode";
 
 import { extLogger } from "../../../../src/common";
-import {
-  QueryHistoryConfig,
-  QueryHistoryConfigListener,
-} from "../../../../src/config";
+import { QueryHistoryConfigListener } from "../../../../src/config";
 import { LocalQueryInfo } from "../../../../src/query-results";
-import { DatabaseManager } from "../../../../src/databases";
+import { DatabaseManager } from "../../../../src/local-databases";
 import { tmpDir } from "../../../../src/helpers";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
 import { QueryRunner } from "../../../../src/queryRunner";
-import { VariantAnalysisManager } from "../../../../src/remote-queries/variant-analysis-manager";
+import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryInfo } from "../../../../src/query-history/query-history-info";
 import {
   createMockLocalQueryInfo,
@@ -23,12 +20,13 @@ import { shuffleHistoryItems } from "../../utils/query-history-helpers";
 import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-status";
-import { VariantAnalysisStatus } from "../../../../src/remote-queries/shared/variant-analysis";
+import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import {
   HistoryTreeDataProvider,
   SortOrder,
 } from "../../../../src/query-history/history-tree-data-provider";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
+import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 
 describe("HistoryTreeDataProvider", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -121,8 +119,10 @@ describe("HistoryTreeDataProvider", () => {
     ]);
 
     labelProvider = new HistoryItemLabelProvider({
-      /**/
-    } as QueryHistoryConfig);
+      format: "",
+      ttlInMillis: 0,
+      onDidChangeConfiguration: jest.fn(),
+    });
     historyTreeDataProvider = new HistoryTreeDataProvider(labelProvider);
   });
 
@@ -426,13 +426,17 @@ describe("HistoryTreeDataProvider", () => {
       localQueriesResultsViewStub,
       variantAnalysisManagerStub,
       {} as EvalLogViewer,
-      "xxx",
+      createMockQueryHistoryDirs(),
       {
         globalStorageUri: vscode.Uri.file(mockExtensionLocation),
         extensionPath: vscode.Uri.file("/x/y/z").fsPath,
       } as vscode.ExtensionContext,
       configListener,
-      new HistoryItemLabelProvider({} as QueryHistoryConfig),
+      new HistoryItemLabelProvider({
+        format: "",
+        ttlInMillis: 0,
+        onDidChangeConfiguration: jest.fn(),
+      }),
       doCompareCallback,
     );
     (qhm.treeDataProvider as any).history = [...allHistory];

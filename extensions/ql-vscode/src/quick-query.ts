@@ -10,7 +10,7 @@ import {
 } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 import { CodeQLCliServer } from "./cli";
-import { DatabaseUI } from "./databases-ui";
+import { DatabaseUI } from "./local-databases-ui";
 import {
   getInitialQueryContents,
   getPrimaryDbscheme,

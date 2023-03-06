@@ -3,13 +3,13 @@ import styled from "styled-components";
 import {
   AnalysisAlert,
   AnalysisRawResults,
-} from "../../remote-queries/shared/analysis-result";
-import AnalysisAlertResult from "../remote-queries/AnalysisAlertResult";
-import RawResultsTable from "../remote-queries/RawResultsTable";
+} from "../../variant-analysis/shared/analysis-result";
+import AnalysisAlertResult from "./AnalysisAlertResult";
+import RawResultsTable from "./RawResultsTable";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
-} from "../../remote-queries/shared/variant-analysis";
+} from "../../variant-analysis/shared/variant-analysis";
 import { Alert } from "../common";
 
 const ContentContainer = styled.div`

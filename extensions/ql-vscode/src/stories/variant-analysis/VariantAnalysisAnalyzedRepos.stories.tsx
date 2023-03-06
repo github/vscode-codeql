@@ -10,13 +10,13 @@ import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisStatus,
-} from "../../remote-queries/shared/variant-analysis";
-import { AnalysisAlert } from "../../remote-queries/shared/analysis-result";
-import { createMockVariantAnalysis } from "../../../test/factories/remote-queries/shared/variant-analysis";
-import { createMockRepositoryWithMetadata } from "../../../test/factories/remote-queries/shared/repository";
-import { createMockScannedRepo } from "../../../test/factories/remote-queries/shared/scanned-repositories";
+} from "../../variant-analysis/shared/variant-analysis";
+import { AnalysisAlert } from "../../variant-analysis/shared/analysis-result";
+import { createMockVariantAnalysis } from "../../../test/factories/variant-analysis/shared/variant-analysis";
+import { createMockRepositoryWithMetadata } from "../../../test/factories/variant-analysis/shared/repository";
+import { createMockScannedRepo } from "../../../test/factories/variant-analysis/shared/scanned-repositories";
 
-import * as analysesResults from "../remote-queries/data/analysesResultsMessage.json";
+import * as analysesResults from "../data/analysesResultsMessage.json";
 
 export default {
   title: "Variant Analysis/Analyzed Repos",

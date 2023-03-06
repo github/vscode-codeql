@@ -1,4 +1,4 @@
-import { findDuplicateStrings } from "../../src/text-utils";
+import { findDuplicateStrings } from "../../src/pure/text-utils";
 
 describe("findDuplicateStrings", () => {
   it("should find duplicates strings in an array of strings", () => {

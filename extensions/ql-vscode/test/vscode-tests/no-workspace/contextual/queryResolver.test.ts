@@ -10,7 +10,7 @@ import {
   resolveQueries,
 } from "../../../../src/contextual/queryResolver";
 import { CodeQLCliServer } from "../../../../src/cli";
-import { DatabaseItem } from "../../../../src/databases";
+import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
 
 describe("queryResolver", () => {
   let getQlPackForDbschemeSpy: jest.SpiedFunction<
@@ -20,9 +20,11 @@ describe("queryResolver", () => {
     typeof helpers.getPrimaryDbscheme
   >;
 
-  const mockCli = {
-    resolveQueriesInSuite: jest.fn(),
-  };
+  const resolveQueriesInSuite = jest.fn();
+
+  const mockCli = mockedObject<CodeQLCliServer>({
+    resolveQueriesInSuite,
+  });
 
   beforeEach(() => {
     getQlPackForDbschemeSpy = jest
@@ -41,20 +43,20 @@ describe("queryResolver", () => {
 
   describe("resolveQueries", () => {
     it("should resolve a query", async () => {
-      mockCli.resolveQueriesInSuite.mockReturnValue(["a", "b"]);
+      resolveQueriesInSuite.mockReturnValue(["a", "b"]);
       const result = await resolveQueries(
-        mockCli as unknown as CodeQLCliServer,
+        mockCli,
         { dbschemePack: "my-qlpack", dbschemePackIsLibraryPack: false },
         KeyType.DefinitionQuery,
       );
       expect(result).toEqual(["a", "b"]);
 
-      expect(mockCli.resolveQueriesInSuite).toHaveBeenCalledWith(
+      expect(resolveQueriesInSuite).toHaveBeenCalledWith(
         expect.stringMatching(/\.qls$/),
         [],
       );
 
-      const fileName = mockCli.resolveQueriesInSuite.mock.calls[0][0];
+      const fileName = resolveQueriesInSuite.mock.calls[0][0];
 
       expect(load(await fs.readFile(fileName, "utf-8"))).toEqual([
         {
@@ -69,11 +71,11 @@ describe("queryResolver", () => {
     });
 
     it("should throw an error when there are no queries found", async () => {
-      mockCli.resolveQueriesInSuite.mockReturnValue([]);
+      resolveQueriesInSuite.mockReturnValue([]);
 
       try {
         await resolveQueries(
-          mockCli as unknown as CodeQLCliServer,
+          mockCli,
           { dbschemePack: "my-qlpack", dbschemePackIsLibraryPack: false },
           KeyType.DefinitionQuery,
         );
@@ -93,17 +95,14 @@ describe("queryResolver", () => {
         dbschemePack: "my-qlpack",
         dbschemePackIsLibraryPack: false,
       });
-      const db = {
+      const db = mockDatabaseItem({
         contents: {
           datasetUri: {
             fsPath: "/path/to/database",
           },
         },
-      } as unknown as DatabaseItem;
-      const result = await qlpackOfDatabase(
-        mockCli as unknown as CodeQLCliServer,
-        db,
-      );
+      });
+      const result = await qlpackOfDatabase(mockCli, db);
       expect(result).toEqual({
         dbschemePack: "my-qlpack",
         dbschemePackIsLibraryPack: false,

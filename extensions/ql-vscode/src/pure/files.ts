@@ -67,3 +67,8 @@ export function pathsEqual(
   }
   return path1 === path2;
 }
+
+export async function readDirFullPaths(path: string): Promise<string[]> {
+  const baseNames = await readdir(path);
+  return baseNames.map((baseName) => join(path, baseName));
+}
