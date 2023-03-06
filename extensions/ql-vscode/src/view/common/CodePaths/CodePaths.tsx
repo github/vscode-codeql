@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 
@@ -24,6 +24,11 @@ export type CodePathsProps = {
   severity: ResultSeverity;
 };
 
+type ScrollPosition = {
+  x: number;
+  y: number;
+};
+
 const filterIsOpenTelemetry = (v: boolean) => v;
 
 export const CodePaths = ({
@@ -37,9 +42,13 @@ export const CodePaths = ({
     filterTelemetryOnValue: filterIsOpenTelemetry,
   });
 
-  const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 });
-  React.useEffect(() => {
-    window.scrollTo(scrollPosition.x, scrollPosition.y);
+  const [scrollPosition, setScrollPosition] = useState<
+    ScrollPosition | undefined
+  >(undefined);
+  useEffect(() => {
+    if (scrollPosition) {
+      window.scrollTo(scrollPosition.x, scrollPosition.y);
+    }
   }, [scrollPosition]);
 
   const linkRef = useRef<HTMLAnchorElement>(null);
