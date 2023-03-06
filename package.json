@@ -1,0 +1,15 @@
+{
+  "name": "@github/vscode-codeql-root",
+  "private": true,
+  "workspaces": [
+    "extensions/ql-vscode"
+  ],
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "patch-package": "^6.5.0"
+  },
+  "scripts": {
+    "prepare": "npx husky install",
+    "postinstall": "patch-package"
+  }
+}
