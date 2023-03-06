@@ -17,6 +17,7 @@ export async function packageExtension(): Promise<void> {
       "..",
       `${deployedPackage.name}-${deployedPackage.version}.vsix`,
     ),
+    "--no-dependencies",
   ];
   const proc = spawn(
     resolve(__dirname, "../../../node_modules/.bin/vsce"),
