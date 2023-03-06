@@ -18,9 +18,13 @@ export async function packageExtension(): Promise<void> {
       `${deployedPackage.name}-${deployedPackage.version}.vsix`,
     ),
   ];
-  const proc = spawn(resolve(__dirname, "../node_modules/.bin/vsce"), args, {
-    cwd: deployedPackage.distPath,
-  });
+  const proc = spawn(
+    resolve(__dirname, "../../../node_modules/.bin/vsce"),
+    args,
+    {
+      cwd: deployedPackage.distPath,
+    },
+  );
   proc.childProcess.stdout!.on("data", (data) => {
     console.log(data.toString());
   });
