@@ -12,6 +12,7 @@ import {
   VariantAnalysisScannedRepositoryState,
 } from "../variant-analysis/shared/variant-analysis";
 import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
+import { ErrorLike } from "./errors";
 
 /**
  * This module contains types and code that are shared between
@@ -189,7 +190,8 @@ export type FromResultsViewMsg =
   | ViewLoadedMsg
   | ChangePage
   | OpenFileMsg
-  | TelemetryMessage;
+  | TelemetryMessage
+  | UnhandledErrorMessage;
 
 /**
  * Message from the results view to open a database source
@@ -291,7 +293,8 @@ export type FromCompareViewMessage =
   | ChangeCompareMessage
   | ViewSourceFileMsg
   | OpenQueryMessage
-  | TelemetryMessage;
+  | TelemetryMessage
+  | UnhandledErrorMessage;
 
 /**
  * Message from the compare view to request opening a query.
@@ -439,6 +442,11 @@ export interface TelemetryMessage {
   action: string;
 }
 
+export interface UnhandledErrorMessage {
+  t: "unhandledError";
+  error: ErrorLike;
+}
+
 export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
   | SetRepoResultsMessage
@@ -453,4 +461,5 @@ export type FromVariantAnalysisMessage =
   | ExportResultsMessage
   | OpenLogsMessage
   | CancelVariantAnalysisMessage
-  | TelemetryMessage;
+  | TelemetryMessage
+  | UnhandledErrorMessage;

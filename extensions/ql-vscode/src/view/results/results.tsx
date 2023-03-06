@@ -14,6 +14,10 @@ import {
   NavigateMsg,
   ResultSet,
 } from "../../pure/interface-types";
+import {
+  registerUnhandledErrorListener,
+  unregisterUnhandledErrorListener,
+} from "../common/errors";
 import { EventHandlers as EventHandlerList } from "./event-handler-list";
 import { ResultTables } from "./result-tables";
 
@@ -307,12 +311,14 @@ export class ResultsApp extends React.Component<
   componentDidMount(): void {
     this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
     window.addEventListener("message", this.vscodeMessageHandler);
+    registerUnhandledErrorListener();
   }
 
   componentWillUnmount(): void {
     if (this.vscodeMessageHandler) {
       window.removeEventListener("message", this.vscodeMessageHandler);
     }
+    unregisterUnhandledErrorListener();
   }
 
   private vscodeMessageHandler(evt: MessageEvent) {

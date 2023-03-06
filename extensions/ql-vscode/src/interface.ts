@@ -295,6 +295,13 @@ export class ResultsView extends AbstractWebview<
         case "telemetry":
           telemetryListener?.sendUIInteraction(msg.action);
           break;
+        case "unhandledError":
+          void showAndLogExceptionWithTelemetry(
+            redactableError(
+              msg.error,
+            )`Unhandled error in results view: ${msg.error.message}`,
+          );
+          break;
         default:
           assertNever(msg);
       }

@@ -15,8 +15,12 @@ import {
   VariantAnalysisViewInterface,
   VariantAnalysisViewManager,
 } from "./variant-analysis-view-manager";
-import { showAndLogWarningMessage } from "../helpers";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../helpers";
 import { telemetryListener } from "../telemetry";
+import { redactableError } from "../pure/errors";
 
 export class VariantAnalysisView
   extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage>
@@ -152,6 +156,13 @@ export class VariantAnalysisView
         break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);
+        break;
+      case "unhandledError":
+        void showAndLogExceptionWithTelemetry(
+          redactableError(
+            msg.error,
+          )`Unhandled error in variant analysis results view: ${msg.error.message}`,
+        );
         break;
       default:
         assertNever(msg);
