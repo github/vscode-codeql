@@ -22,7 +22,7 @@
     "common/temp": true,
     "**/.vscode-test": true
   },
-  "typescript.tsdk": "./extensions/ql-vscode/node_modules/typescript/lib", // we want to use the TS server from our node_modules folder to control its version
+  "typescript.tsdk": "./node_modules/typescript/lib", // we want to use the TS server from our node_modules folder to control its version
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "eslint.validate": [
     "javascript",

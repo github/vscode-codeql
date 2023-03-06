@@ -24,10 +24,9 @@ jobs:
         with:
           node-version: '16.14.2'
           cache: 'npm'
-          cache-dependency-path: extensions/ql-vscode/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: extensions/ql-vscode
         run: |
           npm ci
         shell: bash
@@ -82,10 +81,9 @@ jobs:
         with:
           node-version: '16.14.2'
           cache: 'npm'
-          cache-dependency-path: extensions/ql-vscode/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: extensions/ql-vscode
         run: |
           npm ci
         shell: bash
@@ -121,10 +119,9 @@ jobs:
         with:
           node-version: '16.14.2'
           cache: 'npm'
-          cache-dependency-path: extensions/ql-vscode/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: extensions/ql-vscode
         run: |
           npm ci
         shell: bash
@@ -155,10 +152,9 @@ jobs:
         with:
           node-version: '16.14.2'
           cache: 'npm'
-          cache-dependency-path: extensions/ql-vscode/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: extensions/ql-vscode
         run: |
           npm ci
         shell: bash
@@ -221,10 +217,9 @@ jobs:
         with:
           node-version: '16.14.2'
           cache: 'npm'
-          cache-dependency-path: extensions/ql-vscode/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        working-directory: extensions/ql-vscode
         run: |
           npm ci
         shell: bash

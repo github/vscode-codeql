@@ -26,7 +26,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd extensions/ql-vscode
           npm ci
         shell: bash
 

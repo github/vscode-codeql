@@ -30,7 +30,7 @@
       "name": "Launch Unit Tests (vscode-codeql)",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest.js",
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "env": {
@@ -50,7 +50,7 @@
       "name": "Launch Selected Unit Test (vscode-codeql)",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest.js",
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "env": {
@@ -74,7 +74,7 @@
       "name": "Launch Unit Tests - React (vscode-codeql)",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest.js",
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
@@ -90,7 +90,7 @@
       "name": "Launch Integration Tests - No Workspace (vscode-codeql)",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest.js",
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
@@ -106,7 +106,7 @@
       "name": "Launch Integration Tests - Minimal Workspace (vscode-codeql)",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest.js",
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [
@@ -122,7 +122,7 @@
       "name": "Launch Integration Tests - With CLI",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/extensions/ql-vscode/node_modules/jest/bin/jest.js",
+      "program": "${workspaceFolder}/node_modules/jest/bin/jest.js",
       "showAsyncStacks": true,
       "cwd": "${workspaceFolder}/extensions/ql-vscode",
       "args": [

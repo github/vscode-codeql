@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "extensions/ql-vscode"
+    directory: "/"
     schedule:
       interval: "weekly"
       day: "thursday" # Thursday is arbitrary
