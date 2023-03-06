@@ -7,7 +7,7 @@ The extension is released. You can download it from the [Visual Studio Marketpla
 To see what has changed in the last few versions of the extension, see the [Changelog](https://github.com/github/vscode-codeql/blob/main/extensions/ql-vscode/CHANGELOG.md).
 
 [![CI status badge](https://github.com/github/vscode-codeql/workflows/Build%20Extension/badge.svg)](https://github.com/github/vscode-codeql/actions?query=workflow%3A%22Build+Extension%22+branch%3Amaster)
-[![VS Marketplace badge](https://vsmarketplacebadge.apphb.com/version/github.vscode-codeql.svg)](https://marketplace.visualstudio.com/items?itemName=github.vscode-codeql)
+[![VS Marketplace badge](https://vsmarketplacebadges.dev/version/github.vscode-codeql.svg)](https://marketplace.visualstudio.com/items?itemName=github.vscode-codeql)
 
 ## Features
 
