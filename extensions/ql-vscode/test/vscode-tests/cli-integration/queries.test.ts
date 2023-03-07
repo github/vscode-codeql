@@ -110,7 +110,7 @@ describeWithCodeQL()("Queries", () => {
     it("should run a query that has an extension without looking for extensions in the workspace", async () => {
       if (!(await supportsExtensionPacks())) {
         console.log(
-          `Skipping test because it is only supported for CodeQL CLI versions < ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND}`,
+          `Skipping test because it is only supported for CodeQL CLI versions >= ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND}`,
         );
         return;
       }
@@ -135,7 +135,7 @@ describeWithCodeQL()("Queries", () => {
         return true;
       }
       console.log(
-        `Skipping test because it is only supported for CodeQL CLI versions < ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND}`,
+        `Skipping test because it is only supported for CodeQL CLI versions >= ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND}`,
       );
       return false;
     }
