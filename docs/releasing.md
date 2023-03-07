@@ -1,6 +1,5 @@
 # Releasing (write access required)
 
-1. Go through [our test plan](./test-plan.md) to ensure that the extension is working as expected.
 1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
     * Go through all recent PRs and make sure they are properly accounted for.
     * Make sure all changelog entries have links back to their PR(s) if appropriate.
@@ -17,11 +16,19 @@
     * `.github/workflows/release.yml` - the "node-version: <version>" setting
 1. Double-check that the extension `package.json` and `package-lock.json` have the version you intend to release. If you are doing a patch release (as opposed to minor or major version) this should already be correct.
 1. Create a PR for this release:
-    * This PR will contain any missing bits from steps 1 and 2. Most of the time, this will just be updating `CHANGELOG.md` with today's date.
+    * This PR will contain any missing bits from steps 1, 2 and 3. Most of the time, this will just be updating `CHANGELOG.md` with today's date.
     * Create a new branch for the release named after the new version. For example: `v1.3.6`
     * Create a new commit with a message the same as the branch name.
     * Create a PR for this branch.
     * Wait for the PR to be merged into `main`
+1. Switch to `main` branch and pull latest changes
+1. Lock the `main` branch. 
+  * Go to the [branch protection rules for the `main` branch](https://github.com/github/vscode-codeql/settings/branch_protection_rules/16447115)
+  * Select "Lock branch"
+  * Click "Save changes"
+1. Ensure that no PRs have been merged since the release PR that you merged. If there were, you might need to unlock `main` temporarily and update the CHANGELOG again.
+1. Build the extension `npm run build` and install it on your VS Code using "Install from VSIX".
+1. Go through [our test plan](./test-plan.md) to ensure that the extension is working as expected.
 1. Switch to `main` and add a new tag on the `main` branch with your new version (named after the release), e.g.
     ```bash
     git checkout main
@@ -32,6 +39,10 @@
     ```bash
     git tag -d badly-named-tag
     ```
+1. Unlock the main branch
+  * Go to the [branch protection rules for the `main` branch](https://github.com/github/vscode-codeql/settings/branch_protection_rules/16447115)
+  * Deselect "Lock branch"
+  * Click "Save changes"
 1. Push the new tag up:
 
    a. If you're using a fork of the repo:
