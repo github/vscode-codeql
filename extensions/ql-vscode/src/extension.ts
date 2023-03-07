@@ -1495,6 +1495,22 @@ async function activateWithInstalledDistribution(
   const cfgTemplateProvider = new TemplatePrintCfgProvider(cliServer, dbm);
 
   ctx.subscriptions.push(astViewer);
+
+  async function viewAst(
+    progress: ProgressCallback,
+    token: CancellationToken,
+    selectedFile: Uri,
+  ): Promise<void> {
+    const ast = await printAstTemplateProvider.provideAst(
+      progress,
+      token,
+      selectedFile ?? window.activeTextEditor?.document.uri,
+    );
+    if (ast) {
+      astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
+    }
+  }
+
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       "codeQL.viewAst",
@@ -1502,16 +1518,39 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         selectedFile: Uri,
-      ) => {
-        const ast = await printAstTemplateProvider.provideAst(
-          progress,
-          token,
-          selectedFile ?? window.activeTextEditor?.document.uri,
-        );
-        if (ast) {
-          astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
-        }
+      ) => await viewAst(progress, token, selectedFile),
+      {
+        cancellable: true,
+        title: "Calculate AST",
       },
+    ),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewAst" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewAstContextExplorer",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        selectedFile: Uri,
+      ) => await viewAst(progress, token, selectedFile),
+      {
+        cancellable: true,
+        title: "Calculate AST",
+      },
+    ),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewAst" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewAstContextEditor",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        selectedFile: Uri,
+      ) => await viewAst(progress, token, selectedFile),
       {
         cancellable: true,
         title: "Calculate AST",

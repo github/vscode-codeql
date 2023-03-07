@@ -438,6 +438,14 @@
         "title": "CodeQL: View AST"
       },
       {
+        "command": "codeQL.viewAstContextExplorer",
+        "title": "CodeQL: View AST"
+      },
+      {
+        "command": "codeQL.viewAstContextEditor",
+        "title": "CodeQL: View AST"
+      },
+      {
         "command": "codeQL.viewCfg",
         "title": "CodeQL: View CFG"
       },
@@ -934,7 +942,7 @@
           "when": "resourceScheme == codeql-zip-archive || explorerResourceIsFolder || resourceExtname == .zip"
         },
         {
-          "command": "codeQL.viewAst",
+          "command": "codeQL.viewAstContextExplorer",
           "group": "9_qlCommands",
           "when": "resourceScheme == codeql-zip-archive && !explorerResourceIsFolder && !listMultiSelection"
         },
@@ -1011,6 +1019,14 @@
         {
           "command": "codeQL.viewAst",
           "when": "resourceScheme == codeql-zip-archive"
+        },
+        {
+          "command": "codeQL.viewAstContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.viewAstContextExplorer",
+          "when": "false"
         },
         {
           "command": "codeQL.viewCfg",
@@ -1243,7 +1259,7 @@
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.viewAst",
+          "command": "codeQL.viewAstContextEditor",
           "when": "resourceScheme == codeql-zip-archive"
         },
         {
