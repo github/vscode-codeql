@@ -14,7 +14,6 @@ import { ToVariantAnalysisMessage } from "../../pure/interface-types";
 import { vscode } from "../vscode-api";
 import { defaultFilterSortState } from "../../pure/variant-analysis-filter-sort";
 import { useTelemetryOnChange } from "../common/telemetry";
-import { useUnhandledErrorListener } from "../common/errors";
 
 export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;
@@ -51,8 +50,6 @@ export function VariantAnalysis({
   repoStates: initialRepoStates = [],
   repoResults: initialRepoResults = [],
 }: VariantAnalysisProps): JSX.Element {
-  useUnhandledErrorListener();
-
   const [variantAnalysis, setVariantAnalysis] = useState<
     VariantAnalysisDomainModel | undefined
   >(initialVariantAnalysis);

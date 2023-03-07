@@ -5,8 +5,11 @@ import { WebviewDefinition } from "./webview-definition";
 
 // Allow all views to use Codicons
 import "@vscode/codicons/dist/codicon.css";
+import { registerUnhandledErrorListener } from "./common/errors";
 
 const render = () => {
+  registerUnhandledErrorListener();
+
   const element = document.getElementById("root");
 
   if (!element) {

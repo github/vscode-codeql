@@ -10,7 +10,6 @@ import { vscode } from "../vscode-api";
 import CompareTable from "./CompareTable";
 
 import "../results/resultsView.css";
-import { useUnhandledErrorListener } from "../common/errors";
 
 const emptyComparison: SetComparisonsMessage = {
   t: "setComparisons",
@@ -24,8 +23,6 @@ const emptyComparison: SetComparisonsMessage = {
 };
 
 export function Compare(_: Record<string, never>): JSX.Element {
-  useUnhandledErrorListener();
-
   const [comparison, setComparison] =
     useState<SetComparisonsMessage>(emptyComparison);
 
