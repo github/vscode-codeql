@@ -1,13 +1,21 @@
 diff --git a/node_modules/jest-runner-vscode/dist/child/environment.js b/node_modules/jest-runner-vscode/dist/child/environment.js
-index 1ac28d5..f91f216 100644
+index 1ac28d5..6add1a4 100644
 --- a/node_modules/jest-runner-vscode/dist/child/environment.js
 +++ b/node_modules/jest-runner-vscode/dist/child/environment.js
-@@ -10,6 +10,21 @@ const wrap_io_1 = __importDefault(require("./wrap-io"));
+@@ -4,15 +4,37 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
+ };
+ Object.defineProperty(exports, "__esModule", { value: true });
+ const jest_environment_node_1 = __importDefault(require("jest-environment-node"));
+-const vscode_1 = __importDefault(require("vscode"));
++const module_1 = require("module");
+ const ipc_client_1 = __importDefault(require("./ipc-client"));
+ const wrap_io_1 = __importDefault(require("./wrap-io"));
  const load_pnp_1 = __importDefault(require("./load-pnp"));
  const ipc = new ipc_client_1.default('env');
  class VSCodeEnvironment extends jest_environment_node_1.default {
 +    constructor(config, context) {
 +        super(config, context);
++        this.config = config;
 +        // The _VSCODE_NODE_MODULES is a proxy which will require a module if any property
 +        // on it is accessed. This is a workaround for the fact that jest will call
 +        // _isMockFunction on the module, which will cause that function to be required.
@@ -24,6 +32,15 @@ index 1ac28d5..f91f216 100644
      async setup() {
          await super.setup();
          await (0, load_pnp_1.default)();
++        // If the node_modules directory is not located in the extensions directory recognized by VS Code, then
++        // the wrong 'vscode' module is loaded. This overrides the 'vscode' module that is loaded to be based on
++        // the project rootDir rather than based on this file.
++        // See https://github.com/microsoft/vscode/blob/1.76.0/src/vs/workbench/api/node/extHostExtensionService.ts#L27-L37
++        // and https://github.com/microsoft/vscode/blob/1.76.0/src/vs/workbench/api/common/extHostRequireInterceptor.ts#L164-L185
++        const vscode_1 = __importDefault(module_1._load("vscode", { filename: this.config.projectConfig.rootDir }, false));
+         this.global.vscode = vscode_1.default;
+         await ipc.connect();
+         (0, wrap_io_1.default)(ipc, this.global);
 diff --git a/node_modules/jest-runner-vscode/dist/child/runner.js b/node_modules/jest-runner-vscode/dist/child/runner.js
 index 0663c5c..4991663 100644
 --- a/node_modules/jest-runner-vscode/dist/child/runner.js
