@@ -1125,7 +1125,24 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  // The "runVariantAnalysis" command is internal-only.
+  async function runVariantAnalysis(
+    progress: ProgressCallback,
+    token: CancellationToken,
+    uri: Uri | undefined,
+  ): Promise<void> {
+    progress({
+      maxStep: 5,
+      step: 0,
+      message: "Getting credentials",
+    });
+
+    await variantAnalysisManager.runVariantAnalysis(
+      uri || window.activeTextEditor?.document.uri,
+      progress,
+      token,
+    );
+  }
+
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       "codeQL.runVariantAnalysis",
@@ -1133,19 +1150,23 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => {
-        progress({
-          maxStep: 5,
-          step: 0,
-          message: "Getting credentials",
-        });
-
-        await variantAnalysisManager.runVariantAnalysis(
-          uri || window.activeTextEditor?.document.uri,
-          progress,
-          token,
-        );
+      ) => await runVariantAnalysis(progress, token, uri),
+      {
+        title: "Run Variant Analysis",
+        cancellable: true,
       },
+    ),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.runVariantAnalysis" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.runVariantAnalysisContextEditor",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        uri: Uri | undefined,
+      ) => await runVariantAnalysis(progress, token, uri),
       {
         title: "Run Variant Analysis",
         cancellable: true,

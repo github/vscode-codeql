@@ -323,6 +323,10 @@
         "title": "CodeQL: Run Variant Analysis"
       },
       {
+        "command": "codeQL.runVariantAnalysisContextEditor",
+        "title": "CodeQL: Run Variant Analysis"
+      },
+      {
         "command": "codeQL.exportSelectedVariantAnalysisResults",
         "title": "CodeQL: Export Variant Analysis Results"
       },
@@ -981,7 +985,8 @@
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.exportSelectedVariantAnalysisResults"
+          "command": "codeQL.runVariantAnalysisContextEditor",
+          "when": "false"
         },
         {
           "command": "codeQL.runQueries",
@@ -1234,7 +1239,7 @@
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.runVariantAnalysis",
+          "command": "codeQL.runVariantAnalysisContextEditor",
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
