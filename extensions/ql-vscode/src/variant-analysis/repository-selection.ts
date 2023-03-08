@@ -13,9 +13,9 @@ export interface RepositorySelection {
  * @returns The user selection.
  */
 export async function getRepositorySelection(
-  dbManager?: DbManager,
+  dbManager: DbManager,
 ): Promise<RepositorySelection> {
-  const selectedDbItem = dbManager?.getSelectedDbItem();
+  const selectedDbItem = dbManager.getSelectedDbItem();
   if (selectedDbItem) {
     switch (selectedDbItem.kind) {
       case DbItemKind.LocalDatabase || DbItemKind.LocalList:

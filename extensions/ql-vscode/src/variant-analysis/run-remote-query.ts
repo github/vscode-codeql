@@ -223,7 +223,7 @@ export async function prepareRemoteQueryRun(
   uri: Uri | undefined,
   progress: ProgressCallback,
   token: CancellationToken,
-  dbManager?: DbManager,
+  dbManager: DbManager,
 ): Promise<PreparedRemoteQuery> {
   if (!uri?.fsPath.endsWith(".ql")) {
     throw new UserCancellationException("Not a CodeQL query file.");

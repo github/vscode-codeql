@@ -644,7 +644,7 @@ async function activateWithInstalledDistribution(
     cliServer,
     variantAnalysisStorageDir,
     variantAnalysisResultsManager,
-    dbModule?.dbManager,
+    dbModule.dbManager,
   );
   ctx.subscriptions.push(variantAnalysisManager);
   ctx.subscriptions.push(variantAnalysisResultsManager);
@@ -1134,23 +1134,17 @@ async function activateWithInstalledDistribution(
         token: CancellationToken,
         uri: Uri | undefined,
       ) => {
-        if (isCanary()) {
-          progress({
-            maxStep: 5,
-            step: 0,
-            message: "Getting credentials",
-          });
+        progress({
+          maxStep: 5,
+          step: 0,
+          message: "Getting credentials",
+        });
 
-          await variantAnalysisManager.runVariantAnalysis(
-            uri || window.activeTextEditor?.document.uri,
-            progress,
-            token,
-          );
-        } else {
-          throw new Error(
-            "Variant analysis requires the CodeQL Canary version to run.",
-          );
-        }
+        await variantAnalysisManager.runVariantAnalysis(
+          uri || window.activeTextEditor?.document.uri,
+          progress,
+          token,
+        );
       },
       {
         title: "Run Variant Analysis",

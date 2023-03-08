@@ -105,7 +105,7 @@ export class VariantAnalysisManager
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
     private readonly variantAnalysisResultsManager: VariantAnalysisResultsManager,
-    private readonly dbManager?: DbManager,
+    private readonly dbManager: DbManager,
   ) {
     super();
     this.variantAnalysisMonitor = this.push(
