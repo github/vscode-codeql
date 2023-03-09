@@ -213,6 +213,9 @@ export class DatabaseUI extends DisposableObject {
   init() {
     void extLogger.log("Registering database panel commands.");
     this.push(
+      commandRunner("codeQL.getCurrentDatabase", this.handleGetCurrentDatabase),
+    );
+    this.push(
       commandRunnerWithProgress(
         "codeQL.setCurrentDatabase",
         this.handleSetCurrentDatabase,
@@ -619,6 +622,9 @@ export class DatabaseUI extends DisposableObject {
       );
     }
   };
+
+  private handleGetCurrentDatabase = async (): Promise<string | undefined> =>
+    this.databaseManager.currentDatabaseItem?.databaseUri.fsPath;
 
   private handleSetCurrentDatabase = async (
     progress: ProgressCallback,

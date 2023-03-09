@@ -17,7 +17,7 @@ import { extLogger } from "../common";
 import { createInitialQueryInfo } from "../run-queries-shared";
 import { CancellationToken, Uri } from "vscode";
 import { ProgressCallback } from "../commandRunner";
-import { QueryRunner } from "../queryRunner";
+import { QueryRunner, validateDatabase } from "../queryRunner";
 import { redactableError } from "../pure/errors";
 import { QLPACK_FILENAMES } from "../pure/ql";
 
@@ -186,7 +186,7 @@ export async function runContextualQuery(
     `Running contextual query ${query}; results will be stored in ${queryStorageDir}`,
   );
   const queryResult = await qs.compileAndRunQueryAgainstDatabase(
-    db,
+    await validateDatabase(db),
     initialInfo,
     queryStorageDir,
     progress,

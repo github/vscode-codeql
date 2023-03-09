@@ -23,6 +23,7 @@ import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { compileDatabaseUpgradeSequence } from "./upgrades";
 import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
 import { redactableError } from "../pure/errors";
+import { DatabaseDetails } from "../queryRunner";
 
 /**
  * A collection of evaluation-time information about a query,
@@ -63,15 +64,11 @@ export class QueryInProgress {
     qs: qsClient.QueryServerClient,
     upgradeQlo: string | undefined,
     availableMlModels: cli.MlModelInfo[],
-    dbItem: DatabaseItem,
+    db: DatabaseDetails,
     progress: ProgressCallback,
     token: CancellationToken,
     queryInfo?: LocalQueryInfo,
   ): Promise<messages.EvaluationResult> {
-    if (!dbItem.contents || dbItem.error) {
-      throw new Error("Can't run query on invalid database.");
-    }
-
     let result: messages.EvaluationResult | null = null;
 
     const callbackId = qs.registerCallback((res) => {
@@ -97,7 +94,7 @@ export class QueryInProgress {
     };
 
     const dataset: messages.Dataset = {
-      dbDir: dbItem.contents.datasetUri.fsPath,
+      dbDir: db.datasetPath,
       workingSet: "default",
     };
     if (
@@ -247,19 +244,15 @@ async function compileNonDestructiveUpgrade(
   upgradeTemp: tmp.DirectoryResult,
   query: QueryInProgress,
   qlProgram: messages.QlProgram,
-  dbItem: DatabaseItem,
+  db: DatabaseDetails,
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<string> {
-  if (!dbItem?.contents?.dbSchemeUri) {
-    throw new Error("Database is invalid, and cannot be upgraded.");
-  }
-
   // Dependencies may exist outside of the workspace and they are always on the resolved search path.
   const upgradesPath = qlProgram.libraryPath;
 
   const { scripts, matchesTarget } = await qs.cliServer.resolveUpgrades(
-    dbItem.contents.dbSchemeUri.fsPath,
+    db.dbSchemePath,
     upgradesPath,
     true,
     query.queryDbscheme,
@@ -270,7 +263,7 @@ async function compileNonDestructiveUpgrade(
   }
   const result = await compileDatabaseUpgradeSequence(
     qs,
-    dbItem,
+    db,
     scripts,
     upgradeTemp,
     progress,
@@ -289,7 +282,7 @@ async function compileNonDestructiveUpgrade(
 export async function compileAndRunQueryAgainstDatabase(
   cliServer: cli.CodeQLCliServer,
   qs: qsClient.QueryServerClient,
-  dbItem: DatabaseItem,
+  db: DatabaseDetails,
   initialInfo: InitialQueryInfo,
   queryStorageDir: string,
   progress: ProgressCallback,
@@ -297,12 +290,6 @@ export async function compileAndRunQueryAgainstDatabase(
   templates?: Record<string, string>,
   queryInfo?: LocalQueryInfo, // May be omitted for queries not initiated by the user. If omitted we won't create a structured log for the query.
 ): Promise<QueryWithResults> {
-  if (!dbItem.contents || !dbItem.contents.dbSchemeUri) {
-    throw new Error(
-      `Database ${dbItem.databaseUri} does not have a CodeQL database scheme.`,
-    );
-  }
-
   // Get the workspace folder paths.
   const diskWorkspaceFolders = getOnDiskWorkspaceFolders();
   // Figure out the library path for the query.
@@ -322,7 +309,7 @@ export async function compileAndRunQueryAgainstDatabase(
   // won't trigger this check)
   // This test will produce confusing results if we ever change the name of the database schema files.
   const querySchemaName = basename(packConfig.dbscheme);
-  const dbSchemaName = basename(dbItem.contents.dbSchemeUri.fsPath);
+  const dbSchemaName = basename(db.dbSchemePath);
   if (querySchemaName !== dbSchemaName) {
     void extLogger.log(
       `Query schema was ${querySchemaName}, but database schema was ${dbSchemaName}.`,
@@ -331,7 +318,7 @@ export async function compileAndRunQueryAgainstDatabase(
       `The query ${basename(
         initialInfo.queryPath,
       )} cannot be run against the selected database (${
-        dbItem.name
+        db.name
       }): their target languages are different. Please select a different database and try again.`,
     );
   }
@@ -344,7 +331,7 @@ export async function compileAndRunQueryAgainstDatabase(
     // Since we are compiling and running a query against a database,
     // we use the database's DB scheme here instead of the DB scheme
     // from the current document's project.
-    dbschemePath: dbItem.contents.dbSchemeUri.fsPath,
+    dbschemePath: db.dbSchemePath,
     queryPath: initialInfo.queryPath,
   };
 
@@ -376,10 +363,10 @@ export async function compileAndRunQueryAgainstDatabase(
     );
   }
 
-  const hasMetadataFile = await dbItem.hasMetadataFile();
+  const hasMetadataFile = db.hasMetadataFile;
   const query = new QueryInProgress(
     join(queryStorageDir, initialInfo.id),
-    dbItem.databaseUri.fsPath,
+    db.path,
     hasMetadataFile,
     packConfig.dbscheme,
     initialInfo.quickEvalPosition,
@@ -396,7 +383,7 @@ export async function compileAndRunQueryAgainstDatabase(
       upgradeDir,
       query,
       qlProgram,
-      dbItem,
+      db,
       progress,
       token,
     );
@@ -419,7 +406,7 @@ export async function compileAndRunQueryAgainstDatabase(
         qs,
         upgradeQlo,
         availableMlModels,
-        dbItem,
+        db,
         progress,
         token,
         queryInfo,

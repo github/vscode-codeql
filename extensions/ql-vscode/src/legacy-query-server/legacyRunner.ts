@@ -7,7 +7,7 @@ import {
   registerDatabases,
 } from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
-import { QueryRunner } from "../queryRunner";
+import { DatabaseDetails, QueryRunner } from "../queryRunner";
 import { QueryWithResults } from "../run-queries-shared";
 import { QueryServerClient } from "./queryserver-client";
 import {
@@ -48,7 +48,7 @@ export class LegacyQueryRunner extends QueryRunner {
     await clearCacheInDatabase(this.qs, dbItem, progress, token);
   }
   async compileAndRunQueryAgainstDatabase(
-    dbItem: DatabaseItem,
+    db: DatabaseDetails,
     initialInfo: InitialQueryInfo,
     queryStorageDir: string,
     progress: ProgressCallback,
@@ -59,7 +59,7 @@ export class LegacyQueryRunner extends QueryRunner {
     return await compileAndRunQueryAgainstDatabase(
       this.qs.cliServer,
       this.qs,
-      dbItem,
+      db,
       initialInfo,
       queryStorageDir,
       progress,

@@ -10,7 +10,7 @@ import {
   upgradeDatabase,
 } from "../pure/new-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
-import { QueryRunner } from "../queryRunner";
+import { DatabaseDetails, QueryRunner } from "../queryRunner";
 import { QueryWithResults } from "../run-queries-shared";
 import { QueryServerClient } from "./queryserver-client";
 import { compileAndRunQueryAgainstDatabase } from "./run-queries";
@@ -58,7 +58,7 @@ export class NewQueryRunner extends QueryRunner {
     await this.qs.sendRequest(clearCache, params, token, progress);
   }
   async compileAndRunQueryAgainstDatabase(
-    dbItem: DatabaseItem,
+    db: DatabaseDetails,
     initialInfo: InitialQueryInfo,
     queryStorageDir: string,
     progress: ProgressCallback,
@@ -69,7 +69,7 @@ export class NewQueryRunner extends QueryRunner {
     return await compileAndRunQueryAgainstDatabase(
       this.qs.cliServer,
       this.qs,
-      dbItem,
+      db,
       initialInfo,
       queryStorageDir,
       progress,

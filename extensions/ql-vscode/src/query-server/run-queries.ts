@@ -2,7 +2,6 @@ import { join } from "path";
 import { CancellationToken } from "vscode";
 import * as cli from "../cli";
 import { ProgressCallback } from "../commandRunner";
-import { DatabaseItem } from "../local-databases";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
@@ -16,6 +15,7 @@ import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
 import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
 import * as qsClient from "./queryserver-client";
 import { redactableError } from "../pure/errors";
+import { DatabaseDetails } from "../queryRunner";
 
 /**
  * run-queries.ts
@@ -34,7 +34,7 @@ import { redactableError } from "../pure/errors";
 export async function compileAndRunQueryAgainstDatabase(
   cliServer: cli.CodeQLCliServer,
   qs: qsClient.QueryServerClient,
-  dbItem: DatabaseItem,
+  db: DatabaseDetails,
   initialInfo: InitialQueryInfo,
   queryStorageDir: string,
   progress: ProgressCallback,
@@ -42,27 +42,17 @@ export async function compileAndRunQueryAgainstDatabase(
   templates?: Record<string, string>,
   queryInfo?: LocalQueryInfo, // May be omitted for queries not initiated by the user. If omitted we won't create a structured log for the query.
 ): Promise<QueryWithResults> {
-  if (!dbItem.contents || !dbItem.contents.dbSchemeUri) {
-    throw new Error(
-      `Database ${dbItem.databaseUri} does not have a CodeQL database scheme.`,
-    );
-  }
-
   // Read the query metadata if possible, to use in the UI.
   const metadata = await tryGetQueryMetadata(cliServer, initialInfo.queryPath);
 
-  const hasMetadataFile = await dbItem.hasMetadataFile();
   const query = new QueryEvaluationInfo(
     join(queryStorageDir, initialInfo.id),
-    dbItem.databaseUri.fsPath,
-    hasMetadataFile,
+    db.path,
+    db.hasMetadataFile,
     initialInfo.quickEvalPosition,
     metadata,
   );
 
-  if (!dbItem.contents || dbItem.error) {
-    throw new Error("Can't run query on invalid database.");
-  }
   const target = query.quickEvalPosition
     ? {
         quickEval: { quickEvalPos: query.quickEvalPosition },
@@ -70,10 +60,9 @@ export async function compileAndRunQueryAgainstDatabase(
     : { query: {} };
 
   const diskWorkspaceFolders = getOnDiskWorkspaceFolders();
-  const db = dbItem.databaseUri.fsPath;
   const logPath = queryInfo ? query.evalLogPath : undefined;
   const queryToRun: messages.RunQueryParams = {
-    db,
+    db: db.path,
     additionalPacks: diskWorkspaceFolders,
     externalInputs: {},
     singletonExternalInputs: templates || {},

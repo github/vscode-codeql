@@ -90,6 +90,33 @@
         "editor.wordBasedSuggestions": false
       }
     },
+    "debuggers": [
+      {
+        "type": "codeql",
+        "label": "CodeQL Debugger",
+        "languages": [
+          "ql"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Path to query file (.ql)",
+                "default": "${file}"
+              },
+              "database": {
+                "type": "string",
+                "description": "Path to the target database"
+              }
+            }
+          }
+        },
+        "variables": {
+          "currentDatabase": "codeQL.getCurrentDatabase"
+        }
+      }
+    ],
     "jsonValidation": [
       {
         "fileMatch": "GitHub.vscode-codeql/databases.json",
@@ -428,6 +455,10 @@
       {
         "command": "codeQL.setCurrentDatabase",
         "title": "CodeQL: Set Current Database"
+      },
+      {
+        "command": "codeQL.getCurrentDatabase",
+        "title": "CodeQL: Get Current Database"
       },
       {
         "command": "codeQL.viewAst",
@@ -1005,6 +1036,10 @@
           "when": "false"
         },
         {
+          "command": "codeQL.getCurrentDatabase",
+          "when": "false"
+        },
+        {
           "command": "codeQL.viewAst",
           "when": "resourceScheme == codeql-zip-archive"
         },
@@ -1350,6 +1385,8 @@
     "@primer/octicons-react": "^17.6.0",
     "@primer/react": "^35.0.0",
     "@vscode/codicons": "^0.0.31",
+    "@vscode/debugadapter": "^1.59.0",
+    "@vscode/debugprotocol": "^1.59.0",
     "@vscode/webview-ui-toolkit": "^1.0.1",
     "ajv": "^8.11.0",
     "child-process-promise": "^2.2.1",

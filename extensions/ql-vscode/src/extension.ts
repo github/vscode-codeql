@@ -116,7 +116,7 @@ import { LogScannerService } from "./log-insights/log-scanner-service";
 import { createInitialQueryInfo } from "./run-queries-shared";
 import { LegacyQueryRunner } from "./legacy-query-server/legacyRunner";
 import { NewQueryRunner } from "./query-server/query-runner";
-import { QueryRunner } from "./queryRunner";
+import { QueryRunner, validateDatabase } from "./queryRunner";
 import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
 import {
@@ -131,6 +131,7 @@ import { ExtensionApp } from "./common/vscode/vscode-app";
 import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
+import { QLDebugAdapterDescriptorFactory } from "./debugger/debugger";
 
 /**
  * extension.ts
@@ -744,7 +745,7 @@ async function activateWithInstalledDistribution(
       qhm.addQuery(item);
       try {
         const completedQueryInfo = await qs.compileAndRunQueryAgainstDatabase(
-          databaseItem,
+          await validateDatabase(databaseItem),
           initialInfo,
           queryStorageDir,
           progress,
@@ -903,6 +904,12 @@ async function activateWithInstalledDistribution(
     },
     true,
   );
+
+  void extLogger.log("Initializing debugger factory.");
+  const debuggerFactory = ctx.subscriptions.push(
+    new QLDebugAdapterDescriptorFactory(queryStorageDir, qs, dbm),
+  );
+  void debuggerFactory;
 
   void extLogger.log("Initializing QLTest interface.");
   const testExplorerExtension = extensions.getExtension<TestHub>(

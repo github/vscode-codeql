@@ -5,6 +5,36 @@ import { DatabaseItem } from "./local-databases";
 import { InitialQueryInfo, LocalQueryInfo } from "./query-results";
 import { QueryWithResults } from "./run-queries-shared";
 
+export interface DatabaseDetails {
+  path: string;
+  hasMetadataFile: boolean;
+  dbSchemePath: string;
+  datasetPath: string;
+  name: string;
+}
+
+export async function validateDatabase(
+  dbItem: DatabaseItem,
+): Promise<DatabaseDetails> {
+  if (!dbItem.contents || !dbItem.contents.dbSchemeUri) {
+    throw new Error(
+      `Database ${dbItem.databaseUri} does not have a CodeQL database scheme.`,
+    );
+  }
+
+  if (dbItem.error) {
+    throw new Error("Can't run query on invalid database.");
+  }
+
+  return {
+    path: dbItem.databaseUri.fsPath,
+    hasMetadataFile: await dbItem.hasMetadataFile(),
+    dbSchemePath: dbItem.contents.dbSchemeUri.fsPath,
+    datasetPath: dbItem.contents.datasetUri.fsPath,
+    name: dbItem.name,
+  };
+}
+
 export abstract class QueryRunner {
   abstract restartQueryServer(
     progress: ProgressCallback,
@@ -26,7 +56,7 @@ export abstract class QueryRunner {
   ): Promise<void>;
 
   abstract compileAndRunQueryAgainstDatabase(
-    dbItem: DatabaseItem,
+    db: DatabaseDetails,
     initialInfo: InitialQueryInfo,
     queryStorageDir: string,
     progress: ProgressCallback,
