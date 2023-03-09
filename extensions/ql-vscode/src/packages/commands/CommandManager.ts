@@ -21,7 +21,7 @@ export class CommandManager<
     private readonly commandExecute: <T extends CommandName>(
       commandName: T,
       ...args: Parameters<Commands[T]>
-    ) => Promise<ReturnType<Commands[T]>>,
+    ) => Promise<Awaited<ReturnType<Commands[T]>>>,
   ) {}
 
   registerCommand<T extends CommandName>(
@@ -34,7 +34,7 @@ export class CommandManager<
   executeCommand<T extends CommandName>(
     commandName: T,
     ...args: Parameters<Commands[T]>
-  ): Promise<ReturnType<Commands[T]>> {
+  ): Promise<Awaited<ReturnType<Commands[T]>>> {
     return this.commandExecute(commandName, ...args);
   }
 

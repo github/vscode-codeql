@@ -137,6 +137,11 @@ import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filt
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
+import {
+  AllCommands,
+  ExtensionCommands,
+  initializeVSCodeCommandManager,
+} from "./commands";
 
 /**
  * extension.ts
@@ -167,6 +172,16 @@ let isInstallingOrUpdatingDistribution = false;
 
 const extensionId = "GitHub.vscode-codeql";
 const extension = extensions.getExtension(extensionId);
+
+function getCommands(
+  variantAnalysisManager: VariantAnalysisManager,
+): ExtensionCommands {
+  return {
+    "codeQL.openVariantAnalysisLogs": async (variantAnalysisId: number) => {
+      await variantAnalysisManager.openVariantAnalysisLogs(variantAnalysisId);
+    },
+  };
+}
 
 /**
  * If the user tries to execute vscode commands after extension activation is failed, give
@@ -1153,6 +1168,7 @@ async function activateWithInstalledDistribution(
     ),
   );
 
+  /*
   ctx.subscriptions.push(
     commandRunner(
       "codeQL.openVariantAnalysisLogs",
@@ -1161,6 +1177,17 @@ async function activateWithInstalledDistribution(
       },
     ),
   );
+*/
+
+  const vsCommandRunner = initializeVSCodeCommandManager<AllCommands>();
+  ctx.subscriptions.push(vsCommandRunner);
+  const allCommands: Partial<AllCommands> = {
+    ...getCommands(variantAnalysisManager),
+  };
+
+  for (const [commandName, command] of Object.entries(allCommands)) {
+    vsCommandRunner.registerCommand(commandName as keyof AllCommands, command);
+  }
 
   ctx.subscriptions.push(
     commandRunner(
