@@ -1330,6 +1330,19 @@ async function activateWithInstalledDistribution(
     commandRunner("codeQL.openReferencedFile", openReferencedFile),
   );
 
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
+  ctx.subscriptions.push(
+    commandRunner("codeQL.openReferencedFileContextEditor", openReferencedFile),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
+  ctx.subscriptions.push(
+    commandRunner(
+      "codeQL.openReferencedFileContextExplorer",
+      openReferencedFile,
+    ),
+  );
+
   ctx.subscriptions.push(
     commandRunner("codeQL.previewQueryHelp", previewQueryHelp),
   );

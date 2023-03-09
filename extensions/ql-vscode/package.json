@@ -347,6 +347,14 @@
         "title": "CodeQL: Open Referenced File"
       },
       {
+        "command": "codeQL.openReferencedFileContextEditor",
+        "title": "CodeQL: Open Referenced File"
+      },
+      {
+        "command": "codeQL.openReferencedFileContextExplorer",
+        "title": "CodeQL: Open Referenced File"
+      },
+      {
         "command": "codeQL.previewQueryHelp",
         "title": "CodeQL: Preview Query Help"
       },
@@ -969,7 +977,7 @@
           "when": "resourceScheme != codeql-zip-archive"
         },
         {
-          "command": "codeQL.openReferencedFile",
+          "command": "codeQL.openReferencedFileContextExplorer",
           "group": "9_qlCommands",
           "when": "resourceExtname == .qlref"
         },
@@ -1023,6 +1031,14 @@
         {
           "command": "codeQL.openReferencedFile",
           "when": "resourceExtname == .qlref"
+        },
+        {
+          "command": "codeQL.openReferencedFileContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.openReferencedFileContextExplorer",
+          "when": "false"
         },
         {
           "command": "codeQL.previewQueryHelp",
@@ -1295,7 +1311,7 @@
           "when": "editorLangId == ql"
         },
         {
-          "command": "codeQL.openReferencedFile",
+          "command": "codeQL.openReferencedFileContextEditor",
           "when": "resourceExtname == .qlref"
         },
         {
