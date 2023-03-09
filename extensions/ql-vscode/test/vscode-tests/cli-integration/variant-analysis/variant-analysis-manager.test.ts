@@ -19,7 +19,10 @@ import {
   storagePath,
 } from "../../global.helper";
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
-import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
+import {
+  VariantAnalysisStatus,
+  VariantAnalysisSubmission,
+} from "../../../../src/variant-analysis/shared/variant-analysis";
 import { VariantAnalysis as VariantAnalysisApiResponse } from "../../../../src/variant-analysis/gh-api/variant-analysis";
 import { createMockApiResponse } from "../../../factories/variant-analysis/gh-api/variant-analysis-api-response";
 import { UserCancellationException } from "../../../../src/commandRunner";
@@ -28,6 +31,9 @@ import { DbManager } from "../../../../src/databases/db-manager";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
+import { QueryLanguage } from "../../../../src/common/query-language";
+import { readBundledPack } from "../../utils/bundled-pack-helpers";
+import { load } from "js-yaml";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -80,10 +86,6 @@ describe("Variant Analysis Manager", () => {
     const qlpackFileWithWorkspaceRefs = getFile(
       "data-remote-qlpack/qlpack.yml",
     ).fsPath;
-
-    function getFile(file: string): Uri {
-      return Uri.file(join(baseDir, file));
-    }
 
     beforeEach(async () => {
       jest
@@ -202,5 +204,136 @@ describe("Variant Analysis Manager", () => {
 
       await expect(promise).rejects.toThrow(UserCancellationException);
     });
+
+    describe("check variant analysis generated packs", () => {
+      beforeEach(() => {
+        mockSubmitVariantAnalysis = jest
+          .spyOn(ghApiClient, "submitVariantAnalysis")
+          .mockResolvedValue({
+            id: 1,
+            query_language: QueryLanguage.Javascript,
+            query_pack_url: "http://example.com",
+            created_at: "2021-01-01T00:00:00Z",
+            updated_at: "2021-01-01T00:00:00Z",
+            status: "in_progress",
+            controller_repo: {
+              id: 1,
+              name: "vscode-codeql",
+              full_name: "github/vscode-codeql",
+              private: false,
+            },
+            actions_workflow_run_id: 20,
+            scanned_repositories: [] as any[],
+          });
+
+        executeCommandSpy = jest.spyOn(commands, "executeCommand");
+      });
+
+      it("should run a remote query that is part of a qlpack", async () => {
+        await doVariantAnalysisTest({
+          queryPath: "data-remote-qlpack/in-pack.ql",
+          filesThatExist: ["in-pack.ql", "lib.qll"],
+          filesThatDoNotExist: [],
+          qlxFilesThatExist: ["in-pack.qlx"],
+        });
+      });
+
+      it("should run a remote query that is not part of a qlpack", async () => {
+        await doVariantAnalysisTest({
+          queryPath: "data-remote-no-qlpack/in-pack.ql",
+          filesThatExist: ["in-pack.ql"],
+          filesThatDoNotExist: ["lib.qll", "not-in-pack.ql"],
+          qlxFilesThatExist: ["in-pack.qlx"],
+        });
+      });
+
+      it("should run a remote query that is nested inside a qlpack", async () => {
+        await doVariantAnalysisTest({
+          queryPath: "data-remote-qlpack-nested/subfolder/in-pack.ql",
+          filesThatExist: ["subfolder/in-pack.ql", "otherfolder/lib.qll"],
+          filesThatDoNotExist: ["subfolder/not-in-pack.ql"],
+          qlxFilesThatExist: ["subfolder/in-pack.qlx"],
+        });
+      });
+    });
+
+    async function doVariantAnalysisTest({
+      queryPath,
+      filesThatExist,
+      qlxFilesThatExist,
+      filesThatDoNotExist,
+    }: {
+      queryPath: string;
+      filesThatExist: string[];
+      qlxFilesThatExist: string[];
+      filesThatDoNotExist: string[];
+    }) {
+      const fileUri = getFile(queryPath);
+
+      await variantAnalysisManager.runVariantAnalysis(
+        fileUri,
+        progress,
+        cancellationTokenSource.token,
+      );
+
+      expect(mockSubmitVariantAnalysis).toBeCalledTimes(1);
+      expect(executeCommandSpy).toBeCalledWith(
+        "codeQL.monitorVariantAnalysis",
+        expect.objectContaining({
+          query: expect.objectContaining({ filePath: fileUri.fsPath }),
+        }),
+      );
+
+      const request: VariantAnalysisSubmission =
+        mockSubmitVariantAnalysis.mock.calls[0][1];
+
+      const packFS = await readBundledPack(request.query.pack);
+      filesThatExist.forEach((file) => {
+        expect(packFS.fileExists(file)).toBe(true);
+      });
+      if (await cli.cliConstraints.supportsQlxRemote()) {
+        qlxFilesThatExist.forEach((file) => {
+          expect(packFS.fileExists(file)).toBe(true);
+        });
+      }
+      filesThatDoNotExist.forEach((file) => {
+        expect(packFS.fileExists(file)).toBe(false);
+      });
+
+      expect(
+        packFS.fileExists("qlpack.yml") || packFS.fileExists("codeql-pack.yml"),
+      ).toBe(true);
+
+      // depending on the cli version, we should have one of these files
+      expect(
+        packFS.fileExists("qlpack.lock.yml") ||
+          packFS.fileExists("codeql-pack.lock.yml"),
+      ).toBe(true);
+
+      const packFileName = packFS.fileExists("qlpack.yml")
+        ? "qlpack.yml"
+        : "codeql-pack.yml";
+      const qlpackContents: any = load(
+        packFS.fileContents(packFileName).toString("utf-8"),
+      );
+      expect(qlpackContents.name).toEqual("codeql-remote/query");
+      expect(qlpackContents.version).toEqual("0.0.0");
+      expect(qlpackContents.dependencies?.["codeql/javascript-all"]).toEqual(
+        "*",
+      );
+
+      const qlpackLockContents: any = load(
+        packFS.fileContents("codeql-pack.lock.yml").toString("utf-8"),
+      );
+
+      const actualLockKeys = Object.keys(qlpackLockContents.dependencies);
+
+      // The lock file should contain at least codeql/javascript-all.
+      expect(actualLockKeys).toContain("codeql/javascript-all");
+    }
+
+    function getFile(file: string): Uri {
+      return Uri.file(join(baseDir, file));
+    }
   });
 });
