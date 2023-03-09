@@ -1576,6 +1576,44 @@ async function activateWithInstalledDistribution(
     ),
   );
 
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewCfg" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewCfgContextExplorer",
+      async (progress: ProgressCallback, token: CancellationToken) => {
+        const res = await cfgTemplateProvider.provideCfgUri(
+          window.activeTextEditor?.document,
+        );
+        if (res) {
+          await compileAndRunQuery(false, res[0], progress, token, undefined);
+        }
+      },
+      {
+        title: "Calculating Control Flow Graph",
+        cancellable: true,
+      },
+    ),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewCfg" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewCfgContextEditor",
+      async (progress: ProgressCallback, token: CancellationToken) => {
+        const res = await cfgTemplateProvider.provideCfgUri(
+          window.activeTextEditor?.document,
+        );
+        if (res) {
+          await compileAndRunQuery(false, res[0], progress, token, undefined);
+        }
+      },
+      {
+        title: "Calculating Control Flow Graph",
+        cancellable: true,
+      },
+    ),
+  );
+
   const mockServer = new VSCodeMockGitHubApiServer(ctx);
   ctx.subscriptions.push(mockServer);
   ctx.subscriptions.push(

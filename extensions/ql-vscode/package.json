@@ -450,6 +450,14 @@
         "title": "CodeQL: View CFG"
       },
       {
+        "command": "codeQL.viewCfgContextExplorer",
+        "title": "CodeQL: View CFG"
+      },
+      {
+        "command": "codeQL.viewCfgContextEditor",
+        "title": "CodeQL: View CFG"
+      },
+      {
         "command": "codeQL.upgradeCurrentDatabase",
         "title": "CodeQL: Upgrade Current Database"
       },
@@ -947,7 +955,7 @@
           "when": "resourceScheme == codeql-zip-archive && !explorerResourceIsFolder && !listMultiSelection"
         },
         {
-          "command": "codeQL.viewCfg",
+          "command": "codeQL.viewCfgContextExplorer",
           "group": "9_qlCommands",
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
@@ -1032,6 +1040,14 @@
           "command": "codeQL.viewCfg",
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
+        {
+          "command": "codeQL.viewCfgContextExplorer",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.viewCfgContextEditor",
+          "when": "false"
+        }, 
         {
           "command": "codeQLVariantAnalysisRepositories.openConfigFile",
           "when": "false"
@@ -1263,7 +1279,7 @@
           "when": "resourceScheme == codeql-zip-archive"
         },
         {
-          "command": "codeQL.viewCfg",
+          "command": "codeQL.viewCfgContextEditor",
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
