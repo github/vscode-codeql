@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-## 1.8.0 - 8 March 2023
+## 1.8.0 - 9 March 2023
 
 - Send telemetry about unhandled errors happening within the extension. [#2125](https://github.com/github/vscode-codeql/pull/2125)
 - Enable multi-repository variant analysis. [#2144](https://github.com/github/vscode-codeql/pull/2144)
