@@ -825,12 +825,12 @@
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
           "group": "7_queryHistory@0",
-          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledRemoteResultsItemWithoutLogs || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
           "group": "inline",
-          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledRemoteResultsItemWithoutLogs || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
           "command": "codeQLQueryHistory.renameItem",
