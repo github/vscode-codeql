@@ -339,6 +339,10 @@
         "title": "CodeQL: Quick Evaluation"
       },
       {
+        "command": "codeQL.quickEvalContextEditor",
+        "title": "CodeQL: Quick Evaluation"
+      },
+      {
         "command": "codeQL.openReferencedFile",
         "title": "CodeQL: Open Referenced File"
       },
@@ -1013,6 +1017,10 @@
           "when": "editorLangId == ql"
         },
         {
+          "command": "codeQL.quickEvalContextEditor",
+          "when": "false"
+        },
+        {
           "command": "codeQL.openReferencedFile",
           "when": "resourceExtname == .qlref"
         },
@@ -1283,7 +1291,7 @@
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
-          "command": "codeQL.quickEval",
+          "command": "codeQL.quickEvalContextEditor",
           "when": "editorLangId == ql"
         },
         {
