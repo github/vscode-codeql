@@ -981,9 +981,6 @@
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.exportSelectedVariantAnalysisResults"
-        },
-        {
           "command": "codeQL.runQueries",
           "when": "false"
         },
