@@ -1074,9 +1074,28 @@ async function activateWithInstalledDistribution(
       queryServerLogger,
     ),
   );
+
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       "codeQL.quickEval",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        uri: Uri | undefined,
+      ) => await compileAndRunQuery(true, uri, progress, token, undefined),
+      {
+        title: "Running query",
+        cancellable: true,
+      },
+      // Open the query server logger on error since that's usually where the interesting errors appear.
+      queryServerLogger,
+    ),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.quickEval" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.quickEvalContextEditor",
       async (
         progress: ProgressCallback,
         token: CancellationToken,
@@ -1309,6 +1328,19 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner("codeQL.openReferencedFile", openReferencedFile),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
+  ctx.subscriptions.push(
+    commandRunner("codeQL.openReferencedFileContextEditor", openReferencedFile),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
+  ctx.subscriptions.push(
+    commandRunner(
+      "codeQL.openReferencedFileContextExplorer",
+      openReferencedFile,
+    ),
   );
 
   ctx.subscriptions.push(
@@ -1561,6 +1593,44 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       "codeQL.viewCfg",
+      async (progress: ProgressCallback, token: CancellationToken) => {
+        const res = await cfgTemplateProvider.provideCfgUri(
+          window.activeTextEditor?.document,
+        );
+        if (res) {
+          await compileAndRunQuery(false, res[0], progress, token, undefined);
+        }
+      },
+      {
+        title: "Calculating Control Flow Graph",
+        cancellable: true,
+      },
+    ),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewCfg" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewCfgContextExplorer",
+      async (progress: ProgressCallback, token: CancellationToken) => {
+        const res = await cfgTemplateProvider.provideCfgUri(
+          window.activeTextEditor?.document,
+        );
+        if (res) {
+          await compileAndRunQuery(false, res[0], progress, token, undefined);
+        }
+      },
+      {
+        title: "Calculating Control Flow Graph",
+        cancellable: true,
+      },
+    ),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewCfg" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewCfgContextEditor",
       async (progress: ProgressCallback, token: CancellationToken) => {
         const res = await cfgTemplateProvider.provideCfgUri(
           window.activeTextEditor?.document,
