@@ -169,12 +169,10 @@ let isInstallingOrUpdatingDistribution = false;
 const extensionId = "GitHub.vscode-codeql";
 const extension = extensions.getExtension(extensionId);
 
-function getCommands(
-  variantAnalysisManager: VariantAnalysisManager,
-): ExtensionCommands {
+function getCommands(): ExtensionCommands {
   return {
-    "codeQL.openVariantAnalysisLogs": async (variantAnalysisId: number) => {
-      await variantAnalysisManager.openVariantAnalysisLogs(variantAnalysisId);
+    "codeQL.openDocumentation": async () => {
+      await env.openExternal(Uri.parse("https://codeql.github.com/docs/"));
     },
   };
 }
@@ -1164,19 +1162,9 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  /*
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openVariantAnalysisLogs",
-      async (variantAnalysisId: number) => {
-        await variantAnalysisManager.openVariantAnalysisLogs(variantAnalysisId);
-      },
-    ),
-  );
-*/
-
-  const allCommands: Partial<AllCommands> = {
-    ...getCommands(variantAnalysisManager),
+  const allCommands: AllCommands = {
+    ...getCommands(),
+    ...variantAnalysisManager.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
@@ -1380,12 +1368,6 @@ async function activateWithInstalledDistribution(
       {
         title: "Adding database from URL",
       },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.openDocumentation", async () =>
-      env.openExternal(Uri.parse("https://codeql.github.com/docs/")),
     ),
   );
 
