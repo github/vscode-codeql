@@ -1,0 +1,8 @@
+extensions:
+  - data:
+      - [2]
+      - [3]
+      - [4]
+    addsTo:
+      extensible: testExtensible
+      pack: semmle/has-extension

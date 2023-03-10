@@ -1163,24 +1163,32 @@ export class CodeQLCliServer implements Disposable {
 
   /**
    * Gets information about available qlpacks
-   * @param additionalPacks A list of directories to search for qlpacks before searching in `searchPath`.
-   * @param searchPath A list of directories to search for packs not found in `additionalPacks`. If undefined,
-   *   the default CLI search path is used.
+   * @param additionalPacks A list of directories to search for qlpacks.
+   * @param extensionPacksOnly Whether to only search for extension packs. If true, only extension packs will
+   *    be returned. If false, all packs will be returned.
    * @returns A dictionary mapping qlpack name to the directory it comes from
    */
-  resolveQlpacks(
+  async resolveQlpacks(
     additionalPacks: string[],
-    searchPath?: string[],
+    extensionPacksOnly = false,
   ): Promise<QlpacksInfo> {
     const args = this.getAdditionalPacksArg(additionalPacks);
-    if (searchPath?.length) {
-      args.push("--search-path", join(...searchPath));
+    if (extensionPacksOnly) {
+      if (!(await this.cliConstraints.supportsQlpacksKind())) {
+        void this.logger.log(
+          "Warning: Running with extension packs is only supported by CodeQL CLI v2.12.3 or later.",
+        );
+        return {};
+      }
+      args.push("--kind", "extension", "--no-recursive");
     }
 
     return this.runJsonCodeQlCliCommand<QlpacksInfo>(
       ["resolve", "qlpacks"],
       args,
-      "Resolving qlpack information",
+      `Resolving qlpack information${
+        extensionPacksOnly ? " (extension packs only)" : ""
+      }`,
     );
   }
 
@@ -1379,6 +1387,17 @@ export class CodeQLCliServer implements Disposable {
 
   private getAdditionalPacksArg(paths: string[]): string[] {
     return paths.length ? ["--additional-packs", paths.join(delimiter)] : [];
+  }
+
+  public async useExtensionPacks(): Promise<boolean> {
+    return (
+      this.cliConfig.useExtensionPacks &&
+      (await this.cliConstraints.supportsQlpacksKind())
+    );
+  }
+
+  public async setUseExtensionPacks(useExtensionPacks: boolean) {
+    await this.cliConfig.setUseExtensionPacks(useExtensionPacks);
   }
 }
 
@@ -1668,6 +1687,11 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_WORKSPACE_RFERENCES = new SemVer("2.11.3");
 
+  /**
+   * CLI version that supports the `--kind` option for the `resolve qlpacks` command.
+   */
+  public static CLI_VERSION_WITH_QLPACKS_KIND = new SemVer("2.12.3");
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1723,6 +1747,12 @@ export class CliVersionConstraint {
   async supportsWorkspaceReferences() {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_WORKSPACE_RFERENCES,
+    );
+  }
+
+  async supportsQlpacksKind() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND,
     );
   }
 }
