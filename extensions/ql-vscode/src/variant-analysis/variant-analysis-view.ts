@@ -17,6 +17,7 @@ import {
 } from "./variant-analysis-view-manager";
 import { showAndLogWarningMessage } from "../helpers";
 import { telemetryListener } from "../telemetry";
+import { ExtensionCommandManager } from "../common/commands";
 
 export class VariantAnalysisView
   extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage>
@@ -26,6 +27,7 @@ export class VariantAnalysisView
 
   public constructor(
     ctx: ExtensionContext,
+    private readonly commandManager: ExtensionCommandManager,
     public readonly variantAnalysisId: number,
     private readonly manager: VariantAnalysisViewManager<VariantAnalysisView>,
   ) {
@@ -145,7 +147,7 @@ export class VariantAnalysisView
         );
         break;
       case "openLogs":
-        await commands.executeCommand(
+        await this.commandManager.executeCommand(
           "codeQL.openVariantAnalysisLogs",
           this.variantAnalysisId,
         );
