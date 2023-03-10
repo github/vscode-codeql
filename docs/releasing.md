@@ -23,9 +23,9 @@
     * Wait for the PR to be merged into `main`
 1. Switch to `main` branch and pull latest changes
 1. Lock the `main` branch. 
-  * Go to the [branch protection rules for the `main` branch](https://github.com/github/vscode-codeql/settings/branch_protection_rules/16447115)
-  * Select "Lock branch"
-  * Click "Save changes"
+    * Go to the [branch protection rules for the `main` branch](https://github.com/github/vscode-codeql/settings/branch_protection_rules/16447115)
+    * Select "Lock branch"
+    * Click "Save changes"
 1. Ensure that no PRs have been merged since the release PR that you merged. If there were, you might need to unlock `main` temporarily and update the CHANGELOG again.
 1. Build the extension `npm run build` and install it on your VS Code using "Install from VSIX".
 1. Go through [our test plan](./test-plan.md) to ensure that the extension is working as expected.
@@ -40,9 +40,9 @@
     git tag -d badly-named-tag
     ```
 1. Unlock the main branch
-  * Go to the [branch protection rules for the `main` branch](https://github.com/github/vscode-codeql/settings/branch_protection_rules/16447115)
-  * Deselect "Lock branch"
-  * Click "Save changes"
+    * Go to the [branch protection rules for the `main` branch](https://github.com/github/vscode-codeql/settings/branch_protection_rules/16447115)
+    * Deselect "Lock branch"
+    * Click "Save changes"
 1. Push the new tag up:
 
    a. If you're using a fork of the repo:
