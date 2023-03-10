@@ -52,7 +52,6 @@
     "onCommand:codeQL.chooseDatabaseArchive",
     "onCommand:codeQL.chooseDatabaseInternet",
     "onCommand:codeQL.chooseDatabaseGithub",
-    "onCommand:codeQLDatabases.chooseDatabase",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
