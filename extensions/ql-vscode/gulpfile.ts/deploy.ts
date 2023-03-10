@@ -93,12 +93,6 @@ export async function deployPackage(
     );
     await copyPackage(sourcePath, distPath);
 
-    // This is necessary for vsce to know the dependencies
-    await copyDirectory(
-      resolve(sourcePath, "node_modules"),
-      resolve(distPath, "node_modules"),
-    );
-
     return {
       distPath,
       name: packageJson.name,
