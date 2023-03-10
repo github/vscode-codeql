@@ -269,7 +269,6 @@ describe("Variant Analysis Manager", () => {
       filesThatDoNotExist: string[];
     }) {
       const fileUri = getFile(queryPath);
-
       await variantAnalysisManager.runVariantAnalysis(
         fileUri,
         progress,
@@ -291,6 +290,7 @@ describe("Variant Analysis Manager", () => {
       filesThatExist.forEach((file) => {
         expect(packFS.fileExists(file)).toBe(true);
       });
+
       if (await cli.cliConstraints.supportsQlxRemote()) {
         qlxFilesThatExist.forEach((file) => {
           expect(packFS.fileExists(file)).toBe(true);
@@ -313,7 +313,7 @@ describe("Variant Analysis Manager", () => {
       const packFileName = packFS.fileExists("qlpack.yml")
         ? "qlpack.yml"
         : "codeql-pack.yml";
-      const qlpackContents: any = load(
+      const qlpackContents = load(
         packFS.fileContents(packFileName).toString("utf-8"),
       );
       expect(qlpackContents.name).toEqual("codeql-remote/query");
@@ -322,7 +322,7 @@ describe("Variant Analysis Manager", () => {
         "*",
       );
 
-      const qlpackLockContents: any = load(
+      const qlpackLockContents = load(
         packFS.fileContents("codeql-pack.lock.yml").toString("utf-8"),
       );
 
