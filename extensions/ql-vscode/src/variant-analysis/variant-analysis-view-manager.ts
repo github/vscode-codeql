@@ -2,6 +2,7 @@ import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryState,
 } from "./shared/variant-analysis";
+import { ExtensionCommandManager } from "../common/commands";
 
 export interface VariantAnalysisViewInterface {
   variantAnalysisId: number;
@@ -11,6 +12,8 @@ export interface VariantAnalysisViewInterface {
 export interface VariantAnalysisViewManager<
   T extends VariantAnalysisViewInterface,
 > {
+  commandManager: ExtensionCommandManager;
+
   registerView(view: T): void;
   unregisterView(view: T): void;
   getView(variantAnalysisId: number): T | undefined;

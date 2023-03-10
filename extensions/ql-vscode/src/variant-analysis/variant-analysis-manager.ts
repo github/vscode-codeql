@@ -62,7 +62,10 @@ import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { App } from "../common/app";
 import { redactableError } from "../pure/errors";
-import { VariantAnalysisCommands } from "../common/commands";
+import {
+  ExtensionCommandManager,
+  VariantAnalysisCommands,
+} from "../common/commands";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -130,6 +133,10 @@ export class VariantAnalysisManager
         await this.openVariantAnalysisLogs(variantAnalysisId);
       },
     };
+  }
+
+  get commandManager(): ExtensionCommandManager {
+    return this.app.commandManager;
   }
 
   public async runVariantAnalysis(
@@ -277,14 +284,7 @@ export class VariantAnalysisManager
     }
     if (!this.views.has(variantAnalysisId)) {
       // The view will register itself with the manager, so we don't need to do anything here.
-      this.track(
-        new VariantAnalysisView(
-          this.ctx,
-          this.app.commandManager,
-          variantAnalysisId,
-          this,
-        ),
-      );
+      this.track(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
     }
 
     const variantAnalysisView = this.views.get(variantAnalysisId)!;
