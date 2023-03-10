@@ -137,11 +137,7 @@ import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filt
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
-import {
-  AllCommands,
-  ExtensionCommands,
-  initializeVSCodeCommandManager,
-} from "./commands";
+import { AllCommands, ExtensionCommands } from "./common/commands";
 
 /**
  * extension.ts
@@ -1179,14 +1175,15 @@ async function activateWithInstalledDistribution(
   );
 */
 
-  const vsCommandRunner = initializeVSCodeCommandManager<AllCommands>();
-  ctx.subscriptions.push(vsCommandRunner);
   const allCommands: Partial<AllCommands> = {
     ...getCommands(variantAnalysisManager),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
-    vsCommandRunner.registerCommand(commandName as keyof AllCommands, command);
+    app.commandManager.registerCommand(
+      commandName as keyof AllCommands,
+      command,
+    );
   }
 
   ctx.subscriptions.push(
