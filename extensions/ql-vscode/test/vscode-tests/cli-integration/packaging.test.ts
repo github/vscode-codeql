@@ -61,6 +61,7 @@ describe("Packaging commands", () => {
     );
 
     await handleDownloadPacks(cli, progress);
+    expect(showAndLogExceptionWithTelemetrySpy).not.toHaveBeenCalled();
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
       expect.stringContaining("Finished downloading packs."),
     );
@@ -73,6 +74,7 @@ describe("Packaging commands", () => {
     inputBoxSpy.mockResolvedValue("codeql/csharp-solorigate-queries");
 
     await handleDownloadPacks(cli, progress);
+    expect(showAndLogExceptionWithTelemetrySpy).not.toHaveBeenCalled();
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
       expect.stringContaining("Finished downloading packs."),
     );
