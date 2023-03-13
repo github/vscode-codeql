@@ -20,11 +20,7 @@ import {
   remove,
   readdir,
 } from "fs-extra";
-import {
-  ensureMetadataIsComplete,
-  InitialQueryInfo,
-  LocalQueryInfo,
-} from "./query-results";
+import { ensureMetadataIsComplete, InitialQueryInfo } from "./query-results";
 import { isQuickQueryPath } from "./quick-query";
 import { nanoid } from "nanoid";
 import { CodeQLCliServer } from "./cli";
