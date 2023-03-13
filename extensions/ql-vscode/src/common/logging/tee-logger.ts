@@ -1,5 +1,6 @@
 import { appendFile, ensureFile } from "fs-extra";
 import { isAbsolute } from "path";
+import { getErrorMessage } from "../../pure/helpers-pure";
 import { Logger, LogOptions } from "./logger";
 
 /**
@@ -11,6 +12,7 @@ import { Logger, LogOptions } from "./logger";
  */
 export class TeeLogger implements Logger {
   private emittedRedirectMessage = false;
+  private error = false;
 
   public constructor(
     private readonly logger: Logger,
@@ -33,14 +35,31 @@ export class TeeLogger implements Logger {
       await this.logger.log(separator);
     }
 
-    const trailingNewline = options.trailingNewline ?? true;
-    await ensureFile(this.location);
+    if (!this.error) {
+      try {
+        const trailingNewline = options.trailingNewline ?? true;
+        await ensureFile(this.location);
 
-    await appendFile(this.location, message + (trailingNewline ? "\n" : ""), {
-      encoding: "utf8",
-    });
+        await appendFile(
+          this.location,
+          message + (trailingNewline ? "\n" : ""),
+          {
+            encoding: "utf8",
+          },
+        );
+      } catch (e) {
+        // Write an error message to the primary log, and stop trying to write to the side log.
+        this.error = true;
+        const errorMessage = getErrorMessage(e);
+        await this.logger.log(
+          `Error writing to additional log file: ${errorMessage}`,
+        );
+      }
+    }
 
-    await this.logger.log(message, options);
+    if (!this.error) {
+      await this.logger.log(message, options);
+    }
   }
 
   show(preserveFocus?: boolean): void {
