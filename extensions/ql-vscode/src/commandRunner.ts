@@ -43,21 +43,34 @@ export interface ProgressUpdate {
 export type ProgressCallback = (p: ProgressUpdate) => void;
 
 /**
+ * A task that reports progress.
+ *
+ * @param progress a progress handler function. Call this
+ * function with a `ProgressUpdate` instance in order to
+ * denote some progress being achieved on this task.
+ * @param token a cancellation token
+ */
+export type ProgressTask<R> = (
+  progress: ProgressCallback,
+  token: CancellationToken,
+) => Thenable<R>;
+
+/**
  * A task that handles command invocations from `commandRunner`
  * and includes a progress monitor.
  *
  *
  * Arguments passed to the command handler are passed along,
- * untouched to this `ProgressTask` instance.
+ * untouched to this `ProgressTaskWithArgs` instance.
  *
  * @param progress a progress handler function. Call this
  * function with a `ProgressUpdate` instance in order to
  * denote some progress being achieved on this task.
- * @param token a cencellation token
+ * @param token a cancellation token
  * @param args arguments passed to this task passed on from
  * `commands.registerCommand`.
  */
-export type ProgressTask<R> = (
+export type ProgressTaskWithArgs<R> = (
   progress: ProgressCallback,
   token: CancellationToken,
   ...args: any[]
@@ -92,20 +105,15 @@ type NoProgressTask = (...args: any[]) => Promise<any>;
 export function withProgress<R>(
   options: ProgressOptions,
   task: ProgressTask<R>,
-  ...args: any[]
 ): Thenable<R> {
   let progressAchieved = 0;
   return Window.withProgress(options, (progress, token) => {
-    return task(
-      (p) => {
-        const { message, step, maxStep } = p;
-        const increment = (100 * (step - progressAchieved)) / maxStep;
-        progressAchieved = step;
-        progress.report({ message, increment });
-      },
-      token,
-      ...args,
-    );
+    return task((p) => {
+      const { message, step, maxStep } = p;
+      const increment = (100 * (step - progressAchieved)) / maxStep;
+      progressAchieved = step;
+      progress.report({ message, increment });
+    }, token);
   });
 }
 
@@ -177,7 +185,7 @@ export function commandRunner(
  */
 export function commandRunnerWithProgress<R>(
   commandId: string,
-  task: ProgressTask<R>,
+  task: ProgressTaskWithArgs<R>,
   progressOptions: Partial<ProgressOptions>,
   outputLogger = extLogger,
 ): Disposable {
@@ -189,7 +197,9 @@ export function commandRunnerWithProgress<R>(
         ...progressOptions,
       };
 
-      return withProgress(progressOptionsWithDefaults, task, ...args);
+      return withProgress(progressOptionsWithDefaults, (progress, token) =>
+        task(progress, token, ...args),
+      );
     },
     outputLogger,
   );
