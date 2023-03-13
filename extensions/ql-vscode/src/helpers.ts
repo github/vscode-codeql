@@ -703,7 +703,7 @@ export async function tryGetQueryMetadata(
  * Creates a file in the query directory that indicates when this query was created.
  * This is important for keeping track of when queries should be removed.
  *
- * @param queryPath The directory that will containt all files relevant to a query result.
+ * @param queryPath The directory that will contain all files relevant to a query result.
  * It does not need to exist.
  */
 export async function createTimestampFile(storagePath: string) {

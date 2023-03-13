@@ -16,7 +16,11 @@ import {
   DatabaseInfo,
 } from "./pure/interface-types";
 import { QueryStatus } from "./query-status";
-import { QueryEvaluationInfo, QueryWithResults } from "./run-queries-shared";
+import {
+  EvaluatorLogPaths,
+  QueryEvaluationInfo,
+  QueryWithResults,
+} from "./run-queries-shared";
 import { formatLegacyMessage } from "./legacy-query-server/run-queries";
 import { sarifParser } from "./sarif-parser";
 
@@ -260,6 +264,13 @@ export class LocalQueryInfo {
 
   set userSpecifiedLabel(label: string | undefined) {
     this.initialInfo.userSpecifiedLabel = label;
+  }
+
+  public setEvaluatorLogPaths(logPaths: EvaluatorLogPaths): void {
+    this.evalLogLocation = logPaths.log;
+    this.evalLogSummaryLocation = logPaths.humanReadableSummary;
+    this.jsonEvalLogSummaryLocation = logPaths.jsonSummary;
+    this.evalLogSummarySymbolsLocation = logPaths.summarySymbols;
   }
 
   /**
