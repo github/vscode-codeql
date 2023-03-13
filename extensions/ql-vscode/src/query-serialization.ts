@@ -55,10 +55,6 @@ export async function deserializeQueryHistory(
               q.completedQuery.query,
               QueryEvaluationInfo.prototype,
             );
-            // deserialized queries do not need to be disposed
-            q.completedQuery.dispose = () => {
-              /**/
-            };
 
             // Previously, there was a typo in the completedQuery type. There was a field
             // `sucessful` and it was renamed to `successful`. We need to handle this case.
