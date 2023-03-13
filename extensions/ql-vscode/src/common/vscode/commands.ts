@@ -2,6 +2,10 @@ import { commands } from "vscode";
 import { commandRunner } from "../../commandRunner";
 import { CommandFunction, CommandManager } from "../../packages/commands";
 
+/**
+ * Intializes a command manager for VSCode, wrapping the commandRunner
+ * and vscode.executeCommand.
+ */
 export function initializeVSCodeCommandManager<
   Commands extends Record<string, CommandFunction>,
 >(): CommandManager<Commands> {
