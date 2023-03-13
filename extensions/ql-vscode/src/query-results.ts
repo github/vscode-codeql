@@ -56,11 +56,6 @@ export class CompletedQueryInfo implements QueryWithResults {
   resultCount: number;
 
   /**
-   * This dispose method is called when the query is removed from the history view.
-   */
-  dispose: () => void;
-
-  /**
    * Map from result set name to SortedResultSetInfo.
    */
   sortedResultsInfo: Record<string, SortedResultSetInfo>;
@@ -85,10 +80,6 @@ export class CompletedQueryInfo implements QueryWithResults {
 
     this.message = evaluation.message;
     this.successful = evaluation.successful;
-    // Use the dispose method from the evaluation.
-    // The dispose will clean up any additional log locations that this
-    // query may have created.
-    this.dispose = evaluation.dispose;
 
     this.sortedResultsInfo = {};
     this.resultCount = 0;
