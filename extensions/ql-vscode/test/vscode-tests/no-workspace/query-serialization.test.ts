@@ -259,7 +259,6 @@ describe("serialize and deserialize", () => {
       query: query.queryEvalInfo,
       successful: didRunSuccessfully,
       message: "foo",
-      dispose: jest.fn(),
       result: {
         evaluationTime: 1,
         queryId: 0,
