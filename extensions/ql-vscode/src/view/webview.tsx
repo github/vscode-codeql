@@ -1,4 +1,5 @@
-import { render as ReactDOM_render } from "react-dom";
+import * as React from "react";
+import { createRoot } from "react-dom/client";
 import { vscode } from "./vscode-api";
 
 import { WebviewDefinition } from "./webview-definition";
@@ -25,11 +26,11 @@ const render = () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const view: WebviewDefinition = require(`./${viewName}/index.tsx`).default;
 
-  ReactDOM_render(
-    view.component,
-    document.getElementById("root"),
-    // Post a message to the extension when fully loaded.
-    () => vscode.postMessage({ t: "viewLoaded", viewName }),
+  createRoot(element).render(
+    // Post a message to the extension when fully loaded. See https://github.com/reactwg/react-18/discussions/5 ("What about the render callback?")
+    <div ref={() => vscode.postMessage({ t: "viewLoaded", viewName })}>
+      {view.component}
+    </div>,
   );
 };
 
