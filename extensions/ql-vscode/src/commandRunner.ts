@@ -1,6 +1,6 @@
 import {
   CancellationToken,
-  ProgressOptions,
+  ProgressOptions as VSCodeProgressOptions,
   window as Window,
   commands,
   Disposable,
@@ -41,6 +41,11 @@ export interface ProgressUpdate {
 }
 
 export type ProgressCallback = (p: ProgressUpdate) => void;
+
+// Make certain properties within a type optional
+type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
+export type ProgressOptions = Optional<VSCodeProgressOptions, "location">;
 
 /**
  * A task that reports progress.
@@ -103,18 +108,29 @@ type NoProgressTask = (...args: any[]) => Promise<any>;
  * request).
  */
 export function withProgress<R>(
-  options: ProgressOptions,
   task: ProgressTask<R>,
+  {
+    location = ProgressLocation.Notification,
+    title,
+    cancellable,
+  }: ProgressOptions = {},
 ): Thenable<R> {
   let progressAchieved = 0;
-  return Window.withProgress(options, (progress, token) => {
-    return task((p) => {
-      const { message, step, maxStep } = p;
-      const increment = (100 * (step - progressAchieved)) / maxStep;
-      progressAchieved = step;
-      progress.report({ message, increment });
-    }, token);
-  });
+  return Window.withProgress(
+    {
+      location,
+      title,
+      cancellable,
+    },
+    (progress, token) => {
+      return task((p) => {
+        const { message, step, maxStep } = p;
+        const increment = (100 * (step - progressAchieved)) / maxStep;
+        progressAchieved = step;
+        progress.report({ message, increment });
+      }, token);
+    },
+  );
 }
 
 /**
@@ -186,19 +202,15 @@ export function commandRunner(
 export function commandRunnerWithProgress<R>(
   commandId: string,
   task: ProgressTaskWithArgs<R>,
-  progressOptions: Partial<ProgressOptions>,
+  progressOptions: ProgressOptions,
   outputLogger = extLogger,
 ): Disposable {
   return commandRunner(
     commandId,
     async (...args: any[]) => {
-      const progressOptionsWithDefaults = {
-        location: ProgressLocation.Notification,
-        ...progressOptions,
-      };
-
-      return withProgress(progressOptionsWithDefaults, (progress, token) =>
-        task(progress, token, ...args),
+      return withProgress(
+        (progress, token) => task(progress, token, ...args),
+        progressOptions,
       );
     },
     outputLogger,

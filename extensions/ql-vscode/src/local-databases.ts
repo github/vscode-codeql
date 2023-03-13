@@ -795,9 +795,6 @@ export class DatabaseManager extends DisposableObject {
 
   public async loadPersistedState(): Promise<void> {
     return withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-      },
       async (progress, token) => {
         const currentDatabaseUri =
           this.ctx.workspaceState.get<string>(CURRENT_DB);
@@ -860,6 +857,9 @@ export class DatabaseManager extends DisposableObject {
         }
 
         void this.logger.log("Finished loading persisted databases.");
+      },
+      {
+        location: vscode.ProgressLocation.Notification,
       },
     );
   }
