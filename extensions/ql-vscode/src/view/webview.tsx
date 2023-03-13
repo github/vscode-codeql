@@ -1,4 +1,5 @@
 import * as React from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { vscode } from "./vscode-api";
 
@@ -27,10 +28,12 @@ const render = () => {
   const view: WebviewDefinition = require(`./${viewName}/index.tsx`).default;
 
   createRoot(element).render(
-    // Post a message to the extension when fully loaded. See https://github.com/reactwg/react-18/discussions/5 ("What about the render callback?")
-    <div ref={() => vscode.postMessage({ t: "viewLoaded", viewName })}>
-      {view.component}
-    </div>,
+    <StrictMode>
+      {/* Post a message to the extension when fully loaded. See https://github.com/reactwg/react-18/discussions/5 ("What about the render callback?")*/}
+      <div ref={() => vscode.postMessage({ t: "viewLoaded", viewName })}>
+        {view.component}
+      </div>
+    </StrictMode>,
   );
 };
 
