@@ -121,6 +121,7 @@ export function withProgress<R>(
 export function commandRunner(
   commandId: string,
   task: NoProgressTask,
+  outputLogger = extLogger,
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
     const startTime = Date.now();
@@ -131,64 +132,6 @@ export function commandRunner(
     } catch (e) {
       error = asError(e);
       const errorMessage = redactableError(error)`${
-        getErrorMessage(e) || e
-      } (${commandId})`;
-      const errorStack = getErrorStack(e);
-      if (e instanceof UserCancellationException) {
-        // User has cancelled this action manually
-        if (e.silent) {
-          void extLogger.log(errorMessage.fullMessage);
-        } else {
-          void showAndLogWarningMessage(errorMessage.fullMessage);
-        }
-      } else {
-        // Include the full stack in the error log only.
-        const fullMessage = errorStack
-          ? `${errorMessage.fullMessage}\n${errorStack}`
-          : errorMessage.fullMessage;
-        void showAndLogExceptionWithTelemetry(errorMessage, {
-          fullMessage,
-          extraTelemetryProperties: {
-            command: commandId,
-          },
-        });
-      }
-      return undefined;
-    } finally {
-      const executionTime = Date.now() - startTime;
-      telemetryListener?.sendCommandUsage(commandId, executionTime, error);
-    }
-  });
-}
-
-/**
- * A generic wrapper for command registration.  This wrapper adds uniform error handling,
- * progress monitoring, and cancellation for commands.
- *
- * @param commandId The ID of the command to register.
- * @param task The task to run. It is passed directly to `commands.registerCommand`. Any
- * arguments to the command handler are passed on to the task after the progress callback
- * and cancellation token.
- * @param progressOptions Progress options to be sent to the progress monitor.
- */
-export function commandRunnerWithProgress<R>(
-  commandId: string,
-  task: ProgressTask<R>,
-  progressOptions: Partial<ProgressOptions>,
-  outputLogger = extLogger,
-): Disposable {
-  return commands.registerCommand(commandId, async (...args: any[]) => {
-    const startTime = Date.now();
-    let error: Error | undefined;
-    const progressOptionsWithDefaults = {
-      location: ProgressLocation.Notification,
-      ...progressOptions,
-    };
-    try {
-      return await withProgress(progressOptionsWithDefaults, task, ...args);
-    } catch (e) {
-      error = asError(e);
-      const errorMessage = redactableError`${
         getErrorMessage(e) || e
       } (${commandId})`;
       const errorStack = getErrorStack(e);
@@ -220,6 +163,36 @@ export function commandRunnerWithProgress<R>(
       telemetryListener?.sendCommandUsage(commandId, executionTime, error);
     }
   });
+}
+
+/**
+ * A generic wrapper for command registration.  This wrapper adds uniform error handling,
+ * progress monitoring, and cancellation for commands.
+ *
+ * @param commandId The ID of the command to register.
+ * @param task The task to run. It is passed directly to `commands.registerCommand`. Any
+ * arguments to the command handler are passed on to the task after the progress callback
+ * and cancellation token.
+ * @param progressOptions Progress options to be sent to the progress monitor.
+ */
+export function commandRunnerWithProgress<R>(
+  commandId: string,
+  task: ProgressTask<R>,
+  progressOptions: Partial<ProgressOptions>,
+  outputLogger = extLogger,
+): Disposable {
+  return commandRunner(
+    commandId,
+    async (...args: any[]) => {
+      const progressOptionsWithDefaults = {
+        location: ProgressLocation.Notification,
+        ...progressOptions,
+      };
+
+      return withProgress(progressOptionsWithDefaults, task, ...args);
+    },
+    outputLogger,
+  );
 }
 
 /**
