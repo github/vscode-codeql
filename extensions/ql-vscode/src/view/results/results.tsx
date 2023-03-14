@@ -104,7 +104,6 @@ export class ResultsApp extends React.Component<
           queryPath: msg.queryPath,
         });
 
-        void this.loadResults();
         break;
       case "showInterpretedPage": {
         const tableName =
@@ -141,7 +140,6 @@ export class ResultsApp extends React.Component<
           queryName: msg.queryName,
           queryPath: msg.queryPath,
         });
-        void this.loadResults();
         break;
       }
       case "resultsUpdating":
@@ -164,31 +162,61 @@ export class ResultsApp extends React.Component<
 
   private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
     this.setState((prevState) => {
-      const stateWithDisplayedResults = (
-        displayedResults: ResultsState,
-      ): ResultsViewState => ({
-        displayedResults,
-        isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-        nextResultsInfo: resultsInfo,
-      });
+      if (resultsInfo === null) {
+        if (prevState.isExpectingResultsUpdate) {
+          // Display loading message
+          return {
+            displayedResults: {
+              resultsInfo: null,
+              results: null,
+              errorMessage: "Loading results…",
+            },
+            isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+            nextResultsInfo: resultsInfo,
+          };
+        } else {
+          // No results to display
+          return {
+            displayedResults: {
+              resultsInfo: null,
+              results: null,
+              errorMessage: "No results to display",
+            },
+            isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+            nextResultsInfo: resultsInfo,
+          };
+        }
+      }
 
-      if (!prevState.isExpectingResultsUpdate && resultsInfo === null) {
-        // No results to display
-        return stateWithDisplayedResults({
-          resultsInfo: null,
-          results: null,
-          errorMessage: "No results to display",
-        });
+      let results: Results | null = null;
+      let statusText = "";
+      try {
+        const resultSets = this.getResultSets(resultsInfo);
+        results = {
+          resultSets,
+          database: resultsInfo.database,
+          sortStates: this.getSortStates(resultsInfo),
+        };
+      } catch (e) {
+        let errorMessage: string;
+        if (e instanceof Error) {
+          errorMessage = e.message;
+        } else {
+          errorMessage = "Unknown error";
+        }
+
+        statusText = `Error loading results: ${errorMessage}`;
       }
-      if (!resultsInfo || !resultsInfo.shouldKeepOldResultsWhileRendering) {
-        // Display loading message
-        return stateWithDisplayedResults({
-          resultsInfo: null,
-          results: null,
-          errorMessage: "Loading results…",
-        });
-      }
-      return stateWithDisplayedResults(prevState.displayedResults);
+
+      return {
+        displayedResults: {
+          resultsInfo,
+          results,
+          errorMessage: statusText,
+        },
+        nextResultsInfo: null,
+        isExpectingResultsUpdate: false,
+      };
     });
   }
 
@@ -201,49 +229,6 @@ export class ResultsApp extends React.Component<
       );
     }
     return [resultSet];
-  }
-
-  private async loadResults(): Promise<void> {
-    const resultsInfo = this.state.nextResultsInfo;
-    if (resultsInfo === null) {
-      return;
-    }
-
-    let results: Results | null = null;
-    let statusText = "";
-    try {
-      const resultSets = this.getResultSets(resultsInfo);
-      results = {
-        resultSets,
-        database: resultsInfo.database,
-        sortStates: this.getSortStates(resultsInfo),
-      };
-    } catch (e) {
-      let errorMessage: string;
-      if (e instanceof Error) {
-        errorMessage = e.message;
-      } else {
-        errorMessage = "Unknown error";
-      }
-
-      statusText = `Error loading results: ${errorMessage}`;
-    }
-
-    this.setState((prevState) => {
-      // Only set state if this results info is still current.
-      if (resultsInfo !== prevState.nextResultsInfo) {
-        return null;
-      }
-      return {
-        displayedResults: {
-          resultsInfo,
-          results,
-          errorMessage: statusText,
-        },
-        nextResultsInfo: null,
-        isExpectingResultsUpdate: false,
-      };
-    });
   }
 
   private getSortStates(
