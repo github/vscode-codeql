@@ -9,7 +9,6 @@ import {
   extensions,
   languages,
   ProgressLocation,
-  ProgressOptions,
   QuickPickItem,
   Range,
   Uri,
@@ -322,16 +321,15 @@ export async function activate(
             await commands.executeCommand("workbench.action.reloadWindow");
           }
         } else {
-          const progressOptions: ProgressOptions = {
-            title: progressTitle,
-            location: ProgressLocation.Notification,
-          };
-
-          await withProgress(progressOptions, (progress) =>
-            distributionManager.installExtensionManagedDistributionRelease(
-              result.updatedRelease,
-              progress,
-            ),
+          await withProgress(
+            (progress) =>
+              distributionManager.installExtensionManagedDistributionRelease(
+                result.updatedRelease,
+                progress,
+              ),
+            {
+              title: progressTitle,
+            },
           );
 
           await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);

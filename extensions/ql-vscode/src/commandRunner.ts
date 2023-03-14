@@ -1,6 +1,6 @@
 import {
   CancellationToken,
-  ProgressOptions,
+  ProgressOptions as VSCodeProgressOptions,
   window as Window,
   commands,
   Disposable,
@@ -42,22 +42,40 @@ export interface ProgressUpdate {
 
 export type ProgressCallback = (p: ProgressUpdate) => void;
 
+// Make certain properties within a type optional
+type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
+export type ProgressOptions = Optional<VSCodeProgressOptions, "location">;
+
+/**
+ * A task that reports progress.
+ *
+ * @param progress a progress handler function. Call this
+ * function with a `ProgressUpdate` instance in order to
+ * denote some progress being achieved on this task.
+ * @param token a cancellation token
+ */
+export type ProgressTask<R> = (
+  progress: ProgressCallback,
+  token: CancellationToken,
+) => Thenable<R>;
+
 /**
  * A task that handles command invocations from `commandRunner`
  * and includes a progress monitor.
  *
  *
  * Arguments passed to the command handler are passed along,
- * untouched to this `ProgressTask` instance.
+ * untouched to this `ProgressTaskWithArgs` instance.
  *
  * @param progress a progress handler function. Call this
  * function with a `ProgressUpdate` instance in order to
  * denote some progress being achieved on this task.
- * @param token a cencellation token
+ * @param token a cancellation token
  * @param args arguments passed to this task passed on from
  * `commands.registerCommand`.
  */
-export type ProgressTask<R> = (
+export type ProgressTaskWithArgs<R> = (
   progress: ProgressCallback,
   token: CancellationToken,
   ...args: any[]
@@ -90,23 +108,29 @@ type NoProgressTask = (...args: any[]) => Promise<any>;
  * request).
  */
 export function withProgress<R>(
-  options: ProgressOptions,
   task: ProgressTask<R>,
-  ...args: any[]
+  {
+    location = ProgressLocation.Notification,
+    title,
+    cancellable,
+  }: ProgressOptions = {},
 ): Thenable<R> {
   let progressAchieved = 0;
-  return Window.withProgress(options, (progress, token) => {
-    return task(
-      (p) => {
+  return Window.withProgress(
+    {
+      location,
+      title,
+      cancellable,
+    },
+    (progress, token) => {
+      return task((p) => {
         const { message, step, maxStep } = p;
         const increment = (100 * (step - progressAchieved)) / maxStep;
         progressAchieved = step;
         progress.report({ message, increment });
-      },
-      token,
-      ...args,
-    );
-  });
+      }, token);
+    },
+  );
 }
 
 /**
@@ -177,19 +201,17 @@ export function commandRunner(
  */
 export function commandRunnerWithProgress<R>(
   commandId: string,
-  task: ProgressTask<R>,
-  progressOptions: Partial<ProgressOptions>,
+  task: ProgressTaskWithArgs<R>,
+  progressOptions: ProgressOptions,
   outputLogger = extLogger,
 ): Disposable {
   return commandRunner(
     commandId,
     async (...args: any[]) => {
-      const progressOptionsWithDefaults = {
-        location: ProgressLocation.Notification,
-        ...progressOptions,
-      };
-
-      return withProgress(progressOptionsWithDefaults, task, ...args);
+      return withProgress(
+        (progress, token) => task(progress, token, ...args),
+        progressOptions,
+      );
     },
     outputLogger,
   );
