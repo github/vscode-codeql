@@ -2,6 +2,8 @@ name: "CodeQL config"
 queries:
   - name: Run standard queries
     uses: security-and-quality
+  - name: Experimental queries
+    uses: security-experimental
   - name: Run custom javascript queries
     uses: ./.github/codeql/queries
 paths:

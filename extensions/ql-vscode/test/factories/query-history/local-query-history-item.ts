@@ -74,7 +74,6 @@ export function createMockQueryWithResults({
   hasInterpretedResults?: boolean;
   hasMetadata?: boolean;
 }): QueryWithResults {
-  const dispose = jest.fn();
   const deleteQuery = jest.fn();
   const metadata = hasMetadata
     ? ({ name: "query-name" } as QueryMetadata)
@@ -87,7 +86,6 @@ export function createMockQueryWithResults({
       metadata,
     } as unknown as QueryEvaluationInfo,
     successful: didRunSuccessfully,
-    dispose,
     result: {
       evaluationTime: 1,
       queryId: 0,

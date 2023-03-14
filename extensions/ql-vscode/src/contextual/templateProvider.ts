@@ -4,7 +4,6 @@ import {
   Location,
   LocationLink,
   Position,
-  ProgressLocation,
   ReferenceContext,
   ReferenceProvider,
   TextDocument,
@@ -73,11 +72,6 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
 
   private async getDefinitions(uriString: string): Promise<LocationLink[]> {
     return withProgress(
-      {
-        location: ProgressLocation.Notification,
-        cancellable: true,
-        title: "Finding definitions",
-      },
       async (progress, token) => {
         return getLocationsForUriString(
           this.cli,
@@ -90,6 +84,10 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
           token,
           (src, _dest) => src === uriString,
         );
+      },
+      {
+        cancellable: true,
+        title: "Finding definitions",
       },
     );
   }
@@ -136,11 +134,6 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
 
   private async getReferences(uriString: string): Promise<FullLocationLink[]> {
     return withProgress(
-      {
-        location: ProgressLocation.Notification,
-        cancellable: true,
-        title: "Finding references",
-      },
       async (progress, token) => {
         return getLocationsForUriString(
           this.cli,
@@ -153,6 +146,10 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
           token,
           (src, _dest) => src === uriString,
         );
+      },
+      {
+        cancellable: true,
+        title: "Finding references",
       },
     );
   }

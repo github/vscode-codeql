@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.8.0",
+  "version": "1.8.1",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -44,11 +44,6 @@
     "onView:test-explorer",
     "onCommand:codeQL.checkForUpdatesToCLI",
     "onCommand:codeQL.authenticateToGitHub",
-    "onCommand:codeQLDatabases.chooseDatabaseFolder",
-    "onCommand:codeQLDatabases.chooseDatabaseArchive",
-    "onCommand:codeQLDatabases.chooseDatabaseInternet",
-    "onCommand:codeQLDatabases.chooseDatabaseGithub",
-    "onCommand:codeQL.setCurrentDatabase",
     "onCommand:codeQL.viewAst",
     "onCommand:codeQL.viewCfg",
     "onCommand:codeQL.openReferencedFile",
@@ -57,16 +52,6 @@
     "onCommand:codeQL.chooseDatabaseArchive",
     "onCommand:codeQL.chooseDatabaseInternet",
     "onCommand:codeQL.chooseDatabaseGithub",
-    "onCommand:codeQLDatabases.chooseDatabase",
-    "onCommand:codeQLDatabases.setCurrentDatabase",
-    "onCommand:codeQLVariantAnalysisRepositories.openConfigFile",
-    "onCommand:codeQLVariantAnalysisRepositories.addNewDatabase",
-    "onCommand:codeQLVariantAnalysisRepositories.addNewList",
-    "onCommand:codeQLVariantAnalysisRepositories.setSelectedItem",
-    "onCommand:codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
-    "onCommand:codeQLVariantAnalysisRepositories.renameItemContextMenu",
-    "onCommand:codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
-    "onCommand:codeQLVariantAnalysisRepositories.removeItemContextMenu",
     "onCommand:codeQL.quickQuery",
     "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
@@ -239,6 +224,19 @@
           "default": true,
           "description": "Enable the 'Quick Evaluation' CodeLens."
         },
+        "codeQL.runningQueries.useExtensionPacks": {
+          "type": "string",
+          "default": "none",
+          "enum": [
+            "none",
+            "all"
+          ],
+          "enumDescriptions": [
+            "Do not use extension packs.",
+            "Use all extension packs found in the workspace."
+          ],
+          "description": "Choose whether or not to run queries using extension packs. Requires CodeQL CLI v2.12.3 or later."
+        },
         "codeQL.resultsDisplay.pageSize": {
           "type": "integer",
           "default": 200,
@@ -323,6 +321,10 @@
         "title": "CodeQL: Run Variant Analysis"
       },
       {
+        "command": "codeQL.runVariantAnalysisContextEditor",
+        "title": "CodeQL: Run Variant Analysis"
+      },
+      {
         "command": "codeQL.exportSelectedVariantAnalysisResults",
         "title": "CodeQL: Export Variant Analysis Results"
       },
@@ -335,7 +337,19 @@
         "title": "CodeQL: Quick Evaluation"
       },
       {
+        "command": "codeQL.quickEvalContextEditor",
+        "title": "CodeQL: Quick Evaluation"
+      },
+      {
         "command": "codeQL.openReferencedFile",
+        "title": "CodeQL: Open Referenced File"
+      },
+      {
+        "command": "codeQL.openReferencedFileContextEditor",
+        "title": "CodeQL: Open Referenced File"
+      },
+      {
+        "command": "codeQL.openReferencedFileContextExplorer",
         "title": "CodeQL: Open Referenced File"
       },
       {
@@ -434,7 +448,23 @@
         "title": "CodeQL: View AST"
       },
       {
+        "command": "codeQL.viewAstContextExplorer",
+        "title": "CodeQL: View AST"
+      },
+      {
+        "command": "codeQL.viewAstContextEditor",
+        "title": "CodeQL: View AST"
+      },
+      {
         "command": "codeQL.viewCfg",
+        "title": "CodeQL: View CFG"
+      },
+      {
+        "command": "codeQL.viewCfgContextExplorer",
+        "title": "CodeQL: View CFG"
+      },
+      {
+        "command": "codeQL.viewCfgContextEditor",
         "title": "CodeQL: View CFG"
       },
       {
@@ -825,12 +855,12 @@
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
           "group": "7_queryHistory@0",
-          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledRemoteResultsItemWithoutLogs || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
           "command": "codeQLQueryHistory.removeHistoryItem",
           "group": "inline",
-          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledRemoteResultsItemWithoutLogs || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
           "command": "codeQLQueryHistory.renameItem",
@@ -930,12 +960,12 @@
           "when": "resourceScheme == codeql-zip-archive || explorerResourceIsFolder || resourceExtname == .zip"
         },
         {
-          "command": "codeQL.viewAst",
+          "command": "codeQL.viewAstContextExplorer",
           "group": "9_qlCommands",
           "when": "resourceScheme == codeql-zip-archive && !explorerResourceIsFolder && !listMultiSelection"
         },
         {
-          "command": "codeQL.viewCfg",
+          "command": "codeQL.viewCfgContextExplorer",
           "group": "9_qlCommands",
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
@@ -945,7 +975,7 @@
           "when": "resourceScheme != codeql-zip-archive"
         },
         {
-          "command": "codeQL.openReferencedFile",
+          "command": "codeQL.openReferencedFileContextExplorer",
           "group": "9_qlCommands",
           "when": "resourceExtname == .qlref"
         },
@@ -981,7 +1011,8 @@
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.exportSelectedVariantAnalysisResults"
+          "command": "codeQL.runVariantAnalysisContextEditor",
+          "when": "false"
         },
         {
           "command": "codeQL.runQueries",
@@ -992,8 +1023,20 @@
           "when": "editorLangId == ql"
         },
         {
+          "command": "codeQL.quickEvalContextEditor",
+          "when": "false"
+        },
+        {
           "command": "codeQL.openReferencedFile",
           "when": "resourceExtname == .qlref"
+        },
+        {
+          "command": "codeQL.openReferencedFileContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.openReferencedFileContextExplorer",
+          "when": "false"
         },
         {
           "command": "codeQL.previewQueryHelp",
@@ -1008,8 +1051,24 @@
           "when": "resourceScheme == codeql-zip-archive"
         },
         {
+          "command": "codeQL.viewAstContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.viewAstContextExplorer",
+          "when": "false"
+        },
+        {
           "command": "codeQL.viewCfg",
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
+        },
+        {
+          "command": "codeQL.viewCfgContextExplorer",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.viewCfgContextEditor",
+          "when": "false"
         },
         {
           "command": "codeQLVariantAnalysisRepositories.openConfigFile",
@@ -1234,23 +1293,23 @@
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.runVariantAnalysis",
+          "command": "codeQL.runVariantAnalysisContextEditor",
           "when": "editorLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.viewAst",
+          "command": "codeQL.viewAstContextEditor",
           "when": "resourceScheme == codeql-zip-archive"
         },
         {
-          "command": "codeQL.viewCfg",
+          "command": "codeQL.viewCfgContextEditor",
           "when": "resourceScheme == codeql-zip-archive && config.codeQL.canary"
         },
         {
-          "command": "codeQL.quickEval",
+          "command": "codeQL.quickEvalContextEditor",
           "when": "editorLangId == ql"
         },
         {
-          "command": "codeQL.openReferencedFile",
+          "command": "codeQL.openReferencedFileContextEditor",
           "when": "resourceExtname == .qlref"
         },
         {
@@ -1439,7 +1498,6 @@
     "@vscode/vsce": "^2.15.0",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.3.5",
-    "babel-loader": "^8.2.5",
     "cross-env": "^7.0.3",
     "css-loader": "~3.1.0",
     "del": "^6.0.0",

@@ -19,11 +19,13 @@ import { DatabaseItem, DatabaseManager } from "../../../src/local-databases";
 import { CodeQLExtensionInterface } from "../../../src/extension";
 import { cleanDatabases, dbLoc, storagePath } from "../global.helper";
 import { importArchiveDatabase } from "../../../src/databaseFetcher";
-import { CodeQLCliServer } from "../../../src/cli";
+import { CliVersionConstraint, CodeQLCliServer } from "../../../src/cli";
 import { describeWithCodeQL } from "../cli";
 import { tmpDir } from "../../../src/helpers";
 import { createInitialQueryInfo } from "../../../src/run-queries-shared";
 import { QueryRunner } from "../../../src/queryRunner";
+import { CompletedQueryInfo } from "../../../src/query-results";
+import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
 
 jest.setTimeout(20_000);
 
@@ -94,6 +96,78 @@ describeWithCodeQL()("Queries", () => {
     safeDel(qlpackFile);
     safeDel(qlFile);
     await cleanDatabases(databaseManager);
+  });
+
+  describe("extension packs", () => {
+    const queryUsingExtensionPath = join(
+      __dirname,
+      "../..",
+      "data-extensions",
+      "pack-using-extensions",
+      "query.ql",
+    );
+
+    it("should run a query that has an extension without looking for extensions in the workspace", async () => {
+      if (!(await supportsExtensionPacks())) {
+        console.log(
+          `Skipping test because it is only supported for CodeQL CLI versions >= ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND}`,
+        );
+        return;
+      }
+
+      await cli.setUseExtensionPacks(false);
+      const parsedResults = await runQueryWithExtensions();
+      expect(parsedResults).toEqual([1]);
+    });
+
+    it("should run a query that has an extension and look for extensions in the workspace", async () => {
+      if (!(await supportsExtensionPacks())) {
+        return;
+      }
+
+      await cli.setUseExtensionPacks(true);
+      const parsedResults = await runQueryWithExtensions();
+      expect(parsedResults).toEqual([1, 2, 3, 4]);
+    });
+
+    async function supportsExtensionPacks(): Promise<boolean> {
+      if (await qs.cliServer.cliConstraints.supportsQlpacksKind()) {
+        return true;
+      }
+      console.log(
+        `Skipping test because it is only supported for CodeQL CLI versions >= ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND}`,
+      );
+      return false;
+    }
+
+    async function runQueryWithExtensions() {
+      const result = new CompletedQueryInfo(
+        await qs.compileAndRunQueryAgainstDatabase(
+          dbItem,
+          await mockInitialQueryInfo(queryUsingExtensionPath),
+          join(tmpDir.name, "mock-storage-path"),
+          progress,
+          token,
+        ),
+      );
+
+      // Check that query was successful
+      expect(result.successful).toBe(true);
+
+      // Load query results
+      const chunk = await qs.cliServer.bqrsDecode(
+        result.getResultsPath(SELECT_QUERY_NAME, true),
+        SELECT_QUERY_NAME,
+        {
+          // there should only be one result
+          offset: 0,
+          pageSize: 10,
+        },
+      );
+
+      // Extract the results as an array.
+      return chunk.tuples.map((t) => t[0]);
+    }
   });
 
   it("should run a query", async () => {

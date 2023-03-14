@@ -190,6 +190,7 @@ describe("run-queries", () => {
         mockQlProgram,
         mockProgress as any,
         mockCancel as any,
+        qs.logger,
       );
 
       expect(results).toEqual([{ message: "err", severity: Severity.ERROR }]);

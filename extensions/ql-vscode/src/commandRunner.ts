@@ -1,6 +1,6 @@
 import {
   CancellationToken,
-  ProgressOptions,
+  ProgressOptions as VSCodeProgressOptions,
   window as Window,
   commands,
   Disposable,
@@ -42,22 +42,40 @@ export interface ProgressUpdate {
 
 export type ProgressCallback = (p: ProgressUpdate) => void;
 
+// Make certain properties within a type optional
+type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
+export type ProgressOptions = Optional<VSCodeProgressOptions, "location">;
+
+/**
+ * A task that reports progress.
+ *
+ * @param progress a progress handler function. Call this
+ * function with a `ProgressUpdate` instance in order to
+ * denote some progress being achieved on this task.
+ * @param token a cancellation token
+ */
+export type ProgressTask<R> = (
+  progress: ProgressCallback,
+  token: CancellationToken,
+) => Thenable<R>;
+
 /**
  * A task that handles command invocations from `commandRunner`
  * and includes a progress monitor.
  *
  *
  * Arguments passed to the command handler are passed along,
- * untouched to this `ProgressTask` instance.
+ * untouched to this `ProgressTaskWithArgs` instance.
  *
  * @param progress a progress handler function. Call this
  * function with a `ProgressUpdate` instance in order to
  * denote some progress being achieved on this task.
- * @param token a cencellation token
+ * @param token a cancellation token
  * @param args arguments passed to this task passed on from
  * `commands.registerCommand`.
  */
-export type ProgressTask<R> = (
+export type ProgressTaskWithArgs<R> = (
   progress: ProgressCallback,
   token: CancellationToken,
   ...args: any[]
@@ -90,23 +108,29 @@ type NoProgressTask = (...args: any[]) => Promise<any>;
  * request).
  */
 export function withProgress<R>(
-  options: ProgressOptions,
   task: ProgressTask<R>,
-  ...args: any[]
+  {
+    location = ProgressLocation.Notification,
+    title,
+    cancellable,
+  }: ProgressOptions = {},
 ): Thenable<R> {
   let progressAchieved = 0;
-  return Window.withProgress(options, (progress, token) => {
-    return task(
-      (p) => {
+  return Window.withProgress(
+    {
+      location,
+      title,
+      cancellable,
+    },
+    (progress, token) => {
+      return task((p) => {
         const { message, step, maxStep } = p;
         const increment = (100 * (step - progressAchieved)) / maxStep;
         progressAchieved = step;
         progress.report({ message, increment });
-      },
-      token,
-      ...args,
-    );
-  });
+      }, token);
+    },
+  );
 }
 
 /**
@@ -121,6 +145,7 @@ export function withProgress<R>(
 export function commandRunner(
   commandId: string,
   task: NoProgressTask,
+  outputLogger = extLogger,
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
     const startTime = Date.now();
@@ -131,64 +156,6 @@ export function commandRunner(
     } catch (e) {
       error = asError(e);
       const errorMessage = redactableError(error)`${
-        getErrorMessage(e) || e
-      } (${commandId})`;
-      const errorStack = getErrorStack(e);
-      if (e instanceof UserCancellationException) {
-        // User has cancelled this action manually
-        if (e.silent) {
-          void extLogger.log(errorMessage.fullMessage);
-        } else {
-          void showAndLogWarningMessage(errorMessage.fullMessage);
-        }
-      } else {
-        // Include the full stack in the error log only.
-        const fullMessage = errorStack
-          ? `${errorMessage.fullMessage}\n${errorStack}`
-          : errorMessage.fullMessage;
-        void showAndLogExceptionWithTelemetry(errorMessage, {
-          fullMessage,
-          extraTelemetryProperties: {
-            command: commandId,
-          },
-        });
-      }
-      return undefined;
-    } finally {
-      const executionTime = Date.now() - startTime;
-      telemetryListener?.sendCommandUsage(commandId, executionTime, error);
-    }
-  });
-}
-
-/**
- * A generic wrapper for command registration.  This wrapper adds uniform error handling,
- * progress monitoring, and cancellation for commands.
- *
- * @param commandId The ID of the command to register.
- * @param task The task to run. It is passed directly to `commands.registerCommand`. Any
- * arguments to the command handler are passed on to the task after the progress callback
- * and cancellation token.
- * @param progressOptions Progress options to be sent to the progress monitor.
- */
-export function commandRunnerWithProgress<R>(
-  commandId: string,
-  task: ProgressTask<R>,
-  progressOptions: Partial<ProgressOptions>,
-  outputLogger = extLogger,
-): Disposable {
-  return commands.registerCommand(commandId, async (...args: any[]) => {
-    const startTime = Date.now();
-    let error: Error | undefined;
-    const progressOptionsWithDefaults = {
-      location: ProgressLocation.Notification,
-      ...progressOptions,
-    };
-    try {
-      return await withProgress(progressOptionsWithDefaults, task, ...args);
-    } catch (e) {
-      error = asError(e);
-      const errorMessage = redactableError`${
         getErrorMessage(e) || e
       } (${commandId})`;
       const errorStack = getErrorStack(e);
@@ -220,6 +187,34 @@ export function commandRunnerWithProgress<R>(
       telemetryListener?.sendCommandUsage(commandId, executionTime, error);
     }
   });
+}
+
+/**
+ * A generic wrapper for command registration.  This wrapper adds uniform error handling,
+ * progress monitoring, and cancellation for commands.
+ *
+ * @param commandId The ID of the command to register.
+ * @param task The task to run. It is passed directly to `commands.registerCommand`. Any
+ * arguments to the command handler are passed on to the task after the progress callback
+ * and cancellation token.
+ * @param progressOptions Progress options to be sent to the progress monitor.
+ */
+export function commandRunnerWithProgress<R>(
+  commandId: string,
+  task: ProgressTaskWithArgs<R>,
+  progressOptions: ProgressOptions,
+  outputLogger = extLogger,
+): Disposable {
+  return commandRunner(
+    commandId,
+    async (...args: any[]) => {
+      return withProgress(
+        (progress, token) => task(progress, token, ...args),
+        progressOptions,
+      );
+    },
+    outputLogger,
+  );
 }
 
 /**

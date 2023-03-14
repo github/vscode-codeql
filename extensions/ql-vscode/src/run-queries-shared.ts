@@ -298,12 +298,8 @@ export class QueryEvaluationInfo {
         this.evalLogEndSummaryPath,
         "utf-8",
       );
-      void logger.log(" --- Evaluator Log Summary --- ", {
-        additionalLogLocation: this.logPath,
-      });
-      void logger.log(endSummaryContent, {
-        additionalLogLocation: this.logPath,
-      });
+      void logger.log(" --- Evaluator Log Summary --- ");
+      void logger.log(endSummaryContent);
     } catch (e) {
       void showAndLogWarningMessage(
         `Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`,
@@ -436,7 +432,6 @@ export class QueryEvaluationInfo {
 export interface QueryWithResults {
   readonly query: QueryEvaluationInfo;
   readonly logFileLocation?: string;
-  readonly dispose: () => void;
   readonly successful?: boolean;
   readonly message?: string;
   readonly result: legacyMessages.EvaluationResult;

@@ -1,4 +1,3 @@
-import { dirname } from "path";
 import { ensureFile } from "fs-extra";
 
 import { DisposableObject } from "../pure/disposable-object";
@@ -13,10 +12,8 @@ import {
   progress,
   ProgressMessage,
   WithProgressId,
-  compileQuery,
 } from "../pure/legacy-messages";
 import { ProgressCallback, ProgressTask } from "../commandRunner";
-import { findQueryLogFile } from "../run-queries-shared";
 import { ServerProcess } from "../json-rpc-server";
 
 type WithProgressReporting = (
@@ -56,7 +53,7 @@ export class QueryServerClient extends DisposableObject {
     this.queryServerStartListeners.push(e);
   };
 
-  public activeQueryLogFile: string | undefined;
+  public activeQueryLogger: Logger;
 
   constructor(
     readonly config: QueryServerConfig,
@@ -65,6 +62,9 @@ export class QueryServerClient extends DisposableObject {
     withProgressReporting: WithProgressReporting,
   ) {
     super();
+    // Since no query is active when we initialize, just point the "active query logger" to the
+    // default logger.
+    this.activeQueryLogger = this.logger;
     // When the query server configuration changes, restart the query server.
     if (config.onDidChangeConfiguration !== undefined) {
       this.push(
@@ -177,9 +177,8 @@ export class QueryServerClient extends DisposableObject {
       args,
       this.logger,
       (data) =>
-        this.logger.log(data.toString(), {
+        this.activeQueryLogger.log(data.toString(), {
           trailingNewline: false,
-          additionalLogLocation: this.activeQueryLogFile,
         }),
       undefined, // no listener for stdout
       progressReporter,
@@ -240,8 +239,6 @@ export class QueryServerClient extends DisposableObject {
   ): Promise<R> {
     const id = this.nextProgress++;
     this.progressCallbacks[id] = progress;
-
-    this.updateActiveQuery(type.method, parameter);
     try {
       if (this.serverProcess === undefined) {
         throw new Error("No query server process found.");
@@ -253,20 +250,6 @@ export class QueryServerClient extends DisposableObject {
       );
     } finally {
       delete this.progressCallbacks[id];
-    }
-  }
-
-  /**
-   * Updates the active query every time there is a new request to compile.
-   * The active query is used to specify the side log.
-   *
-   * This isn't ideal because in situations where there are queries running
-   * in parallel, each query's log messages are interleaved. Fixing this
-   * properly will require a change in the query server.
-   */
-  private updateActiveQuery(method: string, parameter: any): void {
-    if (method === compileQuery.method) {
-      this.activeQueryLogFile = findQueryLogFile(dirname(parameter.resultPath));
     }
   }
 }

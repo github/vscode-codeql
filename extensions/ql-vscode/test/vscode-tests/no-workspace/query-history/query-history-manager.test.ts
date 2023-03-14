@@ -344,7 +344,6 @@ describe("QueryHistoryManager", () => {
         });
 
         it("should remove the item", () => {
-          expect(toDelete.completedQuery!.dispose).toBeCalledTimes(1);
           expect(queryHistoryManager.treeDataProvider.allHistory).toEqual(
             expect.not.arrayContaining([toDelete]),
           );
@@ -387,7 +386,6 @@ describe("QueryHistoryManager", () => {
         });
 
         it("should remove the item", () => {
-          expect(toDelete.completedQuery!.dispose).toBeCalledTimes(1);
           expect(queryHistoryManager.treeDataProvider.allHistory).toEqual(
             expect.not.arrayContaining([toDelete]),
           );
