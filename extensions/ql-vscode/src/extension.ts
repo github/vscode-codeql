@@ -219,6 +219,8 @@ interface DistributionUpdateConfig {
 
 const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
 
+const codeQlVersionRange = DEFAULT_DISTRIBUTION_VERSION_RANGE;
+
 // This is the minimum version of vscode that we _want_ to support. We want to update the language server library, but that
 // requires 1.67 or later. If we change the minimum version in the package.json, then anyone on an older version of vscode
 // silently be unable to upgrade. So, the solution is to first bump the minimum version here and release. Then
@@ -257,7 +259,6 @@ export async function activate(
   );
 
   ctx.subscriptions.push(distributionConfigListener);
-  const codeQlVersionRange = DEFAULT_DISTRIBUTION_VERSION_RANGE;
   const distributionManager = new DistributionManager(
     distributionConfigListener,
     codeQlVersionRange,
