@@ -217,6 +217,10 @@ interface DistributionUpdateConfig {
   allowAutoUpdating: boolean;
 }
 
+interface DatabaseQuickPickItem extends QuickPickItem {
+  databaseItem: DatabaseItem;
+}
+
 const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
 
 const codeQlVersionRange = DEFAULT_DISTRIBUTION_VERSION_RANGE;
@@ -950,9 +954,6 @@ async function activateWithInstalledDistribution(
       queryServerLogger,
     ),
   );
-  interface DatabaseQuickPickItem extends QuickPickItem {
-    databaseItem: DatabaseItem;
-  }
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       "codeQL.runQueryOnMultipleDatabases",
