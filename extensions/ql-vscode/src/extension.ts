@@ -274,65 +274,6 @@ export async function activate(
   // Checking the vscode version should not block extension activation.
   void assertVSCodeVersionGreaterThan(MIN_VERSION, ctx);
 
-  async function installOrUpdateDistribution(
-    config: DistributionUpdateConfig,
-  ): Promise<void> {
-    if (isInstallingOrUpdatingDistribution) {
-      throw new Error("Already installing or updating CodeQL CLI");
-    }
-    isInstallingOrUpdatingDistribution = true;
-    const codeQlInstalled =
-      (await distributionManager.getCodeQlPathWithoutVersionCheck()) !==
-      undefined;
-    const willUpdateCodeQl = ctx.globalState.get(
-      shouldUpdateOnNextActivationKey,
-    );
-    const messageText = willUpdateCodeQl
-      ? "Updating CodeQL CLI"
-      : codeQlInstalled
-      ? "Checking for updates to CodeQL CLI"
-      : "Installing CodeQL CLI";
-
-    try {
-      await installOrUpdateDistributionWithProgressTitle(
-        ctx,
-        distributionManager,
-        messageText,
-        config,
-      );
-    } catch (e) {
-      // Don't rethrow the exception, because if the config is changed, we want to be able to retry installing
-      // or updating the distribution.
-      const alertFunction =
-        codeQlInstalled && !config.isUserInitiated
-          ? showAndLogWarningMessage
-          : showAndLogErrorMessage;
-      const taskDescription = `${
-        willUpdateCodeQl
-          ? "update"
-          : codeQlInstalled
-          ? "check for updates to"
-          : "install"
-      } CodeQL CLI`;
-
-      if (e instanceof GithubRateLimitedError) {
-        void alertFunction(
-          `Rate limited while trying to ${taskDescription}. Please try again after ` +
-            `your rate limit window resets at ${e.rateLimitResetDate.toLocaleString(
-              env.language,
-            )}.`,
-        );
-      } else if (e instanceof GithubApiError) {
-        void alertFunction(
-          `Encountered GitHub API error while trying to ${taskDescription}. ${e}`,
-        );
-      }
-      void alertFunction(`Unable to ${taskDescription}. ${e}`);
-    } finally {
-      isInstallingOrUpdatingDistribution = false;
-    }
-  }
-
   async function getDistributionDisplayingDistributionWarnings(): Promise<FindDistributionResult> {
     const result = await distributionManager.getDistribution();
     switch (result.kind) {
@@ -380,7 +321,7 @@ export async function activate(
   async function installOrUpdateThenTryActivate(
     config: DistributionUpdateConfig,
   ): Promise<CodeQLExtensionInterface | Record<string, never>> {
-    await installOrUpdateDistribution(config);
+    await installOrUpdateDistribution(ctx, distributionManager, config);
 
     // Display the warnings even if the extension has already activated.
     const distributionResult =
@@ -528,6 +469,65 @@ async function installOrUpdateDistributionWithProgressTitle(
       break;
     default:
       assertNever(result);
+  }
+}
+
+async function installOrUpdateDistribution(
+  ctx: ExtensionContext,
+  distributionManager: DistributionManager,
+  config: DistributionUpdateConfig,
+): Promise<void> {
+  if (isInstallingOrUpdatingDistribution) {
+    throw new Error("Already installing or updating CodeQL CLI");
+  }
+  isInstallingOrUpdatingDistribution = true;
+  const codeQlInstalled =
+    (await distributionManager.getCodeQlPathWithoutVersionCheck()) !==
+    undefined;
+  const willUpdateCodeQl = ctx.globalState.get(shouldUpdateOnNextActivationKey);
+  const messageText = willUpdateCodeQl
+    ? "Updating CodeQL CLI"
+    : codeQlInstalled
+    ? "Checking for updates to CodeQL CLI"
+    : "Installing CodeQL CLI";
+
+  try {
+    await installOrUpdateDistributionWithProgressTitle(
+      ctx,
+      distributionManager,
+      messageText,
+      config,
+    );
+  } catch (e) {
+    // Don't rethrow the exception, because if the config is changed, we want to be able to retry installing
+    // or updating the distribution.
+    const alertFunction =
+      codeQlInstalled && !config.isUserInitiated
+        ? showAndLogWarningMessage
+        : showAndLogErrorMessage;
+    const taskDescription = `${
+      willUpdateCodeQl
+        ? "update"
+        : codeQlInstalled
+        ? "check for updates to"
+        : "install"
+    } CodeQL CLI`;
+
+    if (e instanceof GithubRateLimitedError) {
+      void alertFunction(
+        `Rate limited while trying to ${taskDescription}. Please try again after ` +
+          `your rate limit window resets at ${e.rateLimitResetDate.toLocaleString(
+            env.language,
+          )}.`,
+      );
+    } else if (e instanceof GithubApiError) {
+      void alertFunction(
+        `Encountered GitHub API error while trying to ${taskDescription}. ${e}`,
+      );
+    }
+    void alertFunction(`Unable to ${taskDescription}. ${e}`);
+  } finally {
+    isInstallingOrUpdatingDistribution = false;
   }
 }
 
