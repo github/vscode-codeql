@@ -136,6 +136,7 @@ import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filt
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
+import { DirResult } from "tmp";
 
 /**
  * extension.ts
@@ -744,32 +745,6 @@ async function activateWithInstalledDistribution(
   });
   ctx.subscriptions.push({ dispose: qhelpTmpDir.removeCallback });
 
-  async function previewQueryHelp(selectedQuery: Uri): Promise<void> {
-    // selectedQuery is unpopulated when executing through the command palette
-    const pathToQhelp = selectedQuery
-      ? selectedQuery.fsPath
-      : window.activeTextEditor?.document.uri.fsPath;
-    if (pathToQhelp) {
-      // Create temporary directory
-      const relativePathToMd = `${basename(pathToQhelp, ".qhelp")}.md`;
-      const absolutePathToMd = join(qhelpTmpDir.name, relativePathToMd);
-      const uri = Uri.file(absolutePathToMd);
-      try {
-        await cliServer.generateQueryHelp(pathToQhelp, absolutePathToMd);
-        await commands.executeCommand("markdown.showPreviewToSide", uri);
-      } catch (e) {
-        const errorMessage = getErrorMessage(e).includes(
-          "Generating qhelp in markdown",
-        )
-          ? redactableError`Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
-          : redactableError`Could not open a preview of the generated file (${absolutePathToMd}).`;
-        void showAndLogExceptionWithTelemetry(errorMessage, {
-          fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
-        });
-      }
-    }
-  }
-
   async function openReferencedFile(selectedQuery: Uri): Promise<void> {
     // If no file is selected, the path of the file in the editor is selected
     const path =
@@ -1316,7 +1291,9 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner("codeQL.previewQueryHelp", previewQueryHelp),
+    commandRunner("codeQL.previewQueryHelp", async (selectedQuery: Uri) => {
+      await previewQueryHelp(cliServer, selectedQuery, qhelpTmpDir);
+    }),
   );
 
   ctx.subscriptions.push(
@@ -1872,6 +1849,36 @@ async function compileAndRunQueryOnMultipleDatabases(
     }
   } else {
     void showAndLogErrorMessage("No databases selected.");
+  }
+}
+
+async function previewQueryHelp(
+  cliServer: CodeQLCliServer,
+  selectedQuery: Uri,
+  qhelpTmpDir: DirResult,
+): Promise<void> {
+  // selectedQuery is unpopulated when executing through the command palette
+  const pathToQhelp = selectedQuery
+    ? selectedQuery.fsPath
+    : window.activeTextEditor?.document.uri.fsPath;
+  if (pathToQhelp) {
+    // Create temporary directory
+    const relativePathToMd = `${basename(pathToQhelp, ".qhelp")}.md`;
+    const absolutePathToMd = join(qhelpTmpDir.name, relativePathToMd);
+    const uri = Uri.file(absolutePathToMd);
+    try {
+      await cliServer.generateQueryHelp(pathToQhelp, absolutePathToMd);
+      await commands.executeCommand("markdown.showPreviewToSide", uri);
+    } catch (e) {
+      const errorMessage = getErrorMessage(e).includes(
+        "Generating qhelp in markdown",
+      )
+        ? redactableError`Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
+        : redactableError`Could not open a preview of the generated file (${absolutePathToMd}).`;
+      void showAndLogExceptionWithTelemetry(errorMessage, {
+        fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
+      });
+    }
   }
 }
 
