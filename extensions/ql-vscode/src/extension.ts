@@ -745,17 +745,6 @@ async function activateWithInstalledDistribution(
   });
   ctx.subscriptions.push({ dispose: qhelpTmpDir.removeCallback });
 
-  async function openReferencedFile(selectedQuery: Uri): Promise<void> {
-    // If no file is selected, the path of the file in the editor is selected
-    const path =
-      selectedQuery?.fsPath || window.activeTextEditor?.document.uri.fsPath;
-    if (qs !== undefined && path) {
-      const resolved = await cliServer.resolveQlref(path);
-      const uri = Uri.file(resolved.resolvedPath);
-      await window.showTextDocument(uri, { preview: false });
-    }
-  }
-
   ctx.subscriptions.push(tmpDirDisposal);
 
   void extLogger.log("Initializing CodeQL language server.");
@@ -1274,19 +1263,28 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner("codeQL.openReferencedFile", openReferencedFile),
+    commandRunner("codeQL.openReferencedFile", async (selectedQuery: Uri) => {
+      await openReferencedFile(qs, cliServer, selectedQuery);
+    }),
   );
 
   // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
   ctx.subscriptions.push(
-    commandRunner("codeQL.openReferencedFileContextEditor", openReferencedFile),
+    commandRunner(
+      "codeQL.openReferencedFileContextEditor",
+      async (selectedQuery: Uri) => {
+        await openReferencedFile(qs, cliServer, selectedQuery);
+      },
+    ),
   );
 
   // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
   ctx.subscriptions.push(
     commandRunner(
       "codeQL.openReferencedFileContextExplorer",
-      openReferencedFile,
+      async (selectedQuery: Uri) => {
+        await openReferencedFile(qs, cliServer, selectedQuery);
+      },
     ),
   );
 
@@ -1879,6 +1877,21 @@ async function previewQueryHelp(
         fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
       });
     }
+  }
+}
+
+async function openReferencedFile(
+  qs: QueryRunner,
+  cliServer: CodeQLCliServer,
+  selectedQuery: Uri,
+): Promise<void> {
+  // If no file is selected, the path of the file in the editor is selected
+  const path =
+    selectedQuery?.fsPath || window.activeTextEditor?.document.uri.fsPath;
+  if (qs !== undefined && path) {
+    const resolved = await cliServer.resolveQlref(path);
+    const uri = Uri.file(resolved.resolvedPath);
+    await window.showTextDocument(uri, { preview: false });
   }
 }
 
