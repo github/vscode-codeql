@@ -737,79 +737,6 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Initializing source archive filesystem provider.");
   archiveFilesystemProvider_activate(ctx);
 
-  async function compileAndRunQueryOnMultipleDatabases(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    uri: Uri | undefined,
-  ): Promise<void> {
-    let filteredDBs = dbm.databaseItems;
-    if (filteredDBs.length === 0) {
-      void showAndLogErrorMessage(
-        "No databases found. Please add a suitable database to your workspace.",
-      );
-      return;
-    }
-    // If possible, only show databases with the right language (otherwise show all databases).
-    const queryLanguage = await findLanguage(cliServer, uri);
-    if (queryLanguage) {
-      filteredDBs = dbm.databaseItems.filter(
-        (db) => db.language === queryLanguage,
-      );
-      if (filteredDBs.length === 0) {
-        void showAndLogErrorMessage(
-          `No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`,
-        );
-        return;
-      }
-    }
-    const quickPickItems = filteredDBs.map<DatabaseQuickPickItem>((dbItem) => ({
-      databaseItem: dbItem,
-      label: dbItem.name,
-      description: dbItem.language,
-    }));
-    /**
-     * Databases that were selected in the quick pick menu.
-     */
-    const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
-      quickPickItems,
-      { canPickMany: true, ignoreFocusOut: true },
-    );
-    if (quickpick !== undefined) {
-      // Collect all skipped databases and display them at the end (instead of popping up individual errors)
-      const skippedDatabases = [];
-      const errors = [];
-      for (const item of quickpick) {
-        try {
-          await compileAndRunQuery(
-            qs,
-            qhm,
-            databaseUI,
-            localQueryResultsView,
-            queryStorageDir,
-            false,
-            uri,
-            progress,
-            token,
-            item.databaseItem,
-          );
-        } catch (e) {
-          skippedDatabases.push(item.label);
-          errors.push(getErrorMessage(e));
-        }
-      }
-      if (skippedDatabases.length > 0) {
-        void extLogger.log(`Errors:\n${errors.join("\n")}`);
-        void showAndLogWarningMessage(
-          `The following databases were skipped:\n${skippedDatabases.join(
-            "\n",
-          )}.\nFor details about the errors, see the logs.`,
-        );
-      }
-    } else {
-      void showAndLogErrorMessage("No databases selected.");
-    }
-  }
-
   const qhelpTmpDir = dirSync({
     prefix: "qhelp_",
     keep: false,
@@ -961,7 +888,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQueryOnMultipleDatabases(progress, token, uri),
+      ) =>
+        await compileAndRunQueryOnMultipleDatabases(
+          cliServer,
+          qs,
+          qhm,
+          dbm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          progress,
+          token,
+          uri,
+        ),
       {
         title: "Running query on selected databases",
         cancellable: true,
@@ -976,7 +915,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQueryOnMultipleDatabases(progress, token, uri),
+      ) =>
+        await compileAndRunQueryOnMultipleDatabases(
+          cliServer,
+          qs,
+          qhm,
+          dbm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          progress,
+          token,
+          uri,
+        ),
       {
         title: "Running query on selected databases",
         cancellable: true,
@@ -1841,6 +1792,86 @@ async function compileAndRunQuery(
       await qhm.refreshTreeView();
       source.dispose();
     }
+  }
+}
+
+async function compileAndRunQueryOnMultipleDatabases(
+  cliServer: CodeQLCliServer,
+  qs: QueryRunner,
+  qhm: QueryHistoryManager,
+  dbm: DatabaseManager,
+  databaseUI: DatabaseUI,
+  localQueryResultsView: ResultsView,
+  queryStorageDir: string,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  uri: Uri | undefined,
+): Promise<void> {
+  let filteredDBs = dbm.databaseItems;
+  if (filteredDBs.length === 0) {
+    void showAndLogErrorMessage(
+      "No databases found. Please add a suitable database to your workspace.",
+    );
+    return;
+  }
+  // If possible, only show databases with the right language (otherwise show all databases).
+  const queryLanguage = await findLanguage(cliServer, uri);
+  if (queryLanguage) {
+    filteredDBs = dbm.databaseItems.filter(
+      (db) => db.language === queryLanguage,
+    );
+    if (filteredDBs.length === 0) {
+      void showAndLogErrorMessage(
+        `No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`,
+      );
+      return;
+    }
+  }
+  const quickPickItems = filteredDBs.map<DatabaseQuickPickItem>((dbItem) => ({
+    databaseItem: dbItem,
+    label: dbItem.name,
+    description: dbItem.language,
+  }));
+  /**
+   * Databases that were selected in the quick pick menu.
+   */
+  const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
+    quickPickItems,
+    { canPickMany: true, ignoreFocusOut: true },
+  );
+  if (quickpick !== undefined) {
+    // Collect all skipped databases and display them at the end (instead of popping up individual errors)
+    const skippedDatabases = [];
+    const errors = [];
+    for (const item of quickpick) {
+      try {
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          false,
+          uri,
+          progress,
+          token,
+          item.databaseItem,
+        );
+      } catch (e) {
+        skippedDatabases.push(item.label);
+        errors.push(getErrorMessage(e));
+      }
+    }
+    if (skippedDatabases.length > 0) {
+      void extLogger.log(`Errors:\n${errors.join("\n")}`);
+      void showAndLogWarningMessage(
+        `The following databases were skipped:\n${skippedDatabases.join(
+          "\n",
+        )}.\nFor details about the errors, see the logs.`,
+      );
+    }
+  } else {
+    void showAndLogErrorMessage("No databases selected.");
   }
 }
 
