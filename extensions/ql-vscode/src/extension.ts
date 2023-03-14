@@ -211,6 +211,12 @@ export interface CodeQLExtensionInterface {
   readonly dispose: () => void;
 }
 
+interface DistributionUpdateConfig {
+  isUserInitiated: boolean;
+  shouldDisplayMessageWhenNoUpdates: boolean;
+  allowAutoUpdating: boolean;
+}
+
 // This is the minimum version of vscode that we _want_ to support. We want to update the language server library, but that
 // requires 1.67 or later. If we change the minimum version in the package.json, then anyone on an older version of vscode
 // silently be unable to upgrade. So, the solution is to first bump the minimum version here and release. Then
@@ -266,12 +272,6 @@ export async function activate(
 
   // Checking the vscode version should not block extension activation.
   void assertVSCodeVersionGreaterThan(MIN_VERSION, ctx);
-
-  interface DistributionUpdateConfig {
-    isUserInitiated: boolean;
-    shouldDisplayMessageWhenNoUpdates: boolean;
-    allowAutoUpdating: boolean;
-  }
 
   async function installOrUpdateDistributionWithProgressTitle(
     progressTitle: string,
