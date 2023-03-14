@@ -274,50 +274,6 @@ export async function activate(
   // Checking the vscode version should not block extension activation.
   void assertVSCodeVersionGreaterThan(MIN_VERSION, ctx);
 
-  async function getDistributionDisplayingDistributionWarnings(): Promise<FindDistributionResult> {
-    const result = await distributionManager.getDistribution();
-    switch (result.kind) {
-      case FindDistributionResultKind.CompatibleDistribution:
-        void extLogger.log(
-          `Found compatible version of CodeQL CLI (version ${result.version.raw})`,
-        );
-        break;
-      case FindDistributionResultKind.IncompatibleDistribution: {
-        const fixGuidanceMessage = (() => {
-          switch (result.distribution.kind) {
-            case DistributionKind.ExtensionManaged:
-              return 'Please update the CodeQL CLI by running the "CodeQL: Check for CLI Updates" command.';
-            case DistributionKind.CustomPathConfig:
-              return `Please update the \"CodeQL CLI Executable Path\" setting to point to a CLI in the version range ${codeQlVersionRange}.`;
-            case DistributionKind.PathEnvironmentVariable:
-              return (
-                `Please update the CodeQL CLI on your PATH to a version compatible with ${codeQlVersionRange}, or ` +
-                `set the \"CodeQL CLI Executable Path\" setting to the path of a CLI version compatible with ${codeQlVersionRange}.`
-              );
-          }
-        })();
-
-        void showAndLogWarningMessage(
-          `The current version of the CodeQL CLI (${result.version.raw}) ` +
-            `is incompatible with this extension. ${fixGuidanceMessage}`,
-        );
-        break;
-      }
-      case FindDistributionResultKind.UnknownCompatibilityDistribution:
-        void showAndLogWarningMessage(
-          "Compatibility with the configured CodeQL CLI could not be determined. " +
-            "You may experience problems using the extension.",
-        );
-        break;
-      case FindDistributionResultKind.NoDistribution:
-        void showAndLogErrorMessage("The CodeQL CLI could not be found.");
-        break;
-      default:
-        assertNever(result);
-    }
-    return result;
-  }
-
   async function installOrUpdateThenTryActivate(
     config: DistributionUpdateConfig,
   ): Promise<CodeQLExtensionInterface | Record<string, never>> {
@@ -325,7 +281,7 @@ export async function activate(
 
     // Display the warnings even if the extension has already activated.
     const distributionResult =
-      await getDistributionDisplayingDistributionWarnings();
+      await getDistributionDisplayingDistributionWarnings(distributionManager);
     let extensionInterface: CodeQLExtensionInterface | Record<string, never> =
       {};
     if (
@@ -529,6 +485,52 @@ async function installOrUpdateDistribution(
   } finally {
     isInstallingOrUpdatingDistribution = false;
   }
+}
+
+async function getDistributionDisplayingDistributionWarnings(
+  distributionManager: DistributionManager,
+): Promise<FindDistributionResult> {
+  const result = await distributionManager.getDistribution();
+  switch (result.kind) {
+    case FindDistributionResultKind.CompatibleDistribution:
+      void extLogger.log(
+        `Found compatible version of CodeQL CLI (version ${result.version.raw})`,
+      );
+      break;
+    case FindDistributionResultKind.IncompatibleDistribution: {
+      const fixGuidanceMessage = (() => {
+        switch (result.distribution.kind) {
+          case DistributionKind.ExtensionManaged:
+            return 'Please update the CodeQL CLI by running the "CodeQL: Check for CLI Updates" command.';
+          case DistributionKind.CustomPathConfig:
+            return `Please update the \"CodeQL CLI Executable Path\" setting to point to a CLI in the version range ${codeQlVersionRange}.`;
+          case DistributionKind.PathEnvironmentVariable:
+            return (
+              `Please update the CodeQL CLI on your PATH to a version compatible with ${codeQlVersionRange}, or ` +
+              `set the \"CodeQL CLI Executable Path\" setting to the path of a CLI version compatible with ${codeQlVersionRange}.`
+            );
+        }
+      })();
+
+      void showAndLogWarningMessage(
+        `The current version of the CodeQL CLI (${result.version.raw}) ` +
+          `is incompatible with this extension. ${fixGuidanceMessage}`,
+      );
+      break;
+    }
+    case FindDistributionResultKind.UnknownCompatibilityDistribution:
+      void showAndLogWarningMessage(
+        "Compatibility with the configured CodeQL CLI could not be determined. " +
+          "You may experience problems using the extension.",
+      );
+      break;
+    case FindDistributionResultKind.NoDistribution:
+      void showAndLogErrorMessage("The CodeQL CLI could not be found.");
+      break;
+    default:
+      assertNever(result);
+  }
+  return result;
 }
 
 const PACK_GLOBS = [
