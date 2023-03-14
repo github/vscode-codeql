@@ -1080,24 +1080,6 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  async function runVariantAnalysis(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    uri: Uri | undefined,
-  ): Promise<void> {
-    progress({
-      maxStep: 5,
-      step: 0,
-      message: "Getting credentials",
-    });
-
-    await variantAnalysisManager.runVariantAnalysis(
-      uri || window.activeTextEditor?.document.uri,
-      progress,
-      token,
-    );
-  }
-
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       "codeQL.runVariantAnalysis",
@@ -1105,7 +1087,8 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await runVariantAnalysis(progress, token, uri),
+      ) =>
+        await runVariantAnalysis(variantAnalysisManager, progress, token, uri),
       {
         title: "Run Variant Analysis",
         cancellable: true,
@@ -1121,7 +1104,8 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await runVariantAnalysis(progress, token, uri),
+      ) =>
+        await runVariantAnalysis(variantAnalysisManager, progress, token, uri),
       {
         title: "Run Variant Analysis",
         cancellable: true,
@@ -1893,6 +1877,25 @@ async function openReferencedFile(
     const uri = Uri.file(resolved.resolvedPath);
     await window.showTextDocument(uri, { preview: false });
   }
+}
+
+async function runVariantAnalysis(
+  variantAnalysisManager: VariantAnalysisManager,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  uri: Uri | undefined,
+): Promise<void> {
+  progress({
+    maxStep: 5,
+    step: 0,
+    message: "Getting credentials",
+  });
+
+  await variantAnalysisManager.runVariantAnalysis(
+    uri || window.activeTextEditor?.document.uri,
+    progress,
+    token,
+  );
 }
 
 function addUnhandledRejectionListener() {
