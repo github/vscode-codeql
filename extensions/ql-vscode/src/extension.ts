@@ -274,64 +274,32 @@ export async function activate(
   // Checking the vscode version should not block extension activation.
   void assertVSCodeVersionGreaterThan(MIN_VERSION, ctx);
 
-  async function installOrUpdateThenTryActivate(
-    config: DistributionUpdateConfig,
-  ): Promise<CodeQLExtensionInterface | Record<string, never>> {
-    await installOrUpdateDistribution(ctx, distributionManager, config);
-
-    // Display the warnings even if the extension has already activated.
-    const distributionResult =
-      await getDistributionDisplayingDistributionWarnings(distributionManager);
-    let extensionInterface: CodeQLExtensionInterface | Record<string, never> =
-      {};
-    if (
-      !beganMainExtensionActivation &&
-      distributionResult.kind !== FindDistributionResultKind.NoDistribution
-    ) {
-      extensionInterface = await activateWithInstalledDistribution(
+  ctx.subscriptions.push(
+    distributionConfigListener.onDidChangeConfiguration(() =>
+      installOrUpdateThenTryActivate(
         ctx,
         distributionManager,
         distributionConfigListener,
-      );
-    } else if (
-      distributionResult.kind === FindDistributionResultKind.NoDistribution
-    ) {
-      registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
-        const installActionName = "Install CodeQL CLI";
-        const chosenAction = await showAndLogErrorMessage(
-          `Can't execute ${command}: missing CodeQL CLI.`,
-          {
-            items: [installActionName],
-          },
-        );
-        if (chosenAction === installActionName) {
-          await installOrUpdateThenTryActivate({
-            isUserInitiated: true,
-            shouldDisplayMessageWhenNoUpdates: false,
-            allowAutoUpdating: true,
-          });
-        }
-      });
-    }
-    return extensionInterface;
-  }
-
-  ctx.subscriptions.push(
-    distributionConfigListener.onDidChangeConfiguration(() =>
-      installOrUpdateThenTryActivate({
-        isUserInitiated: true,
-        shouldDisplayMessageWhenNoUpdates: false,
-        allowAutoUpdating: true,
-      }),
+        {
+          isUserInitiated: true,
+          shouldDisplayMessageWhenNoUpdates: false,
+          allowAutoUpdating: true,
+        },
+      ),
     ),
   );
   ctx.subscriptions.push(
     commandRunner(checkForUpdatesCommand, () =>
-      installOrUpdateThenTryActivate({
-        isUserInitiated: true,
-        shouldDisplayMessageWhenNoUpdates: true,
-        allowAutoUpdating: true,
-      }),
+      installOrUpdateThenTryActivate(
+        ctx,
+        distributionManager,
+        distributionConfigListener,
+        {
+          isUserInitiated: true,
+          shouldDisplayMessageWhenNoUpdates: true,
+          allowAutoUpdating: true,
+        },
+      ),
     ),
   );
 
@@ -341,14 +309,19 @@ export async function activate(
     variantAnalysisViewSerializer,
   );
 
-  const codeQlExtension = await installOrUpdateThenTryActivate({
-    isUserInitiated: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
-    shouldDisplayMessageWhenNoUpdates: false,
+  const codeQlExtension = await installOrUpdateThenTryActivate(
+    ctx,
+    distributionManager,
+    distributionConfigListener,
+    {
+      isUserInitiated: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
+      shouldDisplayMessageWhenNoUpdates: false,
 
-    // only auto update on startup if the user has previously requested an update
-    // otherwise, ask user to accept the update
-    allowAutoUpdating: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
-  });
+      // only auto update on startup if the user has previously requested an update
+      // otherwise, ask user to accept the update
+      allowAutoUpdating: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
+    },
+  );
 
   variantAnalysisViewSerializer.onExtensionLoaded(
     codeQlExtension.variantAnalysisManager,
@@ -531,6 +504,55 @@ async function getDistributionDisplayingDistributionWarnings(
       assertNever(result);
   }
   return result;
+}
+
+async function installOrUpdateThenTryActivate(
+  ctx: ExtensionContext,
+  distributionManager: DistributionManager,
+  distributionConfigListener: DistributionConfigListener,
+  config: DistributionUpdateConfig,
+): Promise<CodeQLExtensionInterface | Record<string, never>> {
+  await installOrUpdateDistribution(ctx, distributionManager, config);
+
+  // Display the warnings even if the extension has already activated.
+  const distributionResult =
+    await getDistributionDisplayingDistributionWarnings(distributionManager);
+  let extensionInterface: CodeQLExtensionInterface | Record<string, never> = {};
+  if (
+    !beganMainExtensionActivation &&
+    distributionResult.kind !== FindDistributionResultKind.NoDistribution
+  ) {
+    extensionInterface = await activateWithInstalledDistribution(
+      ctx,
+      distributionManager,
+      distributionConfigListener,
+    );
+  } else if (
+    distributionResult.kind === FindDistributionResultKind.NoDistribution
+  ) {
+    registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
+      const installActionName = "Install CodeQL CLI";
+      const chosenAction = await showAndLogErrorMessage(
+        `Can't execute ${command}: missing CodeQL CLI.`,
+        {
+          items: [installActionName],
+        },
+      );
+      if (chosenAction === installActionName) {
+        await installOrUpdateThenTryActivate(
+          ctx,
+          distributionManager,
+          distributionConfigListener,
+          {
+            isUserInitiated: true,
+            shouldDisplayMessageWhenNoUpdates: false,
+            allowAutoUpdating: true,
+          },
+        );
+      }
+    });
+  }
+  return extensionInterface;
 }
 
 const PACK_GLOBS = [
