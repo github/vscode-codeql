@@ -1069,7 +1069,7 @@
         {
           "command": "codeQL.viewCfgContextEditor",
           "when": "false"
-        }, 
+        },
         {
           "command": "codeQLVariantAnalysisRepositories.openConfigFile",
           "when": "false"
@@ -1400,7 +1400,13 @@
     "lint:scenarios": "ts-node scripts/lint-scenarios.ts",
     "check-types": "find . -type f -name \"tsconfig.json\" -not -path \"./node_modules/*\" | sed -r 's|/[^/]+$||' | sort | uniq | xargs -I {} sh -c \"echo Checking types in {} && cd {} && npx tsc --noEmit\"",
     "postinstall": "patch-package",
-    "prepare": "cd ../.. && husky install"
+    "prepare": "cd ../.. && husky install",
+    "package2": "mkdir -p dist && vsce package --out dist/test.vsix",
+    "package": "mkdir -p dist && cp ../../dist/*.vsix dist/test.vsix",
+    "code-server-up": "docker-compose up -d && docker exec vscodeCodeQlExtension code-server --install-extension /source/dist/test.vsix",
+    "code-server-down": "docker-compose down",
+    "e2e": "npm run code-server-up && cypress run && npm run code-server-down",
+    "e2e:debug": "npm run code-server-up && cypress open && npm run code-server-down"
   },
   "dependencies": {
     "@octokit/plugin-retry": "^3.0.9",
@@ -1501,6 +1507,7 @@
     "babel-loader": "^8.2.5",
     "cross-env": "^7.0.3",
     "css-loader": "~3.1.0",
+    "cypress": "^12.7.0",
     "del": "^6.0.0",
     "esbuild": "^0.15.15",
     "eslint": "^8.23.1",

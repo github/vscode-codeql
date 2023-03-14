@@ -1,0 +1,10 @@
+version: '2'
+services:
+  test:
+    image: codercom/code-server:latest
+    command: "/source --auth none --disable-telemetry"
+    container_name: vscodeCodeQlExtension
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/source
