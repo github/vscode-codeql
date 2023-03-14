@@ -1459,21 +1459,6 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(astViewer);
 
-  async function viewAst(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    selectedFile: Uri,
-  ): Promise<void> {
-    const ast = await printAstTemplateProvider.provideAst(
-      progress,
-      token,
-      selectedFile ?? window.activeTextEditor?.document.uri,
-    );
-    if (ast) {
-      astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
-    }
-  }
-
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       "codeQL.viewAst",
@@ -1481,7 +1466,14 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         selectedFile: Uri,
-      ) => await viewAst(progress, token, selectedFile),
+      ) =>
+        await viewAst(
+          astViewer,
+          printAstTemplateProvider,
+          progress,
+          token,
+          selectedFile,
+        ),
       {
         cancellable: true,
         title: "Calculate AST",
@@ -1497,7 +1489,14 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         selectedFile: Uri,
-      ) => await viewAst(progress, token, selectedFile),
+      ) =>
+        await viewAst(
+          astViewer,
+          printAstTemplateProvider,
+          progress,
+          token,
+          selectedFile,
+        ),
       {
         cancellable: true,
         title: "Calculate AST",
@@ -1513,7 +1512,14 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         selectedFile: Uri,
-      ) => await viewAst(progress, token, selectedFile),
+      ) =>
+        await viewAst(
+          astViewer,
+          printAstTemplateProvider,
+          progress,
+          token,
+          selectedFile,
+        ),
       {
         cancellable: true,
         title: "Calculate AST",
@@ -1896,6 +1902,23 @@ async function runVariantAnalysis(
     progress,
     token,
   );
+}
+
+async function viewAst(
+  astViewer: AstViewer,
+  printAstTemplateProvider: TemplatePrintAstProvider,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  selectedFile: Uri,
+): Promise<void> {
+  const ast = await printAstTemplateProvider.provideAst(
+    progress,
+    token,
+    selectedFile ?? window.activeTextEditor?.document.uri,
+  );
+  if (ast) {
+    astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
+  }
 }
 
 function addUnhandledRejectionListener() {
