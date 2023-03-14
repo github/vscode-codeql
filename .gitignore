@@ -9,6 +9,7 @@ server/
 node_modules/
 gen/
 artifacts/
+extensions/ql-vscode/dist/
 
 # Integration test artifacts
 **/.vscode-test/**

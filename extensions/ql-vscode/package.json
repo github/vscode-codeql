@@ -1401,7 +1401,6 @@
     "check-types": "find . -type f -name \"tsconfig.json\" -not -path \"./node_modules/*\" | sed -r 's|/[^/]+$||' | sort | uniq | xargs -I {} sh -c \"echo Checking types in {} && cd {} && npx tsc --noEmit\"",
     "postinstall": "patch-package",
     "prepare": "cd ../.. && husky install",
-    "package2": "mkdir -p dist && vsce package --out dist/test.vsix",
     "package": "mkdir -p dist && cp ../../dist/*.vsix dist/test.vsix",
     "code-server-up": "docker-compose up -d && docker exec vscodeCodeQlExtension code-server --install-extension /source/dist/test.vsix",
     "code-server-down": "docker-compose down",
