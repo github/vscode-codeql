@@ -51,7 +51,11 @@ import {
 import { readFile, readJson, remove, pathExists, outputJson } from "fs-extra";
 import { EOL } from "os";
 import { cancelVariantAnalysis } from "./gh-api/gh-actions-api-client";
-import { ProgressCallback, UserCancellationException } from "../commandRunner";
+import {
+  ProgressCallback,
+  UserCancellationException,
+  withProgress,
+} from "../commandRunner";
 import { CodeQLCliServer } from "../cli";
 import {
   defaultFilterSortState,
@@ -132,6 +136,11 @@ export class VariantAnalysisManager
       "codeQL.openVariantAnalysisLogs": async (variantAnalysisId: number) => {
         await this.openVariantAnalysisLogs(variantAnalysisId);
       },
+      "codeQL.runVariantAnalysis": async (uri?: Uri) =>
+        this.runVariantAnalysisFromCommand(uri),
+      // Since we are tracking extension usage through commands, this command mirrors the "codeQL.runVariantAnalysis" command
+      "codeQL.runVariantAnalysisContextEditor": async (uri?: Uri) =>
+        this.runVariantAnalysisFromCommand(uri),
     };
   }
 
@@ -139,11 +148,32 @@ export class VariantAnalysisManager
     return this.app.commandManager;
   }
 
+  private async runVariantAnalysisFromCommand(uri?: Uri) {
+    return withProgress(
+      async (progress, token) =>
+        this.runVariantAnalysis(
+          uri || Window.activeTextEditor?.document.uri,
+          progress,
+          token,
+        ),
+      {
+        title: "Run Variant Analysis",
+        cancellable: true,
+      },
+    );
+  }
+
   public async runVariantAnalysis(
     uri: Uri | undefined,
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
+    progress({
+      maxStep: 5,
+      step: 0,
+      message: "Getting credentials",
+    });
+
     const {
       actionBranch,
       base64Pack,
