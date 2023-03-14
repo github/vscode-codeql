@@ -733,68 +733,6 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Initializing source archive filesystem provider.");
   archiveFilesystemProvider_activate(ctx);
 
-  async function compileAndRunQuery(
-    quickEval: boolean,
-    selectedQuery: Uri | undefined,
-    progress: ProgressCallback,
-    token: CancellationToken,
-    databaseItem: DatabaseItem | undefined,
-    range?: Range,
-  ): Promise<void> {
-    if (qs !== undefined) {
-      // If no databaseItem is specified, use the database currently selected in the Databases UI
-      databaseItem =
-        databaseItem || (await databaseUI.getDatabaseItem(progress, token));
-      if (databaseItem === undefined) {
-        throw new Error("Can't run query without a selected database");
-      }
-      const databaseInfo = {
-        name: databaseItem.name,
-        databaseUri: databaseItem.databaseUri.toString(),
-      };
-
-      // handle cancellation from the history view.
-      const source = new CancellationTokenSource();
-      token.onCancellationRequested(() => source.cancel());
-
-      const initialInfo = await createInitialQueryInfo(
-        selectedQuery,
-        databaseInfo,
-        quickEval,
-        range,
-      );
-      const item = new LocalQueryInfo(initialInfo, source);
-      qhm.addQuery(item);
-      try {
-        const completedQueryInfo = await qs.compileAndRunQueryAgainstDatabase(
-          databaseItem,
-          initialInfo,
-          queryStorageDir,
-          progress,
-          source.token,
-          undefined,
-          item,
-        );
-        qhm.completeQuery(item, completedQueryInfo);
-        await showResultsForCompletedQuery(
-          localQueryResultsView,
-          item as CompletedLocalQueryInfo,
-          WebviewReveal.Forced,
-        );
-        // Note we must update the query history view after showing results as the
-        // display and sorting might depend on the number of results
-      } catch (e) {
-        const err = asError(e);
-        err.message = `Error running query: ${err.message}`;
-        item.failureReason = err.message;
-        throw e;
-      } finally {
-        await qhm.refreshTreeView();
-        source.dispose();
-      }
-    }
-  }
-
   async function compileAndRunQueryOnMultipleDatabases(
     progress: ProgressCallback,
     token: CancellationToken,
@@ -839,6 +777,11 @@ async function activateWithInstalledDistribution(
       for (const item of quickpick) {
         try {
           await compileAndRunQuery(
+            qs,
+            qhm,
+            databaseUI,
+            localQueryResultsView,
+            queryStorageDir,
             false,
             uri,
             progress,
@@ -954,7 +897,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQuery(false, uri, progress, token, undefined),
+      ) =>
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          false,
+          uri,
+          progress,
+          token,
+          undefined,
+        ),
       {
         title: "Running query",
         cancellable: true,
@@ -973,7 +928,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQuery(false, uri, progress, token, undefined),
+      ) =>
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          false,
+          uri,
+          progress,
+          token,
+          undefined,
+        ),
       {
         title: "Running query",
         cancellable: true,
@@ -1068,6 +1035,11 @@ async function activateWithInstalledDistribution(
         await Promise.all(
           queryUris.map(async (uri) =>
             compileAndRunQuery(
+              qs,
+              qhm,
+              databaseUI,
+              localQueryResultsView,
+              queryStorageDir,
               false,
               uri,
               wrappedProgress,
@@ -1094,7 +1066,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQuery(true, uri, progress, token, undefined),
+      ) =>
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          true,
+          uri,
+          progress,
+          token,
+          undefined,
+        ),
       {
         title: "Running query",
         cancellable: true,
@@ -1112,7 +1096,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQuery(true, uri, progress, token, undefined),
+      ) =>
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          true,
+          uri,
+          progress,
+          token,
+          undefined,
+        ),
       {
         title: "Running query",
         cancellable: true,
@@ -1131,7 +1127,19 @@ async function activateWithInstalledDistribution(
         uri: Uri,
         range: Range,
       ) =>
-        await compileAndRunQuery(true, uri, progress, token, undefined, range),
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          true,
+          uri,
+          progress,
+          token,
+          undefined,
+          range,
+        ),
       {
         title: "Running query",
         cancellable: true,
@@ -1610,7 +1618,18 @@ async function activateWithInstalledDistribution(
           window.activeTextEditor?.document,
         );
         if (res) {
-          await compileAndRunQuery(false, res[0], progress, token, undefined);
+          await compileAndRunQuery(
+            qs,
+            qhm,
+            databaseUI,
+            localQueryResultsView,
+            queryStorageDir,
+            false,
+            res[0],
+            progress,
+            token,
+            undefined,
+          );
         }
       },
       {
@@ -1629,7 +1648,18 @@ async function activateWithInstalledDistribution(
           window.activeTextEditor?.document,
         );
         if (res) {
-          await compileAndRunQuery(false, res[0], progress, token, undefined);
+          await compileAndRunQuery(
+            qs,
+            qhm,
+            databaseUI,
+            localQueryResultsView,
+            queryStorageDir,
+            false,
+            res[0],
+            progress,
+            token,
+            undefined,
+          );
         }
       },
       {
@@ -1648,7 +1678,18 @@ async function activateWithInstalledDistribution(
           window.activeTextEditor?.document,
         );
         if (res) {
-          await compileAndRunQuery(false, res[0], progress, token, undefined);
+          await compileAndRunQuery(
+            qs,
+            qhm,
+            databaseUI,
+            localQueryResultsView,
+            queryStorageDir,
+            false,
+            res[0],
+            progress,
+            token,
+            undefined,
+          );
         }
       },
       {
@@ -1734,6 +1775,72 @@ async function showResultsForCompletedQuery(
   forceReveal: WebviewReveal,
 ): Promise<void> {
   await localQueryResultsView.showResults(query, forceReveal, false);
+}
+async function compileAndRunQuery(
+  qs: QueryRunner,
+  qhm: QueryHistoryManager,
+  databaseUI: DatabaseUI,
+  localQueryResultsView: ResultsView,
+  queryStorageDir: string,
+  quickEval: boolean,
+  selectedQuery: Uri | undefined,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  databaseItem: DatabaseItem | undefined,
+  range?: Range,
+): Promise<void> {
+  if (qs !== undefined) {
+    // If no databaseItem is specified, use the database currently selected in the Databases UI
+    databaseItem =
+      databaseItem || (await databaseUI.getDatabaseItem(progress, token));
+    if (databaseItem === undefined) {
+      throw new Error("Can't run query without a selected database");
+    }
+    const databaseInfo = {
+      name: databaseItem.name,
+      databaseUri: databaseItem.databaseUri.toString(),
+    };
+
+    // handle cancellation from the history view.
+    const source = new CancellationTokenSource();
+    token.onCancellationRequested(() => source.cancel());
+
+    const initialInfo = await createInitialQueryInfo(
+      selectedQuery,
+      databaseInfo,
+      quickEval,
+      range,
+    );
+    const item = new LocalQueryInfo(initialInfo, source);
+    qhm.addQuery(item);
+    try {
+      const completedQueryInfo = await qs.compileAndRunQueryAgainstDatabase(
+        databaseItem,
+        initialInfo,
+        queryStorageDir,
+        progress,
+        source.token,
+        undefined,
+        item,
+      );
+      qhm.completeQuery(item, completedQueryInfo);
+      await showResultsForCompletedQuery(
+        localQueryResultsView,
+        item as CompletedLocalQueryInfo,
+        WebviewReveal.Forced,
+      );
+      // Note we must update the query history view after showing results as the
+      // display and sorting might depend on the number of results
+    } catch (e) {
+      const err = asError(e);
+      err.message = `Error running query: ${err.message}`;
+      item.failureReason = err.message;
+      throw e;
+    } finally {
+      await qhm.refreshTreeView();
+      source.dispose();
+    }
+  }
 }
 
 function addUnhandledRejectionListener() {
