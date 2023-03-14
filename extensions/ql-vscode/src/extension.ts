@@ -701,7 +701,7 @@ async function activateWithInstalledDistribution(
     queryHistoryConfigurationListener,
     labelProvider,
     async (from: CompletedLocalQueryInfo, to: CompletedLocalQueryInfo) =>
-      showResultsForComparison(from, to),
+      showResultsForComparison(compareView, from, to),
   );
 
   ctx.subscriptions.push(qhm);
@@ -728,21 +728,6 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing source archive filesystem provider.");
   archiveFilesystemProvider_activate(ctx);
-
-  async function showResultsForComparison(
-    from: CompletedLocalQueryInfo,
-    to: CompletedLocalQueryInfo,
-  ): Promise<void> {
-    try {
-      await compareView.showResults(from, to);
-    } catch (e) {
-      void showAndLogExceptionWithTelemetry(
-        redactableError(asError(e))`Failed to show results: ${getErrorMessage(
-          e,
-        )}`,
-      );
-    }
-  }
 
   async function showResultsForCompletedQuery(
     query: CompletedLocalQueryInfo,
@@ -1727,6 +1712,22 @@ async function activateWithInstalledDistribution(
       ctx.subscriptions.forEach((d) => d.dispose());
     },
   };
+}
+
+async function showResultsForComparison(
+  compareView: CompareView,
+  from: CompletedLocalQueryInfo,
+  to: CompletedLocalQueryInfo,
+): Promise<void> {
+  try {
+    await compareView.showResults(from, to);
+  } catch (e) {
+    void showAndLogExceptionWithTelemetry(
+      redactableError(asError(e))`Failed to show results: ${getErrorMessage(
+        e,
+      )}`,
+    );
+  }
 }
 
 function addUnhandledRejectionListener() {
