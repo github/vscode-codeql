@@ -4,7 +4,6 @@ import {
   Location,
   LocationLink,
   Position,
-  ProgressLocation,
   ReferenceContext,
   ReferenceProvider,
   TextDocument,
@@ -87,7 +86,6 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
         );
       },
       {
-        location: ProgressLocation.Notification,
         cancellable: true,
         title: "Finding definitions",
       },
@@ -150,7 +148,6 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
         );
       },
       {
-        location: ProgressLocation.Notification,
         cancellable: true,
         title: "Finding references",
       },

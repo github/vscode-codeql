@@ -329,7 +329,6 @@ export async function activate(
               ),
             {
               title: progressTitle,
-              location: ProgressLocation.Notification,
             },
           );
 
