@@ -12,7 +12,7 @@ import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-cli
 import { join } from "path";
 
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
-import { CodeQLCliServer } from "../../../../src/cli";
+import { CliVersionConstraint, CodeQLCliServer } from "../../../../src/cli";
 import {
   fixWorkspaceReferences,
   restoreWorkspaceReferences,
@@ -255,6 +255,30 @@ describe("Variant Analysis Manager", () => {
           qlxFilesThatExist: ["subfolder/in-pack.qlx"],
         });
       });
+
+      it("should run a remote query with extension packs inside a qlpack", async () => {
+        if (!(await cli.cliConstraints.supportsQlpacksKind())) {
+          console.log(
+            `Skipping test because qlpacks kind is only suppported in CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND} or later.`,
+          );
+          return;
+        }
+        await cli.setUseExtensionPacks(true);
+        await doVariantAnalysisTest({
+          queryPath: "data-remote-qlpack-nested/subfolder/in-pack.ql",
+          filesThatExist: [
+            "subfolder/in-pack.ql",
+            "otherfolder/lib.qll",
+            ".codeql/libraries/semmle/targets-extension/0.0.0/ext/extension.yml",
+          ],
+          filesThatDoNotExist: ["subfolder/not-in-pack.ql"],
+          qlxFilesThatExist: ["subfolder/in-pack.qlx"],
+          dependenciesToCheck: [
+            "codeql/javascript-all",
+            "semmle/targets-extension",
+          ],
+        });
+      });
     });
 
     async function doVariantAnalysisTest({
@@ -262,11 +286,13 @@ describe("Variant Analysis Manager", () => {
       filesThatExist,
       qlxFilesThatExist,
       filesThatDoNotExist,
+      dependenciesToCheck = ["codeql/javascript-all"],
     }: {
       queryPath: string;
       filesThatExist: string[];
       qlxFilesThatExist: string[];
       filesThatDoNotExist: string[];
+      dependenciesToCheck?: string[];
     }) {
       const fileUri = getFile(queryPath);
       await variantAnalysisManager.runVariantAnalysis(
@@ -328,8 +354,10 @@ describe("Variant Analysis Manager", () => {
 
       const actualLockKeys = Object.keys(qlpackLockContents.dependencies);
 
-      // The lock file should contain at least codeql/javascript-all.
-      expect(actualLockKeys).toContain("codeql/javascript-all");
+      // The lock file should contain at least the specified dependencies.
+      dependenciesToCheck.forEach((dep) =>
+        expect(actualLockKeys).toContain(dep),
+      );
     }
 
     function getFile(file: string): Uri {
