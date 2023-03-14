@@ -274,76 +274,6 @@ export async function activate(
   // Checking the vscode version should not block extension activation.
   void assertVSCodeVersionGreaterThan(MIN_VERSION, ctx);
 
-  async function installOrUpdateDistributionWithProgressTitle(
-    progressTitle: string,
-    config: DistributionUpdateConfig,
-  ): Promise<void> {
-    const minSecondsSinceLastUpdateCheck = config.isUserInitiated ? 0 : 86400;
-    const noUpdatesLoggingFunc = config.shouldDisplayMessageWhenNoUpdates
-      ? showAndLogInformationMessage
-      : async (message: string) => void extLogger.log(message);
-    const result =
-      await distributionManager.checkForUpdatesToExtensionManagedDistribution(
-        minSecondsSinceLastUpdateCheck,
-      );
-
-    // We do want to auto update if there is no distribution at all
-    const allowAutoUpdating =
-      config.allowAutoUpdating ||
-      !(await distributionManager.hasDistribution());
-
-    switch (result.kind) {
-      case DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult:
-        void extLogger.log(
-          "Didn't perform CodeQL CLI update check since a check was already performed within the previous " +
-            `${minSecondsSinceLastUpdateCheck} seconds.`,
-        );
-        break;
-      case DistributionUpdateCheckResultKind.AlreadyUpToDate:
-        await noUpdatesLoggingFunc("CodeQL CLI already up to date.");
-        break;
-      case DistributionUpdateCheckResultKind.InvalidLocation:
-        await noUpdatesLoggingFunc(
-          "CodeQL CLI is installed externally so could not be updated.",
-        );
-        break;
-      case DistributionUpdateCheckResultKind.UpdateAvailable:
-        if (beganMainExtensionActivation || !allowAutoUpdating) {
-          const updateAvailableMessage =
-            `Version "${result.updatedRelease.name}" of the CodeQL CLI is now available. ` +
-            "Do you wish to upgrade?";
-          await ctx.globalState.update(shouldUpdateOnNextActivationKey, true);
-          if (
-            await showInformationMessageWithAction(
-              updateAvailableMessage,
-              "Restart and Upgrade",
-            )
-          ) {
-            await commands.executeCommand("workbench.action.reloadWindow");
-          }
-        } else {
-          await withProgress(
-            (progress) =>
-              distributionManager.installExtensionManagedDistributionRelease(
-                result.updatedRelease,
-                progress,
-              ),
-            {
-              title: progressTitle,
-            },
-          );
-
-          await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
-          void showAndLogInformationMessage(
-            `CodeQL CLI updated to version "${result.updatedRelease.name}".`,
-          );
-        }
-        break;
-      default:
-        assertNever(result);
-    }
-  }
-
   async function installOrUpdateDistribution(
     config: DistributionUpdateConfig,
   ): Promise<void> {
@@ -364,7 +294,12 @@ export async function activate(
       : "Installing CodeQL CLI";
 
     try {
-      await installOrUpdateDistributionWithProgressTitle(messageText, config);
+      await installOrUpdateDistributionWithProgressTitle(
+        ctx,
+        distributionManager,
+        messageText,
+        config,
+      );
     } catch (e) {
       // Don't rethrow the exception, because if the config is changed, we want to be able to retry installing
       // or updating the distribution.
@@ -523,6 +458,77 @@ export async function activate(
   );
 
   return codeQlExtension;
+}
+
+async function installOrUpdateDistributionWithProgressTitle(
+  ctx: ExtensionContext,
+  distributionManager: DistributionManager,
+  progressTitle: string,
+  config: DistributionUpdateConfig,
+): Promise<void> {
+  const minSecondsSinceLastUpdateCheck = config.isUserInitiated ? 0 : 86400;
+  const noUpdatesLoggingFunc = config.shouldDisplayMessageWhenNoUpdates
+    ? showAndLogInformationMessage
+    : async (message: string) => void extLogger.log(message);
+  const result =
+    await distributionManager.checkForUpdatesToExtensionManagedDistribution(
+      minSecondsSinceLastUpdateCheck,
+    );
+
+  // We do want to auto update if there is no distribution at all
+  const allowAutoUpdating =
+    config.allowAutoUpdating || !(await distributionManager.hasDistribution());
+
+  switch (result.kind) {
+    case DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult:
+      void extLogger.log(
+        "Didn't perform CodeQL CLI update check since a check was already performed within the previous " +
+          `${minSecondsSinceLastUpdateCheck} seconds.`,
+      );
+      break;
+    case DistributionUpdateCheckResultKind.AlreadyUpToDate:
+      await noUpdatesLoggingFunc("CodeQL CLI already up to date.");
+      break;
+    case DistributionUpdateCheckResultKind.InvalidLocation:
+      await noUpdatesLoggingFunc(
+        "CodeQL CLI is installed externally so could not be updated.",
+      );
+      break;
+    case DistributionUpdateCheckResultKind.UpdateAvailable:
+      if (beganMainExtensionActivation || !allowAutoUpdating) {
+        const updateAvailableMessage =
+          `Version "${result.updatedRelease.name}" of the CodeQL CLI is now available. ` +
+          "Do you wish to upgrade?";
+        await ctx.globalState.update(shouldUpdateOnNextActivationKey, true);
+        if (
+          await showInformationMessageWithAction(
+            updateAvailableMessage,
+            "Restart and Upgrade",
+          )
+        ) {
+          await commands.executeCommand("workbench.action.reloadWindow");
+        }
+      } else {
+        await withProgress(
+          (progress) =>
+            distributionManager.installExtensionManagedDistributionRelease(
+              result.updatedRelease,
+              progress,
+            ),
+          {
+            title: progressTitle,
+          },
+        );
+
+        await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
+        void showAndLogInformationMessage(
+          `CodeQL CLI updated to version "${result.updatedRelease.name}".`,
+        );
+      }
+      break;
+    default:
+      assertNever(result);
+  }
 }
 
 const PACK_GLOBS = [
