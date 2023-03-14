@@ -14,7 +14,7 @@ const baseConfig = {
       resolve(__dirname, ".storybook/tsconfig.json"),
     ],
   },
-  plugins: ["github", "@typescript-eslint", "etc"],
+  plugins: ["github", "@typescript-eslint", "etc", "jsdoc"],
   env: {
     node: true,
     es6: true,
@@ -27,6 +27,7 @@ const baseConfig = {
     "plugin:jest-dom/recommended",
     "plugin:prettier/recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:jsdoc/recommended",
   ],
   rules: {
     "@typescript-eslint/await-thenable": "error",
@@ -65,6 +66,8 @@ const baseConfig = {
     "import/no-namespace": "off",
     "import/no-unresolved": "off",
     "import/no-webpack-loader-syntax": "off",
+    "jsdoc/require-jsdoc": "off",
+    "jsdoc/require-param-type": "off",
     "jsx-a11y/anchor-is-valid": "off",
     "jsx-a11y/no-noninteractive-element-interactions": "off",
     "jsx-a11y/no-static-element-interactions": "off",
@@ -75,6 +78,11 @@ const baseConfig = {
     "no-shadow": "off",
     "github/array-foreach": "off",
     "github/no-then": "off",
+  },
+  settings: {
+    jsdoc: {
+      mode: "typescript",
+    },
   },
 };
 
@@ -97,6 +105,7 @@ module.exports = {
         ...baseConfig.rules,
       },
       settings: {
+        ...baseConfig.settings,
         react: {
           version: "detect",
         },
@@ -116,6 +125,7 @@ module.exports = {
         ...baseConfig.rules,
       },
       settings: {
+        ...baseConfig.settings,
         react: {
           version: "detect",
         },
