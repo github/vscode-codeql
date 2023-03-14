@@ -636,7 +636,11 @@ async function activateWithInstalledDistribution(
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
   ctx.subscriptions.push(queryHistoryConfigurationListener);
   const showResults = async (item: CompletedLocalQueryInfo) =>
-    showResultsForCompletedQuery(item, WebviewReveal.Forced);
+    showResultsForCompletedQuery(
+      localQueryResultsView,
+      item,
+      WebviewReveal.Forced,
+    );
   const queryStorageDir = join(ctx.globalStorageUri.fsPath, "queries");
   await ensureDir(queryStorageDir);
   const labelProvider = new HistoryItemLabelProvider(
@@ -729,13 +733,6 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Initializing source archive filesystem provider.");
   archiveFilesystemProvider_activate(ctx);
 
-  async function showResultsForCompletedQuery(
-    query: CompletedLocalQueryInfo,
-    forceReveal: WebviewReveal,
-  ): Promise<void> {
-    await localQueryResultsView.showResults(query, forceReveal, false);
-  }
-
   async function compileAndRunQuery(
     quickEval: boolean,
     selectedQuery: Uri | undefined,
@@ -780,6 +777,7 @@ async function activateWithInstalledDistribution(
         );
         qhm.completeQuery(item, completedQueryInfo);
         await showResultsForCompletedQuery(
+          localQueryResultsView,
           item as CompletedLocalQueryInfo,
           WebviewReveal.Forced,
         );
@@ -1728,6 +1726,14 @@ async function showResultsForComparison(
       )}`,
     );
   }
+}
+
+async function showResultsForCompletedQuery(
+  localQueryResultsView: ResultsView,
+  query: CompletedLocalQueryInfo,
+  forceReveal: WebviewReveal,
+): Promise<void> {
+  await localQueryResultsView.showResults(query, forceReveal, false);
 }
 
 function addUnhandledRejectionListener() {
