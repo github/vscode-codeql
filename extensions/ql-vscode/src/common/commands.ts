@@ -1,4 +1,5 @@
 import { CommandManager } from "../packages/commands";
+import type { Uri } from "vscode";
 
 /**
  * Contains type definitions for all commands used by the extension.
@@ -17,6 +18,8 @@ export type VariantAnalysisCommands = {
   "codeQL.openVariantAnalysisLogs": (
     variantAnalysisId: number,
   ) => Promise<void>;
+  "codeQL.runVariantAnalysis": (uri?: Uri) => Promise<void>;
+  "codeQL.runVariantAnalysisContextEditor": (uri?: Uri) => Promise<void>;
 };
 
 export type AllCommands = BaseCommands & VariantAnalysisCommands;
