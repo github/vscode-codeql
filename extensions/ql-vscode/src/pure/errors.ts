@@ -78,9 +78,8 @@ export interface ErrorLike {
 
 function isErrorLike(error: any): error is ErrorLike {
   if (
-    error.message !== undefined &&
     typeof error.message === "string" &&
-    (error.stack === undefined || typeof error.stack === "string")
+    (typeof error.stack === "undefined" || typeof error.stack === "string")
   ) {
     return true;
   }
