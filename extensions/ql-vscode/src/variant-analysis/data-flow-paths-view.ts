@@ -21,13 +21,10 @@ export class DataFlowPathsView extends AbstractWebview<
   }
 
   public async showDataFlows(dataFlowPaths: DataFlowPaths) {
-    if (!this.isShowingPanel) {
-      await this.getPanel();
-      await this.waitForPanelLoaded();
-    }
+    const panel = await this.getPanel();
+    panel.reveal(undefined, true);
 
-    // Focus on panel
-    this.panel?.reveal(undefined, true);
+    await this.waitForPanelLoaded();
 
     await this.postMessage({
       t: "setDataFlowPaths",
