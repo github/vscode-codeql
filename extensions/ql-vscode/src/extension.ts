@@ -137,6 +137,7 @@ import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 import { DirResult } from "tmp";
+import { AllCommands, BaseCommands } from "./common/commands";
 
 /**
  * extension.ts
@@ -167,6 +168,17 @@ let isInstallingOrUpdatingDistribution = false;
 
 const extensionId = "GitHub.vscode-codeql";
 const extension = extensions.getExtension(extensionId);
+
+/**
+ * Return all commands that are not tied to the more specific managers.
+ */
+function getCommands(): BaseCommands {
+  return {
+    "codeQL.openDocumentation": async () => {
+      await env.openExternal(Uri.parse("https://codeql.github.com/docs/"));
+    },
+  };
+}
 
 /**
  * If the user tries to execute vscode commands after extension activation is failed, give
@@ -1113,14 +1125,14 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openVariantAnalysisLogs",
-      async (variantAnalysisId: number) => {
-        await variantAnalysisManager.openVariantAnalysisLogs(variantAnalysisId);
-      },
-    ),
-  );
+  const allCommands: AllCommands = {
+    ...getCommands(),
+    ...variantAnalysisManager.getCommands(),
+  };
+
+  for (const [commandName, command] of Object.entries(allCommands)) {
+    app.commands.register(commandName as keyof AllCommands, command);
+  }
 
   ctx.subscriptions.push(
     commandRunner(
@@ -1340,12 +1352,6 @@ async function activateWithInstalledDistribution(
       {
         title: "Adding database from URL",
       },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.openDocumentation", async () =>
-      env.openExternal(Uri.parse("https://codeql.github.com/docs/")),
     ),
   );
 

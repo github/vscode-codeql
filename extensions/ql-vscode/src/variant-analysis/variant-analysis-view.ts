@@ -145,7 +145,7 @@ export class VariantAnalysisView
         );
         break;
       case "openLogs":
-        await commands.executeCommand(
+        await this.manager.commandManager.execute(
           "codeQL.openVariantAnalysisLogs",
           this.variantAnalysisId,
         );

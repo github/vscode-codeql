@@ -62,6 +62,7 @@ import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { App } from "../common/app";
 import { redactableError } from "../pure/errors";
+import { AppCommandManager, VariantAnalysisCommands } from "../common/commands";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -121,6 +122,18 @@ export class VariantAnalysisManager
     this.variantAnalysisResultsManager.onResultLoaded(
       this.onRepoResultLoaded.bind(this),
     );
+  }
+
+  getCommands(): VariantAnalysisCommands {
+    return {
+      "codeQL.openVariantAnalysisLogs": async (variantAnalysisId: number) => {
+        await this.openVariantAnalysisLogs(variantAnalysisId);
+      },
+    };
+  }
+
+  get commandManager(): AppCommandManager {
+    return this.app.commands;
   }
 
   public async runVariantAnalysis(
