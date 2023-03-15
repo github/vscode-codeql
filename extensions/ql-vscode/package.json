@@ -1416,7 +1416,7 @@
     "d3": "^7.6.1",
     "d3-graphviz": "^5.0.2",
     "fs-extra": "^10.0.1",
-    "glob-promise": "^4.2.2",
+    "glob-promise": "^6.0.2",
     "immutable": "^4.0.0",
     "js-yaml": "^4.1.0",
     "minimist": "~1.2.6",
