@@ -119,10 +119,7 @@ export class VariantAnalysisView
         );
         break;
       case "openQueryFile":
-        void commands.executeCommand(
-          "codeQL.openVariantAnalysisQueryFile",
-          this.variantAnalysisId,
-        );
+        await this.manager.openQueryFile(this.variantAnalysisId);
         break;
       case "openQueryText":
         void commands.executeCommand(
