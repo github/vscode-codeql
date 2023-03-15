@@ -204,7 +204,13 @@ export class QueryHistoryManager extends DisposableObject {
     void extLogger.log("Registering query history panel commands.");
     this.push(
       commandRunner(
-        "codeQLQueryHistory.openQuery",
+        "codeQLQueryHistory.openQueryTitleMenu",
+        this.handleOpenQuery.bind(this),
+      ),
+    );
+    this.push(
+      commandRunner(
+        "codeQLQueryHistory.openQueryContextMenu",
         this.handleOpenQuery.bind(this),
       ),
     );

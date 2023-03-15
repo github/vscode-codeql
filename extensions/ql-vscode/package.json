@@ -544,7 +544,12 @@
         "title": "CodeQL: Check for CLI Updates"
       },
       {
-        "command": "codeQLQueryHistory.openQuery",
+        "command": "codeQLQueryHistory.openQueryTitleMenu",
+        "title": "View Query",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "codeQLQueryHistory.openQueryContextMenu",
         "title": "View Query",
         "icon": "$(edit)"
       },
@@ -751,7 +756,7 @@
           "group": "navigation"
         },
         {
-          "command": "codeQLQueryHistory.openQuery",
+          "command": "codeQLQueryHistory.openQueryTitleMenu",
           "when": "view == codeQLQueryHistory",
           "group": "navigation"
         },
@@ -858,7 +863,7 @@
           "group": "inline"
         },
         {
-          "command": "codeQLQueryHistory.openQuery",
+          "command": "codeQLQueryHistory.openQueryContextMenu",
           "group": "2_queryHistory@0",
           "when": "view == codeQLQueryHistory"
         },
@@ -1165,7 +1170,11 @@
           "when": "false"
         },
         {
-          "command": "codeQLQueryHistory.openQuery",
+          "command": "codeQLQueryHistory.openQueryTitleMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.openQueryContextMenu",
           "when": "false"
         },
         {
