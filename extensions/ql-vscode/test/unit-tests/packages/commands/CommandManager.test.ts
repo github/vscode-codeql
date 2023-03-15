@@ -11,7 +11,7 @@ describe("CommandManager", () => {
       jest.fn(),
     );
     const myCommand = jest.fn();
-    commandManager.registerCommand("abc", myCommand);
+    commandManager.register("abc", myCommand);
     expect(commandRegister).toHaveBeenCalledTimes(1);
     expect(commandRegister).toHaveBeenCalledWith("abc", myCommand);
   });
@@ -28,22 +28,22 @@ describe("CommandManager", () => {
     );
 
     // @ts-expect-error wrong command name should give a type error
-    commandManager.registerCommand("abc", jest.fn());
+    commandManager.register("abc", jest.fn());
 
-    commandManager.registerCommand(
+    commandManager.register(
       "codeQL.openVariantAnalysisLogs",
       // @ts-expect-error wrong function parameter type should give a type error
       async (variantAnalysisId: string): Promise<number> => 10,
     );
 
-    commandManager.registerCommand(
+    commandManager.register(
       "codeQL.openVariantAnalysisLogs",
       // @ts-expect-error wrong function return type should give a type error
       async (variantAnalysisId: number): Promise<string> => "hello",
     );
 
     // Working types
-    commandManager.registerCommand(
+    commandManager.register(
       "codeQL.openVariantAnalysisLogs",
       async (variantAnalysisId: number): Promise<number> =>
         variantAnalysisId * 10,
@@ -61,8 +61,8 @@ describe("CommandManager", () => {
       commandRegister,
       jest.fn(),
     );
-    commandManager.registerCommand("abc", jest.fn());
-    commandManager.registerCommand("def", jest.fn());
+    commandManager.register("abc", jest.fn());
+    commandManager.register("def", jest.fn());
     expect(dispose1).not.toHaveBeenCalled();
     expect(dispose2).not.toHaveBeenCalled();
     commandManager.dispose();
@@ -76,7 +76,7 @@ describe("CommandManager", () => {
       jest.fn(),
       commandExecute,
     );
-    const result = await commandManager.executeCommand("abc", "hello", true);
+    const result = await commandManager.execute("abc", "hello", true);
     expect(result).toEqual(7);
     expect(commandExecute).toHaveBeenCalledTimes(1);
     expect(commandExecute).toHaveBeenCalledWith("abc", "hello", true);
@@ -94,18 +94,18 @@ describe("CommandManager", () => {
     );
 
     // @ts-expect-error wrong command name should give a type error
-    await commandManager.executeCommand("abc", 4);
+    await commandManager.execute("abc", 4);
 
-    await commandManager.executeCommand(
+    await commandManager.execute(
       "codeQL.openVariantAnalysisLogs",
       // @ts-expect-error wrong argument type should give a type error
       "xyz",
     );
 
     // @ts-expect-error wrong number of arguments should give a type error
-    await commandManager.executeCommand("codeQL.openVariantAnalysisLogs", 2, 3);
+    await commandManager.execute("codeQL.openVariantAnalysisLogs", 2, 3);
 
     // Working types
-    await commandManager.executeCommand("codeQL.openVariantAnalysisLogs", 7);
+    await commandManager.execute("codeQL.openVariantAnalysisLogs", 7);
   });
 });

@@ -5,9 +5,7 @@
  * and then allow other parts to call those commands in a well-typed manner.
  */
 
-export interface Disposable {
-  dispose(): void;
-}
+import { Disposable } from "./Disposable";
 
 /**
  * A command function is a completely untyped command.
@@ -32,7 +30,7 @@ export class CommandManager<
   constructor(
     private readonly commandRegister: <T extends CommandName>(
       commandName: T,
-      definition: Commands[T],
+      fn: Commands[T],
     ) => Disposable,
     private readonly commandExecute: <T extends CommandName>(
       commandName: T,
@@ -43,7 +41,7 @@ export class CommandManager<
   /**
    * Register a command with the specified name and implementation.
    */
-  registerCommand<T extends CommandName>(
+  register<T extends CommandName>(
     commandName: T,
     definition: Commands[T],
   ): void {
@@ -53,7 +51,7 @@ export class CommandManager<
   /**
    * Execute a command with the specified name and the provided arguments.
    */
-  executeCommand<T extends CommandName>(
+  execute<T extends CommandName>(
     commandName: T,
     ...args: Parameters<Commands[T]>
   ): Promise<Awaited<ReturnType<Commands[T]>>> {

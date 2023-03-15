@@ -6,19 +6,19 @@ import { AppEventEmitter } from "../events";
 import { extLogger, Logger } from "../logging";
 import { Memento } from "../memento";
 import { VSCodeAppEventEmitter } from "./events";
-import { ExtensionCommandManager } from "../commands";
-import { initializeVSCodeCommandManager } from "./commands";
+import { AppCommandManager } from "../commands";
+import { createVSCodeCommandManager } from "./commands";
 
 export class ExtensionApp implements App {
   public readonly credentials: VSCodeCredentials;
-  public readonly commandManager: ExtensionCommandManager;
+  public readonly commands: AppCommandManager;
 
   public constructor(
     public readonly extensionContext: vscode.ExtensionContext,
   ) {
     this.credentials = new VSCodeCredentials();
-    this.commandManager = initializeVSCodeCommandManager();
-    extensionContext.subscriptions.push(this.commandManager);
+    this.commands = createVSCodeCommandManager();
+    extensionContext.subscriptions.push(this.commands);
   }
 
   public get extensionPath(): string {

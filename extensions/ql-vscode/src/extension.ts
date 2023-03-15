@@ -136,7 +136,7 @@ import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filt
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
-import { AllCommands, ExtensionCommands } from "./common/commands";
+import { AllCommands, BaseCommands } from "./common/commands";
 
 /**
  * extension.ts
@@ -168,7 +168,10 @@ let isInstallingOrUpdatingDistribution = false;
 const extensionId = "GitHub.vscode-codeql";
 const extension = extensions.getExtension(extensionId);
 
-function getCommands(): ExtensionCommands {
+/**
+ * Return all commands that are not tied to the more specific managers.
+ */
+function getCommands(): BaseCommands {
   return {
     "codeQL.openDocumentation": async () => {
       await env.openExternal(Uri.parse("https://codeql.github.com/docs/"));
@@ -1206,10 +1209,7 @@ async function activateWithInstalledDistribution(
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
-    app.commandManager.registerCommand(
-      commandName as keyof AllCommands,
-      command,
-    );
+    app.commands.register(commandName as keyof AllCommands, command);
   }
 
   ctx.subscriptions.push(
