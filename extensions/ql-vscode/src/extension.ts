@@ -1274,7 +1274,7 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner("codeQL.previewQueryHelp", async (selectedQuery: Uri) => {
-      await previewQueryHelp(cliServer, selectedQuery, qhelpTmpDir);
+      await previewQueryHelp(cliServer, qhelpTmpDir, selectedQuery);
     }),
   );
 
@@ -1842,8 +1842,8 @@ async function compileAndRunQueryOnMultipleDatabases(
 
 async function previewQueryHelp(
   cliServer: CodeQLCliServer,
-  selectedQuery: Uri,
   qhelpTmpDir: DirResult,
+  selectedQuery: Uri,
 ): Promise<void> {
   // selectedQuery is unpopulated when executing through the command palette
   const pathToQhelp = selectedQuery
