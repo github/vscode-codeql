@@ -5,22 +5,16 @@ describe('CodeQL Extension', () => {
     cy.visit('http://localhost:8080')
   })
 
-  it('Should load vscode', () => {
-    cy.get('.explorer-viewlet').should('exist')
-  })
+  it('should run UnsafeJQueryPlugin.ql', () => {
+    cy.get('.explorer-viewlet').type('{meta}{shift}p')
+
+    cy.focused().type('Open Query')
+
+    cy.findByText('Open Query').click()
+
+    cy.findByText('UnsafeJQueryPlugin.ql').click()
+  });
 })
-
-
-// it('should open UnsageJQueryPlugin.ql', () => {
-//   cy.get('.explorer-viewlet')
-//     .type('{meta}{shift}P')
-
-//   cy.focused().type('Open Query')
-
-//   cy.findByText('Open Query').click()
-
-//   cy.findByText('UnsafeJQueryPlugin.ql').click()
-// });
 
 // it('Should trust project', () => {
 //   cy.get('Yes, I trust the authors')
@@ -30,18 +24,6 @@ describe('CodeQL Extension', () => {
 //       cy.contains('Yes, I trust the authors').click()
 //     }
 //   });
-// })
-
-// it('Should execute Hello World command', () => {
-  //open the command palette
-  // cy.get('.explorer-viewlet')
-  //   .type('{meta}{shift}P')
-
-  // //type Hello World and enter
-  // cy.focused().type('Hello World')
-
-  // // assert that the notification is opened.
-  // y.findByText('Hello World!').should('exist')
 // })
 
 // 1. Open the [UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
