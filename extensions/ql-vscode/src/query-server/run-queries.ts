@@ -9,7 +9,7 @@ import {
   showAndLogWarningMessage,
   tryGetQueryMetadata,
 } from "../helpers";
-import { extLogger } from "../common";
+import { extLogger, TeeLogger } from "../common";
 import * as messages from "../pure/new-messages";
 import { QueryResultType } from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
@@ -70,6 +70,10 @@ export async function compileAndRunQueryAgainstDatabase(
     : { query: {} };
 
   const diskWorkspaceFolders = getOnDiskWorkspaceFolders();
+  const extensionPacks = (await qs.cliServer.useExtensionPacks())
+    ? Object.keys(await qs.cliServer.resolveQlpacks(diskWorkspaceFolders, true))
+    : undefined;
+
   const db = dbItem.databaseUri.fsPath;
   const logPath = queryInfo ? query.evalLogPath : undefined;
   const queryToRun: messages.RunQueryParams = {
@@ -82,10 +86,17 @@ export async function compileAndRunQueryAgainstDatabase(
     dilPath: query.dilPath,
     logPath,
     target,
+    extensionPacks,
   };
+  const logger = new TeeLogger(qs.logger, query.logPath);
   await query.createTimestampFile();
   let result: messages.RunQueryResult | undefined;
   try {
+    // Update the active query logger every time there is a new request to compile.
+    // This isn't ideal because in situations where there are queries running
+    // in parallel, each query's log messages are interleaved. Fixing this
+    // properly will require a change in the query server.
+    qs.activeQueryLogger = logger;
     result = await qs.sendRequest(
       messages.runQuery,
       queryToRun,
@@ -100,7 +111,7 @@ export async function compileAndRunQueryAgainstDatabase(
   } finally {
     if (queryInfo) {
       if (await query.hasEvalLog()) {
-        await query.addQueryLogs(queryInfo, qs.cliServer, qs.logger);
+        await query.addQueryLogs(queryInfo, qs.cliServer, logger);
       } else {
         void showAndLogWarningMessage(
           `Failed to write structured evaluator log to ${query.evalLogPath}.`,
@@ -155,8 +166,5 @@ export async function compileAndRunQueryAgainstDatabase(
     },
     message,
     successful,
-    dispose: () => {
-      qs.logger.removeAdditionalLogLocation(undefined);
-    },
   };
 }

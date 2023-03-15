@@ -1,0 +1,6 @@
+name: semmle/has-extension
+version: 0.0.0
+dependencies:
+  codeql/javascript-all: '*'
+dataExtensions:
+  - ext/*

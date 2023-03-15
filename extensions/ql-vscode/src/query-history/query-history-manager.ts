@@ -556,7 +556,6 @@ export class QueryHistoryManager extends DisposableObject {
           !(await pathExists(item.completedQuery?.query.querySaveDir))
         ) {
           this.treeDataProvider.remove(item);
-          item.completedQuery?.dispose();
         }
       }),
     );
@@ -577,7 +576,6 @@ export class QueryHistoryManager extends DisposableObject {
           // Removing in progress local queries is not supported. They must be cancelled first.
           if (item.status !== QueryStatus.InProgress) {
             this.treeDataProvider.remove(item);
-            item.completedQuery?.dispose();
 
             // User has explicitly asked for this query to be removed.
             // We need to delete it from disk as well.

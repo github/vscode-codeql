@@ -34,6 +34,7 @@ import {
   getQlPackPath,
   FALLBACK_QLPACK_FILENAME,
   QLPACK_FILENAMES,
+  QLPACK_LOCK_FILENAMES,
 } from "../pure/ql";
 
 export interface QlPack {
@@ -70,42 +71,23 @@ async function generateQueryPack(
   const originalPackRoot = await findPackRoot(queryFile);
   const packRelativePath = relative(originalPackRoot, queryFile);
   const targetQueryFileName = join(queryPackDir, packRelativePath);
+  const workspaceFolders = getOnDiskWorkspaceFolders();
 
   let language: string | undefined;
+
+  // Check if the query is already in a query pack.
+  // If so, copy the entire query pack to the temporary directory.
+  // Otherwise, copy only the query file to the temporary directory
+  // and generate a synthetic query pack.
   if (await getQlPackPath(originalPackRoot)) {
     // don't include ql files. We only want the queryFile to be copied.
-    const toCopy = await cliServer.packPacklist(originalPackRoot, false);
-
-    // also copy the lock file (either new name or old name) and the query file itself. These are not included in the packlist.
-    [
-      join(originalPackRoot, "qlpack.lock.yml"),
-      join(originalPackRoot, "codeql-pack.lock.yml"),
+    await copyExistingQueryPack(
+      cliServer,
+      originalPackRoot,
       queryFile,
-    ].forEach((absolutePath) => {
-      if (absolutePath) {
-        toCopy.push(absolutePath);
-      }
-    });
-
-    let copiedCount = 0;
-    await copy(originalPackRoot, queryPackDir, {
-      filter: (file: string) =>
-        // copy file if it is in the packlist, or it is a parent directory of a file in the packlist
-        !!toCopy.find((f) => {
-          // Normalized paths ensure that Windows drive letters are capitalized consistently.
-          const normalizedPath = Uri.file(f).fsPath;
-          const matches =
-            normalizedPath === file || normalizedPath.startsWith(file + sep);
-          if (matches) {
-            copiedCount++;
-          }
-          return matches;
-        }),
-    });
-
-    void extLogger.log(`Copied ${copiedCount} files to ${queryPackDir}`);
-
-    await fixPackFile(queryPackDir, packRelativePath);
+      queryPackDir,
+      packRelativePath,
+    );
 
     language = await findLanguage(cliServer, Uri.file(targetQueryFileName));
   } else {
@@ -114,20 +96,12 @@ async function generateQueryPack(
 
     // copy only the query file to the query pack directory
     // and generate a synthetic query pack
-    void extLogger.log(`Copying ${queryFile} to ${queryPackDir}`);
-    await copy(queryFile, targetQueryFileName);
-    void extLogger.log("Generating synthetic query pack");
-    const syntheticQueryPack = {
-      name: QUERY_PACK_NAME,
-      version: "0.0.0",
-      dependencies: {
-        [`codeql/${language}-all`]: "*",
-      },
-      defaultSuite: generateDefaultSuite(packRelativePath),
-    };
-    await writeFile(
-      join(queryPackDir, FALLBACK_QLPACK_FILENAME),
-      dump(syntheticQueryPack),
+    await createNewQueryPack(
+      queryFile,
+      queryPackDir,
+      targetQueryFileName,
+      language,
+      packRelativePath,
     );
   }
   if (!language) {
@@ -149,12 +123,21 @@ async function generateQueryPack(
     precompilationOpts = ["--no-precompile"];
   }
 
+  if (await cliServer.useExtensionPacks()) {
+    await injectExtensionPacks(cliServer, queryPackDir, workspaceFolders);
+  }
+
+  await cliServer.packInstall(queryPackDir, {
+    workspaceFolders,
+  });
+
+  // Clear the CLI cache so that the most recent qlpack lock file is used.
+  await cliServer.clearCache();
+
   const bundlePath = await getPackedBundlePath(queryPackDir);
   void extLogger.log(
     `Compiling and bundling query pack from ${queryPackDir} to ${bundlePath}. (This may take a while.)`,
   );
-  await cliServer.packInstall(queryPackDir);
-  const workspaceFolders = getOnDiskWorkspaceFolders();
   await cliServer.packBundle(
     queryPackDir,
     workspaceFolders,
@@ -166,6 +149,70 @@ async function generateQueryPack(
     base64Pack,
     language,
   };
+}
+
+async function createNewQueryPack(
+  queryFile: string,
+  queryPackDir: string,
+  targetQueryFileName: string,
+  language: string | undefined,
+  packRelativePath: string,
+) {
+  void extLogger.log(`Copying ${queryFile} to ${queryPackDir}`);
+  await copy(queryFile, targetQueryFileName);
+  void extLogger.log("Generating synthetic query pack");
+  const syntheticQueryPack = {
+    name: QUERY_PACK_NAME,
+    version: "0.0.0",
+    dependencies: {
+      [`codeql/${language}-all`]: "*",
+    },
+    defaultSuite: generateDefaultSuite(packRelativePath),
+  };
+  await writeFile(
+    join(queryPackDir, FALLBACK_QLPACK_FILENAME),
+    dump(syntheticQueryPack),
+  );
+}
+
+async function copyExistingQueryPack(
+  cliServer: cli.CodeQLCliServer,
+  originalPackRoot: string,
+  queryFile: string,
+  queryPackDir: string,
+  packRelativePath: string,
+) {
+  const toCopy = await cliServer.packPacklist(originalPackRoot, false);
+
+  [
+    // also copy the lock file (either new name or old name) and the query file itself. These are not included in the packlist.
+    ...QLPACK_LOCK_FILENAMES.map((f) => join(originalPackRoot, f)),
+    queryFile,
+  ].forEach((absolutePath) => {
+    if (absolutePath) {
+      toCopy.push(absolutePath);
+    }
+  });
+
+  let copiedCount = 0;
+  await copy(originalPackRoot, queryPackDir, {
+    filter: (file: string) =>
+      // copy file if it is in the packlist, or it is a parent directory of a file in the packlist
+      !!toCopy.find((f) => {
+        // Normalized paths ensure that Windows drive letters are capitalized consistently.
+        const normalizedPath = Uri.file(f).fsPath;
+        const matches =
+          normalizedPath === file || normalizedPath.startsWith(file + sep);
+        if (matches) {
+          copiedCount++;
+        }
+        return matches;
+      }),
+  });
+
+  void extLogger.log(`Copied ${copiedCount} files to ${queryPackDir}`);
+
+  await fixPackFile(queryPackDir, packRelativePath);
 }
 
 async function findPackRoot(queryFile: string): Promise<string> {
@@ -223,7 +270,7 @@ export async function prepareRemoteQueryRun(
   uri: Uri | undefined,
   progress: ProgressCallback,
   token: CancellationToken,
-  dbManager?: DbManager,
+  dbManager: DbManager,
 ): Promise<PreparedRemoteQuery> {
   if (!uri?.fsPath.endsWith(".ql")) {
     throw new UserCancellationException("Not a CodeQL query file.");
@@ -329,17 +376,52 @@ async function fixPackFile(
   }
   const qlpack = load(await readFile(packPath, "utf8")) as QlPack;
 
-  // update pack name
   qlpack.name = QUERY_PACK_NAME;
-
-  // update default suite
-  delete qlpack.defaultSuiteFile;
-  qlpack.defaultSuite = generateDefaultSuite(packRelativePath);
-
-  // remove any ${workspace} version references
+  updateDefaultSuite(qlpack, packRelativePath);
   removeWorkspaceRefs(qlpack);
 
   await writeFile(packPath, dump(qlpack));
+}
+
+async function injectExtensionPacks(
+  cliServer: cli.CodeQLCliServer,
+  queryPackDir: string,
+  workspaceFolders: string[],
+) {
+  const qlpackFile = await getQlPackPath(queryPackDir);
+  if (!qlpackFile) {
+    throw new Error(
+      `Could not find ${QLPACK_FILENAMES.join(
+        " or ",
+      )} file in '${queryPackDir}'`,
+    );
+  }
+  const syntheticQueryPack = load(await readFile(qlpackFile, "utf8")) as QlPack;
+
+  const extensionPacks = await cliServer.resolveQlpacks(workspaceFolders, true);
+  Object.entries(extensionPacks).forEach(([name, paths]) => {
+    // We are guaranteed that there is at least one path found for each extension pack.
+    // If there are multiple paths, then we have a problem. This means that there is
+    // ambiguity in which path to use. This is an error.
+    if (paths.length > 1) {
+      throw new Error(
+        `Multiple versions of extension pack '${name}' found: ${paths.join(
+          ", ",
+        )}`,
+      );
+    }
+    // Add this extension pack as a dependency. It doesn't matter which
+    // version we specify, since we are guaranteed that the extension pack
+    // is resolved from source at the given path.
+    syntheticQueryPack.dependencies[name] = "*";
+  });
+  await writeFile(qlpackFile, dump(syntheticQueryPack));
+  await cliServer.clearCache();
+}
+
+function updateDefaultSuite(qlpack: QlPack, packRelativePath: string) {
+  delete qlpack.defaultSuiteFile;
+  qlpack.defaultSuite = generateDefaultSuite(packRelativePath);
 }
 
 function generateDefaultSuite(packRelativePath: string) {

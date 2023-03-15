@@ -111,9 +111,14 @@ export class HistoryTreeDataProvider
           return "remoteResultsItem";
         }
       case QueryStatus.Failed:
-        return element.t === "local"
-          ? "cancelledResultsItem"
-          : "cancelledRemoteResultsItem";
+        if (element.t === "local") {
+          return "cancelledResultsItem";
+        } else if (element.variantAnalysis.actionsWorkflowRunId === undefined) {
+          return "cancelledRemoteResultsItemWithoutLogs";
+        } else {
+          return "cancelledRemoteResultsItem";
+        }
+
       default:
         assertNever(element.status);
     }

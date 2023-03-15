@@ -126,6 +126,7 @@ export interface RunQueryParams {
   singletonExternalInputs: Record<string, string>;
   dilPath?: string;
   logPath?: string;
+  extensionPacks?: string[];
 }
 
 export interface RunQueryResult {

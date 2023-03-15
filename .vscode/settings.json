@@ -42,22 +42,29 @@
     "LANG": "en-US",
     "TZ": "UTC"
   },
+
+  // These options are used by the `jestrunner.debug` command.
+  // They are not used by the `jestrunner.run` command.
+  // After clicking "debug" over a test, continually invoke the
+  // "Debug: Attach to Node Process" command until you see a
+  // process named "Code Helper (Plugin)". Then click "attach".
+  // This will attach the debugger to the test process.
   "jestrunner.debugOptions": {
     // Uncomment to debug integration tests
-    // "attachSimplePort": 9223,
+    "attachSimplePort": 9223,
     "env": {
       "LANG": "en-US",
       "TZ": "UTC",
 
       // Uncomment to set a custom path to a CodeQL checkout.
-      // "TEST_CODEQL_PATH": "../codeql",
+      // "TEST_CODEQL_PATH": "/absolute/path/to/checkout/of/codeql",
 
       // Uncomment to set a custom path to a CodeQL CLI executable.
       // This is the CodeQL version that will be used in the tests.
-      // "CLI_PATH": "/path/to/customg/codeql",
+      // "CLI_PATH": "/absolute/path/to/custom/codeql",
 
       // Uncomment to debug integration tests
-      // "VSCODE_WAIT_FOR_DEBUGGER": "true",
+      "VSCODE_WAIT_FOR_DEBUGGER": "true",
     }
   },
   "terminal.integrated.env.linux": {
