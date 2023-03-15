@@ -210,7 +210,19 @@ export class QueryHistoryManager extends DisposableObject {
     );
     this.push(
       commandRunner(
-        "codeQLQueryHistory.removeHistoryItem",
+        "codeQLQueryHistory.removeHistoryItemTitleMenu",
+        this.handleRemoveHistoryItem.bind(this),
+      ),
+    );
+    this.push(
+      commandRunner(
+        "codeQLQueryHistory.removeHistoryItemContextMenu",
+        this.handleRemoveHistoryItem.bind(this),
+      ),
+    );
+    this.push(
+      commandRunner(
+        "codeQLQueryHistory.removeHistoryItemContextInline",
         this.handleRemoveHistoryItem.bind(this),
       ),
     );

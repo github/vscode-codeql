@@ -554,7 +554,17 @@
         "icon": "$(preview)"
       },
       {
-        "command": "codeQLQueryHistory.removeHistoryItem",
+        "command": "codeQLQueryHistory.removeHistoryItemTitleMenu",
+        "title": "Delete",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "codeQLQueryHistory.removeHistoryItemContextMenu",
+        "title": "Delete",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "codeQLQueryHistory.removeHistoryItemContextInline",
         "title": "Delete",
         "icon": "$(trash)"
       },
@@ -751,7 +761,7 @@
           "group": "navigation"
         },
         {
-          "command": "codeQLQueryHistory.removeHistoryItem",
+          "command": "codeQLQueryHistory.removeHistoryItemTitleMenu",
           "when": "view == codeQLQueryHistory",
           "group": "navigation"
         },
@@ -853,12 +863,12 @@
           "when": "view == codeQLQueryHistory"
         },
         {
-          "command": "codeQLQueryHistory.removeHistoryItem",
+          "command": "codeQLQueryHistory.removeHistoryItemContextMenu",
           "group": "7_queryHistory@0",
           "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledRemoteResultsItemWithoutLogs || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
-          "command": "codeQLQueryHistory.removeHistoryItem",
+          "command": "codeQLQueryHistory.removeHistoryItemContextInline",
           "group": "inline",
           "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledRemoteResultsItemWithoutLogs || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
@@ -1159,7 +1169,15 @@
           "when": "false"
         },
         {
-          "command": "codeQLQueryHistory.removeHistoryItem",
+          "command": "codeQLQueryHistory.removeHistoryItemTitleMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.removeHistoryItemContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.removeHistoryItemContextInline",
           "when": "false"
         },
         {
