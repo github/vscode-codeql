@@ -66,10 +66,7 @@ import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { App } from "../common/app";
 import { redactableError } from "../pure/errors";
-import {
-  ExtensionCommandManager,
-  VariantAnalysisCommands,
-} from "../common/commands";
+import { AppCommandManager, VariantAnalysisCommands } from "../common/commands";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -144,8 +141,8 @@ export class VariantAnalysisManager
     };
   }
 
-  get commandManager(): ExtensionCommandManager {
-    return this.app.commandManager;
+  get commandManager(): AppCommandManager {
+    return this.app.commands;
   }
 
   private async runVariantAnalysisFromCommand(uri?: Uri) {

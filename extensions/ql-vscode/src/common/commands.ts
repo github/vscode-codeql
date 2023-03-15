@@ -8,8 +8,8 @@ import type { Uri } from "vscode";
  * the implementation in the corresponding `getCommands` function.
  */
 
-// Commands directly in the extension
-export type ExtensionCommands = {
+// Base commands not tied directly to a module like e.g. variant analysis.
+export type BaseCommands = {
   "codeQL.openDocumentation": () => Promise<void>;
 };
 
@@ -22,6 +22,6 @@ export type VariantAnalysisCommands = {
   "codeQL.runVariantAnalysisContextEditor": (uri?: Uri) => Promise<void>;
 };
 
-export type AllCommands = ExtensionCommands & VariantAnalysisCommands;
+export type AllCommands = BaseCommands & VariantAnalysisCommands;
 
-export type ExtensionCommandManager = CommandManager<AllCommands>;
+export type AppCommandManager = CommandManager<AllCommands>;

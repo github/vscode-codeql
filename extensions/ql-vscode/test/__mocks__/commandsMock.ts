@@ -1,9 +1,6 @@
-import { ExtensionCommandManager } from "../../src/common/commands";
-import {
-  CommandFunction,
-  CommandManager,
-  Disposable,
-} from "../../src/packages/commands";
+import { AppCommandManager } from "../../src/common/commands";
+import { CommandFunction, CommandManager } from "../../src/packages/commands";
+import { Disposable } from "../../src/packages/commands/Disposable";
 
 export function createMockCommandManager({
   registerCommand = jest.fn(),
@@ -11,6 +8,6 @@ export function createMockCommandManager({
 }: {
   registerCommand?: (commandName: string, fn: CommandFunction) => Disposable;
   executeCommand?: (commandName: string, ...args: any[]) => Promise<any>;
-} = {}): ExtensionCommandManager {
+} = {}): AppCommandManager {
   return new CommandManager(registerCommand, executeCommand);
 }

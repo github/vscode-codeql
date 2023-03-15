@@ -136,7 +136,8 @@ import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filt
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
-import { AllCommands, ExtensionCommands } from "./common/commands";
+import { DirResult } from "tmp";
+import { AllCommands, BaseCommands } from "./common/commands";
 
 /**
  * extension.ts
@@ -168,7 +169,10 @@ let isInstallingOrUpdatingDistribution = false;
 const extensionId = "GitHub.vscode-codeql";
 const extension = extensions.getExtension(extensionId);
 
-function getCommands(): ExtensionCommands {
+/**
+ * Return all commands that are not tied to the more specific managers.
+ */
+function getCommands(): BaseCommands {
   return {
     "codeQL.openDocumentation": async () => {
       await env.openExternal(Uri.parse("https://codeql.github.com/docs/"));
@@ -220,6 +224,20 @@ export interface CodeQLExtensionInterface {
   readonly dispose: () => void;
 }
 
+interface DistributionUpdateConfig {
+  isUserInitiated: boolean;
+  shouldDisplayMessageWhenNoUpdates: boolean;
+  allowAutoUpdating: boolean;
+}
+
+interface DatabaseQuickPickItem extends QuickPickItem {
+  databaseItem: DatabaseItem;
+}
+
+const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
+
+const codeQlVersionRange = DEFAULT_DISTRIBUTION_VERSION_RANGE;
+
 // This is the minimum version of vscode that we _want_ to support. We want to update the language server library, but that
 // requires 1.67 or later. If we change the minimum version in the package.json, then anyone on an older version of vscode
 // silently be unable to upgrade. So, the solution is to first bump the minimum version here and release. Then
@@ -258,14 +276,11 @@ export async function activate(
   );
 
   ctx.subscriptions.push(distributionConfigListener);
-  const codeQlVersionRange = DEFAULT_DISTRIBUTION_VERSION_RANGE;
   const distributionManager = new DistributionManager(
     distributionConfigListener,
     codeQlVersionRange,
     ctx,
   );
-
-  const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
 
   registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
     void showAndLogErrorMessage(
@@ -276,238 +291,32 @@ export async function activate(
   // Checking the vscode version should not block extension activation.
   void assertVSCodeVersionGreaterThan(MIN_VERSION, ctx);
 
-  interface DistributionUpdateConfig {
-    isUserInitiated: boolean;
-    shouldDisplayMessageWhenNoUpdates: boolean;
-    allowAutoUpdating: boolean;
-  }
-
-  async function installOrUpdateDistributionWithProgressTitle(
-    progressTitle: string,
-    config: DistributionUpdateConfig,
-  ): Promise<void> {
-    const minSecondsSinceLastUpdateCheck = config.isUserInitiated ? 0 : 86400;
-    const noUpdatesLoggingFunc = config.shouldDisplayMessageWhenNoUpdates
-      ? showAndLogInformationMessage
-      : async (message: string) => void extLogger.log(message);
-    const result =
-      await distributionManager.checkForUpdatesToExtensionManagedDistribution(
-        minSecondsSinceLastUpdateCheck,
-      );
-
-    // We do want to auto update if there is no distribution at all
-    const allowAutoUpdating =
-      config.allowAutoUpdating ||
-      !(await distributionManager.hasDistribution());
-
-    switch (result.kind) {
-      case DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult:
-        void extLogger.log(
-          "Didn't perform CodeQL CLI update check since a check was already performed within the previous " +
-            `${minSecondsSinceLastUpdateCheck} seconds.`,
-        );
-        break;
-      case DistributionUpdateCheckResultKind.AlreadyUpToDate:
-        await noUpdatesLoggingFunc("CodeQL CLI already up to date.");
-        break;
-      case DistributionUpdateCheckResultKind.InvalidLocation:
-        await noUpdatesLoggingFunc(
-          "CodeQL CLI is installed externally so could not be updated.",
-        );
-        break;
-      case DistributionUpdateCheckResultKind.UpdateAvailable:
-        if (beganMainExtensionActivation || !allowAutoUpdating) {
-          const updateAvailableMessage =
-            `Version "${result.updatedRelease.name}" of the CodeQL CLI is now available. ` +
-            "Do you wish to upgrade?";
-          await ctx.globalState.update(shouldUpdateOnNextActivationKey, true);
-          if (
-            await showInformationMessageWithAction(
-              updateAvailableMessage,
-              "Restart and Upgrade",
-            )
-          ) {
-            await commands.executeCommand("workbench.action.reloadWindow");
-          }
-        } else {
-          await withProgress(
-            (progress) =>
-              distributionManager.installExtensionManagedDistributionRelease(
-                result.updatedRelease,
-                progress,
-              ),
-            {
-              title: progressTitle,
-            },
-          );
-
-          await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
-          void showAndLogInformationMessage(
-            `CodeQL CLI updated to version "${result.updatedRelease.name}".`,
-          );
-        }
-        break;
-      default:
-        assertNever(result);
-    }
-  }
-
-  async function installOrUpdateDistribution(
-    config: DistributionUpdateConfig,
-  ): Promise<void> {
-    if (isInstallingOrUpdatingDistribution) {
-      throw new Error("Already installing or updating CodeQL CLI");
-    }
-    isInstallingOrUpdatingDistribution = true;
-    const codeQlInstalled =
-      (await distributionManager.getCodeQlPathWithoutVersionCheck()) !==
-      undefined;
-    const willUpdateCodeQl = ctx.globalState.get(
-      shouldUpdateOnNextActivationKey,
-    );
-    const messageText = willUpdateCodeQl
-      ? "Updating CodeQL CLI"
-      : codeQlInstalled
-      ? "Checking for updates to CodeQL CLI"
-      : "Installing CodeQL CLI";
-
-    try {
-      await installOrUpdateDistributionWithProgressTitle(messageText, config);
-    } catch (e) {
-      // Don't rethrow the exception, because if the config is changed, we want to be able to retry installing
-      // or updating the distribution.
-      const alertFunction =
-        codeQlInstalled && !config.isUserInitiated
-          ? showAndLogWarningMessage
-          : showAndLogErrorMessage;
-      const taskDescription = `${
-        willUpdateCodeQl
-          ? "update"
-          : codeQlInstalled
-          ? "check for updates to"
-          : "install"
-      } CodeQL CLI`;
-
-      if (e instanceof GithubRateLimitedError) {
-        void alertFunction(
-          `Rate limited while trying to ${taskDescription}. Please try again after ` +
-            `your rate limit window resets at ${e.rateLimitResetDate.toLocaleString(
-              env.language,
-            )}.`,
-        );
-      } else if (e instanceof GithubApiError) {
-        void alertFunction(
-          `Encountered GitHub API error while trying to ${taskDescription}. ${e}`,
-        );
-      }
-      void alertFunction(`Unable to ${taskDescription}. ${e}`);
-    } finally {
-      isInstallingOrUpdatingDistribution = false;
-    }
-  }
-
-  async function getDistributionDisplayingDistributionWarnings(): Promise<FindDistributionResult> {
-    const result = await distributionManager.getDistribution();
-    switch (result.kind) {
-      case FindDistributionResultKind.CompatibleDistribution:
-        void extLogger.log(
-          `Found compatible version of CodeQL CLI (version ${result.version.raw})`,
-        );
-        break;
-      case FindDistributionResultKind.IncompatibleDistribution: {
-        const fixGuidanceMessage = (() => {
-          switch (result.distribution.kind) {
-            case DistributionKind.ExtensionManaged:
-              return 'Please update the CodeQL CLI by running the "CodeQL: Check for CLI Updates" command.';
-            case DistributionKind.CustomPathConfig:
-              return `Please update the \"CodeQL CLI Executable Path\" setting to point to a CLI in the version range ${codeQlVersionRange}.`;
-            case DistributionKind.PathEnvironmentVariable:
-              return (
-                `Please update the CodeQL CLI on your PATH to a version compatible with ${codeQlVersionRange}, or ` +
-                `set the \"CodeQL CLI Executable Path\" setting to the path of a CLI version compatible with ${codeQlVersionRange}.`
-              );
-          }
-        })();
-
-        void showAndLogWarningMessage(
-          `The current version of the CodeQL CLI (${result.version.raw}) ` +
-            `is incompatible with this extension. ${fixGuidanceMessage}`,
-        );
-        break;
-      }
-      case FindDistributionResultKind.UnknownCompatibilityDistribution:
-        void showAndLogWarningMessage(
-          "Compatibility with the configured CodeQL CLI could not be determined. " +
-            "You may experience problems using the extension.",
-        );
-        break;
-      case FindDistributionResultKind.NoDistribution:
-        void showAndLogErrorMessage("The CodeQL CLI could not be found.");
-        break;
-      default:
-        assertNever(result);
-    }
-    return result;
-  }
-
-  async function installOrUpdateThenTryActivate(
-    config: DistributionUpdateConfig,
-  ): Promise<CodeQLExtensionInterface | Record<string, never>> {
-    await installOrUpdateDistribution(config);
-
-    // Display the warnings even if the extension has already activated.
-    const distributionResult =
-      await getDistributionDisplayingDistributionWarnings();
-    let extensionInterface: CodeQLExtensionInterface | Record<string, never> =
-      {};
-    if (
-      !beganMainExtensionActivation &&
-      distributionResult.kind !== FindDistributionResultKind.NoDistribution
-    ) {
-      extensionInterface = await activateWithInstalledDistribution(
+  ctx.subscriptions.push(
+    distributionConfigListener.onDidChangeConfiguration(() =>
+      installOrUpdateThenTryActivate(
         ctx,
         distributionManager,
         distributionConfigListener,
-      );
-    } else if (
-      distributionResult.kind === FindDistributionResultKind.NoDistribution
-    ) {
-      registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
-        const installActionName = "Install CodeQL CLI";
-        const chosenAction = await showAndLogErrorMessage(
-          `Can't execute ${command}: missing CodeQL CLI.`,
-          {
-            items: [installActionName],
-          },
-        );
-        if (chosenAction === installActionName) {
-          await installOrUpdateThenTryActivate({
-            isUserInitiated: true,
-            shouldDisplayMessageWhenNoUpdates: false,
-            allowAutoUpdating: true,
-          });
-        }
-      });
-    }
-    return extensionInterface;
-  }
-
-  ctx.subscriptions.push(
-    distributionConfigListener.onDidChangeConfiguration(() =>
-      installOrUpdateThenTryActivate({
-        isUserInitiated: true,
-        shouldDisplayMessageWhenNoUpdates: false,
-        allowAutoUpdating: true,
-      }),
+        {
+          isUserInitiated: true,
+          shouldDisplayMessageWhenNoUpdates: false,
+          allowAutoUpdating: true,
+        },
+      ),
     ),
   );
   ctx.subscriptions.push(
     commandRunner(checkForUpdatesCommand, () =>
-      installOrUpdateThenTryActivate({
-        isUserInitiated: true,
-        shouldDisplayMessageWhenNoUpdates: true,
-        allowAutoUpdating: true,
-      }),
+      installOrUpdateThenTryActivate(
+        ctx,
+        distributionManager,
+        distributionConfigListener,
+        {
+          isUserInitiated: true,
+          shouldDisplayMessageWhenNoUpdates: true,
+          allowAutoUpdating: true,
+        },
+      ),
     ),
   );
 
@@ -517,20 +326,250 @@ export async function activate(
     variantAnalysisViewSerializer,
   );
 
-  const codeQlExtension = await installOrUpdateThenTryActivate({
-    isUserInitiated: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
-    shouldDisplayMessageWhenNoUpdates: false,
+  const codeQlExtension = await installOrUpdateThenTryActivate(
+    ctx,
+    distributionManager,
+    distributionConfigListener,
+    {
+      isUserInitiated: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
+      shouldDisplayMessageWhenNoUpdates: false,
 
-    // only auto update on startup if the user has previously requested an update
-    // otherwise, ask user to accept the update
-    allowAutoUpdating: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
-  });
+      // only auto update on startup if the user has previously requested an update
+      // otherwise, ask user to accept the update
+      allowAutoUpdating: !!ctx.globalState.get(shouldUpdateOnNextActivationKey),
+    },
+  );
 
   variantAnalysisViewSerializer.onExtensionLoaded(
     codeQlExtension.variantAnalysisManager,
   );
 
   return codeQlExtension;
+}
+
+async function installOrUpdateDistributionWithProgressTitle(
+  ctx: ExtensionContext,
+  distributionManager: DistributionManager,
+  progressTitle: string,
+  config: DistributionUpdateConfig,
+): Promise<void> {
+  const minSecondsSinceLastUpdateCheck = config.isUserInitiated ? 0 : 86400;
+  const noUpdatesLoggingFunc = config.shouldDisplayMessageWhenNoUpdates
+    ? showAndLogInformationMessage
+    : async (message: string) => void extLogger.log(message);
+  const result =
+    await distributionManager.checkForUpdatesToExtensionManagedDistribution(
+      minSecondsSinceLastUpdateCheck,
+    );
+
+  // We do want to auto update if there is no distribution at all
+  const allowAutoUpdating =
+    config.allowAutoUpdating || !(await distributionManager.hasDistribution());
+
+  switch (result.kind) {
+    case DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult:
+      void extLogger.log(
+        "Didn't perform CodeQL CLI update check since a check was already performed within the previous " +
+          `${minSecondsSinceLastUpdateCheck} seconds.`,
+      );
+      break;
+    case DistributionUpdateCheckResultKind.AlreadyUpToDate:
+      await noUpdatesLoggingFunc("CodeQL CLI already up to date.");
+      break;
+    case DistributionUpdateCheckResultKind.InvalidLocation:
+      await noUpdatesLoggingFunc(
+        "CodeQL CLI is installed externally so could not be updated.",
+      );
+      break;
+    case DistributionUpdateCheckResultKind.UpdateAvailable:
+      if (beganMainExtensionActivation || !allowAutoUpdating) {
+        const updateAvailableMessage =
+          `Version "${result.updatedRelease.name}" of the CodeQL CLI is now available. ` +
+          "Do you wish to upgrade?";
+        await ctx.globalState.update(shouldUpdateOnNextActivationKey, true);
+        if (
+          await showInformationMessageWithAction(
+            updateAvailableMessage,
+            "Restart and Upgrade",
+          )
+        ) {
+          await commands.executeCommand("workbench.action.reloadWindow");
+        }
+      } else {
+        await withProgress(
+          (progress) =>
+            distributionManager.installExtensionManagedDistributionRelease(
+              result.updatedRelease,
+              progress,
+            ),
+          {
+            title: progressTitle,
+          },
+        );
+
+        await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
+        void showAndLogInformationMessage(
+          `CodeQL CLI updated to version "${result.updatedRelease.name}".`,
+        );
+      }
+      break;
+    default:
+      assertNever(result);
+  }
+}
+
+async function installOrUpdateDistribution(
+  ctx: ExtensionContext,
+  distributionManager: DistributionManager,
+  config: DistributionUpdateConfig,
+): Promise<void> {
+  if (isInstallingOrUpdatingDistribution) {
+    throw new Error("Already installing or updating CodeQL CLI");
+  }
+  isInstallingOrUpdatingDistribution = true;
+  const codeQlInstalled =
+    (await distributionManager.getCodeQlPathWithoutVersionCheck()) !==
+    undefined;
+  const willUpdateCodeQl = ctx.globalState.get(shouldUpdateOnNextActivationKey);
+  const messageText = willUpdateCodeQl
+    ? "Updating CodeQL CLI"
+    : codeQlInstalled
+    ? "Checking for updates to CodeQL CLI"
+    : "Installing CodeQL CLI";
+
+  try {
+    await installOrUpdateDistributionWithProgressTitle(
+      ctx,
+      distributionManager,
+      messageText,
+      config,
+    );
+  } catch (e) {
+    // Don't rethrow the exception, because if the config is changed, we want to be able to retry installing
+    // or updating the distribution.
+    const alertFunction =
+      codeQlInstalled && !config.isUserInitiated
+        ? showAndLogWarningMessage
+        : showAndLogErrorMessage;
+    const taskDescription = `${
+      willUpdateCodeQl
+        ? "update"
+        : codeQlInstalled
+        ? "check for updates to"
+        : "install"
+    } CodeQL CLI`;
+
+    if (e instanceof GithubRateLimitedError) {
+      void alertFunction(
+        `Rate limited while trying to ${taskDescription}. Please try again after ` +
+          `your rate limit window resets at ${e.rateLimitResetDate.toLocaleString(
+            env.language,
+          )}.`,
+      );
+    } else if (e instanceof GithubApiError) {
+      void alertFunction(
+        `Encountered GitHub API error while trying to ${taskDescription}. ${e}`,
+      );
+    }
+    void alertFunction(`Unable to ${taskDescription}. ${e}`);
+  } finally {
+    isInstallingOrUpdatingDistribution = false;
+  }
+}
+
+async function getDistributionDisplayingDistributionWarnings(
+  distributionManager: DistributionManager,
+): Promise<FindDistributionResult> {
+  const result = await distributionManager.getDistribution();
+  switch (result.kind) {
+    case FindDistributionResultKind.CompatibleDistribution:
+      void extLogger.log(
+        `Found compatible version of CodeQL CLI (version ${result.version.raw})`,
+      );
+      break;
+    case FindDistributionResultKind.IncompatibleDistribution: {
+      const fixGuidanceMessage = (() => {
+        switch (result.distribution.kind) {
+          case DistributionKind.ExtensionManaged:
+            return 'Please update the CodeQL CLI by running the "CodeQL: Check for CLI Updates" command.';
+          case DistributionKind.CustomPathConfig:
+            return `Please update the \"CodeQL CLI Executable Path\" setting to point to a CLI in the version range ${codeQlVersionRange}.`;
+          case DistributionKind.PathEnvironmentVariable:
+            return (
+              `Please update the CodeQL CLI on your PATH to a version compatible with ${codeQlVersionRange}, or ` +
+              `set the \"CodeQL CLI Executable Path\" setting to the path of a CLI version compatible with ${codeQlVersionRange}.`
+            );
+        }
+      })();
+
+      void showAndLogWarningMessage(
+        `The current version of the CodeQL CLI (${result.version.raw}) ` +
+          `is incompatible with this extension. ${fixGuidanceMessage}`,
+      );
+      break;
+    }
+    case FindDistributionResultKind.UnknownCompatibilityDistribution:
+      void showAndLogWarningMessage(
+        "Compatibility with the configured CodeQL CLI could not be determined. " +
+          "You may experience problems using the extension.",
+      );
+      break;
+    case FindDistributionResultKind.NoDistribution:
+      void showAndLogErrorMessage("The CodeQL CLI could not be found.");
+      break;
+    default:
+      assertNever(result);
+  }
+  return result;
+}
+
+async function installOrUpdateThenTryActivate(
+  ctx: ExtensionContext,
+  distributionManager: DistributionManager,
+  distributionConfigListener: DistributionConfigListener,
+  config: DistributionUpdateConfig,
+): Promise<CodeQLExtensionInterface | Record<string, never>> {
+  await installOrUpdateDistribution(ctx, distributionManager, config);
+
+  // Display the warnings even if the extension has already activated.
+  const distributionResult =
+    await getDistributionDisplayingDistributionWarnings(distributionManager);
+  let extensionInterface: CodeQLExtensionInterface | Record<string, never> = {};
+  if (
+    !beganMainExtensionActivation &&
+    distributionResult.kind !== FindDistributionResultKind.NoDistribution
+  ) {
+    extensionInterface = await activateWithInstalledDistribution(
+      ctx,
+      distributionManager,
+      distributionConfigListener,
+    );
+  } else if (
+    distributionResult.kind === FindDistributionResultKind.NoDistribution
+  ) {
+    registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
+      const installActionName = "Install CodeQL CLI";
+      const chosenAction = await showAndLogErrorMessage(
+        `Can't execute ${command}: missing CodeQL CLI.`,
+        {
+          items: [installActionName],
+        },
+      );
+      if (chosenAction === installActionName) {
+        await installOrUpdateThenTryActivate(
+          ctx,
+          distributionManager,
+          distributionConfigListener,
+          {
+            isUserInitiated: true,
+            shouldDisplayMessageWhenNoUpdates: false,
+            allowAutoUpdating: true,
+          },
+        );
+      }
+    });
+  }
+  return extensionInterface;
 }
 
 const PACK_GLOBS = [
@@ -614,7 +653,11 @@ async function activateWithInstalledDistribution(
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
   ctx.subscriptions.push(queryHistoryConfigurationListener);
   const showResults = async (item: CompletedLocalQueryInfo) =>
-    showResultsForCompletedQuery(item, WebviewReveal.Forced);
+    showResultsForCompletedQuery(
+      localQueryResultsView,
+      item,
+      WebviewReveal.Forced,
+    );
   const queryStorageDir = join(ctx.globalStorageUri.fsPath, "queries");
   await ensureDir(queryStorageDir);
   const labelProvider = new HistoryItemLabelProvider(
@@ -679,7 +722,7 @@ async function activateWithInstalledDistribution(
     queryHistoryConfigurationListener,
     labelProvider,
     async (from: CompletedLocalQueryInfo, to: CompletedLocalQueryInfo) =>
-      showResultsForComparison(from, to),
+      showResultsForComparison(compareView, from, to),
   );
 
   ctx.subscriptions.push(qhm);
@@ -707,200 +750,12 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Initializing source archive filesystem provider.");
   archiveFilesystemProvider_activate(ctx);
 
-  async function showResultsForComparison(
-    from: CompletedLocalQueryInfo,
-    to: CompletedLocalQueryInfo,
-  ): Promise<void> {
-    try {
-      await compareView.showResults(from, to);
-    } catch (e) {
-      void showAndLogExceptionWithTelemetry(
-        redactableError(asError(e))`Failed to show results: ${getErrorMessage(
-          e,
-        )}`,
-      );
-    }
-  }
-
-  async function showResultsForCompletedQuery(
-    query: CompletedLocalQueryInfo,
-    forceReveal: WebviewReveal,
-  ): Promise<void> {
-    await localQueryResultsView.showResults(query, forceReveal, false);
-  }
-
-  async function compileAndRunQuery(
-    quickEval: boolean,
-    selectedQuery: Uri | undefined,
-    progress: ProgressCallback,
-    token: CancellationToken,
-    databaseItem: DatabaseItem | undefined,
-    range?: Range,
-  ): Promise<void> {
-    if (qs !== undefined) {
-      // If no databaseItem is specified, use the database currently selected in the Databases UI
-      databaseItem =
-        databaseItem || (await databaseUI.getDatabaseItem(progress, token));
-      if (databaseItem === undefined) {
-        throw new Error("Can't run query without a selected database");
-      }
-      const databaseInfo = {
-        name: databaseItem.name,
-        databaseUri: databaseItem.databaseUri.toString(),
-      };
-
-      // handle cancellation from the history view.
-      const source = new CancellationTokenSource();
-      token.onCancellationRequested(() => source.cancel());
-
-      const initialInfo = await createInitialQueryInfo(
-        selectedQuery,
-        databaseInfo,
-        quickEval,
-        range,
-      );
-      const item = new LocalQueryInfo(initialInfo, source);
-      qhm.addQuery(item);
-      try {
-        const completedQueryInfo = await qs.compileAndRunQueryAgainstDatabase(
-          databaseItem,
-          initialInfo,
-          queryStorageDir,
-          progress,
-          source.token,
-          undefined,
-          item,
-        );
-        qhm.completeQuery(item, completedQueryInfo);
-        await showResultsForCompletedQuery(
-          item as CompletedLocalQueryInfo,
-          WebviewReveal.Forced,
-        );
-        // Note we must update the query history view after showing results as the
-        // display and sorting might depend on the number of results
-      } catch (e) {
-        const err = asError(e);
-        err.message = `Error running query: ${err.message}`;
-        item.failureReason = err.message;
-        throw e;
-      } finally {
-        await qhm.refreshTreeView();
-        source.dispose();
-      }
-    }
-  }
-
-  async function compileAndRunQueryOnMultipleDatabases(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    uri: Uri | undefined,
-  ): Promise<void> {
-    let filteredDBs = dbm.databaseItems;
-    if (filteredDBs.length === 0) {
-      void showAndLogErrorMessage(
-        "No databases found. Please add a suitable database to your workspace.",
-      );
-      return;
-    }
-    // If possible, only show databases with the right language (otherwise show all databases).
-    const queryLanguage = await findLanguage(cliServer, uri);
-    if (queryLanguage) {
-      filteredDBs = dbm.databaseItems.filter(
-        (db) => db.language === queryLanguage,
-      );
-      if (filteredDBs.length === 0) {
-        void showAndLogErrorMessage(
-          `No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`,
-        );
-        return;
-      }
-    }
-    const quickPickItems = filteredDBs.map<DatabaseQuickPickItem>((dbItem) => ({
-      databaseItem: dbItem,
-      label: dbItem.name,
-      description: dbItem.language,
-    }));
-    /**
-     * Databases that were selected in the quick pick menu.
-     */
-    const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
-      quickPickItems,
-      { canPickMany: true, ignoreFocusOut: true },
-    );
-    if (quickpick !== undefined) {
-      // Collect all skipped databases and display them at the end (instead of popping up individual errors)
-      const skippedDatabases = [];
-      const errors = [];
-      for (const item of quickpick) {
-        try {
-          await compileAndRunQuery(
-            false,
-            uri,
-            progress,
-            token,
-            item.databaseItem,
-          );
-        } catch (e) {
-          skippedDatabases.push(item.label);
-          errors.push(getErrorMessage(e));
-        }
-      }
-      if (skippedDatabases.length > 0) {
-        void extLogger.log(`Errors:\n${errors.join("\n")}`);
-        void showAndLogWarningMessage(
-          `The following databases were skipped:\n${skippedDatabases.join(
-            "\n",
-          )}.\nFor details about the errors, see the logs.`,
-        );
-      }
-    } else {
-      void showAndLogErrorMessage("No databases selected.");
-    }
-  }
-
   const qhelpTmpDir = dirSync({
     prefix: "qhelp_",
     keep: false,
     unsafeCleanup: true,
   });
   ctx.subscriptions.push({ dispose: qhelpTmpDir.removeCallback });
-
-  async function previewQueryHelp(selectedQuery: Uri): Promise<void> {
-    // selectedQuery is unpopulated when executing through the command palette
-    const pathToQhelp = selectedQuery
-      ? selectedQuery.fsPath
-      : window.activeTextEditor?.document.uri.fsPath;
-    if (pathToQhelp) {
-      // Create temporary directory
-      const relativePathToMd = `${basename(pathToQhelp, ".qhelp")}.md`;
-      const absolutePathToMd = join(qhelpTmpDir.name, relativePathToMd);
-      const uri = Uri.file(absolutePathToMd);
-      try {
-        await cliServer.generateQueryHelp(pathToQhelp, absolutePathToMd);
-        await commands.executeCommand("markdown.showPreviewToSide", uri);
-      } catch (e) {
-        const errorMessage = getErrorMessage(e).includes(
-          "Generating qhelp in markdown",
-        )
-          ? redactableError`Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
-          : redactableError`Could not open a preview of the generated file (${absolutePathToMd}).`;
-        void showAndLogExceptionWithTelemetry(errorMessage, {
-          fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
-        });
-      }
-    }
-  }
-
-  async function openReferencedFile(selectedQuery: Uri): Promise<void> {
-    // If no file is selected, the path of the file in the editor is selected
-    const path =
-      selectedQuery?.fsPath || window.activeTextEditor?.document.uri.fsPath;
-    if (qs !== undefined && path) {
-      const resolved = await cliServer.resolveQlref(path);
-      const uri = Uri.file(resolved.resolvedPath);
-      await window.showTextDocument(uri, { preview: false });
-    }
-  }
 
   ctx.subscriptions.push(tmpDirDisposal);
 
@@ -949,7 +804,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQuery(false, uri, progress, token, undefined),
+      ) =>
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          false,
+          uri,
+          progress,
+          token,
+          undefined,
+        ),
       {
         title: "Running query",
         cancellable: true,
@@ -968,7 +835,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQuery(false, uri, progress, token, undefined),
+      ) =>
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          false,
+          uri,
+          progress,
+          token,
+          undefined,
+        ),
       {
         title: "Running query",
         cancellable: true,
@@ -978,9 +857,6 @@ async function activateWithInstalledDistribution(
       queryServerLogger,
     ),
   );
-  interface DatabaseQuickPickItem extends QuickPickItem {
-    databaseItem: DatabaseItem;
-  }
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       "codeQL.runQueryOnMultipleDatabases",
@@ -988,7 +864,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQueryOnMultipleDatabases(progress, token, uri),
+      ) =>
+        await compileAndRunQueryOnMultipleDatabases(
+          cliServer,
+          qs,
+          qhm,
+          dbm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          progress,
+          token,
+          uri,
+        ),
       {
         title: "Running query on selected databases",
         cancellable: true,
@@ -1003,7 +891,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQueryOnMultipleDatabases(progress, token, uri),
+      ) =>
+        await compileAndRunQueryOnMultipleDatabases(
+          cliServer,
+          qs,
+          qhm,
+          dbm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          progress,
+          token,
+          uri,
+        ),
       {
         title: "Running query on selected databases",
         cancellable: true,
@@ -1063,6 +963,11 @@ async function activateWithInstalledDistribution(
         await Promise.all(
           queryUris.map(async (uri) =>
             compileAndRunQuery(
+              qs,
+              qhm,
+              databaseUI,
+              localQueryResultsView,
+              queryStorageDir,
               false,
               uri,
               wrappedProgress,
@@ -1089,7 +994,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQuery(true, uri, progress, token, undefined),
+      ) =>
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          true,
+          uri,
+          progress,
+          token,
+          undefined,
+        ),
       {
         title: "Running query",
         cancellable: true,
@@ -1107,7 +1024,19 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         uri: Uri | undefined,
-      ) => await compileAndRunQuery(true, uri, progress, token, undefined),
+      ) =>
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          true,
+          uri,
+          progress,
+          token,
+          undefined,
+        ),
       {
         title: "Running query",
         cancellable: true,
@@ -1126,7 +1055,19 @@ async function activateWithInstalledDistribution(
         uri: Uri,
         range: Range,
       ) =>
-        await compileAndRunQuery(true, uri, progress, token, undefined, range),
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          true,
+          uri,
+          progress,
+          token,
+          undefined,
+          range,
+        ),
       {
         title: "Running query",
         cancellable: true,
@@ -1157,10 +1098,7 @@ async function activateWithInstalledDistribution(
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
-    app.commandManager.registerCommand(
-      commandName as keyof AllCommands,
-      command,
-    );
+    app.commands.register(commandName as keyof AllCommands, command);
   }
 
   ctx.subscriptions.push(
@@ -1288,24 +1226,35 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner("codeQL.openReferencedFile", openReferencedFile),
+    commandRunner("codeQL.openReferencedFile", async (selectedQuery: Uri) => {
+      await openReferencedFile(qs, cliServer, selectedQuery);
+    }),
   );
 
   // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
   ctx.subscriptions.push(
-    commandRunner("codeQL.openReferencedFileContextEditor", openReferencedFile),
+    commandRunner(
+      "codeQL.openReferencedFileContextEditor",
+      async (selectedQuery: Uri) => {
+        await openReferencedFile(qs, cliServer, selectedQuery);
+      },
+    ),
   );
 
   // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
   ctx.subscriptions.push(
     commandRunner(
       "codeQL.openReferencedFileContextExplorer",
-      openReferencedFile,
+      async (selectedQuery: Uri) => {
+        await openReferencedFile(qs, cliServer, selectedQuery);
+      },
     ),
   );
 
   ctx.subscriptions.push(
-    commandRunner("codeQL.previewQueryHelp", previewQueryHelp),
+    commandRunner("codeQL.previewQueryHelp", async (selectedQuery: Uri) => {
+      await previewQueryHelp(cliServer, qhelpTmpDir, selectedQuery);
+    }),
   );
 
   ctx.subscriptions.push(
@@ -1483,21 +1432,6 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(astViewer);
 
-  async function viewAst(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    selectedFile: Uri,
-  ): Promise<void> {
-    const ast = await printAstTemplateProvider.provideAst(
-      progress,
-      token,
-      selectedFile ?? window.activeTextEditor?.document.uri,
-    );
-    if (ast) {
-      astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
-    }
-  }
-
   ctx.subscriptions.push(
     commandRunnerWithProgress(
       "codeQL.viewAst",
@@ -1505,7 +1439,14 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         selectedFile: Uri,
-      ) => await viewAst(progress, token, selectedFile),
+      ) =>
+        await viewAst(
+          astViewer,
+          printAstTemplateProvider,
+          progress,
+          token,
+          selectedFile,
+        ),
       {
         cancellable: true,
         title: "Calculate AST",
@@ -1521,7 +1462,14 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         selectedFile: Uri,
-      ) => await viewAst(progress, token, selectedFile),
+      ) =>
+        await viewAst(
+          astViewer,
+          printAstTemplateProvider,
+          progress,
+          token,
+          selectedFile,
+        ),
       {
         cancellable: true,
         title: "Calculate AST",
@@ -1537,7 +1485,14 @@ async function activateWithInstalledDistribution(
         progress: ProgressCallback,
         token: CancellationToken,
         selectedFile: Uri,
-      ) => await viewAst(progress, token, selectedFile),
+      ) =>
+        await viewAst(
+          astViewer,
+          printAstTemplateProvider,
+          progress,
+          token,
+          selectedFile,
+        ),
       {
         cancellable: true,
         title: "Calculate AST",
@@ -1553,7 +1508,18 @@ async function activateWithInstalledDistribution(
           window.activeTextEditor?.document,
         );
         if (res) {
-          await compileAndRunQuery(false, res[0], progress, token, undefined);
+          await compileAndRunQuery(
+            qs,
+            qhm,
+            databaseUI,
+            localQueryResultsView,
+            queryStorageDir,
+            false,
+            res[0],
+            progress,
+            token,
+            undefined,
+          );
         }
       },
       {
@@ -1572,7 +1538,18 @@ async function activateWithInstalledDistribution(
           window.activeTextEditor?.document,
         );
         if (res) {
-          await compileAndRunQuery(false, res[0], progress, token, undefined);
+          await compileAndRunQuery(
+            qs,
+            qhm,
+            databaseUI,
+            localQueryResultsView,
+            queryStorageDir,
+            false,
+            res[0],
+            progress,
+            token,
+            undefined,
+          );
         }
       },
       {
@@ -1591,7 +1568,18 @@ async function activateWithInstalledDistribution(
           window.activeTextEditor?.document,
         );
         if (res) {
-          await compileAndRunQuery(false, res[0], progress, token, undefined);
+          await compileAndRunQuery(
+            qs,
+            qhm,
+            databaseUI,
+            localQueryResultsView,
+            queryStorageDir,
+            false,
+            res[0],
+            progress,
+            token,
+            undefined,
+          );
         }
       },
       {
@@ -1653,6 +1641,238 @@ async function activateWithInstalledDistribution(
       ctx.subscriptions.forEach((d) => d.dispose());
     },
   };
+}
+
+async function showResultsForComparison(
+  compareView: CompareView,
+  from: CompletedLocalQueryInfo,
+  to: CompletedLocalQueryInfo,
+): Promise<void> {
+  try {
+    await compareView.showResults(from, to);
+  } catch (e) {
+    void showAndLogExceptionWithTelemetry(
+      redactableError(asError(e))`Failed to show results: ${getErrorMessage(
+        e,
+      )}`,
+    );
+  }
+}
+
+async function showResultsForCompletedQuery(
+  localQueryResultsView: ResultsView,
+  query: CompletedLocalQueryInfo,
+  forceReveal: WebviewReveal,
+): Promise<void> {
+  await localQueryResultsView.showResults(query, forceReveal, false);
+}
+async function compileAndRunQuery(
+  qs: QueryRunner,
+  qhm: QueryHistoryManager,
+  databaseUI: DatabaseUI,
+  localQueryResultsView: ResultsView,
+  queryStorageDir: string,
+  quickEval: boolean,
+  selectedQuery: Uri | undefined,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  databaseItem: DatabaseItem | undefined,
+  range?: Range,
+): Promise<void> {
+  if (qs !== undefined) {
+    // If no databaseItem is specified, use the database currently selected in the Databases UI
+    databaseItem =
+      databaseItem || (await databaseUI.getDatabaseItem(progress, token));
+    if (databaseItem === undefined) {
+      throw new Error("Can't run query without a selected database");
+    }
+    const databaseInfo = {
+      name: databaseItem.name,
+      databaseUri: databaseItem.databaseUri.toString(),
+    };
+
+    // handle cancellation from the history view.
+    const source = new CancellationTokenSource();
+    token.onCancellationRequested(() => source.cancel());
+
+    const initialInfo = await createInitialQueryInfo(
+      selectedQuery,
+      databaseInfo,
+      quickEval,
+      range,
+    );
+    const item = new LocalQueryInfo(initialInfo, source);
+    qhm.addQuery(item);
+    try {
+      const completedQueryInfo = await qs.compileAndRunQueryAgainstDatabase(
+        databaseItem,
+        initialInfo,
+        queryStorageDir,
+        progress,
+        source.token,
+        undefined,
+        item,
+      );
+      qhm.completeQuery(item, completedQueryInfo);
+      await showResultsForCompletedQuery(
+        localQueryResultsView,
+        item as CompletedLocalQueryInfo,
+        WebviewReveal.Forced,
+      );
+      // Note we must update the query history view after showing results as the
+      // display and sorting might depend on the number of results
+    } catch (e) {
+      const err = asError(e);
+      err.message = `Error running query: ${err.message}`;
+      item.failureReason = err.message;
+      throw e;
+    } finally {
+      await qhm.refreshTreeView();
+      source.dispose();
+    }
+  }
+}
+
+async function compileAndRunQueryOnMultipleDatabases(
+  cliServer: CodeQLCliServer,
+  qs: QueryRunner,
+  qhm: QueryHistoryManager,
+  dbm: DatabaseManager,
+  databaseUI: DatabaseUI,
+  localQueryResultsView: ResultsView,
+  queryStorageDir: string,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  uri: Uri | undefined,
+): Promise<void> {
+  let filteredDBs = dbm.databaseItems;
+  if (filteredDBs.length === 0) {
+    void showAndLogErrorMessage(
+      "No databases found. Please add a suitable database to your workspace.",
+    );
+    return;
+  }
+  // If possible, only show databases with the right language (otherwise show all databases).
+  const queryLanguage = await findLanguage(cliServer, uri);
+  if (queryLanguage) {
+    filteredDBs = dbm.databaseItems.filter(
+      (db) => db.language === queryLanguage,
+    );
+    if (filteredDBs.length === 0) {
+      void showAndLogErrorMessage(
+        `No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`,
+      );
+      return;
+    }
+  }
+  const quickPickItems = filteredDBs.map<DatabaseQuickPickItem>((dbItem) => ({
+    databaseItem: dbItem,
+    label: dbItem.name,
+    description: dbItem.language,
+  }));
+  /**
+   * Databases that were selected in the quick pick menu.
+   */
+  const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
+    quickPickItems,
+    { canPickMany: true, ignoreFocusOut: true },
+  );
+  if (quickpick !== undefined) {
+    // Collect all skipped databases and display them at the end (instead of popping up individual errors)
+    const skippedDatabases = [];
+    const errors = [];
+    for (const item of quickpick) {
+      try {
+        await compileAndRunQuery(
+          qs,
+          qhm,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          false,
+          uri,
+          progress,
+          token,
+          item.databaseItem,
+        );
+      } catch (e) {
+        skippedDatabases.push(item.label);
+        errors.push(getErrorMessage(e));
+      }
+    }
+    if (skippedDatabases.length > 0) {
+      void extLogger.log(`Errors:\n${errors.join("\n")}`);
+      void showAndLogWarningMessage(
+        `The following databases were skipped:\n${skippedDatabases.join(
+          "\n",
+        )}.\nFor details about the errors, see the logs.`,
+      );
+    }
+  } else {
+    void showAndLogErrorMessage("No databases selected.");
+  }
+}
+
+async function previewQueryHelp(
+  cliServer: CodeQLCliServer,
+  qhelpTmpDir: DirResult,
+  selectedQuery: Uri,
+): Promise<void> {
+  // selectedQuery is unpopulated when executing through the command palette
+  const pathToQhelp = selectedQuery
+    ? selectedQuery.fsPath
+    : window.activeTextEditor?.document.uri.fsPath;
+  if (pathToQhelp) {
+    // Create temporary directory
+    const relativePathToMd = `${basename(pathToQhelp, ".qhelp")}.md`;
+    const absolutePathToMd = join(qhelpTmpDir.name, relativePathToMd);
+    const uri = Uri.file(absolutePathToMd);
+    try {
+      await cliServer.generateQueryHelp(pathToQhelp, absolutePathToMd);
+      await commands.executeCommand("markdown.showPreviewToSide", uri);
+    } catch (e) {
+      const errorMessage = getErrorMessage(e).includes(
+        "Generating qhelp in markdown",
+      )
+        ? redactableError`Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
+        : redactableError`Could not open a preview of the generated file (${absolutePathToMd}).`;
+      void showAndLogExceptionWithTelemetry(errorMessage, {
+        fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
+      });
+    }
+  }
+}
+
+async function openReferencedFile(
+  qs: QueryRunner,
+  cliServer: CodeQLCliServer,
+  selectedQuery: Uri,
+): Promise<void> {
+  // If no file is selected, the path of the file in the editor is selected
+  const path =
+    selectedQuery?.fsPath || window.activeTextEditor?.document.uri.fsPath;
+  if (qs !== undefined && path) {
+    const resolved = await cliServer.resolveQlref(path);
+    const uri = Uri.file(resolved.resolvedPath);
+    await window.showTextDocument(uri, { preview: false });
+  }
+}
+
+async function viewAst(
+  astViewer: AstViewer,
+  printAstTemplateProvider: TemplatePrintAstProvider,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  selectedFile: Uri,
+): Promise<void> {
+  const ast = await printAstTemplateProvider.provideAst(
+    progress,
+    token,
+    selectedFile ?? window.activeTextEditor?.document.uri,
+  );
+  if (ast) {
+    astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
+  }
 }
 
 function addUnhandledRejectionListener() {

@@ -3,7 +3,7 @@ import { Disposable } from "../pure/disposable-object";
 import { AppEventEmitter } from "./events";
 import { Logger } from "./logging";
 import { Memento } from "./memento";
-import { ExtensionCommandManager } from "./commands";
+import { AppCommandManager } from "./commands";
 
 export interface App {
   createEventEmitter<T>(): AppEventEmitter<T>;
@@ -16,7 +16,7 @@ export interface App {
   readonly workspaceStoragePath?: string;
   readonly workspaceState: Memento;
   readonly credentials: Credentials;
-  readonly commandManager: ExtensionCommandManager;
+  readonly commands: AppCommandManager;
 }
 
 export enum AppMode {
