@@ -19,5 +19,6 @@ export function createMockExtensionContext({
     globalStorageUri: vscode.Uri.file(globalStoragePath),
     storageUri: vscode.Uri.file(workspaceStoragePath),
     workspaceState: createMockMemento(),
+    subscriptions: [],
   } as any as vscode.ExtensionContext;
 }
