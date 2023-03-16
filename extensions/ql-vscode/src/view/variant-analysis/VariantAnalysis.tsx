@@ -13,7 +13,7 @@ import { VariantAnalysisLoading } from "./VariantAnalysisLoading";
 import { ToVariantAnalysisMessage } from "../../pure/interface-types";
 import { vscode } from "../vscode-api";
 import { defaultFilterSortState } from "../../pure/variant-analysis-filter-sort";
-import { useTelemetryOnChange } from "../common/telemetry";
+import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";
 
 export type VariantAnalysisProps = {
   variantAnalysis?: VariantAnalysisDomainModel;
@@ -25,6 +25,7 @@ const openQueryFile = () => {
   vscode.postMessage({
     t: "openQueryFile",
   });
+  sendTelemetry("variant-analysis-open-query-file");
 };
 
 const openQueryText = () => {
