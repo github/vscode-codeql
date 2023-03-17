@@ -43,6 +43,7 @@ export const DataFlowPaths = ({
 
   return (
     <>
+      <VerticalSpace size={2} />
       <SectionTitle>{ruleDescription}</SectionTitle>
       <VerticalSpace size={2} />
 
