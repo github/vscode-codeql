@@ -449,6 +449,11 @@ export interface CancelVariantAnalysisMessage {
   t: "cancelVariantAnalysis";
 }
 
+export interface ShowDataFlowPathsMessage {
+  t: "showDataFlowPaths";
+  dataFlowPaths: DataFlowPaths;
+}
+
 export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
   | SetRepoResultsMessage
@@ -462,7 +467,8 @@ export type FromVariantAnalysisMessage =
   | CopyRepositoryListMessage
   | ExportResultsMessage
   | OpenLogsMessage
-  | CancelVariantAnalysisMessage;
+  | CancelVariantAnalysisMessage
+  | ShowDataFlowPathsMessage;
 
 export interface SetDataFlowPathsMessage {
   t: "setDataFlowPaths";

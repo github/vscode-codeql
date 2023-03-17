@@ -18,20 +18,25 @@ describe(CodePaths.name, () => {
       />,
     );
 
-  it("renders correctly when unexpanded", () => {
+  it("renders 'show paths' link", () => {
     render();
 
     expect(screen.getByText("Show paths")).toBeInTheDocument();
-    expect(screen.queryByText("Code snippet text")).not.toBeInTheDocument();
-    expect(screen.queryByText("Rule description")).not.toBeInTheDocument();
   });
 
-  it("renders correctly when expanded", async () => {
+  it("posts extension message when 'show paths' link clicked", async () => {
     render();
 
     await userEvent.click(screen.getByText("Show paths"));
 
-    expect(screen.getByText("Code snippet text")).toBeInTheDocument();
-    expect(screen.getByText("Rule description")).toBeInTheDocument();
+    expect((window as any).vsCodeApi.postMessage).toHaveBeenCalledWith({
+      t: "showDataFlowPaths",
+      dataFlowPaths: {
+        codeFlows: createMockCodeFlows(),
+        ruleDescription: "Rule description",
+        message: createMockAnalysisMessage(),
+        severity: "Recommendation",
+      },
+    });
   });
 });

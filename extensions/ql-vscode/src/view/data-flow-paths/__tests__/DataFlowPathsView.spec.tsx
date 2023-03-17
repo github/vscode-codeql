@@ -4,7 +4,9 @@ import {
   DataFlowPathsView,
   DataFlowPathsViewProps,
 } from "../DataFlowPathsView";
-import { createMockDataFlowPaths } from "../../../../test/factories/variant-analysis/shared/data-flow-paths";
+import { createMockCodeFlows } from "../../../../test/factories/variant-analysis/shared/CodeFlow";
+import { createMockAnalysisMessage } from "../../../../test/factories/variant-analysis/shared/AnalysisMessage";
+import { DataFlowPaths } from "../../../variant-analysis/shared/data-flow-paths";
 
 describe(DataFlowPathsView.name, () => {
   const render = (props: Partial<DataFlowPathsViewProps>) =>
@@ -17,8 +19,16 @@ describe(DataFlowPathsView.name, () => {
   });
 
   it("renders a data flow paths view", () => {
-    render({ dataFlowPaths: createMockDataFlowPaths() });
+    const dataFlowPaths: DataFlowPaths = {
+      codeFlows: createMockCodeFlows(),
+      ruleDescription: "Rule description",
+      message: createMockAnalysisMessage(),
+      severity: "Recommendation",
+    };
 
-    expect(screen.getByText("Loaded")).toBeInTheDocument();
+    render({ dataFlowPaths });
+
+    expect(screen.queryByText("Code snippet text")).toBeInTheDocument();
+    expect(screen.getByText("Rule description")).toBeInTheDocument();
   });
 });
