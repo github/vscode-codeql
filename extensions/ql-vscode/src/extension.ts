@@ -1094,6 +1094,7 @@ async function activateWithInstalledDistribution(
 
   const allCommands: AllCommands = {
     ...getCommands(),
+    ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
   };
 
