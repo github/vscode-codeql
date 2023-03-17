@@ -644,7 +644,7 @@
       },
       {
         "command": "codeQLQueryHistory.openOnGithub",
-        "title": "Open on GitHub"
+        "title": "View Logs"
       },
       {
         "command": "codeQLQueryHistory.copyRepoList",
