@@ -1199,15 +1199,6 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openVariantAnalysisQueryText",
-      async (variantAnalysisId: number) => {
-        await variantAnalysisManager.openQueryText(variantAnalysisId);
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
     commandRunner("codeQL.openReferencedFile", async (selectedQuery: Uri) => {
       await openReferencedFile(qs, cliServer, selectedQuery);
     }),

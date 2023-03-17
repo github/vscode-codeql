@@ -1034,8 +1034,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (finalSingleItem.t === "variant-analysis") {
-      await commands.executeCommand(
-        "codeQL.openVariantAnalysisQueryText",
+      await this.variantAnalysisManager.openQueryText(
         finalSingleItem.variantAnalysis.id,
       );
       return;
