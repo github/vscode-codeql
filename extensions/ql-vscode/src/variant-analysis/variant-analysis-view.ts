@@ -110,10 +110,7 @@ export class VariantAnalysisView
 
         break;
       case "cancelVariantAnalysis":
-        void commands.executeCommand(
-          "codeQL.cancelVariantAnalysis",
-          this.variantAnalysisId,
-        );
+        await this.manager.cancelVariantAnalysis(this.variantAnalysisId);
         break;
       case "requestRepositoryResults":
         void commands.executeCommand(

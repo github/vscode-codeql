@@ -41,6 +41,9 @@ describe("QueryHistoryManager", () => {
   let executeCommandSpy: jest.SpiedFunction<
     typeof vscode.commands.executeCommand
   >;
+  let cancelVariantAnalysisSpy: jest.SpiedFunction<
+    typeof variantAnalysisManagerStub.cancelVariantAnalysis
+  >;
   const doCompareCallback = jest.fn();
 
   let queryHistoryManager: QueryHistoryManager;
@@ -82,8 +85,13 @@ describe("QueryHistoryManager", () => {
       onVariantAnalysisStatusUpdated: jest.fn(),
       onVariantAnalysisRemoved: jest.fn(),
       removeVariantAnalysis: jest.fn(),
+      cancelVariantAnalysis: jest.fn(),
       showView: jest.fn(),
     } as any as VariantAnalysisManager;
+
+    cancelVariantAnalysisSpy = jest
+      .spyOn(variantAnalysisManagerStub, "cancelVariantAnalysis")
+      .mockResolvedValue(undefined);
 
     localQueryHistory = [
       // completed
@@ -729,8 +737,7 @@ describe("QueryHistoryManager", () => {
         const inProgress1 = variantAnalysisHistory[1];
 
         await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
-        expect(executeCommandSpy).toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).toBeCalledWith(
           inProgress1.variantAnalysis.id,
         );
       });
@@ -746,12 +753,10 @@ describe("QueryHistoryManager", () => {
           inProgress1,
           inProgress2,
         ]);
-        expect(executeCommandSpy).toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).toBeCalledWith(
           inProgress1.variantAnalysis.id,
         );
-        expect(executeCommandSpy).toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).toBeCalledWith(
           inProgress2.variantAnalysis.id,
         );
       });
@@ -793,8 +798,7 @@ describe("QueryHistoryManager", () => {
         await queryHistoryManager.handleCancel(completedVariantAnalysis, [
           completedVariantAnalysis,
         ]);
-        expect(executeCommandSpy).not.toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
           completedVariantAnalysis.variantAnalysis,
         );
       });
@@ -810,12 +814,10 @@ describe("QueryHistoryManager", () => {
           completedVariantAnalysis,
           failedVariantAnalysis,
         ]);
-        expect(executeCommandSpy).not.toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
           completedVariantAnalysis.variantAnalysis.id,
         );
-        expect(executeCommandSpy).not.toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
           failedVariantAnalysis.variantAnalysis.id,
         );
       });

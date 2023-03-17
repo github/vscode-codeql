@@ -25,4 +25,5 @@ export interface VariantAnalysisViewManager<
     variantAnalysisId: number,
   ): Promise<VariantAnalysisScannedRepositoryState[]>;
   openQueryFile(variantAnalysisId: number): Promise<void>;
+  cancelVariantAnalysis(variantAnalysisId: number): Promise<void>;
 }

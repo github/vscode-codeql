@@ -38,6 +38,7 @@ const stopQuery = () => {
   vscode.postMessage({
     t: "cancelVariantAnalysis",
   });
+  sendTelemetry("variant-analysis-cancel");
 };
 
 const openLogs = () => {

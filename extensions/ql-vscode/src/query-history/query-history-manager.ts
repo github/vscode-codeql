@@ -1008,8 +1008,7 @@ export class QueryHistoryManager extends DisposableObject {
         if (item.t === "local") {
           item.cancel();
         } else if (item.t === "variant-analysis") {
-          await commands.executeCommand(
-            "codeQL.cancelVariantAnalysis",
+          await this.variantAnalysisManager.cancelVariantAnalysis(
             item.variantAnalysis.id,
           );
         } else {
