@@ -137,6 +137,7 @@ export function VariantAnalysis({
         repositoryIds: selectedRepositoryIds,
       },
     });
+    sendTelemetry("variant-analysis-export-results");
   }, [filterSortState, selectedRepositoryIds]);
 
   if (
