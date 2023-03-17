@@ -13,6 +13,7 @@ import {
 } from "../variant-analysis/shared/variant-analysis";
 import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
 import { ErrorLike } from "./errors";
+import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 
 /**
  * This module contains types and code that are shared between
@@ -462,3 +463,12 @@ export type FromVariantAnalysisMessage =
   | ExportResultsMessage
   | OpenLogsMessage
   | CancelVariantAnalysisMessage;
+
+export interface SetDataFlowPathsMessage {
+  t: "setDataFlowPaths";
+  dataFlowPaths: DataFlowPaths;
+}
+
+export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
+
+export type FromDataFlowPathsMessage = CommonFromViewMessages;
