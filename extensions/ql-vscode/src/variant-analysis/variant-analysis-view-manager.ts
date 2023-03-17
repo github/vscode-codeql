@@ -24,4 +24,5 @@ export interface VariantAnalysisViewManager<
   getRepoStates(
     variantAnalysisId: number,
   ): Promise<VariantAnalysisScannedRepositoryState[]>;
+  openQueryFile(variantAnalysisId: number): Promise<void>;
 }
