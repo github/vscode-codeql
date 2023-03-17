@@ -5,6 +5,7 @@ import {
   ensureDir,
   writeFile,
   opendir,
+  existsSync,
 } from "fs-extra";
 import { promise as glob } from "glob-promise";
 import { load } from "js-yaml";
@@ -16,6 +17,7 @@ import {
   window as Window,
   workspace,
   env,
+  commands,
 } from "vscode";
 import { CodeQLCliServer, QlpacksInfo } from "./cli";
 import { UserCancellationException } from "./commandRunner";
@@ -25,6 +27,7 @@ import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
 import { getQlPackPath } from "./pure/ql";
 import { dbSchemeToLanguage } from "./common/query-language";
+import { isCodespacesTemplate } from "./config";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -264,6 +267,29 @@ export function isFolderAlreadyInWorkspace(folderName: string) {
   return !!workspaceFolders.find(
     (workspaceFolder) => workspaceFolder.name === folderName,
   );
+}
+
+/** Check if the current workspace is the CodeTour and open the workspace folder.
+ * Without this, we can't run the code tour correctly.
+ **/
+export async function prepareCodeTour(): Promise<void> {
+  if (workspace.workspaceFolders?.length) {
+    const currentFolder = workspace.workspaceFolders[0].uri.fsPath;
+
+    const tutorialWorkspaceUri = Uri.parse(
+      join(workspace.workspaceFolders[0].uri.fsPath, "tutorial.code-workspace"),
+    );
+
+    const toursFolderPath = join(currentFolder, ".tours");
+
+    if (
+      existsSync(tutorialWorkspaceUri.fsPath) &&
+      existsSync(toursFolderPath) &&
+      !isCodespacesTemplate()
+    ) {
+      await commands.executeCommand("vscode.openFolder", tutorialWorkspaceUri);
+    }
+  }
 }
 
 /**

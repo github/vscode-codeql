@@ -70,6 +70,7 @@ import {
   showInformationMessageWithAction,
   tmpDir,
   tmpDirDisposal,
+  prepareCodeTour,
 } from "./helpers";
 import {
   asError,
@@ -343,6 +344,8 @@ export async function activate(
   variantAnalysisViewSerializer.onExtensionLoaded(
     codeQlExtension.variantAnalysisManager,
   );
+
+  await prepareCodeTour();
 
   return codeQlExtension;
 }
