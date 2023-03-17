@@ -5,8 +5,7 @@ import {
   DataFlowPathsViewProps,
 } from "../DataFlowPathsView";
 import { createMockCodeFlows } from "../../../../test/factories/variant-analysis/shared/CodeFlow";
-import { createMockAnalysisMessage } from "../../../../test/factories/variant-analysis/shared/AnalysisMessage";
-import { DataFlowPaths } from "../../../variant-analysis/shared/data-flow-paths";
+import { createMockDataFlowPaths } from "../../../../test/factories/variant-analysis/shared/data-flow-paths";
 
 describe(DataFlowPathsView.name, () => {
   const render = (props: Partial<DataFlowPathsViewProps>) =>
@@ -19,12 +18,10 @@ describe(DataFlowPathsView.name, () => {
   });
 
   it("renders a data flow paths view", () => {
-    const dataFlowPaths: DataFlowPaths = {
-      codeFlows: createMockCodeFlows(),
+    const dataFlowPaths = createMockDataFlowPaths({
       ruleDescription: "Rule description",
-      message: createMockAnalysisMessage(),
-      severity: "Recommendation",
-    };
+      codeFlows: createMockCodeFlows(),
+    });
 
     render({ dataFlowPaths });
 
