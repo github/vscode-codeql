@@ -1,7 +1,6 @@
 import * as React from "react";
 
 import { ComponentStory, ComponentMeta } from "@storybook/react";
-import { ThemeProvider } from "@primer/react";
 
 import { CodePaths } from "../../view/common";
 import type { CodeFlow } from "../../variant-analysis/shared/analysis-result";
@@ -9,13 +8,7 @@ import type { CodeFlow } from "../../variant-analysis/shared/analysis-result";
 export default {
   title: "Code Paths",
   component: CodePaths,
-  decorators: [
-    (Story) => (
-      <ThemeProvider colorMode="auto">
-        <Story />
-      </ThemeProvider>
-    ),
-  ],
+  decorators: [(Story) => <Story />],
 } as ComponentMeta<typeof CodePaths>;
 
 const Template: ComponentStory<typeof CodePaths> = (args) => (
