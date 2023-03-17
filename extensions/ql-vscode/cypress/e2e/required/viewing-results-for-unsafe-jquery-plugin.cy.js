@@ -5,14 +5,35 @@ describe('CodeQL Extension', () => {
     cy.visit('http://localhost:8080')
   })
 
+  // it('Should trust project', () => {
+  //   const element = cy.get('Yes, I trust the authors');
+
+  //   element.should('exist')
+
+  //   if (element !== undefined) {
+  //     element
+  //     .find('div')
+  //     .should(($div) => {
+  //       if ($div.length !== 1) {
+  //         cy.contains('Yes, I trust the authors').click()
+  //       }
+  //     });
+  //   }
+  // })
+
   it('should run UnsafeJQueryPlugin.ql', () => {
-    cy.get('.explorer-viewlet').type('{meta}{shift}p')
+    cy.wait(2000)
+    cy.get('.editor-container')
+        .type('{meta+p}')
 
-    cy.focused().type('Open Query')
+    cy.focused().type('UnsafeJQueryPlugin.ql')
 
-    cy.findByText('Open Query').click()
+    cy.wait(15000)
+    cy.focused().type('{enter}')
 
-    cy.findByText('UnsafeJQueryPlugin.ql').click()
+    cy.get('Cancel').click()
+
+    cy.get('No').click()
   });
 })
 

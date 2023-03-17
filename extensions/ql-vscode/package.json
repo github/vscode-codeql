@@ -1402,8 +1402,10 @@
     "postinstall": "patch-package",
     "prepare": "cd ../.. && husky install",
     "package": "mkdir -p dist && cp ../../dist/*.vsix dist/test.vsix",
-    "code-server-up": "docker-compose up -d && docker exec vscodeCodeQlExtension code-server --install-extension /source/dist/test.vsix",
+    "code-server-up": "docker-compose up -d && docker exec vscodeCodeQlExtension code-server --install-extension /source/dist/test.vsix --force",
     "code-server-down": "docker-compose down",
+    "cypress:run": "cypress run",
+    "cypress:open": "cypress open",
     "e2e": "npm run code-server-up && cypress run && npm run code-server-down",
     "e2e:debug": "npm run code-server-up && cypress open && npm run code-server-down"
   },
