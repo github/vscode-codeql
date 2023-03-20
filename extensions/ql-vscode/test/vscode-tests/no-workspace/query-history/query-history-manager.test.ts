@@ -86,6 +86,7 @@ describe("QueryHistoryManager", () => {
       onVariantAnalysisRemoved: jest.fn(),
       removeVariantAnalysis: jest.fn(),
       cancelVariantAnalysis: jest.fn(),
+      exportResults: jest.fn(),
       showView: jest.fn(),
     } as any as VariantAnalysisManager;
 
@@ -862,7 +863,7 @@ describe("QueryHistoryManager", () => {
       const item = localQueryHistory[4];
       await queryHistoryManager.handleExportResults(item, [item]);
 
-      expect(executeCommandSpy).not.toBeCalled();
+      expect(variantAnalysisManagerStub.exportResults).not.toBeCalled();
     });
 
     it("should export results for a single variant analysis", async () => {
@@ -870,8 +871,7 @@ describe("QueryHistoryManager", () => {
 
       const item = variantAnalysisHistory[1];
       await queryHistoryManager.handleExportResults(item, [item]);
-      expect(executeCommandSpy).toBeCalledWith(
-        "codeQL.exportVariantAnalysisResults",
+      expect(variantAnalysisManagerStub.exportResults).toBeCalledWith(
         item.variantAnalysis.id,
       );
     });
@@ -882,7 +882,7 @@ describe("QueryHistoryManager", () => {
       const item1 = variantAnalysisHistory[1];
       const item2 = variantAnalysisHistory[3];
       await queryHistoryManager.handleExportResults(item1, [item1, item2]);
-      expect(executeCommandSpy).not.toBeCalled();
+      expect(variantAnalysisManagerStub.exportResults).not.toBeCalled();
     });
   });
 
