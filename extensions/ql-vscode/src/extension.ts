@@ -1270,7 +1270,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseFolder",
       (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.handleChooseDatabaseFolder(progress, token),
+        databaseUI.chooseDatabaseFolder(progress, token),
       {
         title: "Choose a Database from a Folder",
       },
@@ -1280,7 +1280,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseArchive",
       (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.handleChooseDatabaseArchive(progress, token),
+        databaseUI.chooseDatabaseArchive(progress, token),
       {
         title: "Choose a Database from an Archive",
       },
@@ -1291,11 +1291,7 @@ async function activateWithInstalledDistribution(
       "codeQL.chooseDatabaseGithub",
       async (progress: ProgressCallback, token: CancellationToken) => {
         const credentials = isCanary() ? app.credentials : undefined;
-        await databaseUI.handleChooseDatabaseGithub(
-          credentials,
-          progress,
-          token,
-        );
+        await databaseUI.chooseDatabaseGithub(credentials, progress, token);
       },
       {
         title: "Adding database from GitHub",
@@ -1306,7 +1302,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseInternet",
       (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.handleChooseDatabaseInternet(progress, token),
+        databaseUI.chooseDatabaseInternet(progress, token),
 
       {
         title: "Adding database from URL",
