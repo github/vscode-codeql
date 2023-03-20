@@ -1096,6 +1096,7 @@ async function activateWithInstalledDistribution(
     ...getCommands(),
     ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
+    ...dbModule.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
