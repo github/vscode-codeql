@@ -345,7 +345,13 @@ export async function activate(
     codeQlExtension.variantAnalysisManager,
   );
 
-  await prepareCodeTour();
+  try {
+    await prepareCodeTour();
+  } catch (e: unknown) {
+    console.log(
+      `Could not open tutorial workspace automatically: ${getErrorMessage(e)}`,
+    );
+  }
 
   return codeQlExtension;
 }
