@@ -68,6 +68,9 @@ export type VariantAnalysisCommands = {
     variantAnalysisId: number,
     filterSort?: RepositoriesFilterSortStateWithIds,
   ) => Promise<void>;
+  "codeQL.monitorVariantAnalysis": (
+    variantAnalysis: VariantAnalysis,
+  ) => Promise<void>;
   "codeQL.openVariantAnalysisLogs": (
     variantAnalysisId: number,
   ) => Promise<void>;

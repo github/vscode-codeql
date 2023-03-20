@@ -133,6 +133,7 @@ export class VariantAnalysisManager
     return {
       "codeQL.copyVariantAnalysisRepoList":
         this.copyRepoListToClipboard.bind(this),
+      "codeQL.monitorVariantAnalysis": this.monitorVariantAnalysis.bind(this),
       "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
       "codeQL.runVariantAnalysis":
         this.runVariantAnalysisFromCommand.bind(this),
@@ -496,12 +497,10 @@ export class VariantAnalysisManager
 
   public async monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
-    cancellationToken: CancellationToken,
   ): Promise<void> {
     await this.variantAnalysisMonitor.monitorVariantAnalysis(
       variantAnalysis,
       this.app.credentials,
-      cancellationToken,
     );
   }
 

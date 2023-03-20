@@ -1102,18 +1102,6 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner(
-      "codeQL.monitorVariantAnalysis",
-      async (variantAnalysis: VariantAnalysis, token: CancellationToken) => {
-        await variantAnalysisManager.monitorVariantAnalysis(
-          variantAnalysis,
-          token,
-        );
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
       "codeQL.autoDownloadVariantAnalysisResult",
       async (
         scannedRepo: VariantAnalysisScannedRepository,
