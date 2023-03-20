@@ -120,10 +120,6 @@ import { NewQueryRunner } from "./query-server/query-runner";
 import { QueryRunner } from "./queryRunner";
 import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
-import {
-  VariantAnalysis,
-  VariantAnalysisScannedRepository,
-} from "./variant-analysis/shared/variant-analysis";
 import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
 import { createVariantAnalysisContentProvider } from "./variant-analysis/variant-analysis-content-provider";
 import { VSCodeMockGitHubApiServer } from "./mocks/vscode-mock-gh-api-server";
@@ -1099,23 +1095,6 @@ async function activateWithInstalledDistribution(
   for (const [commandName, command] of Object.entries(allCommands)) {
     app.commands.register(commandName as keyof AllCommands, command);
   }
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.autoDownloadVariantAnalysisResult",
-      async (
-        scannedRepo: VariantAnalysisScannedRepository,
-        variantAnalysisSummary: VariantAnalysis,
-        token: CancellationToken,
-      ) => {
-        await variantAnalysisManager.enqueueDownload(
-          scannedRepo,
-          variantAnalysisSummary,
-          token,
-        );
-      },
-    ),
-  );
 
   ctx.subscriptions.push(
     commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {

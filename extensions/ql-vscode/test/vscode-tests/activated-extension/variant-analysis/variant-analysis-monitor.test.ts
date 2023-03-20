@@ -167,7 +167,6 @@ describe("Variant Analysis Monitor", () => {
             index + 1,
             processScannedRepository(succeededRepo),
             processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
-            undefined,
           );
         });
       });

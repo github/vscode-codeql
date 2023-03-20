@@ -3,7 +3,10 @@ import type { Uri } from "vscode";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
 import { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-filter-sort";
-import { VariantAnalysis } from "../variant-analysis/shared/variant-analysis";
+import {
+  VariantAnalysis,
+  VariantAnalysisScannedRepository,
+} from "../variant-analysis/shared/variant-analysis";
 
 // A command function matching the signature that VS Code calls when
 // a command on a selection is invoked.
@@ -64,6 +67,10 @@ export type QueryHistoryCommands = {
 
 // Commands tied to variant analysis
 export type VariantAnalysisCommands = {
+  "codeQL.autoDownloadVariantAnalysisResult": (
+    scannedRepo: VariantAnalysisScannedRepository,
+    variantAnalysisSummary: VariantAnalysis,
+  ) => Promise<void>;
   "codeQL.copyVariantAnalysisRepoList": (
     variantAnalysisId: number,
     filterSort?: RepositoriesFilterSortStateWithIds,

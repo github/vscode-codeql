@@ -131,6 +131,8 @@ export class VariantAnalysisManager
 
   getCommands(): VariantAnalysisCommands {
     return {
+      "codeQL.autoDownloadVariantAnalysisResult":
+        this.enqueueDownload.bind(this),
       "codeQL.copyVariantAnalysisRepoList":
         this.copyRepoListToClipboard.bind(this),
       "codeQL.monitorVariantAnalysis": this.monitorVariantAnalysis.bind(this),
@@ -507,7 +509,6 @@ export class VariantAnalysisManager
   public async autoDownloadVariantAnalysisResult(
     scannedRepo: VariantAnalysisScannedRepository,
     variantAnalysis: VariantAnalysis,
-    cancellationToken: CancellationToken,
   ): Promise<void> {
     if (
       this.repoStates.get(variantAnalysis.id)?.[scannedRepo.repository.id]
@@ -523,13 +524,6 @@ export class VariantAnalysisManager
     };
 
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
-
-    if (cancellationToken && cancellationToken.isCancellationRequested) {
-      repoState.downloadStatus =
-        VariantAnalysisScannedRepositoryDownloadStatus.Failed;
-      await this.onRepoStateUpdated(variantAnalysis.id, repoState);
-      return;
-    }
 
     let repoTask: VariantAnalysisRepositoryTask;
     try {
@@ -605,14 +599,9 @@ export class VariantAnalysisManager
   public async enqueueDownload(
     scannedRepo: VariantAnalysisScannedRepository,
     variantAnalysis: VariantAnalysis,
-    token: CancellationToken,
   ): Promise<void> {
     await this.queue.add(() =>
-      this.autoDownloadVariantAnalysisResult(
-        scannedRepo,
-        variantAnalysis,
-        token,
-      ),
+      this.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysis),
     );
   }
 
