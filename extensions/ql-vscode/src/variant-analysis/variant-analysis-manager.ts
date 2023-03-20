@@ -138,6 +138,7 @@ export class VariantAnalysisManager
       "codeQL.loadVariantAnalysisRepoResults": this.loadResults.bind(this),
       "codeQL.monitorVariantAnalysis": this.monitorVariantAnalysis.bind(this),
       "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
+      "codeQL.openVariantAnalysisView": this.showView.bind(this),
       "codeQL.runVariantAnalysis":
         this.runVariantAnalysisFromCommand.bind(this),
       // Since we are tracking extension usage through commands, this command mirrors the "codeQL.runVariantAnalysis" command

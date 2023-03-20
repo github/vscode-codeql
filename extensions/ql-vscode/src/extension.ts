@@ -1101,16 +1101,6 @@ async function activateWithInstalledDistribution(
     }),
   );
 
-  // The "openVariantAnalysisView" command is internal-only.
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openVariantAnalysisView",
-      async (variantAnalysisId: number) => {
-        await variantAnalysisManager.showView(variantAnalysisId);
-      },
-    ),
-  );
-
   ctx.subscriptions.push(
     commandRunner("codeQL.openReferencedFile", async (selectedQuery: Uri) => {
       await openReferencedFile(qs, cliServer, selectedQuery);
