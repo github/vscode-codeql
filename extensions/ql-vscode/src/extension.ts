@@ -1102,21 +1102,6 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner(
-      "codeQL.copyVariantAnalysisRepoList",
-      async (
-        variantAnalysisId: number,
-        filterSort?: RepositoriesFilterSortStateWithIds,
-      ) => {
-        await variantAnalysisManager.copyRepoListToClipboard(
-          variantAnalysisId,
-          filterSort,
-        );
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
       "codeQL.monitorVariantAnalysis",
       async (variantAnalysis: VariantAnalysis, token: CancellationToken) => {
         await variantAnalysisManager.monitorVariantAnalysis(

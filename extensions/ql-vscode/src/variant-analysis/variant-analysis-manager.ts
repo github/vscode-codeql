@@ -131,6 +131,8 @@ export class VariantAnalysisManager
 
   getCommands(): VariantAnalysisCommands {
     return {
+      "codeQL.copyVariantAnalysisRepoList":
+        this.copyRepoListToClipboard.bind(this),
       "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
       "codeQL.runVariantAnalysis":
         this.runVariantAnalysisFromCommand.bind(this),
