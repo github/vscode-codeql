@@ -282,6 +282,21 @@ export async function prepareCodeTour(): Promise<void> {
 
     const toursFolderPath = join(currentFolder, ".tours");
 
+    console.log(
+      "!!!!!!!!!!!!!!!!!!!!!!!!!!!! existsSync(tutorialWorkspaceUri.fsPath)",
+      existsSync(tutorialWorkspaceUri.fsPath),
+    );
+
+    console.log(
+      "!!!!!!!!!!!!!!!!!!!!!!!!!!!! existsSync(toursFolderPath)",
+      existsSync(toursFolderPath),
+    );
+
+    console.log(
+      "!!!!!!!!!!!!!!!!!!!!!!!!!!!! isCodespacesTemplate()",
+      isCodespacesTemplate(),
+    );
+
     if (
       existsSync(tutorialWorkspaceUri.fsPath) &&
       existsSync(toursFolderPath) &&
