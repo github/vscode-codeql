@@ -131,14 +131,12 @@ export class VariantAnalysisManager
 
   getCommands(): VariantAnalysisCommands {
     return {
-      "codeQL.openVariantAnalysisLogs": async (variantAnalysisId: number) => {
-        await this.openVariantAnalysisLogs(variantAnalysisId);
-      },
-      "codeQL.runVariantAnalysis": async (uri?: Uri) =>
-        this.runVariantAnalysisFromCommand(uri),
+      "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
+      "codeQL.runVariantAnalysis":
+        this.runVariantAnalysisFromCommand.bind(this),
       // Since we are tracking extension usage through commands, this command mirrors the "codeQL.runVariantAnalysis" command
-      "codeQL.runVariantAnalysisContextEditor": async (uri?: Uri) =>
-        this.runVariantAnalysisFromCommand(uri),
+      "codeQL.runVariantAnalysisContextEditor":
+        this.runVariantAnalysisFromCommand.bind(this),
     };
   }
 
