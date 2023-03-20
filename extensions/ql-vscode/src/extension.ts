@@ -1147,15 +1147,6 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.cancelVariantAnalysis",
-      async (variantAnalysisId: number) => {
-        await variantAnalysisManager.cancelVariantAnalysis(variantAnalysisId);
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
     commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
       await exportSelectedVariantAnalysisResults(qhm);
     }),
@@ -1204,15 +1195,6 @@ async function activateWithInstalledDistribution(
       "codeQL.openVariantAnalysisView",
       async (variantAnalysisId: number) => {
         await variantAnalysisManager.showView(variantAnalysisId);
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openVariantAnalysisQueryText",
-      async (variantAnalysisId: number) => {
-        await variantAnalysisManager.openQueryText(variantAnalysisId);
       },
     ),
   );

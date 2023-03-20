@@ -32,12 +32,14 @@ const openQueryText = () => {
   vscode.postMessage({
     t: "openQueryText",
   });
+  sendTelemetry("variant-analysis-open-query-text");
 };
 
 const stopQuery = () => {
   vscode.postMessage({
     t: "cancelVariantAnalysis",
   });
+  sendTelemetry("variant-analysis-cancel");
 };
 
 const openLogs = () => {
