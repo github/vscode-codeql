@@ -21,7 +21,7 @@ import {
   DatabaseItem,
   DatabaseManager,
 } from "./local-databases";
-import { commandRunner, ProgressCallback, withProgress } from "./commandRunner";
+import { ProgressCallback, withProgress } from "./commandRunner";
 import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
@@ -38,8 +38,8 @@ import { asError, asyncFilter, getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./queryRunner";
 import { isCanary } from "./config";
 import { App } from "./common/app";
-import { Credentials } from "./common/authentication";
 import { redactableError } from "./pure/errors";
+import { LocalDatabasesCommands } from "./common/commands";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -206,108 +206,34 @@ export class DatabaseUI extends DisposableObject {
     );
   }
 
-  init() {
-    void extLogger.log("Registering database panel commands.");
-    this.push(
-      commandRunner(
-        "codeQL.setCurrentDatabase",
-        this.handleSetCurrentDatabase.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQL.setDefaultTourDatabase",
+  public getCommands(): LocalDatabasesCommands {
+    return {
+      "codeQL.setCurrentDatabase": this.handleSetCurrentDatabase.bind(this),
+      "codeQL.setDefaultTourDatabase":
         this.handleSetDefaultTourDatabase.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQL.upgradeCurrentDatabase",
+      "codeQL.upgradeCurrentDatabase":
         this.handleUpgradeCurrentDatabase.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner("codeQL.clearCache", this.handleClearCache.bind(this)),
-    );
-
-    this.push(
-      commandRunner(
-        "codeQLDatabases.chooseDatabaseFolder",
+      "codeQL.clearCache": this.handleClearCache.bind(this),
+      "codeQLDatabases.chooseDatabaseFolder":
         this.handleChooseDatabaseFolder.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.chooseDatabaseArchive",
+      "codeQLDatabases.chooseDatabaseArchive":
         this.handleChooseDatabaseArchive.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.chooseDatabaseInternet",
+      "codeQLDatabases.chooseDatabaseInternet":
         this.handleChooseDatabaseInternet.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner("codeQLDatabases.chooseDatabaseGithub", async () => {
-        const credentials = isCanary() ? this.app.credentials : undefined;
-        await this.handleChooseDatabaseGithub(credentials);
-      }),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.setCurrentDatabase",
+      "codeQLDatabases.chooseDatabaseGithub":
+        this.handleChooseDatabaseGithub.bind(this),
+      "codeQLDatabases.setCurrentDatabase":
         this.handleMakeCurrentDatabase.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.sortByName",
-        this.handleSortByName.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.sortByDateAdded",
-        this.handleSortByDateAdded.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.removeDatabase",
-        this.handleRemoveDatabase.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.upgradeDatabase",
-        this.handleUpgradeDatabase.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.renameDatabase",
-        this.handleRenameDatabase.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.openDatabaseFolder",
-        this.handleOpenFolder.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.addDatabaseSource",
-        this.handleAddSource.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.removeOrphanedDatabases",
+      "codeQLDatabases.sortByName": this.handleSortByName.bind(this),
+      "codeQLDatabases.sortByDateAdded": this.handleSortByDateAdded.bind(this),
+      "codeQLDatabases.removeDatabase": this.handleRemoveDatabase.bind(this),
+      "codeQLDatabases.upgradeDatabase": this.handleUpgradeDatabase.bind(this),
+      "codeQLDatabases.renameDatabase": this.handleRenameDatabase.bind(this),
+      "codeQLDatabases.openDatabaseFolder": this.handleOpenFolder.bind(this),
+      "codeQLDatabases.addDatabaseSource": this.handleAddSource.bind(this),
+      "codeQLDatabases.removeOrphanedDatabases":
         this.handleRemoveOrphanedDatabases.bind(this),
-      ),
-    );
+    };
   }
 
   private async handleMakeCurrentDatabase(
@@ -505,12 +431,10 @@ export class DatabaseUI extends DisposableObject {
     );
   }
 
-  private async handleChooseDatabaseInternet(): Promise<
-    DatabaseItem | undefined
-  > {
+  private async handleChooseDatabaseInternet(): Promise<void> {
     return withProgress(
       async (progress, token) => {
-        return await this.chooseDatabaseInternet(progress, token);
+        await this.chooseDatabaseInternet(progress, token);
       },
       {
         title: "Adding database from URL",
@@ -519,10 +443,11 @@ export class DatabaseUI extends DisposableObject {
   }
 
   public async chooseDatabaseGithub(
-    credentials: Credentials | undefined,
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<DatabaseItem | undefined> {
+    const credentials = isCanary() ? this.app.credentials : undefined;
+
     return await promptImportGithubDatabase(
       this.databaseManager,
       this.storagePath,
@@ -533,12 +458,10 @@ export class DatabaseUI extends DisposableObject {
     );
   }
 
-  private async handleChooseDatabaseGithub(
-    credentials: Credentials | undefined,
-  ): Promise<DatabaseItem | undefined> {
+  private async handleChooseDatabaseGithub(): Promise<void> {
     return withProgress(
       async (progress, token) => {
-        return await this.chooseDatabaseGithub(credentials, progress, token);
+        await this.chooseDatabaseGithub(progress, token);
       },
       {
         title: "Adding database from GitHub",

@@ -35,7 +35,6 @@ import { CodeQLCliServer } from "./cli";
 import {
   CliConfigListener,
   DistributionConfigListener,
-  isCanary,
   joinOrderWarningThreshold,
   MAX_QUERIES,
   QueryHistoryConfigListener,
@@ -642,7 +641,6 @@ async function activateWithInstalledDistribution(
     getContextStoragePath(ctx),
     ctx.extensionPath,
   );
-  databaseUI.init();
   ctx.subscriptions.push(databaseUI);
 
   void extLogger.log("Initializing evaluator log viewer.");
@@ -1096,6 +1094,7 @@ async function activateWithInstalledDistribution(
     ...getCommands(),
     ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
+    ...databaseUI.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
@@ -1290,8 +1289,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseGithub",
       async (progress: ProgressCallback, token: CancellationToken) => {
-        const credentials = isCanary() ? app.credentials : undefined;
-        await databaseUI.chooseDatabaseGithub(credentials, progress, token);
+        await databaseUI.chooseDatabaseGithub(progress, token);
       },
       {
         title: "Adding database from GitHub",
