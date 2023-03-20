@@ -1238,8 +1238,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    await commands.executeCommand(
-      "codeQL.exportVariantAnalysisResults",
+    await this.variantAnalysisManager.exportResults(
       finalSingleItem.variantAnalysis.id,
     );
   }

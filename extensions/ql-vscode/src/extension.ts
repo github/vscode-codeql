@@ -109,10 +109,7 @@ import {
   handleInstallPackDependencies,
 } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
-import {
-  exportSelectedVariantAnalysisResults,
-  exportVariantAnalysisResults,
-} from "./variant-analysis/export-results";
+import { exportSelectedVariantAnalysisResults } from "./variant-analysis/export-results";
 import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
@@ -1156,33 +1153,8 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
-      await exportSelectedVariantAnalysisResults(qhm);
+      await exportSelectedVariantAnalysisResults(variantAnalysisManager, qhm);
     }),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.exportVariantAnalysisResults",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        variantAnalysisId: number,
-        filterSort?: RepositoriesFilterSortStateWithIds,
-      ) => {
-        await exportVariantAnalysisResults(
-          variantAnalysisManager,
-          variantAnalysisId,
-          filterSort,
-          app.credentials,
-          progress,
-          token,
-        );
-      },
-      {
-        title: "Exporting variant analysis results",
-        cancellable: true,
-      },
-    ),
   );
 
   ctx.subscriptions.push(
