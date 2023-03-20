@@ -58,6 +58,9 @@ export type QueryHistoryCommands = {
   "codeQLQueryHistory.itemClicked": SelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.openOnGithub": SelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.copyRepoList": SelectionCommandFunction<QueryHistoryInfo>;
+
+  // Commands in the command pallete
+  "codeQL.exportSelectedVariantAnalysisResults": () => Promise<void>;
 };
 
 // Commands tied to variant analysis

@@ -271,6 +271,9 @@ export class QueryHistoryManager extends DisposableObject {
       "codeQLQueryHistory.itemClicked": this.handleItemClicked.bind(this),
       "codeQLQueryHistory.openOnGithub": this.handleOpenOnGithub.bind(this),
       "codeQLQueryHistory.copyRepoList": this.handleCopyRepoList.bind(this),
+
+      "codeQL.exportSelectedVariantAnalysisResults":
+        this.exportSelectedVariantAnalysisResults.bind(this),
     };
   }
 
@@ -1124,6 +1127,22 @@ export class QueryHistoryManager extends DisposableObject {
 
     await this.variantAnalysisManager.exportResults(
       finalSingleItem.variantAnalysis.id,
+    );
+  }
+
+  /**
+   * Exports the results of the currently-selected variant analysis.
+   */
+  async exportSelectedVariantAnalysisResults(): Promise<void> {
+    const queryHistoryItem = this.getCurrentQueryHistoryItem();
+    if (!queryHistoryItem || queryHistoryItem.t !== "variant-analysis") {
+      throw new Error(
+        "No variant analysis results currently open. To open results, click an item in the query history view.",
+      );
+    }
+
+    await this.variantAnalysisManager.exportResults(
+      queryHistoryItem.variantAnalysis.id,
     );
   }
 
