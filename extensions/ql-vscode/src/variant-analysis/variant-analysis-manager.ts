@@ -135,6 +135,7 @@ export class VariantAnalysisManager
         this.enqueueDownload.bind(this),
       "codeQL.copyVariantAnalysisRepoList":
         this.copyRepoListToClipboard.bind(this),
+      "codeQL.loadVariantAnalysisRepoResults": this.loadResults.bind(this),
       "codeQL.monitorVariantAnalysis": this.monitorVariantAnalysis.bind(this),
       "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
       "codeQL.runVariantAnalysis":

@@ -6,6 +6,7 @@ import { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-fil
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
+  VariantAnalysisScannedRepositoryResult,
 } from "../variant-analysis/shared/variant-analysis";
 
 // A command function matching the signature that VS Code calls when
@@ -75,6 +76,10 @@ export type VariantAnalysisCommands = {
     variantAnalysisId: number,
     filterSort?: RepositoriesFilterSortStateWithIds,
   ) => Promise<void>;
+  "codeQL.loadVariantAnalysisRepoResults": (
+    variantAnalysisId: number,
+    repositoryFullName: string,
+  ) => Promise<VariantAnalysisScannedRepositoryResult>;
   "codeQL.monitorVariantAnalysis": (
     variantAnalysis: VariantAnalysis,
   ) => Promise<void>;

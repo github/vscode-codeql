@@ -125,7 +125,6 @@ import { createVariantAnalysisContentProvider } from "./variant-analysis/variant
 import { VSCodeMockGitHubApiServer } from "./mocks/vscode-mock-gh-api-server";
 import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
 import { ExtensionApp } from "./common/vscode/vscode-app";
-import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
@@ -1100,18 +1099,6 @@ async function activateWithInstalledDistribution(
     commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
       await exportSelectedVariantAnalysisResults(variantAnalysisManager, qhm);
     }),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.loadVariantAnalysisRepoResults",
-      async (variantAnalysisId: number, repositoryFullName: string) => {
-        await variantAnalysisManager.loadResults(
-          variantAnalysisId,
-          repositoryFullName,
-        );
-      },
-    ),
   );
 
   // The "openVariantAnalysisView" command is internal-only.
