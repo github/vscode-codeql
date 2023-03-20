@@ -1,5 +1,5 @@
 import { CancellationToken } from "vscode";
-import { ProgressCallback } from "../commandRunner";
+import { ProgressCallback } from "../progress";
 import { DatabaseItem } from "../local-databases";
 import {
   Dataset,

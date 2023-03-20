@@ -89,12 +89,8 @@ import { QLTestAdapterFactory } from "./test-adapter";
 import { TestUIService } from "./test-ui";
 import { CompareView } from "./compare/compare-view";
 import { initializeTelemetry } from "./telemetry";
-import {
-  commandRunner,
-  commandRunnerWithProgress,
-  ProgressCallback,
-  withProgress,
-} from "./commandRunner";
+import { commandRunner, commandRunnerWithProgress } from "./commandRunner";
+import { ProgressCallback, withProgress } from "./progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";

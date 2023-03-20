@@ -13,7 +13,7 @@ import {
   ProgressMessage,
   WithProgressId,
 } from "../pure/legacy-messages";
-import { ProgressCallback, ProgressTask } from "../commandRunner";
+import { ProgressCallback, ProgressTask } from "../progress";
 import { ServerProcess } from "../json-rpc-server";
 
 type WithProgressReporting = (

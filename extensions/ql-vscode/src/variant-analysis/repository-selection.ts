@@ -1,4 +1,4 @@
-import { UserCancellationException } from "../commandRunner";
+import { UserCancellationException } from "../progress";
 import { DbManager } from "../databases/db-manager";
 import { DbItemKind } from "../databases/db-item";
 
