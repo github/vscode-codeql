@@ -47,9 +47,9 @@ type LocalQueryOptions = {
 export function registerLocalQueryCommands(
   ctx: ExtensionContext,
   {
-    queryRunner: qs,
-    queryHistoryManager: qhm,
-    databaseManager: dbm,
+    queryRunner,
+    queryHistoryManager,
+    databaseManager,
     cliServer,
     databaseUI,
     localQueryResultsView,
@@ -65,8 +65,8 @@ export function registerLocalQueryCommands(
         uri: Uri | undefined,
       ) =>
         await compileAndRunQuery(
-          qs,
-          qhm,
+          queryRunner,
+          queryHistoryManager,
           databaseUI,
           localQueryResultsView,
           queryStorageDir,
@@ -96,8 +96,8 @@ export function registerLocalQueryCommands(
         uri: Uri | undefined,
       ) =>
         await compileAndRunQuery(
-          qs,
-          qhm,
+          queryRunner,
+          queryHistoryManager,
           databaseUI,
           localQueryResultsView,
           queryStorageDir,
@@ -126,9 +126,9 @@ export function registerLocalQueryCommands(
       ) =>
         await compileAndRunQueryOnMultipleDatabases(
           cliServer,
-          qs,
-          qhm,
-          dbm,
+          queryRunner,
+          queryHistoryManager,
+          databaseManager,
           databaseUI,
           localQueryResultsView,
           queryStorageDir,
@@ -153,9 +153,9 @@ export function registerLocalQueryCommands(
       ) =>
         await compileAndRunQueryOnMultipleDatabases(
           cliServer,
-          qs,
-          qhm,
-          dbm,
+          queryRunner,
+          queryHistoryManager,
+          databaseManager,
           databaseUI,
           localQueryResultsView,
           queryStorageDir,
@@ -222,8 +222,8 @@ export function registerLocalQueryCommands(
         await Promise.all(
           queryUris.map(async (uri) =>
             compileAndRunQuery(
-              qs,
-              qhm,
+              queryRunner,
+              queryHistoryManager,
               databaseUI,
               localQueryResultsView,
               queryStorageDir,
@@ -255,8 +255,8 @@ export function registerLocalQueryCommands(
         uri: Uri | undefined,
       ) =>
         await compileAndRunQuery(
-          qs,
-          qhm,
+          queryRunner,
+          queryHistoryManager,
           databaseUI,
           localQueryResultsView,
           queryStorageDir,
@@ -285,8 +285,8 @@ export function registerLocalQueryCommands(
         uri: Uri | undefined,
       ) =>
         await compileAndRunQuery(
-          qs,
-          qhm,
+          queryRunner,
+          queryHistoryManager,
           databaseUI,
           localQueryResultsView,
           queryStorageDir,
@@ -315,8 +315,8 @@ export function registerLocalQueryCommands(
         range: Range,
       ) =>
         await compileAndRunQuery(
-          qs,
-          qhm,
+          queryRunner,
+          queryHistoryManager,
           databaseUI,
           localQueryResultsView,
           queryStorageDir,
