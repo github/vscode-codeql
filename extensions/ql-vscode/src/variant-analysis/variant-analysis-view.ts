@@ -21,12 +21,15 @@ import {
 } from "../helpers";
 import { telemetryListener } from "../telemetry";
 import { redactableError } from "../pure/errors";
+import { DataFlowPathsView } from "./data-flow-paths-view";
+import { DataFlowPaths } from "./shared/data-flow-paths";
 
 export class VariantAnalysisView
   extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage>
   implements VariantAnalysisViewInterface
 {
   public static readonly viewType = "codeQL.variantAnalysis";
+  private readonly dataFlowPathsView: DataFlowPathsView;
 
   public constructor(
     ctx: ExtensionContext,
@@ -36,6 +39,8 @@ export class VariantAnalysisView
     super(ctx);
 
     manager.registerView(this);
+
+    this.dataFlowPathsView = new DataFlowPathsView(ctx);
   }
 
   public async openView() {
@@ -110,10 +115,7 @@ export class VariantAnalysisView
 
         break;
       case "cancelVariantAnalysis":
-        void commands.executeCommand(
-          "codeQL.cancelVariantAnalysis",
-          this.variantAnalysisId,
-        );
+        await this.manager.cancelVariantAnalysis(this.variantAnalysisId);
         break;
       case "requestRepositoryResults":
         void commands.executeCommand(
@@ -126,10 +128,7 @@ export class VariantAnalysisView
         await this.manager.openQueryFile(this.variantAnalysisId);
         break;
       case "openQueryText":
-        void commands.executeCommand(
-          "codeQL.openVariantAnalysisQueryText",
-          this.variantAnalysisId,
-        );
+        await this.manager.openQueryText(this.variantAnalysisId);
         break;
       case "copyRepositoryList":
         void commands.executeCommand(
@@ -149,6 +148,9 @@ export class VariantAnalysisView
           "codeQL.openVariantAnalysisLogs",
           this.variantAnalysisId,
         );
+        break;
+      case "showDataFlowPaths":
+        await this.showDataFlows(msg.dataFlowPaths);
         break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);
@@ -199,5 +201,9 @@ export class VariantAnalysisView
     return variantAnalysis
       ? `${variantAnalysis.query.name} - Variant Analysis Results`
       : `Variant Analysis ${this.variantAnalysisId} - Results`;
+  }
+
+  private async showDataFlows(dataFlows: DataFlowPaths): Promise<void> {
+    await this.dataFlowPathsView.showDataFlows(dataFlows);
   }
 }

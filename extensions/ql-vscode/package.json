@@ -1433,8 +1433,6 @@
   "dependencies": {
     "@octokit/plugin-retry": "^3.0.9",
     "@octokit/rest": "^19.0.4",
-    "@primer/octicons-react": "^17.6.0",
-    "@primer/react": "^35.0.0",
     "@vscode/codicons": "^0.0.31",
     "@vscode/webview-ui-toolkit": "^1.0.1",
     "ajv": "^8.11.0",
@@ -1512,6 +1510,7 @@
     "@types/semver": "~7.2.0",
     "@types/stream-chain": "~2.0.1",
     "@types/stream-json": "~1.7.1",
+    "@types/styled-components": "^5.1.11",
     "@types/tar-stream": "^2.2.2",
     "@types/through2": "^2.0.36",
     "@types/tmp": "^0.1.0",

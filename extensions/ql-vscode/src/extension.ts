@@ -1091,7 +1091,9 @@ async function activateWithInstalledDistribution(
 
   const allCommands: AllCommands = {
     ...getCommands(),
+    ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
+    ...dbModule.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
@@ -1143,15 +1145,6 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.cancelVariantAnalysis",
-      async (variantAnalysisId: number) => {
-        await variantAnalysisManager.cancelVariantAnalysis(variantAnalysisId);
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
     commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
       await exportSelectedVariantAnalysisResults(variantAnalysisManager, qhm);
     }),
@@ -1175,15 +1168,6 @@ async function activateWithInstalledDistribution(
       "codeQL.openVariantAnalysisView",
       async (variantAnalysisId: number) => {
         await variantAnalysisManager.showView(variantAnalysisId);
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openVariantAnalysisQueryText",
-      async (variantAnalysisId: number) => {
-        await variantAnalysisManager.openQueryText(variantAnalysisId);
       },
     ),
   );

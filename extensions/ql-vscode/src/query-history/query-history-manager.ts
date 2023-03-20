@@ -25,7 +25,6 @@ import {
 import { extLogger } from "../common";
 import { URLSearchParams } from "url";
 import { DisposableObject } from "../pure/disposable-object";
-import { commandRunner } from "../commandRunner";
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../pure/time";
 import {
   asError,
@@ -66,6 +65,7 @@ import { getTotalResultCount } from "../variant-analysis/shared/variant-analysis
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
 import { redactableError } from "../pure/errors";
 import { QueryHistoryDirs } from "./query-history-dirs";
+import { QueryHistoryCommands } from "../common/commands";
 
 /**
  * query-history-manager.ts
@@ -201,159 +201,6 @@ export class QueryHistoryManager extends DisposableObject {
       }),
     );
 
-    void extLogger.log("Registering query history panel commands.");
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.openQueryTitleMenu",
-        this.handleOpenQuery.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.openQueryContextMenu",
-        this.handleOpenQuery.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.removeHistoryItemTitleMenu",
-        this.handleRemoveHistoryItem.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.removeHistoryItemContextMenu",
-        this.handleRemoveHistoryItem.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.removeHistoryItemContextInline",
-        this.handleRemoveHistoryItem.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.sortByName",
-        this.handleSortByName.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.sortByDate",
-        this.handleSortByDate.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.sortByCount",
-        this.handleSortByCount.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.renameItem",
-        this.handleRenameItem.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.compareWith",
-        this.handleCompareWith.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.showQueryLog",
-        this.handleShowQueryLog.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.openQueryDirectory",
-        this.handleOpenQueryDirectory.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.showEvalLog",
-        this.handleShowEvalLog.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.showEvalLogSummary",
-        this.handleShowEvalLogSummary.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.showEvalLogViewer",
-        this.handleShowEvalLogViewer.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner("codeQLQueryHistory.cancel", this.handleCancel.bind(this)),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.showQueryText",
-        this.handleShowQueryText.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.exportResults",
-        this.handleExportResults.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.viewCsvResults",
-        this.handleViewCsvResults.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.viewCsvAlerts",
-        this.handleViewCsvAlerts.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.viewSarifAlerts",
-        this.handleViewSarifAlerts.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.viewDil",
-        this.handleViewDil.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.itemClicked",
-        async (item: LocalQueryInfo) => {
-          return this.handleItemClicked(item, [item]);
-        },
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.openOnGithub",
-        async (item: LocalQueryInfo) => {
-          return this.handleOpenOnGithub(item, [item]);
-        },
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.copyRepoList",
-        this.handleCopyRepoList.bind(this),
-      ),
-    );
-
     // There are two configuration items that affect the query history:
     // 1. The ttl for query history items.
     // 2. The default label for query history items.
@@ -386,6 +233,45 @@ export class QueryHistoryManager extends DisposableObject {
 
     this.registerQueryHistoryScrubber(queryHistoryConfigListener, this, ctx);
     this.registerToVariantAnalysisEvents();
+  }
+
+  public getCommands(): QueryHistoryCommands {
+    return {
+      "codeQLQueryHistory.sortByName": this.handleSortByName.bind(this),
+      "codeQLQueryHistory.sortByDate": this.handleSortByDate.bind(this),
+      "codeQLQueryHistory.sortByCount": this.handleSortByCount.bind(this),
+
+      "codeQLQueryHistory.openQueryTitleMenu": this.handleOpenQuery.bind(this),
+      "codeQLQueryHistory.openQueryContextMenu":
+        this.handleOpenQuery.bind(this),
+      "codeQLQueryHistory.removeHistoryItemTitleMenu":
+        this.handleRemoveHistoryItem.bind(this),
+      "codeQLQueryHistory.removeHistoryItemContextMenu":
+        this.handleRemoveHistoryItem.bind(this),
+      "codeQLQueryHistory.removeHistoryItemContextInline":
+        this.handleRemoveHistoryItem.bind(this),
+      "codeQLQueryHistory.renameItem": this.handleRenameItem.bind(this),
+      "codeQLQueryHistory.compareWith": this.handleCompareWith.bind(this),
+      "codeQLQueryHistory.showEvalLog": this.handleShowEvalLog.bind(this),
+      "codeQLQueryHistory.showEvalLogSummary":
+        this.handleShowEvalLogSummary.bind(this),
+      "codeQLQueryHistory.showEvalLogViewer":
+        this.handleShowEvalLogViewer.bind(this),
+      "codeQLQueryHistory.showQueryLog": this.handleShowQueryLog.bind(this),
+      "codeQLQueryHistory.showQueryText": this.handleShowQueryText.bind(this),
+      "codeQLQueryHistory.openQueryDirectory":
+        this.handleOpenQueryDirectory.bind(this),
+      "codeQLQueryHistory.cancel": this.handleCancel.bind(this),
+      "codeQLQueryHistory.exportResults": this.handleExportResults.bind(this),
+      "codeQLQueryHistory.viewCsvResults": this.handleViewCsvResults.bind(this),
+      "codeQLQueryHistory.viewCsvAlerts": this.handleViewCsvAlerts.bind(this),
+      "codeQLQueryHistory.viewSarifAlerts":
+        this.handleViewSarifAlerts.bind(this),
+      "codeQLQueryHistory.viewDil": this.handleViewDil.bind(this),
+      "codeQLQueryHistory.itemClicked": this.handleItemClicked.bind(this),
+      "codeQLQueryHistory.openOnGithub": this.handleOpenOnGithub.bind(this),
+      "codeQLQueryHistory.copyRepoList": this.handleCopyRepoList.bind(this),
+    };
   }
 
   public completeQuery(info: LocalQueryInfo, results: QueryWithResults): void {
@@ -1008,8 +894,7 @@ export class QueryHistoryManager extends DisposableObject {
         if (item.t === "local") {
           item.cancel();
         } else if (item.t === "variant-analysis") {
-          await commands.executeCommand(
-            "codeQL.cancelVariantAnalysis",
+          await this.variantAnalysisManager.cancelVariantAnalysis(
             item.variantAnalysis.id,
           );
         } else {
@@ -1035,8 +920,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (finalSingleItem.t === "variant-analysis") {
-      await commands.executeCommand(
-        "codeQL.openVariantAnalysisQueryText",
+      await this.variantAnalysisManager.openQueryText(
         finalSingleItem.variantAnalysis.id,
       );
       return;

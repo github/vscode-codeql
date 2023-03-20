@@ -26,6 +26,8 @@ export interface VariantAnalysisViewManager<
     variantAnalysisId: number,
   ): Promise<VariantAnalysisScannedRepositoryState[]>;
   openQueryFile(variantAnalysisId: number): Promise<void>;
+  openQueryText(variantAnalysisId: number): Promise<void>;
+  cancelVariantAnalysis(variantAnalysisId: number): Promise<void>;
   exportResults(
     variantAnalysisId: number,
     filterSort?: RepositoriesFilterSortStateWithIds,

@@ -2,7 +2,7 @@
 
 [fork]: https://github.com/github/vscode-codeql/fork
 [pr]: https://github.com/github/vscode-codeql/compare
-[style]: https://primer.style
+[style]: https://github.com/microsoft/vscode-webview-ui-toolkit
 [code-of-conduct]: CODE_OF_CONDUCT.md
 
 Hi there! We're thrilled that you'd like to contribute to this project. Your help is essential for keeping it great.

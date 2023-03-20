@@ -8,7 +8,7 @@ import {
 } from "fs-extra";
 import { join } from "path";
 
-import { commands, ExtensionContext, Uri } from "vscode";
+import { ExtensionContext, Uri } from "vscode";
 import { DatabaseManager } from "../../../../src/local-databases";
 import { tmpDir, walkDirectory } from "../../../../src/helpers";
 import { DisposableBucket } from "../../disposable-bucket";
@@ -54,9 +54,12 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     rehydrateVariantAnalysis: rehydrateVariantAnalysisStub,
     onVariantAnalysisStatusUpdated: jest.fn(),
     showView: showViewStub,
+    openQueryText: jest.fn(),
   } as any as VariantAnalysisManager;
 
-  let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
+  let openQueryTextSpy: jest.SpiedFunction<
+    typeof variantAnalysisManagerStub.openQueryText
+  >;
 
   beforeEach(async () => {
     // Since these tests change the state of the query history manager, we need to copy the original
@@ -95,8 +98,8 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     );
     disposables.push(qhm);
 
-    executeCommandSpy = jest
-      .spyOn(commands, "executeCommand")
+    openQueryTextSpy = jest
+      .spyOn(variantAnalysisManagerStub, "openQueryText")
       .mockResolvedValue(undefined);
   });
 
@@ -180,8 +183,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     await qhm.readQueryHistory();
     await qhm.handleShowQueryText(qhm.treeDataProvider.allHistory[0], []);
 
-    expect(executeCommandSpy).toHaveBeenCalledWith(
-      "codeQL.openVariantAnalysisQueryText",
+    expect(openQueryTextSpy).toHaveBeenCalledWith(
       rawQueryHistory[0].variantAnalysis.id,
     );
   });

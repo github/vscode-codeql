@@ -7,7 +7,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { commandRunner, UserCancellationException } from "../../commandRunner";
+import { UserCancellationException } from "../../commandRunner";
 import {
   getNwoFromGitHubUrl,
   isValidGitHubNwo,
@@ -32,6 +32,7 @@ import { getGitHubUrl } from "./db-tree-view-item-action";
 import { getControllerRepo } from "../../variant-analysis/run-remote-query";
 import { getErrorMessage } from "../../pure/helpers-pure";
 import { Credentials } from "../../common/authentication";
+import { DatabasePanelCommands } from "../../common/commands";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   kind: string;
@@ -72,58 +73,28 @@ export class DbPanel extends DisposableObject {
     this.push(this.treeView);
   }
 
-  public async initialize(): Promise<void> {
-    this.push(
-      commandRunner("codeQLVariantAnalysisRepositories.openConfigFile", () =>
-        this.openConfigFile(),
-      ),
-    );
-    this.push(
-      commandRunner("codeQLVariantAnalysisRepositories.addNewDatabase", () =>
-        this.addNewRemoteDatabase(),
-      ),
-    );
-    this.push(
-      commandRunner("codeQLVariantAnalysisRepositories.addNewList", () =>
-        this.addNewList(),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.setSelectedItem",
-        (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
-        (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
-        (treeViewItem: DbTreeViewItem) => this.openOnGitHub(treeViewItem),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.renameItemContextMenu",
-        (treeViewItem: DbTreeViewItem) => this.renameItem(treeViewItem),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.removeItemContextMenu",
-        (treeViewItem: DbTreeViewItem) => this.removeItem(treeViewItem),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.setupControllerRepository",
-        () => this.setupControllerRepository(),
-      ),
-    );
+  public getCommands(): DatabasePanelCommands {
+    return {
+      "codeQLVariantAnalysisRepositories.openConfigFile":
+        this.openConfigFile.bind(this),
+      "codeQLVariantAnalysisRepositories.addNewDatabase":
+        this.addNewRemoteDatabase.bind(this),
+      "codeQLVariantAnalysisRepositories.addNewList":
+        this.addNewList.bind(this),
+      "codeQLVariantAnalysisRepositories.setupControllerRepository":
+        this.setupControllerRepository.bind(this),
+
+      "codeQLVariantAnalysisRepositories.setSelectedItem":
+        this.setSelectedItem.bind(this),
+      "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu":
+        this.setSelectedItem.bind(this),
+      "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu":
+        this.openOnGitHub.bind(this),
+      "codeQLVariantAnalysisRepositories.renameItemContextMenu":
+        this.renameItem.bind(this),
+      "codeQLVariantAnalysisRepositories.removeItemContextMenu":
+        this.removeItem.bind(this),
+    };
   }
 
   private async openConfigFile(): Promise<void> {
