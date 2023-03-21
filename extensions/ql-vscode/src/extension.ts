@@ -133,7 +133,7 @@ import {
   getLocalQueryCommands,
   showResultsForCompletedQuery,
 } from "./local-queries";
-import { registerAstCfgCommands } from "./ast-cfg-commands";
+import { getAstCfgCommands } from "./ast-cfg-commands";
 
 /**
  * extension.ts
@@ -651,6 +651,15 @@ async function activateWithInstalledDistribution(
     );
   const queryStorageDir = join(ctx.globalStorageUri.fsPath, "queries");
   await ensureDir(queryStorageDir);
+
+  // Store contextual queries in a temporary folder so that they are removed
+  // when the application closes. There is no need for the user to interact with them.
+  const contextualQueryStorageDir = join(
+    tmpDir.name,
+    "contextual-query-storage",
+  );
+  await ensureDir(contextualQueryStorageDir);
+
   const labelProvider = new HistoryItemLabelProvider(
     queryHistoryConfigurationListener,
   );
@@ -787,6 +796,17 @@ async function activateWithInstalledDistribution(
     ctx.subscriptions.push(testUIService);
   }
 
+  const astViewer = new AstViewer();
+  const astTemplateProvider = new TemplatePrintAstProvider(
+    cliServer,
+    qs,
+    dbm,
+    contextualQueryStorageDir,
+  );
+  const cfgTemplateProvider = new TemplatePrintCfgProvider(cliServer, dbm);
+
+  ctx.subscriptions.push(astViewer);
+
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllCommands = {
@@ -795,6 +815,16 @@ async function activateWithInstalledDistribution(
     ...variantAnalysisManager.getCommands(),
     ...databaseUI.getCommands(),
     ...dbModule.getCommands(),
+    ...getAstCfgCommands({
+      queryRunner: qs,
+      queryHistoryManager: qhm,
+      databaseUI,
+      localQueryResultsView,
+      queryStorageDir,
+      astViewer,
+      astTemplateProvider,
+      cfgTemplateProvider,
+    }),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
@@ -1057,13 +1087,6 @@ async function activateWithInstalledDistribution(
   // Jump-to-definition and find-references
   void extLogger.log("Registering jump-to-definition handlers.");
 
-  // Store contextual queries in a temporary folder so that they are removed
-  // when the application closes. There is no need for the user to interact with them.
-  const contextualQueryStorageDir = join(
-    tmpDir.name,
-    "contextual-query-storage",
-  );
-  await ensureDir(contextualQueryStorageDir);
   languages.registerDefinitionProvider(
     { scheme: zipArchiveScheme },
     new TemplateQueryDefinitionProvider(
@@ -1083,28 +1106,6 @@ async function activateWithInstalledDistribution(
       contextualQueryStorageDir,
     ),
   );
-
-  const astViewer = new AstViewer();
-  const astTemplateProvider = new TemplatePrintAstProvider(
-    cliServer,
-    qs,
-    dbm,
-    contextualQueryStorageDir,
-  );
-  const cfgTemplateProvider = new TemplatePrintCfgProvider(cliServer, dbm);
-
-  ctx.subscriptions.push(astViewer);
-
-  registerAstCfgCommands(ctx, {
-    queryRunner: qs,
-    queryHistoryManager: qhm,
-    databaseUI,
-    localQueryResultsView,
-    queryStorageDir,
-    astViewer,
-    astTemplateProvider,
-    cfgTemplateProvider,
-  });
 
   const mockServer = new VSCodeMockGitHubApiServer(ctx);
   ctx.subscriptions.push(mockServer);

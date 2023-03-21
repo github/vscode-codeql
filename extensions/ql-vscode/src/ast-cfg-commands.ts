@@ -1,5 +1,5 @@
-import { CancellationToken, ExtensionContext, Uri, window } from "vscode";
-import { commandRunner, ProgressCallback, withProgress } from "./commandRunner";
+import { CancellationToken, Uri, window } from "vscode";
+import { ProgressCallback, withProgress } from "./commandRunner";
 import { AstViewer } from "./astViewer";
 import {
   TemplatePrintAstProvider,
@@ -10,6 +10,7 @@ import { QueryRunner } from "./queryRunner";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { DatabaseUI } from "./local-databases-ui";
 import { ResultsView } from "./interface";
+import { AstCfgCommands } from "./common/commands";
 
 type AstCfgOptions = {
   queryRunner: QueryRunner;
@@ -23,19 +24,16 @@ type AstCfgOptions = {
   cfgTemplateProvider: TemplatePrintCfgProvider;
 };
 
-export function registerAstCfgCommands(
-  ctx: ExtensionContext,
-  {
-    queryRunner,
-    queryHistoryManager,
-    databaseUI,
-    localQueryResultsView,
-    queryStorageDir,
-    astViewer,
-    astTemplateProvider,
-    cfgTemplateProvider,
-  }: AstCfgOptions,
-) {
+export function getAstCfgCommands({
+  queryRunner,
+  queryHistoryManager,
+  databaseUI,
+  localQueryResultsView,
+  queryStorageDir,
+  astViewer,
+  astTemplateProvider,
+  cfgTemplateProvider,
+}: AstCfgOptions): AstCfgCommands {
   const viewAstCommand = async (selectedFile: Uri) =>
     withProgress(
       async (progress, token) =>
@@ -79,29 +77,14 @@ export function registerAstCfgCommands(
       },
     );
 
-  ctx.subscriptions.push(commandRunner("codeQL.viewAst", viewAstCommand));
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewAst" command
-  ctx.subscriptions.push(
-    commandRunner("codeQL.viewAstContextExplorer", viewAstCommand),
-  );
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewAst" command
-  ctx.subscriptions.push(
-    commandRunner("codeQL.viewAstContextEditor", viewAstCommand),
-  );
-
-  ctx.subscriptions.push(commandRunner("codeQL.viewCfg", viewCfgCommand));
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewCfg" command
-  ctx.subscriptions.push(
-    commandRunner("codeQL.viewCfgContextExplorer", viewCfgCommand),
-  );
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewCfg" command
-  ctx.subscriptions.push(
-    commandRunner("codeQL.viewCfgContextEditor", viewCfgCommand),
-  );
+  return {
+    "codeQL.viewAst": viewAstCommand,
+    "codeQL.viewAstContextExplorer": viewAstCommand,
+    "codeQL.viewAstContextEditor": viewAstCommand,
+    "codeQL.viewCfg": viewCfgCommand,
+    "codeQL.viewCfgContextExplorer": viewCfgCommand,
+    "codeQL.viewCfgContextEditor": viewCfgCommand,
+  };
 }
 
 async function viewAst(

@@ -123,11 +123,21 @@ export type DatabasePanelCommands = {
   "codeQLVariantAnalysisRepositories.removeItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
 };
 
+export type AstCfgCommands = {
+  "codeQL.viewAst": (selectedFile: Uri) => Promise<void>;
+  "codeQL.viewAstContextExplorer": (selectedFile: Uri) => Promise<void>;
+  "codeQL.viewAstContextEditor": (selectedFile: Uri) => Promise<void>;
+  "codeQL.viewCfg": () => Promise<void>;
+  "codeQL.viewCfgContextExplorer": () => Promise<void>;
+  "codeQL.viewCfgContextEditor": () => Promise<void>;
+};
+
 export type AllCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
-  DatabasePanelCommands;
+  DatabasePanelCommands &
+  AstCfgCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 
