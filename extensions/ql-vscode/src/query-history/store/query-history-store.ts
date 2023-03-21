@@ -14,7 +14,7 @@ import { QueryEvaluationInfo } from "../../run-queries-shared";
 import { QueryResultType } from "../../pure/legacy-messages";
 import { redactableError } from "../../pure/errors";
 
-export async function deserializeQueryHistory(
+export async function readFromQueryHistoryFile(
   fsPath: string,
 ): Promise<QueryHistoryInfo[]> {
   try {
@@ -109,7 +109,7 @@ export async function deserializeQueryHistory(
  * @param queries the list of queries to save.
  * @param fsPath the path to save the queries to.
  */
-export async function serializeQueryHistory(
+export async function writeQueryHistoryToFile(
   queries: QueryHistoryInfo[],
   fsPath: string,
 ): Promise<void> {

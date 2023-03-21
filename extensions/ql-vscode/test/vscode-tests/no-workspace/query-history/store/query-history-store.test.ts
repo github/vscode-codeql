@@ -1,6 +1,6 @@
 import {
-  deserializeQueryHistory,
-  serializeQueryHistory,
+  readFromQueryHistoryFile,
+  writeQueryHistoryToFile,
 } from "../../../../../src/query-history/store/query-history-store";
 import { join } from "path";
 import { writeFileSync, mkdirpSync, writeFile } from "fs-extra";
@@ -19,7 +19,7 @@ import { QueryHistoryInfo } from "../../../../../src/query-history/query-history
 import { createMockVariantAnalysisHistoryItem } from "../../../../factories/query-history/variant-analysis-history-item";
 import { nanoid } from "nanoid";
 
-describe("serialize and deserialize", () => {
+describe("write and read", () => {
   let infoSuccessRaw: LocalQueryInfo;
   let infoSuccessInterpreted: LocalQueryInfo;
   let infoEarlyFailure: LocalQueryInfo;
@@ -93,12 +93,12 @@ describe("serialize and deserialize", () => {
     ];
   });
 
-  it("should serialize and deserialize query history", async () => {
+  it("should write and read query history", async () => {
     const allHistoryPath = join(tmpDir.name, "workspace-query-history.json");
 
-    // serialize and deserialize
-    await serializeQueryHistory(allHistory, allHistoryPath);
-    const allHistoryActual = await deserializeQueryHistory(allHistoryPath);
+    // write and read
+    await writeQueryHistoryToFile(allHistory, allHistoryPath);
+    const allHistoryActual = await readFromQueryHistoryFile(allHistoryPath);
 
     // the dispose methods will be different. Ignore them.
     allHistoryActual.forEach((info) => {
@@ -106,7 +106,7 @@ describe("serialize and deserialize", () => {
         const completedQuery = info.completedQuery;
         (completedQuery as any).dispose = undefined;
 
-        // these fields should be missing on the deserialized value
+        // these fields should be missing on the read value
         // but they are undefined on the original value
         if (!("logFileLocation" in completedQuery)) {
           (completedQuery as any).logFileLocation = undefined;
@@ -181,7 +181,7 @@ describe("serialize and deserialize", () => {
       "utf8",
     );
 
-    const actual = await deserializeQueryHistory(path);
+    const actual = await readFromQueryHistoryFile(path);
     expect(actual.length).toEqual(expectedHistory.length);
   });
 
@@ -196,7 +196,7 @@ describe("serialize and deserialize", () => {
       "utf8",
     );
 
-    const allHistoryActual = await deserializeQueryHistory(badPath);
+    const allHistoryActual = await readFromQueryHistoryFile(badPath);
     // version number is invalid. Should return an empty array.
     expect(allHistoryActual).toEqual([]);
   });
