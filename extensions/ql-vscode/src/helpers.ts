@@ -276,13 +276,20 @@ export async function prepareCodeTour(): Promise<void> {
   if (workspace.workspaceFolders?.length) {
     const currentFolder = workspace.workspaceFolders[0].uri.fsPath;
 
-    // We need this path to check that the file exists on windows
     const tutorialWorkspacePath = join(
       currentFolder,
       "tutorial.code-workspace",
     );
     const toursFolderPath = join(currentFolder, ".tours");
 
+    /** We're opening the tutorial workspace, if we detect it.
+     * This will only happen if the following three conditions are met:
+     * - the .tours folder exists
+     * - the tutorial.code-workspace file exists
+     * - the CODESPACES_TEMPLATE setting doesn't exist (it's only set if the user has already opened
+     * the tutorial workspace so it's a good indicator that the user is in the folder but has ignored
+     * the prompt to open the workspace)
+     */
     if (
       existsSync(tutorialWorkspacePath) &&
       existsSync(toursFolderPath) &&
