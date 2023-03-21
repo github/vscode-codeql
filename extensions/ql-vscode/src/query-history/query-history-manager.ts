@@ -894,8 +894,7 @@ export class QueryHistoryManager extends DisposableObject {
         if (item.t === "local") {
           item.cancel();
         } else if (item.t === "variant-analysis") {
-          await commands.executeCommand(
-            "codeQL.cancelVariantAnalysis",
+          await this.variantAnalysisManager.cancelVariantAnalysis(
             item.variantAnalysis.id,
           );
         } else {
@@ -921,8 +920,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (finalSingleItem.t === "variant-analysis") {
-      await commands.executeCommand(
-        "codeQL.openVariantAnalysisQueryText",
+      await this.variantAnalysisManager.openQueryText(
         finalSingleItem.variantAnalysis.id,
       );
       return;
@@ -1124,8 +1122,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    await commands.executeCommand(
-      "codeQL.exportVariantAnalysisResults",
+    await this.variantAnalysisManager.exportResults(
       finalSingleItem.variantAnalysis.id,
     );
   }

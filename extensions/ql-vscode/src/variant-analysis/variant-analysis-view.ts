@@ -115,10 +115,7 @@ export class VariantAnalysisView
 
         break;
       case "cancelVariantAnalysis":
-        void commands.executeCommand(
-          "codeQL.cancelVariantAnalysis",
-          this.variantAnalysisId,
-        );
+        await this.manager.cancelVariantAnalysis(this.variantAnalysisId);
         break;
       case "requestRepositoryResults":
         void commands.executeCommand(
@@ -131,10 +128,7 @@ export class VariantAnalysisView
         await this.manager.openQueryFile(this.variantAnalysisId);
         break;
       case "openQueryText":
-        void commands.executeCommand(
-          "codeQL.openVariantAnalysisQueryText",
-          this.variantAnalysisId,
-        );
+        await this.manager.openQueryText(this.variantAnalysisId);
         break;
       case "copyRepositoryList":
         void commands.executeCommand(
@@ -144,8 +138,7 @@ export class VariantAnalysisView
         );
         break;
       case "exportResults":
-        void commands.executeCommand(
-          "codeQL.exportVariantAnalysisResults",
+        await this.manager.exportResults(
           this.variantAnalysisId,
           msg.filterSort,
         );

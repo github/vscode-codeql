@@ -41,6 +41,9 @@ describe("QueryHistoryManager", () => {
   let executeCommandSpy: jest.SpiedFunction<
     typeof vscode.commands.executeCommand
   >;
+  let cancelVariantAnalysisSpy: jest.SpiedFunction<
+    typeof variantAnalysisManagerStub.cancelVariantAnalysis
+  >;
   const doCompareCallback = jest.fn();
 
   let queryHistoryManager: QueryHistoryManager;
@@ -82,8 +85,14 @@ describe("QueryHistoryManager", () => {
       onVariantAnalysisStatusUpdated: jest.fn(),
       onVariantAnalysisRemoved: jest.fn(),
       removeVariantAnalysis: jest.fn(),
+      cancelVariantAnalysis: jest.fn(),
+      exportResults: jest.fn(),
       showView: jest.fn(),
     } as any as VariantAnalysisManager;
+
+    cancelVariantAnalysisSpy = jest
+      .spyOn(variantAnalysisManagerStub, "cancelVariantAnalysis")
+      .mockResolvedValue(undefined);
 
     localQueryHistory = [
       // completed
@@ -729,8 +738,7 @@ describe("QueryHistoryManager", () => {
         const inProgress1 = variantAnalysisHistory[1];
 
         await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
-        expect(executeCommandSpy).toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).toBeCalledWith(
           inProgress1.variantAnalysis.id,
         );
       });
@@ -746,12 +754,10 @@ describe("QueryHistoryManager", () => {
           inProgress1,
           inProgress2,
         ]);
-        expect(executeCommandSpy).toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).toBeCalledWith(
           inProgress1.variantAnalysis.id,
         );
-        expect(executeCommandSpy).toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).toBeCalledWith(
           inProgress2.variantAnalysis.id,
         );
       });
@@ -793,8 +799,7 @@ describe("QueryHistoryManager", () => {
         await queryHistoryManager.handleCancel(completedVariantAnalysis, [
           completedVariantAnalysis,
         ]);
-        expect(executeCommandSpy).not.toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
           completedVariantAnalysis.variantAnalysis,
         );
       });
@@ -810,12 +815,10 @@ describe("QueryHistoryManager", () => {
           completedVariantAnalysis,
           failedVariantAnalysis,
         ]);
-        expect(executeCommandSpy).not.toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
           completedVariantAnalysis.variantAnalysis.id,
         );
-        expect(executeCommandSpy).not.toBeCalledWith(
-          "codeQL.cancelVariantAnalysis",
+        expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
           failedVariantAnalysis.variantAnalysis.id,
         );
       });
@@ -860,7 +863,7 @@ describe("QueryHistoryManager", () => {
       const item = localQueryHistory[4];
       await queryHistoryManager.handleExportResults(item, [item]);
 
-      expect(executeCommandSpy).not.toBeCalled();
+      expect(variantAnalysisManagerStub.exportResults).not.toBeCalled();
     });
 
     it("should export results for a single variant analysis", async () => {
@@ -868,8 +871,7 @@ describe("QueryHistoryManager", () => {
 
       const item = variantAnalysisHistory[1];
       await queryHistoryManager.handleExportResults(item, [item]);
-      expect(executeCommandSpy).toBeCalledWith(
-        "codeQL.exportVariantAnalysisResults",
+      expect(variantAnalysisManagerStub.exportResults).toBeCalledWith(
         item.variantAnalysis.id,
       );
     });
@@ -880,7 +882,7 @@ describe("QueryHistoryManager", () => {
       const item1 = variantAnalysisHistory[1];
       const item2 = variantAnalysisHistory[3];
       await queryHistoryManager.handleExportResults(item1, [item1, item2]);
-      expect(executeCommandSpy).not.toBeCalled();
+      expect(variantAnalysisManagerStub.exportResults).not.toBeCalled();
     });
   });
 

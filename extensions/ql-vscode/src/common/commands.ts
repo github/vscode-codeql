@@ -1,5 +1,6 @@
 import type { CommandManager } from "../packages/commands";
 import type { Uri } from "vscode";
+import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
 
@@ -8,6 +9,12 @@ import type { QueryHistoryInfo } from "../query-history/query-history-info";
 export type SelectionCommandFunction<Item> = (
   singleItem: Item,
   multiSelect: Item[],
+) => Promise<void>;
+
+// A command function matching the signature that VS Code calls when
+// a command on a selection is invoked when canSelectMany is false.
+export type SingleSelectionCommandFunction<Item> = (
+  singleItem: Item,
 ) => Promise<void>;
 
 /**
@@ -88,9 +95,23 @@ export type VariantAnalysisCommands = {
   "codeQL.runVariantAnalysisContextEditor": (uri?: Uri) => Promise<void>;
 };
 
+export type DatabasePanelCommands = {
+  "codeQLVariantAnalysisRepositories.openConfigFile": () => Promise<void>;
+  "codeQLVariantAnalysisRepositories.addNewDatabase": () => Promise<void>;
+  "codeQLVariantAnalysisRepositories.addNewList": () => Promise<void>;
+  "codeQLVariantAnalysisRepositories.setupControllerRepository": () => Promise<void>;
+
+  "codeQLVariantAnalysisRepositories.setSelectedItem": SingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.renameItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.removeItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
+};
+
 export type AllCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
-  VariantAnalysisCommands;
+  VariantAnalysisCommands &
+  DatabasePanelCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;

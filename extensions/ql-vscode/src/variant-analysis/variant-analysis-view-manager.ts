@@ -3,6 +3,7 @@ import {
   VariantAnalysisScannedRepositoryState,
 } from "./shared/variant-analysis";
 import { AppCommandManager } from "../common/commands";
+import { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-filter-sort";
 
 export interface VariantAnalysisViewInterface {
   variantAnalysisId: number;
@@ -25,4 +26,10 @@ export interface VariantAnalysisViewManager<
     variantAnalysisId: number,
   ): Promise<VariantAnalysisScannedRepositoryState[]>;
   openQueryFile(variantAnalysisId: number): Promise<void>;
+  openQueryText(variantAnalysisId: number): Promise<void>;
+  cancelVariantAnalysis(variantAnalysisId: number): Promise<void>;
+  exportResults(
+    variantAnalysisId: number,
+    filterSort?: RepositoriesFilterSortStateWithIds,
+  ): Promise<void>;
 }
