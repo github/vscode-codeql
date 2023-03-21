@@ -103,7 +103,7 @@ import {
   withProgress,
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
-import { registerPackagingCommands } from "./packaging";
+import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { exportSelectedVariantAnalysisResults } from "./variant-analysis/export-results";
 import { EvalLogViewer } from "./eval-log-viewer";
@@ -1090,6 +1090,9 @@ async function activateWithInstalledDistribution(
     ...variantAnalysisManager.getCommands(),
     ...databaseUI.getCommands(),
     ...dbModule.getCommands(),
+    ...getPackagingCommands({
+      cliServer,
+    }),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
@@ -1291,10 +1294,6 @@ async function activateWithInstalledDistribution(
       );
     }),
   );
-
-  registerPackagingCommands(ctx, {
-    cliServer,
-  });
 
   ctx.subscriptions.push(
     commandRunner("codeQL.showLogs", async () => {

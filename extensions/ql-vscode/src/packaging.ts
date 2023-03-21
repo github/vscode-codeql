@@ -4,9 +4,8 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
 } from "./helpers";
-import { ExtensionContext, QuickPickItem, window } from "vscode";
+import { QuickPickItem, window } from "vscode";
 import {
-  commandRunner,
   ProgressCallback,
   UserCancellationException,
   withProgress,
@@ -15,17 +14,17 @@ import { extLogger } from "./common";
 import { asError, getErrorStack } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
 import { PACKS_BY_QUERY_LANGUAGE } from "./common/query-language";
+import { PackagingCommands } from "./common/commands";
 
 type PackagingOptions = {
   cliServer: CodeQLCliServer;
 };
 
-export function registerPackagingCommands(
-  ctx: ExtensionContext,
-  { cliServer }: PackagingOptions,
-) {
-  ctx.subscriptions.push(
-    commandRunner("codeQL.installPackDependencies", async () =>
+export function getPackagingCommands({
+  cliServer,
+}: PackagingOptions): PackagingCommands {
+  return {
+    "codeQL.installPackDependencies": async () =>
       withProgress(
         async (progress: ProgressCallback) =>
           await handleInstallPackDependencies(cliServer, progress),
@@ -33,11 +32,7 @@ export function registerPackagingCommands(
           title: "Installing pack dependencies",
         },
       ),
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.downloadPacks", async () =>
+    "codeQL.downloadPacks": async () =>
       withProgress(
         async (progress: ProgressCallback) =>
           await handleDownloadPacks(cliServer, progress),
@@ -45,8 +40,7 @@ export function registerPackagingCommands(
           title: "Downloading packs",
         },
       ),
-    ),
-  );
+  };
 }
 
 /**

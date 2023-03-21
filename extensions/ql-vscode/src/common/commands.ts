@@ -108,10 +108,16 @@ export type DatabasePanelCommands = {
   "codeQLVariantAnalysisRepositories.removeItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
 };
 
+export type PackagingCommands = {
+  "codeQL.installPackDependencies": () => Promise<void>;
+  "codeQL.downloadPacks": () => Promise<void>;
+};
+
 export type AllCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
-  DatabasePanelCommands;
+  DatabasePanelCommands &
+  PackagingCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
