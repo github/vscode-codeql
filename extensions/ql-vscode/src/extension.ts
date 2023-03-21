@@ -1299,7 +1299,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.installPackDependencies",
       async (progress: ProgressCallback) =>
-        await handleInstallPackDependencies(cliServer, progress),
+        await handleInstallPackDependencies(cliServer, client, progress),
       {
         title: "Installing pack dependencies",
       },

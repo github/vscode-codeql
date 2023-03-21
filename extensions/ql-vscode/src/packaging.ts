@@ -4,12 +4,18 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
 } from "./helpers";
-import { QuickPickItem, window } from "vscode";
+import { QuickPickItem, Uri, window } from "vscode";
 import { ProgressCallback, UserCancellationException } from "./commandRunner";
 import { extLogger } from "./common";
 import { asError, getErrorStack } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
 import { PACKS_BY_QUERY_LANGUAGE } from "./common/query-language";
+import {
+  DidChangeWatchedFilesNotification,
+  FileChangeType,
+  LanguageClient,
+} from "vscode-languageclient/node";
+import * as path from "path";
 
 /**
  * Prompts user to choose packs to download, and downloads them.
@@ -81,6 +87,7 @@ interface QLPackQuickPickItem extends QuickPickItem {
  */
 export async function handleInstallPackDependencies(
   cliServer: CodeQLCliServer,
+  ideServer: LanguageClient,
   progress: ProgressCallback,
 ): Promise<void> {
   progress({
@@ -118,6 +125,7 @@ export async function handleInstallPackDependencies(
       try {
         for (const dir of pack.packRootDir) {
           await cliServer.packInstall(dir);
+          await notifyPackChanged(dir, ideServer);
         }
       } catch (error) {
         failedPacks.push(pack.label);
@@ -139,4 +147,16 @@ export async function handleInstallPackDependencies(
   } else {
     throw new UserCancellationException("No packs selected.");
   }
+}
+
+async function notifyPackChanged(dir: string, ideServer: LanguageClient) {
+  const packFile = path.resolve(dir, "qlpack.yml");
+  await ideServer.sendNotification(DidChangeWatchedFilesNotification.type, {
+    changes: [
+      {
+        type: FileChangeType.Changed,
+        uri: Uri.file(packFile).toString(),
+      },
+    ],
+  });
 }
