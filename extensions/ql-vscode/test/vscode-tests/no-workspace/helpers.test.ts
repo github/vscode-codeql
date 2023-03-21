@@ -636,7 +636,7 @@ describe("prepareCodeTour", () => {
 
         await prepareCodeTour();
 
-        expect(commandSpy).not.toHaveBeenCalledWith("vscode.openFolder");
+        expect(commandSpy).not.toHaveBeenCalled();
       });
     });
   });
@@ -653,7 +653,7 @@ describe("prepareCodeTour", () => {
 
       await prepareCodeTour();
 
-      expect(commandSpy).not.toHaveBeenCalledWith("vscode.openFolder");
+      expect(commandSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -665,7 +665,7 @@ describe("prepareCodeTour", () => {
 
       await prepareCodeTour();
 
-      expect(commandSpy).not.toHaveBeenCalledWith("vscode.openFolder");
+      expect(commandSpy).not.toHaveBeenCalled();
     });
   });
 });
