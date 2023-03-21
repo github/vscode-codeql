@@ -1,7 +1,8 @@
 import {
-  commandRunnerWithProgress,
+  commandRunner,
   ProgressCallback,
   ProgressUpdate,
+  withProgress,
 } from "./commandRunner";
 import {
   CancellationToken,
@@ -56,14 +57,9 @@ export function registerLocalQueryCommands(
     queryStorageDir,
   }: LocalQueryOptions,
 ) {
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.runQuery",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
+  const runQuery = async (uri: Uri | undefined) =>
+    withProgress(
+      async (progress, token) => {
         await compileAndRunQuery(
           queryRunner,
           queryHistoryManager,
@@ -75,12 +71,18 @@ export function registerLocalQueryCommands(
           progress,
           token,
           undefined,
-        ),
+        );
+      },
       {
         title: "Running query",
         cancellable: true,
       },
+    );
 
+  ctx.subscriptions.push(
+    commandRunner(
+      "codeQL.runQuery",
+      runQuery,
       // Open the query server logger on error since that's usually where the interesting errors appear.
       queryServerLogger,
     ),
@@ -88,42 +90,17 @@ export function registerLocalQueryCommands(
 
   // Since we are tracking extension usage through commands, this command mirrors the runQuery command
   ctx.subscriptions.push(
-    commandRunnerWithProgress(
+    commandRunner(
       "codeQL.runQueryContextEditor",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
-        await compileAndRunQuery(
-          queryRunner,
-          queryHistoryManager,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          false,
-          uri,
-          progress,
-          token,
-          undefined,
-        ),
-      {
-        title: "Running query",
-        cancellable: true,
-      },
-
+      runQuery,
       // Open the query server logger on error since that's usually where the interesting errors appear.
       queryServerLogger,
     ),
   );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.runQueryOnMultipleDatabases",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
+
+  const runQueryOnMultipleDatabases = async (uri: Uri | undefined) =>
+    withProgress(
+      async (progress, token) =>
         await compileAndRunQueryOnMultipleDatabases(
           cliServer,
           queryRunner,
@@ -140,120 +117,101 @@ export function registerLocalQueryCommands(
         title: "Running query on selected databases",
         cancellable: true,
       },
+    );
+
+  ctx.subscriptions.push(
+    commandRunner(
+      "codeQL.runQueryOnMultipleDatabases",
+      runQueryOnMultipleDatabases,
     ),
   );
   // Since we are tracking extension usage through commands, this command mirrors the runQueryOnMultipleDatabases command
   ctx.subscriptions.push(
-    commandRunnerWithProgress(
+    commandRunner(
       "codeQL.runQueryOnMultipleDatabasesContextEditor",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
-        await compileAndRunQueryOnMultipleDatabases(
-          cliServer,
-          queryRunner,
-          queryHistoryManager,
-          databaseManager,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          progress,
-          token,
-          uri,
-        ),
-      {
-        title: "Running query on selected databases",
-        cancellable: true,
-      },
+      runQueryOnMultipleDatabases,
     ),
   );
   ctx.subscriptions.push(
-    commandRunnerWithProgress(
+    commandRunner(
       "codeQL.runQueries",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        _: Uri | undefined,
-        multi: Uri[],
-      ) => {
-        const maxQueryCount = MAX_QUERIES.getValue() as number;
-        const [files, dirFound] = await gatherQlFiles(
-          multi.map((uri) => uri.fsPath),
-        );
-        if (files.length > maxQueryCount) {
-          throw new Error(
-            `You tried to run ${files.length} queries, but the maximum is ${maxQueryCount}. Try selecting fewer queries or changing the 'codeQL.runningQueries.maxQueries' setting.`,
-          );
-        }
-        // warn user and display selected files when a directory is selected because some ql
-        // files may be hidden from the user.
-        if (dirFound) {
-          const fileString = files.map((file) => basename(file)).join(", ");
-          const res = await showBinaryChoiceDialog(
-            `You are about to run ${files.length} queries: ${fileString} Do you want to continue?`,
-          );
-          if (!res) {
-            return;
-          }
-        }
-        const queryUris = files.map((path) => Uri.parse(`file:${path}`, true));
+      async (_: Uri | undefined, multi: Uri[]) =>
+        withProgress(
+          async (progress, token) => {
+            const maxQueryCount = MAX_QUERIES.getValue() as number;
+            const [files, dirFound] = await gatherQlFiles(
+              multi.map((uri) => uri.fsPath),
+            );
+            if (files.length > maxQueryCount) {
+              throw new Error(
+                `You tried to run ${files.length} queries, but the maximum is ${maxQueryCount}. Try selecting fewer queries or changing the 'codeQL.runningQueries.maxQueries' setting.`,
+              );
+            }
+            // warn user and display selected files when a directory is selected because some ql
+            // files may be hidden from the user.
+            if (dirFound) {
+              const fileString = files.map((file) => basename(file)).join(", ");
+              const res = await showBinaryChoiceDialog(
+                `You are about to run ${files.length} queries: ${fileString} Do you want to continue?`,
+              );
+              if (!res) {
+                return;
+              }
+            }
+            const queryUris = files.map((path) =>
+              Uri.parse(`file:${path}`, true),
+            );
 
-        // Use a wrapped progress so that messages appear with the queries remaining in it.
-        let queriesRemaining = queryUris.length;
-        function wrappedProgress(update: ProgressUpdate) {
-          const message =
-            queriesRemaining > 1
-              ? `${queriesRemaining} remaining. ${update.message}`
-              : update.message;
-          progress({
-            ...update,
-            message,
-          });
-        }
+            // Use a wrapped progress so that messages appear with the queries remaining in it.
+            let queriesRemaining = queryUris.length;
 
-        wrappedProgress({
-          maxStep: queryUris.length,
-          step: queryUris.length - queriesRemaining,
-          message: "",
-        });
+            function wrappedProgress(update: ProgressUpdate) {
+              const message =
+                queriesRemaining > 1
+                  ? `${queriesRemaining} remaining. ${update.message}`
+                  : update.message;
+              progress({
+                ...update,
+                message,
+              });
+            }
 
-        await Promise.all(
-          queryUris.map(async (uri) =>
-            compileAndRunQuery(
-              queryRunner,
-              queryHistoryManager,
-              databaseUI,
-              localQueryResultsView,
-              queryStorageDir,
-              false,
-              uri,
-              wrappedProgress,
-              token,
-              undefined,
-            ).then(() => queriesRemaining--),
-          ),
-        );
-      },
-      {
-        title: "Running queries",
-        cancellable: true,
-      },
+            wrappedProgress({
+              maxStep: queryUris.length,
+              step: queryUris.length - queriesRemaining,
+              message: "",
+            });
 
+            await Promise.all(
+              queryUris.map(async (uri) =>
+                compileAndRunQuery(
+                  queryRunner,
+                  queryHistoryManager,
+                  databaseUI,
+                  localQueryResultsView,
+                  queryStorageDir,
+                  false,
+                  uri,
+                  wrappedProgress,
+                  token,
+                  undefined,
+                ).then(() => queriesRemaining--),
+              ),
+            );
+          },
+          {
+            title: "Running queries",
+            cancellable: true,
+          },
+        ),
       // Open the query server logger on error since that's usually where the interesting errors appear.
       queryServerLogger,
     ),
   );
 
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.quickEval",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
+  const quickEval = async (uri: Uri) =>
+    withProgress(
+      async (progress, token) => {
         await compileAndRunQuery(
           queryRunner,
           queryHistoryManager,
@@ -265,11 +223,18 @@ export function registerLocalQueryCommands(
           progress,
           token,
           undefined,
-        ),
+        );
+      },
       {
         title: "Running query",
         cancellable: true,
       },
+    );
+
+  ctx.subscriptions.push(
+    commandRunner(
+      "codeQL.quickEval",
+      quickEval,
       // Open the query server logger on error since that's usually where the interesting errors appear.
       queryServerLogger,
     ),
@@ -277,75 +242,54 @@ export function registerLocalQueryCommands(
 
   // Since we are tracking extension usage through commands, this command mirrors the "codeQL.quickEval" command
   ctx.subscriptions.push(
-    commandRunnerWithProgress(
+    commandRunner(
       "codeQL.quickEvalContextEditor",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
-        await compileAndRunQuery(
-          queryRunner,
-          queryHistoryManager,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          true,
-          uri,
-          progress,
-          token,
-          undefined,
-        ),
-      {
-        title: "Running query",
-        cancellable: true,
-      },
+      quickEval,
       // Open the query server logger on error since that's usually where the interesting errors appear.
       queryServerLogger,
     ),
   );
 
   ctx.subscriptions.push(
-    commandRunnerWithProgress(
+    commandRunner(
       "codeQL.codeLensQuickEval",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri,
-        range: Range,
-      ) =>
-        await compileAndRunQuery(
-          queryRunner,
-          queryHistoryManager,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          true,
-          uri,
-          progress,
-          token,
-          undefined,
-          range,
+      async (uri: Uri, range: Range) =>
+        withProgress(
+          async (progress, token) =>
+            await compileAndRunQuery(
+              queryRunner,
+              queryHistoryManager,
+              databaseUI,
+              localQueryResultsView,
+              queryStorageDir,
+              true,
+              uri,
+              progress,
+              token,
+              undefined,
+              range,
+            ),
+          {
+            title: "Running query",
+            cancellable: true,
+          },
         ),
-      {
-        title: "Running query",
-        cancellable: true,
-      },
-
       // Open the query server logger on error since that's usually where the interesting errors appear.
       queryServerLogger,
     ),
   );
 
   ctx.subscriptions.push(
-    commandRunnerWithProgress(
+    commandRunner(
       "codeQL.quickQuery",
-      async (progress: ProgressCallback, token: CancellationToken) =>
-        displayQuickQuery(ctx, cliServer, databaseUI, progress, token),
-      {
-        title: "Run Quick Query",
-      },
-
+      async () =>
+        withProgress(
+          async (progress, token) =>
+            displayQuickQuery(ctx, cliServer, databaseUI, progress, token),
+          {
+            title: "Run Quick Query",
+          },
+        ),
       // Open the query server logger on error since that's usually where the interesting errors appear.
       queryServerLogger,
     ),
