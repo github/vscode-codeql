@@ -620,7 +620,7 @@ describe("prepareCodeTour", () => {
     describe("if the workspace is already open", () => {
       it("should not open the tutorial workspace", async () => {
         // Set isCodespaceTemplate to true to indicate the workspace has already been opened
-        jest.spyOn(Setting.prototype, "getValue").mockReturnValue(false);
+        jest.spyOn(Setting.prototype, "getValue").mockReturnValue(true);
 
         // set up directory to have a 'tutorial.code-workspace' file
         const tutorialWorkspacePath = join(dir.name, "tutorial.code-workspace");
