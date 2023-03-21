@@ -21,11 +21,7 @@ import {
   DatabaseItem,
   DatabaseManager,
 } from "./local-databases";
-import {
-  commandRunner,
-  commandRunnerWithProgress,
-  ProgressCallback,
-} from "./commandRunner";
+import { ProgressCallback, withProgress } from "./commandRunner";
 import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
@@ -42,8 +38,8 @@ import { asError, asyncFilter, getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./queryRunner";
 import { isCanary } from "./config";
 import { App } from "./common/app";
-import { Credentials } from "./common/authentication";
 import { redactableError } from "./pure/errors";
+import { LocalDatabasesCommands } from "./common/commands";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -73,12 +69,12 @@ class DatabaseTreeDataProvider
 
     this.push(
       this.databaseManager.onDidChangeDatabaseItem(
-        this.handleDidChangeDatabaseItem,
+        this.handleDidChangeDatabaseItem.bind(this),
       ),
     );
     this.push(
       this.databaseManager.onDidChangeCurrentDatabaseItem(
-        this.handleDidChangeCurrentDatabaseItem,
+        this.handleDidChangeCurrentDatabaseItem.bind(this),
       ),
     );
   }
@@ -87,18 +83,18 @@ class DatabaseTreeDataProvider
     return this._onDidChangeTreeData.event;
   }
 
-  private handleDidChangeDatabaseItem = (event: DatabaseChangedEvent): void => {
+  private handleDidChangeDatabaseItem(event: DatabaseChangedEvent): void {
     // Note that events from the database manager are instances of DatabaseChangedEvent
     // and events fired by the UI are instances of DatabaseItem
 
     // When event.item is undefined, then the entire tree is refreshed.
     // When event.item is a db item, then only that item is refreshed.
     this._onDidChangeTreeData.fire(event.item);
-  };
+  }
 
-  private handleDidChangeCurrentDatabaseItem = (
+  private handleDidChangeCurrentDatabaseItem(
     event: DatabaseChangedEvent,
-  ): void => {
+  ): void {
     if (this.currentDatabaseItem) {
       this._onDidChangeTreeData.fire(this.currentDatabaseItem);
     }
@@ -106,7 +102,7 @@ class DatabaseTreeDataProvider
     if (this.currentDatabaseItem) {
       this._onDidChangeTreeData.fire(this.currentDatabaseItem);
     }
-  };
+  }
 
   public getTreeItem(element: DatabaseItem): TreeItem {
     const item = new TreeItem(element.name);
@@ -210,149 +206,46 @@ export class DatabaseUI extends DisposableObject {
     );
   }
 
-  init() {
-    void extLogger.log("Registering database panel commands.");
-    this.push(
-      commandRunnerWithProgress(
-        "codeQL.setCurrentDatabase",
-        this.handleSetCurrentDatabase,
-        {
-          title: "Importing database from archive",
-        },
-      ),
-    );
-    this.push(
-      commandRunnerWithProgress(
-        "codeQL.setDefaultTourDatabase",
-        this.handleSetDefaultTourDatabase,
-        {
-          title: "Set Default Database for Codespace CodeQL Tour",
-        },
-      ),
-    );
-    this.push(
-      commandRunnerWithProgress(
-        "codeQL.upgradeCurrentDatabase",
-        this.handleUpgradeCurrentDatabase,
-        {
-          title: "Upgrading current database",
-          cancellable: true,
-        },
-      ),
-    );
-    this.push(
-      commandRunnerWithProgress("codeQL.clearCache", this.handleClearCache, {
-        title: "Clearing Cache",
-      }),
-    );
-
-    this.push(
-      commandRunnerWithProgress(
-        "codeQLDatabases.chooseDatabaseFolder",
-        this.handleChooseDatabaseFolder,
-        {
-          title: "Adding database from folder",
-        },
-      ),
-    );
-    this.push(
-      commandRunnerWithProgress(
-        "codeQLDatabases.chooseDatabaseArchive",
-        this.handleChooseDatabaseArchive,
-        {
-          title: "Adding database from archive",
-        },
-      ),
-    );
-    this.push(
-      commandRunnerWithProgress(
-        "codeQLDatabases.chooseDatabaseInternet",
-        this.handleChooseDatabaseInternet,
-        {
-          title: "Adding database from URL",
-        },
-      ),
-    );
-    this.push(
-      commandRunnerWithProgress(
-        "codeQLDatabases.chooseDatabaseGithub",
-        async (progress: ProgressCallback, token: CancellationToken) => {
-          const credentials = isCanary() ? this.app.credentials : undefined;
-          await this.handleChooseDatabaseGithub(credentials, progress, token);
-        },
-        {
-          title: "Adding database from GitHub",
-        },
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.setCurrentDatabase",
-        this.handleMakeCurrentDatabase,
-      ),
-    );
-    this.push(
-      commandRunner("codeQLDatabases.sortByName", this.handleSortByName),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.sortByDateAdded",
-        this.handleSortByDateAdded,
-      ),
-    );
-    this.push(
-      commandRunnerWithProgress(
-        "codeQLDatabases.removeDatabase",
-        this.handleRemoveDatabase,
-        {
-          title: "Removing database",
-          cancellable: false,
-        },
-      ),
-    );
-    this.push(
-      commandRunnerWithProgress(
-        "codeQLDatabases.upgradeDatabase",
-        this.handleUpgradeDatabase,
-        {
-          title: "Upgrading database",
-          cancellable: true,
-        },
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.renameDatabase",
-        this.handleRenameDatabase,
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.openDatabaseFolder",
-        this.handleOpenFolder,
-      ),
-    );
-    this.push(
-      commandRunner("codeQLDatabases.addDatabaseSource", this.handleAddSource),
-    );
-    this.push(
-      commandRunner(
-        "codeQLDatabases.removeOrphanedDatabases",
-        this.handleRemoveOrphanedDatabases,
-      ),
-    );
+  public getCommands(): LocalDatabasesCommands {
+    return {
+      "codeQL.setCurrentDatabase": this.handleSetCurrentDatabase.bind(this),
+      "codeQL.setDefaultTourDatabase":
+        this.handleSetDefaultTourDatabase.bind(this),
+      "codeQL.upgradeCurrentDatabase":
+        this.handleUpgradeCurrentDatabase.bind(this),
+      "codeQL.clearCache": this.handleClearCache.bind(this),
+      "codeQLDatabases.chooseDatabaseFolder":
+        this.handleChooseDatabaseFolder.bind(this),
+      "codeQLDatabases.chooseDatabaseArchive":
+        this.handleChooseDatabaseArchive.bind(this),
+      "codeQLDatabases.chooseDatabaseInternet":
+        this.handleChooseDatabaseInternet.bind(this),
+      "codeQLDatabases.chooseDatabaseGithub":
+        this.handleChooseDatabaseGithub.bind(this),
+      "codeQLDatabases.setCurrentDatabase":
+        this.handleMakeCurrentDatabase.bind(this),
+      "codeQLDatabases.sortByName": this.handleSortByName.bind(this),
+      "codeQLDatabases.sortByDateAdded": this.handleSortByDateAdded.bind(this),
+      "codeQLDatabases.removeDatabase": this.handleRemoveDatabase.bind(this),
+      "codeQLDatabases.upgradeDatabase": this.handleUpgradeDatabase.bind(this),
+      "codeQLDatabases.renameDatabase": this.handleRenameDatabase.bind(this),
+      "codeQLDatabases.openDatabaseFolder": this.handleOpenFolder.bind(this),
+      "codeQLDatabases.addDatabaseSource": this.handleAddSource.bind(this),
+      "codeQLDatabases.removeOrphanedDatabases":
+        this.handleRemoveOrphanedDatabases.bind(this),
+    };
   }
 
-  private handleMakeCurrentDatabase = async (
+  private async handleMakeCurrentDatabase(
     databaseItem: DatabaseItem,
-  ): Promise<void> => {
+  ): Promise<void> {
     await this.databaseManager.setCurrentDatabaseItem(databaseItem);
-  };
+  }
 
-  handleChooseDatabaseFolder = async (
+  public async chooseDatabaseFolder(
     progress: ProgressCallback,
     token: CancellationToken,
-  ): Promise<void> => {
+  ): Promise<void> {
     try {
       await this.chooseAndSetDatabase(true, progress, token);
     } catch (e) {
@@ -362,47 +255,62 @@ export class DatabaseUI extends DisposableObject {
         )`Failed to choose and set database: ${getErrorMessage(e)}`,
       );
     }
-  };
+  }
 
-  private handleSetDefaultTourDatabase = async (
-    progress: ProgressCallback,
-    token: CancellationToken,
-  ): Promise<void> => {
-    try {
-      if (!workspace.workspaceFolders?.length) {
-        throw new Error("No workspace folder is open.");
-      } else {
-        // This specifically refers to the database folder in
-        // https://github.com/github/codespaces-codeql
-        const uri = Uri.parse(
-          `${workspace.workspaceFolders[0].uri}/.tours/codeql-tutorial-database`,
-        );
+  private async handleChooseDatabaseFolder(): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        await this.chooseDatabaseFolder(progress, token);
+      },
+      {
+        title: "Adding database from folder",
+      },
+    );
+  }
 
-        let databaseItem = this.databaseManager.findDatabaseItem(uri);
-        const isTutorialDatabase = true;
-        if (databaseItem === undefined) {
-          databaseItem = await this.databaseManager.openDatabase(
-            progress,
-            token,
-            uri,
-            "CodeQL Tutorial Database",
-            isTutorialDatabase,
+  private async handleSetDefaultTourDatabase(): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        try {
+          if (!workspace.workspaceFolders?.length) {
+            throw new Error("No workspace folder is open.");
+          } else {
+            // This specifically refers to the database folder in
+            // https://github.com/github/codespaces-codeql
+            const uri = Uri.parse(
+              `${workspace.workspaceFolders[0].uri}/.tours/codeql-tutorial-database`,
+            );
+
+            let databaseItem = this.databaseManager.findDatabaseItem(uri);
+            const isTutorialDatabase = true;
+            if (databaseItem === undefined) {
+              databaseItem = await this.databaseManager.openDatabase(
+                progress,
+                token,
+                uri,
+                "CodeQL Tutorial Database",
+                isTutorialDatabase,
+              );
+            }
+            await this.databaseManager.setCurrentDatabaseItem(databaseItem);
+            await this.handleTourDependencies();
+          }
+        } catch (e) {
+          // rethrow and let this be handled by default error handling.
+          throw new Error(
+            `Could not set the database for the Code Tour. Please make sure you are using the default workspace in your codespace: ${getErrorMessage(
+              e,
+            )}`,
           );
         }
-        await this.databaseManager.setCurrentDatabaseItem(databaseItem);
-        await this.handleTourDependencies();
-      }
-    } catch (e) {
-      // rethrow and let this be handled by default error handling.
-      throw new Error(
-        `Could not set the database for the Code Tour. Please make sure you are using the default workspace in your codespace: ${getErrorMessage(
-          e,
-        )}`,
-      );
-    }
-  };
+      },
+      {
+        title: "Set Default Database for Codespace CodeQL Tour",
+      },
+    );
+  }
 
-  private handleTourDependencies = async (): Promise<void> => {
+  private async handleTourDependencies(): Promise<void> {
     if (!workspace.workspaceFolders?.length) {
       throw new Error("No workspace folder is open.");
     } else {
@@ -416,9 +324,10 @@ export class DatabaseUI extends DisposableObject {
       }
       await cli.packInstall(tutorialQueriesPath);
     }
-  };
+  }
 
-  handleRemoveOrphanedDatabases = async (): Promise<void> => {
+  // Public because it's used in tests
+  public async handleRemoveOrphanedDatabases(): Promise<void> {
     void extLogger.log("Removing orphaned databases from workspace storage.");
     let dbDirs = undefined;
 
@@ -481,12 +390,12 @@ export class DatabaseUI extends DisposableObject {
         )}).\nTo delete unused databases, please remove them manually from the storage folder ${dirname}.`,
       );
     }
-  };
+  }
 
-  handleChooseDatabaseArchive = async (
+  public async chooseDatabaseArchive(
     progress: ProgressCallback,
     token: CancellationToken,
-  ): Promise<void> => {
+  ): Promise<void> {
     try {
       await this.chooseAndSetDatabase(false, progress, token);
     } catch (e: unknown) {
@@ -496,12 +405,23 @@ export class DatabaseUI extends DisposableObject {
         )`Failed to choose and set database: ${getErrorMessage(e)}`,
       );
     }
-  };
+  }
 
-  handleChooseDatabaseInternet = async (
+  private async handleChooseDatabaseArchive(): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        await this.chooseDatabaseArchive(progress, token);
+      },
+      {
+        title: "Adding database from archive",
+      },
+    );
+  }
+
+  public async chooseDatabaseInternet(
     progress: ProgressCallback,
     token: CancellationToken,
-  ): Promise<DatabaseItem | undefined> => {
+  ): Promise<DatabaseItem | undefined> {
     return await promptImportInternetDatabase(
       this.databaseManager,
       this.storagePath,
@@ -509,13 +429,25 @@ export class DatabaseUI extends DisposableObject {
       token,
       this.queryServer?.cliServer,
     );
-  };
+  }
 
-  handleChooseDatabaseGithub = async (
-    credentials: Credentials | undefined,
+  private async handleChooseDatabaseInternet(): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        await this.chooseDatabaseInternet(progress, token);
+      },
+      {
+        title: "Adding database from URL",
+      },
+    );
+  }
+
+  public async chooseDatabaseGithub(
     progress: ProgressCallback,
     token: CancellationToken,
-  ): Promise<DatabaseItem | undefined> => {
+  ): Promise<DatabaseItem | undefined> {
+    const credentials = isCanary() ? this.app.credentials : undefined;
+
     return await promptImportGithubDatabase(
       this.databaseManager,
       this.storagePath,
@@ -524,53 +456,82 @@ export class DatabaseUI extends DisposableObject {
       token,
       this.queryServer?.cliServer,
     );
-  };
-
-  async tryUpgradeCurrentDatabase(
-    progress: ProgressCallback,
-    token: CancellationToken,
-  ) {
-    await this.handleUpgradeCurrentDatabase(progress, token);
   }
 
-  private handleSortByName = async () => {
+  private async handleChooseDatabaseGithub(): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        await this.chooseDatabaseGithub(progress, token);
+      },
+      {
+        title: "Adding database from GitHub",
+      },
+    );
+  }
+
+  private async handleSortByName() {
     if (this.treeDataProvider.sortOrder === SortOrder.NameAsc) {
       this.treeDataProvider.sortOrder = SortOrder.NameDesc;
     } else {
       this.treeDataProvider.sortOrder = SortOrder.NameAsc;
     }
-  };
+  }
 
-  private handleSortByDateAdded = async () => {
+  private async handleSortByDateAdded() {
     if (this.treeDataProvider.sortOrder === SortOrder.DateAddedAsc) {
       this.treeDataProvider.sortOrder = SortOrder.DateAddedDesc;
     } else {
       this.treeDataProvider.sortOrder = SortOrder.DateAddedAsc;
     }
-  };
+  }
 
-  private handleUpgradeCurrentDatabase = async (
-    progress: ProgressCallback,
-    token: CancellationToken,
-  ): Promise<void> => {
-    await this.handleUpgradeDatabase(
-      progress,
-      token,
-      this.databaseManager.currentDatabaseItem,
-      [],
+  private async handleUpgradeCurrentDatabase(): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        await this.handleUpgradeDatabaseInternal(
+          progress,
+          token,
+          this.databaseManager.currentDatabaseItem,
+          [],
+        );
+      },
+      {
+        title: "Upgrading current database",
+        cancellable: true,
+      },
     );
-  };
+  }
 
-  private handleUpgradeDatabase = async (
+  private async handleUpgradeDatabase(
+    databaseItem: DatabaseItem | undefined,
+    multiSelect: DatabaseItem[] | undefined,
+  ): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        return await this.handleUpgradeDatabaseInternal(
+          progress,
+          token,
+          databaseItem,
+          multiSelect,
+        );
+      },
+      {
+        title: "Upgrading database",
+        cancellable: true,
+      },
+    );
+  }
+
+  private async handleUpgradeDatabaseInternal(
     progress: ProgressCallback,
     token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
     multiSelect: DatabaseItem[] | undefined,
-  ): Promise<void> => {
+  ): Promise<void> {
     if (multiSelect?.length) {
       await Promise.all(
         multiSelect.map((dbItem) =>
-          this.handleUpgradeDatabase(progress, token, dbItem, []),
+          this.handleUpgradeDatabaseInternal(progress, token, dbItem, []),
         ),
       );
     }
@@ -602,78 +563,91 @@ export class DatabaseUI extends DisposableObject {
       progress,
       token,
     );
-  };
+  }
 
-  private handleClearCache = async (
-    progress: ProgressCallback,
-    token: CancellationToken,
-  ): Promise<void> => {
-    if (
-      this.queryServer !== undefined &&
-      this.databaseManager.currentDatabaseItem !== undefined
-    ) {
-      await this.queryServer.clearCacheInDatabase(
-        this.databaseManager.currentDatabaseItem,
-        progress,
-        token,
-      );
-    }
-  };
+  private async handleClearCache(): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        if (
+          this.queryServer !== undefined &&
+          this.databaseManager.currentDatabaseItem !== undefined
+        ) {
+          await this.queryServer.clearCacheInDatabase(
+            this.databaseManager.currentDatabaseItem,
+            progress,
+            token,
+          );
+        }
+      },
+      {
+        title: "Clearing cache",
+      },
+    );
+  }
 
-  private handleSetCurrentDatabase = async (
-    progress: ProgressCallback,
-    token: CancellationToken,
-    uri: Uri,
-  ): Promise<void> => {
-    try {
-      // Assume user has selected an archive if the file has a .zip extension
-      if (uri.path.endsWith(".zip")) {
-        await importArchiveDatabase(
-          uri.toString(true),
-          this.databaseManager,
-          this.storagePath,
-          progress,
-          token,
-          this.queryServer?.cliServer,
-        );
-      } else {
-        await this.setCurrentDatabase(progress, token, uri);
-      }
-    } catch (e) {
-      // rethrow and let this be handled by default error handling.
-      throw new Error(
-        `Could not set database to ${basename(
-          uri.fsPath,
-        )}. Reason: ${getErrorMessage(e)}`,
-      );
-    }
-  };
+  private async handleSetCurrentDatabase(uri: Uri): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        try {
+          // Assume user has selected an archive if the file has a .zip extension
+          if (uri.path.endsWith(".zip")) {
+            await importArchiveDatabase(
+              uri.toString(true),
+              this.databaseManager,
+              this.storagePath,
+              progress,
+              token,
+              this.queryServer?.cliServer,
+            );
+          } else {
+            await this.setCurrentDatabase(progress, token, uri);
+          }
+        } catch (e) {
+          // rethrow and let this be handled by default error handling.
+          throw new Error(
+            `Could not set database to ${basename(
+              uri.fsPath,
+            )}. Reason: ${getErrorMessage(e)}`,
+          );
+        }
+      },
+      {
+        title: "Importing database from archive",
+      },
+    );
+  }
 
-  private handleRemoveDatabase = async (
-    progress: ProgressCallback,
-    token: CancellationToken,
+  private async handleRemoveDatabase(
     databaseItem: DatabaseItem,
     multiSelect: DatabaseItem[] | undefined,
-  ): Promise<void> => {
-    if (multiSelect?.length) {
-      await Promise.all(
-        multiSelect.map((dbItem) =>
-          this.databaseManager.removeDatabaseItem(progress, token, dbItem),
-        ),
-      );
-    } else {
-      await this.databaseManager.removeDatabaseItem(
-        progress,
-        token,
-        databaseItem,
-      );
-    }
-  };
+  ): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        if (multiSelect?.length) {
+          await Promise.all(
+            multiSelect.map((dbItem) =>
+              this.databaseManager.removeDatabaseItem(progress, token, dbItem),
+            ),
+          );
+        } else {
+          await this.databaseManager.removeDatabaseItem(
+            progress,
+            token,
+            databaseItem,
+          );
+        }
+      },
+      {
+        title: "Removing database",
+        cancellable: false,
+      },
+    );
+  }
 
-  private handleRenameDatabase = async (
+  private async handleRenameDatabase(
     databaseItem: DatabaseItem,
     multiSelect: DatabaseItem[] | undefined,
-  ): Promise<void> => {
+  ): Promise<void> {
     this.assertSingleDatabase(multiSelect);
 
     const newName = await window.showInputBox({
@@ -684,12 +658,12 @@ export class DatabaseUI extends DisposableObject {
     if (newName) {
       await this.databaseManager.renameDatabaseItem(databaseItem, newName);
     }
-  };
+  }
 
-  private handleOpenFolder = async (
+  private async handleOpenFolder(
     databaseItem: DatabaseItem,
     multiSelect: DatabaseItem[] | undefined,
-  ): Promise<void> => {
+  ): Promise<void> {
     if (multiSelect?.length) {
       await Promise.all(
         multiSelect.map((dbItem) => env.openExternal(dbItem.databaseUri)),
@@ -697,17 +671,17 @@ export class DatabaseUI extends DisposableObject {
     } else {
       await env.openExternal(databaseItem.databaseUri);
     }
-  };
+  }
 
   /**
    * Adds the source folder of a CodeQL database to the workspace.
    * When a database is first added in the "Databases" view, its source folder is added to the workspace.
    * If the source folder is removed from the workspace for some reason, we want to be able to re-add it if need be.
    */
-  private handleAddSource = async (
+  private async handleAddSource(
     databaseItem: DatabaseItem,
     multiSelect: DatabaseItem[] | undefined,
-  ): Promise<void> => {
+  ): Promise<void> {
     if (multiSelect?.length) {
       for (const dbItem of multiSelect) {
         await this.databaseManager.addDatabaseSourceArchiveFolder(dbItem);
@@ -715,7 +689,7 @@ export class DatabaseUI extends DisposableObject {
     } else {
       await this.databaseManager.addDatabaseSourceArchiveFolder(databaseItem);
     }
-  };
+  }
 
   /**
    * Return the current database directory. If we don't already have a

@@ -35,7 +35,6 @@ import { CodeQLCliServer } from "./cli";
 import {
   CliConfigListener,
   DistributionConfigListener,
-  isCanary,
   joinOrderWarningThreshold,
   MAX_QUERIES,
   QueryHistoryConfigListener,
@@ -639,7 +638,6 @@ async function activateWithInstalledDistribution(
     getContextStoragePath(ctx),
     ctx.extensionPath,
   );
-  databaseUI.init();
   ctx.subscriptions.push(databaseUI);
 
   void extLogger.log("Initializing evaluator log viewer.");
@@ -1093,6 +1091,7 @@ async function activateWithInstalledDistribution(
     ...getCommands(),
     ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
+    ...databaseUI.getCommands(),
     ...dbModule.getCommands(),
   };
 
@@ -1225,7 +1224,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseFolder",
       (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.handleChooseDatabaseFolder(progress, token),
+        databaseUI.chooseDatabaseFolder(progress, token),
       {
         title: "Choose a Database from a Folder",
       },
@@ -1235,7 +1234,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseArchive",
       (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.handleChooseDatabaseArchive(progress, token),
+        databaseUI.chooseDatabaseArchive(progress, token),
       {
         title: "Choose a Database from an Archive",
       },
@@ -1245,12 +1244,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseGithub",
       async (progress: ProgressCallback, token: CancellationToken) => {
-        const credentials = isCanary() ? app.credentials : undefined;
-        await databaseUI.handleChooseDatabaseGithub(
-          credentials,
-          progress,
-          token,
-        );
+        await databaseUI.chooseDatabaseGithub(progress, token);
       },
       {
         title: "Adding database from GitHub",
@@ -1261,7 +1255,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseInternet",
       (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.handleChooseDatabaseInternet(progress, token),
+        databaseUI.chooseDatabaseInternet(progress, token),
 
       {
         title: "Adding database from URL",
