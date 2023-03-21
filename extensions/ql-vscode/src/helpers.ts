@@ -288,12 +288,7 @@ export async function prepareCodeTour(): Promise<void> {
       existsSync(toursFolderPath) &&
       !isCodespacesTemplate()
     ) {
-      const tutorialWorkspaceUri = Uri.parse(
-        join(
-          workspace.workspaceFolders[0].uri.fsPath,
-          "tutorial.code-workspace",
-        ),
-      );
+      const tutorialWorkspaceUri = Uri.parse(tutorialWorkspacePath);
       await commands.executeCommand("vscode.openFolder", tutorialWorkspaceUri);
     }
   }
