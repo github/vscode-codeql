@@ -124,10 +124,14 @@ import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 import { DirResult } from "tmp";
-import { AllCommands, BaseCommands } from "./common/commands";
+import {
+  AllCommands,
+  BaseCommands,
+  QueryServerCommands,
+} from "./common/commands";
 import {
   compileAndRunQuery,
-  registerLocalQueryCommands,
+  getLocalQueryCommands,
   showResultsForCompletedQuery,
 } from "./local-queries";
 
@@ -785,16 +789,6 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Registering top-level command palette commands.");
 
-  registerLocalQueryCommands(ctx, {
-    queryRunner: qs,
-    queryHistoryManager: qhm,
-    databaseManager: dbm,
-    cliServer,
-    databaseUI,
-    localQueryResultsView,
-    queryStorageDir,
-  });
-
   const allCommands: AllCommands = {
     ...getCommands(),
     ...qhm.getCommands(),
@@ -805,6 +799,26 @@ async function activateWithInstalledDistribution(
 
   for (const [commandName, command] of Object.entries(allCommands)) {
     app.commands.register(commandName as keyof AllCommands, command);
+  }
+
+  const queryServerCommands: QueryServerCommands = {
+    ...getLocalQueryCommands({
+      app,
+      queryRunner: qs,
+      queryHistoryManager: qhm,
+      databaseManager: dbm,
+      cliServer,
+      databaseUI,
+      localQueryResultsView,
+      queryStorageDir,
+    }),
+  };
+
+  for (const [commandName, command] of Object.entries(queryServerCommands)) {
+    app.queryServerCommands.register(
+      commandName as keyof QueryServerCommands,
+      command,
+    );
   }
 
   ctx.subscriptions.push(

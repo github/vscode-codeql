@@ -89,7 +89,7 @@ export type ProgressTaskWithArgs<R> = (
  * @param args arguments passed to this task passed on from
  * `commands.registerCommand`.
  */
-type NoProgressTask = (...args: any[]) => Promise<any>;
+export type NoProgressTask = (...args: any[]) => Promise<any>;
 
 /**
  * This mediates between the kind of progress callbacks we want to
