@@ -612,7 +612,7 @@ describe("prepareCodeTour", () => {
 
         expect(commandSpy).toHaveBeenCalledWith(
           "vscode.openFolder",
-          expect.anything(),
+          Uri.parse(tutorialWorkspacePath),
         );
       });
     });
