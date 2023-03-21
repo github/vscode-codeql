@@ -5,7 +5,6 @@ import {
   ensureDir,
   writeFile,
   opendir,
-  existsSync,
 } from "fs-extra";
 import { promise as glob } from "glob-promise";
 import { load } from "js-yaml";
@@ -291,8 +290,8 @@ export async function prepareCodeTour(): Promise<void> {
      * the prompt to open the workspace)
      */
     if (
-      existsSync(tutorialWorkspacePath) &&
-      existsSync(toursFolderPath) &&
+      (await pathExists(tutorialWorkspacePath)) &&
+      (await pathExists(toursFolderPath)) &&
       !isCodespacesTemplate()
     ) {
       const answer = await showBinaryChoiceDialog(
