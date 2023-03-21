@@ -345,14 +345,6 @@ export async function activate(
     codeQlExtension.variantAnalysisManager,
   );
 
-  try {
-    await prepareCodeTour();
-  } catch (e: unknown) {
-    void extLogger.log(
-      `Could not open tutorial workspace automatically: ${getErrorMessage(e)}`,
-    );
-  }
-
   return codeQlExtension;
 }
 
@@ -539,6 +531,14 @@ async function installOrUpdateThenTryActivate(
   config: DistributionUpdateConfig,
 ): Promise<CodeQLExtensionInterface | Record<string, never>> {
   await installOrUpdateDistribution(ctx, distributionManager, config);
+
+  try {
+    await prepareCodeTour();
+  } catch (e: unknown) {
+    void extLogger.log(
+      `Could not open tutorial workspace automatically: ${getErrorMessage(e)}`,
+    );
+  }
 
   // Display the warnings even if the extension has already activated.
   const distributionResult =
