@@ -208,6 +208,8 @@ export class DatabaseUI extends DisposableObject {
 
   public getCommands(): LocalDatabasesCommands {
     return {
+      "codeQL.chooseDatabaseFolder":
+        this.handleChooseDatabaseFolderFromPalette.bind(this),
       "codeQL.setCurrentDatabase": this.handleSetCurrentDatabase.bind(this),
       "codeQL.setDefaultTourDatabase":
         this.handleSetDefaultTourDatabase.bind(this),
@@ -264,6 +266,17 @@ export class DatabaseUI extends DisposableObject {
       },
       {
         title: "Adding database from folder",
+      },
+    );
+  }
+
+  private async handleChooseDatabaseFolderFromPalette(): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        await this.chooseDatabaseFolder(progress, token);
+      },
+      {
+        title: "Choose a Database from a Folder",
       },
     );
   }
