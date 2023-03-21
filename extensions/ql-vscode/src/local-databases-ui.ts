@@ -210,6 +210,8 @@ export class DatabaseUI extends DisposableObject {
     return {
       "codeQL.chooseDatabaseFolder":
         this.handleChooseDatabaseFolderFromPalette.bind(this),
+      "codeQL.chooseDatabaseArchive":
+        this.handleChooseDatabaseArchiveFromPalette.bind(this),
       "codeQL.setCurrentDatabase": this.handleSetCurrentDatabase.bind(this),
       "codeQL.setDefaultTourDatabase":
         this.handleSetDefaultTourDatabase.bind(this),
@@ -427,6 +429,17 @@ export class DatabaseUI extends DisposableObject {
       },
       {
         title: "Adding database from archive",
+      },
+    );
+  }
+
+  private async handleChooseDatabaseArchiveFromPalette(): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        await this.chooseDatabaseArchive(progress, token);
+      },
+      {
+        title: "Choose a Database from an Archive",
       },
     );
   }

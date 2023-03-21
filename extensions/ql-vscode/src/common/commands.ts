@@ -65,6 +65,7 @@ export type QueryHistoryCommands = {
 export type LocalDatabasesCommands = {
   // Command palette commands
   "codeQL.chooseDatabaseFolder": () => Promise<void>;
+  "codeQL.chooseDatabaseArchive": () => Promise<void>;
   "codeQL.upgradeCurrentDatabase": () => Promise<void>;
   "codeQL.clearCache": () => Promise<void>;
 

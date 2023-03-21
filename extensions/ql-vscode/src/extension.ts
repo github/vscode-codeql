@@ -1222,16 +1222,6 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunnerWithProgress(
-      "codeQL.chooseDatabaseArchive",
-      (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.chooseDatabaseArchive(progress, token),
-      {
-        title: "Choose a Database from an Archive",
-      },
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
       "codeQL.chooseDatabaseGithub",
       async (progress: ProgressCallback, token: CancellationToken) => {
         await databaseUI.chooseDatabaseGithub(progress, token);
