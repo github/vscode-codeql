@@ -1221,18 +1221,6 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.chooseDatabaseGithub",
-      async (progress: ProgressCallback, token: CancellationToken) => {
-        await databaseUI.chooseDatabaseGithub(progress, token);
-      },
-      {
-        title: "Adding database from GitHub",
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
     commandRunner("codeQL.copyVersion", async () => {
       const text = `CodeQL extension version: ${
         extension?.packageJSON.version
