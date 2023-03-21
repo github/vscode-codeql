@@ -1,5 +1,5 @@
-import { CancellationToken, Uri, window } from "vscode";
-import { ProgressCallback, withProgress } from "./commandRunner";
+import { Uri, window } from "vscode";
+import { withProgress } from "./commandRunner";
 import { AstViewer } from "./astViewer";
 import {
   TemplatePrintAstProvider,
@@ -34,23 +34,25 @@ export function getAstCfgCommands({
   astTemplateProvider,
   cfgTemplateProvider,
 }: AstCfgOptions): AstCfgCommands {
-  const viewAstCommand = async (selectedFile: Uri) =>
+  const viewAst = async (selectedFile: Uri) =>
     withProgress(
-      async (progress, token) =>
-        await viewAst(
-          astViewer,
-          astTemplateProvider,
+      async (progress, token) => {
+        const ast = await astTemplateProvider.provideAst(
           progress,
           token,
-          selectedFile,
-        ),
+          selectedFile ?? window.activeTextEditor?.document.uri,
+        );
+        if (ast) {
+          astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
+        }
+      },
       {
         cancellable: true,
         title: "Calculate AST",
       },
     );
 
-  const viewCfgCommand = async () =>
+  const viewCfg = async () =>
     withProgress(
       async (progress, token) => {
         const res = await cfgTemplateProvider.provideCfgUri(
@@ -78,28 +80,11 @@ export function getAstCfgCommands({
     );
 
   return {
-    "codeQL.viewAst": viewAstCommand,
-    "codeQL.viewAstContextExplorer": viewAstCommand,
-    "codeQL.viewAstContextEditor": viewAstCommand,
-    "codeQL.viewCfg": viewCfgCommand,
-    "codeQL.viewCfgContextExplorer": viewCfgCommand,
-    "codeQL.viewCfgContextEditor": viewCfgCommand,
+    "codeQL.viewAst": viewAst,
+    "codeQL.viewAstContextExplorer": viewAst,
+    "codeQL.viewAstContextEditor": viewAst,
+    "codeQL.viewCfg": viewCfg,
+    "codeQL.viewCfgContextExplorer": viewCfg,
+    "codeQL.viewCfgContextEditor": viewCfg,
   };
-}
-
-async function viewAst(
-  astViewer: AstViewer,
-  printAstTemplateProvider: TemplatePrintAstProvider,
-  progress: ProgressCallback,
-  token: CancellationToken,
-  selectedFile: Uri,
-): Promise<void> {
-  const ast = await printAstTemplateProvider.provideAst(
-    progress,
-    token,
-    selectedFile ?? window.activeTextEditor?.document.uri,
-  );
-  if (ast) {
-    astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
-  }
 }
