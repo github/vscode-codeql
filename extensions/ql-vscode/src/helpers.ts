@@ -295,10 +295,20 @@ export async function prepareCodeTour(): Promise<void> {
       existsSync(toursFolderPath) &&
       !isCodespacesTemplate()
     ) {
+      const answer = await showBinaryChoiceDialog(
+        "We've detected you're in the CodeQL Tour repo. We will need to open the workspace file to continue. Reload?",
+      );
+
+      if (!answer) {
+        return;
+      }
+
       const tutorialWorkspaceUri = Uri.parse(tutorialWorkspacePath);
+
       void extLogger.log(
         `In prepareCodeTour() method, going to open the tutorial workspace file: ${tutorialWorkspacePath}`,
       );
+
       await commands.executeCommand("vscode.openFolder", tutorialWorkspaceUri);
     }
   }

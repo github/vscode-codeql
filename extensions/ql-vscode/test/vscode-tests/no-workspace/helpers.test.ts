@@ -572,6 +572,9 @@ describe("isFolderAlreadyInWorkspace", () => {
 
 describe("prepareCodeTour", () => {
   let dir: tmp.DirResult;
+  let showInformationMessageSpy: jest.SpiedFunction<
+    typeof window.showInformationMessage
+  >;
 
   beforeEach(() => {
     dir = tmp.dirSync();
@@ -587,6 +590,10 @@ describe("prepareCodeTour", () => {
     jest
       .spyOn(workspace, "workspaceFolders", "get")
       .mockReturnValue(mockWorkspaceFolders);
+
+    showInformationMessageSpy = jest
+      .spyOn(window, "showInformationMessage")
+      .mockResolvedValue({ title: "Yes" });
   });
 
   afterEach(() => {
@@ -610,6 +617,7 @@ describe("prepareCodeTour", () => {
 
         await prepareCodeTour();
 
+        expect(showInformationMessageSpy).toHaveBeenCalled();
         expect(commandSpy).toHaveBeenCalledWith(
           "vscode.openFolder",
           Uri.parse(tutorialWorkspacePath),
