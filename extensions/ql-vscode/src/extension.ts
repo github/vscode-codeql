@@ -103,10 +103,7 @@ import {
   withProgress,
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
-import {
-  handleDownloadPacks,
-  handleInstallPackDependencies,
-} from "./packaging";
+import { registerPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { exportSelectedVariantAnalysisResults } from "./variant-analysis/export-results";
 import { EvalLogViewer } from "./eval-log-viewer";
@@ -1295,27 +1292,9 @@ async function activateWithInstalledDistribution(
     }),
   );
 
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.installPackDependencies",
-      async (progress: ProgressCallback) =>
-        await handleInstallPackDependencies(cliServer, progress),
-      {
-        title: "Installing pack dependencies",
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.downloadPacks",
-      async (progress: ProgressCallback) =>
-        await handleDownloadPacks(cliServer, progress),
-      {
-        title: "Downloading packs",
-      },
-    ),
-  );
+  registerPackagingCommands(ctx, {
+    cliServer,
+  });
 
   ctx.subscriptions.push(
     commandRunner("codeQL.showLogs", async () => {
