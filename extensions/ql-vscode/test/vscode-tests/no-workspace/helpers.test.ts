@@ -631,12 +631,12 @@ describe("prepareCodeTour", () => {
         await mkdir(tourDirPath);
 
         // spy that we open the workspace file by calling the 'vscode.openFolder' command
-        const openFileSpy = jest.spyOn(commands, "executeCommand");
-        openFileSpy.mockImplementation(() => Promise.resolve());
+        const commandSpy = jest.spyOn(commands, "executeCommand");
+        commandSpy.mockImplementation(() => Promise.resolve());
 
         await prepareCodeTour();
 
-        expect(openFileSpy).not.toHaveBeenCalledWith("vscode.openFolder");
+        expect(commandSpy).not.toHaveBeenCalledWith("vscode.openFolder");
       });
     });
   });
@@ -648,24 +648,24 @@ describe("prepareCodeTour", () => {
       await mkdir(tourDirPath);
 
       // spy that we open the workspace file by calling the 'vscode.openFolder' command
-      const openFileSpy = jest.spyOn(commands, "executeCommand");
-      openFileSpy.mockImplementation(() => Promise.resolve());
+      const commandSpy = jest.spyOn(commands, "executeCommand");
+      commandSpy.mockImplementation(() => Promise.resolve());
 
       await prepareCodeTour();
 
-      expect(openFileSpy).not.toHaveBeenCalledWith("vscode.openFolder");
+      expect(commandSpy).not.toHaveBeenCalledWith("vscode.openFolder");
     });
   });
 
   describe("if we're in a different repo with no tour", () => {
     it("should not open the tutorial workspace", async () => {
       // spy that we open the workspace file by calling the 'vscode.openFolder' command
-      const openFileSpy = jest.spyOn(commands, "executeCommand");
-      openFileSpy.mockImplementation(() => Promise.resolve());
+      const commandSpy = jest.spyOn(commands, "executeCommand");
+      commandSpy.mockImplementation(() => Promise.resolve());
 
       await prepareCodeTour();
 
-      expect(openFileSpy).not.toHaveBeenCalledWith("vscode.openFolder");
+      expect(commandSpy).not.toHaveBeenCalledWith("vscode.openFolder");
     });
   });
 });
