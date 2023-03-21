@@ -1231,17 +1231,6 @@ async function activateWithInstalledDistribution(
       },
     ),
   );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.chooseDatabaseInternet",
-      (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.chooseDatabaseInternet(progress, token),
-
-      {
-        title: "Adding database from URL",
-      },
-    ),
-  );
 
   ctx.subscriptions.push(
     commandRunner("codeQL.copyVersion", async () => {

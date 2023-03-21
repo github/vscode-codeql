@@ -66,6 +66,7 @@ export type LocalDatabasesCommands = {
   // Command palette commands
   "codeQL.chooseDatabaseFolder": () => Promise<void>;
   "codeQL.chooseDatabaseArchive": () => Promise<void>;
+  "codeQL.chooseDatabaseInternet": () => Promise<void>;
   "codeQL.upgradeCurrentDatabase": () => Promise<void>;
   "codeQL.clearCache": () => Promise<void>;
 

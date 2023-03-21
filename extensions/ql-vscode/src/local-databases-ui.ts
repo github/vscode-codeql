@@ -212,6 +212,8 @@ export class DatabaseUI extends DisposableObject {
         this.handleChooseDatabaseFolderFromPalette.bind(this),
       "codeQL.chooseDatabaseArchive":
         this.handleChooseDatabaseArchiveFromPalette.bind(this),
+      "codeQL.chooseDatabaseInternet":
+        this.handleChooseDatabaseInternet.bind(this),
       "codeQL.setCurrentDatabase": this.handleSetCurrentDatabase.bind(this),
       "codeQL.setDefaultTourDatabase":
         this.handleSetDefaultTourDatabase.bind(this),
