@@ -6,9 +6,10 @@ import {
 } from "./helpers";
 import { ExtensionContext, QuickPickItem, window } from "vscode";
 import {
-  commandRunnerWithProgress,
+  commandRunner,
   ProgressCallback,
   UserCancellationException,
+  withProgress,
 } from "./commandRunner";
 import { extLogger } from "./common";
 import { asError, getErrorStack } from "./pure/helpers-pure";
@@ -24,24 +25,26 @@ export function registerPackagingCommands(
   { cliServer }: PackagingOptions,
 ) {
   ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.installPackDependencies",
-      async (progress: ProgressCallback) =>
-        await handleInstallPackDependencies(cliServer, progress),
-      {
-        title: "Installing pack dependencies",
-      },
+    commandRunner("codeQL.installPackDependencies", async () =>
+      withProgress(
+        async (progress: ProgressCallback) =>
+          await handleInstallPackDependencies(cliServer, progress),
+        {
+          title: "Installing pack dependencies",
+        },
+      ),
     ),
   );
 
   ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.downloadPacks",
-      async (progress: ProgressCallback) =>
-        await handleDownloadPacks(cliServer, progress),
-      {
-        title: "Downloading packs",
-      },
+    commandRunner("codeQL.downloadPacks", async () =>
+      withProgress(
+        async (progress: ProgressCallback) =>
+          await handleDownloadPacks(cliServer, progress),
+        {
+          title: "Downloading packs",
+        },
+      ),
     ),
   );
 }
