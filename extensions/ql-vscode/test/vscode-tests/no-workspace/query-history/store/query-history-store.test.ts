@@ -1,7 +1,7 @@
 import {
   deserializeQueryHistory,
   serializeQueryHistory,
-} from "../../../../../src/query-history/store/query-serialization";
+} from "../../../../../src/query-history/store/query-history-store";
 import { join } from "path";
 import { writeFileSync, mkdirpSync, writeFile } from "fs-extra";
 import {

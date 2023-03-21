@@ -48,7 +48,7 @@ import {
 import {
   deserializeQueryHistory,
   serializeQueryHistory,
-} from "./store/query-serialization";
+} from "./store/query-history-store";
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
