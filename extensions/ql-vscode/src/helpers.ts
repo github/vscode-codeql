@@ -296,6 +296,9 @@ export async function prepareCodeTour(): Promise<void> {
       !isCodespacesTemplate()
     ) {
       const tutorialWorkspaceUri = Uri.parse(tutorialWorkspacePath);
+      void extLogger.log(
+        `In prepareCodeTour() method, going to open the tutorial workspace file: ${tutorialWorkspacePath}`,
+      );
       await commands.executeCommand("vscode.openFolder", tutorialWorkspaceUri);
     }
   }

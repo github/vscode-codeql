@@ -348,7 +348,7 @@ export async function activate(
   try {
     await prepareCodeTour();
   } catch (e: unknown) {
-    console.log(
+    void extLogger.log(
       `Could not open tutorial workspace automatically: ${getErrorMessage(e)}`,
     );
   }
