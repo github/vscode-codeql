@@ -3,7 +3,7 @@
 ## [UNRELEASED]
 
 - Show data flow paths of a variant analysis in a new tab
-- Show labels of entities in CSV export [#2170](https://github.com/github/vscode-codeql/pull/2170)
+- Show labels of entities in exported CSV results [#2170](https://github.com/github/vscode-codeql/pull/2170)
 
 ## 1.8.0 - 9 March 2023
 
