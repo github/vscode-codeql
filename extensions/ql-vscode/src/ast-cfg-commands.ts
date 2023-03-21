@@ -1,0 +1,212 @@
+import { CancellationToken, ExtensionContext, Uri, window } from "vscode";
+import { commandRunnerWithProgress, ProgressCallback } from "./commandRunner";
+import { AstViewer } from "./astViewer";
+import {
+  TemplatePrintAstProvider,
+  TemplatePrintCfgProvider,
+} from "./contextual/templateProvider";
+import { compileAndRunQuery } from "./local-queries";
+import { QueryRunner } from "./queryRunner";
+import { QueryHistoryManager } from "./query-history/query-history-manager";
+import { DatabaseUI } from "./local-databases-ui";
+import { ResultsView } from "./interface";
+
+type AstCfgOptions = {
+  queryRunner: QueryRunner;
+  queryHistoryManager: QueryHistoryManager;
+  databaseUI: DatabaseUI;
+  localQueryResultsView: ResultsView;
+  queryStorageDir: string;
+
+  astViewer: AstViewer;
+  astTemplateProvider: TemplatePrintAstProvider;
+  cfgTemplateProvider: TemplatePrintCfgProvider;
+};
+
+export function registerAstCfgCommands(
+  ctx: ExtensionContext,
+  {
+    queryRunner,
+    queryHistoryManager,
+    databaseUI,
+    localQueryResultsView,
+    queryStorageDir,
+    astViewer,
+    astTemplateProvider,
+    cfgTemplateProvider,
+  }: AstCfgOptions,
+) {
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewAst",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        selectedFile: Uri,
+      ) =>
+        await viewAst(
+          astViewer,
+          astTemplateProvider,
+          progress,
+          token,
+          selectedFile,
+        ),
+      {
+        cancellable: true,
+        title: "Calculate AST",
+      },
+    ),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewAst" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewAstContextExplorer",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        selectedFile: Uri,
+      ) =>
+        await viewAst(
+          astViewer,
+          astTemplateProvider,
+          progress,
+          token,
+          selectedFile,
+        ),
+      {
+        cancellable: true,
+        title: "Calculate AST",
+      },
+    ),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewAst" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewAstContextEditor",
+      async (
+        progress: ProgressCallback,
+        token: CancellationToken,
+        selectedFile: Uri,
+      ) =>
+        await viewAst(
+          astViewer,
+          astTemplateProvider,
+          progress,
+          token,
+          selectedFile,
+        ),
+      {
+        cancellable: true,
+        title: "Calculate AST",
+      },
+    ),
+  );
+
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewCfg",
+      async (progress: ProgressCallback, token: CancellationToken) => {
+        const res = await cfgTemplateProvider.provideCfgUri(
+          window.activeTextEditor?.document,
+        );
+        if (res) {
+          await compileAndRunQuery(
+            queryRunner,
+            queryHistoryManager,
+            databaseUI,
+            localQueryResultsView,
+            queryStorageDir,
+            false,
+            res[0],
+            progress,
+            token,
+            undefined,
+          );
+        }
+      },
+      {
+        title: "Calculating Control Flow Graph",
+        cancellable: true,
+      },
+    ),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewCfg" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewCfgContextExplorer",
+      async (progress: ProgressCallback, token: CancellationToken) => {
+        const res = await cfgTemplateProvider.provideCfgUri(
+          window.activeTextEditor?.document,
+        );
+        if (res) {
+          await compileAndRunQuery(
+            queryRunner,
+            queryHistoryManager,
+            databaseUI,
+            localQueryResultsView,
+            queryStorageDir,
+            false,
+            res[0],
+            progress,
+            token,
+            undefined,
+          );
+        }
+      },
+      {
+        title: "Calculating Control Flow Graph",
+        cancellable: true,
+      },
+    ),
+  );
+
+  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewCfg" command
+  ctx.subscriptions.push(
+    commandRunnerWithProgress(
+      "codeQL.viewCfgContextEditor",
+      async (progress: ProgressCallback, token: CancellationToken) => {
+        const res = await cfgTemplateProvider.provideCfgUri(
+          window.activeTextEditor?.document,
+        );
+        if (res) {
+          await compileAndRunQuery(
+            queryRunner,
+            queryHistoryManager,
+            databaseUI,
+            localQueryResultsView,
+            queryStorageDir,
+            false,
+            res[0],
+            progress,
+            token,
+            undefined,
+          );
+        }
+      },
+      {
+        title: "Calculating Control Flow Graph",
+        cancellable: true,
+      },
+    ),
+  );
+}
+
+async function viewAst(
+  astViewer: AstViewer,
+  printAstTemplateProvider: TemplatePrintAstProvider,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  selectedFile: Uri,
+): Promise<void> {
+  const ast = await printAstTemplateProvider.provideAst(
+    progress,
+    token,
+    selectedFile ?? window.activeTextEditor?.document.uri,
+  );
+  if (ast) {
+    astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
+  }
+}
