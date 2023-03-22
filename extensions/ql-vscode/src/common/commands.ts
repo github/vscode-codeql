@@ -59,7 +59,7 @@ export type QueryHistoryCommands = {
   "codeQLQueryHistory.openOnGithub": SelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.copyRepoList": SelectionCommandFunction<QueryHistoryInfo>;
 
-  // Commands in the command pallete
+  // Commands in the command palette
   "codeQL.exportSelectedVariantAnalysisResults": () => Promise<void>;
 };
 
