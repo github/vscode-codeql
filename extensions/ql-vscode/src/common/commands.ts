@@ -48,6 +48,7 @@ export type BuiltInVsCodeCommands = {
     title?: string,
     columnOrOptions?: TextDocumentShowOptions,
   ) => Promise<void>;
+  "vscode.open": (uri: Uri) => Promise<void>;
   "vscode.openFolder": (uri: Uri) => Promise<void>;
 };
 
