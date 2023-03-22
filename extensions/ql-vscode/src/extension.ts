@@ -667,7 +667,12 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(statusBar);
 
   void extLogger.log("Initializing query server client.");
-  const qs = await createQueryServer(qlConfigurationListener, cliServer, ctx);
+  const qs = await createQueryServer(
+    app,
+    qlConfigurationListener,
+    cliServer,
+    ctx,
+  );
 
   for (const glob of PACK_GLOBS) {
     const fsWatcher = workspace.createFileSystemWatcher(glob);
@@ -1044,6 +1049,7 @@ function addUnhandledRejectionListener() {
 }
 
 async function createQueryServer(
+  app: ExtensionApp,
   qlConfigurationListener: QueryServerConfigListener,
   cliServer: CodeQLCliServer,
   ctx: ExtensionContext,
@@ -1074,6 +1080,7 @@ async function createQueryServer(
     return new NewQueryRunner(qs);
   } else {
     const qs = new LegacyQueryServerClient(
+      app,
       qlConfigurationListener,
       cliServer,
       qsOpts,
