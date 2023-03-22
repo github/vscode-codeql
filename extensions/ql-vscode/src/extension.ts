@@ -879,6 +879,7 @@ async function activateWithInstalledDistribution(
   const allCommands: AllExtensionCommands = {
     ...getCommands(app, cliServer, qs),
     ...getQueryEditorCommands({
+      commandManager: app.commands,
       queryRunner: qs,
       cliServer,
       qhelpTmpDir: qhelpTmpDir.name,
