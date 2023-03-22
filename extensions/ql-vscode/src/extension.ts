@@ -89,12 +89,7 @@ import { QLTestAdapterFactory } from "./test-adapter";
 import { TestUIService } from "./test-ui";
 import { CompareView } from "./compare/compare-view";
 import { initializeTelemetry } from "./telemetry";
-import {
-  commandRunner,
-  commandRunnerWithProgress,
-  ProgressCallback,
-  withProgress,
-} from "./commandRunner";
+import { commandRunner, ProgressCallback, withProgress } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
@@ -122,10 +117,10 @@ import {
   QueryServerCommands,
 } from "./common/commands";
 import {
-  compileAndRunQuery,
   getLocalQueryCommands,
   showResultsForCompletedQuery,
 } from "./local-queries";
+import { getAstCfgCommands } from "./ast-cfg-commands";
 
 /**
  * extension.ts
@@ -668,6 +663,15 @@ async function activateWithInstalledDistribution(
     );
   const queryStorageDir = join(ctx.globalStorageUri.fsPath, "queries");
   await ensureDir(queryStorageDir);
+
+  // Store contextual queries in a temporary folder so that they are removed
+  // when the application closes. There is no need for the user to interact with them.
+  const contextualQueryStorageDir = join(
+    tmpDir.name,
+    "contextual-query-storage",
+  );
+  await ensureDir(contextualQueryStorageDir);
+
   const labelProvider = new HistoryItemLabelProvider(
     queryHistoryConfigurationListener,
   );
@@ -804,6 +808,17 @@ async function activateWithInstalledDistribution(
     ctx.subscriptions.push(testUIService);
   }
 
+  const astViewer = new AstViewer();
+  const astTemplateProvider = new TemplatePrintAstProvider(
+    cliServer,
+    qs,
+    dbm,
+    contextualQueryStorageDir,
+  );
+  const cfgTemplateProvider = new TemplatePrintCfgProvider(cliServer, dbm);
+
+  ctx.subscriptions.push(astViewer);
+
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllCommands = {
@@ -812,6 +827,16 @@ async function activateWithInstalledDistribution(
     ...variantAnalysisManager.getCommands(),
     ...databaseUI.getCommands(),
     ...dbModule.getCommands(),
+    ...getAstCfgCommands({
+      queryRunner: qs,
+      queryHistoryManager: qhm,
+      databaseUI,
+      localQueryResultsView,
+      queryStorageDir,
+      astViewer,
+      astTemplateProvider,
+      cfgTemplateProvider,
+    }),
     ...getPackagingCommands({
       cliServer,
     }),
@@ -924,13 +949,6 @@ async function activateWithInstalledDistribution(
   // Jump-to-definition and find-references
   void extLogger.log("Registering jump-to-definition handlers.");
 
-  // Store contextual queries in a temporary folder so that they are removed
-  // when the application closes. There is no need for the user to interact with them.
-  const contextualQueryStorageDir = join(
-    tmpDir.name,
-    "contextual-query-storage",
-  );
-  await ensureDir(contextualQueryStorageDir);
   languages.registerDefinitionProvider(
     { scheme: zipArchiveScheme },
     new TemplateQueryDefinitionProvider(
@@ -948,174 +966,6 @@ async function activateWithInstalledDistribution(
       qs,
       dbm,
       contextualQueryStorageDir,
-    ),
-  );
-
-  const astViewer = new AstViewer();
-  const printAstTemplateProvider = new TemplatePrintAstProvider(
-    cliServer,
-    qs,
-    dbm,
-    contextualQueryStorageDir,
-  );
-  const cfgTemplateProvider = new TemplatePrintCfgProvider(cliServer, dbm);
-
-  ctx.subscriptions.push(astViewer);
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.viewAst",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        selectedFile: Uri,
-      ) =>
-        await viewAst(
-          astViewer,
-          printAstTemplateProvider,
-          progress,
-          token,
-          selectedFile,
-        ),
-      {
-        cancellable: true,
-        title: "Calculate AST",
-      },
-    ),
-  );
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewAst" command
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.viewAstContextExplorer",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        selectedFile: Uri,
-      ) =>
-        await viewAst(
-          astViewer,
-          printAstTemplateProvider,
-          progress,
-          token,
-          selectedFile,
-        ),
-      {
-        cancellable: true,
-        title: "Calculate AST",
-      },
-    ),
-  );
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewAst" command
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.viewAstContextEditor",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        selectedFile: Uri,
-      ) =>
-        await viewAst(
-          astViewer,
-          printAstTemplateProvider,
-          progress,
-          token,
-          selectedFile,
-        ),
-      {
-        cancellable: true,
-        title: "Calculate AST",
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.viewCfg",
-      async (progress: ProgressCallback, token: CancellationToken) => {
-        const res = await cfgTemplateProvider.provideCfgUri(
-          window.activeTextEditor?.document,
-        );
-        if (res) {
-          await compileAndRunQuery(
-            qs,
-            qhm,
-            databaseUI,
-            localQueryResultsView,
-            queryStorageDir,
-            false,
-            res[0],
-            progress,
-            token,
-            undefined,
-          );
-        }
-      },
-      {
-        title: "Calculating Control Flow Graph",
-        cancellable: true,
-      },
-    ),
-  );
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewCfg" command
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.viewCfgContextExplorer",
-      async (progress: ProgressCallback, token: CancellationToken) => {
-        const res = await cfgTemplateProvider.provideCfgUri(
-          window.activeTextEditor?.document,
-        );
-        if (res) {
-          await compileAndRunQuery(
-            qs,
-            qhm,
-            databaseUI,
-            localQueryResultsView,
-            queryStorageDir,
-            false,
-            res[0],
-            progress,
-            token,
-            undefined,
-          );
-        }
-      },
-      {
-        title: "Calculating Control Flow Graph",
-        cancellable: true,
-      },
-    ),
-  );
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.viewCfg" command
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.viewCfgContextEditor",
-      async (progress: ProgressCallback, token: CancellationToken) => {
-        const res = await cfgTemplateProvider.provideCfgUri(
-          window.activeTextEditor?.document,
-        );
-        if (res) {
-          await compileAndRunQuery(
-            qs,
-            qhm,
-            databaseUI,
-            localQueryResultsView,
-            queryStorageDir,
-            false,
-            res[0],
-            progress,
-            token,
-            undefined,
-          );
-        }
-      },
-      {
-        title: "Calculating Control Flow Graph",
-        cancellable: true,
-      },
     ),
   );
 
@@ -1231,23 +1081,6 @@ async function openReferencedFile(
     const resolved = await cliServer.resolveQlref(path);
     const uri = Uri.file(resolved.resolvedPath);
     await window.showTextDocument(uri, { preview: false });
-  }
-}
-
-async function viewAst(
-  astViewer: AstViewer,
-  printAstTemplateProvider: TemplatePrintAstProvider,
-  progress: ProgressCallback,
-  token: CancellationToken,
-  selectedFile: Uri,
-): Promise<void> {
-  const ast = await printAstTemplateProvider.provideAst(
-    progress,
-    token,
-    selectedFile ?? window.activeTextEditor?.document.uri,
-  );
-  if (ast) {
-    astViewer.updateRoots(await ast.getRoots(), ast.db, ast.fileName);
   }
 }
 
