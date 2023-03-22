@@ -3,6 +3,12 @@ import type { Uri, Range } from "vscode";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
+import type { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-filter-sort";
+import type {
+  VariantAnalysis,
+  VariantAnalysisScannedRepository,
+  VariantAnalysisScannedRepositoryResult,
+} from "../variant-analysis/shared/variant-analysis";
 
 // A command function matching the signature that VS Code calls when
 // a command on a selection is invoked.
@@ -123,7 +129,25 @@ export type LocalDatabasesCommands = {
 
 // Commands tied to variant analysis
 export type VariantAnalysisCommands = {
+  "codeQL.autoDownloadVariantAnalysisResult": (
+    scannedRepo: VariantAnalysisScannedRepository,
+    variantAnalysisSummary: VariantAnalysis,
+  ) => Promise<void>;
+  "codeQL.copyVariantAnalysisRepoList": (
+    variantAnalysisId: number,
+    filterSort?: RepositoriesFilterSortStateWithIds,
+  ) => Promise<void>;
+  "codeQL.loadVariantAnalysisRepoResults": (
+    variantAnalysisId: number,
+    repositoryFullName: string,
+  ) => Promise<VariantAnalysisScannedRepositoryResult>;
+  "codeQL.monitorVariantAnalysis": (
+    variantAnalysis: VariantAnalysis,
+  ) => Promise<void>;
   "codeQL.openVariantAnalysisLogs": (
+    variantAnalysisId: number,
+  ) => Promise<void>;
+  "codeQL.openVariantAnalysisView": (
     variantAnalysisId: number,
   ) => Promise<void>;
   "codeQL.runVariantAnalysis": (uri?: Uri) => Promise<void>;

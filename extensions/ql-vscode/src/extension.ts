@@ -110,16 +110,11 @@ import { NewQueryRunner } from "./query-server/query-runner";
 import { QueryRunner } from "./queryRunner";
 import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
-import {
-  VariantAnalysis,
-  VariantAnalysisScannedRepository,
-} from "./variant-analysis/shared/variant-analysis";
 import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
 import { createVariantAnalysisContentProvider } from "./variant-analysis/variant-analysis-content-provider";
 import { VSCodeMockGitHubApiServer } from "./mocks/vscode-mock-gh-api-server";
 import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
 import { ExtensionApp } from "./common/vscode/vscode-app";
-import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
@@ -846,72 +841,6 @@ async function activateWithInstalledDistribution(
       command,
     );
   }
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.copyVariantAnalysisRepoList",
-      async (
-        variantAnalysisId: number,
-        filterSort?: RepositoriesFilterSortStateWithIds,
-      ) => {
-        await variantAnalysisManager.copyRepoListToClipboard(
-          variantAnalysisId,
-          filterSort,
-        );
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.monitorVariantAnalysis",
-      async (variantAnalysis: VariantAnalysis, token: CancellationToken) => {
-        await variantAnalysisManager.monitorVariantAnalysis(
-          variantAnalysis,
-          token,
-        );
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.autoDownloadVariantAnalysisResult",
-      async (
-        scannedRepo: VariantAnalysisScannedRepository,
-        variantAnalysisSummary: VariantAnalysis,
-        token: CancellationToken,
-      ) => {
-        await variantAnalysisManager.enqueueDownload(
-          scannedRepo,
-          variantAnalysisSummary,
-          token,
-        );
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.loadVariantAnalysisRepoResults",
-      async (variantAnalysisId: number, repositoryFullName: string) => {
-        await variantAnalysisManager.loadResults(
-          variantAnalysisId,
-          repositoryFullName,
-        );
-      },
-    ),
-  );
-
-  // The "openVariantAnalysisView" command is internal-only.
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openVariantAnalysisView",
-      async (variantAnalysisId: number) => {
-        await variantAnalysisManager.showView(variantAnalysisId);
-      },
-    ),
-  );
 
   ctx.subscriptions.push(
     commandRunner("codeQL.openReferencedFile", async (selectedQuery: Uri) => {
