@@ -4,7 +4,7 @@ import {
   showAndLogExceptionWithTelemetry,
   tmpDir,
 } from "../helpers";
-import { ProgressCallback, UserCancellationException } from "../commandRunner";
+import { ProgressCallback, UserCancellationException } from "../progress";
 import { extLogger } from "../common";
 import * as messages from "../pure/legacy-messages";
 import * as qsClient from "./queryserver-client";

@@ -9,7 +9,7 @@ import {
   ProgressCallback,
   UserCancellationException,
   withProgress,
-} from "./commandRunner";
+} from "./progress";
 import { extLogger } from "./common";
 import { asError, getErrorStack } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";

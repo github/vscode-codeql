@@ -18,7 +18,7 @@ import {
 import { CodeQLCliServer } from "../cli";
 import { DatabaseManager } from "../local-databases";
 import { CachedOperation } from "../helpers";
-import { ProgressCallback, withProgress } from "../commandRunner";
+import { ProgressCallback, withProgress } from "../progress";
 import AstBuilder from "./astBuilder";
 import { KeyType } from "./keyType";
 import {

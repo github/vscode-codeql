@@ -16,7 +16,7 @@ import { DatabaseItem } from "../local-databases";
 import { extLogger } from "../common";
 import { createInitialQueryInfo } from "../run-queries-shared";
 import { CancellationToken, Uri } from "vscode";
-import { ProgressCallback } from "../commandRunner";
+import { ProgressCallback } from "../progress";
 import { QueryRunner } from "../queryRunner";
 import { redactableError } from "../pure/errors";
 import { QLPACK_FILENAMES } from "../pure/ql";

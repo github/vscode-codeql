@@ -1,5 +1,5 @@
 import { Uri, window } from "vscode";
-import { withProgress } from "./commandRunner";
+import { withProgress } from "./progress";
 import { AstViewer } from "./astViewer";
 import {
   TemplatePrintAstProvider,

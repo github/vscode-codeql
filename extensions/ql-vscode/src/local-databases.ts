@@ -12,7 +12,7 @@ import {
   isFolderAlreadyInWorkspace,
   showBinaryChoiceDialog,
 } from "./helpers";
-import { ProgressCallback, withProgress } from "./commandRunner";
+import { ProgressCallback, withProgress } from "./progress";
 import {
   zipArchiveScheme,
   encodeArchiveBasePath,

@@ -54,6 +54,15 @@ export type LocalQueryCommands = {
   "codeQL.quickQuery": () => Promise<void>;
 };
 
+export type ResultsViewCommands = {
+  "codeQLQueryResults.up": () => Promise<void>;
+  "codeQLQueryResults.down": () => Promise<void>;
+  "codeQLQueryResults.left": () => Promise<void>;
+  "codeQLQueryResults.right": () => Promise<void>;
+  "codeQLQueryResults.nextPathStep": () => Promise<void>;
+  "codeQLQueryResults.previousPathStep": () => Promise<void>;
+};
+
 // Commands used for the query history panel
 export type QueryHistoryCommands = {
   // Commands in the "navigation" group
@@ -201,7 +210,16 @@ export type TestUICommands = {
   "codeQLTests.acceptOutput": (node: TestTreeNode) => Promise<void>;
 };
 
+export type MockGitHubApiServerCommands = {
+  "codeQL.mockGitHubApiServer.startRecording": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.saveScenario": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.cancelRecording": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.loadScenario": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.unloadScenario": () => Promise<void>;
+};
+
 export type AllCommands = BaseCommands &
+  ResultsViewCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
@@ -211,7 +229,8 @@ export type AllCommands = BaseCommands &
   PackagingCommands &
   EvalLogViewerCommands &
   SummaryLanguageSupportCommands &
-  Partial<TestUICommands>;
+  Partial<TestUICommands> &
+  MockGitHubApiServerCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 

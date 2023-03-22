@@ -55,7 +55,7 @@ import {
   ProgressCallback,
   UserCancellationException,
   withProgress,
-} from "../commandRunner";
+} from "../progress";
 import { CodeQLCliServer } from "../cli";
 import {
   defaultFilterSortState,

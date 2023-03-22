@@ -42,7 +42,6 @@ import {
   ParsedResultSets,
 } from "./pure/interface-types";
 import { Logger } from "./common";
-import { commandRunner } from "./commandRunner";
 import {
   CompletedQueryInfo,
   interpretResultsSarif,
@@ -72,6 +71,7 @@ import { isCanary, PAGE_SIZE } from "./config";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { telemetryListener } from "./telemetry";
 import { redactableError } from "./pure/errors";
+import { ResultsViewCommands } from "./common/commands";
 
 /**
  * interface.ts
@@ -179,21 +179,6 @@ export class ResultsView extends AbstractWebview<
         this.handleSelectionChange.bind(this),
       ),
     );
-    const navigationCommands = {
-      "codeQLQueryResults.up": NavigationDirection.up,
-      "codeQLQueryResults.down": NavigationDirection.down,
-      "codeQLQueryResults.left": NavigationDirection.left,
-      "codeQLQueryResults.right": NavigationDirection.right,
-      // For backwards compatibility with keybindings set using an earlier version of the extension.
-      "codeQLQueryResults.nextPathStep": NavigationDirection.down,
-      "codeQLQueryResults.previousPathStep": NavigationDirection.up,
-    };
-    void logger.log("Registering result view navigation commands.");
-    for (const [commandId, direction] of Object.entries(navigationCommands)) {
-      this.push(
-        commandRunner(commandId, this.navigateResultView.bind(this, direction)),
-      );
-    }
 
     this.push(
       this.databaseManager.onDidChangeDatabaseItem(({ kind }) => {
@@ -207,6 +192,36 @@ export class ResultsView extends AbstractWebview<
         }
       }),
     );
+  }
+
+  public getCommands(): ResultsViewCommands {
+    return {
+      "codeQLQueryResults.up": this.navigateResultView.bind(
+        this,
+        NavigationDirection.up,
+      ),
+      "codeQLQueryResults.down": this.navigateResultView.bind(
+        this,
+        NavigationDirection.down,
+      ),
+      "codeQLQueryResults.left": this.navigateResultView.bind(
+        this,
+        NavigationDirection.left,
+      ),
+      "codeQLQueryResults.right": this.navigateResultView.bind(
+        this,
+        NavigationDirection.right,
+      ),
+      // For backwards compatibility with keybindings set using an earlier version of the extension.
+      "codeQLQueryResults.nextPathStep": this.navigateResultView.bind(
+        this,
+        NavigationDirection.down,
+      ),
+      "codeQLQueryResults.previousPathStep": this.navigateResultView.bind(
+        this,
+        NavigationDirection.up,
+      ),
+    };
   }
 
   async navigateResultView(direction: NavigationDirection): Promise<void> {
