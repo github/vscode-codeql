@@ -30,6 +30,12 @@ export type SingleSelectionCommandFunction<Item> = (
  * the implementation in the corresponding `getCommands` function.
  */
 
+// Builtin commands where the implementation is provided by VS Code and not by this extension.
+export type VSCodeCommands = {
+  "markdown.showPreviewToSide": (uri: Uri) => Promise<void>;
+  "workbench.action.reloadWindow": () => Promise<void>;
+};
+
 // Base commands not tied directly to a module like e.g. variant analysis.
 export type BaseCommands = {
   "codeQL.openDocumentation": () => Promise<void>;
@@ -185,7 +191,8 @@ export type EvalLogViewerCommands = {
   "codeQLEvalLogViewer.clear": () => Promise<void>;
 };
 
-export type AllCommands = BaseCommands &
+// All commands where the implementation is provided by this extension.
+export type AllCodeQLCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
@@ -193,6 +200,8 @@ export type AllCommands = BaseCommands &
   AstCfgCommands &
   PackagingCommands &
   EvalLogViewerCommands;
+
+export type AllCommands = AllCodeQLCommands & VSCodeCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 
