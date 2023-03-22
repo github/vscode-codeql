@@ -837,6 +837,7 @@ async function activateWithInstalledDistribution(
       astTemplateProvider,
       cfgTemplateProvider,
     }),
+    ...astViewer.getCommands(),
     ...getPackagingCommands({
       cliServer,
     }),
