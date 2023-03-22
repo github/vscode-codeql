@@ -169,11 +169,28 @@ const extension = extensions.getExtension(extensionId);
 /**
  * Return all commands that are not tied to the more specific managers.
  */
-function getCommands(): BaseCommands {
+function getCommands(
+  cliServer: CodeQLCliServer,
+  queryRunner: QueryRunner,
+): BaseCommands {
   return {
     "codeQL.openDocumentation": async () => {
       await env.openExternal(Uri.parse("https://codeql.github.com/docs/"));
     },
+    "codeQL.restartQueryServer": async () =>
+      withProgress(
+        async (progress: ProgressCallback, token: CancellationToken) => {
+          // We restart the CLI server too, to ensure they are the same version
+          cliServer.restartCliServer();
+          await queryRunner.restartQueryServer(progress, token);
+          void showAndLogInformationMessage("CodeQL Query Server restarted.", {
+            outputLogger: queryServerLogger,
+          });
+        },
+        {
+          title: "Restarting Query Server",
+        },
+      ),
   };
 }
 
@@ -799,7 +816,7 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllCommands = {
-    ...getCommands(),
+    ...getCommands(cliServer, qs),
     ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
     ...databaseUI.getCommands(),
@@ -933,23 +950,6 @@ async function activateWithInstalledDistribution(
     commandRunner("codeQL.previewQueryHelp", async (selectedQuery: Uri) => {
       await previewQueryHelp(cliServer, qhelpTmpDir, selectedQuery);
     }),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.restartQueryServer",
-      async (progress: ProgressCallback, token: CancellationToken) => {
-        // We restart the CLI server too, to ensure they are the same version
-        cliServer.restartCliServer();
-        await qs.restartQueryServer(progress, token);
-        void showAndLogInformationMessage("CodeQL Query Server restarted.", {
-          outputLogger: queryServerLogger,
-        });
-      },
-      {
-        title: "Restarting Query Server",
-      },
-    ),
   );
 
   ctx.subscriptions.push(

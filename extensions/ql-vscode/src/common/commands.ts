@@ -27,6 +27,8 @@ export type SingleSelectionCommandFunction<Item> = (
 // Base commands not tied directly to a module like e.g. variant analysis.
 export type BaseCommands = {
   "codeQL.openDocumentation": () => Promise<void>;
+
+  "codeQL.restartQueryServer": () => Promise<void>;
 };
 
 // Commands used for running local queries
