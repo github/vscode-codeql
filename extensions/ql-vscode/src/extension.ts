@@ -823,6 +823,9 @@ async function activateWithInstalledDistribution(
   const summaryLanguageSupport = new SummaryLanguageSupport();
   ctx.subscriptions.push(summaryLanguageSupport);
 
+  const mockServer = new VSCodeMockGitHubApiServer(ctx);
+  ctx.subscriptions.push(mockServer);
+
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllCommands = {
@@ -848,6 +851,7 @@ async function activateWithInstalledDistribution(
     }),
     ...evalLogViewer.getCommands(),
     ...summaryLanguageSupport.getCommands(),
+    ...mockServer.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
@@ -971,39 +975,6 @@ async function activateWithInstalledDistribution(
       qs,
       dbm,
       contextualQueryStorageDir,
-    ),
-  );
-
-  const mockServer = new VSCodeMockGitHubApiServer(ctx);
-  ctx.subscriptions.push(mockServer);
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.mockGitHubApiServer.startRecording",
-      async () => await mockServer.startRecording(),
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.mockGitHubApiServer.saveScenario",
-      async () => await mockServer.saveScenario(),
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.mockGitHubApiServer.cancelRecording",
-      async () => await mockServer.cancelRecording(),
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.mockGitHubApiServer.loadScenario",
-      async () => await mockServer.loadScenario(),
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.mockGitHubApiServer.unloadScenario",
-      async () => await mockServer.unloadScenario(),
     ),
   );
 
