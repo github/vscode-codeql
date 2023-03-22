@@ -1,7 +1,6 @@
 import "source-map-support/register";
 import {
   CancellationToken,
-  CancellationTokenSource,
   commands,
   Disposable,
   env,
@@ -9,8 +8,6 @@ import {
   extensions,
   languages,
   ProgressLocation,
-  QuickPickItem,
-  Range,
   Uri,
   version as vscodeVersion,
   window as Window,
@@ -36,12 +33,11 @@ import {
   CliConfigListener,
   DistributionConfigListener,
   joinOrderWarningThreshold,
-  MAX_QUERIES,
   QueryHistoryConfigListener,
   QueryServerConfigListener,
 } from "./config";
 import { install } from "./languageSupport";
-import { DatabaseItem, DatabaseManager } from "./local-databases";
+import { DatabaseManager } from "./local-databases";
 import { DatabaseUI } from "./local-databases-ui";
 import {
   TemplatePrintAstProvider,
@@ -60,7 +56,6 @@ import {
   GithubRateLimitedError,
 } from "./distribution";
 import {
-  findLanguage,
   showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
@@ -69,6 +64,7 @@ import {
   showInformationMessageWithAction,
   tmpDir,
   tmpDirDisposal,
+  prepareCodeTour,
 } from "./helpers";
 import {
   asError,
@@ -86,20 +82,17 @@ import {
   queryServerLogger,
 } from "./common";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
-import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
+import { CompletedLocalQueryInfo } from "./query-results";
 import { QueryServerClient as LegacyQueryServerClient } from "./legacy-query-server/queryserver-client";
 import { QueryServerClient } from "./query-server/queryserver-client";
-import { displayQuickQuery } from "./quick-query";
 import { QLTestAdapterFactory } from "./test-adapter";
 import { TestUIService } from "./test-ui";
 import { CompareView } from "./compare/compare-view";
-import { gatherQlFiles } from "./pure/files";
 import { initializeTelemetry } from "./telemetry";
 import {
   commandRunner,
   commandRunnerWithProgress,
   ProgressCallback,
-  ProgressUpdate,
   withProgress,
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
@@ -110,7 +103,6 @@ import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
 import { LogScannerService } from "./log-insights/log-scanner-service";
-import { createInitialQueryInfo } from "./run-queries-shared";
 import { LegacyQueryRunner } from "./legacy-query-server/legacyRunner";
 import { NewQueryRunner } from "./query-server/query-runner";
 import { QueryRunner } from "./queryRunner";
@@ -130,7 +122,16 @@ import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 import { DirResult } from "tmp";
-import { AllCommands, BaseCommands } from "./common/commands";
+import {
+  AllCommands,
+  BaseCommands,
+  QueryServerCommands,
+} from "./common/commands";
+import {
+  compileAndRunQuery,
+  getLocalQueryCommands,
+  showResultsForCompletedQuery,
+} from "./local-queries";
 
 /**
  * extension.ts
@@ -165,11 +166,28 @@ const extension = extensions.getExtension(extensionId);
 /**
  * Return all commands that are not tied to the more specific managers.
  */
-function getCommands(): BaseCommands {
+function getCommands(
+  cliServer: CodeQLCliServer,
+  queryRunner: QueryRunner,
+): BaseCommands {
   return {
     "codeQL.openDocumentation": async () => {
       await env.openExternal(Uri.parse("https://codeql.github.com/docs/"));
     },
+    "codeQL.restartQueryServer": async () =>
+      withProgress(
+        async (progress: ProgressCallback, token: CancellationToken) => {
+          // We restart the CLI server too, to ensure they are the same version
+          cliServer.restartCliServer();
+          await queryRunner.restartQueryServer(progress, token);
+          void showAndLogInformationMessage("CodeQL Query Server restarted.", {
+            outputLogger: queryServerLogger,
+          });
+        },
+        {
+          title: "Restarting Query Server",
+        },
+      ),
   };
 }
 
@@ -221,10 +239,6 @@ interface DistributionUpdateConfig {
   isUserInitiated: boolean;
   shouldDisplayMessageWhenNoUpdates: boolean;
   allowAutoUpdating: boolean;
-}
-
-interface DatabaseQuickPickItem extends QuickPickItem {
-  databaseItem: DatabaseItem;
 }
 
 const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
@@ -524,6 +538,14 @@ async function installOrUpdateThenTryActivate(
 ): Promise<CodeQLExtensionInterface | Record<string, never>> {
   await installOrUpdateDistribution(ctx, distributionManager, config);
 
+  try {
+    await prepareCodeTour();
+  } catch (e: unknown) {
+    void extLogger.log(
+      `Could not open tutorial workspace automatically: ${getErrorMessage(e)}`,
+    );
+  }
+
   // Display the warnings even if the extension has already activated.
   const distributionResult =
     await getDistributionDisplayingDistributionWarnings(distributionManager);
@@ -789,303 +811,9 @@ async function activateWithInstalledDistribution(
   }
 
   void extLogger.log("Registering top-level command palette commands.");
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.runQuery",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
-        await compileAndRunQuery(
-          qs,
-          qhm,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          false,
-          uri,
-          progress,
-          token,
-          undefined,
-        ),
-      {
-        title: "Running query",
-        cancellable: true,
-      },
-
-      // Open the query server logger on error since that's usually where the interesting errors appear.
-      queryServerLogger,
-    ),
-  );
-
-  // Since we are tracking extension usage through commands, this command mirrors the runQuery command
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.runQueryContextEditor",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
-        await compileAndRunQuery(
-          qs,
-          qhm,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          false,
-          uri,
-          progress,
-          token,
-          undefined,
-        ),
-      {
-        title: "Running query",
-        cancellable: true,
-      },
-
-      // Open the query server logger on error since that's usually where the interesting errors appear.
-      queryServerLogger,
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.runQueryOnMultipleDatabases",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
-        await compileAndRunQueryOnMultipleDatabases(
-          cliServer,
-          qs,
-          qhm,
-          dbm,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          progress,
-          token,
-          uri,
-        ),
-      {
-        title: "Running query on selected databases",
-        cancellable: true,
-      },
-    ),
-  );
-  // Since we are tracking extension usage through commands, this command mirrors the runQueryOnMultipleDatabases command
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.runQueryOnMultipleDatabasesContextEditor",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
-        await compileAndRunQueryOnMultipleDatabases(
-          cliServer,
-          qs,
-          qhm,
-          dbm,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          progress,
-          token,
-          uri,
-        ),
-      {
-        title: "Running query on selected databases",
-        cancellable: true,
-      },
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.runQueries",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        _: Uri | undefined,
-        multi: Uri[],
-      ) => {
-        const maxQueryCount = MAX_QUERIES.getValue() as number;
-        const [files, dirFound] = await gatherQlFiles(
-          multi.map((uri) => uri.fsPath),
-        );
-        if (files.length > maxQueryCount) {
-          throw new Error(
-            `You tried to run ${files.length} queries, but the maximum is ${maxQueryCount}. Try selecting fewer queries or changing the 'codeQL.runningQueries.maxQueries' setting.`,
-          );
-        }
-        // warn user and display selected files when a directory is selected because some ql
-        // files may be hidden from the user.
-        if (dirFound) {
-          const fileString = files.map((file) => basename(file)).join(", ");
-          const res = await showBinaryChoiceDialog(
-            `You are about to run ${files.length} queries: ${fileString} Do you want to continue?`,
-          );
-          if (!res) {
-            return;
-          }
-        }
-        const queryUris = files.map((path) => Uri.parse(`file:${path}`, true));
-
-        // Use a wrapped progress so that messages appear with the queries remaining in it.
-        let queriesRemaining = queryUris.length;
-        function wrappedProgress(update: ProgressUpdate) {
-          const message =
-            queriesRemaining > 1
-              ? `${queriesRemaining} remaining. ${update.message}`
-              : update.message;
-          progress({
-            ...update,
-            message,
-          });
-        }
-
-        wrappedProgress({
-          maxStep: queryUris.length,
-          step: queryUris.length - queriesRemaining,
-          message: "",
-        });
-
-        await Promise.all(
-          queryUris.map(async (uri) =>
-            compileAndRunQuery(
-              qs,
-              qhm,
-              databaseUI,
-              localQueryResultsView,
-              queryStorageDir,
-              false,
-              uri,
-              wrappedProgress,
-              token,
-              undefined,
-            ).then(() => queriesRemaining--),
-          ),
-        );
-      },
-      {
-        title: "Running queries",
-        cancellable: true,
-      },
-
-      // Open the query server logger on error since that's usually where the interesting errors appear.
-      queryServerLogger,
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.quickEval",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
-        await compileAndRunQuery(
-          qs,
-          qhm,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          true,
-          uri,
-          progress,
-          token,
-          undefined,
-        ),
-      {
-        title: "Running query",
-        cancellable: true,
-      },
-      // Open the query server logger on error since that's usually where the interesting errors appear.
-      queryServerLogger,
-    ),
-  );
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.quickEval" command
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.quickEvalContextEditor",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri | undefined,
-      ) =>
-        await compileAndRunQuery(
-          qs,
-          qhm,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          true,
-          uri,
-          progress,
-          token,
-          undefined,
-        ),
-      {
-        title: "Running query",
-        cancellable: true,
-      },
-      // Open the query server logger on error since that's usually where the interesting errors appear.
-      queryServerLogger,
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.codeLensQuickEval",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        uri: Uri,
-        range: Range,
-      ) =>
-        await compileAndRunQuery(
-          qs,
-          qhm,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          true,
-          uri,
-          progress,
-          token,
-          undefined,
-          range,
-        ),
-      {
-        title: "Running query",
-        cancellable: true,
-      },
-
-      // Open the query server logger on error since that's usually where the interesting errors appear.
-      queryServerLogger,
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.quickQuery",
-      async (progress: ProgressCallback, token: CancellationToken) =>
-        displayQuickQuery(ctx, cliServer, databaseUI, progress, token),
-      {
-        title: "Run Quick Query",
-      },
-
-      // Open the query server logger on error since that's usually where the interesting errors appear.
-      queryServerLogger,
-    ),
-  );
 
   const allCommands: AllCommands = {
-    ...getCommands(),
+    ...getCommands(cliServer, qs),
     ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
     ...databaseUI.getCommands(),
@@ -1093,10 +821,31 @@ async function activateWithInstalledDistribution(
     ...getPackagingCommands({
       cliServer,
     }),
+    ...evalLogViewer.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
     app.commands.register(commandName as keyof AllCommands, command);
+  }
+
+  const queryServerCommands: QueryServerCommands = {
+    ...getLocalQueryCommands({
+      app,
+      queryRunner: qs,
+      queryHistoryManager: qhm,
+      databaseManager: dbm,
+      cliServer,
+      databaseUI,
+      localQueryResultsView,
+      queryStorageDir,
+    }),
+  };
+
+  for (const [commandName, command] of Object.entries(queryServerCommands)) {
+    app.queryServerCommands.register(
+      commandName as keyof QueryServerCommands,
+      command,
+    );
   }
 
   ctx.subscriptions.push(
@@ -1201,66 +950,6 @@ async function activateWithInstalledDistribution(
     commandRunner("codeQL.previewQueryHelp", async (selectedQuery: Uri) => {
       await previewQueryHelp(cliServer, qhelpTmpDir, selectedQuery);
     }),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.restartQueryServer",
-      async (progress: ProgressCallback, token: CancellationToken) => {
-        // We restart the CLI server too, to ensure they are the same version
-        cliServer.restartCliServer();
-        await qs.restartQueryServer(progress, token);
-        void showAndLogInformationMessage("CodeQL Query Server restarted.", {
-          outputLogger: queryServerLogger,
-        });
-      },
-      {
-        title: "Restarting Query Server",
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.chooseDatabaseFolder",
-      (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.chooseDatabaseFolder(progress, token),
-      {
-        title: "Choose a Database from a Folder",
-      },
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.chooseDatabaseArchive",
-      (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.chooseDatabaseArchive(progress, token),
-      {
-        title: "Choose a Database from an Archive",
-      },
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.chooseDatabaseGithub",
-      async (progress: ProgressCallback, token: CancellationToken) => {
-        await databaseUI.chooseDatabaseGithub(progress, token);
-      },
-      {
-        title: "Adding database from GitHub",
-      },
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.chooseDatabaseInternet",
-      (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.chooseDatabaseInternet(progress, token),
-
-      {
-        title: "Adding database from URL",
-      },
-    ),
   );
 
   ctx.subscriptions.push(
@@ -1575,160 +1264,6 @@ async function showResultsForComparison(
         e,
       )}`,
     );
-  }
-}
-
-async function showResultsForCompletedQuery(
-  localQueryResultsView: ResultsView,
-  query: CompletedLocalQueryInfo,
-  forceReveal: WebviewReveal,
-): Promise<void> {
-  await localQueryResultsView.showResults(query, forceReveal, false);
-}
-async function compileAndRunQuery(
-  qs: QueryRunner,
-  qhm: QueryHistoryManager,
-  databaseUI: DatabaseUI,
-  localQueryResultsView: ResultsView,
-  queryStorageDir: string,
-  quickEval: boolean,
-  selectedQuery: Uri | undefined,
-  progress: ProgressCallback,
-  token: CancellationToken,
-  databaseItem: DatabaseItem | undefined,
-  range?: Range,
-): Promise<void> {
-  if (qs !== undefined) {
-    // If no databaseItem is specified, use the database currently selected in the Databases UI
-    databaseItem =
-      databaseItem || (await databaseUI.getDatabaseItem(progress, token));
-    if (databaseItem === undefined) {
-      throw new Error("Can't run query without a selected database");
-    }
-    const databaseInfo = {
-      name: databaseItem.name,
-      databaseUri: databaseItem.databaseUri.toString(),
-    };
-
-    // handle cancellation from the history view.
-    const source = new CancellationTokenSource();
-    token.onCancellationRequested(() => source.cancel());
-
-    const initialInfo = await createInitialQueryInfo(
-      selectedQuery,
-      databaseInfo,
-      quickEval,
-      range,
-    );
-    const item = new LocalQueryInfo(initialInfo, source);
-    qhm.addQuery(item);
-    try {
-      const completedQueryInfo = await qs.compileAndRunQueryAgainstDatabase(
-        databaseItem,
-        initialInfo,
-        queryStorageDir,
-        progress,
-        source.token,
-        undefined,
-        item,
-      );
-      qhm.completeQuery(item, completedQueryInfo);
-      await showResultsForCompletedQuery(
-        localQueryResultsView,
-        item as CompletedLocalQueryInfo,
-        WebviewReveal.Forced,
-      );
-      // Note we must update the query history view after showing results as the
-      // display and sorting might depend on the number of results
-    } catch (e) {
-      const err = asError(e);
-      err.message = `Error running query: ${err.message}`;
-      item.failureReason = err.message;
-      throw e;
-    } finally {
-      await qhm.refreshTreeView();
-      source.dispose();
-    }
-  }
-}
-
-async function compileAndRunQueryOnMultipleDatabases(
-  cliServer: CodeQLCliServer,
-  qs: QueryRunner,
-  qhm: QueryHistoryManager,
-  dbm: DatabaseManager,
-  databaseUI: DatabaseUI,
-  localQueryResultsView: ResultsView,
-  queryStorageDir: string,
-  progress: ProgressCallback,
-  token: CancellationToken,
-  uri: Uri | undefined,
-): Promise<void> {
-  let filteredDBs = dbm.databaseItems;
-  if (filteredDBs.length === 0) {
-    void showAndLogErrorMessage(
-      "No databases found. Please add a suitable database to your workspace.",
-    );
-    return;
-  }
-  // If possible, only show databases with the right language (otherwise show all databases).
-  const queryLanguage = await findLanguage(cliServer, uri);
-  if (queryLanguage) {
-    filteredDBs = dbm.databaseItems.filter(
-      (db) => db.language === queryLanguage,
-    );
-    if (filteredDBs.length === 0) {
-      void showAndLogErrorMessage(
-        `No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`,
-      );
-      return;
-    }
-  }
-  const quickPickItems = filteredDBs.map<DatabaseQuickPickItem>((dbItem) => ({
-    databaseItem: dbItem,
-    label: dbItem.name,
-    description: dbItem.language,
-  }));
-  /**
-   * Databases that were selected in the quick pick menu.
-   */
-  const quickpick = await window.showQuickPick<DatabaseQuickPickItem>(
-    quickPickItems,
-    { canPickMany: true, ignoreFocusOut: true },
-  );
-  if (quickpick !== undefined) {
-    // Collect all skipped databases and display them at the end (instead of popping up individual errors)
-    const skippedDatabases = [];
-    const errors = [];
-    for (const item of quickpick) {
-      try {
-        await compileAndRunQuery(
-          qs,
-          qhm,
-          databaseUI,
-          localQueryResultsView,
-          queryStorageDir,
-          false,
-          uri,
-          progress,
-          token,
-          item.databaseItem,
-        );
-      } catch (e) {
-        skippedDatabases.push(item.label);
-        errors.push(getErrorMessage(e));
-      }
-    }
-    if (skippedDatabases.length > 0) {
-      void extLogger.log(`Errors:\n${errors.join("\n")}`);
-      void showAndLogWarningMessage(
-        `The following databases were skipped:\n${skippedDatabases.join(
-          "\n",
-        )}.\nFor details about the errors, see the logs.`,
-      );
-    }
-  } else {
-    void showAndLogErrorMessage("No databases selected.");
   }
 }
 

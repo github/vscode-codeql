@@ -1,6 +1,7 @@
 import { commands } from "vscode";
-import { commandRunner } from "../../commandRunner";
+import { commandRunner, NoProgressTask } from "../../commandRunner";
 import { CommandFunction, CommandManager } from "../../packages/commands";
+import { OutputChannelLogger } from "../logging";
 
 /**
  * Create a command manager for VSCode, wrapping the commandRunner
@@ -8,8 +9,10 @@ import { CommandFunction, CommandManager } from "../../packages/commands";
  */
 export function createVSCodeCommandManager<
   Commands extends Record<string, CommandFunction>,
->(): CommandManager<Commands> {
-  return new CommandManager(commandRunner, wrapExecuteCommand);
+>(outputLogger?: OutputChannelLogger): CommandManager<Commands> {
+  return new CommandManager((commandId, task: NoProgressTask) => {
+    return commandRunner(commandId, task, outputLogger);
+  }, wrapExecuteCommand);
 }
 
 /**

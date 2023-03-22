@@ -1,4 +1,5 @@
 import {
+  commands,
   EnvironmentVariableCollection,
   EnvironmentVariableMutator,
   Event,
@@ -15,7 +16,14 @@ import {
 import { dump } from "js-yaml";
 import * as tmp from "tmp";
 import { join } from "path";
-import { writeFileSync, mkdirSync, ensureDirSync, symlinkSync } from "fs-extra";
+import {
+  writeFileSync,
+  mkdirSync,
+  ensureDirSync,
+  symlinkSync,
+  writeFile,
+  mkdir,
+} from "fs-extra";
 import { DirResult } from "tmp";
 
 import {
@@ -24,6 +32,7 @@ import {
   isFolderAlreadyInWorkspace,
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
+  prepareCodeTour,
   showBinaryChoiceDialog,
   showBinaryChoiceWithUrlDialog,
   showInformationMessageWithAction,
@@ -31,6 +40,7 @@ import {
 } from "../../../src/helpers";
 import { reportStreamProgress } from "../../../src/commandRunner";
 import { QueryLanguage } from "../../../src/common/query-language";
+import { Setting } from "../../../src/config";
 
 describe("helpers", () => {
   describe("Invocation rate limiter", () => {
@@ -557,5 +567,115 @@ describe("isFolderAlreadyInWorkspace", () => {
 
   it("should return false if the folder is not in the workspace", () => {
     expect(isFolderAlreadyInWorkspace("/third/path")).toBe(false);
+  });
+});
+
+describe("prepareCodeTour", () => {
+  let dir: tmp.DirResult;
+  let showInformationMessageSpy: jest.SpiedFunction<
+    typeof window.showInformationMessage
+  >;
+
+  beforeEach(() => {
+    dir = tmp.dirSync();
+
+    const mockWorkspaceFolders = [
+      {
+        uri: Uri.file(dir.name),
+        name: "test",
+        index: 0,
+      },
+    ] as WorkspaceFolder[];
+
+    jest
+      .spyOn(workspace, "workspaceFolders", "get")
+      .mockReturnValue(mockWorkspaceFolders);
+
+    showInformationMessageSpy = jest
+      .spyOn(window, "showInformationMessage")
+      .mockResolvedValue({ title: "Yes" });
+  });
+
+  afterEach(() => {
+    dir.removeCallback();
+  });
+
+  describe("if we're in the tour repo", () => {
+    describe("if the workspace is not already open", () => {
+      it("should open the tutorial workspace", async () => {
+        // set up directory to have a 'tutorial.code-workspace' file
+        const tutorialWorkspacePath = join(dir.name, "tutorial.code-workspace");
+        await writeFile(tutorialWorkspacePath, "{}");
+
+        // set up a .tours directory to indicate we're in the tour codespace
+        const tourDirPath = join(dir.name, ".tours");
+        await mkdir(tourDirPath);
+
+        // spy that we open the workspace file by calling the 'vscode.openFolder' command
+        const commandSpy = jest.spyOn(commands, "executeCommand");
+        commandSpy.mockImplementation(() => Promise.resolve());
+
+        await prepareCodeTour();
+
+        expect(showInformationMessageSpy).toHaveBeenCalled();
+        expect(commandSpy).toHaveBeenCalledWith(
+          "vscode.openFolder",
+          expect.objectContaining({
+            path: Uri.parse(tutorialWorkspacePath).fsPath,
+          }),
+        );
+      });
+    });
+
+    describe("if the workspace is already open", () => {
+      it("should not open the tutorial workspace", async () => {
+        // Set isCodespaceTemplate to true to indicate the workspace has already been opened
+        jest.spyOn(Setting.prototype, "getValue").mockReturnValue(true);
+
+        // set up directory to have a 'tutorial.code-workspace' file
+        const tutorialWorkspacePath = join(dir.name, "tutorial.code-workspace");
+        await writeFile(tutorialWorkspacePath, "{}");
+
+        // set up a .tours directory to indicate we're in the tour codespace
+        const tourDirPath = join(dir.name, ".tours");
+        await mkdir(tourDirPath);
+
+        // spy that we open the workspace file by calling the 'vscode.openFolder' command
+        const commandSpy = jest.spyOn(commands, "executeCommand");
+        commandSpy.mockImplementation(() => Promise.resolve());
+
+        await prepareCodeTour();
+
+        expect(commandSpy).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe("if we're in a different tour repo", () => {
+    it("should not open the tutorial workspace", async () => {
+      // set up a .tours directory
+      const tourDirPath = join(dir.name, ".tours");
+      await mkdir(tourDirPath);
+
+      // spy that we open the workspace file by calling the 'vscode.openFolder' command
+      const commandSpy = jest.spyOn(commands, "executeCommand");
+      commandSpy.mockImplementation(() => Promise.resolve());
+
+      await prepareCodeTour();
+
+      expect(commandSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("if we're in a different repo with no tour", () => {
+    it("should not open the tutorial workspace", async () => {
+      // spy that we open the workspace file by calling the 'vscode.openFolder' command
+      const commandSpy = jest.spyOn(commands, "executeCommand");
+      commandSpy.mockImplementation(() => Promise.resolve());
+
+      await prepareCodeTour();
+
+      expect(commandSpy).not.toHaveBeenCalled();
+    });
   });
 });
