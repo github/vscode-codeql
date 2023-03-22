@@ -1213,19 +1213,20 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.restartQueryServer",
-      async (progress: ProgressCallback, token: CancellationToken) => {
-        // We restart the CLI server too, to ensure they are the same version
-        cliServer.restartCliServer();
-        await qs.restartQueryServer(progress, token);
-        void showAndLogInformationMessage("CodeQL Query Server restarted.", {
-          outputLogger: queryServerLogger,
-        });
-      },
-      {
-        title: "Restarting Query Server",
-      },
+    commandRunner("codeQL.restartQueryServer", async () =>
+      withProgress(
+        async (progress: ProgressCallback, token: CancellationToken) => {
+          // We restart the CLI server too, to ensure they are the same version
+          cliServer.restartCliServer();
+          await qs.restartQueryServer(progress, token);
+          void showAndLogInformationMessage("CodeQL Query Server restarted.", {
+            outputLogger: queryServerLogger,
+          });
+        },
+        {
+          title: "Restarting Query Server",
+        },
+      ),
     ),
   );
 
