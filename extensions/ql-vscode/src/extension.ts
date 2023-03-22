@@ -678,7 +678,7 @@ async function activateWithInstalledDistribution(
   }
 
   void extLogger.log("Initializing database manager.");
-  const dbm = new DatabaseManager(ctx, qs, cliServer, extLogger);
+  const dbm = new DatabaseManager(ctx, app, qs, cliServer, extLogger);
 
   // Let this run async.
   void dbm.loadPersistedState();

@@ -25,6 +25,7 @@ import * as helpers from "../../../src/helpers";
 import { Setting } from "../../../src/config";
 import { QlPackGenerator } from "../../../src/qlpack-generator";
 import { mockedObject } from "../utils/mocking.helpers";
+import { createMockApp } from "../../__mocks__/appMock";
 
 describe("local databases", () => {
   const MOCK_DB_OPTIONS: FullDatabaseOptions = {
@@ -87,6 +88,7 @@ describe("local databases", () => {
 
     databaseManager = new DatabaseManager(
       extensionContext,
+      createMockApp({}),
       mockedObject<QueryRunner>({
         registerDatabase: registerSpy,
         deregisterDatabase: deregisterSpy,
