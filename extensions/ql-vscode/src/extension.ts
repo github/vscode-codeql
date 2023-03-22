@@ -804,6 +804,7 @@ async function activateWithInstalledDistribution(
     ...variantAnalysisManager.getCommands(),
     ...databaseUI.getCommands(),
     ...dbModule.getCommands(),
+    ...evalLogViewer.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {

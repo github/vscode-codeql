@@ -138,11 +138,16 @@ export type DatabasePanelCommands = {
   "codeQLVariantAnalysisRepositories.removeItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
 };
 
+export type EvalLogViewerCommands = {
+  "codeQLEvalLogViewer.clear": () => Promise<void>;
+};
+
 export type AllCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
-  DatabasePanelCommands;
+  DatabasePanelCommands &
+  EvalLogViewerCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 
