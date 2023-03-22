@@ -826,6 +826,7 @@ async function activateWithInstalledDistribution(
 
   const allCommands: AllCommands = {
     ...getCommands(cliServer, qs),
+    ...localQueryResultsView.getCommands(),
     ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
     ...databaseUI.getCommands(),

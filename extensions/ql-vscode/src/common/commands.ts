@@ -53,6 +53,15 @@ export type LocalQueryCommands = {
   "codeQL.quickQuery": () => Promise<void>;
 };
 
+export type ResultsViewCommands = {
+  "codeQLQueryResults.up": () => Promise<void>;
+  "codeQLQueryResults.down": () => Promise<void>;
+  "codeQLQueryResults.left": () => Promise<void>;
+  "codeQLQueryResults.right": () => Promise<void>;
+  "codeQLQueryResults.nextPathStep": () => Promise<void>;
+  "codeQLQueryResults.previousPathStep": () => Promise<void>;
+};
+
 // Commands used for the query history panel
 export type QueryHistoryCommands = {
   // Commands in the "navigation" group
@@ -196,6 +205,7 @@ export type SummaryLanguageSupportCommands = {
 };
 
 export type AllCommands = BaseCommands &
+  ResultsViewCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
