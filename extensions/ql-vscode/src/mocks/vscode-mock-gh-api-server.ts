@@ -15,6 +15,7 @@ import {
 } from "../config";
 import { DisposableObject } from "../pure/disposable-object";
 import { MockGitHubApiServer } from "./mock-gh-api-server";
+import { MockGitHubApiServerCommands } from "../common/commands";
 
 /**
  * "Interface" to the mock GitHub API server which implements VSCode interactions, such as
@@ -32,6 +33,19 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
     this.config = new MockGitHubApiConfigListener();
 
     this.setupConfigListener();
+  }
+
+  public getCommands(): MockGitHubApiServerCommands {
+    return {
+      "codeQL.mockGitHubApiServer.startRecording":
+        this.startRecording.bind(this),
+      "codeQL.mockGitHubApiServer.saveScenario": this.saveScenario.bind(this),
+      "codeQL.mockGitHubApiServer.cancelRecording":
+        this.cancelRecording.bind(this),
+      "codeQL.mockGitHubApiServer.loadScenario": this.loadScenario.bind(this),
+      "codeQL.mockGitHubApiServer.unloadScenario":
+        this.unloadScenario.bind(this),
+    };
   }
 
   public async startServer(): Promise<void> {

@@ -204,6 +204,14 @@ export type SummaryLanguageSupportCommands = {
   "codeQL.gotoQL": () => Promise<void>;
 };
 
+export type MockGitHubApiServerCommands = {
+  "codeQL.mockGitHubApiServer.startRecording": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.saveScenario": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.cancelRecording": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.loadScenario": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.unloadScenario": () => Promise<void>;
+};
+
 export type AllCommands = BaseCommands &
   ResultsViewCommands &
   QueryHistoryCommands &
@@ -214,7 +222,8 @@ export type AllCommands = BaseCommands &
   AstViewerCommands &
   PackagingCommands &
   EvalLogViewerCommands &
-  SummaryLanguageSupportCommands;
+  SummaryLanguageSupportCommands &
+  MockGitHubApiServerCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 
