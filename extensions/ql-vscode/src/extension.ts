@@ -115,6 +115,7 @@ import {
   AllCommands,
   BaseCommands,
   QueryServerCommands,
+  TestUICommands,
 } from "./common/commands";
 import {
   getLocalQueryCommands,
@@ -795,6 +796,7 @@ async function activateWithInstalledDistribution(
   const testExplorerExtension = extensions.getExtension<TestHub>(
     testExplorerExtensionId,
   );
+  let testUiCommands: Partial<TestUICommands> = {};
   if (testExplorerExtension) {
     const testHub = testExplorerExtension.exports;
     const testAdapterFactory = new QLTestAdapterFactory(
@@ -806,6 +808,8 @@ async function activateWithInstalledDistribution(
 
     const testUIService = new TestUIService(testHub);
     ctx.subscriptions.push(testUIService);
+
+    testUiCommands = testUIService.getCommands();
   }
 
   const astViewer = new AstViewer();
@@ -846,6 +850,7 @@ async function activateWithInstalledDistribution(
     }),
     ...evalLogViewer.getCommands(),
     ...summaryLanguageSupport.getCommands(),
+    ...testUiCommands,
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {

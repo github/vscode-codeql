@@ -5,6 +5,7 @@ import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
 import type { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-filter-sort";
+import type { TestTreeNode } from "../test-tree-node";
 import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
@@ -195,6 +196,11 @@ export type SummaryLanguageSupportCommands = {
   "codeQL.gotoQL": () => Promise<void>;
 };
 
+export type TestUICommands = {
+  "codeQLTests.showOutputDifferences": (node: TestTreeNode) => Promise<void>;
+  "codeQLTests.acceptOutput": (node: TestTreeNode) => Promise<void>;
+};
+
 export type AllCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
@@ -204,7 +210,8 @@ export type AllCommands = BaseCommands &
   AstViewerCommands &
   PackagingCommands &
   EvalLogViewerCommands &
-  SummaryLanguageSupportCommands;
+  SummaryLanguageSupportCommands &
+  Partial<TestUICommands>;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 
