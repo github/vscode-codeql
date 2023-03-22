@@ -9,7 +9,7 @@ import { Readable } from "stream";
 import { StringDecoder } from "string_decoder";
 import tk from "tree-kill";
 import { promisify } from "util";
-import { CancellationToken, commands, Disposable, Uri } from "vscode";
+import { CancellationToken, Disposable, Uri } from "vscode";
 
 import { BQRSInfo, DecodedBqrsChunk } from "./pure/bqrs-cli-types";
 import { allowCanaryQueryServer, CliConfig } from "./config";
@@ -1375,7 +1375,7 @@ export class CodeQLCliServer implements Disposable {
     if (!this._version) {
       this._version = this.refreshVersion();
       // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
-      await commands.executeCommand(
+      await this.app.commands.execute(
         "setContext",
         "codeql.supportsEvalLog",
         await this.cliConstraints.supportsPerQueryEvalLog(),
