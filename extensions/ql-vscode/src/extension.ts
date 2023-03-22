@@ -10,13 +10,12 @@ import {
   Uri,
   version as vscodeVersion,
   window as Window,
-  window,
   workspace,
 } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
 import { arch, platform } from "os";
 import { ensureDir } from "fs-extra";
-import { basename, join } from "path";
+import { join } from "path";
 import { dirSync } from "tmp-promise";
 import { testExplorerExtensionId, TestHub } from "vscode-test-adapter-api";
 import { lt, parse } from "semver";
@@ -110,17 +109,18 @@ import { ExtensionApp } from "./common/vscode/vscode-app";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
-import { DirResult } from "tmp";
 import {
   AllExtensionCommands,
   BaseCommands,
   QueryServerCommands,
+  TestUICommands,
 } from "./common/commands";
 import {
   getLocalQueryCommands,
   showResultsForCompletedQuery,
 } from "./local-queries";
 import { getAstCfgCommands } from "./ast-cfg-commands";
+import { getQueryEditorCommands } from "./query-editor";
 
 /**
  * extension.ts
@@ -805,6 +805,7 @@ async function activateWithInstalledDistribution(
   const testExplorerExtension = extensions.getExtension<TestHub>(
     testExplorerExtensionId,
   );
+  let testUiCommands: Partial<TestUICommands> = {};
   if (testExplorerExtension) {
     const testHub = testExplorerExtension.exports;
     const testAdapterFactory = new QLTestAdapterFactory(
@@ -816,6 +817,8 @@ async function activateWithInstalledDistribution(
 
     const testUIService = new TestUIService(testHub);
     ctx.subscriptions.push(testUIService);
+
+    testUiCommands = testUIService.getCommands();
   }
 
   const astViewer = new AstViewer();
@@ -839,6 +842,11 @@ async function activateWithInstalledDistribution(
 
   const allCommands: AllExtensionCommands = {
     ...getCommands(cliServer, qs),
+    ...getQueryEditorCommands({
+      queryRunner: qs,
+      cliServer,
+      qhelpTmpDir: qhelpTmpDir.name,
+    }),
     ...localQueryResultsView.getCommands(),
     ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
@@ -860,6 +868,7 @@ async function activateWithInstalledDistribution(
     }),
     ...evalLogViewer.getCommands(),
     ...summaryLanguageSupport.getCommands(),
+    ...testUiCommands,
     ...mockServer.getCommands(),
   };
 
@@ -886,38 +895,6 @@ async function activateWithInstalledDistribution(
       command,
     );
   }
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.openReferencedFile", async (selectedQuery: Uri) => {
-      await openReferencedFile(qs, cliServer, selectedQuery);
-    }),
-  );
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openReferencedFileContextEditor",
-      async (selectedQuery: Uri) => {
-        await openReferencedFile(qs, cliServer, selectedQuery);
-      },
-    ),
-  );
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openReferencedFileContextExplorer",
-      async (selectedQuery: Uri) => {
-        await openReferencedFile(qs, cliServer, selectedQuery);
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.previewQueryHelp", async (selectedQuery: Uri) => {
-      await previewQueryHelp(app, cliServer, qhelpTmpDir, selectedQuery);
-    }),
-  );
 
   ctx.subscriptions.push(
     commandRunner("codeQL.copyVersion", async () => {
@@ -1021,52 +998,6 @@ async function showResultsForComparison(
         e,
       )}`,
     );
-  }
-}
-
-async function previewQueryHelp(
-  app: ExtensionApp,
-  cliServer: CodeQLCliServer,
-  qhelpTmpDir: DirResult,
-  selectedQuery: Uri,
-): Promise<void> {
-  // selectedQuery is unpopulated when executing through the command palette
-  const pathToQhelp = selectedQuery
-    ? selectedQuery.fsPath
-    : window.activeTextEditor?.document.uri.fsPath;
-  if (pathToQhelp) {
-    // Create temporary directory
-    const relativePathToMd = `${basename(pathToQhelp, ".qhelp")}.md`;
-    const absolutePathToMd = join(qhelpTmpDir.name, relativePathToMd);
-    const uri = Uri.file(absolutePathToMd);
-    try {
-      await cliServer.generateQueryHelp(pathToQhelp, absolutePathToMd);
-      await app.commands.execute("markdown.showPreviewToSide", uri);
-    } catch (e) {
-      const errorMessage = getErrorMessage(e).includes(
-        "Generating qhelp in markdown",
-      )
-        ? redactableError`Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
-        : redactableError`Could not open a preview of the generated file (${absolutePathToMd}).`;
-      void showAndLogExceptionWithTelemetry(errorMessage, {
-        fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
-      });
-    }
-  }
-}
-
-async function openReferencedFile(
-  qs: QueryRunner,
-  cliServer: CodeQLCliServer,
-  selectedQuery: Uri,
-): Promise<void> {
-  // If no file is selected, the path of the file in the editor is selected
-  const path =
-    selectedQuery?.fsPath || window.activeTextEditor?.document.uri.fsPath;
-  if (qs !== undefined && path) {
-    const resolved = await cliServer.resolveQlref(path);
-    const uri = Uri.file(resolved.resolvedPath);
-    await window.showTextDocument(uri, { preview: false });
   }
 }
 

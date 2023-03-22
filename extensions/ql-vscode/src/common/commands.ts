@@ -5,6 +5,7 @@ import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
 import type { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-filter-sort";
+import type { TestTreeNode } from "../test-tree-node";
 import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
@@ -43,6 +44,18 @@ export type BaseCommands = {
   "codeQL.openDocumentation": () => Promise<void>;
 
   "codeQL.restartQueryServer": () => Promise<void>;
+};
+
+// Commands used when working with queries in the editor
+export type QueryEditorCommands = {
+  "codeQL.openReferencedFile": (selectedQuery: Uri) => Promise<void>;
+  "codeQL.openReferencedFileContextEditor": (
+    selectedQuery: Uri,
+  ) => Promise<void>;
+  "codeQL.openReferencedFileContextExplorer": (
+    selectedQuery: Uri,
+  ) => Promise<void>;
+  "codeQL.previewQueryHelp": (selectedQuery: Uri) => Promise<void>;
 };
 
 // Commands used for running local queries
@@ -211,6 +224,11 @@ export type SummaryLanguageSupportCommands = {
   "codeQL.gotoQL": () => Promise<void>;
 };
 
+export type TestUICommands = {
+  "codeQLTests.showOutputDifferences": (node: TestTreeNode) => Promise<void>;
+  "codeQLTests.acceptOutput": (node: TestTreeNode) => Promise<void>;
+};
+
 export type MockGitHubApiServerCommands = {
   "codeQL.mockGitHubApiServer.startRecording": () => Promise<void>;
   "codeQL.mockGitHubApiServer.saveScenario": () => Promise<void>;
@@ -221,6 +239,8 @@ export type MockGitHubApiServerCommands = {
 
 // All commands where the implementation is provided by this extension.
 export type AllExtensionCommands = BaseCommands &
+  QueryEditorCommands &
+  ResultsViewCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
@@ -230,6 +250,7 @@ export type AllExtensionCommands = BaseCommands &
   PackagingCommands &
   EvalLogViewerCommands &
   SummaryLanguageSupportCommands &
+  Partial<TestUICommands> &
   MockGitHubApiServerCommands;
 
 export type AllCommands = AllExtensionCommands & BuiltInVsCodeCommands;

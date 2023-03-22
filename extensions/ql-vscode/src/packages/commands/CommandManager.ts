@@ -30,7 +30,7 @@ export class CommandManager<
   constructor(
     private readonly commandRegister: <T extends CommandName>(
       commandName: T,
-      fn: Commands[T],
+      fn: NonNullable<Commands[T]>,
     ) => Disposable,
     private readonly commandExecute: <T extends CommandName>(
       commandName: T,
@@ -43,7 +43,7 @@ export class CommandManager<
    */
   register<T extends CommandName>(
     commandName: T,
-    definition: Commands[T],
+    definition: NonNullable<Commands[T]>,
   ): void {
     this.commands.push(this.commandRegister(commandName, definition));
   }

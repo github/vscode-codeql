@@ -14,9 +14,8 @@ import {
 import { showAndLogWarningMessage } from "./helpers";
 import { TestTreeNode } from "./test-tree-node";
 import { DisposableObject } from "./pure/disposable-object";
-import { UIService } from "./vscode-utils/ui-service";
 import { QLTestAdapter, getExpectedFile, getActualFile } from "./test-adapter";
-import { extLogger } from "./common";
+import { TestUICommands } from "./common/commands";
 
 type VSCodeTestEvent =
   | TestRunStartedEvent
@@ -42,20 +41,21 @@ class QLTestListener extends DisposableObject {
 /**
  * Service that implements all UI and commands for QL tests.
  */
-export class TestUIService extends UIService implements TestController {
+export class TestUIService extends DisposableObject implements TestController {
   private readonly listeners: Map<TestAdapter, QLTestListener> = new Map();
 
   constructor(private readonly testHub: TestHub) {
     super();
 
-    void extLogger.log("Registering CodeQL test panel commands.");
-    this.registerCommand(
-      "codeQLTests.showOutputDifferences",
-      this.showOutputDifferences,
-    );
-    this.registerCommand("codeQLTests.acceptOutput", this.acceptOutput);
-
     testHub.registerTestController(this);
+  }
+
+  public getCommands(): TestUICommands {
+    return {
+      "codeQLTests.showOutputDifferences":
+        this.showOutputDifferences.bind(this),
+      "codeQLTests.acceptOutput": this.acceptOutput.bind(this),
+    };
   }
 
   public dispose(): void {
