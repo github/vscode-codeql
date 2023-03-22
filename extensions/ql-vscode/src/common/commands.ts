@@ -2,8 +2,8 @@ import type { CommandManager } from "../packages/commands";
 import type { Uri } from "vscode";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
-import { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-filter-sort";
-import {
+import type { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-filter-sort";
+import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
