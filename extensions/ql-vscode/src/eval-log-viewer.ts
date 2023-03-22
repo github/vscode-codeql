@@ -8,11 +8,11 @@ import {
   EventEmitter,
   TreeItemCollapsibleState,
 } from "vscode";
-import { commandRunner } from "./commandRunner";
 import { DisposableObject } from "./pure/disposable-object";
 import { showAndLogExceptionWithTelemetry } from "./helpers";
 import { asError, getErrorMessage } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
+import { EvalLogViewerCommands } from "./common/commands";
 
 export interface EvalLogTreeItem {
   label?: string;
@@ -80,11 +80,12 @@ export class EvalLogViewer extends DisposableObject {
 
     this.push(this.treeView);
     this.push(this.treeDataProvider);
-    this.push(
-      commandRunner("codeQLEvalLogViewer.clear", async () => {
-        this.clear();
-      }),
-    );
+  }
+
+  public getCommands(): EvalLogViewerCommands {
+    return {
+      "codeQLEvalLogViewer.clear": async () => this.clear(),
+    };
   }
 
   private clear(): void {
