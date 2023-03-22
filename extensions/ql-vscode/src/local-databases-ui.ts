@@ -21,7 +21,7 @@ import {
   DatabaseItem,
   DatabaseManager,
 } from "./local-databases";
-import { ProgressCallback, withProgress } from "./commandRunner";
+import { ProgressCallback, withProgress } from "./progress";
 import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,

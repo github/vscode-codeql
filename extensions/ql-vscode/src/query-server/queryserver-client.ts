@@ -11,7 +11,7 @@ import {
   ProgressMessage,
   WithProgressId,
 } from "../pure/new-messages";
-import { ProgressCallback, ProgressTask } from "../commandRunner";
+import { ProgressCallback, ProgressTask } from "../progress";
 import { ServerProcess } from "../json-rpc-server";
 
 type ServerOpts = {

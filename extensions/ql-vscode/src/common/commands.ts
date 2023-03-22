@@ -1,5 +1,6 @@
 import type { CommandManager } from "../packages/commands";
 import type { Uri, Range } from "vscode";
+import type { AstItem } from "../astViewer";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
@@ -57,6 +58,15 @@ export type LocalQueryCommands = {
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
   "codeQL.codeLensQuickEval": (uri: Uri, range: Range) => Promise<void>;
   "codeQL.quickQuery": () => Promise<void>;
+};
+
+export type ResultsViewCommands = {
+  "codeQLQueryResults.up": () => Promise<void>;
+  "codeQLQueryResults.down": () => Promise<void>;
+  "codeQLQueryResults.left": () => Promise<void>;
+  "codeQLQueryResults.right": () => Promise<void>;
+  "codeQLQueryResults.nextPathStep": () => Promise<void>;
+  "codeQLQueryResults.previousPathStep": () => Promise<void>;
 };
 
 // Commands used for the query history panel
@@ -183,6 +193,11 @@ export type AstCfgCommands = {
   "codeQL.viewCfgContextEditor": () => Promise<void>;
 };
 
+export type AstViewerCommands = {
+  "codeQLAstViewer.clear": () => Promise<void>;
+  "codeQLAstViewer.gotoCode": (item: AstItem) => Promise<void>;
+};
+
 export type PackagingCommands = {
   "codeQL.installPackDependencies": () => Promise<void>;
   "codeQL.downloadPacks": () => Promise<void>;
@@ -192,6 +207,18 @@ export type EvalLogViewerCommands = {
   "codeQLEvalLogViewer.clear": () => Promise<void>;
 };
 
+export type SummaryLanguageSupportCommands = {
+  "codeQL.gotoQL": () => Promise<void>;
+};
+
+export type MockGitHubApiServerCommands = {
+  "codeQL.mockGitHubApiServer.startRecording": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.saveScenario": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.cancelRecording": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.loadScenario": () => Promise<void>;
+  "codeQL.mockGitHubApiServer.unloadScenario": () => Promise<void>;
+};
+
 // All commands where the implementation is provided by this extension.
 export type AllCodeQLCommands = BaseCommands &
   QueryHistoryCommands &
@@ -199,8 +226,11 @@ export type AllCodeQLCommands = BaseCommands &
   VariantAnalysisCommands &
   DatabasePanelCommands &
   AstCfgCommands &
+  AstViewerCommands &
   PackagingCommands &
-  EvalLogViewerCommands;
+  EvalLogViewerCommands &
+  SummaryLanguageSupportCommands &
+  MockGitHubApiServerCommands;
 
 export type AllCommands = AllCodeQLCommands & VSCodeCommands;
 

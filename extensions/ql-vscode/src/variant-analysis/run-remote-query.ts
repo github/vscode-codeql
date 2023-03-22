@@ -18,7 +18,7 @@ import {
   getRemoteControllerRepo,
   setRemoteControllerRepo,
 } from "../config";
-import { ProgressCallback, UserCancellationException } from "../commandRunner";
+import { ProgressCallback, UserCancellationException } from "../progress";
 import { RequestError } from "@octokit/types/dist-types";
 import { QueryMetadata } from "../pure/interface-types";
 import { getErrorMessage, REPO_REGEX } from "../pure/helpers-pure";

@@ -13,9 +13,9 @@ import {
   workspace,
 } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
-import { commandRunner } from "../commandRunner";
 import { extLogger } from "../common";
 import { getErrorMessage } from "../pure/helpers-pure";
+import { SummaryLanguageSupportCommands } from "../common/commands";
 
 /** A `Position` within a specified file on disk. */
 interface PositionInFile {
@@ -73,8 +73,12 @@ export class SummaryLanguageSupport extends DisposableObject {
         this.handleDidCloseTextDocument.bind(this),
       ),
     );
+  }
 
-    this.push(commandRunner("codeQL.gotoQL", this.handleGotoQL.bind(this)));
+  public getCommands(): SummaryLanguageSupportCommands {
+    return {
+      "codeQL.gotoQL": this.handleGotoQL.bind(this),
+    };
   }
 
   /**

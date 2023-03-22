@@ -88,7 +88,8 @@ import { QLTestAdapterFactory } from "./test-adapter";
 import { TestUIService } from "./test-ui";
 import { CompareView } from "./compare/compare-view";
 import { initializeTelemetry } from "./telemetry";
-import { commandRunner, ProgressCallback, withProgress } from "./commandRunner";
+import { commandRunner } from "./commandRunner";
+import { ProgressCallback, withProgress } from "./progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
@@ -828,10 +829,17 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(astViewer);
 
+  const summaryLanguageSupport = new SummaryLanguageSupport();
+  ctx.subscriptions.push(summaryLanguageSupport);
+
+  const mockServer = new VSCodeMockGitHubApiServer(ctx);
+  ctx.subscriptions.push(mockServer);
+
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllCodeQLCommands = {
     ...getCommands(cliServer, qs),
+    ...localQueryResultsView.getCommands(),
     ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
     ...databaseUI.getCommands(),
@@ -846,10 +854,13 @@ async function activateWithInstalledDistribution(
       astTemplateProvider,
       cfgTemplateProvider,
     }),
+    ...astViewer.getCommands(),
     ...getPackagingCommands({
       cliServer,
     }),
     ...evalLogViewer.getCommands(),
+    ...summaryLanguageSupport.getCommands(),
+    ...mockServer.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
@@ -946,8 +957,6 @@ async function activateWithInstalledDistribution(
     }),
   );
 
-  ctx.subscriptions.push(new SummaryLanguageSupport());
-
   void extLogger.log("Starting language server.");
   await client.start();
   ctx.subscriptions.push({
@@ -975,39 +984,6 @@ async function activateWithInstalledDistribution(
       qs,
       dbm,
       contextualQueryStorageDir,
-    ),
-  );
-
-  const mockServer = new VSCodeMockGitHubApiServer(ctx);
-  ctx.subscriptions.push(mockServer);
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.mockGitHubApiServer.startRecording",
-      async () => await mockServer.startRecording(),
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.mockGitHubApiServer.saveScenario",
-      async () => await mockServer.saveScenario(),
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.mockGitHubApiServer.cancelRecording",
-      async () => await mockServer.cancelRecording(),
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.mockGitHubApiServer.loadScenario",
-      async () => await mockServer.loadScenario(),
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.mockGitHubApiServer.unloadScenario",
-      async () => await mockServer.unloadScenario(),
     ),
   );
 

@@ -38,7 +38,7 @@ import {
   showInformationMessageWithAction,
   walkDirectory,
 } from "../../../src/helpers";
-import { reportStreamProgress } from "../../../src/commandRunner";
+import { reportStreamProgress } from "../../../src/progress";
 import { QueryLanguage } from "../../../src/common/query-language";
 import { Setting } from "../../../src/config";
 
