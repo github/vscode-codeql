@@ -851,7 +851,7 @@ async function activateWithInstalledDistribution(
     );
     ctx.subscriptions.push(testAdapterFactory);
 
-    const testUIService = new TestUIService(testHub);
+    const testUIService = new TestUIService(app, testHub);
     ctx.subscriptions.push(testUIService);
 
     testUiCommands = testUIService.getCommands();

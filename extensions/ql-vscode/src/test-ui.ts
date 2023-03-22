@@ -1,6 +1,6 @@
 import { lstat, copy, pathExists, createFile } from "fs-extra";
 import { basename } from "path";
-import { Uri, TextDocumentShowOptions, commands, window } from "vscode";
+import { Uri, TextDocumentShowOptions, window } from "vscode";
 import {
   TestHub,
   TestController,
@@ -16,6 +16,7 @@ import { TestTreeNode } from "./test-tree-node";
 import { DisposableObject } from "./pure/disposable-object";
 import { QLTestAdapter, getExpectedFile, getActualFile } from "./test-adapter";
 import { TestUICommands } from "./common/commands";
+import { App } from "./common/app";
 
 type VSCodeTestEvent =
   | TestRunStartedEvent
@@ -44,7 +45,7 @@ class QLTestListener extends DisposableObject {
 export class TestUIService extends DisposableObject implements TestController {
   private readonly listeners: Map<TestAdapter, QLTestListener> = new Map();
 
-  constructor(private readonly testHub: TestHub) {
+  constructor(private readonly app: App, private readonly testHub: TestHub) {
     super();
 
     testHub.registerTestController(this);
@@ -105,7 +106,7 @@ export class TestUIService extends DisposableObject implements TestController {
 
       if (await pathExists(actualPath)) {
         const actualUri = Uri.file(actualPath);
-        await commands.executeCommand<void>(
+        await this.app.commands.execute(
           "vscode.diff",
           expectedUri,
           actualUri,

@@ -1,5 +1,5 @@
 import type { CommandManager } from "../packages/commands";
-import type { Uri, Range } from "vscode";
+import type { Uri, Range, TextDocumentShowOptions } from "vscode";
 import type { AstItem } from "../astViewer";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
@@ -42,6 +42,12 @@ export type BuiltInVsCodeCommands = {
     value: unknown,
   ) => Promise<void>;
   "workbench.action.reloadWindow": () => Promise<void>;
+  "vscode.diff": (
+    leftSideResource: Uri,
+    rightSideResource: Uri,
+    title?: string,
+    columnOrOptions?: TextDocumentShowOptions,
+  ) => Promise<void>;
   "vscode.openFolder": (uri: Uri) => Promise<void>;
 };
 
