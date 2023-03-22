@@ -819,6 +819,9 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(astViewer);
 
+  const summaryLanguageSupport = new SummaryLanguageSupport();
+  ctx.subscriptions.push(summaryLanguageSupport);
+
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllCommands = {
@@ -842,6 +845,7 @@ async function activateWithInstalledDistribution(
       cliServer,
     }),
     ...evalLogViewer.getCommands(),
+    ...summaryLanguageSupport.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
@@ -937,8 +941,6 @@ async function activateWithInstalledDistribution(
       extLogger.show();
     }),
   );
-
-  ctx.subscriptions.push(new SummaryLanguageSupport());
 
   void extLogger.log("Starting language server.");
   await client.start();

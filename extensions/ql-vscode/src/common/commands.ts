@@ -191,6 +191,10 @@ export type EvalLogViewerCommands = {
   "codeQLEvalLogViewer.clear": () => Promise<void>;
 };
 
+export type SummaryLanguageSupportCommands = {
+  "codeQL.gotoQL": () => Promise<void>;
+};
+
 export type AllCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
@@ -199,7 +203,8 @@ export type AllCommands = BaseCommands &
   AstCfgCommands &
   AstViewerCommands &
   PackagingCommands &
-  EvalLogViewerCommands;
+  EvalLogViewerCommands &
+  SummaryLanguageSupportCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 
