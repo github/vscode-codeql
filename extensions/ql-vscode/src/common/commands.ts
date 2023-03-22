@@ -1,5 +1,6 @@
 import type { CommandManager } from "../packages/commands";
 import type { Uri, Range } from "vscode";
+import type { AstItem } from "../astViewer";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
@@ -167,6 +168,20 @@ export type DatabasePanelCommands = {
   "codeQLVariantAnalysisRepositories.removeItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
 };
 
+export type AstCfgCommands = {
+  "codeQL.viewAst": (selectedFile: Uri) => Promise<void>;
+  "codeQL.viewAstContextExplorer": (selectedFile: Uri) => Promise<void>;
+  "codeQL.viewAstContextEditor": (selectedFile: Uri) => Promise<void>;
+  "codeQL.viewCfg": () => Promise<void>;
+  "codeQL.viewCfgContextExplorer": () => Promise<void>;
+  "codeQL.viewCfgContextEditor": () => Promise<void>;
+};
+
+export type AstViewerCommands = {
+  "codeQLAstViewer.clear": () => Promise<void>;
+  "codeQLAstViewer.gotoCode": (item: AstItem) => Promise<void>;
+};
+
 export type PackagingCommands = {
   "codeQL.installPackDependencies": () => Promise<void>;
   "codeQL.downloadPacks": () => Promise<void>;
@@ -176,13 +191,20 @@ export type EvalLogViewerCommands = {
   "codeQLEvalLogViewer.clear": () => Promise<void>;
 };
 
+export type SummaryLanguageSupportCommands = {
+  "codeQL.gotoQL": () => Promise<void>;
+};
+
 export type AllCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
   DatabasePanelCommands &
+  AstCfgCommands &
+  AstViewerCommands &
   PackagingCommands &
-  EvalLogViewerCommands;
+  EvalLogViewerCommands &
+  SummaryLanguageSupportCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 
