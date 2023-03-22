@@ -96,10 +96,7 @@ import {
   withProgress,
 } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
-import {
-  handleDownloadPacks,
-  handleInstallPackDependencies,
-} from "./packaging";
+import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
@@ -815,6 +812,9 @@ async function activateWithInstalledDistribution(
     ...variantAnalysisManager.getCommands(),
     ...databaseUI.getCommands(),
     ...dbModule.getCommands(),
+    ...getPackagingCommands({
+      cliServer,
+    }),
     ...evalLogViewer.getCommands(),
   };
 
@@ -904,28 +904,6 @@ async function activateWithInstalledDistribution(
         `Authenticated to GitHub as user: ${userInfo.data.login}`,
       );
     }),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.installPackDependencies",
-      async (progress: ProgressCallback) =>
-        await handleInstallPackDependencies(cliServer, progress),
-      {
-        title: "Installing pack dependencies",
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.downloadPacks",
-      async (progress: ProgressCallback) =>
-        await handleDownloadPacks(cliServer, progress),
-      {
-        title: "Downloading packs",
-      },
-    ),
   );
 
   ctx.subscriptions.push(
