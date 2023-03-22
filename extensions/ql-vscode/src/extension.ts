@@ -112,6 +112,7 @@ import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 import {
   AllExtensionCommands,
   BaseCommands,
+  PreActivationCommands,
   QueryServerCommands,
   TestUICommands,
 } from "./common/commands";
@@ -204,6 +205,8 @@ function registerErrorStubs(
 
   stubbedCommands.forEach((command) => {
     if (excludedCommands.indexOf(command) === -1) {
+      // This is purposefully using `commandRunner` instead of the command manager because these
+      // commands are untyped and registered pre-activation.
       errorStubs.push(commandRunner(command, stubGenerator(command)));
     }
   });
@@ -305,6 +308,8 @@ export async function activate(
     ),
   );
   ctx.subscriptions.push(
+    // This is purposefully using `commandRunner` directly instead of the command manager
+    // because this command is registered pre-activation.
     commandRunner(checkForUpdatesCommand, () =>
       installOrUpdateThenTryActivate(
         ctx,
@@ -1096,7 +1101,8 @@ async function initializeLogging(ctx: ExtensionContext): Promise<void> {
   ctx.subscriptions.push(ideServerLogger);
 }
 
-const checkForUpdatesCommand = "codeQL.checkForUpdatesToCLI";
+const checkForUpdatesCommand: keyof PreActivationCommands =
+  "codeQL.checkForUpdatesToCLI" as const;
 
 const avoidVersionCheck = "avoid-version-check-at-startup";
 const lastVersionChecked = "last-version-checked";
