@@ -3,6 +3,12 @@ import type { Uri, Range } from "vscode";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
+import type { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-filter-sort";
+import type {
+  VariantAnalysis,
+  VariantAnalysisScannedRepository,
+  VariantAnalysisScannedRepositoryResult,
+} from "../variant-analysis/shared/variant-analysis";
 
 // A command function matching the signature that VS Code calls when
 // a command on a selection is invoked.
@@ -27,6 +33,8 @@ export type SingleSelectionCommandFunction<Item> = (
 // Base commands not tied directly to a module like e.g. variant analysis.
 export type BaseCommands = {
   "codeQL.openDocumentation": () => Promise<void>;
+
+  "codeQL.restartQueryServer": () => Promise<void>;
 };
 
 // Commands used for running local queries
@@ -74,6 +82,9 @@ export type QueryHistoryCommands = {
   "codeQLQueryHistory.itemClicked": SelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.openOnGithub": SelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.copyRepoList": SelectionCommandFunction<QueryHistoryInfo>;
+
+  // Commands in the command palette
+  "codeQL.exportSelectedVariantAnalysisResults": () => Promise<void>;
 };
 
 // Commands used for the local databases panel
@@ -118,7 +129,25 @@ export type LocalDatabasesCommands = {
 
 // Commands tied to variant analysis
 export type VariantAnalysisCommands = {
+  "codeQL.autoDownloadVariantAnalysisResult": (
+    scannedRepo: VariantAnalysisScannedRepository,
+    variantAnalysisSummary: VariantAnalysis,
+  ) => Promise<void>;
+  "codeQL.copyVariantAnalysisRepoList": (
+    variantAnalysisId: number,
+    filterSort?: RepositoriesFilterSortStateWithIds,
+  ) => Promise<void>;
+  "codeQL.loadVariantAnalysisRepoResults": (
+    variantAnalysisId: number,
+    repositoryFullName: string,
+  ) => Promise<VariantAnalysisScannedRepositoryResult>;
+  "codeQL.monitorVariantAnalysis": (
+    variantAnalysis: VariantAnalysis,
+  ) => Promise<void>;
   "codeQL.openVariantAnalysisLogs": (
+    variantAnalysisId: number,
+  ) => Promise<void>;
+  "codeQL.openVariantAnalysisView": (
     variantAnalysisId: number,
   ) => Promise<void>;
   "codeQL.runVariantAnalysis": (uri?: Uri) => Promise<void>;
@@ -147,12 +176,23 @@ export type AstCfgCommands = {
   "codeQL.viewCfgContextEditor": () => Promise<void>;
 };
 
+export type PackagingCommands = {
+  "codeQL.installPackDependencies": () => Promise<void>;
+  "codeQL.downloadPacks": () => Promise<void>;
+};
+
+export type EvalLogViewerCommands = {
+  "codeQLEvalLogViewer.clear": () => Promise<void>;
+};
+
 export type AllCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
   DatabasePanelCommands &
-  AstCfgCommands;
+  AstCfgCommands &
+  PackagingCommands &
+  EvalLogViewerCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 

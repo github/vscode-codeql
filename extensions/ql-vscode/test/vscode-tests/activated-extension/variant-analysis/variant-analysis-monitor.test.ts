@@ -1,4 +1,4 @@
-import { CancellationTokenSource, commands, extensions } from "vscode";
+import { commands, extensions } from "vscode";
 import { CodeQLExtensionInterface } from "../../../../src/extension";
 
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
@@ -33,7 +33,6 @@ describe("Variant Analysis Monitor", () => {
   let mockGetVariantAnalysis: jest.SpiedFunction<
     typeof ghApiClient.getVariantAnalysis
   >;
-  let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
   let shouldCancelMonitor: jest.Mock<Promise<boolean>, [number]>;
   let variantAnalysis: VariantAnalysis;
@@ -45,8 +44,6 @@ describe("Variant Analysis Monitor", () => {
   const onVariantAnalysisChangeSpy = jest.fn();
 
   beforeEach(async () => {
-    cancellationTokenSource = new CancellationTokenSource();
-
     variantAnalysis = createMockVariantAnalysis({});
 
     shouldCancelMonitor = jest.fn();
@@ -71,25 +68,12 @@ describe("Variant Analysis Monitor", () => {
     limitNumberOfAttemptsToMonitor();
   });
 
-  it("should return early if variant analysis is cancelled", async () => {
-    cancellationTokenSource.cancel();
-
-    await variantAnalysisMonitor.monitorVariantAnalysis(
-      variantAnalysis,
-      testCredentialsWithStub(),
-      cancellationTokenSource.token,
-    );
-
-    expect(onVariantAnalysisChangeSpy).not.toHaveBeenCalled();
-  });
-
   it("should return early if variant analysis should be cancelled", async () => {
     shouldCancelMonitor.mockResolvedValue(true);
 
     await variantAnalysisMonitor.monitorVariantAnalysis(
       variantAnalysis,
       testCredentialsWithStub(),
-      cancellationTokenSource.token,
     );
 
     expect(onVariantAnalysisChangeSpy).not.toHaveBeenCalled();
@@ -107,7 +91,6 @@ describe("Variant Analysis Monitor", () => {
       await variantAnalysisMonitor.monitorVariantAnalysis(
         variantAnalysis,
         testCredentialsWithStub(),
-        cancellationTokenSource.token,
       );
 
       expect(mockGetVariantAnalysis).toHaveBeenCalledTimes(1);
@@ -157,7 +140,6 @@ describe("Variant Analysis Monitor", () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
           testCredentialsWithStub(),
-          cancellationTokenSource.token,
         );
 
         expect(commandSpy).toBeCalledTimes(succeededRepos.length);
@@ -176,7 +158,6 @@ describe("Variant Analysis Monitor", () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
           testCredentialsWithStub(),
-          cancellationTokenSource.token,
         );
 
         expect(mockGetDownloadResult).toBeCalledTimes(succeededRepos.length);
@@ -186,7 +167,6 @@ describe("Variant Analysis Monitor", () => {
             index + 1,
             processScannedRepository(succeededRepo),
             processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
-            undefined,
           );
         });
       });
@@ -209,7 +189,6 @@ describe("Variant Analysis Monitor", () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
           testCredentialsWithStub(),
-          cancellationTokenSource.token,
         );
 
         expect(commandSpy).not.toHaveBeenCalled();
@@ -219,7 +198,6 @@ describe("Variant Analysis Monitor", () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
           testCredentialsWithStub(),
-          cancellationTokenSource.token,
         );
 
         expect(mockGetDownloadResult).not.toBeCalled();
@@ -278,7 +256,6 @@ describe("Variant Analysis Monitor", () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
           testCredentialsWithStub(),
-          cancellationTokenSource.token,
         );
 
         expect(mockGetVariantAnalysis).toBeCalledTimes(4);
@@ -297,7 +274,6 @@ describe("Variant Analysis Monitor", () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(
           variantAnalysis,
           testCredentialsWithStub(),
-          cancellationTokenSource.token,
         );
 
         expect(mockGetDownloadResult).not.toBeCalled();

@@ -89,19 +89,10 @@ import { QLTestAdapterFactory } from "./test-adapter";
 import { TestUIService } from "./test-ui";
 import { CompareView } from "./compare/compare-view";
 import { initializeTelemetry } from "./telemetry";
-import {
-  commandRunner,
-  commandRunnerWithProgress,
-  ProgressCallback,
-  withProgress,
-} from "./commandRunner";
+import { commandRunner, ProgressCallback, withProgress } from "./commandRunner";
 import { CodeQlStatusBarHandler } from "./status-bar";
-import {
-  handleDownloadPacks,
-  handleInstallPackDependencies,
-} from "./packaging";
+import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
-import { exportSelectedVariantAnalysisResults } from "./variant-analysis/export-results";
 import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
@@ -111,16 +102,11 @@ import { NewQueryRunner } from "./query-server/query-runner";
 import { QueryRunner } from "./queryRunner";
 import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
-import {
-  VariantAnalysis,
-  VariantAnalysisScannedRepository,
-} from "./variant-analysis/shared/variant-analysis";
 import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
 import { createVariantAnalysisContentProvider } from "./variant-analysis/variant-analysis-content-provider";
 import { VSCodeMockGitHubApiServer } from "./mocks/vscode-mock-gh-api-server";
 import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
 import { ExtensionApp } from "./common/vscode/vscode-app";
-import { RepositoriesFilterSortStateWithIds } from "./pure/variant-analysis-filter-sort";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
@@ -169,11 +155,28 @@ const extension = extensions.getExtension(extensionId);
 /**
  * Return all commands that are not tied to the more specific managers.
  */
-function getCommands(): BaseCommands {
+function getCommands(
+  cliServer: CodeQLCliServer,
+  queryRunner: QueryRunner,
+): BaseCommands {
   return {
     "codeQL.openDocumentation": async () => {
       await env.openExternal(Uri.parse("https://codeql.github.com/docs/"));
     },
+    "codeQL.restartQueryServer": async () =>
+      withProgress(
+        async (progress: ProgressCallback, token: CancellationToken) => {
+          // We restart the CLI server too, to ensure they are the same version
+          cliServer.restartCliServer();
+          await queryRunner.restartQueryServer(progress, token);
+          void showAndLogInformationMessage("CodeQL Query Server restarted.", {
+            outputLogger: queryServerLogger,
+          });
+        },
+        {
+          title: "Restarting Query Server",
+        },
+      ),
   };
 }
 
@@ -819,7 +822,7 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllCommands = {
-    ...getCommands(),
+    ...getCommands(cliServer, qs),
     ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
     ...databaseUI.getCommands(),
@@ -834,6 +837,10 @@ async function activateWithInstalledDistribution(
       astTemplateProvider,
       cfgTemplateProvider,
     }),
+    ...getPackagingCommands({
+      cliServer,
+    }),
+    ...evalLogViewer.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
@@ -859,78 +866,6 @@ async function activateWithInstalledDistribution(
       command,
     );
   }
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.copyVariantAnalysisRepoList",
-      async (
-        variantAnalysisId: number,
-        filterSort?: RepositoriesFilterSortStateWithIds,
-      ) => {
-        await variantAnalysisManager.copyRepoListToClipboard(
-          variantAnalysisId,
-          filterSort,
-        );
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.monitorVariantAnalysis",
-      async (variantAnalysis: VariantAnalysis, token: CancellationToken) => {
-        await variantAnalysisManager.monitorVariantAnalysis(
-          variantAnalysis,
-          token,
-        );
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.autoDownloadVariantAnalysisResult",
-      async (
-        scannedRepo: VariantAnalysisScannedRepository,
-        variantAnalysisSummary: VariantAnalysis,
-        token: CancellationToken,
-      ) => {
-        await variantAnalysisManager.enqueueDownload(
-          scannedRepo,
-          variantAnalysisSummary,
-          token,
-        );
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
-      await exportSelectedVariantAnalysisResults(variantAnalysisManager, qhm);
-    }),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.loadVariantAnalysisRepoResults",
-      async (variantAnalysisId: number, repositoryFullName: string) => {
-        await variantAnalysisManager.loadResults(
-          variantAnalysisId,
-          repositoryFullName,
-        );
-      },
-    ),
-  );
-
-  // The "openVariantAnalysisView" command is internal-only.
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openVariantAnalysisView",
-      async (variantAnalysisId: number) => {
-        await variantAnalysisManager.showView(variantAnalysisId);
-      },
-    ),
-  );
 
   ctx.subscriptions.push(
     commandRunner("codeQL.openReferencedFile", async (selectedQuery: Uri) => {
@@ -965,23 +900,6 @@ async function activateWithInstalledDistribution(
   );
 
   ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.restartQueryServer",
-      async (progress: ProgressCallback, token: CancellationToken) => {
-        // We restart the CLI server too, to ensure they are the same version
-        cliServer.restartCliServer();
-        await qs.restartQueryServer(progress, token);
-        void showAndLogInformationMessage("CodeQL Query Server restarted.", {
-          outputLogger: queryServerLogger,
-        });
-      },
-      {
-        title: "Restarting Query Server",
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
     commandRunner("codeQL.copyVersion", async () => {
       const text = `CodeQL extension version: ${
         extension?.packageJSON.version
@@ -1011,28 +929,6 @@ async function activateWithInstalledDistribution(
         `Authenticated to GitHub as user: ${userInfo.data.login}`,
       );
     }),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.installPackDependencies",
-      async (progress: ProgressCallback) =>
-        await handleInstallPackDependencies(cliServer, progress),
-      {
-        title: "Installing pack dependencies",
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.downloadPacks",
-      async (progress: ProgressCallback) =>
-        await handleDownloadPacks(cliServer, progress),
-      {
-        title: "Downloading packs",
-      },
-    ),
   );
 
   ctx.subscriptions.push(

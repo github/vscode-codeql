@@ -16,7 +16,6 @@ import {
 } from "../commandRunner";
 import { showInformationMessageWithAction } from "../helpers";
 import { extLogger } from "../common";
-import { QueryHistoryManager } from "../query-history/query-history-manager";
 import { createGist } from "./gh-api/gh-api-client";
 import {
   generateVariantAnalysisMarkdown,
@@ -36,25 +35,6 @@ import {
   RepositoriesFilterSortStateWithIds,
 } from "../pure/variant-analysis-filter-sort";
 import { Credentials } from "../common/authentication";
-
-/**
- * Exports the results of the currently-selected variant analysis.
- */
-export async function exportSelectedVariantAnalysisResults(
-  variantAnalysisManager: VariantAnalysisManager,
-  queryHistoryManager: QueryHistoryManager,
-): Promise<void> {
-  const queryHistoryItem = queryHistoryManager.getCurrentQueryHistoryItem();
-  if (!queryHistoryItem || queryHistoryItem.t !== "variant-analysis") {
-    throw new Error(
-      "No variant analysis results currently open. To open results, click an item in the query history view.",
-    );
-  }
-
-  await variantAnalysisManager.exportResults(
-    queryHistoryItem.variantAnalysis.id,
-  );
-}
 
 const MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS = 2;
 
