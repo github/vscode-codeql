@@ -35,7 +35,6 @@ import { CodeQLCliServer } from "./cli";
 import {
   CliConfigListener,
   DistributionConfigListener,
-  isCanary,
   joinOrderWarningThreshold,
   MAX_QUERIES,
   QueryHistoryConfigListener,
@@ -110,10 +109,7 @@ import {
   handleInstallPackDependencies,
 } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
-import {
-  exportSelectedVariantAnalysisResults,
-  exportVariantAnalysisResults,
-} from "./variant-analysis/export-results";
+import { exportSelectedVariantAnalysisResults } from "./variant-analysis/export-results";
 import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
@@ -651,7 +647,6 @@ async function activateWithInstalledDistribution(
     getContextStoragePath(ctx),
     ctx.extensionPath,
   );
-  databaseUI.init();
   ctx.subscriptions.push(databaseUI);
 
   void extLogger.log("Initializing evaluator log viewer.");
@@ -1105,6 +1100,8 @@ async function activateWithInstalledDistribution(
     ...getCommands(),
     ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
+    ...databaseUI.getCommands(),
+    ...dbModule.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
@@ -1157,33 +1154,8 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(
     commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
-      await exportSelectedVariantAnalysisResults(qhm);
+      await exportSelectedVariantAnalysisResults(variantAnalysisManager, qhm);
     }),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.exportVariantAnalysisResults",
-      async (
-        progress: ProgressCallback,
-        token: CancellationToken,
-        variantAnalysisId: number,
-        filterSort?: RepositoriesFilterSortStateWithIds,
-      ) => {
-        await exportVariantAnalysisResults(
-          variantAnalysisManager,
-          variantAnalysisId,
-          filterSort,
-          app.credentials,
-          progress,
-          token,
-        );
-      },
-      {
-        title: "Exporting variant analysis results",
-        cancellable: true,
-      },
-    ),
   );
 
   ctx.subscriptions.push(
@@ -1261,7 +1233,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseFolder",
       (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.handleChooseDatabaseFolder(progress, token),
+        databaseUI.chooseDatabaseFolder(progress, token),
       {
         title: "Choose a Database from a Folder",
       },
@@ -1271,7 +1243,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseArchive",
       (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.handleChooseDatabaseArchive(progress, token),
+        databaseUI.chooseDatabaseArchive(progress, token),
       {
         title: "Choose a Database from an Archive",
       },
@@ -1281,12 +1253,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseGithub",
       async (progress: ProgressCallback, token: CancellationToken) => {
-        const credentials = isCanary() ? app.credentials : undefined;
-        await databaseUI.handleChooseDatabaseGithub(
-          credentials,
-          progress,
-          token,
-        );
+        await databaseUI.chooseDatabaseGithub(progress, token);
       },
       {
         title: "Adding database from GitHub",
@@ -1297,7 +1264,7 @@ async function activateWithInstalledDistribution(
     commandRunnerWithProgress(
       "codeQL.chooseDatabaseInternet",
       (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.handleChooseDatabaseInternet(progress, token),
+        databaseUI.chooseDatabaseInternet(progress, token),
 
       {
         title: "Adding database from URL",

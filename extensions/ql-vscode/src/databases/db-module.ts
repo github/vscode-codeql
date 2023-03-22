@@ -6,10 +6,12 @@ import { DbConfigStore } from "./config/db-config-store";
 import { DbManager } from "./db-manager";
 import { DbPanel } from "./ui/db-panel";
 import { DbSelectionDecorationProvider } from "./ui/db-selection-decoration-provider";
+import { DatabasePanelCommands } from "../common/commands";
 
 export class DbModule extends DisposableObject {
   public readonly dbManager: DbManager;
   private readonly dbConfigStore: DbConfigStore;
+  private dbPanel: DbPanel | undefined;
 
   private constructor(app: App) {
     super();
@@ -26,15 +28,24 @@ export class DbModule extends DisposableObject {
     return dbModule;
   }
 
+  public getCommands(): DatabasePanelCommands {
+    if (!this.dbPanel) {
+      throw new Error("Database panel not initialized");
+    }
+
+    return {
+      ...this.dbPanel.getCommands(),
+    };
+  }
+
   private async initialize(app: App): Promise<void> {
     void extLogger.log("Initializing database module");
 
     await this.dbConfigStore.initialize();
 
-    const dbPanel = new DbPanel(this.dbManager, app.credentials);
-    await dbPanel.initialize();
+    this.dbPanel = new DbPanel(this.dbManager, app.credentials);
 
-    this.push(dbPanel);
+    this.push(this.dbPanel);
     this.push(this.dbConfigStore);
 
     const dbSelectionDecorationProvider = new DbSelectionDecorationProvider();

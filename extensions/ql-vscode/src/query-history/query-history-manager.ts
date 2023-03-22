@@ -48,7 +48,7 @@ import {
 import {
   deserializeQueryHistory,
   serializeQueryHistory,
-} from "../query-serialization";
+} from "./store/query-history-store";
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
@@ -1122,8 +1122,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    await commands.executeCommand(
-      "codeQL.exportVariantAnalysisResults",
+    await this.variantAnalysisManager.exportResults(
       finalSingleItem.variantAnalysis.id,
     );
   }

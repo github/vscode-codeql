@@ -1,5 +1,7 @@
 import type { CommandManager } from "../packages/commands";
 import type { Uri } from "vscode";
+import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
+import type { DatabaseItem } from "../local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
 
 // A command function matching the signature that VS Code calls when
@@ -7,6 +9,12 @@ import type { QueryHistoryInfo } from "../query-history/query-history-info";
 export type SelectionCommandFunction<Item> = (
   singleItem: Item,
   multiSelect: Item[],
+) => Promise<void>;
+
+// A command function matching the signature that VS Code calls when
+// a command on a selection is invoked when canSelectMany is false.
+export type SingleSelectionCommandFunction<Item> = (
+  singleItem: Item,
 ) => Promise<void>;
 
 /**
@@ -53,6 +61,31 @@ export type QueryHistoryCommands = {
   "codeQLQueryHistory.copyRepoList": SelectionCommandFunction<QueryHistoryInfo>;
 };
 
+// Commands used for the local databases panel
+export type LocalDatabasesCommands = {
+  "codeQL.setCurrentDatabase": (uri: Uri) => Promise<void>;
+  "codeQL.setDefaultTourDatabase": () => Promise<void>;
+  "codeQL.upgradeCurrentDatabase": () => Promise<void>;
+  "codeQL.clearCache": () => Promise<void>;
+
+  "codeQLDatabases.chooseDatabaseFolder": () => Promise<void>;
+  "codeQLDatabases.chooseDatabaseArchive": () => Promise<void>;
+  "codeQLDatabases.chooseDatabaseInternet": () => Promise<void>;
+  "codeQLDatabases.chooseDatabaseGithub": () => Promise<void>;
+  "codeQLDatabases.setCurrentDatabase": (
+    databaseItem: DatabaseItem,
+  ) => Promise<void>;
+  "codeQLDatabases.sortByName": () => Promise<void>;
+  "codeQLDatabases.sortByDateAdded": () => Promise<void>;
+  "codeQLDatabases.removeOrphanedDatabases": () => Promise<void>;
+
+  "codeQLDatabases.removeDatabase": SelectionCommandFunction<DatabaseItem>;
+  "codeQLDatabases.upgradeDatabase": SelectionCommandFunction<DatabaseItem>;
+  "codeQLDatabases.renameDatabase": SelectionCommandFunction<DatabaseItem>;
+  "codeQLDatabases.openDatabaseFolder": SelectionCommandFunction<DatabaseItem>;
+  "codeQLDatabases.addDatabaseSource": SelectionCommandFunction<DatabaseItem>;
+};
+
 // Commands tied to variant analysis
 export type VariantAnalysisCommands = {
   "codeQL.openVariantAnalysisLogs": (
@@ -62,8 +95,23 @@ export type VariantAnalysisCommands = {
   "codeQL.runVariantAnalysisContextEditor": (uri?: Uri) => Promise<void>;
 };
 
+export type DatabasePanelCommands = {
+  "codeQLVariantAnalysisRepositories.openConfigFile": () => Promise<void>;
+  "codeQLVariantAnalysisRepositories.addNewDatabase": () => Promise<void>;
+  "codeQLVariantAnalysisRepositories.addNewList": () => Promise<void>;
+  "codeQLVariantAnalysisRepositories.setupControllerRepository": () => Promise<void>;
+
+  "codeQLVariantAnalysisRepositories.setSelectedItem": SingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.renameItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.removeItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
+};
+
 export type AllCommands = BaseCommands &
   QueryHistoryCommands &
-  VariantAnalysisCommands;
+  LocalDatabasesCommands &
+  VariantAnalysisCommands &
+  DatabasePanelCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;

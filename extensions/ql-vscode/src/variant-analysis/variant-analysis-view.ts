@@ -138,8 +138,7 @@ export class VariantAnalysisView
         );
         break;
       case "exportResults":
-        void commands.executeCommand(
-          "codeQL.exportVariantAnalysisResults",
+        await this.manager.exportResults(
           this.variantAnalysisId,
           msg.filterSort,
         );

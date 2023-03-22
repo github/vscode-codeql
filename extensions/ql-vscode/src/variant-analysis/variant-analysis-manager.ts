@@ -67,6 +67,7 @@ import { DbManager } from "../databases/db-manager";
 import { App } from "../common/app";
 import { redactableError } from "../pure/errors";
 import { AppCommandManager, VariantAnalysisCommands } from "../common/commands";
+import { exportVariantAnalysisResults } from "./export-results";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -688,6 +689,18 @@ export class VariantAnalysisManager
     ];
 
     await env.clipboard.writeText(text.join(EOL));
+  }
+
+  public async exportResults(
+    variantAnalysisId: number,
+    filterSort?: RepositoriesFilterSortStateWithIds,
+  ) {
+    await exportVariantAnalysisResults(
+      this,
+      variantAnalysisId,
+      filterSort,
+      this.app.credentials,
+    );
   }
 
   private getRepoStatesStoragePath(variantAnalysisId: number): string {
