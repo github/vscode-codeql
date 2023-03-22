@@ -31,6 +31,7 @@ export type SingleSelectionCommandFunction<Item> = (
  */
 
 // Builtin commands where the implementation is provided by VS Code and not by this extension.
+// See https://code.visualstudio.com/api/references/commands
 export type VSCodeCommands = {
   "markdown.showPreviewToSide": (uri: Uri) => Promise<void>;
   "workbench.action.reloadWindow": () => Promise<void>;
