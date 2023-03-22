@@ -120,7 +120,7 @@ import {
   showResultsForCompletedQuery,
 } from "./local-queries";
 import { getAstCfgCommands } from "./ast-cfg-commands";
-import { registerQueryEditorCommands } from "./query-editor";
+import { getQueryEditorCommands } from "./query-editor";
 
 /**
  * extension.ts
@@ -829,6 +829,11 @@ async function activateWithInstalledDistribution(
 
   const allCommands: AllCommands = {
     ...getCommands(cliServer, qs),
+    ...getQueryEditorCommands({
+      queryRunner: qs,
+      cliServer,
+      qhelpTmpDir: qhelpTmpDir.name,
+    }),
     ...localQueryResultsView.getCommands(),
     ...qhm.getCommands(),
     ...variantAnalysisManager.getCommands(),
@@ -876,12 +881,6 @@ async function activateWithInstalledDistribution(
       command,
     );
   }
-
-  registerQueryEditorCommands(ctx, {
-    queryRunner: qs,
-    cliServer,
-    qhelpTmpDir: qhelpTmpDir.name,
-  });
 
   ctx.subscriptions.push(
     commandRunner("codeQL.copyVersion", async () => {

@@ -38,6 +38,18 @@ export type BaseCommands = {
   "codeQL.restartQueryServer": () => Promise<void>;
 };
 
+// Commands used when working with queries in the editor
+export type QueryEditorCommands = {
+  "codeQL.openReferencedFile": (selectedQuery: Uri) => Promise<void>;
+  "codeQL.openReferencedFileContextEditor": (
+    selectedQuery: Uri,
+  ) => Promise<void>;
+  "codeQL.openReferencedFileContextExplorer": (
+    selectedQuery: Uri,
+  ) => Promise<void>;
+  "codeQL.previewQueryHelp": (selectedQuery: Uri) => Promise<void>;
+};
+
 // Commands used for running local queries
 export type LocalQueryCommands = {
   "codeQL.runQuery": (uri?: Uri) => Promise<void>;
@@ -213,6 +225,7 @@ export type MockGitHubApiServerCommands = {
 };
 
 export type AllCommands = BaseCommands &
+  QueryEditorCommands &
   ResultsViewCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &

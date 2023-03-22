@@ -1,11 +1,11 @@
-import { commands, ExtensionContext, Uri, window } from "vscode";
+import { commands, Uri, window } from "vscode";
 import { CodeQLCliServer } from "./cli";
 import { QueryRunner } from "./queryRunner";
-import { commandRunner } from "./commandRunner";
 import { basename, join } from "path";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
 import { showAndLogExceptionWithTelemetry } from "./helpers";
+import { QueryEditorCommands } from "./common/commands";
 
 type QueryEditorOptions = {
   queryRunner: QueryRunner;
@@ -14,41 +14,23 @@ type QueryEditorOptions = {
   qhelpTmpDir: string;
 };
 
-export function registerQueryEditorCommands(
-  ctx: ExtensionContext,
-  { queryRunner, cliServer, qhelpTmpDir }: QueryEditorOptions,
-) {
-  ctx.subscriptions.push(
-    commandRunner("codeQL.openReferencedFile", async (selectedQuery: Uri) => {
-      await openReferencedFile(queryRunner, cliServer, selectedQuery);
-    }),
-  );
+export function getQueryEditorCommands({
+  queryRunner,
+  cliServer,
+  qhelpTmpDir,
+}: QueryEditorOptions): QueryEditorCommands {
+  const openReferencedFileCommand = async (selectedQuery: Uri) =>
+    await openReferencedFile(queryRunner, cliServer, selectedQuery);
 
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openReferencedFileContextEditor",
-      async (selectedQuery: Uri) => {
-        await openReferencedFile(queryRunner, cliServer, selectedQuery);
-      },
-    ),
-  );
-
-  // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
-  ctx.subscriptions.push(
-    commandRunner(
-      "codeQL.openReferencedFileContextExplorer",
-      async (selectedQuery: Uri) => {
-        await openReferencedFile(queryRunner, cliServer, selectedQuery);
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.previewQueryHelp", async (selectedQuery: Uri) => {
-      await previewQueryHelp(cliServer, qhelpTmpDir, selectedQuery);
-    }),
-  );
+  return {
+    "codeQL.openReferencedFile": openReferencedFileCommand,
+    // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
+    "codeQL.openReferencedFileContextEditor": openReferencedFileCommand,
+    // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
+    "codeQL.openReferencedFileContextExplorer": openReferencedFileCommand,
+    "codeQL.previewQueryHelp": async (selectedQuery: Uri) =>
+      await previewQueryHelp(cliServer, qhelpTmpDir, selectedQuery),
+  };
 }
 
 async function previewQueryHelp(
