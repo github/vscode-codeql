@@ -16,7 +16,6 @@ import {
   window as Window,
   workspace,
   env,
-  commands,
 } from "vscode";
 import { CodeQLCliServer, QlpacksInfo } from "./cli";
 import { UserCancellationException } from "./progress";
@@ -27,6 +26,7 @@ import { RedactableError } from "./pure/errors";
 import { getQlPackPath } from "./pure/ql";
 import { dbSchemeToLanguage } from "./common/query-language";
 import { isCodespacesTemplate } from "./config";
+import { AppCommandManager } from "./common/commands";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -271,7 +271,9 @@ export function isFolderAlreadyInWorkspace(folderName: string) {
 /** Check if the current workspace is the CodeTour and open the workspace folder.
  * Without this, we can't run the code tour correctly.
  **/
-export async function prepareCodeTour(): Promise<void> {
+export async function prepareCodeTour(
+  commandManager: AppCommandManager,
+): Promise<void> {
   if (workspace.workspaceFolders?.length) {
     const currentFolder = workspace.workspaceFolders[0].uri.fsPath;
 
@@ -308,7 +310,7 @@ export async function prepareCodeTour(): Promise<void> {
         `In prepareCodeTour() method, going to open the tutorial workspace file: ${tutorialWorkspacePath}`,
       );
 
-      await commands.executeCommand("vscode.openFolder", tutorialWorkspaceUri);
+      await commandManager.execute("vscode.openFolder", tutorialWorkspaceUri);
     }
   }
 }

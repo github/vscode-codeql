@@ -42,6 +42,7 @@ export type BuiltInVsCodeCommands = {
     value: unknown,
   ) => Promise<void>;
   "workbench.action.reloadWindow": () => Promise<void>;
+  "vscode.openFolder": (uri: Uri) => Promise<void>;
 };
 
 // Commands that are available before the extension is fully activated.

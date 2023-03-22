@@ -1,5 +1,4 @@
 import {
-  commands,
   EnvironmentVariableCollection,
   EnvironmentVariableMutator,
   Event,
@@ -41,6 +40,7 @@ import {
 import { reportStreamProgress } from "../../../src/progress";
 import { QueryLanguage } from "../../../src/common/query-language";
 import { Setting } from "../../../src/config";
+import { createMockCommandManager } from "../../__mocks__/commandsMock";
 
 describe("helpers", () => {
   describe("Invocation rate limiter", () => {
@@ -612,13 +612,11 @@ describe("prepareCodeTour", () => {
         await mkdir(tourDirPath);
 
         // spy that we open the workspace file by calling the 'vscode.openFolder' command
-        const commandSpy = jest.spyOn(commands, "executeCommand");
-        commandSpy.mockImplementation(() => Promise.resolve());
-
-        await prepareCodeTour();
+        const executeCommand = jest.fn();
+        await prepareCodeTour(createMockCommandManager({ executeCommand }));
 
         expect(showInformationMessageSpy).toHaveBeenCalled();
-        expect(commandSpy).toHaveBeenCalledWith(
+        expect(executeCommand).toHaveBeenCalledWith(
           "vscode.openFolder",
           expect.objectContaining({
             path: Uri.parse(tutorialWorkspacePath).fsPath,
@@ -641,12 +639,10 @@ describe("prepareCodeTour", () => {
         await mkdir(tourDirPath);
 
         // spy that we open the workspace file by calling the 'vscode.openFolder' command
-        const commandSpy = jest.spyOn(commands, "executeCommand");
-        commandSpy.mockImplementation(() => Promise.resolve());
+        const executeCommand = jest.fn();
+        await prepareCodeTour(createMockCommandManager({ executeCommand }));
 
-        await prepareCodeTour();
-
-        expect(commandSpy).not.toHaveBeenCalled();
+        expect(executeCommand).not.toHaveBeenCalled();
       });
     });
   });
@@ -658,24 +654,20 @@ describe("prepareCodeTour", () => {
       await mkdir(tourDirPath);
 
       // spy that we open the workspace file by calling the 'vscode.openFolder' command
-      const commandSpy = jest.spyOn(commands, "executeCommand");
-      commandSpy.mockImplementation(() => Promise.resolve());
+      const executeCommand = jest.fn();
+      await prepareCodeTour(createMockCommandManager({ executeCommand }));
 
-      await prepareCodeTour();
-
-      expect(commandSpy).not.toHaveBeenCalled();
+      expect(executeCommand).not.toHaveBeenCalled();
     });
   });
 
   describe("if we're in a different repo with no tour", () => {
     it("should not open the tutorial workspace", async () => {
       // spy that we open the workspace file by calling the 'vscode.openFolder' command
-      const commandSpy = jest.spyOn(commands, "executeCommand");
-      commandSpy.mockImplementation(() => Promise.resolve());
+      const executeCommand = jest.fn();
+      await prepareCodeTour(createMockCommandManager({ executeCommand }));
 
-      await prepareCodeTour();
-
-      expect(commandSpy).not.toHaveBeenCalled();
+      expect(executeCommand).not.toHaveBeenCalled();
     });
   });
 });

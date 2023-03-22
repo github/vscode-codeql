@@ -573,7 +573,7 @@ async function installOrUpdateThenTryActivate(
   await installOrUpdateDistribution(ctx, app, distributionManager, config);
 
   try {
-    await prepareCodeTour();
+    await prepareCodeTour(app.commands);
   } catch (e: unknown) {
     void extLogger.log(
       `Could not open tutorial workspace automatically: ${getErrorMessage(e)}`,
