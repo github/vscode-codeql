@@ -112,7 +112,7 @@ import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 import { DirResult } from "tmp";
 import {
-  AllCodeQLCommands,
+  AllExtensionCommands,
   BaseCommands,
   QueryServerCommands,
 } from "./common/commands";
@@ -837,7 +837,7 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Registering top-level command palette commands.");
 
-  const allCommands: AllCodeQLCommands = {
+  const allCommands: AllExtensionCommands = {
     ...getCommands(cliServer, qs),
     ...localQueryResultsView.getCommands(),
     ...qhm.getCommands(),
@@ -864,7 +864,7 @@ async function activateWithInstalledDistribution(
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
-    app.commands.register(commandName as keyof AllCodeQLCommands, command);
+    app.commands.register(commandName as keyof AllExtensionCommands, command);
   }
 
   const queryServerCommands: QueryServerCommands = {

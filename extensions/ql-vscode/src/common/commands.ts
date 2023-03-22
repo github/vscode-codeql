@@ -33,7 +33,7 @@ export type SingleSelectionCommandFunction<Item> = (
 
 // Builtin commands where the implementation is provided by VS Code and not by this extension.
 // See https://code.visualstudio.com/api/references/commands
-export type VSCodeCommands = {
+export type BuiltInVsCodeCommands = {
   "markdown.showPreviewToSide": (uri: Uri) => Promise<void>;
   "workbench.action.reloadWindow": () => Promise<void>;
 };
@@ -220,7 +220,7 @@ export type MockGitHubApiServerCommands = {
 };
 
 // All commands where the implementation is provided by this extension.
-export type AllCodeQLCommands = BaseCommands &
+export type AllExtensionCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
@@ -232,7 +232,7 @@ export type AllCodeQLCommands = BaseCommands &
   SummaryLanguageSupportCommands &
   MockGitHubApiServerCommands;
 
-export type AllCommands = AllCodeQLCommands & VSCodeCommands;
+export type AllCommands = AllExtensionCommands & BuiltInVsCodeCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 
