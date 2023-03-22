@@ -1,5 +1,6 @@
 import type { CommandManager } from "../packages/commands";
 import type { Uri, Range } from "vscode";
+import type { AstItem } from "../astViewer";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
@@ -176,6 +177,11 @@ export type AstCfgCommands = {
   "codeQL.viewCfgContextEditor": () => Promise<void>;
 };
 
+export type AstViewerCommands = {
+  "codeQLAstViewer.clear": () => Promise<void>;
+  "codeQLAstViewer.gotoCode": (item: AstItem) => Promise<void>;
+};
+
 export type PackagingCommands = {
   "codeQL.installPackDependencies": () => Promise<void>;
   "codeQL.downloadPacks": () => Promise<void>;
@@ -191,6 +197,7 @@ export type AllCommands = BaseCommands &
   VariantAnalysisCommands &
   DatabasePanelCommands &
   AstCfgCommands &
+  AstViewerCommands &
   PackagingCommands &
   EvalLogViewerCommands;
 
