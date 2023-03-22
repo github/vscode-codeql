@@ -33,6 +33,8 @@ export type SingleSelectionCommandFunction<Item> = (
 // Base commands not tied directly to a module like e.g. variant analysis.
 export type BaseCommands = {
   "codeQL.openDocumentation": () => Promise<void>;
+
+  "codeQL.restartQueryServer": () => Promise<void>;
 };
 
 // Commands used for running local queries
@@ -80,6 +82,9 @@ export type QueryHistoryCommands = {
   "codeQLQueryHistory.itemClicked": SelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.openOnGithub": SelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.copyRepoList": SelectionCommandFunction<QueryHistoryInfo>;
+
+  // Commands in the command palette
+  "codeQL.exportSelectedVariantAnalysisResults": () => Promise<void>;
 };
 
 // Commands used for the local databases panel
@@ -162,11 +167,16 @@ export type DatabasePanelCommands = {
   "codeQLVariantAnalysisRepositories.removeItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
 };
 
+export type EvalLogViewerCommands = {
+  "codeQLEvalLogViewer.clear": () => Promise<void>;
+};
+
 export type AllCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
-  DatabasePanelCommands;
+  DatabasePanelCommands &
+  EvalLogViewerCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 
