@@ -208,6 +208,13 @@ export class DatabaseUI extends DisposableObject {
 
   public getCommands(): LocalDatabasesCommands {
     return {
+      "codeQL.chooseDatabaseFolder":
+        this.handleChooseDatabaseFolderFromPalette.bind(this),
+      "codeQL.chooseDatabaseArchive":
+        this.handleChooseDatabaseArchiveFromPalette.bind(this),
+      "codeQL.chooseDatabaseInternet":
+        this.handleChooseDatabaseInternet.bind(this),
+      "codeQL.chooseDatabaseGithub": this.handleChooseDatabaseGithub.bind(this),
       "codeQL.setCurrentDatabase": this.handleSetCurrentDatabase.bind(this),
       "codeQL.setDefaultTourDatabase":
         this.handleSetDefaultTourDatabase.bind(this),
@@ -242,7 +249,7 @@ export class DatabaseUI extends DisposableObject {
     await this.databaseManager.setCurrentDatabaseItem(databaseItem);
   }
 
-  public async chooseDatabaseFolder(
+  private async chooseDatabaseFolder(
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
@@ -264,6 +271,17 @@ export class DatabaseUI extends DisposableObject {
       },
       {
         title: "Adding database from folder",
+      },
+    );
+  }
+
+  private async handleChooseDatabaseFolderFromPalette(): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        await this.chooseDatabaseFolder(progress, token);
+      },
+      {
+        title: "Choose a Database from a Folder",
       },
     );
   }
@@ -392,7 +410,7 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  public async chooseDatabaseArchive(
+  private async chooseDatabaseArchive(
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
@@ -418,23 +436,27 @@ export class DatabaseUI extends DisposableObject {
     );
   }
 
-  public async chooseDatabaseInternet(
-    progress: ProgressCallback,
-    token: CancellationToken,
-  ): Promise<DatabaseItem | undefined> {
-    return await promptImportInternetDatabase(
-      this.databaseManager,
-      this.storagePath,
-      progress,
-      token,
-      this.queryServer?.cliServer,
+  private async handleChooseDatabaseArchiveFromPalette(): Promise<void> {
+    return withProgress(
+      async (progress, token) => {
+        await this.chooseDatabaseArchive(progress, token);
+      },
+      {
+        title: "Choose a Database from an Archive",
+      },
     );
   }
 
   private async handleChooseDatabaseInternet(): Promise<void> {
     return withProgress(
       async (progress, token) => {
-        await this.chooseDatabaseInternet(progress, token);
+        await promptImportInternetDatabase(
+          this.databaseManager,
+          this.storagePath,
+          progress,
+          token,
+          this.queryServer?.cliServer,
+        );
       },
       {
         title: "Adding database from URL",
@@ -442,26 +464,19 @@ export class DatabaseUI extends DisposableObject {
     );
   }
 
-  public async chooseDatabaseGithub(
-    progress: ProgressCallback,
-    token: CancellationToken,
-  ): Promise<DatabaseItem | undefined> {
-    const credentials = isCanary() ? this.app.credentials : undefined;
-
-    return await promptImportGithubDatabase(
-      this.databaseManager,
-      this.storagePath,
-      credentials,
-      progress,
-      token,
-      this.queryServer?.cliServer,
-    );
-  }
-
   private async handleChooseDatabaseGithub(): Promise<void> {
     return withProgress(
       async (progress, token) => {
-        await this.chooseDatabaseGithub(progress, token);
+        const credentials = isCanary() ? this.app.credentials : undefined;
+
+        await promptImportGithubDatabase(
+          this.databaseManager,
+          this.storagePath,
+          credentials,
+          progress,
+          token,
+          this.queryServer?.cliServer,
+        );
       },
       {
         title: "Adding database from GitHub",

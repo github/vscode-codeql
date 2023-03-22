@@ -64,6 +64,7 @@ import {
   showInformationMessageWithAction,
   tmpDir,
   tmpDirDisposal,
+  prepareCodeTour,
 } from "./helpers";
 import {
   asError,
@@ -523,6 +524,14 @@ async function installOrUpdateThenTryActivate(
 ): Promise<CodeQLExtensionInterface | Record<string, never>> {
   await installOrUpdateDistribution(ctx, distributionManager, config);
 
+  try {
+    await prepareCodeTour();
+  } catch (e: unknown) {
+    void extLogger.log(
+      `Could not open tutorial workspace automatically: ${getErrorMessage(e)}`,
+    );
+  }
+
   // Display the warnings even if the extension has already activated.
   const distributionResult =
     await getDistributionDisplayingDistributionWarnings(distributionManager);
@@ -968,49 +977,6 @@ async function activateWithInstalledDistribution(
       },
       {
         title: "Restarting Query Server",
-      },
-    ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.chooseDatabaseFolder",
-      (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.chooseDatabaseFolder(progress, token),
-      {
-        title: "Choose a Database from a Folder",
-      },
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.chooseDatabaseArchive",
-      (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.chooseDatabaseArchive(progress, token),
-      {
-        title: "Choose a Database from an Archive",
-      },
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.chooseDatabaseGithub",
-      async (progress: ProgressCallback, token: CancellationToken) => {
-        await databaseUI.chooseDatabaseGithub(progress, token);
-      },
-      {
-        title: "Adding database from GitHub",
-      },
-    ),
-  );
-  ctx.subscriptions.push(
-    commandRunnerWithProgress(
-      "codeQL.chooseDatabaseInternet",
-      (progress: ProgressCallback, token: CancellationToken) =>
-        databaseUI.chooseDatabaseInternet(progress, token),
-
-      {
-        title: "Adding database from URL",
       },
     ),
   );

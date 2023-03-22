@@ -1,18 +1,18 @@
 import { pathExists, readFile, remove, mkdir, writeFile } from "fs-extra";
 import { dirname } from "path";
 
-import { showAndLogExceptionWithTelemetry } from "./helpers";
+import { showAndLogExceptionWithTelemetry } from "../../helpers";
 import {
   asError,
   asyncFilter,
   getErrorMessage,
   getErrorStack,
-} from "./pure/helpers-pure";
-import { CompletedQueryInfo, LocalQueryInfo } from "./query-results";
-import { QueryHistoryInfo } from "./query-history/query-history-info";
-import { QueryEvaluationInfo } from "./run-queries-shared";
-import { QueryResultType } from "./pure/legacy-messages";
-import { redactableError } from "./pure/errors";
+} from "../../pure/helpers-pure";
+import { CompletedQueryInfo, LocalQueryInfo } from "../../query-results";
+import { QueryHistoryInfo } from "../query-history-info";
+import { QueryEvaluationInfo } from "../../run-queries-shared";
+import { QueryResultType } from "../../pure/legacy-messages";
+import { redactableError } from "../../pure/errors";
 
 export async function deserializeQueryHistory(
   fsPath: string,
