@@ -30,7 +30,7 @@ import { nanoid } from "nanoid";
 import { CodeQLCliServer } from "./cli";
 import { SELECT_QUERY_NAME } from "./contextual/locationFinder";
 import { DatabaseManager } from "./local-databases";
-import { DecodedBqrsChunk } from "./pure/bqrs-cli-types";
+import { DecodedBqrsChunk, EntityValue } from "./pure/bqrs-cli-types";
 import { extLogger, Logger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { getErrorMessage } from "./pure/helpers-pure";
@@ -351,11 +351,17 @@ export class QueryEvaluationInfo {
       chunk.tuples.forEach((tuple) => {
         out.write(
           `${tuple
-            .map((v, i) =>
-              chunk.columns[i].kind === "String"
-                ? `"${typeof v === "string" ? v.replaceAll('"', '""') : v}"`
-                : v,
-            )
+            .map((v, i) => {
+              if (chunk.columns[i].kind === "String") {
+                return `"${
+                  typeof v === "string" ? v.replaceAll('"', '""') : v
+                }"`;
+              } else if (chunk.columns[i].kind === "Entity") {
+                return (v as EntityValue).label;
+              } else {
+                return v;
+              }
+            })
             .join(",")}\n`,
         );
       });
