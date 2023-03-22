@@ -1,5 +1,5 @@
 import type { CommandManager } from "../packages/commands";
-import type { Uri } from "vscode";
+import type { Uri, Range } from "vscode";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
@@ -29,6 +29,21 @@ export type BaseCommands = {
   "codeQL.openDocumentation": () => Promise<void>;
 
   "codeQL.restartQueryServer": () => Promise<void>;
+};
+
+// Commands used for running local queries
+export type LocalQueryCommands = {
+  "codeQL.runQuery": (uri?: Uri) => Promise<void>;
+  "codeQL.runQueryContextEditor": (uri?: Uri) => Promise<void>;
+  "codeQL.runQueryOnMultipleDatabases": (uri?: Uri) => Promise<void>;
+  "codeQL.runQueryOnMultipleDatabasesContextEditor": (
+    uri?: Uri,
+  ) => Promise<void>;
+  "codeQL.runQueries": SelectionCommandFunction<Uri>;
+  "codeQL.quickEval": (uri: Uri) => Promise<void>;
+  "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
+  "codeQL.codeLensQuickEval": (uri: Uri, range: Range) => Promise<void>;
+  "codeQL.quickQuery": () => Promise<void>;
 };
 
 // Commands used for the query history panel
@@ -65,27 +80,42 @@ export type QueryHistoryCommands = {
 
 // Commands used for the local databases panel
 export type LocalDatabasesCommands = {
-  "codeQL.setCurrentDatabase": (uri: Uri) => Promise<void>;
-  "codeQL.setDefaultTourDatabase": () => Promise<void>;
+  // Command palette commands
+  "codeQL.chooseDatabaseFolder": () => Promise<void>;
+  "codeQL.chooseDatabaseArchive": () => Promise<void>;
+  "codeQL.chooseDatabaseInternet": () => Promise<void>;
+  "codeQL.chooseDatabaseGithub": () => Promise<void>;
   "codeQL.upgradeCurrentDatabase": () => Promise<void>;
   "codeQL.clearCache": () => Promise<void>;
 
+  // Explorer context menu
+  "codeQL.setCurrentDatabase": (uri: Uri) => Promise<void>;
+
+  // Database panel view title commands
   "codeQLDatabases.chooseDatabaseFolder": () => Promise<void>;
   "codeQLDatabases.chooseDatabaseArchive": () => Promise<void>;
   "codeQLDatabases.chooseDatabaseInternet": () => Promise<void>;
   "codeQLDatabases.chooseDatabaseGithub": () => Promise<void>;
+  "codeQLDatabases.sortByName": () => Promise<void>;
+  "codeQLDatabases.sortByDateAdded": () => Promise<void>;
+
+  // Database panel context menu
   "codeQLDatabases.setCurrentDatabase": (
     databaseItem: DatabaseItem,
   ) => Promise<void>;
-  "codeQLDatabases.sortByName": () => Promise<void>;
-  "codeQLDatabases.sortByDateAdded": () => Promise<void>;
-  "codeQLDatabases.removeOrphanedDatabases": () => Promise<void>;
 
+  // Database panel selection commands
   "codeQLDatabases.removeDatabase": SelectionCommandFunction<DatabaseItem>;
   "codeQLDatabases.upgradeDatabase": SelectionCommandFunction<DatabaseItem>;
   "codeQLDatabases.renameDatabase": SelectionCommandFunction<DatabaseItem>;
   "codeQLDatabases.openDatabaseFolder": SelectionCommandFunction<DatabaseItem>;
   "codeQLDatabases.addDatabaseSource": SelectionCommandFunction<DatabaseItem>;
+
+  // Codespace template commands
+  "codeQL.setDefaultTourDatabase": () => Promise<void>;
+
+  // Internal commands
+  "codeQLDatabases.removeOrphanedDatabases": () => Promise<void>;
 };
 
 // Commands tied to variant analysis
@@ -110,10 +140,19 @@ export type DatabasePanelCommands = {
   "codeQLVariantAnalysisRepositories.removeItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
 };
 
+export type EvalLogViewerCommands = {
+  "codeQLEvalLogViewer.clear": () => Promise<void>;
+};
+
 export type AllCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   VariantAnalysisCommands &
-  DatabasePanelCommands;
+  DatabasePanelCommands &
+  EvalLogViewerCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
+
+// Separate command manager because it uses a different logger
+export type QueryServerCommands = LocalQueryCommands;
+export type QueryServerCommandManager = CommandManager<QueryServerCommands>;
