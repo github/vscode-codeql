@@ -76,6 +76,9 @@ export type QueryHistoryCommands = {
   "codeQLQueryHistory.itemClicked": SelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.openOnGithub": SelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.copyRepoList": SelectionCommandFunction<QueryHistoryInfo>;
+
+  // Commands in the command palette
+  "codeQL.exportSelectedVariantAnalysisResults": () => Promise<void>;
 };
 
 // Commands used for the local databases panel

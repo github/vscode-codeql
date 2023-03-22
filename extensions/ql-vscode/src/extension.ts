@@ -101,7 +101,6 @@ import {
   handleInstallPackDependencies,
 } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
-import { exportSelectedVariantAnalysisResults } from "./variant-analysis/export-results";
 import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
@@ -890,12 +889,6 @@ async function activateWithInstalledDistribution(
         );
       },
     ),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.exportSelectedVariantAnalysisResults", async () => {
-      await exportSelectedVariantAnalysisResults(variantAnalysisManager, qhm);
-    }),
   );
 
   ctx.subscriptions.push(
