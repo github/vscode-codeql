@@ -35,6 +35,7 @@ export type SingleSelectionCommandFunction<Item> = (
 // Builtin commands where the implementation is provided by VS Code and not by this extension.
 // See https://code.visualstudio.com/api/references/commands
 export type BuiltInVsCodeCommands = {
+  "codeQLDatabases.focus": () => Promise<void>;
   "markdown.showPreviewToSide": (uri: Uri) => Promise<void>;
   setContext: (
     key: `${"codeql" | "codeQL"}${string}`,

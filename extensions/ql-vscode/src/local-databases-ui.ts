@@ -451,6 +451,7 @@ export class DatabaseUI extends DisposableObject {
     return withProgress(
       async (progress, token) => {
         await promptImportInternetDatabase(
+          this.app.commands,
           this.databaseManager,
           this.storagePath,
           progress,
@@ -470,6 +471,7 @@ export class DatabaseUI extends DisposableObject {
         const credentials = isCanary() ? this.app.credentials : undefined;
 
         await promptImportGithubDatabase(
+          this.app.commands,
           this.databaseManager,
           this.storagePath,
           credentials,
@@ -607,6 +609,7 @@ export class DatabaseUI extends DisposableObject {
           // Assume user has selected an archive if the file has a .zip extension
           if (uri.path.endsWith(".zip")) {
             await importArchiveDatabase(
+              this.app.commands,
               uri.toString(true),
               this.databaseManager,
               this.storagePath,
@@ -762,6 +765,7 @@ export class DatabaseUI extends DisposableObject {
       // we are selecting a database archive. Must unzip into a workspace-controlled area
       // before importing.
       return await importArchiveDatabase(
+        this.app.commands,
         uri.toString(true),
         this.databaseManager,
         this.storagePath,

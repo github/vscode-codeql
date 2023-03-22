@@ -26,6 +26,7 @@ import { createInitialQueryInfo } from "../../../src/run-queries-shared";
 import { QueryRunner } from "../../../src/queryRunner";
 import { CompletedQueryInfo } from "../../../src/query-results";
 import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
+import { createMockCommandManager } from "../../__mocks__/commandsMock";
 
 jest.setTimeout(20_000);
 
@@ -78,6 +79,7 @@ describeWithCodeQL()("Queries", () => {
     await cleanDatabases(databaseManager);
     const uri = Uri.file(dbLoc);
     const maybeDbItem = await importArchiveDatabase(
+      createMockCommandManager(),
       uri.toString(true),
       databaseManager,
       storagePath,

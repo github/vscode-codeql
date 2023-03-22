@@ -9,6 +9,7 @@ import {
   promptImportInternetDatabase,
 } from "../../../src/databaseFetcher";
 import { cleanDatabases, dbLoc, DB_URL, storagePath } from "../global.helper";
+import { createMockCommandManager } from "../../__mocks__/commandsMock";
 
 jest.setTimeout(60_000);
 
@@ -53,6 +54,7 @@ describe("DatabaseFetcher", () => {
     it("should add a database from a folder", async () => {
       const uri = Uri.file(dbLoc);
       let dbItem = await importArchiveDatabase(
+        createMockCommandManager(),
         uri.toString(true),
         databaseManager,
         storagePath,
@@ -75,6 +77,7 @@ describe("DatabaseFetcher", () => {
       inputBoxStub.mockResolvedValue(DB_URL);
 
       let dbItem = await promptImportInternetDatabase(
+        createMockCommandManager(),
         databaseManager,
         storagePath,
         progressCallback,

@@ -1,7 +1,7 @@
 import fetch, { Response } from "node-fetch";
 import { zip } from "zip-a-folder";
 import { Open } from "unzipper";
-import { Uri, CancellationToken, commands, window } from "vscode";
+import { Uri, CancellationToken, window } from "vscode";
 import { CodeQLCliServer } from "./cli";
 import {
   ensureDir,
@@ -26,6 +26,7 @@ import {
   isValidGitHubNwo,
 } from "./common/github-url-identifier-helper";
 import { Credentials } from "./common/authentication";
+import { AppCommandManager } from "./common/commands";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -34,6 +35,7 @@ import { Credentials } from "./common/authentication";
  * @param storagePath where to store the unzipped database.
  */
 export async function promptImportInternetDatabase(
+  commandManager: AppCommandManager,
   databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
@@ -61,7 +63,7 @@ export async function promptImportInternetDatabase(
   );
 
   if (item) {
-    await commands.executeCommand("codeQLDatabases.focus");
+    await commandManager.execute("codeQLDatabases.focus");
     void showAndLogInformationMessage(
       "Database downloaded and imported successfully.",
     );
@@ -78,6 +80,7 @@ export async function promptImportInternetDatabase(
  * @param storagePath where to store the unzipped database.
  */
 export async function promptImportGithubDatabase(
+  commandManager: AppCommandManager,
   databaseManager: DatabaseManager,
   storagePath: string,
   credentials: Credentials | undefined,
@@ -141,7 +144,7 @@ export async function promptImportGithubDatabase(
     cli,
   );
   if (item) {
-    await commands.executeCommand("codeQLDatabases.focus");
+    await commandManager.execute("codeQLDatabases.focus");
     void showAndLogInformationMessage(
       "Database downloaded and imported successfully.",
     );
@@ -158,6 +161,7 @@ export async function promptImportGithubDatabase(
  * @param storagePath where to store the unzipped database.
  */
 export async function importArchiveDatabase(
+  commandManager: AppCommandManager,
   databaseUrl: string,
   databaseManager: DatabaseManager,
   storagePath: string,
@@ -177,7 +181,7 @@ export async function importArchiveDatabase(
       cli,
     );
     if (item) {
-      await commands.executeCommand("codeQLDatabases.focus");
+      await commandManager.execute("codeQLDatabases.focus");
       void showAndLogInformationMessage(
         "Database unzipped and imported successfully.",
       );
