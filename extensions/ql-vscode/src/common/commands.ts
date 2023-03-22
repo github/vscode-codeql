@@ -78,27 +78,42 @@ export type QueryHistoryCommands = {
 
 // Commands used for the local databases panel
 export type LocalDatabasesCommands = {
-  "codeQL.setCurrentDatabase": (uri: Uri) => Promise<void>;
-  "codeQL.setDefaultTourDatabase": () => Promise<void>;
+  // Command palette commands
+  "codeQL.chooseDatabaseFolder": () => Promise<void>;
+  "codeQL.chooseDatabaseArchive": () => Promise<void>;
+  "codeQL.chooseDatabaseInternet": () => Promise<void>;
+  "codeQL.chooseDatabaseGithub": () => Promise<void>;
   "codeQL.upgradeCurrentDatabase": () => Promise<void>;
   "codeQL.clearCache": () => Promise<void>;
 
+  // Explorer context menu
+  "codeQL.setCurrentDatabase": (uri: Uri) => Promise<void>;
+
+  // Database panel view title commands
   "codeQLDatabases.chooseDatabaseFolder": () => Promise<void>;
   "codeQLDatabases.chooseDatabaseArchive": () => Promise<void>;
   "codeQLDatabases.chooseDatabaseInternet": () => Promise<void>;
   "codeQLDatabases.chooseDatabaseGithub": () => Promise<void>;
+  "codeQLDatabases.sortByName": () => Promise<void>;
+  "codeQLDatabases.sortByDateAdded": () => Promise<void>;
+
+  // Database panel context menu
   "codeQLDatabases.setCurrentDatabase": (
     databaseItem: DatabaseItem,
   ) => Promise<void>;
-  "codeQLDatabases.sortByName": () => Promise<void>;
-  "codeQLDatabases.sortByDateAdded": () => Promise<void>;
-  "codeQLDatabases.removeOrphanedDatabases": () => Promise<void>;
 
+  // Database panel selection commands
   "codeQLDatabases.removeDatabase": SelectionCommandFunction<DatabaseItem>;
   "codeQLDatabases.upgradeDatabase": SelectionCommandFunction<DatabaseItem>;
   "codeQLDatabases.renameDatabase": SelectionCommandFunction<DatabaseItem>;
   "codeQLDatabases.openDatabaseFolder": SelectionCommandFunction<DatabaseItem>;
   "codeQLDatabases.addDatabaseSource": SelectionCommandFunction<DatabaseItem>;
+
+  // Codespace template commands
+  "codeQL.setDefaultTourDatabase": () => Promise<void>;
+
+  // Internal commands
+  "codeQLDatabases.removeOrphanedDatabases": () => Promise<void>;
 };
 
 // Commands tied to variant analysis
