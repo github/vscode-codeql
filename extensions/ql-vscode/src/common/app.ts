@@ -7,7 +7,6 @@ import { AppCommandManager } from "./commands";
 
 export interface App {
   createEventEmitter<T>(): AppEventEmitter<T>;
-  executeCommand(command: string, ...args: any): Thenable<void>;
   readonly mode: AppMode;
   readonly logger: Logger;
   readonly subscriptions: Disposable[];
