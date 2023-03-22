@@ -35,7 +35,10 @@ export type SingleSelectionCommandFunction<Item> = (
 // Base commands not tied directly to a module like e.g. variant analysis.
 export type BaseCommands = {
   "codeQL.openDocumentation": () => Promise<void>;
+  "codeQL.showLogs": () => Promise<void>;
+  "codeQL.authenticateToGitHub": () => Promise<void>;
 
+  "codeQL.copyVersion": () => Promise<void>;
   "codeQL.restartQueryServer": () => Promise<void>;
 };
 
