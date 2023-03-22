@@ -3,21 +3,23 @@ import { VSCodeCredentials } from "../../authentication";
 import { Disposable } from "../../pure/disposable-object";
 import { App, AppMode } from "../app";
 import { AppEventEmitter } from "../events";
-import { extLogger, Logger } from "../logging";
+import { extLogger, Logger, queryServerLogger } from "../logging";
 import { Memento } from "../memento";
 import { VSCodeAppEventEmitter } from "./events";
-import { AppCommandManager } from "../commands";
+import { AppCommandManager, QueryServerCommandManager } from "../commands";
 import { createVSCodeCommandManager } from "./commands";
 
 export class ExtensionApp implements App {
   public readonly credentials: VSCodeCredentials;
   public readonly commands: AppCommandManager;
+  public readonly queryServerCommands: QueryServerCommandManager;
 
   public constructor(
     public readonly extensionContext: vscode.ExtensionContext,
   ) {
     this.credentials = new VSCodeCredentials();
     this.commands = createVSCodeCommandManager();
+    this.queryServerCommands = createVSCodeCommandManager(queryServerLogger);
     extensionContext.subscriptions.push(this.commands);
   }
 

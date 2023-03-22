@@ -1,5 +1,5 @@
 import type { CommandManager } from "../packages/commands";
-import type { Uri } from "vscode";
+import type { Uri, Range } from "vscode";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
@@ -27,6 +27,21 @@ export type SingleSelectionCommandFunction<Item> = (
 // Base commands not tied directly to a module like e.g. variant analysis.
 export type BaseCommands = {
   "codeQL.openDocumentation": () => Promise<void>;
+};
+
+// Commands used for running local queries
+export type LocalQueryCommands = {
+  "codeQL.runQuery": (uri?: Uri) => Promise<void>;
+  "codeQL.runQueryContextEditor": (uri?: Uri) => Promise<void>;
+  "codeQL.runQueryOnMultipleDatabases": (uri?: Uri) => Promise<void>;
+  "codeQL.runQueryOnMultipleDatabasesContextEditor": (
+    uri?: Uri,
+  ) => Promise<void>;
+  "codeQL.runQueries": SelectionCommandFunction<Uri>;
+  "codeQL.quickEval": (uri: Uri) => Promise<void>;
+  "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
+  "codeQL.codeLensQuickEval": (uri: Uri, range: Range) => Promise<void>;
+  "codeQL.quickQuery": () => Promise<void>;
 };
 
 // Commands used for the query history panel
@@ -115,3 +130,7 @@ export type AllCommands = BaseCommands &
   DatabasePanelCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
+
+// Separate command manager because it uses a different logger
+export type QueryServerCommands = LocalQueryCommands;
+export type QueryServerCommandManager = CommandManager<QueryServerCommands>;
