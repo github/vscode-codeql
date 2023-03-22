@@ -19,7 +19,7 @@ import {
   commands,
 } from "vscode";
 import { CodeQLCliServer, QlpacksInfo } from "./cli";
-import { UserCancellationException } from "./commandRunner";
+import { UserCancellationException } from "./progress";
 import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";

@@ -11,7 +11,7 @@ import {
 import { CodeQLCliServer } from "../cli";
 import { DatabaseManager, DatabaseItem } from "../local-databases";
 import fileRangeFromURI from "./fileRangeFromURI";
-import { ProgressCallback } from "../commandRunner";
+import { ProgressCallback } from "../progress";
 import { KeyType } from "./keyType";
 import {
   qlpackOfDatabase,

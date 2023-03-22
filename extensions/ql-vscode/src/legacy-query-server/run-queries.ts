@@ -13,7 +13,7 @@ import {
   tryGetQueryMetadata,
   upgradesTmpDir,
 } from "../helpers";
-import { ProgressCallback } from "../commandRunner";
+import { ProgressCallback } from "../progress";
 import { QueryMetadata } from "../pure/interface-types";
 import { extLogger, Logger, TeeLogger } from "../common";
 import * as messages from "../pure/legacy-messages";

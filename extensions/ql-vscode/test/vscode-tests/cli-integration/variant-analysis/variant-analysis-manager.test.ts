@@ -25,7 +25,7 @@ import {
 } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { VariantAnalysis as VariantAnalysisApiResponse } from "../../../../src/variant-analysis/gh-api/variant-analysis";
 import { createMockApiResponse } from "../../../factories/variant-analysis/gh-api/variant-analysis-api-response";
-import { UserCancellationException } from "../../../../src/commandRunner";
+import { UserCancellationException } from "../../../../src/progress";
 import { Repository } from "../../../../src/variant-analysis/gh-api/repository";
 import { DbManager } from "../../../../src/databases/db-manager";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";

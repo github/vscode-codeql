@@ -9,7 +9,7 @@ import {
   TelemetryListener,
   telemetryListener as globalTelemetryListener,
 } from "../../../src/telemetry";
-import { UserCancellationException } from "../../../src/commandRunner";
+import { UserCancellationException } from "../../../src/progress";
 import { ENABLE_TELEMETRY } from "../../../src/config";
 import { createMockExtensionContext } from "./index";
 import { vscodeGetConfigurationMock } from "../test-config";

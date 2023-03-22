@@ -1,8 +1,4 @@
-import {
-  ProgressCallback,
-  ProgressUpdate,
-  withProgress,
-} from "./commandRunner";
+import { ProgressCallback, ProgressUpdate, withProgress } from "./progress";
 import {
   CancellationToken,
   CancellationTokenSource,

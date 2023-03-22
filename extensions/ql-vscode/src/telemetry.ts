@@ -16,7 +16,7 @@ import {
 } from "./config";
 import * as appInsights from "applicationinsights";
 import { extLogger } from "./common";
-import { UserCancellationException } from "./commandRunner";
+import { UserCancellationException } from "./progress";
 import { showBinaryChoiceWithUrlDialog } from "./helpers";
 import { RedactableError } from "./pure/errors";
 
