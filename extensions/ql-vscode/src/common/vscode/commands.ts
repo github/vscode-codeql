@@ -15,7 +15,7 @@ import {
 import { telemetryListener } from "../../telemetry";
 
 /**
- * Create a command manager for VSCode, wrapping the commandRunner
+ * Create a command manager for VSCode, wrapping registerCommandWithErrorHandling
  * and vscode.executeCommand.
  */
 export function createVSCodeCommandManager<
