@@ -121,6 +121,7 @@ import {
 } from "./local-queries";
 import { getAstCfgCommands } from "./ast-cfg-commands";
 import { getQueryEditorCommands } from "./query-editor";
+import { App } from "./common/app";
 
 /**
  * extension.ts
@@ -156,9 +157,18 @@ const extension = extensions.getExtension(extensionId);
  * Return all commands that are not tied to the more specific managers.
  */
 function getCommands(
+  app: App,
   cliServer: CodeQLCliServer,
   queryRunner: QueryRunner,
 ): BaseCommands {
+  const getCliVersion = async () => {
+    try {
+      return await cliServer.getVersion();
+    } catch {
+      return "<missing>";
+    }
+  };
+
   return {
     "codeQL.openDocumentation": async () => {
       await env.openExternal(Uri.parse("https://codeql.github.com/docs/"));
@@ -177,6 +187,27 @@ function getCommands(
           title: "Restarting Query Server",
         },
       ),
+    "codeQL.copyVersion": async () => {
+      const text = `CodeQL extension version: ${
+        extension?.packageJSON.version
+      } \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${platform()} ${arch()}`;
+      await env.clipboard.writeText(text);
+      void showAndLogInformationMessage(text);
+    },
+    "codeQL.authenticateToGitHub": async () => {
+      /**
+       * Credentials for authenticating to GitHub.
+       * These are used when making API calls.
+       */
+      const octokit = await app.credentials.getOctokit();
+      const userInfo = await octokit.users.getAuthenticated();
+      void showAndLogInformationMessage(
+        `Authenticated to GitHub as user: ${userInfo.data.login}`,
+      );
+    },
+    "codeQL.showLogs": async () => {
+      extLogger.show();
+    },
   };
 }
 
@@ -841,7 +872,7 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllExtensionCommands = {
-    ...getCommands(cliServer, qs),
+    ...getCommands(app, cliServer, qs),
     ...getQueryEditorCommands({
       queryRunner: qs,
       cliServer,
@@ -895,44 +926,6 @@ async function activateWithInstalledDistribution(
       command,
     );
   }
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.copyVersion", async () => {
-      const text = `CodeQL extension version: ${
-        extension?.packageJSON.version
-      } \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${platform()} ${arch()}`;
-      await env.clipboard.writeText(text);
-      void showAndLogInformationMessage(text);
-    }),
-  );
-
-  const getCliVersion = async () => {
-    try {
-      return await cliServer.getVersion();
-    } catch {
-      return "<missing>";
-    }
-  };
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.authenticateToGitHub", async () => {
-      /**
-       * Credentials for authenticating to GitHub.
-       * These are used when making API calls.
-       */
-      const octokit = await app.credentials.getOctokit();
-      const userInfo = await octokit.users.getAuthenticated();
-      void showAndLogInformationMessage(
-        `Authenticated to GitHub as user: ${userInfo.data.login}`,
-      );
-    }),
-  );
-
-  ctx.subscriptions.push(
-    commandRunner("codeQL.showLogs", async () => {
-      extLogger.show();
-    }),
-  );
 
   void extLogger.log("Starting language server.");
   await client.start();
