@@ -36,7 +36,10 @@ export type SingleSelectionCommandFunction<Item> = (
 // See https://code.visualstudio.com/api/references/commands
 export type BuiltInVsCodeCommands = {
   "markdown.showPreviewToSide": (uri: Uri) => Promise<void>;
-  setContext: (key: string, value: unknown) => Promise<void>;
+  setContext: (
+    key: `${"codeql" | "codeQL"}${string}`,
+    value: unknown,
+  ) => Promise<void>;
   "workbench.action.reloadWindow": () => Promise<void>;
 };
 
