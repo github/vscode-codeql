@@ -14,7 +14,6 @@ export function createMockApp({
   workspaceStoragePath = "/mock/workspace/storage/path",
   globalStoragePath = "/mock/global/storage/path",
   createEventEmitter = <T>() => new MockAppEventEmitter<T>(),
-  executeCommand = jest.fn(() => Promise.resolve()),
   workspaceState = createMockMemento(),
   credentials = testCredentialsWithStub(),
   commands = createMockCommandManager(),
@@ -23,7 +22,6 @@ export function createMockApp({
   workspaceStoragePath?: string;
   globalStoragePath?: string;
   createEventEmitter?: <T>() => AppEventEmitter<T>;
-  executeCommand?: () => Promise<void>;
   workspaceState?: Memento;
   credentials?: Credentials;
   commands?: AppCommandManager;
@@ -37,7 +35,6 @@ export function createMockApp({
     globalStoragePath,
     workspaceState,
     createEventEmitter,
-    executeCommand,
     credentials,
     commands,
   };

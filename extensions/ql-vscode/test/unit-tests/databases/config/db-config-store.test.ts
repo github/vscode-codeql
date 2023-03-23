@@ -19,6 +19,7 @@ import {
   createRemoteUserDefinedListDbItem,
 } from "../../../factories/db-item-factories";
 import { createMockApp } from "../../../__mocks__/appMock";
+import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 
 describe("db config store", () => {
   const extensionPath = join(__dirname, "../../../..");
@@ -136,14 +137,16 @@ describe("db config store", () => {
     it("should set codeQLVariantAnalysisRepositories.configError to true when config has error", async () => {
       const testDataStoragePathInvalid = join(__dirname, "data", "invalid");
 
+      const executeCommand = jest.fn();
       const app = createMockApp({
         extensionPath,
         workspaceStoragePath: testDataStoragePathInvalid,
+        commands: createMockCommandManager({ executeCommand }),
       });
       const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
-      expect(app.executeCommand).toBeCalledWith(
+      expect(executeCommand).toBeCalledWith(
         "setContext",
         "codeQLVariantAnalysisRepositories.configError",
         true,
@@ -152,14 +155,16 @@ describe("db config store", () => {
     });
 
     it("should set codeQLVariantAnalysisRepositories.configError to false when config is valid", async () => {
+      const executeCommand = jest.fn();
       const app = createMockApp({
         extensionPath,
         workspaceStoragePath: testDataStoragePath,
+        commands: createMockCommandManager({ executeCommand }),
       });
       const configStore = new DbConfigStore(app, false);
       await configStore.initialize();
 
-      expect(app.executeCommand).toBeCalledWith(
+      expect(executeCommand).toBeCalledWith(
         "setContext",
         "codeQLVariantAnalysisRepositories.configError",
         false,
