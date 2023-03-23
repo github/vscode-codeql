@@ -1,4 +1,4 @@
-import { CancellationToken, commands, Disposable } from "vscode";
+import { commands, Disposable } from "vscode";
 import {
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
@@ -7,12 +7,7 @@ import { extLogger } from "./common";
 import { asError, getErrorMessage, getErrorStack } from "./pure/helpers-pure";
 import { telemetryListener } from "./telemetry";
 import { redactableError } from "./pure/errors";
-import {
-  UserCancellationException,
-  withProgress,
-  ProgressOptions,
-  ProgressCallback,
-} from "./progress";
+import { UserCancellationException } from "./progress";
 
 /**
  * A task that handles command invocations from `commandRunner`.
@@ -23,27 +18,6 @@ import {
  * `commands.registerCommand`.
  */
 export type NoProgressTask = (...args: any[]) => Promise<any>;
-
-/**
- * A task that handles command invocations from `commandRunner`
- * and includes a progress monitor.
- *
- *
- * Arguments passed to the command handler are passed along,
- * untouched to this `ProgressTaskWithArgs` instance.
- *
- * @param progress a progress handler function. Call this
- * function with a `ProgressUpdate` instance in order to
- * denote some progress being achieved on this task.
- * @param token a cancellation token
- * @param args arguments passed to this task passed on from
- * `commands.registerCommand`.
- */
-type ProgressTaskWithArgs<R> = (
-  progress: ProgressCallback,
-  token: CancellationToken,
-  ...args: any[]
-) => Thenable<R>;
 
 /**
  * A generic wrapper for command registration. This wrapper adds uniform error handling for commands.
@@ -99,32 +73,4 @@ export function commandRunner(
       telemetryListener?.sendCommandUsage(commandId, executionTime, error);
     }
   });
-}
-
-/**
- * A generic wrapper for command registration.  This wrapper adds uniform error handling,
- * progress monitoring, and cancellation for commands.
- *
- * @param commandId The ID of the command to register.
- * @param task The task to run. It is passed directly to `commands.registerCommand`. Any
- * arguments to the command handler are passed on to the task after the progress callback
- * and cancellation token.
- * @param progressOptions Progress options to be sent to the progress monitor.
- */
-export function commandRunnerWithProgress<R>(
-  commandId: string,
-  task: ProgressTaskWithArgs<R>,
-  progressOptions: ProgressOptions,
-  outputLogger = extLogger,
-): Disposable {
-  return commandRunner(
-    commandId,
-    async (...args: any[]) => {
-      return withProgress(
-        (progress, token) => task(progress, token, ...args),
-        progressOptions,
-      );
-    },
-    outputLogger,
-  );
 }
