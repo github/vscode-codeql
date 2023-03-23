@@ -521,7 +521,7 @@ export async function convertGithubNwoToDatabaseUrl(
   }
 }
 
-async function promptForLanguage(
+export async function promptForLanguage(
   languages: string[],
   progress: ProgressCallback,
 ): Promise<string | undefined> {
