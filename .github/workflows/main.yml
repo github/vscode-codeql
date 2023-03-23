@@ -199,6 +199,7 @@ jobs:
         run: echo "cli-versions=$(cat ./extensions/ql-vscode/supported_cli_versions.json | jq -rc)" >> $GITHUB_OUTPUT
     outputs:
       cli-versions: ${{ steps.set-variables.outputs.cli-versions }}
+
   cli-test:
     name: CLI Test
     runs-on: ${{ matrix.os }}

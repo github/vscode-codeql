@@ -5,9 +5,11 @@ import * as tmp from "tmp";
 import { realpathSync } from "fs-extra";
 import { setStoragePath, storagePath } from "./global.helper";
 
-jest.retryTimes(3, {
-  logErrorsBeforeRetry: true,
-});
+if (process.env.CI) {
+  jest.retryTimes(3, {
+    logErrorsBeforeRetry: true,
+  });
+}
 
 // create an extension storage location
 let removeStorage: tmp.DirResult["removeCallback"] | undefined;
