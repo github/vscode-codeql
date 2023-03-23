@@ -876,7 +876,7 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(astViewer);
 
-  const summaryLanguageSupport = new SummaryLanguageSupport();
+  const summaryLanguageSupport = new SummaryLanguageSupport(app);
   ctx.subscriptions.push(summaryLanguageSupport);
 
   const mockServer = new VSCodeMockGitHubApiServer(ctx);
