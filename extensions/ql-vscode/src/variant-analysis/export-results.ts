@@ -1,14 +1,7 @@
 import { join } from "path";
 import { ensureDir, writeFile } from "fs-extra";
 
-import {
-  CancellationToken,
-  commands,
-  Uri,
-  ViewColumn,
-  window,
-  workspace,
-} from "vscode";
+import { CancellationToken, Uri, ViewColumn, window, workspace } from "vscode";
 import {
   ProgressCallback,
   UserCancellationException,
@@ -35,6 +28,7 @@ import {
   RepositoriesFilterSortStateWithIds,
 } from "../pure/variant-analysis-filter-sort";
 import { Credentials } from "../common/authentication";
+import { AppCommandManager } from "../common/commands";
 
 const MAX_VARIANT_ANALYSIS_EXPORT_PROGRESS_STEPS = 2;
 
@@ -46,6 +40,7 @@ export async function exportVariantAnalysisResults(
   variantAnalysisManager: VariantAnalysisManager,
   variantAnalysisId: number,
   filterSort: RepositoriesFilterSortStateWithIds | undefined,
+  commandManager: AppCommandManager,
   credentials: Credentials,
 ): Promise<void> {
   await withProgress(
@@ -149,6 +144,7 @@ export async function exportVariantAnalysisResults(
         getAnalysesResults(),
         repositories?.length ?? 0,
         exportFormat,
+        commandManager,
         credentials,
         progress,
         token,
@@ -169,6 +165,7 @@ export async function exportVariantAnalysisAnalysisResults(
   >,
   expectedAnalysesResultsCount: number,
   exportFormat: "gist" | "local",
+  commandManager: AppCommandManager,
   credentials: Credentials,
   progress: ProgressCallback,
   token: CancellationToken,
@@ -199,6 +196,7 @@ export async function exportVariantAnalysisAnalysisResults(
     description,
     markdownFiles,
     exportFormat,
+    commandManager,
     credentials,
     progress,
     token,
@@ -243,6 +241,7 @@ export async function exportResults(
   description: string,
   markdownFiles: MarkdownFile[],
   exportFormat: "gist" | "local",
+  commandManager: AppCommandManager,
   credentials: Credentials,
   progress?: ProgressCallback,
   token?: CancellationToken,
@@ -255,6 +254,7 @@ export async function exportResults(
     await exportToGist(
       description,
       markdownFiles,
+      commandManager,
       credentials,
       progress,
       token,
@@ -263,6 +263,7 @@ export async function exportResults(
     await exportToLocalMarkdown(
       exportedResultsPath,
       markdownFiles,
+      commandManager,
       progress,
       token,
     );
@@ -272,6 +273,7 @@ export async function exportResults(
 export async function exportToGist(
   description: string,
   markdownFiles: MarkdownFile[],
+  commandManager: AppCommandManager,
   credentials: Credentials,
   progress?: ProgressCallback,
   token?: CancellationToken,
@@ -303,7 +305,7 @@ export async function exportToGist(
       if (!shouldOpenGist) {
         return;
       }
-      return commands.executeCommand("vscode.open", Uri.parse(gistUrl));
+      return commandManager.execute("vscode.open", Uri.parse(gistUrl));
     });
   }
 }
@@ -334,6 +336,7 @@ const buildVariantAnalysisGistDescription = (
 async function exportToLocalMarkdown(
   exportedResultsPath: string,
   markdownFiles: MarkdownFile[],
+  commandManager: AppCommandManager,
   progress?: ProgressCallback,
   token?: CancellationToken,
 ) {
@@ -366,6 +369,6 @@ async function exportToLocalMarkdown(
     const summaryFilePath = join(exportedResultsPath, "_summary.md");
     const summaryFile = await workspace.openTextDocument(summaryFilePath);
     await window.showTextDocument(summaryFile, ViewColumn.One);
-    await commands.executeCommand("revealFileInOS", Uri.file(summaryFilePath));
+    await commandManager.execute("revealFileInOS", Uri.file(summaryFilePath));
   });
 }

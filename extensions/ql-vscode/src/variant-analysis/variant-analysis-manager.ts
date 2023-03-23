@@ -689,6 +689,7 @@ export class VariantAnalysisManager
       this,
       variantAnalysisId,
       filterSort,
+      this.app.commands,
       this.app.credentials,
     );
   }
