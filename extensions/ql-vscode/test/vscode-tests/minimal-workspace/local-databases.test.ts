@@ -13,7 +13,7 @@ import {
   FullDatabaseOptions,
 } from "../../../src/local-databases";
 import { Logger } from "../../../src/common";
-import { ProgressCallback } from "../../../src/commandRunner";
+import { ProgressCallback } from "../../../src/progress";
 import { CodeQLCliServer, DbInfo } from "../../../src/cli";
 import {
   encodeArchiveBasePath,
@@ -25,6 +25,7 @@ import * as helpers from "../../../src/helpers";
 import { Setting } from "../../../src/config";
 import { QlPackGenerator } from "../../../src/qlpack-generator";
 import { mockedObject } from "../utils/mocking.helpers";
+import { createMockApp } from "../../__mocks__/appMock";
 
 describe("local databases", () => {
   const MOCK_DB_OPTIONS: FullDatabaseOptions = {
@@ -87,6 +88,7 @@ describe("local databases", () => {
 
     databaseManager = new DatabaseManager(
       extensionContext,
+      createMockApp({}),
       mockedObject<QueryRunner>({
         registerDatabase: registerSpy,
         deregisterDatabase: deregisterSpy,

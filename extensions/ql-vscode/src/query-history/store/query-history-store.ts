@@ -1,18 +1,18 @@
 import { pathExists, readFile, remove, mkdir, writeFile } from "fs-extra";
 import { dirname } from "path";
 
-import { showAndLogExceptionWithTelemetry } from "./helpers";
+import { showAndLogExceptionWithTelemetry } from "../../helpers";
 import {
   asError,
   asyncFilter,
   getErrorMessage,
   getErrorStack,
-} from "./pure/helpers-pure";
-import { CompletedQueryInfo, LocalQueryInfo } from "./query-results";
-import { QueryHistoryInfo } from "./query-history/query-history-info";
-import { QueryEvaluationInfo } from "./run-queries-shared";
-import { QueryResultType } from "./pure/legacy-messages";
-import { redactableError } from "./pure/errors";
+} from "../../pure/helpers-pure";
+import { CompletedQueryInfo, LocalQueryInfo } from "../../query-results";
+import { QueryHistoryInfo } from "../query-history-info";
+import { QueryEvaluationInfo } from "../../run-queries-shared";
+import { QueryResultType } from "../../pure/legacy-messages";
+import { redactableError } from "../../pure/errors";
 
 export async function deserializeQueryHistory(
   fsPath: string,
@@ -55,10 +55,6 @@ export async function deserializeQueryHistory(
               q.completedQuery.query,
               QueryEvaluationInfo.prototype,
             );
-            // deserialized queries do not need to be disposed
-            q.completedQuery.dispose = () => {
-              /**/
-            };
 
             // Previously, there was a typo in the completedQuery type. There was a field
             // `sucessful` and it was renamed to `successful`. We need to handle this case.

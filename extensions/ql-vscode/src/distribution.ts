@@ -14,7 +14,7 @@ import {
 } from "./helpers";
 import { extLogger } from "./common";
 import { getCodeQlCliVersion } from "./cli-version";
-import { ProgressCallback, reportStreamProgress } from "./commandRunner";
+import { ProgressCallback, reportStreamProgress } from "./progress";
 import {
   codeQlLauncherName,
   deprecatedCodeQlLauncherName,

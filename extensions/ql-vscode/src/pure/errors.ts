@@ -1,6 +1,6 @@
 export class RedactableError extends Error {
   constructor(
-    cause: Error | undefined,
+    cause: ErrorLike | undefined,
     private readonly strings: TemplateStringsArray,
     private readonly values: unknown[],
   ) {
@@ -54,19 +54,34 @@ export function redactableError(
   ...values: unknown[]
 ): RedactableError;
 export function redactableError(
-  error: Error,
+  error: ErrorLike,
 ): (strings: TemplateStringsArray, ...values: unknown[]) => RedactableError;
 
 export function redactableError(
-  errorOrStrings: Error | TemplateStringsArray,
+  errorOrStrings: ErrorLike | TemplateStringsArray,
   ...values: unknown[]
 ):
   | ((strings: TemplateStringsArray, ...values: unknown[]) => RedactableError)
   | RedactableError {
-  if (errorOrStrings instanceof Error) {
+  if (isErrorLike(errorOrStrings)) {
     return (strings: TemplateStringsArray, ...values: unknown[]) =>
       new RedactableError(errorOrStrings, strings, values);
   } else {
     return new RedactableError(undefined, errorOrStrings, values);
   }
+}
+
+export interface ErrorLike {
+  message: string;
+  stack?: string;
+}
+
+function isErrorLike(error: any): error is ErrorLike {
+  if (
+    typeof error.message === "string" &&
+    (error.stack === undefined || typeof error.stack === "string")
+  ) {
+    return true;
+  }
+  return false;
 }

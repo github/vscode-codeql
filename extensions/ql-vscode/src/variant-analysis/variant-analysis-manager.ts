@@ -51,7 +51,11 @@ import {
 import { readFile, readJson, remove, pathExists, outputJson } from "fs-extra";
 import { EOL } from "os";
 import { cancelVariantAnalysis } from "./gh-api/gh-actions-api-client";
-import { ProgressCallback, UserCancellationException } from "../commandRunner";
+import {
+  ProgressCallback,
+  UserCancellationException,
+  withProgress,
+} from "../progress";
 import { CodeQLCliServer } from "../cli";
 import {
   defaultFilterSortState,
@@ -62,6 +66,8 @@ import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { App } from "../common/app";
 import { redactableError } from "../pure/errors";
+import { AppCommandManager, VariantAnalysisCommands } from "../common/commands";
+import { exportVariantAnalysisResults } from "./export-results";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -123,11 +129,54 @@ export class VariantAnalysisManager
     );
   }
 
+  getCommands(): VariantAnalysisCommands {
+    return {
+      "codeQL.autoDownloadVariantAnalysisResult":
+        this.enqueueDownload.bind(this),
+      "codeQL.copyVariantAnalysisRepoList":
+        this.copyRepoListToClipboard.bind(this),
+      "codeQL.loadVariantAnalysisRepoResults": this.loadResults.bind(this),
+      "codeQL.monitorVariantAnalysis": this.monitorVariantAnalysis.bind(this),
+      "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
+      "codeQL.openVariantAnalysisView": this.showView.bind(this),
+      "codeQL.runVariantAnalysis":
+        this.runVariantAnalysisFromCommand.bind(this),
+      // Since we are tracking extension usage through commands, this command mirrors the "codeQL.runVariantAnalysis" command
+      "codeQL.runVariantAnalysisContextEditor":
+        this.runVariantAnalysisFromCommand.bind(this),
+    };
+  }
+
+  get commandManager(): AppCommandManager {
+    return this.app.commands;
+  }
+
+  private async runVariantAnalysisFromCommand(uri?: Uri) {
+    return withProgress(
+      async (progress, token) =>
+        this.runVariantAnalysis(
+          uri || Window.activeTextEditor?.document.uri,
+          progress,
+          token,
+        ),
+      {
+        title: "Run Variant Analysis",
+        cancellable: true,
+      },
+    );
+  }
+
   public async runVariantAnalysis(
     uri: Uri | undefined,
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
+    progress({
+      maxStep: 5,
+      step: 0,
+      message: "Getting credentials",
+    });
+
     const {
       actionBranch,
       base64Pack,
@@ -452,19 +501,16 @@ export class VariantAnalysisManager
 
   public async monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
-    cancellationToken: CancellationToken,
   ): Promise<void> {
     await this.variantAnalysisMonitor.monitorVariantAnalysis(
       variantAnalysis,
       this.app.credentials,
-      cancellationToken,
     );
   }
 
   public async autoDownloadVariantAnalysisResult(
     scannedRepo: VariantAnalysisScannedRepository,
     variantAnalysis: VariantAnalysis,
-    cancellationToken: CancellationToken,
   ): Promise<void> {
     if (
       this.repoStates.get(variantAnalysis.id)?.[scannedRepo.repository.id]
@@ -480,13 +526,6 @@ export class VariantAnalysisManager
     };
 
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
-
-    if (cancellationToken && cancellationToken.isCancellationRequested) {
-      repoState.downloadStatus =
-        VariantAnalysisScannedRepositoryDownloadStatus.Failed;
-      await this.onRepoStateUpdated(variantAnalysis.id, repoState);
-      return;
-    }
 
     let repoTask: VariantAnalysisRepositoryTask;
     try {
@@ -562,14 +601,9 @@ export class VariantAnalysisManager
   public async enqueueDownload(
     scannedRepo: VariantAnalysisScannedRepository,
     variantAnalysis: VariantAnalysis,
-    token: CancellationToken,
   ): Promise<void> {
     await this.queue.add(() =>
-      this.autoDownloadVariantAnalysisResult(
-        scannedRepo,
-        variantAnalysis,
-        token,
-      ),
+      this.autoDownloadVariantAnalysisResult(scannedRepo, variantAnalysis),
     );
   }
 
@@ -645,6 +679,18 @@ export class VariantAnalysisManager
     ];
 
     await env.clipboard.writeText(text.join(EOL));
+  }
+
+  public async exportResults(
+    variantAnalysisId: number,
+    filterSort?: RepositoriesFilterSortStateWithIds,
+  ) {
+    await exportVariantAnalysisResults(
+      this,
+      variantAnalysisId,
+      filterSort,
+      this.app.credentials,
+    );
   }
 
   private getRepoStatesStoragePath(variantAnalysisId: number): string {

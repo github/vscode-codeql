@@ -1,5 +1,4 @@
 import {
-  CancellationTokenSource,
   commands,
   env,
   extensions,
@@ -54,7 +53,6 @@ jest.setTimeout(3 * 60 * 1000);
 
 describe("Variant Analysis Manager", () => {
   let app: App;
-  let cancellationTokenSource: CancellationTokenSource;
   let variantAnalysisManager: VariantAnalysisManager;
   let variantAnalysisResultsManager: VariantAnalysisResultsManager;
   let variantAnalysis: VariantAnalysis;
@@ -62,8 +60,6 @@ describe("Variant Analysis Manager", () => {
 
   beforeEach(async () => {
     jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
-
-    cancellationTokenSource = new CancellationTokenSource();
 
     scannedRepos = createMockScannedRepos();
     variantAnalysis = createMockVariantAnalysis({
@@ -203,7 +199,6 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationTokenSource.token,
         );
 
         expect(getVariantAnalysisRepoResultStub).not.toHaveBeenCalled();
@@ -228,23 +223,10 @@ describe("Variant Analysis Manager", () => {
         getVariantAnalysisRepoResultStub.mockResolvedValue(response);
       });
 
-      it("should return early if variant analysis is cancelled", async () => {
-        cancellationTokenSource.cancel();
-
-        await variantAnalysisManager.autoDownloadVariantAnalysisResult(
-          scannedRepos[0],
-          variantAnalysis,
-          cancellationTokenSource.token,
-        );
-
-        expect(getVariantAnalysisRepoStub).not.toHaveBeenCalled();
-      });
-
       it("should fetch a repo task", async () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationTokenSource.token,
         );
 
         expect(getVariantAnalysisRepoStub).toHaveBeenCalled();
@@ -254,7 +236,6 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationTokenSource.token,
         );
 
         expect(getVariantAnalysisRepoResultStub).toHaveBeenCalled();
@@ -265,7 +246,6 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationTokenSource.token,
         );
 
         getVariantAnalysisRepoStub.mockClear();
@@ -273,7 +253,6 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationTokenSource.token,
         );
 
         expect(getVariantAnalysisRepoStub).not.toHaveBeenCalled();
@@ -283,7 +262,6 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationTokenSource.token,
         );
 
         await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
@@ -304,7 +282,6 @@ describe("Variant Analysis Manager", () => {
           variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
             variantAnalysis,
-            cancellationTokenSource.token,
           ),
         ).rejects.toThrow();
 
@@ -320,7 +297,6 @@ describe("Variant Analysis Manager", () => {
           variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
             variantAnalysis,
-            cancellationTokenSource.token,
           ),
         ).rejects.toThrow();
 
@@ -329,7 +305,6 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[1],
           variantAnalysis,
-          cancellationTokenSource.token,
         );
 
         await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
@@ -355,7 +330,6 @@ describe("Variant Analysis Manager", () => {
           variantAnalysisManager.autoDownloadVariantAnalysisResult(
             scannedRepos[0],
             variantAnalysis,
-            cancellationTokenSource.token,
           ),
         ).rejects.toThrow();
 
@@ -364,7 +338,6 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[1],
           variantAnalysis,
-          cancellationTokenSource.token,
         );
 
         await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
@@ -400,7 +373,6 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.autoDownloadVariantAnalysisResult(
           scannedRepos[0],
           variantAnalysis,
-          cancellationTokenSource.token,
         );
 
         await expect(fs.readJson(repoStatesPath)).resolves.toEqual({
@@ -439,17 +411,14 @@ describe("Variant Analysis Manager", () => {
       await variantAnalysisManager.enqueueDownload(
         scannedRepos[0],
         variantAnalysis,
-        cancellationTokenSource.token,
       );
       await variantAnalysisManager.enqueueDownload(
         scannedRepos[1],
         variantAnalysis,
-        cancellationTokenSource.token,
       );
       await variantAnalysisManager.enqueueDownload(
         scannedRepos[2],
         variantAnalysis,
-        cancellationTokenSource.token,
       );
 
       expect(variantAnalysisManager.downloadsQueueSize()).toBe(0);

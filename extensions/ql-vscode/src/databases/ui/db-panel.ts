@@ -1,5 +1,4 @@
 import {
-  commands,
   QuickPickItem,
   TreeView,
   TreeViewExpansionEvent,
@@ -7,7 +6,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { commandRunner, UserCancellationException } from "../../commandRunner";
+import { UserCancellationException } from "../../progress";
 import {
   getNwoFromGitHubUrl,
   isValidGitHubNwo,
@@ -31,7 +30,8 @@ import { DbTreeViewItem } from "./db-tree-view-item";
 import { getGitHubUrl } from "./db-tree-view-item-action";
 import { getControllerRepo } from "../../variant-analysis/run-remote-query";
 import { getErrorMessage } from "../../pure/helpers-pure";
-import { Credentials } from "../../common/authentication";
+import { DatabasePanelCommands } from "../../common/commands";
+import { App } from "../../common/app";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   kind: string;
@@ -46,8 +46,8 @@ export class DbPanel extends DisposableObject {
   private readonly treeView: TreeView<DbTreeViewItem>;
 
   public constructor(
+    private readonly app: App,
     private readonly dbManager: DbManager,
-    private readonly credentials: Credentials,
   ) {
     super();
 
@@ -72,58 +72,28 @@ export class DbPanel extends DisposableObject {
     this.push(this.treeView);
   }
 
-  public async initialize(): Promise<void> {
-    this.push(
-      commandRunner("codeQLVariantAnalysisRepositories.openConfigFile", () =>
-        this.openConfigFile(),
-      ),
-    );
-    this.push(
-      commandRunner("codeQLVariantAnalysisRepositories.addNewDatabase", () =>
-        this.addNewRemoteDatabase(),
-      ),
-    );
-    this.push(
-      commandRunner("codeQLVariantAnalysisRepositories.addNewList", () =>
-        this.addNewList(),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.setSelectedItem",
-        (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
-        (treeViewItem: DbTreeViewItem) => this.setSelectedItem(treeViewItem),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
-        (treeViewItem: DbTreeViewItem) => this.openOnGitHub(treeViewItem),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.renameItemContextMenu",
-        (treeViewItem: DbTreeViewItem) => this.renameItem(treeViewItem),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.removeItemContextMenu",
-        (treeViewItem: DbTreeViewItem) => this.removeItem(treeViewItem),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLVariantAnalysisRepositories.setupControllerRepository",
-        () => this.setupControllerRepository(),
-      ),
-    );
+  public getCommands(): DatabasePanelCommands {
+    return {
+      "codeQLVariantAnalysisRepositories.openConfigFile":
+        this.openConfigFile.bind(this),
+      "codeQLVariantAnalysisRepositories.addNewDatabase":
+        this.addNewRemoteDatabase.bind(this),
+      "codeQLVariantAnalysisRepositories.addNewList":
+        this.addNewList.bind(this),
+      "codeQLVariantAnalysisRepositories.setupControllerRepository":
+        this.setupControllerRepository.bind(this),
+
+      "codeQLVariantAnalysisRepositories.setSelectedItem":
+        this.setSelectedItem.bind(this),
+      "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu":
+        this.setSelectedItem.bind(this),
+      "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu":
+        this.openOnGitHub.bind(this),
+      "codeQLVariantAnalysisRepositories.renameItemContextMenu":
+        this.renameItem.bind(this),
+      "codeQLVariantAnalysisRepositories.removeItemContextMenu":
+        this.removeItem.bind(this),
+    };
   }
 
   private async openConfigFile(): Promise<void> {
@@ -398,13 +368,13 @@ export class DbPanel extends DisposableObject {
       );
     }
 
-    await commands.executeCommand("vscode.open", Uri.parse(githubUrl));
+    await this.app.commands.execute("vscode.open", Uri.parse(githubUrl));
   }
 
   private async setupControllerRepository(): Promise<void> {
     try {
       // This will also validate that the controller repository is valid
-      await getControllerRepo(this.credentials);
+      await getControllerRepo(this.app.credentials);
     } catch (e: unknown) {
       if (e instanceof UserCancellationException) {
         return;

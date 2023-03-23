@@ -1,4 +1,4 @@
-import { CancellationToken, commands, EventEmitter } from "vscode";
+import { commands, EventEmitter } from "vscode";
 import { getVariantAnalysis } from "./gh-api/gh-api-client";
 
 import {
@@ -37,17 +37,12 @@ export class VariantAnalysisMonitor extends DisposableObject {
   public async monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
     credentials: Credentials,
-    cancellationToken: CancellationToken,
   ): Promise<void> {
     let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];
 
     while (attemptCount <= VariantAnalysisMonitor.maxAttemptCount) {
       await sleep(VariantAnalysisMonitor.sleepTime);
-
-      if (cancellationToken && cancellationToken.isCancellationRequested) {
-        return;
-      }
 
       if (await this.shouldCancelMonitor(variantAnalysis.id)) {
         return;

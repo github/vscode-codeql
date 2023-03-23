@@ -1,0 +1,8 @@
+name: github/extension-pack-for-testing
+version: 0.0.0
+library: true
+extensionTargets:
+  github/remote-query-pack: "*"
+
+dataExtensions:
+  - extension-file.yml

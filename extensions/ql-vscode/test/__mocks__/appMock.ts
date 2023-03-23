@@ -6,23 +6,25 @@ import { createMockLogger } from "./loggerMock";
 import { createMockMemento } from "../mock-memento";
 import { testCredentialsWithStub } from "../factories/authentication";
 import { Credentials } from "../../src/common/authentication";
+import { AppCommandManager } from "../../src/common/commands";
+import { createMockCommandManager } from "./commandsMock";
 
 export function createMockApp({
   extensionPath = "/mock/extension/path",
   workspaceStoragePath = "/mock/workspace/storage/path",
   globalStoragePath = "/mock/global/storage/path",
   createEventEmitter = <T>() => new MockAppEventEmitter<T>(),
-  executeCommand = jest.fn(() => Promise.resolve()),
   workspaceState = createMockMemento(),
   credentials = testCredentialsWithStub(),
+  commands = createMockCommandManager(),
 }: {
   extensionPath?: string;
   workspaceStoragePath?: string;
   globalStoragePath?: string;
   createEventEmitter?: <T>() => AppEventEmitter<T>;
-  executeCommand?: () => Promise<void>;
   workspaceState?: Memento;
   credentials?: Credentials;
+  commands?: AppCommandManager;
 }): App {
   return {
     mode: AppMode.Test,
@@ -33,8 +35,8 @@ export function createMockApp({
     globalStoragePath,
     workspaceState,
     createEventEmitter,
-    executeCommand,
     credentials,
+    commands,
   };
 }
 

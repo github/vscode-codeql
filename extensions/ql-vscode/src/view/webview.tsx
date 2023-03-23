@@ -7,8 +7,11 @@ import { WebviewDefinition } from "./webview-definition";
 
 // Allow all views to use Codicons
 import "@vscode/codicons/dist/codicon.css";
+import { registerUnhandledErrorListener } from "./common/errors";
 
 const render = () => {
+  registerUnhandledErrorListener();
+
   const element = document.getElementById("root");
 
   if (!element) {
@@ -27,9 +30,9 @@ const render = () => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const view: WebviewDefinition = require(`./${viewName}/index.tsx`).default;
 
-  createRoot(element).render(
+  const root = createRoot(element);
+  root.render(
     <StrictMode>
-      {/* Post a message to the extension when fully loaded. See https://github.com/reactwg/react-18/discussions/5 ("What about the render callback?")*/}
       <div ref={() => vscode.postMessage({ t: "viewLoaded", viewName })}>
         {view.component}
       </div>

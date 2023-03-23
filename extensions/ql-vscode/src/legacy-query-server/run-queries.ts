@@ -13,9 +13,9 @@ import {
   tryGetQueryMetadata,
   upgradesTmpDir,
 } from "../helpers";
-import { ProgressCallback } from "../commandRunner";
+import { ProgressCallback } from "../progress";
 import { QueryMetadata } from "../pure/interface-types";
-import { extLogger } from "../common";
+import { extLogger, Logger, TeeLogger } from "../common";
 import * as messages from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
 import * as qsClient from "./queryserver-client";
@@ -66,7 +66,8 @@ export class QueryInProgress {
     dbItem: DatabaseItem,
     progress: ProgressCallback,
     token: CancellationToken,
-    queryInfo?: LocalQueryInfo,
+    logger: Logger,
+    queryInfo: LocalQueryInfo | undefined,
   ): Promise<messages.EvaluationResult> {
     if (!dbItem.contents || dbItem.error) {
       throw new Error("Can't run query on invalid database.");
@@ -137,7 +138,7 @@ export class QueryInProgress {
           await this.queryEvalInfo.addQueryLogs(
             queryInfo,
             qs.cliServer,
-            qs.logger,
+            logger,
           );
         } else {
           void showAndLogWarningMessage(
@@ -162,6 +163,7 @@ export class QueryInProgress {
     program: messages.QlProgram,
     progress: ProgressCallback,
     token: CancellationToken,
+    logger: Logger,
   ): Promise<messages.CompilationMessage[]> {
     let compiled: messages.CheckQueryResult | undefined;
     try {
@@ -190,6 +192,11 @@ export class QueryInProgress {
         target,
       };
 
+      // Update the active query logger every time there is a new request to compile.
+      // This isn't ideal because in situations where there are queries running
+      // in parallel, each query's log messages are interleaved. Fixing this
+      // properly will require a change in the query server.
+      qs.activeQueryLogger = logger;
       compiled = await qs.sendRequest(
         messages.compileQuery,
         params,
@@ -197,9 +204,7 @@ export class QueryInProgress {
         progress,
       );
     } finally {
-      void qs.logger.log(" - - - COMPILATION DONE - - - ", {
-        additionalLogLocation: this.queryEvalInfo.logPath,
-      });
+      void logger.log(" - - - COMPILATION DONE - - - ");
     }
     return (compiled?.messages || []).filter(
       (msg) => msg.severity === messages.Severity.ERROR,
@@ -386,6 +391,8 @@ export async function compileAndRunQueryAgainstDatabase(
     metadata,
     templates,
   );
+  const logger = new TeeLogger(qs.logger, query.queryEvalInfo.logPath);
+
   await query.queryEvalInfo.createTimestampFile();
 
   let upgradeDir: tmp.DirectoryResult | undefined;
@@ -402,7 +409,7 @@ export async function compileAndRunQueryAgainstDatabase(
     );
     let errors;
     try {
-      errors = await query.compile(qs, qlProgram, progress, token);
+      errors = await query.compile(qs, qlProgram, progress, token, logger);
     } catch (e) {
       if (
         e instanceof ResponseError &&
@@ -422,6 +429,7 @@ export async function compileAndRunQueryAgainstDatabase(
         dbItem,
         progress,
         token,
+        logger,
         queryInfo,
       );
       if (result.resultType !== messages.QueryResultType.SUCCESS) {
@@ -439,18 +447,14 @@ export async function compileAndRunQueryAgainstDatabase(
         result,
         successful: result.resultType === messages.QueryResultType.SUCCESS,
         logFileLocation: result.logFileLocation,
-        dispose: () => {
-          qs.logger.removeAdditionalLogLocation(result.logFileLocation);
-        },
       };
     } else {
       // Error dialogs are limited in size and scrollability,
       // so we include a general description of the problem,
       // and direct the user to the output window for the detailed compilation messages.
       // However we don't show quick eval errors there so we need to display them anyway.
-      void qs.logger.log(
+      void logger.log(
         `Failed to compile query ${initialInfo.queryPath} against database scheme ${qlProgram.dbschemePath}:`,
-        { additionalLogLocation: query.queryEvalInfo.logPath },
       );
 
       const formattedMessages: string[] = [];
@@ -459,9 +463,7 @@ export async function compileAndRunQueryAgainstDatabase(
         const message = error.message || "[no error message available]";
         const formatted = `ERROR: ${message} (${error.position.fileName}:${error.position.line}:${error.position.column}:${error.position.endLine}:${error.position.endColumn})`;
         formattedMessages.push(formatted);
-        void qs.logger.log(formatted, {
-          additionalLogLocation: query.queryEvalInfo.logPath,
-        });
+        void logger.log(formatted);
       }
       if (initialInfo.isQuickEval && formattedMessages.length <= 2) {
         // If there are more than 2 error messages, they will not be displayed well in a popup
@@ -484,9 +486,8 @@ export async function compileAndRunQueryAgainstDatabase(
     try {
       await upgradeDir?.cleanup();
     } catch (e) {
-      void qs.logger.log(
+      void logger.log(
         `Could not clean up the upgrades dir. Reason: ${getErrorMessage(e)}`,
-        { additionalLogLocation: query.queryEvalInfo.logPath },
       );
     }
   }
@@ -535,9 +536,6 @@ function createSyntheticResult(
       runId: 0,
     },
     successful: false,
-    dispose: () => {
-      /**/
-    },
   };
 }
 

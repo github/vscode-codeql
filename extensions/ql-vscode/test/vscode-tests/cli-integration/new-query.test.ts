@@ -13,6 +13,7 @@ import { extLogger, ProgressReporter } from "../../../src/common";
 import { QueryResultType } from "../../../src/pure/new-messages";
 import { cleanDatabases, dbLoc, storagePath } from "../global.helper";
 import { importArchiveDatabase } from "../../../src/databaseFetcher";
+import { createMockCommandManager } from "../../__mocks__/commandsMock";
 
 const baseDir = join(__dirname, "../../../test/data");
 
@@ -147,6 +148,7 @@ describeWithCodeQL()("using the new query server", () => {
       await cleanDatabases(extension.databaseManager);
       const uri = Uri.file(dbLoc);
       const maybeDbItem = await importArchiveDatabase(
+        createMockCommandManager(),
         uri.toString(true),
         extension.databaseManager,
         storagePath,

@@ -20,6 +20,8 @@ import { assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import { telemetryListener } from "../telemetry";
+import { redactableError } from "../pure/errors";
+import { showAndLogExceptionWithTelemetry } from "../helpers";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -137,6 +139,14 @@ export class CompareView extends AbstractWebview<
 
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);
+        break;
+
+      case "unhandledError":
+        void showAndLogExceptionWithTelemetry(
+          redactableError(
+            msg.error,
+          )`Unhandled error in result comparison view: ${msg.error.message}`,
+        );
         break;
 
       default:

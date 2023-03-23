@@ -470,7 +470,6 @@ describe("query-results", () => {
       query: query.queryEvalInfo,
       successful: didRunSuccessfully,
       message: "foo",
-      dispose: jest.fn(),
       result: {
         evaluationTime: 1,
         queryId: 0,

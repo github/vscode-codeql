@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from "fs-extra";
 import { join } from "path";
 import * as tmp from "tmp";
-import { OutputChannelLogger } from "../../../src/common";
+import { Logger, OutputChannelLogger, TeeLogger } from "../../../src/common";
 
 jest.setTimeout(999999);
 
@@ -58,16 +58,19 @@ describe("OutputChannelLogger tests", function () {
     expect(mockOutputChannel.appendLine).not.toBeCalledWith("yyy");
     expect(mockOutputChannel.append).toBeCalledWith("yyy");
 
-    await logger.log("zzz", createLogOptions("hucairz"));
+    const hucairz = createSideLogger(logger, "hucairz");
+    await hucairz.log("zzz");
 
     // should have created 1 side log
     expect(readdirSync(tempFolders.storagePath.name)).toEqual(["hucairz"]);
   });
 
   it("should create a side log", async () => {
-    await logger.log("xxx", createLogOptions("first"));
-    await logger.log("yyy", createLogOptions("second"));
-    await logger.log("zzz", createLogOptions("first", false));
+    const first = createSideLogger(logger, "first");
+    await first.log("xxx");
+    const second = createSideLogger(logger, "second");
+    await second.log("yyy");
+    await first.log("zzz", { trailingNewline: false });
     await logger.log("aaa");
 
     // expect 2 side logs
@@ -82,16 +85,13 @@ describe("OutputChannelLogger tests", function () {
     ).toBe("yyy\n");
   });
 
-  function createLogOptions(
+  function createSideLogger(
+    logger: Logger,
     additionalLogLocation: string,
-    trailingNewline?: boolean,
-  ) {
-    return {
-      additionalLogLocation: join(
-        tempFolders.storagePath.name,
-        additionalLogLocation,
-      ),
-      trailingNewline,
-    };
+  ): Logger {
+    return new TeeLogger(
+      logger,
+      join(tempFolders.storagePath.name, additionalLogLocation),
+    );
   }
 });

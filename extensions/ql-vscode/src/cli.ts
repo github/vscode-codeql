@@ -9,7 +9,7 @@ import { Readable } from "stream";
 import { StringDecoder } from "string_decoder";
 import tk from "tree-kill";
 import { promisify } from "util";
-import { CancellationToken, commands, Disposable, Uri } from "vscode";
+import { CancellationToken, Disposable, Uri } from "vscode";
 
 import { BQRSInfo, DecodedBqrsChunk } from "./pure/bqrs-cli-types";
 import { allowCanaryQueryServer, CliConfig } from "./config";
@@ -1284,10 +1284,24 @@ export class CodeQLCliServer implements Disposable {
     );
   }
 
-  async packInstall(dir: string, forceUpdate = false) {
+  async packInstall(
+    dir: string,
+    { forceUpdate = false, workspaceFolders = [] as string[] } = {},
+  ) {
     const args = [dir];
     if (forceUpdate) {
       args.push("--mode", "update");
+    }
+    if (workspaceFolders?.length > 0) {
+      if (await this.cliConstraints.supportsAdditionalPacksInstall()) {
+        args.push(
+          // Allow prerelease packs from the ql submodule.
+          "--allow-prerelease",
+          // Allow the use of --additional-packs argument without issueing a warning
+          "--no-strict-mode",
+          ...this.getAdditionalPacksArg(workspaceFolders),
+        );
+      }
     }
     return this.runJsonCodeQlCliCommandWithAuthentication(
       ["pack", "install"],
@@ -1361,7 +1375,7 @@ export class CodeQLCliServer implements Disposable {
     if (!this._version) {
       this._version = this.refreshVersion();
       // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
-      await commands.executeCommand(
+      await this.app.commands.execute(
         "setContext",
         "codeql.supportsEvalLog",
         await this.cliConstraints.supportsPerQueryEvalLog(),
@@ -1692,6 +1706,13 @@ export class CliVersionConstraint {
    */
   public static CLI_VERSION_WITH_QLPACKS_KIND = new SemVer("2.12.3");
 
+  /**
+   * CLI version that supports the `--additional-packs` option for the `pack install` command.
+   */
+  public static CLI_VERSION_WITH_ADDITIONAL_PACKS_INSTALL = new SemVer(
+    "2.12.4",
+  );
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1753,6 +1774,12 @@ export class CliVersionConstraint {
   async supportsQlpacksKind() {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND,
+    );
+  }
+
+  async supportsAdditionalPacksInstall() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_ADDITIONAL_PACKS_INSTALL,
     );
   }
 }
