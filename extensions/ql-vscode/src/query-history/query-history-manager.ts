@@ -1,6 +1,5 @@
 import { join, dirname } from "path";
 import {
-  commands,
   Disposable,
   env,
   EventEmitter,
@@ -61,6 +60,7 @@ import { HistoryTreeDataProvider } from "./history-tree-data-provider";
 import { redactableError } from "../pure/errors";
 import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryCommands } from "../common/commands";
+import { App } from "../common/app";
 import { tryOpenExternalFile } from "../vscode-utils/external-files";
 
 /**
@@ -131,6 +131,7 @@ export class QueryHistoryManager extends DisposableObject {
   readonly onDidCompleteQuery = this._onDidCompleteQuery.event;
 
   constructor(
+    private readonly app: App,
     private readonly qs: QueryRunner,
     private readonly dbm: DatabaseManager,
     private readonly localQueriesResultsView: ResultsView,
@@ -747,7 +748,7 @@ export class QueryHistoryManager extends DisposableObject {
         }
       }
       try {
-        await commands.executeCommand(
+        await this.app.commands.execute(
           "revealFileInOS",
           Uri.file(externalFilePath),
         );
@@ -1073,7 +1074,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(finalSingleItem);
 
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "vscode.open",
       Uri.parse(actionsWorkflowRunUrl),
     );
@@ -1097,7 +1098,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "codeQL.copyVariantAnalysisRepoList",
       finalSingleItem.variantAnalysis.id,
     );

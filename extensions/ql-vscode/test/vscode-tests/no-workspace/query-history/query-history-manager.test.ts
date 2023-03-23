@@ -777,7 +777,7 @@ describe("QueryHistoryManager", () => {
       const item = localQueryHistory[4];
       await queryHistoryManager.handleCopyRepoList(item, [item]);
 
-      expect(executeCommandSpy).not.toBeCalled();
+      expect(executeCommand).not.toBeCalled();
     });
 
     it("should copy repo list for a single variant analysis", async () => {
@@ -785,7 +785,7 @@ describe("QueryHistoryManager", () => {
 
       const item = variantAnalysisHistory[1];
       await queryHistoryManager.handleCopyRepoList(item, [item]);
-      expect(executeCommandSpy).toBeCalledWith(
+      expect(executeCommand).toBeCalledWith(
         "codeQL.copyVariantAnalysisRepoList",
         item.variantAnalysis.id,
       );
@@ -797,7 +797,7 @@ describe("QueryHistoryManager", () => {
       const item1 = variantAnalysisHistory[1];
       const item2 = variantAnalysisHistory[3];
       await queryHistoryManager.handleCopyRepoList(item1, [item1, item2]);
-      expect(executeCommandSpy).not.toBeCalled();
+      expect(executeCommand).not.toBeCalled();
     });
   });
 
@@ -1094,6 +1094,7 @@ describe("QueryHistoryManager", () => {
 
   async function createMockQueryHistory(allHistory: QueryHistoryInfo[]) {
     const qhm = new QueryHistoryManager(
+      mockApp,
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
