@@ -115,6 +115,7 @@ export class VariantAnalysisManager
     super();
     this.variantAnalysisMonitor = this.push(
       new VariantAnalysisMonitor(
+        app,
         this.shouldCancelMonitorVariantAnalysis.bind(this),
       ),
     );
@@ -501,10 +502,7 @@ export class VariantAnalysisManager
   public async monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
-    await this.variantAnalysisMonitor.monitorVariantAnalysis(
-      variantAnalysis,
-      this.app.credentials,
-    );
+    await this.variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
   }
 
   public async autoDownloadVariantAnalysisResult(
