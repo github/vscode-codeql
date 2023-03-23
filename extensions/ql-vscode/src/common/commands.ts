@@ -38,6 +38,7 @@ export type BuiltInVsCodeCommands = {
   // The codeQLDatabases.focus command is provided by VS Code because we've registered the custom view
   "codeQLDatabases.focus": () => Promise<void>;
   "markdown.showPreviewToSide": (uri: Uri) => Promise<void>;
+  revealFileInOS: (uri: Uri) => Promise<void>;
   setContext: (
     key: `${"codeql" | "codeQL"}${string}`,
     value: unknown,

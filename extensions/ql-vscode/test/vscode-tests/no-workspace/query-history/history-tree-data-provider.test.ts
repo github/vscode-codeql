@@ -27,6 +27,7 @@ import {
 } from "../../../../src/query-history/history-tree-data-provider";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
+import { createMockApp } from "../../../__mocks__/appMock";
 
 describe("HistoryTreeDataProvider", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -421,6 +422,7 @@ describe("HistoryTreeDataProvider", () => {
 
   async function createMockQueryHistory(allHistory: QueryHistoryInfo[]) {
     const qhm = new QueryHistoryManager(
+      createMockApp({}),
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,

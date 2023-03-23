@@ -22,59 +22,49 @@ import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-h
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-status";
 import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
-import { TextEditor } from "vscode";
 import { WebviewReveal } from "../../../../src/interface-utils";
 import * as helpers from "../../../../src/helpers";
-import { mockedObject, mockedQuickPickItem } from "../../utils/mocking.helpers";
+import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
+import { createMockApp } from "../../../__mocks__/appMock";
+import { App } from "../../../../src/common/app";
+import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 
 describe("QueryHistoryManager", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
   let configListener: QueryHistoryConfigListener;
-  let showTextDocumentSpy: jest.SpiedFunction<
-    typeof vscode.window.showTextDocument
-  >;
-  let showInformationMessageSpy: jest.SpiedFunction<
-    typeof vscode.window.showInformationMessage
-  >;
   let showQuickPickSpy: jest.SpiedFunction<typeof vscode.window.showQuickPick>;
-  let executeCommandSpy: jest.SpiedFunction<
-    typeof vscode.commands.executeCommand
-  >;
   let cancelVariantAnalysisSpy: jest.SpiedFunction<
     typeof variantAnalysisManagerStub.cancelVariantAnalysis
   >;
   const doCompareCallback = jest.fn();
+
+  let executeCommand: jest.MockedFn<
+    (commandName: string, ...args: any[]) => Promise<any>
+  >;
+  let mockApp: App;
 
   let queryHistoryManager: QueryHistoryManager;
 
   let localQueriesResultsViewStub: ResultsView;
   let variantAnalysisManagerStub: VariantAnalysisManager;
 
-  let tryOpenExternalFile: Function;
-
   let allHistory: QueryHistoryInfo[];
   let localQueryHistory: LocalQueryInfo[];
   let variantAnalysisHistory: VariantAnalysisHistoryItem[];
 
   beforeEach(() => {
-    showTextDocumentSpy = jest
-      .spyOn(vscode.window, "showTextDocument")
-      .mockResolvedValue(mockedObject<TextEditor>({}));
-    showInformationMessageSpy = jest
-      .spyOn(vscode.window, "showInformationMessage")
-      .mockResolvedValue(undefined);
     showQuickPickSpy = jest
       .spyOn(vscode.window, "showQuickPick")
       .mockResolvedValue(undefined);
-    executeCommandSpy = jest
-      .spyOn(vscode.commands, "executeCommand")
-      .mockResolvedValue(undefined);
+
+    executeCommand = jest.fn();
+    mockApp = createMockApp({
+      commands: createMockCommandManager({ executeCommand }),
+    });
 
     jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
-    tryOpenExternalFile = (QueryHistoryManager.prototype as any)
-      .tryOpenExternalFile;
     configListener = new QueryHistoryConfigListener();
     localQueriesResultsViewStub = {
       showResults: jest.fn(),
@@ -156,51 +146,6 @@ describe("QueryHistoryManager", () => {
     if (queryHistoryManager) {
       queryHistoryManager.dispose();
     }
-  });
-  describe("tryOpenExternalFile", () => {
-    it("should open an external file", async () => {
-      await tryOpenExternalFile("xxx");
-      expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
-      expect(showTextDocumentSpy).toHaveBeenCalledWith(
-        vscode.Uri.file("xxx"),
-        expect.anything(),
-      );
-      expect(executeCommandSpy).not.toBeCalled();
-    });
-
-    [
-      "too large to open",
-      "Files above 50MB cannot be synchronized with extensions",
-    ].forEach((msg) => {
-      it(`should fail to open a file because "${msg}" and open externally`, async () => {
-        showTextDocumentSpy.mockRejectedValue(new Error(msg));
-        showInformationMessageSpy.mockResolvedValue({ title: "Yes" });
-
-        await tryOpenExternalFile("xxx");
-        const uri = vscode.Uri.file("xxx");
-        expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
-        expect(showTextDocumentSpy).toHaveBeenCalledWith(
-          uri,
-          expect.anything(),
-        );
-        expect(executeCommandSpy).toHaveBeenCalledWith("revealFileInOS", uri);
-      });
-
-      it(`should fail to open a file because "${msg}" and NOT open externally`, async () => {
-        showTextDocumentSpy.mockRejectedValue(new Error(msg));
-        showInformationMessageSpy.mockResolvedValue({ title: "No" });
-
-        await tryOpenExternalFile("xxx");
-        const uri = vscode.Uri.file("xxx");
-        expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
-        expect(showTextDocumentSpy).toHaveBeenCalledWith(
-          uri,
-          expect.anything(),
-        );
-        expect(showInformationMessageSpy).toBeCalled();
-        expect(executeCommandSpy).not.toBeCalled();
-      });
-    });
   });
 
   describe("handleItemClicked", () => {
@@ -832,7 +777,7 @@ describe("QueryHistoryManager", () => {
       const item = localQueryHistory[4];
       await queryHistoryManager.handleCopyRepoList(item, [item]);
 
-      expect(executeCommandSpy).not.toBeCalled();
+      expect(executeCommand).not.toBeCalled();
     });
 
     it("should copy repo list for a single variant analysis", async () => {
@@ -840,7 +785,7 @@ describe("QueryHistoryManager", () => {
 
       const item = variantAnalysisHistory[1];
       await queryHistoryManager.handleCopyRepoList(item, [item]);
-      expect(executeCommandSpy).toBeCalledWith(
+      expect(executeCommand).toBeCalledWith(
         "codeQL.copyVariantAnalysisRepoList",
         item.variantAnalysis.id,
       );
@@ -852,7 +797,7 @@ describe("QueryHistoryManager", () => {
       const item1 = variantAnalysisHistory[1];
       const item2 = variantAnalysisHistory[3];
       await queryHistoryManager.handleCopyRepoList(item1, [item1, item2]);
-      expect(executeCommandSpy).not.toBeCalled();
+      expect(executeCommand).not.toBeCalled();
     });
   });
 
@@ -1149,6 +1094,7 @@ describe("QueryHistoryManager", () => {
 
   async function createMockQueryHistory(allHistory: QueryHistoryInfo[]) {
     const qhm = new QueryHistoryManager(
+      mockApp,
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
