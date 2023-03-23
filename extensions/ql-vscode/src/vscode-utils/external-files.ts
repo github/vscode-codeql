@@ -8,7 +8,7 @@ import { redactableError } from "../pure/errors";
 import { asError, getErrorMessage, getErrorStack } from "../pure/helpers-pure";
 
 export async function tryOpenExternalFile(
-  CommandManager: AppCommandManager,
+  commandManager: AppCommandManager,
   fileLocation: string,
 ) {
   const uri = Uri.file(fileLocation);
@@ -29,7 +29,7 @@ the file in the file explorer and dragging it into the workspace.`,
       );
       if (res) {
         try {
-          await CommandManager.execute("revealFileInOS", uri);
+          await commandManager.execute("revealFileInOS", uri);
         } catch (e) {
           void showAndLogExceptionWithTelemetry(
             redactableError(
