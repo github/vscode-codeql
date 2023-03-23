@@ -575,7 +575,7 @@ async function installOrUpdateThenTryActivate(
   await installOrUpdateDistribution(ctx, app, distributionManager, config);
 
   try {
-    await prepareCodeTour();
+    await prepareCodeTour(app.commands);
   } catch (e: unknown) {
     void extLogger.log(
       `Could not open tutorial workspace automatically: ${getErrorMessage(e)}`,
@@ -669,7 +669,12 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(statusBar);
 
   void extLogger.log("Initializing query server client.");
-  const qs = await createQueryServer(qlConfigurationListener, cliServer, ctx);
+  const qs = await createQueryServer(
+    app,
+    qlConfigurationListener,
+    cliServer,
+    ctx,
+  );
 
   for (const glob of PACK_GLOBS) {
     const fsWatcher = workspace.createFileSystemWatcher(glob);
@@ -680,7 +685,7 @@ async function activateWithInstalledDistribution(
   }
 
   void extLogger.log("Initializing database manager.");
-  const dbm = new DatabaseManager(ctx, qs, cliServer, extLogger);
+  const dbm = new DatabaseManager(ctx, app, qs, cliServer, extLogger);
 
   // Let this run async.
   void dbm.loadPersistedState();
@@ -853,7 +858,7 @@ async function activateWithInstalledDistribution(
     );
     ctx.subscriptions.push(testAdapterFactory);
 
-    const testUIService = new TestUIService(testHub);
+    const testUIService = new TestUIService(app, testHub);
     ctx.subscriptions.push(testUIService);
 
     testUiCommands = testUIService.getCommands();
@@ -881,6 +886,7 @@ async function activateWithInstalledDistribution(
   const allCommands: AllExtensionCommands = {
     ...getCommands(app, cliServer, qs),
     ...getQueryEditorCommands({
+      commandManager: app.commands,
       queryRunner: qs,
       cliServer,
       qhelpTmpDir: qhelpTmpDir.name,
@@ -1046,6 +1052,7 @@ function addUnhandledRejectionListener() {
 }
 
 async function createQueryServer(
+  app: ExtensionApp,
   qlConfigurationListener: QueryServerConfigListener,
   cliServer: CodeQLCliServer,
   ctx: ExtensionContext,
@@ -1076,6 +1083,7 @@ async function createQueryServer(
     return new NewQueryRunner(qs);
   } else {
     const qs = new LegacyQueryServerClient(
+      app,
       qlConfigurationListener,
       cliServer,
       qsOpts,

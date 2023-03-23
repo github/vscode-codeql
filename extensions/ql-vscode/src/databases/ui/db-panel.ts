@@ -1,5 +1,4 @@
 import {
-  commands,
   QuickPickItem,
   TreeView,
   TreeViewExpansionEvent,
@@ -31,8 +30,8 @@ import { DbTreeViewItem } from "./db-tree-view-item";
 import { getGitHubUrl } from "./db-tree-view-item-action";
 import { getControllerRepo } from "../../variant-analysis/run-remote-query";
 import { getErrorMessage } from "../../pure/helpers-pure";
-import { Credentials } from "../../common/authentication";
 import { DatabasePanelCommands } from "../../common/commands";
+import { App } from "../../common/app";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   kind: string;
@@ -47,8 +46,8 @@ export class DbPanel extends DisposableObject {
   private readonly treeView: TreeView<DbTreeViewItem>;
 
   public constructor(
+    private readonly app: App,
     private readonly dbManager: DbManager,
-    private readonly credentials: Credentials,
   ) {
     super();
 
@@ -369,13 +368,13 @@ export class DbPanel extends DisposableObject {
       );
     }
 
-    await commands.executeCommand("vscode.open", Uri.parse(githubUrl));
+    await this.app.commands.execute("vscode.open", Uri.parse(githubUrl));
   }
 
   private async setupControllerRepository(): Promise<void> {
     try {
       // This will also validate that the controller repository is valid
-      await getControllerRepo(this.credentials);
+      await getControllerRepo(this.app.credentials);
     } catch (e: unknown) {
       if (e instanceof UserCancellationException) {
         return;

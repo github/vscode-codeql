@@ -1,7 +1,7 @@
 import { ensureFile } from "fs-extra";
 
 import { DisposableObject } from "../pure/disposable-object";
-import { CancellationToken, commands } from "vscode";
+import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
 import * as cli from "../cli";
 import { QueryServerConfig } from "../config";
@@ -15,6 +15,7 @@ import {
 } from "../pure/legacy-messages";
 import { ProgressCallback, ProgressTask } from "../progress";
 import { ServerProcess } from "../json-rpc-server";
+import { App } from "../common/app";
 
 type WithProgressReporting = (
   task: (
@@ -56,6 +57,7 @@ export class QueryServerClient extends DisposableObject {
   public activeQueryLogger: Logger;
 
   constructor(
+    app: App,
     readonly config: QueryServerConfig,
     readonly cliServer: cli.CodeQLCliServer,
     readonly opts: ServerOpts,
@@ -69,7 +71,7 @@ export class QueryServerClient extends DisposableObject {
     if (config.onDidChangeConfiguration !== undefined) {
       this.push(
         config.onDidChangeConfiguration(() =>
-          commands.executeCommand("codeQL.restartQueryServer"),
+          app.commands.execute("codeQL.restartQueryServer"),
         ),
       );
     }

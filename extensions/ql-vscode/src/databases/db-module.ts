@@ -43,7 +43,7 @@ export class DbModule extends DisposableObject {
 
     await this.dbConfigStore.initialize();
 
-    this.dbPanel = new DbPanel(this.dbManager, app.credentials);
+    this.dbPanel = new DbPanel(app, this.dbManager);
 
     this.push(this.dbPanel);
     this.push(this.dbConfigStore);

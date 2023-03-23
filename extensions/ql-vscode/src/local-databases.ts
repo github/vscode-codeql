@@ -28,6 +28,7 @@ import { redactableError } from "./pure/errors";
 import { isCodespacesTemplate } from "./config";
 import { QlPackGenerator } from "./qlpack-generator";
 import { QueryLanguage } from "./common/query-language";
+import { App } from "./common/app";
 
 /**
  * databases.ts
@@ -593,6 +594,7 @@ export class DatabaseManager extends DisposableObject {
 
   constructor(
     private readonly ctx: ExtensionContext,
+    private readonly app: App,
     private readonly qs: QueryRunner,
     private readonly cli: cli.CodeQLCliServer,
     public logger: Logger,
@@ -875,7 +877,7 @@ export class DatabaseManager extends DisposableObject {
       this._currentDatabaseItem = item;
       this.updatePersistedCurrentDatabaseItem();
 
-      await vscode.commands.executeCommand(
+      await this.app.commands.execute(
         "setContext",
         "codeQL.currentDatabaseItem",
         item?.name,

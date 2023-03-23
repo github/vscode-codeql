@@ -1,13 +1,15 @@
-import { commands, Uri, window } from "vscode";
+import { Uri, window } from "vscode";
 import { CodeQLCliServer } from "./cli";
 import { QueryRunner } from "./queryRunner";
 import { basename, join } from "path";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
 import { showAndLogExceptionWithTelemetry } from "./helpers";
-import { QueryEditorCommands } from "./common/commands";
+import { AppCommandManager, QueryEditorCommands } from "./common/commands";
 
 type QueryEditorOptions = {
+  commandManager: AppCommandManager;
+
   queryRunner: QueryRunner;
   cliServer: CodeQLCliServer;
 
@@ -15,6 +17,7 @@ type QueryEditorOptions = {
 };
 
 export function getQueryEditorCommands({
+  commandManager,
   queryRunner,
   cliServer,
   qhelpTmpDir,
@@ -29,11 +32,17 @@ export function getQueryEditorCommands({
     // Since we are tracking extension usage through commands, this command mirrors the "codeQL.openReferencedFile" command
     "codeQL.openReferencedFileContextExplorer": openReferencedFileCommand,
     "codeQL.previewQueryHelp": async (selectedQuery: Uri) =>
-      await previewQueryHelp(cliServer, qhelpTmpDir, selectedQuery),
+      await previewQueryHelp(
+        commandManager,
+        cliServer,
+        qhelpTmpDir,
+        selectedQuery,
+      ),
   };
 }
 
 async function previewQueryHelp(
+  commandManager: AppCommandManager,
   cliServer: CodeQLCliServer,
   qhelpTmpDir: string,
   selectedQuery: Uri,
@@ -49,7 +58,7 @@ async function previewQueryHelp(
     const uri = Uri.file(absolutePathToMd);
     try {
       await cliServer.generateQueryHelp(pathToQhelp, absolutePathToMd);
-      await commands.executeCommand("markdown.showPreviewToSide", uri);
+      await commandManager.execute("markdown.showPreviewToSide", uri);
     } catch (e) {
       const errorMessage = getErrorMessage(e).includes(
         "Generating qhelp in markdown",

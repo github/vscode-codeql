@@ -1,5 +1,5 @@
 import type { CommandManager } from "../packages/commands";
-import type { Uri, Range } from "vscode";
+import type { Uri, Range, TextDocumentShowOptions } from "vscode";
 import type { AstItem } from "../astViewer";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../local-databases";
@@ -35,12 +35,22 @@ export type SingleSelectionCommandFunction<Item> = (
 // Builtin commands where the implementation is provided by VS Code and not by this extension.
 // See https://code.visualstudio.com/api/references/commands
 export type BuiltInVsCodeCommands = {
+  // The codeQLDatabases.focus command is provided by VS Code because we've registered the custom view
+  "codeQLDatabases.focus": () => Promise<void>;
   "markdown.showPreviewToSide": (uri: Uri) => Promise<void>;
   setContext: (
     key: `${"codeql" | "codeQL"}${string}`,
     value: unknown,
   ) => Promise<void>;
   "workbench.action.reloadWindow": () => Promise<void>;
+  "vscode.diff": (
+    leftSideResource: Uri,
+    rightSideResource: Uri,
+    title?: string,
+    columnOrOptions?: TextDocumentShowOptions,
+  ) => Promise<void>;
+  "vscode.open": (uri: Uri) => Promise<void>;
+  "vscode.openFolder": (uri: Uri) => Promise<void>;
 };
 
 // Commands that are available before the extension is fully activated.
