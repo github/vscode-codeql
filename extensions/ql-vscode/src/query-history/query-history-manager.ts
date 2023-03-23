@@ -26,12 +26,7 @@ import { extLogger } from "../common";
 import { URLSearchParams } from "url";
 import { DisposableObject } from "../pure/disposable-object";
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../pure/time";
-import {
-  asError,
-  assertNever,
-  getErrorMessage,
-  getErrorStack,
-} from "../pure/helpers-pure";
+import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import {
   getActionsWorkflowRunUrl,
@@ -66,6 +61,7 @@ import { HistoryTreeDataProvider } from "./history-tree-data-provider";
 import { redactableError } from "../pure/errors";
 import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryCommands } from "../common/commands";
+import { tryOpenExternalFile } from "../vscode-utils/external-files";
 
 /**
  * query-history-manager.ts
@@ -683,7 +679,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (singleItem.completedQuery.logFileLocation) {
-      await this.tryOpenExternalFile(singleItem.completedQuery.logFileLocation);
+      await tryOpenExternalFile(singleItem.completedQuery.logFileLocation);
     } else {
       void showAndLogWarningMessage("No log file available");
     }
@@ -800,7 +796,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (finalSingleItem.evalLogLocation) {
-      await this.tryOpenExternalFile(finalSingleItem.evalLogLocation);
+      await tryOpenExternalFile(finalSingleItem.evalLogLocation);
     } else {
       this.warnNoEvalLogs();
     }
@@ -825,7 +821,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (finalSingleItem.evalLogSummaryLocation) {
-      await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
+      await tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
       return;
     }
 
@@ -968,7 +964,7 @@ export class QueryHistoryManager extends DisposableObject {
     const query = finalSingleItem.completedQuery.query;
     const hasInterpretedResults = query.canHaveInterpretedResults();
     if (hasInterpretedResults) {
-      await this.tryOpenExternalFile(query.resultsPaths.interpretedResultsPath);
+      await tryOpenExternalFile(query.resultsPaths.interpretedResultsPath);
     } else {
       const label = this.labelProvider.getLabel(finalSingleItem);
       void showAndLogInformationMessage(
@@ -997,11 +993,11 @@ export class QueryHistoryManager extends DisposableObject {
     }
     const query = finalSingleItem.completedQuery.query;
     if (await query.hasCsv()) {
-      void this.tryOpenExternalFile(query.csvPath);
+      void tryOpenExternalFile(query.csvPath);
       return;
     }
     if (await query.exportCsvResults(this.qs.cliServer, query.csvPath)) {
-      void this.tryOpenExternalFile(query.csvPath);
+      void tryOpenExternalFile(query.csvPath);
     }
   }
 
@@ -1024,7 +1020,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    await this.tryOpenExternalFile(
+    await tryOpenExternalFile(
       await finalSingleItem.completedQuery.query.ensureCsvAlerts(
         this.qs.cliServer,
         this.dbm,
@@ -1051,7 +1047,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    await this.tryOpenExternalFile(
+    await tryOpenExternalFile(
       await finalSingleItem.completedQuery.query.ensureDilPath(
         this.qs.cliServer,
       ),
@@ -1167,47 +1163,6 @@ export class QueryHistoryManager extends DisposableObject {
         // using `reveal` if the tree view was not visible when the current element was added.
         this.treeDataProvider.refresh();
         void this.treeView.reveal(current, { select: true });
-      }
-    }
-  }
-
-  private async tryOpenExternalFile(fileLocation: string) {
-    const uri = Uri.file(fileLocation);
-    try {
-      await window.showTextDocument(uri, { preview: false });
-    } catch (e) {
-      const msg = getErrorMessage(e);
-      if (
-        msg.includes(
-          "Files above 50MB cannot be synchronized with extensions",
-        ) ||
-        msg.includes("too large to open")
-      ) {
-        const res = await showBinaryChoiceDialog(
-          `VS Code does not allow extensions to open files >50MB. This file
-exceeds that limit. Do you want to open it outside of VS Code?
-
-You can also try manually opening it inside VS Code by selecting
-the file in the file explorer and dragging it into the workspace.`,
-        );
-        if (res) {
-          try {
-            await commands.executeCommand("revealFileInOS", uri);
-          } catch (e) {
-            void showAndLogExceptionWithTelemetry(
-              redactableError(
-                asError(e),
-              )`Failed to reveal file in OS: ${getErrorMessage(e)}`,
-            );
-          }
-        }
-      } else {
-        void showAndLogExceptionWithTelemetry(
-          redactableError(asError(e))`Could not open file ${fileLocation}`,
-          {
-            fullMessage: `${getErrorMessage(e)}\n${getErrorStack(e)}`,
-          },
-        );
       }
     }
   }
