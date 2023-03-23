@@ -87,7 +87,6 @@ import { QLTestAdapterFactory } from "./test-adapter";
 import { TestUIService } from "./test-ui";
 import { CompareView } from "./compare/compare-view";
 import { initializeTelemetry } from "./telemetry";
-import { commandRunner } from "./commandRunner";
 import { ProgressCallback, withProgress } from "./progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";
@@ -123,6 +122,7 @@ import {
 import { getAstCfgCommands } from "./ast-cfg-commands";
 import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
+import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 
 /**
  * extension.ts
@@ -238,7 +238,9 @@ function registerErrorStubs(
     if (excludedCommands.indexOf(command) === -1) {
       // This is purposefully using `commandRunner` instead of the command manager because these
       // commands are untyped and registered pre-activation.
-      errorStubs.push(commandRunner(command, stubGenerator(command)));
+      errorStubs.push(
+        registerCommandWithErrorHandling(command, stubGenerator(command)),
+      );
     }
   });
 }
@@ -341,7 +343,7 @@ export async function activate(
   ctx.subscriptions.push(
     // This is purposefully using `commandRunner` directly instead of the command manager
     // because this command is registered pre-activation.
-    commandRunner(checkForUpdatesCommand, () =>
+    registerCommandWithErrorHandling(checkForUpdatesCommand, () =>
       installOrUpdateThenTryActivate(
         ctx,
         app,
