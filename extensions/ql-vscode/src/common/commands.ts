@@ -35,6 +35,7 @@ export type SingleSelectionCommandFunction<Item> = (
 // Builtin commands where the implementation is provided by VS Code and not by this extension.
 // See https://code.visualstudio.com/api/references/commands
 export type BuiltInVsCodeCommands = {
+  // The codeQLDatabases.focus command is provided by VS Code because we've registered the custom view
   "codeQLDatabases.focus": () => Promise<void>;
   "markdown.showPreviewToSide": (uri: Uri) => Promise<void>;
   setContext: (
