@@ -236,7 +236,7 @@ function registerErrorStubs(
 
   stubbedCommands.forEach((command) => {
     if (excludedCommands.indexOf(command) === -1) {
-      // This is purposefully using `commandRunner` instead of the command manager because these
+      // This is purposefully using `registerCommandWithErrorHandling` instead of the command manager because these
       // commands are untyped and registered pre-activation.
       errorStubs.push(
         registerCommandWithErrorHandling(command, stubGenerator(command)),
@@ -341,7 +341,7 @@ export async function activate(
     ),
   );
   ctx.subscriptions.push(
-    // This is purposefully using `commandRunner` directly instead of the command manager
+    // This is purposefully using `registerCommandWithErrorHandling` directly instead of the command manager
     // because this command is registered pre-activation.
     registerCommandWithErrorHandling(checkForUpdatesCommand, () =>
       installOrUpdateThenTryActivate(
@@ -1035,7 +1035,8 @@ function addUnhandledRejectionListener() {
   // "uncaughtException" will trigger whenever an exception reaches the top level.
   // This covers extension initialization and any code within a `setTimeout`.
   // Notably this does not include exceptions thrown when executing commands,
-  // because `commandRunner` wraps the command body and handles errors.
+  // because `registerCommandWithErrorHandling` wraps the command body and
+  // handles errors.
   process.addListener("uncaughtException", handler);
 
   // "unhandledRejection" will trigger whenever any promise is rejected and it is
