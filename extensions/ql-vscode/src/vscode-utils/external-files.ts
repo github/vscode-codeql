@@ -1,4 +1,5 @@
-import { commands, Uri, window } from "vscode";
+import { Uri, window } from "vscode";
+import { AppCommandManager } from "../common/commands";
 import {
   showAndLogExceptionWithTelemetry,
   showBinaryChoiceDialog,
@@ -6,7 +7,10 @@ import {
 import { redactableError } from "../pure/errors";
 import { asError, getErrorMessage, getErrorStack } from "../pure/helpers-pure";
 
-export async function tryOpenExternalFile(fileLocation: string) {
+export async function tryOpenExternalFile(
+  CommandManager: AppCommandManager,
+  fileLocation: string,
+) {
   const uri = Uri.file(fileLocation);
   try {
     await window.showTextDocument(uri, { preview: false });
@@ -25,7 +29,7 @@ the file in the file explorer and dragging it into the workspace.`,
       );
       if (res) {
         try {
-          await commands.executeCommand("revealFileInOS", uri);
+          await CommandManager.execute("revealFileInOS", uri);
         } catch (e) {
           void showAndLogExceptionWithTelemetry(
             redactableError(

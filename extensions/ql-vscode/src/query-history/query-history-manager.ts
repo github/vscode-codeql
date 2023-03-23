@@ -680,7 +680,10 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (singleItem.completedQuery.logFileLocation) {
-      await tryOpenExternalFile(singleItem.completedQuery.logFileLocation);
+      await tryOpenExternalFile(
+        this.app.commands,
+        singleItem.completedQuery.logFileLocation,
+      );
     } else {
       void showAndLogWarningMessage("No log file available");
     }
@@ -797,7 +800,10 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (finalSingleItem.evalLogLocation) {
-      await tryOpenExternalFile(finalSingleItem.evalLogLocation);
+      await tryOpenExternalFile(
+        this.app.commands,
+        finalSingleItem.evalLogLocation,
+      );
     } else {
       this.warnNoEvalLogs();
     }
@@ -822,7 +828,10 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (finalSingleItem.evalLogSummaryLocation) {
-      await tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
+      await tryOpenExternalFile(
+        this.app.commands,
+        finalSingleItem.evalLogSummaryLocation,
+      );
       return;
     }
 
@@ -965,7 +974,10 @@ export class QueryHistoryManager extends DisposableObject {
     const query = finalSingleItem.completedQuery.query;
     const hasInterpretedResults = query.canHaveInterpretedResults();
     if (hasInterpretedResults) {
-      await tryOpenExternalFile(query.resultsPaths.interpretedResultsPath);
+      await tryOpenExternalFile(
+        this.app.commands,
+        query.resultsPaths.interpretedResultsPath,
+      );
     } else {
       const label = this.labelProvider.getLabel(finalSingleItem);
       void showAndLogInformationMessage(
@@ -994,11 +1006,11 @@ export class QueryHistoryManager extends DisposableObject {
     }
     const query = finalSingleItem.completedQuery.query;
     if (await query.hasCsv()) {
-      void tryOpenExternalFile(query.csvPath);
+      void tryOpenExternalFile(this.app.commands, query.csvPath);
       return;
     }
     if (await query.exportCsvResults(this.qs.cliServer, query.csvPath)) {
-      void tryOpenExternalFile(query.csvPath);
+      void tryOpenExternalFile(this.app.commands, query.csvPath);
     }
   }
 
@@ -1022,6 +1034,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     await tryOpenExternalFile(
+      this.app.commands,
       await finalSingleItem.completedQuery.query.ensureCsvAlerts(
         this.qs.cliServer,
         this.dbm,
@@ -1049,6 +1062,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     await tryOpenExternalFile(
+      this.app.commands,
       await finalSingleItem.completedQuery.query.ensureDilPath(
         this.qs.cliServer,
       ),

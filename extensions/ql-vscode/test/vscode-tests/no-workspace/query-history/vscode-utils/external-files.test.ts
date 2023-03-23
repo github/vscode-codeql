@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { tryOpenExternalFile } from "../../../../../src/vscode-utils/external-files";
+import { createMockCommandManager } from "../../../../__mocks__/commandsMock";
 import { mockedObject } from "../../../utils/mocking.helpers";
 
 describe("tryOpenExternalFile", () => {
@@ -9,9 +10,6 @@ describe("tryOpenExternalFile", () => {
   let showInformationMessageSpy: jest.SpiedFunction<
     typeof vscode.window.showInformationMessage
   >;
-  let executeCommandSpy: jest.SpiedFunction<
-    typeof vscode.commands.executeCommand
-  >;
 
   beforeEach(() => {
     showTextDocumentSpy = jest
@@ -20,19 +18,19 @@ describe("tryOpenExternalFile", () => {
     showInformationMessageSpy = jest
       .spyOn(vscode.window, "showInformationMessage")
       .mockResolvedValue(undefined);
-    executeCommandSpy = jest
-      .spyOn(vscode.commands, "executeCommand")
-      .mockResolvedValue(undefined);
   });
 
   it("should open an external file", async () => {
-    await tryOpenExternalFile("xxx");
+    const executeCommand = jest.fn();
+    const commandManager = createMockCommandManager({ executeCommand });
+
+    await tryOpenExternalFile(commandManager, "xxx");
     expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
     expect(showTextDocumentSpy).toHaveBeenCalledWith(
       vscode.Uri.file("xxx"),
       expect.anything(),
     );
-    expect(executeCommandSpy).not.toBeCalled();
+    expect(executeCommand).not.toBeCalled();
   });
 
   [
@@ -40,26 +38,32 @@ describe("tryOpenExternalFile", () => {
     "Files above 50MB cannot be synchronized with extensions",
   ].forEach((msg) => {
     it(`should fail to open a file because "${msg}" and open externally`, async () => {
+      const executeCommand = jest.fn();
+      const commandManager = createMockCommandManager({ executeCommand });
+
       showTextDocumentSpy.mockRejectedValue(new Error(msg));
       showInformationMessageSpy.mockResolvedValue({ title: "Yes" });
 
-      await tryOpenExternalFile("xxx");
+      await tryOpenExternalFile(commandManager, "xxx");
       const uri = vscode.Uri.file("xxx");
       expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
       expect(showTextDocumentSpy).toHaveBeenCalledWith(uri, expect.anything());
-      expect(executeCommandSpy).toHaveBeenCalledWith("revealFileInOS", uri);
+      expect(executeCommand).toHaveBeenCalledWith("revealFileInOS", uri);
     });
 
     it(`should fail to open a file because "${msg}" and NOT open externally`, async () => {
+      const executeCommand = jest.fn();
+      const commandManager = createMockCommandManager({ executeCommand });
+
       showTextDocumentSpy.mockRejectedValue(new Error(msg));
       showInformationMessageSpy.mockResolvedValue({ title: "No" });
 
-      await tryOpenExternalFile("xxx");
+      await tryOpenExternalFile(commandManager, "xxx");
       const uri = vscode.Uri.file("xxx");
       expect(showTextDocumentSpy).toHaveBeenCalledTimes(1);
       expect(showTextDocumentSpy).toHaveBeenCalledWith(uri, expect.anything());
       expect(showInformationMessageSpy).toBeCalled();
-      expect(executeCommandSpy).not.toBeCalled();
+      expect(executeCommand).not.toBeCalled();
     });
   });
 });
