@@ -3,10 +3,10 @@ import { Disposable } from "../pure/disposable-object";
 import { AppEventEmitter } from "./events";
 import { Logger } from "./logging";
 import { Memento } from "./memento";
+import { AppCommandManager } from "./commands";
 
 export interface App {
   createEventEmitter<T>(): AppEventEmitter<T>;
-  executeCommand(command: string, ...args: any): Thenable<void>;
   readonly mode: AppMode;
   readonly logger: Logger;
   readonly subscriptions: Disposable[];
@@ -15,6 +15,7 @@ export interface App {
   readonly workspaceStoragePath?: string;
   readonly workspaceState: Memento;
   readonly credentials: Credentials;
+  readonly commands: AppCommandManager;
 }
 
 export enum AppMode {

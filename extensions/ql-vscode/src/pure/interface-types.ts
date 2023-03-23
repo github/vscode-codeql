@@ -12,6 +12,8 @@ import {
   VariantAnalysisScannedRepositoryState,
 } from "../variant-analysis/shared/variant-analysis";
 import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
+import { ErrorLike } from "./errors";
+import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 
 /**
  * This module contains types and code that are shared between
@@ -182,14 +184,13 @@ export type IntoResultsViewMsg =
  * A message sent from the results view.
  */
 export type FromResultsViewMsg =
+  | CommonFromViewMessages
   | ViewSourceFileMsg
   | ToggleDiagnostics
   | ChangeRawResultsSortMsg
   | ChangeInterpretedResultsSortMsg
-  | ViewLoadedMsg
   | ChangePage
-  | OpenFileMsg
-  | TelemetryMessage;
+  | OpenFileMsg;
 
 /**
  * Message from the results view to open a database source
@@ -230,6 +231,21 @@ interface ViewLoadedMsg {
   t: "viewLoaded";
   viewName: string;
 }
+
+interface TelemetryMessage {
+  t: "telemetry";
+  action: string;
+}
+
+interface UnhandledErrorMessage {
+  t: "unhandledError";
+  error: ErrorLike;
+}
+
+type CommonFromViewMessages =
+  | ViewLoadedMsg
+  | TelemetryMessage
+  | UnhandledErrorMessage;
 
 /**
  * Message from the results view to signal a request to change the
@@ -287,11 +303,10 @@ interface ChangeInterpretedResultsSortMsg {
  * Message from the compare view to the extension.
  */
 export type FromCompareViewMessage =
-  | ViewLoadedMsg
+  | CommonFromViewMessages
   | ChangeCompareMessage
   | ViewSourceFileMsg
-  | OpenQueryMessage
-  | TelemetryMessage;
+  | OpenQueryMessage;
 
 /**
  * Message from the compare view to request opening a query.
@@ -434,9 +449,9 @@ export interface CancelVariantAnalysisMessage {
   t: "cancelVariantAnalysis";
 }
 
-export interface TelemetryMessage {
-  t: "telemetry";
-  action: string;
+export interface ShowDataFlowPathsMessage {
+  t: "showDataFlowPaths";
+  dataFlowPaths: DataFlowPaths;
 }
 
 export type ToVariantAnalysisMessage =
@@ -445,7 +460,7 @@ export type ToVariantAnalysisMessage =
   | SetRepoStatesMessage;
 
 export type FromVariantAnalysisMessage =
-  | ViewLoadedMsg
+  | CommonFromViewMessages
   | RequestRepositoryResultsMessage
   | OpenQueryFileMessage
   | OpenQueryTextMessage
@@ -453,4 +468,13 @@ export type FromVariantAnalysisMessage =
   | ExportResultsMessage
   | OpenLogsMessage
   | CancelVariantAnalysisMessage
-  | TelemetryMessage;
+  | ShowDataFlowPathsMessage;
+
+export interface SetDataFlowPathsMessage {
+  t: "setDataFlowPaths";
+  dataFlowPaths: DataFlowPaths;
+}
+
+export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
+
+export type FromDataFlowPathsMessage = CommonFromViewMessages;

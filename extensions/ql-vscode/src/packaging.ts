@@ -5,11 +5,43 @@ import {
   showAndLogInformationMessage,
 } from "./helpers";
 import { QuickPickItem, window } from "vscode";
-import { ProgressCallback, UserCancellationException } from "./commandRunner";
+import {
+  ProgressCallback,
+  UserCancellationException,
+  withProgress,
+} from "./progress";
 import { extLogger } from "./common";
 import { asError, getErrorStack } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
 import { PACKS_BY_QUERY_LANGUAGE } from "./common/query-language";
+import { PackagingCommands } from "./common/commands";
+
+type PackagingOptions = {
+  cliServer: CodeQLCliServer;
+};
+
+export function getPackagingCommands({
+  cliServer,
+}: PackagingOptions): PackagingCommands {
+  return {
+    "codeQL.installPackDependencies": async () =>
+      withProgress(
+        async (progress: ProgressCallback) =>
+          await handleInstallPackDependencies(cliServer, progress),
+        {
+          title: "Installing pack dependencies",
+        },
+      ),
+    "codeQL.downloadPacks": async () =>
+      withProgress(
+        async (progress: ProgressCallback) =>
+          await handleDownloadPacks(cliServer, progress),
+        {
+          title: "Downloading packs",
+        },
+      ),
+  };
+}
 
 /**
  * Prompts user to choose packs to download, and downloads them.

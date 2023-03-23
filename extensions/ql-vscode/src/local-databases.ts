@@ -12,7 +12,7 @@ import {
   isFolderAlreadyInWorkspace,
   showBinaryChoiceDialog,
 } from "./helpers";
-import { ProgressCallback, withProgress } from "./commandRunner";
+import { ProgressCallback, withProgress } from "./progress";
 import {
   zipArchiveScheme,
   encodeArchiveBasePath,
@@ -28,6 +28,7 @@ import { redactableError } from "./pure/errors";
 import { isCodespacesTemplate } from "./config";
 import { QlPackGenerator } from "./qlpack-generator";
 import { QueryLanguage } from "./common/query-language";
+import { App } from "./common/app";
 
 /**
  * databases.ts
@@ -593,6 +594,7 @@ export class DatabaseManager extends DisposableObject {
 
   constructor(
     private readonly ctx: ExtensionContext,
+    private readonly app: App,
     private readonly qs: QueryRunner,
     private readonly cli: cli.CodeQLCliServer,
     public logger: Logger,
@@ -794,74 +796,66 @@ export class DatabaseManager extends DisposableObject {
   }
 
   public async loadPersistedState(): Promise<void> {
-    return withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-      },
-      async (progress, token) => {
-        const currentDatabaseUri =
-          this.ctx.workspaceState.get<string>(CURRENT_DB);
-        const databases = this.ctx.workspaceState.get<PersistedDatabaseItem[]>(
-          DB_LIST,
-          [],
+    return withProgress(async (progress, token) => {
+      const currentDatabaseUri =
+        this.ctx.workspaceState.get<string>(CURRENT_DB);
+      const databases = this.ctx.workspaceState.get<PersistedDatabaseItem[]>(
+        DB_LIST,
+        [],
+      );
+      let step = 0;
+      progress({
+        maxStep: databases.length,
+        message: "Loading persisted databases",
+        step,
+      });
+      try {
+        void this.logger.log(
+          `Found ${databases.length} persisted databases: ${databases
+            .map((db) => db.uri)
+            .join(", ")}`,
         );
-        let step = 0;
-        progress({
-          maxStep: databases.length,
-          message: "Loading persisted databases",
-          step,
-        });
-        try {
-          void this.logger.log(
-            `Found ${databases.length} persisted databases: ${databases
-              .map((db) => db.uri)
-              .join(", ")}`,
-          );
-          for (const database of databases) {
-            progress({
-              maxStep: databases.length,
-              message: `Loading ${
-                database.options?.displayName || "databases"
-              }`,
-              step: ++step,
-            });
+        for (const database of databases) {
+          progress({
+            maxStep: databases.length,
+            message: `Loading ${database.options?.displayName || "databases"}`,
+            step: ++step,
+          });
 
-            const databaseItem =
-              await this.createDatabaseItemFromPersistedState(
-                progress,
-                token,
-                database,
-              );
-            try {
-              await databaseItem.refresh();
-              await this.registerDatabase(progress, token, databaseItem);
-              if (currentDatabaseUri === database.uri) {
-                await this.setCurrentDatabaseItem(databaseItem, true);
-              }
-              void this.logger.log(
-                `Loaded database ${databaseItem.name} at URI ${database.uri}.`,
-              );
-            } catch (e) {
-              // When loading from persisted state, leave invalid databases in the list. They will be
-              // marked as invalid, and cannot be set as the current database.
-              void this.logger.log(
-                `Error loading database ${database.uri}: ${e}.`,
-              );
+          const databaseItem = await this.createDatabaseItemFromPersistedState(
+            progress,
+            token,
+            database,
+          );
+          try {
+            await databaseItem.refresh();
+            await this.registerDatabase(progress, token, databaseItem);
+            if (currentDatabaseUri === database.uri) {
+              await this.setCurrentDatabaseItem(databaseItem, true);
             }
+            void this.logger.log(
+              `Loaded database ${databaseItem.name} at URI ${database.uri}.`,
+            );
+          } catch (e) {
+            // When loading from persisted state, leave invalid databases in the list. They will be
+            // marked as invalid, and cannot be set as the current database.
+            void this.logger.log(
+              `Error loading database ${database.uri}: ${e}.`,
+            );
           }
-          await this.updatePersistedDatabaseList();
-        } catch (e) {
-          // database list had an unexpected type - nothing to be done?
-          void showAndLogExceptionWithTelemetry(
-            redactableError(
-              asError(e),
-            )`Database list loading failed: ${getErrorMessage(e)}`,
-          );
         }
+        await this.updatePersistedDatabaseList();
+      } catch (e) {
+        // database list had an unexpected type - nothing to be done?
+        void showAndLogExceptionWithTelemetry(
+          redactableError(
+            asError(e),
+          )`Database list loading failed: ${getErrorMessage(e)}`,
+        );
+      }
 
-        void this.logger.log("Finished loading persisted databases.");
-      },
-    );
+      void this.logger.log("Finished loading persisted databases.");
+    });
   }
 
   public get databaseItems(): readonly DatabaseItem[] {
@@ -883,7 +877,7 @@ export class DatabaseManager extends DisposableObject {
       this._currentDatabaseItem = item;
       this.updatePersistedCurrentDatabaseItem();
 
-      await vscode.commands.executeCommand(
+      await this.app.commands.execute(
         "setContext",
         "codeQL.currentDatabaseItem",
         item?.name,

@@ -15,14 +15,21 @@ import {
   VariantAnalysisViewInterface,
   VariantAnalysisViewManager,
 } from "./variant-analysis-view-manager";
-import { showAndLogWarningMessage } from "../helpers";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../helpers";
 import { telemetryListener } from "../telemetry";
+import { redactableError } from "../pure/errors";
+import { DataFlowPathsView } from "./data-flow-paths-view";
+import { DataFlowPaths } from "./shared/data-flow-paths";
 
 export class VariantAnalysisView
   extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage>
   implements VariantAnalysisViewInterface
 {
   public static readonly viewType = "codeQL.variantAnalysis";
+  private readonly dataFlowPathsView: DataFlowPathsView;
 
   public constructor(
     ctx: ExtensionContext,
@@ -32,6 +39,8 @@ export class VariantAnalysisView
     super(ctx);
 
     manager.registerView(this);
+
+    this.dataFlowPathsView = new DataFlowPathsView(ctx);
   }
 
   public async openView() {
@@ -106,10 +115,7 @@ export class VariantAnalysisView
 
         break;
       case "cancelVariantAnalysis":
-        void commands.executeCommand(
-          "codeQL.cancelVariantAnalysis",
-          this.variantAnalysisId,
-        );
+        await this.manager.cancelVariantAnalysis(this.variantAnalysisId);
         break;
       case "requestRepositoryResults":
         void commands.executeCommand(
@@ -119,16 +125,10 @@ export class VariantAnalysisView
         );
         break;
       case "openQueryFile":
-        void commands.executeCommand(
-          "codeQL.openVariantAnalysisQueryFile",
-          this.variantAnalysisId,
-        );
+        await this.manager.openQueryFile(this.variantAnalysisId);
         break;
       case "openQueryText":
-        void commands.executeCommand(
-          "codeQL.openVariantAnalysisQueryText",
-          this.variantAnalysisId,
-        );
+        await this.manager.openQueryText(this.variantAnalysisId);
         break;
       case "copyRepositoryList":
         void commands.executeCommand(
@@ -138,20 +138,29 @@ export class VariantAnalysisView
         );
         break;
       case "exportResults":
-        void commands.executeCommand(
-          "codeQL.exportVariantAnalysisResults",
+        await this.manager.exportResults(
           this.variantAnalysisId,
           msg.filterSort,
         );
         break;
       case "openLogs":
-        await commands.executeCommand(
+        await this.manager.commandManager.execute(
           "codeQL.openVariantAnalysisLogs",
           this.variantAnalysisId,
         );
         break;
+      case "showDataFlowPaths":
+        await this.showDataFlows(msg.dataFlowPaths);
+        break;
       case "telemetry":
         telemetryListener?.sendUIInteraction(msg.action);
+        break;
+      case "unhandledError":
+        void showAndLogExceptionWithTelemetry(
+          redactableError(
+            msg.error,
+          )`Unhandled error in variant analysis results view: ${msg.error.message}`,
+        );
         break;
       default:
         assertNever(msg);
@@ -192,5 +201,9 @@ export class VariantAnalysisView
     return variantAnalysis
       ? `${variantAnalysis.query.name} - Variant Analysis Results`
       : `Variant Analysis ${this.variantAnalysisId} - Results`;
+  }
+
+  private async showDataFlows(dataFlows: DataFlowPaths): Promise<void> {
+    await this.dataFlowPathsView.showDataFlows(dataFlows);
   }
 }

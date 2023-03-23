@@ -12,6 +12,7 @@ import { CodeQLExtensionInterface } from "../../../src/extension";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../../src/legacy-query-server/queryserver-client";
 import { extLogger, ProgressReporter } from "../../../src/common";
+import { createMockApp } from "../../__mocks__/appMock";
 
 const baseDir = join(__dirname, "../../../test/data");
 
@@ -121,6 +122,7 @@ describeWithCodeQL()("using the legacy query server", () => {
       cliServer.quiet = true;
 
       qs = new QueryServerClient(
+        createMockApp({}),
         {
           codeQlPath:
             (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||

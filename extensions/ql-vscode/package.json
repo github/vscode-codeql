@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.8.1",
+  "version": "1.8.2",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -56,6 +56,7 @@
     "onCommand:codeQL.restartQueryServer",
     "onWebviewPanel:resultsView",
     "onWebviewPanel:codeQL.variantAnalysis",
+    "onWebviewPanel:codeQL.dataFlowPaths",
     "onFileSystem:codeql-zip-archive"
   ],
   "main": "./out/extension",
@@ -544,7 +545,12 @@
         "title": "CodeQL: Check for CLI Updates"
       },
       {
-        "command": "codeQLQueryHistory.openQuery",
+        "command": "codeQLQueryHistory.openQueryTitleMenu",
+        "title": "View Query",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "codeQLQueryHistory.openQueryContextMenu",
         "title": "View Query",
         "icon": "$(edit)"
       },
@@ -554,7 +560,17 @@
         "icon": "$(preview)"
       },
       {
-        "command": "codeQLQueryHistory.removeHistoryItem",
+        "command": "codeQLQueryHistory.removeHistoryItemTitleMenu",
+        "title": "Delete",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "codeQLQueryHistory.removeHistoryItemContextMenu",
+        "title": "Delete",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "codeQLQueryHistory.removeHistoryItemContextInline",
         "title": "Delete",
         "icon": "$(trash)"
       },
@@ -741,7 +757,7 @@
           "group": "navigation"
         },
         {
-          "command": "codeQLQueryHistory.openQuery",
+          "command": "codeQLQueryHistory.openQueryTitleMenu",
           "when": "view == codeQLQueryHistory",
           "group": "navigation"
         },
@@ -751,7 +767,7 @@
           "group": "navigation"
         },
         {
-          "command": "codeQLQueryHistory.removeHistoryItem",
+          "command": "codeQLQueryHistory.removeHistoryItemTitleMenu",
           "when": "view == codeQLQueryHistory",
           "group": "navigation"
         },
@@ -848,17 +864,17 @@
           "group": "inline"
         },
         {
-          "command": "codeQLQueryHistory.openQuery",
+          "command": "codeQLQueryHistory.openQueryContextMenu",
           "group": "2_queryHistory@0",
           "when": "view == codeQLQueryHistory"
         },
         {
-          "command": "codeQLQueryHistory.removeHistoryItem",
+          "command": "codeQLQueryHistory.removeHistoryItemContextMenu",
           "group": "7_queryHistory@0",
           "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledRemoteResultsItemWithoutLogs || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
         {
-          "command": "codeQLQueryHistory.removeHistoryItem",
+          "command": "codeQLQueryHistory.removeHistoryItemContextInline",
           "group": "inline",
           "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledRemoteResultsItemWithoutLogs || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         },
@@ -1155,11 +1171,23 @@
           "when": "false"
         },
         {
-          "command": "codeQLQueryHistory.openQuery",
+          "command": "codeQLQueryHistory.openQueryTitleMenu",
           "when": "false"
         },
         {
-          "command": "codeQLQueryHistory.removeHistoryItem",
+          "command": "codeQLQueryHistory.openQueryContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.removeHistoryItemTitleMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.removeHistoryItemContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.removeHistoryItemContextInline",
           "when": "false"
         },
         {
@@ -1405,8 +1433,6 @@
   "dependencies": {
     "@octokit/plugin-retry": "^3.0.9",
     "@octokit/rest": "^19.0.4",
-    "@primer/octicons-react": "^17.6.0",
-    "@primer/react": "^35.0.0",
     "@vscode/codicons": "^0.0.31",
     "@vscode/webview-ui-toolkit": "^1.0.1",
     "ajv": "^8.11.0",
@@ -1416,7 +1442,7 @@
     "d3": "^7.6.1",
     "d3-graphviz": "^5.0.2",
     "fs-extra": "^10.0.1",
-    "glob-promise": "^4.2.2",
+    "glob-promise": "^6.0.2",
     "immutable": "^4.0.0",
     "js-yaml": "^4.1.0",
     "minimist": "~1.2.6",
@@ -1449,7 +1475,7 @@
     "@babel/core": "^7.18.13",
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
     "@faker-js/faker": "^7.5.0",
-    "@octokit/plugin-throttling": "^4.3.2",
+    "@octokit/plugin-throttling": "^5.0.1",
     "@storybook/addon-actions": "^6.5.10",
     "@storybook/addon-essentials": "^6.5.10",
     "@storybook/addon-interactions": "^6.5.10",
@@ -1484,6 +1510,7 @@
     "@types/semver": "~7.2.0",
     "@types/stream-chain": "~2.0.1",
     "@types/stream-json": "~1.7.1",
+    "@types/styled-components": "^5.1.11",
     "@types/tar-stream": "^2.2.2",
     "@types/through2": "^2.0.36",
     "@types/tmp": "^0.1.0",
@@ -1498,7 +1525,6 @@
     "@vscode/vsce": "^2.15.0",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.3.5",
-    "babel-loader": "^8.2.5",
     "cross-env": "^7.0.3",
     "css-loader": "~3.1.0",
     "del": "^6.0.0",
@@ -1523,12 +1549,12 @@
     "jest": "^29.0.3",
     "jest-environment-jsdom": "^29.0.3",
     "jest-runner-vscode": "^3.0.1",
-    "lint-staged": "~10.2.2",
+    "lint-staged": "~13.2.0",
     "mini-css-extract-plugin": "^2.6.1",
     "npm-run-all": "^4.1.5",
     "patch-package": "^6.5.0",
     "prettier": "^2.7.1",
-    "tar-stream": "^2.2.0",
+    "tar-stream": "^3.0.0",
     "through2": "^4.0.2",
     "ts-jest": "^29.0.1",
     "ts-json-schema-generator": "^1.1.2",
@@ -1536,8 +1562,8 @@
     "ts-node": "^10.7.0",
     "ts-protoc-gen": "^0.9.0",
     "typescript": "^4.5.5",
-    "webpack": "^5.62.2",
-    "webpack-cli": "^4.6.0"
+    "webpack": "^5.76.0",
+    "webpack-cli": "^5.0.1"
   },
   "lint-staged": {
     "./**/*.{json,css,scss}": [

@@ -1,6 +1,5 @@
 import { join, dirname } from "path";
 import {
-  commands,
   Disposable,
   env,
   EventEmitter,
@@ -25,14 +24,8 @@ import {
 import { extLogger } from "../common";
 import { URLSearchParams } from "url";
 import { DisposableObject } from "../pure/disposable-object";
-import { commandRunner } from "../commandRunner";
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../pure/time";
-import {
-  asError,
-  assertNever,
-  getErrorMessage,
-  getErrorStack,
-} from "../pure/helpers-pure";
+import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import {
   getActionsWorkflowRunUrl,
@@ -49,7 +42,7 @@ import {
 import {
   deserializeQueryHistory,
   serializeQueryHistory,
-} from "../query-serialization";
+} from "./store/query-history-store";
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
@@ -66,6 +59,9 @@ import { getTotalResultCount } from "../variant-analysis/shared/variant-analysis
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
 import { redactableError } from "../pure/errors";
 import { QueryHistoryDirs } from "./query-history-dirs";
+import { QueryHistoryCommands } from "../common/commands";
+import { App } from "../common/app";
+import { tryOpenExternalFile } from "../vscode-utils/external-files";
 
 /**
  * query-history-manager.ts
@@ -135,6 +131,7 @@ export class QueryHistoryManager extends DisposableObject {
   readonly onDidCompleteQuery = this._onDidCompleteQuery.event;
 
   constructor(
+    private readonly app: App,
     private readonly qs: QueryRunner,
     private readonly dbm: DatabaseManager,
     private readonly localQueriesResultsView: ResultsView,
@@ -201,141 +198,6 @@ export class QueryHistoryManager extends DisposableObject {
       }),
     );
 
-    void extLogger.log("Registering query history panel commands.");
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.openQuery",
-        this.handleOpenQuery.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.removeHistoryItem",
-        this.handleRemoveHistoryItem.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.sortByName",
-        this.handleSortByName.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.sortByDate",
-        this.handleSortByDate.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.sortByCount",
-        this.handleSortByCount.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.renameItem",
-        this.handleRenameItem.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.compareWith",
-        this.handleCompareWith.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.showQueryLog",
-        this.handleShowQueryLog.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.openQueryDirectory",
-        this.handleOpenQueryDirectory.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.showEvalLog",
-        this.handleShowEvalLog.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.showEvalLogSummary",
-        this.handleShowEvalLogSummary.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.showEvalLogViewer",
-        this.handleShowEvalLogViewer.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner("codeQLQueryHistory.cancel", this.handleCancel.bind(this)),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.showQueryText",
-        this.handleShowQueryText.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.exportResults",
-        this.handleExportResults.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.viewCsvResults",
-        this.handleViewCsvResults.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.viewCsvAlerts",
-        this.handleViewCsvAlerts.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.viewSarifAlerts",
-        this.handleViewSarifAlerts.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.viewDil",
-        this.handleViewDil.bind(this),
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.itemClicked",
-        async (item: LocalQueryInfo) => {
-          return this.handleItemClicked(item, [item]);
-        },
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.openOnGithub",
-        async (item: LocalQueryInfo) => {
-          return this.handleOpenOnGithub(item, [item]);
-        },
-      ),
-    );
-    this.push(
-      commandRunner(
-        "codeQLQueryHistory.copyRepoList",
-        this.handleCopyRepoList.bind(this),
-      ),
-    );
-
     // There are two configuration items that affect the query history:
     // 1. The ttl for query history items.
     // 2. The default label for query history items.
@@ -368,6 +230,48 @@ export class QueryHistoryManager extends DisposableObject {
 
     this.registerQueryHistoryScrubber(queryHistoryConfigListener, this, ctx);
     this.registerToVariantAnalysisEvents();
+  }
+
+  public getCommands(): QueryHistoryCommands {
+    return {
+      "codeQLQueryHistory.sortByName": this.handleSortByName.bind(this),
+      "codeQLQueryHistory.sortByDate": this.handleSortByDate.bind(this),
+      "codeQLQueryHistory.sortByCount": this.handleSortByCount.bind(this),
+
+      "codeQLQueryHistory.openQueryTitleMenu": this.handleOpenQuery.bind(this),
+      "codeQLQueryHistory.openQueryContextMenu":
+        this.handleOpenQuery.bind(this),
+      "codeQLQueryHistory.removeHistoryItemTitleMenu":
+        this.handleRemoveHistoryItem.bind(this),
+      "codeQLQueryHistory.removeHistoryItemContextMenu":
+        this.handleRemoveHistoryItem.bind(this),
+      "codeQLQueryHistory.removeHistoryItemContextInline":
+        this.handleRemoveHistoryItem.bind(this),
+      "codeQLQueryHistory.renameItem": this.handleRenameItem.bind(this),
+      "codeQLQueryHistory.compareWith": this.handleCompareWith.bind(this),
+      "codeQLQueryHistory.showEvalLog": this.handleShowEvalLog.bind(this),
+      "codeQLQueryHistory.showEvalLogSummary":
+        this.handleShowEvalLogSummary.bind(this),
+      "codeQLQueryHistory.showEvalLogViewer":
+        this.handleShowEvalLogViewer.bind(this),
+      "codeQLQueryHistory.showQueryLog": this.handleShowQueryLog.bind(this),
+      "codeQLQueryHistory.showQueryText": this.handleShowQueryText.bind(this),
+      "codeQLQueryHistory.openQueryDirectory":
+        this.handleOpenQueryDirectory.bind(this),
+      "codeQLQueryHistory.cancel": this.handleCancel.bind(this),
+      "codeQLQueryHistory.exportResults": this.handleExportResults.bind(this),
+      "codeQLQueryHistory.viewCsvResults": this.handleViewCsvResults.bind(this),
+      "codeQLQueryHistory.viewCsvAlerts": this.handleViewCsvAlerts.bind(this),
+      "codeQLQueryHistory.viewSarifAlerts":
+        this.handleViewSarifAlerts.bind(this),
+      "codeQLQueryHistory.viewDil": this.handleViewDil.bind(this),
+      "codeQLQueryHistory.itemClicked": this.handleItemClicked.bind(this),
+      "codeQLQueryHistory.openOnGithub": this.handleOpenOnGithub.bind(this),
+      "codeQLQueryHistory.copyRepoList": this.handleCopyRepoList.bind(this),
+
+      "codeQL.exportSelectedVariantAnalysisResults":
+        this.exportSelectedVariantAnalysisResults.bind(this),
+    };
   }
 
   public completeQuery(info: LocalQueryInfo, results: QueryWithResults): void {
@@ -510,8 +414,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (finalSingleItem.t === "variant-analysis") {
-      await commands.executeCommand(
-        "codeQL.openVariantAnalysisQueryFile",
+      await this.variantAnalysisManager.openQueryFile(
         finalSingleItem.variantAnalysis.id,
       );
       return;
@@ -556,7 +459,6 @@ export class QueryHistoryManager extends DisposableObject {
           !(await pathExists(item.completedQuery?.query.querySaveDir))
         ) {
           this.treeDataProvider.remove(item);
-          item.completedQuery?.dispose();
         }
       }),
     );
@@ -577,7 +479,6 @@ export class QueryHistoryManager extends DisposableObject {
           // Removing in progress local queries is not supported. They must be cancelled first.
           if (item.status !== QueryStatus.InProgress) {
             this.treeDataProvider.remove(item);
-            item.completedQuery?.dispose();
 
             // User has explicitly asked for this query to be removed.
             // We need to delete it from disk as well.
@@ -779,7 +680,10 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (singleItem.completedQuery.logFileLocation) {
-      await this.tryOpenExternalFile(singleItem.completedQuery.logFileLocation);
+      await tryOpenExternalFile(
+        this.app.commands,
+        singleItem.completedQuery.logFileLocation,
+      );
     } else {
       void showAndLogWarningMessage("No log file available");
     }
@@ -847,7 +751,7 @@ export class QueryHistoryManager extends DisposableObject {
         }
       }
       try {
-        await commands.executeCommand(
+        await this.app.commands.execute(
           "revealFileInOS",
           Uri.file(externalFilePath),
         );
@@ -896,7 +800,10 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (finalSingleItem.evalLogLocation) {
-      await this.tryOpenExternalFile(finalSingleItem.evalLogLocation);
+      await tryOpenExternalFile(
+        this.app.commands,
+        finalSingleItem.evalLogLocation,
+      );
     } else {
       this.warnNoEvalLogs();
     }
@@ -921,7 +828,10 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (finalSingleItem.evalLogSummaryLocation) {
-      await this.tryOpenExternalFile(finalSingleItem.evalLogSummaryLocation);
+      await tryOpenExternalFile(
+        this.app.commands,
+        finalSingleItem.evalLogSummaryLocation,
+      );
       return;
     }
 
@@ -993,8 +903,7 @@ export class QueryHistoryManager extends DisposableObject {
         if (item.t === "local") {
           item.cancel();
         } else if (item.t === "variant-analysis") {
-          await commands.executeCommand(
-            "codeQL.cancelVariantAnalysis",
+          await this.variantAnalysisManager.cancelVariantAnalysis(
             item.variantAnalysis.id,
           );
         } else {
@@ -1020,8 +929,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     if (finalSingleItem.t === "variant-analysis") {
-      await commands.executeCommand(
-        "codeQL.openVariantAnalysisQueryText",
+      await this.variantAnalysisManager.openQueryText(
         finalSingleItem.variantAnalysis.id,
       );
       return;
@@ -1066,7 +974,10 @@ export class QueryHistoryManager extends DisposableObject {
     const query = finalSingleItem.completedQuery.query;
     const hasInterpretedResults = query.canHaveInterpretedResults();
     if (hasInterpretedResults) {
-      await this.tryOpenExternalFile(query.resultsPaths.interpretedResultsPath);
+      await tryOpenExternalFile(
+        this.app.commands,
+        query.resultsPaths.interpretedResultsPath,
+      );
     } else {
       const label = this.labelProvider.getLabel(finalSingleItem);
       void showAndLogInformationMessage(
@@ -1095,11 +1006,11 @@ export class QueryHistoryManager extends DisposableObject {
     }
     const query = finalSingleItem.completedQuery.query;
     if (await query.hasCsv()) {
-      void this.tryOpenExternalFile(query.csvPath);
+      void tryOpenExternalFile(this.app.commands, query.csvPath);
       return;
     }
     if (await query.exportCsvResults(this.qs.cliServer, query.csvPath)) {
-      void this.tryOpenExternalFile(query.csvPath);
+      void tryOpenExternalFile(this.app.commands, query.csvPath);
     }
   }
 
@@ -1122,7 +1033,8 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    await this.tryOpenExternalFile(
+    await tryOpenExternalFile(
+      this.app.commands,
       await finalSingleItem.completedQuery.query.ensureCsvAlerts(
         this.qs.cliServer,
         this.dbm,
@@ -1149,7 +1061,8 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    await this.tryOpenExternalFile(
+    await tryOpenExternalFile(
+      this.app.commands,
       await finalSingleItem.completedQuery.query.ensureDilPath(
         this.qs.cliServer,
       ),
@@ -1175,7 +1088,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(finalSingleItem);
 
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "vscode.open",
       Uri.parse(actionsWorkflowRunUrl),
     );
@@ -1199,7 +1112,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "codeQL.copyVariantAnalysisRepoList",
       finalSingleItem.variantAnalysis.id,
     );
@@ -1223,9 +1136,24 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    await commands.executeCommand(
-      "codeQL.exportVariantAnalysisResults",
+    await this.variantAnalysisManager.exportResults(
       finalSingleItem.variantAnalysis.id,
+    );
+  }
+
+  /**
+   * Exports the results of the currently-selected variant analysis.
+   */
+  async exportSelectedVariantAnalysisResults(): Promise<void> {
+    const queryHistoryItem = this.getCurrentQueryHistoryItem();
+    if (!queryHistoryItem || queryHistoryItem.t !== "variant-analysis") {
+      throw new Error(
+        "No variant analysis results currently open. To open results, click an item in the query history view.",
+      );
+    }
+
+    await this.variantAnalysisManager.exportResults(
+      queryHistoryItem.variantAnalysis.id,
     );
   }
 
@@ -1250,47 +1178,6 @@ export class QueryHistoryManager extends DisposableObject {
         // using `reveal` if the tree view was not visible when the current element was added.
         this.treeDataProvider.refresh();
         void this.treeView.reveal(current, { select: true });
-      }
-    }
-  }
-
-  private async tryOpenExternalFile(fileLocation: string) {
-    const uri = Uri.file(fileLocation);
-    try {
-      await window.showTextDocument(uri, { preview: false });
-    } catch (e) {
-      const msg = getErrorMessage(e);
-      if (
-        msg.includes(
-          "Files above 50MB cannot be synchronized with extensions",
-        ) ||
-        msg.includes("too large to open")
-      ) {
-        const res = await showBinaryChoiceDialog(
-          `VS Code does not allow extensions to open files >50MB. This file
-exceeds that limit. Do you want to open it outside of VS Code?
-
-You can also try manually opening it inside VS Code by selecting
-the file in the file explorer and dragging it into the workspace.`,
-        );
-        if (res) {
-          try {
-            await commands.executeCommand("revealFileInOS", uri);
-          } catch (e) {
-            void showAndLogExceptionWithTelemetry(
-              redactableError(
-                asError(e),
-              )`Failed to reveal file in OS: ${getErrorMessage(e)}`,
-            );
-          }
-        }
-      } else {
-        void showAndLogExceptionWithTelemetry(
-          redactableError(asError(e))`Could not open file ${fileLocation}`,
-          {
-            fullMessage: `${getErrorMessage(e)}\n${getErrorStack(e)}`,
-          },
-        );
       }
     }
   }

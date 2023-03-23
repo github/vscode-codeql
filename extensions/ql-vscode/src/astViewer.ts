@@ -23,11 +23,11 @@ import {
   isWholeFileLoc,
   isLineColumnLoc,
 } from "./pure/bqrs-utils";
-import { commandRunner } from "./commandRunner";
 import { DisposableObject } from "./pure/disposable-object";
 import { showAndLogExceptionWithTelemetry } from "./helpers";
 import { asError, getErrorMessage } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
+import { AstViewerCommands } from "./common/commands";
 
 export interface AstItem {
   id: BqrsId;
@@ -54,15 +54,6 @@ class AstViewerDataProvider
   );
   readonly onDidChangeTreeData: Event<AstItem | undefined> =
     this._onDidChangeTreeData.event;
-
-  constructor() {
-    super();
-    this.push(
-      commandRunner("codeQLAstViewer.gotoCode", async (item: AstItem) => {
-        await showLocation(item.fileLocation);
-      }),
-    );
-  }
 
   refresh(): void {
     this._onDidChangeTreeData.fire(undefined);
@@ -127,13 +118,17 @@ export class AstViewer extends DisposableObject {
     this.push(this.treeView);
     this.push(this.treeDataProvider);
     this.push(
-      commandRunner("codeQLAstViewer.clear", async () => {
-        this.clear();
-      }),
-    );
-    this.push(
       window.onDidChangeTextEditorSelection(this.updateTreeSelection, this),
     );
+  }
+
+  getCommands(): AstViewerCommands {
+    return {
+      "codeQLAstViewer.clear": async () => this.clear(),
+      "codeQLAstViewer.gotoCode": async (item: AstItem) => {
+        await showLocation(item.fileLocation);
+      },
+    };
   }
 
   updateRoots(roots: AstItem[], db: DatabaseItem, fileUri: Uri) {

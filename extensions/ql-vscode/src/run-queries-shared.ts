@@ -12,7 +12,7 @@ import {
   window,
 } from "vscode";
 import { isCanary, AUTOSAVE_SETTING } from "./config";
-import { UserCancellationException } from "./commandRunner";
+import { UserCancellationException } from "./progress";
 import {
   pathExists,
   readFile,
@@ -30,7 +30,7 @@ import { nanoid } from "nanoid";
 import { CodeQLCliServer } from "./cli";
 import { SELECT_QUERY_NAME } from "./contextual/locationFinder";
 import { DatabaseManager } from "./local-databases";
-import { DecodedBqrsChunk } from "./pure/bqrs-cli-types";
+import { DecodedBqrsChunk, EntityValue } from "./pure/bqrs-cli-types";
 import { extLogger, Logger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { getErrorMessage } from "./pure/helpers-pure";
@@ -298,12 +298,8 @@ export class QueryEvaluationInfo {
         this.evalLogEndSummaryPath,
         "utf-8",
       );
-      void logger.log(" --- Evaluator Log Summary --- ", {
-        additionalLogLocation: this.logPath,
-      });
-      void logger.log(endSummaryContent, {
-        additionalLogLocation: this.logPath,
-      });
+      void logger.log(" --- Evaluator Log Summary --- ");
+      void logger.log(endSummaryContent);
     } catch (e) {
       void showAndLogWarningMessage(
         `Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`,
@@ -355,11 +351,17 @@ export class QueryEvaluationInfo {
       chunk.tuples.forEach((tuple) => {
         out.write(
           `${tuple
-            .map((v, i) =>
-              chunk.columns[i].kind === "String"
-                ? `"${typeof v === "string" ? v.replaceAll('"', '""') : v}"`
-                : v,
-            )
+            .map((v, i) => {
+              if (chunk.columns[i].kind === "String") {
+                return `"${
+                  typeof v === "string" ? v.replaceAll('"', '""') : v
+                }"`;
+              } else if (chunk.columns[i].kind === "Entity") {
+                return (v as EntityValue).label;
+              } else {
+                return v;
+              }
+            })
             .join(",")}\n`,
         );
       });
@@ -436,7 +438,6 @@ export class QueryEvaluationInfo {
 export interface QueryWithResults {
   readonly query: QueryEvaluationInfo;
   readonly logFileLocation?: string;
-  readonly dispose: () => void;
   readonly successful?: boolean;
   readonly message?: string;
   readonly result: legacyMessages.EvaluationResult;

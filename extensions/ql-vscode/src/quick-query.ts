@@ -1,13 +1,7 @@
 import { ensureDir, writeFile, pathExists, readFile } from "fs-extra";
 import { dump, load } from "js-yaml";
 import { basename, join } from "path";
-import {
-  CancellationToken,
-  ExtensionContext,
-  window as Window,
-  workspace,
-  Uri,
-} from "vscode";
+import { CancellationToken, window as Window, workspace, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 import { CodeQLCliServer } from "./cli";
 import { DatabaseUI } from "./local-databases-ui";
@@ -17,9 +11,10 @@ import {
   getQlPackForDbscheme,
   showBinaryChoiceDialog,
 } from "./helpers";
-import { ProgressCallback, UserCancellationException } from "./commandRunner";
+import { ProgressCallback, UserCancellationException } from "./progress";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { FALLBACK_QLPACK_FILENAME, getQlPackPath } from "./pure/ql";
+import { App } from "./common/app";
 
 const QUICK_QUERIES_DIR_NAME = "quick-queries";
 const QUICK_QUERY_QUERY_NAME = "quick-query.ql";
@@ -30,8 +25,8 @@ export function isQuickQueryPath(queryPath: string): boolean {
   return basename(queryPath) === QUICK_QUERY_QUERY_NAME;
 }
 
-async function getQuickQueriesDir(ctx: ExtensionContext): Promise<string> {
-  const storagePath = ctx.storagePath;
+async function getQuickQueriesDir(app: App): Promise<string> {
+  const storagePath = app.workspaceStoragePath;
   if (storagePath === undefined) {
     throw new Error("Workspace storage path is undefined");
   }
@@ -57,7 +52,7 @@ function findExistingQuickQueryEditor() {
  * Show a buffer the user can enter a simple query into.
  */
 export async function displayQuickQuery(
-  ctx: ExtensionContext,
+  app: App,
   cliServer: CodeQLCliServer,
   databaseUI: DatabaseUI,
   progress: ProgressCallback,
@@ -73,7 +68,7 @@ export async function displayQuickQuery(
     }
 
     const workspaceFolders = workspace.workspaceFolders || [];
-    const queriesDir = await getQuickQueriesDir(ctx);
+    const queriesDir = await getQuickQueriesDir(app);
 
     // We need to have a multi-root workspace to make quick query work
     // at all. Changing the workspace from single-root to multi-root
@@ -143,7 +138,7 @@ export async function displayQuickQuery(
 
     if (shouldRewrite) {
       await cliServer.clearCache();
-      await cliServer.packInstall(queriesDir, true);
+      await cliServer.packInstall(queriesDir, { forceUpdate: true });
     }
 
     await Window.showTextDocument(await workspace.openTextDocument(qlFile));

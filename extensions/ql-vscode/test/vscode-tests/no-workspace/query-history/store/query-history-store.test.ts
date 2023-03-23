@@ -1,19 +1,22 @@
 import {
   deserializeQueryHistory,
   serializeQueryHistory,
-} from "../../../src/query-serialization";
+} from "../../../../../src/query-history/store/query-history-store";
 import { join } from "path";
 import { writeFileSync, mkdirpSync, writeFile } from "fs-extra";
-import { LocalQueryInfo, InitialQueryInfo } from "../../../src/query-results";
-import { QueryWithResults } from "../../../src/run-queries-shared";
-import { DatabaseInfo } from "../../../src/pure/interface-types";
+import {
+  LocalQueryInfo,
+  InitialQueryInfo,
+} from "../../../../../src/query-results";
+import { QueryWithResults } from "../../../../../src/run-queries-shared";
+import { DatabaseInfo } from "../../../../../src/pure/interface-types";
 import { CancellationTokenSource, Uri } from "vscode";
-import { tmpDir } from "../../../src/helpers";
-import { QueryResultType } from "../../../src/pure/legacy-messages";
-import { QueryInProgress } from "../../../src/legacy-query-server/run-queries";
-import { VariantAnalysisHistoryItem } from "../../../src/query-history/variant-analysis-history-item";
-import { QueryHistoryInfo } from "../../../src/query-history/query-history-info";
-import { createMockVariantAnalysisHistoryItem } from "../../factories/query-history/variant-analysis-history-item";
+import { tmpDir } from "../../../../../src/helpers";
+import { QueryResultType } from "../../../../../src/pure/legacy-messages";
+import { QueryInProgress } from "../../../../../src/legacy-query-server/run-queries";
+import { VariantAnalysisHistoryItem } from "../../../../../src/query-history/variant-analysis-history-item";
+import { QueryHistoryInfo } from "../../../../../src/query-history/query-history-info";
+import { createMockVariantAnalysisHistoryItem } from "../../../../factories/query-history/variant-analysis-history-item";
 import { nanoid } from "nanoid";
 
 describe("serialize and deserialize", () => {
@@ -259,7 +262,6 @@ describe("serialize and deserialize", () => {
       query: query.queryEvalInfo,
       successful: didRunSuccessfully,
       message: "foo",
-      dispose: jest.fn(),
       result: {
         evaluationTime: 1,
         queryId: 0,
