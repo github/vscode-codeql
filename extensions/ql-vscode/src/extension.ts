@@ -1,7 +1,6 @@
 import "source-map-support/register";
 import {
   CancellationToken,
-  commands,
   Disposable,
   env,
   ExtensionContext,
@@ -111,7 +110,7 @@ import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 import {
-  AllCommands,
+  AllExtensionCommands,
   BaseCommands,
   QueryServerCommands,
   TestUICommands,
@@ -297,6 +296,8 @@ export async function activate(
   addUnhandledRejectionListener();
   install();
 
+  const app = new ExtensionApp(ctx);
+
   const codelensProvider = new QuickEvalCodeLensProvider();
   languages.registerCodeLensProvider(
     { scheme: "file", language: "ql" },
@@ -323,6 +324,7 @@ export async function activate(
     distributionConfigListener.onDidChangeConfiguration(() =>
       installOrUpdateThenTryActivate(
         ctx,
+        app,
         distributionManager,
         distributionConfigListener,
         {
@@ -337,6 +339,7 @@ export async function activate(
     commandRunner(checkForUpdatesCommand, () =>
       installOrUpdateThenTryActivate(
         ctx,
+        app,
         distributionManager,
         distributionConfigListener,
         {
@@ -356,6 +359,7 @@ export async function activate(
 
   const codeQlExtension = await installOrUpdateThenTryActivate(
     ctx,
+    app,
     distributionManager,
     distributionConfigListener,
     {
@@ -377,6 +381,7 @@ export async function activate(
 
 async function installOrUpdateDistributionWithProgressTitle(
   ctx: ExtensionContext,
+  app: ExtensionApp,
   distributionManager: DistributionManager,
   progressTitle: string,
   config: DistributionUpdateConfig,
@@ -421,7 +426,7 @@ async function installOrUpdateDistributionWithProgressTitle(
             "Restart and Upgrade",
           )
         ) {
-          await commands.executeCommand("workbench.action.reloadWindow");
+          await app.commands.execute("workbench.action.reloadWindow");
         }
       } else {
         await withProgress(
@@ -448,6 +453,7 @@ async function installOrUpdateDistributionWithProgressTitle(
 
 async function installOrUpdateDistribution(
   ctx: ExtensionContext,
+  app: ExtensionApp,
   distributionManager: DistributionManager,
   config: DistributionUpdateConfig,
 ): Promise<void> {
@@ -468,6 +474,7 @@ async function installOrUpdateDistribution(
   try {
     await installOrUpdateDistributionWithProgressTitle(
       ctx,
+      app,
       distributionManager,
       messageText,
       config,
@@ -553,11 +560,12 @@ async function getDistributionDisplayingDistributionWarnings(
 
 async function installOrUpdateThenTryActivate(
   ctx: ExtensionContext,
+  app: ExtensionApp,
   distributionManager: DistributionManager,
   distributionConfigListener: DistributionConfigListener,
   config: DistributionUpdateConfig,
 ): Promise<CodeQLExtensionInterface | Record<string, never>> {
-  await installOrUpdateDistribution(ctx, distributionManager, config);
+  await installOrUpdateDistribution(ctx, app, distributionManager, config);
 
   try {
     await prepareCodeTour();
@@ -577,6 +585,7 @@ async function installOrUpdateThenTryActivate(
   ) {
     extensionInterface = await activateWithInstalledDistribution(
       ctx,
+      app,
       distributionManager,
       distributionConfigListener,
     );
@@ -594,6 +603,7 @@ async function installOrUpdateThenTryActivate(
       if (chosenAction === installActionName) {
         await installOrUpdateThenTryActivate(
           ctx,
+          app,
           distributionManager,
           distributionConfigListener,
           {
@@ -620,6 +630,7 @@ const PACK_GLOBS = [
 
 async function activateWithInstalledDistribution(
   ctx: ExtensionContext,
+  app: ExtensionApp,
   distributionManager: DistributionManager,
   distributionConfigListener: DistributionConfigListener,
 ): Promise<CodeQLExtensionInterface> {
@@ -627,8 +638,6 @@ async function activateWithInstalledDistribution(
   // Remove any error stubs command handlers left over from first part
   // of activation.
   errorStubs.forEach((stub) => stub.dispose());
-
-  const app = new ExtensionApp(ctx);
 
   void extLogger.log("Initializing configuration listener...");
   const qlConfigurationListener =
@@ -862,7 +871,7 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Registering top-level command palette commands.");
 
-  const allCommands: AllCommands = {
+  const allCommands: AllExtensionCommands = {
     ...getCommands(app, cliServer, qs),
     ...getQueryEditorCommands({
       queryRunner: qs,
@@ -895,7 +904,7 @@ async function activateWithInstalledDistribution(
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {
-    app.commands.register(commandName as keyof AllCommands, command);
+    app.commands.register(commandName as keyof AllExtensionCommands, command);
   }
 
   const queryServerCommands: QueryServerCommands = {
@@ -948,7 +957,7 @@ async function activateWithInstalledDistribution(
     ),
   );
 
-  await commands.executeCommand("codeQLDatabases.removeOrphanedDatabases");
+  await app.commands.execute("codeQLDatabases.removeOrphanedDatabases");
 
   void extLogger.log("Reading query history");
   await qhm.readQueryHistory();
