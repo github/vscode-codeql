@@ -72,6 +72,20 @@
  
    override string getCommandName() { result = this.getArgument(0).(StringLiteral).getValue() }
  }
+
+ /**
+  * A usage of a command from the typescript code, by calling `CommandManager.execute`.
+  */
+ class CommandUsageCommandManagerMethodCallExpr extends CommandUsage, MethodCallExpr {
+   CommandUsageCommandManagerMethodCallExpr() {
+     this.getCalleeName() = "execute" and
+     this.getReceiver().getType().unfold().(TypeReference).getTypeName().getName() = "CommandManager" and
+     this.getArgument(0).(StringLiteral).getValue().matches("%codeQL%") and
+     not this.getFile().getRelativePath().matches("extensions/ql-vscode/test/%")
+   }
+
+   override string getCommandName() { result = this.getArgument(0).(StringLiteral).getValue() }
+ }
  
  /**
   * A usage of a command from any menu that isn't the command palette.
