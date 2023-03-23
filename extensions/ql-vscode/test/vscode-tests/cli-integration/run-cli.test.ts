@@ -1,9 +1,8 @@
-import { authentication, extensions, Uri } from "vscode";
+import { authentication, Uri } from "vscode";
 import { join } from "path";
 import { SemVer } from "semver";
 
 import { CodeQLCliServer, QueryInfoByLanguage } from "../../../src/cli";
-import { CodeQLExtensionInterface } from "../../../src/extension";
 import { itWithCodeQL } from "../cli";
 import {
   getOnDiskWorkspaceFolders,
@@ -13,6 +12,7 @@ import {
 import { resolveQueries } from "../../../src/contextual/queryResolver";
 import { KeyType } from "../../../src/contextual/keyType";
 import { faker } from "@faker-js/faker";
+import { getActivatedExtension } from "../global.helper";
 
 jest.setTimeout(60_000);
 
@@ -24,11 +24,7 @@ describe("Use cli", () => {
   let supportedLanguages: string[];
 
   beforeEach(async () => {
-    const extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
+    const extension = await getActivatedExtension();
     if ("cliServer" in extension) {
       cli = extension.cliServer;
       supportedLanguages = await cli.getSupportedLanguages();

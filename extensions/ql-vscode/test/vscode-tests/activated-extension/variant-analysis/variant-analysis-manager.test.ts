@@ -1,14 +1,12 @@
 import {
   commands,
   env,
-  extensions,
   TextDocument,
   TextEditor,
   Uri,
   window,
   workspace,
 } from "vscode";
-import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { extLogger } from "../../../../src/common";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import * as ghActionsApiClient from "../../../../src/variant-analysis/gh-api/gh-actions-api-client";
@@ -20,7 +18,7 @@ import { Response } from "node-fetch";
 
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { CodeQLCliServer } from "../../../../src/cli";
-import { storagePath } from "../../global.helper";
+import { getActivatedExtension, storagePath } from "../../global.helper";
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
 import * as VariantAnalysisModule from "../../../../src/variant-analysis/shared/variant-analysis";
@@ -67,11 +65,7 @@ describe("Variant Analysis Manager", () => {
       scannedRepos,
     });
 
-    const extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
+    const extension = await getActivatedExtension();
     const cli = mockedObject<CodeQLCliServer>({});
     app = new ExtensionApp(extension.ctx);
     const dbManager = new DbManager(app, new DbConfigStore(app));

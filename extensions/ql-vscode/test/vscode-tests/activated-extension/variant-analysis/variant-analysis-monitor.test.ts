@@ -1,5 +1,4 @@
-import { commands, extensions } from "vscode";
-import { CodeQLExtensionInterface } from "../../../../src/extension";
+import { commands } from "vscode";
 
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import { VariantAnalysisMonitor } from "../../../../src/variant-analysis/variant-analysis-monitor";
@@ -25,11 +24,11 @@ import {
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { testCredentialsWithStub } from "../../../factories/authentication";
+import { getActivatedExtension } from "../../global.helper";
 
 jest.setTimeout(60_000);
 
 describe("Variant Analysis Monitor", () => {
-  let extension: CodeQLExtensionInterface | Record<string, never>;
   let mockGetVariantAnalysis: jest.SpiedFunction<
     typeof ghApiClient.getVariantAnalysis
   >;
@@ -48,11 +47,7 @@ describe("Variant Analysis Monitor", () => {
 
     shouldCancelMonitor = jest.fn();
 
-    extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
+    const extension = await getActivatedExtension();
     variantAnalysisMonitor = new VariantAnalysisMonitor(shouldCancelMonitor);
     variantAnalysisMonitor.onVariantAnalysisChange(onVariantAnalysisChangeSpy);
 

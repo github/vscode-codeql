@@ -1,10 +1,4 @@
-import {
-  CancellationToken,
-  commands,
-  ExtensionContext,
-  extensions,
-  Uri,
-} from "vscode";
+import { CancellationToken, commands, ExtensionContext, Uri } from "vscode";
 import { join, dirname } from "path";
 import {
   pathExistsSync,
@@ -16,8 +10,12 @@ import {
 import { load, dump } from "js-yaml";
 
 import { DatabaseItem, DatabaseManager } from "../../../src/local-databases";
-import { CodeQLExtensionInterface } from "../../../src/extension";
-import { cleanDatabases, dbLoc, storagePath } from "../global.helper";
+import {
+  cleanDatabases,
+  dbLoc,
+  getActivatedExtension,
+  storagePath,
+} from "../global.helper";
 import { importArchiveDatabase } from "../../../src/databaseFetcher";
 import { CliVersionConstraint, CodeQLCliServer } from "../../../src/cli";
 import { describeWithCodeQL } from "../cli";
@@ -48,11 +46,7 @@ describeWithCodeQL()("Queries", () => {
   let qlFile: string;
 
   beforeEach(async () => {
-    const extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
+    const extension = await getActivatedExtension();
     if ("databaseManager" in extension) {
       databaseManager = extension.databaseManager;
       cli = extension.cliServer;

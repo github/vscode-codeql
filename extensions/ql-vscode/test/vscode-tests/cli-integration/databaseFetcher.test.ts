@@ -1,14 +1,19 @@
 import { join } from "path";
-import { extensions, CancellationToken, Uri, window } from "vscode";
+import { CancellationToken, Uri, window } from "vscode";
 
-import { CodeQLExtensionInterface } from "../../../src/extension";
 import { CodeQLCliServer } from "../../../src/cli";
 import { DatabaseManager } from "../../../src/local-databases";
 import {
   importArchiveDatabase,
   promptImportInternetDatabase,
 } from "../../../src/databaseFetcher";
-import { cleanDatabases, dbLoc, DB_URL, storagePath } from "../global.helper";
+import {
+  cleanDatabases,
+  dbLoc,
+  DB_URL,
+  getActivatedExtension,
+  storagePath,
+} from "../global.helper";
 import { createMockCommandManager } from "../../__mocks__/commandsMock";
 
 jest.setTimeout(60_000);
@@ -30,11 +35,7 @@ describe("DatabaseFetcher", () => {
     jest.spyOn(window, "showErrorMessage").mockResolvedValue(undefined);
     jest.spyOn(window, "showInformationMessage").mockResolvedValue(undefined);
 
-    const extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
+    const extension = await getActivatedExtension();
     if ("databaseManager" in extension) {
       databaseManager = extension.databaseManager;
     } else {

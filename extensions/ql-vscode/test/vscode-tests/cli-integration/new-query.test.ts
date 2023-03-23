@@ -5,13 +5,17 @@ import * as messages from "../../../src/pure/new-messages";
 import * as qsClient from "../../../src/query-server/queryserver-client";
 import * as cli from "../../../src/cli";
 import { CellValue } from "../../../src/pure/bqrs-cli-types";
-import { extensions, Uri } from "vscode";
-import { CodeQLExtensionInterface } from "../../../src/extension";
+import { Uri } from "vscode";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../../src/query-server/queryserver-client";
 import { extLogger, ProgressReporter } from "../../../src/common";
 import { QueryResultType } from "../../../src/pure/new-messages";
-import { cleanDatabases, dbLoc, storagePath } from "../global.helper";
+import {
+  cleanDatabases,
+  dbLoc,
+  getActivatedExtension,
+  storagePath,
+} from "../global.helper";
 import { importArchiveDatabase } from "../../../src/databaseFetcher";
 import { createMockCommandManager } from "../../__mocks__/commandsMock";
 
@@ -110,11 +114,7 @@ describeWithCodeQL()("using the new query server", () => {
   let supportNewQueryServer = true;
 
   beforeAll(async () => {
-    const extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
+    const extension = await getActivatedExtension();
     if ("cliServer" in extension && "databaseManager" in extension) {
       cliServer = extension.cliServer;
 
