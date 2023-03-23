@@ -777,6 +777,7 @@ async function activateWithInstalledDistribution(
   };
 
   const qhm = new QueryHistoryManager(
+    app,
     qs,
     dbm,
     localQueryResultsView,
