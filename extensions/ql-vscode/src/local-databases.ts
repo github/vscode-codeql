@@ -1001,6 +1001,15 @@ export class DatabaseManager extends DisposableObject {
     });
   }
 
+  public async removeAllDatabases(
+    progress: ProgressCallback,
+    token: vscode.CancellationToken,
+  ) {
+    for (const item of this.databaseItems) {
+      await this.removeDatabaseItem(progress, token, item);
+    }
+  }
+
   private async deregisterDatabase(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
