@@ -1074,6 +1074,7 @@ async function createQueryServer(
     );
   if (await cliServer.cliConstraints.supportsNewQueryServer()) {
     const qs = new QueryServerClient(
+      app,
       qlConfigurationListener,
       cliServer,
       qsOpts,
