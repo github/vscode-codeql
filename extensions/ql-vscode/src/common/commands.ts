@@ -39,6 +39,13 @@ export type BuiltInVsCodeCommands = {
   "workbench.action.reloadWindow": () => Promise<void>;
 };
 
+// Commands that are available before the extension is fully activated.
+// These commands are *not* registered using the command manager, but can
+// be invoked using the command manager.
+export type PreActivationCommands = {
+  "codeQL.checkForUpdatesToCLI": () => Promise<void>;
+};
+
 // Base commands not tied directly to a module like e.g. variant analysis.
 export type BaseCommands = {
   "codeQL.openDocumentation": () => Promise<void>;
@@ -240,7 +247,7 @@ export type MockGitHubApiServerCommands = {
   "codeQL.mockGitHubApiServer.unloadScenario": () => Promise<void>;
 };
 
-// All commands where the implementation is provided by this extension.
+// All commands where the implementation is provided by this activated extension.
 export type AllExtensionCommands = BaseCommands &
   QueryEditorCommands &
   ResultsViewCommands &
@@ -256,7 +263,9 @@ export type AllExtensionCommands = BaseCommands &
   Partial<TestUICommands> &
   MockGitHubApiServerCommands;
 
-export type AllCommands = AllExtensionCommands & BuiltInVsCodeCommands;
+export type AllCommands = AllExtensionCommands &
+  PreActivationCommands &
+  BuiltInVsCodeCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 
