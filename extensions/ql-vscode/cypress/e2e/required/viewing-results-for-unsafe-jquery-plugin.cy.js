@@ -29,7 +29,7 @@ describe('CodeQL Extension', () => {
     cy.wait(1000)
     cy.focused().type('{enter}')
 
-    cy.get('[aria-label="Clear Notification (⌘Backspace)"]').click()
+    // cy.get('[aria-label="Clear Notification (⌘Backspace)"]').click()
     cy.get('.editor-container').type('{meta+p}')
     cy.focused().type('> CodeQL: Run Query on Selected Database{enter}')
     cy.get('a.monaco-button.monaco-text-button:contains("Install CodeQL CLI")').click()

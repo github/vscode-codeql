@@ -1,10 +1,12 @@
 version: '2'
 services:
   test:
-    image: codercom/code-server:latest
+    image: code-server
     build:
-      context: backend
-      dockerfile: vscodeCodeQlExtension.Dockerfile
+      context: .
+      dockerfile: cypress.Dockerfile
+      args:
+        - GH_TOKEN
     command: "/source --auth none --disable-telemetry"
     container_name: vscodeCodeQlExtension
     ports:

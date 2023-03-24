@@ -1,0 +1,53 @@
+name: Run E2E tests
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+
+jobs:
+  test:
+    name: Run tests
+    env:
+      GH_TOKEN: ${{ github.token }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.14.2'
+          cache: 'npm'
+          cache-dependency-path: extensions/ql-vscode/package-lock.json
+
+      - name: Install dependencies
+        working-directory: extensions/ql-vscode
+        run: |
+          npm ci
+        shell: bash
+
+      - name: Build
+        working-directory: extensions/ql-vscode
+        env:
+          APP_INSIGHTS_KEY: '${{ secrets.APP_INSIGHTS_KEY }}'
+        run: |
+          npm run build
+        shell: bash
+
+      - name: Copy extension file
+        run: |
+          mkdir extensions/ql-vscode/dist
+          cp dist/*.vsix extensions/ql-vscode/dist/test.vsix
+
+      - name: Build Docker
+        working-directory: extensions/ql-vscode
+        run: |
+          npm run code-server-up
+
+      - name: Run e2e tests
+        working-directory: extensions/ql-vscode
+        run: |
+          npm run cypress:run
