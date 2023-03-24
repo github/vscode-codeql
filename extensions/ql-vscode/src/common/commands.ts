@@ -95,6 +95,7 @@ export type LocalQueryCommands = {
   "codeQL.quickEval": (uri: Uri) => Promise<void>;
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
   "codeQL.codeLensQuickEval": (uri: Uri, range: Range) => Promise<void>;
+  "codeQL.quickEvalCount": (uri: Uri) => Promise<void>;
   "codeQL.quickQuery": () => Promise<void>;
 };
 

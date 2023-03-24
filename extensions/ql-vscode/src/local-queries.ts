@@ -207,6 +207,27 @@ export function getLocalQueryCommands({
       },
     );
 
+  const quickEvalCount = async (uri: Uri) =>
+    withProgress(
+      async (progress, token) =>
+        await compileAndRunQuery(
+          queryRunner,
+          queryHistoryManager,
+          databaseUI,
+          localQueryResultsView,
+          queryStorageDir,
+          QuickEvalType.QuickEvalCount,
+          uri,
+          progress,
+          token,
+          undefined,
+        ),
+      {
+        title: "Running query",
+        cancellable: true,
+      },
+    );
+
   const quickQuery = async () =>
     withProgress(
       async (progress, token) =>
@@ -226,6 +247,7 @@ export function getLocalQueryCommands({
     "codeQL.quickEval": quickEval,
     "codeQL.quickEvalContextEditor": quickEval,
     "codeQL.codeLensQuickEval": codeLensQuickEval,
+    "codeQL.quickEvalCount": quickEvalCount, 
     "codeQL.quickQuery": quickQuery,
   };
 }

@@ -1380,6 +1380,11 @@ export class CodeQLCliServer implements Disposable {
         "codeql.supportsEvalLog",
         await this.cliConstraints.supportsPerQueryEvalLog(),
       );
+      await commands.executeCommand(
+        "setContext",
+        "codeql.supportsQuickEvalCount",
+        await this.cliConstraints.supportsQuickEvalCount(),
+      );
     }
     return await this._version;
   }
@@ -1713,6 +1718,13 @@ export class CliVersionConstraint {
     "2.12.4",
   );
 
+  /**
+   * CLI version that supports quick eval count.
+   */
+  public static CLI_VERSION_WITH_QUICK_EVAL_COUNT = new SemVer(
+    "2.12.6", // XXX Modified for testing.
+  );
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1780,6 +1792,12 @@ export class CliVersionConstraint {
   async supportsAdditionalPacksInstall() {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_ADDITIONAL_PACKS_INSTALL,
+    );
+  }
+
+  async supportsQuickEvalCount() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
     );
   }
 }
