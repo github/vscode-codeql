@@ -879,7 +879,7 @@ async function activateWithInstalledDistribution(
   const summaryLanguageSupport = new SummaryLanguageSupport(app);
   ctx.subscriptions.push(summaryLanguageSupport);
 
-  const mockServer = new VSCodeMockGitHubApiServer(ctx, app);
+  const mockServer = new VSCodeMockGitHubApiServer(app);
   ctx.subscriptions.push(mockServer);
 
   void extLogger.log("Registering top-level command palette commands.");

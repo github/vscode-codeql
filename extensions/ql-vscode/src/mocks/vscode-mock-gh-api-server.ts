@@ -1,12 +1,5 @@
 import { pathExists } from "fs-extra";
-import {
-  env,
-  ExtensionContext,
-  ExtensionMode,
-  QuickPickItem,
-  Uri,
-  window,
-} from "vscode";
+import { env, QuickPickItem, Uri, window } from "vscode";
 
 import {
   getMockGitHubApiServerScenariosPath,
@@ -15,7 +8,8 @@ import {
 import { DisposableObject } from "../pure/disposable-object";
 import { MockGitHubApiServer } from "./mock-gh-api-server";
 import { MockGitHubApiServerCommands } from "../common/commands";
-import { App } from "../common/app";
+import { App, AppMode } from "../common/app";
+import path from "path";
 
 /**
  * "Interface" to the mock GitHub API server which implements VSCode interactions, such as
@@ -27,10 +21,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
   private readonly server: MockGitHubApiServer;
   private readonly config: MockGitHubApiConfigListener;
 
-  constructor(
-    private readonly ctx: ExtensionContext,
-    private readonly app: App,
-  ) {
+  constructor(private readonly app: App) {
     super();
     this.server = new MockGitHubApiServer();
     this.config = new MockGitHubApiConfigListener();
@@ -228,11 +219,11 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
       return scenariosPath;
     }
 
-    if (this.ctx.extensionMode === ExtensionMode.Development) {
-      const developmentScenariosPath = Uri.joinPath(
-        this.ctx.extensionUri,
+    if (this.app.mode === AppMode.Development) {
+      const developmentScenariosPath = path.join(
+        this.app.extensionPath,
         "src/mocks/scenarios",
-      ).fsPath.toString();
+      );
       if (await pathExists(developmentScenariosPath)) {
         return developmentScenariosPath;
       }
