@@ -161,6 +161,7 @@ function getCommands(
   app: App,
   cliServer: CodeQLCliServer,
   queryRunner: QueryRunner,
+  ideServer: LanguageClient,
 ): BaseCommands {
   const getCliVersion = async () => {
     try {
@@ -177,9 +178,12 @@ function getCommands(
     "codeQL.restartQueryServer": async () =>
       withProgress(
         async (progress: ProgressCallback, token: CancellationToken) => {
-          // We restart the CLI server too, to ensure they are the same version
+          // Restart all of the spawned servers: cli, query, and language.
           cliServer.restartCliServer();
-          await queryRunner.restartQueryServer(progress, token);
+          await Promise.all([
+            queryRunner.restartQueryServer(progress, token),
+            ideServer.restart(),
+          ]);
           void showAndLogInformationMessage("CodeQL Query Server restarted.", {
             outputLogger: queryServerLogger,
           });
@@ -889,7 +893,7 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllExtensionCommands = {
-    ...getCommands(app, cliServer, qs),
+    ...getCommands(app, cliServer, qs, client),
     ...getQueryEditorCommands({
       commandManager: app.commands,
       queryRunner: qs,
