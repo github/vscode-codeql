@@ -85,7 +85,10 @@ export interface LocalQueryHistoryEvaluationInfo {
   databaseHasMetadataFile: boolean;
   quickEvalPosition?: LocalQueryHistoryPosition;
   metadata?: LocalQueryHistoryMetadata;
-  resultsPaths: string;
+  resultsPaths: {
+    resultsPath: string;
+    interpretedResultsPath: string;
+  };
 }
 
 export interface LocalQueryHistoryMetadata {
