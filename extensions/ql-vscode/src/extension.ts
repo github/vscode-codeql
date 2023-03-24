@@ -877,10 +877,10 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(astViewer);
 
-  const summaryLanguageSupport = new SummaryLanguageSupport();
+  const summaryLanguageSupport = new SummaryLanguageSupport(app);
   ctx.subscriptions.push(summaryLanguageSupport);
 
-  const mockServer = new VSCodeMockGitHubApiServer(ctx);
+  const mockServer = new VSCodeMockGitHubApiServer(app);
   ctx.subscriptions.push(mockServer);
 
   void extLogger.log("Registering top-level command palette commands.");
@@ -1075,6 +1075,7 @@ async function createQueryServer(
     );
   if (await cliServer.cliConstraints.supportsNewQueryServer()) {
     const qs = new QueryServerClient(
+      app,
       qlConfigurationListener,
       cliServer,
       qsOpts,

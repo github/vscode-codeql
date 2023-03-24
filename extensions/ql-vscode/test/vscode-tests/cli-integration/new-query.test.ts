@@ -17,7 +17,7 @@ import {
   storagePath,
 } from "../global.helper";
 import { importArchiveDatabase } from "../../../src/databaseFetcher";
-import { createMockCommandManager } from "../../__mocks__/commandsMock";
+import { createMockApp } from "../../__mocks__/appMock";
 
 const baseDir = join(__dirname, "../../../test/data");
 
@@ -114,6 +114,7 @@ describeWithCodeQL()("using the new query server", () => {
   let supportNewQueryServer = true;
 
   beforeAll(async () => {
+    const app = createMockApp({});
     const extension = await getActivatedExtension();
     cliServer = extension.cliServer;
 
@@ -122,6 +123,7 @@ describeWithCodeQL()("using the new query server", () => {
       supportNewQueryServer = false;
     }
     qs = new QueryServerClient(
+      app,
       {
         codeQlPath:
           (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
@@ -146,7 +148,7 @@ describeWithCodeQL()("using the new query server", () => {
     await cleanDatabases(extension.databaseManager);
     const uri = Uri.file(dbLoc);
     const maybeDbItem = await importArchiveDatabase(
-      createMockCommandManager(),
+      app.commands,
       uri.toString(true),
       extension.databaseManager,
       storagePath,

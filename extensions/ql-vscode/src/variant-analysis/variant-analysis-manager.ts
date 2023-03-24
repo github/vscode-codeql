@@ -6,7 +6,6 @@ import {
 } from "./gh-api/gh-api-client";
 import {
   CancellationToken,
-  commands,
   env,
   EventEmitter,
   ExtensionContext,
@@ -116,6 +115,7 @@ export class VariantAnalysisManager
     super();
     this.variantAnalysisMonitor = this.push(
       new VariantAnalysisMonitor(
+        app,
         this.shouldCancelMonitorVariantAnalysis.bind(this),
       ),
     );
@@ -239,11 +239,11 @@ export class VariantAnalysisManager
       `Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`,
     );
 
-    void commands.executeCommand(
+    void this.app.commands.execute(
       "codeQL.openVariantAnalysisView",
       processedVariantAnalysis.id,
     );
-    void commands.executeCommand(
+    void this.app.commands.execute(
       "codeQL.monitorVariantAnalysis",
       processedVariantAnalysis,
     );
@@ -273,7 +273,7 @@ export class VariantAnalysisManager
           this.makeResultDownloadChecker(variantAnalysis),
         ))
       ) {
-        void commands.executeCommand(
+        void this.app.commands.execute(
           "codeQL.monitorVariantAnalysis",
           variantAnalysis,
         );
@@ -502,10 +502,7 @@ export class VariantAnalysisManager
   public async monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
-    await this.variantAnalysisMonitor.monitorVariantAnalysis(
-      variantAnalysis,
-      this.app.credentials,
-    );
+    await this.variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
   }
 
   public async autoDownloadVariantAnalysisResult(
@@ -641,7 +638,7 @@ export class VariantAnalysisManager
 
     const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
 
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "vscode.open",
       Uri.parse(actionsWorkflowRunUrl),
     );
@@ -689,6 +686,7 @@ export class VariantAnalysisManager
       this,
       variantAnalysisId,
       filterSort,
+      this.app.commands,
       this.app.credentials,
     );
   }
