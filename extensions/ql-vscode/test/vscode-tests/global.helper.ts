@@ -29,7 +29,9 @@ export async function getActivatedExtension(): Promise<CodeQLExtensionInterface>
     .getExtension<CodeQLExtensionInterface | undefined>("GitHub.vscode-codeql")
     ?.activate();
   if (extension === undefined) {
-    throw new Error("Unable to active CodeQL extension");
+    throw new Error(
+      "Unable to active CodeQL extension. Make sure cli is downloaded and installed properly.",
+    );
   }
   return extension;
 }
