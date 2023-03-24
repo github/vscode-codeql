@@ -2,6 +2,7 @@ import { ExtensionContext, WebviewPanel, WebviewPanelSerializer } from "vscode";
 import { VariantAnalysisView } from "./variant-analysis-view";
 import { VariantAnalysisState } from "../pure/interface-types";
 import { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
+import { App } from "../common/app";
 
 export class VariantAnalysisViewSerializer implements WebviewPanelSerializer {
   private resolvePromises: Array<
@@ -10,7 +11,10 @@ export class VariantAnalysisViewSerializer implements WebviewPanelSerializer {
 
   private manager?: VariantAnalysisViewManager<VariantAnalysisView>;
 
-  public constructor(private readonly ctx: ExtensionContext) {}
+  public constructor(
+    private readonly ctx: ExtensionContext,
+    private readonly app: App,
+  ) {}
 
   onExtensionLoaded(
     manager: VariantAnalysisViewManager<VariantAnalysisView>,
@@ -49,6 +53,7 @@ export class VariantAnalysisViewSerializer implements WebviewPanelSerializer {
 
     const view = new VariantAnalysisView(
       this.ctx,
+      this.app,
       variantAnalysisState.variantAnalysisId,
       manager,
     );
