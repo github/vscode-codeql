@@ -25,14 +25,8 @@ describe("Use cli", () => {
 
   beforeEach(async () => {
     const extension = await getActivatedExtension();
-    if ("cliServer" in extension) {
-      cli = extension.cliServer;
-      supportedLanguages = await cli.getSupportedLanguages();
-    } else {
-      throw new Error(
-        "Extension not initialized. Make sure cli is downloaded and installed properly.",
-      );
-    }
+    cli = extension.cliServer;
+    supportedLanguages = await cli.getSupportedLanguages();
   });
 
   if (process.env.CLI_VERSION && process.env.CLI_VERSION !== "nightly") {

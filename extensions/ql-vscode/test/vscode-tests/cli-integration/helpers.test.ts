@@ -14,13 +14,7 @@ describe("helpers (with CLI)", () => {
 
   beforeEach(async () => {
     const extension = await getActivatedExtension();
-    if ("cliServer" in extension) {
-      cli = extension.cliServer;
-    } else {
-      throw new Error(
-        "Extension not initialized. Make sure cli is downloaded and installed properly.",
-      );
-    }
+    cli = extension.cliServer;
   });
 
   it("should get query metadata when available", async () => {

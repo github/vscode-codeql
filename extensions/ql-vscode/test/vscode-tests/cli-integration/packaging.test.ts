@@ -42,13 +42,7 @@ describe("Packaging commands", () => {
       .mockResolvedValue(undefined);
 
     const extension = await getActivatedExtension();
-    if ("cliServer" in extension) {
-      cli = extension.cliServer;
-    } else {
-      throw new Error(
-        "Extension not initialized. Make sure cli is downloaded and installed properly.",
-      );
-    }
+    cli = extension.cliServer;
   });
 
   it("should download all core query packs", async () => {

@@ -36,13 +36,7 @@ describe("DatabaseFetcher", () => {
     jest.spyOn(window, "showInformationMessage").mockResolvedValue(undefined);
 
     const extension = await getActivatedExtension();
-    if ("databaseManager" in extension) {
-      databaseManager = extension.databaseManager;
-    } else {
-      throw new Error(
-        "Extension not initialized. Make sure cli is downloaded and installed properly.",
-      );
-    }
+    databaseManager = extension.databaseManager;
 
     await cleanDatabases(databaseManager);
   });

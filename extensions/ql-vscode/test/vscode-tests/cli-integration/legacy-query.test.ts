@@ -112,36 +112,29 @@ describeWithCodeQL()("using the legacy query server", () => {
 
   beforeAll(async () => {
     const extension = await getActivatedExtension();
-    if ("cliServer" in extension) {
-      cliServer = extension.cliServer;
-      cliServer.quiet = true;
+    cliServer = extension.cliServer;
+    cliServer.quiet = true;
 
-      qs = new QueryServerClient(
-        createMockApp({}),
-        {
-          codeQlPath:
-            (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
-            "",
-          debug: false,
-          cacheSize: 0,
-          numThreads: 1,
-          saveCache: false,
-          timeoutSecs: 0,
-        },
-        cliServer,
-        {
-          contextStoragePath: tmpDir.name,
-          logger: extLogger,
-        },
-        (task) =>
-          task(nullProgressReporter, new CancellationTokenSource().token),
-      );
-      await qs.startQueryServer();
-    } else {
-      throw new Error(
-        "Extension not initialized. Make sure cli is downloaded and installed properly.",
-      );
-    }
+    qs = new QueryServerClient(
+      createMockApp({}),
+      {
+        codeQlPath:
+          (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
+          "",
+        debug: false,
+        cacheSize: 0,
+        numThreads: 1,
+        saveCache: false,
+        timeoutSecs: 0,
+      },
+      cliServer,
+      {
+        contextStoragePath: tmpDir.name,
+        logger: extLogger,
+      },
+      (task) => task(nullProgressReporter, new CancellationTokenSource().token),
+    );
+    await qs.startQueryServer();
   });
 
   for (const queryTestCase of queryTestCases) {

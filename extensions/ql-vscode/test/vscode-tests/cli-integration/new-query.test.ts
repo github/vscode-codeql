@@ -115,58 +115,51 @@ describeWithCodeQL()("using the new query server", () => {
 
   beforeAll(async () => {
     const extension = await getActivatedExtension();
-    if ("cliServer" in extension && "databaseManager" in extension) {
-      cliServer = extension.cliServer;
+    cliServer = extension.cliServer;
 
-      cliServer.quiet = true;
-      if (!(await cliServer.cliConstraints.supportsNewQueryServerForTests())) {
-        supportNewQueryServer = false;
-      }
-      qs = new QueryServerClient(
-        {
-          codeQlPath:
-            (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
-            "",
-          debug: false,
-          cacheSize: 0,
-          numThreads: 1,
-          saveCache: false,
-          timeoutSecs: 0,
-        },
-        cliServer,
-        {
-          contextStoragePath: tmpDir.name,
-          logger: extLogger,
-        },
-        (task) =>
-          task(nullProgressReporter, new CancellationTokenSource().token),
-      );
-      await qs.startQueryServer();
-
-      // Unlike the old query sevre the new one wants a database and the empty direcrtory is not valid.
-      // Add a database, but make sure the database manager is empty first
-      await cleanDatabases(extension.databaseManager);
-      const uri = Uri.file(dbLoc);
-      const maybeDbItem = await importArchiveDatabase(
-        createMockCommandManager(),
-        uri.toString(true),
-        extension.databaseManager,
-        storagePath,
-        () => {
-          /**ignore progress */
-        },
-        token,
-      );
-
-      if (!maybeDbItem) {
-        throw new Error("Could not import database");
-      }
-      db = maybeDbItem.databaseUri.fsPath;
-    } else {
-      throw new Error(
-        "Extension not initialized. Make sure cli is downloaded and installed properly.",
-      );
+    cliServer.quiet = true;
+    if (!(await cliServer.cliConstraints.supportsNewQueryServerForTests())) {
+      supportNewQueryServer = false;
     }
+    qs = new QueryServerClient(
+      {
+        codeQlPath:
+          (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
+          "",
+        debug: false,
+        cacheSize: 0,
+        numThreads: 1,
+        saveCache: false,
+        timeoutSecs: 0,
+      },
+      cliServer,
+      {
+        contextStoragePath: tmpDir.name,
+        logger: extLogger,
+      },
+      (task) => task(nullProgressReporter, new CancellationTokenSource().token),
+    );
+    await qs.startQueryServer();
+
+    // Unlike the old query sevre the new one wants a database and the empty direcrtory is not valid.
+    // Add a database, but make sure the database manager is empty first
+    await cleanDatabases(extension.databaseManager);
+    const uri = Uri.file(dbLoc);
+    const maybeDbItem = await importArchiveDatabase(
+      createMockCommandManager(),
+      uri.toString(true),
+      extension.databaseManager,
+      storagePath,
+      () => {
+        /**ignore progress */
+      },
+      token,
+    );
+
+    if (!maybeDbItem) {
+      throw new Error("Could not import database");
+    }
+    db = maybeDbItem.databaseUri.fsPath;
   });
 
   for (const queryTestCase of queryTestCases) {
