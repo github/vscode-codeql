@@ -88,13 +88,18 @@ export class Recorder extends DisposableObject {
 
         const bodyFileName = `${i}-${writtenRequest.request.kind}.body.${extension}`;
         const bodyFilePath = join(scenarioDirectory, bodyFileName);
-        await writeFile(bodyFilePath, writtenRequest.response.body);
+
+        let bodyFileLink = undefined;
+        if (writtenRequest.response.body) {
+          await writeFile(bodyFilePath, writtenRequest.response.body || "");
+          bodyFileLink = `file:${bodyFileName}`;
+        }
 
         writtenRequest = {
           ...writtenRequest,
           response: {
             ...writtenRequest.response,
-            body: `file:${bodyFileName}`,
+            body: bodyFileLink,
           },
         };
       }
