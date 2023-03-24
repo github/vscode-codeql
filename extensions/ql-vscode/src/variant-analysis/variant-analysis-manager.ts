@@ -317,7 +317,9 @@ export class VariantAnalysisManager
     }
     if (!this.views.has(variantAnalysisId)) {
       // The view will register itself with the manager, so we don't need to do anything here.
-      this.track(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
+      this.track(
+        new VariantAnalysisView(this.ctx, this.app, variantAnalysisId, this),
+      );
     }
 
     const variantAnalysisView = this.views.get(variantAnalysisId)!;

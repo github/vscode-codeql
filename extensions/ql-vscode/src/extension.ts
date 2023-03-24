@@ -358,7 +358,10 @@ export async function activate(
     ),
   );
 
-  const variantAnalysisViewSerializer = new VariantAnalysisViewSerializer(ctx);
+  const variantAnalysisViewSerializer = new VariantAnalysisViewSerializer(
+    ctx,
+    app,
+  );
   Window.registerWebviewPanelSerializer(
     VariantAnalysisView.viewType,
     variantAnalysisViewSerializer,
