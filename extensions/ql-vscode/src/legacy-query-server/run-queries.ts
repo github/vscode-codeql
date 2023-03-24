@@ -33,7 +33,7 @@ import { redactableError } from "../pure/errors";
 export class QueryInProgress {
   public queryEvalInfo: QueryEvaluationInfo;
   /**
-   * Note that in the {@link readFromQueryHistoryFile} method, we create a QueryEvaluationInfo instance
+   * Note that in the {@link readQueryHistoryFromFile} method, we create a QueryEvaluationInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
    */
   constructor(

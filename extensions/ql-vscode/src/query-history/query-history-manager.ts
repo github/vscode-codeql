@@ -40,7 +40,7 @@ import {
   variantAnalysisStatusToQueryStatus,
 } from "../query-status";
 import {
-  readFromQueryHistoryFile,
+  readQueryHistoryFromFile,
   writeQueryHistoryToFile,
 } from "./store/query-history-store";
 import { pathExists } from "fs-extra";
@@ -379,7 +379,7 @@ export class QueryHistoryManager extends DisposableObject {
     void extLogger.log(
       `Reading cached query history from '${this.queryMetadataStorageLocation}'.`,
     );
-    const history = await readFromQueryHistoryFile(
+    const history = await readQueryHistoryFromFile(
       this.queryMetadataStorageLocation,
     );
     this.treeDataProvider.allHistory = history;

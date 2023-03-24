@@ -1,5 +1,5 @@
 import {
-  readFromQueryHistoryFile,
+  readQueryHistoryFromFile,
   writeQueryHistoryToFile,
 } from "../../../../../src/query-history/store/query-history-store";
 import { join } from "path";
@@ -98,7 +98,7 @@ describe("write and read", () => {
 
     // write and read
     await writeQueryHistoryToFile(allHistory, allHistoryPath);
-    const allHistoryActual = await readFromQueryHistoryFile(allHistoryPath);
+    const allHistoryActual = await readQueryHistoryFromFile(allHistoryPath);
 
     // the dispose methods will be different. Ignore them.
     allHistoryActual.forEach((info) => {
@@ -181,7 +181,7 @@ describe("write and read", () => {
       "utf8",
     );
 
-    const actual = await readFromQueryHistoryFile(path);
+    const actual = await readQueryHistoryFromFile(path);
     expect(actual.length).toEqual(expectedHistory.length);
   });
 
@@ -196,7 +196,7 @@ describe("write and read", () => {
       "utf8",
     );
 
-    const allHistoryActual = await readFromQueryHistoryFile(badPath);
+    const allHistoryActual = await readQueryHistoryFromFile(badPath);
     // version number is invalid. Should return an empty array.
     expect(allHistoryActual).toEqual([]);
   });

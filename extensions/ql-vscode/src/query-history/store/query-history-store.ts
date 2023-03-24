@@ -14,7 +14,7 @@ import { QueryEvaluationInfo } from "../../run-queries-shared";
 import { QueryResultType } from "../../pure/legacy-messages";
 import { redactableError } from "../../pure/errors";
 
-export async function readFromQueryHistoryFile(
+export async function readQueryHistoryFromFile(
   fsPath: string,
 ): Promise<QueryHistoryInfo[]> {
   try {
