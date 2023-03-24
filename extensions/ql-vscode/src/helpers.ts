@@ -6,7 +6,7 @@ import {
   writeFile,
   opendir,
 } from "fs-extra";
-import { promise as glob } from "glob-promise";
+import { glob } from "glob";
 import { load } from "js-yaml";
 import { join, basename } from "path";
 import { dirSync } from "tmp-promise";
@@ -515,7 +515,9 @@ export async function getQlPackForDbscheme(
 export async function getPrimaryDbscheme(
   datasetFolder: string,
 ): Promise<string> {
-  const dbschemes = await glob(join(datasetFolder, "*.dbscheme"));
+  const dbschemes = await glob("*.dbscheme", {
+    cwd: datasetFolder,
+  });
 
   if (dbschemes.length < 1) {
     throw new Error(
