@@ -20,18 +20,14 @@ import {
   remove,
   readdir,
 } from "fs-extra";
-import {
-  ensureMetadataIsComplete,
-  InitialQueryInfo,
-  LocalQueryInfo,
-} from "./query-results";
+import { ensureMetadataIsComplete, InitialQueryInfo } from "./query-results";
 import { isQuickQueryPath } from "./quick-query";
 import { nanoid } from "nanoid";
 import { CodeQLCliServer } from "./cli";
 import { SELECT_QUERY_NAME } from "./contextual/locationFinder";
 import { DatabaseManager } from "./local-databases";
 import { DecodedBqrsChunk, EntityValue } from "./pure/bqrs-cli-types";
-import { extLogger, Logger } from "./common";
+import { BaseLogger, extLogger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { getErrorMessage } from "./pure/helpers-pure";
 
@@ -42,7 +38,18 @@ import { getErrorMessage } from "./pure/helpers-pure";
  * Compiling and running QL queries.
  */
 
-export function findQueryLogFile(resultPath: string): string {
+/**
+ * Holds the paths to the various structured log summary files generated for a query evaluation.
+ */
+export interface EvaluatorLogPaths {
+  log: string;
+  humanReadableSummary: string | undefined;
+  endSummary: string | undefined;
+  jsonSummary: string | undefined;
+  summarySymbols: string | undefined;
+}
+
+function findQueryLogFile(resultPath: string): string {
   return join(resultPath, "query.log");
 }
 
@@ -66,20 +73,11 @@ function findQueryEvalLogEndSummaryFile(resultPath: string): string {
   return join(resultPath, "evaluator-log-end.summary");
 }
 
-export class QueryEvaluationInfo {
-  /**
-   * Note that in the {@link readQueryHistoryFromFile} method, we create a QueryEvaluationInfo instance
-   * by explicitly setting the prototype in order to avoid calling this constructor.
-   */
-  constructor(
-    public readonly querySaveDir: string,
-    public readonly dbItemPath: string,
-    private readonly databaseHasMetadataFile: boolean,
-    public readonly quickEvalPosition?: messages.Position,
-    public readonly metadata?: QueryMetadata,
-  ) {
-    /**/
-  }
+/**
+ * Provides paths to the files that can be generated in the output directory for a query evaluation.
+ */
+export class QueryOutputDir {
+  constructor(public readonly querySaveDir: string) {}
 
   get dilPath() {
     return join(this.querySaveDir, "results.dil");
@@ -120,9 +118,29 @@ export class QueryEvaluationInfo {
     return findQueryEvalLogEndSummaryFile(this.querySaveDir);
   }
 
+  get bqrsPath() {
+    return join(this.querySaveDir, "results.bqrs");
+  }
+}
+
+export class QueryEvaluationInfo extends QueryOutputDir {
+  /**
+   * Note that in the {@link readQueryHistoryFromFile} method, we create a QueryEvaluationInfo instance
+   * by explicitly setting the prototype in order to avoid calling this constructor.
+   */
+  constructor(
+    querySaveDir: string,
+    public readonly dbItemPath: string,
+    private readonly databaseHasMetadataFile: boolean,
+    public readonly quickEvalPosition?: messages.Position,
+    public readonly metadata?: QueryMetadata,
+  ) {
+    super(querySaveDir);
+  }
+
   get resultsPaths() {
     return {
-      resultsPath: join(this.querySaveDir, "results.bqrs"),
+      resultsPath: this.bqrsPath,
       interpretedResultsPath: join(
         this.querySaveDir,
         this.metadata?.kind === "graph"
@@ -226,85 +244,6 @@ export class QueryEvaluationInfo {
    */
   async hasEvalLog(): Promise<boolean> {
     return pathExists(this.evalLogPath);
-  }
-
-  /**
-   * Add the structured evaluator log to the query evaluation info.
-   */
-  async addQueryLogs(
-    queryInfo: LocalQueryInfo,
-    cliServer: CodeQLCliServer,
-    logger: Logger,
-  ) {
-    queryInfo.evalLogLocation = this.evalLogPath;
-    queryInfo.evalLogSummaryLocation =
-      await this.generateHumanReadableLogSummary(cliServer);
-    void this.logEndSummary(queryInfo.evalLogSummaryLocation, logger); // Logged asynchrnously
-    if (isCanary()) {
-      // Generate JSON summary for viewer.
-      await cliServer.generateJsonLogSummary(
-        this.evalLogPath,
-        this.jsonEvalLogSummaryPath,
-      );
-      queryInfo.jsonEvalLogSummaryLocation = this.jsonEvalLogSummaryPath;
-      await generateSummarySymbolsFile(
-        this.evalLogSummaryPath,
-        this.evalLogSummarySymbolsPath,
-      );
-      queryInfo.evalLogSummarySymbolsLocation = this.evalLogSummarySymbolsPath;
-    }
-  }
-
-  /**
-   * Calls the appropriate CLI command to generate a human-readable log summary.
-   * @param qs The query server client.
-   * @returns The path to the log summary, or `undefined` if the summary could not be generated.   */
-  private async generateHumanReadableLogSummary(
-    cliServer: CodeQLCliServer,
-  ): Promise<string | undefined> {
-    try {
-      await cliServer.generateLogSummary(
-        this.evalLogPath,
-        this.evalLogSummaryPath,
-        this.evalLogEndSummaryPath,
-      );
-      return this.evalLogSummaryPath;
-    } catch (e) {
-      void showAndLogWarningMessage(
-        `Failed to generate human-readable structured evaluator log summary. Reason: ${getErrorMessage(
-          e,
-        )}`,
-      );
-      return undefined;
-    }
-  }
-
-  /**
-   * Logs the end summary to the Output window and log file.
-   * @param logSummaryPath Path to the human-readable log summary
-   * @param qs The query server client.
-   */
-  private async logEndSummary(
-    logSummaryPath: string | undefined,
-    logger: Logger,
-  ): Promise<void> {
-    if (logSummaryPath === undefined) {
-      // Failed to generate the log, so we don't expect an end summary either.
-      return;
-    }
-
-    try {
-      const endSummaryContent = await readFile(
-        this.evalLogEndSummaryPath,
-        "utf-8",
-      );
-      void logger.log(" --- Evaluator Log Summary --- ");
-      void logger.log(endSummaryContent);
-    } catch (e) {
-      void showAndLogWarningMessage(
-        `Could not read structured evaluator log end of summary file at ${this.evalLogEndSummaryPath}.`,
-      );
-    }
   }
 
   /**
@@ -674,4 +613,88 @@ export async function createInitialQueryInfo(
           queryText: await readFile(queryPath, "utf8"),
         }),
   };
+}
+
+export async function generateEvalLogSummaries(
+  cliServer: CodeQLCliServer,
+  outputDir: QueryOutputDir,
+): Promise<EvaluatorLogPaths | undefined> {
+  const log = outputDir.evalLogPath;
+  if (!(await pathExists(log))) {
+    // No raw JSON log, so we can't generate any summaries.
+    return undefined;
+  }
+  let humanReadableSummary: string | undefined = undefined;
+  let endSummary: string | undefined = undefined;
+  if (await generateHumanReadableLogSummary(cliServer, outputDir)) {
+    humanReadableSummary = outputDir.evalLogSummaryPath;
+    endSummary = outputDir.evalLogEndSummaryPath;
+  }
+  let jsonSummary: string | undefined = undefined;
+  let summarySymbols: string | undefined = undefined;
+  if (isCanary()) {
+    // Generate JSON summary for viewer.
+    jsonSummary = outputDir.jsonEvalLogSummaryPath;
+    await cliServer.generateJsonLogSummary(log, jsonSummary);
+
+    if (humanReadableSummary !== undefined) {
+      summarySymbols = outputDir.evalLogSummarySymbolsPath;
+      await generateSummarySymbolsFile(humanReadableSummary, summarySymbols);
+    }
+  }
+
+  return {
+    log,
+    humanReadableSummary,
+    endSummary,
+    jsonSummary,
+    summarySymbols,
+  };
+}
+
+/**
+ * Calls the appropriate CLI command to generate a human-readable log summary.
+ * @param qs The query server client.
+ * @param outputDir The query's output directory, where all of the logs are located.
+ * @returns True if the summary and end summary were generated, or false if not.
+ */
+async function generateHumanReadableLogSummary(
+  cliServer: CodeQLCliServer,
+  outputDir: QueryOutputDir,
+): Promise<boolean> {
+  try {
+    await cliServer.generateLogSummary(
+      outputDir.evalLogPath,
+      outputDir.evalLogSummaryPath,
+      outputDir.evalLogEndSummaryPath,
+    );
+    return true;
+  } catch (e) {
+    void showAndLogWarningMessage(
+      `Failed to generate human-readable structured evaluator log summary. Reason: ${getErrorMessage(
+        e,
+      )}`,
+    );
+    return false;
+  }
+}
+
+/**
+ * Logs the end summary to the Output window and log file.
+ * @param logSummaryPath Path to the human-readable log summary
+ * @param qs The query server client.
+ */
+export async function logEndSummary(
+  endSummary: string,
+  logger: BaseLogger,
+): Promise<void> {
+  try {
+    const endSummaryContent = await readFile(endSummary, "utf-8");
+    void logger.log(" --- Evaluator Log Summary --- ");
+    void logger.log(endSummaryContent);
+  } catch (e) {
+    void showAndLogWarningMessage(
+      `Could not read structured evaluator log end of summary file at ${endSummary}.`,
+    );
+  }
 }

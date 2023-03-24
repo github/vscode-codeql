@@ -107,6 +107,7 @@ import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analys
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
+import { QLDebugAdapterDescriptorFactory } from "./debugger/debugger-factory";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 import {
   AllExtensionCommands,
@@ -123,6 +124,7 @@ import { getAstCfgCommands } from "./ast-cfg-commands";
 import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
+import { DebuggerUI } from "./debugger/debugger-ui";
 
 /**
  * extension.ts
@@ -848,6 +850,18 @@ async function activateWithInstalledDistribution(
     },
     true,
   );
+
+  void extLogger.log("Initializing debugger factory.");
+  const debuggerFactory = ctx.subscriptions.push(
+    new QLDebugAdapterDescriptorFactory(queryStorageDir, qs),
+  );
+  void debuggerFactory;
+
+  void extLogger.log("Initializing debugger UI.");
+  const debuggerUI = ctx.subscriptions.push(
+    new DebuggerUI(localQueryResultsView, dbm, qhm, qs),
+  );
+  void debuggerUI;
 
   void extLogger.log("Initializing QLTest interface.");
   const testExplorerExtension = extensions.getExtension<TestHub>(

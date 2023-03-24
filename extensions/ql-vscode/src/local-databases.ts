@@ -95,6 +95,10 @@ export interface DatabaseContents {
   dbSchemeUri?: vscode.Uri;
 }
 
+export interface DatabaseContentsWithDbScheme extends DatabaseContents {
+  dbSchemeUri: vscode.Uri; // Always present
+}
+
 /**
  * An error thrown when we cannot find a valid database in a putative
  * database directory.
@@ -165,7 +169,7 @@ async function getDbSchemeFiles(dbDirectory: string): Promise<string[]> {
 export class DatabaseResolver {
   public static async resolveDatabaseContents(
     uri: vscode.Uri,
-  ): Promise<DatabaseContents> {
+  ): Promise<DatabaseContentsWithDbScheme> {
     if (uri.scheme !== "file") {
       throw new Error(
         `Database URI scheme '${uri.scheme}' not supported; only 'file' URIs are supported.`,
@@ -199,9 +203,12 @@ export class DatabaseResolver {
         `Database '${databasePath}' contains multiple CodeQL dbschemes under '${dbPath}'.`,
       );
     } else {
-      contents.dbSchemeUri = vscode.Uri.file(resolve(dbPath, dbSchemeFiles[0]));
+      const dbSchemeUri = vscode.Uri.file(resolve(dbPath, dbSchemeFiles[0]));
+      return {
+        ...contents,
+        dbSchemeUri,
+      };
     }
-    return contents;
   }
 
   public static async resolveDatabase(
@@ -604,12 +611,61 @@ export class DatabaseManager extends DisposableObject {
     qs.onStart(this.reregisterDatabases.bind(this));
   }
 
+  /**
+   * Creates a {@link DatabaseItem} for the specified database, and adds it to the list of open
+   * databases.
+   */
   public async openDatabase(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     uri: vscode.Uri,
     displayName?: string,
     isTutorialDatabase?: boolean,
+  ): Promise<DatabaseItem> {
+    const databaseItem = await this.createDatabaseItem(uri, displayName);
+
+    return await this.addExistingDatabaseItem(
+      databaseItem,
+      progress,
+      token,
+      isTutorialDatabase,
+    );
+  }
+
+  /**
+   * Adds a {@link DatabaseItem} to the list of open databases, if that database is not already on
+   * the list.
+   *
+   * Typically, the item will have been created by {@link createOrOpenDatabaseItem}.
+   */
+  public async addExistingDatabaseItem(
+    databaseItem: DatabaseItem,
+    progress: ProgressCallback,
+    token: vscode.CancellationToken,
+    isTutorialDatabase?: boolean,
+  ): Promise<DatabaseItem> {
+    const existingItem = this.findDatabaseItem(databaseItem.databaseUri);
+    if (existingItem !== undefined) {
+      return existingItem;
+    }
+
+    await this.addDatabaseItem(progress, token, databaseItem);
+    await this.addDatabaseSourceArchiveFolder(databaseItem);
+
+    if (isCodespacesTemplate() && !isTutorialDatabase) {
+      await this.createSkeletonPacks(databaseItem);
+    }
+
+    return databaseItem;
+  }
+
+  /**
+   * Creates a {@link DatabaseItem} for the specified database, without adding it to the list of
+   * open databases.
+   */
+  private async createDatabaseItem(
+    uri: vscode.Uri,
+    displayName: string | undefined,
   ): Promise<DatabaseItem> {
     const contents = await DatabaseResolver.resolveDatabaseContents(uri);
     // Ignore the source archive for QLTest databases by default.
@@ -630,14 +686,27 @@ export class DatabaseManager extends DisposableObject {
       },
     );
 
-    await this.addDatabaseItem(progress, token, databaseItem);
-    await this.addDatabaseSourceArchiveFolder(databaseItem);
+    return databaseItem;
+  }
 
-    if (isCodespacesTemplate() && !isTutorialDatabase) {
-      await this.createSkeletonPacks(databaseItem);
+  /**
+   * If the specified database is already on the list of open databases, returns that database's
+   * {@link DatabaseItem}. Otherwise, creates a new {@link DatabaseItem} without adding it to the
+   * list of open databases.
+   *
+   * The {@link DatabaseItem} can be added to the list of open databases later, via {@link addExistingDatabaseItem}.
+   */
+  public async createOrOpenDatabaseItem(
+    uri: vscode.Uri,
+  ): Promise<DatabaseItem> {
+    const existingItem = this.findDatabaseItem(uri);
+    if (existingItem !== undefined) {
+      // Use the one we already have.
+      return existingItem;
     }
 
-    return databaseItem;
+    // We don't add this to the list automatically, but the user can add it later.
+    return this.createDatabaseItem(uri, undefined);
   }
 
   public async createSkeletonPacks(databaseItem: DatabaseItem) {

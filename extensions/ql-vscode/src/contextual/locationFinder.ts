@@ -19,8 +19,9 @@ import {
   runContextualQuery,
 } from "./queryResolver";
 import { CancellationToken, LocationLink, Uri } from "vscode";
-import { QueryWithResults } from "../run-queries-shared";
+import { QueryOutputDir } from "../run-queries-shared";
 import { QueryRunner } from "../queryRunner";
+import { QueryResultType } from "../pure/new-messages";
 
 export const SELECT_QUERY_NAME = "#select";
 export const TEMPLATE_NAME = "selectedSourceFile";
@@ -78,21 +79,23 @@ export async function getLocationsForUriString(
       token,
       templates,
     );
-    if (results.successful) {
-      links.push(...(await getLinksFromResults(results, cli, db, filter)));
+    if (results.resultType === QueryResultType.SUCCESS) {
+      links.push(
+        ...(await getLinksFromResults(results.outputDir, cli, db, filter)),
+      );
     }
   }
   return links;
 }
 
 async function getLinksFromResults(
-  results: QueryWithResults,
+  outputDir: QueryOutputDir,
   cli: CodeQLCliServer,
   db: DatabaseItem,
   filter: (srcFile: string, destFile: string) => boolean,
 ): Promise<FullLocationLink[]> {
   const localLinks: FullLocationLink[] = [];
-  const bqrsPath = results.query.resultsPaths.resultsPath;
+  const bqrsPath = outputDir.bqrsPath;
   const info = await cli.bqrsInfo(bqrsPath);
   const selectInfo = getResultSetSchema(SELECT_QUERY_NAME, info);
   if (isValidSelect(selectInfo)) {
