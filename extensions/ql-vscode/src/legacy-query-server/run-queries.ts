@@ -21,7 +21,11 @@ import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
 import * as qsClient from "./queryserver-client";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { compileDatabaseUpgradeSequence } from "./upgrades";
-import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
+import {
+  QueryEvaluationInfo,
+  QueryWithResults,
+  QuickEvalType,
+} from "../run-queries-shared";
 import { redactableError } from "../pure/errors";
 
 /**
@@ -43,6 +47,7 @@ export class QueryInProgress {
     readonly queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
     readonly quickEvalPosition?: messages.Position,
     readonly metadata?: QueryMetadata,
+    readonly quickEvalType?: QuickEvalType,
     readonly templates?: Record<string, string>,
   ) {
     this.queryEvalInfo = new QueryEvaluationInfo(
@@ -71,6 +76,12 @@ export class QueryInProgress {
   ): Promise<messages.EvaluationResult> {
     if (!dbItem.contents || dbItem.error) {
       throw new Error("Can't run query on invalid database.");
+    }
+
+    if (this.quickEvalType === QuickEvalType.QuickEvalCount) {
+      throw new Error(
+        "Quick Eval count is not supported by the old query server.",
+      );
     }
 
     let result: messages.EvaluationResult | null = null;
@@ -167,9 +178,12 @@ export class QueryInProgress {
   ): Promise<messages.CompilationMessage[]> {
     let compiled: messages.CheckQueryResult | undefined;
     try {
-      const target = this.quickEvalPosition
+      const target: messages.CompilationTarget = this.quickEvalPosition
         ? {
-            quickEval: { quickEvalPos: this.quickEvalPosition },
+            quickEval: {
+              quickEvalPos: this.quickEvalPosition,
+              countOnly: this.quickEvalType === QuickEvalType.QuickEvalCount,
+            },
           }
         : { query: {} };
       const params: messages.CompileQueryParams = {
@@ -389,6 +403,7 @@ export async function compileAndRunQueryAgainstDatabase(
     packConfig.dbscheme,
     initialInfo.quickEvalPosition,
     metadata,
+    initialInfo.quickEvalType,
     templates,
   );
   const logger = new TeeLogger(qs.logger, query.queryEvalInfo.logPath);

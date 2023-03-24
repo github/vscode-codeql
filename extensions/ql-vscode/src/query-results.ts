@@ -16,7 +16,11 @@ import {
   DatabaseInfo,
 } from "./pure/interface-types";
 import { QueryStatus } from "./query-status";
-import { QueryEvaluationInfo, QueryWithResults } from "./run-queries-shared";
+import {
+  QueryEvaluationInfo,
+  QueryWithResults,
+  QuickEvalType,
+} from "./run-queries-shared";
 import { formatLegacyMessage } from "./legacy-query-server/run-queries";
 import { sarifParser } from "./sarif-parser";
 
@@ -37,6 +41,7 @@ export interface InitialQueryInfo {
   readonly queryText: string; // text of the selected file, or the selected text when doing quick eval
   readonly isQuickQuery: boolean;
   readonly isQuickEval: boolean;
+  readonly quickEvalType?: QuickEvalType; // Only set for newer queries, use isQuickEval if not set
   readonly quickEvalPosition?: messages.Position;
   readonly queryPath: string;
   readonly databaseInfo: DatabaseInfo;

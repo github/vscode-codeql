@@ -14,7 +14,7 @@ import { KeyType, kindOfKeyType, nameOfKeyType, tagOfKeyType } from "./keyType";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseItem } from "../local-databases";
 import { extLogger } from "../common";
-import { createInitialQueryInfo } from "../run-queries-shared";
+import { createInitialQueryInfo, QuickEvalType } from "../run-queries-shared";
 import { CancellationToken, Uri } from "vscode";
 import { ProgressCallback } from "../progress";
 import { QueryRunner } from "../queryRunner";
@@ -180,7 +180,7 @@ export async function runContextualQuery(
       name: db.name,
       databaseUri: db.databaseUri.toString(),
     },
-    false,
+    QuickEvalType.None,
   );
   void extLogger.log(
     `Running contextual query ${query}; results will be stored in ${queryStorageDir}`,

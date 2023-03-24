@@ -23,7 +23,7 @@ import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { DatabaseUI } from "./local-databases-ui";
 import { ResultsView } from "./interface";
 import { DatabaseItem, DatabaseManager } from "./local-databases";
-import { createInitialQueryInfo } from "./run-queries-shared";
+import { createInitialQueryInfo, QuickEvalType } from "./run-queries-shared";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
 import { WebviewReveal } from "./interface-utils";
 import { asError, getErrorMessage } from "./pure/helpers-pure";
@@ -61,7 +61,7 @@ export function getLocalQueryCommands({
           databaseUI,
           localQueryResultsView,
           queryStorageDir,
-          false,
+          QuickEvalType.None,
           uri,
           progress,
           token,
@@ -148,7 +148,7 @@ export function getLocalQueryCommands({
               databaseUI,
               localQueryResultsView,
               queryStorageDir,
-              false,
+              QuickEvalType.None,
               uri,
               wrappedProgress,
               token,
@@ -172,7 +172,7 @@ export function getLocalQueryCommands({
           databaseUI,
           localQueryResultsView,
           queryStorageDir,
-          true,
+          QuickEvalType.QuickEval,
           uri,
           progress,
           token,
@@ -194,7 +194,7 @@ export function getLocalQueryCommands({
           databaseUI,
           localQueryResultsView,
           queryStorageDir,
-          true,
+          QuickEvalType.QuickEval,
           uri,
           progress,
           token,
@@ -236,7 +236,7 @@ export async function compileAndRunQuery(
   databaseUI: DatabaseUI,
   localQueryResultsView: ResultsView,
   queryStorageDir: string,
-  quickEval: boolean,
+  quickEval: QuickEvalType,
   selectedQuery: Uri | undefined,
   progress: ProgressCallback,
   token: CancellationToken,
@@ -357,7 +357,7 @@ async function compileAndRunQueryOnMultipleDatabases(
           databaseUI,
           localQueryResultsView,
           queryStorageDir,
-          false,
+          QuickEvalType.None,
           uri,
           progress,
           token,

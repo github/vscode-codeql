@@ -13,7 +13,11 @@ import { extLogger, TeeLogger } from "../common";
 import * as messages from "../pure/new-messages";
 import { QueryResultType } from "../pure/legacy-messages";
 import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
-import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
+import {
+  QueryEvaluationInfo,
+  QueryWithResults,
+  QuickEvalType,
+} from "../run-queries-shared";
 import * as qsClient from "./queryserver-client";
 import { redactableError } from "../pure/errors";
 
@@ -63,9 +67,12 @@ export async function compileAndRunQueryAgainstDatabase(
   if (!dbItem.contents || dbItem.error) {
     throw new Error("Can't run query on invalid database.");
   }
-  const target = query.quickEvalPosition
+  const target: messages.CompilationTarget = query.quickEvalPosition
     ? {
-        quickEval: { quickEvalPos: query.quickEvalPosition },
+        quickEval: {
+          quickEvalPos: query.quickEvalPosition,
+          countOnly: initialInfo.quickEvalType === QuickEvalType.QuickEvalCount,
+        },
       }
     : { query: {} };
 

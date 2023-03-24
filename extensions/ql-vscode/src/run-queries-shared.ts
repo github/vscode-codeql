@@ -638,34 +638,45 @@ async function convertToQlPath(filePath: string): Promise<string> {
   }
 }
 
+export enum QuickEvalType {
+  None,
+  QuickEval,
+  QuickEvalCount,
+}
+
 /**
  * Determines the initial information for a query. This is everything of interest
  * we know about this query that is available before it is run.
  *
  * @param selectedQueryUri The Uri of the document containing the query to be run.
  * @param databaseInfo The database to run the query against.
- * @param isQuickEval true if this is a quick evaluation.
+ * @param quickEvalType true if this is a quick evaluation.
  * @param range the selection range of the query to be run. Only used if isQuickEval is true.
  * @returns The initial information for the query to be run.
  */
 export async function createInitialQueryInfo(
   selectedQueryUri: Uri | undefined,
   databaseInfo: DatabaseInfo,
-  isQuickEval: boolean,
+  quickEvalType: QuickEvalType,
   range?: Range,
 ): Promise<InitialQueryInfo> {
   // Determine which query to run, based on the selection and the active editor.
   const { queryPath, quickEvalPosition, quickEvalText } =
-    await determineSelectedQuery(selectedQueryUri, isQuickEval, range);
+    await determineSelectedQuery(
+      selectedQueryUri,
+      quickEvalType !== QuickEvalType.None,
+      range,
+    );
 
   return {
     queryPath,
-    isQuickEval,
+    quickEvalType,
+    isQuickEval: quickEvalType !== QuickEvalType.None,
     isQuickQuery: isQuickQueryPath(queryPath),
     databaseInfo,
     id: `${basename(queryPath)}-${nanoid()}`,
     start: new Date(),
-    ...(isQuickEval
+    ...(quickEvalType !== QuickEvalType.None
       ? {
           queryText: quickEvalText!, // if this query is quick eval, it must have quick eval text
           quickEvalPosition,

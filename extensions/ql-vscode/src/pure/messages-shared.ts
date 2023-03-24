@@ -67,7 +67,8 @@ export interface CompilationTarget {
  * Options for quick evaluation
  */
 export interface QuickEvalOptions {
-  quickEvalPos?: Position;
+  quickEvalPos: Position;
+  countOnly?: boolean;
 }
 
 /**
