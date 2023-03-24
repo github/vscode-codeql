@@ -1,21 +1,10 @@
-import { join } from "path";
 import { CancellationToken } from "vscode";
-import * as cli from "../cli";
 import { ProgressCallback } from "../progress";
-import { DatabaseItem } from "../local-databases";
-import {
-  getOnDiskWorkspaceFolders,
-  showAndLogExceptionWithTelemetry,
-  showAndLogWarningMessage,
-  tryGetQueryMetadata,
-} from "../helpers";
-import { extLogger, TeeLogger } from "../common";
 import * as messages from "../pure/new-messages";
-import { QueryResultType } from "../pure/legacy-messages";
-import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
-import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
+import { QueryOutputDir } from "../run-queries-shared";
 import * as qsClient from "./queryserver-client";
-import { redactableError } from "../pure/errors";
+import { CoreQueryResults, CoreQueryTarget } from "../queryRunner";
+import { Logger } from "../common";
 
 /**
  * run-queries.ts
@@ -31,140 +20,58 @@ import { redactableError } from "../pure/errors";
  * output and results.
  */
 
-export async function compileAndRunQueryAgainstDatabase(
-  cliServer: cli.CodeQLCliServer,
+export async function compileAndRunQueryAgainstDatabaseCore(
   qs: qsClient.QueryServerClient,
-  dbItem: DatabaseItem,
-  initialInfo: InitialQueryInfo,
-  queryStorageDir: string,
+  dbPath: string,
+  query: CoreQueryTarget,
+  generateEvalLog: boolean,
+  additionalPacks: string[],
+  outputDir: QueryOutputDir,
   progress: ProgressCallback,
   token: CancellationToken,
-  templates?: Record<string, string>,
-  queryInfo?: LocalQueryInfo, // May be omitted for queries not initiated by the user. If omitted we won't create a structured log for the query.
-): Promise<QueryWithResults> {
-  if (!dbItem.contents || !dbItem.contents.dbSchemeUri) {
-    throw new Error(
-      `Database ${dbItem.databaseUri} does not have a CodeQL database scheme.`,
-    );
-  }
+  templates: Record<string, string> | undefined,
+  logger: Logger,
+): Promise<CoreQueryResults> {
+  const target =
+    query.quickEvalPosition !== undefined
+      ? {
+          quickEval: { quickEvalPos: query.quickEvalPosition },
+        }
+      : { query: {} };
 
-  // Read the query metadata if possible, to use in the UI.
-  const metadata = await tryGetQueryMetadata(cliServer, initialInfo.queryPath);
-
-  const hasMetadataFile = await dbItem.hasMetadataFile();
-  const query = new QueryEvaluationInfo(
-    join(queryStorageDir, initialInfo.id),
-    dbItem.databaseUri.fsPath,
-    hasMetadataFile,
-    initialInfo.quickEvalPosition,
-    metadata,
-  );
-
-  if (!dbItem.contents || dbItem.error) {
-    throw new Error("Can't run query on invalid database.");
-  }
-  const target = query.quickEvalPosition
-    ? {
-        quickEval: { quickEvalPos: query.quickEvalPosition },
-      }
-    : { query: {} };
-
-  const diskWorkspaceFolders = getOnDiskWorkspaceFolders();
   const extensionPacks = (await qs.cliServer.useExtensionPacks())
-    ? Object.keys(await qs.cliServer.resolveQlpacks(diskWorkspaceFolders, true))
+    ? Object.keys(await qs.cliServer.resolveQlpacks(additionalPacks, true))
     : undefined;
 
-  const db = dbItem.databaseUri.fsPath;
-  const logPath = queryInfo ? query.evalLogPath : undefined;
+  const evalLogPath = generateEvalLog ? outputDir.evalLogPath : undefined;
   const queryToRun: messages.RunQueryParams = {
-    db,
-    additionalPacks: diskWorkspaceFolders,
+    db: dbPath,
+    additionalPacks,
     externalInputs: {},
     singletonExternalInputs: templates || {},
-    outputPath: query.resultsPaths.resultsPath,
-    queryPath: initialInfo.queryPath,
-    dilPath: query.dilPath,
-    logPath,
+    outputPath: outputDir.bqrsPath,
+    queryPath: query.queryPath,
+    dilPath: outputDir.dilPath,
+    logPath: evalLogPath,
     target,
     extensionPacks,
   };
-  const logger = new TeeLogger(qs.logger, query.logPath);
-  await query.createTimestampFile();
-  let result: messages.RunQueryResult | undefined;
-  try {
-    // Update the active query logger every time there is a new request to compile.
-    // This isn't ideal because in situations where there are queries running
-    // in parallel, each query's log messages are interleaved. Fixing this
-    // properly will require a change in the query server.
-    qs.activeQueryLogger = logger;
-    result = await qs.sendRequest(
-      messages.runQuery,
-      queryToRun,
-      token,
-      progress,
-    );
-    if (qs.config.customLogDirectory) {
-      void showAndLogWarningMessage(
-        `Custom log directories are no longer supported. The "codeQL.runningQueries.customLogDirectory" setting is deprecated. Unset the setting to stop seeing this message. Query logs saved to ${query.logPath}.`,
-      );
-    }
-  } finally {
-    if (queryInfo) {
-      if (await query.hasEvalLog()) {
-        await query.addQueryLogs(queryInfo, qs.cliServer, logger);
-      } else {
-        void showAndLogWarningMessage(
-          `Failed to write structured evaluator log to ${query.evalLogPath}.`,
-        );
-      }
-    }
-  }
 
-  if (result.resultType !== messages.QueryResultType.SUCCESS) {
-    const message = result?.message
-      ? redactableError`${result.message}`
-      : redactableError`Failed to run query`;
-    void extLogger.log(message.fullMessage);
-    void showAndLogExceptionWithTelemetry(
-      redactableError`Failed to run query: ${message}`,
-    );
-  }
-  let message;
-  switch (result.resultType) {
-    case messages.QueryResultType.CANCELLATION:
-      message = `cancelled after ${Math.round(
-        result.evaluationTime / 1000,
-      )} seconds`;
-      break;
-    case messages.QueryResultType.OOM:
-      message = "out of memory";
-      break;
-    case messages.QueryResultType.SUCCESS:
-      message = `finished in ${Math.round(
-        result.evaluationTime / 1000,
-      )} seconds`;
-      break;
-    case messages.QueryResultType.COMPILATION_ERROR:
-      message = `compilation failed: ${result.message}`;
-      break;
-    case messages.QueryResultType.OTHER_ERROR:
-    default:
-      message = result.message ? `failed: ${result.message}` : "failed";
-      break;
-  }
-  const successful = result.resultType === messages.QueryResultType.SUCCESS;
+  // Update the active query logger every time there is a new request to compile.
+  // This isn't ideal because in situations where there are queries running
+  // in parallel, each query's log messages are interleaved. Fixing this
+  // properly will require a change in the query server.
+  qs.activeQueryLogger = logger;
+  const result = await qs.sendRequest(
+    messages.runQuery,
+    queryToRun,
+    token,
+    progress,
+  );
+
   return {
-    query,
-    result: {
-      evaluationTime: result.evaluationTime,
-      queryId: 0,
-      resultType: successful
-        ? QueryResultType.SUCCESS
-        : QueryResultType.OTHER_ERROR,
-      runId: 0,
-      message,
-    },
-    message,
-    successful,
+    resultType: result.resultType,
+    message: result.message,
+    evaluationTime: result.evaluationTime,
   };
 }

@@ -9,20 +9,30 @@ import {
   registerDatabases,
   upgradeDatabase,
 } from "../pure/new-messages";
-import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
-import { QueryRunner } from "../queryRunner";
-import { QueryWithResults } from "../run-queries-shared";
+import { CoreQueryResults, CoreQueryTarget, QueryRunner } from "../queryRunner";
 import { QueryServerClient } from "./queryserver-client";
-import { compileAndRunQueryAgainstDatabase } from "./run-queries";
+import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";
 import * as vscode from "vscode";
 import { getOnDiskWorkspaceFolders } from "../helpers";
+import { CodeQLCliServer } from "../cli";
+import { Logger } from "../common";
+import { QueryOutputDir } from "../run-queries-shared";
+
 export class NewQueryRunner extends QueryRunner {
   constructor(public readonly qs: QueryServerClient) {
     super();
   }
 
-  get cliServer() {
+  get cliServer(): CodeQLCliServer {
     return this.qs.cliServer;
+  }
+
+  get customLogDirectory(): string | undefined {
+    return this.qs.config.customLogDirectory;
+  }
+
+  get logger(): Logger {
+    return this.qs.logger;
   }
 
   async restartQueryServer(
@@ -57,25 +67,29 @@ export class NewQueryRunner extends QueryRunner {
     };
     await this.qs.sendRequest(clearCache, params, token, progress);
   }
-  async compileAndRunQueryAgainstDatabase(
-    dbItem: DatabaseItem,
-    initialInfo: InitialQueryInfo,
-    queryStorageDir: string,
+
+  protected async compileAndRunQueryAgainstDatabaseCore(
+    dbPath: string,
+    query: CoreQueryTarget,
+    additionalPacks: string[],
+    generateEvalLog: boolean,
+    outputDir: QueryOutputDir,
     progress: ProgressCallback,
     token: CancellationToken,
-    templates?: Record<string, string>,
-    queryInfo?: LocalQueryInfo,
-  ): Promise<QueryWithResults> {
-    return await compileAndRunQueryAgainstDatabase(
-      this.qs.cliServer,
+    templates: Record<string, string> | undefined,
+    logger: Logger,
+  ): Promise<CoreQueryResults> {
+    return await compileAndRunQueryAgainstDatabaseCore(
       this.qs,
-      dbItem,
-      initialInfo,
-      queryStorageDir,
+      dbPath,
+      query,
+      generateEvalLog,
+      additionalPacks,
+      outputDir,
       progress,
       token,
       templates,
-      queryInfo,
+      logger,
     );
   }
 
