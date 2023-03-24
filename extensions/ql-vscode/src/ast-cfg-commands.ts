@@ -5,31 +5,18 @@ import {
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
 } from "./contextual/templateProvider";
-import { compileAndRunQuery } from "./local-queries";
-import { QueryRunner } from "./queryRunner";
-import { QueryHistoryManager } from "./query-history/query-history-manager";
-import { DatabaseUI } from "./local-databases-ui";
-import { ResultsView } from "./interface";
 import { AstCfgCommands } from "./common/commands";
+import { LocalQueries } from "./local-queries";
 
 type AstCfgOptions = {
-  queryRunner: QueryRunner;
-  queryHistoryManager: QueryHistoryManager;
-  databaseUI: DatabaseUI;
-  localQueryResultsView: ResultsView;
-  queryStorageDir: string;
-
+  localQueries: LocalQueries;
   astViewer: AstViewer;
   astTemplateProvider: TemplatePrintAstProvider;
   cfgTemplateProvider: TemplatePrintCfgProvider;
 };
 
 export function getAstCfgCommands({
-  queryRunner,
-  queryHistoryManager,
-  databaseUI,
-  localQueryResultsView,
-  queryStorageDir,
+  localQueries,
   astViewer,
   astTemplateProvider,
   cfgTemplateProvider,
@@ -59,12 +46,7 @@ export function getAstCfgCommands({
           window.activeTextEditor?.document,
         );
         if (res) {
-          await compileAndRunQuery(
-            queryRunner,
-            queryHistoryManager,
-            databaseUI,
-            localQueryResultsView,
-            queryStorageDir,
+          await localQueries.compileAndRunQuery(
             false,
             res[0],
             progress,

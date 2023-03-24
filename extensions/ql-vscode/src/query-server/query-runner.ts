@@ -68,7 +68,7 @@ export class NewQueryRunner extends QueryRunner {
     await this.qs.sendRequest(clearCache, params, token, progress);
   }
 
-  protected async compileAndRunQueryAgainstDatabaseCore(
+  public async compileAndRunQueryAgainstDatabaseCore(
     dbPath: string,
     query: CoreQueryTarget,
     additionalPacks: string[],

@@ -57,7 +57,7 @@ export class LegacyQueryRunner extends QueryRunner {
     await clearCacheInDatabase(this.qs, dbItem, progress, token);
   }
 
-  protected async compileAndRunQueryAgainstDatabaseCore(
+  public async compileAndRunQueryAgainstDatabaseCore(
     dbPath: string,
     query: CoreQueryTarget,
     additionalPacks: string[],
