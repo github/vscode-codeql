@@ -253,6 +253,7 @@ export interface CodeQLExtensionInterface {
   readonly distributionManager: DistributionManager;
   readonly databaseManager: DatabaseManager;
   readonly databaseUI: DatabaseUI;
+  readonly localQueries: LocalQueries;
   readonly variantAnalysisManager: VariantAnalysisManager;
   readonly dispose: () => void;
 }
@@ -978,6 +979,7 @@ async function activateWithInstalledDistribution(
   return {
     ctx,
     cliServer,
+    localQueries,
     qs,
     distributionManager,
     databaseManager: dbm,

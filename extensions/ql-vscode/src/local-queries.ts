@@ -371,7 +371,7 @@ export class LocalQueries extends DisposableObject {
     await this.localQueryResultsView.showResults(query, forceReveal, false);
   }
 
-  private async compileAndRunQueryAgainstDatabase(
+  async compileAndRunQueryAgainstDatabase(
     db: DatabaseItem,
     initialInfo: InitialQueryInfo,
     queryStorageDir: string,

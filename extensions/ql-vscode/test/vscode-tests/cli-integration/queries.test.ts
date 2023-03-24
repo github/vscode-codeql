@@ -25,6 +25,7 @@ import { QueryRunner } from "../../../src/queryRunner";
 import { CompletedQueryInfo } from "../../../src/query-results";
 import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
 import { createMockCommandManager } from "../../__mocks__/commandsMock";
+import { LocalQueries } from "../../../src/local-queries";
 
 jest.setTimeout(20_000);
 
@@ -36,6 +37,7 @@ describeWithCodeQL()("Queries", () => {
   let databaseManager: DatabaseManager;
   let cli: CodeQLCliServer;
   let qs: QueryRunner;
+  let localQueries: LocalQueries;
   const progress = jest.fn();
   let token: CancellationToken;
   let ctx: ExtensionContext;
@@ -50,6 +52,7 @@ describeWithCodeQL()("Queries", () => {
     databaseManager = extension.databaseManager;
     cli = extension.cliServer;
     qs = extension.qs;
+    localQueries = extension.localQueries;
     cli.quiet = true;
     ctx = extension.ctx;
     qlpackFile = `${ctx.storageUri?.fsPath}/quick-queries/qlpack.yml`;
@@ -132,7 +135,7 @@ describeWithCodeQL()("Queries", () => {
 
     async function runQueryWithExtensions() {
       const result = new CompletedQueryInfo(
-        await qs.compileAndRunQueryAgainstDatabase(
+        await localQueries.compileAndRunQueryAgainstDatabase(
           dbItem,
           await mockInitialQueryInfo(queryUsingExtensionPath),
           join(tmpDir.name, "mock-storage-path"),
@@ -162,7 +165,7 @@ describeWithCodeQL()("Queries", () => {
 
   it("should run a query", async () => {
     const queryPath = join(__dirname, "data", "simple-query.ql");
-    const result = qs.compileAndRunQueryAgainstDatabase(
+    const result = localQueries.compileAndRunQueryAgainstDatabase(
       dbItem,
       await mockInitialQueryInfo(queryPath),
       join(tmpDir.name, "mock-storage-path"),
@@ -178,7 +181,7 @@ describeWithCodeQL()("Queries", () => {
   it("should restart the database and run a query", async () => {
     await commands.executeCommand("codeQL.restartQueryServer");
     const queryPath = join(__dirname, "data", "simple-query.ql");
-    const result = await qs.compileAndRunQueryAgainstDatabase(
+    const result = await localQueries.compileAndRunQueryAgainstDatabase(
       dbItem,
       await mockInitialQueryInfo(queryPath),
       join(tmpDir.name, "mock-storage-path"),
