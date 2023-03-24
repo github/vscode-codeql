@@ -2,7 +2,7 @@ import { ensureDir, writeFile } from "fs-extra";
 import { join } from "path";
 
 import { MockedRequest } from "msw";
-import { SetupServerApi } from "msw/node";
+import { SetupServer } from "msw/node";
 import { IsomorphicResponse } from "@mswjs/interceptors";
 
 import { Headers } from "headers-polyfill";
@@ -22,7 +22,7 @@ export class Recorder extends DisposableObject {
 
   private _isRecording = false;
 
-  constructor(private readonly server: SetupServerApi) {
+  constructor(private readonly server: SetupServer) {
     super();
     this.onRequestStart = this.onRequestStart.bind(this);
     this.onResponseBypass = this.onResponseBypass.bind(this);
@@ -88,13 +88,18 @@ export class Recorder extends DisposableObject {
 
         const bodyFileName = `${i}-${writtenRequest.request.kind}.body.${extension}`;
         const bodyFilePath = join(scenarioDirectory, bodyFileName);
-        await writeFile(bodyFilePath, writtenRequest.response.body);
+
+        let bodyFileLink = undefined;
+        if (writtenRequest.response.body) {
+          await writeFile(bodyFilePath, writtenRequest.response.body || "");
+          bodyFileLink = `file:${bodyFileName}`;
+        }
 
         writtenRequest = {
           ...writtenRequest,
           response: {
             ...writtenRequest.response,
-            body: `file:${bodyFileName}`,
+            body: bodyFileLink,
           },
         };
       }

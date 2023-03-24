@@ -1,5 +1,5 @@
 import { pathExists, stat, remove } from "fs-extra";
-import { promise as glob } from "glob-promise";
+import { glob } from "glob";
 import { join, basename, resolve, relative, dirname, extname } from "path";
 import * as vscode from "vscode";
 import * as cli from "./cli";

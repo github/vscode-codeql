@@ -289,7 +289,7 @@ const MIN_VERSION = "1.67.0";
  */
 export async function activate(
   ctx: ExtensionContext,
-): Promise<CodeQLExtensionInterface | Record<string, never>> {
+): Promise<CodeQLExtensionInterface | undefined> {
   void extLogger.log(`Starting ${extensionId} extension`);
   if (extension === undefined) {
     throw new Error(`Can't find extension ${extensionId}`);
@@ -379,9 +379,11 @@ export async function activate(
     },
   );
 
-  variantAnalysisViewSerializer.onExtensionLoaded(
-    codeQlExtension.variantAnalysisManager,
-  );
+  if (codeQlExtension !== undefined) {
+    variantAnalysisViewSerializer.onExtensionLoaded(
+      codeQlExtension.variantAnalysisManager,
+    );
+  }
 
   return codeQlExtension;
 }
@@ -571,7 +573,7 @@ async function installOrUpdateThenTryActivate(
   distributionManager: DistributionManager,
   distributionConfigListener: DistributionConfigListener,
   config: DistributionUpdateConfig,
-): Promise<CodeQLExtensionInterface | Record<string, never>> {
+): Promise<CodeQLExtensionInterface | undefined> {
   await installOrUpdateDistribution(ctx, app, distributionManager, config);
 
   try {
@@ -585,20 +587,19 @@ async function installOrUpdateThenTryActivate(
   // Display the warnings even if the extension has already activated.
   const distributionResult =
     await getDistributionDisplayingDistributionWarnings(distributionManager);
-  let extensionInterface: CodeQLExtensionInterface | Record<string, never> = {};
   if (
     !beganMainExtensionActivation &&
     distributionResult.kind !== FindDistributionResultKind.NoDistribution
   ) {
-    extensionInterface = await activateWithInstalledDistribution(
+    return await activateWithInstalledDistribution(
       ctx,
       app,
       distributionManager,
       distributionConfigListener,
     );
-  } else if (
-    distributionResult.kind === FindDistributionResultKind.NoDistribution
-  ) {
+  }
+
+  if (distributionResult.kind === FindDistributionResultKind.NoDistribution) {
     registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
       const installActionName = "Install CodeQL CLI";
       const chosenAction = await showAndLogErrorMessage(
@@ -622,7 +623,7 @@ async function installOrUpdateThenTryActivate(
       }
     });
   }
-  return extensionInterface;
+  return undefined;
 }
 
 const PACK_GLOBS = [

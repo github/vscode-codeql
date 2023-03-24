@@ -1,9 +1,8 @@
 import { join } from "path";
-import { extensions } from "vscode";
 
 import { CodeQLCliServer } from "../../../src/cli";
-import { CodeQLExtensionInterface } from "../../../src/extension";
 import { tryGetQueryMetadata } from "../../../src/helpers";
+import { getActivatedExtension } from "../global.helper";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -14,18 +13,8 @@ describe("helpers (with CLI)", () => {
   let cli: CodeQLCliServer;
 
   beforeEach(async () => {
-    const extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
-    if ("cliServer" in extension) {
-      cli = extension.cliServer;
-    } else {
-      throw new Error(
-        "Extension not initialized. Make sure cli is downloaded and installed properly.",
-      );
-    }
+    const extension = await getActivatedExtension();
+    cli = extension.cliServer;
   });
 
   it("should get query metadata when available", async () => {
