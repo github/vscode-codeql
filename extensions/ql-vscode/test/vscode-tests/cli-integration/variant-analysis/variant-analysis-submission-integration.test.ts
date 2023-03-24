@@ -12,6 +12,7 @@ import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { setRemoteControllerRepo } from "../../../../src/config";
 import { getActivatedExtension } from "../../global.helper";
+import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
 
 jest.setTimeout(30_000);
 
@@ -29,6 +30,7 @@ async function showQlDocument(name: string): Promise<TextDocument> {
 }
 
 describe("Variant Analysis Submission Integration", () => {
+  const commandManager = createVSCodeCommandManager();
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
   let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;
@@ -68,7 +70,7 @@ describe("Variant Analysis Submission Integration", () => {
       // Select target language for your query
       quickPickSpy.mockResolvedValueOnce(mockedQuickPickItem("javascript"));
 
-      await commands.executeCommand("codeQL.runVariantAnalysis");
+      await commandManager.execute("codeQL.runVariantAnalysis");
 
       expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.openVariantAnalysisView",
@@ -85,7 +87,7 @@ describe("Variant Analysis Submission Integration", () => {
     it("shows the error message", async () => {
       await showQlDocument("query.ql");
 
-      await commands.executeCommand("codeQL.runVariantAnalysis");
+      await commandManager.execute("codeQL.runVariantAnalysis");
 
       expect(showErrorMessageSpy).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -107,7 +109,7 @@ describe("Variant Analysis Submission Integration", () => {
       // Select target language for your query
       quickPickSpy.mockResolvedValueOnce(mockedQuickPickItem("javascript"));
 
-      await commands.executeCommand("codeQL.runVariantAnalysis");
+      await commandManager.execute("codeQL.runVariantAnalysis");
 
       expect(showErrorMessageSpy).toHaveBeenCalledWith(
         expect.stringContaining(

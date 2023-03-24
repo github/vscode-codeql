@@ -1,7 +1,8 @@
-import { commands, Selection, window, workspace } from "vscode";
+import { Selection, window, workspace } from "vscode";
 import { join, basename } from "path";
 import { tmpDir } from "../../../src/helpers";
 import { readFile, writeFile, ensureDir, copy } from "fs-extra";
+import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
 
 jest.setTimeout(20_000);
 
@@ -9,6 +10,8 @@ jest.setTimeout(20_000);
  * Integration tests for queries
  */
 describe("SourceMap", () => {
+  const commandManager = createVSCodeCommandManager();
+
   it("should jump to QL code", async () => {
     const root = workspace.workspaceFolders![0].uri.fsPath;
     const srcFiles = {
@@ -32,7 +35,7 @@ describe("SourceMap", () => {
     expect(summaryDocument.languageId).toBe("ql-summary");
     const summaryEditor = await window.showTextDocument(summaryDocument);
     summaryEditor.selection = new Selection(356, 10, 356, 10);
-    await commands.executeCommand("codeQL.gotoQL");
+    await commandManager.execute("codeQL.gotoQL");
 
     const newEditor = window.activeTextEditor;
     expect(newEditor).toBeDefined();
