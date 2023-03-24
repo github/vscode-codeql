@@ -7,12 +7,11 @@ import * as messages from "../../../src/pure/legacy-messages";
 import * as qsClient from "../../../src/legacy-query-server/queryserver-client";
 import * as cli from "../../../src/cli";
 import { CellValue } from "../../../src/pure/bqrs-cli-types";
-import { extensions } from "vscode";
-import { CodeQLExtensionInterface } from "../../../src/extension";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../../src/legacy-query-server/queryserver-client";
 import { extLogger, ProgressReporter } from "../../../src/common";
 import { createMockApp } from "../../__mocks__/appMock";
+import { getActivatedExtension } from "../global.helper";
 
 const baseDir = join(__dirname, "../../../test/data");
 
@@ -112,41 +111,30 @@ describeWithCodeQL()("using the legacy query server", () => {
   let cliServer: cli.CodeQLCliServer;
 
   beforeAll(async () => {
-    const extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
-    if ("cliServer" in extension) {
-      cliServer = extension.cliServer;
-      cliServer.quiet = true;
+    const extension = await getActivatedExtension();
+    cliServer = extension.cliServer;
+    cliServer.quiet = true;
 
-      qs = new QueryServerClient(
-        createMockApp({}),
-        {
-          codeQlPath:
-            (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
-            "",
-          debug: false,
-          cacheSize: 0,
-          numThreads: 1,
-          saveCache: false,
-          timeoutSecs: 0,
-        },
-        cliServer,
-        {
-          contextStoragePath: tmpDir.name,
-          logger: extLogger,
-        },
-        (task) =>
-          task(nullProgressReporter, new CancellationTokenSource().token),
-      );
-      await qs.startQueryServer();
-    } else {
-      throw new Error(
-        "Extension not initialized. Make sure cli is downloaded and installed properly.",
-      );
-    }
+    qs = new QueryServerClient(
+      createMockApp({}),
+      {
+        codeQlPath:
+          (await extension.distributionManager.getCodeQlPathWithoutVersionCheck()) ||
+          "",
+        debug: false,
+        cacheSize: 0,
+        numThreads: 1,
+        saveCache: false,
+        timeoutSecs: 0,
+      },
+      cliServer,
+      {
+        contextStoragePath: tmpDir.name,
+        logger: extLogger,
+      },
+      (task) => task(nullProgressReporter, new CancellationTokenSource().token),
+    );
+    await qs.startQueryServer();
   });
 
   for (const queryTestCase of queryTestCases) {

@@ -1,11 +1,4 @@
-import {
-  CancellationTokenSource,
-  commands,
-  extensions,
-  Uri,
-  window,
-} from "vscode";
-import { CodeQLExtensionInterface } from "../../../../src/extension";
+import { CancellationTokenSource, commands, Uri, window } from "vscode";
 import { extLogger } from "../../../../src/common";
 import { setRemoteControllerRepo } from "../../../../src/config";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
@@ -15,6 +8,7 @@ import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant
 import { CliVersionConstraint, CodeQLCliServer } from "../../../../src/cli";
 import {
   fixWorkspaceReferences,
+  getActivatedExtension,
   restoreWorkspaceReferences,
   storagePath,
 } from "../../global.helper";
@@ -48,11 +42,7 @@ describe("Variant Analysis Manager", () => {
 
     cancellationTokenSource = new CancellationTokenSource();
 
-    const extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
+    const extension = await getActivatedExtension();
     cli = extension.cliServer;
     const app = new ExtensionApp(extension.ctx);
     const dbManager = new DbManager(app, new DbConfigStore(app));

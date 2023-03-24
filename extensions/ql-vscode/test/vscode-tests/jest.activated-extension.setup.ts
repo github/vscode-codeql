@@ -1,9 +1,13 @@
 import { CUSTOM_CODEQL_PATH_SETTING } from "../../src/config";
-import { ConfigurationTarget, env, extensions } from "vscode";
+import { ConfigurationTarget, env } from "vscode";
 import { beforeEachAction as testConfigBeforeEachAction } from "./test-config";
 import * as tmp from "tmp";
 import { realpathSync } from "fs-extra";
-import { setStoragePath, storagePath } from "./global.helper";
+import {
+  getActivatedExtension,
+  setStoragePath,
+  storagePath,
+} from "./global.helper";
 
 if (process.env.CI) {
   jest.retryTimes(3, {
@@ -35,7 +39,7 @@ export async function beforeAllAction() {
   removeStorage = dir.removeCallback;
 
   // Activate the extension
-  await extensions.getExtension("GitHub.vscode-codeql")?.activate();
+  await getActivatedExtension();
 }
 
 export async function beforeEachAction() {

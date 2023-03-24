@@ -1,6 +1,5 @@
-import { commands, extensions, window } from "vscode";
+import { commands, window } from "vscode";
 
-import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { readJson } from "fs-extra";
 import * as path from "path";
 import {
@@ -15,19 +14,15 @@ import { DbListKind } from "../../../../src/databases/db-item";
 import { createDbTreeViewItemSystemDefinedList } from "../../../../src/databases/ui/db-tree-view-item";
 import { createRemoteSystemDefinedListDbItem } from "../../../factories/db-item-factories";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
+import { getActivatedExtension } from "../../global.helper";
 
 jest.setTimeout(60_000);
 
 describe("Db panel UI commands", () => {
-  let extension: CodeQLExtensionInterface | Record<string, never>;
   let storagePath: string;
 
   beforeEach(async () => {
-    extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
+    const extension = await getActivatedExtension();
 
     storagePath =
       extension.ctx.storageUri?.fsPath || extension.ctx.globalStorageUri.fsPath;

@@ -3,16 +3,15 @@ import { resolve } from "path";
 import {
   authentication,
   commands,
-  extensions,
   TextDocument,
   window,
   workspace,
 } from "vscode";
 
-import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { setRemoteControllerRepo } from "../../../../src/config";
+import { getActivatedExtension } from "../../global.helper";
 
 jest.setTimeout(30_000);
 
@@ -55,11 +54,7 @@ describe("Variant Analysis Submission Integration", () => {
       .spyOn(window, "showErrorMessage")
       .mockResolvedValue(undefined);
 
-    await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
+    await getActivatedExtension();
   });
 
   describe("Successful scenario", () => {
