@@ -7,7 +7,7 @@ import {
   Uri,
   window,
 } from "vscode";
-import { BaseLogger, extLogger, TeeLogger } from "./common";
+import { BaseLogger, extLogger, Logger, TeeLogger } from "./common";
 import { MAX_QUERIES } from "./config";
 import { gatherQlFiles } from "./pure/files";
 import { basename } from "path";
@@ -72,13 +72,112 @@ function formatResultMessage(result: CoreQueryResults): string {
   }
 }
 
+/**
+ * Tracks the evaluation of a local query, including its interactions with the UI.
+ *
+ * The client creates an instance of `LocalQueryRun` when the evaluation starts, and then invokes
+ * the `complete()` function once the query has completed (successfully or otherwise).
+ *
+ * Having the client tell the `LocalQueryRun` when the evaluation is complete, rather than having
+ * the `LocalQueryRun` manage the evaluation itself, may seem a bit clunky. It's done this way
+ * because once we move query evaluation into a Debug Adapter, the debugging UI drives the
+ * evaluation, and we can only respond to events from the debug adapter.
+ */
+export class LocalQueryRun {
+  public constructor(
+    private readonly outputDir: QueryOutputDir,
+    private readonly localQueries: LocalQueries,
+    private readonly queryInfo: LocalQueryInfo,
+    private readonly dbItem: DatabaseItem,
+    public readonly logger: Logger,
+  ) {}
+
+  /**
+   * Updates the UI based on the results of the query evaluation. This creates the evaluator log
+   * summaries, updates the query history item for the evaluation with the results and evaluation
+   * time, and displays the results view.
+   *
+   * This function must be called when the evaluation completes, whether the evaluation was
+   * successful or not.
+   * */
+  public async complete(results: CoreQueryResults): Promise<void> {
+    const evalLogPaths = await this.localQueries.summarizeEvalLog(
+      results.resultType,
+      this.outputDir,
+      this.logger,
+    );
+    if (evalLogPaths !== undefined) {
+      this.queryInfo.setEvaluatorLogPaths(evalLogPaths);
+    }
+    const queryWithResults = await this.getCompletedQueryInfo(results);
+    this.localQueries.queryHistoryManager.completeQuery(
+      this.queryInfo,
+      queryWithResults,
+    );
+    await this.localQueries.showResultsForCompletedQuery(
+      this.queryInfo as CompletedLocalQueryInfo,
+      WebviewReveal.Forced,
+    );
+    // Note we must update the query history view after showing results as the
+    // display and sorting might depend on the number of results
+    await this.localQueries.queryHistoryManager.refreshTreeView();
+  }
+
+  /**
+   * Gets a `QueryWithResults` containing information about the evaluation of the query and its
+   * result, in the form expected by the query history UI.
+   */
+  private async getCompletedQueryInfo(
+    results: CoreQueryResults,
+  ): Promise<QueryWithResults> {
+    // Read the query metadata if possible, to use in the UI.
+    const metadata = await tryGetQueryMetadata(
+      this.localQueries.cliServer,
+      this.queryInfo.initialInfo.queryPath,
+    );
+    const query = new QueryEvaluationInfo(
+      this.outputDir.querySaveDir,
+      this.dbItem.databaseUri.fsPath,
+      await this.dbItem.hasMetadataFile(),
+      this.queryInfo.initialInfo.quickEvalPosition,
+      metadata,
+    );
+
+    if (results.resultType !== QueryResultType.SUCCESS) {
+      const message = results.message
+        ? redactableError`${results.message}`
+        : redactableError`Failed to run query`;
+      void extLogger.log(message.fullMessage);
+      void showAndLogExceptionWithTelemetry(
+        redactableError`Failed to run query: ${message}`,
+      );
+    }
+    const message = formatResultMessage(results);
+    const successful = results.resultType === QueryResultType.SUCCESS;
+    return {
+      query,
+      result: {
+        evaluationTime: results.evaluationTime,
+        queryId: 0,
+        resultType: successful
+          ? QueryResultType.SUCCESS
+          : QueryResultType.OTHER_ERROR,
+        runId: 0,
+        message,
+      },
+      message,
+      successful,
+    };
+  }
+}
+
 export class LocalQueries extends DisposableObject {
   public constructor(
     private readonly app: App,
     private readonly queryRunner: QueryRunner,
-    private readonly queryHistoryManager: QueryHistoryManager,
+    public readonly queryHistoryManager: QueryHistoryManager,
     private readonly databaseManager: DatabaseManager,
-    private readonly cliServer: CodeQLCliServer,
+    public readonly cliServer: CodeQLCliServer,
     private readonly databaseUI: DatabaseUI,
     private readonly localQueryResultsView: ResultsView,
     private readonly queryStorageDir: string,
@@ -234,7 +333,48 @@ export class LocalQueries extends DisposableObject {
     };
   }
 
-  async compileAndRunQuery(
+  /**
+   * Creates a new `LocalQueryRun` object to track a query evaluation. This creates a timestamp
+   * file in the query's output directory, creates a `LocalQueryInfo` object, and registers that
+   * object with the query history manager.
+   *
+   * Once the evaluation is complete, the client must call `complete()` on the `LocalQueryRun`
+   * object to update the UI based on the results of the query.
+   */
+  public async createLocalQueryRun(
+    queryPath: string,
+    quickEval: boolean,
+    range: Range | undefined,
+    dbItem: DatabaseItem,
+    outputDir: string,
+    tokenSource: CancellationTokenSource,
+  ): Promise<LocalQueryRun> {
+    const queryOutputDir = new QueryOutputDir(outputDir);
+
+    await createTimestampFile(outputDir);
+
+    const initialInfo = await createInitialQueryInfo(
+      Uri.file(queryPath),
+      {
+        databaseUri: dbItem.databaseUri.toString(),
+        name: dbItem.name,
+      },
+      quickEval,
+      range,
+    );
+
+    // When cancellation is requested from the query history view, we just stop the debug session.
+    const queryInfo = new LocalQueryInfo(initialInfo, tokenSource);
+    this.queryHistoryManager.addQuery(queryInfo);
+
+    const logger = new TeeLogger(
+      this.queryRunner.logger,
+      queryOutputDir.logPath,
+    );
+    return new LocalQueryRun(queryOutputDir, this, queryInfo, dbItem, logger);
+  }
+
+  public async compileAndRunQuery(
     quickEval: boolean,
     selectedQuery: Uri | undefined,
     progress: ProgressCallback,
@@ -296,7 +436,7 @@ export class LocalQueries extends DisposableObject {
     }
   }
 
-  async compileAndRunQueryOnMultipleDatabases(
+  private async compileAndRunQueryOnMultipleDatabases(
     progress: ProgressCallback,
     token: CancellationToken,
     uri: Uri | undefined,
@@ -364,14 +504,14 @@ export class LocalQueries extends DisposableObject {
     }
   }
 
-  async showResultsForCompletedQuery(
+  public async showResultsForCompletedQuery(
     query: CompletedLocalQueryInfo,
     forceReveal: WebviewReveal,
   ): Promise<void> {
     await this.localQueryResultsView.showResults(query, forceReveal, false);
   }
 
-  async compileAndRunQueryAgainstDatabase(
+  private async compileAndRunQueryAgainstDatabase(
     db: DatabaseItem,
     initialInfo: InitialQueryInfo,
     queryStorageDir: string,
@@ -466,7 +606,7 @@ export class LocalQueries extends DisposableObject {
    * Gets a `QueryWithResults` containing information about the evaluation of the query and its
    * result, in the form expected by the query history UI.
    */
-  public async getCompletedQueryInfo(
+  private async getCompletedQueryInfo(
     dbItem: DatabaseItem,
     queryTarget: CoreQueryTarget,
     outputDir: QueryOutputDir,
