@@ -386,7 +386,7 @@ export interface QueryWithResults {
  * Information about which query will be to be run. `quickEvalPosition` and `quickEvalText`
  * is only filled in if the query is a quick query.
  */
-interface SelectedQuery {
+export interface SelectedQuery {
   queryPath: string;
   quickEvalPosition?: messages.Position;
   quickEvalText?: string;
@@ -581,36 +581,29 @@ async function convertToQlPath(filePath: string): Promise<string> {
  * Determines the initial information for a query. This is everything of interest
  * we know about this query that is available before it is run.
  *
- * @param selectedQueryUri The Uri of the document containing the query to be run.
+ * @param selectedQuer The query to run, including any quickeval info.
  * @param databaseInfo The database to run the query against.
- * @param isQuickEval true if this is a quick evaluation.
- * @param range the selection range of the query to be run. Only used if isQuickEval is true.
  * @returns The initial information for the query to be run.
  */
 export async function createInitialQueryInfo(
-  selectedQueryUri: Uri | undefined,
+  selectedQuery: SelectedQuery,
   databaseInfo: DatabaseInfo,
-  isQuickEval: boolean,
-  range?: Range,
 ): Promise<InitialQueryInfo> {
-  // Determine which query to run, based on the selection and the active editor.
-  const { queryPath, quickEvalPosition, quickEvalText } =
-    await determineSelectedQuery(selectedQueryUri, isQuickEval, range);
-
+  const isQuickEval = selectedQuery.quickEvalPosition !== undefined;
   return {
-    queryPath,
+    queryPath: selectedQuery.queryPath,
     isQuickEval,
-    isQuickQuery: isQuickQueryPath(queryPath),
+    isQuickQuery: isQuickQueryPath(selectedQuery.queryPath),
     databaseInfo,
-    id: `${basename(queryPath)}-${nanoid()}`,
+    id: `${basename(selectedQuery.queryPath)}-${nanoid()}`,
     start: new Date(),
     ...(isQuickEval
       ? {
-          queryText: quickEvalText!, // if this query is quick eval, it must have quick eval text
-          quickEvalPosition,
+          queryText: selectedQuery.quickEvalText!, // if this query is quick eval, it must have quick eval text
+          quickEvalPosition: selectedQuery.quickEvalPosition,
         }
       : {
-          queryText: await readFile(queryPath, "utf8"),
+          queryText: await readFile(selectedQuery.queryPath, "utf8"),
         }),
   };
 }

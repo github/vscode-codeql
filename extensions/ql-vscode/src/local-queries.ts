@@ -22,25 +22,23 @@ import {
   tryGetQueryMetadata,
 } from "./helpers";
 import { displayQuickQuery } from "./quick-query";
-import { CoreQueryResults, CoreQueryTarget, QueryRunner } from "./queryRunner";
+import { CoreQueryResults, QueryRunner } from "./queryRunner";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { DatabaseUI } from "./local-databases-ui";
 import { ResultsView } from "./interface";
 import { DatabaseItem, DatabaseManager } from "./local-databases";
 import {
   createInitialQueryInfo,
+  determineSelectedQuery,
   EvaluatorLogPaths,
   generateEvalLogSummaries,
   logEndSummary,
   QueryEvaluationInfo,
   QueryOutputDir,
   QueryWithResults,
+  SelectedQuery,
 } from "./run-queries-shared";
-import {
-  CompletedLocalQueryInfo,
-  InitialQueryInfo,
-  LocalQueryInfo,
-} from "./query-results";
+import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
 import { WebviewReveal } from "./interface-utils";
 import { asError, getErrorMessage } from "./pure/helpers-pure";
 import { CodeQLCliServer } from "./cli";
@@ -87,7 +85,7 @@ export class LocalQueryRun {
   public constructor(
     private readonly outputDir: QueryOutputDir,
     private readonly localQueries: LocalQueries,
-    private readonly queryInfo: LocalQueryInfo,
+    public readonly queryInfo: LocalQueryInfo,
     private readonly dbItem: DatabaseItem,
     public readonly logger: Logger,
   ) {}
@@ -101,7 +99,7 @@ export class LocalQueryRun {
    * successful or not.
    * */
   public async complete(results: CoreQueryResults): Promise<void> {
-    const evalLogPaths = await this.localQueries.summarizeEvalLog(
+    const evalLogPaths = await this.summarizeEvalLog(
       results.resultType,
       this.outputDir,
       this.logger,
@@ -121,6 +119,38 @@ export class LocalQueryRun {
     // Note we must update the query history view after showing results as the
     // display and sorting might depend on the number of results
     await this.localQueries.queryHistoryManager.refreshTreeView();
+  }
+
+  /**
+   * Generate summaries of the structured evaluator log.
+   */
+  private async summarizeEvalLog(
+    resultType: QueryResultType,
+    outputDir: QueryOutputDir,
+    logger: BaseLogger,
+  ): Promise<EvaluatorLogPaths | undefined> {
+    const evalLogPaths = await generateEvalLogSummaries(
+      this.localQueries.cliServer,
+      outputDir,
+    );
+    if (evalLogPaths !== undefined) {
+      if (evalLogPaths.endSummary !== undefined) {
+        void logEndSummary(evalLogPaths.endSummary, logger); // Logged asynchrnously
+      }
+    } else {
+      // Raw evaluator log was not found. Notify the user, unless we know why it wasn't found.
+      if (resultType === QueryResultType.SUCCESS) {
+        void showAndLogWarningMessage(
+          `Failed to write structured evaluator log to ${outputDir.evalLogPath}.`,
+        );
+      } else {
+        // Don't bother notifying the user if there's no log. For some errors, like compilation
+        // errors, we don't expect a log. For cancellations and OOM errors, whether or not we have
+        // a log depends on how far execution got before termination.
+      }
+    }
+
+    return evalLogPaths;
   }
 
   /**
@@ -342,47 +372,47 @@ export class LocalQueries extends DisposableObject {
    * object to update the UI based on the results of the query.
    */
   public async createLocalQueryRun(
-    queryPath: string,
-    quickEval: boolean,
-    range: Range | undefined,
+    selectedQuery: SelectedQuery,
     dbItem: DatabaseItem,
-    outputDir: string,
+    outputDir: QueryOutputDir,
     tokenSource: CancellationTokenSource,
   ): Promise<LocalQueryRun> {
-    const queryOutputDir = new QueryOutputDir(outputDir);
+    await createTimestampFile(outputDir.querySaveDir);
 
-    await createTimestampFile(outputDir);
+    if (this.queryRunner.customLogDirectory) {
+      void showAndLogWarningMessage(
+        `Custom log directories are no longer supported. The "codeQL.runningQueries.customLogDirectory" setting is deprecated. Unset the setting to stop seeing this message. Query logs saved to ${outputDir.logPath}`,
+      );
+    }
 
-    const initialInfo = await createInitialQueryInfo(
-      Uri.file(queryPath),
-      {
-        databaseUri: dbItem.databaseUri.toString(),
-        name: dbItem.name,
-      },
-      quickEval,
-      range,
-    );
+    const initialInfo = await createInitialQueryInfo(selectedQuery, {
+      databaseUri: dbItem.databaseUri.toString(),
+      name: dbItem.name,
+    });
 
     // When cancellation is requested from the query history view, we just stop the debug session.
     const queryInfo = new LocalQueryInfo(initialInfo, tokenSource);
     this.queryHistoryManager.addQuery(queryInfo);
 
-    const logger = new TeeLogger(
-      this.queryRunner.logger,
-      queryOutputDir.logPath,
-    );
-    return new LocalQueryRun(queryOutputDir, this, queryInfo, dbItem, logger);
+    const logger = new TeeLogger(this.queryRunner.logger, outputDir.logPath);
+    return new LocalQueryRun(outputDir, this, queryInfo, dbItem, logger);
   }
 
   public async compileAndRunQuery(
     quickEval: boolean,
-    selectedQuery: Uri | undefined,
+    queryUri: Uri | undefined,
     progress: ProgressCallback,
     token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
     range?: Range,
   ): Promise<void> {
     if (this.queryRunner !== undefined) {
+      const selectedQuery = await determineSelectedQuery(
+        queryUri,
+        quickEval,
+        range,
+      );
+
       // If no databaseItem is specified, use the database currently selected in the Databases UI
       databaseItem =
         databaseItem ||
@@ -390,45 +420,46 @@ export class LocalQueries extends DisposableObject {
       if (databaseItem === undefined) {
         throw new Error("Can't run query without a selected database");
       }
-      const databaseInfo = {
-        name: databaseItem.name,
-        databaseUri: databaseItem.databaseUri.toString(),
-      };
+
+      const coreQueryRun = this.queryRunner.createQueryRun(
+        databaseItem.databaseUri.fsPath,
+        {
+          queryPath: selectedQuery.queryPath,
+          quickEvalPosition: selectedQuery.quickEvalPosition,
+        },
+        true,
+        getOnDiskWorkspaceFolders(),
+        this.queryStorageDir,
+        undefined,
+        undefined,
+      );
 
       // handle cancellation from the history view.
       const source = new CancellationTokenSource();
-      token.onCancellationRequested(() => source.cancel());
-
-      const initialInfo = await createInitialQueryInfo(
-        selectedQuery,
-        databaseInfo,
-        quickEval,
-        range,
-      );
-      const item = new LocalQueryInfo(initialInfo, source);
-      this.queryHistoryManager.addQuery(item);
       try {
-        const completedQueryInfo = await this.compileAndRunQueryAgainstDatabase(
+        token.onCancellationRequested(() => source.cancel());
+
+        const localQueryRun = await this.createLocalQueryRun(
+          selectedQuery,
           databaseItem,
-          initialInfo,
-          this.queryStorageDir,
-          progress,
-          source.token,
-          undefined,
-          item,
+          coreQueryRun.outputDir,
+          source,
         );
-        this.queryHistoryManager.completeQuery(item, completedQueryInfo);
-        await this.showResultsForCompletedQuery(
-          item as CompletedLocalQueryInfo,
-          WebviewReveal.Forced,
-        );
-        // Note we must update the query history view after showing results as the
-        // display and sorting might depend on the number of results
-      } catch (e) {
-        const err = asError(e);
-        err.message = `Error running query: ${err.message}`;
-        item.failureReason = err.message;
-        throw e;
+
+        try {
+          const results = await coreQueryRun.evaluate(
+            progress,
+            source.token,
+            localQueryRun.logger,
+          );
+
+          await localQueryRun.complete(results);
+        } catch (e) {
+          const err = asError(e);
+          err.message = `Error running query: ${err.message}`;
+          localQueryRun.queryInfo.failureReason = err.message;
+          throw e;
+        }
       } finally {
         await this.queryHistoryManager.refreshTreeView();
         source.dispose();
@@ -509,146 +540,5 @@ export class LocalQueries extends DisposableObject {
     forceReveal: WebviewReveal,
   ): Promise<void> {
     await this.localQueryResultsView.showResults(query, forceReveal, false);
-  }
-
-  private async compileAndRunQueryAgainstDatabase(
-    db: DatabaseItem,
-    initialInfo: InitialQueryInfo,
-    queryStorageDir: string,
-    progress: ProgressCallback,
-    token: CancellationToken,
-    templates?: Record<string, string>,
-    queryInfo?: LocalQueryInfo, // May be omitted for queries not initiated by the user. If omitted we won't create a structured log for the query.
-  ): Promise<QueryWithResults> {
-    const queryTarget: CoreQueryTarget = {
-      queryPath: initialInfo.queryPath,
-      quickEvalPosition: initialInfo.quickEvalPosition,
-    };
-
-    const diskWorkspaceFolders = getOnDiskWorkspaceFolders();
-    const queryRun = this.queryRunner.createQueryRun(
-      db.databaseUri.fsPath,
-      queryTarget,
-      queryInfo !== undefined,
-      diskWorkspaceFolders,
-      queryStorageDir,
-      initialInfo.id,
-      templates,
-    );
-
-    await createTimestampFile(queryRun.outputDir.querySaveDir);
-
-    const logPath = queryRun.outputDir.logPath;
-    if (this.queryRunner.customLogDirectory) {
-      void showAndLogWarningMessage(
-        `Custom log directories are no longer supported. The "codeQL.runningQueries.customLogDirectory" setting is deprecated. Unset the setting to stop seeing this message. Query logs saved to ${logPath}`,
-      );
-    }
-
-    const logger = new TeeLogger(this.queryRunner.logger, logPath);
-    const coreResults = await queryRun.evaluate(progress, token, logger);
-    if (queryInfo !== undefined) {
-      const evalLogPaths = await this.summarizeEvalLog(
-        coreResults.resultType,
-        queryRun.outputDir,
-        logger,
-      );
-      if (evalLogPaths !== undefined) {
-        queryInfo.setEvaluatorLogPaths(evalLogPaths);
-      }
-    }
-
-    return await this.getCompletedQueryInfo(
-      db,
-      queryTarget,
-      queryRun.outputDir,
-      coreResults,
-    );
-  }
-
-  /**
-   * Generate summaries of the structured evaluator log.
-   */
-  public async summarizeEvalLog(
-    resultType: QueryResultType,
-    outputDir: QueryOutputDir,
-    logger: BaseLogger,
-  ): Promise<EvaluatorLogPaths | undefined> {
-    const evalLogPaths = await generateEvalLogSummaries(
-      this.cliServer,
-      outputDir,
-    );
-    if (evalLogPaths !== undefined) {
-      if (evalLogPaths.endSummary !== undefined) {
-        void logEndSummary(evalLogPaths.endSummary, logger); // Logged asynchrnously
-      }
-    } else {
-      // Raw evaluator log was not found. Notify the user, unless we know why it wasn't found.
-      switch (resultType) {
-        case QueryResultType.COMPILATION_ERROR:
-        case QueryResultType.DBSCHEME_MISMATCH_NAME:
-        case QueryResultType.DBSCHEME_NO_UPGRADE:
-          // In these cases, the evaluator was never invoked anyway, so don't bother warning.
-          break;
-
-        default:
-          void showAndLogWarningMessage(
-            `Failed to write structured evaluator log to ${outputDir.evalLogPath}.`,
-          );
-          break;
-      }
-    }
-
-    return evalLogPaths;
-  }
-
-  /**
-   * Gets a `QueryWithResults` containing information about the evaluation of the query and its
-   * result, in the form expected by the query history UI.
-   */
-  private async getCompletedQueryInfo(
-    dbItem: DatabaseItem,
-    queryTarget: CoreQueryTarget,
-    outputDir: QueryOutputDir,
-    results: CoreQueryResults,
-  ): Promise<QueryWithResults> {
-    // Read the query metadata if possible, to use in the UI.
-    const metadata = await tryGetQueryMetadata(
-      this.cliServer,
-      queryTarget.queryPath,
-    );
-    const query = new QueryEvaluationInfo(
-      outputDir.querySaveDir,
-      dbItem.databaseUri.fsPath,
-      await dbItem.hasMetadataFile(),
-      queryTarget.quickEvalPosition,
-      metadata,
-    );
-
-    if (results.resultType !== QueryResultType.SUCCESS) {
-      const message = results.message
-        ? redactableError`${results.message}`
-        : redactableError`Failed to run query`;
-      void extLogger.log(message.fullMessage);
-      void showAndLogExceptionWithTelemetry(
-        redactableError`Failed to run query: ${message}`,
-      );
-    }
-    const message = formatResultMessage(results);
-    const successful = results.resultType === QueryResultType.SUCCESS;
-    return {
-      query,
-      result: {
-        evaluationTime: results.evaluationTime,
-        queryId: 0,
-        resultType: successful
-          ? QueryResultType.SUCCESS
-          : QueryResultType.OTHER_ERROR,
-        runId: 0,
-        message,
-      },
-      message,
-      successful,
-    };
   }
 }
