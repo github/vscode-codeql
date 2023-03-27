@@ -53,10 +53,18 @@ describe("AstBuilder", () => {
     const roots = await astBuilder.getRoots();
 
     const options = { entities: ["id", "url", "string"] };
-    expect(mockCli.bqrsDecode).toBeCalledWith("/a/b/c", "nodes", options);
-    expect(mockCli.bqrsDecode).toBeCalledWith("/a/b/c", "edges", options);
     expect(mockCli.bqrsDecode).toBeCalledWith(
-      "/a/b/c",
+      "/a/b/c/results.bqrs",
+      "nodes",
+      options,
+    );
+    expect(mockCli.bqrsDecode).toBeCalledWith(
+      "/a/b/c/results.bqrs",
+      "edges",
+      options,
+    );
+    expect(mockCli.bqrsDecode).toBeCalledWith(
+      "/a/b/c/results.bqrs",
       "graphProperties",
       options,
     );
