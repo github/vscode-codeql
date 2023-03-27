@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Restart the CodeQL language server whenever the _CodeQL: Restart Query Server_ command is invoked. This avoids bugs where the CLI version changes to support new language features, but the language server is not updated. [#2238](https://github.com/github/vscode-codeql/pull/2238)
+
 ## 1.8.1 - 23 March 2023
 
 - Show data flow paths of a variant analysis in a new tab. [#2172](https://github.com/github/vscode-codeql/pull/2172) & [#2182](https://github.com/github/vscode-codeql/pull/2182)
