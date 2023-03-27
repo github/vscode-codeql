@@ -17,12 +17,13 @@ import { ProgressCallback } from "../progress";
 import { QueryMetadata } from "../pure/interface-types";
 import { extLogger, Logger, TeeLogger } from "../common";
 import * as messages from "../pure/legacy-messages";
-import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
+import { InitialQueryInfo } from "../query-results";
 import * as qsClient from "./queryserver-client";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { compileDatabaseUpgradeSequence } from "./upgrades";
 import { QueryEvaluationInfo, QueryWithResults } from "../run-queries-shared";
 import { redactableError } from "../pure/errors";
+import { LocalQueryInfo } from "../local-queries/local-query-info";
 
 /**
  * A collection of evaluation-time information about a query,

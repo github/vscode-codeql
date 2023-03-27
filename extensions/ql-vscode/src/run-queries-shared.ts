@@ -20,11 +20,7 @@ import {
   remove,
   readdir,
 } from "fs-extra";
-import {
-  ensureMetadataIsComplete,
-  InitialQueryInfo,
-  LocalQueryInfo,
-} from "./query-results";
+import { ensureMetadataIsComplete, InitialQueryInfo } from "./query-results";
 import { isQuickQueryPath } from "./quick-query";
 import { nanoid } from "nanoid";
 import { CodeQLCliServer } from "./cli";
@@ -34,6 +30,7 @@ import { DecodedBqrsChunk, EntityValue } from "./pure/bqrs-cli-types";
 import { extLogger, Logger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { getErrorMessage } from "./pure/helpers-pure";
+import { LocalQueryInfo } from "./local-queries/local-query-info";
 
 /**
  * run-queries.ts
