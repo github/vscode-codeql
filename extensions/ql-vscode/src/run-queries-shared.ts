@@ -437,7 +437,7 @@ export class QueryEvaluationInfo {
 
 export interface QueryWithResults {
   readonly query: QueryEvaluationInfo;
-  readonly logFileLocati  on?: string;
+  readonly logFileLocation?: string;
   readonly successful?: boolean;
   readonly message?: string;
   readonly result: legacyMessages.EvaluationResult;

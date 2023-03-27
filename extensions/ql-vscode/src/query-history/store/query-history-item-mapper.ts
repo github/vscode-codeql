@@ -14,36 +14,18 @@ import {
 export function mapLocalQueryHistoryItemDataModelToDomainModel(
   localQuery: LocalQueryHistoryItem,
 ): LocalQueryInfo {
-  const localQueryDomainModel: LocalQueryInfo = {
-    t: "local",
-    initialInfo:
-      localQuery.initialInfo &&
+  return new LocalQueryInfo(
+    localQuery.initialInfo &&
       mapLocalQueryHistoryInitialInfoToInitialQueryInfo(localQuery.initialInfo),
-    completedQuery:
-      localQuery.completedQuery &&
+    undefined,
+    localQuery.failureReason,
+    localQuery.completedQuery &&
       mapCompleteQueryDataModelToDomainModel(localQuery.completedQuery),
-    evalLogLocation: localQuery.evalLogLocation,
-    evalLogSummaryLocation: localQuery.evalLogSummaryLocation,
-    jsonEvalLogSummaryLocation: localQuery.jsonEvalLogSummaryLocation,
-    evalLogSummarySymbolsLocation: localQuery.evalLogSummarySymbolsLocation,
-    failureReason: localQuery.failureReason,
-  };
-
-  Object.setPrototypeOf(localQueryDomainModel, LocalQueryInfo.prototype);
-
-  if (localQueryDomainModel.completedQuery) {
-    // Again, need to explicitly set prototypes.
-    Object.setPrototypeOf(
-      localQueryDomainModel.completedQuery,
-      CompletedQueryInfo.prototype,
-    );
-    Object.setPrototypeOf(
-      localQueryDomainModel.completedQuery.query,
-      QueryEvaluationInfo.prototype,
-    );
-  }
-
-  return localQueryDomainModel;
+    localQuery.evalLogLocation,
+    localQuery.evalLogSummaryLocation,
+    localQuery.jsonEvalLogSummaryLocation,
+    localQuery.evalLogSummarySymbolsLocation,
+  );
 }
 
 function mapCompleteQueryDataModelToDomainModel(
@@ -104,23 +86,23 @@ function mapLocalQueryHistoryInitialInfoToInitialQueryInfo(
 function mapLocalQueryHistoryEvaluationInfoToQueryEvaluationInfo(
   evaluationInfo: LocalQueryHistoryEvaluationInfo,
 ): QueryEvaluationInfo {
-  return {
-    querySaveDir: evaluationInfo.querySaveDir,
-    dbItemPath: evaluationInfo.dbItemPath,
-    databaseHasMetadataFile: evaluationInfo.databaseHasMetadataFile,
-    quickEvalPosition: evaluationInfo.quickEvalPosition && {
+  return new QueryEvaluationInfo(
+    evaluationInfo.querySaveDir,
+    evaluationInfo.dbItemPath,
+    evaluationInfo.databaseHasMetadataFile,
+    evaluationInfo.quickEvalPosition && {
       line: evaluationInfo.quickEvalPosition.line,
       column: evaluationInfo.quickEvalPosition.column,
       endLine: evaluationInfo.quickEvalPosition.endLine,
       endColumn: evaluationInfo.quickEvalPosition.endColumn,
       fileName: evaluationInfo.quickEvalPosition.fileName,
     },
-    metadata: evaluationInfo.metadata && {
+    evaluationInfo.metadata && {
       name: evaluationInfo.metadata.name,
       description: evaluationInfo.metadata.description,
       id: evaluationInfo.metadata.id,
       kind: evaluationInfo.metadata.kind,
       scored: evaluationInfo.metadata.scored,
     },
-  };
+  );
 }

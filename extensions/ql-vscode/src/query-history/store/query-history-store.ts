@@ -8,10 +8,7 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "../../pure/helpers-pure";
-import { CompletedQueryInfo, LocalQueryInfo } from "../../query-results";
 import { QueryHistoryInfo } from "../query-history-info";
-import { QueryEvaluationInfo } from "../../run-queries-shared";
-import { QueryResultType } from "../../pure/legacy-messages";
 import { redactableError } from "../../pure/errors";
 import {
   ALLOWED_QUERY_HISTORY_VERSIONS,
@@ -47,46 +44,9 @@ export async function readQueryHistoryFromFile(
 
     const queries = obj.queries;
     // Remove remote queries, which are not supported anymore.
-    const parsedQueries = queries
-      .filter((q: QueryHistoryDataItem | { t: "remote" }) => q.t !== "remote")
-      .map((q: QueryHistoryDataItem) => {
-        // Need to explicitly set prototype since reading in from JSON will not
-        // do this automatically. Note that we can't call the constructor here since
-        // the constructor invokes extra logic that we don't want to do.
-        if (q.t === "local") {
-          Object.setPrototypeOf(q, LocalQueryInfo.prototype);
-
-          // Date instances are serialized as strings. Need to
-          // convert them back to Date instances.
-          (q.initialInfo as any).start = new Date(q.initialInfo.start);
-          if (q.completedQuery) {
-            // Again, need to explicitly set prototypes.
-            Object.setPrototypeOf(
-              q.completedQuery,
-              CompletedQueryInfo.prototype,
-            );
-            Object.setPrototypeOf(
-              q.completedQuery.query,
-              QueryEvaluationInfo.prototype,
-            );
-
-            // Previously, there was a typo in the completedQuery type. There was a field
-            // `sucessful` and it was renamed to `successful`. We need to handle this case.
-            if ("sucessful" in q.completedQuery) {
-              (q.completedQuery as any).successful = (
-                q.completedQuery as any
-              ).sucessful;
-              delete (q.completedQuery as any).sucessful;
-            }
-
-            if (!("successful" in q.completedQuery)) {
-              (q.completedQuery as any).successful =
-                q.completedQuery.result?.resultType === QueryResultType.SUCCESS;
-            }
-          }
-        }
-        return q;
-      });
+    const parsedQueries = queries.filter(
+      (q: QueryHistoryDataItem | { t: "remote" }) => q.t !== "remote",
+    );
 
     // filter out queries that have been deleted on disk
     // most likely another workspace has deleted them because the
@@ -101,7 +61,7 @@ export async function readQueryHistoryFromFile(
           return true;
         }
         // TMP NOTE: removed one 'resultsPath' when introducing data model
-        const resultsPath = q.completedQuery?.query.resultsPaths;
+        const resultsPath = q.completedQuery?.query.resultsPaths.resultsPath;
         return !!resultsPath && (await pathExists(resultsPath));
       },
     );

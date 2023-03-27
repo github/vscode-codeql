@@ -216,13 +216,6 @@ export type CompletedLocalQueryInfo = LocalQueryInfo & {
 export class LocalQueryInfo {
   readonly t = "local";
 
-  public failureReason: string | undefined;
-  public completedQuery: CompletedQueryInfo | undefined;
-  public evalLogLocation: string | undefined;
-  public evalLogSummaryLocation: string | undefined;
-  public jsonEvalLogSummaryLocation: string | undefined;
-  public evalLogSummarySymbolsLocation: string | undefined;
-
   /**
    * Note that in the {@link readQueryHistoryFromFile} method, we create a FullQueryInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
@@ -230,6 +223,12 @@ export class LocalQueryInfo {
   constructor(
     public readonly initialInfo: InitialQueryInfo,
     private cancellationSource?: CancellationTokenSource, // used to cancel in progress queries
+    public failureReason?: string,
+    public completedQuery?: CompletedQueryInfo,
+    public evalLogLocation?: string,
+    public evalLogSummaryLocation?: string,
+    public jsonEvalLogSummaryLocation?: string,
+    public evalLogSummarySymbolsLocation?: string,
   ) {
     /**/
   }
