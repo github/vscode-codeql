@@ -7,42 +7,30 @@ import {
   Uri,
   CancellationTokenSource,
 } from "vscode";
-import { BaseLogger, queryServerLogger, TeeLogger } from "../common";
-import { createTimestampFile } from "../helpers";
 import { ResultsView } from "../interface";
 import { WebviewReveal } from "../interface-utils";
-import { DatabaseItem, DatabaseManager } from "../local-databases";
+import { DatabaseManager } from "../local-databases";
+import { LocalQueries, LocalQueryRun } from "../local-queries";
 import { DisposableObject } from "../pure/disposable-object";
-import { QueryHistoryManager } from "../query-history/query-history-manager";
-import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
-import { QueryRunner } from "../queryRunner";
-import { createInitialQueryInfo, QueryOutputDir } from "../run-queries-shared";
+import { CompletedLocalQueryInfo } from "../query-results";
+import { CoreQueryResults } from "../queryRunner";
 import { QLResolvedDebugConfiguration } from "./debug-configuration";
 import * as CodeQLDebugProtocol from "./debug-protocol";
-
-interface ActiveEvaluation {
-  queryInfo: LocalQueryInfo;
-  dbItem: DatabaseItem;
-  outputDir: QueryOutputDir;
-  logger: BaseLogger;
-  result: CodeQLDebugProtocol.EvaluationCompletedEventBody | undefined;
-}
 
 class QLDebugAdapterTracker
   extends DisposableObject
   implements DebugAdapterTracker
 {
   private readonly configuration: QLResolvedDebugConfiguration;
-  private evaluation: ActiveEvaluation | undefined;
+  private localQueryRun: LocalQueryRun | undefined;
   /** The promise of the most recently queued deferred message handler. */
   private lastDeferredMessageHandler: Promise<void> = Promise.resolve();
 
   constructor(
     private readonly session: DebugSession,
     private readonly ui: DebuggerUI,
+    private readonly localQueries: LocalQueries,
     private readonly dbm: DatabaseManager,
-    private readonly qhm: QueryHistoryManager,
-    private readonly queryRunner: QueryRunner,
   ) {
     super();
     this.configuration = <QLResolvedDebugConfiguration>session.configuration;
@@ -65,7 +53,7 @@ class QLDebugAdapterTracker
           break;
         case "output":
           if (message.body.category === "console") {
-            void this.evaluation?.logger.log(message.body.output);
+            void this.localQueryRun?.logger.log(message.body.output);
           }
           break;
       }
@@ -85,71 +73,32 @@ class QLDebugAdapterTracker
   private async onEvaluationStarted(
     body: CodeQLDebugProtocol.EvaluationStartedEventBody,
   ): Promise<void> {
-    const outputDir = new QueryOutputDir(body.outputDir);
-
-    await createTimestampFile(outputDir.querySaveDir);
-
     const dbUri = Uri.file(this.configuration.database);
     const dbItem = await this.dbm.createOrOpenDatabaseItem(dbUri);
-    const initialInfo = await createInitialQueryInfo(
-      Uri.file(this.configuration.query),
-      {
-        databaseUri: dbUri.toString(),
-        name: dbItem.name,
-      },
-      false,
-      undefined,
-    );
 
     // When cancellation is requested from the query history view, we just stop the debug session.
     const tokenSource = new CancellationTokenSource();
     tokenSource.token.onCancellationRequested(() =>
       debug.stopDebugging(this.session),
     );
-    const queryInfo = new LocalQueryInfo(initialInfo, tokenSource);
-    this.qhm.addQuery(queryInfo);
 
-    this.evaluation = {
-      queryInfo,
+    this.localQueryRun = await this.localQueries.createLocalQueryRun(
+      this.configuration.query,
+      false,
+      undefined,
       dbItem,
-      outputDir,
-      logger: new TeeLogger(queryServerLogger, outputDir.logPath),
-      result: undefined,
-    };
+      body.outputDir,
+      tokenSource,
+    );
   }
 
   private async onEvaluationCompleted(
     body: CodeQLDebugProtocol.EvaluationCompletedEventBody,
   ): Promise<void> {
-    if (this.evaluation !== undefined) {
-      this.evaluation.result = body;
-      if (this.evaluation.queryInfo !== undefined) {
-        const evalLogPaths = await this.queryRunner.summarizeEvalLog(
-          this.evaluation.result?.resultType,
-          this.evaluation.outputDir,
-          this.evaluation.logger,
-        );
-        if (evalLogPaths !== undefined) {
-          this.evaluation.queryInfo.setEvaluatorLogPaths(evalLogPaths);
-        }
-        const queryWithResults = await this.queryRunner.getCompletedQueryInfo(
-          this.evaluation.dbItem,
-          {
-            queryPath: this.configuration.query,
-            quickEvalPosition: undefined,
-          },
-          this.evaluation.outputDir,
-          this.evaluation.result,
-        );
-        this.qhm.completeQuery(this.evaluation.queryInfo, queryWithResults);
-        await this.ui.showResultsForCompletedQuery(
-          this.evaluation.queryInfo as CompletedLocalQueryInfo,
-          WebviewReveal.Forced,
-        );
-        // Note we must update the query history view after showing results as the
-        // display and sorting might depend on the number of results
-        await this.qhm.refreshTreeView();
-      }
+    if (this.localQueryRun !== undefined) {
+      const results: CoreQueryResults = body;
+      await this.localQueryRun.complete(results);
+      this.localQueryRun = undefined;
     }
   }
 }
@@ -162,9 +111,8 @@ export class DebuggerUI
 
   constructor(
     private readonly localQueryResultsView: ResultsView,
+    private readonly localQueries: LocalQueries,
     private readonly dbm: DatabaseManager,
-    private readonly qhm: QueryHistoryManager,
-    private readonly queryRunner: QueryRunner,
   ) {
     super();
 
@@ -178,9 +126,8 @@ export class DebuggerUI
       const tracker = new QLDebugAdapterTracker(
         session,
         this,
+        this.localQueries,
         this.dbm,
-        this.qhm,
-        this.queryRunner,
       );
       this.sessions.set(session.id, tracker);
       return tracker;

@@ -116,10 +116,7 @@ import {
   QueryServerCommands,
   TestUICommands,
 } from "./common/commands";
-import {
-  getLocalQueryCommands,
-  showResultsForCompletedQuery,
-} from "./local-queries";
+import { LocalQueries } from "./local-queries";
 import { getAstCfgCommands } from "./ast-cfg-commands";
 import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
@@ -258,6 +255,7 @@ export interface CodeQLExtensionInterface {
   readonly distributionManager: DistributionManager;
   readonly databaseManager: DatabaseManager;
   readonly databaseUI: DatabaseUI;
+  readonly localQueries: LocalQueries;
   readonly variantAnalysisManager: VariantAnalysisManager;
   readonly dispose: () => void;
 }
@@ -714,12 +712,6 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Initializing query history manager.");
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
   ctx.subscriptions.push(queryHistoryConfigurationListener);
-  const showResults = async (item: CompletedLocalQueryInfo) =>
-    showResultsForCompletedQuery(
-      localQueryResultsView,
-      item,
-      WebviewReveal.Forced,
-    );
   const queryStorageDir = join(ctx.globalStorageUri.fsPath, "queries");
   await ensureDir(queryStorageDir);
 
@@ -793,8 +785,10 @@ async function activateWithInstalledDistribution(
     ctx,
     queryHistoryConfigurationListener,
     labelProvider,
-    async (from: CompletedLocalQueryInfo, to: CompletedLocalQueryInfo) =>
-      showResultsForComparison(compareView, from, to),
+    async (
+      from: CompletedLocalQueryInfo,
+      to: CompletedLocalQueryInfo,
+    ): Promise<void> => showResultsForComparison(compareView, from, to),
   );
 
   ctx.subscriptions.push(qhm);
@@ -815,7 +809,8 @@ async function activateWithInstalledDistribution(
     cliServer,
     queryServerLogger,
     labelProvider,
-    showResults,
+    async (item: CompletedLocalQueryInfo) =>
+      localQueries.showResultsForCompletedQuery(item, WebviewReveal.Forced),
   );
   ctx.subscriptions.push(compareView);
 
@@ -851,6 +846,18 @@ async function activateWithInstalledDistribution(
     true,
   );
 
+  const localQueries = new LocalQueries(
+    app,
+    qs,
+    qhm,
+    dbm,
+    cliServer,
+    databaseUI,
+    localQueryResultsView,
+    queryStorageDir,
+  );
+  ctx.subscriptions.push(localQueries);
+
   void extLogger.log("Initializing debugger factory.");
   const debuggerFactory = ctx.subscriptions.push(
     new QLDebugAdapterDescriptorFactory(queryStorageDir, qs),
@@ -859,7 +866,7 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing debugger UI.");
   const debuggerUI = ctx.subscriptions.push(
-    new DebuggerUI(localQueryResultsView, dbm, qhm, qs),
+    new DebuggerUI(localQueryResultsView, localQueries, dbm),
   );
   void debuggerUI;
 
@@ -916,11 +923,7 @@ async function activateWithInstalledDistribution(
     ...databaseUI.getCommands(),
     ...dbModule.getCommands(),
     ...getAstCfgCommands({
-      queryRunner: qs,
-      queryHistoryManager: qhm,
-      databaseUI,
-      localQueryResultsView,
-      queryStorageDir,
+      localQueries,
       astViewer,
       astTemplateProvider,
       cfgTemplateProvider,
@@ -940,16 +943,7 @@ async function activateWithInstalledDistribution(
   }
 
   const queryServerCommands: QueryServerCommands = {
-    ...getLocalQueryCommands({
-      app,
-      queryRunner: qs,
-      queryHistoryManager: qhm,
-      databaseManager: dbm,
-      cliServer,
-      databaseUI,
-      localQueryResultsView,
-      queryStorageDir,
-    }),
+    ...localQueries.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(queryServerCommands)) {
@@ -999,6 +993,7 @@ async function activateWithInstalledDistribution(
   return {
     ctx,
     cliServer,
+    localQueries,
     qs,
     distributionManager,
     databaseManager: dbm,
