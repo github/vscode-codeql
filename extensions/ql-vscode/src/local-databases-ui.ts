@@ -208,6 +208,7 @@ export class DatabaseUI extends DisposableObject {
 
   public getCommands(): LocalDatabasesCommands {
     return {
+      "codeQL.getCurrentDatabase": this.handleGetCurrentDatabase.bind(this),
       "codeQL.chooseDatabaseFolder":
         this.handleChooseDatabaseFolderFromPalette.bind(this),
       "codeQL.chooseDatabaseArchive":
@@ -600,6 +601,10 @@ export class DatabaseUI extends DisposableObject {
         title: "Clearing cache",
       },
     );
+  }
+
+  private async handleGetCurrentDatabase(): Promise<string | undefined> {
+    return this.databaseManager.currentDatabaseItem?.databaseUri.fsPath;
   }
 
   private async handleSetCurrentDatabase(uri: Uri): Promise<void> {

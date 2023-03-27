@@ -76,6 +76,40 @@
         "editor.wordBasedSuggestions": false
       }
     },
+    "debuggers": [
+      {
+        "type": "codeql",
+        "label": "CodeQL Debugger",
+        "languages": [
+          "ql"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Path to query file (.ql)",
+                "default": "${file}"
+              },
+              "database": {
+                "type": "string",
+                "description": "Path to the target database"
+              },
+              "additionalPacks": {
+                "type": [
+                  "array",
+                  "string"
+                ],
+                "description": "Additional folders to search for library packs. Defaults to searching all workspace folders."
+              }
+            }
+          }
+        },
+        "variables": {
+          "currentDatabase": "codeQL.getCurrentDatabase"
+        }
+      }
+    ],
     "jsonValidation": [
       {
         "fileMatch": "GitHub.vscode-codeql/databases.json",
@@ -443,6 +477,10 @@
       {
         "command": "codeQL.setCurrentDatabase",
         "title": "CodeQL: Set Current Database"
+      },
+      {
+        "command": "codeQL.getCurrentDatabase",
+        "title": "CodeQL: Get Current Database"
       },
       {
         "command": "codeQL.viewAst",
@@ -1063,6 +1101,10 @@
           "when": "false"
         },
         {
+          "command": "codeQL.getCurrentDatabase",
+          "when": "false"
+        },
+        {
           "command": "codeQL.viewAst",
           "when": "resourceScheme == codeql-zip-archive"
         },
@@ -1434,6 +1476,8 @@
     "@octokit/plugin-retry": "^3.0.9",
     "@octokit/rest": "^19.0.4",
     "@vscode/codicons": "^0.0.31",
+    "@vscode/debugadapter": "^1.59.0",
+    "@vscode/debugprotocol": "^1.59.0",
     "@vscode/webview-ui-toolkit": "^1.0.1",
     "ajv": "^8.11.0",
     "child-process-promise": "^2.2.1",
