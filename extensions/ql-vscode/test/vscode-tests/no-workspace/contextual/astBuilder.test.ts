@@ -3,7 +3,7 @@ import { readFileSync } from "fs-extra";
 import AstBuilder from "../../../../src/contextual/astBuilder";
 import { CodeQLCliServer } from "../../../../src/cli";
 import { Uri } from "vscode";
-import { QueryWithResults } from "../../../../src/run-queries-shared";
+import { QueryOutputDir } from "../../../../src/run-queries-shared";
 import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
 
 /**
@@ -137,13 +137,7 @@ describe("AstBuilder", () => {
 
   function createAstBuilder() {
     return new AstBuilder(
-      {
-        query: {
-          resultsPaths: {
-            resultsPath: "/a/b/c",
-          },
-        },
-      } as QueryWithResults,
+      new QueryOutputDir("/a/b/c"),
       mockCli,
       mockDatabaseItem({
         resolveSourceFile: undefined,

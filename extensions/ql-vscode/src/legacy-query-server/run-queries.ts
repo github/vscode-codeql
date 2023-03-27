@@ -27,7 +27,7 @@ import { redactableError } from "../pure/errors";
 import { CoreQueryResults, CoreQueryTarget } from "../queryRunner";
 import { Position } from "../pure/messages-shared";
 
-async function compileQuery(
+export async function compileQuery(
   qs: qsClient.QueryServerClient,
   program: messages.QlProgram,
   quickEvalPosition: Position | undefined,
@@ -185,7 +185,7 @@ export class QueryInProgress {
     readonly querySaveDir: string,
     readonly dbItemPath: string,
     databaseHasMetadataFile: boolean,
-    readonly queryDbscheme: string, // the dbscheme file the query expects, based on library path resolution
+    readonly queryDbscheme: string, // the dbscheme file the query expects, ba`sed on library path resolution
     readonly quickEvalPosition?: messages.Position,
     readonly metadata?: QueryMetadata,
     readonly templates?: Record<string, string>,

@@ -22,7 +22,11 @@ import {
   tryGetQueryMetadata,
 } from "./helpers";
 import { displayQuickQuery } from "./quick-query";
-import { CoreQueryResults, QueryRunner } from "./queryRunner";
+import {
+  CoreCompletedQuery,
+  CoreQueryResults,
+  QueryRunner,
+} from "./queryRunner";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { DatabaseUI } from "./local-databases-ui";
 import { ResultsView } from "./interface";
@@ -406,64 +410,82 @@ export class LocalQueries extends DisposableObject {
     databaseItem: DatabaseItem | undefined,
     range?: Range,
   ): Promise<void> {
-    if (this.queryRunner !== undefined) {
-      const selectedQuery = await determineSelectedQuery(
-        queryUri,
-        quickEval,
-        range,
+    await this.compileAndRunQueryInternal(
+      quickEval,
+      queryUri,
+      progress,
+      token,
+      databaseItem,
+      range,
+    );
+  }
+
+  /** Used by tests */
+  public async compileAndRunQueryInternal(
+    quickEval: boolean,
+    queryUri: Uri | undefined,
+    progress: ProgressCallback,
+    token: CancellationToken,
+    databaseItem: DatabaseItem | undefined,
+    range?: Range,
+  ): Promise<CoreCompletedQuery> {
+    const selectedQuery = await determineSelectedQuery(
+      queryUri,
+      quickEval,
+      range,
+    );
+
+    // If no databaseItem is specified, use the database currently selected in the Databases UI
+    databaseItem =
+      databaseItem || (await this.databaseUI.getDatabaseItem(progress, token));
+    if (databaseItem === undefined) {
+      throw new Error("Can't run query without a selected database");
+    }
+
+    const coreQueryRun = this.queryRunner.createQueryRun(
+      databaseItem.databaseUri.fsPath,
+      {
+        queryPath: selectedQuery.queryPath,
+        quickEvalPosition: selectedQuery.quickEvalPosition,
+      },
+      true,
+      getOnDiskWorkspaceFolders(),
+      this.queryStorageDir,
+      undefined,
+      undefined,
+    );
+
+    // handle cancellation from the history view.
+    const source = new CancellationTokenSource();
+    try {
+      token.onCancellationRequested(() => source.cancel());
+
+      const localQueryRun = await this.createLocalQueryRun(
+        selectedQuery,
+        databaseItem,
+        coreQueryRun.outputDir,
+        source,
       );
 
-      // If no databaseItem is specified, use the database currently selected in the Databases UI
-      databaseItem =
-        databaseItem ||
-        (await this.databaseUI.getDatabaseItem(progress, token));
-      if (databaseItem === undefined) {
-        throw new Error("Can't run query without a selected database");
-      }
-
-      const coreQueryRun = this.queryRunner.createQueryRun(
-        databaseItem.databaseUri.fsPath,
-        {
-          queryPath: selectedQuery.queryPath,
-          quickEvalPosition: selectedQuery.quickEvalPosition,
-        },
-        true,
-        getOnDiskWorkspaceFolders(),
-        this.queryStorageDir,
-        undefined,
-        undefined,
-      );
-
-      // handle cancellation from the history view.
-      const source = new CancellationTokenSource();
       try {
-        token.onCancellationRequested(() => source.cancel());
-
-        const localQueryRun = await this.createLocalQueryRun(
-          selectedQuery,
-          databaseItem,
-          coreQueryRun.outputDir,
-          source,
+        const results = await coreQueryRun.evaluate(
+          progress,
+          source.token,
+          localQueryRun.logger,
         );
 
-        try {
-          const results = await coreQueryRun.evaluate(
-            progress,
-            source.token,
-            localQueryRun.logger,
-          );
+        await localQueryRun.complete(results);
 
-          await localQueryRun.complete(results);
-        } catch (e) {
-          const err = asError(e);
-          err.message = `Error running query: ${err.message}`;
-          localQueryRun.queryInfo.failureReason = err.message;
-          throw e;
-        }
-      } finally {
-        await this.queryHistoryManager.refreshTreeView();
-        source.dispose();
+        return results;
+      } catch (e) {
+        const err = asError(e);
+        err.message = `Error running query: ${err.message}`;
+        localQueryRun.queryInfo.failureReason = err.message;
+        throw e;
       }
+    } finally {
+      await this.queryHistoryManager.refreshTreeView();
+      source.dispose();
     }
   }
 
