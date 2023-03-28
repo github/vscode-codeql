@@ -5,6 +5,7 @@ import { CodeQLCliServer } from "../../../../src/cli";
 import { Uri } from "vscode";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
 import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
+import path from "path";
 
 /**
  *
@@ -52,19 +53,12 @@ describe("AstBuilder", () => {
     const astBuilder = createAstBuilder();
     const roots = await astBuilder.getRoots();
 
+    const bqrsPath = path.normalize("/a/b/c/results.bqrs");
     const options = { entities: ["id", "url", "string"] };
+    expect(mockCli.bqrsDecode).toBeCalledWith(bqrsPath, "nodes", options);
+    expect(mockCli.bqrsDecode).toBeCalledWith(bqrsPath, "edges", options);
     expect(mockCli.bqrsDecode).toBeCalledWith(
-      "/a/b/c/results.bqrs",
-      "nodes",
-      options,
-    );
-    expect(mockCli.bqrsDecode).toBeCalledWith(
-      "/a/b/c/results.bqrs",
-      "edges",
-      options,
-    );
-    expect(mockCli.bqrsDecode).toBeCalledWith(
-      "/a/b/c/results.bqrs",
+      bqrsPath,
       "graphProperties",
       options,
     );
