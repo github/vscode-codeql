@@ -26,6 +26,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
   query: CoreQueryTarget,
   generateEvalLog: boolean,
   additionalPacks: string[],
+  extensionPacks: string[] | undefined,
   outputDir: QueryOutputDir,
   progress: ProgressCallback,
   token: CancellationToken,
@@ -38,10 +39,6 @@ export async function compileAndRunQueryAgainstDatabaseCore(
           quickEval: { quickEvalPos: query.quickEvalPosition },
         }
       : { query: {} };
-
-  const extensionPacks = (await qs.cliServer.useExtensionPacks())
-    ? Object.keys(await qs.cliServer.resolveQlpacks(additionalPacks, true))
-    : undefined;
 
   const evalLogPath = generateEvalLog ? outputDir.evalLogPath : undefined;
   const queryToRun: messages.RunQueryParams = {

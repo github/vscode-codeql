@@ -178,6 +178,7 @@ export async function runContextualQuery(
     { queryPath: query, quickEvalPosition: undefined },
     false,
     getOnDiskWorkspaceFolders(),
+    undefined,
     queryStorageDir,
     undefined,
     templates,
