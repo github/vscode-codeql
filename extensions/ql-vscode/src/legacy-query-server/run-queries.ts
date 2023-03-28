@@ -445,9 +445,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
         void showAndLogExceptionWithTelemetry(error);
       }
 
-      return {
-        ...translateLegacyResult(result),
-      };
+      return translateLegacyResult(result);
     } else {
       // Error dialogs are limited in size and scrollability,
       // so we include a general description of the problem,
