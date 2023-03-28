@@ -292,7 +292,7 @@ function translateLegacyResult(
       break;
     case messages.QueryResultType.TIMEOUT:
       // This is the only legacy result type that doesn't exist for the new query server. Format the
-      // messasge here, and let the later code treat is as `OTHER_ERROR`.
+      // messasge here, and let the later code treat it as `OTHER_ERROR`.
       newResultType = newMessages.QueryResultType.OTHER_ERROR;
       newMessage = `timed out after ${Math.round(
         legacyResult.evaluationTime / 1000,
