@@ -89,9 +89,11 @@ export class LocalQueryRun {
   public constructor(
     private readonly outputDir: QueryOutputDir,
     private readonly localQueries: LocalQueries,
-    public readonly queryInfo: LocalQueryInfo,
+    private readonly queryInfo: LocalQueryInfo,
     private readonly dbItem: DatabaseItem,
-    public readonly logger: Logger,
+    public readonly logger: Logger, // Public so that other clients, like the debug adapter, know where to send log output
+    private readonly queryHistoryManager: QueryHistoryManager,
+    private readonly cliServer: CodeQLCliServer,
   ) {}
 
   /**
@@ -112,17 +114,23 @@ export class LocalQueryRun {
       this.queryInfo.setEvaluatorLogPaths(evalLogPaths);
     }
     const queryWithResults = await this.getCompletedQueryInfo(results);
-    this.localQueries.queryHistoryManager.completeQuery(
-      this.queryInfo,
-      queryWithResults,
-    );
+    this.queryHistoryManager.completeQuery(this.queryInfo, queryWithResults);
     await this.localQueries.showResultsForCompletedQuery(
       this.queryInfo as CompletedLocalQueryInfo,
       WebviewReveal.Forced,
     );
     // Note we must update the query history view after showing results as the
     // display and sorting might depend on the number of results
-    await this.localQueries.queryHistoryManager.refreshTreeView();
+    await this.queryHistoryManager.refreshTreeView();
+  }
+
+  /**
+   * Updates the UI in the case where query evaluation throws an exception.
+   */
+  public async fail(err: Error): Promise<void> {
+    err.message = `Error running query: ${err.message}`;
+    this.queryInfo.failureReason = err.message;
+    await this.queryHistoryManager.refreshTreeView();
   }
 
   /**
@@ -134,7 +142,7 @@ export class LocalQueryRun {
     logger: BaseLogger,
   ): Promise<EvaluatorLogPaths | undefined> {
     const evalLogPaths = await generateEvalLogSummaries(
-      this.localQueries.cliServer,
+      this.cliServer,
       outputDir,
     );
     if (evalLogPaths !== undefined) {
@@ -166,7 +174,7 @@ export class LocalQueryRun {
   ): Promise<QueryWithResults> {
     // Read the query metadata if possible, to use in the UI.
     const metadata = await tryGetQueryMetadata(
-      this.localQueries.cliServer,
+      this.cliServer,
       this.queryInfo.initialInfo.queryPath,
     );
     const query = new QueryEvaluationInfo(
@@ -179,12 +187,9 @@ export class LocalQueryRun {
 
     if (results.resultType !== QueryResultType.SUCCESS) {
       const message = results.message
-        ? redactableError`${results.message}`
+        ? redactableError`Failed to run query: ${results.message}`
         : redactableError`Failed to run query`;
-      void extLogger.log(message.fullMessage);
-      void showAndLogExceptionWithTelemetry(
-        redactableError`Failed to run query: ${message}`,
-      );
+      void showAndLogExceptionWithTelemetry(message);
     }
     const message = formatResultMessage(results);
     const successful = results.resultType === QueryResultType.SUCCESS;
@@ -209,9 +214,9 @@ export class LocalQueries extends DisposableObject {
   public constructor(
     private readonly app: App,
     private readonly queryRunner: QueryRunner,
-    public readonly queryHistoryManager: QueryHistoryManager,
+    private readonly queryHistoryManager: QueryHistoryManager,
     private readonly databaseManager: DatabaseManager,
-    public readonly cliServer: CodeQLCliServer,
+    private readonly cliServer: CodeQLCliServer,
     private readonly databaseUI: DatabaseUI,
     private readonly localQueryResultsView: ResultsView,
     private readonly queryStorageDir: string,
@@ -399,7 +404,15 @@ export class LocalQueries extends DisposableObject {
     this.queryHistoryManager.addQuery(queryInfo);
 
     const logger = new TeeLogger(this.queryRunner.logger, outputDir.logPath);
-    return new LocalQueryRun(outputDir, this, queryInfo, dbItem, logger);
+    return new LocalQueryRun(
+      outputDir,
+      this,
+      queryInfo,
+      dbItem,
+      logger,
+      this.queryHistoryManager,
+      this.cliServer,
+    );
   }
 
   public async compileAndRunQuery(
@@ -478,13 +491,15 @@ export class LocalQueries extends DisposableObject {
 
         return results;
       } catch (e) {
+        // It's odd that we have two different ways for a query evaluation to fail: by throwing an
+        // exception, and by returning a result with a failure code. This is how the code worked
+        // before the refactoring, so it's been preserved, but we should probably figure out how
+        // to unify both error handling paths.
         const err = asError(e);
-        err.message = `Error running query: ${err.message}`;
-        localQueryRun.queryInfo.failureReason = err.message;
+        await localQueryRun.fail(err);
         throw e;
       }
     } finally {
-      await this.queryHistoryManager.refreshTreeView();
       source.dispose();
     }
   }
