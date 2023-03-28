@@ -16,12 +16,13 @@ import { createRemoteSystemDefinedListDbItem } from "../../../factories/db-item-
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { getActivatedExtension } from "../../global.helper";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
+import { AllCommands } from "../../../../src/common/commands";
 
 jest.setTimeout(60_000);
 
 describe("Db panel UI commands", () => {
   let storagePath: string;
-  const commandManager = createVSCodeCommandManager();
+  const commandManager = createVSCodeCommandManager<AllCommands>();
 
   beforeEach(async () => {
     const extension = await getActivatedExtension();

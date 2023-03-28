@@ -13,6 +13,7 @@ import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { setRemoteControllerRepo } from "../../../../src/config";
 import { getActivatedExtension } from "../../global.helper";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
+import { AllCommands } from "../../../../src/common/commands";
 
 jest.setTimeout(30_000);
 
@@ -30,7 +31,7 @@ async function showQlDocument(name: string): Promise<TextDocument> {
 }
 
 describe("Variant Analysis Submission Integration", () => {
-  const commandManager = createVSCodeCommandManager();
+  const commandManager = createVSCodeCommandManager<AllCommands>();
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
   let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;

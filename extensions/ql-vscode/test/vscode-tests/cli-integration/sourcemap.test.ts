@@ -3,6 +3,7 @@ import { join, basename } from "path";
 import { tmpDir } from "../../../src/helpers";
 import { readFile, writeFile, ensureDir, copy } from "fs-extra";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
+import { AllCommands } from "../../../src/common/commands";
 
 jest.setTimeout(20_000);
 
@@ -10,7 +11,7 @@ jest.setTimeout(20_000);
  * Integration tests for queries
  */
 describe("SourceMap", () => {
-  const commandManager = createVSCodeCommandManager();
+  const commandManager = createVSCodeCommandManager<AllCommands>();
 
   it("should jump to QL code", async () => {
     const root = workspace.workspaceFolders![0].uri.fsPath;
