@@ -62,7 +62,11 @@ describeWithCodeQL()("Queries", () => {
     safeDel(qlFile);
     safeDel(qlpackFile);
 
-    token = {} as CancellationToken;
+    token = {
+      onCancellationRequested: (_) => {
+        void _;
+      },
+    } as CancellationToken;
 
     // Add a database, but make sure the database manager is empty first
     await cleanDatabases(databaseManager);
