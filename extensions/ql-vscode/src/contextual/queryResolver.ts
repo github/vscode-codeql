@@ -183,7 +183,7 @@ export async function runContextualQuery(
     templates,
   );
   void extLogger.log(
-    `Running contextual query ${query}; results will be stored in ${queryRun.outputDir}`,
+    `Running contextual query ${query}; results will be stored in ${queryRun.outputDir.querySaveDir}`,
   );
   const results = await queryRun.evaluate(
     progress,
