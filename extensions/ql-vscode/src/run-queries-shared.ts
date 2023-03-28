@@ -587,7 +587,7 @@ async function convertToQlPath(filePath: string): Promise<string> {
  * Determines the initial information for a query. This is everything of interest
  * we know about this query that is available before it is run.
  *
- * @param selectedQuer The query to run, including any quickeval info.
+ * @param selectedQuery The query to run, including any quickeval info.
  * @param databaseInfo The database to run the query against.
  * @returns The initial information for the query to be run.
  */
