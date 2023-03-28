@@ -225,151 +225,154 @@ export class LocalQueries extends DisposableObject {
   }
 
   public getCommands(): LocalQueryCommands {
-    const runQuery = async (uri: Uri | undefined) =>
-      withProgress(
-        async (progress, token) => {
-          await this.compileAndRunQuery(false, uri, progress, token, undefined);
-        },
-        {
-          title: "Running query",
-          cancellable: true,
-        },
-      );
-
-    const runQueryOnMultipleDatabases = async (uri: Uri | undefined) =>
-      withProgress(
-        async (progress, token) =>
-          await this.compileAndRunQueryOnMultipleDatabases(
-            progress,
-            token,
-            uri,
-          ),
-        {
-          title: "Running query on selected databases",
-          cancellable: true,
-        },
-      );
-
-    const runQueries = async (_: Uri | undefined, multi: Uri[]) =>
-      withProgress(
-        async (progress, token) => {
-          const maxQueryCount = MAX_QUERIES.getValue() as number;
-          const [files, dirFound] = await gatherQlFiles(
-            multi.map((uri) => uri.fsPath),
-          );
-          if (files.length > maxQueryCount) {
-            throw new Error(
-              `You tried to run ${files.length} queries, but the maximum is ${maxQueryCount}. Try selecting fewer queries or changing the 'codeQL.runningQueries.maxQueries' setting.`,
-            );
-          }
-          // warn user and display selected files when a directory is selected because some ql
-          // files may be hidden from the user.
-          if (dirFound) {
-            const fileString = files.map((file) => basename(file)).join(", ");
-            const res = await showBinaryChoiceDialog(
-              `You are about to run ${files.length} queries: ${fileString} Do you want to continue?`,
-            );
-            if (!res) {
-              return;
-            }
-          }
-          const queryUris = files.map((path) =>
-            Uri.parse(`file:${path}`, true),
-          );
-
-          // Use a wrapped progress so that messages appear with the queries remaining in it.
-          let queriesRemaining = queryUris.length;
-
-          function wrappedProgress(update: ProgressUpdate) {
-            const message =
-              queriesRemaining > 1
-                ? `${queriesRemaining} remaining. ${update.message}`
-                : update.message;
-            progress({
-              ...update,
-              message,
-            });
-          }
-
-          wrappedProgress({
-            maxStep: queryUris.length,
-            step: queryUris.length - queriesRemaining,
-            message: "",
-          });
-
-          await Promise.all(
-            queryUris.map(async (uri) =>
-              this.compileAndRunQuery(
-                false,
-                uri,
-                wrappedProgress,
-                token,
-                undefined,
-              ).then(() => queriesRemaining--),
-            ),
-          );
-        },
-        {
-          title: "Running queries",
-          cancellable: true,
-        },
-      );
-
-    const quickEval = async (uri: Uri) =>
-      withProgress(
-        async (progress, token) => {
-          await this.compileAndRunQuery(true, uri, progress, token, undefined);
-        },
-        {
-          title: "Running query",
-          cancellable: true,
-        },
-      );
-
-    const codeLensQuickEval = async (uri: Uri, range: Range) =>
-      withProgress(
-        async (progress, token) =>
-          await this.compileAndRunQuery(
-            true,
-            uri,
-            progress,
-            token,
-            undefined,
-            range,
-          ),
-        {
-          title: "Running query",
-          cancellable: true,
-        },
-      );
-
-    const quickQuery = async () =>
-      withProgress(
-        async (progress, token) =>
-          displayQuickQuery(
-            this.app,
-            this.cliServer,
-            this.databaseUI,
-            progress,
-            token,
-          ),
-        {
-          title: "Run Quick Query",
-        },
-      );
-
     return {
-      "codeQL.runQuery": runQuery,
-      "codeQL.runQueryContextEditor": runQuery,
-      "codeQL.runQueryOnMultipleDatabases": runQueryOnMultipleDatabases,
+      "codeQL.runQuery": this.runQuery.bind(this),
+      "codeQL.runQueryContextEditor": this.runQuery.bind(this),
+      "codeQL.runQueryOnMultipleDatabases":
+        this.runQueryOnMultipleDatabases.bind(this),
       "codeQL.runQueryOnMultipleDatabasesContextEditor":
-        runQueryOnMultipleDatabases,
-      "codeQL.runQueries": runQueries,
-      "codeQL.quickEval": quickEval,
-      "codeQL.quickEvalContextEditor": quickEval,
-      "codeQL.codeLensQuickEval": codeLensQuickEval,
-      "codeQL.quickQuery": quickQuery,
+        this.runQueryOnMultipleDatabases.bind(this),
+      "codeQL.runQueries": this.runQueries.bind(this),
+      "codeQL.quickEval": this.quickEval.bind(this),
+      "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
+      "codeQL.codeLensQuickEval": this.codeLensQuickEval.bind(this),
+      "codeQL.quickQuery": this.quickQuery.bind(this),
     };
+  }
+
+  private async runQuery(uri: Uri | undefined): Promise<void> {
+    await withProgress(
+      async (progress, token) => {
+        await this.compileAndRunQuery(false, uri, progress, token, undefined);
+      },
+      {
+        title: "Running query",
+        cancellable: true,
+      },
+    );
+  }
+
+  private async runQueryOnMultipleDatabases(
+    uri: Uri | undefined,
+  ): Promise<void> {
+    await withProgress(
+      async (progress, token) =>
+        await this.compileAndRunQueryOnMultipleDatabases(progress, token, uri),
+      {
+        title: "Running query on selected databases",
+        cancellable: true,
+      },
+    );
+  }
+
+  private async runQueries(_: Uri | undefined, multi: Uri[]): Promise<void> {
+    await withProgress(
+      async (progress, token) => {
+        const maxQueryCount = MAX_QUERIES.getValue() as number;
+        const [files, dirFound] = await gatherQlFiles(
+          multi.map((uri) => uri.fsPath),
+        );
+        if (files.length > maxQueryCount) {
+          throw new Error(
+            `You tried to run ${files.length} queries, but the maximum is ${maxQueryCount}. Try selecting fewer queries or changing the 'codeQL.runningQueries.maxQueries' setting.`,
+          );
+        }
+        // warn user and display selected files when a directory is selected because some ql
+        // files may be hidden from the user.
+        if (dirFound) {
+          const fileString = files.map((file) => basename(file)).join(", ");
+          const res = await showBinaryChoiceDialog(
+            `You are about to run ${files.length} queries: ${fileString} Do you want to continue?`,
+          );
+          if (!res) {
+            return;
+          }
+        }
+        const queryUris = files.map((path) => Uri.parse(`file:${path}`, true));
+
+        // Use a wrapped progress so that messages appear with the queries remaining in it.
+        let queriesRemaining = queryUris.length;
+
+        function wrappedProgress(update: ProgressUpdate) {
+          const message =
+            queriesRemaining > 1
+              ? `${queriesRemaining} remaining. ${update.message}`
+              : update.message;
+          progress({
+            ...update,
+            message,
+          });
+        }
+
+        wrappedProgress({
+          maxStep: queryUris.length,
+          step: queryUris.length - queriesRemaining,
+          message: "",
+        });
+
+        await Promise.all(
+          queryUris.map(async (uri) =>
+            this.compileAndRunQuery(
+              false,
+              uri,
+              wrappedProgress,
+              token,
+              undefined,
+            ).then(() => queriesRemaining--),
+          ),
+        );
+      },
+      {
+        title: "Running queries",
+        cancellable: true,
+      },
+    );
+  }
+
+  private async quickEval(uri: Uri): Promise<void> {
+    await withProgress(
+      async (progress, token) => {
+        await this.compileAndRunQuery(true, uri, progress, token, undefined);
+      },
+      {
+        title: "Running query",
+        cancellable: true,
+      },
+    );
+  }
+
+  private async codeLensQuickEval(uri: Uri, range: Range): Promise<void> {
+    await withProgress(
+      async (progress, token) =>
+        await this.compileAndRunQuery(
+          true,
+          uri,
+          progress,
+          token,
+          undefined,
+          range,
+        ),
+      {
+        title: "Running query",
+        cancellable: true,
+      },
+    );
+  }
+
+  private async quickQuery(): Promise<void> {
+    await withProgress(
+      async (progress, token) =>
+        displayQuickQuery(
+          this.app,
+          this.cliServer,
+          this.databaseUI,
+          progress,
+          token,
+        ),
+      {
+        title: "Run Quick Query",
+      },
+    );
   }
 
   /**
