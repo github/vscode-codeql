@@ -110,16 +110,15 @@ export abstract class QueryRunner {
     generateEvalLog: boolean,
     additionalPacks: string[],
     queryStorageDir: string,
-    id: string | undefined,
+    id = `${basename(query.queryPath)}-${nanoid()}`,
     templates: Record<string, string> | undefined,
   ): CoreQueryRun {
-    const actualId = id ?? `${basename(query.queryPath)}-${nanoid()}`;
-    const outputDir = new QueryOutputDir(join(queryStorageDir, actualId));
+    const outputDir = new QueryOutputDir(join(queryStorageDir, id));
 
     return {
       queryTarget: query,
       dbPath,
-      id: actualId,
+      id,
       outputDir,
       evaluate: async (
         progress: ProgressCallback,
@@ -127,7 +126,7 @@ export abstract class QueryRunner {
         logger: BaseLogger,
       ): Promise<CoreCompletedQuery> => {
         return {
-          id: actualId,
+          id,
           outputDir,
           dbPath,
           queryTarget: query,
