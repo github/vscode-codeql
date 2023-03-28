@@ -124,6 +124,12 @@ export class QueryOutputDir {
 }
 
 export class QueryEvaluationInfo extends QueryOutputDir {
+  // We extend `QueryOutputDir`, rather than having it as a property, because we need
+  // `QueryOutputDir`'s `querySaveDir` property to be a property of `QueryEvaluationInfo`. This is
+  // because `QueryEvaluationInfo` is serialized directly as JSON, and before we hoisted
+  // `QueryOutputDir` out into a base class, `querySaveDir` was a property on `QueryEvaluationInfo`
+  // itself.
+
   /**
    * Note that in the {@link readQueryHistoryFromFile} method, we create a QueryEvaluationInfo instance
    * by explicitly setting the prototype in order to avoid calling this constructor.
