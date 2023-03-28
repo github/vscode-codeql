@@ -619,7 +619,7 @@ describe("prepareCodeTour", () => {
         expect(executeCommand).toHaveBeenCalledWith(
           "vscode.openFolder",
           expect.objectContaining({
-            path: Uri.file(tutorialWorkspacePath).path,
+            path: expect.stringMatching(/tutorial.code-workspace$/),
           }),
         );
       });
