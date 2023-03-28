@@ -9,11 +9,7 @@ import {
   DatabaseItem,
   DatabaseResolver,
 } from "../local-databases";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogWarningMessage,
-  upgradesTmpDir,
-} from "../helpers";
+import { showAndLogExceptionWithTelemetry, upgradesTmpDir } from "../helpers";
 import { ProgressCallback } from "../progress";
 import { QueryMetadata } from "../pure/interface-types";
 import { extLogger, Logger } from "../common";
@@ -141,11 +137,6 @@ async function runQuery(
   };
   try {
     await qs.sendRequest(messages.runQueries, params, token, progress);
-    if (qs.config.customLogDirectory) {
-      void showAndLogWarningMessage(
-        `Custom log directories are no longer supported. The "codeQL.runningQueries.customLogDirectory" setting is deprecated. Unset the setting to stop seeing this message. Query logs saved to ${logPath}.`,
-      );
-    }
   } finally {
     qs.unRegisterCallback(callbackId);
     if (
