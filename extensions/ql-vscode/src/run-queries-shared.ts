@@ -653,7 +653,8 @@ export async function generateEvalLogSummaries(
 
 /**
  * Calls the appropriate CLI command to generate a human-readable log summary.
- * @param cliServer The cli server client. * @param outputDir The query's output directory, where all of the logs are located.
+ * @param cliServer The cli server client.
+ * @param outputDir The query's output directory, where all of the logs are located.
  * @returns True if the summary and end summary were generated, or false if not.
  */
 async function generateHumanReadableLogSummary(
