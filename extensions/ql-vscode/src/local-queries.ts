@@ -2,13 +2,14 @@ import { ProgressCallback, ProgressUpdate, withProgress } from "./progress";
 import {
   CancellationToken,
   CancellationTokenSource,
+  ExtensionContext,
   QuickPickItem,
   Range,
   Uri,
   window,
 } from "vscode";
 import { BaseLogger, extLogger, Logger, TeeLogger } from "./common";
-import { MAX_QUERIES } from "./config";
+import { isCanary, MAX_QUERIES } from "./config";
 import { gatherQlFiles } from "./pure/files";
 import { basename } from "path";
 import {
@@ -51,6 +52,7 @@ import { App } from "./common/app";
 import { DisposableObject } from "./pure/disposable-object";
 import { QueryResultType } from "./pure/new-messages";
 import { redactableError } from "./pure/errors";
+import { SkeletonQueryWizard } from "./skeleton-query";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -220,6 +222,7 @@ export class LocalQueries extends DisposableObject {
     private readonly databaseUI: DatabaseUI,
     private readonly localQueryResultsView: ResultsView,
     private readonly queryStorageDir: string,
+    private readonly ctx: ExtensionContext,
   ) {
     super();
   }
@@ -237,6 +240,7 @@ export class LocalQueries extends DisposableObject {
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
       "codeQL.codeLensQuickEval": this.codeLensQuickEval.bind(this),
       "codeQL.quickQuery": this.quickQuery.bind(this),
+      "codeQL.createSkeletonQuery": this.createSkeletonQuery.bind(this),
     };
   }
 
@@ -371,6 +375,27 @@ export class LocalQueries extends DisposableObject {
         ),
       {
         title: "Run Quick Query",
+      },
+    );
+  }
+
+  private async createSkeletonQuery(): Promise<void> {
+    await withProgress(
+      async (progress: ProgressCallback, token: CancellationToken) => {
+        const credentials = isCanary() ? this.app.credentials : undefined;
+        const skeletonQueryWizard = new SkeletonQueryWizard(
+          this.cliServer,
+          this.ctx.storageUri?.fsPath,
+          progress,
+          credentials,
+          extLogger,
+          this.databaseManager,
+          token,
+        );
+        await skeletonQueryWizard.execute();
+      },
+      {
+        title: "Create Query",
       },
     );
   }
