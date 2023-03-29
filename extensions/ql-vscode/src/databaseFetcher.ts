@@ -147,6 +147,7 @@ export async function downloadGitHubDatabase(
   progress: ProgressCallback,
   token: CancellationToken,
   cli?: CodeQLCliServer,
+  language?: string,
 ): Promise<DatabaseItem | undefined> {
   const nwo = getNwoFromGitHubUrl(githubRepo) || githubRepo;
   if (!isValidGitHubNwo(nwo)) {
@@ -157,7 +158,12 @@ export async function downloadGitHubDatabase(
     ? await credentials.getOctokit()
     : new Octokit.Octokit({ retry });
 
-  const result = await convertGithubNwoToDatabaseUrl(nwo, octokit, progress);
+  const result = await convertGithubNwoToDatabaseUrl(
+    nwo,
+    octokit,
+    progress,
+    language,
+  );
   if (!result) {
     return;
   }
@@ -487,6 +493,7 @@ export async function convertGithubNwoToDatabaseUrl(
   nwo: string,
   octokit: Octokit.Octokit,
   progress: ProgressCallback,
+  language?: string,
 ): Promise<
   | {
       databaseUrl: string;
@@ -505,16 +512,24 @@ export async function convertGithubNwoToDatabaseUrl(
 
     const languages = response.data.map((db: any) => db.language);
 
-    const language = await promptForLanguage(languages, progress);
-    if (!language) {
-      return;
-    }
+    if (language && languages.includes(language)) {
+      return {
+        databaseUrl: `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`,
+        owner,
+        name: repo,
+      };
+    } else {
+      const language = await promptForLanguage(languages, progress);
+      if (!language) {
+        return;
+      }
 
-    return {
-      databaseUrl: `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`,
-      owner,
-      name: repo,
-    };
+      return {
+        databaseUrl: `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`,
+        owner,
+        name: repo,
+      };
+    }
   } catch (e) {
     void extLogger.log(`Error: ${getErrorMessage(e)}`);
     throw new Error(`Unable to get database for '${nwo}'`);

@@ -26,7 +26,6 @@ export class SkeletonQueryWizard {
     ruby: "github/codeql",
     javascript: "github/codeql",
     go: "github/codeql",
-    ql: "github/codeql",
   };
 
   constructor(
@@ -186,6 +185,7 @@ export class SkeletonQueryWizard {
       this.progress,
       this.token,
       this.cliServer,
+      this.language,
     );
   }
 
