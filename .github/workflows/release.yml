@@ -164,10 +164,7 @@ jobs:
 
       - name: Publish to Registry
         run: |
-          npx vsce publish -p $VSCE_TOKEN --packagePath *.vsix || \
-            echo "Failed to publish to VS Code Marketplace. \
-                  If this was an authentication problem, please make sure the \
-                  auth token hasn't expired."
+          npx vsce publish -p $VSCE_TOKEN --packagePath *.vsix
 
   open-vsx-publish:
     name: Publish to Open VSX Registry
