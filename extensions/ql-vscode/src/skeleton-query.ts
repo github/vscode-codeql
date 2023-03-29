@@ -1,0 +1,218 @@
+import { join } from "path";
+import { CancellationToken, Uri, workspace } from "vscode";
+import { CodeQLCliServer } from "./cli";
+import { OutputChannelLogger } from "./common";
+import { Credentials } from "./common/authentication";
+import { QueryLanguage } from "./common/query-language";
+import { askForLanguage, isFolderAlreadyInWorkspace } from "./helpers";
+import { getErrorMessage } from "./pure/helpers-pure";
+import { QlPackGenerator } from "./qlpack-generator";
+import { DatabaseItem, DatabaseManager } from "./local-databases";
+import * as databaseFetcher from "./databaseFetcher";
+import { ProgressCallback } from "./progress";
+
+type QueryLanguagesToDatabaseMap = {
+  [id: string]: string;
+};
+
+export class SkeletonQueryWizard {
+  private language: string | undefined;
+  private folderName: string | undefined;
+  private fileName = "example.ql";
+
+  QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
+    csharp: "github/codeql",
+    python: "github/codeql",
+    ruby: "github/codeql",
+    javascript: "github/codeql",
+    go: "github/codeql",
+    ql: "github/codeql",
+  };
+
+  constructor(
+    private readonly cliServer: CodeQLCliServer,
+    private readonly storagePath: string | undefined,
+    private readonly progress: ProgressCallback,
+    private readonly credentials: Credentials | undefined,
+    private readonly extLogger: OutputChannelLogger,
+    private readonly databaseManager: DatabaseManager,
+    private readonly token: CancellationToken,
+  ) {}
+
+  public async execute() {
+    // show quick pick to choose language
+    await this.chooseLanguage();
+    if (!this.language) {
+      return;
+    }
+
+    this.folderName = `codeql-custom-queries-${this.language}`;
+    const skeletonPackAlreadyExists = isFolderAlreadyInWorkspace(
+      this.folderName,
+    );
+
+    if (skeletonPackAlreadyExists) {
+      // just create a new example query file in skeleton QL pack
+      await this.createExampleFile();
+      // select existing database for language
+      await this.selectExistingDatabase();
+    } else {
+      // generate a new skeleton QL pack with query file
+      await this.createQlPack();
+      // download database based on language and select it
+      await this.downloadDatabase();
+    }
+
+    // open a query file
+    await this.openExampleFile();
+  }
+
+  private async openExampleFile() {
+    if (this.folderName === undefined || this.storagePath === undefined) {
+      throw new Error("Path to folder is undefined");
+    }
+
+    const queryFileUri = Uri.file(
+      join(this.storagePath, this.folderName, this.fileName),
+    );
+
+    void workspace.openTextDocument(queryFileUri).then((doc) => {
+      void Window.showTextDocument(doc);
+    });
+  }
+
+  private async chooseLanguage() {
+    this.progress({
+      message: "Choose language",
+      step: 1,
+      maxStep: 1,
+    });
+
+    this.language = await askForLanguage(this.cliServer, false);
+  }
+
+  private async createQlPack() {
+    if (this.folderName === undefined) {
+      throw new Error("Folder name is undefined");
+    }
+
+    this.progress({
+      message: "Creating skeleton QL pack around query",
+      step: 2,
+      maxStep: 2,
+    });
+
+    try {
+      const qlPackGenerator = new QlPackGenerator(
+        this.folderName,
+        this.language as QueryLanguage,
+        this.cliServer,
+        this.storagePath,
+      );
+
+      await qlPackGenerator.generate();
+    } catch (e: unknown) {
+      void this.extLogger.log(
+        `Could not create skeleton QL pack: ${getErrorMessage(e)}`,
+      );
+    }
+  }
+
+  private async createExampleFile() {
+    if (this.folderName === undefined) {
+      throw new Error("Folder name is undefined");
+    }
+
+    this.progress({
+      message:
+        "Skeleton query pack already exists. Creating additional query example file.",
+      step: 2,
+      maxStep: 2,
+    });
+
+    try {
+      const qlPackGenerator = new QlPackGenerator(
+        this.folderName,
+        this.language as QueryLanguage,
+        this.cliServer,
+        this.storagePath,
+      );
+
+      this.fileName = await this.workoutNextFileName(this.folderName);
+      await qlPackGenerator.createExampleQlFile(this.fileName);
+    } catch (e: unknown) {
+      void this.extLogger.log(
+        `Could not create skeleton QL pack: ${getErrorMessage(e)}`,
+      );
+    }
+  }
+
+  private async workoutNextFileName(folderName: string): Promise<string> {
+    if (this.storagePath === undefined) {
+      throw new Error("Workspace storage path is undefined");
+    }
+
+    const folderUri = Uri.file(join(this.storagePath, folderName));
+    const files = await workspace.fs.readDirectory(folderUri);
+    const qlFiles = files.filter((file) =>
+      file[0].endsWith(".ql") ? true : false,
+    );
+
+    return `example${qlFiles.length + 1}.ql`;
+  }
+
+  private async downloadDatabase() {
+    if (this.storagePath === undefined) {
+      throw new Error("Workspace storage path is undefined");
+    }
+
+    if (this.language === undefined) {
+      throw new Error("Workspace storage path is undefined");
+    }
+
+    this.progress({
+      message: "Downloading database",
+      step: 3,
+      maxStep: 3,
+    });
+
+    const githubRepoNwo = this.QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
+
+    await databaseFetcher.downloadGitHubDatabase(
+      githubRepoNwo,
+      this.databaseManager,
+      this.storagePath,
+      this.credentials,
+      this.progress,
+      this.token,
+      this.cliServer,
+    );
+  }
+
+  private async selectExistingDatabase() {
+    if (this.language === undefined) {
+      throw new Error("Language is undefined");
+    }
+
+    if (this.storagePath === undefined) {
+      throw new Error("Workspace storage path is undefined");
+    }
+
+    const databaseNwo = this.QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
+
+    const databaseItem = await this.databaseManager.digForDatabaseItem(
+      this.language,
+      databaseNwo,
+    );
+
+    if (databaseItem) {
+      // select the found database
+      await this.databaseManager.setCurrentDatabaseItem(
+        databaseItem as DatabaseItem,
+      );
+    } else {
+      // download new database and select it
+      await this.downloadDatabase();
+    }
+  }
+}
