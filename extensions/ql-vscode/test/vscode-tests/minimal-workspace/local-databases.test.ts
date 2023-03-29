@@ -785,6 +785,39 @@ describe("local databases", () => {
     });
   });
 
+  describe("digForDatabaseItem", () => {
+    describe("when the item exists", () => {
+      it("should return the database item", async () => {
+        const mockDbItem = createMockDB();
+
+        await (databaseManager as any).addDatabaseItem(
+          {} as ProgressCallback,
+          {} as CancellationToken,
+          mockDbItem,
+        );
+
+        const databaseItem = await databaseManager.digForDatabaseItem(
+          mockDbItem.language,
+          mockDbItem.name,
+        );
+
+        expect(databaseItem!.language).toEqual(mockDbItem.language);
+        expect(databaseItem!.name).toEqual(mockDbItem.name);
+      });
+    });
+
+    describe("when the item doesn't exist", () => {
+      it("should return nothing", async () => {
+        const databaseItem = await databaseManager.digForDatabaseItem(
+          "ruby",
+          "mock-database-name",
+        );
+
+        expect(databaseItem).toBeUndefined();
+      });
+    });
+  });
+
   function createMockDB(
     mockDbOptions = MOCK_DB_OPTIONS,
     // source archive location must be a real(-ish) location since
