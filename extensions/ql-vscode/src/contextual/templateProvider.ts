@@ -32,8 +32,7 @@ import {
   runContextualQuery,
 } from "./queryResolver";
 import { isCanary, NO_CACHE_AST_VIEWER } from "../config";
-import { QueryWithResults } from "../run-queries-shared";
-import { QueryRunner } from "../queryRunner";
+import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
 
 /**
  * Runs templated CodeQL queries to find definitions in
@@ -155,17 +154,12 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
   }
 }
 
-type QueryWithDb = {
-  query: QueryWithResults;
-  dbUri: Uri;
-};
-
 /**
  * Run templated CodeQL queries to produce AST information for
  * source-language files.
  */
 export class TemplatePrintAstProvider {
-  private cache: CachedOperation<QueryWithDb>;
+  private cache: CachedOperation<CoreCompletedQuery>;
 
   constructor(
     private cli: CodeQLCliServer,
@@ -173,7 +167,9 @@ export class TemplatePrintAstProvider {
     private dbm: DatabaseManager,
     private queryStorageDir: string,
   ) {
-    this.cache = new CachedOperation<QueryWithDb>(this.getAst.bind(this));
+    this.cache = new CachedOperation<CoreCompletedQuery>(
+      this.getAst.bind(this),
+    );
   }
 
   async provideAst(
@@ -186,14 +182,14 @@ export class TemplatePrintAstProvider {
         "Cannot view the AST. Please select a valid source file inside a CodeQL database.",
       );
     }
-    const { query, dbUri } = this.shouldCache()
+    const completedQuery = this.shouldCache()
       ? await this.cache.get(fileUri.toString(), progress, token)
       : await this.getAst(fileUri.toString(), progress, token);
 
     return new AstBuilder(
-      query,
+      completedQuery.outputDir,
       this.cli,
-      this.dbm.findDatabaseItem(dbUri)!,
+      this.dbm.findDatabaseItem(Uri.file(completedQuery.dbPath))!,
       fileUri,
     );
   }
@@ -206,7 +202,7 @@ export class TemplatePrintAstProvider {
     uriString: string,
     progress: ProgressCallback,
     token: CancellationToken,
-  ): Promise<QueryWithDb> {
+  ): Promise<CoreCompletedQuery> {
     const uri = Uri.parse(uriString, true);
     if (uri.scheme !== zipArchiveScheme) {
       throw new Error(
@@ -242,7 +238,7 @@ export class TemplatePrintAstProvider {
       [TEMPLATE_NAME]: zippedArchive.pathWithinSourceArchive,
     };
 
-    const queryResult = await runContextualQuery(
+    const results = await runContextualQuery(
       query,
       db,
       this.queryStorageDir,
@@ -252,10 +248,7 @@ export class TemplatePrintAstProvider {
       token,
       templates,
     );
-    return {
-      query: queryResult,
-      dbUri: db.databaseUri,
-    };
+    return results;
   }
 }
 

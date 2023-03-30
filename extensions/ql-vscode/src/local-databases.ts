@@ -95,6 +95,10 @@ export interface DatabaseContents {
   dbSchemeUri?: vscode.Uri;
 }
 
+export interface DatabaseContentsWithDbScheme extends DatabaseContents {
+  dbSchemeUri: vscode.Uri; // Always present
+}
+
 /**
  * An error thrown when we cannot find a valid database in a putative
  * database directory.
@@ -165,7 +169,7 @@ async function getDbSchemeFiles(dbDirectory: string): Promise<string[]> {
 export class DatabaseResolver {
   public static async resolveDatabaseContents(
     uri: vscode.Uri,
-  ): Promise<DatabaseContents> {
+  ): Promise<DatabaseContentsWithDbScheme> {
     if (uri.scheme !== "file") {
       throw new Error(
         `Database URI scheme '${uri.scheme}' not supported; only 'file' URIs are supported.`,
@@ -199,9 +203,12 @@ export class DatabaseResolver {
         `Database '${databasePath}' contains multiple CodeQL dbschemes under '${dbPath}'.`,
       );
     } else {
-      contents.dbSchemeUri = vscode.Uri.file(resolve(dbPath, dbSchemeFiles[0]));
+      const dbSchemeUri = vscode.Uri.file(resolve(dbPath, dbSchemeFiles[0]));
+      return {
+        ...contents,
+        dbSchemeUri,
+      };
     }
-    return contents;
   }
 
   public static async resolveDatabase(

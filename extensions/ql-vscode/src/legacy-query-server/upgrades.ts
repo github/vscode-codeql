@@ -27,18 +27,11 @@ const MAX_UPGRADE_MESSAGE_LINES = 10;
  */
 export async function compileDatabaseUpgradeSequence(
   qs: qsClient.QueryServerClient,
-  dbItem: DatabaseItem,
   resolvedSequence: string[],
   currentUpgradeTmp: tmp.DirectoryResult,
   progress: ProgressCallback,
   token: vscode.CancellationToken,
 ): Promise<messages.CompileUpgradeSequenceResult> {
-  if (
-    dbItem.contents === undefined ||
-    dbItem.contents.dbSchemeUri === undefined
-  ) {
-    throw new Error("Database is invalid, and cannot be upgraded.");
-  }
   // If possible just compile the upgrade sequence
   return await qs.sendRequest(
     messages.compileUpgradeSequence,

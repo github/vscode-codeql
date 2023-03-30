@@ -13,11 +13,10 @@ import {
 import { KeyType, kindOfKeyType, nameOfKeyType, tagOfKeyType } from "./keyType";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseItem } from "../local-databases";
-import { extLogger } from "../common";
-import { createInitialQueryInfo } from "../run-queries-shared";
-import { CancellationToken, Uri } from "vscode";
+import { extLogger, TeeLogger } from "../common";
+import { CancellationToken } from "vscode";
 import { ProgressCallback } from "../progress";
-import { QueryRunner } from "../queryRunner";
+import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
 import { redactableError } from "../pure/errors";
 import { QLPACK_FILENAMES } from "../pure/ql";
 
@@ -169,32 +168,30 @@ export async function runContextualQuery(
   progress: ProgressCallback,
   token: CancellationToken,
   templates: Record<string, string>,
-) {
+): Promise<CoreCompletedQuery> {
   const { packPath, createdTempLockFile } = await resolveContextualQuery(
     cli,
     query,
   );
-  const initialInfo = await createInitialQueryInfo(
-    Uri.file(query),
-    {
-      name: db.name,
-      databaseUri: db.databaseUri.toString(),
-    },
+  const queryRun = qs.createQueryRun(
+    db.databaseUri.fsPath,
+    { queryPath: query, quickEvalPosition: undefined },
     false,
+    getOnDiskWorkspaceFolders(),
+    queryStorageDir,
+    undefined,
+    templates,
   );
   void extLogger.log(
-    `Running contextual query ${query}; results will be stored in ${queryStorageDir}`,
+    `Running contextual query ${query}; results will be stored in ${queryRun.outputDir.querySaveDir}`,
   );
-  const queryResult = await qs.compileAndRunQueryAgainstDatabase(
-    db,
-    initialInfo,
-    queryStorageDir,
+  const results = await queryRun.evaluate(
     progress,
     token,
-    templates,
+    new TeeLogger(qs.logger, queryRun.outputDir.logPath),
   );
   if (createdTempLockFile) {
     await removeTemporaryLockFile(packPath);
   }
-  return queryResult;
+  return results;
 }

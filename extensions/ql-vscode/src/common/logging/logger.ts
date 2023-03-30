@@ -3,7 +3,8 @@ export interface LogOptions {
   trailingNewline?: boolean;
 }
 
-export interface Logger {
+/** Minimal logger interface. */
+export interface BaseLogger {
   /**
    * Writes the given log message, optionally followed by a newline.
    * This function is asynchronous and will only resolve once the message is written
@@ -15,7 +16,10 @@ export interface Logger {
    * @param options Optional settings.
    */
   log(message: string, options?: LogOptions): Promise<void>;
+}
 
+/** Full logger interface, including a function to show the log in the UI. */
+export interface Logger extends BaseLogger {
   /**
    * Reveal the logger channel in the UI.
    *
