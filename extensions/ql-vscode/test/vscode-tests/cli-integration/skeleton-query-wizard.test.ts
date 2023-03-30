@@ -1,5 +1,5 @@
 import { CodeQLCliServer } from "../../../src/cli";
-import { SkeletonQueryWizard } from "../../../src/skeleton-query";
+import { SkeletonQueryWizard } from "../../../src/skeleton-query-wizard";
 import { mockedObject, mockedQuickPickItem } from "../utils/mocking.helpers";
 import * as tmp from "tmp";
 import { TextDocument, window, workspace, WorkspaceFolder } from "vscode";

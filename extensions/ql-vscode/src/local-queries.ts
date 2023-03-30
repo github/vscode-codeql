@@ -51,7 +51,7 @@ import { App } from "./common/app";
 import { DisposableObject } from "./pure/disposable-object";
 import { QueryResultType } from "./pure/new-messages";
 import { redactableError } from "./pure/errors";
-import { SkeletonQueryWizard } from "./skeleton-query";
+import { SkeletonQueryWizard } from "./skeleton-query-wizard";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
