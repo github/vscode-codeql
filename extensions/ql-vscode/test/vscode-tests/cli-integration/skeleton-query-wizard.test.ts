@@ -42,6 +42,7 @@ describe("SkeletonQueryWizard", () => {
   const mockDatabaseManager = mockedObject<DatabaseManager>({
     setCurrentDatabaseItem: jest.fn(),
     digForDatabaseItem: jest.fn(),
+    digForDatabaseWithSameLanguage: jest.fn(),
   });
   const mockCli = mockedObject<CodeQLCliServer>({
     resolveLanguages: jest
