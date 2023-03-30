@@ -1,4 +1,4 @@
-import { CancellationToken, commands, ExtensionContext, Uri } from "vscode";
+import { CancellationToken, ExtensionContext, Uri } from "vscode";
 import { join, dirname } from "path";
 import {
   pathExistsSync,
@@ -24,6 +24,8 @@ import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
 import { createMockCommandManager } from "../../__mocks__/commandsMock";
 import { LocalQueries } from "../../../src/local-queries";
 import { QueryResultType } from "../../../src/pure/new-messages";
+import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
+import { AllCommands, QueryServerCommands } from "../../../src/common/commands";
 
 jest.setTimeout(20_000);
 
@@ -39,6 +41,9 @@ describeWithCodeQL()("Queries", () => {
   const progress = jest.fn();
   let token: CancellationToken;
   let ctx: ExtensionContext;
+  const appCommandManager = createVSCodeCommandManager<AllCommands>();
+  const queryServerCommandManager =
+    createVSCodeCommandManager<QueryServerCommands>();
 
   let qlpackFile: string;
   let qlpackLockFile: string;
@@ -181,7 +186,7 @@ describeWithCodeQL()("Queries", () => {
 
   // Asserts a fix for bug https://github.com/github/vscode-codeql/issues/733
   it("should restart the database and run a query", async () => {
-    await commands.executeCommand("codeQL.restartQueryServer");
+    await appCommandManager.execute("codeQL.restartQueryServer");
     const queryPath = join(__dirname, "data", "simple-query.ql");
     const result = await localQueries.compileAndRunQueryInternal(
       false,
@@ -196,7 +201,7 @@ describeWithCodeQL()("Queries", () => {
   });
 
   it("should create a quick query", async () => {
-    await commands.executeCommand("codeQL.quickQuery");
+    await queryServerCommandManager.execute("codeQL.quickQuery");
 
     // should have created the quick query file and query pack file
     expect(pathExistsSync(qlFile)).toBe(true);
@@ -229,7 +234,7 @@ describeWithCodeQL()("Queries", () => {
       }),
     );
     writeFileSync(qlFile, "xxx");
-    await commands.executeCommand("codeQL.quickQuery");
+    await queryServerCommandManager.execute("codeQL.quickQuery");
 
     // should not have created the quick query file because database schema hasn't changed
     expect(readFileSync(qlFile, "utf8")).toBe("xxx");
