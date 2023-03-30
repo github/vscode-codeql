@@ -1,4 +1,4 @@
-import { EventEmitter } from "vscode";
+import { env, EventEmitter } from "vscode";
 import { getVariantAnalysis } from "./gh-api/gh-api-client";
 
 import {
@@ -57,7 +57,11 @@ export class VariantAnalysisMonitor extends DisposableObject {
         );
       } catch (e) {
         void showAndLogWarningMessage(
-          `Error while monitoring variant analysis: ${getErrorMessage(e)}`,
+          `Error while monitoring variant analysis ${
+            variantAnalysis.query.name
+          } (${variantAnalysis.query.language}) [${new Date(
+            variantAnalysis.executionStartTime,
+          ).toLocaleString(env.language)}]: ${getErrorMessage(e)}`,
         );
         continue;
       }
