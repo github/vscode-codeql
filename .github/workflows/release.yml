@@ -67,49 +67,19 @@ jobs:
 
         # TODO Run tests, or check that a test run on the same branch succeeded.
 
-      - name: Create release
-        id: create-release
-        uses: actions/create-release@v1.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          # This gives us a chance to manually review the created release before publishing it,
-          # as well as to test the release workflow by pushing temporary tags.
-          # Once we have set all required release metadata in this step, we can set this to `false`.
-          draft: true
-          prerelease: false
-
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1.0.1
-        if: success()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          # Get the `upload_url` from the `create-release` step above.
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          # Get the `vsix_path` and `ref_name` from the `prepare-artifacts` step above.
-          asset_path: ${{ steps.prepare-artifacts.outputs.vsix_path }}
-          asset_name: ${{ format('vscode-codeql-{0}.vsix', steps.prepare-artifacts.outputs.ref_name) }}
-          asset_content_type: application/zip
-
       - name: Create sourcemap ZIP file
         run: |
           cd dist/vscode-codeql/out
           zip -r ../../vscode-codeql-sourcemaps.zip *.map
 
-      - name: Upload sourcemap ZIP file
-        uses: actions/upload-release-asset@v1.0.1
-        if: success()
+      - name: Create release
+        id: create-release
+        run: |
+          gh release create ${{ github.ref_name }} --draft --title "Release ${{ github.ref_name }}" \
+            '${{ steps.prepare-artifacts.outputs.vsix_path }}#${{ format('vscode-codeql-{0}.vsix', steps.prepare-artifacts.outputs.ref_name) }}' \
+            'dist/vscode-codeql-sourcemaps.zip#${{ format('vscode-codeql-sourcemaps-{0}.zip', steps.prepare-artifacts.outputs.ref_name) }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          # Get the `upload_url` from the `create-release` step above.
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: dist/vscode-codeql-sourcemaps.zip
-          asset_name: ${{ format('vscode-codeql-sourcemaps-{0}.zip', steps.prepare-artifacts.outputs.ref_name) }}
-          asset_content_type: application/zip
 
       ###
       # Do Post release work: version bump and changelog PR
@@ -164,10 +134,7 @@ jobs:
 
       - name: Publish to Registry
         run: |
-          npx vsce publish -p $VSCE_TOKEN --packagePath *.vsix || \
-            echo "Failed to publish to VS Code Marketplace. \
-                  If this was an authentication problem, please make sure the \
-                  auth token hasn't expired."
+          npx vsce publish -p $VSCE_TOKEN --packagePath *.vsix
 
   open-vsx-publish:
     name: Publish to Open VSX Registry

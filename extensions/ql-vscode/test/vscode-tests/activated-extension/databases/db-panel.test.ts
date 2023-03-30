@@ -1,4 +1,4 @@
-import { commands, window } from "vscode";
+import { window } from "vscode";
 
 import { readJson } from "fs-extra";
 import * as path from "path";
@@ -15,11 +15,14 @@ import { createDbTreeViewItemSystemDefinedList } from "../../../../src/databases
 import { createRemoteSystemDefinedListDbItem } from "../../../factories/db-item-factories";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { getActivatedExtension } from "../../global.helper";
+import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
+import { AllCommands } from "../../../../src/common/commands";
 
 jest.setTimeout(60_000);
 
 describe("Db panel UI commands", () => {
   let storagePath: string;
+  const commandManager = createVSCodeCommandManager<AllCommands>();
 
   beforeEach(async () => {
     const extension = await getActivatedExtension();
@@ -31,7 +34,7 @@ describe("Db panel UI commands", () => {
   it("should add new remote db list", async () => {
     // Add db list
     jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
-    await commands.executeCommand(
+    await commandManager.execute(
       "codeQLVariantAnalysisRepositories.addNewList",
     );
 
@@ -53,7 +56,7 @@ describe("Db panel UI commands", () => {
       kind: DbListKind.Local,
     } as AddListQuickPickItem);
     jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
-    await commands.executeCommand(
+    await commandManager.execute(
       "codeQLVariantAnalysisRepositories.addNewList",
     );
 
@@ -74,7 +77,7 @@ describe("Db panel UI commands", () => {
     } as RemoteDatabaseQuickPickItem);
 
     jest.spyOn(window, "showInputBox").mockResolvedValue("owner1/repo1");
-    await commands.executeCommand(
+    await commandManager.execute(
       "codeQLVariantAnalysisRepositories.addNewDatabase",
     );
 
@@ -97,7 +100,7 @@ describe("Db panel UI commands", () => {
     } as RemoteDatabaseQuickPickItem);
 
     jest.spyOn(window, "showInputBox").mockResolvedValue("owner1");
-    await commands.executeCommand(
+    await commandManager.execute(
       "codeQLVariantAnalysisRepositories.addNewDatabase",
     );
 
@@ -119,7 +122,7 @@ describe("Db panel UI commands", () => {
       "tooltip",
     );
 
-    await commands.executeCommand(
+    await commandManager.execute(
       "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
       treeViewItem,
     );

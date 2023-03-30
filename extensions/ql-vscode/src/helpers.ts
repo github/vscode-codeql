@@ -304,7 +304,7 @@ export async function prepareCodeTour(
         return;
       }
 
-      const tutorialWorkspaceUri = Uri.parse(tutorialWorkspacePath);
+      const tutorialWorkspaceUri = Uri.file(tutorialWorkspacePath);
 
       void extLogger.log(
         `In prepareCodeTour() method, going to open the tutorial workspace file: ${tutorialWorkspacePath}`,
