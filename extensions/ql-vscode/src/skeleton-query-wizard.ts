@@ -22,11 +22,14 @@ export class SkeletonQueryWizard {
   private storagePath: string | undefined;
 
   QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
-    csharp: "github/codeql",
-    python: "github/codeql",
-    ruby: "github/codeql",
-    javascript: "github/codeql",
-    go: "github/codeql",
+    cpp: "protocolbuffers/protobuf",
+    csharp: "dotnet/efcore",
+    go: "evanw/esbuild",
+    java: "google/guava",
+    javascript: "facebook/react",
+    python: "pallets/flask",
+    ruby: "rails/rails",
+    swift: "Alamofire/Alamofire",
   };
 
   constructor(
