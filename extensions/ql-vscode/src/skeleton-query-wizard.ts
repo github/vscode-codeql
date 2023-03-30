@@ -231,6 +231,7 @@ export class SkeletonQueryWizard {
 
     const databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
 
+    // Check that we haven't already downloaded a database for this language
     const databaseItem = await this.findDatabaseItemByNwo(
       this.language,
       databaseNwo,
@@ -241,8 +242,20 @@ export class SkeletonQueryWizard {
       // select the found database
       await this.databaseManager.setCurrentDatabaseItem(databaseItem);
     } else {
-      // download new database and select it
-      await this.downloadDatabase();
+      const sameLanguageDatabaseItem =
+        await this.databaseManager.digForDatabaseWithSameLanguage(
+          this.language,
+        );
+
+      if (sameLanguageDatabaseItem) {
+        // select the found database
+        await this.databaseManager.setCurrentDatabaseItem(
+          sameLanguageDatabaseItem as DatabaseItem,
+        );
+      } else {
+        // download new database and select it
+        await this.downloadDatabase();
+      }
     }
   }
 

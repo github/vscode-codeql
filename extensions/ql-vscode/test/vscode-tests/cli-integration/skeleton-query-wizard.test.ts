@@ -62,6 +62,7 @@ describe("SkeletonQueryWizard", () => {
     mockDatabaseManager = mockedObject<DatabaseManager>({
       setCurrentDatabaseItem: jest.fn(),
       databaseItems: [] as DatabaseItem[],
+      digForDatabaseWithSameLanguage: jest.fn(),
     });
 
     dir = tmp.dirSync({
