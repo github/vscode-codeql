@@ -10,14 +10,18 @@ interface QLDebugArgs {
   query: string;
   database: string;
   additionalPacks: string[] | string;
+  extensionPacks: string[] | string;
 }
 
 type QLDebugConfiguration = DebugConfiguration & Partial<QLDebugArgs>;
 
+interface QLResolvedDebugArgs extends QLDebugArgs {
+  additionalPacks: string[];
+  extensionPacks: string[];
+}
+
 export type QLResolvedDebugConfiguration = DebugConfiguration &
-  QLDebugArgs & {
-    additionalPacks: string[];
-  };
+  QLResolvedDebugArgs;
 
 export class QLDebugConfigurationProvider
   implements DebugConfigurationProvider
@@ -71,6 +75,12 @@ export class QLDebugConfigurationProvider
           : typeof qlConfiguration.additionalPacks === "string"
           ? [qlConfiguration.additionalPacks]
           : qlConfiguration.additionalPacks,
+      extensionPacks:
+        qlConfiguration.extensionPacks === undefined
+          ? []
+          : typeof qlConfiguration.extensionPacks === "string"
+          ? [qlConfiguration.extensionPacks]
+          : qlConfiguration.extensionPacks,
     };
 
     return resultConfiguration;
