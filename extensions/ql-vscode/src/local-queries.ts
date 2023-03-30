@@ -456,9 +456,7 @@ export class LocalQueries extends DisposableObject {
     }
 
     const additionalPacks = getOnDiskWorkspaceFolders();
-    const extensionPacks = (await this.cliServer.useExtensionPacks())
-      ? Object.keys(await this.cliServer.resolveQlpacks(additionalPacks, true))
-      : undefined;
+    const extensionPacks = await this.getDefaultExtensionPacks(additionalPacks);
 
     const coreQueryRun = this.queryRunner.createQueryRun(
       databaseItem.databaseUri.fsPath,
@@ -583,5 +581,13 @@ export class LocalQueries extends DisposableObject {
     forceReveal: WebviewReveal,
   ): Promise<void> {
     await this.localQueryResultsView.showResults(query, forceReveal, false);
+  }
+
+  public async getDefaultExtensionPacks(
+    additionalPacks: string[],
+  ): Promise<string[]> {
+    return (await this.cliServer.useExtensionPacks())
+      ? Object.keys(await this.cliServer.resolveQlpacks(additionalPacks, true))
+      : [];
   }
 }

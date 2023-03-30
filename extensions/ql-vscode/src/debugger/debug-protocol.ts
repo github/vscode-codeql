@@ -66,4 +66,5 @@ export interface LaunchRequestArguments
   query: string;
   database: string;
   additionalPacks: string[];
+  extensionPacks: string[];
 }

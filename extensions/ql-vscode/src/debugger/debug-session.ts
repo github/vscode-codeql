@@ -235,6 +235,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
         },
         true,
         args.additionalPacks,
+        args.extensionPacks,
         this.queryStorageDir,
         undefined,
         undefined,

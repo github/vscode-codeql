@@ -9,6 +9,7 @@ import {
   DebugSession,
   ProviderResult,
 } from "vscode";
+import { LocalQueries } from "../local-queries";
 import { DisposableObject } from "../pure/disposable-object";
 import { QueryRunner } from "../queryRunner";
 import { QLDebugConfigurationProvider } from "./debug-configuration";
@@ -23,13 +24,14 @@ export class QLDebugAdapterDescriptorFactory
   constructor(
     private readonly queryStorageDir: string,
     private readonly queryRunner: QueryRunner,
+    localQueries: LocalQueries,
   ) {
     super();
     this.push(debug.registerDebugAdapterDescriptorFactory("codeql", this));
     this.push(
       debug.registerDebugConfigurationProvider(
         "codeql",
-        new QLDebugConfigurationProvider(),
+        new QLDebugConfigurationProvider(localQueries),
         DebugConfigurationProviderTriggerKind.Dynamic,
       ),
     );

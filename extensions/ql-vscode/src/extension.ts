@@ -864,7 +864,7 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing debugger factory.");
   const debuggerFactory = ctx.subscriptions.push(
-    new QLDebugAdapterDescriptorFactory(queryStorageDir, qs),
+    new QLDebugAdapterDescriptorFactory(queryStorageDir, qs, localQueries),
   );
   void debuggerFactory;
 

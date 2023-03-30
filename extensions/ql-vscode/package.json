@@ -101,12 +101,20 @@
                   "string"
                 ],
                 "description": "Additional folders to search for library packs. Defaults to searching all workspace folders."
+              },
+              "extensionPacks": {
+                "type": [
+                  "array",
+                  "string"
+                ],
+                "description": "Names of extension packs to include in the evaluation. These are resolved from the locations specified in `additionalPacks`."
               }
             }
           }
         },
         "variables": {
-          "currentDatabase": "codeQL.getCurrentDatabase"
+          "currentDatabase": "codeQL.getCurrentDatabase",
+          "currentQuery": "codeQL.getCurrentQuery"
         }
       }
     ],
@@ -481,6 +489,10 @@
       {
         "command": "codeQL.getCurrentDatabase",
         "title": "CodeQL: Get Current Database"
+      },
+      {
+        "command": "codeQL.getCurrentQuery",
+        "title": "CodeQL: Get Current Query"
       },
       {
         "command": "codeQL.viewAst",
@@ -1102,6 +1114,10 @@
         },
         {
           "command": "codeQL.getCurrentDatabase",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.getCurrentQuery",
           "when": "false"
         },
         {

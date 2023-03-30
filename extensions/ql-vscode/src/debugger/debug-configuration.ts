@@ -5,6 +5,7 @@ import {
   WorkspaceFolder,
 } from "vscode";
 import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from "../helpers";
+import { LocalQueries } from "../local-queries";
 
 interface QLDebugArgs {
   query: string;
@@ -26,6 +27,8 @@ export type QLResolvedDebugConfiguration = DebugConfiguration &
 export class QLDebugConfigurationProvider
   implements DebugConfigurationProvider
 {
+  public constructor(private readonly localQueries: LocalQueries) {}
+
   public resolveDebugConfiguration(
     _folder: WorkspaceFolder | undefined,
     debugConfiguration: DebugConfiguration,
@@ -62,25 +65,30 @@ export class QLDebugConfigurationProvider
       return null;
     }
 
+    // Fill in defaults here, instead of in `resolveDebugConfiguration`, to avoid the highly
+    // unusual case where one of the computed default values looks like a variable substitution.
+    const additionalPacks =
+      qlConfiguration.additionalPacks === undefined
+        ? getOnDiskWorkspaceFolders()
+        : typeof qlConfiguration.additionalPacks === "string"
+        ? [qlConfiguration.additionalPacks]
+        : qlConfiguration.additionalPacks;
+
+    // Default to computing the extension packs based on the extension configuration and the search
+    // path.
+    const extensionPacks =
+      qlConfiguration.extensionPacks === undefined
+        ? await this.localQueries.getDefaultExtensionPacks(additionalPacks)
+        : typeof qlConfiguration.extensionPacks === "string"
+        ? [qlConfiguration.extensionPacks]
+        : qlConfiguration.extensionPacks;
+
     const resultConfiguration: QLResolvedDebugConfiguration = {
       ...qlConfiguration,
       query: qlConfiguration.query,
       database: qlConfiguration.database,
-      additionalPacks:
-        // Fill in defaults here, instead of in `resolveDebugConfiguration`, to avoid the highly
-        // unusual case where one of the workspace folder paths contains something that looks like a
-        // variable substitution.
-        qlConfiguration.additionalPacks === undefined
-          ? getOnDiskWorkspaceFolders()
-          : typeof qlConfiguration.additionalPacks === "string"
-          ? [qlConfiguration.additionalPacks]
-          : qlConfiguration.additionalPacks,
-      extensionPacks:
-        qlConfiguration.extensionPacks === undefined
-          ? []
-          : typeof qlConfiguration.extensionPacks === "string"
-          ? [qlConfiguration.extensionPacks]
-          : qlConfiguration.extensionPacks,
+      additionalPacks,
+      extensionPacks,
     };
 
     return resultConfiguration;
