@@ -1525,7 +1525,7 @@
     "applicationinsights": "^2.3.5",
     "cross-env": "^7.0.3",
     "css-loader": "~3.1.0",
-    "del": "^6.0.0",
+    "del": "^7.0.0",
     "esbuild": "^0.15.15",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "^8.5.0",
