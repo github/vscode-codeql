@@ -2,7 +2,7 @@ import { CodeQLCliServer } from "../../../src/cli";
 import { SkeletonQueryWizard } from "../../../src/skeleton-query";
 import { mockedObject, mockedQuickPickItem } from "../utils/mocking.helpers";
 import * as tmp from "tmp";
-import { TextDocument, window, workspace } from "vscode";
+import { TextDocument, window, workspace, WorkspaceFolder } from "vscode";
 import { extLogger } from "../../../src/common";
 import { QlPackGenerator } from "../../../src/qlpack-generator";
 import * as helpers from "../../../src/helpers";
@@ -99,7 +99,6 @@ describe("SkeletonQueryWizard", () => {
 
     wizard = new SkeletonQueryWizard(
       mockCli,
-      storagePath,
       jest.fn(),
       credentials,
       extLogger,

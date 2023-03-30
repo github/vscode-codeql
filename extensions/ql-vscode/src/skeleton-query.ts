@@ -1,5 +1,5 @@
 import { join } from "path";
-import { CancellationToken, Uri, workspace } from "vscode";
+import { CancellationToken, Uri, workspace, window as Window } from "vscode";
 import { CodeQLCliServer } from "./cli";
 import { OutputChannelLogger } from "./common";
 import { Credentials } from "./common/authentication";
@@ -19,6 +19,7 @@ export class SkeletonQueryWizard {
   private language: string | undefined;
   private folderName: string | undefined;
   private fileName = "example.ql";
+  private storagePath: string | undefined;
 
   QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
     csharp: "github/codeql",
@@ -30,13 +31,14 @@ export class SkeletonQueryWizard {
 
   constructor(
     private readonly cliServer: CodeQLCliServer,
-    private readonly storagePath: string | undefined,
     private readonly progress: ProgressCallback,
     private readonly credentials: Credentials | undefined,
     private readonly extLogger: OutputChannelLogger,
     private readonly databaseManager: DatabaseManager,
     private readonly token: CancellationToken,
-  ) {}
+  ) {
+    this.storagePath = this.workoutStoragePath();
+  }
 
   public async execute() {
     // show quick pick to choose language
@@ -78,6 +80,18 @@ export class SkeletonQueryWizard {
     void workspace.openTextDocument(queryFileUri).then((doc) => {
       void Window.showTextDocument(doc);
     });
+  }
+
+  private workoutStoragePath() {
+    const workspaceFolders = workspace.workspaceFolders;
+
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      throw new Error("No workspace folders found");
+    }
+
+    const firstFolder = workspaceFolders[0];
+
+    return firstFolder.uri.path;
   }
 
   private async chooseLanguage() {
