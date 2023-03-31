@@ -32,6 +32,9 @@ describe("SkeletonQueryWizard", () => {
   let downloadGitHubDatabaseSpy: jest.SpiedFunction<
     typeof databaseFetcher.downloadGitHubDatabase
   >;
+  let askForGitHubRepoSpy: jest.SpiedFunction<
+    typeof databaseFetcher.askForGitHubRepo
+  >;
   let openTextDocumentSpy: jest.SpiedFunction<
     typeof workspace.openTextDocument
   >;
@@ -58,6 +61,8 @@ describe("SkeletonQueryWizard", () => {
       ]),
     getSupportedLanguages: jest.fn(),
   });
+
+  jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
   beforeEach(async () => {
     dir = tmp.dirSync({
@@ -102,6 +107,10 @@ describe("SkeletonQueryWizard", () => {
       mockDatabaseManager,
       token,
     );
+
+    askForGitHubRepoSpy = jest
+      .spyOn(databaseFetcher, "askForGitHubRepo")
+      .mockResolvedValue(QUERY_LANGUAGE_TO_DATABASE_REPO[chosenLanguage]);
   });
 
   afterEach(async () => {
@@ -251,10 +260,30 @@ describe("SkeletonQueryWizard", () => {
           .mockResolvedValue(undefined);
       });
 
-      it("should download a new database for language", async () => {
-        await wizard.execute();
+      describe("if the user choses to downloaded the suggested database from GitHub", () => {
+        it("should download a new database for language", async () => {
+          await wizard.execute();
 
-        expect(downloadGitHubDatabaseSpy).toHaveBeenCalled();
+          expect(askForGitHubRepoSpy).toHaveBeenCalled();
+          expect(downloadGitHubDatabaseSpy).toHaveBeenCalled();
+        });
+      });
+
+      describe("if the user choses to download a different database from GitHub than the one suggested", () => {
+        beforeEach(() => {
+          const chosenGitHubRepo = "pickles-owner/pickles-repo";
+
+          askForGitHubRepoSpy = jest
+            .spyOn(databaseFetcher, "askForGitHubRepo")
+            .mockResolvedValue(chosenGitHubRepo);
+        });
+
+        it("should download the newly chosen database", async () => {
+          await wizard.execute();
+
+          expect(askForGitHubRepoSpy).toHaveBeenCalled();
+          expect(downloadGitHubDatabaseSpy).toHaveBeenCalled();
+        });
       });
     });
   });
