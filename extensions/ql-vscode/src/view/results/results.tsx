@@ -162,30 +162,28 @@ export class ResultsApp extends React.Component<
 
   private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
     this.setState((prevState) => {
-      if (resultsInfo === null) {
-        if (prevState.isExpectingResultsUpdate) {
-          // Display loading message
-          return {
-            displayedResults: {
-              resultsInfo: null,
-              results: null,
-              errorMessage: "Loading results…",
-            },
-            isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-            nextResultsInfo: resultsInfo,
-          };
-        } else {
-          // No results to display
-          return {
-            displayedResults: {
-              resultsInfo: null,
-              results: null,
-              errorMessage: "No results to display",
-            },
-            isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-            nextResultsInfo: resultsInfo,
-          };
-        }
+      if (resultsInfo === null && prevState.isExpectingResultsUpdate) {
+        // Display loading message
+        return {
+          displayedResults: {
+            resultsInfo: null,
+            results: null,
+            errorMessage: "Loading results…",
+          },
+          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+          nextResultsInfo: resultsInfo,
+        };
+      } else if (resultsInfo === null) {
+        // No results to display
+        return {
+          displayedResults: {
+            resultsInfo: null,
+            results: null,
+            errorMessage: "No results to display",
+          },
+          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+          nextResultsInfo: resultsInfo,
+        };
       }
 
       let results: Results | null = null;
