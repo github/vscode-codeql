@@ -458,6 +458,11 @@ export class LocalQueries extends DisposableObject {
       throw new Error("Can't run query without a selected database");
     }
 
+    const additionalPacks = getOnDiskWorkspaceFolders();
+    const extensionPacks = (await this.cliServer.useExtensionPacks())
+      ? Object.keys(await this.cliServer.resolveQlpacks(additionalPacks, true))
+      : undefined;
+
     const coreQueryRun = this.queryRunner.createQueryRun(
       databaseItem.databaseUri.fsPath,
       {
@@ -465,7 +470,8 @@ export class LocalQueries extends DisposableObject {
         quickEvalPosition: selectedQuery.quickEvalPosition,
       },
       true,
-      getOnDiskWorkspaceFolders(),
+      additionalPacks,
+      extensionPacks,
       this.queryStorageDir,
       undefined,
       undefined,

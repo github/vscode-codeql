@@ -9,7 +9,11 @@ import {
   DatabaseItem,
   DatabaseResolver,
 } from "../local-databases";
-import { showAndLogExceptionWithTelemetry, upgradesTmpDir } from "../helpers";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+  upgradesTmpDir,
+} from "../helpers";
 import { ProgressCallback } from "../progress";
 import { QueryMetadata } from "../pure/interface-types";
 import { extLogger, Logger } from "../common";
@@ -308,12 +312,19 @@ export async function compileAndRunQueryAgainstDatabaseCore(
   query: CoreQueryTarget,
   generateEvalLog: boolean,
   additionalPacks: string[],
+  extensionPacks: string[] | undefined,
   outputDir: QueryOutputDir,
   progress: ProgressCallback,
   token: CancellationToken,
   templates: Record<string, string> | undefined,
   logger: Logger,
 ): Promise<CoreQueryResults> {
+  if (extensionPacks !== undefined && extensionPacks.length > 0) {
+    await showAndLogWarningMessage(
+      "Legacy query server does not support extension packs.",
+    );
+  }
+
   const dbContents = await DatabaseResolver.resolveDatabaseContents(
     Uri.file(dbPath),
   );
