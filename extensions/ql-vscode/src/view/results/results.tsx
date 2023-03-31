@@ -1,5 +1,5 @@
 import * as React from "react";
-import { assertNever } from "../../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../../pure/helpers-pure";
 import {
   DatabaseInfo,
   Interpretation,
@@ -198,12 +198,7 @@ export class ResultsApp extends React.Component<
           sortStates: this.getSortStates(resultsInfo),
         };
       } catch (e) {
-        let errorMessage: string;
-        if (e instanceof Error) {
-          errorMessage = e.message;
-        } else {
-          errorMessage = "Unknown error";
-        }
+        const errorMessage = getErrorMessage(e);
 
         statusText = `Error loading results: ${errorMessage}`;
       }
