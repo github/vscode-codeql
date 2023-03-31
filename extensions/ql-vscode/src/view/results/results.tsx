@@ -223,9 +223,14 @@ export class ResultsApp extends React.Component<
   private getResultSets(resultsInfo: ResultsInfo): readonly ResultSet[] {
     const parsedResultSets = resultsInfo.parsedResultSets;
     const resultSet = parsedResultSets.resultSet;
-    if (!resultSet.t) {
+    if (
+      resultSet.t !== "InterpretedResultSet" &&
+      resultSet.t !== "RawResultSet"
+    ) {
       throw new Error(
-        'Missing result set type. Should be either "InterpretedResultSet" or "RawResultSet".',
+        `Invalid result set type. Should be either "InterpretedResultSet" or "RawResultSet", but got "${
+          (resultSet as { t: string }).t
+        }".`,
       );
     }
     return [resultSet];
