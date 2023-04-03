@@ -120,7 +120,7 @@ import { getAstCfgCommands } from "./ast-cfg-commands";
 import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
-import { ExternalApiModule } from "./data-extensions-editor/external-api-module";
+import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extensions-editor-module";
 
 /**
  * extension.ts
@@ -861,15 +861,18 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(localQueries);
 
-  const externalApiQueryStorageDir = join(tmpDir.name, "external-api-results");
-  await ensureDir(externalApiQueryStorageDir);
-  const externalApiModule = new ExternalApiModule(
+  const dataExtensionsEditorQueryStorageDir = join(
+    tmpDir.name,
+    "data-extensions-editor-results",
+  );
+  await ensureDir(dataExtensionsEditorQueryStorageDir);
+  const dataExtensionsEditorModule = new DataExtensionsEditorModule(
     ctx,
     app,
     dbm,
     cliServer,
     qs,
-    externalApiQueryStorageDir,
+    dataExtensionsEditorQueryStorageDir,
   );
 
   void extLogger.log("Initializing QLTest interface.");
@@ -934,7 +937,7 @@ async function activateWithInstalledDistribution(
     ...getPackagingCommands({
       cliServer,
     }),
-    ...externalApiModule.getCommands(),
+    ...dataExtensionsEditorModule.getCommands(),
     ...evalLogViewer.getCommands(),
     ...summaryLanguageSupport.getCommands(),
     ...testUiCommands,

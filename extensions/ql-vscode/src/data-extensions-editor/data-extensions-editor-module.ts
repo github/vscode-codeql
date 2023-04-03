@@ -7,7 +7,7 @@ import { QueryRunner } from "../queryRunner";
 import { App } from "../common/app";
 import { extLogger } from "../common";
 
-export class ExternalApiModule {
+export class DataExtensionsEditorModule {
   public constructor(
     private readonly ctx: ExtensionContext,
     private readonly app: App,
