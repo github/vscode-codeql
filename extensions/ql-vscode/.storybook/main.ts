@@ -12,6 +12,9 @@ const config: StorybookConfig = {
   core: {
     builder: "@storybook/builder-webpack5",
   },
+  features: {
+    babelModeV7: true,
+  },
 };
 
 module.exports = config;
