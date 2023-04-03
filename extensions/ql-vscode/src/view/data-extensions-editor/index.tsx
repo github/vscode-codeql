@@ -1,9 +1,9 @@
 import * as React from "react";
 import { WebviewDefinition } from "../webview-definition";
-import { ExternalApi } from "./ExternalApi";
+import { DataExtensionsEditor } from "./DataExtensionsEditor";
 
 const definition: WebviewDefinition = {
-  component: <ExternalApi />,
+  component: <DataExtensionsEditor />,
 };
 
 export default definition;

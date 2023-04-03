@@ -25,7 +25,7 @@ import {
 import { vscode } from "../vscode-api";
 import { assertNever } from "../../pure/helpers-pure";
 
-export const ExternalApiContainer = styled.div`
+export const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
 `;
 
@@ -40,7 +40,7 @@ const ProgressBar = styled.div<ProgressBarProps>`
   background-color: var(--vscode-progressBar-background);
 `;
 
-export function ExternalApi(): JSX.Element {
+export function DataExtensionsEditor(): JSX.Element {
   const [results, setResults] = useState<DecodedBqrsChunk | undefined>(
     undefined,
   );
@@ -199,7 +199,7 @@ export function ExternalApi(): JSX.Element {
   }, [modeledMethods]);
 
   return (
-    <ExternalApiContainer>
+    <DataExtensionsEditorContainer>
       {progress.maxStep > 0 && (
         <p>
           <ProgressBar completion={progress.step / progress.maxStep} />{" "}
@@ -261,6 +261,6 @@ export function ExternalApi(): JSX.Element {
           </div>
         </>
       )}
-    </ExternalApiContainer>
+    </DataExtensionsEditorContainer>
   );
 }
