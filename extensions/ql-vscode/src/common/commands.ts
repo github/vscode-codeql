@@ -241,8 +241,8 @@ export type PackagingCommands = {
   "codeQL.downloadPacks": () => Promise<void>;
 };
 
-export type ExternalApiCommands = {
-  "codeQL.openExternalApi": () => Promise<void>;
+export type DataExtensionsEditorCommands = {
+  "codeQL.openDataExtensionsEditor": () => Promise<void>;
 };
 
 export type EvalLogViewerCommands = {
@@ -277,7 +277,7 @@ export type AllExtensionCommands = BaseCommands &
   AstCfgCommands &
   AstViewerCommands &
   PackagingCommands &
-  ExternalApiCommands &
+  DataExtensionsEditorCommands &
   EvalLogViewerCommands &
   SummaryLanguageSupportCommands &
   Partial<TestUICommands> &

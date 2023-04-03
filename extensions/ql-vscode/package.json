@@ -704,8 +704,8 @@
         "enablement": "codeql.hasQLSource"
       },
       {
-        "command": "codeQL.openExternalApi",
-        "title": "CodeQL: Show External Api Results"
+        "command": "codeQL.openDataExtensionsEditor",
+        "title": "CodeQL: Open Data Extensions Editor"
       },
       {
         "command": "codeQL.mockGitHubApiServer.startRecording",
@@ -1091,7 +1091,7 @@
           "when": "false"
         },
         {
-          "command": "codeQL.openExternalApi",
+          "command": "codeQL.openDataExtensionsEditor",
           "when": "config.codeQL.canary && config.codeQL.dataExtensions.editor"
         },
         {

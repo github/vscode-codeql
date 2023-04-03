@@ -1,6 +1,6 @@
 import { ExtensionContext } from "vscode";
 import { DataExtensionsEditorView } from "./data-extensions-editor-view";
-import { ExternalApiCommands } from "../common/commands";
+import { DataExtensionsEditorCommands } from "../common/commands";
 import { DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
 import { QueryRunner } from "../queryRunner";
@@ -17,9 +17,9 @@ export class DataExtensionsEditorModule {
     private readonly queryStorageDir: string,
   ) {}
 
-  public getCommands(): ExternalApiCommands {
+  public getCommands(): DataExtensionsEditorCommands {
     return {
-      "codeQL.openExternalApi": async () => {
+      "codeQL.openDataExtensionsEditor": async () => {
         const db = this.databaseManager.currentDatabaseItem;
         if (!db) {
           void extLogger.log("No database selected");
