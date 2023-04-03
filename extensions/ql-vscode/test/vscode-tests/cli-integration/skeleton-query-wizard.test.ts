@@ -12,16 +12,11 @@ import { CancellationTokenSource } from "vscode-jsonrpc";
 import { testCredentialsWithStub } from "../../factories/authentication";
 import { DatabaseItem, DatabaseManager } from "../../../src/local-databases";
 import * as databaseFetcher from "../../../src/databaseFetcher";
-import { Credentials } from "../../../src/common/authentication";
-import { getErrorMessage } from "../../../src/pure/helpers-pure";
 
 describe("SkeletonQueryWizard", () => {
-  let mockCli: CodeQLCliServer;
-  let mockDatabaseManager: DatabaseManager;
   let wizard: SkeletonQueryWizard;
   let dir: tmp.DirResult;
   let storagePath: string;
-  let credentials: Credentials;
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let generateSpy: jest.SpiedFunction<
     typeof QlPackGenerator.prototype.generate
@@ -29,7 +24,6 @@ describe("SkeletonQueryWizard", () => {
   let createExampleQlFileSpy: jest.SpiedFunction<
     typeof QlPackGenerator.prototype.createExampleQlFile
   >;
-  let chosenLanguage: string;
   let downloadGitHubDatabaseSpy: jest.SpiedFunction<
     typeof databaseFetcher.downloadGitHubDatabase
   >;
@@ -37,37 +31,36 @@ describe("SkeletonQueryWizard", () => {
     typeof workspace.openTextDocument
   >;
 
+  const token = new CancellationTokenSource().token;
+  const credentials = testCredentialsWithStub();
+  const chosenLanguage = "ruby";
+  const mockDatabaseManager = mockedObject<DatabaseManager>({
+    setCurrentDatabaseItem: jest.fn(),
+    digForDatabaseItem: jest.fn(),
+  });
+  const mockCli = mockedObject<CodeQLCliServer>({
+    resolveLanguages: jest
+      .fn()
+      .mockResolvedValue([
+        "ruby",
+        "javascript",
+        "go",
+        "java",
+        "python",
+        "csharp",
+        "cpp",
+      ]),
+    getSupportedLanguages: jest.fn(),
+  });
+
   beforeEach(async () => {
     dir = tmp.dirSync({
       prefix: "skeleton_query_wizard_",
       unsafeCleanup: true,
     });
-    chosenLanguage = "ruby";
-
-    mockCli = mockedObject<CodeQLCliServer>({
-      resolveLanguages: jest
-        .fn()
-        .mockResolvedValue([
-          "ruby",
-          "javascript",
-          "go",
-          "java",
-          "python",
-          "csharp",
-          "cpp",
-        ]),
-      getSupportedLanguages: jest.fn(),
-    });
-
-    mockDatabaseManager = mockedObject<DatabaseManager>({
-      setCurrentDatabaseItem: jest.fn(),
-      digForDatabaseItem: jest.fn(),
-    });
 
     storagePath = dir.name;
-    credentials = testCredentialsWithStub();
 
-    jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
     jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
       {
         name: `codespaces-codeql`,
@@ -94,8 +87,6 @@ describe("SkeletonQueryWizard", () => {
     openTextDocumentSpy = jest
       .spyOn(workspace, "openTextDocument")
       .mockResolvedValue({} as TextDocument);
-
-    const token = new CancellationTokenSource().token;
 
     wizard = new SkeletonQueryWizard(
       mockCli,
