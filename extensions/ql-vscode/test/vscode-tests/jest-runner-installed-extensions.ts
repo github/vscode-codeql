@@ -33,7 +33,7 @@ export default class JestRunnerInstalledExtensions extends VSCodeTestRunner {
           ?.config as RunnerOptions) ?? {};
 
       const { version, platform } = options;
-      const versionKey = `${version}-${platform}`;
+      const versionKey = `${version}-${platform}` as const;
 
       if (installedOnVsCodeVersions.has(versionKey)) {
         continue;
