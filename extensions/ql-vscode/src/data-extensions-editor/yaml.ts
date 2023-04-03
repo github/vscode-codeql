@@ -129,12 +129,12 @@ export const definitions: Record<
   },
 };
 
-export function createDataProperty(
+function createDataProperty(
   methods: ExternalApiUsageByType[],
   definition: DataExtensionDefinition,
 ) {
   if (methods.length === 0) {
-    return "[]";
+    return " []";
   }
 
   return `\n${methods
@@ -176,7 +176,7 @@ export function createDataExtensionYaml(
     ([type, definition]) => `  - addsTo:
       pack: codeql/java-all
       extensible: ${definition.extensible}
-    data: ${createDataProperty(
+    data:${createDataProperty(
       methodsByType[type as Exclude<ModeledMethodType, "none">],
       definition,
     )}
