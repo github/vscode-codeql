@@ -298,10 +298,6 @@
     },
     "commands": [
       {
-        "command": "codeQL.openExternalApi",
-        "title": "CodeQL: Show External Api Results"
-      },
-      {
         "command": "codeQL.authenticateToGitHub",
         "title": "CodeQL: Authenticate to GitHub"
       },
@@ -708,6 +704,10 @@
         "enablement": "codeql.hasQLSource"
       },
       {
+        "command": "codeQL.openExternalApi",
+        "title": "CodeQL: Show External Api Results"
+      },
+      {
         "command": "codeQL.mockGitHubApiServer.startRecording",
         "title": "CodeQL: Mock GitHub API Server: Start Scenario Recording"
       },
@@ -1089,6 +1089,10 @@
         {
           "command": "codeQL.viewCfgContextEditor",
           "when": "false"
+        },
+        {
+          "command": "codeQL.openExternalApi",
+          "when": "config.codeQL.canary && config.codeQL.dataExtensions.editor"
         },
         {
           "command": "codeQLVariantAnalysisRepositories.openConfigFile",
