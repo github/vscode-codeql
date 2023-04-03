@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { DecodedBqrsChunk } from "../../pure/bqrs-cli-types";
 import {
   ShowProgressMessage,
-  ToExternalApiMessage,
+  ToDataExtensionsEditorMessage,
 } from "../../pure/interface-types";
 import {
   VSCodeButton,
@@ -56,7 +56,7 @@ export function ExternalApi(): JSX.Element {
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
-        const msg: ToExternalApiMessage = evt.data;
+        const msg: ToDataExtensionsEditorMessage = evt.data;
         switch (msg.t) {
           case "setExternalApiRepoResults":
             setResults(msg.results);

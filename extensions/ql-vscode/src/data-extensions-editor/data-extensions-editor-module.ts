@@ -1,5 +1,5 @@
 import { ExtensionContext } from "vscode";
-import { ExternalApiView } from "./external-api-view";
+import { DataExtensionsEditorView } from "./data-extensions-editor-view";
 import { ExternalApiCommands } from "../common/commands";
 import { DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
@@ -26,7 +26,7 @@ export class DataExtensionsEditorModule {
           return;
         }
 
-        const view = new ExternalApiView(
+        const view = new DataExtensionsEditorView(
           this.ctx,
           this.app,
           this.databaseManager,

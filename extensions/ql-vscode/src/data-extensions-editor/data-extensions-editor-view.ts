@@ -8,8 +8,8 @@ import {
 } from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import {
-  FromExternalApiMessage,
-  ToExternalApiMessage,
+  FromDataExtensionsEditorMessage,
+  ToDataExtensionsEditorMessage,
 } from "../pure/interface-types";
 import { qlpackOfDatabase } from "../contextual/queryResolver";
 import { CodeQLCliServer } from "../cli";
@@ -29,9 +29,9 @@ import { ProgressUpdate } from "../progress";
 import { ModeledMethod } from "./interface";
 import { generateFlowModel } from "./generate-flow-model";
 
-export class ExternalApiView extends AbstractWebview<
-  ToExternalApiMessage,
-  FromExternalApiMessage
+export class DataExtensionsEditorView extends AbstractWebview<
+  ToDataExtensionsEditorMessage,
+  FromDataExtensionsEditorMessage
 > {
   public constructor(
     ctx: ExtensionContext,
@@ -66,7 +66,9 @@ export class ExternalApiView extends AbstractWebview<
     // Nothing to do here
   }
 
-  protected async onMessage(msg: FromExternalApiMessage): Promise<void> {
+  protected async onMessage(
+    msg: FromDataExtensionsEditorMessage,
+  ): Promise<void> {
     switch (msg.t) {
       case "viewLoaded":
         await this.onWebViewLoaded();

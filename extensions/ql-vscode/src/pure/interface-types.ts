@@ -517,13 +517,13 @@ export interface GenerateExternalApiMessage {
   t: "generateExternalApi";
 }
 
-export type ToExternalApiMessage =
+export type ToDataExtensionsEditorMessage =
   | SetExternalApiResultsMessage
   | ShowProgressMessage
   | SetExistingYamlDataMessage
   | AddModeledMethodsMessage;
 
-export type FromExternalApiMessage =
+export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
   | ApplyDataExtensionYamlMessage
   | JumpToUsageMessage
