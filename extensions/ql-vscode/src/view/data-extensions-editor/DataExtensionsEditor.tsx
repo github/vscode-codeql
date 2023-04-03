@@ -33,13 +33,21 @@ const ProgressBar = styled.div<ProgressBarProps>`
   background-color: var(--vscode-progressBar-background);
 `;
 
-export function DataExtensionsEditor(): JSX.Element {
+type Props = {
+  initialExternalApiUsages?: ExternalApiUsage[];
+  initialModeledMethods?: Record<string, ModeledMethod>;
+};
+
+export function DataExtensionsEditor({
+  initialExternalApiUsages = [],
+  initialModeledMethods = {},
+}: Props): JSX.Element {
   const [externalApiUsages, setExternalApiUsages] = useState<
     ExternalApiUsage[]
-  >([]);
+  >(initialExternalApiUsages);
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
-  >({});
+  >(initialModeledMethods);
   const [progress, setProgress] = useState<Omit<ShowProgressMessage, "t">>({
     step: 0,
     maxStep: 0,
