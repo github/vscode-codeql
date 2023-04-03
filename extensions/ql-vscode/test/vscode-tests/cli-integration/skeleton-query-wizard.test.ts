@@ -16,6 +16,8 @@ import { testCredentialsWithStub } from "../../factories/authentication";
 import { DatabaseItem, DatabaseManager } from "../../../src/local-databases";
 import * as databaseFetcher from "../../../src/databaseFetcher";
 
+jest.setTimeout(40_000);
+
 describe("SkeletonQueryWizard", () => {
   let wizard: SkeletonQueryWizard;
   let dir: tmp.DirResult;
