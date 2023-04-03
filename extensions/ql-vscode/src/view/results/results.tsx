@@ -1,5 +1,5 @@
 import * as React from "react";
-import { assertNever } from "../../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../../pure/helpers-pure";
 import {
   DatabaseInfo,
   Interpretation,
@@ -162,30 +162,28 @@ export class ResultsApp extends React.Component<
 
   private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
     this.setState((prevState) => {
-      if (resultsInfo === null) {
-        if (prevState.isExpectingResultsUpdate) {
-          // Display loading message
-          return {
-            displayedResults: {
-              resultsInfo: null,
-              results: null,
-              errorMessage: "Loading results…",
-            },
-            isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-            nextResultsInfo: resultsInfo,
-          };
-        } else {
-          // No results to display
-          return {
-            displayedResults: {
-              resultsInfo: null,
-              results: null,
-              errorMessage: "No results to display",
-            },
-            isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-            nextResultsInfo: resultsInfo,
-          };
-        }
+      if (resultsInfo === null && prevState.isExpectingResultsUpdate) {
+        // Display loading message
+        return {
+          displayedResults: {
+            resultsInfo: null,
+            results: null,
+            errorMessage: "Loading results…",
+          },
+          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+          nextResultsInfo: resultsInfo,
+        };
+      } else if (resultsInfo === null) {
+        // No results to display
+        return {
+          displayedResults: {
+            resultsInfo: null,
+            results: null,
+            errorMessage: "No results to display",
+          },
+          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+          nextResultsInfo: resultsInfo,
+        };
       }
 
       let results: Results | null = null;
@@ -198,12 +196,7 @@ export class ResultsApp extends React.Component<
           sortStates: this.getSortStates(resultsInfo),
         };
       } catch (e) {
-        let errorMessage: string;
-        if (e instanceof Error) {
-          errorMessage = e.message;
-        } else {
-          errorMessage = "Unknown error";
-        }
+        const errorMessage = getErrorMessage(e);
 
         statusText = `Error loading results: ${errorMessage}`;
       }
@@ -223,9 +216,14 @@ export class ResultsApp extends React.Component<
   private getResultSets(resultsInfo: ResultsInfo): readonly ResultSet[] {
     const parsedResultSets = resultsInfo.parsedResultSets;
     const resultSet = parsedResultSets.resultSet;
-    if (!resultSet.t) {
+    if (
+      resultSet.t !== "InterpretedResultSet" &&
+      resultSet.t !== "RawResultSet"
+    ) {
       throw new Error(
-        'Missing result set type. Should be either "InterpretedResultSet" or "RawResultSet".',
+        `Invalid result set type. Should be either "InterpretedResultSet" or "RawResultSet", but got "${
+          (resultSet as { t: string }).t
+        }".`,
       );
     }
     return [resultSet];

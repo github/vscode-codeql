@@ -1,13 +1,5 @@
 import { pathExists } from "fs-extra";
-import {
-  commands,
-  env,
-  ExtensionContext,
-  ExtensionMode,
-  QuickPickItem,
-  Uri,
-  window,
-} from "vscode";
+import { env, QuickPickItem, Uri, window } from "vscode";
 
 import {
   getMockGitHubApiServerScenariosPath,
@@ -16,6 +8,8 @@ import {
 import { DisposableObject } from "../pure/disposable-object";
 import { MockGitHubApiServer } from "./mock-gh-api-server";
 import { MockGitHubApiServerCommands } from "../common/commands";
+import { App, AppMode } from "../common/app";
+import path from "path";
 
 /**
  * "Interface" to the mock GitHub API server which implements VSCode interactions, such as
@@ -27,7 +21,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
   private readonly server: MockGitHubApiServer;
   private readonly config: MockGitHubApiConfigListener;
 
-  constructor(private readonly ctx: ExtensionContext) {
+  constructor(private readonly app: App) {
     super();
     this.server = new MockGitHubApiServer();
     this.config = new MockGitHubApiConfigListener();
@@ -55,12 +49,12 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
   public async stopServer(): Promise<void> {
     this.server.stopServer();
 
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "setContext",
       "codeQL.mockGitHubApiServer.scenarioLoaded",
       false,
     );
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "setContext",
       "codeQL.mockGitHubApiServer.recording",
       false,
@@ -92,7 +86,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
 
     // Set a value in the context to track whether we have a scenario loaded.
     // This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "setContext",
       "codeQL.mockGitHubApiServer.scenarioLoaded",
       true,
@@ -106,7 +100,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
       await window.showInformationMessage("No scenario currently loaded");
     } else {
       await this.server.unloadScenario();
-      await commands.executeCommand(
+      await this.app.commands.execute(
         "setContext",
         "codeQL.mockGitHubApiServer.scenarioLoaded",
         false,
@@ -125,7 +119,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
 
     if (this.server.isScenarioLoaded) {
       await this.server.unloadScenario();
-      await commands.executeCommand(
+      await this.app.commands.execute(
         "setContext",
         "codeQL.mockGitHubApiServer.scenarioLoaded",
         false,
@@ -137,7 +131,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
 
     await this.server.startRecording();
     // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "setContext",
       "codeQL.mockGitHubApiServer.recording",
       true,
@@ -155,7 +149,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
     }
 
     // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "setContext",
       "codeQL.mockGitHubApiServer.recording",
       false,
@@ -210,7 +204,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
 
   private async stopRecording(): Promise<void> {
     // Set a value in the context to track whether we are recording. This allows us to use this to show/hide commands (see package.json)
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "setContext",
       "codeQL.mockGitHubApiServer.recording",
       false,
@@ -225,11 +219,11 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
       return scenariosPath;
     }
 
-    if (this.ctx.extensionMode === ExtensionMode.Development) {
-      const developmentScenariosPath = Uri.joinPath(
-        this.ctx.extensionUri,
+    if (this.app.mode === AppMode.Development) {
+      const developmentScenariosPath = path.join(
+        this.app.extensionPath,
         "src/mocks/scenarios",
-      ).fsPath.toString();
+      );
       if (await pathExists(developmentScenariosPath)) {
         return developmentScenariosPath;
       }

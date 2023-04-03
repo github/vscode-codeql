@@ -1,6 +1,5 @@
-import { commands, extensions, window } from "vscode";
+import { window } from "vscode";
 
-import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { readJson } from "fs-extra";
 import * as path from "path";
 import {
@@ -15,19 +14,18 @@ import { DbListKind } from "../../../../src/databases/db-item";
 import { createDbTreeViewItemSystemDefinedList } from "../../../../src/databases/ui/db-tree-view-item";
 import { createRemoteSystemDefinedListDbItem } from "../../../factories/db-item-factories";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
+import { getActivatedExtension } from "../../global.helper";
+import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
+import { AllCommands } from "../../../../src/common/commands";
 
 jest.setTimeout(60_000);
 
 describe("Db panel UI commands", () => {
-  let extension: CodeQLExtensionInterface | Record<string, never>;
   let storagePath: string;
+  const commandManager = createVSCodeCommandManager<AllCommands>();
 
   beforeEach(async () => {
-    extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
+    const extension = await getActivatedExtension();
 
     storagePath =
       extension.ctx.storageUri?.fsPath || extension.ctx.globalStorageUri.fsPath;
@@ -36,7 +34,7 @@ describe("Db panel UI commands", () => {
   it("should add new remote db list", async () => {
     // Add db list
     jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
-    await commands.executeCommand(
+    await commandManager.execute(
       "codeQLVariantAnalysisRepositories.addNewList",
     );
 
@@ -58,7 +56,7 @@ describe("Db panel UI commands", () => {
       kind: DbListKind.Local,
     } as AddListQuickPickItem);
     jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
-    await commands.executeCommand(
+    await commandManager.execute(
       "codeQLVariantAnalysisRepositories.addNewList",
     );
 
@@ -79,7 +77,7 @@ describe("Db panel UI commands", () => {
     } as RemoteDatabaseQuickPickItem);
 
     jest.spyOn(window, "showInputBox").mockResolvedValue("owner1/repo1");
-    await commands.executeCommand(
+    await commandManager.execute(
       "codeQLVariantAnalysisRepositories.addNewDatabase",
     );
 
@@ -102,7 +100,7 @@ describe("Db panel UI commands", () => {
     } as RemoteDatabaseQuickPickItem);
 
     jest.spyOn(window, "showInputBox").mockResolvedValue("owner1");
-    await commands.executeCommand(
+    await commandManager.execute(
       "codeQLVariantAnalysisRepositories.addNewDatabase",
     );
 
@@ -124,7 +122,7 @@ describe("Db panel UI commands", () => {
       "tooltip",
     );
 
-    await commands.executeCommand(
+    await commandManager.execute(
       "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu",
       treeViewItem,
     );

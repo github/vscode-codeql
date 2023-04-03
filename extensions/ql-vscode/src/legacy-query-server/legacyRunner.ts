@@ -1,18 +1,19 @@
 import { CancellationToken } from "vscode";
+import { CodeQLCliServer } from "../cli";
 import { ProgressCallback } from "../progress";
+import { Logger } from "../common";
 import { DatabaseItem } from "../local-databases";
 import {
   Dataset,
   deregisterDatabases,
   registerDatabases,
 } from "../pure/legacy-messages";
-import { InitialQueryInfo, LocalQueryInfo } from "../query-results";
-import { QueryRunner } from "../queryRunner";
-import { QueryWithResults } from "../run-queries-shared";
+import { CoreQueryResults, CoreQueryTarget, QueryRunner } from "../queryRunner";
+import { QueryOutputDir } from "../run-queries-shared";
 import { QueryServerClient } from "./queryserver-client";
 import {
   clearCacheInDatabase,
-  compileAndRunQueryAgainstDatabase,
+  compileAndRunQueryAgainstDatabaseCore,
 } from "./run-queries";
 import { upgradeDatabaseExplicit } from "./upgrades";
 
@@ -21,8 +22,16 @@ export class LegacyQueryRunner extends QueryRunner {
     super();
   }
 
-  get cliServer() {
+  get cliServer(): CodeQLCliServer {
     return this.qs.cliServer;
+  }
+
+  get customLogDirectory(): string | undefined {
+    return undefined;
+  }
+
+  get logger(): Logger {
+    return this.qs.logger;
   }
 
   async restartQueryServer(
@@ -47,25 +56,31 @@ export class LegacyQueryRunner extends QueryRunner {
   ): Promise<void> {
     await clearCacheInDatabase(this.qs, dbItem, progress, token);
   }
-  async compileAndRunQueryAgainstDatabase(
-    dbItem: DatabaseItem,
-    initialInfo: InitialQueryInfo,
-    queryStorageDir: string,
+
+  public async compileAndRunQueryAgainstDatabaseCore(
+    dbPath: string,
+    query: CoreQueryTarget,
+    additionalPacks: string[],
+    extensionPacks: string[] | undefined,
+    generateEvalLog: boolean,
+    outputDir: QueryOutputDir,
     progress: ProgressCallback,
     token: CancellationToken,
-    templates?: Record<string, string>,
-    queryInfo?: LocalQueryInfo,
-  ): Promise<QueryWithResults> {
-    return await compileAndRunQueryAgainstDatabase(
-      this.qs.cliServer,
+    templates: Record<string, string> | undefined,
+    logger: Logger,
+  ): Promise<CoreQueryResults> {
+    return await compileAndRunQueryAgainstDatabaseCore(
       this.qs,
-      dbItem,
-      initialInfo,
-      queryStorageDir,
+      dbPath,
+      query,
+      generateEvalLog,
+      additionalPacks,
+      extensionPacks,
+      outputDir,
       progress,
       token,
       templates,
-      queryInfo,
+      logger,
     );
   }
 

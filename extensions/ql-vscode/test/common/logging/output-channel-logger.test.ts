@@ -1,7 +1,12 @@
 import { readdirSync, readFileSync } from "fs-extra";
 import { join } from "path";
 import * as tmp from "tmp";
-import { Logger, OutputChannelLogger, TeeLogger } from "../../../src/common";
+import {
+  BaseLogger,
+  Logger,
+  OutputChannelLogger,
+  TeeLogger,
+} from "../../../src/common";
 
 jest.setTimeout(999999);
 
@@ -88,7 +93,7 @@ describe("OutputChannelLogger tests", function () {
   function createSideLogger(
     logger: Logger,
     additionalLogLocation: string,
-  ): Logger {
+  ): BaseLogger {
     return new TeeLogger(
       logger,
       join(tempFolders.storagePath.name, additionalLogLocation),
