@@ -15,7 +15,7 @@ import {
 import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
 import { ErrorLike } from "./errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import { ModeledMethod } from "../external-api/interface";
+import { ModeledMethod } from "../data-extensions-editor/interface";
 
 /**
  * This module contains types and code that are shared between

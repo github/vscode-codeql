@@ -1,4 +1,7 @@
-import { ExternalApiUsage, ModeledMethod } from "../../external-api/interface";
+import {
+  ExternalApiUsage,
+  ModeledMethod,
+} from "../../data-extensions-editor/interface";
 import {
   VSCodeDataGridCell,
   VSCodeDataGridRow,

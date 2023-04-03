@@ -120,7 +120,7 @@ import { getAstCfgCommands } from "./ast-cfg-commands";
 import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
-import { ExternalApiModule } from "./external-api/external-api-module";
+import { ExternalApiModule } from "./data-extensions-editor/external-api-module";
 
 /**
  * extension.ts

@@ -16,12 +16,12 @@ import {
   Call,
   ExternalApiUsage,
   ModeledMethod,
-} from "../../external-api/interface";
+} from "../../data-extensions-editor/interface";
 import { MethodRow } from "./MethodRow";
 import {
   createDataExtensionYaml,
   loadDataExtensionYaml,
-} from "../../external-api/yaml";
+} from "../../data-extensions-editor/yaml";
 import { vscode } from "../vscode-api";
 import { assertNever } from "../../pure/helpers-pure";
 
