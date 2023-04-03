@@ -1,4 +1,5 @@
 import * as React from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { vscode } from "./vscode-api";
 
@@ -31,9 +32,11 @@ const render = () => {
 
   const root = createRoot(element);
   root.render(
-    <div ref={() => vscode.postMessage({ t: "viewLoaded", viewName })}>
-      {view.component}
-    </div>,
+    <StrictMode>
+      <div ref={() => vscode.postMessage({ t: "viewLoaded", viewName })}>
+        {view.component}
+      </div>
+    </StrictMode>,
   );
 };
 
