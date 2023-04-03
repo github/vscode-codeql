@@ -1,8 +1,7 @@
-import { extensions, window } from "vscode";
+import { window } from "vscode";
 import { join } from "path";
 
 import { CodeQLCliServer } from "../../../src/cli";
-import { CodeQLExtensionInterface } from "../../../src/extension";
 import { getErrorMessage } from "../../../src/pure/helpers-pure";
 
 import * as helpers from "../../../src/helpers";
@@ -11,6 +10,7 @@ import {
   handleInstallPackDependencies,
 } from "../../../src/packaging";
 import { mockedQuickPickItem } from "../utils/mocking.helpers";
+import { getActivatedExtension } from "../global.helper";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -41,18 +41,8 @@ describe("Packaging commands", () => {
       .spyOn(helpers, "showAndLogInformationMessage")
       .mockResolvedValue(undefined);
 
-    const extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
-    if ("cliServer" in extension) {
-      cli = extension.cliServer;
-    } else {
-      throw new Error(
-        "Extension not initialized. Make sure cli is downloaded and installed properly.",
-      );
-    }
+    const extension = await getActivatedExtension();
+    cli = extension.cliServer;
   });
 
   it("should download all core query packs", async () => {

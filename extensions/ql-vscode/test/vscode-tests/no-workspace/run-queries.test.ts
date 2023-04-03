@@ -13,7 +13,10 @@ import { tmpDir } from "../../../src/helpers";
 import { QueryServerClient } from "../../../src/legacy-query-server/queryserver-client";
 import { CodeQLCliServer } from "../../../src/cli";
 import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
-import { QueryInProgress } from "../../../src/legacy-query-server/run-queries";
+import {
+  QueryInProgress,
+  compileQuery as compileQueryLegacy,
+} from "../../../src/legacy-query-server/run-queries";
 import { LegacyQueryRunner } from "../../../src/legacy-query-server/legacyRunner";
 import { DatabaseItem } from "../../../src/local-databases";
 import { DeepPartial, mockedObject } from "../utils/mocking.helpers";
@@ -30,7 +33,6 @@ describe("run-queries", () => {
     const saveDir = "query-save-dir";
     const info = createMockQueryInfo(true, saveDir);
 
-    expect(info.compiledQueryPath).toBe(join(saveDir, "compiledQuery.qlo"));
     expect(info.queryEvalInfo.dilPath).toBe(join(saveDir, "results.dil"));
     expect(info.queryEvalInfo.resultsPaths.resultsPath).toBe(
       join(saveDir, "results.bqrs"),
@@ -185,14 +187,15 @@ describe("run-queries", () => {
         queryPath: "",
       };
 
-      const results = await info.compile(
+      const results = await compileQueryLegacy(
         qs as any,
         mockQlProgram,
+        undefined,
+        info.queryEvalInfo,
         mockProgress as any,
         mockCancel as any,
         qs.logger,
       );
-
       expect(results).toEqual([{ message: "err", severity: Severity.ERROR }]);
 
       expect(qs.sendRequest).toHaveBeenCalledTimes(1);
@@ -214,7 +217,7 @@ describe("run-queries", () => {
             timeoutSecs: 5,
           },
           queryToCheck: mockQlProgram,
-          resultPath: info.compiledQueryPath,
+          resultPath: info.queryEvalInfo.compileQueryPath,
           target: { query: {} },
         },
         mockCancel,

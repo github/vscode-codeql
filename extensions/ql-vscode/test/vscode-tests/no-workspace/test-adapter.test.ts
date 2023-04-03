@@ -1,4 +1,3 @@
-import * as fs from "fs-extra";
 import { Uri, WorkspaceFolder } from "vscode";
 
 import { QLTestAdapter } from "../../../src/test-adapter";
@@ -18,8 +17,6 @@ jest.mock("fs-extra", () => {
     access: jest.fn(),
   };
 });
-
-const mockedFsExtra = jest.mocked(fs);
 
 describe("test-adapter", () => {
   let adapter: QLTestAdapter;
@@ -131,8 +128,6 @@ describe("test-adapter", () => {
   });
 
   it("should reregister testproj databases around test run", async () => {
-    mockedFsExtra.access.mockResolvedValue(undefined);
-
     currentDatabaseItem = preTestDatabaseItem;
     databaseItems = [preTestDatabaseItem];
     await adapter.run(["/path/to/test/dir"]);

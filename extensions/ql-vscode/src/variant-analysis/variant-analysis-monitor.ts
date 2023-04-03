@@ -1,4 +1,4 @@
-import { commands, EventEmitter } from "vscode";
+import { env, EventEmitter } from "vscode";
 import { getVariantAnalysis } from "./gh-api/gh-api-client";
 
 import {
@@ -13,7 +13,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { sleep } from "../pure/time";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { showAndLogWarningMessage } from "../helpers";
-import { Credentials } from "../common/authentication";
+import { App } from "../common/app";
 
 export class VariantAnalysisMonitor extends DisposableObject {
   // With a sleep of 5 seconds, the maximum number of attempts takes
@@ -27,6 +27,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
   readonly onVariantAnalysisChange = this._onVariantAnalysisChange.event;
 
   constructor(
+    private readonly app: App,
     private readonly shouldCancelMonitor: (
       variantAnalysisId: number,
     ) => Promise<boolean>,
@@ -36,7 +37,6 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
   public async monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
-    credentials: Credentials,
   ): Promise<void> {
     let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];
@@ -51,13 +51,17 @@ export class VariantAnalysisMonitor extends DisposableObject {
       let variantAnalysisSummary: ApiVariantAnalysis;
       try {
         variantAnalysisSummary = await getVariantAnalysis(
-          credentials,
+          this.app.credentials,
           variantAnalysis.controllerRepo.id,
           variantAnalysis.id,
         );
       } catch (e) {
         void showAndLogWarningMessage(
-          `Error while monitoring variant analysis: ${getErrorMessage(e)}`,
+          `Error while monitoring variant analysis ${
+            variantAnalysis.query.name
+          } (${variantAnalysis.query.language}) [${new Date(
+            variantAnalysis.executionStartTime,
+          ).toLocaleString(env.language)}]: ${getErrorMessage(e)}`,
         );
         continue;
       }
@@ -87,7 +91,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
     scannedRepo: VariantAnalysisScannedRepository,
     variantAnalysisSummary: VariantAnalysis,
   ) {
-    void commands.executeCommand(
+    void this.app.commands.execute(
       "codeQL.autoDownloadVariantAnalysisResult",
       scannedRepo,
       variantAnalysisSummary,

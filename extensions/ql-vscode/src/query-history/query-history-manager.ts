@@ -40,8 +40,8 @@ import {
   variantAnalysisStatusToQueryStatus,
 } from "../query-status";
 import {
-  deserializeQueryHistory,
-  serializeQueryHistory,
+  readQueryHistoryFromFile,
+  writeQueryHistoryToFile,
 } from "./store/query-history-store";
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../cli";
@@ -379,7 +379,7 @@ export class QueryHistoryManager extends DisposableObject {
     void extLogger.log(
       `Reading cached query history from '${this.queryMetadataStorageLocation}'.`,
     );
-    const history = await deserializeQueryHistory(
+    const history = await readQueryHistoryFromFile(
       this.queryMetadataStorageLocation,
     );
     this.treeDataProvider.allHistory = history;
@@ -395,7 +395,7 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async writeQueryHistory(): Promise<void> {
-    await serializeQueryHistory(
+    await writeQueryHistoryToFile(
       this.treeDataProvider.allHistory,
       this.queryMetadataStorageLocation,
     );

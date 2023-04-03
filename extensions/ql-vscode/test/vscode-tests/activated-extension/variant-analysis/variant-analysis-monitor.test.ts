@@ -1,6 +1,3 @@
-import { commands, extensions } from "vscode";
-import { CodeQLExtensionInterface } from "../../../../src/extension";
-
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import { VariantAnalysisMonitor } from "../../../../src/variant-analysis/variant-analysis-monitor";
 import {
@@ -23,43 +20,36 @@ import {
   processUpdatedVariantAnalysis,
 } from "../../../../src/variant-analysis/variant-analysis-processor";
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
-import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
-import { testCredentialsWithStub } from "../../../factories/authentication";
+import { createMockApp } from "../../../__mocks__/appMock";
+import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 
 jest.setTimeout(60_000);
 
 describe("Variant Analysis Monitor", () => {
-  let extension: CodeQLExtensionInterface | Record<string, never>;
   let mockGetVariantAnalysis: jest.SpiedFunction<
     typeof ghApiClient.getVariantAnalysis
   >;
   let variantAnalysisMonitor: VariantAnalysisMonitor;
   let shouldCancelMonitor: jest.Mock<Promise<boolean>, [number]>;
   let variantAnalysis: VariantAnalysis;
-  let variantAnalysisManager: VariantAnalysisManager;
-  let mockGetDownloadResult: jest.SpiedFunction<
-    typeof variantAnalysisManager.autoDownloadVariantAnalysisResult
-  >;
 
   const onVariantAnalysisChangeSpy = jest.fn();
+  const mockEecuteCommand = jest.fn();
 
   beforeEach(async () => {
     variantAnalysis = createMockVariantAnalysis({});
 
     shouldCancelMonitor = jest.fn();
 
-    extension = await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
-    variantAnalysisMonitor = new VariantAnalysisMonitor(shouldCancelMonitor);
+    variantAnalysisMonitor = new VariantAnalysisMonitor(
+      createMockApp({
+        commands: createMockCommandManager({
+          executeCommand: mockEecuteCommand,
+        }),
+      }),
+      shouldCancelMonitor,
+    );
     variantAnalysisMonitor.onVariantAnalysisChange(onVariantAnalysisChangeSpy);
-
-    variantAnalysisManager = extension.variantAnalysisManager;
-    mockGetDownloadResult = jest
-      .spyOn(variantAnalysisManager, "autoDownloadVariantAnalysisResult")
-      .mockResolvedValue(undefined);
 
     mockGetVariantAnalysis = jest
       .spyOn(ghApiClient, "getVariantAnalysis")
@@ -71,10 +61,7 @@ describe("Variant Analysis Monitor", () => {
   it("should return early if variant analysis should be cancelled", async () => {
     shouldCancelMonitor.mockResolvedValue(true);
 
-    await variantAnalysisMonitor.monitorVariantAnalysis(
-      variantAnalysis,
-      testCredentialsWithStub(),
-    );
+    await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
     expect(onVariantAnalysisChangeSpy).not.toHaveBeenCalled();
   });
@@ -88,10 +75,7 @@ describe("Variant Analysis Monitor", () => {
     });
 
     it("should mark as failed and stop monitoring", async () => {
-      await variantAnalysisMonitor.monitorVariantAnalysis(
-        variantAnalysis,
-        testCredentialsWithStub(),
-      );
+      await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
       expect(mockGetVariantAnalysis).toHaveBeenCalledTimes(1);
 
@@ -109,7 +93,6 @@ describe("Variant Analysis Monitor", () => {
   describe("when the variant analysis is in progress", () => {
     let mockApiResponse: VariantAnalysisApiResponse;
     let scannedRepos: ApiVariantAnalysisScannedRepository[];
-    let succeededRepos: ApiVariantAnalysisScannedRepository[];
 
     describe("when there are successfully scanned repos", () => {
       beforeEach(async () => {
@@ -124,47 +107,20 @@ describe("Variant Analysis Monitor", () => {
         ]);
         mockApiResponse = createMockApiResponse("succeeded", scannedRepos);
         mockGetVariantAnalysis.mockResolvedValue(mockApiResponse);
-        succeededRepos = scannedRepos.filter(
-          (r) => r.analysis_status === "succeeded",
-        );
       });
 
       it("should trigger a download extension command for each repo", async () => {
         const succeededRepos = scannedRepos.filter(
           (r) => r.analysis_status === "succeeded",
         );
-        const commandSpy = jest
-          .spyOn(commands, "executeCommand")
-          .mockResolvedValue(undefined);
+        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        await variantAnalysisMonitor.monitorVariantAnalysis(
-          variantAnalysis,
-          testCredentialsWithStub(),
-        );
-
-        expect(commandSpy).toBeCalledTimes(succeededRepos.length);
+        expect(mockEecuteCommand).toBeCalledTimes(succeededRepos.length);
 
         succeededRepos.forEach((succeededRepo, index) => {
-          expect(commandSpy).toHaveBeenNthCalledWith(
+          expect(mockEecuteCommand).toHaveBeenNthCalledWith(
             index + 1,
             "codeQL.autoDownloadVariantAnalysisResult",
-            processScannedRepository(succeededRepo),
-            processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
-          );
-        });
-      });
-
-      it("should download all available results", async () => {
-        await variantAnalysisMonitor.monitorVariantAnalysis(
-          variantAnalysis,
-          testCredentialsWithStub(),
-        );
-
-        expect(mockGetDownloadResult).toBeCalledTimes(succeededRepos.length);
-
-        succeededRepos.forEach((succeededRepo, index) => {
-          expect(mockGetDownloadResult).toHaveBeenNthCalledWith(
-            index + 1,
             processScannedRepository(succeededRepo),
             processUpdatedVariantAnalysis(variantAnalysis, mockApiResponse),
           );
@@ -182,25 +138,9 @@ describe("Variant Analysis Monitor", () => {
       });
 
       it("should succeed and not download any repos via a command", async () => {
-        const commandSpy = jest
-          .spyOn(commands, "executeCommand")
-          .mockResolvedValue(undefined);
+        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        await variantAnalysisMonitor.monitorVariantAnalysis(
-          variantAnalysis,
-          testCredentialsWithStub(),
-        );
-
-        expect(commandSpy).not.toHaveBeenCalled();
-      });
-
-      it("should not try to download any repos", async () => {
-        await variantAnalysisMonitor.monitorVariantAnalysis(
-          variantAnalysis,
-          testCredentialsWithStub(),
-        );
-
-        expect(mockGetDownloadResult).not.toBeCalled();
+        expect(mockEecuteCommand).not.toHaveBeenCalled();
       });
     });
 
@@ -249,17 +189,10 @@ describe("Variant Analysis Monitor", () => {
       });
 
       it("should trigger a download extension command for each repo", async () => {
-        const commandSpy = jest
-          .spyOn(commands, "executeCommand")
-          .mockResolvedValue(undefined);
-
-        await variantAnalysisMonitor.monitorVariantAnalysis(
-          variantAnalysis,
-          testCredentialsWithStub(),
-        );
+        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
         expect(mockGetVariantAnalysis).toBeCalledTimes(4);
-        expect(commandSpy).toBeCalledTimes(5);
+        expect(mockEecuteCommand).toBeCalledTimes(5);
       });
     });
 
@@ -271,12 +204,9 @@ describe("Variant Analysis Monitor", () => {
       });
 
       it("should not try to download any repos", async () => {
-        await variantAnalysisMonitor.monitorVariantAnalysis(
-          variantAnalysis,
-          testCredentialsWithStub(),
-        );
+        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(mockGetDownloadResult).not.toBeCalled();
+        expect(mockEecuteCommand).not.toBeCalled();
       });
     });
   });

@@ -3,16 +3,17 @@ import { resolve } from "path";
 import {
   authentication,
   commands,
-  extensions,
   TextDocument,
   window,
   workspace,
 } from "vscode";
 
-import { CodeQLExtensionInterface } from "../../../../src/extension";
 import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { setRemoteControllerRepo } from "../../../../src/config";
+import { getActivatedExtension } from "../../global.helper";
+import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
+import { AllCommands } from "../../../../src/common/commands";
 
 jest.setTimeout(30_000);
 
@@ -30,6 +31,7 @@ async function showQlDocument(name: string): Promise<TextDocument> {
 }
 
 describe("Variant Analysis Submission Integration", () => {
+  const commandManager = createVSCodeCommandManager<AllCommands>();
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let executeCommandSpy: jest.SpiedFunction<typeof commands.executeCommand>;
   let showErrorMessageSpy: jest.SpiedFunction<typeof window.showErrorMessage>;
@@ -55,11 +57,7 @@ describe("Variant Analysis Submission Integration", () => {
       .spyOn(window, "showErrorMessage")
       .mockResolvedValue(undefined);
 
-    await extensions
-      .getExtension<CodeQLExtensionInterface | Record<string, never>>(
-        "GitHub.vscode-codeql",
-      )!
-      .activate();
+    await getActivatedExtension();
   });
 
   describe("Successful scenario", () => {
@@ -73,7 +71,7 @@ describe("Variant Analysis Submission Integration", () => {
       // Select target language for your query
       quickPickSpy.mockResolvedValueOnce(mockedQuickPickItem("javascript"));
 
-      await commands.executeCommand("codeQL.runVariantAnalysis");
+      await commandManager.execute("codeQL.runVariantAnalysis");
 
       expect(executeCommandSpy).toHaveBeenCalledWith(
         "codeQL.openVariantAnalysisView",
@@ -90,7 +88,7 @@ describe("Variant Analysis Submission Integration", () => {
     it("shows the error message", async () => {
       await showQlDocument("query.ql");
 
-      await commands.executeCommand("codeQL.runVariantAnalysis");
+      await commandManager.execute("codeQL.runVariantAnalysis");
 
       expect(showErrorMessageSpy).toHaveBeenCalledWith(
         expect.stringContaining(
@@ -112,7 +110,7 @@ describe("Variant Analysis Submission Integration", () => {
       // Select target language for your query
       quickPickSpy.mockResolvedValueOnce(mockedQuickPickItem("javascript"));
 
-      await commands.executeCommand("codeQL.runVariantAnalysis");
+      await commandManager.execute("codeQL.runVariantAnalysis");
 
       expect(showErrorMessageSpy).toHaveBeenCalledWith(
         expect.stringContaining(

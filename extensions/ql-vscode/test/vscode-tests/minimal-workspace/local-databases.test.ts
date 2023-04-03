@@ -5,6 +5,7 @@ import { CancellationToken, ExtensionContext, Uri, workspace } from "vscode";
 
 import {
   DatabaseContents,
+  DatabaseContentsWithDbScheme,
   DatabaseEventKind,
   DatabaseItemImpl,
   DatabaseManager,
@@ -687,7 +688,7 @@ describe("local databases", () => {
 
       resolveDatabaseContentsSpy = jest
         .spyOn(DatabaseResolver, "resolveDatabaseContents")
-        .mockResolvedValue({} as DatabaseContents);
+        .mockResolvedValue({} as DatabaseContentsWithDbScheme);
 
       addDatabaseSourceArchiveFolderSpy = jest.spyOn(
         databaseManager,

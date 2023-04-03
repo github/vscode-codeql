@@ -6,7 +6,7 @@ import {
   writeFile,
   opendir,
 } from "fs-extra";
-import { promise as glob } from "glob-promise";
+import { glob } from "glob";
 import { load } from "js-yaml";
 import { join, basename } from "path";
 import { dirSync } from "tmp-promise";
@@ -304,7 +304,7 @@ export async function prepareCodeTour(
         return;
       }
 
-      const tutorialWorkspaceUri = Uri.parse(tutorialWorkspacePath);
+      const tutorialWorkspaceUri = Uri.file(tutorialWorkspacePath);
 
       void extLogger.log(
         `In prepareCodeTour() method, going to open the tutorial workspace file: ${tutorialWorkspacePath}`,
@@ -515,7 +515,9 @@ export async function getQlPackForDbscheme(
 export async function getPrimaryDbscheme(
   datasetFolder: string,
 ): Promise<string> {
-  const dbschemes = await glob(join(datasetFolder, "*.dbscheme"));
+  const dbschemes = await glob("*.dbscheme", {
+    cwd: datasetFolder,
+  });
 
   if (dbschemes.length < 1) {
     throw new Error(
@@ -752,7 +754,7 @@ export async function tryGetQueryMetadata(
  * Creates a file in the query directory that indicates when this query was created.
  * This is important for keeping track of when queries should be removed.
  *
- * @param queryPath The directory that will containt all files relevant to a query result.
+ * @param queryPath The directory that will contain all files relevant to a query result.
  * It does not need to exist.
  */
 export async function createTimestampFile(storagePath: string) {

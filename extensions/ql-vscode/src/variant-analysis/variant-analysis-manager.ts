@@ -6,7 +6,6 @@ import {
 } from "./gh-api/gh-api-client";
 import {
   CancellationToken,
-  commands,
   env,
   EventEmitter,
   ExtensionContext,
@@ -116,6 +115,7 @@ export class VariantAnalysisManager
     super();
     this.variantAnalysisMonitor = this.push(
       new VariantAnalysisMonitor(
+        app,
         this.shouldCancelMonitorVariantAnalysis.bind(this),
       ),
     );
@@ -239,11 +239,11 @@ export class VariantAnalysisManager
       `Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`,
     );
 
-    void commands.executeCommand(
+    void this.app.commands.execute(
       "codeQL.openVariantAnalysisView",
       processedVariantAnalysis.id,
     );
-    void commands.executeCommand(
+    void this.app.commands.execute(
       "codeQL.monitorVariantAnalysis",
       processedVariantAnalysis,
     );
@@ -273,7 +273,7 @@ export class VariantAnalysisManager
           this.makeResultDownloadChecker(variantAnalysis),
         ))
       ) {
-        void commands.executeCommand(
+        void this.app.commands.execute(
           "codeQL.monitorVariantAnalysis",
           variantAnalysis,
         );
@@ -317,7 +317,9 @@ export class VariantAnalysisManager
     }
     if (!this.views.has(variantAnalysisId)) {
       // The view will register itself with the manager, so we don't need to do anything here.
-      this.track(new VariantAnalysisView(this.ctx, variantAnalysisId, this));
+      this.track(
+        new VariantAnalysisView(this.ctx, this.app, variantAnalysisId, this),
+      );
     }
 
     const variantAnalysisView = this.views.get(variantAnalysisId)!;
@@ -502,10 +504,7 @@ export class VariantAnalysisManager
   public async monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
-    await this.variantAnalysisMonitor.monitorVariantAnalysis(
-      variantAnalysis,
-      this.app.credentials,
-    );
+    await this.variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
   }
 
   public async autoDownloadVariantAnalysisResult(
@@ -641,7 +640,7 @@ export class VariantAnalysisManager
 
     const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(variantAnalysis);
 
-    await commands.executeCommand(
+    await this.app.commands.execute(
       "vscode.open",
       Uri.parse(actionsWorkflowRunUrl),
     );
@@ -689,6 +688,7 @@ export class VariantAnalysisManager
       this,
       variantAnalysisId,
       filterSort,
+      this.app.commands,
       this.app.credentials,
     );
   }

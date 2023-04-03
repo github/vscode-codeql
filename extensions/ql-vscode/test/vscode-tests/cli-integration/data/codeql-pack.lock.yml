@@ -1,4 +1,10 @@
 ---
-dependencies: {}
-compiled: false
 lockVersion: 1.0.0
+dependencies:
+  codeql-javascript:
+    version: 0.5.1
+  codeql/regex:
+    version: 0.0.9
+  codeql/tutorial:
+    version: 0.0.6
+compiled: false

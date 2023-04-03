@@ -1,4 +1,4 @@
-import { commands, ExtensionContext, ViewColumn } from "vscode";
+import { ExtensionContext, ViewColumn } from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import { extLogger } from "../common";
 import {
@@ -23,6 +23,7 @@ import { telemetryListener } from "../telemetry";
 import { redactableError } from "../pure/errors";
 import { DataFlowPathsView } from "./data-flow-paths-view";
 import { DataFlowPaths } from "./shared/data-flow-paths";
+import { App } from "../common/app";
 
 export class VariantAnalysisView
   extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage>
@@ -33,6 +34,7 @@ export class VariantAnalysisView
 
   public constructor(
     ctx: ExtensionContext,
+    private readonly app: App,
     public readonly variantAnalysisId: number,
     private readonly manager: VariantAnalysisViewManager<VariantAnalysisView>,
   ) {
@@ -118,7 +120,7 @@ export class VariantAnalysisView
         await this.manager.cancelVariantAnalysis(this.variantAnalysisId);
         break;
       case "requestRepositoryResults":
-        void commands.executeCommand(
+        void this.app.commands.execute(
           "codeQL.loadVariantAnalysisRepoResults",
           this.variantAnalysisId,
           msg.repositoryFullName,
@@ -131,7 +133,7 @@ export class VariantAnalysisView
         await this.manager.openQueryText(this.variantAnalysisId);
         break;
       case "copyRepositoryList":
-        void commands.executeCommand(
+        void this.app.commands.execute(
           "codeQL.copyVariantAnalysisRepoList",
           this.variantAnalysisId,
           msg.filterSort,

@@ -3,8 +3,9 @@ import { readFileSync } from "fs-extra";
 import AstBuilder from "../../../../src/contextual/astBuilder";
 import { CodeQLCliServer } from "../../../../src/cli";
 import { Uri } from "vscode";
-import { QueryWithResults } from "../../../../src/run-queries-shared";
+import { QueryOutputDir } from "../../../../src/run-queries-shared";
 import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
+import path from "path";
 
 /**
  *
@@ -52,11 +53,12 @@ describe("AstBuilder", () => {
     const astBuilder = createAstBuilder();
     const roots = await astBuilder.getRoots();
 
+    const bqrsPath = path.normalize("/a/b/c/results.bqrs");
     const options = { entities: ["id", "url", "string"] };
-    expect(mockCli.bqrsDecode).toBeCalledWith("/a/b/c", "nodes", options);
-    expect(mockCli.bqrsDecode).toBeCalledWith("/a/b/c", "edges", options);
+    expect(mockCli.bqrsDecode).toBeCalledWith(bqrsPath, "nodes", options);
+    expect(mockCli.bqrsDecode).toBeCalledWith(bqrsPath, "edges", options);
     expect(mockCli.bqrsDecode).toBeCalledWith(
-      "/a/b/c",
+      bqrsPath,
       "graphProperties",
       options,
     );
@@ -137,13 +139,7 @@ describe("AstBuilder", () => {
 
   function createAstBuilder() {
     return new AstBuilder(
-      {
-        query: {
-          resultsPaths: {
-            resultsPath: "/a/b/c",
-          },
-        },
-      } as QueryWithResults,
+      new QueryOutputDir("/a/b/c"),
       mockCli,
       mockDatabaseItem({
         resolveSourceFile: undefined,

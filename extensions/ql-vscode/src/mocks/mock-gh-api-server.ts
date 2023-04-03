@@ -1,6 +1,6 @@
 import { join, resolve } from "path";
 import { pathExists } from "fs-extra";
-import { setupServer, SetupServerApi } from "msw/node";
+import { setupServer, SetupServer } from "msw/node";
 
 import { DisposableObject } from "../pure/disposable-object";
 
@@ -14,7 +14,7 @@ import { getDirectoryNamesInsidePath } from "../pure/files";
 export class MockGitHubApiServer extends DisposableObject {
   private _isListening: boolean;
 
-  private readonly server: SetupServerApi;
+  private readonly server: SetupServer;
   private readonly recorder: Recorder;
 
   constructor() {

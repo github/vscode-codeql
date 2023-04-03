@@ -115,10 +115,7 @@ import {
   QueryServerCommands,
   TestUICommands,
 } from "./common/commands";
-import {
-  getLocalQueryCommands,
-  showResultsForCompletedQuery,
-} from "./local-queries";
+import { LocalQueries } from "./local-queries";
 import { getAstCfgCommands } from "./ast-cfg-commands";
 import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
@@ -161,6 +158,7 @@ function getCommands(
   app: App,
   cliServer: CodeQLCliServer,
   queryRunner: QueryRunner,
+  ideServer: LanguageClient,
 ): BaseCommands {
   const getCliVersion = async () => {
     try {
@@ -177,9 +175,12 @@ function getCommands(
     "codeQL.restartQueryServer": async () =>
       withProgress(
         async (progress: ProgressCallback, token: CancellationToken) => {
-          // We restart the CLI server too, to ensure they are the same version
+          // Restart all of the spawned servers: cli, query, and language.
           cliServer.restartCliServer();
-          await queryRunner.restartQueryServer(progress, token);
+          await Promise.all([
+            queryRunner.restartQueryServer(progress, token),
+            ideServer.restart(),
+          ]);
           void showAndLogInformationMessage("CodeQL Query Server restarted.", {
             outputLogger: queryServerLogger,
           });
@@ -256,6 +257,7 @@ export interface CodeQLExtensionInterface {
   readonly distributionManager: DistributionManager;
   readonly databaseManager: DatabaseManager;
   readonly databaseUI: DatabaseUI;
+  readonly localQueries: LocalQueries;
   readonly variantAnalysisManager: VariantAnalysisManager;
   readonly dispose: () => void;
 }
@@ -289,7 +291,7 @@ const MIN_VERSION = "1.67.0";
  */
 export async function activate(
   ctx: ExtensionContext,
-): Promise<CodeQLExtensionInterface | Record<string, never>> {
+): Promise<CodeQLExtensionInterface | undefined> {
   void extLogger.log(`Starting ${extensionId} extension`);
   if (extension === undefined) {
     throw new Error(`Can't find extension ${extensionId}`);
@@ -358,7 +360,10 @@ export async function activate(
     ),
   );
 
-  const variantAnalysisViewSerializer = new VariantAnalysisViewSerializer(ctx);
+  const variantAnalysisViewSerializer = new VariantAnalysisViewSerializer(
+    ctx,
+    app,
+  );
   Window.registerWebviewPanelSerializer(
     VariantAnalysisView.viewType,
     variantAnalysisViewSerializer,
@@ -379,9 +384,11 @@ export async function activate(
     },
   );
 
-  variantAnalysisViewSerializer.onExtensionLoaded(
-    codeQlExtension.variantAnalysisManager,
-  );
+  if (codeQlExtension !== undefined) {
+    variantAnalysisViewSerializer.onExtensionLoaded(
+      codeQlExtension.variantAnalysisManager,
+    );
+  }
 
   return codeQlExtension;
 }
@@ -571,7 +578,7 @@ async function installOrUpdateThenTryActivate(
   distributionManager: DistributionManager,
   distributionConfigListener: DistributionConfigListener,
   config: DistributionUpdateConfig,
-): Promise<CodeQLExtensionInterface | Record<string, never>> {
+): Promise<CodeQLExtensionInterface | undefined> {
   await installOrUpdateDistribution(ctx, app, distributionManager, config);
 
   try {
@@ -585,20 +592,19 @@ async function installOrUpdateThenTryActivate(
   // Display the warnings even if the extension has already activated.
   const distributionResult =
     await getDistributionDisplayingDistributionWarnings(distributionManager);
-  let extensionInterface: CodeQLExtensionInterface | Record<string, never> = {};
   if (
     !beganMainExtensionActivation &&
     distributionResult.kind !== FindDistributionResultKind.NoDistribution
   ) {
-    extensionInterface = await activateWithInstalledDistribution(
+    return await activateWithInstalledDistribution(
       ctx,
       app,
       distributionManager,
       distributionConfigListener,
     );
-  } else if (
-    distributionResult.kind === FindDistributionResultKind.NoDistribution
-  ) {
+  }
+
+  if (distributionResult.kind === FindDistributionResultKind.NoDistribution) {
     registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
       const installActionName = "Install CodeQL CLI";
       const chosenAction = await showAndLogErrorMessage(
@@ -622,7 +628,7 @@ async function installOrUpdateThenTryActivate(
       }
     });
   }
-  return extensionInterface;
+  return undefined;
 }
 
 const PACK_GLOBS = [
@@ -708,12 +714,6 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Initializing query history manager.");
   const queryHistoryConfigurationListener = new QueryHistoryConfigListener();
   ctx.subscriptions.push(queryHistoryConfigurationListener);
-  const showResults = async (item: CompletedLocalQueryInfo) =>
-    showResultsForCompletedQuery(
-      localQueryResultsView,
-      item,
-      WebviewReveal.Forced,
-    );
   const queryStorageDir = join(ctx.globalStorageUri.fsPath, "queries");
   await ensureDir(queryStorageDir);
 
@@ -787,8 +787,10 @@ async function activateWithInstalledDistribution(
     ctx,
     queryHistoryConfigurationListener,
     labelProvider,
-    async (from: CompletedLocalQueryInfo, to: CompletedLocalQueryInfo) =>
-      showResultsForComparison(compareView, from, to),
+    async (
+      from: CompletedLocalQueryInfo,
+      to: CompletedLocalQueryInfo,
+    ): Promise<void> => showResultsForComparison(compareView, from, to),
   );
 
   ctx.subscriptions.push(qhm);
@@ -809,7 +811,8 @@ async function activateWithInstalledDistribution(
     cliServer,
     queryServerLogger,
     labelProvider,
-    showResults,
+    async (item: CompletedLocalQueryInfo) =>
+      localQueries.showResultsForCompletedQuery(item, WebviewReveal.Forced),
   );
   ctx.subscriptions.push(compareView);
 
@@ -845,6 +848,18 @@ async function activateWithInstalledDistribution(
     true,
   );
 
+  const localQueries = new LocalQueries(
+    app,
+    qs,
+    qhm,
+    dbm,
+    cliServer,
+    databaseUI,
+    localQueryResultsView,
+    queryStorageDir,
+  );
+  ctx.subscriptions.push(localQueries);
+
   void extLogger.log("Initializing QLTest interface.");
   const testExplorerExtension = extensions.getExtension<TestHub>(
     testExplorerExtensionId,
@@ -876,16 +891,16 @@ async function activateWithInstalledDistribution(
 
   ctx.subscriptions.push(astViewer);
 
-  const summaryLanguageSupport = new SummaryLanguageSupport();
+  const summaryLanguageSupport = new SummaryLanguageSupport(app);
   ctx.subscriptions.push(summaryLanguageSupport);
 
-  const mockServer = new VSCodeMockGitHubApiServer(ctx);
+  const mockServer = new VSCodeMockGitHubApiServer(app);
   ctx.subscriptions.push(mockServer);
 
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllExtensionCommands = {
-    ...getCommands(app, cliServer, qs),
+    ...getCommands(app, cliServer, qs, client),
     ...getQueryEditorCommands({
       commandManager: app.commands,
       queryRunner: qs,
@@ -898,11 +913,7 @@ async function activateWithInstalledDistribution(
     ...databaseUI.getCommands(),
     ...dbModule.getCommands(),
     ...getAstCfgCommands({
-      queryRunner: qs,
-      queryHistoryManager: qhm,
-      databaseUI,
-      localQueryResultsView,
-      queryStorageDir,
+      localQueries,
       astViewer,
       astTemplateProvider,
       cfgTemplateProvider,
@@ -922,16 +933,7 @@ async function activateWithInstalledDistribution(
   }
 
   const queryServerCommands: QueryServerCommands = {
-    ...getLocalQueryCommands({
-      app,
-      queryRunner: qs,
-      queryHistoryManager: qhm,
-      databaseManager: dbm,
-      cliServer,
-      databaseUI,
-      localQueryResultsView,
-      queryStorageDir,
-    }),
+    ...localQueries.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(queryServerCommands)) {
@@ -981,6 +983,7 @@ async function activateWithInstalledDistribution(
   return {
     ctx,
     cliServer,
+    localQueries,
     qs,
     distributionManager,
     databaseManager: dbm,
@@ -1074,6 +1077,7 @@ async function createQueryServer(
     );
   if (await cliServer.cliConstraints.supportsNewQueryServer()) {
     const qs = new QueryServerClient(
+      app,
       qlConfigurationListener,
       cliServer,
       qsOpts,

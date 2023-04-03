@@ -4,7 +4,7 @@ import { DatabaseItem } from "../local-databases";
 import { ChildAstItem, AstItem } from "../astViewer";
 import fileRangeFromURI from "./fileRangeFromURI";
 import { Uri } from "vscode";
-import { QueryWithResults } from "../run-queries-shared";
+import { QueryOutputDir } from "../run-queries-shared";
 
 /**
  * A class that wraps a tree of QL results from a query that
@@ -14,12 +14,12 @@ export default class AstBuilder {
   private roots: AstItem[] | undefined;
   private bqrsPath: string;
   constructor(
-    queryResults: QueryWithResults,
+    outputDir: QueryOutputDir,
     private cli: CodeQLCliServer,
     public db: DatabaseItem,
     public fileName: Uri,
   ) {
-    this.bqrsPath = queryResults.query.resultsPaths.resultsPath;
+    this.bqrsPath = outputDir.bqrsPath;
   }
 
   async getRoots(): Promise<AstItem[]> {

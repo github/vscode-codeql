@@ -1,10 +1,12 @@
 import { join } from "path";
 import { load, dump } from "js-yaml";
 import { realpathSync, readFileSync, writeFileSync } from "fs-extra";
-import { commands } from "vscode";
+import { CancellationToken, extensions } from "vscode";
 import { DatabaseManager } from "../../src/local-databases";
 import { CodeQLCliServer } from "../../src/cli";
 import { removeWorkspaceRefs } from "../../src/variant-analysis/run-remote-query";
+import { CodeQLExtensionInterface } from "../../src/extension";
+import { ProgressCallback } from "../../src/progress";
 
 // This file contains helpers shared between tests that work with an activated extension.
 
@@ -23,10 +25,23 @@ export function setStoragePath(path: string) {
   storagePath = path;
 }
 
-export async function cleanDatabases(databaseManager: DatabaseManager) {
-  for (const item of databaseManager.databaseItems) {
-    await commands.executeCommand("codeQLDatabases.removeDatabase", item);
+export async function getActivatedExtension(): Promise<CodeQLExtensionInterface> {
+  const extension = await extensions
+    .getExtension<CodeQLExtensionInterface | undefined>("GitHub.vscode-codeql")
+    ?.activate();
+  if (extension === undefined) {
+    throw new Error(
+      "Unable to active CodeQL extension. Make sure cli is downloaded and installed properly.",
+    );
   }
+  return extension;
+}
+
+export async function cleanDatabases(databaseManager: DatabaseManager) {
+  await databaseManager.removeAllDatabases(
+    {} as ProgressCallback,
+    {} as CancellationToken,
+  );
 }
 
 /**
