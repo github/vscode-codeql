@@ -114,7 +114,7 @@ export type WebviewView =
   | "compare"
   | "variant-analysis"
   | "data-flow-paths"
-  | "external-api";
+  | "data-extensions-editor";
 
 export interface WebviewMessage {
   t: string;

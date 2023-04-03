@@ -54,11 +54,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
     return {
-      viewId: "external-api-view",
-      title: "External API usage",
+      viewId: "data-extensions-editor",
+      title: "Data Extensions Editor",
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
-      view: "external-api",
+      view: "data-extensions-editor",
     };
   }
 
