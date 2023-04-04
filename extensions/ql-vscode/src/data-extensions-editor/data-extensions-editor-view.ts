@@ -18,9 +18,13 @@ import { file } from "tmp-promise";
 import { readFile, writeFile } from "fs-extra";
 import { dump, load } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../helpers";
-import { DatabaseItem } from "../local-databases";
+import { DatabaseItem, DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
-import { assertNever } from "../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { generateFlowModel } from "./generate-flow-model";
+import { ModeledMethod } from "./interface";
+import { promptImportGithubDatabase } from "../databaseFetcher";
+import { App } from "../common/app";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -28,6 +32,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
 > {
   public constructor(
     ctx: ExtensionContext,
+    private readonly app: App,
+    private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
     private readonly queryStorageDir: string,
@@ -68,6 +74,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
       case "applyDataExtensionYaml":
         await this.saveYaml(msg.yaml);
         await this.loadExternalApiUsages();
+
+        break;
+      case "generateExternalApi":
+        await this.generateExternalApi();
 
         break;
       default:
@@ -145,6 +155,84 @@ export class DataExtensionsEditorView extends AbstractWebview<
       t: "setExternalApiRepoResults",
       results,
     });
+
+    await this.clearProgress();
+  }
+
+  protected async generateExternalApi(): Promise<void> {
+    const tokenSource = new CancellationTokenSource();
+
+    const selectedDatabase = this.databaseManager.currentDatabaseItem;
+
+    const database = await promptImportGithubDatabase(
+      this.app.commands,
+      this.databaseManager,
+      this.app.workspaceStoragePath ?? this.app.globalStoragePath,
+      this.app.credentials,
+      (update) => this.showProgress(update),
+      tokenSource.token,
+      this.cliServer,
+    );
+    if (!database) {
+      await this.clearProgress();
+      void extLogger.log("No database chosen");
+
+      return;
+    }
+
+    await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
+
+    const workspaceFolder = workspace.workspaceFolders?.find(
+      (folder) => folder.name === "ql",
+    );
+    if (!workspaceFolder) {
+      void extLogger.log("No workspace folder 'ql' found");
+
+      return;
+    }
+
+    await this.showProgress({
+      step: 0,
+      maxStep: 4000,
+      message: "Generating external API",
+    });
+
+    try {
+      await generateFlowModel(
+        this.cliServer,
+        this.queryRunner,
+        this.queryStorageDir,
+        workspaceFolder.uri.fsPath,
+        database,
+        async (results) => {
+          const modeledMethodsByName: Record<string, ModeledMethod> = {};
+
+          for (const result of results) {
+            modeledMethodsByName[result[0]] = result[1];
+          }
+
+          await this.postMessage({
+            t: "addModeledMethods",
+            modeledMethods: modeledMethodsByName,
+          });
+        },
+        (update) => this.showProgress(update),
+        tokenSource.token,
+      );
+    } catch (e: unknown) {
+      void extLogger.log(`Error: ${getErrorMessage(e)}`);
+    }
+
+    await this.databaseManager.removeDatabaseItem(
+      () =>
+        this.showProgress({
+          step: 3900,
+          maxStep: 4000,
+          message: "Removing temporary database",
+        }),
+      tokenSource.token,
+      database,
+    );
 
     await this.clearProgress();
   }

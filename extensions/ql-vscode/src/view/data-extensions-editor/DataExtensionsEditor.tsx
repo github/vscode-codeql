@@ -75,6 +75,20 @@ export function DataExtensionsEditor(): JSX.Element {
             });
 
             break;
+          case "addModeledMethods":
+            setModeledMethods((oldModeledMethods) => {
+              const filteredOldModeledMethods = Object.fromEntries(
+                Object.entries(oldModeledMethods).filter(
+                  ([, value]) => value.type !== "none",
+                ),
+              );
+
+              return {
+                ...msg.modeledMethods,
+                ...filteredOldModeledMethods,
+              };
+            });
+            break;
           default:
             assertNever(msg);
         }
@@ -168,6 +182,12 @@ export function DataExtensionsEditor(): JSX.Element {
     });
   }, [methods, modeledMethods]);
 
+  const onGenerateClick = useCallback(() => {
+    vscode.postMessage({
+      t: "generateExternalApi",
+    });
+  }, []);
+
   return (
     <DataExtensionsEditorContainer>
       {progress.maxStep > 0 && (
@@ -189,6 +209,12 @@ export function DataExtensionsEditor(): JSX.Element {
           <div>
             <h3>External API modelling</h3>
             <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+            &nbsp;
+            <VSCodeButton onClick={onGenerateClick}>
+              Download and generate
+            </VSCodeButton>
+            <br />
+            <br />
             <VSCodeDataGrid>
               <VSCodeDataGridRow rowType="header">
                 <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>

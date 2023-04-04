@@ -868,6 +868,7 @@ async function activateWithInstalledDistribution(
   await ensureDir(dataExtensionsEditorQueryStorageDir);
   const dataExtensionsEditorModule = new DataExtensionsEditorModule(
     ctx,
+    app,
     dbm,
     cliServer,
     qs,

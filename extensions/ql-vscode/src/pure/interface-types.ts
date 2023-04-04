@@ -15,6 +15,7 @@ import {
 import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
 import { ErrorLike } from "./errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
+import { ModeledMethod } from "../data-extensions-editor/interface";
 
 /**
  * This module contains types and code that are shared between
@@ -497,16 +498,27 @@ export interface SetExistingYamlDataMessage {
   data: any;
 }
 
+export interface AddModeledMethodsMessage {
+  t: "addModeledMethods";
+  modeledMethods: Record<string, ModeledMethod>;
+}
+
 export interface ApplyDataExtensionYamlMessage {
   t: "applyDataExtensionYaml";
   yaml: string;
 }
 
+export interface GenerateExternalApiMessage {
+  t: "generateExternalApi";
+}
+
 export type ToDataExtensionsEditorMessage =
   | SetExternalApiResultsMessage
   | ShowProgressMessage
-  | SetExistingYamlDataMessage;
+  | SetExistingYamlDataMessage
+  | AddModeledMethodsMessage;
 
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
-  | ApplyDataExtensionYamlMessage;
+  | ApplyDataExtensionYamlMessage
+  | GenerateExternalApiMessage;
