@@ -241,6 +241,10 @@ export type PackagingCommands = {
   "codeQL.downloadPacks": () => Promise<void>;
 };
 
+export type DataExtensionsEditorCommands = {
+  "codeQL.openDataExtensionsEditor": () => Promise<void>;
+};
+
 export type EvalLogViewerCommands = {
   "codeQLEvalLogViewer.clear": () => Promise<void>;
 };
@@ -273,6 +277,7 @@ export type AllExtensionCommands = BaseCommands &
   AstCfgCommands &
   AstViewerCommands &
   PackagingCommands &
+  DataExtensionsEditorCommands &
   EvalLogViewerCommands &
   SummaryLanguageSupportCommands &
   Partial<TestUICommands> &
