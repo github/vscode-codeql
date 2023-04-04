@@ -15,8 +15,8 @@ import { extLogger, TeeLogger } from "../common";
 import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
 import { qlpackOfDatabase } from "../contextual/queryResolver";
 import { file } from "tmp-promise";
-import { writeFile } from "fs-extra";
-import { dump } from "js-yaml";
+import { readFile, writeFile } from "fs-extra";
+import { dump, load } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../helpers";
 import { DatabaseItem } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
@@ -78,7 +78,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
   protected async onWebViewLoaded() {
     super.onWebViewLoaded();
 
-    await this.loadExternalApiUsages();
+    await Promise.all([this.loadExternalApiUsages(), this.readExistingYaml()]);
   }
 
   protected async saveYaml(yaml: string): Promise<void> {
@@ -90,6 +90,28 @@ export class DataExtensionsEditorView extends AbstractWebview<
     await writeFile(modelFilename, yaml);
 
     void extLogger.log(`Saved data extension YAML to ${modelFilename}`);
+  }
+
+  protected async readExistingYaml(): Promise<void> {
+    const modelFilename = this.modelFileName;
+    if (!modelFilename) {
+      return;
+    }
+
+    try {
+      const yaml = await readFile(modelFilename, "utf8");
+
+      const data = load(yaml, {
+        filename: modelFilename,
+      });
+
+      await this.postMessage({
+        t: "setExistingYamlData",
+        data,
+      });
+    } catch (e: unknown) {
+      void extLogger.log(`Unable to read data extension YAML: ${e}`);
+    }
   }
 
   protected async loadExternalApiUsages(): Promise<void> {

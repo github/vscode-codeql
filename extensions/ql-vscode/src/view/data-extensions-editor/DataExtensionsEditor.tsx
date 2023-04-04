@@ -20,7 +20,10 @@ import {
 import { MethodRow } from "./MethodRow";
 import { assertNever } from "../../pure/helpers-pure";
 import { vscode } from "../vscode-api";
-import { createDataExtensionYaml } from "../../data-extensions-editor/yaml";
+import {
+  createDataExtensionYaml,
+  loadDataExtensionYaml,
+} from "../../data-extensions-editor/yaml";
 
 export const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -60,6 +63,17 @@ export function DataExtensionsEditor(): JSX.Element {
             break;
           case "showProgress":
             setProgress(msg);
+            break;
+          case "setExistingYamlData":
+            setModeledMethods((oldModeledMethods) => {
+              const existingModeledMethods = loadDataExtensionYaml(msg.data);
+
+              return {
+                ...existingModeledMethods,
+                ...oldModeledMethods,
+              };
+            });
+
             break;
           default:
             assertNever(msg);
