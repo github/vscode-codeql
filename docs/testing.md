@@ -18,6 +18,7 @@ Any test data you're using (sample projects, config files, etc.) must go in a `t
 ## Running the tests
 
 Pre-requisites:
+
 1. Run `npm run build`.
 2. You will need to have `npm run watch` running in the background.
 
@@ -51,6 +52,7 @@ You will need to run tests using a task from inside of VS Code, under the "Run a
 * View Tests: run the _Launch Unit Tests_ task
 * VSCode integration tests: run the _Launch Unit Tests - No Workspace_ and _Launch Unit Tests - Minimal Workspace_ tasks
 
+<!-- markdownlint-disable-next-line MD024 -->
 #### CLI integration tests
 
 The CLI integration tests require the CodeQL standard libraries in order to run so you will need to clone a local copy of the `github/codeql` repository.
@@ -63,6 +65,7 @@ The CLI integration tests require the CodeQL standard libraries in order to run 
 
 ## Running a single test
 
+<!-- markdownlint-disable-next-line MD024 -->
 ### 1. From the terminal
 
 The easiest way to run a single test is to change the `it` of the test to `it.only` and then run the test command with some additional options
@@ -78,6 +81,7 @@ You can also use the `--testNamePattern` option to run a specific test within a 
 npm run test:cli-integration -- --runTestsByPath test/vscode-tests/cli-integration/run-queries.test.ts --testNamePattern "should create a QueryEvaluationInfo"
 ```
 
+<!-- markdownlint-disable-next-line MD024 -->
 ### 2. From VSCode
 
 Alternatively, you can run a single test inside VSCode. To do so, install the [Jest Runner](https://marketplace.visualstudio.com/items?itemName=firsttris.vscode-jest-runner) extension. Then,
@@ -94,7 +98,9 @@ Multi-Repo Variant Analyses (MRVA) rely on the GitHub API. In order to make deve
 ### Using a pre-recorded test scenario
 
 To run a mock MRVA scenario, follow these steps:
+
 1. Enable the mock GitHub API server by adding the following in your VS Code user settings (which can be found by running the `Preferences: Open User Settings (JSON)` VS Code command):
+
 ```json
 "codeQL.mockGitHubApiServer": {
   "enabled": true
@@ -108,9 +114,11 @@ To run a mock MRVA scenario, follow these steps:
 If you want to replay the same scenario you should unload and reload it so requests are replayed from the start.
 
 ### Recording a new test scenario
+
 To record a new mock MRVA scenario, follow these steps:
 
 1. Enable the mock GitHub API server by adding the following in your VS Code user settings (which can be found by running the `Preferences: Open User Settings (JSON)` VS Code command):
+
 ```json
 "codeQL.mockGitHubApiServer": {
   "enabled": true
