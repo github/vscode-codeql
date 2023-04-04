@@ -22,7 +22,7 @@
     * Create a PR for this branch.
     * Wait for the PR to be merged into `main`
 1. Switch to `main` branch and pull latest changes
-1. Lock the `main` branch. 
+1. Lock the `main` branch.
     * Go to the [branch protection rules for the `main` branch](https://github.com/github/vscode-codeql/settings/branch_protection_rules/16447115)
     * Select "Lock branch"
     * Click "Save changes"
@@ -30,15 +30,18 @@
 1. Build the extension `npm run build` and install it on your VS Code using "Install from VSIX".
 1. Go through [our test plan](./test-plan.md) to ensure that the extension is working as expected.
 1. Switch to `main` and add a new tag on the `main` branch with your new version (named after the release), e.g.
+
     ```bash
     git checkout main
     git tag v1.3.6
     ```
 
    If you've accidentally created a badly named tag, you can delete it via
-    ```bash
-    git tag -d badly-named-tag
-    ```
+
+   ```bash
+   git tag -d badly-named-tag
+   ```
+
 1. Unlock the main branch
     * Go to the [branch protection rules for the `main` branch](https://github.com/github/vscode-codeql/settings/branch_protection_rules/16447115)
     * Deselect "Lock branch"
@@ -68,7 +71,7 @@
    or look at the source if there's any doubt the right code is being shipped.
 1. Install the `.vsix` file into your vscode IDE and ensure the extension can load properly. Run a single command (like run query, or add database).
 1. Go to the actions tab of the vscode-codeql repository and select the [Release workflow](https://github.com/github/vscode-codeql/actions?query=workflow%3ARelease).
-    - If there is an authentication failure when publishing, be sure to check that the authentication keys haven't expired. See below.
+    * If there is an authentication failure when publishing, be sure to check that the authentication keys haven't expired. See below.
 1. Approve the deployments of the correct Release workflow. This will automatically publish to Open VSX and VS Code Marketplace.
 1. Go to the draft GitHub release in [the releases tab of the repository](https://github.com/github/vscode-codeql/releases), click 'Edit', add some summary description, and publish it.
 1. Confirm the new release is marked as the latest release at <https://github.com/github/vscode-codeql/releases>.
