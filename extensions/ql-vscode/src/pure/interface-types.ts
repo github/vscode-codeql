@@ -478,3 +478,7 @@ export interface SetDataFlowPathsMessage {
 export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
 
 export type FromDataFlowPathsMessage = CommonFromViewMessages;
+
+export type ToDataExtensionsEditorMessage = never;
+
+export type FromDataExtensionsEditorMessage = ViewLoadedMsg;

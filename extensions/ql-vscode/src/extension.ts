@@ -120,6 +120,7 @@ import { getAstCfgCommands } from "./ast-cfg-commands";
 import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
+import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extensions-editor-module";
 
 /**
  * extension.ts
@@ -860,6 +861,8 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(localQueries);
 
+  const dataExtensionsEditorModule = new DataExtensionsEditorModule(ctx);
+
   void extLogger.log("Initializing QLTest interface.");
   const testExplorerExtension = extensions.getExtension<TestHub>(
     testExplorerExtensionId,
@@ -922,6 +925,7 @@ async function activateWithInstalledDistribution(
     ...getPackagingCommands({
       cliServer,
     }),
+    ...dataExtensionsEditorModule.getCommands(),
     ...evalLogViewer.getCommands(),
     ...summaryLanguageSupport.getCommands(),
     ...testUiCommands,
