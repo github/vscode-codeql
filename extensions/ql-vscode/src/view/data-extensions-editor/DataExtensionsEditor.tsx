@@ -6,6 +6,7 @@ import {
   ToDataExtensionsEditorMessage,
 } from "../../pure/interface-types";
 import {
+  VSCodeButton,
   VSCodeDataGrid,
   VSCodeDataGridCell,
   VSCodeDataGridRow,
@@ -18,6 +19,8 @@ import {
 } from "../../data-extensions-editor/interface";
 import { MethodRow } from "./MethodRow";
 import { assertNever } from "../../pure/helpers-pure";
+import { vscode } from "../vscode-api";
+import { createDataExtensionYaml } from "../../data-extensions-editor/yaml";
 
 export const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -142,6 +145,15 @@ export function DataExtensionsEditor(): JSX.Element {
     [],
   );
 
+  const onApplyClick = useCallback(() => {
+    const yamlString = createDataExtensionYaml(methods, modeledMethods);
+
+    vscode.postMessage({
+      t: "applyDataExtensionYaml",
+      yaml: yamlString,
+    });
+  }, [methods, modeledMethods]);
+
   return (
     <DataExtensionsEditorContainer>
       {progress.maxStep > 0 && (
@@ -162,6 +174,7 @@ export function DataExtensionsEditor(): JSX.Element {
           </div>
           <div>
             <h3>External API modelling</h3>
+            <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
             <VSCodeDataGrid>
               <VSCodeDataGridRow rowType="header">
                 <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
