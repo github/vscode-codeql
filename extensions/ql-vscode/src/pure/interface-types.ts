@@ -5,6 +5,7 @@ import {
   ResultSetSchema,
   Column,
   ResolvableLocationValue,
+  DecodedBqrsChunk,
 } from "./bqrs-cli-types";
 import {
   VariantAnalysis,
@@ -479,6 +480,20 @@ export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
 
 export type FromDataFlowPathsMessage = CommonFromViewMessages;
 
-export type ToDataExtensionsEditorMessage = never;
+export interface SetExternalApiResultsMessage {
+  t: "setExternalApiRepoResults";
+  results: DecodedBqrsChunk;
+}
+
+export interface ShowProgressMessage {
+  t: "showProgress";
+  step: number;
+  maxStep: number;
+  message: string;
+}
+
+export type ToDataExtensionsEditorMessage =
+  | SetExternalApiResultsMessage
+  | ShowProgressMessage;
 
 export type FromDataExtensionsEditorMessage = ViewLoadedMsg;
