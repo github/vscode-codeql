@@ -492,8 +492,15 @@ export interface ShowProgressMessage {
   message: string;
 }
 
+export interface JumpToUsageMessage {
+  t: "jumpToUsage";
+  location: ResolvableLocationValue;
+}
+
 export type ToDataExtensionsEditorMessage =
   | SetExternalApiResultsMessage
   | ShowProgressMessage;
 
-export type FromDataExtensionsEditorMessage = ViewLoadedMsg;
+export type FromDataExtensionsEditorMessage =
+  | ViewLoadedMsg
+  | JumpToUsageMessage;

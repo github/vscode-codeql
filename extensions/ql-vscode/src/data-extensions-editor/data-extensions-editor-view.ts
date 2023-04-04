@@ -1,4 +1,9 @@
-import { CancellationTokenSource, ExtensionContext, ViewColumn } from "vscode";
+import {
+  CancellationTokenSource,
+  ExtensionContext,
+  ViewColumn,
+  window,
+} from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import {
   FromDataExtensionsEditorMessage,
@@ -14,6 +19,9 @@ import { dump } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../helpers";
 import { DatabaseItem } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
+import { assertNever } from "../pure/helpers-pure";
+import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
+import { showResolvableLocation } from "../interface-utils";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -58,8 +66,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.onWebViewLoaded();
 
         break;
+      case "jumpToUsage":
+        await this.jumpToUsage(msg.location);
+
+        break;
       default:
-        throw new Error("Unexpected message type");
+        assertNever(msg);
     }
   }
 
@@ -67,6 +79,26 @@ export class DataExtensionsEditorView extends AbstractWebview<
     super.onWebViewLoaded();
 
     await this.loadExternalApiUsages();
+  }
+
+  protected async jumpToUsage(
+    location: ResolvableLocationValue,
+  ): Promise<void> {
+    try {
+      await showResolvableLocation(location, this.databaseItem);
+    } catch (e) {
+      if (e instanceof Error) {
+        if (e.message.match(/File not found/)) {
+          void window.showErrorMessage(
+            "Original file of this result is not in the database's source archive.",
+          );
+        } else {
+          void extLogger.log(`Unable to handleMsgFromView: ${e.message}`);
+        }
+      } else {
+        void extLogger.log(`Unable to handleMsgFromView: ${e}`);
+      }
+    }
   }
 
   protected async loadExternalApiUsages(): Promise<void> {

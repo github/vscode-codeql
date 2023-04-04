@@ -12,6 +12,7 @@ import {
 import * as React from "react";
 import { useCallback, useMemo } from "react";
 import styled from "styled-components";
+import { vscode } from "../vscode-api";
 
 const Dropdown = styled(VSCodeDropdown)`
   width: 100%;
@@ -27,6 +28,13 @@ type SupportedUnsupportedSpanProps = {
 
 const SupportedUnsupportedSpan = styled.span<SupportedUnsupportedSpanProps>`
   color: ${(props) => (props.supported ? "green" : "red")};
+`;
+
+const UsagesButton = styled.button`
+  color: var(--vscode-editor-foreground);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
 `;
 
 type Props = {
@@ -105,6 +113,13 @@ export const MethodRow = ({ method, model, onChange }: Props) => {
     [onChange, method, model],
   );
 
+  const jumpToUsage = useCallback(() => {
+    vscode.postMessage({
+      t: "jumpToUsage",
+      location: method.usages[0].url,
+    });
+  }, [method]);
+
   return (
     <VSCodeDataGridRow>
       <VSCodeDataGridCell gridColumn={1}>
@@ -119,7 +134,9 @@ export const MethodRow = ({ method, model, onChange }: Props) => {
         </SupportedUnsupportedSpan>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={3}>
-        {method.usages.length}
+        <UsagesButton onClick={jumpToUsage}>
+          {method.usages.length}
+        </UsagesButton>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={4}>
         {(!method.supported || (model && model?.type !== "none")) && (
