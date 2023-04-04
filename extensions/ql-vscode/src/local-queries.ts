@@ -6,6 +6,7 @@ import {
   Range,
   Uri,
   window,
+  workspace,
 } from "vscode";
 import { BaseLogger, extLogger, Logger, TeeLogger } from "./common";
 import { MAX_QUERIES } from "./config";
@@ -33,14 +34,16 @@ import { ResultsView } from "./interface";
 import { DatabaseItem, DatabaseManager } from "./local-databases";
 import {
   createInitialQueryInfo,
-  determineSelectedQuery,
   EvaluatorLogPaths,
   generateEvalLogSummaries,
+  getQuickEvalContext,
   logEndSummary,
+  promptUserToSaveChanges,
   QueryEvaluationInfo,
   QueryOutputDir,
   QueryWithResults,
   SelectedQuery,
+  validateQueryUri,
 } from "./run-queries-shared";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "./query-results";
 import { WebviewReveal } from "./interface-utils";
@@ -71,6 +74,25 @@ function formatResultMessage(result: CoreQueryResults): string {
     case QueryResultType.OTHER_ERROR:
     default:
       return result.message ? `failed: ${result.message}` : "failed";
+  }
+}
+
+/**
+ * If either the query file or the quickeval file is dirty, give the user the chance to save them.
+ */
+async function promptToSaveQueryIfNeeded(query: SelectedQuery): Promise<void> {
+  // There seems to be no way to ask VS Code to find an existing text document by name, without
+  // automatically opening the document if it is not found.
+  const queryUri = Uri.file(query.queryPath).toString();
+  const quickEvalUri =
+    query.quickEval !== undefined
+      ? Uri.file(query.quickEval.quickEvalPosition.fileName).toString()
+      : undefined;
+  for (const openDocument of workspace.textDocuments) {
+    const documentUri = openDocument.uri.toString();
+    if (documentUri === queryUri || documentUri === quickEvalUri) {
+      await promptUserToSaveChanges(openDocument);
+    }
   }
 }
 
@@ -237,6 +259,7 @@ export class LocalQueries extends DisposableObject {
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
       "codeQL.codeLensQuickEval": this.codeLensQuickEval.bind(this),
       "codeQL.quickQuery": this.quickQuery.bind(this),
+      "codeQL.getCurrentQuery": this.getCurrentQuery.bind(this),
     };
   }
 
@@ -376,6 +399,23 @@ export class LocalQueries extends DisposableObject {
   }
 
   /**
+   * Gets the current active query.
+   *
+   * For now, the "active query" is just whatever query is in the active text editor. Once we have a
+   * propery "queries" panel, we can provide a way to select the current query there.
+   */
+  private async getCurrentQuery(): Promise<string> {
+    const editor = window.activeTextEditor;
+    if (editor === undefined) {
+      throw new Error(
+        "No query was selected. Please select a query and try again.",
+      );
+    }
+
+    return validateQueryUri(editor.document.uri, false);
+  }
+
+  /**
    * Creates a new `LocalQueryRun` object to track a query evaluation. This creates a timestamp
    * file in the query's output directory, creates a `LocalQueryInfo` object, and registers that
    * object with the query history manager.
@@ -445,15 +485,24 @@ export class LocalQueries extends DisposableObject {
     databaseItem: DatabaseItem | undefined,
     range?: Range,
   ): Promise<CoreCompletedQuery> {
-    const selectedQuery = await determineSelectedQuery(
-      queryUri,
-      quickEval,
-      range,
-    );
+    let queryPath: string;
+    if (queryUri !== undefined) {
+      // The query URI is provided by the command, most likely because the command was run from an
+      // editor context menu. Use the provided URI, but make sure it's a valid query.
+      queryPath = validateQueryUri(queryUri, quickEval);
+    } else {
+      // Use the currently selected query.
+      queryPath = await this.getCurrentQuery();
+    }
+
+    const selectedQuery: SelectedQuery = {
+      queryPath,
+      quickEval: quickEval ? await getQuickEvalContext(range) : undefined,
+    };
 
     // If no databaseItem is specified, use the database currently selected in the Databases UI
     databaseItem =
-      databaseItem || (await this.databaseUI.getDatabaseItem(progress, token));
+      databaseItem ?? (await this.databaseUI.getDatabaseItem(progress, token));
     if (databaseItem === undefined) {
       throw new Error("Can't run query without a selected database");
     }
@@ -461,11 +510,13 @@ export class LocalQueries extends DisposableObject {
     const additionalPacks = getOnDiskWorkspaceFolders();
     const extensionPacks = await this.getDefaultExtensionPacks(additionalPacks);
 
+    await promptToSaveQueryIfNeeded(selectedQuery);
+
     const coreQueryRun = this.queryRunner.createQueryRun(
       databaseItem.databaseUri.fsPath,
       {
         queryPath: selectedQuery.queryPath,
-        quickEvalPosition: selectedQuery.quickEvalPosition,
+        quickEvalPosition: selectedQuery.quickEval?.quickEvalPosition,
       },
       true,
       additionalPacks,

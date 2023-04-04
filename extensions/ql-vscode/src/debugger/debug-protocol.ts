@@ -17,6 +17,9 @@ export interface EvaluationStartedEventBody {
   outputDir: string;
 }
 
+/**
+ * Custom event to provide additional information about a running evaluation.
+ */
 export interface EvaluationStartedEvent extends DebugProtocol.Event {
   event: "codeql-evaluation-started";
   body: EvaluationStartedEventBody;
@@ -28,6 +31,9 @@ export interface EvaluationCompletedEventBody {
   evaluationTime: number;
 }
 
+/**
+ * Custom event to provide additional information about a completed evaluation.
+ */
 export interface EvaluationCompletedEvent extends DebugProtocol.Event {
   event: "codeql-evaluation-completed";
   body: EvaluationCompletedEventBody;
@@ -61,10 +67,28 @@ export type AnyResponse = InitializeResponse;
 
 export type AnyProtocolMessage = AnyEvent | AnyRequest | AnyResponse;
 
-export interface LaunchRequestArguments
-  extends DebugProtocol.LaunchRequestArguments {
-  query: string;
-  database: string;
-  additionalPacks: string[];
-  extensionPacks: string[];
+export interface Position {
+  fileName: string;
+  line: number;
+  column: number;
+  endLine: number;
+  endColumn: number;
 }
+
+export interface LaunchConfig {
+  /** Full path to query (.ql) file. */
+  query: string;
+  /** Full path to the database directory. */
+  database: string;
+  /** Full paths to `--additional-packs` directories. */
+  additionalPacks: string[];
+  /** Pack names of extension packs. */
+  extensionPacks: string[];
+  /** Optional quick evaluation position. */
+  quickEvalPosition: Position | undefined;
+  /** Run the query without debugging it. */
+  noDebug: boolean;
+}
+
+export type LaunchRequestArguments = DebugProtocol.LaunchRequestArguments &
+  LaunchConfig;

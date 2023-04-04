@@ -96,6 +96,13 @@ export type LocalQueryCommands = {
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
   "codeQL.codeLensQuickEval": (uri: Uri, range: Range) => Promise<void>;
   "codeQL.quickQuery": () => Promise<void>;
+  "codeQL.getCurrentQuery": () => Promise<string>;
+};
+
+// Debugger commands
+export type DebuggerCommands = {
+  "codeQL.debug.quickEval": (uri: Uri) => Promise<void>;
+  "codeQL.debug.quickEvalContextEditor": (uri: Uri) => Promise<void>;
 };
 
 export type ResultsViewCommands = {
@@ -269,6 +276,7 @@ export type AllExtensionCommands = BaseCommands &
   ResultsViewCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
+  DebuggerCommands &
   VariantAnalysisCommands &
   DatabasePanelCommands &
   AstCfgCommands &

@@ -4,18 +4,16 @@ import {
   DebugAdapterDescriptorFactory,
   DebugAdapterExecutable,
   DebugAdapterInlineImplementation,
-  DebugAdapterServer,
   DebugConfigurationProviderTriggerKind,
   DebugSession,
   ProviderResult,
 } from "vscode";
+import { isCanary } from "../config";
 import { LocalQueries } from "../local-queries";
 import { DisposableObject } from "../pure/disposable-object";
 import { QueryRunner } from "../queryRunner";
 import { QLDebugConfigurationProvider } from "./debug-configuration";
 import { QLDebugSession } from "./debug-session";
-
-const useInlineImplementation = true;
 
 export class QLDebugAdapterDescriptorFactory
   extends DisposableObject
@@ -27,6 +25,7 @@ export class QLDebugAdapterDescriptorFactory
     localQueries: LocalQueries,
   ) {
     super();
+
     this.push(debug.registerDebugAdapterDescriptorFactory("codeql", this));
     this.push(
       debug.registerDebugConfigurationProvider(
@@ -43,13 +42,12 @@ export class QLDebugAdapterDescriptorFactory
     _session: DebugSession,
     _executable: DebugAdapterExecutable | undefined,
   ): ProviderResult<DebugAdapterDescriptor> {
-    if (useInlineImplementation) {
-      return new DebugAdapterInlineImplementation(
-        new QLDebugSession(this.queryStorageDir, this.queryRunner),
-      );
-    } else {
-      return new DebugAdapterServer(2112);
+    if (!isCanary()) {
+      throw new Error("The CodeQL debugger feature is not available yet.");
     }
+    return new DebugAdapterInlineImplementation(
+      new QLDebugSession(this.queryStorageDir, this.queryRunner),
+    );
   }
 
   private handleOnDidStartDebugSession(session: DebugSession): void {

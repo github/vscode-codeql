@@ -389,55 +389,33 @@ export interface QueryWithResults {
 }
 
 /**
- * Information about which query will be to be run. `quickEvalPosition` and `quickEvalText`
- * is only filled in if the query is a quick query.
+ * Validates that the specified URI represents a QL query, and returns the file system path to that
+ * query.
+ *
+ * If `allowLibraryFiles` is set, ".qll" files will also be allowed as query files.
  */
-export interface SelectedQuery {
-  queryPath: string;
-  quickEvalPosition?: messages.Position;
-  quickEvalText?: string;
-}
-
-/**
- * Determines which QL file to run during an invocation of `Run Query` or `Quick Evaluation`, as follows:
- * - If the command was called by clicking on a file, then use that file.
- * - Otherwise, use the file open in the current editor.
- * - In either case, prompt the user to save the file if it is open with unsaved changes.
- * - For `Quick Evaluation`, ensure the selected file is also the one open in the editor,
- * and use the selected region.
- * @param selectedResourceUri The selected resource when the command was run.
- * @param quickEval Whether the command being run is `Quick Evaluation`.
- */
-export async function determineSelectedQuery(
-  selectedResourceUri: Uri | undefined,
-  quickEval: boolean,
-  range?: Range,
-): Promise<SelectedQuery> {
-  const editor = window.activeTextEditor;
-
-  // Choose which QL file to use.
-  let queryUri: Uri;
-  if (selectedResourceUri) {
-    // A resource was passed to the command handler, so use it.
-    queryUri = selectedResourceUri;
-  } else {
-    // No resource was passed to the command handler, so obtain it from the active editor.
-    // This usually happens when the command is called from the Command Palette.
-    if (editor === undefined) {
-      throw new Error(
-        "No query was selected. Please select a query and try again.",
-      );
-    } else {
-      queryUri = editor.document.uri;
-    }
-  }
-
+export function validateQueryUri(
+  queryUri: Uri,
+  allowLibraryFiles: boolean,
+): string {
   if (queryUri.scheme !== "file") {
     throw new Error("Can only run queries that are on disk.");
   }
   const queryPath = queryUri.fsPath;
+  validateQueryPath(queryPath, allowLibraryFiles);
+  return queryPath;
+}
 
-  if (quickEval) {
+/**
+ * Validates that the specified path represents a QL query
+ *
+ * If `allowLibraryFiles` is set, ".qll" files will also be allowed as query files.
+ */
+export function validateQueryPath(
+  queryPath: string,
+  allowLibraryFiles: boolean,
+): void {
+  if (allowLibraryFiles) {
     if (!(queryPath.endsWith(".ql") || queryPath.endsWith(".qll"))) {
       throw new Error(
         'The selected resource is not a CodeQL file; It should have the extension ".ql" or ".qll".',
@@ -450,40 +428,52 @@ export async function determineSelectedQuery(
       );
     }
   }
+}
 
-  // Whether we chose the file from the active editor or from a context menu,
-  // if the same file is open with unsaved changes in the active editor,
-  // then prompt the user to save it first.
-  if (editor !== undefined && editor.document.uri.fsPath === queryPath) {
-    if (await promptUserToSaveChanges(editor.document)) {
-      await editor.document.save();
-    }
+export interface QuickEvalContext {
+  quickEvalPosition: messages.Position;
+  quickEvalText: string;
+}
+
+/**
+ * Gets the selection to be used for quick evaluation.
+ *
+ * If `range` is specified, then that range will be used. Otherwise, the current selection will be
+ * used.
+ */
+export async function getQuickEvalContext(
+  range: Range | undefined,
+): Promise<QuickEvalContext> {
+  const editor = window.activeTextEditor;
+  if (editor === undefined) {
+    throw new Error("Can't run quick evaluation without an active editor.");
+  }
+  // For Quick Evaluation, the selected position comes from the active editor, but it's possible
+  // that query itself was a different file. We need to validate the path of the file we're using
+  // for the QuickEval selection in case it was different.
+  validateQueryUri(editor.document.uri, true);
+  const quickEvalPosition = await getSelectedPosition(editor, range);
+  let quickEvalText: string;
+  if (!editor.selection?.isEmpty) {
+    quickEvalText = editor.document.getText(editor.selection);
+  } else {
+    // capture the entire line if the user didn't select anything
+    const line = editor.document.lineAt(editor.selection.active.line);
+    quickEvalText = line.text.trim();
   }
 
-  let quickEvalPosition: messages.Position | undefined = undefined;
-  let quickEvalText: string | undefined = undefined;
-  if (quickEval) {
-    if (editor === undefined) {
-      throw new Error("Can't run quick evaluation without an active editor.");
-    }
-    if (editor.document.fileName !== queryPath) {
-      // For Quick Evaluation we expect these to be the same.
-      // Report an error if we end up in this (hopefully unlikely) situation.
-      throw new Error(
-        "The selected resource for quick evaluation should match the active editor.",
-      );
-    }
-    quickEvalPosition = await getSelectedPosition(editor, range);
-    if (!editor.selection?.isEmpty) {
-      quickEvalText = editor.document.getText(editor.selection);
-    } else {
-      // capture the entire line if the user didn't select anything
-      const line = editor.document.lineAt(editor.selection.active.line);
-      quickEvalText = line.text.trim();
-    }
-  }
+  return {
+    quickEvalPosition,
+    quickEvalText,
+  };
+}
 
-  return { queryPath, quickEvalPosition, quickEvalText };
+/**
+ * Information about which query will be to be run, optionally including a QuickEval selection.
+ */
+export interface SelectedQuery {
+  queryPath: string;
+  quickEval?: QuickEvalContext;
 }
 
 /** Gets the selected position within the given editor. */
@@ -512,7 +502,7 @@ async function getSelectedPosition(
  * @returns true if we should save changes and false if we should continue without saving changes.
  * @throws UserCancellationException if we should abort whatever operation triggered this prompt
  */
-async function promptUserToSaveChanges(
+export async function promptUserToSaveChanges(
   document: TextDocument,
 ): Promise<boolean> {
   if (document.isDirty) {
@@ -526,7 +516,9 @@ async function promptUserToSaveChanges(
         isCloseAffordance: false,
       };
       const cancelItem = { title: "Cancel", isCloseAffordance: true };
-      const message = "Query file has unsaved changes. Save now?";
+      const message = `Query file '${basename(
+        document.uri.fsPath,
+      )}' has unsaved changes. Save now?`;
       const chosenItem = await window.showInformationMessage(
         message,
         { modal: true },
@@ -595,7 +587,7 @@ export async function createInitialQueryInfo(
   selectedQuery: SelectedQuery,
   databaseInfo: DatabaseInfo,
 ): Promise<InitialQueryInfo> {
-  const isQuickEval = selectedQuery.quickEvalPosition !== undefined;
+  const isQuickEval = selectedQuery.quickEval !== undefined;
   return {
     queryPath: selectedQuery.queryPath,
     isQuickEval,
@@ -603,10 +595,10 @@ export async function createInitialQueryInfo(
     databaseInfo,
     id: `${basename(selectedQuery.queryPath)}-${nanoid()}`,
     start: new Date(),
-    ...(isQuickEval
+    ...(selectedQuery.quickEval !== undefined
       ? {
-          queryText: selectedQuery.quickEvalText!, // if this query is quick eval, it must have quick eval text
-          quickEvalPosition: selectedQuery.quickEvalPosition,
+          queryText: selectedQuery.quickEval.quickEvalText,
+          quickEvalPosition: selectedQuery.quickEval.quickEvalPosition,
         }
       : {
           queryText: await readFile(selectedQuery.queryPath, "utf8"),

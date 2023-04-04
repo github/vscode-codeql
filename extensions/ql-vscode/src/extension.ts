@@ -863,16 +863,13 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(localQueries);
 
   void extLogger.log("Initializing debugger factory.");
-  const debuggerFactory = ctx.subscriptions.push(
+  ctx.subscriptions.push(
     new QLDebugAdapterDescriptorFactory(queryStorageDir, qs, localQueries),
   );
-  void debuggerFactory;
 
   void extLogger.log("Initializing debugger UI.");
-  const debuggerUI = ctx.subscriptions.push(
-    new DebuggerUI(localQueryResultsView, localQueries, dbm),
-  );
-  void debuggerUI;
+  const debuggerUI = new DebuggerUI(localQueryResultsView, localQueries, dbm);
+  ctx.subscriptions.push(debuggerUI);
 
   void extLogger.log("Initializing QLTest interface.");
   const testExplorerExtension = extensions.getExtension<TestHub>(
@@ -940,6 +937,7 @@ async function activateWithInstalledDistribution(
     ...summaryLanguageSupport.getCommands(),
     ...testUiCommands,
     ...mockServer.getCommands(),
+    ...debuggerUI.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {

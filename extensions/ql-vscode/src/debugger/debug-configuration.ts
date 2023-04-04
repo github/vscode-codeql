@@ -6,24 +6,38 @@ import {
 } from "vscode";
 import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from "../helpers";
 import { LocalQueries } from "../local-queries";
+import { getQuickEvalContext, validateQueryPath } from "../run-queries-shared";
+import * as CodeQLDebugProtocol from "./debug-protocol";
 
+/**
+ * The CodeQL launch arguments, as specified in "launch.json".
+ */
 interface QLDebugArgs {
-  query: string;
-  database: string;
-  additionalPacks: string[] | string;
-  extensionPacks: string[] | string;
+  query?: string;
+  database?: string;
+  additionalPacks?: string[] | string;
+  extensionPacks?: string[] | string;
+  quickEval?: boolean;
+  noDebug?: boolean;
 }
 
-type QLDebugConfiguration = DebugConfiguration & Partial<QLDebugArgs>;
+/**
+ * The debug configuration for a CodeQL configuration.
+ *
+ * This just combines `QLDebugArgs` with the standard debug configuration properties.
+ */
+type QLDebugConfiguration = DebugConfiguration & QLDebugArgs;
 
-interface QLResolvedDebugArgs extends QLDebugArgs {
-  additionalPacks: string[];
-  extensionPacks: string[];
-}
-
+/**
+ * A CodeQL debug configuration after all variables and defaults have been resolved. This is what
+ * is passed to the debug adapter via the `launch` request.
+ */
 export type QLResolvedDebugConfiguration = DebugConfiguration &
-  QLResolvedDebugArgs;
+  CodeQLDebugProtocol.LaunchConfig;
 
+/**
+ * Implementation of `DebugConfigurationProvider` for CodeQL.
+ */
 export class QLDebugConfigurationProvider
   implements DebugConfigurationProvider
 {
@@ -36,10 +50,12 @@ export class QLDebugConfigurationProvider
   ): DebugConfiguration {
     const qlConfiguration = <QLDebugConfiguration>debugConfiguration;
 
-    // Fill in defaults
+    // Fill in defaults for properties whose default value is a command invocation. VS Code will
+    // invoke any commands to fill in  actual values, then call
+    // `resolveDebugConfigurationWithSubstitutedVariables()`with the result.
     const resultConfiguration: QLDebugConfiguration = {
       ...qlConfiguration,
-      query: qlConfiguration.query ?? "${file}",
+      query: qlConfiguration.query ?? "${command:currentQuery}",
       database: qlConfiguration.database ?? "${command:currentDatabase}",
     };
 
@@ -83,12 +99,23 @@ export class QLDebugConfigurationProvider
         ? [qlConfiguration.extensionPacks]
         : qlConfiguration.extensionPacks;
 
+    const quickEval = qlConfiguration.quickEval ?? false;
+    validateQueryPath(qlConfiguration.query, quickEval);
+
+    const quickEvalContext = quickEval
+      ? await getQuickEvalContext(undefined)
+      : undefined;
+
     const resultConfiguration: QLResolvedDebugConfiguration = {
-      ...qlConfiguration,
+      name: qlConfiguration.name,
+      request: qlConfiguration.request,
+      type: qlConfiguration.type,
       query: qlConfiguration.query,
       database: qlConfiguration.database,
       additionalPacks,
       extensionPacks,
+      quickEvalPosition: quickEvalContext?.quickEvalPosition,
+      noDebug: qlConfiguration.noDebug ?? false,
     };
 
     return resultConfiguration;

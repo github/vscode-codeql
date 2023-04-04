@@ -6,7 +6,10 @@ import {
   //  window,
   Uri,
   CancellationTokenSource,
+  commands,
 } from "vscode";
+import { DebuggerCommands } from "../common/commands";
+import { isCanary } from "../config";
 import { ResultsView } from "../interface";
 import { WebviewReveal } from "../interface-utils";
 import { DatabaseManager } from "../local-databases";
@@ -18,11 +21,16 @@ import { QueryOutputDir } from "../run-queries-shared";
 import { QLResolvedDebugConfiguration } from "./debug-configuration";
 import * as CodeQLDebugProtocol from "./debug-protocol";
 
+/**
+ * Listens to messages passing between VS Code and the debug adapter, so that we can supplement the
+ * UI.
+ */
 class QLDebugAdapterTracker
   extends DisposableObject
   implements DebugAdapterTracker
 {
   private readonly configuration: QLResolvedDebugConfiguration;
+  /** The `LocalQueryRun` of the current evaluation, if one is running. */
   private localQueryRun: LocalQueryRun | undefined;
   /** The promise of the most recently queued deferred message handler. */
   private lastDeferredMessageHandler: Promise<void> = Promise.resolve();
@@ -66,11 +74,24 @@ class QLDebugAdapterTracker
     this.dispose();
   }
 
+  /**
+   * Queues a message handler to be executed once all other pending message handlers have completed.
+   *
+   * The `onDidSendMessage()` function is synchronous, so it needs to return before any async
+   * handling of the msssage is completed. We can't just launch the message handler directly from
+   * `onDidSendMessage()`, though, because if the message handler's implementation blocks awaiting
+   * a promise, then another event might be received by `onDidSendMessage()` while the first message
+   * handler is still incomplete.
+   *
+   * To enforce sequential execution of event handlers, we queue each new handler as a `finally()`
+   * handler for the most recently queued message.
+   */
   private queueMessageHandler(handler: () => Promise<void>): void {
     this.lastDeferredMessageHandler =
       this.lastDeferredMessageHandler.finally(handler);
   }
 
+  /** Updates the UI to track the currently executing query. */
   private async onEvaluationStarted(
     body: CodeQLDebugProtocol.EvaluationStartedEventBody,
   ): Promise<void> {
@@ -83,11 +104,17 @@ class QLDebugAdapterTracker
       debug.stopDebugging(this.session),
     );
 
+    const quickEval =
+      this.configuration.quickEvalPosition !== undefined
+        ? {
+            quickEvalPosition: this.configuration.quickEvalPosition,
+            quickEvalText: "quickeval!!!", // TODO: Have the debug adapter return the range, and extract the text from the editor.
+          }
+        : undefined;
     this.localQueryRun = await this.localQueries.createLocalQueryRun(
       {
         queryPath: this.configuration.query,
-        quickEvalPosition: undefined,
-        quickEvalText: undefined,
+        quickEval,
       },
       dbItem,
       new QueryOutputDir(body.outputDir),
@@ -95,6 +122,7 @@ class QLDebugAdapterTracker
     );
   }
 
+  /** Update the UI after a query has finished evaluating. */
   private async onEvaluationCompleted(
     body: CodeQLDebugProtocol.EvaluationCompletedEventBody,
   ): Promise<void> {
@@ -106,6 +134,7 @@ class QLDebugAdapterTracker
   }
 }
 
+/** Service handling the UI for CodeQL debugging. */
 export class DebuggerUI
   extends DisposableObject
   implements DebugAdapterTrackerFactory
@@ -119,7 +148,16 @@ export class DebuggerUI
   ) {
     super();
 
-    this.push(debug.registerDebugAdapterTrackerFactory("codeql", this));
+    if (isCanary()) {
+      this.push(debug.registerDebugAdapterTrackerFactory("codeql", this));
+    }
+  }
+
+  public getCommands(): DebuggerCommands {
+    return {
+      "codeQL.debug.quickEval": this.quickEval.bind(this),
+      "codeQL.debug.quickEvalContextEditor": this.quickEval.bind(this),
+    };
   }
 
   public createDebugAdapterTracker(
@@ -141,6 +179,14 @@ export class DebuggerUI
 
   public onSessionClosed(session: DebugSession): void {
     this.sessions.delete(session.id);
+  }
+
+  private async quickEval(_uri: Uri): Promise<void> {
+    await commands.executeCommand("workbench.action.debug.start", {
+      config: {
+        quickEval: true,
+      },
+    });
   }
 
   private getTrackerForSession(

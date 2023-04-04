@@ -82,6 +82,29 @@ export function withProgress<R>(
   );
 }
 
+export interface ProgressContext {
+  progress: ProgressCallback;
+  token: CancellationToken;
+}
+
+/**
+ * Like `withProgress()`, except that the caller is not required to provide a progress context. If
+ * the caller does provide one, any long-running operations performed by `task` will use the
+ * supplied progress context. Otherwise, this function wraps `task` in a new progress context with
+ * the supplied options.
+ */
+export function withInheritedProgress<R>(
+  parent: ProgressContext | undefined,
+  task: ProgressTask<R>,
+  options: ProgressOptions,
+): Thenable<R> {
+  if (parent !== undefined) {
+    return task(parent.progress, parent.token);
+  } else {
+    return withProgress(task, options);
+  }
+}
+
 /**
  * Displays a progress monitor that indicates how much progess has been made
  * reading from a stream.
