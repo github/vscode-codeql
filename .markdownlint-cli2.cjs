@@ -1,4 +1,7 @@
-const options = require('@github/markdownlint-github').init()
+const options = require('@github/markdownlint-github').init({
+  "MD013": false, // Line length
+  "MD041": false, // First line in file should be a top level heading
+})
 module.exports = {
     config: options,
     customRules: ["@github/markdownlint-github"],
