@@ -1,6 +1,5 @@
 import { CancellationToken } from "vscode";
 import { DatabaseItem } from "../local-databases";
-import { ModeledMethod, ModeledMethodType } from "./interface";
 import { join } from "path";
 import { QueryRunner } from "../queryRunner";
 import { CodeQLCliServer } from "../cli";
@@ -8,6 +7,7 @@ import { extLogger, TeeLogger } from "../common";
 import { definitions } from "./yaml";
 import { ProgressCallback } from "../progress";
 import { getOnDiskWorkspaceFolders } from "../helpers";
+import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 
 class FlowModelGenerator {
   constructor(

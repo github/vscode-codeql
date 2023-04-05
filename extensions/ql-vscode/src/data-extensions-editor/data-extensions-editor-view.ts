@@ -17,14 +17,19 @@ import { qlpackOfDatabase } from "../contextual/queryResolver";
 import { file } from "tmp-promise";
 import { readFile, writeFile } from "fs-extra";
 import { dump, load } from "js-yaml";
-import { getOnDiskWorkspaceFolders } from "../helpers";
+import {
+  getOnDiskWorkspaceFolders,
+  showAndLogExceptionWithTelemetry,
+} from "../helpers";
 import { DatabaseItem, DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
-import { assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { generateFlowModel } from "./generate-flow-model";
-import { ModeledMethod } from "./interface";
 import { promptImportGithubDatabase } from "../databaseFetcher";
 import { App } from "../common/app";
+import { decodeBqrsToExternalApiUsages } from "./bqrs";
+import { redactableError } from "../pure/errors";
+import { ModeledMethod } from "./modeled-method";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -125,38 +130,48 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   protected async loadExternalApiUsages(): Promise<void> {
-    const queryResult = await this.runQuery();
-    if (!queryResult) {
+    try {
+      const queryResult = await this.runQuery();
+      if (!queryResult) {
+        await this.clearProgress();
+        return;
+      }
+
+      await this.showProgress({
+        message: "Loading results",
+        step: 1100,
+        maxStep: 1500,
+      });
+
+      const bqrsPath = queryResult.outputDir.bqrsPath;
+
+      const bqrsChunk = await this.getResults(bqrsPath);
+      if (!bqrsChunk) {
+        await this.clearProgress();
+        return;
+      }
+
+      await this.showProgress({
+        message: "Finalizing results",
+        step: 1450,
+        maxStep: 1500,
+      });
+
+      const externalApiUsages = decodeBqrsToExternalApiUsages(bqrsChunk);
+
+      await this.postMessage({
+        t: "setExternalApiUsages",
+        externalApiUsages,
+      });
+
       await this.clearProgress();
-      return;
+    } catch (err) {
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(err),
+        )`Failed to load external APi usages: ${getErrorMessage(err)}`,
+      );
     }
-
-    await this.showProgress({
-      message: "Loading results",
-      step: 1100,
-      maxStep: 1500,
-    });
-
-    const bqrsPath = queryResult.outputDir.bqrsPath;
-
-    const results = await this.getResults(bqrsPath);
-    if (!results) {
-      await this.clearProgress();
-      return;
-    }
-
-    await this.showProgress({
-      message: "Finalizing results",
-      step: 1450,
-      maxStep: 1500,
-    });
-
-    await this.postMessage({
-      t: "setExternalApiRepoResults",
-      results,
-    });
-
-    await this.clearProgress();
   }
 
   protected async generateExternalApi(): Promise<void> {
@@ -314,6 +329,14 @@ export class DataExtensionsEditorView extends AbstractWebview<
     return this.cliServer.bqrsDecode(bqrsPath, resultSet.name);
   }
 
+  /*
+   * Progress in this class is a bit weird. Most of the progress is based on running the query.
+   * Query progress is always between 0 and 1000. However, we still have some steps that need
+   * to be done after the query has finished. Therefore, the maximum step is 1500. This captures
+   * that there's 1000 steps of the query progress since that takes the most time, and then
+   * an additional 500 steps for the rest of the work. The progress doesn't need to be 100%
+   * accurate, so this is just a rough estimate.
+   */
   private async showProgress(update: ProgressUpdate, maxStep?: number) {
     await this.postMessage({
       t: "showProgress",

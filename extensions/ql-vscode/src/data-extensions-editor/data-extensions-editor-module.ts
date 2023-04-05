@@ -5,17 +5,47 @@ import { CodeQLCliServer } from "../cli";
 import { QueryRunner } from "../queryRunner";
 import { DatabaseManager } from "../local-databases";
 import { extLogger } from "../common";
+import { ensureDir } from "fs-extra";
+import { join } from "path";
 import { App } from "../common/app";
 
 export class DataExtensionsEditorModule {
-  public constructor(
+  private readonly queryStorageDir: string;
+
+  private constructor(
     private readonly ctx: ExtensionContext,
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
-    private readonly queryStorageDir: string,
-  ) {}
+    baseQueryStorageDir: string,
+  ) {
+    this.queryStorageDir = join(
+      baseQueryStorageDir,
+      "data-extensions-editor-results",
+    );
+  }
+
+  public static async initialize(
+    ctx: ExtensionContext,
+    app: App,
+    databaseManager: DatabaseManager,
+    cliServer: CodeQLCliServer,
+    queryRunner: QueryRunner,
+    queryStorageDir: string,
+  ): Promise<DataExtensionsEditorModule> {
+    const dataExtensionsEditorModule = new DataExtensionsEditorModule(
+      ctx,
+      app,
+      databaseManager,
+      cliServer,
+      queryRunner,
+      queryStorageDir,
+    );
+
+    await dataExtensionsEditorModule.initialize();
+    return dataExtensionsEditorModule;
+  }
 
   public getCommands(): DataExtensionsEditorCommands {
     return {
@@ -38,5 +68,9 @@ export class DataExtensionsEditorModule {
         await view.openView();
       },
     };
+  }
+
+  private async initialize(): Promise<void> {
+    await ensureDir(this.queryStorageDir);
   }
 }

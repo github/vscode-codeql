@@ -5,7 +5,6 @@ import {
   ResultSetSchema,
   Column,
   ResolvableLocationValue,
-  DecodedBqrsChunk,
 } from "./bqrs-cli-types";
 import {
   VariantAnalysis,
@@ -15,7 +14,8 @@ import {
 import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
 import { ErrorLike } from "./errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import { ModeledMethod } from "../data-extensions-editor/interface";
+import { ExternalApiUsage } from "../data-extensions-editor/external-api-usage";
+import { ModeledMethod } from "../data-extensions-editor/modeled-method";
 
 /**
  * This module contains types and code that are shared between
@@ -481,9 +481,9 @@ export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
 
 export type FromDataFlowPathsMessage = CommonFromViewMessages;
 
-export interface SetExternalApiResultsMessage {
-  t: "setExternalApiRepoResults";
-  results: DecodedBqrsChunk;
+export interface SetExternalApiUsagesMessage {
+  t: "setExternalApiUsages";
+  externalApiUsages: ExternalApiUsage[];
 }
 
 export interface ShowProgressMessage {
@@ -513,7 +513,7 @@ export interface GenerateExternalApiMessage {
 }
 
 export type ToDataExtensionsEditorMessage =
-  | SetExternalApiResultsMessage
+  | SetExternalApiUsagesMessage
   | ShowProgressMessage
   | SetExistingYamlDataMessage
   | AddModeledMethodsMessage;
