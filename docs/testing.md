@@ -30,7 +30,7 @@ Then, from the `extensions/ql-vscode` directory, use the appropriate command to 
 * View Tests: `npm test:view`
 * VSCode integration tests: `npm run test:vscode-integration`
 
-#### CLI integration tests
+#### Running CLI integration tests from the terminal
 
 The CLI integration tests require the CodeQL standard libraries in order to run so you will need to clone a local copy of the `github/codeql` repository.
 
@@ -52,8 +52,7 @@ You will need to run tests using a task from inside of VS Code, under the "Run a
 * View Tests: run the _Launch Unit Tests_ task
 * VSCode integration tests: run the _Launch Unit Tests - No Workspace_ and _Launch Unit Tests - Minimal Workspace_ tasks
 
-<!-- markdownlint-disable-next-line MD024 -->
-#### CLI integration tests
+#### Running CLI integration tests from VSCode
 
 The CLI integration tests require the CodeQL standard libraries in order to run so you will need to clone a local copy of the `github/codeql` repository.
 
@@ -65,8 +64,7 @@ The CLI integration tests require the CodeQL standard libraries in order to run 
 
 ## Running a single test
 
-<!-- markdownlint-disable-next-line MD024 -->
-### 1. From the terminal
+### 1. Running a single test from the terminal
 
 The easiest way to run a single test is to change the `it` of the test to `it.only` and then run the test command with some additional options
 to only run tests for this specific file. For example, to run the test `test/vscode-tests/cli-integration/run-queries.test.ts`:
@@ -81,8 +79,7 @@ You can also use the `--testNamePattern` option to run a specific test within a 
 npm run test:cli-integration -- --runTestsByPath test/vscode-tests/cli-integration/run-queries.test.ts --testNamePattern "should create a QueryEvaluationInfo"
 ```
 
-<!-- markdownlint-disable-next-line MD024 -->
-### 2. From VSCode
+### 2. Running a single test from VSCode
 
 Alternatively, you can run a single test inside VSCode. To do so, install the [Jest Runner](https://marketplace.visualstudio.com/items?itemName=firsttris.vscode-jest-runner) extension. Then,
 you will have quicklinks to run a single test from within test files. To run a single unit or integration test, click the "Run" button. Debugging a single test is currently only supported
