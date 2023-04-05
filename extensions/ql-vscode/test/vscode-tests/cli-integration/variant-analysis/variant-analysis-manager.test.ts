@@ -128,7 +128,7 @@ describe("Variant Analysis Manager", () => {
       );
 
       expect(executeCommandSpy).toBeCalledWith(
-        "codeQL.monitorVariantAnalysis",
+        "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           id: mockApiResponse.id,
           status: VariantAnalysisStatus.InProgress,
@@ -149,7 +149,7 @@ describe("Variant Analysis Manager", () => {
       );
 
       expect(executeCommandSpy).toBeCalledWith(
-        "codeQL.monitorVariantAnalysis",
+        "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           id: mockApiResponse.id,
           status: VariantAnalysisStatus.InProgress,
@@ -170,7 +170,7 @@ describe("Variant Analysis Manager", () => {
       );
 
       expect(executeCommandSpy).toBeCalledWith(
-        "codeQL.monitorVariantAnalysis",
+        "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           id: mockApiResponse.id,
           status: VariantAnalysisStatus.InProgress,
@@ -293,7 +293,7 @@ describe("Variant Analysis Manager", () => {
 
       expect(mockSubmitVariantAnalysis).toBeCalledTimes(1);
       expect(executeCommandSpy).toBeCalledWith(
-        "codeQL.monitorVariantAnalysis",
+        "codeQL.monitorNewVariantAnalysis",
         expect.objectContaining({
           query: expect.objectContaining({ filePath: fileUri.fsPath }),
         }),

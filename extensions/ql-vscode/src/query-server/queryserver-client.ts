@@ -68,7 +68,7 @@ export class QueryServerClient extends DisposableObject {
     if (config.onDidChangeConfiguration !== undefined) {
       this.push(
         config.onDidChangeConfiguration(() =>
-          app.commands.execute("codeQL.restartQueryServer"),
+          app.commands.execute("codeQL.restartQueryServerOnConfigChange"),
         ),
       );
     }

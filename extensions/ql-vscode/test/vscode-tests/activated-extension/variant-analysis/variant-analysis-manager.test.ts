@@ -516,7 +516,7 @@ describe("Variant Analysis Manager", () => {
             variantAnalysis,
           );
           expect(executeCommandSpy).toHaveBeenCalledWith(
-            "codeQL.monitorVariantAnalysis",
+            "codeQL.monitorRehydratedVariantAnalysis",
             expect.anything(),
           );
         });

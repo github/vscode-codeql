@@ -14,6 +14,7 @@ import {
 import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
 import { ErrorLike } from "./errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
+import { ExternalApiUsage } from "../data-extensions-editor/external-api-usage";
 
 /**
  * This module contains types and code that are shared between
@@ -478,3 +479,21 @@ export interface SetDataFlowPathsMessage {
 export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
 
 export type FromDataFlowPathsMessage = CommonFromViewMessages;
+
+export interface SetExternalApiUsagesMessage {
+  t: "setExternalApiUsages";
+  externalApiUsages: ExternalApiUsage[];
+}
+
+export interface ShowProgressMessage {
+  t: "showProgress";
+  step: number;
+  maxStep: number;
+  message: string;
+}
+
+export type ToDataExtensionsEditorMessage =
+  | SetExternalApiUsagesMessage
+  | ShowProgressMessage;
+
+export type FromDataExtensionsEditorMessage = ViewLoadedMsg;

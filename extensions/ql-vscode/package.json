@@ -704,6 +704,10 @@
         "enablement": "codeql.hasQLSource"
       },
       {
+        "command": "codeQL.openDataExtensionsEditor",
+        "title": "CodeQL: Open Data Extensions Editor"
+      },
+      {
         "command": "codeQL.mockGitHubApiServer.startRecording",
         "title": "CodeQL: Mock GitHub API Server: Start Scenario Recording"
       },
@@ -1085,6 +1089,10 @@
         {
           "command": "codeQL.viewCfgContextEditor",
           "when": "false"
+        },
+        {
+          "command": "codeQL.openDataExtensionsEditor",
+          "when": "config.codeQL.canary && config.codeQL.dataExtensions.editor"
         },
         {
           "command": "codeQLVariantAnalysisRepositories.openConfigFile",
