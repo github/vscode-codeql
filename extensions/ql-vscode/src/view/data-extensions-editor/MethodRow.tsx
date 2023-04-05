@@ -10,7 +10,10 @@ import { useCallback, useMemo } from "react";
 import styled from "styled-components";
 
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
-import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
+import {
+  ModeledMethod,
+  ModeledMethodType,
+} from "../../data-extensions-editor/modeled-method";
 
 const Dropdown = styled(VSCodeDropdown)`
   width: 100%;
@@ -24,7 +27,7 @@ type SupportedUnsupportedSpanProps = {
   supported: boolean;
 };
 
-const SupportedUnsupportedSpan = styled.span<SupportedUnsupportedSpanProps>`
+const SupportSpan = styled.span<SupportedUnsupportedSpanProps>`
   color: ${(props) => (props.supported ? "green" : "red")};
 `;
 
@@ -56,11 +59,12 @@ export const MethodRow = ({
       const target = e.target as HTMLSelectElement;
 
       onChange(externalApiUsage, {
+        // If there are no arguments, we will default to "this", which is Argument[-1]
         input: argumentsList.length === 0 ? "Argument[-1]" : "Argument[0]",
         output: "ReturnType",
         kind: "value",
         ...modeledMethod,
-        type: target.value as ModeledMethod["type"],
+        type: target.value as ModeledMethodType,
       });
     },
     [onChange, externalApiUsage, modeledMethod, argumentsList],
@@ -114,15 +118,15 @@ export const MethodRow = ({
   return (
     <VSCodeDataGridRow>
       <VSCodeDataGridCell gridColumn={1}>
-        <SupportedUnsupportedSpan supported={externalApiUsage.supported}>
+        <SupportSpan supported={externalApiUsage.supported}>
           {externalApiUsage.packageName}.{externalApiUsage.typeName}
-        </SupportedUnsupportedSpan>
+        </SupportSpan>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={2}>
-        <SupportedUnsupportedSpan supported={externalApiUsage.supported}>
+        <SupportSpan supported={externalApiUsage.supported}>
           {externalApiUsage.methodName}
           {externalApiUsage.methodParameters}
-        </SupportedUnsupportedSpan>
+        </SupportSpan>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={3}>
         {externalApiUsage.usages.length}
