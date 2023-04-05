@@ -598,10 +598,13 @@ export class VariantAnalysisManager
       VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
-    await writeRepoStates(
-      this.getRepoStatesStoragePath(variantAnalysis.id),
-      this.repoStates.get(variantAnalysis.id),
-    );
+    const repoStates = this.repoStates.get(variantAnalysis.id);
+    if (repoStates) {
+      await writeRepoStates(
+        this.getRepoStatesStoragePath(variantAnalysis.id),
+        repoStates,
+      );
+    }
   }
 
   public async enqueueDownload(
