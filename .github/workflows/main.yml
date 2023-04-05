@@ -100,6 +100,11 @@ jobs:
         run: |
           npm run lint
 
+      - name: Lint Markdown
+        working-directory: extensions/ql-vscode
+        run: |
+          npm run lint:markdown
+
       - name: Lint scenarios
         working-directory: extensions/ql-vscode
         run: |
