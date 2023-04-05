@@ -143,8 +143,8 @@ export function DataExtensionsEditor(): JSX.Element {
               {externalApiUsages.map((externalApiUsage) => (
                 <MethodRow
                   key={externalApiUsage.signature}
-                  method={externalApiUsage}
-                  model={modeledMethods[externalApiUsage.signature]}
+                  externalApiUsage={externalApiUsage}
+                  modeledMethod={modeledMethods[externalApiUsage.signature]}
                   onChange={onChange}
                 />
               ))}
