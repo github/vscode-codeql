@@ -865,7 +865,14 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(localQueries);
 
-  const dataExtensionsEditorModule = new DataExtensionsEditorModule(ctx);
+  const dataExtensionsEditorModule =
+    await DataExtensionsEditorModule.initialize(
+      ctx,
+      dbm,
+      cliServer,
+      qs,
+      tmpDir.name,
+    );
 
   void extLogger.log("Initializing QLTest interface.");
   const testExplorerExtension = extensions.getExtension<TestHub>(
