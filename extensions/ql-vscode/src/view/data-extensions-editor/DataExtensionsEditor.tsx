@@ -14,6 +14,7 @@ import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usag
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { MethodRow } from "./MethodRow";
 import { assertNever } from "../../pure/helpers-pure";
+import { calculateSupportedPercentage } from "./supported";
 
 export const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -70,21 +71,12 @@ export function DataExtensionsEditor(): JSX.Element {
     };
   }, []);
 
-  const supportedPercentage = useMemo(() => {
-    return (
-      (externalApiUsages.filter((m) => m.supported).length /
-        externalApiUsages.length) *
-      100
-    );
-  }, [externalApiUsages]);
+  const supportedPercentage = useMemo(
+    () => calculateSupportedPercentage(externalApiUsages),
+    [externalApiUsages],
+  );
 
-  const unsupportedPercentage = useMemo(() => {
-    return (
-      (externalApiUsages.filter((m) => !m.supported).length /
-        externalApiUsages.length) *
-      100
-    );
-  }, [externalApiUsages]);
+  const unsupportedPercentage = 100 - supportedPercentage;
 
   const onChange = useCallback(
     (method: ExternalApiUsage, model: ModeledMethod) => {
