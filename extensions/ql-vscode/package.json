@@ -1422,7 +1422,7 @@
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
     "lint": "eslint . --ext .js,.ts,.tsx --max-warnings=0",
-    "lint:markdown": "markdownlint-cli2-config \"../../.markdownlint-cli2.cjs\" \"../../**/*.{md,mdx}\" \"!**/node_modules/**\"",
+    "lint:markdown": "markdownlint-cli2 \"../../**/*.{md,mdx}\" \"!**/node_modules/**\"",
     "format-staged": "lint-staged",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
