@@ -43,6 +43,19 @@
     "TZ": "UTC"
   },
 
+  // These custom rules are read in extensions/ql-vscode/.markdownlint-cli2.cjs
+  // but markdownlint only considers that config when linting files in
+  // extensions/ql-vscode/ or its subfolders. Therefore, we have to explicitly
+  // load the custom rules here too.
+  //
+  // Configuration of the default rules is done in .markdownlint.json, which
+  // is picked up by the extension automatically, and read explicitly in
+  // .markdownlint-cli2.cjs
+  "markdownlint.customRules": [
+    "./extensions/ql-vscode/node_modules/@github/markdownlint-github/src/rules/no-default-alt-text.js",
+    "./extensions/ql-vscode/node_modules/@github/markdownlint-github/src/rules/no-generic-link-text.js"
+  ],
+
   // These options are used by the `jestrunner.debug` command.
   // They are not used by the `jestrunner.run` command.
   // After clicking "debug" over a test, continually invoke the
