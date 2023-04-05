@@ -8,7 +8,7 @@ describe("createDataExtensionYaml", () => {
     const yaml = createDataExtensionYaml(
       [
         {
-          externalApiInfo: "org.sql2o.Connection#createQuery(String)",
+          signature: "org.sql2o.Connection#createQuery(String)",
           packageName: "org.sql2o",
           typeName: "Connection",
           methodName: "createQuery",
@@ -38,7 +38,7 @@ describe("createDataExtensionYaml", () => {
           ],
         },
         {
-          externalApiInfo: "org.sql2o.Query#executeScalar(Class)",
+          signature: "org.sql2o.Query#executeScalar(Class)",
           packageName: "org.sql2o",
           typeName: "Query",
           methodName: "executeScalar",
