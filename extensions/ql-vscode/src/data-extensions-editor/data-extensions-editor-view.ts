@@ -197,6 +197,14 @@ export class DataExtensionsEditorView extends AbstractWebview<
     return this.cliServer.bqrsDecode(bqrsPath, resultSet.name);
   }
 
+  /*
+   * Progress in this class is a bit weird. Most of the progress is based on running the query.
+   * Query progress is always between 0 and 1000. However, we still have some steps that need
+   * to be done after the query has finished. Therefore, the maximum step is 1500. This captures
+   * that there's 1000 steps of the query progress since that takes the most time, and then
+   * an additional 500 steps for the rest of the work. The progress doesn't need to be 100%
+   * accurate, so this is just a rough estimate.
+   */
   private async showProgress(update: ProgressUpdate, maxStep?: number) {
     await this.postMessage({
       t: "showProgress",
