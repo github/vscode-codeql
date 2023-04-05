@@ -13,6 +13,7 @@ import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../pure/errors";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { getResults, runQuery } from "./external-api-usage-query";
+import { extLogger } from "../common";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -77,6 +78,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         queryRunner: this.queryRunner,
         databaseItem: this.databaseItem,
         queryStorageDir: this.queryStorageDir,
+        logger: extLogger,
         progress: (progressUpdate: ProgressUpdate) => {
           void this.showProgress(progressUpdate, 1500);
         },
@@ -96,6 +98,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       const bqrsChunk = await getResults({
         cliServer: this.cliServer,
         bqrsPath: queryResult.outputDir.bqrsPath,
+        logger: extLogger,
       });
       if (!bqrsChunk) {
         await this.clearProgress();

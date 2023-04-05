@@ -478,7 +478,7 @@ function findStandardQueryPack(
 }
 
 export async function getQlPackForDbscheme(
-  cliServer: CodeQLCliServer,
+  cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
   dbschemePath: string,
 ): Promise<QlPacksForLanguage> {
   const qlpacks = await cliServer.resolveQlpacks(getOnDiskWorkspaceFolders());

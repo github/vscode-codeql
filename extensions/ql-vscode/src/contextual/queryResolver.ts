@@ -21,8 +21,8 @@ import { redactableError } from "../pure/errors";
 import { QLPACK_FILENAMES } from "../pure/ql";
 
 export async function qlpackOfDatabase(
-  cli: CodeQLCliServer,
-  db: DatabaseItem,
+  cli: Pick<CodeQLCliServer, "resolveQlpacks">,
+  db: Pick<DatabaseItem, "contents">,
 ): Promise<QlPacksForLanguage> {
   if (db.contents === undefined) {
     throw new Error("Database is invalid and cannot infer QLPack.");

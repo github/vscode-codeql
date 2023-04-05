@@ -4,17 +4,18 @@ import { file } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../helpers";
-import { extLogger, TeeLogger } from "../common";
+import { Logger, TeeLogger } from "../common";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseItem } from "../local-databases";
 import { ProgressCallback } from "../progress";
 
 export type RunQueryOptions = {
-  cliServer: CodeQLCliServer;
-  queryRunner: QueryRunner;
-  databaseItem: DatabaseItem;
+  cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveQueriesInSuite">;
+  queryRunner: Pick<QueryRunner, "createQueryRun" | "logger">;
+  databaseItem: Pick<DatabaseItem, "contents" | "databaseUri" | "language">;
   queryStorageDir: string;
+  logger: Logger;
 
   progress: ProgressCallback;
   token: CancellationToken;
@@ -25,6 +26,7 @@ export async function runQuery({
   queryRunner,
   databaseItem,
   queryStorageDir,
+  logger,
   progress,
   token,
 }: RunQueryOptions): Promise<CoreCompletedQuery | undefined> {
@@ -58,7 +60,7 @@ export async function runQuery({
   );
 
   if (queries.length !== 1) {
-    void extLogger.log(`Expected exactly one query, got ${queries.length}`);
+    void logger.log(`Expected exactly one query, got ${queries.length}`);
     return;
   }
 
@@ -83,14 +85,19 @@ export async function runQuery({
 }
 
 export type GetResultsOptions = {
-  cliServer: CodeQLCliServer;
+  cliServer: Pick<CodeQLCliServer, "bqrsInfo" | "bqrsDecode">;
   bqrsPath: string;
+  logger: Logger;
 };
 
-export async function getResults({ cliServer, bqrsPath }: GetResultsOptions) {
+export async function getResults({
+  cliServer,
+  bqrsPath,
+  logger,
+}: GetResultsOptions) {
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
-    void extLogger.log(
+    void logger.log(
       `Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
     );
     return undefined;
@@ -98,5 +105,7 @@ export async function getResults({ cliServer, bqrsPath }: GetResultsOptions) {
 
   const resultSet = bqrsInfo["result-sets"][0];
 
-  return cliServer.bqrsDecode(bqrsPath, resultSet.name);
+  const result = await cliServer.bqrsDecode(bqrsPath, resultSet.name);
+  void logger.log(JSON.stringify(result));
+  return result;
 }
