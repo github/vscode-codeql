@@ -28,7 +28,7 @@ For information about other configurations, see the separate [CodeQL help](https
 1. [Run a query](#running-a-query).
 
 ---
-
+<!-- markdownlint-disable-next-line MD024 -->
 ## Quick start: Installing and configuring the extension
 
 ### Installing the extension
@@ -71,6 +71,7 @@ in the starter workspace directory.
 
 If you're using your own clone of the CodeQL standard libraries, you can do a `git pull` from where you have the libraries checked out.
 
+<!-- markdownlint-disable-next-line MD024 -->
 ## Quick start: Using CodeQL
 
 You can find all the commands contributed by the extension in the Command Palette (**Ctrl+Shift+P** or **Cmd+Shift+P**) by typing `CodeQL`, many of them are also accessible through the interface, and via keyboard shortcuts.
