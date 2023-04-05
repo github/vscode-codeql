@@ -47,7 +47,7 @@ import {
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "../helpers";
-import { readFile, readJson, remove, pathExists, outputJson } from "fs-extra";
+import { readFile, remove, pathExists } from "fs-extra";
 import { EOL } from "os";
 import { cancelVariantAnalysis } from "./gh-api/gh-actions-api-client";
 import {
@@ -67,12 +67,16 @@ import { App } from "../common/app";
 import { redactableError } from "../pure/errors";
 import { AppCommandManager, VariantAnalysisCommands } from "../common/commands";
 import { exportVariantAnalysisResults } from "./export-results";
+import {
+  readRepoStates,
+  REPO_STATES_FILENAME,
+  writeRepoStates,
+} from "./store/repo-states-store";
 
 export class VariantAnalysisManager
   extends DisposableObject
   implements VariantAnalysisViewManager<VariantAnalysisView>
 {
-  private static readonly REPO_STATES_FILENAME = "repo_states.json";
   private static readonly DOWNLOAD_PERCENTAGE_UPDATE_DELAY_MS = 500;
 
   private readonly _onVariantAnalysisAdded = this.push(
@@ -136,7 +140,10 @@ export class VariantAnalysisManager
       "codeQL.copyVariantAnalysisRepoList":
         this.copyRepoListToClipboard.bind(this),
       "codeQL.loadVariantAnalysisRepoResults": this.loadResults.bind(this),
-      "codeQL.monitorVariantAnalysis": this.monitorVariantAnalysis.bind(this),
+      "codeQL.monitorNewVariantAnalysis":
+        this.monitorVariantAnalysis.bind(this),
+      "codeQL.monitorRehydratedVariantAnalysis":
+        this.monitorVariantAnalysis.bind(this),
       "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
       "codeQL.openVariantAnalysisView": this.showView.bind(this),
       "codeQL.runVariantAnalysis":
@@ -244,7 +251,7 @@ export class VariantAnalysisManager
       processedVariantAnalysis.id,
     );
     void this.app.commands.execute(
-      "codeQL.monitorVariantAnalysis",
+      "codeQL.monitorNewVariantAnalysis",
       processedVariantAnalysis,
     );
   }
@@ -258,7 +265,7 @@ export class VariantAnalysisManager
       await this.setVariantAnalysis(variantAnalysis);
 
       try {
-        const repoStates = await readJson(
+        const repoStates = await readRepoStates(
           this.getRepoStatesStoragePath(variantAnalysis.id),
         );
         this.repoStates.set(variantAnalysis.id, repoStates);
@@ -274,7 +281,7 @@ export class VariantAnalysisManager
         ))
       ) {
         void this.app.commands.execute(
-          "codeQL.monitorVariantAnalysis",
+          "codeQL.monitorRehydratedVariantAnalysis",
           variantAnalysis,
         );
       }
@@ -591,7 +598,7 @@ export class VariantAnalysisManager
       VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
-    await outputJson(
+    await writeRepoStates(
       this.getRepoStatesStoragePath(variantAnalysis.id),
       this.repoStates.get(variantAnalysis.id),
     );
@@ -696,7 +703,7 @@ export class VariantAnalysisManager
   private getRepoStatesStoragePath(variantAnalysisId: number): string {
     return join(
       this.getVariantAnalysisStorageLocation(variantAnalysisId),
-      VariantAnalysisManager.REPO_STATES_FILENAME,
+      REPO_STATES_FILENAME,
     );
   }
 

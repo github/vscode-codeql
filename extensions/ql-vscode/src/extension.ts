@@ -169,27 +169,31 @@ function getCommands(
     }
   };
 
+  const restartQueryServer = async () =>
+    withProgress(
+      async (progress: ProgressCallback, token: CancellationToken) => {
+        // Restart all of the spawned servers: cli, query, and language.
+        cliServer.restartCliServer();
+        await Promise.all([
+          queryRunner.restartQueryServer(progress, token),
+          ideServer.restart(),
+        ]);
+        void showAndLogInformationMessage("CodeQL Query Server restarted.", {
+          outputLogger: queryServerLogger,
+        });
+      },
+      {
+        title: "Restarting Query Server",
+      },
+    );
+
   return {
     "codeQL.openDocumentation": async () => {
       await env.openExternal(Uri.parse("https://codeql.github.com/docs/"));
     },
-    "codeQL.restartQueryServer": async () =>
-      withProgress(
-        async (progress: ProgressCallback, token: CancellationToken) => {
-          // Restart all of the spawned servers: cli, query, and language.
-          cliServer.restartCliServer();
-          await Promise.all([
-            queryRunner.restartQueryServer(progress, token),
-            ideServer.restart(),
-          ]);
-          void showAndLogInformationMessage("CodeQL Query Server restarted.", {
-            outputLogger: queryServerLogger,
-          });
-        },
-        {
-          title: "Restarting Query Server",
-        },
-      ),
+    "codeQL.restartQueryServer": restartQueryServer,
+    "codeQL.restartQueryServerOnConfigChange": restartQueryServer,
+    "codeQL.restartLegacyQueryServerOnConfigChange": restartQueryServer,
     "codeQL.copyVersion": async () => {
       const text = `CodeQL extension version: ${
         extension?.packageJSON.version
@@ -861,18 +865,14 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(localQueries);
 
-  const dataExtensionsEditorQueryStorageDir = join(
-    tmpDir.name,
-    "data-extensions-editor-results",
-  );
-  await ensureDir(dataExtensionsEditorQueryStorageDir);
-  const dataExtensionsEditorModule = new DataExtensionsEditorModule(
-    ctx,
-    dbm,
-    cliServer,
-    qs,
-    dataExtensionsEditorQueryStorageDir,
-  );
+  const dataExtensionsEditorModule =
+    await DataExtensionsEditorModule.initialize(
+      ctx,
+      dbm,
+      cliServer,
+      qs,
+      tmpDir.name,
+    );
 
   void extLogger.log("Initializing QLTest interface.");
   const testExplorerExtension = extensions.getExtension<TestHub>(

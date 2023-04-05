@@ -1,11 +1,8 @@
-import {
-  ExternalApiUsage,
-  ModeledMethod,
-  ModeledMethodType,
-} from "./interface";
+import { ExternalApiUsage } from "./external-api-usage";
+import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 
 type ExternalApiUsageByType = {
-  method: ExternalApiUsage;
+  externalApiUsage: ExternalApiUsage;
   modeledMethod: ModeledMethod;
 };
 
@@ -25,11 +22,11 @@ const definitions: Record<
     //   string output, string kind, string provenance
     // );
     generateMethodDefinition: (method) => [
-      method.method.packageName,
-      method.method.typeName,
+      method.externalApiUsage.packageName,
+      method.externalApiUsage.typeName,
       true,
-      method.method.methodName,
-      method.method.methodParameters,
+      method.externalApiUsage.methodName,
+      method.externalApiUsage.methodParameters,
       "",
       method.modeledMethod.output,
       method.modeledMethod.kind,
@@ -43,11 +40,11 @@ const definitions: Record<
     //   string input, string kind, string provenance
     // );
     generateMethodDefinition: (method) => [
-      method.method.packageName,
-      method.method.typeName,
+      method.externalApiUsage.packageName,
+      method.externalApiUsage.typeName,
       true,
-      method.method.methodName,
-      method.method.methodParameters,
+      method.externalApiUsage.methodName,
+      method.externalApiUsage.methodParameters,
       "",
       method.modeledMethod.input,
       method.modeledMethod.kind,
@@ -61,11 +58,11 @@ const definitions: Record<
     //   string input, string output, string kind, string provenance
     // );
     generateMethodDefinition: (method) => [
-      method.method.packageName,
-      method.method.typeName,
+      method.externalApiUsage.packageName,
+      method.externalApiUsage.typeName,
       true,
-      method.method.methodName,
-      method.method.methodParameters,
+      method.externalApiUsage.methodName,
+      method.externalApiUsage.methodParameters,
       "",
       method.modeledMethod.input,
       method.modeledMethod.output,
@@ -79,10 +76,10 @@ const definitions: Record<
     //   string package, string type, string name, string signature, string provenance
     // );
     generateMethodDefinition: (method) => [
-      method.method.packageName,
-      method.method.typeName,
-      method.method.methodName,
-      method.method.methodParameters,
+      method.externalApiUsage.packageName,
+      method.externalApiUsage.typeName,
+      method.externalApiUsage.methodName,
+      method.externalApiUsage.methodParameters,
       "manual",
     ],
   },
@@ -107,7 +104,7 @@ function createDataProperty(
 }
 
 export function createDataExtensionYaml(
-  methods: ExternalApiUsage[],
+  externalApiUsages: ExternalApiUsage[],
   modeledMethods: Record<string, ModeledMethod>,
 ) {
   const methodsByType: Record<
@@ -120,12 +117,12 @@ export function createDataExtensionYaml(
     neutral: [],
   };
 
-  for (const method of methods) {
-    const modeledMethod = modeledMethods[method.externalApiInfo];
+  for (const externalApiUsage of externalApiUsages) {
+    const modeledMethod = modeledMethods[externalApiUsage.signature];
 
     if (modeledMethod?.type && modeledMethod.type !== "none") {
       methodsByType[modeledMethod.type].push({
-        method,
+        externalApiUsage,
         modeledMethod,
       });
     }
