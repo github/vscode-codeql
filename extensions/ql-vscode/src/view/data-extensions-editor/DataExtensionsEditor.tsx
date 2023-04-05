@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { DecodedBqrsChunk } from "../../pure/bqrs-cli-types";
 import {
   ShowProgressMessage,
   ToDataExtensionsEditorMessage,
@@ -11,10 +10,7 @@ import {
   VSCodeDataGridRow,
 } from "@vscode/webview-ui-toolkit/react";
 import styled from "styled-components";
-import {
-  Call,
-  ExternalApiUsage,
-} from "../../data-extensions-editor/external-api-usage";
+import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { MethodRow } from "./MethodRow";
 import { assertNever } from "../../pure/helpers-pure";
@@ -35,9 +31,9 @@ const ProgressBar = styled.div<ProgressBarProps>`
 `;
 
 export function DataExtensionsEditor(): JSX.Element {
-  const [results, setResults] = useState<DecodedBqrsChunk | undefined>(
-    undefined,
-  );
+  const [externalApiUsages, setExternalApiUsages] = useState<
+    ExternalApiUsage[]
+  >([]);
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
   >({});
@@ -52,8 +48,8 @@ export function DataExtensionsEditor(): JSX.Element {
       if (evt.origin === window.origin) {
         const msg: ToDataExtensionsEditorMessage = evt.data;
         switch (msg.t) {
-          case "setExternalApiRepoResults":
-            setResults(msg.results);
+          case "setExternalApiUsages":
+            setExternalApiUsages(msg.externalApiUsages);
             break;
           case "showProgress":
             setProgress(msg);
@@ -74,63 +70,21 @@ export function DataExtensionsEditor(): JSX.Element {
     };
   }, []);
 
-  const methods = useMemo(() => {
-    const methodsByApiName = new Map<string, ExternalApiUsage>();
-
-    results?.tuples.forEach((tuple) => {
-      const signature = tuple[0] as string;
-      const supported = tuple[1] as boolean;
-      const usage = tuple[2] as Call;
-
-      const [packageWithType, methodDeclaration] = signature.split("#");
-
-      const packageName = packageWithType.substring(
-        0,
-        packageWithType.lastIndexOf("."),
-      );
-      const typeName = packageWithType.substring(
-        packageWithType.lastIndexOf(".") + 1,
-      );
-
-      const methodName = methodDeclaration.substring(
-        0,
-        methodDeclaration.indexOf("("),
-      );
-      const methodParameters = methodDeclaration.substring(
-        methodDeclaration.indexOf("("),
-      );
-
-      if (!methodsByApiName.has(signature)) {
-        methodsByApiName.set(signature, {
-          signature,
-          packageName,
-          typeName,
-          methodName,
-          methodParameters,
-          supported,
-          usages: [],
-        });
-      }
-
-      const method = methodsByApiName.get(signature)!;
-      method.usages.push(usage);
-    });
-
-    const externalApiUsages = Array.from(methodsByApiName.values());
-    externalApiUsages.sort((a, b) => {
-      // Sort by number of usages descending
-      return b.usages.length - a.usages.length;
-    });
-    return externalApiUsages;
-  }, [results]);
-
   const supportedPercentage = useMemo(() => {
-    return (methods.filter((m) => m.supported).length / methods.length) * 100;
-  }, [methods]);
+    return (
+      (externalApiUsages.filter((m) => m.supported).length /
+        externalApiUsages.length) *
+      100
+    );
+  }, [externalApiUsages]);
 
   const unsupportedPercentage = useMemo(() => {
-    return (methods.filter((m) => !m.supported).length / methods.length) * 100;
-  }, [methods]);
+    return (
+      (externalApiUsages.filter((m) => !m.supported).length /
+        externalApiUsages.length) *
+      100
+    );
+  }, [externalApiUsages]);
 
   const onChange = useCallback(
     (method: ExternalApiUsage, model: ModeledMethod) => {
@@ -151,7 +105,7 @@ export function DataExtensionsEditor(): JSX.Element {
         </p>
       )}
 
-      {methods.length > 0 && (
+      {externalApiUsages.length > 0 && (
         <>
           <div>
             <h3>External API support stats</h3>
@@ -186,11 +140,11 @@ export function DataExtensionsEditor(): JSX.Element {
                   Kind
                 </VSCodeDataGridCell>
               </VSCodeDataGridRow>
-              {methods.map((method) => (
+              {externalApiUsages.map((externalApiUsage) => (
                 <MethodRow
-                  key={method.signature}
-                  method={method}
-                  model={modeledMethods[method.signature]}
+                  key={externalApiUsage.signature}
+                  method={externalApiUsage}
+                  model={modeledMethods[externalApiUsage.signature]}
                   onChange={onChange}
                 />
               ))}

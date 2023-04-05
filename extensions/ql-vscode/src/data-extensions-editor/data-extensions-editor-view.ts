@@ -14,6 +14,7 @@ import { dump } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../helpers";
 import { DatabaseItem } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
+import { decodeBqrsToExternalApiUsages } from "./bqrs";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -84,8 +85,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
     const bqrsPath = queryResult.outputDir.bqrsPath;
 
-    const results = await this.getResults(bqrsPath);
-    if (!results) {
+    const bqrsChunk = await this.getResults(bqrsPath);
+    if (!bqrsChunk) {
       await this.clearProgress();
       return;
     }
@@ -96,9 +97,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
       maxStep: 1500,
     });
 
+    const externalApiUsages = decodeBqrsToExternalApiUsages(bqrsChunk);
+
     await this.postMessage({
-      t: "setExternalApiRepoResults",
-      results,
+      t: "setExternalApiUsages",
+      externalApiUsages,
     });
 
     await this.clearProgress();
