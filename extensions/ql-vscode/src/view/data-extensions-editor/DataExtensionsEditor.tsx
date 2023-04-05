@@ -78,11 +78,11 @@ export function DataExtensionsEditor(): JSX.Element {
     const methodsByApiName = new Map<string, ExternalApiUsage>();
 
     results?.tuples.forEach((tuple) => {
-      const externalApiInfo = tuple[0] as string;
+      const signature = tuple[0] as string;
       const supported = tuple[1] as boolean;
       const usage = tuple[2] as Call;
 
-      const [packageWithType, methodDeclaration] = externalApiInfo.split("#");
+      const [packageWithType, methodDeclaration] = signature.split("#");
 
       const packageName = packageWithType.substring(
         0,
@@ -100,9 +100,9 @@ export function DataExtensionsEditor(): JSX.Element {
         methodDeclaration.indexOf("("),
       );
 
-      if (!methodsByApiName.has(externalApiInfo)) {
-        methodsByApiName.set(externalApiInfo, {
-          externalApiInfo,
+      if (!methodsByApiName.has(signature)) {
+        methodsByApiName.set(signature, {
+          signature,
           packageName,
           typeName,
           methodName,
@@ -112,7 +112,7 @@ export function DataExtensionsEditor(): JSX.Element {
         });
       }
 
-      const method = methodsByApiName.get(externalApiInfo)!;
+      const method = methodsByApiName.get(signature)!;
       method.usages.push(usage);
     });
 
@@ -136,7 +136,7 @@ export function DataExtensionsEditor(): JSX.Element {
     (method: ExternalApiUsage, model: ModeledMethod) => {
       setModeledMethods((oldModeledMethods) => ({
         ...oldModeledMethods,
-        [method.externalApiInfo]: model,
+        [method.signature]: model,
       }));
     },
     [],
@@ -188,9 +188,9 @@ export function DataExtensionsEditor(): JSX.Element {
               </VSCodeDataGridRow>
               {methods.map((method) => (
                 <MethodRow
-                  key={method.externalApiInfo}
+                  key={method.signature}
                   method={method}
-                  model={modeledMethods[method.externalApiInfo]}
+                  model={modeledMethods[method.signature]}
                   onChange={onChange}
                 />
               ))}

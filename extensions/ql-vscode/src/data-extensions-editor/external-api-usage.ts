@@ -6,7 +6,10 @@ export type Call = {
 };
 
 export type ExternalApiUsage = {
-  externalApiInfo: string;
+  /**
+   * Contains the full method signature, e.g. `org.sql2o.Connection#createQuery(String)`
+   */
+  signature: string;
   packageName: string;
   typeName: string;
   methodName: string;
