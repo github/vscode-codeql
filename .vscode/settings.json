@@ -52,8 +52,13 @@
     "./extensions/ql-vscode/node_modules/@github/markdownlint-github/src/rules/no-generic-link-text.js"
   ],
 
-  // This ensures that the rule enablement done by github-markdownlint is considered
-  // by the extension too.
+  // This ensures that the accessibility rule enablement done by github-markdownlint is
+  // considered by the extension too.
+  //
+  // Unfortunately, we can only specify a single extends, so the config here isn't
+  // identical since it can't also consider @github/markdownlint-github/style/base.json
+  // That's not as bad as it could be since the full config is considered for anything
+  // in extensions/ql-vscode/ or its subfolders anyway.
   //
   // Additional nonfiguration of the default rules is done in .markdownlint.json,
   // which is picked up by the extension automatically, and read explicitly in
