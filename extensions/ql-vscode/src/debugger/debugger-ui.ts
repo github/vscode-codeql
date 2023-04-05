@@ -1,3 +1,4 @@
+import { basename } from "path";
 import {
   DebugAdapterTracker,
   DebugAdapterTrackerFactory,
@@ -17,7 +18,11 @@ import { LocalQueries, LocalQueryRun } from "../local-queries";
 import { DisposableObject } from "../pure/disposable-object";
 import { CompletedLocalQueryInfo } from "../query-results";
 import { CoreQueryResults } from "../queryRunner";
-import { QueryOutputDir } from "../run-queries-shared";
+import {
+  getQuickEvalContext,
+  QueryOutputDir,
+  validateQueryUri,
+} from "../run-queries-shared";
 import { QLResolvedDebugConfiguration } from "./debug-configuration";
 import * as CodeQLDebugProtocol from "./debug-protocol";
 
@@ -74,6 +79,14 @@ class QLDebugAdapterTracker
     this.dispose();
   }
 
+  public async quickEval(): Promise<void> {
+    const args: CodeQLDebugProtocol.QuickEvalRequest["arguments"] = {
+      quickEvalPosition: (await getQuickEvalContext(undefined))
+        .quickEvalPosition,
+    };
+    await this.session.customRequest("codeql-quickeval", args);
+  }
+
   /**
    * Queues a message handler to be executed once all other pending message handlers have completed.
    *
@@ -105,10 +118,10 @@ class QLDebugAdapterTracker
     );
 
     const quickEval =
-      this.configuration.quickEvalPosition !== undefined
+      body.quickEvalPosition !== undefined
         ? {
-            quickEvalPosition: this.configuration.quickEvalPosition,
-            quickEvalText: "quickeval!!!", // TODO: Have the debug adapter return the range, and extract the text from the editor.
+            quickEvalPosition: body.quickEvalPosition,
+            quickEvalText: "<Quick Evaluation>", // TODO: Have the debug adapter return the range, and extract the text from the editor.
           }
         : undefined;
     this.localQueryRun = await this.localQueries.createLocalQueryRun(
@@ -155,8 +168,15 @@ export class DebuggerUI
 
   public getCommands(): DebuggerCommands {
     return {
-      "codeQL.debug.quickEval": this.quickEval.bind(this),
-      "codeQL.debug.quickEvalContextEditor": this.quickEval.bind(this),
+      "codeQL.debugQuery": this.debugQuery.bind(this),
+      "codeQL.debugQueryContextEditor": this.debugQuery.bind(this),
+      "codeQL.startDebuggingSelectionContextEditor":
+        this.startDebuggingSelection.bind(this),
+      "codeQL.startDebuggingSelection": this.startDebuggingSelection.bind(this),
+      "codeQL.continueDebuggingSelection":
+        this.continueDebuggingSelection.bind(this),
+      "codeQL.continueDebuggingSelectionContextEditor":
+        this.continueDebuggingSelection.bind(this),
     };
   }
 
@@ -181,12 +201,34 @@ export class DebuggerUI
     this.sessions.delete(session.id);
   }
 
-  private async quickEval(_uri: Uri): Promise<void> {
+  private async debugQuery(uri: Uri): Promise<void> {
+    const queryPath = validateQueryUri(uri, false);
+
+    // Start debugging with a default configuration that just specifies the query path.
+    await debug.startDebugging(undefined, {
+      name: basename(queryPath),
+      type: "codeql",
+      request: "launch",
+      query: queryPath,
+    });
+  }
+
+  private async startDebuggingSelection(): Promise<void> {
+    // Launch the currently selected debug configuration, but specifying QuickEval mode.
     await commands.executeCommand("workbench.action.debug.start", {
       config: {
         quickEval: true,
       },
     });
+  }
+
+  private async continueDebuggingSelection(): Promise<void> {
+    const activeTracker = this.activeTracker;
+    if (activeTracker === undefined) {
+      throw new Error("No CodeQL debug session is active.");
+    }
+
+    await activeTracker.quickEval();
   }
 
   private getTrackerForSession(

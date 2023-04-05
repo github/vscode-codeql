@@ -352,6 +352,30 @@
         "title": "CodeQL: Run Query on Selected Database"
       },
       {
+        "command": "codeQL.debugQuery",
+        "title": "CodeQL: Debug Query"
+      },
+      {
+        "command": "codeQL.debugQueryContextEditor",
+        "title": "CodeQL: Debug Query"
+      },
+      {
+        "command": "codeQL.startDebuggingSelection",
+        "title": "CodeQL: Debug Selection"
+      },
+      {
+        "command": "codeQL.startDebuggingSelectionContextEditor",
+        "title": "CodeQL: Debug Selection"
+      },
+      {
+        "command": "codeQL.continueDebuggingSelection",
+        "title": "CodeQL: Debug Selection"
+      },
+      {
+        "command": "codeQL.continueDebuggingSelectionContextEditor",
+        "title": "CodeQL: Debug Selection"
+      },
+      {
         "command": "codeQL.runQueryOnMultipleDatabases",
         "title": "CodeQL: Run Query on Multiple Databases"
       },
@@ -1073,6 +1097,30 @@
           "when": "false"
         },
         {
+          "command": "codeQL.debugQuery",
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql && !inDebugMode"
+        },
+        {
+          "command": "codeQL.debugQueryContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.startDebuggingSelection",
+          "when": "config.codeQL.canary && editorLangId == ql && debugState == inactive && debugConfigurationType == codeql"
+        },
+        {
+          "command": "codeQL.startDebuggingSelectionContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.continueDebuggingSelection",
+          "when": "config.codeQL.canary && editorLangId == ql && debugState == stopped && debugType == codeql"
+        },
+        {
+          "command": "codeQL.continueDebuggingSelectionContextEditor",
+          "when": "false"
+        },
+        {
           "command": "codeQL.runQueryOnMultipleDatabases",
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
@@ -1388,7 +1436,7 @@
       "editor/context": [
         {
           "command": "codeQL.runQueryContextEditor",
-          "when": "editorLangId == ql && resourceExtname == .ql"
+          "when": "editorLangId == ql && resourceExtname == .ql && !inDebugMode"
         },
         {
           "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",
@@ -1408,11 +1456,19 @@
         },
         {
           "command": "codeQL.quickEvalContextEditor",
-          "when": "editorLangId == ql"
+          "when": "editorLangId == ql && debugState == inactive"
         },
         {
-          "command": "codeQL.debug.quickEvalContextEditor",
-          "when": "config.codeQL.canary && editorLangId == ql"
+          "command": "codeQL.debugQueryContextEditor",
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql && !inDebugMode"
+        },
+        {
+          "command": "codeQL.startDebuggingSelectionContextEditor",
+          "when": "config.codeQL.canary && editorLangId == ql && debugState == inactive && debugConfigurationType == codeql"
+        },
+        {
+          "command": "codeQL.continueDebuggingSelectionContextEditor",
+          "when": "config.codeQL.canary && editorLangId == ql && debugState == stopped && debugType == codeql"
         },
         {
           "command": "codeQL.openReferencedFileContextEditor",

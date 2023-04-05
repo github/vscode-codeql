@@ -1,4 +1,5 @@
 import {
+  ContinuedEvent,
   Event,
   ExitedEvent,
   InitializedEvent,
@@ -13,7 +14,12 @@ import { Disposable } from "vscode";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import { BaseLogger, LogOptions, queryServerLogger } from "../common";
 import { QueryResultType } from "../pure/new-messages";
-import { CoreQueryResults, CoreQueryRun, QueryRunner } from "../queryRunner";
+import {
+  CoreCompletedQuery,
+  CoreQueryResults,
+  CoreQueryRun,
+  QueryRunner,
+} from "../queryRunner";
 import * as CodeQLDebugProtocol from "./debug-protocol";
 
 // More complete implementations of `Event` for certain events, because the classes from
@@ -77,11 +83,16 @@ class EvaluationStartedEvent
   public readonly event = "codeql-evaluation-started";
   public readonly body: CodeQLDebugProtocol.EvaluationStartedEventBody;
 
-  constructor(id: string, outputDir: string) {
+  constructor(
+    id: string,
+    outputDir: string,
+    quickEvalPosition: CodeQLDebugProtocol.Position | undefined,
+  ) {
     super("codeql-evaluation-started");
     this.body = {
       id,
       outputDir,
+      quickEvalPosition,
     };
   }
 }
@@ -254,7 +265,55 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
         // Send the response immediately. We'll send a "stopped" message when the evaluation is complete.
         this.sendResponse(response);
 
-        void this.evaluate();
+        void this.evaluate(this.args.quickEvalPosition);
+        break;
+
+      default:
+        this.unexpectedState(response);
+        break;
+    }
+  }
+
+  protected nextRequest(
+    response: DebugProtocol.NextResponse,
+    _args: DebugProtocol.NextArguments,
+    _request?: DebugProtocol.Request,
+  ): void {
+    this.stepRequest(response);
+  }
+
+  protected stepInRequest(
+    response: DebugProtocol.StepInResponse,
+    _args: DebugProtocol.StepInArguments,
+    _request?: DebugProtocol.Request,
+  ): void {
+    this.stepRequest(response);
+  }
+
+  protected stepOutRequest(
+    response: DebugProtocol.Response,
+    _args: DebugProtocol.StepOutArguments,
+    _request?: DebugProtocol.Request,
+  ): void {
+    this.stepRequest(response);
+  }
+
+  protected stepBackRequest(
+    response: DebugProtocol.StepBackResponse,
+    _args: DebugProtocol.StepBackArguments,
+    _request?: DebugProtocol.Request,
+  ): void {
+    this.stepRequest(response);
+  }
+
+  private stepRequest(response: DebugProtocol.Response): void {
+    switch (this.state) {
+      case "stopped":
+        this.sendResponse(response);
+        // We don't do anything with stepping yet, so just announce that we've stopped without
+        // actually doing anything.
+        // We don't even send the `EvaluationCompletedEvent`.
+        this.reportStopped();
         break;
 
       default:
@@ -276,7 +335,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
         // Send the response immediately. We'll send a "stopped" message when the evaluation is complete.
         this.sendResponse(response);
 
-        void this.evaluate();
+        void this.evaluate(undefined);
         break;
 
       default:
@@ -333,6 +392,50 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     super.stackTraceRequest(response, _args, _request);
   }
 
+  protected customRequest(
+    command: string,
+    response: CodeQLDebugProtocol.Response,
+    args: any,
+    request?: DebugProtocol.Request,
+  ): void {
+    switch (command) {
+      case "codeql-quickeval": {
+        this.quickEvalRequest(
+          response,
+          <CodeQLDebugProtocol.QuickEvalRequest["arguments"]>args,
+        );
+        break;
+      }
+
+      default:
+        super.customRequest(command, response, args, request);
+        break;
+    }
+  }
+
+  protected quickEvalRequest(
+    response: CodeQLDebugProtocol.QuickEvalResponse,
+    args: CodeQLDebugProtocol.QuickEvalRequest["arguments"],
+  ): void {
+    switch (this.state) {
+      case "stopped":
+        // Send the response immediately. We'll send a "stopped" message when the evaluation is complete.
+        this.sendResponse(response);
+
+        // For built-in requests that are expected to cause execution (`launch`, `continue`, `step`, etc.),
+        // the adapter does not send a `continued` event because the client already knows that's what
+        // is supposed to happen. For a custom request, though, we have to notify the client.
+        this.sendEvent(new ContinuedEvent(QUERY_THREAD_ID, true));
+
+        void this.evaluate(args.quickEvalPosition);
+        break;
+
+      default:
+        this.unexpectedState(response);
+        break;
+    }
+  }
+
   /** Creates a `BaseLogger` that sends output to the debug console. */
   private createLogger(): BaseLogger {
     return {
@@ -348,7 +451,9 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
    * This function is invoked from the `launch` and `continue` handlers, without awaiting its
    * result.
    */
-  private async evaluate(): Promise<void> {
+  private async evaluate(
+    quickEvalPosition: CodeQLDebugProtocol.Position | undefined,
+  ): Promise<void> {
     const args = this.args!;
 
     this.tokenSource = new CancellationTokenSource();
@@ -359,7 +464,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
         args.database,
         {
           queryPath: args.query,
-          quickEvalPosition: args.quickEvalPosition,
+          quickEvalPosition,
         },
         true,
         args.additionalPacks,
@@ -377,33 +482,38 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
         new EvaluationStartedEvent(
           this.queryRun.id,
           this.queryRun.outputDir.querySaveDir,
+          quickEvalPosition,
         ),
       );
 
-      // Report progress via the debugger protocol.
-      const progressStart = new ProgressStartEvent(
-        this.queryRun.id,
-        "Running query",
-        undefined,
-        0,
-      );
-      progressStart.body.cancellable = true;
-      this.sendEvent(progressStart);
-
       try {
-        const result = await this.queryRun.evaluate(
-          (p) => {
-            const progressUpdate = new ProgressUpdateEvent(
-              this.queryRun!.id,
-              p.message,
-              (p.step * 100) / p.maxStep,
-            );
-            this.sendEvent(progressUpdate);
-          },
-          this.tokenSource!.token,
-          this.createLogger(),
+        // Report progress via the debugger protocol.
+        const progressStart = new ProgressStartEvent(
+          this.queryRun.id,
+          "Running query",
+          undefined,
+          0,
         );
-
+        progressStart.body.cancellable = true;
+        this.sendEvent(progressStart);
+        let result: CoreCompletedQuery;
+        try {
+          result = await this.queryRun.evaluate(
+            (p) => {
+              const progressUpdate = new ProgressUpdateEvent(
+                this.queryRun!.id,
+                p.message,
+                (p.step * 100) / p.maxStep,
+              );
+              this.sendEvent(progressUpdate);
+            },
+            this.tokenSource!.token,
+            this.createLogger(),
+          );
+        } finally {
+          // Report the end of the progress
+          this.sendEvent(new ProgressEndEvent(this.queryRun!.id));
+        }
         this.completeEvaluation(result);
       } catch (e) {
         const message = e instanceof Error ? e.message : "Unknown error";
@@ -426,8 +536,6 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   ): void {
     this.lastResult = result;
 
-    // Report the end of the progress
-    this.sendEvent(new ProgressEndEvent(this.queryRun!.id));
     // Report the evaluation result
     this.sendEvent(new EvaluationCompletedEvent(result));
     if (result.resultType !== QueryResultType.SUCCESS) {
@@ -437,6 +545,12 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
       this.sendEvent(outputEvent);
     }
 
+    this.reportStopped();
+
+    this.queryRun = undefined;
+  }
+
+  private reportStopped(): void {
     if (this.terminateOnComplete) {
       this.terminateAndExit();
     } else {
@@ -445,7 +559,6 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
 
       this.state = "stopped";
     }
-    this.queryRun = undefined;
   }
 
   private terminateAndExit(): void {

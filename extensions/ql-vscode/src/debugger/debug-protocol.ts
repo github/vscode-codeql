@@ -15,6 +15,7 @@ export type OutputEvent = DebugProtocol.OutputEvent &
 export interface EvaluationStartedEventBody {
   id: string;
   outputDir: string;
+  quickEvalPosition: Position | undefined;
 }
 
 /**
@@ -48,6 +49,13 @@ export type AnyEvent =
 
 export type Request = DebugProtocol.Request & { type: "request" };
 
+export interface QuickEvalRequest extends Request {
+  command: "codeql-quickeval";
+  arguments: {
+    quickEvalPosition: Position;
+  };
+}
+
 export interface DebugResultRequest extends Request {
   command: "codeql-debug-result";
   arguments: undefined;
@@ -56,12 +64,18 @@ export interface DebugResultRequest extends Request {
 export type InitializeRequest = DebugProtocol.InitializeRequest &
   Request & { command: "initialize" };
 
-export type AnyRequest = InitializeRequest | DebugResultRequest;
+export type AnyRequest =
+  | InitializeRequest
+  | DebugResultRequest
+  | QuickEvalRequest;
 
 export type Response = DebugProtocol.Response & { type: "response" };
 
 export type InitializeResponse = DebugProtocol.InitializeResponse &
   Response & { command: "initialize" };
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface QuickEvalResponse extends Response {}
 
 export type AnyResponse = InitializeResponse;
 
