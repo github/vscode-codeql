@@ -14,8 +14,8 @@ import styled from "styled-components";
 import {
   Call,
   ExternalApiUsage,
-  ModeledMethod,
-} from "../../data-extensions-editor/interface";
+} from "../../data-extensions-editor/external-api-usage";
+import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { MethodRow } from "./MethodRow";
 import { assertNever } from "../../pure/helpers-pure";
 

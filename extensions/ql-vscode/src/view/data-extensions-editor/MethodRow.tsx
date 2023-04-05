@@ -1,8 +1,4 @@
 import {
-  ExternalApiUsage,
-  ModeledMethod,
-} from "../../data-extensions-editor/interface";
-import {
   VSCodeDataGridCell,
   VSCodeDataGridRow,
   VSCodeDropdown,
@@ -12,6 +8,9 @@ import {
 import * as React from "react";
 import { useCallback, useMemo } from "react";
 import styled from "styled-components";
+
+import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
+import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 
 const Dropdown = styled(VSCodeDropdown)`
   width: 100%;
