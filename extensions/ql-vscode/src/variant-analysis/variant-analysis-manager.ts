@@ -140,7 +140,10 @@ export class VariantAnalysisManager
       "codeQL.copyVariantAnalysisRepoList":
         this.copyRepoListToClipboard.bind(this),
       "codeQL.loadVariantAnalysisRepoResults": this.loadResults.bind(this),
-      "codeQL.monitorVariantAnalysis": this.monitorVariantAnalysis.bind(this),
+      "codeQL.monitorNewVariantAnalysis":
+        this.monitorVariantAnalysis.bind(this),
+      "codeQL.monitorRehydratedVariantAnalysis":
+        this.monitorVariantAnalysis.bind(this),
       "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
       "codeQL.openVariantAnalysisView": this.showView.bind(this),
       "codeQL.runVariantAnalysis":
@@ -248,7 +251,7 @@ export class VariantAnalysisManager
       processedVariantAnalysis.id,
     );
     void this.app.commands.execute(
-      "codeQL.monitorVariantAnalysis",
+      "codeQL.monitorNewVariantAnalysis",
       processedVariantAnalysis,
     );
   }
@@ -278,7 +281,7 @@ export class VariantAnalysisManager
         ))
       ) {
         void this.app.commands.execute(
-          "codeQL.monitorVariantAnalysis",
+          "codeQL.monitorRehydratedVariantAnalysis",
           variantAnalysis,
         );
       }
