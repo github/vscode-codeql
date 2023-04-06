@@ -492,8 +492,15 @@ export interface ShowProgressMessage {
   message: string;
 }
 
+export interface ApplyDataExtensionYamlMessage {
+  t: "applyDataExtensionYaml";
+  yaml: string;
+}
+
 export type ToDataExtensionsEditorMessage =
   | SetExternalApiUsagesMessage
   | ShowProgressMessage;
 
-export type FromDataExtensionsEditorMessage = ViewLoadedMsg;
+export type FromDataExtensionsEditorMessage =
+  | ViewLoadedMsg
+  | ApplyDataExtensionYamlMessage;

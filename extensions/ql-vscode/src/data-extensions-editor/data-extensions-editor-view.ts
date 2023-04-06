@@ -1,4 +1,10 @@
-import { CancellationTokenSource, ExtensionContext, ViewColumn } from "vscode";
+import {
+  CancellationTokenSource,
+  ExtensionContext,
+  Uri,
+  ViewColumn,
+  workspace,
+} from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import {
   FromDataExtensionsEditorMessage,
@@ -17,9 +23,9 @@ import {
 } from "../helpers";
 import { DatabaseItem } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
+import { assertNever, asError, getErrorMessage } from "../pure/helpers-pure";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../pure/errors";
-import { asError, getErrorMessage } from "../pure/helpers-pure";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -64,8 +70,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.onWebViewLoaded();
 
         break;
+      case "applyDataExtensionYaml":
+        await this.saveYaml(msg.yaml);
+        await this.loadExternalApiUsages();
+
+        break;
       default:
-        throw new Error("Unexpected message type");
+        assertNever(msg);
     }
   }
 
@@ -73,6 +84,17 @@ export class DataExtensionsEditorView extends AbstractWebview<
     super.onWebViewLoaded();
 
     await this.loadExternalApiUsages();
+  }
+
+  protected async saveYaml(yaml: string): Promise<void> {
+    const modelFilename = this.calculateModelFilename();
+    if (!modelFilename) {
+      return;
+    }
+
+    await writeFile(modelFilename, yaml);
+
+    void extLogger.log(`Saved data extension YAML to ${modelFilename}`);
   }
 
   protected async loadExternalApiUsages(): Promise<void> {
@@ -220,5 +242,22 @@ export class DataExtensionsEditorView extends AbstractWebview<
       maxStep: 0,
       message: "",
     });
+  }
+
+  private calculateModelFilename(): string | undefined {
+    const workspaceFolder = workspace.workspaceFolders?.find(
+      (folder) => folder.name === "ql",
+    );
+    if (!workspaceFolder) {
+      void extLogger.log("No workspace folder 'ql' found");
+
+      return;
+    }
+
+    return Uri.joinPath(
+      workspaceFolder.uri,
+      "java/ql/lib/ext",
+      `${this.databaseItem.name.replaceAll("/", ".")}.model.yml`,
+    ).fsPath;
   }
 }
