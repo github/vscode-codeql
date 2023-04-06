@@ -1,7 +1,12 @@
-import { VariantAnalysisScannedRepositoryDownloadStatus } from "../shared/variant-analysis";
-
 export interface VariantAnalysisScannedRepositoryStateData {
   repositoryId: number;
-  downloadStatus: VariantAnalysisScannedRepositoryDownloadStatus;
+  downloadStatus: VariantAnalysisScannedRepositoryDownloadData;
   downloadPercentage?: number;
+}
+
+export enum VariantAnalysisScannedRepositoryDownloadData {
+  Pending = "pending",
+  InProgress = "inProgress",
+  Succeeded = "succeeded",
+  Failed = "failed",
 }
