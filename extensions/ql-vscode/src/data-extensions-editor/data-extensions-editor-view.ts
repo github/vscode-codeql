@@ -395,6 +395,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
    * that there's 1000 steps of the query progress since that takes the most time, and then
    * an additional 500 steps for the rest of the work. The progress doesn't need to be 100%
    * accurate, so this is just a rough estimate.
+   *
+   * For generating the modeled methods for an external library, the max step is 4000. This is
+   * based on the following steps:
+   * - 1000 for the summary model
+   * - 1000 for the sink model
+   * - 1000 for the source model
+   * - 1000 for the neutral model
    */
   private async showProgress(update: ProgressUpdate, maxStep?: number) {
     await this.postMessage({
