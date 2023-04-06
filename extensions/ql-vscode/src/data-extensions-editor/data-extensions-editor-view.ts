@@ -87,7 +87,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   protected async saveYaml(yaml: string): Promise<void> {
-    const modelFilename = this.modelFileName;
+    const modelFilename = this.calculateModelFilename();
     if (!modelFilename) {
       return;
     }
@@ -244,7 +244,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     });
   }
 
-  private get modelFileName(): string | undefined {
+  private calculateModelFilename(): string | undefined {
     const workspaceFolder = workspace.workspaceFolders?.find(
       (folder) => folder.name === "ql",
     );
