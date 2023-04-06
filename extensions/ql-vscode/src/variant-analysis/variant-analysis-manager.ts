@@ -268,11 +268,7 @@ export class VariantAnalysisManager
         this.getRepoStatesStoragePath(variantAnalysis.id),
       );
 
-      if (repoStatesFromDisk) {
-        this.repoStates.set(variantAnalysis.id, repoStatesFromDisk);
-      } else {
-        this.repoStates.set(variantAnalysis.id, {});
-      }
+      this.repoStates.set(variantAnalysis.id, repoStatesFromDisk || {});
 
       if (
         !(await isVariantAnalysisComplete(
