@@ -1,0 +1,7 @@
+{
+  "extends": "../../../../../../.markdownlint.json",
+  "MD010": false, // Hard tabs are from the original snippet in the SARIF file
+  "MD024": false, // Duplicate headings
+  "MD033": false, // Inline HTML for <details> and <summary>
+  "MD051": false // Link fragments are used in Gist to link to other files
+}
