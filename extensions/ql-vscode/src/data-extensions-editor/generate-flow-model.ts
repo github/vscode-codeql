@@ -3,7 +3,7 @@ import { DatabaseItem } from "../local-databases";
 import { join } from "path";
 import { QueryRunner } from "../queryRunner";
 import { CodeQLCliServer } from "../cli";
-import { extLogger, TeeLogger } from "../common";
+import { TeeLogger } from "../common";
 import { extensiblePredicateDefinitions } from "./yaml";
 import { ProgressCallback } from "../progress";
 import { getOnDiskWorkspaceFolders } from "../helpers";
@@ -27,7 +27,7 @@ class FlowModelGenerator {
     type: Exclude<ModeledMethodType, "none">,
     queryName: string,
     queryStep: number,
-  ): Promise<ModeledMethodWithSignature[] | undefined> {
+  ): Promise<ModeledMethodWithSignature[]> {
     const definition = extensiblePredicateDefinitions[type];
 
     const query = join(
@@ -63,10 +63,9 @@ class FlowModelGenerator {
 
     const bqrsInfo = await this.cli.bqrsInfo(bqrsPath);
     if (bqrsInfo["result-sets"].length !== 1) {
-      void extLogger.log(
+      throw new Error(
         `Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
       );
-      return undefined;
     }
 
     const resultSet = bqrsInfo["result-sets"][0];

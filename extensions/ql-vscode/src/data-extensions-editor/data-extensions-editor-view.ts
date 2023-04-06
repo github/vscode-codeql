@@ -294,7 +294,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
         tokenSource.token,
       );
     } catch (e: unknown) {
-      void extLogger.log(`Error: ${getErrorMessage(e)}`);
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(e),
+        )`Failed to generate flow model: ${getErrorMessage(e)}`,
+      );
     }
 
     await this.databaseManager.removeDatabaseItem(
