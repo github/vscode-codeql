@@ -876,15 +876,6 @@ async function activateWithInstalledDistribution(
   const debuggerUI = new DebuggerUI(localQueryResultsView, localQueries, dbm);
   ctx.subscriptions.push(debuggerUI);
 
-  void extLogger.log("Initializing debugger factory.");
-  ctx.subscriptions.push(
-    new QLDebugAdapterDescriptorFactory(queryStorageDir, qs, localQueries),
-  );
-
-  void extLogger.log("Initializing debugger UI.");
-  const debuggerUI = new DebuggerUI(localQueryResultsView, localQueries, dbm);
-  ctx.subscriptions.push(debuggerUI);
-
   const dataExtensionsEditorModule =
     await DataExtensionsEditorModule.initialize(
       ctx,
