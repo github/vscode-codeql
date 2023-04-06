@@ -1,18 +1,27 @@
 import { outputJson, readJson } from "fs-extra";
 import { join } from "path";
 import { VariantAnalysisRepositoryTask } from "../shared/variant-analysis";
+import { mapRepoTaskToData } from "./repo-task-to-data-mapper";
+import { mapRepoTaskToDomain } from "./repo-task-to-domain-mapper";
 
 export const REPO_TASK_FILENAME = "repo_task.json";
 
-export function writeRepoTask(
+export async function writeRepoTask(
   storageDirectory: string,
   repoTask: VariantAnalysisRepositoryTask,
 ): Promise<void> {
-  return outputJson(join(storageDirectory, REPO_TASK_FILENAME), repoTask);
+  const repoTaskData = mapRepoTaskToData(repoTask);
+  return await outputJson(
+    join(storageDirectory, REPO_TASK_FILENAME),
+    repoTaskData,
+  );
 }
 
-export function readRepoTask(
+export async function readRepoTask(
   storageDirectory: string,
 ): Promise<VariantAnalysisRepositoryTask> {
-  return readJson(join(storageDirectory, REPO_TASK_FILENAME));
+  const repoTaskData = await readJson(
+    join(storageDirectory, REPO_TASK_FILENAME),
+  );
+  return mapRepoTaskToDomain(repoTaskData);
 }
