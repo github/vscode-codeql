@@ -7,7 +7,7 @@ import { QueryLanguage } from "./common/query-language";
 import { askForLanguage, isFolderAlreadyInWorkspace } from "./helpers";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
-import { DatabaseManager } from "./local-databases";
+import { DatabaseItem, DatabaseManager } from "./local-databases";
 import * as databaseFetcher from "./databaseFetcher";
 import { ProgressCallback } from "./progress";
 
@@ -231,9 +231,10 @@ export class SkeletonQueryWizard {
 
     const databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
 
-    const databaseItem = await this.databaseManager.digForDatabaseItem(
+    const databaseItem = await this.digForDatabaseItem(
       this.language,
       databaseNwo,
+      this.databaseManager.databaseItems,
     );
 
     if (databaseItem) {
@@ -243,5 +244,20 @@ export class SkeletonQueryWizard {
       // download new database and select it
       await this.downloadDatabase();
     }
+  }
+
+  public async digForDatabaseItem(
+    language: string,
+    databaseNwo: string,
+    databaseItems: readonly DatabaseItem[],
+  ): Promise<DatabaseItem | undefined> {
+    const dbItems = databaseItems || [];
+    const dbs = dbItems.filter(
+      (db) => db.language === language && db.name === databaseNwo,
+    );
+    if (dbs.length === 0) {
+      return undefined;
+    }
+    return dbs[0];
   }
 }
