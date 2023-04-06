@@ -939,6 +939,7 @@ async function activateWithInstalledDistribution(
     ...astViewer.getCommands(),
     ...getPackagingCommands({
       cliServer,
+      client,
     }),
     ...dataExtensionsEditorModule.getCommands(),
     ...evalLogViewer.getCommands(),

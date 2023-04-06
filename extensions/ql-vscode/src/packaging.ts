@@ -4,7 +4,7 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
 } from "./helpers";
-import { QuickPickItem, window } from "vscode";
+import { FileChangeType, QuickPickItem, Uri, window } from "vscode";
 import {
   ProgressCallback,
   UserCancellationException,
@@ -15,19 +15,26 @@ import { asError, getErrorStack } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";
 import { PACKS_BY_QUERY_LANGUAGE } from "./common/query-language";
 import { PackagingCommands } from "./common/commands";
+import {
+  DidChangeWatchedFilesNotification,
+  LanguageClient,
+} from "vscode-languageclient/node";
+import * as path from "path";
 
 type PackagingOptions = {
   cliServer: CodeQLCliServer;
+  client: LanguageClient;
 };
 
 export function getPackagingCommands({
   cliServer,
+  client,
 }: PackagingOptions): PackagingCommands {
   return {
     "codeQL.installPackDependencies": async () =>
       withProgress(
         async (progress: ProgressCallback) =>
-          await handleInstallPackDependencies(cliServer, progress),
+          await handleInstallPackDependencies(cliServer, client, progress),
         {
           title: "Installing pack dependencies",
         },
@@ -113,6 +120,7 @@ interface QLPackQuickPickItem extends QuickPickItem {
  */
 export async function handleInstallPackDependencies(
   cliServer: CodeQLCliServer,
+  ideServer: LanguageClient,
   progress: ProgressCallback,
 ): Promise<void> {
   progress({
@@ -150,6 +158,7 @@ export async function handleInstallPackDependencies(
       try {
         for (const dir of pack.packRootDir) {
           await cliServer.packInstall(dir);
+          await notifyPackChanged(dir, ideServer);
         }
       } catch (error) {
         failedPacks.push(pack.label);
@@ -171,4 +180,19 @@ export async function handleInstallPackDependencies(
   } else {
     throw new UserCancellationException("No packs selected.");
   }
+}
+
+export async function notifyPackChanged(
+  dir: string,
+  ideServer: LanguageClient,
+) {
+  const packFile = path.resolve(dir, "codeql-pack.yml");
+  await ideServer.sendNotification(DidChangeWatchedFilesNotification.type, {
+    changes: [
+      {
+        type: FileChangeType.Changed,
+        uri: Uri.file(packFile).toString(),
+      },
+    ],
+  });
 }
