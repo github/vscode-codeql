@@ -75,11 +75,16 @@ class FlowModelGenerator {
 
     const results = decodedResults.tuples;
 
-    return results.map((result) => {
-      const row = result[0] as string;
+    return (
+      results
+        // This is just a sanity check. The query should only return strings.
+        .filter((result) => typeof result[0] === "string")
+        .map((result) => {
+          const row = result[0] as string;
 
-      return definition.readModeledMethod(row.split(";"));
-    });
+          return definition.readModeledMethod(row.split(";"));
+        })
+    );
   }
 
   async run(
