@@ -1,4 +1,4 @@
-import { pathExists, readFile, remove, mkdir, writeFile } from "fs-extra";
+import { pathExists, remove, mkdir, writeFile, readJson } from "fs-extra";
 import { dirname } from "path";
 
 import { showAndLogExceptionWithTelemetry } from "../../helpers";
@@ -8,11 +8,15 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "../../pure/helpers-pure";
-import { CompletedQueryInfo, LocalQueryInfo } from "../../query-results";
 import { QueryHistoryInfo } from "../query-history-info";
-import { QueryEvaluationInfo } from "../../run-queries-shared";
-import { QueryResultType } from "../../pure/legacy-messages";
 import { redactableError } from "../../pure/errors";
+import {
+  ALLOWED_QUERY_HISTORY_VERSIONS,
+  QueryHistoryData,
+  QueryHistoryDataItem,
+} from "./query-history-data";
+import { mapQueryHistoryToDomainModels } from "./data-mapper";
+import { mapQueryHistoryToDataModels } from "./domain-mapper";
 
 export async function readQueryHistoryFromFile(
   fsPath: string,
@@ -22,9 +26,11 @@ export async function readQueryHistoryFromFile(
       return [];
     }
 
-    const data = await readFile(fsPath, "utf8");
-    const obj = JSON.parse(data);
-    if (![1, 2].includes(obj.version)) {
+    const obj: QueryHistoryData = await readJson(fsPath, {
+      encoding: "utf8",
+    });
+
+    if (!ALLOWED_QUERY_HISTORY_VERSIONS.includes(obj.version)) {
       void showAndLogExceptionWithTelemetry(
         redactableError`Can't parse query history. Unsupported query history format: v${obj.version}.`,
       );
@@ -32,61 +38,33 @@ export async function readQueryHistoryFromFile(
     }
 
     const queries = obj.queries;
-    const parsedQueries = queries
-      // Remove remote queries, which are not supported anymore.
-      .filter((q: QueryHistoryInfo | { t: "remote" }) => q.t !== "remote")
-      .map((q: QueryHistoryInfo) => {
-        // Need to explicitly set prototype since reading in from JSON will not
-        // do this automatically. Note that we can't call the constructor here since
-        // the constructor invokes extra logic that we don't want to do.
-        if (q.t === "local") {
-          Object.setPrototypeOf(q, LocalQueryInfo.prototype);
+    // Remove remote queries, which are not supported anymore.
+    const parsedQueries = queries.filter(
+      (q: QueryHistoryDataItem | { t: "remote" }) => q.t !== "remote",
+    );
 
-          // Date instances are serialized as strings. Need to
-          // convert them back to Date instances.
-          (q.initialInfo as any).start = new Date(q.initialInfo.start);
-          if (q.completedQuery) {
-            // Again, need to explicitly set prototypes.
-            Object.setPrototypeOf(
-              q.completedQuery,
-              CompletedQueryInfo.prototype,
-            );
-            Object.setPrototypeOf(
-              q.completedQuery.query,
-              QueryEvaluationInfo.prototype,
-            );
-
-            // Previously, there was a typo in the completedQuery type. There was a field
-            // `sucessful` and it was renamed to `successful`. We need to handle this case.
-            if ("sucessful" in q.completedQuery) {
-              (q.completedQuery as any).successful = (
-                q.completedQuery as any
-              ).sucessful;
-              delete (q.completedQuery as any).sucessful;
-            }
-
-            if (!("successful" in q.completedQuery)) {
-              (q.completedQuery as any).successful =
-                q.completedQuery.result?.resultType === QueryResultType.SUCCESS;
-            }
-          }
-        }
-        return q;
-      });
+    // Map the data models to the domain models.
+    const domainModels: QueryHistoryInfo[] =
+      mapQueryHistoryToDomainModels(parsedQueries);
 
     // filter out queries that have been deleted on disk
     // most likely another workspace has deleted them because the
     // queries aged out.
-    return asyncFilter(parsedQueries, async (q) => {
-      if (q.t === "variant-analysis") {
-        // the deserializer doesn't know where the remote queries are stored
-        // so we need to assume here that they exist. Later, we check to
-        // see if they exist on disk.
-        return true;
-      }
-      const resultsPath = q.completedQuery?.query.resultsPaths.resultsPath;
-      return !!resultsPath && (await pathExists(resultsPath));
-    });
+    const filteredDomainModels: Promise<QueryHistoryInfo[]> = asyncFilter(
+      domainModels,
+      async (q) => {
+        if (q.t === "variant-analysis") {
+          // the query history store doesn't know where variant analysises are
+          // stored so we need to assume here that they exist. We check later
+          // to see if they exist on disk.
+          return true;
+        }
+        const resultsPath = q.completedQuery?.query.resultsPaths.resultsPath;
+        return !!resultsPath && (await pathExists(resultsPath));
+      },
+    );
+
+    return filteredDomainModels;
   } catch (e) {
     void showAndLogExceptionWithTelemetry(
       redactableError(asError(e))`Error loading query history.`,
@@ -121,13 +99,17 @@ export async function writeQueryHistoryToFile(
     const filteredQueries = queries.filter((q) =>
       q.t === "local" ? q.completedQuery !== undefined : true,
     );
+
+    // map domain model queries to data model
+    const queryHistoryData = mapQueryHistoryToDataModels(filteredQueries);
+
     const data = JSON.stringify(
       {
         // version 2:
         // - adds the `variant-analysis` type
         // - ensures a `successful` property exists on completedQuery
         version: 2,
-        queries: filteredQueries,
+        queries: queryHistoryData,
       },
       null,
       2,

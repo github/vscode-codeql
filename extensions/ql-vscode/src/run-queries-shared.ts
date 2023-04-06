@@ -137,7 +137,7 @@ export class QueryEvaluationInfo extends QueryOutputDir {
   constructor(
     querySaveDir: string,
     public readonly dbItemPath: string,
-    private readonly databaseHasMetadataFile: boolean,
+    public readonly databaseHasMetadataFile: boolean,
     public readonly quickEvalPosition?: messages.Position,
     public readonly metadata?: QueryMetadata,
   ) {
@@ -382,10 +382,10 @@ export class QueryEvaluationInfo extends QueryOutputDir {
 
 export interface QueryWithResults {
   readonly query: QueryEvaluationInfo;
+  readonly result: legacyMessages.EvaluationResult;
   readonly logFileLocation?: string;
   readonly successful?: boolean;
   readonly message?: string;
-  readonly result: legacyMessages.EvaluationResult;
 }
 
 /**
