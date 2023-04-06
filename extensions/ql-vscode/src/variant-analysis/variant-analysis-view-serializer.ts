@@ -37,6 +37,14 @@ export class VariantAnalysisViewSerializer implements WebviewPanelSerializer {
       return;
     }
 
+    // Between the time the webview is deserialized and the time the extension
+    // is fully activated, the user may close the webview. In this case, we
+    // should not attempt to restore the view.
+    let disposed = false;
+    const unregisterOnDidDispose = webviewPanel.onDidDispose(() => {
+      disposed = true;
+    });
+
     const variantAnalysisState: VariantAnalysisState =
       state as VariantAnalysisState;
 
@@ -46,8 +54,13 @@ export class VariantAnalysisViewSerializer implements WebviewPanelSerializer {
       variantAnalysisState.variantAnalysisId,
     );
     if (existingView) {
+      unregisterOnDidDispose.dispose();
       await existingView.openView();
       webviewPanel.dispose();
+      return;
+    }
+
+    if (disposed) {
       return;
     }
 
@@ -58,6 +71,8 @@ export class VariantAnalysisViewSerializer implements WebviewPanelSerializer {
       manager,
     );
     await view.restoreView(webviewPanel);
+
+    unregisterOnDidDispose.dispose();
   }
 
   private waitForExtensionFullyLoaded(): Promise<
