@@ -11,10 +11,7 @@ export async function writeRepoTask(
   repoTask: VariantAnalysisRepositoryTask,
 ): Promise<void> {
   const repoTaskData = mapRepoTaskToData(repoTask);
-  return await outputJson(
-    join(storageDirectory, REPO_TASK_FILENAME),
-    repoTaskData,
-  );
+  await outputJson(join(storageDirectory, REPO_TASK_FILENAME), repoTaskData);
 }
 
 export async function readRepoTask(
