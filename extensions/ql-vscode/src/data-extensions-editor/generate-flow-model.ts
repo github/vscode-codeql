@@ -72,15 +72,11 @@ class FlowModelGenerator {
 
     const results = decodedResults.tuples;
 
-    return results
-      .map((result): [string, ModeledMethod] | undefined => {
-        const row = result[0] as string;
+    return results.map((result): [string, ModeledMethod] => {
+      const row = result[0] as string;
 
-        return definition.readModeledMethod(row.split(";"));
-      })
-      .filter(
-        (result): result is [string, ModeledMethod] => result !== undefined,
-      );
+      return definition.readModeledMethod(row.split(";"));
+    });
   }
 
   async run(

@@ -9,7 +9,7 @@ type ExternalApiUsageByType = {
 type ExtensiblePredicateDefinition = {
   extensiblePredicate: string;
   generateMethodDefinition: (method: ExternalApiUsageByType) => any[];
-  readModeledMethod: (row: any[]) => [string, ModeledMethod] | undefined;
+  readModeledMethod: (row: any[]) => [string, ModeledMethod];
 };
 
 function readRowToMethod(row: any[]): string {
