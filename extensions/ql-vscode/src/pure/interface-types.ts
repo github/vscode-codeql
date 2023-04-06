@@ -493,6 +493,11 @@ export interface ShowProgressMessage {
   message: string;
 }
 
+export interface JumpToUsageMessage {
+  t: "jumpToUsage";
+  location: ResolvableLocationValue;
+}
+
 export interface SetExistingModeledMethods {
   t: "setExistingModeledMethods";
   existingModeledMethods: Record<string, ModeledMethod>;
@@ -511,4 +516,5 @@ export type ToDataExtensionsEditorMessage =
 
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
+  | JumpToUsageMessage
   | SaveModeledMethods;
