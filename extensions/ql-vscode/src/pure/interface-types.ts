@@ -15,6 +15,7 @@ import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-so
 import { ErrorLike } from "./errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 import { ExternalApiUsage } from "../data-extensions-editor/external-api-usage";
+import { ModeledMethod } from "../data-extensions-editor/modeled-method";
 
 /**
  * This module contains types and code that are shared between
@@ -492,8 +493,28 @@ export interface ShowProgressMessage {
   message: string;
 }
 
+export interface JumpToUsageMessage {
+  t: "jumpToUsage";
+  location: ResolvableLocationValue;
+}
+
+export interface SetExistingModeledMethods {
+  t: "setExistingModeledMethods";
+  existingModeledMethods: Record<string, ModeledMethod>;
+}
+
+export interface SaveModeledMethods {
+  t: "saveModeledMethods";
+  externalApiUsages: ExternalApiUsage[];
+  modeledMethods: Record<string, ModeledMethod>;
+}
+
 export type ToDataExtensionsEditorMessage =
   | SetExternalApiUsagesMessage
-  | ShowProgressMessage;
+  | ShowProgressMessage
+  | SetExistingModeledMethods;
 
-export type FromDataExtensionsEditorMessage = ViewLoadedMsg;
+export type FromDataExtensionsEditorMessage =
+  | ViewLoadedMsg
+  | JumpToUsageMessage
+  | SaveModeledMethods;

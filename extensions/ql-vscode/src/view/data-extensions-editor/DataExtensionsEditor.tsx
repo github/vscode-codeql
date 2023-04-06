@@ -5,6 +5,7 @@ import {
   ToDataExtensionsEditorMessage,
 } from "../../pure/interface-types";
 import {
+  VSCodeButton,
   VSCodeDataGrid,
   VSCodeDataGridCell,
   VSCodeDataGridRow,
@@ -14,6 +15,7 @@ import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usag
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { MethodRow } from "./MethodRow";
 import { assertNever } from "../../pure/helpers-pure";
+import { vscode } from "../vscode-api";
 import { calculateSupportedPercentage } from "./supported";
 
 export const DataExtensionsEditorContainer = styled.div`
@@ -55,6 +57,15 @@ export function DataExtensionsEditor(): JSX.Element {
           case "showProgress":
             setProgress(msg);
             break;
+          case "setExistingModeledMethods":
+            setModeledMethods((oldModeledMethods) => {
+              return {
+                ...msg.existingModeledMethods,
+                ...oldModeledMethods,
+              };
+            });
+
+            break;
           default:
             assertNever(msg);
         }
@@ -88,6 +99,14 @@ export function DataExtensionsEditor(): JSX.Element {
     [],
   );
 
+  const onApplyClick = useCallback(() => {
+    vscode.postMessage({
+      t: "saveModeledMethods",
+      externalApiUsages,
+      modeledMethods,
+    });
+  }, [externalApiUsages, modeledMethods]);
+
   return (
     <DataExtensionsEditorContainer>
       {progress.maxStep > 0 && (
@@ -108,6 +127,7 @@ export function DataExtensionsEditor(): JSX.Element {
           </div>
           <div>
             <h3>External API modelling</h3>
+            <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
             <VSCodeDataGrid>
               <VSCodeDataGridRow rowType="header">
                 <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>

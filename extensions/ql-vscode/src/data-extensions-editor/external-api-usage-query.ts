@@ -2,7 +2,7 @@ import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
 import { qlpackOfDatabase } from "../contextual/queryResolver";
 import { file } from "tmp-promise";
 import { writeFile } from "fs-extra";
-import { dump } from "js-yaml";
+import { dump as dumpYaml } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../helpers";
 import { Logger, TeeLogger } from "../common";
 import { CancellationToken } from "vscode";
@@ -52,7 +52,7 @@ export async function runQuery({
       },
     });
   }
-  await writeFile(suiteFile, dump(suiteYaml), "utf8");
+  await writeFile(suiteFile, dumpYaml(suiteYaml), "utf8");
 
   const queries = await cliServer.resolveQueriesInSuite(
     suiteFile,
@@ -105,7 +105,5 @@ export async function getResults({
 
   const resultSet = bqrsInfo["result-sets"][0];
 
-  const result = await cliServer.bqrsDecode(bqrsPath, resultSet.name);
-  void logger.log(JSON.stringify(result));
-  return result;
+  return cliServer.bqrsDecode(bqrsPath, resultSet.name);
 }
