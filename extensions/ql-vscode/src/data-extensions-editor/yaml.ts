@@ -1,5 +1,9 @@
 import { ExternalApiUsage } from "./external-api-usage";
-import { ModeledMethod, ModeledMethodType } from "./modeled-method";
+import {
+  ModeledMethod,
+  ModeledMethodType,
+  ModeledMethodWithSignature,
+} from "./modeled-method";
 
 type ExternalApiUsageByType = {
   externalApiUsage: ExternalApiUsage;
@@ -9,7 +13,7 @@ type ExternalApiUsageByType = {
 type ExtensiblePredicateDefinition = {
   extensiblePredicate: string;
   generateMethodDefinition: (method: ExternalApiUsageByType) => any[];
-  readModeledMethod: (row: any[]) => [string, ModeledMethod];
+  readModeledMethod: (row: any[]) => ModeledMethodWithSignature;
 };
 
 function readRowToMethod(row: any[]): string {
@@ -37,15 +41,15 @@ export const extensiblePredicateDefinitions: Record<
       method.modeledMethod.kind,
       "manual",
     ],
-    readModeledMethod: (row) => [
-      readRowToMethod(row),
-      {
+    readModeledMethod: (row) => ({
+      signature: readRowToMethod(row),
+      modeledMethod: {
         type: "source",
         input: "",
         output: row[6],
         kind: row[7],
       },
-    ],
+    }),
   },
   sink: {
     extensiblePredicate: "sinkModel",
@@ -64,15 +68,15 @@ export const extensiblePredicateDefinitions: Record<
       method.modeledMethod.kind,
       "manual",
     ],
-    readModeledMethod: (row) => [
-      readRowToMethod(row),
-      {
+    readModeledMethod: (row) => ({
+      signature: readRowToMethod(row),
+      modeledMethod: {
         type: "sink",
         input: row[6],
         output: "",
         kind: row[7],
       },
-    ],
+    }),
   },
   summary: {
     extensiblePredicate: "summaryModel",
@@ -92,15 +96,15 @@ export const extensiblePredicateDefinitions: Record<
       method.modeledMethod.kind,
       "manual",
     ],
-    readModeledMethod: (row) => [
-      readRowToMethod(row),
-      {
+    readModeledMethod: (row) => ({
+      signature: readRowToMethod(row),
+      modeledMethod: {
         type: "summary",
         input: row[6],
         output: row[7],
         kind: row[8],
       },
-    ],
+    }),
   },
   neutral: {
     extensiblePredicate: "neutralModel",
@@ -114,15 +118,15 @@ export const extensiblePredicateDefinitions: Record<
       method.externalApiUsage.methodParameters,
       "manual",
     ],
-    readModeledMethod: (row) => [
-      `${row[0]}.${row[1]}#${row[2]}${row[3]}`,
-      {
+    readModeledMethod: (row) => ({
+      signature: `${row[0]}.${row[1]}#${row[2]}${row[3]}`,
+      modeledMethod: {
         type: "neutral",
         input: "",
         output: "",
         kind: "",
       },
-    ],
+    }),
   },
 };
 
@@ -227,9 +231,9 @@ export function loadDataExtensionYaml(
         continue;
       }
 
-      const [apiInfo, modeledMethod] = result;
+      const { signature, modeledMethod } = result;
 
-      modeledMethods[apiInfo] = modeledMethod;
+      modeledMethods[signature] = modeledMethod;
     }
   }
 

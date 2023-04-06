@@ -7,7 +7,10 @@ import { extLogger, TeeLogger } from "../common";
 import { extensiblePredicateDefinitions } from "./yaml";
 import { ProgressCallback } from "../progress";
 import { getOnDiskWorkspaceFolders } from "../helpers";
-import { ModeledMethod, ModeledMethodType } from "./modeled-method";
+import {
+  ModeledMethodType,
+  ModeledMethodWithSignature,
+} from "./modeled-method";
 
 class FlowModelGenerator {
   constructor(
@@ -24,7 +27,7 @@ class FlowModelGenerator {
     type: Exclude<ModeledMethodType, "none">,
     queryName: string,
     queryStep: number,
-  ): Promise<Array<[string, ModeledMethod]> | undefined> {
+  ): Promise<ModeledMethodWithSignature[] | undefined> {
     const definition = extensiblePredicateDefinitions[type];
 
     const query = join(
@@ -72,7 +75,7 @@ class FlowModelGenerator {
 
     const results = decodedResults.tuples;
 
-    return results.map((result): [string, ModeledMethod] => {
+    return results.map((result) => {
       const row = result[0] as string;
 
       return definition.readModeledMethod(row.split(";"));
@@ -80,9 +83,7 @@ class FlowModelGenerator {
   }
 
   async run(
-    onResults: (
-      results: Array<[string, ModeledMethod]>,
-    ) => void | Promise<void>,
+    onResults: (results: ModeledMethodWithSignature[]) => void | Promise<void>,
   ) {
     const summaryResults = await this.getAddsTo(
       "summary",
@@ -124,7 +125,7 @@ export async function generateFlowModel(
   queryStorageDir: string,
   qlDir: string,
   databaseItem: DatabaseItem,
-  onResults: (results: Array<[string, ModeledMethod]>) => void | Promise<void>,
+  onResults: (results: ModeledMethodWithSignature[]) => void | Promise<void>,
   progress: ProgressCallback,
   token: CancellationToken,
 ) {

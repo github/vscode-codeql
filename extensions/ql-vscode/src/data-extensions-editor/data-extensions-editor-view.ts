@@ -281,7 +281,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
           const modeledMethodsByName: Record<string, ModeledMethod> = {};
 
           for (const result of results) {
-            modeledMethodsByName[result[0]] = result[1];
+            modeledMethodsByName[result.signature] = result.modeledMethod;
           }
 
           await this.postMessage({
