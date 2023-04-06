@@ -1,4 +1,4 @@
-import { appendFile, pathExists, mkdir } from "fs-extra";
+import { appendFile, pathExists } from "fs-extra";
 import fetch from "node-fetch";
 import { EOL } from "os";
 import { join } from "path";
@@ -77,10 +77,6 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       variantAnalysisStoragePath,
       repoTask.repository.fullName,
     );
-
-    if (!(await pathExists(resultDirectory))) {
-      await mkdir(resultDirectory, { recursive: true });
-    }
 
     await writeRepoTask(resultDirectory, repoTask);
 
