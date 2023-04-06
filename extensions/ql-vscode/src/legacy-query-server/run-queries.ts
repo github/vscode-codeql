@@ -172,10 +172,6 @@ async function runQuery(
  */
 export class QueryInProgress {
   public queryEvalInfo: QueryEvaluationInfo;
-  /**
-   * Note that in the {@link readQueryHistoryFromFile} method, we create a QueryEvaluationInfo instance
-   * by explicitly setting the prototype in order to avoid calling this constructor.
-   */
   constructor(
     readonly querySaveDir: string,
     readonly dbItemPath: string,

@@ -49,45 +49,31 @@ export interface InitialQueryInfo {
 }
 
 export class CompletedQueryInfo implements QueryWithResults {
-  readonly query: QueryEvaluationInfo;
-  readonly message?: string;
-  readonly successful?: boolean;
-  /**
-   * The legacy result. This is only set when loading from the query history.
-   */
-  readonly result: legacyMessages.EvaluationResult;
-  readonly logFileLocation?: string;
-  resultCount: number;
+  constructor(
+    public readonly query: QueryEvaluationInfo,
 
-  /**
-   * Map from result set name to SortedResultSetInfo.
-   */
-  sortedResultsInfo: Record<string, SortedResultSetInfo>;
+    /**
+     * The legacy result. This is only set when loading from the query history.
+     */
+    public readonly result: legacyMessages.EvaluationResult,
+    public readonly logFileLocation: string | undefined,
+    public readonly successful: boolean | undefined,
+    public readonly message: string | undefined,
+    /**
+     * How we're currently sorting alerts. This is not mere interface
+     * state due to truncation; on re-sort, we want to read in the file
+     * again, sort it, and only ship off a reasonable number of results
+     * to the webview. Undefined means to use whatever order is in the
+     * sarif file.
+     */
+    public interpretedResultsSortState: InterpretedResultsSortState | undefined,
+    public resultCount: number = 0,
 
-  /**
-   * How we're currently sorting alerts. This is not mere interface
-   * state due to truncation; on re-sort, we want to read in the file
-   * again, sort it, and only ship off a reasonable number of results
-   * to the webview. Undefined means to use whatever order is in the
-   * sarif file.
-   */
-  interpretedResultsSortState: InterpretedResultsSortState | undefined;
-
-  /**
-   * Note that in the {@link readQueryHistoryFromFile} method, we create a CompletedQueryInfo instance
-   * by explicitly setting the prototype in order to avoid calling this constructor.
-   */
-  constructor(evaluation: QueryWithResults) {
-    this.query = evaluation.query;
-    this.logFileLocation = evaluation.logFileLocation;
-    this.result = evaluation.result;
-
-    this.message = evaluation.message;
-    this.successful = evaluation.successful;
-
-    this.sortedResultsInfo = {};
-    this.resultCount = 0;
-  }
+    /**
+     * Map from result set name to SortedResultSetInfo.
+     */
+    public sortedResultsInfo: Record<string, SortedResultSetInfo> = {},
+  ) {}
 
   setResultCount(value: number) {
     this.resultCount = value;
@@ -220,20 +206,15 @@ export type CompletedLocalQueryInfo = LocalQueryInfo & {
 export class LocalQueryInfo {
   readonly t = "local";
 
-  public failureReason: string | undefined;
-  public completedQuery: CompletedQueryInfo | undefined;
-  public evalLogLocation: string | undefined;
-  public evalLogSummaryLocation: string | undefined;
-  public jsonEvalLogSummaryLocation: string | undefined;
-  public evalLogSummarySymbolsLocation: string | undefined;
-
-  /**
-   * Note that in the {@link readQueryHistoryFromFile} method, we create a FullQueryInfo instance
-   * by explicitly setting the prototype in order to avoid calling this constructor.
-   */
   constructor(
     public readonly initialInfo: InitialQueryInfo,
     private cancellationSource?: CancellationTokenSource, // used to cancel in progress queries
+    public failureReason?: string,
+    public completedQuery?: CompletedQueryInfo,
+    public evalLogLocation?: string,
+    public evalLogSummaryLocation?: string,
+    public jsonEvalLogSummaryLocation?: string,
+    public evalLogSummarySymbolsLocation?: string,
   ) {
     /**/
   }
@@ -301,7 +282,14 @@ export class LocalQueryInfo {
   }
 
   completeThisQuery(info: QueryWithResults): void {
-    this.completedQuery = new CompletedQueryInfo(info);
+    this.completedQuery = new CompletedQueryInfo(
+      info.query,
+      info.result,
+      info.logFileLocation,
+      info.successful,
+      info.message,
+      undefined,
+    );
 
     // dispose of the cancellation token source and also ensure the source is not serialized as JSON
     this.cancellationSource?.dispose();

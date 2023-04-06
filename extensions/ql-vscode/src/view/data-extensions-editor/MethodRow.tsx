@@ -8,6 +8,7 @@ import {
 import * as React from "react";
 import { useCallback, useMemo } from "react";
 import styled from "styled-components";
+import { vscode } from "../vscode-api";
 
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import {
@@ -29,6 +30,13 @@ type SupportedUnsupportedSpanProps = {
 
 const SupportSpan = styled.span<SupportedUnsupportedSpanProps>`
   color: ${(props) => (props.supported ? "green" : "red")};
+`;
+
+const UsagesButton = styled.button`
+  color: var(--vscode-editor-foreground);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
 `;
 
 type Props = {
@@ -115,6 +123,13 @@ export const MethodRow = ({
     [onChange, externalApiUsage, modeledMethod],
   );
 
+  const jumpToUsage = useCallback(() => {
+    vscode.postMessage({
+      t: "jumpToUsage",
+      location: externalApiUsage.usages[0].url,
+    });
+  }, [externalApiUsage]);
+
   return (
     <VSCodeDataGridRow>
       <VSCodeDataGridCell gridColumn={1}>
@@ -129,7 +144,9 @@ export const MethodRow = ({
         </SupportSpan>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={3}>
-        {externalApiUsage.usages.length}
+        <UsagesButton onClick={jumpToUsage}>
+          {externalApiUsage.usages.length}
+        </UsagesButton>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={4}>
         {(!externalApiUsage.supported ||

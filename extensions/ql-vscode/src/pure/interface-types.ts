@@ -506,6 +506,16 @@ export interface AddModeledMethodsMessage {
   overrideNone?: boolean;
 }
 
+export interface JumpToUsageMessage {
+  t: "jumpToUsage";
+  location: ResolvableLocationValue;
+}
+
+export interface SetExistingModeledMethods {
+  t: "setExistingModeledMethods";
+  existingModeledMethods: Record<string, ModeledMethod>;
+}
+
 export interface SaveModeledMethods {
   t: "saveModeledMethods";
   externalApiUsages: ExternalApiUsage[];
@@ -523,5 +533,6 @@ export type ToDataExtensionsEditorMessage =
 
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
+  | JumpToUsageMessage
   | SaveModeledMethods
   | GenerateExternalApiMessage;

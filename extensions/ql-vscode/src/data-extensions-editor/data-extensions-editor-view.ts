@@ -3,6 +3,7 @@ import {
   ExtensionContext,
   Uri,
   ViewColumn,
+  window,
   workspace,
 } from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
@@ -28,6 +29,8 @@ import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { generateFlowModel } from "./generate-flow-model";
 import { promptImportGithubDatabase } from "../databaseFetcher";
 import { App } from "../common/app";
+import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
+import { showResolvableLocation } from "../interface-utils";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../pure/errors";
 import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
@@ -79,6 +82,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.onWebViewLoaded();
 
         break;
+      case "jumpToUsage":
+        await this.jumpToUsage(msg.location);
+
+        break;
       case "saveModeledMethods":
         await this.saveModeledMethods(
           msg.externalApiUsages,
@@ -103,6 +110,26 @@ export class DataExtensionsEditorView extends AbstractWebview<
       this.loadExternalApiUsages(),
       this.loadExistingModeledMethods(),
     ]);
+  }
+
+  protected async jumpToUsage(
+    location: ResolvableLocationValue,
+  ): Promise<void> {
+    try {
+      await showResolvableLocation(location, this.databaseItem);
+    } catch (e) {
+      if (e instanceof Error) {
+        if (e.message.match(/File not found/)) {
+          void window.showErrorMessage(
+            "Original file of this result is not in the database's source archive.",
+          );
+        } else {
+          void extLogger.log(`Unable to handleMsgFromView: ${e.message}`);
+        }
+      } else {
+        void extLogger.log(`Unable to handleMsgFromView: ${e}`);
+      }
+    }
   }
 
   protected async saveModeledMethods(
