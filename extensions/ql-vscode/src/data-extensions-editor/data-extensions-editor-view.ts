@@ -5,6 +5,7 @@ import {
   ViewColumn,
   window,
   workspace,
+  WorkspaceFolder,
 } from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import {
@@ -36,6 +37,19 @@ import { redactableError } from "../pure/errors";
 import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
+
+function getQlSubmoduleFolder(): WorkspaceFolder | undefined {
+  const workspaceFolder = workspace.workspaceFolders?.find(
+    (folder) => folder.name === "ql",
+  );
+  if (!workspaceFolder) {
+    void extLogger.log("No workspace folder 'ql' found");
+
+    return;
+  }
+
+  return workspaceFolder;
+}
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -245,12 +259,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
     await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
 
-    const workspaceFolder = workspace.workspaceFolders?.find(
-      (folder) => folder.name === "ql",
-    );
+    const workspaceFolder = getQlSubmoduleFolder();
     if (!workspaceFolder) {
-      void extLogger.log("No workspace folder 'ql' found");
-
       return;
     }
 
@@ -404,12 +414,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   private calculateModelFilename(): string | undefined {
-    const workspaceFolder = workspace.workspaceFolders?.find(
-      (folder) => folder.name === "ql",
-    );
+    const workspaceFolder = getQlSubmoduleFolder();
     if (!workspaceFolder) {
-      void extLogger.log("No workspace folder 'ql' found");
-
       return;
     }
 
