@@ -139,6 +139,31 @@ export class ResultTables extends React.Component<
     };
   }
 
+  componentDidUpdate(
+    prevProps: Readonly<ResultTablesProps>,
+    prevState: Readonly<ResultTablesState>,
+    snapshot?: any,
+  ) {
+    const resultSetExists =
+      this.props.parsedResultSets.resultSetNames.some(
+        (v) => this.state.selectedTable === v,
+      ) ||
+      this.getResultSets().some(
+        (v) => this.state.selectedTable === v.schema.name,
+      );
+
+    // If the selected result set does not exist, select the default result set.
+    if (!resultSetExists) {
+      const selectedTable =
+        this.props.parsedResultSets.selectedTable ||
+        getDefaultResultSet(this.getResultSets());
+      this.setState({
+        selectedTable,
+        selectedPage: `${this.props.parsedResultSets.pageNumber + 1}`,
+      });
+    }
+  }
+
   untoggleProblemsView() {
     this.setState({
       problemsViewSelected: false,
