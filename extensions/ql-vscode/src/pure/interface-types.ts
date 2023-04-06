@@ -498,9 +498,10 @@ export interface SetExistingModeledMethods {
   existingModeledMethods: Record<string, ModeledMethod>;
 }
 
-export interface ApplyDataExtensionYamlMessage {
-  t: "applyDataExtensionYaml";
-  yaml: string;
+export interface SaveModeledMethods {
+  t: "saveModeledMethods";
+  externalApiUsages: ExternalApiUsage[];
+  modeledMethods: Record<string, ModeledMethod>;
 }
 
 export type ToDataExtensionsEditorMessage =
@@ -510,4 +511,4 @@ export type ToDataExtensionsEditorMessage =
 
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
-  | ApplyDataExtensionYamlMessage;
+  | SaveModeledMethods;

@@ -16,7 +16,6 @@ import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { MethodRow } from "./MethodRow";
 import { assertNever } from "../../pure/helpers-pure";
 import { vscode } from "../vscode-api";
-import { createDataExtensionYaml } from "../../data-extensions-editor/yaml";
 import { calculateSupportedPercentage } from "./supported";
 
 export const DataExtensionsEditorContainer = styled.div`
@@ -101,14 +100,10 @@ export function DataExtensionsEditor(): JSX.Element {
   );
 
   const onApplyClick = useCallback(() => {
-    const yamlString = createDataExtensionYaml(
+    vscode.postMessage({
+      t: "saveModeledMethods",
       externalApiUsages,
       modeledMethods,
-    );
-
-    vscode.postMessage({
-      t: "applyDataExtensionYaml",
-      yaml: yamlString,
     });
   }, [externalApiUsages, modeledMethods]);
 

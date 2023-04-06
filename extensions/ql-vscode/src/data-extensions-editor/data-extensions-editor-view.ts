@@ -27,7 +27,9 @@ import { CodeQLCliServer } from "../cli";
 import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../pure/errors";
-import { loadDataExtensionYaml } from "./yaml";
+import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
+import { ExternalApiUsage } from "./external-api-usage";
+import { ModeledMethod } from "./modeled-method";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -72,8 +74,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.onWebViewLoaded();
 
         break;
-      case "applyDataExtensionYaml":
-        await this.saveYaml(msg.yaml);
+      case "saveModeledMethods":
+        await this.saveModeledMethods(
+          msg.externalApiUsages,
+          msg.modeledMethods,
+        );
         await this.loadExternalApiUsages();
 
         break;
@@ -91,11 +96,16 @@ export class DataExtensionsEditorView extends AbstractWebview<
     ]);
   }
 
-  protected async saveYaml(yaml: string): Promise<void> {
+  protected async saveModeledMethods(
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ): Promise<void> {
     const modelFilename = this.calculateModelFilename();
     if (!modelFilename) {
       return;
     }
+
+    const yaml = createDataExtensionYaml(externalApiUsages, modeledMethods);
 
     await writeFile(modelFilename, yaml);
 
