@@ -57,22 +57,15 @@ export function DataExtensionsEditor(): JSX.Element {
           case "showProgress":
             setProgress(msg);
             break;
-          case "setExistingModeledMethods":
-            setModeledMethods((oldModeledMethods) => {
-              return {
-                ...msg.existingModeledMethods,
-                ...oldModeledMethods,
-              };
-            });
-
-            break;
           case "addModeledMethods":
             setModeledMethods((oldModeledMethods) => {
-              const filteredOldModeledMethods = Object.fromEntries(
-                Object.entries(oldModeledMethods).filter(
-                  ([, value]) => value.type !== "none",
-                ),
-              );
+              const filteredOldModeledMethods = msg.overrideNone
+                ? Object.fromEntries(
+                    Object.entries(oldModeledMethods).filter(
+                      ([, value]) => value.type !== "none",
+                    ),
+                  )
+                : oldModeledMethods;
 
               return {
                 ...msg.modeledMethods,

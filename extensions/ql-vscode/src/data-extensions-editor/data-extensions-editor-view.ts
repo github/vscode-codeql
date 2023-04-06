@@ -142,8 +142,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
       }
 
       await this.postMessage({
-        t: "setExistingModeledMethods",
-        existingModeledMethods,
+        t: "addModeledMethods",
+        modeledMethods: existingModeledMethods,
       });
     } catch (e: unknown) {
       void extLogger.log(`Unable to read data extension YAML: ${e}`);
@@ -250,6 +250,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
           await this.postMessage({
             t: "addModeledMethods",
             modeledMethods: modeledMethodsByName,
+            overrideNone: true,
           });
         },
         (update) => this.showProgress(update),
