@@ -493,9 +493,9 @@ export interface ShowProgressMessage {
   message: string;
 }
 
-export interface SetExistingYamlDataMessage {
-  t: "setExistingYamlData";
-  data: any;
+export interface SetExistingModeledMethods {
+  t: "setExistingModeledMethods";
+  existingModeledMethods: Record<string, ModeledMethod>;
 }
 
 export interface AddModeledMethodsMessage {
@@ -503,9 +503,10 @@ export interface AddModeledMethodsMessage {
   modeledMethods: Record<string, ModeledMethod>;
 }
 
-export interface ApplyDataExtensionYamlMessage {
-  t: "applyDataExtensionYaml";
-  yaml: string;
+export interface SaveModeledMethods {
+  t: "saveModeledMethods";
+  externalApiUsages: ExternalApiUsage[];
+  modeledMethods: Record<string, ModeledMethod>;
 }
 
 export interface GenerateExternalApiMessage {
@@ -515,10 +516,10 @@ export interface GenerateExternalApiMessage {
 export type ToDataExtensionsEditorMessage =
   | SetExternalApiUsagesMessage
   | ShowProgressMessage
-  | SetExistingYamlDataMessage
+  | SetExistingModeledMethods
   | AddModeledMethodsMessage;
 
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
-  | ApplyDataExtensionYamlMessage
+  | SaveModeledMethods
   | GenerateExternalApiMessage;

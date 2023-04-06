@@ -16,10 +16,11 @@ import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
 import { qlpackOfDatabase } from "../contextual/queryResolver";
 import { file } from "tmp-promise";
 import { readFile, writeFile } from "fs-extra";
-import { dump, load } from "js-yaml";
+import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
 } from "../helpers";
 import { DatabaseItem, DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
@@ -29,6 +30,8 @@ import { promptImportGithubDatabase } from "../databaseFetcher";
 import { App } from "../common/app";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../pure/errors";
+import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
+import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 
 export class DataExtensionsEditorView extends AbstractWebview<
@@ -76,8 +79,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.onWebViewLoaded();
 
         break;
-      case "applyDataExtensionYaml":
-        await this.saveYaml(msg.yaml);
+      case "saveModeledMethods":
+        await this.saveModeledMethods(
+          msg.externalApiUsages,
+          msg.modeledMethods,
+        );
         await this.loadExternalApiUsages();
 
         break;
@@ -93,22 +99,30 @@ export class DataExtensionsEditorView extends AbstractWebview<
   protected async onWebViewLoaded() {
     super.onWebViewLoaded();
 
-    await Promise.all([this.loadExternalApiUsages(), this.readExistingYaml()]);
+    await Promise.all([
+      this.loadExternalApiUsages(),
+      this.loadExistingModeledMethods(),
+    ]);
   }
 
-  protected async saveYaml(yaml: string): Promise<void> {
-    const modelFilename = this.modelFileName;
+  protected async saveModeledMethods(
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ): Promise<void> {
+    const modelFilename = this.calculateModelFilename();
     if (!modelFilename) {
       return;
     }
+
+    const yaml = createDataExtensionYaml(externalApiUsages, modeledMethods);
 
     await writeFile(modelFilename, yaml);
 
     void extLogger.log(`Saved data extension YAML to ${modelFilename}`);
   }
 
-  protected async readExistingYaml(): Promise<void> {
-    const modelFilename = this.modelFileName;
+  protected async loadExistingModeledMethods(): Promise<void> {
+    const modelFilename = this.calculateModelFilename();
     if (!modelFilename) {
       return;
     }
@@ -116,13 +130,20 @@ export class DataExtensionsEditorView extends AbstractWebview<
     try {
       const yaml = await readFile(modelFilename, "utf8");
 
-      const data = load(yaml, {
+      const data = loadYaml(yaml, {
         filename: modelFilename,
       });
 
+      const existingModeledMethods = loadDataExtensionYaml(data);
+
+      if (!existingModeledMethods) {
+        void showAndLogWarningMessage("Failed to parse data extension YAML.");
+        return;
+      }
+
       await this.postMessage({
-        t: "setExistingYamlData",
-        data,
+        t: "setExistingModeledMethods",
+        existingModeledMethods,
       });
     } catch (e: unknown) {
       void extLogger.log(`Unable to read data extension YAML: ${e}`);
@@ -275,7 +296,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         },
       });
     }
-    await writeFile(suiteFile, dump(suiteYaml), "utf8");
+    await writeFile(suiteFile, dumpYaml(suiteYaml), "utf8");
 
     const queries = await this.cliServer.resolveQueriesInSuite(
       suiteFile,
@@ -354,7 +375,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     });
   }
 
-  private get modelFileName(): string | undefined {
+  private calculateModelFilename(): string | undefined {
     const workspaceFolder = workspace.workspaceFolders?.find(
       (folder) => folder.name === "ql",
     );

@@ -112,7 +112,7 @@ export function generateVariantAnalysisMarkdownSummary(
   lines.push(`### Results for "${query.name}"`, "");
 
   // Expandable section containing query text
-  const queryCodeBlock = ["```ql", ...query.text.split("\n"), "```"];
+  const queryCodeBlock = ["```ql", ...query.text.split("\n"), "```", ""];
   lines.push(...buildExpandableMarkdownSection("Query", queryCodeBlock));
 
   // Padding between sections
@@ -127,6 +127,9 @@ export function generateVariantAnalysisMarkdownSummary(
     const link = createRelativeLink(summary.fileName, linkType);
     lines.push(`| ${fullName} | [${summary.resultCount} result(s)](${link}) |`);
   }
+
+  // Add a trailing newline
+  lines.push("");
 
   return {
     fileName: "_summary",
@@ -279,8 +282,8 @@ function generateMarkdownForPathResults(
       );
       // Indent the snippet to fit with the numbered list.
       // The indentation is "n + 2" where the list number is an n-digit number.
-      const codeSnippetIndented = codeSnippet.map(
-        (line) => " ".repeat(listNumber.toString().length + 2) + line,
+      const codeSnippetIndented = codeSnippet.map((line) =>
+        (" ".repeat(listNumber.toString().length + 2) + line).trimEnd(),
       );
       pathLines.push(`${listNumber}. ${link}`, ...codeSnippetIndented);
     }
@@ -382,7 +385,6 @@ function buildExpandableMarkdownSection(
     `<summary>${title}</summary>`,
     "",
     ...contents,
-    "",
     "</details>",
     "",
   );
