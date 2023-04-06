@@ -264,13 +264,13 @@ export class VariantAnalysisManager
     } else {
       await this.setVariantAnalysis(variantAnalysis);
 
-      try {
-        const repoStates = await readRepoStates(
-          this.getRepoStatesStoragePath(variantAnalysis.id),
-        );
-        this.repoStates.set(variantAnalysis.id, repoStates);
-      } catch (e) {
-        // Ignore this error, we simply might not have downloaded anything yet
+      const repoStatesFromDisk = await readRepoStates(
+        this.getRepoStatesStoragePath(variantAnalysis.id),
+      );
+
+      if (repoStatesFromDisk) {
+        this.repoStates.set(variantAnalysis.id, repoStatesFromDisk);
+      } else {
         this.repoStates.set(variantAnalysis.id, {});
       }
 

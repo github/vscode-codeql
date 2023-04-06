@@ -22,18 +22,23 @@ export async function writeRepoStates(
 
 export async function readRepoStates(
   storagePath: string,
-): Promise<Record<number, VariantAnalysisScannedRepositoryState>> {
-  const repoStatesData: Record<
-    number,
-    VariantAnalysisScannedRepositoryStateData
-  > = await readJson(storagePath);
+): Promise<Record<number, VariantAnalysisScannedRepositoryState> | undefined> {
+  try {
+    const repoStatesData: Record<
+      number,
+      VariantAnalysisScannedRepositoryStateData
+    > = await readJson(storagePath);
 
-  // Map from repoStates Data type to the repoStates Domain type
-  const repoStates = Object.fromEntries(
-    Object.entries(repoStatesData).map(([key, value]) => {
-      return [key, mapRepoStateToDomain(value)];
-    }),
-  );
+    // Map from repoStates Data type to the repoStates Domain type
+    const repoStates = Object.fromEntries(
+      Object.entries(repoStatesData).map(([key, value]) => {
+        return [key, mapRepoStateToDomain(value)];
+      }),
+    );
 
-  return repoStates;
+    return repoStates;
+  } catch (e) {
+    // Ignore this error, we simply might not have downloaded anything yet
+    return undefined;
+  }
 }
