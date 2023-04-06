@@ -1,3 +1,4 @@
+import { assertNever } from "../../pure/helpers-pure";
 import {
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryState,
@@ -30,6 +31,6 @@ function processDownloadStatus(
     case VariantAnalysisScannedRepositoryDownloadStatus.Failed:
       return VariantAnalysisScannedRepositoryDownloadData.Failed;
     default:
-      return VariantAnalysisScannedRepositoryDownloadData.Pending;
+      assertNever(downloadedStatus);
   }
 }
