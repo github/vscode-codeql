@@ -1485,7 +1485,7 @@
     "@faker-js/faker": "^7.5.0",
     "@github/markdownlint-github": "^0.3.0",
     "@octokit/plugin-throttling": "^5.0.1",
-    "@storybook/addon-actions": "^6.5.17-alpha.0",
+    "@storybook/addon-actions": "^7.0.2",
     "@storybook/addon-essentials": "^6.5.17-alpha.0",
     "@storybook/addon-interactions": "^6.5.17-alpha.0",
     "@storybook/addon-links": "^6.5.17-alpha.0",
