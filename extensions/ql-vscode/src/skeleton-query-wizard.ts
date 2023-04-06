@@ -7,7 +7,7 @@ import { QueryLanguage } from "./common/query-language";
 import { askForLanguage, isFolderAlreadyInWorkspace } from "./helpers";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
-import { DatabaseManager } from "./local-databases";
+import { DatabaseItem, DatabaseManager } from "./local-databases";
 import * as databaseFetcher from "./databaseFetcher";
 import { ProgressCallback, UserCancellationException } from "./progress";
 
@@ -239,10 +239,10 @@ export class SkeletonQueryWizard {
 
     const databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
 
-    // Check that we haven't already downloaded a database for this language
-    const existingDatabaseItem = await this.databaseManager.digForDatabaseItem(
+    const existingDatabaseItem = await this.digForDatabaseItem(
       this.language,
       databaseNwo,
+      this.databaseManager.databaseItems,
     );
 
     if (existingDatabaseItem) {
@@ -250,8 +250,9 @@ export class SkeletonQueryWizard {
       await this.databaseManager.setCurrentDatabaseItem(existingDatabaseItem);
     } else {
       const sameLanguageDatabaseItem =
-        await this.databaseManager.digForDatabaseWithSameLanguage(
+        await this.digForDatabaseWithSameLanguage(
           this.language,
+          this.databaseManager.databaseItems,
         );
 
       if (sameLanguageDatabaseItem) {
@@ -264,5 +265,32 @@ export class SkeletonQueryWizard {
         await this.downloadDatabase();
       }
     }
+  }
+
+  public async digForDatabaseItem(
+    language: string,
+    databaseNwo: string,
+    databaseItems: readonly DatabaseItem[],
+  ): Promise<DatabaseItem | undefined> {
+    const dbItems = databaseItems || [];
+    const dbs = dbItems.filter(
+      (db) => db.language === language && db.name === databaseNwo,
+    );
+    if (dbs.length === 0) {
+      return undefined;
+    }
+    return dbs[0];
+  }
+
+  public async digForDatabaseWithSameLanguage(
+    language: string,
+    databaseItems: readonly DatabaseItem[],
+  ): Promise<DatabaseItem | undefined> {
+    const dbItems = databaseItems || [];
+    const dbs = dbItems.filter((db) => db.language === language);
+    if (dbs.length === 0) {
+      return undefined;
+    }
+    return dbs[0];
   }
 }
