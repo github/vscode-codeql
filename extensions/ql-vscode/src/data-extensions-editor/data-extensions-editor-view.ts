@@ -83,7 +83,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
   protected async onWebViewLoaded() {
     super.onWebViewLoaded();
 
-    await Promise.all([this.loadExternalApiUsages(), this.readExistingYaml()]);
+    await Promise.all([
+      this.loadExternalApiUsages(),
+      this.loadExistingModeledMethods(),
+    ]);
   }
 
   protected async saveYaml(yaml: string): Promise<void> {
@@ -97,7 +100,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     void extLogger.log(`Saved data extension YAML to ${modelFilename}`);
   }
 
-  protected async readExistingYaml(): Promise<void> {
+  protected async loadExistingModeledMethods(): Promise<void> {
     const modelFilename = this.modelFileName;
     if (!modelFilename) {
       return;
