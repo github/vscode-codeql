@@ -267,7 +267,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     await this.showProgress({
       step: 0,
       maxStep: 4000,
-      message: "Generating external API",
+      message: "Generating modeled methods for library",
     });
 
     try {
