@@ -4,7 +4,7 @@ import { join } from "path";
 import { QueryRunner } from "../queryRunner";
 import { CodeQLCliServer } from "../cli";
 import { extLogger, TeeLogger } from "../common";
-import { definitions } from "./yaml";
+import { extensiblePredicateDefinitions } from "./yaml";
 import { ProgressCallback } from "../progress";
 import { getOnDiskWorkspaceFolders } from "../helpers";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
@@ -25,7 +25,7 @@ class FlowModelGenerator {
     queryName: string,
     queryStep: number,
   ): Promise<Array<[string, ModeledMethod]> | undefined> {
-    const definition = definitions[type];
+    const definition = extensiblePredicateDefinitions[type];
 
     const query = join(
       this.qlDir,
