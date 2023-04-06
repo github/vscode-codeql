@@ -16,7 +16,7 @@ import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
 import { qlpackOfDatabase } from "../contextual/queryResolver";
 import { file } from "tmp-promise";
 import { readFile, writeFile } from "fs-extra";
-import { dump, load } from "js-yaml";
+import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
@@ -109,7 +109,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     try {
       const yaml = await readFile(modelFilename, "utf8");
 
-      const data = load(yaml, {
+      const data = loadYaml(yaml, {
         filename: modelFilename,
       });
 
@@ -190,7 +190,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         },
       });
     }
-    await writeFile(suiteFile, dump(suiteYaml), "utf8");
+    await writeFile(suiteFile, dumpYaml(suiteYaml), "utf8");
 
     const queries = await this.cliServer.resolveQueriesInSuite(
       suiteFile,
