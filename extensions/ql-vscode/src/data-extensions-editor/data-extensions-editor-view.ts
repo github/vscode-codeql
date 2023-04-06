@@ -20,12 +20,14 @@ import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
 } from "../helpers";
 import { DatabaseItem } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
 import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../pure/errors";
+import { loadDataExtensionYaml } from "./yaml";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -113,9 +115,16 @@ export class DataExtensionsEditorView extends AbstractWebview<
         filename: modelFilename,
       });
 
+      const existingModeledMethods = loadDataExtensionYaml(data);
+
+      if (!existingModeledMethods) {
+        void showAndLogWarningMessage("Failed to parse data extension YAML.");
+        return;
+      }
+
       await this.postMessage({
-        t: "setExistingYamlData",
-        data,
+        t: "setExistingModeledMethods",
+        existingModeledMethods,
       });
     } catch (e: unknown) {
       void extLogger.log(`Unable to read data extension YAML: ${e}`);

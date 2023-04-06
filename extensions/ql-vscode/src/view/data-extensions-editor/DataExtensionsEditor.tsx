@@ -16,10 +16,7 @@ import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { MethodRow } from "./MethodRow";
 import { assertNever } from "../../pure/helpers-pure";
 import { vscode } from "../vscode-api";
-import {
-  createDataExtensionYaml,
-  loadDataExtensionYaml,
-} from "../../data-extensions-editor/yaml";
+import { createDataExtensionYaml } from "../../data-extensions-editor/yaml";
 import { calculateSupportedPercentage } from "./supported";
 
 export const DataExtensionsEditorContainer = styled.div`
@@ -61,12 +58,10 @@ export function DataExtensionsEditor(): JSX.Element {
           case "showProgress":
             setProgress(msg);
             break;
-          case "setExistingYamlData":
+          case "setExistingModeledMethods":
             setModeledMethods((oldModeledMethods) => {
-              const existingModeledMethods = loadDataExtensionYaml(msg.data);
-
               return {
-                ...existingModeledMethods,
+                ...msg.existingModeledMethods,
                 ...oldModeledMethods,
               };
             });
