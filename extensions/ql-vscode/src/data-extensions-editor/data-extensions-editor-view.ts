@@ -95,7 +95,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "generateExternalApi":
-        await this.generateExternalApi();
+        await this.generateModeledMethods();
 
         break;
       default:
@@ -222,7 +222,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     }
   }
 
-  protected async generateExternalApi(): Promise<void> {
+  protected async generateModeledMethods(): Promise<void> {
     const tokenSource = new CancellationTokenSource();
 
     const selectedDatabase = this.databaseManager.currentDatabaseItem;
