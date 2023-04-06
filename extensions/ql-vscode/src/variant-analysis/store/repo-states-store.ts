@@ -17,7 +17,7 @@ export async function writeRepoStates(
     }),
   );
 
-  return await outputJson(storagePath, repoStatesData);
+  await outputJson(storagePath, repoStatesData);
 }
 
 export async function readRepoStates(

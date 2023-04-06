@@ -1,4 +1,4 @@
-import { appendFile, pathExists, mkdir, outputJson, readJson } from "fs-extra";
+import { appendFile, pathExists } from "fs-extra";
 import fetch from "node-fetch";
 import { EOL } from "os";
 import { join } from "path";
@@ -17,6 +17,7 @@ import {
 import { DisposableObject, DisposeHandler } from "../pure/disposable-object";
 import { EventEmitter } from "vscode";
 import { unzipFile } from "../pure/zip";
+import { readRepoTask, writeRepoTask } from "./store/repo-task-store";
 
 type CacheKey = `${number}/${string}`;
 
@@ -37,7 +38,6 @@ export type LoadResultsOptions = {
 };
 
 export class VariantAnalysisResultsManager extends DisposableObject {
-  private static readonly REPO_TASK_FILENAME = "repo_task.json";
   private static readonly RESULTS_DIRECTORY = "results";
 
   private readonly cachedResults: Map<
@@ -78,14 +78,7 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       repoTask.repository.fullName,
     );
 
-    if (!(await pathExists(resultDirectory))) {
-      await mkdir(resultDirectory, { recursive: true });
-    }
-
-    await outputJson(
-      join(resultDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME),
-      repoTask,
-    );
+    await writeRepoTask(resultDirectory, repoTask);
 
     const zipFilePath = join(resultDirectory, "results.zip");
 
@@ -184,8 +177,8 @@ export class VariantAnalysisResultsManager extends DisposableObject {
       repositoryFullName,
     );
 
-    const repoTask: VariantAnalysisRepositoryTask = await readJson(
-      join(storageDirectory, VariantAnalysisResultsManager.REPO_TASK_FILENAME),
+    const repoTask: VariantAnalysisRepositoryTask = await readRepoTask(
+      storageDirectory,
     );
 
     if (!repoTask.databaseCommitSha || !repoTask.sourceLocationPrefix) {
