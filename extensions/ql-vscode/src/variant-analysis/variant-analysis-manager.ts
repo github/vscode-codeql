@@ -264,15 +264,11 @@ export class VariantAnalysisManager
     } else {
       await this.setVariantAnalysis(variantAnalysis);
 
-      try {
-        const repoStates = await readRepoStates(
-          this.getRepoStatesStoragePath(variantAnalysis.id),
-        );
-        this.repoStates.set(variantAnalysis.id, repoStates);
-      } catch (e) {
-        // Ignore this error, we simply might not have downloaded anything yet
-        this.repoStates.set(variantAnalysis.id, {});
-      }
+      const repoStatesFromDisk = await readRepoStates(
+        this.getRepoStatesStoragePath(variantAnalysis.id),
+      );
+
+      this.repoStates.set(variantAnalysis.id, repoStatesFromDisk || {});
 
       if (
         !(await isVariantAnalysisComplete(
@@ -598,10 +594,13 @@ export class VariantAnalysisManager
       VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
     await this.onRepoStateUpdated(variantAnalysis.id, repoState);
 
-    await writeRepoStates(
-      this.getRepoStatesStoragePath(variantAnalysis.id),
-      this.repoStates.get(variantAnalysis.id),
-    );
+    const repoStates = this.repoStates.get(variantAnalysis.id);
+    if (repoStates) {
+      await writeRepoStates(
+        this.getRepoStatesStoragePath(variantAnalysis.id),
+        repoStates,
+      );
+    }
   }
 
   public async enqueueDownload(

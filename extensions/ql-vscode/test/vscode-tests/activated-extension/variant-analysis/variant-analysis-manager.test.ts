@@ -45,6 +45,10 @@ import { App } from "../../../../src/common/app";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { mockedObject } from "../../utils/mocking.helpers";
+import {
+  REPO_STATES_FILENAME,
+  writeRepoStates,
+} from "../../../../src/variant-analysis/store/repo-states-store";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -119,8 +123,12 @@ describe("Variant Analysis Manager", () => {
       });
 
       it("should read in the repo states if it exists", async () => {
-        await fs.writeJson(
-          join(storagePath, variantAnalysis.id.toString(), "repo_states.json"),
+        await writeRepoStates(
+          join(
+            storagePath,
+            variantAnalysis.id.toString(),
+            REPO_STATES_FILENAME,
+          ),
           {
             [scannedRepos[0].repository.id]: {
               repositoryId: scannedRepos[0].repository.id,
@@ -177,7 +185,7 @@ describe("Variant Analysis Manager", () => {
       repoStatesPath = join(
         storagePath,
         variantAnalysis.id.toString(),
-        "repo_states.json",
+        REPO_STATES_FILENAME,
       );
     });
 
