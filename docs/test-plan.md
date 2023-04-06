@@ -83,6 +83,7 @@ choose to go through some of the Optional Test Cases.
 ### Test Case 5: MRVA - Canceling a variant analysis run
 
 Run one of the above MRVAs, but cancel it from within VS Code:
+
 - Check that the query is canceled and the query history item is updated.
 - Check that the workflow run is also canceled.
 - Check that any available results are visible in VS Code.
@@ -231,6 +232,7 @@ with this since it has quite a limited number of actions you can do.
 
 This requires running a MRVA query and seeing the results view.
 
+<!-- markdownlint-disable-next-line MD024 -->
 #### Test case 1: When variant analysis state is "pending"
 
 1. Can open a results view

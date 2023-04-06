@@ -122,6 +122,7 @@ import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
+import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extensions-editor-module";
 
 /**
  * extension.ts
@@ -170,27 +171,31 @@ function getCommands(
     }
   };
 
+  const restartQueryServer = async () =>
+    withProgress(
+      async (progress: ProgressCallback, token: CancellationToken) => {
+        // Restart all of the spawned servers: cli, query, and language.
+        cliServer.restartCliServer();
+        await Promise.all([
+          queryRunner.restartQueryServer(progress, token),
+          ideServer.restart(),
+        ]);
+        void showAndLogInformationMessage("CodeQL Query Server restarted.", {
+          outputLogger: queryServerLogger,
+        });
+      },
+      {
+        title: "Restarting Query Server",
+      },
+    );
+
   return {
     "codeQL.openDocumentation": async () => {
       await env.openExternal(Uri.parse("https://codeql.github.com/docs/"));
     },
-    "codeQL.restartQueryServer": async () =>
-      withProgress(
-        async (progress: ProgressCallback, token: CancellationToken) => {
-          // Restart all of the spawned servers: cli, query, and language.
-          cliServer.restartCliServer();
-          await Promise.all([
-            queryRunner.restartQueryServer(progress, token),
-            ideServer.restart(),
-          ]);
-          void showAndLogInformationMessage("CodeQL Query Server restarted.", {
-            outputLogger: queryServerLogger,
-          });
-        },
-        {
-          title: "Restarting Query Server",
-        },
-      ),
+    "codeQL.restartQueryServer": restartQueryServer,
+    "codeQL.restartQueryServerOnConfigChange": restartQueryServer,
+    "codeQL.restartLegacyQueryServerOnConfigChange": restartQueryServer,
     "codeQL.copyVersion": async () => {
       const text = `CodeQL extension version: ${
         extension?.packageJSON.version
@@ -871,6 +876,24 @@ async function activateWithInstalledDistribution(
   const debuggerUI = new DebuggerUI(localQueryResultsView, localQueries, dbm);
   ctx.subscriptions.push(debuggerUI);
 
+  void extLogger.log("Initializing debugger factory.");
+  ctx.subscriptions.push(
+    new QLDebugAdapterDescriptorFactory(queryStorageDir, qs, localQueries),
+  );
+
+  void extLogger.log("Initializing debugger UI.");
+  const debuggerUI = new DebuggerUI(localQueryResultsView, localQueries, dbm);
+  ctx.subscriptions.push(debuggerUI);
+
+  const dataExtensionsEditorModule =
+    await DataExtensionsEditorModule.initialize(
+      ctx,
+      dbm,
+      cliServer,
+      qs,
+      tmpDir.name,
+    );
+
   void extLogger.log("Initializing QLTest interface.");
   const testExplorerExtension = extensions.getExtension<TestHub>(
     testExplorerExtensionId,
@@ -933,6 +956,7 @@ async function activateWithInstalledDistribution(
     ...getPackagingCommands({
       cliServer,
     }),
+    ...dataExtensionsEditorModule.getCommands(),
     ...evalLogViewer.getCommands(),
     ...summaryLanguageSupport.getCommands(),
     ...testUiCommands,

@@ -69,6 +69,8 @@ export type BaseCommands = {
 
   "codeQL.copyVersion": () => Promise<void>;
   "codeQL.restartQueryServer": () => Promise<void>;
+  "codeQL.restartQueryServerOnConfigChange": () => Promise<void>;
+  "codeQL.restartLegacyQueryServerOnConfigChange": () => Promise<void>;
 };
 
 // Commands used when working with queries in the editor
@@ -208,7 +210,10 @@ export type VariantAnalysisCommands = {
     variantAnalysisId: number,
     repositoryFullName: string,
   ) => Promise<VariantAnalysisScannedRepositoryResult>;
-  "codeQL.monitorVariantAnalysis": (
+  "codeQL.monitorNewVariantAnalysis": (
+    variantAnalysis: VariantAnalysis,
+  ) => Promise<void>;
+  "codeQL.monitorRehydratedVariantAnalysis": (
     variantAnalysis: VariantAnalysis,
   ) => Promise<void>;
   "codeQL.openVariantAnalysisLogs": (
@@ -253,6 +258,10 @@ export type PackagingCommands = {
   "codeQL.downloadPacks": () => Promise<void>;
 };
 
+export type DataExtensionsEditorCommands = {
+  "codeQL.openDataExtensionsEditor": () => Promise<void>;
+};
+
 export type EvalLogViewerCommands = {
   "codeQLEvalLogViewer.clear": () => Promise<void>;
 };
@@ -286,6 +295,7 @@ export type AllExtensionCommands = BaseCommands &
   AstCfgCommands &
   AstViewerCommands &
   PackagingCommands &
+  DataExtensionsEditorCommands &
   EvalLogViewerCommands &
   SummaryLanguageSupportCommands &
   Partial<TestUICommands> &

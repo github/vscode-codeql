@@ -1,5 +1,5 @@
 import * as React from "react";
-import { assertNever } from "../../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../../pure/helpers-pure";
 import {
   DatabaseInfo,
   Interpretation,
@@ -104,7 +104,6 @@ export class ResultsApp extends React.Component<
           queryPath: msg.queryPath,
         });
 
-        void this.loadResults();
         break;
       case "showInterpretedPage": {
         const tableName =
@@ -141,7 +140,6 @@ export class ResultsApp extends React.Component<
           queryName: msg.queryName,
           queryPath: msg.queryPath,
         });
-        void this.loadResults();
         break;
       }
       case "resultsUpdating":
@@ -164,76 +162,45 @@ export class ResultsApp extends React.Component<
 
   private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
     this.setState((prevState) => {
-      const stateWithDisplayedResults = (
-        displayedResults: ResultsState,
-      ): ResultsViewState => ({
-        displayedResults,
-        isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-        nextResultsInfo: resultsInfo,
-      });
-
-      if (!prevState.isExpectingResultsUpdate && resultsInfo === null) {
-        // No results to display
-        return stateWithDisplayedResults({
-          resultsInfo: null,
-          results: null,
-          errorMessage: "No results to display",
-        });
-      }
-      if (!resultsInfo || !resultsInfo.shouldKeepOldResultsWhileRendering) {
+      if (resultsInfo === null && prevState.isExpectingResultsUpdate) {
         // Display loading message
-        return stateWithDisplayedResults({
-          resultsInfo: null,
-          results: null,
-          errorMessage: "Loading results…",
-        });
-      }
-      return stateWithDisplayedResults(prevState.displayedResults);
-    });
-  }
-
-  private getResultSets(resultsInfo: ResultsInfo): readonly ResultSet[] {
-    const parsedResultSets = resultsInfo.parsedResultSets;
-    const resultSet = parsedResultSets.resultSet;
-    if (!resultSet.t) {
-      throw new Error(
-        'Missing result set type. Should be either "InterpretedResultSet" or "RawResultSet".',
-      );
-    }
-    return [resultSet];
-  }
-
-  private async loadResults(): Promise<void> {
-    const resultsInfo = this.state.nextResultsInfo;
-    if (resultsInfo === null) {
-      return;
-    }
-
-    let results: Results | null = null;
-    let statusText = "";
-    try {
-      const resultSets = this.getResultSets(resultsInfo);
-      results = {
-        resultSets,
-        database: resultsInfo.database,
-        sortStates: this.getSortStates(resultsInfo),
-      };
-    } catch (e) {
-      let errorMessage: string;
-      if (e instanceof Error) {
-        errorMessage = e.message;
-      } else {
-        errorMessage = "Unknown error";
+        return {
+          displayedResults: {
+            resultsInfo: null,
+            results: null,
+            errorMessage: "Loading results…",
+          },
+          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+          nextResultsInfo: resultsInfo,
+        };
+      } else if (resultsInfo === null) {
+        // No results to display
+        return {
+          displayedResults: {
+            resultsInfo: null,
+            results: null,
+            errorMessage: "No results to display",
+          },
+          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+          nextResultsInfo: resultsInfo,
+        };
       }
 
-      statusText = `Error loading results: ${errorMessage}`;
-    }
+      let results: Results | null = null;
+      let statusText = "";
+      try {
+        const resultSets = this.getResultSets(resultsInfo);
+        results = {
+          resultSets,
+          database: resultsInfo.database,
+          sortStates: this.getSortStates(resultsInfo),
+        };
+      } catch (e) {
+        const errorMessage = getErrorMessage(e);
 
-    this.setState((prevState) => {
-      // Only set state if this results info is still current.
-      if (resultsInfo !== prevState.nextResultsInfo) {
-        return null;
+        statusText = `Error loading results: ${errorMessage}`;
       }
+
       return {
         displayedResults: {
           resultsInfo,
@@ -244,6 +211,22 @@ export class ResultsApp extends React.Component<
         isExpectingResultsUpdate: false,
       };
     });
+  }
+
+  private getResultSets(resultsInfo: ResultsInfo): readonly ResultSet[] {
+    const parsedResultSets = resultsInfo.parsedResultSets;
+    const resultSet = parsedResultSets.resultSet;
+    if (
+      resultSet.t !== "InterpretedResultSet" &&
+      resultSet.t !== "RawResultSet"
+    ) {
+      throw new Error(
+        `Invalid result set type. Should be either "InterpretedResultSet" or "RawResultSet", but got "${
+          (resultSet as { t: string }).t
+        }".`,
+      );
+    }
+    return [resultSet];
   }
 
   private getSortStates(
