@@ -1,4 +1,7 @@
-import { createDataExtensionYaml } from "../../../src/data-extensions-editor/yaml";
+import {
+  createDataExtensionYaml,
+  loadDataExtensionYaml,
+} from "../../../src/data-extensions-editor/yaml";
 
 describe("createDataExtensionYaml", () => {
   it("creates the correct YAML file", () => {
@@ -97,5 +100,63 @@ describe("createDataExtensionYaml", () => {
       extensible: neutralModel
     data: []
 `);
+  });
+});
+
+describe("loadDataExtensionYaml", () => {
+  it("loads the YAML file", () => {
+    const data = loadDataExtensionYaml({
+      extensions: [
+        {
+          addsTo: { pack: "codeql/java-all", extensible: "sourceModel" },
+          data: [],
+        },
+        {
+          addsTo: { pack: "codeql/java-all", extensible: "sinkModel" },
+          data: [
+            [
+              "org.sql2o",
+              "Connection",
+              true,
+              "createQuery",
+              "(String)",
+              "",
+              "Argument[0]",
+              "sql",
+              "manual",
+            ],
+          ],
+        },
+        {
+          addsTo: { pack: "codeql/java-all", extensible: "summaryModel" },
+          data: [],
+        },
+        {
+          addsTo: { pack: "codeql/java-all", extensible: "neutralModel" },
+          data: [],
+        },
+      ],
+    });
+
+    expect(data).toEqual({
+      "org.sql2o.Connection#createQuery(String)": {
+        input: "Argument[0]",
+        kind: "sql",
+        output: "",
+        type: "sink",
+      },
+    });
+  });
+
+  it("returns undefined if given a string", () => {
+    const data = loadDataExtensionYaml(`extensions:
+  - addsTo:
+      pack: codeql/java-all
+      extensible: sinkModel
+    data:
+      - ["org.sql2o","Connection",true,"createQuery","(String)","","Argument[0]","sql","manual"]
+`);
+
+    expect(data).toBeUndefined();
   });
 });
