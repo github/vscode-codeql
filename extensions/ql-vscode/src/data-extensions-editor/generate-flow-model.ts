@@ -23,7 +23,7 @@ class FlowModelGenerator {
     private readonly token: CancellationToken,
   ) {}
 
-  async getAddsTo(
+  private async getModeledMethodsFromFlow(
     type: Exclude<ModeledMethodType, "none">,
     queryName: string,
     queryStep: number,
@@ -90,7 +90,7 @@ class FlowModelGenerator {
   async run(
     onResults: (results: ModeledMethodWithSignature[]) => void | Promise<void>,
   ) {
-    const summaryResults = await this.getAddsTo(
+    const summaryResults = await this.getModeledMethodsFromFlow(
       "summary",
       "CaptureSummaryModels.ql",
       0,
@@ -99,12 +99,16 @@ class FlowModelGenerator {
       await onResults(summaryResults);
     }
 
-    const sinkResults = await this.getAddsTo("sink", "CaptureSinkModels.ql", 1);
+    const sinkResults = await this.getModeledMethodsFromFlow(
+      "sink",
+      "CaptureSinkModels.ql",
+      1,
+    );
     if (sinkResults) {
       await onResults(sinkResults);
     }
 
-    const sourceResults = await this.getAddsTo(
+    const sourceResults = await this.getModeledMethodsFromFlow(
       "source",
       "CaptureSourceModels.ql",
       2,
@@ -113,7 +117,7 @@ class FlowModelGenerator {
       await onResults(sourceResults);
     }
 
-    const neutralResults = await this.getAddsTo(
+    const neutralResults = await this.getModeledMethodsFromFlow(
       "neutral",
       "CaptureNeutralModels.ql",
       3,
