@@ -20,18 +20,18 @@
    <pre><code class="javascript">
    const meteorLocalFolder = '.meteor';
    const meteorPath = <strong>path.resolve(rootPath, meteorLocalFolder)</strong>;
-   
+
    module.exports = {
    </code></pre>
-   
+
 2. [npm-packages/meteor-installer/config.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/config.js#L39-L39)
    <pre><code class="javascript">
    const meteorLocalFolder = '.meteor';
    const <strong>meteorPath = path.resolve(rootPath, meteorLocalFolder)</strong>;
-   
+
    module.exports = {
    </code></pre>
-   
+
 3. [npm-packages/meteor-installer/config.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/config.js#L44-L44)
    <pre><code class="javascript">  METEOR_LATEST_VERSION,
      extractPath: rootPath,
@@ -39,7 +39,7 @@
      release: process.env.INSTALL_METEOR_VERSION || METEOR_LATEST_VERSION,
      rootPath,
    </code></pre>
-   
+
 4. [npm-packages/meteor-installer/install.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/install.js#L12-L12)
    <pre><code class="javascript">const os = require('os');
    const {
@@ -47,7 +47,7 @@
      release,
      startedPath,
    </code></pre>
-   
+
 5. [npm-packages/meteor-installer/install.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/install.js#L11-L23)
    <pre><code class="javascript">const tmp = require('tmp');
    const os = require('os');
@@ -67,7 +67,7 @@
    const { uninstall } = require('./uninstall');
    const {
    </code></pre>
-   
+
 6. [npm-packages/meteor-installer/install.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/install.js#L259-L259)
    <pre><code class="javascript">  if (isWindows()) {
        //set for the current session and beyond
@@ -75,7 +75,7 @@
        return;
      }
    </code></pre>
-   
+
 7. [npm-packages/meteor-installer/install.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/install.js#L259-L259)
    <pre><code class="javascript">  if (isWindows()) {
        //set for the current session and beyond
@@ -83,7 +83,7 @@
        return;
      }
    </code></pre>
-   
+
 8. [npm-packages/meteor-installer/install.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/install.js#L259-L259)
    <pre><code class="javascript">  if (isWindows()) {
        //set for the current session and beyond
@@ -91,7 +91,7 @@
        return;
      }
    </code></pre>
-   
+
 9. [npm-packages/meteor-installer/install.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/install.js#L259-L259)
    <pre><code class="javascript">  if (isWindows()) {
        //set for the current session and beyond
@@ -99,7 +99,7 @@
        return;
      }
    </code></pre>
-   
+
 10. [npm-packages/meteor-installer/install.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/install.js#L259-L259)
     <pre><code class="javascript">  if (isWindows()) {
         //set for the current session and beyond
@@ -107,7 +107,7 @@
         return;
       }
     </code></pre>
-    
+
 11. [npm-packages/meteor-installer/install.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/install.js#L259-L259)
     <pre><code class="javascript">  if (isWindows()) {
         //set for the current session and beyond
@@ -115,7 +115,6 @@
         return;
       }
     </code></pre>
-    
 
 </details>
 
@@ -126,10 +125,10 @@
    <pre><code class="javascript">
    const meteorLocalFolder = '.meteor';
    const meteorPath = <strong>path.resolve(rootPath, meteorLocalFolder)</strong>;
-   
+
    module.exports = {
    </code></pre>
-   
+
 2. [npm-packages/meteor-installer/install.js](https://github.com/meteor/meteor/blob/73b538fe201cbfe89dd0c709689023f9b3eab1ec/npm-packages/meteor-installer/install.js#L259-L259)
    <pre><code class="javascript">  if (isWindows()) {
        //set for the current session and beyond
@@ -137,7 +136,6 @@
        return;
      }
    </code></pre>
-   
 
 </details>
 
