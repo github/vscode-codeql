@@ -4,7 +4,6 @@ import {
   DebugAdapterTrackerFactory,
   DebugSession,
   debug,
-  //  window,
   Uri,
   CancellationTokenSource,
   commands,
@@ -24,7 +23,7 @@ import {
   validateQueryUri,
 } from "../run-queries-shared";
 import { QLResolvedDebugConfiguration } from "./debug-configuration";
-import * as CodeQLDebugProtocol from "./debug-protocol";
+import * as CodeQLProtocol from "./debug-protocol";
 
 /**
  * Listens to messages passing between VS Code and the debug adapter, so that we can supplement the
@@ -50,9 +49,7 @@ class QLDebugAdapterTracker
     this.configuration = <QLResolvedDebugConfiguration>session.configuration;
   }
 
-  public onDidSendMessage(
-    message: CodeQLDebugProtocol.AnyProtocolMessage,
-  ): void {
+  public onDidSendMessage(message: CodeQLProtocol.AnyProtocolMessage): void {
     if (message.type === "event") {
       switch (message.event) {
         case "codeql-evaluation-started":
@@ -80,9 +77,8 @@ class QLDebugAdapterTracker
   }
 
   public async quickEval(): Promise<void> {
-    const args: CodeQLDebugProtocol.QuickEvalRequest["arguments"] = {
-      quickEvalPosition: (await getQuickEvalContext(undefined))
-        .quickEvalPosition,
+    const args: CodeQLProtocol.QuickEvalRequest["arguments"] = {
+      quickEvalContext: await getQuickEvalContext(undefined),
     };
     await this.session.customRequest("codeql-quickeval", args);
   }
@@ -106,7 +102,7 @@ class QLDebugAdapterTracker
 
   /** Updates the UI to track the currently executing query. */
   private async onEvaluationStarted(
-    body: CodeQLDebugProtocol.EvaluationStartedEventBody,
+    body: CodeQLProtocol.EvaluationStartedEvent["body"],
   ): Promise<void> {
     const dbUri = Uri.file(this.configuration.database);
     const dbItem = await this.dbm.createOrOpenDatabaseItem(dbUri);
@@ -117,17 +113,10 @@ class QLDebugAdapterTracker
       debug.stopDebugging(this.session),
     );
 
-    const quickEval =
-      body.quickEvalPosition !== undefined
-        ? {
-            quickEvalPosition: body.quickEvalPosition,
-            quickEvalText: "<Quick Evaluation>", // TODO: Have the debug adapter return the range, and extract the text from the editor.
-          }
-        : undefined;
     this.localQueryRun = await this.localQueries.createLocalQueryRun(
       {
         queryPath: this.configuration.query,
-        quickEval,
+        quickEval: body.quickEvalContext,
       },
       dbItem,
       new QueryOutputDir(body.outputDir),
@@ -137,7 +126,7 @@ class QLDebugAdapterTracker
 
   /** Update the UI after a query has finished evaluating. */
   private async onEvaluationCompleted(
-    body: CodeQLDebugProtocol.EvaluationCompletedEventBody,
+    body: CodeQLProtocol.EvaluationCompletedEvent["body"],
   ): Promise<void> {
     if (this.localQueryRun !== undefined) {
       const results: CoreQueryResults = body;

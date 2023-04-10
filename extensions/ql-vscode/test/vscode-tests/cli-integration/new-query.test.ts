@@ -5,18 +5,11 @@ import * as messages from "../../../src/pure/new-messages";
 import * as qsClient from "../../../src/query-server/queryserver-client";
 import * as cli from "../../../src/cli";
 import { CellValue } from "../../../src/pure/bqrs-cli-types";
-import { Uri } from "vscode";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../../src/query-server/queryserver-client";
 import { extLogger, ProgressReporter } from "../../../src/common";
 import { QueryResultType } from "../../../src/pure/new-messages";
-import {
-  cleanDatabases,
-  dbLoc,
-  getActivatedExtension,
-  storagePath,
-} from "../global.helper";
-import { importArchiveDatabase } from "../../../src/databaseFetcher";
+import { ensureTestDatabase, getActivatedExtension } from "../global.helper";
 import { createMockApp } from "../../__mocks__/appMock";
 
 const baseDir = join(__dirname, "../../../test/data");
@@ -144,24 +137,11 @@ describeWithCodeQL()("using the new query server", () => {
     await qs.startQueryServer();
 
     // Unlike the old query sevre the new one wants a database and the empty direcrtory is not valid.
-    // Add a database, but make sure the database manager is empty first
-    await cleanDatabases(extension.databaseManager);
-    const uri = Uri.file(dbLoc);
-    const maybeDbItem = await importArchiveDatabase(
-      app.commands,
-      uri.toString(true),
+    const dbItem = await ensureTestDatabase(
       extension.databaseManager,
-      storagePath,
-      () => {
-        /**ignore progress */
-      },
-      token,
+      undefined,
     );
-
-    if (!maybeDbItem) {
-      throw new Error("Could not import database");
-    }
-    db = maybeDbItem.databaseUri.fsPath;
+    db = dbItem.databaseUri.fsPath;
   });
 
   for (const queryTestCase of queryTestCases) {

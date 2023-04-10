@@ -7,12 +7,12 @@ import {
 import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from "../helpers";
 import { LocalQueries } from "../local-queries";
 import { getQuickEvalContext, validateQueryPath } from "../run-queries-shared";
-import * as CodeQLDebugProtocol from "./debug-protocol";
+import * as CodeQLProtocol from "./debug-protocol";
 
 /**
  * The CodeQL launch arguments, as specified in "launch.json".
  */
-interface QLDebugArgs {
+export interface QLDebugArgs {
   query?: string;
   database?: string;
   additionalPacks?: string[] | string;
@@ -26,14 +26,14 @@ interface QLDebugArgs {
  *
  * This just combines `QLDebugArgs` with the standard debug configuration properties.
  */
-type QLDebugConfiguration = DebugConfiguration & QLDebugArgs;
+export type QLDebugConfiguration = DebugConfiguration & QLDebugArgs;
 
 /**
  * A CodeQL debug configuration after all variables and defaults have been resolved. This is what
  * is passed to the debug adapter via the `launch` request.
  */
 export type QLResolvedDebugConfiguration = DebugConfiguration &
-  CodeQLDebugProtocol.LaunchConfig;
+  CodeQLProtocol.LaunchConfig;
 
 /**
  * Implementation of `DebugConfigurationProvider` for CodeQL.
@@ -114,7 +114,7 @@ export class QLDebugConfigurationProvider
       database: qlConfiguration.database,
       additionalPacks,
       extensionPacks,
-      quickEvalPosition: quickEvalContext?.quickEvalPosition,
+      quickEvalContext,
       noDebug: qlConfiguration.noDebug ?? false,
     };
 

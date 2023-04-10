@@ -9,7 +9,7 @@ import {
   StoppedEvent,
   TerminatedEvent,
 } from "@vscode/debugadapter";
-import { DebugProtocol } from "@vscode/debugprotocol";
+import { DebugProtocol as Protocol } from "@vscode/debugprotocol";
 import { Disposable } from "vscode";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import { BaseLogger, LogOptions, queryServerLogger } from "../common";
@@ -20,15 +20,13 @@ import {
   CoreQueryRun,
   QueryRunner,
 } from "../queryRunner";
-import * as CodeQLDebugProtocol from "./debug-protocol";
+import * as CodeQLProtocol from "./debug-protocol";
+import { QuickEvalContext } from "../run-queries-shared";
 
 // More complete implementations of `Event` for certain events, because the classes from
 // `@vscode/debugadapter` make it more difficult to provide some of the message values.
 
-class ProgressStartEvent
-  extends Event
-  implements DebugProtocol.ProgressStartEvent
-{
+class ProgressStartEvent extends Event implements Protocol.ProgressStartEvent {
   public readonly event = "progressStart";
   public readonly body: {
     progressId: string;
@@ -57,7 +55,7 @@ class ProgressStartEvent
 
 class ProgressUpdateEvent
   extends Event
-  implements DebugProtocol.ProgressUpdateEvent
+  implements Protocol.ProgressUpdateEvent
 {
   public readonly event = "progressUpdate";
   public readonly body: {
@@ -78,31 +76,33 @@ class ProgressUpdateEvent
 
 class EvaluationStartedEvent
   extends Event
-  implements CodeQLDebugProtocol.EvaluationStartedEvent
+  implements CodeQLProtocol.EvaluationStartedEvent
 {
+  public readonly type = "event";
   public readonly event = "codeql-evaluation-started";
-  public readonly body: CodeQLDebugProtocol.EvaluationStartedEventBody;
+  public readonly body: CodeQLProtocol.EvaluationStartedEvent["body"];
 
   constructor(
     id: string,
     outputDir: string,
-    quickEvalPosition: CodeQLDebugProtocol.Position | undefined,
+    quickEvalContext: QuickEvalContext | undefined,
   ) {
     super("codeql-evaluation-started");
     this.body = {
       id,
       outputDir,
-      quickEvalPosition,
+      quickEvalContext,
     };
   }
 }
 
 class EvaluationCompletedEvent
   extends Event
-  implements CodeQLDebugProtocol.EvaluationCompletedEvent
+  implements CodeQLProtocol.EvaluationCompletedEvent
 {
+  public readonly type = "event";
   public readonly event = "codeql-evaluation-completed";
-  public readonly body: CodeQLDebugProtocol.EvaluationCompletedEventBody;
+  public readonly body: CodeQLProtocol.EvaluationCompletedEvent["body"];
 
   constructor(results: CoreQueryResults) {
     super("codeql-evaluation-completed");
@@ -139,12 +139,12 @@ const QUERY_THREAD_NAME = "Evaluation thread";
 export class QLDebugSession extends LoggingDebugSession implements Disposable {
   private state: State = "uninitialized";
   private terminateOnComplete = false;
-  private args: CodeQLDebugProtocol.LaunchRequestArguments | undefined =
+  private args: CodeQLProtocol.LaunchRequest["arguments"] | undefined =
     undefined;
   private tokenSource: CancellationTokenSource | undefined = undefined;
   private queryRun: CoreQueryRun | undefined = undefined;
   private lastResult:
-    | CodeQLDebugProtocol.EvaluationCompletedEventBody
+    | CodeQLProtocol.EvaluationCompletedEvent["body"]
     | undefined = undefined;
 
   constructor(
@@ -158,14 +158,14 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     this.cancelEvaluation();
   }
 
-  protected dispatchRequest(request: DebugProtocol.Request): void {
+  protected dispatchRequest(request: Protocol.Request): void {
     // We just defer to the base class implementation, but having this override makes it easy to set
     // a breakpoint that will be hit for any message received by the debug adapter.
     void queryServerLogger.log(`DAP request: ${request.command}`);
     super.dispatchRequest(request);
   }
 
-  private unexpectedState(response: DebugProtocol.Response): void {
+  private unexpectedState(response: Protocol.Response): void {
     this.sendErrorResponse(
       response,
       ERROR_UNEXPECTED_STATE,
@@ -178,8 +178,8 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   }
 
   protected initializeRequest(
-    response: DebugProtocol.InitializeResponse,
-    _args: DebugProtocol.InitializeRequestArguments,
+    response: Protocol.InitializeResponse,
+    _args: Protocol.InitializeRequestArguments,
   ): void {
     switch (this.state) {
       case "uninitialized":
@@ -206,30 +206,30 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   }
 
   protected configurationDoneRequest(
-    response: DebugProtocol.ConfigurationDoneResponse,
-    args: DebugProtocol.ConfigurationDoneArguments,
-    request?: DebugProtocol.Request,
+    response: Protocol.ConfigurationDoneResponse,
+    args: Protocol.ConfigurationDoneArguments,
+    request?: Protocol.Request,
   ): void {
     super.configurationDoneRequest(response, args, request);
   }
 
   protected disconnectRequest(
-    response: DebugProtocol.DisconnectResponse,
-    _args: DebugProtocol.DisconnectArguments,
-    _request?: DebugProtocol.Request,
+    response: Protocol.DisconnectResponse,
+    _args: Protocol.DisconnectArguments,
+    _request?: Protocol.Request,
   ): void {
     this.terminateOrDisconnect(response);
   }
 
   protected terminateRequest(
-    response: DebugProtocol.TerminateResponse,
-    _args: DebugProtocol.TerminateArguments,
-    _request?: DebugProtocol.Request,
+    response: Protocol.TerminateResponse,
+    _args: Protocol.TerminateArguments,
+    _request?: Protocol.Request,
   ): void {
     this.terminateOrDisconnect(response);
   }
 
-  private terminateOrDisconnect(response: DebugProtocol.Response): void {
+  private terminateOrDisconnect(response: Protocol.Response): void {
     switch (this.state) {
       case "running":
         this.terminateOnComplete = true;
@@ -249,9 +249,9 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   }
 
   protected launchRequest(
-    response: DebugProtocol.LaunchResponse,
-    args: CodeQLDebugProtocol.LaunchRequestArguments,
-    _request?: DebugProtocol.Request,
+    response: Protocol.LaunchResponse,
+    args: CodeQLProtocol.LaunchRequest["arguments"],
+    _request?: Protocol.Request,
   ): void {
     switch (this.state) {
       case "initialized":
@@ -265,7 +265,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
         // Send the response immediately. We'll send a "stopped" message when the evaluation is complete.
         this.sendResponse(response);
 
-        void this.evaluate(this.args.quickEvalPosition);
+        void this.evaluate(this.args.quickEvalContext);
         break;
 
       default:
@@ -275,38 +275,38 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   }
 
   protected nextRequest(
-    response: DebugProtocol.NextResponse,
-    _args: DebugProtocol.NextArguments,
-    _request?: DebugProtocol.Request,
+    response: Protocol.NextResponse,
+    _args: Protocol.NextArguments,
+    _request?: Protocol.Request,
   ): void {
     this.stepRequest(response);
   }
 
   protected stepInRequest(
-    response: DebugProtocol.StepInResponse,
-    _args: DebugProtocol.StepInArguments,
-    _request?: DebugProtocol.Request,
+    response: Protocol.StepInResponse,
+    _args: Protocol.StepInArguments,
+    _request?: Protocol.Request,
   ): void {
     this.stepRequest(response);
   }
 
   protected stepOutRequest(
-    response: DebugProtocol.Response,
-    _args: DebugProtocol.StepOutArguments,
-    _request?: DebugProtocol.Request,
+    response: Protocol.Response,
+    _args: Protocol.StepOutArguments,
+    _request?: Protocol.Request,
   ): void {
     this.stepRequest(response);
   }
 
   protected stepBackRequest(
-    response: DebugProtocol.StepBackResponse,
-    _args: DebugProtocol.StepBackArguments,
-    _request?: DebugProtocol.Request,
+    response: Protocol.StepBackResponse,
+    _args: Protocol.StepBackArguments,
+    _request?: Protocol.Request,
   ): void {
     this.stepRequest(response);
   }
 
-  private stepRequest(response: DebugProtocol.Response): void {
+  private stepRequest(response: Protocol.Response): void {
     switch (this.state) {
       case "stopped":
         this.sendResponse(response);
@@ -323,9 +323,9 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   }
 
   protected continueRequest(
-    response: DebugProtocol.ContinueResponse,
-    _args: DebugProtocol.ContinueArguments,
-    _request?: DebugProtocol.Request,
+    response: Protocol.ContinueResponse,
+    _args: Protocol.ContinueArguments,
+    _request?: Protocol.Request,
   ): void {
     switch (this.state) {
       case "stopped":
@@ -345,9 +345,9 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   }
 
   protected cancelRequest(
-    response: DebugProtocol.CancelResponse,
-    args: DebugProtocol.CancelArguments,
-    _request?: DebugProtocol.Request,
+    response: Protocol.CancelResponse,
+    args: Protocol.CancelArguments,
+    _request?: Protocol.Request,
   ): void {
     switch (this.state) {
       case "running":
@@ -367,8 +367,8 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   }
 
   protected threadsRequest(
-    response: DebugProtocol.ThreadsResponse,
-    _request?: DebugProtocol.Request,
+    response: Protocol.ThreadsResponse,
+    _request?: Protocol.Request,
   ): void {
     response.body = response.body ?? {};
     response.body.threads = [
@@ -382,9 +382,9 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   }
 
   protected stackTraceRequest(
-    response: DebugProtocol.StackTraceResponse,
-    _args: DebugProtocol.StackTraceArguments,
-    _request?: DebugProtocol.Request,
+    response: Protocol.StackTraceResponse,
+    _args: Protocol.StackTraceArguments,
+    _request?: Protocol.Request,
   ): void {
     response.body = response.body ?? {};
     response.body.stackFrames = []; // No frames for now.
@@ -394,15 +394,15 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
 
   protected customRequest(
     command: string,
-    response: CodeQLDebugProtocol.Response,
+    response: CodeQLProtocol.Response,
     args: any,
-    request?: DebugProtocol.Request,
+    request?: Protocol.Request,
   ): void {
     switch (command) {
       case "codeql-quickeval": {
         this.quickEvalRequest(
           response,
-          <CodeQLDebugProtocol.QuickEvalRequest["arguments"]>args,
+          <CodeQLProtocol.QuickEvalRequest["arguments"]>args,
         );
         break;
       }
@@ -414,8 +414,8 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   }
 
   protected quickEvalRequest(
-    response: CodeQLDebugProtocol.QuickEvalResponse,
-    args: CodeQLDebugProtocol.QuickEvalRequest["arguments"],
+    response: CodeQLProtocol.QuickEvalResponse,
+    args: CodeQLProtocol.QuickEvalRequest["arguments"],
   ): void {
     switch (this.state) {
       case "stopped":
@@ -427,7 +427,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
         // is supposed to happen. For a custom request, though, we have to notify the client.
         this.sendEvent(new ContinuedEvent(QUERY_THREAD_ID, true));
 
-        void this.evaluate(args.quickEvalPosition);
+        void this.evaluate(args.quickEvalContext);
         break;
 
       default:
@@ -452,7 +452,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
    * result.
    */
   private async evaluate(
-    quickEvalPosition: CodeQLDebugProtocol.Position | undefined,
+    quickEvalContext: QuickEvalContext | undefined,
   ): Promise<void> {
     const args = this.args!;
 
@@ -464,7 +464,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
         args.database,
         {
           queryPath: args.query,
-          quickEvalPosition,
+          quickEvalPosition: quickEvalContext?.quickEvalPosition,
         },
         true,
         args.additionalPacks,
@@ -482,7 +482,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
         new EvaluationStartedEvent(
           this.queryRun.id,
           this.queryRun.outputDir.querySaveDir,
-          quickEvalPosition,
+          quickEvalContext,
         ),
       );
 
@@ -532,7 +532,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
    * Mark the evaluation as completed, and notify the client of the result.
    */
   private completeEvaluation(
-    result: CodeQLDebugProtocol.EvaluationCompletedEventBody,
+    result: CodeQLProtocol.EvaluationCompletedEvent["body"],
   ): void {
     this.lastResult = result;
 

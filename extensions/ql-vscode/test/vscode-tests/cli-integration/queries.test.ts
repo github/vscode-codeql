@@ -1,4 +1,4 @@
-import { CancellationToken, ExtensionContext, Uri } from "vscode";
+import { debug, CancellationToken, ExtensionContext, Range, Uri } from "vscode";
 import { join, dirname } from "path";
 import {
   pathExistsSync,
@@ -12,22 +12,68 @@ import { load, dump } from "js-yaml";
 import { DatabaseItem, DatabaseManager } from "../../../src/local-databases";
 import {
   cleanDatabases,
-  dbLoc,
+  ensureTestDatabase,
   getActivatedExtension,
-  storagePath,
 } from "../global.helper";
-import { importArchiveDatabase } from "../../../src/databaseFetcher";
 import { CliVersionConstraint, CodeQLCliServer } from "../../../src/cli";
 import { describeWithCodeQL } from "../cli";
-import { QueryRunner } from "../../../src/queryRunner";
+import { CoreCompletedQuery, QueryRunner } from "../../../src/queryRunner";
 import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
-import { createMockCommandManager } from "../../__mocks__/commandsMock";
 import { LocalQueries } from "../../../src/local-queries";
 import { QueryResultType } from "../../../src/pure/new-messages";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
-import { AllCommands, QueryServerCommands } from "../../../src/common/commands";
+import {
+  AllCommands,
+  DebuggerCommands,
+  QueryServerCommands,
+} from "../../../src/common/commands";
+import { ProgressCallback } from "../../../src/progress";
+import { CommandManager } from "../../../src/packages/commands";
+import { withDebugController } from "./debug-controller";
 
-jest.setTimeout(20_000);
+type DebugMode = "localQueries" | "launch";
+
+async function compileAndRunQuery(
+  mode: DebugMode,
+  localQueries: LocalQueries,
+  debuggerCommands: CommandManager<DebuggerCommands>,
+  quickEval: boolean,
+  queryUri: Uri,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  databaseItem: DatabaseItem | undefined,
+  range?: Range,
+): Promise<CoreCompletedQuery> {
+  switch (mode) {
+    case "localQueries":
+      return await localQueries.compileAndRunQueryInternal(
+        quickEval,
+        queryUri,
+        progress,
+        token,
+        databaseItem,
+        range,
+      );
+
+    case "launch":
+      return await withDebugController(debuggerCommands, async (controller) => {
+        await controller.debugQuery(queryUri);
+        await controller.expectLaunched();
+        const succeeded = await controller.expectSucceeded();
+        await controller.expectStopped();
+        expect(debug.activeDebugSession?.name).not.toBeUndefined();
+        await debug.stopDebugging();
+        await controller.expectTerminated();
+        await controller.expectSessionClosed();
+
+        return succeeded.results;
+      });
+  }
+}
+
+jest.setTimeout(2000_000);
+
+const MODES: DebugMode[] = ["localQueries", "launch"];
 
 /**
  * Integration tests for queries
@@ -44,6 +90,7 @@ describeWithCodeQL()("Queries", () => {
   const appCommandManager = createVSCodeCommandManager<AllCommands>();
   const queryServerCommandManager =
     createVSCodeCommandManager<QueryServerCommands>();
+  const debuggerCommands = createVSCodeCommandManager<DebuggerCommands>();
 
   let qlpackFile: string;
   let qlpackLockFile: string;
@@ -73,23 +120,7 @@ describeWithCodeQL()("Queries", () => {
       },
     } as CancellationToken;
 
-    // Add a database, but make sure the database manager is empty first
-    await cleanDatabases(databaseManager);
-    const uri = Uri.file(dbLoc);
-    const maybeDbItem = await importArchiveDatabase(
-      createMockCommandManager(),
-      uri.toString(true),
-      databaseManager,
-      storagePath,
-      progress,
-      token,
-      cli,
-    );
-
-    if (!maybeDbItem) {
-      throw new Error("Could not import database");
-    }
-    dbItem = maybeDbItem;
+    dbItem = await ensureTestDatabase(databaseManager, cli);
   });
 
   afterEach(async () => {
@@ -98,7 +129,7 @@ describeWithCodeQL()("Queries", () => {
     await cleanDatabases(databaseManager);
   });
 
-  describe("extension packs", () => {
+  describe.each(MODES)("extension packs (%s)", (mode) => {
     const queryUsingExtensionPath = join(
       __dirname,
       "../..",
@@ -141,7 +172,10 @@ describeWithCodeQL()("Queries", () => {
     }
 
     async function runQueryWithExtensions() {
-      const result = await localQueries.compileAndRunQueryInternal(
+      const result = await compileAndRunQuery(
+        mode,
+        localQueries,
+        debuggerCommands,
         false,
         Uri.file(queryUsingExtensionPath),
         progress,
@@ -169,75 +203,85 @@ describeWithCodeQL()("Queries", () => {
     }
   });
 
-  it("should run a query", async () => {
-    const queryPath = join(__dirname, "data", "simple-query.ql");
-    const result = await localQueries.compileAndRunQueryInternal(
-      false,
-      Uri.file(queryPath),
-      progress,
-      token,
-      dbItem,
-      undefined,
-    );
+  describe.each(MODES)("running queries (%s)", (mode) => {
+    it("should run a query", async () => {
+      const queryPath = join(__dirname, "data", "simple-query.ql");
+      const result = await compileAndRunQuery(
+        mode,
+        localQueries,
+        debuggerCommands,
+        false,
+        Uri.file(queryPath),
+        progress,
+        token,
+        dbItem,
+        undefined,
+      );
 
-    // just check that the query was successful
-    expect(result.resultType).toBe(QueryResultType.SUCCESS);
+      // just check that the query was successful
+      expect(result.resultType).toBe(QueryResultType.SUCCESS);
+    });
+
+    // Asserts a fix for bug https://github.com/github/vscode-codeql/issues/733
+    it("should restart the database and run a query", async () => {
+      await appCommandManager.execute("codeQL.restartQueryServer");
+      const queryPath = join(__dirname, "data", "simple-query.ql");
+      const result = await compileAndRunQuery(
+        mode,
+        localQueries,
+        debuggerCommands,
+        false,
+        Uri.file(queryPath),
+        progress,
+        token,
+        dbItem,
+        undefined,
+      );
+
+      expect(result.resultType).toBe(QueryResultType.SUCCESS);
+    });
   });
 
-  // Asserts a fix for bug https://github.com/github/vscode-codeql/issues/733
-  it("should restart the database and run a query", async () => {
-    await appCommandManager.execute("codeQL.restartQueryServer");
-    const queryPath = join(__dirname, "data", "simple-query.ql");
-    const result = await localQueries.compileAndRunQueryInternal(
-      false,
-      Uri.file(queryPath),
-      progress,
-      token,
-      dbItem,
-      undefined,
-    );
+  describe("quick query", () => {
+    it("should create a quick query", async () => {
+      await queryServerCommandManager.execute("codeQL.quickQuery");
 
-    expect(result.resultType).toBe(QueryResultType.SUCCESS);
-  });
+      // should have created the quick query file and query pack file
+      expect(pathExistsSync(qlFile)).toBe(true);
+      expect(pathExistsSync(qlpackFile)).toBe(true);
 
-  it("should create a quick query", async () => {
-    await queryServerCommandManager.execute("codeQL.quickQuery");
+      const qlpackContents: any = await load(readFileSync(qlpackFile, "utf8"));
+      // Should have chosen the js libraries
+      expect(qlpackContents.dependencies["codeql/javascript-all"]).toBe("*");
 
-    // should have created the quick query file and query pack file
-    expect(pathExistsSync(qlFile)).toBe(true);
-    expect(pathExistsSync(qlpackFile)).toBe(true);
+      // Should also have a codeql-pack.lock.yml file
+      const packFileToUse = pathExistsSync(qlpackLockFile)
+        ? qlpackLockFile
+        : oldQlpackLockFile;
+      const qlpackLock: any = await load(readFileSync(packFileToUse, "utf8"));
+      expect(!!qlpackLock.dependencies["codeql/javascript-all"].version).toBe(
+        true,
+      );
+    });
 
-    const qlpackContents: any = await load(readFileSync(qlpackFile, "utf8"));
-    // Should have chosen the js libraries
-    expect(qlpackContents.dependencies["codeql/javascript-all"]).toBe("*");
+    it("should avoid creating a quick query", async () => {
+      mkdirpSync(dirname(qlpackFile));
+      writeFileSync(
+        qlpackFile,
+        dump({
+          name: "quick-query",
+          version: "1.0.0",
+          dependencies: {
+            "codeql/javascript-all": "*",
+          },
+        }),
+      );
+      writeFileSync(qlFile, "xxx");
+      await queryServerCommandManager.execute("codeQL.quickQuery");
 
-    // Should also have a codeql-pack.lock.yml file
-    const packFileToUse = pathExistsSync(qlpackLockFile)
-      ? qlpackLockFile
-      : oldQlpackLockFile;
-    const qlpackLock: any = await load(readFileSync(packFileToUse, "utf8"));
-    expect(!!qlpackLock.dependencies["codeql/javascript-all"].version).toBe(
-      true,
-    );
-  });
-
-  it("should avoid creating a quick query", async () => {
-    mkdirpSync(dirname(qlpackFile));
-    writeFileSync(
-      qlpackFile,
-      dump({
-        name: "quick-query",
-        version: "1.0.0",
-        dependencies: {
-          "codeql/javascript-all": "*",
-        },
-      }),
-    );
-    writeFileSync(qlFile, "xxx");
-    await queryServerCommandManager.execute("codeQL.quickQuery");
-
-    // should not have created the quick query file because database schema hasn't changed
-    expect(readFileSync(qlFile, "utf8")).toBe("xxx");
+      // should not have created the quick query file because database schema hasn't changed
+      expect(readFileSync(qlFile, "utf8")).toBe("xxx");
+    });
   });
 
   function safeDel(file: string) {

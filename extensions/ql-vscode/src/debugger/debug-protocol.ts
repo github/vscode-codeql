@@ -1,5 +1,8 @@
 import { DebugProtocol } from "@vscode/debugprotocol";
 import { QueryResultType } from "../pure/new-messages";
+import { QuickEvalContext } from "../run-queries-shared";
+
+// Events
 
 export type Event = { type: "event" };
 
@@ -9,85 +12,50 @@ export type StoppedEvent = DebugProtocol.StoppedEvent &
 export type InitializedEvent = DebugProtocol.InitializedEvent &
   Event & { event: "initialized" };
 
+export type ExitedEvent = DebugProtocol.ExitedEvent &
+  Event & { event: "exited" };
+
 export type OutputEvent = DebugProtocol.OutputEvent &
   Event & { event: "output" };
-
-export interface EvaluationStartedEventBody {
-  id: string;
-  outputDir: string;
-  quickEvalPosition: Position | undefined;
-}
 
 /**
  * Custom event to provide additional information about a running evaluation.
  */
-export interface EvaluationStartedEvent extends DebugProtocol.Event {
+export interface EvaluationStartedEvent extends Event {
   event: "codeql-evaluation-started";
-  body: EvaluationStartedEventBody;
-}
-
-export interface EvaluationCompletedEventBody {
-  resultType: QueryResultType;
-  message: string | undefined;
-  evaluationTime: number;
+  body: {
+    id: string;
+    outputDir: string;
+    quickEvalContext: QuickEvalContext | undefined;
+  };
 }
 
 /**
  * Custom event to provide additional information about a completed evaluation.
  */
-export interface EvaluationCompletedEvent extends DebugProtocol.Event {
+export interface EvaluationCompletedEvent extends Event {
   event: "codeql-evaluation-completed";
-  body: EvaluationCompletedEventBody;
+  body: {
+    resultType: QueryResultType;
+    message: string | undefined;
+    evaluationTime: number;
+  };
 }
 
 export type AnyEvent =
   | StoppedEvent
+  | ExitedEvent
   | InitializedEvent
   | OutputEvent
   | EvaluationStartedEvent
   | EvaluationCompletedEvent;
 
+// Requests
+
 export type Request = DebugProtocol.Request & { type: "request" };
-
-export interface QuickEvalRequest extends Request {
-  command: "codeql-quickeval";
-  arguments: {
-    quickEvalPosition: Position;
-  };
-}
-
-export interface DebugResultRequest extends Request {
-  command: "codeql-debug-result";
-  arguments: undefined;
-}
 
 export type InitializeRequest = DebugProtocol.InitializeRequest &
   Request & { command: "initialize" };
-
-export type AnyRequest =
-  | InitializeRequest
-  | DebugResultRequest
-  | QuickEvalRequest;
-
-export type Response = DebugProtocol.Response & { type: "response" };
-
-export type InitializeResponse = DebugProtocol.InitializeResponse &
-  Response & { command: "initialize" };
-
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface QuickEvalResponse extends Response {}
-
-export type AnyResponse = InitializeResponse;
-
-export type AnyProtocolMessage = AnyEvent | AnyRequest | AnyResponse;
-
-export interface Position {
-  fileName: string;
-  line: number;
-  column: number;
-  endLine: number;
-  endColumn: number;
-}
 
 export interface LaunchConfig {
   /** Full path to query (.ql) file. */
@@ -98,11 +66,37 @@ export interface LaunchConfig {
   additionalPacks: string[];
   /** Pack names of extension packs. */
   extensionPacks: string[];
-  /** Optional quick evaluation position. */
-  quickEvalPosition: Position | undefined;
+  /** Optional quick evaluation context. */
+  quickEvalContext: QuickEvalContext | undefined;
   /** Run the query without debugging it. */
   noDebug: boolean;
 }
 
-export type LaunchRequestArguments = DebugProtocol.LaunchRequestArguments &
-  LaunchConfig;
+export interface LaunchRequest extends Request, DebugProtocol.LaunchRequest {
+  type: "request";
+  command: "launch";
+  arguments: DebugProtocol.LaunchRequestArguments & LaunchConfig;
+}
+
+export interface QuickEvalRequest extends Request {
+  command: "codeql-quickeval";
+  arguments: {
+    quickEvalContext: QuickEvalContext;
+  };
+}
+
+export type AnyRequest = InitializeRequest | LaunchRequest | QuickEvalRequest;
+
+// Responses
+
+export type Response = DebugProtocol.Response & { type: "response" };
+
+export type InitializeResponse = DebugProtocol.InitializeResponse &
+  Response & { command: "initialize" };
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface QuickEvalResponse extends Response {}
+
+export type AnyResponse = InitializeResponse | QuickEvalResponse;
+
+export type AnyProtocolMessage = AnyEvent | AnyRequest | AnyResponse;

@@ -259,7 +259,13 @@ export class LocalQueries extends DisposableObject {
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
       "codeQL.codeLensQuickEval": this.codeLensQuickEval.bind(this),
       "codeQL.quickQuery": this.quickQuery.bind(this),
-      "codeQL.getCurrentQuery": this.getCurrentQuery.bind(this),
+      "codeQL.getCurrentQuery": () => {
+        // When invoked as a command, such as when resolving variables in a debug configuration,
+        // always allow ".qll" files, because we don't know if the configuration will be for
+        // quickeval yet. The debug configuration code will do further validation once it knows for
+        // sure.
+        return this.getCurrentQuery(true);
+      },
     };
   }
 
@@ -404,7 +410,7 @@ export class LocalQueries extends DisposableObject {
    * For now, the "active query" is just whatever query is in the active text editor. Once we have a
    * propery "queries" panel, we can provide a way to select the current query there.
    */
-  private async getCurrentQuery(): Promise<string> {
+  private async getCurrentQuery(allowLibraryFiles: boolean): Promise<string> {
     const editor = window.activeTextEditor;
     if (editor === undefined) {
       throw new Error(
@@ -412,7 +418,7 @@ export class LocalQueries extends DisposableObject {
       );
     }
 
-    return validateQueryUri(editor.document.uri, false);
+    return validateQueryUri(editor.document.uri, allowLibraryFiles);
   }
 
   /**
@@ -492,7 +498,7 @@ export class LocalQueries extends DisposableObject {
       queryPath = validateQueryUri(queryUri, quickEval);
     } else {
       // Use the currently selected query.
-      queryPath = await this.getCurrentQuery();
+      queryPath = await this.getCurrentQuery(quickEval);
     }
 
     const selectedQuery: SelectedQuery = {
