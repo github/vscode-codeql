@@ -45,7 +45,7 @@ export class SkeletonQueryWizard {
 
   public async execute() {
     // show quick pick to choose language
-    await this.chooseLanguage();
+    this.language = await this.chooseLanguage();
     if (!this.language) {
       return;
     }
@@ -112,7 +112,7 @@ export class SkeletonQueryWizard {
       maxStep: 1,
     });
 
-    this.language = await askForLanguage(this.cliServer, false);
+    return await askForLanguage(this.cliServer, false);
   }
 
   private async createQlPack() {
