@@ -15,22 +15,22 @@ type QueryLanguagesToDatabaseMap = {
   [id: string]: string;
 };
 
+export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
+  cpp: "protocolbuffers/protobuf",
+  csharp: "dotnet/efcore",
+  go: "evanw/esbuild",
+  java: "google/guava",
+  javascript: "facebook/react",
+  python: "pallets/flask",
+  ruby: "rails/rails",
+  swift: "Alamofire/Alamofire",
+};
+
 export class SkeletonQueryWizard {
   private language: string | undefined;
   private folderName: string | undefined;
   private fileName = "example.ql";
   private storagePath: string | undefined;
-
-  QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
-    cpp: "protocolbuffers/protobuf",
-    csharp: "dotnet/efcore",
-    go: "evanw/esbuild",
-    java: "google/guava",
-    javascript: "facebook/react",
-    python: "pallets/flask",
-    ruby: "rails/rails",
-    swift: "Alamofire/Alamofire",
-  };
 
   constructor(
     private readonly cliServer: CodeQLCliServer,
@@ -206,7 +206,7 @@ export class SkeletonQueryWizard {
       maxStep: 3,
     });
 
-    const githubRepoNwo = this.QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
+    const githubRepoNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
 
     await databaseFetcher.downloadGitHubDatabase(
       githubRepoNwo,
@@ -229,7 +229,7 @@ export class SkeletonQueryWizard {
       throw new Error("Workspace storage path is undefined");
     }
 
-    const databaseNwo = this.QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
+    const databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
 
     const databaseItem = await this.databaseManager.digForDatabaseItem(
       this.language,
