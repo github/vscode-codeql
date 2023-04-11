@@ -138,6 +138,7 @@ export async function promptImportGithubDatabase(
  * @param progress the progress callback
  * @param token the cancellation token
  * @param cli the CodeQL CLI server
+ * @param language the language to download. If undefined, the user will be prompted to choose a language.
  **/
 export async function downloadGitHubDatabase(
   githubRepo: string,
