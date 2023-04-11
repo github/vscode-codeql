@@ -276,13 +276,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
     });
 
     try {
-      await generateFlowModel(
-        this.cliServer,
-        this.queryRunner,
-        this.queryStorageDir,
-        workspaceFolder.uri.fsPath,
-        database,
-        async (results) => {
+      await generateFlowModel({
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        queryStorageDir: this.queryStorageDir,
+        qlDir: workspaceFolder.uri.fsPath,
+        databaseItem: database,
+        onResults: async (results) => {
           const modeledMethodsByName: Record<string, ModeledMethod> = {};
 
           for (const result of results) {
@@ -295,9 +295,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
             overrideNone: true,
           });
         },
-        (update) => this.showProgress(update),
-        tokenSource.token,
-      );
+        progress: (update) => this.showProgress(update),
+        token: tokenSource.token,
+      });
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
         redactableError(
