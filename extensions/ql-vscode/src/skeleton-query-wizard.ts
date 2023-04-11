@@ -197,7 +197,7 @@ export class SkeletonQueryWizard {
     }
 
     if (this.language === undefined) {
-      throw new Error("Workspace storage path is undefined");
+      throw new Error("Language is undefined");
     }
 
     this.progress({
