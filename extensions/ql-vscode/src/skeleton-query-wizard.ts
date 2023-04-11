@@ -80,9 +80,15 @@ export class SkeletonQueryWizard {
       join(this.storagePath, this.folderName, this.fileName),
     );
 
-    void workspace.openTextDocument(queryFileUri).then((doc) => {
-      void Window.showTextDocument(doc);
-    });
+    try {
+      void workspace.openTextDocument(queryFileUri).then((doc) => {
+        void Window.showTextDocument(doc);
+      });
+    } catch (e: unknown) {
+      void this.extLogger.log(
+        `Could not open example query file: ${getErrorMessage(e)}`,
+      );
+    }
   }
 
   private workoutStoragePath() {
