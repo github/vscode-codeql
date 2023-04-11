@@ -9,7 +9,7 @@ import { TextDocument, window, workspace, WorkspaceFolder } from "vscode";
 import { extLogger } from "../../../src/common";
 import { QlPackGenerator } from "../../../src/qlpack-generator";
 import * as helpers from "../../../src/helpers";
-import { ensureDirSync, removeSync } from "fs-extra";
+import { createFileSync, ensureDirSync, removeSync } from "fs-extra";
 import { join } from "path";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import { testCredentialsWithStub } from "../../factories/authentication";
@@ -153,6 +153,16 @@ describe("SkeletonQueryWizard", () => {
     });
 
     it("should create new query file in the same QL pack folder", async () => {
+      await wizard.execute();
+
+      expect(createExampleQlFileSpy).toHaveBeenCalledWith("example2.ql");
+    });
+
+    it("should only take into account example QL files", async () => {
+      createFileSync(
+        join(dir.name, `codeql-custom-queries-${chosenLanguage}`, "MyQuery.ql"),
+      );
+
       await wizard.execute();
 
       expect(createExampleQlFileSpy).toHaveBeenCalledWith("example2.ql");
