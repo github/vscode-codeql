@@ -241,6 +241,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
     const selectedDatabase = this.databaseManager.currentDatabaseItem;
 
+    // The external API methods are in the library source code, so we need to ask
+    // the user to import the library database. We need to have the database
+    // imported to the query server, so we need to register it to our workspace.
     const database = await promptImportGithubDatabase(
       this.app.commands,
       this.databaseManager,
@@ -257,6 +260,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
       return;
     }
 
+    // The library database was set as the current database by importing it,
+    // but we need to set it back to the originally selected database.
     await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
 
     const workspaceFolder = getQlSubmoduleFolder();
@@ -301,6 +306,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
       );
     }
 
+    // After the flow model has been generated, we can remove the temporary database
+    // which we used for generating the flow model.
     await this.databaseManager.removeDatabaseItem(
       () =>
         this.showProgress({
