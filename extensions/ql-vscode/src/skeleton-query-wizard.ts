@@ -26,7 +26,6 @@ export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
 
 export class SkeletonQueryWizard {
   private language: string | undefined;
-  private folderName: string | undefined;
   private fileName = "example.ql";
   private storagePath: string | undefined;
 
@@ -41,6 +40,10 @@ export class SkeletonQueryWizard {
     this.storagePath = this.workoutStoragePath();
   }
 
+  private get folderName() {
+    return `codeql-custom-queries-${this.language}`;
+  }
+
   public async execute() {
     // show quick pick to choose language
     this.language = await this.chooseLanguage();
@@ -48,7 +51,6 @@ export class SkeletonQueryWizard {
       return;
     }
 
-    this.folderName = `codeql-custom-queries-${this.language}`;
     const skeletonPackAlreadyExists = isFolderAlreadyInWorkspace(
       this.folderName,
     );
