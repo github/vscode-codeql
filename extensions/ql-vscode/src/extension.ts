@@ -13,7 +13,7 @@ import {
   workspace,
 } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
-import { arch, platform } from "os";
+import { arch, platform, homedir } from "os";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { dirSync } from "tmp-promise";
@@ -1019,8 +1019,9 @@ async function activateWithInstalledDistribution(
  * See https://docs.github.com/en/code-security/codeql-cli/using-the-codeql-cli/specifying-command-options-in-a-codeql-configuration-file#using-a-codeql-configuration-file
  */
 function watchExternalConfigFile(app: ExtensionApp, ctx: ExtensionContext) {
-  if (process.env.HOME) {
-    const configPath = join(process.env.HOME, ".config/codeql", "config");
+  const home = homedir();
+  if (home) {
+    const configPath = join(home, ".config", "codeql", "config");
     const configWatcher = watch(configPath, {
       // These options avoid firing the event twice.
       persistent: true,
