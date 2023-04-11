@@ -11,9 +11,7 @@ import { DatabaseItem, DatabaseManager } from "./local-databases";
 import * as databaseFetcher from "./databaseFetcher";
 import { ProgressCallback } from "./progress";
 
-type QueryLanguagesToDatabaseMap = {
-  [id: string]: string;
-};
+type QueryLanguagesToDatabaseMap = Record<string, string>;
 
 export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
   cpp: "protocolbuffers/protobuf",
