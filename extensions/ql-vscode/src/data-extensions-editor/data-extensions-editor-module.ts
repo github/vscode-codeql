@@ -53,7 +53,7 @@ export class DataExtensionsEditorModule {
     return {
       "codeQL.openDataExtensionsEditor": async () =>
         withProgress(
-          async (progress) => {
+          async (progress, token) => {
             const db = this.databaseManager.currentDatabaseItem;
             if (!db) {
               void showAndLogErrorMessage("No database selected");
@@ -78,6 +78,8 @@ export class DataExtensionsEditorModule {
             const modelFile = await pickModelFile(
               this.cliServer,
               progress,
+              token,
+              db,
               extensionPackPath,
             );
             if (!modelFile) {
