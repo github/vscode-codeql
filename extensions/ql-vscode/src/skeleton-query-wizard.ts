@@ -184,9 +184,7 @@ export class SkeletonQueryWizard {
 
     const folderUri = Uri.file(join(this.storagePath, folderName));
     const files = await workspace.fs.readDirectory(folderUri);
-    const qlFiles = files.filter((file) =>
-      file[0].endsWith(".ql") ? true : false,
-    );
+    const qlFiles = files.filter((file) => file[0].endsWith(".ql"));
 
     return `example${qlFiles.length + 1}.ql`;
   }
