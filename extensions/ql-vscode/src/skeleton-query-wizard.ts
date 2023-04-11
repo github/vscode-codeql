@@ -168,7 +168,7 @@ export class SkeletonQueryWizard {
         this.storagePath,
       );
 
-      this.fileName = await this.workoutNextFileName(this.folderName);
+      this.fileName = await this.determineNextFileName(this.folderName);
       await qlPackGenerator.createExampleQlFile(this.fileName);
     } catch (e: unknown) {
       void this.extLogger.log(
@@ -177,7 +177,7 @@ export class SkeletonQueryWizard {
     }
   }
 
-  private async workoutNextFileName(folderName: string): Promise<string> {
+  private async determineNextFileName(folderName: string): Promise<string> {
     if (this.storagePath === undefined) {
       throw new Error("Workspace storage path is undefined");
     }
