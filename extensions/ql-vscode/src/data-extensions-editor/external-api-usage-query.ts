@@ -54,6 +54,11 @@ export async function runQuery({
   }
   await writeFile(suiteFile, dumpYaml(suiteYaml), "utf8");
 
+  const additionalPacks = getOnDiskWorkspaceFolders();
+  const extensionPacks = Object.keys(
+    await cliServer.resolveQlpacks(additionalPacks, true),
+  );
+
   const queries = await cliServer.resolveQueriesInSuite(
     suiteFile,
     getOnDiskWorkspaceFolders(),
@@ -71,7 +76,7 @@ export async function runQuery({
     { queryPath: query, quickEvalPosition: undefined },
     false,
     getOnDiskWorkspaceFolders(),
-    undefined,
+    extensionPacks,
     queryStorageDir,
     undefined,
     undefined,
