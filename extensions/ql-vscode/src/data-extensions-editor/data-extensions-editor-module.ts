@@ -7,12 +7,14 @@ import { DatabaseManager } from "../local-databases";
 import { extLogger } from "../common";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
+import { App } from "../common/app";
 
 export class DataExtensionsEditorModule {
   private readonly queryStorageDir: string;
 
   private constructor(
     private readonly ctx: ExtensionContext,
+    private readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
@@ -26,6 +28,7 @@ export class DataExtensionsEditorModule {
 
   public static async initialize(
     ctx: ExtensionContext,
+    app: App,
     databaseManager: DatabaseManager,
     cliServer: CodeQLCliServer,
     queryRunner: QueryRunner,
@@ -33,6 +36,7 @@ export class DataExtensionsEditorModule {
   ): Promise<DataExtensionsEditorModule> {
     const dataExtensionsEditorModule = new DataExtensionsEditorModule(
       ctx,
+      app,
       databaseManager,
       cliServer,
       queryRunner,
@@ -54,6 +58,8 @@ export class DataExtensionsEditorModule {
 
         const view = new DataExtensionsEditorView(
           this.ctx,
+          this.app,
+          this.databaseManager,
           this.cliServer,
           this.queryRunner,
           this.queryStorageDir,
