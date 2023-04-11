@@ -215,6 +215,9 @@ export class DistributionManager implements DistributionProvider {
     minSecondsSinceLastUpdateCheck: number,
   ): Promise<DistributionUpdateCheckResult> {
     const distribution = await this.getDistributionWithoutVersionCheck();
+    if (distribution === undefined) {
+      minSecondsSinceLastUpdateCheck = 0;
+    }
     const extensionManagedCodeQlPath =
       await this.extensionSpecificDistributionManager.getCodeQlPathWithoutVersionCheck();
     if (distribution?.codeQlPath !== extensionManagedCodeQlPath) {
