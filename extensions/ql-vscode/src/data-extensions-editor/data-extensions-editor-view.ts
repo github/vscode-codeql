@@ -13,17 +13,14 @@ import {
   ToDataExtensionsEditorMessage,
 } from "../pure/interface-types";
 import { ProgressUpdate } from "../progress";
-import { extLogger, TeeLogger } from "../common";
-import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
-import { qlpackOfDatabase } from "../contextual/queryResolver";
-import { file } from "tmp-promise";
-import { readFile, writeFile } from "fs-extra";
-import { dump as dumpYaml, load as loadYaml } from "js-yaml";
+import { QueryRunner } from "../queryRunner";
 import {
-  getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../helpers";
+import { extLogger } from "../common";
+import { readFile, writeFile } from "fs-extra";
+import { load as loadYaml } from "js-yaml";
 import { DatabaseItem, DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
 import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
@@ -34,6 +31,7 @@ import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
 import { showResolvableLocation } from "../interface-utils";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../pure/errors";
+import { readQueryResults, runQuery } from "./external-api-usage-query";
 import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
@@ -192,22 +190,36 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   protected async loadExternalApiUsages(): Promise<void> {
+    const cancellationTokenSource = new CancellationTokenSource();
+
     try {
-      const queryResult = await this.runQuery();
+      const queryResult = await runQuery({
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        databaseItem: this.databaseItem,
+        queryStorageDir: this.queryStorageDir,
+        logger: extLogger,
+        progress: (progressUpdate: ProgressUpdate) => {
+          void this.showProgress(progressUpdate, 1500);
+        },
+        token: cancellationTokenSource.token,
+      });
       if (!queryResult) {
         await this.clearProgress();
         return;
       }
 
       await this.showProgress({
-        message: "Loading results",
+        message: "Decoding results",
         step: 1100,
         maxStep: 1500,
       });
 
-      const bqrsPath = queryResult.outputDir.bqrsPath;
-
-      const bqrsChunk = await this.getResults(bqrsPath);
+      const bqrsChunk = await readQueryResults({
+        cliServer: this.cliServer,
+        bqrsPath: queryResult.outputDir.bqrsPath,
+        logger: extLogger,
+      });
       if (!bqrsChunk) {
         await this.clearProgress();
         return;
@@ -320,83 +332,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
     );
 
     await this.clearProgress();
-  }
-
-  private async runQuery(): Promise<CoreCompletedQuery | undefined> {
-    const qlpacks = await qlpackOfDatabase(this.cliServer, this.databaseItem);
-
-    const packsToSearch = [qlpacks.dbschemePack];
-    if (qlpacks.queryPack) {
-      packsToSearch.push(qlpacks.queryPack);
-    }
-
-    const suiteFile = (
-      await file({
-        postfix: ".qls",
-      })
-    ).path;
-    const suiteYaml = [];
-    for (const qlpack of packsToSearch) {
-      suiteYaml.push({
-        from: qlpack,
-        queries: ".",
-        include: {
-          id: `${this.databaseItem.language}/telemetry/fetch-external-apis`,
-        },
-      });
-    }
-    await writeFile(suiteFile, dumpYaml(suiteYaml), "utf8");
-
-    const queries = await this.cliServer.resolveQueriesInSuite(
-      suiteFile,
-      getOnDiskWorkspaceFolders(),
-    );
-
-    if (queries.length !== 1) {
-      void extLogger.log(`Expected exactly one query, got ${queries.length}`);
-      return;
-    }
-
-    const query = queries[0];
-
-    const tokenSource = new CancellationTokenSource();
-
-    const queryRun = this.queryRunner.createQueryRun(
-      this.databaseItem.databaseUri.fsPath,
-      { queryPath: query, quickEvalPosition: undefined },
-      false,
-      getOnDiskWorkspaceFolders(),
-      undefined,
-      this.queryStorageDir,
-      undefined,
-      undefined,
-    );
-
-    return queryRun.evaluate(
-      (update) => this.showProgress(update, 1500),
-      tokenSource.token,
-      new TeeLogger(this.queryRunner.logger, queryRun.outputDir.logPath),
-    );
-  }
-
-  private async getResults(bqrsPath: string) {
-    const bqrsInfo = await this.cliServer.bqrsInfo(bqrsPath);
-    if (bqrsInfo["result-sets"].length !== 1) {
-      void extLogger.log(
-        `Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
-      );
-      return undefined;
-    }
-
-    const resultSet = bqrsInfo["result-sets"][0];
-
-    await this.showProgress({
-      message: "Decoding results",
-      step: 1200,
-      maxStep: 1500,
-    });
-
-    return this.cliServer.bqrsDecode(bqrsPath, resultSet.name);
   }
 
   /*
