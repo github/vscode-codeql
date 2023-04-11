@@ -231,7 +231,7 @@ export class SkeletonQueryWizard {
 
     const databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
 
-    const databaseItem = await this.digForDatabaseItem(
+    const databaseItem = await this.findDatabaseItemByNwo(
       this.language,
       databaseNwo,
       this.databaseManager.databaseItems,
@@ -246,7 +246,7 @@ export class SkeletonQueryWizard {
     }
   }
 
-  public async digForDatabaseItem(
+  public async findDatabaseItemByNwo(
     language: string,
     databaseNwo: string,
     databaseItems: readonly DatabaseItem[],
