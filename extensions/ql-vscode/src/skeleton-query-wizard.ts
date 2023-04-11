@@ -239,7 +239,7 @@ export class SkeletonQueryWizard {
 
     const databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
 
-    const existingDatabaseItem = await this.digForDatabaseItem(
+    const existingDatabaseItem = await this.findDatabaseItemByNwo(
       this.language,
       databaseNwo,
       this.databaseManager.databaseItems,
@@ -249,11 +249,10 @@ export class SkeletonQueryWizard {
       // select the found database
       await this.databaseManager.setCurrentDatabaseItem(existingDatabaseItem);
     } else {
-      const sameLanguageDatabaseItem =
-        await this.digForDatabaseWithSameLanguage(
-          this.language,
-          this.databaseManager.databaseItems,
-        );
+      const sameLanguageDatabaseItem = await this.findDatabaseItemByLanguage(
+        this.language,
+        this.databaseManager.databaseItems,
+      );
 
       if (sameLanguageDatabaseItem) {
         // select the found database
@@ -267,7 +266,7 @@ export class SkeletonQueryWizard {
     }
   }
 
-  public async digForDatabaseItem(
+  public async findDatabaseItemByNwo(
     language: string,
     databaseNwo: string,
     databaseItems: readonly DatabaseItem[],
@@ -282,7 +281,7 @@ export class SkeletonQueryWizard {
     return dbs[0];
   }
 
-  public async digForDatabaseWithSameLanguage(
+  public async findDatabaseItemByLanguage(
     language: string,
     databaseItems: readonly DatabaseItem[],
   ): Promise<DatabaseItem | undefined> {

@@ -347,13 +347,13 @@ describe("SkeletonQueryWizard", () => {
     });
   });
 
-  describe("digForDatabaseItem", () => {
+  describe("findDatabaseItemByNwo", () => {
     describe("when the item exists", () => {
       it("should return the database item", async () => {
         const mockDbItem = createMockDB(dir);
         const mockDbItem2 = createMockDB(dir);
 
-        const databaseItem = await wizard.digForDatabaseItem(
+        const databaseItem = await wizard.findDatabaseItemByNwo(
           mockDbItem.language,
           mockDbItem.name,
           [mockDbItem, mockDbItem2],
@@ -369,9 +369,9 @@ describe("SkeletonQueryWizard", () => {
         const mockDbItem = createMockDB(dir);
         const mockDbItem2 = createMockDB(dir);
 
-        const databaseItem = await wizard.digForDatabaseItem(
+        const databaseItem = await wizard.findDatabaseItemByNwo(
           "ruby",
-          "mock-database-name",
+          "mock-nwo",
           [mockDbItem, mockDbItem2],
         );
 
@@ -380,7 +380,7 @@ describe("SkeletonQueryWizard", () => {
     });
   });
 
-  describe("digForDatabaseWithSameLanguage", () => {
+  describe("findDatabaseItemByLanguage", () => {
     describe("when the item exists", () => {
       it("should return the database item", async () => {
         const mockDbItem = createMockDB(dir, {
@@ -390,10 +390,10 @@ describe("SkeletonQueryWizard", () => {
           language: "javascript",
         } as FullDatabaseOptions);
 
-        const databaseItem = await wizard.digForDatabaseWithSameLanguage(
-          "ruby",
-          [mockDbItem, mockDbItem2],
-        );
+        const databaseItem = await wizard.findDatabaseItemByLanguage("ruby", [
+          mockDbItem,
+          mockDbItem2,
+        ]);
 
         expect(databaseItem).toEqual(mockDbItem);
       });
@@ -404,10 +404,10 @@ describe("SkeletonQueryWizard", () => {
         const mockDbItem = createMockDB(dir);
         const mockDbItem2 = createMockDB(dir);
 
-        const databaseItem = await wizard.digForDatabaseWithSameLanguage(
-          "ruby",
-          [mockDbItem, mockDbItem2],
-        );
+        const databaseItem = await wizard.findDatabaseItemByLanguage("ruby", [
+          mockDbItem,
+          mockDbItem2,
+        ]);
 
         expect(databaseItem).toBeUndefined();
       });
