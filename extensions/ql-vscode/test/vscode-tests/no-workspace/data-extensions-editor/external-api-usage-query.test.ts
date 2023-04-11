@@ -36,11 +36,9 @@ describe("runQuery", () => {
 
     const options = {
       cliServer: {
-        resolveQlpacks: jest
-          .fn()
-          .mockRejectedValue(
-            new Error("Did not expect mocked method to be called"),
-          ),
+        resolveQlpacks: jest.fn().mockResolvedValue({
+          "my/java-extensions": "/a/b/c/",
+        }),
         resolveQueriesInSuite: jest
           .fn()
           .mockResolvedValue([
@@ -103,6 +101,8 @@ describe("runQuery", () => {
       },
     ]);
 
+    expect(options.cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
+    expect(options.cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
       "/a/b/c/src.zip",
       {
@@ -112,7 +112,7 @@ describe("runQuery", () => {
       },
       false,
       [],
-      undefined,
+      ["my/java-extensions"],
       "/tmp/queries",
       undefined,
       undefined,
@@ -120,7 +120,7 @@ describe("runQuery", () => {
   });
 });
 
-describe("getResults", () => {
+describe("readQueryResults", () => {
   const options = {
     cliServer: {
       bqrsInfo: jest.fn(),

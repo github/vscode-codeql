@@ -1,13 +1,13 @@
 import { ExtensionContext } from "vscode";
 import { DataExtensionsEditorView } from "./data-extensions-editor-view";
 import { DataExtensionsEditorCommands } from "../common/commands";
-import { CodeQLCliServer } from "../cli";
+import { CliVersionConstraint, CodeQLCliServer } from "../cli";
 import { QueryRunner } from "../queryRunner";
 import { DatabaseManager } from "../local-databases";
-import { extLogger } from "../common";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { App } from "../common/app";
+import { showAndLogErrorMessage } from "../helpers";
 
 export class DataExtensionsEditorModule {
   private readonly queryStorageDir: string;
@@ -52,7 +52,14 @@ export class DataExtensionsEditorModule {
       "codeQL.openDataExtensionsEditor": async () => {
         const db = this.databaseManager.currentDatabaseItem;
         if (!db) {
-          void extLogger.log("No database selected");
+          void showAndLogErrorMessage("No database selected");
+          return;
+        }
+
+        if (!(await this.cliServer.cliConstraints.supportsQlpacksKind())) {
+          void showAndLogErrorMessage(
+            `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND.format()} or later.`,
+          );
           return;
         }
 
