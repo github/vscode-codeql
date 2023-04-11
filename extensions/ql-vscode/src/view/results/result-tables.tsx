@@ -79,7 +79,7 @@ function renderResultCountString(resultSet: ResultSet): JSX.Element {
 }
 
 function getInterpretedTableName(interpretation: Interpretation): string {
-  return interpretation?.data.t === "GraphInterpretationData"
+  return interpretation.data.t === "GraphInterpretationData"
     ? GRAPH_TABLE_NAME
     : ALERTS_TABLE_NAME;
 }
