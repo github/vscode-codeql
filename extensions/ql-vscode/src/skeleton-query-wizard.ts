@@ -7,7 +7,7 @@ import { QueryLanguage } from "./common/query-language";
 import { askForLanguage, isFolderAlreadyInWorkspace } from "./helpers";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
-import { DatabaseItem, DatabaseManager } from "./local-databases";
+import { DatabaseManager } from "./local-databases";
 import * as databaseFetcher from "./databaseFetcher";
 import { ProgressCallback } from "./progress";
 
@@ -236,9 +236,7 @@ export class SkeletonQueryWizard {
 
     if (databaseItem) {
       // select the found database
-      await this.databaseManager.setCurrentDatabaseItem(
-        databaseItem as DatabaseItem,
-      );
+      await this.databaseManager.setCurrentDatabaseItem(databaseItem);
     } else {
       // download new database and select it
       await this.downloadDatabase();
