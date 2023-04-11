@@ -20,6 +20,7 @@ import { createMockDB } from "../../factories/databases/databases";
 jest.setTimeout(40_000);
 
 describe("SkeletonQueryWizard", () => {
+  let mockCli: CodeQLCliServer;
   let wizard: SkeletonQueryWizard;
   let mockDatabaseManager: DatabaseManager;
   let dir: tmp.DirResult;
@@ -41,22 +42,23 @@ describe("SkeletonQueryWizard", () => {
   const token = new CancellationTokenSource().token;
   const credentials = testCredentialsWithStub();
   const chosenLanguage = "ruby";
-  const mockCli = mockedObject<CodeQLCliServer>({
-    resolveLanguages: jest
-      .fn()
-      .mockResolvedValue([
-        "ruby",
-        "javascript",
-        "go",
-        "java",
-        "python",
-        "csharp",
-        "cpp",
-      ]),
-    getSupportedLanguages: jest.fn(),
-  });
 
   beforeEach(async () => {
+    mockCli = mockedObject<CodeQLCliServer>({
+      resolveLanguages: jest
+        .fn()
+        .mockResolvedValue([
+          "ruby",
+          "javascript",
+          "go",
+          "java",
+          "python",
+          "csharp",
+          "cpp",
+        ]),
+      getSupportedLanguages: jest.fn(),
+    });
+
     mockDatabaseManager = mockedObject<DatabaseManager>({
       setCurrentDatabaseItem: jest.fn(),
       databaseItems: [] as DatabaseItem[],
