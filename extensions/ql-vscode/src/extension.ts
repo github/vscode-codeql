@@ -884,6 +884,7 @@ async function activateWithInstalledDistribution(
   const dataExtensionsEditorModule =
     await DataExtensionsEditorModule.initialize(
       ctx,
+      app,
       dbm,
       cliServer,
       qs,

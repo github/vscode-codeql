@@ -79,7 +79,7 @@ function renderResultCountString(resultSet: ResultSet): JSX.Element {
 }
 
 function getInterpretedTableName(interpretation: Interpretation): string {
-  return interpretation?.data.t === "GraphInterpretationData"
+  return interpretation.data.t === "GraphInterpretationData"
     ? GRAPH_TABLE_NAME
     : ALERTS_TABLE_NAME;
 }
@@ -101,7 +101,7 @@ function getResultSets(
 ): ResultSet[] {
   const resultSets: ResultSet[] =
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore 2783
+    // @ts-ignore 2783 Avoid compilation error for overwriting the t property
     rawResultSets.map((rs) => ({ t: "RawResultSet", ...rs }));
 
   if (interpretation !== undefined) {

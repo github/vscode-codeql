@@ -5,6 +5,7 @@ import {
   ViewColumn,
   window,
   workspace,
+  WorkspaceFolder,
 } from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import {
@@ -12,27 +13,41 @@ import {
   ToDataExtensionsEditorMessage,
 } from "../pure/interface-types";
 import { ProgressUpdate } from "../progress";
-import { extLogger, TeeLogger } from "../common";
-import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
-import { qlpackOfDatabase } from "../contextual/queryResolver";
-import { file } from "tmp-promise";
-import { readFile, writeFile } from "fs-extra";
-import { dump as dumpYaml, load as loadYaml } from "js-yaml";
+import { QueryRunner } from "../queryRunner";
 import {
-  getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../helpers";
-import { DatabaseItem } from "../local-databases";
+import { extLogger } from "../common";
+import { readFile, writeFile } from "fs-extra";
+import { load as loadYaml } from "js-yaml";
+import { DatabaseItem, DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
 import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { generateFlowModel } from "./generate-flow-model";
+import { promptImportGithubDatabase } from "../databaseFetcher";
+import { App } from "../common/app";
 import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
 import { showResolvableLocation } from "../interface-utils";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../pure/errors";
+import { readQueryResults, runQuery } from "./external-api-usage-query";
 import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
+
+function getQlSubmoduleFolder(): WorkspaceFolder | undefined {
+  const workspaceFolder = workspace.workspaceFolders?.find(
+    (folder) => folder.name === "ql",
+  );
+  if (!workspaceFolder) {
+    void extLogger.log("No workspace folder 'ql' found");
+
+    return;
+  }
+
+  return workspaceFolder;
+}
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -40,6 +55,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
 > {
   public constructor(
     ctx: ExtensionContext,
+    private readonly app: App,
+    private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
     private readonly queryStorageDir: string,
@@ -87,6 +104,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
           msg.modeledMethods,
         );
         await this.loadExternalApiUsages();
+
+        break;
+      case "generateExternalApi":
+        await this.generateModeledMethods();
 
         break;
       default:
@@ -160,8 +181,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
       }
 
       await this.postMessage({
-        t: "setExistingModeledMethods",
-        existingModeledMethods,
+        t: "addModeledMethods",
+        modeledMethods: existingModeledMethods,
       });
     } catch (e: unknown) {
       void extLogger.log(`Unable to read data extension YAML: ${e}`);
@@ -169,22 +190,36 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   protected async loadExternalApiUsages(): Promise<void> {
+    const cancellationTokenSource = new CancellationTokenSource();
+
     try {
-      const queryResult = await this.runQuery();
+      const queryResult = await runQuery({
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        databaseItem: this.databaseItem,
+        queryStorageDir: this.queryStorageDir,
+        logger: extLogger,
+        progress: (progressUpdate: ProgressUpdate) => {
+          void this.showProgress(progressUpdate, 1500);
+        },
+        token: cancellationTokenSource.token,
+      });
       if (!queryResult) {
         await this.clearProgress();
         return;
       }
 
       await this.showProgress({
-        message: "Loading results",
+        message: "Decoding results",
         step: 1100,
         maxStep: 1500,
       });
 
-      const bqrsPath = queryResult.outputDir.bqrsPath;
-
-      const bqrsChunk = await this.getResults(bqrsPath);
+      const bqrsChunk = await readQueryResults({
+        cliServer: this.cliServer,
+        bqrsPath: queryResult.outputDir.bqrsPath,
+        logger: extLogger,
+      });
       if (!bqrsChunk) {
         await this.clearProgress();
         return;
@@ -213,81 +248,90 @@ export class DataExtensionsEditorView extends AbstractWebview<
     }
   }
 
-  private async runQuery(): Promise<CoreCompletedQuery | undefined> {
-    const qlpacks = await qlpackOfDatabase(this.cliServer, this.databaseItem);
+  protected async generateModeledMethods(): Promise<void> {
+    const tokenSource = new CancellationTokenSource();
 
-    const packsToSearch = [qlpacks.dbschemePack];
-    if (qlpacks.queryPack) {
-      packsToSearch.push(qlpacks.queryPack);
-    }
+    const selectedDatabase = this.databaseManager.currentDatabaseItem;
 
-    const suiteFile = (
-      await file({
-        postfix: ".qls",
-      })
-    ).path;
-    const suiteYaml = [];
-    for (const qlpack of packsToSearch) {
-      suiteYaml.push({
-        from: qlpack,
-        queries: ".",
-        include: {
-          id: `${this.databaseItem.language}/telemetry/fetch-external-apis`,
-        },
-      });
-    }
-    await writeFile(suiteFile, dumpYaml(suiteYaml), "utf8");
-
-    const queries = await this.cliServer.resolveQueriesInSuite(
-      suiteFile,
-      getOnDiskWorkspaceFolders(),
+    // The external API methods are in the library source code, so we need to ask
+    // the user to import the library database. We need to have the database
+    // imported to the query server, so we need to register it to our workspace.
+    const database = await promptImportGithubDatabase(
+      this.app.commands,
+      this.databaseManager,
+      this.app.workspaceStoragePath ?? this.app.globalStoragePath,
+      this.app.credentials,
+      (update) => this.showProgress(update),
+      tokenSource.token,
+      this.cliServer,
     );
+    if (!database) {
+      await this.clearProgress();
+      void extLogger.log("No database chosen");
 
-    if (queries.length !== 1) {
-      void extLogger.log(`Expected exactly one query, got ${queries.length}`);
       return;
     }
 
-    const query = queries[0];
+    // The library database was set as the current database by importing it,
+    // but we need to set it back to the originally selected database.
+    await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
 
-    const tokenSource = new CancellationTokenSource();
-
-    const queryRun = this.queryRunner.createQueryRun(
-      this.databaseItem.databaseUri.fsPath,
-      { queryPath: query, quickEvalPosition: undefined },
-      false,
-      getOnDiskWorkspaceFolders(),
-      undefined,
-      this.queryStorageDir,
-      undefined,
-      undefined,
-    );
-
-    return queryRun.evaluate(
-      (update) => this.showProgress(update, 1500),
-      tokenSource.token,
-      new TeeLogger(this.queryRunner.logger, queryRun.outputDir.logPath),
-    );
-  }
-
-  private async getResults(bqrsPath: string) {
-    const bqrsInfo = await this.cliServer.bqrsInfo(bqrsPath);
-    if (bqrsInfo["result-sets"].length !== 1) {
-      void extLogger.log(
-        `Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
-      );
-      return undefined;
+    const workspaceFolder = getQlSubmoduleFolder();
+    if (!workspaceFolder) {
+      return;
     }
 
-    const resultSet = bqrsInfo["result-sets"][0];
-
     await this.showProgress({
-      message: "Decoding results",
-      step: 1200,
-      maxStep: 1500,
+      step: 0,
+      maxStep: 4000,
+      message: "Generating modeled methods for library",
     });
 
-    return this.cliServer.bqrsDecode(bqrsPath, resultSet.name);
+    try {
+      await generateFlowModel({
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        queryStorageDir: this.queryStorageDir,
+        qlDir: workspaceFolder.uri.fsPath,
+        databaseItem: database,
+        onResults: async (results) => {
+          const modeledMethodsByName: Record<string, ModeledMethod> = {};
+
+          for (const result of results) {
+            modeledMethodsByName[result.signature] = result.modeledMethod;
+          }
+
+          await this.postMessage({
+            t: "addModeledMethods",
+            modeledMethods: modeledMethodsByName,
+            overrideNone: true,
+          });
+        },
+        progress: (update) => this.showProgress(update),
+        token: tokenSource.token,
+      });
+    } catch (e: unknown) {
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(e),
+        )`Failed to generate flow model: ${getErrorMessage(e)}`,
+      );
+    }
+
+    // After the flow model has been generated, we can remove the temporary database
+    // which we used for generating the flow model.
+    await this.databaseManager.removeDatabaseItem(
+      () =>
+        this.showProgress({
+          step: 3900,
+          maxStep: 4000,
+          message: "Removing temporary database",
+        }),
+      tokenSource.token,
+      database,
+    );
+
+    await this.clearProgress();
   }
 
   /*
@@ -297,6 +341,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
    * that there's 1000 steps of the query progress since that takes the most time, and then
    * an additional 500 steps for the rest of the work. The progress doesn't need to be 100%
    * accurate, so this is just a rough estimate.
+   *
+   * For generating the modeled methods for an external library, the max step is 4000. This is
+   * based on the following steps:
+   * - 1000 for the summary model
+   * - 1000 for the sink model
+   * - 1000 for the source model
+   * - 1000 for the neutral model
    */
   private async showProgress(update: ProgressUpdate, maxStep?: number) {
     await this.postMessage({
@@ -316,12 +367,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   private calculateModelFilename(): string | undefined {
-    const workspaceFolder = workspace.workspaceFolders?.find(
-      (folder) => folder.name === "ql",
-    );
+    const workspaceFolder = getQlSubmoduleFolder();
     if (!workspaceFolder) {
-      void extLogger.log("No workspace folder 'ql' found");
-
       return;
     }
 

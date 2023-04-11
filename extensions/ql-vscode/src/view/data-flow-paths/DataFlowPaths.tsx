@@ -41,6 +41,11 @@ export const DataFlowPaths = ({
 
   const { codeFlows, ruleDescription, message, severity } = dataFlowPaths;
 
+  React.useEffect(() => {
+    // Make sure to update the selected code flow if the data flow paths change
+    setSelectedCodeFlow(dataFlowPaths.codeFlows[0]);
+  }, [dataFlowPaths]);
+
   return (
     <>
       <VerticalSpace size={2} />

@@ -1,27 +1,31 @@
 import { ExternalApiUsage } from "./external-api-usage";
-import { ModeledMethod, ModeledMethodType } from "./modeled-method";
+import {
+  ModeledMethod,
+  ModeledMethodType,
+  ModeledMethodWithSignature,
+} from "./modeled-method";
 
 type ExternalApiUsageByType = {
   externalApiUsage: ExternalApiUsage;
   modeledMethod: ModeledMethod;
 };
 
-type DataExtensionDefinition = {
-  extensible: string;
+type ExtensiblePredicateDefinition = {
+  extensiblePredicate: string;
   generateMethodDefinition: (method: ExternalApiUsageByType) => any[];
-  readModeledMethod: (row: any[]) => [string, ModeledMethod] | undefined;
+  readModeledMethod: (row: any[]) => ModeledMethodWithSignature;
 };
 
 function readRowToMethod(row: any[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;
 }
 
-const definitions: Record<
+export const extensiblePredicateDefinitions: Record<
   Exclude<ModeledMethodType, "none">,
-  DataExtensionDefinition
+  ExtensiblePredicateDefinition
 > = {
   source: {
-    extensible: "sourceModel",
+    extensiblePredicate: "sourceModel",
     // extensible predicate sourceModel(
     //   string package, string type, boolean subtypes, string name, string signature, string ext,
     //   string output, string kind, string provenance
@@ -37,18 +41,18 @@ const definitions: Record<
       method.modeledMethod.kind,
       "manual",
     ],
-    readModeledMethod: (row) => [
-      readRowToMethod(row),
-      {
+    readModeledMethod: (row) => ({
+      signature: readRowToMethod(row),
+      modeledMethod: {
         type: "source",
         input: "",
         output: row[6],
         kind: row[7],
       },
-    ],
+    }),
   },
   sink: {
-    extensible: "sinkModel",
+    extensiblePredicate: "sinkModel",
     // extensible predicate sinkModel(
     //   string package, string type, boolean subtypes, string name, string signature, string ext,
     //   string input, string kind, string provenance
@@ -64,18 +68,18 @@ const definitions: Record<
       method.modeledMethod.kind,
       "manual",
     ],
-    readModeledMethod: (row) => [
-      readRowToMethod(row),
-      {
+    readModeledMethod: (row) => ({
+      signature: readRowToMethod(row),
+      modeledMethod: {
         type: "sink",
         input: row[6],
         output: "",
         kind: row[7],
       },
-    ],
+    }),
   },
   summary: {
-    extensible: "summaryModel",
+    extensiblePredicate: "summaryModel",
     // extensible predicate summaryModel(
     //   string package, string type, boolean subtypes, string name, string signature, string ext,
     //   string input, string output, string kind, string provenance
@@ -92,18 +96,18 @@ const definitions: Record<
       method.modeledMethod.kind,
       "manual",
     ],
-    readModeledMethod: (row) => [
-      readRowToMethod(row),
-      {
+    readModeledMethod: (row) => ({
+      signature: readRowToMethod(row),
+      modeledMethod: {
         type: "summary",
         input: row[6],
         output: row[7],
         kind: row[8],
       },
-    ],
+    }),
   },
   neutral: {
-    extensible: "neutralModel",
+    extensiblePredicate: "neutralModel",
     // extensible predicate neutralModel(
     //   string package, string type, string name, string signature, string provenance
     // );
@@ -114,21 +118,21 @@ const definitions: Record<
       method.externalApiUsage.methodParameters,
       "manual",
     ],
-    readModeledMethod: (row) => [
-      `${row[0]}.${row[1]}#${row[2]}${row[3]}`,
-      {
+    readModeledMethod: (row) => ({
+      signature: `${row[0]}.${row[1]}#${row[2]}${row[3]}`,
+      modeledMethod: {
         type: "neutral",
         input: "",
         output: "",
         kind: "",
       },
-    ],
+    }),
   },
 };
 
 function createDataProperty(
   methods: ExternalApiUsageByType[],
-  definition: DataExtensionDefinition,
+  definition: ExtensiblePredicateDefinition,
 ) {
   if (methods.length === 0) {
     return " []";
@@ -169,10 +173,10 @@ export function createDataExtensionYaml(
     }
   }
 
-  const extensions = Object.entries(definitions).map(
+  const extensions = Object.entries(extensiblePredicateDefinitions).map(
     ([type, definition]) => `  - addsTo:
       pack: codeql/java-all
-      extensible: ${definition.extensible}
+      extensible: ${definition.extensiblePredicate}
     data:${createDataProperty(
       methodsByType[type as Exclude<ModeledMethodType, "none">],
       definition,
@@ -214,8 +218,8 @@ export function loadDataExtensionYaml(
       continue;
     }
 
-    const definition = Object.values(definitions).find(
-      (definition) => definition.extensible === extensible,
+    const definition = Object.values(extensiblePredicateDefinitions).find(
+      (definition) => definition.extensiblePredicate === extensible,
     );
     if (!definition) {
       continue;
@@ -227,9 +231,9 @@ export function loadDataExtensionYaml(
         continue;
       }
 
-      const [apiInfo, modeledMethod] = result;
+      const { signature, modeledMethod } = result;
 
-      modeledMethods[apiInfo] = modeledMethod;
+      modeledMethods[signature] = modeledMethod;
     }
   }
 

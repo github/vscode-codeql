@@ -11,3 +11,8 @@ export type ModeledMethod = {
   output: string;
   kind: string;
 };
+
+export type ModeledMethodWithSignature = {
+  signature: string;
+  modeledMethod: ModeledMethod;
+};

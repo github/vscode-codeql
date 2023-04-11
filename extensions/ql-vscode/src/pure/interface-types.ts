@@ -493,6 +493,19 @@ export interface ShowProgressMessage {
   message: string;
 }
 
+export interface AddModeledMethodsMessage {
+  t: "addModeledMethods";
+  modeledMethods: Record<string, ModeledMethod>;
+
+  /**
+   * If true, then any existing modeled methods set to "none" will be
+   * overwritten by the new modeled methods. Otherwise, the "none" modeled
+   * methods will not be overwritten, even if the new modeled methods
+   * contain a better model.
+   */
+  overrideNone?: boolean;
+}
+
 export interface JumpToUsageMessage {
   t: "jumpToUsage";
   location: ResolvableLocationValue;
@@ -509,12 +522,17 @@ export interface SaveModeledMethods {
   modeledMethods: Record<string, ModeledMethod>;
 }
 
+export interface GenerateExternalApiMessage {
+  t: "generateExternalApi";
+}
+
 export type ToDataExtensionsEditorMessage =
   | SetExternalApiUsagesMessage
   | ShowProgressMessage
-  | SetExistingModeledMethods;
+  | AddModeledMethodsMessage;
 
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
   | JumpToUsageMessage
-  | SaveModeledMethods;
+  | SaveModeledMethods
+  | GenerateExternalApiMessage;

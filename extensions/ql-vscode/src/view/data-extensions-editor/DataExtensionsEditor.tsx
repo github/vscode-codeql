@@ -33,13 +33,21 @@ const ProgressBar = styled.div<ProgressBarProps>`
   background-color: var(--vscode-progressBar-background);
 `;
 
-export function DataExtensionsEditor(): JSX.Element {
+type Props = {
+  initialExternalApiUsages?: ExternalApiUsage[];
+  initialModeledMethods?: Record<string, ModeledMethod>;
+};
+
+export function DataExtensionsEditor({
+  initialExternalApiUsages = [],
+  initialModeledMethods = {},
+}: Props): JSX.Element {
   const [externalApiUsages, setExternalApiUsages] = useState<
     ExternalApiUsage[]
-  >([]);
+  >(initialExternalApiUsages);
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
-  >({});
+  >(initialModeledMethods);
   const [progress, setProgress] = useState<Omit<ShowProgressMessage, "t">>({
     step: 0,
     maxStep: 0,
@@ -57,14 +65,21 @@ export function DataExtensionsEditor(): JSX.Element {
           case "showProgress":
             setProgress(msg);
             break;
-          case "setExistingModeledMethods":
+          case "addModeledMethods":
             setModeledMethods((oldModeledMethods) => {
+              const filteredOldModeledMethods = msg.overrideNone
+                ? Object.fromEntries(
+                    Object.entries(oldModeledMethods).filter(
+                      ([, value]) => value.type !== "none",
+                    ),
+                  )
+                : oldModeledMethods;
+
               return {
-                ...msg.existingModeledMethods,
-                ...oldModeledMethods,
+                ...msg.modeledMethods,
+                ...filteredOldModeledMethods,
               };
             });
-
             break;
           default:
             assertNever(msg);
@@ -107,6 +122,12 @@ export function DataExtensionsEditor(): JSX.Element {
     });
   }, [externalApiUsages, modeledMethods]);
 
+  const onGenerateClick = useCallback(() => {
+    vscode.postMessage({
+      t: "generateExternalApi",
+    });
+  }, []);
+
   return (
     <DataExtensionsEditorContainer>
       {progress.maxStep > 0 && (
@@ -128,6 +149,12 @@ export function DataExtensionsEditor(): JSX.Element {
           <div>
             <h3>External API modelling</h3>
             <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+            &nbsp;
+            <VSCodeButton onClick={onGenerateClick}>
+              Download and generate
+            </VSCodeButton>
+            <br />
+            <br />
             <VSCodeDataGrid>
               <VSCodeDataGridRow rowType="header">
                 <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
