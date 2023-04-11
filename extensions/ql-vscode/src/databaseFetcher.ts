@@ -512,24 +512,18 @@ export async function convertGithubNwoToDatabaseUrl(
 
     const languages = response.data.map((db: any) => db.language);
 
-    if (language && languages.includes(language)) {
-      return {
-        databaseUrl: `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`,
-        owner,
-        name: repo,
-      };
-    } else {
-      const language = await promptForLanguage(languages, progress);
+    if (!language || !languages.includes(language)) {
+      language = await promptForLanguage(languages, progress);
       if (!language) {
         return;
       }
-
-      return {
-        databaseUrl: `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`,
-        owner,
-        name: repo,
-      };
     }
+
+    return {
+      databaseUrl: `https://api.github.com/repos/${owner}/${repo}/code-scanning/codeql/databases/${language}`,
+      owner,
+      name: repo,
+    };
   } catch (e) {
     void extLogger.log(`Error: ${getErrorMessage(e)}`);
     throw new Error(`Unable to get database for '${nwo}'`);
