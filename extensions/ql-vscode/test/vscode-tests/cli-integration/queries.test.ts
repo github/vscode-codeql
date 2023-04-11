@@ -1,4 +1,4 @@
-import { debug, CancellationToken, ExtensionContext, Range, Uri } from "vscode";
+import { CancellationToken, ExtensionContext, Range, Uri } from "vscode";
 import { join, dirname } from "path";
 import {
   pathExistsSync,
@@ -24,19 +24,18 @@ import { QueryResultType } from "../../../src/pure/new-messages";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
 import {
   AllCommands,
-  DebuggerCommands,
+  AppCommandManager,
   QueryServerCommands,
 } from "../../../src/common/commands";
 import { ProgressCallback } from "../../../src/progress";
-import { CommandManager } from "../../../src/packages/commands";
 import { withDebugController } from "./debug-controller";
 
-type DebugMode = "localQueries" | "launch";
+type DebugMode = "localQueries" | "debug";
 
 async function compileAndRunQuery(
   mode: DebugMode,
+  appCommands: AppCommandManager,
   localQueries: LocalQueries,
-  debuggerCommands: CommandManager<DebuggerCommands>,
   quickEval: boolean,
   queryUri: Uri,
   progress: ProgressCallback,
@@ -55,14 +54,17 @@ async function compileAndRunQuery(
         range,
       );
 
-    case "launch":
-      return await withDebugController(debuggerCommands, async (controller) => {
-        await controller.debugQuery(queryUri);
+    case "debug":
+      return await withDebugController(appCommands, async (controller) => {
+        await controller.startDebugging(
+          {
+            query: queryUri.fsPath,
+          },
+          true,
+        );
         await controller.expectLaunched();
         const succeeded = await controller.expectSucceeded();
-        await controller.expectStopped();
-        expect(debug.activeDebugSession?.name).not.toBeUndefined();
-        await debug.stopDebugging();
+        await controller.expectExited();
         await controller.expectTerminated();
         await controller.expectSessionClosed();
 
@@ -71,9 +73,9 @@ async function compileAndRunQuery(
   }
 }
 
-jest.setTimeout(2000_000);
+jest.setTimeout(20_000);
 
-const MODES: DebugMode[] = ["localQueries", "launch"];
+const MODES: DebugMode[] = ["localQueries", "debug"];
 
 /**
  * Integration tests for queries
@@ -90,7 +92,6 @@ describeWithCodeQL()("Queries", () => {
   const appCommandManager = createVSCodeCommandManager<AllCommands>();
   const queryServerCommandManager =
     createVSCodeCommandManager<QueryServerCommands>();
-  const debuggerCommands = createVSCodeCommandManager<DebuggerCommands>();
 
   let qlpackFile: string;
   let qlpackLockFile: string;
@@ -174,8 +175,8 @@ describeWithCodeQL()("Queries", () => {
     async function runQueryWithExtensions() {
       const result = await compileAndRunQuery(
         mode,
+        appCommandManager,
         localQueries,
-        debuggerCommands,
         false,
         Uri.file(queryUsingExtensionPath),
         progress,
@@ -208,8 +209,8 @@ describeWithCodeQL()("Queries", () => {
       const queryPath = join(__dirname, "data", "simple-query.ql");
       const result = await compileAndRunQuery(
         mode,
+        appCommandManager,
         localQueries,
-        debuggerCommands,
         false,
         Uri.file(queryPath),
         progress,
@@ -228,8 +229,8 @@ describeWithCodeQL()("Queries", () => {
       const queryPath = join(__dirname, "data", "simple-query.ql");
       const result = await compileAndRunQuery(
         mode,
+        appCommandManager,
         localQueries,
-        debuggerCommands,
         false,
         Uri.file(queryPath),
         progress,

@@ -6,7 +6,6 @@ import {
   debug,
   Uri,
   CancellationTokenSource,
-  commands,
 } from "vscode";
 import { DebuggerCommands } from "../common/commands";
 import { isCanary } from "../config";
@@ -24,6 +23,7 @@ import {
 } from "../run-queries-shared";
 import { QLResolvedDebugConfiguration } from "./debug-configuration";
 import * as CodeQLProtocol from "./debug-protocol";
+import { App } from "../common/app";
 
 /**
  * Listens to messages passing between VS Code and the debug adapter, so that we can supplement the
@@ -144,6 +144,7 @@ export class DebuggerUI
   private readonly sessions = new Map<string, QLDebugAdapterTracker>();
 
   constructor(
+    private readonly app: App,
     private readonly localQueryResultsView: ResultsView,
     private readonly localQueries: LocalQueries,
     private readonly dbm: DatabaseManager,
@@ -204,7 +205,7 @@ export class DebuggerUI
 
   private async startDebuggingSelection(): Promise<void> {
     // Launch the currently selected debug configuration, but specifying QuickEval mode.
-    await commands.executeCommand("workbench.action.debug.start", {
+    await this.app.commands.execute("workbench.action.debug.start", {
       config: {
         quickEval: true,
       },

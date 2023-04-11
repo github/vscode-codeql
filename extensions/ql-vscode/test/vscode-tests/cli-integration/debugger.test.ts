@@ -8,13 +8,13 @@ import {
   getActivatedExtension,
 } from "../global.helper";
 import { describeWithCodeQL } from "../cli";
-import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
-import { DebuggerCommands } from "../../../src/common/commands";
 import { withDebugController } from "./debug-controller";
 import { CodeQLCliServer } from "../../../src/cli";
 import { QueryOutputDir } from "../../../src/run-queries-shared";
+import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
+import { AllCommands } from "../../../src/common/commands";
 
-jest.setTimeout(2000_000);
+jest.setTimeout(20_000);
 
 async function selectForQuickEval(
   path: string,
@@ -43,7 +43,7 @@ async function getResultCount(
 describeWithCodeQL()("Debugger", () => {
   let databaseManager: DatabaseManager;
   let cli: CodeQLCliServer;
-  const debuggerCommands = createVSCodeCommandManager<DebuggerCommands>();
+  const appCommands = createVSCodeCommandManager<AllCommands>();
   const simpleQueryPath = join(__dirname, "data", "simple-query.ql");
   const quickEvalQueryPath = join(__dirname, "data", "QuickEvalQuery.ql");
   const quickEvalLibPath = join(__dirname, "data", "QuickEvalLib.qll");
@@ -62,7 +62,7 @@ describeWithCodeQL()("Debugger", () => {
   });
 
   it("should debug a query and keep the session active", async () => {
-    await withDebugController(debuggerCommands, async (controller) => {
+    await withDebugController(appCommands, async (controller) => {
       await controller.debugQuery(Uri.file(simpleQueryPath));
       await controller.expectLaunched();
       await controller.expectSucceeded();
@@ -71,7 +71,7 @@ describeWithCodeQL()("Debugger", () => {
   });
 
   it("should run a query and then stop debugging", async () => {
-    await withDebugController(debuggerCommands, async (controller) => {
+    await withDebugController(appCommands, async (controller) => {
       await controller.startDebugging(
         {
           query: simpleQueryPath,
@@ -87,7 +87,7 @@ describeWithCodeQL()("Debugger", () => {
   });
 
   it("should run a quick evaluation", async () => {
-    await withDebugController(debuggerCommands, async (controller) => {
+    await withDebugController(appCommands, async (controller) => {
       await selectForQuickEval(quickEvalQueryPath, 18, 5, 18, 22);
 
       // Don't specify a query path, so we'll default to the active document ("QuickEvalQuery.ql")
@@ -105,7 +105,7 @@ describeWithCodeQL()("Debugger", () => {
   });
 
   it("should run a quick evaluation on a library without any query context", async () => {
-    await withDebugController(debuggerCommands, async (controller) => {
+    await withDebugController(appCommands, async (controller) => {
       await selectForQuickEval(quickEvalLibPath, 4, 15, 4, 32);
 
       // Don't specify a query path, so we'll default to the active document ("QuickEvalLib.qll")
@@ -123,7 +123,7 @@ describeWithCodeQL()("Debugger", () => {
   });
 
   it("should run a quick evaluation on a library in the context of a specific query", async () => {
-    await withDebugController(debuggerCommands, async (controller) => {
+    await withDebugController(appCommands, async (controller) => {
       await selectForQuickEval(quickEvalLibPath, 4, 15, 4, 32);
 
       await controller.startDebuggingSelection({

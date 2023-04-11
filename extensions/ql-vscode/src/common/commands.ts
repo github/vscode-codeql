@@ -11,6 +11,7 @@ import type {
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
 } from "../variant-analysis/shared/variant-analysis";
+import { QLDebugConfiguration } from "../debugger/debug-configuration";
 
 // A command function matching the signature that VS Code calls when
 // a command on a selection is invoked.
@@ -52,6 +53,15 @@ export type BuiltInVsCodeCommands = {
   ) => Promise<void>;
   "vscode.open": (uri: Uri) => Promise<void>;
   "vscode.openFolder": (uri: Uri) => Promise<void>;
+  // We type the `config` property specifically as a CodeQL debug configuration, since that's the
+  // only kinds we specify anyway.
+  "workbench.action.debug.start": (options?: {
+    config?: Partial<QLDebugConfiguration>;
+    noDebug?: boolean;
+  }) => Promise<void>;
+  "workbench.action.debug.stepInto": () => Promise<void>;
+  "workbench.action.debug.stepOver": () => Promise<void>;
+  "workbench.action.debug.stepOut": () => Promise<void>;
 };
 
 // Commands that are available before the extension is fully activated.

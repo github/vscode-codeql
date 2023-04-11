@@ -4,13 +4,10 @@ import {
   DebugSession,
   ProviderResult,
   Uri,
-  commands,
   debug,
   workspace,
 } from "vscode";
 import * as CodeQLProtocol from "../../../src/debugger/debug-protocol";
-import { DebuggerCommands } from "../../../src/common/commands";
-import { CommandManager } from "../../../src/packages/commands";
 import { DisposableObject } from "../../../src/pure/disposable-object";
 import { QueryResultType } from "../../../src/pure/legacy-messages";
 import { CoreCompletedQuery } from "../../../src/queryRunner";
@@ -22,6 +19,7 @@ import {
 import { join } from "path";
 import { writeFile } from "fs-extra";
 import { expect } from "@jest/globals";
+import { AppCommandManager } from "../../../src/common/commands";
 
 type Resolver<T> = (value: T) => void;
 
@@ -190,9 +188,7 @@ export class DebugController
    */
   private resolver: Resolver<AnyDebugEvent> | undefined = undefined;
 
-  public constructor(
-    private readonly debuggerCommands: CommandManager<DebuggerCommands>,
-  ) {
+  public constructor(private readonly appCommands: AppCommandManager) {
     super();
     this.push(debug.registerDebugAdapterTrackerFactory("codeql", this));
     this.push(
@@ -232,7 +228,7 @@ export class DebugController
    * Starts a debug session via the "codeQL.debugQuery" copmmand.
    */
   public debugQuery(uri: Uri): Promise<void> {
-    return this.debuggerCommands.execute("codeQL.debugQuery", uri);
+    return this.appCommands.execute("codeQL.debugQuery", uri);
   }
 
   public async startDebugging(
@@ -251,7 +247,7 @@ export class DebugController
         }
       : {};
 
-    return await commands.executeCommand("workbench.action.debug.start", {
+    return await this.appCommands.execute("workbench.action.debug.start", {
       config: fullConfig,
       ...options,
     });
@@ -265,21 +261,19 @@ export class DebugController
   }
 
   public async continueDebuggingSelection(): Promise<void> {
-    return await this.debuggerCommands.execute(
-      "codeQL.continueDebuggingSelection",
-    );
+    return await this.appCommands.execute("codeQL.continueDebuggingSelection");
   }
 
   public async stepInto(): Promise<void> {
-    return await commands.executeCommand("workbench.action.debug.stepInto");
+    return await this.appCommands.execute("workbench.action.debug.stepInto");
   }
 
   public async stepOver(): Promise<void> {
-    return await commands.executeCommand("workbench.action.debug.stepOver");
+    return await this.appCommands.execute("workbench.action.debug.stepOver");
   }
 
   public async stepOut(): Promise<void> {
-    return await commands.executeCommand("workbench.action.debug.stepOut");
+    return await this.appCommands.execute("workbench.action.debug.stepOut");
   }
 
   public handleEvent(event: AnyDebugEvent): void {
@@ -411,12 +405,12 @@ export class DebugController
  * debug controller is cleaned up.
  */
 export async function withDebugController<T>(
-  debuggerCommands: CommandManager<DebuggerCommands>,
+  appCommands: AppCommandManager,
   op: (controller: DebugController) => Promise<T>,
 ): Promise<T> {
   await workspace.getConfiguration().update("codeQL.canary", true);
   try {
-    const controller = new DebugController(debuggerCommands);
+    const controller = new DebugController(appCommands);
     try {
       try {
         const result = await op(controller);
