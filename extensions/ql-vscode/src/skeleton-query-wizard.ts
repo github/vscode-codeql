@@ -36,9 +36,7 @@ export class SkeletonQueryWizard {
     private readonly extLogger: OutputChannelLogger,
     private readonly databaseManager: DatabaseManager,
     private readonly token: CancellationToken,
-  ) {
-    this.storagePath = this.workoutStoragePath();
-  }
+  ) {}
 
   private get folderName() {
     return `codeql-custom-queries-${this.language}`;
@@ -50,6 +48,8 @@ export class SkeletonQueryWizard {
     if (!this.language) {
       return;
     }
+
+    this.storagePath = this.getFirstStoragePath();
 
     const skeletonPackAlreadyExists = isFolderAlreadyInWorkspace(
       this.folderName,
@@ -91,7 +91,7 @@ export class SkeletonQueryWizard {
     }
   }
 
-  private workoutStoragePath() {
+  public getFirstStoragePath() {
     const workspaceFolders = workspace.workspaceFolders;
 
     if (!workspaceFolders || workspaceFolders.length === 0) {

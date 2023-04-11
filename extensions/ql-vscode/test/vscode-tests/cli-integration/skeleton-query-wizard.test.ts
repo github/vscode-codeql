@@ -245,4 +245,52 @@ describe("SkeletonQueryWizard", () => {
       });
     });
   });
+
+  describe("getFirstStoragePath", () => {
+    it("should return the first workspace folder", async () => {
+      jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
+        {
+          name: "codeql-custom-queries-cpp",
+          uri: { path: "codespaces-codeql" },
+        },
+      ] as WorkspaceFolder[]);
+
+      wizard = new SkeletonQueryWizard(
+        mockCli,
+        jest.fn(),
+        credentials,
+        extLogger,
+        mockDatabaseManager,
+        token,
+      );
+
+      expect(wizard.getFirstStoragePath()).toEqual("codespaces-codeql");
+    });
+
+    describe("if user is in vscode-codeql-starter workspace", () => {
+      it("should set storage path to parent folder", async () => {
+        jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
+          {
+            name: "codeql-custom-queries-cpp",
+            uri: { path: "vscode-codeql-starter/codeql-custom-queries-cpp" },
+          },
+          {
+            name: "codeql-custom-queries-csharp",
+            uri: { path: "vscode-codeql-starter/codeql-custom-queries-csharp" },
+          },
+        ] as WorkspaceFolder[]);
+
+        wizard = new SkeletonQueryWizard(
+          mockCli,
+          jest.fn(),
+          credentials,
+          extLogger,
+          mockDatabaseManager,
+          token,
+        );
+
+        expect(wizard.getFirstStoragePath()).toEqual("vscode-codeql-starter");
+      });
+    });
+  });
 });
