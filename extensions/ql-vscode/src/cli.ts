@@ -107,6 +107,20 @@ export type MlModelInfo = {
 /** The expected output of `codeql resolve ml-models`. */
 export type MlModelsInfo = { models: MlModelInfo[] };
 
+export type DataExtensionInfo = {
+  predicate: string;
+  file: string;
+  index: number;
+};
+
+/** The expected output of `codeql resolve extensions`. */
+export type ExtensionsInfo = {
+  models: MlModelInfo[];
+  data: {
+    [filename: string]: DataExtensionInfo[];
+  };
+};
+
 /**
  * The expected output of `codeql resolve qlref`.
  */
@@ -1189,6 +1203,29 @@ export class CodeQLCliServer implements Disposable {
       `Resolving qlpack information${
         extensionPacksOnly ? " (extension packs only)" : ""
       }`,
+    );
+  }
+
+  /**
+   * Gets information about available extensions
+   * @param suite The suite to resolve.
+   * @param additionalPacks A list of directories to search for qlpacks.
+   * @returns An object containing the list of models and extensions
+   */
+  async resolveExtensions(
+    suite: string,
+    additionalPacks: string[],
+  ): Promise<ExtensionsInfo> {
+    const args = this.getAdditionalPacksArg(additionalPacks);
+    args.push(suite);
+
+    return this.runJsonCodeQlCliCommand<ExtensionsInfo>(
+      ["resolve", "extensions"],
+      args,
+      "Resolving extensions",
+      {
+        addFormat: false,
+      },
     );
   }
 
