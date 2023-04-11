@@ -5,6 +5,7 @@ import {
   ViewColumn,
   window,
   workspace,
+  WorkspaceFolder,
 } from "vscode";
 import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
 import {
@@ -20,9 +21,12 @@ import {
 import { extLogger } from "../common";
 import { readFile, writeFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
-import { DatabaseItem } from "../local-databases";
+import { DatabaseItem, DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
 import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { generateFlowModel } from "./generate-flow-model";
+import { promptImportGithubDatabase } from "../databaseFetcher";
+import { App } from "../common/app";
 import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
 import { showResolvableLocation } from "../interface-utils";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
@@ -32,12 +36,27 @@ import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 
+function getQlSubmoduleFolder(): WorkspaceFolder | undefined {
+  const workspaceFolder = workspace.workspaceFolders?.find(
+    (folder) => folder.name === "ql",
+  );
+  if (!workspaceFolder) {
+    void extLogger.log("No workspace folder 'ql' found");
+
+    return;
+  }
+
+  return workspaceFolder;
+}
+
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
   FromDataExtensionsEditorMessage
 > {
   public constructor(
     ctx: ExtensionContext,
+    private readonly app: App,
+    private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
     private readonly queryStorageDir: string,
@@ -85,6 +104,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
           msg.modeledMethods,
         );
         await this.loadExternalApiUsages();
+
+        break;
+      case "generateExternalApi":
+        await this.generateModeledMethods();
 
         break;
       default:
@@ -158,8 +181,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
       }
 
       await this.postMessage({
-        t: "setExistingModeledMethods",
-        existingModeledMethods,
+        t: "addModeledMethods",
+        modeledMethods: existingModeledMethods,
       });
     } catch (e: unknown) {
       void extLogger.log(`Unable to read data extension YAML: ${e}`);
@@ -225,6 +248,92 @@ export class DataExtensionsEditorView extends AbstractWebview<
     }
   }
 
+  protected async generateModeledMethods(): Promise<void> {
+    const tokenSource = new CancellationTokenSource();
+
+    const selectedDatabase = this.databaseManager.currentDatabaseItem;
+
+    // The external API methods are in the library source code, so we need to ask
+    // the user to import the library database. We need to have the database
+    // imported to the query server, so we need to register it to our workspace.
+    const database = await promptImportGithubDatabase(
+      this.app.commands,
+      this.databaseManager,
+      this.app.workspaceStoragePath ?? this.app.globalStoragePath,
+      this.app.credentials,
+      (update) => this.showProgress(update),
+      tokenSource.token,
+      this.cliServer,
+    );
+    if (!database) {
+      await this.clearProgress();
+      void extLogger.log("No database chosen");
+
+      return;
+    }
+
+    // The library database was set as the current database by importing it,
+    // but we need to set it back to the originally selected database.
+    await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
+
+    const workspaceFolder = getQlSubmoduleFolder();
+    if (!workspaceFolder) {
+      return;
+    }
+
+    await this.showProgress({
+      step: 0,
+      maxStep: 4000,
+      message: "Generating modeled methods for library",
+    });
+
+    try {
+      await generateFlowModel({
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        queryStorageDir: this.queryStorageDir,
+        qlDir: workspaceFolder.uri.fsPath,
+        databaseItem: database,
+        onResults: async (results) => {
+          const modeledMethodsByName: Record<string, ModeledMethod> = {};
+
+          for (const result of results) {
+            modeledMethodsByName[result.signature] = result.modeledMethod;
+          }
+
+          await this.postMessage({
+            t: "addModeledMethods",
+            modeledMethods: modeledMethodsByName,
+            overrideNone: true,
+          });
+        },
+        progress: (update) => this.showProgress(update),
+        token: tokenSource.token,
+      });
+    } catch (e: unknown) {
+      void showAndLogExceptionWithTelemetry(
+        redactableError(
+          asError(e),
+        )`Failed to generate flow model: ${getErrorMessage(e)}`,
+      );
+    }
+
+    // After the flow model has been generated, we can remove the temporary database
+    // which we used for generating the flow model.
+    await this.databaseManager.removeDatabaseItem(
+      () =>
+        this.showProgress({
+          step: 3900,
+          maxStep: 4000,
+          message: "Removing temporary database",
+        }),
+      tokenSource.token,
+      database,
+    );
+
+    await this.clearProgress();
+  }
+
   /*
    * Progress in this class is a bit weird. Most of the progress is based on running the query.
    * Query progress is always between 0 and 1000. However, we still have some steps that need
@@ -232,6 +341,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
    * that there's 1000 steps of the query progress since that takes the most time, and then
    * an additional 500 steps for the rest of the work. The progress doesn't need to be 100%
    * accurate, so this is just a rough estimate.
+   *
+   * For generating the modeled methods for an external library, the max step is 4000. This is
+   * based on the following steps:
+   * - 1000 for the summary model
+   * - 1000 for the sink model
+   * - 1000 for the source model
+   * - 1000 for the neutral model
    */
   private async showProgress(update: ProgressUpdate, maxStep?: number) {
     await this.postMessage({
@@ -251,12 +367,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   private calculateModelFilename(): string | undefined {
-    const workspaceFolder = workspace.workspaceFolders?.find(
-      (folder) => folder.name === "ql",
-    );
+    const workspaceFolder = getQlSubmoduleFolder();
     if (!workspaceFolder) {
-      void extLogger.log("No workspace folder 'ql' found");
-
       return;
     }
 
