@@ -27,7 +27,7 @@ import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
 import { showResolvableLocation } from "../interface-utils";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../pure/errors";
-import { getResults, runQuery } from "./external-api-usage-query";
+import { readQueryResults, runQuery } from "./external-api-usage-query";
 import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
@@ -192,7 +192,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         maxStep: 1500,
       });
 
-      const bqrsChunk = await getResults({
+      const bqrsChunk = await readQueryResults({
         cliServer: this.cliServer,
         bqrsPath: queryResult.outputDir.bqrsPath,
         logger: extLogger,

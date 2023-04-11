@@ -1,5 +1,5 @@
 import {
-  getResults,
+  readQueryResults,
   runQuery,
 } from "../../../../src/data-extensions-editor/external-api-usage-query";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
@@ -135,7 +135,7 @@ describe("getResults", () => {
       "result-sets": [],
     });
 
-    expect(await getResults(options)).toBeUndefined();
+    expect(await readQueryResults(options)).toBeUndefined();
     expect(options.logger.log).toHaveBeenCalledWith(
       expect.stringMatching(/Expected exactly one result set/),
     );
@@ -165,7 +165,7 @@ describe("getResults", () => {
       ],
     });
 
-    expect(await getResults(options)).toBeUndefined();
+    expect(await readQueryResults(options)).toBeUndefined();
     expect(options.logger.log).toHaveBeenCalledWith(
       expect.stringMatching(/Expected exactly one result set/),
     );
@@ -211,7 +211,7 @@ describe("getResults", () => {
     };
     options.cliServer.bqrsDecode.mockResolvedValue(decodedResultSet);
 
-    const result = await getResults(options);
+    const result = await readQueryResults(options);
     expect(result).toEqual(decodedResultSet);
     expect(options.cliServer.bqrsInfo).toHaveBeenCalledWith(options.bqrsPath);
     expect(options.cliServer.bqrsDecode).toHaveBeenCalledWith(

@@ -90,7 +90,7 @@ export type GetResultsOptions = {
   logger: Logger;
 };
 
-export async function getResults({
+export async function readQueryResults({
   cliServer,
   bqrsPath,
   logger,
