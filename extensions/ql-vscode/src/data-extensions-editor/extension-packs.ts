@@ -39,6 +39,13 @@ export async function pickExtensionPack(
   if (extensionPackPaths.length !== 1) {
     void showAndLogErrorMessage(
       `Extension pack ${extensionPackOption.extensionPack} could not be resolved to a single location`,
+      {
+        fullMessage: `Extension pack ${
+          extensionPackOption.extensionPack
+        } could not be resolved to a single location. Found ${
+          extensionPackPaths.length
+        } locations: ${extensionPackPaths.join(", ")}.`,
+      },
     );
     return undefined;
   }
