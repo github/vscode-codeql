@@ -1,4 +1,4 @@
-import { relative, resolve } from "path";
+import { relative, resolve, sep } from "path";
 import { pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { minimatch } from "minimatch";
@@ -9,14 +9,42 @@ import { ProgressCallback } from "../progress";
 import { DatabaseItem } from "../local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";
 
-export async function pickExtensionPack(
-  cliServer: CodeQLCliServer,
+const maxStep = 3;
+
+export async function pickExtensionPackModelFile(
+  cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveExtensions">,
+  databaseItem: Pick<DatabaseItem, "name">,
   progress: ProgressCallback,
+  token: CancellationToken,
+): Promise<string | undefined> {
+  const extensionPackPath = await pickExtensionPack(cliServer, progress, token);
+  if (!extensionPackPath) {
+    return;
+  }
+
+  const modelFile = await pickModelFile(
+    cliServer,
+    databaseItem,
+    extensionPackPath,
+    progress,
+    token,
+  );
+  if (!modelFile) {
+    return;
+  }
+
+  return modelFile;
+}
+
+async function pickExtensionPack(
+  cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
+  progress: ProgressCallback,
+  token: CancellationToken,
 ): Promise<string | undefined> {
   progress({
     message: "Resolving extension packs...",
     step: 1,
-    maxStep: 3,
+    maxStep,
   });
 
   // Get all existing extension packs in the workspace
@@ -30,12 +58,16 @@ export async function pickExtensionPack(
   progress({
     message: "Choosing extension pack...",
     step: 2,
-    maxStep: 3,
+    maxStep,
   });
 
-  const extensionPackOption = await window.showQuickPick(options, {
-    title: "Select extension pack to use",
-  });
+  const extensionPackOption = await window.showQuickPick(
+    options,
+    {
+      title: "Select extension pack to use",
+    },
+    token,
+  );
   if (!extensionPackOption) {
     return undefined;
   }
@@ -44,6 +76,13 @@ export async function pickExtensionPack(
   if (extensionPackPaths.length !== 1) {
     void showAndLogErrorMessage(
       `Extension pack ${extensionPackOption.extensionPack} could not be resolved to a single location`,
+      {
+        fullMessage: `Extension pack ${
+          extensionPackOption.extensionPack
+        } could not be resolved to a single location. Found ${
+          extensionPackPaths.length
+        } locations: ${extensionPackPaths.join(", ")}.`,
+      },
     );
     return undefined;
   }
@@ -51,12 +90,12 @@ export async function pickExtensionPack(
   return extensionPackPaths[0];
 }
 
-export async function pickModelFile(
-  cliServer: CodeQLCliServer,
+async function pickModelFile(
+  cliServer: Pick<CodeQLCliServer, "resolveExtensions">,
+  databaseItem: Pick<DatabaseItem, "name">,
+  extensionPackPath: string,
   progress: ProgressCallback,
   token: CancellationToken,
-  databaseItem: DatabaseItem,
-  extensionPackPath: string,
 ): Promise<string | undefined> {
   // Find the existing model files in the extension pack
   const additionalPacks = getOnDiskWorkspaceFolders();
@@ -74,13 +113,13 @@ export async function pickModelFile(
   }
 
   if (modelFiles.size === 0) {
-    return pickNewModelFile(token, databaseItem, extensionPackPath);
+    return pickNewModelFile(databaseItem, extensionPackPath, token);
   }
 
   const fileOptions: Array<{ label: string; file: string | null }> = [];
   for (const file of modelFiles) {
     fileOptions.push({
-      label: relative(extensionPackPath, file),
+      label: relative(extensionPackPath, file).replaceAll(sep, "/"),
       file,
     });
   }
@@ -92,7 +131,7 @@ export async function pickModelFile(
   progress({
     message: "Choosing model file...",
     step: 3,
-    maxStep: 3,
+    maxStep,
   });
 
   const fileOption = await window.showQuickPick(
@@ -111,13 +150,13 @@ export async function pickModelFile(
     return fileOption.file;
   }
 
-  return pickNewModelFile(token, databaseItem, extensionPackPath);
+  return pickNewModelFile(databaseItem, extensionPackPath, token);
 }
 
 async function pickNewModelFile(
-  token: CancellationToken,
-  databaseItem: DatabaseItem,
+  databaseItem: Pick<DatabaseItem, "name">,
   extensionPackPath: string,
+  token: CancellationToken,
 ) {
   const qlpackPath = await getQlPackPath(extensionPackPath);
   if (!qlpackPath) {
