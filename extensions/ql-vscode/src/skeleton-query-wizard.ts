@@ -187,7 +187,7 @@ export class SkeletonQueryWizard {
     const folderUri = Uri.file(join(this.qlPackStoragePath, folderName));
     const files = await workspace.fs.readDirectory(folderUri);
     const qlFiles = files.filter(([filename, _fileType]) =>
-      filename.match(/example[0-9]*.ql/),
+      filename.match(/^example[0-9]*\.ql$/),
     );
 
     return `example${qlFiles.length + 1}.ql`;
