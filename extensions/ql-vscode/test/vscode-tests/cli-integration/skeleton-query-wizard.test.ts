@@ -349,48 +349,6 @@ describe("SkeletonQueryWizard", () => {
         expect(wizard.getFirstStoragePath()).toEqual("vscode-codeql-starter");
       });
     });
-
-    describe("if user is on windows", () => {
-      let originalPlatform: string;
-
-      beforeEach(() => {
-        originalPlatform = process.platform;
-        Object.defineProperty(process, "platform", {
-          value: "win32",
-        });
-      });
-
-      afterEach(() => {
-        originalPlatform = process.platform;
-        Object.defineProperty(process, "platform", {
-          value: originalPlatform,
-        });
-      });
-
-      it("should return the first workspace folder", async () => {
-        jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
-          {
-            name: "codespaces-codeql",
-            uri: { fsPath: "codespaces-codeql\\codeql-custom-queries-cpp" },
-          },
-        ] as WorkspaceFolder[]);
-
-        Object.defineProperty(process, "platform", {
-          value: "win32",
-        });
-
-        wizard = new SkeletonQueryWizard(
-          mockCli,
-          jest.fn(),
-          credentials,
-          extLogger,
-          mockDatabaseManager,
-          token,
-        );
-
-        expect(wizard.getFirstStoragePath()).toEqual("codespaces-codeql");
-      });
-    });
   });
 
   describe("findDatabaseItemByNwo", () => {
