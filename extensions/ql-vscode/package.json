@@ -973,6 +973,13 @@
           "when": "viewItem == testWithSource"
         }
       ],
+      "testing/item/context": [
+        {
+          "command": "codeQLTests.acceptOutput",
+          "group": "qltest@1",
+          "when": "controllerId == codeql && testId =~ /^test /"
+        }
+      ],
       "explorer/context": [
         {
           "command": "codeQL.setCurrentDatabase",
@@ -1523,7 +1530,7 @@
     "@types/through2": "^2.0.36",
     "@types/tmp": "^0.1.0",
     "@types/unzipper": "~0.10.1",
-    "@types/vscode": "^1.59.0",
+    "@types/vscode": "^1.67.0",
     "@types/webpack": "^5.28.0",
     "@types/webpack-env": "^1.18.0",
     "@types/xml2js": "~0.4.4",
