@@ -36,6 +36,7 @@ export class SkeletonQueryWizard {
     private readonly extLogger: OutputChannelLogger,
     private readonly databaseManager: DatabaseManager,
     private readonly token: CancellationToken,
+    private readonly databaseStoragePath: string | undefined,
   ) {}
 
   private get folderName() {
@@ -197,6 +198,10 @@ export class SkeletonQueryWizard {
       throw new Error("Workspace storage path is undefined");
     }
 
+    if (this.databaseStoragePath === undefined) {
+      throw new Error("Database storage path is undefined");
+    }
+
     if (this.language === undefined) {
       throw new Error("Language is undefined");
     }
@@ -220,7 +225,7 @@ export class SkeletonQueryWizard {
     await databaseFetcher.downloadGitHubDatabase(
       chosenRepo,
       this.databaseManager,
-      this.qlPackStoragePath,
+      this.databaseStoragePath,
       this.credentials,
       this.progress,
       this.token,

@@ -114,6 +114,7 @@ describe("SkeletonQueryWizard", () => {
       extLogger,
       mockDatabaseManager,
       token,
+      storagePath,
     );
 
     askForGitHubRepoSpy = jest
@@ -244,6 +245,7 @@ describe("SkeletonQueryWizard", () => {
           extLogger,
           mockDatabaseManagerWithItems,
           token,
+          storagePath,
         );
       });
 
@@ -317,6 +319,7 @@ describe("SkeletonQueryWizard", () => {
         extLogger,
         mockDatabaseManager,
         token,
+        storagePath,
       );
 
       expect(wizard.getFirstStoragePath()).toEqual("codespaces-codeql");
@@ -352,6 +355,7 @@ describe("SkeletonQueryWizard", () => {
           extLogger,
           mockDatabaseManager,
           token,
+          storagePath,
         );
 
         expect(wizard.getFirstStoragePath()).toEqual("vscode-codeql-starter");

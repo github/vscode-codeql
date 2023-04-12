@@ -862,6 +862,7 @@ async function activateWithInstalledDistribution(
     databaseUI,
     localQueryResultsView,
     queryStorageDir,
+    ctx,
   );
   ctx.subscriptions.push(localQueries);
 
