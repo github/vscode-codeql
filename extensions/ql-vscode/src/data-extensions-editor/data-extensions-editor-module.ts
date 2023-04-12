@@ -9,7 +9,7 @@ import { join } from "path";
 import { App } from "../common/app";
 import { showAndLogErrorMessage } from "../helpers";
 import { withProgress } from "../progress";
-import { pickExtensionPackModelFile } from "./extension-packs";
+import { pickExtensionPackModelFile } from "./extension-pack-picker";
 
 export class DataExtensionsEditorModule {
   private readonly queryStorageDir: string;

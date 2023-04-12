@@ -1,6 +1,6 @@
 import { QuickPickItem, window } from "vscode";
 
-import { pickExtensionPackModelFile } from "../../../../src/data-extensions-editor/extension-packs";
+import { pickExtensionPackModelFile } from "../../../../src/data-extensions-editor/extension-pack-picker";
 import { QlpacksInfo, ResolveExtensionsResult } from "../../../../src/cli";
 import * as helpers from "../../../../src/helpers";
 
