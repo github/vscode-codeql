@@ -362,7 +362,7 @@
         "title": "CodeQL: Quick Query"
       },
       {
-        "command": "codeQL.createSkeletonQuery",
+        "command": "codeQL.createQuery",
         "title": "CodeQL: Create Query"
       },
       {
