@@ -1,4 +1,4 @@
-import { relative } from "path";
+import { relative, sep } from "path";
 import { window } from "vscode";
 import { CodeQLCliServer } from "../cli";
 import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from "../helpers";
@@ -95,7 +95,7 @@ async function pickModelFile(
   const fileOptions: Array<{ label: string; file: string }> = [];
   for (const file of modelFiles) {
     fileOptions.push({
-      label: relative(extensionPackPath, file),
+      label: relative(extensionPackPath, file).replaceAll(sep, "/"),
       file,
     });
   }
