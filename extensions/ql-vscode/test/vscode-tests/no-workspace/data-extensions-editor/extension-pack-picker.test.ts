@@ -1,6 +1,6 @@
 import { CancellationTokenSource, QuickPickItem, window } from "vscode";
-import { dump as dumpYaml } from "js-yaml";
-import { outputFile } from "fs-extra";
+import { dump as dumpYaml, load as loadYaml } from "js-yaml";
+import { outputFile, readFile } from "fs-extra";
 import { join } from "path";
 import { dir } from "tmp-promise";
 
@@ -83,6 +83,10 @@ describe("pickExtensionPackModelFile", () => {
         {
           label: "another-extension-pack",
           extensionPack: "another-extension-pack",
+        },
+        {
+          label: expect.stringMatching(/create/i),
+          extensionPack: null,
         },
       ],
       {
@@ -181,6 +185,10 @@ describe("pickExtensionPackModelFile", () => {
           label: "another-extension-pack",
           extensionPack: "another-extension-pack",
         },
+        {
+          label: expect.stringMatching(/create/i),
+          extensionPack: null,
+        },
       ],
       {
         title: expect.any(String),
@@ -234,7 +242,69 @@ describe("pickExtensionPackModelFile", () => {
     expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
 
-  it("does not show any options when there are no extension packs", async () => {
+  it("allows user to create an extension pack when there are no extension packs", async () => {
+    const cliServer = mockCliServer({}, { models: [], data: {} });
+
+    const tmpDir = await dir({
+      unsafeCleanup: true,
+    });
+
+    showQuickPickSpy.mockResolvedValueOnce({
+      label: "codeql-custom-queries-java",
+      path: tmpDir.path,
+    } as QuickPickItem);
+    showInputBoxSpy.mockResolvedValueOnce("my-extension-pack");
+    showInputBoxSpy.mockResolvedValue("models/my-model.yml");
+
+    expect(
+      await pickExtensionPackModelFile(
+        cliServer,
+        databaseItem,
+        progress,
+        token,
+      ),
+    ).toEqual(join(tmpDir.path, "my-extension-pack", "models", "my-model.yml"));
+    expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
+    expect(showInputBoxSpy).toHaveBeenCalledTimes(2);
+    expect(showInputBoxSpy).toHaveBeenCalledWith(
+      {
+        title: expect.stringMatching(/extension pack/i),
+        prompt: expect.stringMatching(/extension pack/i),
+        placeHolder: expect.stringMatching(/github\/vscode-codeql-extensions/),
+        validateInput: expect.any(Function),
+      },
+      token,
+    );
+    expect(showInputBoxSpy).toHaveBeenCalledWith(
+      {
+        title: expect.stringMatching(/model file/),
+        value: "models/github.vscode-codeql.model.yml",
+        validateInput: expect.any(Function),
+      },
+      token,
+    );
+    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
+    expect(cliServer.resolveExtensions).toHaveBeenCalled();
+
+    expect(
+      loadYaml(
+        await readFile(
+          join(tmpDir.path, "my-extension-pack", "codeql-pack.yml"),
+          "utf8",
+        ),
+      ),
+    ).toEqual({
+      name: "my-extension-pack",
+      version: "0.0.0",
+      library: true,
+      extensionTargets: {
+        "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    });
+  });
+
+  it("allows cancelling the workspace folder selection", async () => {
     const cliServer = mockCliServer({}, { models: [], data: {} });
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
@@ -248,13 +318,30 @@ describe("pickExtensionPackModelFile", () => {
       ),
     ).toEqual(undefined);
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
-    expect(showQuickPickSpy).toHaveBeenCalledWith(
-      [],
-      {
-        title: expect.any(String),
-      },
-      token,
-    );
+    expect(showInputBoxSpy).toHaveBeenCalledTimes(0);
+    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
+    expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
+  });
+
+  it("allows cancelling the extension pack name input", async () => {
+    const cliServer = mockCliServer({}, { models: [], data: {} });
+
+    showQuickPickSpy.mockResolvedValueOnce({
+      label: "codeql-custom-queries-java",
+      path: "/a/b/c",
+    } as QuickPickItem);
+    showInputBoxSpy.mockResolvedValueOnce(undefined);
+
+    expect(
+      await pickExtensionPackModelFile(
+        cliServer,
+        databaseItem,
+        progress,
+        token,
+      ),
+    ).toEqual(undefined);
+    expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
+    expect(showInputBoxSpy).toHaveBeenCalledTimes(1);
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
@@ -590,6 +677,49 @@ describe("pickExtensionPackModelFile", () => {
     expect(showInputBoxSpy).toHaveBeenCalledTimes(1);
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(cliServer.resolveExtensions).toHaveBeenCalled();
+  });
+
+  it("validates the pack name input", async () => {
+    const cliServer = mockCliServer({}, { models: [], data: {} });
+
+    showQuickPickSpy.mockResolvedValueOnce({
+      label: "a",
+      path: "/a/b/c",
+    } as QuickPickItem);
+    showInputBoxSpy.mockResolvedValue(undefined);
+
+    expect(
+      await pickExtensionPackModelFile(
+        cliServer,
+        databaseItem,
+        progress,
+        token,
+      ),
+    ).toEqual(undefined);
+
+    const validateFile = showInputBoxSpy.mock.calls[0][0]?.validateInput;
+    expect(validateFile).toBeDefined();
+    if (!validateFile) {
+      return;
+    }
+
+    expect(await validateFile("")).toEqual("Pack name must not be empty");
+    expect(await validateFile("a".repeat(129))).toEqual(
+      "Pack name must be no longer than 128 characters",
+    );
+    expect(await validateFile("github/vscode-codeql/extensions")).toEqual(
+      "Invalid package name: a pack name must contain only lowercase ASCII letters, ASCII digits, and hyphens",
+    );
+    expect(await validateFile("VSCODE")).toEqual(
+      "Invalid package name: a pack name must contain only lowercase ASCII letters, ASCII digits, and hyphens",
+    );
+    expect(await validateFile("github/vscode-codeql-")).toEqual(
+      "Invalid package name: a pack name must contain only lowercase ASCII letters, ASCII digits, and hyphens",
+    );
+    expect(
+      await validateFile("github/vscode-codeql-extensions"),
+    ).toBeUndefined();
+    expect(await validateFile("vscode-codeql-extensions")).toBeUndefined();
   });
 
   it("validates the file input", async () => {
