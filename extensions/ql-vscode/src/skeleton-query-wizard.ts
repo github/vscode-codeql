@@ -104,7 +104,11 @@ export class SkeletonQueryWizard {
     // so we need to get the parent folder
     if (firstFolder.uri.path.includes("codeql-custom-queries")) {
       // slice off the last part of the path and return the parent folder
-      return firstFolder.uri.path.split("/").slice(0, -1).join("/");
+      if (process.platform === "win32") {
+        return firstFolder.uri.path.split("\\").slice(0, -1).join("\\");
+      } else {
+        return firstFolder.uri.path.split("/").slice(0, -1).join("/");
+      }
     } else {
       // if the first folder is not a ql pack, then we are in a normal workspace
       return firstFolder.uri.path;
