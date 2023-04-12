@@ -71,6 +71,7 @@ export type BaseCommands = {
   "codeQL.restartQueryServer": () => Promise<void>;
   "codeQL.restartQueryServerOnConfigChange": () => Promise<void>;
   "codeQL.restartLegacyQueryServerOnConfigChange": () => Promise<void>;
+  "codeQL.restartQueryServerOnExternalConfigChange": () => Promise<void>;
 };
 
 // Commands used when working with queries in the editor
