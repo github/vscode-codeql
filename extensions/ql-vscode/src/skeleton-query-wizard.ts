@@ -99,15 +99,16 @@ export class SkeletonQueryWizard {
     }
 
     const firstFolder = workspaceFolders[0];
+    const firstFolderFsPath = firstFolder.uri.fsPath;
 
     // For the vscode-codeql-starter repo, the first folder will be a ql pack
     // so we need to get the parent folder
-    if (firstFolder.uri.path.includes("codeql-custom-queries")) {
+    if (firstFolderFsPath.includes("codeql-custom-queries")) {
       // return the parent folder
-      return dirname(firstFolder.uri.fsPath);
+      return dirname(firstFolderFsPath);
     } else {
       // if the first folder is not a ql pack, then we are in a normal workspace
-      return firstFolder.uri.fsPath;
+      return firstFolderFsPath;
     }
   }
 

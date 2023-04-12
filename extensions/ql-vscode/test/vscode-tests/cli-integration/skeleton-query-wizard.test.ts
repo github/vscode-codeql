@@ -83,11 +83,11 @@ describe("SkeletonQueryWizard", () => {
     jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
       {
         name: `codespaces-codeql`,
-        uri: { path: storagePath },
+        uri: { fsPath: storagePath },
       },
       {
         name: "/second/folder/path",
-        uri: { path: storagePath },
+        uri: { fsPath: storagePath },
       },
     ] as WorkspaceFolder[]);
 
@@ -306,7 +306,7 @@ describe("SkeletonQueryWizard", () => {
       jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
         {
           name: "codespaces-codeql",
-          uri: { path: "codespaces-codeql" },
+          uri: { fsPath: "codespaces-codeql" },
         },
       ] as WorkspaceFolder[]);
 
@@ -327,11 +327,13 @@ describe("SkeletonQueryWizard", () => {
         jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
           {
             name: "codeql-custom-queries-cpp",
-            uri: { path: "vscode-codeql-starter/codeql-custom-queries-cpp" },
+            uri: { fsPath: "vscode-codeql-starter/codeql-custom-queries-cpp" },
           },
           {
             name: "codeql-custom-queries-csharp",
-            uri: { path: "vscode-codeql-starter/codeql-custom-queries-csharp" },
+            uri: {
+              fsPath: "vscode-codeql-starter/codeql-custom-queries-csharp",
+            },
           },
         ] as WorkspaceFolder[]);
 
@@ -369,7 +371,7 @@ describe("SkeletonQueryWizard", () => {
         jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
           {
             name: "codespaces-codeql",
-            uri: { path: "codespaces-codeql\\codeql-custom-queries-cpp" },
+            uri: { fsPath: "codespaces-codeql\\codeql-custom-queries-cpp" },
           },
         ] as WorkspaceFolder[]);
 
