@@ -9,7 +9,7 @@ import { join } from "path";
 import { App } from "../common/app";
 import { showAndLogErrorMessage } from "../helpers";
 import { withProgress } from "../progress";
-import { pickExtensionPack, pickModelFile } from "./extension-packs";
+import { pickExtensionPackModelFile } from "./extension-packs";
 
 export class DataExtensionsEditorModule {
   private readonly queryStorageDir: string;
@@ -67,18 +67,9 @@ export class DataExtensionsEditorModule {
               return;
             }
 
-            const extensionPackPath = await pickExtensionPack(
+            const modelFile = await pickExtensionPackModelFile(
               this.cliServer,
               progress,
-            );
-            if (!extensionPackPath) {
-              return;
-            }
-
-            const modelFile = await pickModelFile(
-              this.cliServer,
-              progress,
-              extensionPackPath,
             );
             if (!modelFile) {
               return;

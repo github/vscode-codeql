@@ -4,14 +4,33 @@ import { CodeQLCliServer } from "../cli";
 import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from "../helpers";
 import { ProgressCallback } from "../progress";
 
-export async function pickExtensionPack(
+const maxStep = 3;
+
+export async function pickExtensionPackModelFile(
+  cliServer: CodeQLCliServer,
+  progress: ProgressCallback,
+): Promise<string | undefined> {
+  const extensionPackPath = await pickExtensionPack(cliServer, progress);
+  if (!extensionPackPath) {
+    return;
+  }
+
+  const modelFile = await pickModelFile(cliServer, progress, extensionPackPath);
+  if (!modelFile) {
+    return;
+  }
+
+  return modelFile;
+}
+
+async function pickExtensionPack(
   cliServer: CodeQLCliServer,
   progress: ProgressCallback,
 ): Promise<string | undefined> {
   progress({
     message: "Resolving extension packs...",
     step: 1,
-    maxStep: 3,
+    maxStep,
   });
 
   // Get all existing extension packs in the workspace
@@ -25,7 +44,7 @@ export async function pickExtensionPack(
   progress({
     message: "Choosing extension pack...",
     step: 2,
-    maxStep: 3,
+    maxStep,
   });
 
   const extensionPackOption = await window.showQuickPick(options, {
@@ -53,7 +72,7 @@ export async function pickExtensionPack(
   return extensionPackPaths[0];
 }
 
-export async function pickModelFile(
+async function pickModelFile(
   cliServer: CodeQLCliServer,
   progress: ProgressCallback,
   extensionPackPath: string,
@@ -84,7 +103,7 @@ export async function pickModelFile(
   progress({
     message: "Choosing model file...",
     step: 3,
-    maxStep: 3,
+    maxStep,
   });
 
   const fileOption = await window.showQuickPick(fileOptions, {
