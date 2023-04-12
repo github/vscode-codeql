@@ -15,7 +15,7 @@ import {
   SortDirectionDto,
 } from "./query-history-local-query-dto";
 import { QueryHistoryDataItem } from "./query-history-data";
-import { VariantAnalysisDataItem } from "./variant-analysis-data-item";
+import { QueryHistoryVariantAnalysisDto } from "./query-history-variant-analysis-dto";
 import {
   RawResultsSortState,
   SortDirection,
@@ -29,7 +29,7 @@ export function mapQueryHistoryToDataModels(
 ): QueryHistoryDataItem[] {
   return queries.map((q) => {
     if (q.t === "variant-analysis") {
-      const query: VariantAnalysisDataItem = q;
+      const query: QueryHistoryVariantAnalysisDto = q;
       return query;
     } else if (q.t === "local") {
       return mapLocalQueryInfoToDataModel(q);

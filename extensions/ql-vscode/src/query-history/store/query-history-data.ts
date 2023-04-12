@@ -2,7 +2,7 @@
 // Changes to these models should be done carefully and account for backwards compatibility of data.
 
 import { QueryHistoryLocalQueryDto } from "./query-history-local-query-dto";
-import { VariantAnalysisDataItem } from "./variant-analysis-data-item";
+import { QueryHistoryVariantAnalysisDto } from "./query-history-variant-analysis-dto";
 
 export const ALLOWED_QUERY_HISTORY_VERSIONS = [1, 2];
 
@@ -13,4 +13,4 @@ export interface QueryHistoryData {
 
 export type QueryHistoryDataItem =
   | QueryHistoryLocalQueryDto
-  | VariantAnalysisDataItem;
+  | QueryHistoryVariantAnalysisDto;
