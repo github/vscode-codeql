@@ -182,7 +182,7 @@ export class SkeletonQueryWizard {
 
   private async determineNextFileName(folderName: string): Promise<string> {
     if (this.qlPackStoragePath === undefined) {
-      throw new Error("Workspace storage path is undefined");
+      throw new Error("QL Pack storage path is undefined");
     }
 
     const folderUri = Uri.file(join(this.qlPackStoragePath, folderName));
@@ -196,7 +196,7 @@ export class SkeletonQueryWizard {
 
   private async downloadDatabase() {
     if (this.qlPackStoragePath === undefined) {
-      throw new Error("Workspace storage path is undefined");
+      throw new Error("QL Pack storage path is undefined");
     }
 
     if (this.databaseStoragePath === undefined) {
@@ -238,7 +238,7 @@ export class SkeletonQueryWizard {
     }
 
     if (this.qlPackStoragePath === undefined) {
-      throw new Error("Workspace storage path is undefined");
+      throw new Error("QL Pack storage path is undefined");
     }
 
     const databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
