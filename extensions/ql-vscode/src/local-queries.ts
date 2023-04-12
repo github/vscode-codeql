@@ -2,7 +2,6 @@ import { ProgressCallback, ProgressUpdate, withProgress } from "./progress";
 import {
   CancellationToken,
   CancellationTokenSource,
-  ExtensionContext,
   QuickPickItem,
   Range,
   Uri,
@@ -222,7 +221,6 @@ export class LocalQueries extends DisposableObject {
     private readonly databaseUI: DatabaseUI,
     private readonly localQueryResultsView: ResultsView,
     private readonly queryStorageDir: string,
-    private readonly ctx: ExtensionContext,
   ) {
     super();
   }
@@ -384,7 +382,7 @@ export class LocalQueries extends DisposableObject {
       async (progress: ProgressCallback, token: CancellationToken) => {
         const credentials = isCanary() ? this.app.credentials : undefined;
         const contextStoragePath =
-          this.ctx.storageUri?.fsPath || this.ctx.globalStorageUri.fsPath;
+          this.app.workspaceStoragePath || this.app.globalStoragePath;
         const skeletonQueryWizard = new SkeletonQueryWizard(
           this.cliServer,
           progress,
