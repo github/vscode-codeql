@@ -7,7 +7,7 @@ import { ProgressCallback } from "../progress";
 const maxStep = 3;
 
 export async function pickExtensionPackModelFile(
-  cliServer: CodeQLCliServer,
+  cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveExtensions">,
   progress: ProgressCallback,
 ): Promise<string | undefined> {
   const extensionPackPath = await pickExtensionPack(cliServer, progress);
@@ -24,7 +24,7 @@ export async function pickExtensionPackModelFile(
 }
 
 async function pickExtensionPack(
-  cliServer: CodeQLCliServer,
+  cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
   progress: ProgressCallback,
 ): Promise<string | undefined> {
   progress({
@@ -73,7 +73,7 @@ async function pickExtensionPack(
 }
 
 async function pickModelFile(
-  cliServer: CodeQLCliServer,
+  cliServer: Pick<CodeQLCliServer, "resolveExtensions">,
   progress: ProgressCallback,
   extensionPackPath: string,
 ): Promise<string | undefined> {
