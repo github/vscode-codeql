@@ -1321,6 +1321,10 @@
         {
           "command": "codeQL.mockGitHubApiServer.unloadScenario",
           "when": "config.codeQL.mockGitHubApiServer.enabled && codeQL.mockGitHubApiServer.scenarioLoaded"
+        },
+        {
+          "command": "codeQL.createQuery",
+          "when": "config.codeQL.canary"
         }
       ],
       "editor/context": [
