@@ -9,6 +9,7 @@ import {
   FullDatabaseOptions,
 } from "../../../src/local-databases";
 import { mockedObject } from "../utils/mocking.helpers";
+import { TestRunner } from "../../../src/test-runner";
 
 jest.mock("fs-extra", () => {
   const original = jest.requireActual("fs-extra");
@@ -19,8 +20,10 @@ jest.mock("fs-extra", () => {
 });
 
 describe("test-adapter", () => {
+  let testRunner: TestRunner;
   let adapter: QLTestAdapter;
   let fakeDatabaseManager: DatabaseManager;
+  let fakeCliServer: CodeQLCliServer;
   let currentDatabaseItem: DatabaseItem | undefined;
   let databaseItems: DatabaseItem[] = [];
   const openDatabaseSpy = jest.fn();
@@ -73,17 +76,21 @@ describe("test-adapter", () => {
 
     jest.spyOn(preTestDatabaseItem, "isAffectedByTest").mockResolvedValue(true);
 
+    fakeCliServer = mockedObject<CodeQLCliServer>({
+      runTests: runTestsSpy,
+      resolveQlpacks: resolveQlpacksSpy,
+      resolveTests: resolveTestsSpy,
+    });
+
+    testRunner = new TestRunner(fakeDatabaseManager, fakeCliServer);
+
     adapter = new QLTestAdapter(
       mockedObject<WorkspaceFolder>({
         name: "ABC",
         uri: Uri.parse("file:/ab/c"),
       }),
-      mockedObject<CodeQLCliServer>({
-        runTests: runTestsSpy,
-        resolveQlpacks: resolveQlpacksSpy,
-        resolveTests: resolveTestsSpy,
-      }),
-      fakeDatabaseManager,
+      testRunner,
+      fakeCliServer,
     );
   });
 
