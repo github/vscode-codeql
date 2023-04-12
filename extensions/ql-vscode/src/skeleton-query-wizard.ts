@@ -9,7 +9,7 @@ import { getErrorMessage } from "./pure/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseManager } from "./local-databases";
 import * as databaseFetcher from "./databaseFetcher";
-import { ProgressCallback } from "./progress";
+import { ProgressCallback, UserCancellationException } from "./progress";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
@@ -207,9 +207,17 @@ export class SkeletonQueryWizard {
     });
 
     const githubRepoNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
+    const chosenRepo = await databaseFetcher.askForGitHubRepo(
+      undefined,
+      githubRepoNwo,
+    );
+
+    if (!chosenRepo) {
+      throw new UserCancellationException("No GitHub repository provided");
+    }
 
     await databaseFetcher.downloadGitHubDatabase(
-      githubRepoNwo,
+      chosenRepo,
       this.databaseManager,
       this.storagePath,
       this.credentials,
@@ -231,17 +239,30 @@ export class SkeletonQueryWizard {
 
     const databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
 
-    const databaseItem = await this.databaseManager.digForDatabaseItem(
+    // Check that we haven't already downloaded a database for this language
+    const existingDatabaseItem = await this.databaseManager.digForDatabaseItem(
       this.language,
       databaseNwo,
     );
 
-    if (databaseItem) {
+    if (existingDatabaseItem) {
       // select the found database
-      await this.databaseManager.setCurrentDatabaseItem(databaseItem);
+      await this.databaseManager.setCurrentDatabaseItem(existingDatabaseItem);
     } else {
-      // download new database and select it
-      await this.downloadDatabase();
+      const sameLanguageDatabaseItem =
+        await this.databaseManager.digForDatabaseWithSameLanguage(
+          this.language,
+        );
+
+      if (sameLanguageDatabaseItem) {
+        // select the found database
+        await this.databaseManager.setCurrentDatabaseItem(
+          sameLanguageDatabaseItem,
+        );
+      } else {
+        // download new database and select it
+        await this.downloadDatabase();
+      }
     }
   }
 }

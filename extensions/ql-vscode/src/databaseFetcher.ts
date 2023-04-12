@@ -1,7 +1,7 @@
 import fetch, { Response } from "node-fetch";
 import { zip } from "zip-a-folder";
 import { Open } from "unzipper";
-import { Uri, CancellationToken, window } from "vscode";
+import { Uri, CancellationToken, window, InputBoxOptions } from "vscode";
 import { CodeQLCliServer } from "./cli";
 import {
   ensureDir,
@@ -92,17 +92,7 @@ export async function promptImportGithubDatabase(
   token: CancellationToken,
   cli?: CodeQLCliServer,
 ): Promise<DatabaseItem | undefined> {
-  progress({
-    message: "Choose repository",
-    step: 1,
-    maxStep: 2,
-  });
-  const githubRepo = await window.showInputBox({
-    title:
-      'Enter a GitHub repository URL or "name with owner" (e.g. https://github.com/github/codeql or github/codeql)',
-    placeHolder: "https://github.com/<owner>/<repo> or <owner>/<repo>",
-    ignoreFocusOut: true,
-  });
+  const githubRepo = await askForGitHubRepo(progress);
   if (!githubRepo) {
     return;
   }
@@ -126,6 +116,30 @@ export async function promptImportGithubDatabase(
   }
 
   return;
+}
+
+export async function askForGitHubRepo(
+  progress?: ProgressCallback,
+  suggestedValue?: string,
+): Promise<string | undefined> {
+  progress?.({
+    message: "Choose repository",
+    step: 1,
+    maxStep: 2,
+  });
+
+  const options: InputBoxOptions = {
+    title:
+      'Enter a GitHub repository URL or "name with owner" (e.g. https://github.com/github/codeql or github/codeql)',
+    placeHolder: "https://github.com/<owner>/<repo> or <owner>/<repo>",
+    ignoreFocusOut: true,
+  };
+
+  if (suggestedValue) {
+    options.value = suggestedValue;
+  }
+
+  return await window.showInputBox(options);
 }
 
 /**
