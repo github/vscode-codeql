@@ -176,7 +176,7 @@ async function pickNewModelFile(
     return undefined;
   }
 
-  const dataExtensionPatternsValue = qlpack.dataExtensions ?? [];
+  const dataExtensionPatternsValue = qlpack.dataExtensions;
   if (
     !(
       Array.isArray(dataExtensionPatternsValue) ||
@@ -199,16 +199,19 @@ async function pickNewModelFile(
       title: "Enter the name of the new model file",
       value: `models/${databaseItem.name.replaceAll("/", ".")}.model.yml`,
       validateInput: async (value: string): Promise<string | undefined> => {
+        if (value === "") {
+          return "File name must not be empty";
+        }
+
         const path = resolve(extensionPackPath, value);
 
         if (await pathExists(path)) {
           return "File already exists";
         }
 
-        const notInExtensionPack = !relative(
-          extensionPackPath,
-          path,
-        ).startsWith("..");
+        const notInExtensionPack = relative(extensionPackPath, path).startsWith(
+          "..",
+        );
         if (notInExtensionPack) {
           return "File must be in the extension pack";
         }
