@@ -117,7 +117,7 @@ export class SkeletonQueryWizard {
     this.progress({
       message: "Choose language",
       step: 1,
-      maxStep: 1,
+      maxStep: 3,
     });
 
     return await askForLanguage(this.cliServer, false);
@@ -131,7 +131,7 @@ export class SkeletonQueryWizard {
     this.progress({
       message: "Creating skeleton QL pack around query",
       step: 2,
-      maxStep: 2,
+      maxStep: 3,
     });
 
     try {
@@ -159,7 +159,7 @@ export class SkeletonQueryWizard {
       message:
         "Skeleton query pack already exists. Creating additional query example file.",
       step: 2,
-      maxStep: 2,
+      maxStep: 3,
     });
 
     try {
