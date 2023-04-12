@@ -73,6 +73,10 @@ export async function pickModelFile(
     }
   }
 
+  if (modelFiles.size === 0) {
+    return pickNewModelFile(token, databaseItem, extensionPackPath);
+  }
+
   const fileOptions: Array<{ label: string; file: string | null }> = [];
   for (const file of modelFiles) {
     fileOptions.push({
