@@ -133,13 +133,23 @@ async function pickNewModelFile(
     return undefined;
   }
 
-  const dataExtensionPatterns = qlpack.dataExtensions ?? [];
-  if (!Array.isArray(dataExtensionPatterns)) {
+  const dataExtensionPatternsValue = qlpack.dataExtensions ?? [];
+  if (
+    !(
+      Array.isArray(dataExtensionPatternsValue) ||
+      typeof dataExtensionPatternsValue === "string"
+    )
+  ) {
     void showAndLogErrorMessage(
-      `Expected 'dataExtensions' to be an array in ${qlpackPath}`,
+      `Expected 'dataExtensions' to be a string or an array in ${qlpackPath}`,
     );
     return undefined;
   }
+
+  // The YAML allows either a string or an array of strings
+  const dataExtensionPatterns = Array.isArray(dataExtensionPatternsValue)
+    ? dataExtensionPatternsValue
+    : [dataExtensionPatternsValue];
 
   const filename = await window.showInputBox(
     {
@@ -152,10 +162,11 @@ async function pickNewModelFile(
           return "File already exists";
         }
 
-        const isInExtensionPack = !relative(extensionPackPath, path).startsWith(
-          "..",
-        );
-        if (!isInExtensionPack) {
+        const notInExtensionPack = !relative(
+          extensionPackPath,
+          path,
+        ).startsWith("..");
+        if (notInExtensionPack) {
           return "File must be in the extension pack";
         }
 
