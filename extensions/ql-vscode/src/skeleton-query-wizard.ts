@@ -27,7 +27,7 @@ export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
 export class SkeletonQueryWizard {
   private language: string | undefined;
   private fileName = "example.ql";
-  private storagePath: string | undefined;
+  private qlPackStoragePath: string | undefined;
 
   constructor(
     private readonly cliServer: CodeQLCliServer,
@@ -49,7 +49,7 @@ export class SkeletonQueryWizard {
       return;
     }
 
-    this.storagePath = this.getFirstStoragePath();
+    this.qlPackStoragePath = this.getFirstStoragePath();
 
     const skeletonPackAlreadyExists = isFolderAlreadyInWorkspace(
       this.folderName,
@@ -72,12 +72,12 @@ export class SkeletonQueryWizard {
   }
 
   private async openExampleFile() {
-    if (this.folderName === undefined || this.storagePath === undefined) {
+    if (this.folderName === undefined || this.qlPackStoragePath === undefined) {
       throw new Error("Path to folder is undefined");
     }
 
     const queryFileUri = Uri.file(
-      join(this.storagePath, this.folderName, this.fileName),
+      join(this.qlPackStoragePath, this.folderName, this.fileName),
     );
 
     try {
@@ -138,7 +138,7 @@ export class SkeletonQueryWizard {
         this.folderName,
         this.language as QueryLanguage,
         this.cliServer,
-        this.storagePath,
+        this.qlPackStoragePath,
       );
 
       await qlPackGenerator.generate();
@@ -166,7 +166,7 @@ export class SkeletonQueryWizard {
         this.folderName,
         this.language as QueryLanguage,
         this.cliServer,
-        this.storagePath,
+        this.qlPackStoragePath,
       );
 
       this.fileName = await this.determineNextFileName(this.folderName);
@@ -179,11 +179,11 @@ export class SkeletonQueryWizard {
   }
 
   private async determineNextFileName(folderName: string): Promise<string> {
-    if (this.storagePath === undefined) {
+    if (this.qlPackStoragePath === undefined) {
       throw new Error("Workspace storage path is undefined");
     }
 
-    const folderUri = Uri.file(join(this.storagePath, folderName));
+    const folderUri = Uri.file(join(this.qlPackStoragePath, folderName));
     const files = await workspace.fs.readDirectory(folderUri);
     const qlFiles = files.filter(([filename, _fileType]) =>
       filename.match(/example[0-9]*.ql/),
@@ -193,7 +193,7 @@ export class SkeletonQueryWizard {
   }
 
   private async downloadDatabase() {
-    if (this.storagePath === undefined) {
+    if (this.qlPackStoragePath === undefined) {
       throw new Error("Workspace storage path is undefined");
     }
 
@@ -220,7 +220,7 @@ export class SkeletonQueryWizard {
     await databaseFetcher.downloadGitHubDatabase(
       chosenRepo,
       this.databaseManager,
-      this.storagePath,
+      this.qlPackStoragePath,
       this.credentials,
       this.progress,
       this.token,
@@ -234,7 +234,7 @@ export class SkeletonQueryWizard {
       throw new Error("Language is undefined");
     }
 
-    if (this.storagePath === undefined) {
+    if (this.qlPackStoragePath === undefined) {
       throw new Error("Workspace storage path is undefined");
     }
 
