@@ -519,14 +519,6 @@
         "title": "CodeQL: Get Current Query"
       },
       {
-        "command": "codeQL.debug.quickEval",
-        "title": "CodeQL Debugger: Quick Evaluation"
-      },
-      {
-        "command": "codeQL.debug.quickEvalContextEditor",
-        "title": "CodeQL Debugger: Quick Evaluation"
-      },
-      {
         "command": "codeQL.viewAst",
         "title": "CodeQL: View AST"
       },
