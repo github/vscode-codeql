@@ -3,10 +3,10 @@ import { LocalQueryInfo, InitialQueryInfo } from "../../query-results";
 import { QueryEvaluationInfo } from "../../run-queries-shared";
 import { QueryHistoryInfo } from "../query-history-info";
 import {
-  LocalQueryDataItem,
-  InitialQueryInfoData,
-  QueryEvaluationInfoData,
-} from "./local-query-data-item";
+  QueryHistoryLocalQueryDto,
+  InitialQueryInfoDto,
+  QueryEvaluationInfoDto,
+} from "./query-history-local-query-dto";
 import { QueryHistoryDataItem } from "./query-history-data";
 import { VariantAnalysisDataItem } from "./variant-analysis-data-item";
 
@@ -29,7 +29,7 @@ export function mapQueryHistoryToDataModels(
 
 function mapLocalQueryInfoToDataModel(
   query: LocalQueryInfo,
-): LocalQueryDataItem {
+): QueryHistoryLocalQueryDto {
   return {
     initialInfo: mapInitialQueryInfoToDataModel(query.initialInfo),
     t: "local",
@@ -59,7 +59,7 @@ function mapLocalQueryInfoToDataModel(
 
 function mapInitialQueryInfoToDataModel(
   localQueryInitialInfo: InitialQueryInfo,
-): InitialQueryInfoData {
+): InitialQueryInfoDto {
   return {
     userSpecifiedLabel: localQueryInitialInfo.userSpecifiedLabel,
     queryText: localQueryInitialInfo.queryText,
@@ -78,7 +78,7 @@ function mapInitialQueryInfoToDataModel(
 
 function mapQueryEvaluationInfoToDataModel(
   queryEvaluationInfo: QueryEvaluationInfo,
-): QueryEvaluationInfoData {
+): QueryEvaluationInfoDto {
   return {
     querySaveDir: queryEvaluationInfo.querySaveDir,
     dbItemPath: queryEvaluationInfo.dbItemPath,

@@ -1,32 +1,32 @@
-export interface LocalQueryDataItem {
-  initialInfo: InitialQueryInfoData;
+export interface QueryHistoryLocalQueryDto {
+  initialInfo: InitialQueryInfoDto;
   t: "local";
   evalLogLocation?: string;
   evalLogSummaryLocation?: string;
   jsonEvalLogSummaryLocation?: string;
   evalLogSummarySymbolsLocation?: string;
-  completedQuery?: CompletedQueryInfoData;
+  completedQuery?: CompletedQueryInfoDto;
   failureReason?: string;
 }
 
-export interface InitialQueryInfoData {
+export interface InitialQueryInfoDto {
   userSpecifiedLabel?: string;
   queryText: string;
   isQuickQuery: boolean;
   isQuickEval: boolean;
-  quickEvalPosition?: PositionData;
+  quickEvalPosition?: PositionDto;
   queryPath: string;
-  databaseInfo: DatabaseInfoData;
+  databaseInfo: DatabaseInfoDto;
   start: Date;
   id: string;
 }
 
-interface DatabaseInfoData {
+interface DatabaseInfoDto {
   name: string;
   databaseUri: string;
 }
 
-interface PositionData {
+interface PositionDto {
   line: number;
   column: number;
   endLine: number;
@@ -34,33 +34,33 @@ interface PositionData {
   fileName: string;
 }
 
-export interface CompletedQueryInfoData {
-  query: QueryEvaluationInfoData;
+export interface CompletedQueryInfoDto {
+  query: QueryEvaluationInfoDto;
   message?: string;
   successful?: boolean;
 
   // There once was a typo in the data model, which is why we need to support both
   sucessful?: boolean;
-  result: EvaluationResultData;
+  result: EvaluationResultDto;
   logFileLocation?: string;
   resultCount: number;
-  sortedResultsInfo: Record<string, SortedResultSetInfo>;
-  interpretedResultsSortState?: InterpretedResultsSortState;
+  sortedResultsInfo: Record<string, SortedResultSetInfoDto>;
+  interpretedResultsSortState?: InterpretedResultsSortStateDto;
 }
 
-interface InterpretedResultsSortState {
-  sortBy: InterpretedResultsSortColumn;
+interface InterpretedResultsSortStateDto {
+  sortBy: InterpretedResultsSortColumnDto;
   sortDirection: SortDirection;
 }
 
-type InterpretedResultsSortColumn = "alert-message";
+type InterpretedResultsSortColumnDto = "alert-message";
 
-interface SortedResultSetInfo {
+interface SortedResultSetInfoDto {
   resultsPath: string;
-  sortState: RawResultsSortState;
+  sortState: RawResultsSortStateDto;
 }
 
-interface RawResultsSortState {
+interface RawResultsSortStateDto {
   columnIndex: number;
   sortDirection: SortDirection;
 }
@@ -70,7 +70,7 @@ enum SortDirection {
   desc,
 }
 
-interface EvaluationResultData {
+interface EvaluationResultDto {
   runId: number;
   queryId: number;
   resultType: number;
@@ -79,19 +79,19 @@ interface EvaluationResultData {
   logFileLocation?: string;
 }
 
-export interface QueryEvaluationInfoData {
+export interface QueryEvaluationInfoDto {
   querySaveDir: string;
   dbItemPath: string;
   databaseHasMetadataFile: boolean;
-  quickEvalPosition?: PositionData;
-  metadata?: QueryMetadataData;
+  quickEvalPosition?: PositionDto;
+  metadata?: QueryMetadataDto;
   resultsPaths: {
     resultsPath: string;
     interpretedResultsPath: string;
   };
 }
 
-interface QueryMetadataData {
+interface QueryMetadataDto {
   name?: string;
   description?: string;
   id?: string;

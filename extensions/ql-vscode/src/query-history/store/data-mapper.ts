@@ -7,11 +7,11 @@ import { QueryEvaluationInfo } from "../../run-queries-shared";
 import { QueryHistoryInfo } from "../query-history-info";
 import { VariantAnalysisHistoryItem } from "../variant-analysis-history-item";
 import {
-  CompletedQueryInfoData,
-  QueryEvaluationInfoData,
-  InitialQueryInfoData,
-  LocalQueryDataItem,
-} from "./local-query-data-item";
+  CompletedQueryInfoDto,
+  QueryEvaluationInfoDto,
+  InitialQueryInfoDto,
+  QueryHistoryLocalQueryDto,
+} from "./query-history-local-query-dto";
 import { QueryHistoryDataItem } from "./query-history-data";
 
 // Maps Query History Data Models to Domain Models
@@ -36,7 +36,7 @@ export function mapQueryHistoryToDomainModels(
 }
 
 function mapLocalQueryDataItemToDomainModel(
-  localQuery: LocalQueryDataItem,
+  localQuery: QueryHistoryLocalQueryDto,
 ): LocalQueryInfo {
   return new LocalQueryInfo(
     mapInitialQueryInfoDataToDomainModel(localQuery.initialInfo),
@@ -52,7 +52,7 @@ function mapLocalQueryDataItemToDomainModel(
 }
 
 function mapCompletedQueryInfoDataToDomainModel(
-  completedQuery: CompletedQueryInfoData,
+  completedQuery: CompletedQueryInfoDto,
 ): CompletedQueryInfo {
   return new CompletedQueryInfo(
     mapQueryEvaluationInfoDataToDomainModel(completedQuery.query),
@@ -74,7 +74,7 @@ function mapCompletedQueryInfoDataToDomainModel(
 }
 
 function mapInitialQueryInfoDataToDomainModel(
-  initialInfo: InitialQueryInfoData,
+  initialInfo: InitialQueryInfoDto,
 ): InitialQueryInfo {
   return {
     userSpecifiedLabel: initialInfo.userSpecifiedLabel,
@@ -93,7 +93,7 @@ function mapInitialQueryInfoDataToDomainModel(
 }
 
 function mapQueryEvaluationInfoDataToDomainModel(
-  evaluationInfo: QueryEvaluationInfoData,
+  evaluationInfo: QueryEvaluationInfoDto,
 ): QueryEvaluationInfo {
   return new QueryEvaluationInfo(
     evaluationInfo.querySaveDir,
