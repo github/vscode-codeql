@@ -122,12 +122,11 @@ export async function askForGitHubRepo(
   progress?: ProgressCallback,
   suggestedValue?: string,
 ): Promise<string | undefined> {
-  progress &&
-    progress({
-      message: "Choose repository",
-      step: 1,
-      maxStep: 2,
-    });
+  progress?.({
+    message: "Choose repository",
+    step: 1,
+    maxStep: 2,
+  });
 
   const options: InputBoxOptions = {
     title:
