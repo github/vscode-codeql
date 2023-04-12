@@ -327,12 +327,20 @@ describe("SkeletonQueryWizard", () => {
         jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
           {
             name: "codeql-custom-queries-cpp",
-            uri: { fsPath: "vscode-codeql-starter/codeql-custom-queries-cpp" },
+            uri: {
+              fsPath: join(
+                "vscode-codeql-starter",
+                "codeql-custom-queries-cpp",
+              ),
+            },
           },
           {
             name: "codeql-custom-queries-csharp",
             uri: {
-              fsPath: "vscode-codeql-starter/codeql-custom-queries-csharp",
+              fsPath: join(
+                "vscode-codeql-starter",
+                "codeql-custom-queries-csharp",
+              ),
             },
           },
         ] as WorkspaceFolder[]);
