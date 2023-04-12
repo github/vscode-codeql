@@ -119,14 +119,15 @@ export async function promptImportGithubDatabase(
 }
 
 export async function askForGitHubRepo(
-  progress: ProgressCallback,
+  progress?: ProgressCallback,
   suggestedValue?: string,
 ): Promise<string | undefined> {
-  progress({
-    message: "Choose repository",
-    step: 1,
-    maxStep: 2,
-  });
+  progress &&
+    progress({
+      message: "Choose repository",
+      step: 1,
+      maxStep: 2,
+    });
 
   const options: InputBoxOptions = {
     title:

@@ -208,7 +208,7 @@ export class SkeletonQueryWizard {
 
     const githubRepoNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
     const chosenRepo = await databaseFetcher.askForGitHubRepo(
-      this.progress,
+      undefined,
       githubRepoNwo,
     );
 
