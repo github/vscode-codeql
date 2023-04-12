@@ -1,4 +1,4 @@
-import { join } from "path";
+import { join, dirname } from "path";
 import { CancellationToken, Uri, workspace, window as Window } from "vscode";
 import { CodeQLCliServer } from "./cli";
 import { OutputChannelLogger } from "./common";
@@ -103,15 +103,11 @@ export class SkeletonQueryWizard {
     // For the vscode-codeql-starter repo, the first folder will be a ql pack
     // so we need to get the parent folder
     if (firstFolder.uri.path.includes("codeql-custom-queries")) {
-      // slice off the last part of the path and return the parent folder
-      if (process.platform === "win32") {
-        return firstFolder.uri.path.split("\\").slice(0, -1).join("\\");
-      } else {
-        return firstFolder.uri.path.split("/").slice(0, -1).join("/");
-      }
+      // return the parent folder
+      return dirname(firstFolder.uri.fsPath);
     } else {
       // if the first folder is not a ql pack, then we are in a normal workspace
-      return firstFolder.uri.path;
+      return firstFolder.uri.fsPath;
     }
   }
 
