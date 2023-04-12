@@ -75,7 +75,7 @@ export function registerCommandWithErrorHandling(
       return undefined;
     } finally {
       const executionTime = Date.now() - startTime;
-      telemetryListener?.sendCommandUsage(commandId, executionTime, error);
+      void telemetryListener?.sendCommandUsage(commandId, executionTime, error);
     }
   });
 }

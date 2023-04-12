@@ -185,7 +185,7 @@ describe("telemetry reporting", () => {
   it("should send an event", async () => {
     await telemetryListener.initialize();
 
-    telemetryListener.sendCommandUsage("command-id", 1234, undefined);
+    await telemetryListener.sendCommandUsage("command-id", 1234, undefined);
 
     expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
       "command-usage",
@@ -193,6 +193,7 @@ describe("telemetry reporting", () => {
         name: "command-id",
         status: "Success",
         isCanary,
+        cliVersion: "not-set",
       },
       { executionTime: 1234 },
     );
@@ -203,7 +204,7 @@ describe("telemetry reporting", () => {
   it("should send a command usage event with an error", async () => {
     await telemetryListener.initialize();
 
-    telemetryListener.sendCommandUsage(
+    await telemetryListener.sendCommandUsage(
       "command-id",
       1234,
       new UserCancellationException(),
@@ -215,6 +216,33 @@ describe("telemetry reporting", () => {
         name: "command-id",
         status: "Cancelled",
         isCanary,
+        cliVersion: "not-set",
+      },
+      { executionTime: 1234 },
+    );
+
+    expect(sendTelemetryExceptionSpy).not.toBeCalled();
+  });
+
+  it("should send a command usage event with a cli version", async () => {
+    await telemetryListener.initialize();
+    telemetryListener.cli = {
+      getVersion: () => Promise.resolve("1.2.3"),
+    } as any;
+
+    await telemetryListener.sendCommandUsage(
+      "command-id",
+      1234,
+      new UserCancellationException(),
+    );
+
+    expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+      "command-usage",
+      {
+        name: "command-id",
+        status: "Cancelled",
+        isCanary,
+        cliVersion: "1.2.3",
       },
       { executionTime: 1234 },
     );
@@ -226,8 +254,8 @@ describe("telemetry reporting", () => {
     await telemetryListener.initialize();
     await enableTelemetry("codeQL.telemetry", false);
 
-    telemetryListener.sendCommandUsage("command-id", 1234, undefined);
-    telemetryListener.sendCommandUsage("command-id", 1234, new Error());
+    await telemetryListener.sendCommandUsage("command-id", 1234, undefined);
+    await telemetryListener.sendCommandUsage("command-id", 1234, new Error());
 
     expect(sendTelemetryEventSpy).not.toBeCalled();
     expect(sendTelemetryExceptionSpy).not.toBeCalled();
@@ -238,7 +266,7 @@ describe("telemetry reporting", () => {
     await enableTelemetry("codeQL.telemetry", false);
     await enableTelemetry("codeQL.telemetry", true);
 
-    telemetryListener.sendCommandUsage("command-id", 1234, undefined);
+    await telemetryListener.sendCommandUsage("command-id", 1234, undefined);
 
     expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
       "command-usage",
@@ -246,6 +274,7 @@ describe("telemetry reporting", () => {
         name: "command-id",
         status: "Success",
         isCanary,
+        cliVersion: "not-set",
       },
       { executionTime: 1234 },
     );

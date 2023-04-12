@@ -306,7 +306,7 @@ export async function activate(
 
   const distributionConfigListener = new DistributionConfigListener();
   await initializeLogging(ctx);
-  await initializeTelemetry(extension, ctx);
+  const telemetryListener = await initializeTelemetry(extension, ctx);
   addUnhandledRejectionListener();
   install();
 
@@ -395,6 +395,7 @@ export async function activate(
     variantAnalysisViewSerializer.onExtensionLoaded(
       codeQlExtension.variantAnalysisManager,
     );
+    telemetryListener.cli = codeQlExtension.cliServer;
   }
 
   return codeQlExtension;
