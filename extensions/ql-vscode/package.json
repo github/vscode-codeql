@@ -362,6 +362,10 @@
         "title": "CodeQL: Quick Query"
       },
       {
+        "command": "codeQL.createSkeletonQuery",
+        "title": "CodeQL: Create Query"
+      },
+      {
         "command": "codeQL.openDocumentation",
         "title": "CodeQL: Open Documentation"
       },

@@ -66,8 +66,8 @@ export class QlPackGenerator {
     await writeFile(qlPackFilePath, this.header + dump(qlPackYml), "utf8");
   }
 
-  private async createExampleQlFile() {
-    const exampleQlFilePath = join(this.folderUri.fsPath, "example.ql");
+  public async createExampleQlFile(fileName = "example.ql") {
+    const exampleQlFilePath = join(this.folderUri.fsPath, fileName);
 
     const exampleQl = `
 /**
