@@ -71,6 +71,7 @@ export type BaseCommands = {
   "codeQL.restartQueryServer": () => Promise<void>;
   "codeQL.restartQueryServerOnConfigChange": () => Promise<void>;
   "codeQL.restartLegacyQueryServerOnConfigChange": () => Promise<void>;
+  "codeQL.restartQueryServerOnExternalConfigChange": () => Promise<void>;
 };
 
 // Commands used when working with queries in the editor
@@ -98,6 +99,7 @@ export type LocalQueryCommands = {
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
   "codeQL.codeLensQuickEval": (uri: Uri, range: Range) => Promise<void>;
   "codeQL.quickQuery": () => Promise<void>;
+  "codeQL.createSkeletonQuery": () => Promise<void>;
 };
 
 export type ResultsViewCommands = {
