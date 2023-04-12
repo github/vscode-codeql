@@ -107,17 +107,18 @@ export type MlModelInfo = {
 /** The expected output of `codeql resolve ml-models`. */
 export type MlModelsInfo = { models: MlModelInfo[] };
 
-export type DataExtensionInfo = {
+/** Information about a data extension predicate, as resolved by `codeql resolve extensions`. */
+export type DataExtensionResult = {
   predicate: string;
   file: string;
   index: number;
 };
 
 /** The expected output of `codeql resolve extensions`. */
-export type ExtensionsInfo = {
+export type ResolveExtensionsResult = {
   models: MlModelInfo[];
   data: {
-    [filename: string]: DataExtensionInfo[];
+    [path: string]: DataExtensionResult[];
   };
 };
 
@@ -1215,11 +1216,11 @@ export class CodeQLCliServer implements Disposable {
   async resolveExtensions(
     suite: string,
     additionalPacks: string[],
-  ): Promise<ExtensionsInfo> {
+  ): Promise<ResolveExtensionsResult> {
     const args = this.getAdditionalPacksArg(additionalPacks);
     args.push(suite);
 
-    return this.runJsonCodeQlCliCommand<ExtensionsInfo>(
+    return this.runJsonCodeQlCliCommand<ResolveExtensionsResult>(
       ["resolve", "extensions"],
       args,
       "Resolving extensions",
