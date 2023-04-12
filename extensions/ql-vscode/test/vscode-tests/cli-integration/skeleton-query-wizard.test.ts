@@ -13,13 +13,20 @@ import { createFileSync, ensureDirSync, removeSync } from "fs-extra";
 import { join } from "path";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import { testCredentialsWithStub } from "../../factories/authentication";
-import { DatabaseItem, DatabaseManager } from "../../../src/local-databases";
+import {
+  DatabaseItem,
+  DatabaseManager,
+  FullDatabaseOptions,
+} from "../../../src/local-databases";
 import * as databaseFetcher from "../../../src/databaseFetcher";
+import { createMockDB } from "../../factories/databases/databases";
 
 jest.setTimeout(40_000);
 
 describe("SkeletonQueryWizard", () => {
+  let mockCli: CodeQLCliServer;
   let wizard: SkeletonQueryWizard;
+  let mockDatabaseManager: DatabaseManager;
   let dir: tmp.DirResult;
   let storagePath: string;
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
@@ -42,29 +49,30 @@ describe("SkeletonQueryWizard", () => {
   const token = new CancellationTokenSource().token;
   const credentials = testCredentialsWithStub();
   const chosenLanguage = "ruby";
-  const mockDatabaseManager = mockedObject<DatabaseManager>({
-    setCurrentDatabaseItem: jest.fn(),
-    digForDatabaseItem: jest.fn(),
-    digForDatabaseWithSameLanguage: jest.fn(),
-  });
-  const mockCli = mockedObject<CodeQLCliServer>({
-    resolveLanguages: jest
-      .fn()
-      .mockResolvedValue([
-        "ruby",
-        "javascript",
-        "go",
-        "java",
-        "python",
-        "csharp",
-        "cpp",
-      ]),
-    getSupportedLanguages: jest.fn(),
-  });
 
   jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
   beforeEach(async () => {
+    mockCli = mockedObject<CodeQLCliServer>({
+      resolveLanguages: jest
+        .fn()
+        .mockResolvedValue([
+          "ruby",
+          "javascript",
+          "go",
+          "java",
+          "python",
+          "csharp",
+          "cpp",
+        ]),
+      getSupportedLanguages: jest.fn(),
+    });
+
+    mockDatabaseManager = mockedObject<DatabaseManager>({
+      setCurrentDatabaseItem: jest.fn(),
+      databaseItems: [] as DatabaseItem[],
+    });
+
     dir = tmp.dirSync({
       prefix: "skeleton_query_wizard_",
       unsafeCleanup: true,
@@ -214,6 +222,7 @@ describe("SkeletonQueryWizard", () => {
     describe("if database is also already downloaded", () => {
       let databaseNwo: string;
       let databaseItem: DatabaseItem;
+      let mockDatabaseManagerWithItems: DatabaseManager;
 
       beforeEach(async () => {
         databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[chosenLanguage];
@@ -223,9 +232,19 @@ describe("SkeletonQueryWizard", () => {
           language: chosenLanguage,
         } as DatabaseItem;
 
-        jest
-          .spyOn(mockDatabaseManager, "digForDatabaseItem")
-          .mockResolvedValue([databaseItem] as any);
+        mockDatabaseManagerWithItems = mockedObject<DatabaseManager>({
+          setCurrentDatabaseItem: jest.fn(),
+          databaseItems: [databaseItem] as DatabaseItem[],
+        });
+
+        wizard = new SkeletonQueryWizard(
+          mockCli,
+          jest.fn(),
+          credentials,
+          extLogger,
+          mockDatabaseManagerWithItems,
+          token,
+        );
       });
 
       it("should not download a new database for language", async () => {
@@ -237,9 +256,9 @@ describe("SkeletonQueryWizard", () => {
       it("should select an existing database", async () => {
         await wizard.execute();
 
-        expect(mockDatabaseManager.setCurrentDatabaseItem).toHaveBeenCalledWith(
-          [databaseItem],
-        );
+        expect(
+          mockDatabaseManagerWithItems.setCurrentDatabaseItem,
+        ).toHaveBeenCalledWith(databaseItem);
       });
 
       it("should open the new query file", async () => {
@@ -254,12 +273,6 @@ describe("SkeletonQueryWizard", () => {
     });
 
     describe("if database is missing", () => {
-      beforeEach(async () => {
-        jest
-          .spyOn(mockDatabaseManager, "digForDatabaseItem")
-          .mockResolvedValue(undefined);
-      });
-
       describe("if the user choses to downloaded the suggested database from GitHub", () => {
         it("should download a new database for language", async () => {
           await wizard.execute();
@@ -332,6 +345,73 @@ describe("SkeletonQueryWizard", () => {
         );
 
         expect(wizard.getFirstStoragePath()).toEqual("vscode-codeql-starter");
+      });
+    });
+  });
+
+  describe("findDatabaseItemByNwo", () => {
+    describe("when the item exists", () => {
+      it("should return the database item", async () => {
+        const mockDbItem = createMockDB(dir);
+        const mockDbItem2 = createMockDB(dir);
+
+        const databaseItem = await wizard.findDatabaseItemByNwo(
+          mockDbItem.language,
+          mockDbItem.name,
+          [mockDbItem, mockDbItem2],
+        );
+
+        expect(databaseItem!.language).toEqual(mockDbItem.language);
+        expect(databaseItem!.name).toEqual(mockDbItem.name);
+      });
+    });
+
+    describe("when the item doesn't exist", () => {
+      it("should return nothing", async () => {
+        const mockDbItem = createMockDB(dir);
+        const mockDbItem2 = createMockDB(dir);
+
+        const databaseItem = await wizard.findDatabaseItemByNwo(
+          "ruby",
+          "mock-nwo",
+          [mockDbItem, mockDbItem2],
+        );
+
+        expect(databaseItem).toBeUndefined();
+      });
+    });
+  });
+
+  describe("findDatabaseItemByLanguage", () => {
+    describe("when the item exists", () => {
+      it("should return the database item", async () => {
+        const mockDbItem = createMockDB(dir, {
+          language: "ruby",
+        } as FullDatabaseOptions);
+        const mockDbItem2 = createMockDB(dir, {
+          language: "javascript",
+        } as FullDatabaseOptions);
+
+        const databaseItem = await wizard.findDatabaseItemByLanguage("ruby", [
+          mockDbItem,
+          mockDbItem2,
+        ]);
+
+        expect(databaseItem).toEqual(mockDbItem);
+      });
+    });
+
+    describe("when the item doesn't exist", () => {
+      it("should return nothing", async () => {
+        const mockDbItem = createMockDB(dir);
+        const mockDbItem2 = createMockDB(dir);
+
+        const databaseItem = await wizard.findDatabaseItemByLanguage("ruby", [
+          mockDbItem,
+          mockDbItem2,
+        ]);
+
+        expect(databaseItem).toBeUndefined();
       });
     });
   });

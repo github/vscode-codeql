@@ -897,31 +897,6 @@ export class DatabaseManager extends DisposableObject {
     }
   }
 
-  public async digForDatabaseItem(
-    language: string,
-    databaseNwo: string,
-  ): Promise<DatabaseItem | undefined> {
-    const dbItems = this.databaseItems || [];
-    const dbs = dbItems.filter(
-      (db) => db.language === language && db.name === databaseNwo,
-    );
-    if (dbs.length === 0) {
-      return undefined;
-    }
-    return dbs[0];
-  }
-
-  public async digForDatabaseWithSameLanguage(
-    language: string,
-  ): Promise<DatabaseItem | undefined> {
-    const dbItems = this.databaseItems || [];
-    const dbs = dbItems.filter((db) => db.language === language);
-    if (dbs.length === 0) {
-      return undefined;
-    }
-    return dbs[0];
-  }
-
   /**
    * Returns the index of the workspace folder that corresponds to the source archive of `item`
    * if there is one, and -1 otherwise.

@@ -4,7 +4,6 @@ import { join } from "path";
 import { CancellationToken, ExtensionContext, Uri, workspace } from "vscode";
 
 import {
-  DatabaseContents,
   DatabaseContentsWithDbScheme,
   DatabaseEventKind,
   DatabaseItemImpl,
@@ -27,14 +26,14 @@ import { Setting } from "../../../src/config";
 import { QlPackGenerator } from "../../../src/qlpack-generator";
 import { mockedObject } from "../utils/mocking.helpers";
 import { createMockApp } from "../../__mocks__/appMock";
+import {
+  createMockDB,
+  dbLocationUri,
+  mockDbOptions,
+  sourceLocationUri,
+} from "../../factories/databases/databases";
 
 describe("local databases", () => {
-  const MOCK_DB_OPTIONS: FullDatabaseOptions = {
-    dateAdded: 123,
-    ignoreSourceArchive: false,
-    language: "",
-  };
-
   let databaseManager: DatabaseManager;
   let extensionContext: ExtensionContext;
 
@@ -118,7 +117,7 @@ describe("local databases", () => {
   });
 
   it("should fire events when adding and removing a db item", async () => {
-    const mockDbItem = createMockDB();
+    const mockDbItem = createMockDB(dir);
     const onDidChangeDatabaseItem = jest.fn();
     databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
     await (databaseManager as any).addDatabaseItem(
@@ -130,8 +129,8 @@ describe("local databases", () => {
     expect((databaseManager as any)._databaseItems).toEqual([mockDbItem]);
     expect(updateSpy).toBeCalledWith("databaseList", [
       {
-        options: MOCK_DB_OPTIONS,
-        uri: dbLocationUri().toString(true),
+        options: mockDbOptions(),
+        uri: dbLocationUri(dir).toString(true),
       },
     ]);
     expect(onDidChangeDatabaseItem).toBeCalledWith({
@@ -158,7 +157,7 @@ describe("local databases", () => {
 
   describe("renameDatabaseItem", () => {
     it("should rename a db item and emit an event", async () => {
-      const mockDbItem = createMockDB();
+      const mockDbItem = createMockDB(dir);
       const onDidChangeDatabaseItem = jest.fn();
       databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
       await (databaseManager as any).addDatabaseItem(
@@ -172,8 +171,8 @@ describe("local databases", () => {
       expect(mockDbItem.name).toBe("new name");
       expect(updateSpy).toBeCalledWith("databaseList", [
         {
-          options: { ...MOCK_DB_OPTIONS, displayName: "new name" },
-          uri: dbLocationUri().toString(true),
+          options: { ...mockDbOptions(), displayName: "new name" },
+          uri: dbLocationUri(dir).toString(true),
         },
       ]);
 
@@ -188,7 +187,7 @@ describe("local databases", () => {
     it("should add a database item", async () => {
       const onDidChangeDatabaseItem = jest.fn();
       databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
-      const mockDbItem = createMockDB();
+      const mockDbItem = createMockDB(dir);
 
       await (databaseManager as any).addDatabaseItem(
         {} as ProgressCallback,
@@ -199,8 +198,8 @@ describe("local databases", () => {
       expect(databaseManager.databaseItems).toEqual([mockDbItem]);
       expect(updateSpy).toBeCalledWith("databaseList", [
         {
-          uri: dbLocationUri().toString(true),
-          options: MOCK_DB_OPTIONS,
+          uri: dbLocationUri(dir).toString(true),
+          options: mockDbOptions(),
         },
       ]);
 
@@ -212,7 +211,7 @@ describe("local databases", () => {
     });
 
     it("should add a database item source archive", async () => {
-      const mockDbItem = createMockDB();
+      const mockDbItem = createMockDB(dir);
       mockDbItem.name = "xxx";
       await databaseManager.addDatabaseSourceArchiveFolder(mockDbItem);
 
@@ -223,13 +222,13 @@ describe("local databases", () => {
         // must use a matcher here since vscode URIs with the same path
         // are not always equal due to internal state.
         uri: expect.objectContaining({
-          fsPath: encodeArchiveBasePath(sourceLocationUri().fsPath).fsPath,
+          fsPath: encodeArchiveBasePath(sourceLocationUri(dir).fsPath).fsPath,
         }),
       });
     });
 
     it("should remove a database item", async () => {
-      const mockDbItem = createMockDB();
+      const mockDbItem = createMockDB(dir);
       await fs.ensureDir(mockDbItem.databaseUri.fsPath);
 
       // pretend that this item is the first workspace folder in the list
@@ -263,7 +262,7 @@ describe("local databases", () => {
     });
 
     it("should remove a database item outside of the extension controlled area", async () => {
-      const mockDbItem = createMockDB();
+      const mockDbItem = createMockDB(dir);
       await fs.ensureDir(mockDbItem.databaseUri.fsPath);
 
       // pretend that this item is the first workspace folder in the list
@@ -301,7 +300,7 @@ describe("local databases", () => {
     it("should register and deregister a database when adding and removing it", async () => {
       // similar test as above, but also check the call to sendRequestSpy to make sure they send the
       // registration messages.
-      const mockDbItem = createMockDB();
+      const mockDbItem = createMockDB(dir);
 
       await (databaseManager as any).addDatabaseItem(
         {} as ProgressCallback,
@@ -325,7 +324,8 @@ describe("local databases", () => {
   describe("resolveSourceFile", () => {
     it("should fail to resolve when not a uri", () => {
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
+        dir,
+        mockDbOptions(),
         Uri.parse("file:/sourceArchive-uri/"),
       );
       (db as any)._contents.sourceArchiveUri = undefined;
@@ -336,7 +336,8 @@ describe("local databases", () => {
 
     it("should fail to resolve when not a file uri", () => {
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
+        dir,
+        mockDbOptions(),
         Uri.parse("file:/sourceArchive-uri/"),
       );
       (db as any)._contents.sourceArchiveUri = undefined;
@@ -348,17 +349,19 @@ describe("local databases", () => {
     describe("no source archive", () => {
       it("should resolve undefined", () => {
         const db = createMockDB(
-          MOCK_DB_OPTIONS,
+          dir,
+          mockDbOptions(),
           Uri.parse("file:/sourceArchive-uri/"),
         );
         (db as any)._contents.sourceArchiveUri = undefined;
         const resolved = db.resolveSourceFile(undefined);
-        expect(resolved.toString(true)).toBe(dbLocationUri().toString(true));
+        expect(resolved.toString(true)).toBe(dbLocationUri(dir).toString(true));
       });
 
       it("should resolve an empty file", () => {
         const db = createMockDB(
-          MOCK_DB_OPTIONS,
+          dir,
+          mockDbOptions(),
           Uri.parse("file:/sourceArchive-uri/"),
         );
         (db as any)._contents.sourceArchiveUri = undefined;
@@ -370,7 +373,8 @@ describe("local databases", () => {
     describe("zipped source archive", () => {
       it("should encode a source archive url", () => {
         const db = createMockDB(
-          MOCK_DB_OPTIONS,
+          dir,
+          mockDbOptions(),
           encodeSourceArchiveUri({
             sourceArchiveZipPath: "sourceArchive-uri",
             pathWithinSourceArchive: "def",
@@ -390,7 +394,8 @@ describe("local databases", () => {
 
       it("should encode a source archive url with trailing slash", () => {
         const db = createMockDB(
-          MOCK_DB_OPTIONS,
+          dir,
+          mockDbOptions(),
           encodeSourceArchiveUri({
             sourceArchiveZipPath: "sourceArchive-uri",
             pathWithinSourceArchive: "def/",
@@ -410,7 +415,8 @@ describe("local databases", () => {
 
       it("should encode an empty source archive url", () => {
         const db = createMockDB(
-          MOCK_DB_OPTIONS,
+          dir,
+          mockDbOptions(),
           encodeSourceArchiveUri({
             sourceArchiveZipPath: "sourceArchive-uri",
             pathWithinSourceArchive: "def",
@@ -425,7 +431,8 @@ describe("local databases", () => {
 
     it("should handle an empty file", () => {
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
+        dir,
+        mockDbOptions(),
         Uri.parse("file:/sourceArchive-uri/"),
       );
       const resolved = db.resolveSourceFile("");
@@ -471,8 +478,9 @@ describe("local databases", () => {
 
     it("should return true for testproj database in test directory", async () => {
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
-        sourceLocationUri(),
+        dir,
+        mockDbOptions(),
+        sourceLocationUri(dir),
         Uri.file(projectPath),
       );
       expect(await db.isAffectedByTest(directoryPath)).toBe(true);
@@ -480,8 +488,9 @@ describe("local databases", () => {
 
     it("should return false for non-existent test directory", async () => {
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
-        sourceLocationUri(),
+        dir,
+        mockDbOptions(),
+        sourceLocationUri(dir),
         Uri.file(join(dir.name, "non-existent/non-existent.testproj")),
       );
       expect(await db.isAffectedByTest(join(dir.name, "non-existent"))).toBe(
@@ -494,8 +503,9 @@ describe("local databases", () => {
       await fs.writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
-        sourceLocationUri(),
+        dir,
+        mockDbOptions(),
+        sourceLocationUri(dir),
         Uri.file(anotherProjectPath),
       );
       expect(await db.isAffectedByTest(directoryPath)).toBe(false);
@@ -508,8 +518,9 @@ describe("local databases", () => {
       await fs.writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
-        sourceLocationUri(),
+        dir,
+        mockDbOptions(),
+        sourceLocationUri(dir),
         Uri.file(anotherProjectPath),
       );
       expect(await db.isAffectedByTest(directoryPath)).toBe(false);
@@ -517,8 +528,9 @@ describe("local databases", () => {
 
     it("should return false for testproj database for prefix directory", async () => {
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
-        sourceLocationUri(),
+        dir,
+        mockDbOptions(),
+        sourceLocationUri(dir),
         Uri.file(projectPath),
       );
       // /d is a prefix of /dir/dir.testproj, but
@@ -528,8 +540,9 @@ describe("local databases", () => {
 
     it("should return true for testproj database for test file", async () => {
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
-        sourceLocationUri(),
+        dir,
+        mockDbOptions(),
+        sourceLocationUri(dir),
         Uri.file(projectPath),
       );
       expect(await db.isAffectedByTest(qlFilePath)).toBe(true);
@@ -538,8 +551,9 @@ describe("local databases", () => {
     it("should return false for non-existent test file", async () => {
       const otherTestFile = join(directoryPath, "other-test.ql");
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
-        sourceLocationUri(),
+        dir,
+        mockDbOptions(),
+        sourceLocationUri(dir),
         Uri.file(projectPath),
       );
       expect(await db.isAffectedByTest(otherTestFile)).toBe(false);
@@ -550,8 +564,9 @@ describe("local databases", () => {
       await fs.writeFile(anotherProjectPath, "");
 
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
-        sourceLocationUri(),
+        dir,
+        mockDbOptions(),
+        sourceLocationUri(dir),
         Uri.file(anotherProjectPath),
       );
       expect(await db.isAffectedByTest(qlFilePath)).toBe(false);
@@ -562,8 +577,9 @@ describe("local databases", () => {
       await fs.writeFile(otherTestFile, "");
 
       const db = createMockDB(
-        MOCK_DB_OPTIONS,
-        sourceLocationUri(),
+        dir,
+        mockDbOptions(),
+        sourceLocationUri(dir),
         Uri.file(projectPath),
       );
       expect(await db.isAffectedByTest(otherTestFile)).toBe(false);
@@ -622,7 +638,7 @@ describe("local databases", () => {
         ignoreSourceArchive: false,
         language,
       };
-      mockDbItem = createMockDB(options);
+      mockDbItem = createMockDB(dir, options);
 
       generateSpy = jest
         .spyOn(QlPackGenerator.prototype, "generate")
@@ -655,7 +671,7 @@ describe("local databases", () => {
 
     describe("when the language is not set", () => {
       it("should fail gracefully", async () => {
-        mockDbItem = createMockDB();
+        mockDbItem = createMockDB(dir);
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
         expect(logSpy).toHaveBeenCalledWith(
           "Could not create skeleton QL pack because the selected database's language is not set.",
@@ -701,7 +717,7 @@ describe("local databases", () => {
         },
       }));
 
-      mockDbItem = createMockDB();
+      mockDbItem = createMockDB(dir);
     });
 
     it("should resolve the database contents", async () => {
@@ -784,63 +800,4 @@ describe("local databases", () => {
       });
     });
   });
-
-  describe("digForDatabaseItem", () => {
-    describe("when the item exists", () => {
-      it("should return the database item", async () => {
-        const mockDbItem = createMockDB();
-
-        await (databaseManager as any).addDatabaseItem(
-          {} as ProgressCallback,
-          {} as CancellationToken,
-          mockDbItem,
-        );
-
-        const databaseItem = await databaseManager.digForDatabaseItem(
-          mockDbItem.language,
-          mockDbItem.name,
-        );
-
-        expect(databaseItem!.language).toEqual(mockDbItem.language);
-        expect(databaseItem!.name).toEqual(mockDbItem.name);
-      });
-    });
-
-    describe("when the item doesn't exist", () => {
-      it("should return nothing", async () => {
-        const databaseItem = await databaseManager.digForDatabaseItem(
-          "ruby",
-          "mock-database-name",
-        );
-
-        expect(databaseItem).toBeUndefined();
-      });
-    });
-  });
-
-  function createMockDB(
-    mockDbOptions = MOCK_DB_OPTIONS,
-    // source archive location must be a real(-ish) location since
-    // tests will add this to the workspace location
-    sourceArchiveUri = sourceLocationUri(),
-    databaseUri = dbLocationUri(),
-  ): DatabaseItemImpl {
-    return new DatabaseItemImpl(
-      databaseUri,
-      {
-        sourceArchiveUri,
-        datasetUri: databaseUri,
-      } as DatabaseContents,
-      mockDbOptions,
-      () => void 0,
-    );
-  }
-
-  function sourceLocationUri() {
-    return Uri.file(join(dir.name, "src.zip"));
-  }
-
-  function dbLocationUri() {
-    return Uri.file(join(dir.name, "db"));
-  }
 });
