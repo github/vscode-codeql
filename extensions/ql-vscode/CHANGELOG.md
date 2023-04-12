@@ -7,6 +7,7 @@
 - Fix bug where users could end up with the managed CodeQL CLI getting uninstalled during upgrades and not reinstalled. [#2294](https://github.com/github/vscode-codeql/pull/2294)
 - Fix bug that was causing code flows to not get updated when switching between results. [#2288](https://github.com/github/vscode-codeql/pull/2288)
 - Restart the CodeQL language server whenever the _CodeQL: Restart Query Server_ command is invoked. This avoids bugs where the CLI version changes to support new language features, but the language server is not updated. [#2238](https://github.com/github/vscode-codeql/pull/2238)
+- Avoid requiring a manual restart of the query server when the [external CLI config file](https://docs.github.com/en/code-security/codeql-cli/using-the-codeql-cli/specifying-command-options-in-a-codeql-configuration-file#using-a-codeql-configuration-file) changes. [#2289](https://github.com/github/vscode-codeql/pull/2289)
 
 ## 1.8.1 - 23 March 2023
 
