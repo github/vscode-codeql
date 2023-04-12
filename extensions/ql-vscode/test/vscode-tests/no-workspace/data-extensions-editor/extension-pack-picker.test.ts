@@ -1,4 +1,8 @@
 import { CancellationTokenSource, QuickPickItem, window } from "vscode";
+import { dump as dumpYaml } from "js-yaml";
+import { outputFile } from "fs-extra";
+import { join } from "path";
+import { dir } from "tmp-promise";
 
 import { pickExtensionPackModelFile } from "../../../../src/data-extensions-editor/extension-pack-picker";
 import { QlpacksInfo, ResolveExtensionsResult } from "../../../../src/cli";
@@ -30,11 +34,15 @@ describe("pickExtensionPackModelFile", () => {
 
   const progress = jest.fn();
   let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
+  let showInputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
 
   beforeEach(() => {
     showQuickPickSpy = jest
       .spyOn(window, "showQuickPick")
       .mockRejectedValue(new Error("Unexpected call to showQuickPick"));
+    showInputBoxSpy = jest
+      .spyOn(window, "showInputBox")
+      .mockRejectedValue(new Error("Unexpected call to showInputBox"));
   });
 
   it("allows choosing an existing extension pack and model file", async () => {
@@ -72,6 +80,7 @@ describe("pickExtensionPackModelFile", () => {
       {
         title: expect.any(String),
       },
+      token,
     );
     expect(showQuickPickSpy).toHaveBeenCalledWith(
       [
@@ -79,10 +88,15 @@ describe("pickExtensionPackModelFile", () => {
           label: "models/model.yml",
           file: "/a/b/c/my-extension-pack/models/model.yml",
         },
+        {
+          label: expect.stringMatching(/create/i),
+          file: null,
+        },
       ],
       {
         title: expect.any(String),
       },
+      token,
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
     expect(cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
@@ -110,7 +124,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
 
-  it("does not show any options when there are no extension packs", async () => {
+  it("shows create option when there are no extension packs", async () => {
     const cliServer = mockCliServer({}, { models: [], data: {} });
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
@@ -124,9 +138,13 @@ describe("pickExtensionPackModelFile", () => {
       ),
     ).toEqual(undefined);
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
-    expect(showQuickPickSpy).toHaveBeenCalledWith([], {
-      title: expect.any(String),
-    });
+    expect(showQuickPickSpy).toHaveBeenCalledWith(
+      [],
+      {
+        title: expect.any(String),
+      },
+      token,
+    );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
@@ -191,14 +209,37 @@ describe("pickExtensionPackModelFile", () => {
     expect(cliServer.resolveExtensions).toHaveBeenCalled();
   });
 
-  it("does not show any options when there are no model files", async () => {
-    const cliServer = mockCliServer(qlPacks, { models: [], data: {} });
+  it("shows create input box when there are no model files", async () => {
+    const tmpDir = await dir({
+      unsafeCleanup: true,
+    });
+
+    const cliServer = mockCliServer(
+      {
+        "my-extension-pack": [tmpDir.path],
+      },
+      { models: [], data: {} },
+    );
+
+    await outputFile(
+      join(tmpDir.path, "codeql-pack.yml"),
+      dumpYaml({
+        name: "my-extension-pack",
+        version: "0.0.0",
+        library: true,
+        extensionTargets: {
+          "codeql/java-all": "*",
+        },
+        dataExtensions: ["models/**/*.yml"],
+      }),
+    );
 
     showQuickPickSpy.mockResolvedValueOnce({
       label: "my-extension-pack",
       extensionPack: "my-extension-pack",
     } as QuickPickItem);
     showQuickPickSpy.mockResolvedValueOnce(undefined);
+    showInputBoxSpy.mockResolvedValue("models/my-model.yml");
 
     expect(
       await pickExtensionPackModelFile(
@@ -207,26 +248,16 @@ describe("pickExtensionPackModelFile", () => {
         progress,
         token,
       ),
-    ).toEqual(undefined);
-    expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
-    expect(showQuickPickSpy).toHaveBeenCalledWith(
-      [
-        {
-          label: "my-extension-pack",
-          extensionPack: "my-extension-pack",
-        },
-        {
-          label: "another-extension-pack",
-          extensionPack: "another-extension-pack",
-        },
-      ],
+    ).toEqual(join(tmpDir.path, "models/my-model.yml"));
+    expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
+    expect(showInputBoxSpy).toHaveBeenCalledWith(
       {
         title: expect.any(String),
+        value: "models/github.vscode-codeql.model.yml",
+        validateInput: expect.any(Function),
       },
+      token,
     );
-    expect(showQuickPickSpy).toHaveBeenCalledWith([], {
-      title: expect.any(String),
-    });
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(cliServer.resolveExtensions).toHaveBeenCalled();
   });
