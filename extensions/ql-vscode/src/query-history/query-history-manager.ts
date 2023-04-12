@@ -402,8 +402,8 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleOpenQuery(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    singleItem: QueryHistoryInfo | undefined,
+    multiSelect: QueryHistoryInfo[] | undefined,
   ): Promise<void> {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -465,8 +465,8 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleRemoveHistoryItem(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] = [],
+    singleItem: QueryHistoryInfo | undefined,
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -566,14 +566,14 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleRenameItem(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ): Promise<void> {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
       multiSelect,
     );
 
-    if (!this.assertSingleQuery(finalMultiSelect)) {
+    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
       return;
     }
 
@@ -595,7 +595,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleCompareWith(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -633,8 +633,8 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleItemClicked(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] = [],
+    singleItem: QueryHistoryInfo | undefined,
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -668,7 +668,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleShowQueryLog(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     // Local queries only
     if (!this.assertSingleQuery(multiSelect) || singleItem?.t !== "local") {
@@ -709,7 +709,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleOpenQueryDirectory(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -783,7 +783,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleShowEvalLog(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -811,7 +811,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleShowEvalLogSummary(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -849,7 +849,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleShowEvalLogViewer(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -889,7 +889,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleCancel(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -954,7 +954,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleViewSarifAlerts(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -988,7 +988,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleViewCsvResults(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -1016,7 +1016,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleViewCsvAlerts(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -1044,7 +1044,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleViewDil(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -1071,7 +1071,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleOpenOnGithub(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -1096,7 +1096,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleCopyRepoList(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -1120,7 +1120,7 @@ export class QueryHistoryManager extends DisposableObject {
 
   async handleExportResults(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    multiSelect: QueryHistoryInfo[] | undefined,
   ): Promise<void> {
     const { finalSingleItem, finalMultiSelect } = this.determineSelection(
       singleItem,
@@ -1295,10 +1295,10 @@ export class QueryHistoryManager extends DisposableObject {
    * @param multiSelect a multi-select or undefined if no items are selected
    */
   private determineSelection(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
+    singleItem: QueryHistoryInfo | undefined,
+    multiSelect: QueryHistoryInfo[] | undefined,
   ): {
-    finalSingleItem: QueryHistoryInfo;
+    finalSingleItem: QueryHistoryInfo | undefined;
     finalMultiSelect: QueryHistoryInfo[];
   } {
     if (!singleItem && !multiSelect?.[0]) {
@@ -1325,7 +1325,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
     return {
       finalSingleItem: singleItem,
-      finalMultiSelect: multiSelect,
+      finalMultiSelect: multiSelect || [],
     };
   }
 

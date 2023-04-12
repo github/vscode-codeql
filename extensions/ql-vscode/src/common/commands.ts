@@ -13,16 +13,51 @@ import type {
 } from "../variant-analysis/shared/variant-analysis";
 
 // A command function matching the signature that VS Code calls when
-// a command on a selection is invoked.
-export type SelectionCommandFunction<Item> = (
-  singleItem: Item,
-  multiSelect: Item[],
+// a command is invoked from the title bar of a TreeView with
+// canSelectMany set to true.
+//
+// It is possible to get any combination of singleItem and multiSelect
+// to be undefined. This is because it is possible to click a title bar
+// option without interacting with any individual items first, or even
+// when there are no items present at all.
+// If both singleItem and multiSelect are defined, then singleItem will
+// be contained within multiSelect.
+export type TreeViewTitleMultiSelectionCommandFunction<Item> = (
+  singleItem: Item | undefined,
+  multiSelect: Item[] | undefined,
 ) => Promise<void>;
 
 // A command function matching the signature that VS Code calls when
-// a command on a selection is invoked when canSelectMany is false.
-export type SingleSelectionCommandFunction<Item> = (
+// a command is invoked from a context menu on a TreeView with
+// canSelectMany set to true.
+//
+// singleItem will always be defined and corresponds to the item that
+// was hovered or right-clicked. If precisely one item was selected then
+// multiSelect will be undefined. If more than one item is selected then
+// multiSelect will contain all selected items, including singleItem.
+export type TreeViewContextMultiSelectionCommandFunction<Item> = (
   singleItem: Item,
+  multiSelect: Item[] | undefined,
+) => Promise<void>;
+
+// A command function matching the signature that VS Code calls when
+// a command is invoked from a context menu on a TreeView with
+// canSelectMany set to false.
+//
+// It is guaranteed that precisely one item will be selected.
+export type TreeViewContextSingleSelectionCommandFunction<Item> = (
+  singleItem: Item,
+) => Promise<void>;
+
+// A command function matching the signature that VS Code calls when
+// a command is invoked from a context menu on the file explorer.
+//
+// singleItem corresponds to the item that was right-clicked.
+// multiSelect will always been defined and non-empty and contains
+// all selected items, including singleItem.
+export type ExplorerSelectionCommandFunction<Item> = (
+  singleItem: Item,
+  multiSelect: Item[],
 ) => Promise<void>;
 
 /**
@@ -93,7 +128,7 @@ export type LocalQueryCommands = {
   "codeQL.runQueryOnMultipleDatabasesContextEditor": (
     uri?: Uri,
   ) => Promise<void>;
-  "codeQL.runQueries": SelectionCommandFunction<Uri>;
+  "codeQL.runQueries": ExplorerSelectionCommandFunction<Uri>;
   "codeQL.quickEval": (uri: Uri) => Promise<void>;
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
   "codeQL.codeLensQuickEval": (uri: Uri, range: Range) => Promise<void>;
@@ -117,28 +152,28 @@ export type QueryHistoryCommands = {
   "codeQLQueryHistory.sortByCount": () => Promise<void>;
 
   // Commands in the context menu or in the hover menu
-  "codeQLQueryHistory.openQueryTitleMenu": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.openQueryContextMenu": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.removeHistoryItemTitleMenu": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.removeHistoryItemContextMenu": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.removeHistoryItemContextInline": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.renameItem": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.compareWith": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.showEvalLog": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.showEvalLogSummary": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.showEvalLogViewer": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.showQueryLog": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.showQueryText": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.openQueryDirectory": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.cancel": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.exportResults": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.viewCsvResults": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.viewCsvAlerts": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.viewSarifAlerts": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.viewDil": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.itemClicked": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.openOnGithub": SelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.copyRepoList": SelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.openQueryTitleMenu": TreeViewTitleMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.openQueryContextMenu": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.removeHistoryItemTitleMenu": TreeViewTitleMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.removeHistoryItemContextMenu": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.removeHistoryItemContextInline": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.renameItem": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.compareWith": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.showEvalLog": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.showEvalLogSummary": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.showEvalLogViewer": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.showQueryLog": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.showQueryText": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.openQueryDirectory": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.cancel": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.exportResults": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.viewCsvResults": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.viewCsvAlerts": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.viewSarifAlerts": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.viewDil": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.itemClicked": TreeViewTitleMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.openOnGithub": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.copyRepoList": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
 
   // Commands in the command palette
   "codeQL.exportSelectedVariantAnalysisResults": () => Promise<void>;
@@ -171,11 +206,11 @@ export type LocalDatabasesCommands = {
   ) => Promise<void>;
 
   // Database panel selection commands
-  "codeQLDatabases.removeDatabase": SelectionCommandFunction<DatabaseItem>;
-  "codeQLDatabases.upgradeDatabase": SelectionCommandFunction<DatabaseItem>;
-  "codeQLDatabases.renameDatabase": SelectionCommandFunction<DatabaseItem>;
-  "codeQLDatabases.openDatabaseFolder": SelectionCommandFunction<DatabaseItem>;
-  "codeQLDatabases.addDatabaseSource": SelectionCommandFunction<DatabaseItem>;
+  "codeQLDatabases.removeDatabase": TreeViewContextMultiSelectionCommandFunction<DatabaseItem>;
+  "codeQLDatabases.upgradeDatabase": TreeViewContextMultiSelectionCommandFunction<DatabaseItem>;
+  "codeQLDatabases.renameDatabase": TreeViewContextMultiSelectionCommandFunction<DatabaseItem>;
+  "codeQLDatabases.openDatabaseFolder": TreeViewContextMultiSelectionCommandFunction<DatabaseItem>;
+  "codeQLDatabases.addDatabaseSource": TreeViewContextMultiSelectionCommandFunction<DatabaseItem>;
 
   // Codespace template commands
   "codeQL.setDefaultTourDatabase": () => Promise<void>;
@@ -220,11 +255,11 @@ export type DatabasePanelCommands = {
   "codeQLVariantAnalysisRepositories.addNewList": () => Promise<void>;
   "codeQLVariantAnalysisRepositories.setupControllerRepository": () => Promise<void>;
 
-  "codeQLVariantAnalysisRepositories.setSelectedItem": SingleSelectionCommandFunction<DbTreeViewItem>;
-  "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
-  "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
-  "codeQLVariantAnalysisRepositories.renameItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
-  "codeQLVariantAnalysisRepositories.removeItemContextMenu": SingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.setSelectedItem": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.setSelectedItemContextMenu": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.renameItemContextMenu": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.removeItemContextMenu": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
 };
 
 export type AstCfgCommands = {
