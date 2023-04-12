@@ -69,7 +69,14 @@ export class SkeletonQueryWizard {
     }
 
     // open a query file
-    await this.openExampleFile();
+
+    try {
+      await this.openExampleFile();
+    } catch (e: unknown) {
+      void this.extLogger.log(
+        `Could not open example query file: ${getErrorMessage(e)}`,
+      );
+    }
   }
 
   private async openExampleFile() {
@@ -81,15 +88,9 @@ export class SkeletonQueryWizard {
       join(this.qlPackStoragePath, this.folderName, this.fileName),
     );
 
-    try {
-      void workspace.openTextDocument(queryFileUri).then((doc) => {
-        void Window.showTextDocument(doc);
-      });
-    } catch (e: unknown) {
-      void this.extLogger.log(
-        `Could not open example query file: ${getErrorMessage(e)}`,
-      );
-    }
+    void workspace.openTextDocument(queryFileUri).then((doc) => {
+      void Window.showTextDocument(doc);
+    });
   }
 
   public getFirstStoragePath() {
