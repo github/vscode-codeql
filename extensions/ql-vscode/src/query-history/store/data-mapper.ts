@@ -16,7 +16,7 @@ import {
   SortedResultSetInfoDto,
   RawResultsSortStateDto,
 } from "./query-history-local-query-dto";
-import { QueryHistoryDataItem } from "./query-history-data";
+import { QueryHistoryItemDto } from "./query-history-dto";
 import {
   InterpretedResultsSortState,
   RawResultsSortState,
@@ -27,7 +27,7 @@ import {
 // Maps Query History Data Models to Domain Models
 
 export function mapQueryHistoryToDomainModels(
-  queries: QueryHistoryDataItem[],
+  queries: QueryHistoryItemDto[],
 ): QueryHistoryInfo[] {
   return queries.map((d) => {
     if (d.t === "variant-analysis") {

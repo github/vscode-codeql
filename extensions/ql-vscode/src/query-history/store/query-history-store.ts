@@ -12,9 +12,9 @@ import { QueryHistoryInfo } from "../query-history-info";
 import { redactableError } from "../../pure/errors";
 import {
   ALLOWED_QUERY_HISTORY_VERSIONS,
-  QueryHistoryData,
-  QueryHistoryDataItem,
-} from "./query-history-data";
+  QueryHistoryDto,
+  QueryHistoryItemDto,
+} from "./query-history-dto";
 import { mapQueryHistoryToDomainModels } from "./data-mapper";
 import { mapQueryHistoryToDataModels } from "./domain-mapper";
 
@@ -26,7 +26,7 @@ export async function readQueryHistoryFromFile(
       return [];
     }
 
-    const obj: QueryHistoryData = await readJson(fsPath, {
+    const obj: QueryHistoryDto = await readJson(fsPath, {
       encoding: "utf8",
     });
 
@@ -40,7 +40,7 @@ export async function readQueryHistoryFromFile(
     const queries = obj.queries;
     // Remove remote queries, which are not supported anymore.
     const parsedQueries = queries.filter(
-      (q: QueryHistoryDataItem | { t: "remote" }) => q.t !== "remote",
+      (q: QueryHistoryItemDto | { t: "remote" }) => q.t !== "remote",
     );
 
     // Map the data models to the domain models.

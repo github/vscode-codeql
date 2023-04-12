@@ -6,11 +6,11 @@ import { QueryHistoryVariantAnalysisDto } from "./query-history-variant-analysis
 
 export const ALLOWED_QUERY_HISTORY_VERSIONS = [1, 2];
 
-export interface QueryHistoryData {
+export interface QueryHistoryDto {
   version: number;
-  queries: QueryHistoryDataItem[];
+  queries: QueryHistoryItemDto[];
 }
 
-export type QueryHistoryDataItem =
+export type QueryHistoryItemDto =
   | QueryHistoryLocalQueryDto
   | QueryHistoryVariantAnalysisDto;
