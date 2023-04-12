@@ -9,7 +9,7 @@ import { getErrorMessage } from "./pure/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseManager } from "./local-databases";
 import * as databaseFetcher from "./databaseFetcher";
-import { ProgressCallback } from "./progress";
+import { ProgressCallback, UserCancellationException } from "./progress";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
@@ -213,7 +213,7 @@ export class SkeletonQueryWizard {
     );
 
     if (!chosenRepo) {
-      throw new Error("No GitHub repository provided");
+      throw new UserCancellationException("No GitHub repository provided");
     }
 
     await databaseFetcher.downloadGitHubDatabase(
