@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.8.2 - 12 April 2023
 
 - Fix bug where users could end up with the mananged CodeQL CLI getting uninstalled during upgrades and not reinstalled. [#2294](https://github.com/github/vscode-codeql/pull/2294)
