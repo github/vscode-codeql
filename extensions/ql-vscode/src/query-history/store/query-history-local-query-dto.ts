@@ -48,24 +48,24 @@ export interface CompletedQueryInfoDto {
   interpretedResultsSortState?: InterpretedResultsSortStateDto;
 }
 
-interface InterpretedResultsSortStateDto {
+export interface InterpretedResultsSortStateDto {
   sortBy: InterpretedResultsSortColumnDto;
-  sortDirection: SortDirection;
+  sortDirection: SortDirectionDto;
 }
 
 type InterpretedResultsSortColumnDto = "alert-message";
 
-interface SortedResultSetInfoDto {
+export interface SortedResultSetInfoDto {
   resultsPath: string;
   sortState: RawResultsSortStateDto;
 }
 
-interface RawResultsSortStateDto {
+export interface RawResultsSortStateDto {
   columnIndex: number;
-  sortDirection: SortDirection;
+  sortDirection: SortDirectionDto;
 }
 
-enum SortDirection {
+export enum SortDirectionDto {
   asc,
   desc,
 }

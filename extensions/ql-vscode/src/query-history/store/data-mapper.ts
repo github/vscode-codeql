@@ -11,8 +11,18 @@ import {
   QueryEvaluationInfoDto,
   InitialQueryInfoDto,
   QueryHistoryLocalQueryDto,
+  SortDirectionDto,
+  InterpretedResultsSortStateDto,
+  SortedResultSetInfoDto,
+  RawResultsSortStateDto,
 } from "./query-history-local-query-dto";
 import { QueryHistoryDataItem } from "./query-history-data";
+import {
+  InterpretedResultsSortState,
+  RawResultsSortState,
+  SortDirection,
+  SortedResultSetInfo,
+} from "../../pure/interface-types";
 
 // Maps Query History Data Models to Domain Models
 
@@ -54,6 +64,16 @@ function mapLocalQueryDataItemToDomainModel(
 function mapCompletedQueryInfoDataToDomainModel(
   completedQuery: CompletedQueryInfoDto,
 ): CompletedQueryInfo {
+  const sortState =
+    completedQuery.interpretedResultsSortState &&
+    mapSortStateToDomainModel(completedQuery.interpretedResultsSortState);
+
+  const sortedResults = Object.fromEntries(
+    Object.entries(completedQuery.sortedResultsInfo).map(([key, value]) => {
+      return [key, mapSortedResultSetInfoDtoToDomainModel(value)];
+    }),
+  );
+
   return new CompletedQueryInfo(
     mapQueryEvaluationInfoDataToDomainModel(completedQuery.query),
     {
@@ -67,9 +87,9 @@ function mapCompletedQueryInfoDataToDomainModel(
     completedQuery.logFileLocation,
     completedQuery.successful ?? completedQuery.sucessful,
     completedQuery.message,
-    completedQuery.interpretedResultsSortState,
+    sortState,
     completedQuery.resultCount,
-    completedQuery.sortedResultsInfo,
+    sortedResults,
   );
 }
 
@@ -102,4 +122,44 @@ function mapQueryEvaluationInfoDataToDomainModel(
     evaluationInfo.quickEvalPosition,
     evaluationInfo.metadata,
   );
+}
+
+function mapSortDirectionToDomainModel(
+  sortDirection: SortDirectionDto,
+): SortDirection {
+  switch (sortDirection) {
+    case SortDirectionDto.asc:
+      return SortDirection.asc;
+    case SortDirectionDto.desc:
+      return SortDirection.desc;
+  }
+}
+
+function mapSortStateToDomainModel(
+  sortState: InterpretedResultsSortStateDto,
+): InterpretedResultsSortState {
+  return {
+    sortBy: sortState.sortBy,
+    sortDirection: mapSortDirectionToDomainModel(sortState.sortDirection),
+  };
+}
+
+function mapSortedResultSetInfoDtoToDomainModel(
+  sortedResultSetInfo: SortedResultSetInfoDto,
+): SortedResultSetInfo {
+  return {
+    resultsPath: sortedResultSetInfo.resultsPath,
+    sortState: mapRawResultsSortStateToDomainModel(
+      sortedResultSetInfo.sortState,
+    ),
+  };
+}
+
+function mapRawResultsSortStateToDomainModel(
+  sortState: RawResultsSortStateDto,
+): RawResultsSortState {
+  return {
+    columnIndex: sortState.columnIndex,
+    sortDirection: mapSortDirectionToDomainModel(sortState.sortDirection),
+  };
 }

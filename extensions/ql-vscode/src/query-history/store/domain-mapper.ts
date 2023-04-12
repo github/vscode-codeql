@@ -1,14 +1,26 @@
 import { assertNever } from "../../pure/helpers-pure";
-import { LocalQueryInfo, InitialQueryInfo } from "../../query-results";
+import {
+  LocalQueryInfo,
+  InitialQueryInfo,
+  CompletedQueryInfo,
+} from "../../query-results";
 import { QueryEvaluationInfo } from "../../run-queries-shared";
 import { QueryHistoryInfo } from "../query-history-info";
 import {
   QueryHistoryLocalQueryDto,
   InitialQueryInfoDto,
   QueryEvaluationInfoDto,
+  CompletedQueryInfoDto,
+  SortedResultSetInfoDto,
+  SortDirectionDto,
 } from "./query-history-local-query-dto";
 import { QueryHistoryDataItem } from "./query-history-data";
 import { VariantAnalysisDataItem } from "./variant-analysis-data-item";
+import {
+  RawResultsSortState,
+  SortDirection,
+  SortedResultSetInfo,
+} from "../../pure/interface-types";
 
 // Maps Query History Domain Models to Data Models
 
@@ -38,22 +50,65 @@ function mapLocalQueryInfoToDataModel(
     jsonEvalLogSummaryLocation: query.jsonEvalLogSummaryLocation,
     evalLogSummarySymbolsLocation: query.evalLogSummarySymbolsLocation,
     failureReason: query.failureReason,
-    completedQuery: query.completedQuery && {
-      query: mapQueryEvaluationInfoToDataModel(query.completedQuery.query),
-      result: {
-        runId: query.completedQuery.result.runId,
-        queryId: query.completedQuery.result.queryId,
-        resultType: query.completedQuery.result.resultType,
-        evaluationTime: query.completedQuery.result.evaluationTime,
-        message: query.completedQuery.result.message,
-        logFileLocation: query.completedQuery.result.logFileLocation,
-      },
-      logFileLocation: query.completedQuery.logFileLocation,
-      successful: query.completedQuery.successful,
-      message: query.completedQuery.message,
-      resultCount: query.completedQuery.resultCount,
-      sortedResultsInfo: query.completedQuery.sortedResultsInfo,
+    completedQuery:
+      query.completedQuery &&
+      mapCompletedQueryToDataModel(query.completedQuery),
+  };
+}
+
+function mapCompletedQueryToDataModel(
+  query: CompletedQueryInfo,
+): CompletedQueryInfoDto {
+  const sortedResults = Object.fromEntries(
+    Object.entries(query.sortedResultsInfo).map(([key, value]) => {
+      return [key, mapSortedResultSetInfoToDataModel(value)];
+    }),
+  );
+
+  return {
+    query: mapQueryEvaluationInfoToDataModel(query.query),
+    result: {
+      runId: query.result.runId,
+      queryId: query.result.queryId,
+      resultType: query.result.resultType,
+      evaluationTime: query.result.evaluationTime,
+      message: query.result.message,
+      logFileLocation: query.result.logFileLocation,
     },
+    logFileLocation: query.logFileLocation,
+    successful: query.successful,
+    message: query.message,
+    resultCount: query.resultCount,
+    sortedResultsInfo: sortedResults,
+  };
+}
+
+function mapSortDirectionToDomainModel(
+  sortDirection: SortDirection,
+): SortDirectionDto {
+  switch (sortDirection) {
+    case SortDirection.asc:
+      return SortDirectionDto.asc;
+    case SortDirection.desc:
+      return SortDirectionDto.desc;
+  }
+}
+
+function mapRawResultsSortStateToDataModel(
+  sortState: RawResultsSortState,
+): SortedResultSetInfoDto["sortState"] {
+  return {
+    columnIndex: sortState.columnIndex,
+    sortDirection: mapSortDirectionToDomainModel(sortState.sortDirection),
+  };
+}
+
+function mapSortedResultSetInfoToDataModel(
+  resultSet: SortedResultSetInfo,
+): SortedResultSetInfoDto {
+  return {
+    resultsPath: resultSet.resultsPath,
+    sortState: mapRawResultsSortStateToDataModel(resultSet.sortState),
   };
 }
 
