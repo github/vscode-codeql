@@ -257,7 +257,9 @@ export class DatabaseUI extends DisposableObject {
       "codeQLDatabases.openDatabaseFolder": createMultiSelectionCommand(
         this.handleOpenFolder.bind(this),
       ),
-      "codeQLDatabases.addDatabaseSource": this.handleAddSource.bind(this),
+      "codeQLDatabases.addDatabaseSource": createMultiSelectionCommand(
+        this.handleAddSource.bind(this),
+      ),
       "codeQLDatabases.removeOrphanedDatabases":
         this.handleRemoveOrphanedDatabases.bind(this),
     };
@@ -698,16 +700,9 @@ export class DatabaseUI extends DisposableObject {
    * When a database is first added in the "Databases" view, its source folder is added to the workspace.
    * If the source folder is removed from the workspace for some reason, we want to be able to re-add it if need be.
    */
-  private async handleAddSource(
-    databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined,
-  ): Promise<void> {
-    if (multiSelect?.length) {
-      for (const dbItem of multiSelect) {
-        await this.databaseManager.addDatabaseSourceArchiveFolder(dbItem);
-      }
-    } else {
-      await this.databaseManager.addDatabaseSourceArchiveFolder(databaseItem);
+  private async handleAddSource(databaseItems: DatabaseItem[]): Promise<void> {
+    for (const dbItem of databaseItems) {
+      await this.databaseManager.addDatabaseSourceArchiveFolder(dbItem);
     }
   }
 
