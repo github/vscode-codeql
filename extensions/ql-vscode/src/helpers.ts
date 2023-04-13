@@ -8,7 +8,7 @@ import {
 } from "fs-extra";
 import { glob } from "glob";
 import { load } from "js-yaml";
-import { join, basename } from "path";
+import { join, basename, dirname } from "path";
 import { dirSync } from "tmp-promise";
 import {
   ExtensionContext,
@@ -783,5 +783,26 @@ export async function* walkDirectory(
     } else if (d.isFile()) {
       yield entry;
     }
+  }
+}
+
+export function getFirstStoragePath() {
+  const workspaceFolders = workspace.workspaceFolders;
+
+  if (!workspaceFolders || workspaceFolders.length === 0) {
+    throw new Error("No workspace folders found");
+  }
+
+  const firstFolder = workspaceFolders[0];
+  const firstFolderFsPath = firstFolder.uri.fsPath;
+
+  // For the vscode-codeql-starter repo, the first folder will be a ql pack
+  // so we need to get the parent folder
+  if (firstFolderFsPath.includes("codeql-custom-queries")) {
+    // return the parent folder
+    return dirname(firstFolderFsPath);
+  } else {
+    // if the first folder is not a ql pack, then we are in a normal workspace
+    return firstFolderFsPath;
   }
 }

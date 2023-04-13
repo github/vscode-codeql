@@ -1,10 +1,14 @@
-import { join, dirname } from "path";
+import { join } from "path";
 import { CancellationToken, Uri, workspace, window as Window } from "vscode";
 import { CodeQLCliServer } from "./cli";
 import { OutputChannelLogger } from "./common";
 import { Credentials } from "./common/authentication";
 import { QueryLanguage } from "./common/query-language";
-import { askForLanguage, isFolderAlreadyInWorkspace } from "./helpers";
+import {
+  askForLanguage,
+  getFirstStoragePath,
+  isFolderAlreadyInWorkspace,
+} from "./helpers";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "./local-databases";
@@ -50,7 +54,7 @@ export class SkeletonQueryWizard {
       return;
     }
 
-    this.qlPackStoragePath = this.getFirstStoragePath();
+    this.qlPackStoragePath = getFirstStoragePath();
 
     const skeletonPackAlreadyExists = isFolderAlreadyInWorkspace(
       this.folderName,
@@ -91,27 +95,6 @@ export class SkeletonQueryWizard {
     void workspace.openTextDocument(queryFileUri).then((doc) => {
       void Window.showTextDocument(doc);
     });
-  }
-
-  public getFirstStoragePath() {
-    const workspaceFolders = workspace.workspaceFolders;
-
-    if (!workspaceFolders || workspaceFolders.length === 0) {
-      throw new Error("No workspace folders found");
-    }
-
-    const firstFolder = workspaceFolders[0];
-    const firstFolderFsPath = firstFolder.uri.fsPath;
-
-    // For the vscode-codeql-starter repo, the first folder will be a ql pack
-    // so we need to get the parent folder
-    if (firstFolderFsPath.includes("codeql-custom-queries")) {
-      // return the parent folder
-      return dirname(firstFolderFsPath);
-    } else {
-      // if the first folder is not a ql pack, then we are in a normal workspace
-      return firstFolderFsPath;
-    }
   }
 
   private async chooseLanguage() {

@@ -303,66 +303,6 @@ describe("SkeletonQueryWizard", () => {
     });
   });
 
-  describe("getFirstStoragePath", () => {
-    it("should return the first workspace folder", async () => {
-      jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
-        {
-          name: "codespaces-codeql",
-          uri: { fsPath: "codespaces-codeql" },
-        },
-      ] as WorkspaceFolder[]);
-
-      wizard = new SkeletonQueryWizard(
-        mockCli,
-        jest.fn(),
-        credentials,
-        extLogger,
-        mockDatabaseManager,
-        token,
-        storagePath,
-      );
-
-      expect(wizard.getFirstStoragePath()).toEqual("codespaces-codeql");
-    });
-
-    describe("if user is in vscode-codeql-starter workspace", () => {
-      it("should set storage path to parent folder", async () => {
-        jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
-          {
-            name: "codeql-custom-queries-cpp",
-            uri: {
-              fsPath: join(
-                "vscode-codeql-starter",
-                "codeql-custom-queries-cpp",
-              ),
-            },
-          },
-          {
-            name: "codeql-custom-queries-csharp",
-            uri: {
-              fsPath: join(
-                "vscode-codeql-starter",
-                "codeql-custom-queries-csharp",
-              ),
-            },
-          },
-        ] as WorkspaceFolder[]);
-
-        wizard = new SkeletonQueryWizard(
-          mockCli,
-          jest.fn(),
-          credentials,
-          extLogger,
-          mockDatabaseManager,
-          token,
-          storagePath,
-        );
-
-        expect(wizard.getFirstStoragePath()).toEqual("vscode-codeql-starter");
-      });
-    });
-  });
-
   describe("findDatabaseItemByNwo", () => {
     describe("when the item exists", () => {
       it("should return the database item", async () => {
