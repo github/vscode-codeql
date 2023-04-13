@@ -24,8 +24,6 @@ import {
   SortedResultSetInfo,
 } from "../../pure/interface-types";
 
-// Maps Query History Data Models to Domain Models
-
 export function mapQueryHistoryToDomainModel(
   queries: QueryHistoryItemDto[],
 ): QueryHistoryInfo[] {

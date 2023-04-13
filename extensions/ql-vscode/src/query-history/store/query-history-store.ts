@@ -45,14 +45,14 @@ export async function readQueryHistoryFromFile(
     const domainModels: QueryHistoryInfo[] =
       mapQueryHistoryToDomainModel(parsedQueries);
 
-    // filter out queries that have been deleted on disk
+    // Filter out queries that have been deleted on disk
     // most likely another workspace has deleted them because the
     // queries aged out.
     const filteredDomainModels: Promise<QueryHistoryInfo[]> = asyncFilter(
       domainModels,
       async (q) => {
         if (q.t === "variant-analysis") {
-          // the query history store doesn't know where variant analysises are
+          // The query history store doesn't know where variant analysises are
           // stored so we need to assume here that they exist. We check later
           // to see if they exist on disk.
           return true;
@@ -70,7 +70,7 @@ export async function readQueryHistoryFromFile(
         fullMessage: `Error loading query history.\n${getErrorStack(e)}`,
       },
     );
-    // since the query history is invalid, it should be deleted so this error does not happen on next startup.
+    // Since the query history is invalid, it should be deleted so this error does not happen on next startup.
     await remove(fsPath);
     return [];
   }
@@ -93,12 +93,12 @@ export async function writeQueryHistoryToFile(
     if (!(await pathExists(fsPath))) {
       await mkdir(dirname(fsPath), { recursive: true });
     }
-    // remove incomplete local queries since they cannot be recreated on restart
+    // Remove incomplete local queries since they cannot be recreated on restart
     const filteredQueries = queries.filter((q) =>
       q.t === "local" ? q.completedQuery !== undefined : true,
     );
 
-    // map domain model queries to data model
+    // Map domain model queries to data model
     const queryHistoryData = mapQueryHistoryToDto(filteredQueries);
 
     const data = JSON.stringify(

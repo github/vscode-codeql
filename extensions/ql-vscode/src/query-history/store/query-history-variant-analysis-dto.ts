@@ -1,3 +1,6 @@
+// Contains models and consts for the data we want to store in the query history store.
+// Changes to these models should be done carefully and account for backwards compatibility of data.
+
 import { QueryLanguage } from "../../common/query-language";
 import { QueryStatus } from "../../query-status";
 import {
@@ -6,7 +9,6 @@ import {
   VariantAnalysisStatus,
 } from "../../variant-analysis/shared/variant-analysis";
 
-// Data Model for Variant Analysis Query History Items
 // All data points are modelled, except enums.
 
 export interface QueryHistoryVariantAnalysisDto {

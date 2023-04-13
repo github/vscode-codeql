@@ -1,3 +1,6 @@
+// Contains models and consts for the data we want to store in the query history store.
+// Changes to these models should be done carefully and account for backwards compatibility of data.
+
 export interface QueryHistoryLocalQueryDto {
   initialInfo: InitialQueryInfoDto;
   t: "local";
