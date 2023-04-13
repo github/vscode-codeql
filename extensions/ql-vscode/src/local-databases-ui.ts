@@ -515,12 +515,11 @@ export class DatabaseUI extends DisposableObject {
   private async handleUpgradeCurrentDatabase(): Promise<void> {
     return withProgress(
       async (progress, token) => {
-        await this.handleUpgradeDatabaseInternal(
-          progress,
-          token,
-          this.databaseManager.currentDatabaseItem,
-          [],
-        );
+        if (this.databaseManager.currentDatabaseItem !== undefined) {
+          await this.handleUpgradeDatabasesInternal(progress, token, [
+            this.databaseManager.currentDatabaseItem,
+          ]);
+        }
       },
       {
         title: "Upgrading current database",
@@ -535,11 +534,12 @@ export class DatabaseUI extends DisposableObject {
   ): Promise<void> {
     return withProgress(
       async (progress, token) => {
-        return await this.handleUpgradeDatabaseInternal(
+        return await this.handleUpgradeDatabasesInternal(
           progress,
           token,
-          databaseItem,
-          multiSelect,
+          multiSelect === undefined && databaseItem !== undefined
+            ? [databaseItem]
+            : multiSelect || [],
         );
       },
       {
@@ -549,46 +549,42 @@ export class DatabaseUI extends DisposableObject {
     );
   }
 
-  private async handleUpgradeDatabaseInternal(
+  private async handleUpgradeDatabasesInternal(
     progress: ProgressCallback,
     token: CancellationToken,
-    databaseItem: DatabaseItem | undefined,
-    multiSelect: DatabaseItem[] | undefined,
+    databaseItems: DatabaseItem[],
   ): Promise<void> {
-    if (multiSelect?.length) {
-      await Promise.all(
-        multiSelect.map((dbItem) =>
-          this.handleUpgradeDatabaseInternal(progress, token, dbItem, []),
-        ),
-      );
-    }
-    if (this.queryServer === undefined) {
-      throw new Error(
-        "Received request to upgrade database, but there is no running query server.",
-      );
-    }
-    if (databaseItem === undefined) {
-      throw new Error(
-        "Received request to upgrade database, but no database was provided.",
-      );
-    }
-    if (databaseItem.contents === undefined) {
-      throw new Error(
-        "Received request to upgrade database, but database contents could not be found.",
-      );
-    }
-    if (databaseItem.contents.dbSchemeUri === undefined) {
-      throw new Error(
-        "Received request to upgrade database, but database has no schema.",
-      );
-    }
+    await Promise.all(
+      databaseItems.map(async (databaseItem) => {
+        if (this.queryServer === undefined) {
+          throw new Error(
+            "Received request to upgrade database, but there is no running query server.",
+          );
+        }
+        if (databaseItem === undefined) {
+          throw new Error(
+            "Received request to upgrade database, but no database was provided.",
+          );
+        }
+        if (databaseItem.contents === undefined) {
+          throw new Error(
+            "Received request to upgrade database, but database contents could not be found.",
+          );
+        }
+        if (databaseItem.contents.dbSchemeUri === undefined) {
+          throw new Error(
+            "Received request to upgrade database, but database has no schema.",
+          );
+        }
 
-    // Search for upgrade scripts in any workspace folders available
+        // Search for upgrade scripts in any workspace folders available
 
-    await this.queryServer.upgradeDatabaseExplicit(
-      databaseItem,
-      progress,
-      token,
+        await this.queryServer.upgradeDatabaseExplicit(
+          databaseItem,
+          progress,
+          token,
+        );
+      }),
     );
   }
 
