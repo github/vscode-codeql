@@ -188,7 +188,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
         queryRunner: this.queryRunner,
         databaseItem: this.databaseItem,
         queryStorageDir: this.queryStorageDir,
-        logger: extLogger,
         progress: (progressUpdate: ProgressUpdate) => {
           void this.showProgress(progressUpdate, 1500);
         },
