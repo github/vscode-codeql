@@ -10,13 +10,11 @@ import {
 } from "../../pure/helpers-pure";
 import { QueryHistoryInfo } from "../query-history-info";
 import { redactableError } from "../../pure/errors";
-import {
-  ALLOWED_QUERY_HISTORY_VERSIONS,
-  QueryHistoryDto,
-  QueryHistoryItemDto,
-} from "./query-history-dto";
-import { mapQueryHistoryToDomainModel } from "./data-mapper";
-import { mapQueryHistoryToDto } from "./domain-mapper";
+import { QueryHistoryDto, QueryHistoryItemDto } from "./query-history-dto";
+import { mapQueryHistoryToDomainModel } from "./query-history-dto-mapper";
+import { mapQueryHistoryToDto } from "./query-history-domain-mapper";
+
+const ALLOWED_QUERY_HISTORY_VERSIONS = [1, 2];
 
 export async function readQueryHistoryFromFile(
   fsPath: string,
