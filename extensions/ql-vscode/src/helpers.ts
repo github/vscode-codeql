@@ -799,14 +799,13 @@ export async function* walkDirectory(
  */
 
 export function getFirstWorkspaceFolder() {
-  const workspaceFolders = workspace.workspaceFolders;
+  const workspaceFolders = getOnDiskWorkspaceFolders();
 
   if (!workspaceFolders || workspaceFolders.length === 0) {
     throw new Error("No workspace folders found");
   }
 
-  const firstFolder = workspaceFolders[0];
-  const firstFolderFsPath = firstFolder.uri.fsPath;
+  const firstFolderFsPath = workspaceFolders[0];
 
   // For the vscode-codeql-starter repo, the first folder will be a ql pack
   // so we need to get the parent folder

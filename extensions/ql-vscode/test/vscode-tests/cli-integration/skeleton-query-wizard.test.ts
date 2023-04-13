@@ -83,11 +83,11 @@ describe("SkeletonQueryWizard", () => {
     jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
       {
         name: `codespaces-codeql`,
-        uri: { fsPath: storagePath },
+        uri: { fsPath: storagePath, scheme: "file" },
       },
       {
         name: "/second/folder/path",
-        uri: { fsPath: storagePath },
+        uri: { fsPath: storagePath, scheme: "file" },
       },
     ] as WorkspaceFolder[]);
 
