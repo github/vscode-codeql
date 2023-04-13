@@ -1,8 +1,8 @@
 import { outputJson, readJson } from "fs-extra";
 import { VariantAnalysisScannedRepositoryState } from "../shared/variant-analysis";
 import { VariantAnalysisScannedRepositoryStateDto } from "./repo-states-dto";
-import { mapRepoStateToDto } from "./repo-states-to-data-mapper";
-import { mapRepoStateToDomainModel } from "./repo-states-to-domain-mapper";
+import { mapRepoStateToDto } from "./repo-states-dto-mapper";
+import { mapRepoStateToDomainModel } from "./repo-states-domain-mapper";
 
 export const REPO_STATES_FILENAME = "repo_states.json";
 
