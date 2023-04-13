@@ -267,7 +267,7 @@ export class LocalQueries extends DisposableObject {
     );
   }
 
-  private async runQueries(_: Uri | undefined, multi: Uri[]): Promise<void> {
+  private async runQueries(_: unknown, multi: Uri[]): Promise<void> {
     await withProgress(
       async (progress, token) => {
         const maxQueryCount = MAX_QUERIES.getValue() as number;
