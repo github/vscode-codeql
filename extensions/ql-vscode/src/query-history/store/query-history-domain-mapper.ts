@@ -15,20 +15,19 @@ import {
   SortDirectionDto,
 } from "./query-history-local-query-dto";
 import { QueryHistoryItemDto } from "./query-history-dto";
-import { QueryHistoryVariantAnalysisDto } from "./query-history-variant-analysis-dto";
 import {
   RawResultsSortState,
   SortDirection,
   SortedResultSetInfo,
 } from "../../pure/interface-types";
+import { mapQueryHistoryVariantAnalysisToDto } from "./variant-analysis-domain-mapper";
 
 export function mapQueryHistoryToDto(
   queries: QueryHistoryInfo[],
 ): QueryHistoryItemDto[] {
   return queries.map((q) => {
     if (q.t === "variant-analysis") {
-      const query: QueryHistoryVariantAnalysisDto = q;
-      return query;
+      return mapQueryHistoryVariantAnalysisToDto(q);
     } else if (q.t === "local") {
       return mapLocalQueryInfoToDto(q);
     } else {
