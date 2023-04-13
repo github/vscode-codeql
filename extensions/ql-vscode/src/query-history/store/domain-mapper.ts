@@ -24,7 +24,7 @@ import {
 
 // Maps Query History Domain Models to Data Models
 
-export function mapQueryHistoryToDataModels(
+export function mapQueryHistoryToDto(
   queries: QueryHistoryInfo[],
 ): QueryHistoryItemDto[] {
   return queries.map((q) => {
@@ -32,18 +32,18 @@ export function mapQueryHistoryToDataModels(
       const query: QueryHistoryVariantAnalysisDto = q;
       return query;
     } else if (q.t === "local") {
-      return mapLocalQueryInfoToDataModel(q);
+      return mapLocalQueryInfoToDto(q);
     } else {
       assertNever(q);
     }
   });
 }
 
-function mapLocalQueryInfoToDataModel(
+function mapLocalQueryInfoToDto(
   query: LocalQueryInfo,
 ): QueryHistoryLocalQueryDto {
   return {
-    initialInfo: mapInitialQueryInfoToDataModel(query.initialInfo),
+    initialInfo: mapInitialQueryInfoToDto(query.initialInfo),
     t: "local",
     evalLogLocation: query.evalLogLocation,
     evalLogSummaryLocation: query.evalLogSummaryLocation,
@@ -51,22 +51,21 @@ function mapLocalQueryInfoToDataModel(
     evalLogSummarySymbolsLocation: query.evalLogSummarySymbolsLocation,
     failureReason: query.failureReason,
     completedQuery:
-      query.completedQuery &&
-      mapCompletedQueryToDataModel(query.completedQuery),
+      query.completedQuery && mapCompletedQueryToDto(query.completedQuery),
   };
 }
 
-function mapCompletedQueryToDataModel(
+function mapCompletedQueryToDto(
   query: CompletedQueryInfo,
 ): CompletedQueryInfoDto {
   const sortedResults = Object.fromEntries(
     Object.entries(query.sortedResultsInfo).map(([key, value]) => {
-      return [key, mapSortedResultSetInfoToDataModel(value)];
+      return [key, mapSortedResultSetInfoToDto(value)];
     }),
   );
 
   return {
-    query: mapQueryEvaluationInfoToDataModel(query.query),
+    query: mapQueryEvaluationInfoToDto(query.query),
     result: {
       runId: query.result.runId,
       queryId: query.result.queryId,
@@ -83,9 +82,7 @@ function mapCompletedQueryToDataModel(
   };
 }
 
-function mapSortDirectionToDomainModel(
-  sortDirection: SortDirection,
-): SortDirectionDto {
+function mapSortDirectionToDto(sortDirection: SortDirection): SortDirectionDto {
   switch (sortDirection) {
     case SortDirection.asc:
       return SortDirectionDto.asc;
@@ -94,25 +91,25 @@ function mapSortDirectionToDomainModel(
   }
 }
 
-function mapRawResultsSortStateToDataModel(
+function mapRawResultsSortStateToDto(
   sortState: RawResultsSortState,
 ): SortedResultSetInfoDto["sortState"] {
   return {
     columnIndex: sortState.columnIndex,
-    sortDirection: mapSortDirectionToDomainModel(sortState.sortDirection),
+    sortDirection: mapSortDirectionToDto(sortState.sortDirection),
   };
 }
 
-function mapSortedResultSetInfoToDataModel(
+function mapSortedResultSetInfoToDto(
   resultSet: SortedResultSetInfo,
 ): SortedResultSetInfoDto {
   return {
     resultsPath: resultSet.resultsPath,
-    sortState: mapRawResultsSortStateToDataModel(resultSet.sortState),
+    sortState: mapRawResultsSortStateToDto(resultSet.sortState),
   };
 }
 
-function mapInitialQueryInfoToDataModel(
+function mapInitialQueryInfoToDto(
   localQueryInitialInfo: InitialQueryInfo,
 ): InitialQueryInfoDto {
   return {
@@ -131,7 +128,7 @@ function mapInitialQueryInfoToDataModel(
   };
 }
 
-function mapQueryEvaluationInfoToDataModel(
+function mapQueryEvaluationInfoToDto(
   queryEvaluationInfo: QueryEvaluationInfo,
 ): QueryEvaluationInfoDto {
   return {

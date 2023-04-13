@@ -26,7 +26,7 @@ import {
 
 // Maps Query History Data Models to Domain Models
 
-export function mapQueryHistoryToDomainModels(
+export function mapQueryHistoryToDomainModel(
   queries: QueryHistoryItemDto[],
 ): QueryHistoryInfo[] {
   return queries.map((d) => {
@@ -34,7 +34,7 @@ export function mapQueryHistoryToDomainModels(
       const query: VariantAnalysisHistoryItem = d;
       return query;
     } else if (d.t === "local") {
-      return mapLocalQueryDataItemToDomainModel(d);
+      return mapLocalQueryItemToDomainModel(d);
     }
 
     throw Error(
@@ -45,15 +45,15 @@ export function mapQueryHistoryToDomainModels(
   });
 }
 
-function mapLocalQueryDataItemToDomainModel(
+function mapLocalQueryItemToDomainModel(
   localQuery: QueryHistoryLocalQueryDto,
 ): LocalQueryInfo {
   return new LocalQueryInfo(
-    mapInitialQueryInfoDataToDomainModel(localQuery.initialInfo),
+    mapInitialQueryInfoToDomainModel(localQuery.initialInfo),
     undefined,
     localQuery.failureReason,
     localQuery.completedQuery &&
-      mapCompletedQueryInfoDataToDomainModel(localQuery.completedQuery),
+      mapCompletedQueryInfoToDomainModel(localQuery.completedQuery),
     localQuery.evalLogLocation,
     localQuery.evalLogSummaryLocation,
     localQuery.jsonEvalLogSummaryLocation,
@@ -61,7 +61,7 @@ function mapLocalQueryDataItemToDomainModel(
   );
 }
 
-function mapCompletedQueryInfoDataToDomainModel(
+function mapCompletedQueryInfoToDomainModel(
   completedQuery: CompletedQueryInfoDto,
 ): CompletedQueryInfo {
   const sortState =
@@ -70,12 +70,12 @@ function mapCompletedQueryInfoDataToDomainModel(
 
   const sortedResults = Object.fromEntries(
     Object.entries(completedQuery.sortedResultsInfo).map(([key, value]) => {
-      return [key, mapSortedResultSetInfoDtoToDomainModel(value)];
+      return [key, mapSortedResultSetInfoToDomainModel(value)];
     }),
   );
 
   return new CompletedQueryInfo(
-    mapQueryEvaluationInfoDataToDomainModel(completedQuery.query),
+    mapQueryEvaluationInfoToDomainModel(completedQuery.query),
     {
       runId: completedQuery.result.runId,
       queryId: completedQuery.result.queryId,
@@ -93,7 +93,7 @@ function mapCompletedQueryInfoDataToDomainModel(
   );
 }
 
-function mapInitialQueryInfoDataToDomainModel(
+function mapInitialQueryInfoToDomainModel(
   initialInfo: InitialQueryInfoDto,
 ): InitialQueryInfo {
   return {
@@ -112,7 +112,7 @@ function mapInitialQueryInfoDataToDomainModel(
   };
 }
 
-function mapQueryEvaluationInfoDataToDomainModel(
+function mapQueryEvaluationInfoToDomainModel(
   evaluationInfo: QueryEvaluationInfoDto,
 ): QueryEvaluationInfo {
   return new QueryEvaluationInfo(
@@ -144,7 +144,7 @@ function mapSortStateToDomainModel(
   };
 }
 
-function mapSortedResultSetInfoDtoToDomainModel(
+function mapSortedResultSetInfoToDomainModel(
   sortedResultSetInfo: SortedResultSetInfoDto,
 ): SortedResultSetInfo {
   return {

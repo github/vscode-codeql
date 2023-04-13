@@ -15,8 +15,8 @@ import {
   QueryHistoryDto,
   QueryHistoryItemDto,
 } from "./query-history-dto";
-import { mapQueryHistoryToDomainModels } from "./data-mapper";
-import { mapQueryHistoryToDataModels } from "./domain-mapper";
+import { mapQueryHistoryToDomainModel } from "./data-mapper";
+import { mapQueryHistoryToDto } from "./domain-mapper";
 
 export async function readQueryHistoryFromFile(
   fsPath: string,
@@ -45,7 +45,7 @@ export async function readQueryHistoryFromFile(
 
     // Map the data models to the domain models.
     const domainModels: QueryHistoryInfo[] =
-      mapQueryHistoryToDomainModels(parsedQueries);
+      mapQueryHistoryToDomainModel(parsedQueries);
 
     // filter out queries that have been deleted on disk
     // most likely another workspace has deleted them because the
@@ -101,7 +101,7 @@ export async function writeQueryHistoryToFile(
     );
 
     // map domain model queries to data model
-    const queryHistoryData = mapQueryHistoryToDataModels(filteredQueries);
+    const queryHistoryData = mapQueryHistoryToDto(filteredQueries);
 
     const data = JSON.stringify(
       {
