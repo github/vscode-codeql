@@ -22,7 +22,7 @@ import {
   SortDirection,
   SortedResultSetInfo,
 } from "../../pure/interface-types";
-import { mapQueryHistoryVariantAnalysisToDomainModel } from "./variant-analysis-dto-mapper";
+import { mapQueryHistoryVariantAnalysisToDomainModel } from "./query-history-variant-analysis-dto-mapper";
 
 export function mapQueryHistoryToDomainModel(
   queries: QueryHistoryItemDto[],
