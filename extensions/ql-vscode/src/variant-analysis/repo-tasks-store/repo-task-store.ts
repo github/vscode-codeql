@@ -1,8 +1,8 @@
 import { outputJson, readJson } from "fs-extra";
 import { join } from "path";
 import { VariantAnalysisRepositoryTask } from "../shared/variant-analysis";
-import { mapRepoTaskToDto } from "./repo-task-to-data-mapper";
-import { mapRepoTaskToDomainModel } from "./repo-task-to-domain-mapper";
+import { mapRepoTaskToDto } from "./repo-tasks-dto-mapper";
+import { mapRepoTaskToDomainModel } from "./repo-tasks-domain-mapper";
 
 export const REPO_TASK_FILENAME = "repo_task.json";
 
