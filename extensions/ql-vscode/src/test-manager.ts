@@ -125,7 +125,7 @@ export class TestManager extends TestManagerBase {
     // Having this as a parameter with a default value makes passing in a mock easier.
     private readonly testController: TestController = tests.createTestController(
       "codeql",
-      "Fancy CodeQL Tests",
+      "CodeQL Tests",
     ),
   ) {
     super(app);
