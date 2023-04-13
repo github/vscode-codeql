@@ -109,11 +109,6 @@ class WorkspaceFolderHandler extends DisposableObject {
  * debugging of tests.
  */
 export class TestManager extends TestManagerBase {
-  private readonly testController: TestController = tests.createTestController(
-    "codeql",
-    "Fancy CodeQL Tests",
-  );
-
   /**
    * Maps from each workspace folder being tracked to the `WorkspaceFolderHandler` responsible for
    * tracking it.
@@ -127,6 +122,11 @@ export class TestManager extends TestManagerBase {
     app: App,
     private readonly testRunner: TestRunner,
     private readonly cliServer: CodeQLCliServer,
+    // Having this as a parameter with a default value makes passing in a mock easier.
+    private readonly testController: TestController = tests.createTestController(
+      "codeql",
+      "Fancy CodeQL Tests",
+    ),
   ) {
     super(app);
 
@@ -245,8 +245,10 @@ export class TestManager extends TestManagerBase {
 
   /**
    * Run the tests specified by the `TestRunRequest` parameter.
+   *
+   * Public because this is used in unit tests.
    */
-  private async run(
+  public async run(
     request: TestRunRequest,
     token: CancellationToken,
   ): Promise<void> {

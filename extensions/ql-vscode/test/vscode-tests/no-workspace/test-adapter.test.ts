@@ -1,90 +1,46 @@
-import { Uri, WorkspaceFolder } from "vscode";
+import {
+  CancellationTokenSource,
+  Range,
+  TestItem,
+  TestItemCollection,
+  TestRun,
+  TestRunRequest,
+  Uri,
+  WorkspaceFolder,
+  tests,
+} from "vscode";
 
 import { QLTestAdapter } from "../../../src/test-adapter";
 import { CodeQLCliServer } from "../../../src/cli";
-import {
-  DatabaseItem,
-  DatabaseItemImpl,
-  DatabaseManager,
-  FullDatabaseOptions,
-} from "../../../src/local-databases";
+import { DatabaseManager } from "../../../src/local-databases";
 import { mockedObject } from "../utils/mocking.helpers";
 import { TestRunner } from "../../../src/test-runner";
+import {
+  createMockCliServerForTestRun,
+  mockEmptyDatabaseManager,
+  mockTestsInfo,
+} from "./test-runner-helpers";
+import { TestManager } from "../../../src/test-manager";
+import { createMockApp } from "../../__mocks__/appMock";
 
-jest.mock("fs-extra", () => {
-  const original = jest.requireActual("fs-extra");
-  return {
-    ...original,
-    access: jest.fn(),
-  };
-});
+type IdTestItemPair = [id: string, testItem: TestItem];
 
 describe("test-adapter", () => {
   let testRunner: TestRunner;
-  let adapter: QLTestAdapter;
   let fakeDatabaseManager: DatabaseManager;
   let fakeCliServer: CodeQLCliServer;
-  let currentDatabaseItem: DatabaseItem | undefined;
-  let databaseItems: DatabaseItem[] = [];
-  const openDatabaseSpy = jest.fn();
-  const removeDatabaseItemSpy = jest.fn();
-  const renameDatabaseItemSpy = jest.fn();
-  const setCurrentDatabaseItemSpy = jest.fn();
-  const runTestsSpy = jest.fn();
-  const resolveTestsSpy = jest.fn();
-  const resolveQlpacksSpy = jest.fn();
-
-  const preTestDatabaseItem = new DatabaseItemImpl(
-    Uri.file("/path/to/test/dir/dir.testproj"),
-    undefined,
-    mockedObject<FullDatabaseOptions>({ displayName: "custom display name" }),
-    (_) => {
-      /* no change event listener */
-    },
-  );
-  const postTestDatabaseItem = new DatabaseItemImpl(
-    Uri.file("/path/to/test/dir/dir.testproj"),
-    undefined,
-    mockedObject<FullDatabaseOptions>({ displayName: "default name" }),
-    (_) => {
-      /* no change event listener */
-    },
-  );
 
   beforeEach(() => {
-    mockRunTests();
-    openDatabaseSpy.mockResolvedValue(postTestDatabaseItem);
-    removeDatabaseItemSpy.mockResolvedValue(undefined);
-    renameDatabaseItemSpy.mockResolvedValue(undefined);
-    setCurrentDatabaseItemSpy.mockResolvedValue(undefined);
-    resolveQlpacksSpy.mockResolvedValue({});
-    resolveTestsSpy.mockResolvedValue([]);
-    fakeDatabaseManager = mockedObject<DatabaseManager>(
-      {
-        openDatabase: openDatabaseSpy,
-        removeDatabaseItem: removeDatabaseItemSpy,
-        renameDatabaseItem: renameDatabaseItemSpy,
-        setCurrentDatabaseItem: setCurrentDatabaseItemSpy,
-      },
-      {
-        dynamicProperties: {
-          currentDatabaseItem: () => currentDatabaseItem,
-          databaseItems: () => databaseItems,
-        },
-      },
-    );
+    fakeDatabaseManager = mockEmptyDatabaseManager();
 
-    jest.spyOn(preTestDatabaseItem, "isAffectedByTest").mockResolvedValue(true);
-
-    fakeCliServer = mockedObject<CodeQLCliServer>({
-      runTests: runTestsSpy,
-      resolveQlpacks: resolveQlpacksSpy,
-      resolveTests: resolveTestsSpy,
-    });
+    const mockCli = createMockCliServerForTestRun();
+    fakeCliServer = mockCli.cliServer;
 
     testRunner = new TestRunner(fakeDatabaseManager, fakeCliServer);
+  });
 
-    adapter = new QLTestAdapter(
+  it("legacy test adapter should run some tests", async () => {
+    const adapter = new QLTestAdapter(
       mockedObject<WorkspaceFolder>({
         name: "ABC",
         uri: Uri.parse("file:/ab/c"),
@@ -92,121 +48,128 @@ describe("test-adapter", () => {
       testRunner,
       fakeCliServer,
     );
-  });
 
-  it("should run some tests", async () => {
     const listenerSpy = jest.fn();
     adapter.testStates(listenerSpy);
-    const testsPath = Uri.parse("file:/ab/c").fsPath;
-    const dPath = Uri.parse("file:/ab/c/d.ql").fsPath;
-    const gPath = Uri.parse("file:/ab/c/e/f/g.ql").fsPath;
-    const hPath = Uri.parse("file:/ab/c/e/f/h.ql").fsPath;
-
-    await adapter.run([testsPath]);
+    await adapter.run([mockTestsInfo.testsPath]);
 
     expect(listenerSpy).toBeCalledTimes(5);
 
     expect(listenerSpy).toHaveBeenNthCalledWith(1, {
       type: "started",
-      tests: [testsPath],
+      tests: [mockTestsInfo.testsPath],
     });
     expect(listenerSpy).toHaveBeenNthCalledWith(2, {
       type: "test",
       state: "passed",
-      test: dPath,
+      test: mockTestsInfo.dPath,
       message: undefined,
       decorations: [],
     });
     expect(listenerSpy).toHaveBeenNthCalledWith(3, {
       type: "test",
       state: "errored",
-      test: gPath,
-      message: `\ncompilation error: ${gPath}\nERROR: abc\n`,
+      test: mockTestsInfo.gPath,
+      message: `\ncompilation error: ${mockTestsInfo.gPath}\nERROR: abc\n`,
       decorations: [{ line: 1, message: "abc" }],
     });
     expect(listenerSpy).toHaveBeenNthCalledWith(4, {
       type: "test",
       state: "failed",
-      test: hPath,
-      message: `\nfailed: ${hPath}\njkh\ntuv\n`,
+      test: mockTestsInfo.hPath,
+      message: `\nfailed: ${mockTestsInfo.hPath}\njkh\ntuv\n`,
       decorations: [],
     });
     expect(listenerSpy).toHaveBeenNthCalledWith(5, { type: "finished" });
   });
 
-  it("should reregister testproj databases around test run", async () => {
-    currentDatabaseItem = preTestDatabaseItem;
-    databaseItems = [preTestDatabaseItem];
-    await adapter.run(["/path/to/test/dir"]);
+  it("native test manager should run some tests", async () => {
+    const enqueuedSpy = jest.fn();
+    const passedSpy = jest.fn();
+    const erroredSpy = jest.fn();
+    const failedSpy = jest.fn();
+    const endSpy = jest.fn();
 
-    expect(removeDatabaseItemSpy.mock.invocationCallOrder[0]).toBeLessThan(
-      runTestsSpy.mock.invocationCallOrder[0],
+    const testController = tests.createTestController("codeql", "CodeQL Tests");
+    testController.createTestRun = jest.fn().mockImplementation(() =>
+      mockedObject<TestRun>({
+        enqueued: enqueuedSpy,
+        passed: passedSpy,
+        errored: erroredSpy,
+        failed: failedSpy,
+        end: endSpy,
+      }),
     );
-    expect(openDatabaseSpy.mock.invocationCallOrder[0]).toBeGreaterThan(
-      runTestsSpy.mock.invocationCallOrder[0],
-    );
-    expect(renameDatabaseItemSpy.mock.invocationCallOrder[0]).toBeGreaterThan(
-      openDatabaseSpy.mock.invocationCallOrder[0],
-    );
-    expect(
-      setCurrentDatabaseItemSpy.mock.invocationCallOrder[0],
-    ).toBeGreaterThan(openDatabaseSpy.mock.invocationCallOrder[0]);
-
-    expect(removeDatabaseItemSpy).toBeCalledTimes(1);
-    expect(removeDatabaseItemSpy).toBeCalledWith(
-      expect.anything(),
-      expect.anything(),
-      preTestDatabaseItem,
-    );
-
-    expect(openDatabaseSpy).toBeCalledTimes(1);
-    expect(openDatabaseSpy).toBeCalledWith(
-      expect.anything(),
-      expect.anything(),
-      preTestDatabaseItem.databaseUri,
+    const testManager = new TestManager(
+      createMockApp({}),
+      testRunner,
+      fakeCliServer,
+      testController,
     );
 
-    expect(renameDatabaseItemSpy).toBeCalledTimes(1);
-    expect(renameDatabaseItemSpy).toBeCalledWith(
-      postTestDatabaseItem,
-      preTestDatabaseItem.name,
-    );
+    const childItems: TestItem[] = [
+      {
+        children: { size: 0 } as TestItemCollection,
+        id: `test ${mockTestsInfo.dPath}`,
+        uri: Uri.file(mockTestsInfo.dPath),
+      } as TestItem,
+      {
+        children: { size: 0 } as TestItemCollection,
+        id: `test ${mockTestsInfo.gPath}`,
+        uri: Uri.file(mockTestsInfo.gPath),
+      } as TestItem,
+      {
+        children: { size: 0 } as TestItemCollection,
+        id: `test ${mockTestsInfo.hPath}`,
+        uri: Uri.file(mockTestsInfo.hPath),
+      } as TestItem,
+    ];
+    const childElements: IdTestItemPair[] = childItems.map((childItem) => [
+      childItem.id,
+      childItem,
+    ]);
+    const childIteratorFunc: () => Iterator<IdTestItemPair> = () =>
+      childElements[Symbol.iterator]();
 
-    expect(setCurrentDatabaseItemSpy).toBeCalledTimes(1);
-    expect(setCurrentDatabaseItemSpy).toBeCalledWith(
-      postTestDatabaseItem,
-      true,
+    const rootItem = {
+      id: `dir ${mockTestsInfo.testsPath}`,
+      uri: Uri.file(mockTestsInfo.testsPath),
+      children: {
+        size: 3,
+        [Symbol.iterator]: childIteratorFunc,
+      } as TestItemCollection,
+    } as TestItem;
+
+    const request = new TestRunRequest([rootItem]);
+    await testManager.run(request, new CancellationTokenSource().token);
+
+    expect(enqueuedSpy).toBeCalledTimes(3);
+    expect(passedSpy).toBeCalledTimes(1);
+    expect(passedSpy).toHaveBeenCalledWith(childItems[0], 3000);
+    expect(erroredSpy).toHaveBeenCalledTimes(1);
+    expect(erroredSpy).toHaveBeenCalledWith(
+      childItems[1],
+      [
+        {
+          location: {
+            range: new Range(0, 0, 1, 1),
+            uri: Uri.file(mockTestsInfo.gPath),
+          },
+          message: "abc",
+        },
+      ],
+      4000,
     );
+    expect(failedSpy).toHaveBeenCalledWith(
+      childItems[2],
+      [
+        {
+          message: "Test failed",
+        },
+      ],
+      11000,
+    );
+    expect(failedSpy).toBeCalledTimes(1);
+    expect(endSpy).toBeCalledTimes(1);
   });
-
-  function mockRunTests() {
-    // runTests is an async generator function. This is not directly supported in sinon
-    // However, we can pretend the same thing by just returning an async array.
-    runTestsSpy.mockReturnValue(
-      (async function* () {
-        yield Promise.resolve({
-          test: Uri.parse("file:/ab/c/d.ql").fsPath,
-          pass: true,
-          messages: [],
-        });
-        yield Promise.resolve({
-          test: Uri.parse("file:/ab/c/e/f/g.ql").fsPath,
-          pass: false,
-          diff: ["pqr", "xyz"],
-          // a compile error
-          failureStage: "COMPILATION",
-          messages: [
-            { position: { line: 1 }, message: "abc", severity: "ERROR" },
-          ],
-        });
-        yield Promise.resolve({
-          test: Uri.parse("file:/ab/c/e/f/h.ql").fsPath,
-          pass: false,
-          diff: ["jkh", "tuv"],
-          failureStage: "RESULT",
-          messages: [],
-        });
-      })(),
-    );
-  }
 });
