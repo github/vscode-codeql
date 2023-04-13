@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.8.2",
+  "version": "1.8.3",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -426,6 +426,10 @@
       {
         "command": "codeQL.quickQuery",
         "title": "CodeQL: Quick Query"
+      },
+      {
+        "command": "codeQL.createSkeletonQuery",
+        "title": "CodeQL: Create Query"
       },
       {
         "command": "codeQL.openDocumentation",
