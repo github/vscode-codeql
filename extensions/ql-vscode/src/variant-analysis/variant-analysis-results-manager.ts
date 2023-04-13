@@ -20,7 +20,7 @@ import { unzipFile } from "../pure/zip";
 import {
   readRepoTask,
   writeRepoTask,
-} from "./repo-tasks-store/repo-task-store";
+} from "./repo-tasks-store/repo-tasks-store";
 
 type CacheKey = `${number}/${string}`;
 
