@@ -677,13 +677,13 @@ export class DatabaseManager extends DisposableObject {
     }
 
     try {
-      const workspaceStorage = getFirstWorkspaceFolder();
+      const firstWorkspaceFolder = getFirstWorkspaceFolder();
 
       const qlPackGenerator = new QlPackGenerator(
         folderName,
         databaseItem.language as QueryLanguage,
         this.cli,
-        workspaceStorage,
+        firstWorkspaceFolder,
       );
       await qlPackGenerator.generate();
     } catch (e: unknown) {
