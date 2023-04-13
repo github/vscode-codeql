@@ -48,7 +48,7 @@ import { mockedObject } from "../../utils/mocking.helpers";
 import {
   REPO_STATES_FILENAME,
   writeRepoStates,
-} from "../../../../src/variant-analysis/repo-states-store/repo-states-store";
+} from "../../../../src/variant-analysis/repo-states-store";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
