@@ -4,13 +4,13 @@ import {
   VariantAnalysisRepoStatus,
 } from "../shared/variant-analysis";
 import {
-  VariantAnalysisRepositoryTaskData,
-  VariantAnalysisRepoStatusData,
-} from "./repo-task-data-types";
+  VariantAnalysisRepositoryTaskDto,
+  VariantAnalysisRepoStatusDto,
+} from "./repo-tasks-dto";
 
 export function mapRepoTaskToData(
   repoTask: VariantAnalysisRepositoryTask,
-): VariantAnalysisRepositoryTaskData {
+): VariantAnalysisRepositoryTaskDto {
   return {
     repository: {
       id: repoTask.repository.id,
@@ -29,20 +29,20 @@ export function mapRepoTaskToData(
 
 function mapRepoTaskAnalysisStatusToData(
   analysisStatus: VariantAnalysisRepoStatus,
-): VariantAnalysisRepoStatusData {
+): VariantAnalysisRepoStatusDto {
   switch (analysisStatus) {
     case VariantAnalysisRepoStatus.Pending:
-      return VariantAnalysisRepoStatusData.Pending;
+      return VariantAnalysisRepoStatusDto.Pending;
     case VariantAnalysisRepoStatus.InProgress:
-      return VariantAnalysisRepoStatusData.InProgress;
+      return VariantAnalysisRepoStatusDto.InProgress;
     case VariantAnalysisRepoStatus.Succeeded:
-      return VariantAnalysisRepoStatusData.Succeeded;
+      return VariantAnalysisRepoStatusDto.Succeeded;
     case VariantAnalysisRepoStatus.Failed:
-      return VariantAnalysisRepoStatusData.Failed;
+      return VariantAnalysisRepoStatusDto.Failed;
     case VariantAnalysisRepoStatus.Canceled:
-      return VariantAnalysisRepoStatusData.Canceled;
+      return VariantAnalysisRepoStatusDto.Canceled;
     case VariantAnalysisRepoStatus.TimedOut:
-      return VariantAnalysisRepoStatusData.TimedOut;
+      return VariantAnalysisRepoStatusDto.TimedOut;
     default:
       assertNever(analysisStatus);
   }
