@@ -8,17 +8,17 @@ import {
   VariantAnalysisScannedRepositoryDownloadDto,
 } from "./repo-states-dto";
 
-export function mapRepoStateToDomain(
+export function mapRepoStateToDomainModel(
   repoState: VariantAnalysisScannedRepositoryStateDto,
 ): VariantAnalysisScannedRepositoryState {
   return {
     repositoryId: repoState.repositoryId,
-    downloadStatus: processDownloadStatus(repoState.downloadStatus),
+    downloadStatus: mapDownloadStatusToDomainModel(repoState.downloadStatus),
     downloadPercentage: repoState.downloadPercentage,
   };
 }
 
-function processDownloadStatus(
+function mapDownloadStatusToDomainModel(
   downloadedStatus: VariantAnalysisScannedRepositoryDownloadDto,
 ) {
   switch (downloadedStatus) {
