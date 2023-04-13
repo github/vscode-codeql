@@ -43,6 +43,7 @@ import { App } from "../common/app";
 import { DisposableObject } from "../pure/disposable-object";
 import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
+import { createMultiSelectionCommand } from "../common/selection-commands";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -89,7 +90,9 @@ export class LocalQueries extends DisposableObject {
         this.runQueryOnMultipleDatabases.bind(this),
       "codeQL.runQueryOnMultipleDatabasesContextEditor":
         this.runQueryOnMultipleDatabases.bind(this),
-      "codeQL.runQueries": this.runQueries.bind(this),
+      "codeQL.runQueries": createMultiSelectionCommand(
+        this.runQueries.bind(this),
+      ),
       "codeQL.quickEval": this.quickEval.bind(this),
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
       "codeQL.codeLensQuickEval": this.codeLensQuickEval.bind(this),
@@ -130,12 +133,12 @@ export class LocalQueries extends DisposableObject {
     );
   }
 
-  private async runQueries(_: unknown, multi: Uri[]): Promise<void> {
+  private async runQueries(fileURIs: Uri[]): Promise<void> {
     await withProgress(
       async (progress, token) => {
         const maxQueryCount = MAX_QUERIES.getValue() as number;
         const [files, dirFound] = await gatherQlFiles(
-          multi.map((uri) => uri.fsPath),
+          fileURIs.map((uri) => uri.fsPath),
         );
         if (files.length > maxQueryCount) {
           throw new Error(
