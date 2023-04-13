@@ -786,6 +786,18 @@ export async function* walkDirectory(
   }
 }
 
+/**
+ * Returns the path of the first folder in the workspace.
+ * This is used to decide where to create skeleton QL packs.
+ *
+ * If the first folder is a QL pack, then the parent folder is returned.
+ * This is because the vscode-codeql-starter repo contains a ql pack in
+ * the first folder.
+ *
+ * This is a temporary workaround until we can retire the
+ * vscode-codeql-starter repo.
+ */
+
 export function getFirstWorkspaceFolder() {
   const workspaceFolders = workspace.workspaceFolders;
 
