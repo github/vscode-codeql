@@ -254,7 +254,9 @@ export class DatabaseUI extends DisposableObject {
         this.handleRenameDatabase.bind(this),
         "database",
       ),
-      "codeQLDatabases.openDatabaseFolder": this.handleOpenFolder.bind(this),
+      "codeQLDatabases.openDatabaseFolder": createMultiSelectionCommand(
+        this.handleOpenFolder.bind(this),
+      ),
       "codeQLDatabases.addDatabaseSource": this.handleAddSource.bind(this),
       "codeQLDatabases.removeOrphanedDatabases":
         this.handleRemoveOrphanedDatabases.bind(this),
@@ -685,17 +687,10 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  private async handleOpenFolder(
-    databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined,
-  ): Promise<void> {
-    if (multiSelect?.length) {
-      await Promise.all(
-        multiSelect.map((dbItem) => env.openExternal(dbItem.databaseUri)),
-      );
-    } else {
-      await env.openExternal(databaseItem.databaseUri);
-    }
+  private async handleOpenFolder(databaseItems: DatabaseItem[]): Promise<void> {
+    await Promise.all(
+      databaseItems.map((dbItem) => env.openExternal(dbItem.databaseUri)),
+    );
   }
 
   /**
