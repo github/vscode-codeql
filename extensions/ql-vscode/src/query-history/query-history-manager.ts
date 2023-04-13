@@ -39,10 +39,7 @@ import {
   QueryStatus,
   variantAnalysisStatusToQueryStatus,
 } from "../query-status";
-import {
-  readQueryHistoryFromFile,
-  writeQueryHistoryToFile,
-} from "./store/query-history-store";
+import { readQueryHistoryFromFile, writeQueryHistoryToFile } from "./store";
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
