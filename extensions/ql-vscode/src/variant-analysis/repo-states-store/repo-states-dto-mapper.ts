@@ -8,7 +8,17 @@ import {
   VariantAnalysisScannedRepositoryStateDto,
 } from "./repo-states-dto";
 
-export function mapRepoStateToDto(
+export function mapRepoStatesToDto(
+  repoStates: Record<number, VariantAnalysisScannedRepositoryState>,
+): Record<number, VariantAnalysisScannedRepositoryStateDto> {
+  return Object.fromEntries(
+    Object.entries(repoStates).map(([key, value]) => {
+      return [key, mapRepoStateToDto(value)];
+    }),
+  );
+}
+
+function mapRepoStateToDto(
   repoState: VariantAnalysisScannedRepositoryState,
 ): VariantAnalysisScannedRepositoryStateDto {
   return {

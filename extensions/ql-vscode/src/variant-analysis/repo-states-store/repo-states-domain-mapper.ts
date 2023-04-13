@@ -8,7 +8,17 @@ import {
   VariantAnalysisScannedRepositoryDownloadDto,
 } from "./repo-states-dto";
 
-export function mapRepoStateToDomainModel(
+export function mapRepoStatesToDomainModel(
+  repoStates: Record<number, VariantAnalysisScannedRepositoryStateDto>,
+): Record<number, VariantAnalysisScannedRepositoryState> {
+  return Object.fromEntries(
+    Object.entries(repoStates).map(([key, value]) => {
+      return [key, mapRepoStateToDomainModel(value)];
+    }),
+  );
+}
+
+function mapRepoStateToDomainModel(
   repoState: VariantAnalysisScannedRepositoryStateDto,
 ): VariantAnalysisScannedRepositoryState {
   return {
