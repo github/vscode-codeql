@@ -14,6 +14,7 @@ import { ENABLE_TELEMETRY } from "../../../src/config";
 import { createMockExtensionContext } from "./index";
 import { vscodeGetConfigurationMock } from "../test-config";
 import { redactableError } from "../../../src/pure/errors";
+import { SemVer } from "semver";
 
 // setting preferences can trigger lots of background activity
 // so need to bump up the timeout of this test.
@@ -185,7 +186,7 @@ describe("telemetry reporting", () => {
   it("should send an event", async () => {
     await telemetryListener.initialize();
 
-    await telemetryListener.sendCommandUsage("command-id", 1234, undefined);
+    telemetryListener.sendCommandUsage("command-id", 1234, undefined);
 
     expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
       "command-usage",
@@ -204,7 +205,7 @@ describe("telemetry reporting", () => {
   it("should send a command usage event with an error", async () => {
     await telemetryListener.initialize();
 
-    await telemetryListener.sendCommandUsage(
+    telemetryListener.sendCommandUsage(
       "command-id",
       1234,
       new UserCancellationException(),
@@ -226,11 +227,9 @@ describe("telemetry reporting", () => {
 
   it("should send a command usage event with a cli version", async () => {
     await telemetryListener.initialize();
-    telemetryListener.cli = {
-      getVersion: () => Promise.resolve("1.2.3"),
-    } as any;
+    telemetryListener.cliVersion = new SemVer("1.2.3");
 
-    await telemetryListener.sendCommandUsage(
+    telemetryListener.sendCommandUsage(
       "command-id",
       1234,
       new UserCancellationException(),
@@ -248,14 +247,35 @@ describe("telemetry reporting", () => {
     );
 
     expect(sendTelemetryExceptionSpy).not.toBeCalled();
+
+    // Verify that if the cli version is not set, then the telemetry falls back to "not-set"
+    sendTelemetryEventSpy.mockClear();
+    telemetryListener.cliVersion = undefined;
+
+    telemetryListener.sendCommandUsage(
+      "command-id",
+      5678,
+      new UserCancellationException(),
+    );
+
+    expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+      "command-usage",
+      {
+        name: "command-id",
+        status: "Cancelled",
+        isCanary,
+        cliVersion: "not-set",
+      },
+      { executionTime: 5678 },
+    );
   });
 
   it("should avoid sending an event when telemetry is disabled", async () => {
     await telemetryListener.initialize();
     await enableTelemetry("codeQL.telemetry", false);
 
-    await telemetryListener.sendCommandUsage("command-id", 1234, undefined);
-    await telemetryListener.sendCommandUsage("command-id", 1234, new Error());
+    telemetryListener.sendCommandUsage("command-id", 1234, undefined);
+    telemetryListener.sendCommandUsage("command-id", 1234, new Error());
 
     expect(sendTelemetryEventSpy).not.toBeCalled();
     expect(sendTelemetryExceptionSpy).not.toBeCalled();
@@ -266,7 +286,7 @@ describe("telemetry reporting", () => {
     await enableTelemetry("codeQL.telemetry", false);
     await enableTelemetry("codeQL.telemetry", true);
 
-    await telemetryListener.sendCommandUsage("command-id", 1234, undefined);
+    telemetryListener.sendCommandUsage("command-id", 1234, undefined);
 
     expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
       "command-usage",
@@ -431,6 +451,24 @@ describe("telemetry reporting", () => {
       {
         name: "test",
         isCanary,
+        cliVersion: "not-set",
+      },
+      {},
+    );
+  });
+
+  it("should send a ui-interaction telementry event with a cli version", async () => {
+    await telemetryListener.initialize();
+
+    telemetryListener.cliVersion = new SemVer("1.2.3");
+    telemetryListener.sendUIInteraction("test");
+
+    expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+      "ui-interaction",
+      {
+        name: "test",
+        isCanary,
+        cliVersion: "1.2.3",
       },
       {},
     );
@@ -447,6 +485,25 @@ describe("telemetry reporting", () => {
         message: "test",
         isCanary,
         stack: expect.any(String),
+        cliVersion: "not-set",
+      },
+      {},
+    );
+  });
+
+  it("should send an error telementry event with a cli version", async () => {
+    await telemetryListener.initialize();
+    telemetryListener.cliVersion = new SemVer("1.2.3");
+
+    telemetryListener.sendError(redactableError`test`);
+
+    expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+      "error",
+      {
+        message: "test",
+        isCanary,
+        stack: expect.any(String),
+        cliVersion: "1.2.3",
       },
       {},
     );
@@ -465,6 +522,7 @@ describe("telemetry reporting", () => {
         message:
           "test message with secret information: [REDACTED] and more [REDACTED] parts",
         isCanary,
+        cliVersion: "not-set",
         stack: expect.any(String),
       },
       {},

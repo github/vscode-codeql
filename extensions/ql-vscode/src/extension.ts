@@ -395,7 +395,9 @@ export async function activate(
     variantAnalysisViewSerializer.onExtensionLoaded(
       codeQlExtension.variantAnalysisManager,
     );
-    telemetryListener.cli = codeQlExtension.cliServer;
+    codeQlExtension.cliServer.addVersionChangedListener((ver) => {
+      telemetryListener.cliVersion = ver;
+    });
   }
 
   return codeQlExtension;

@@ -19,7 +19,7 @@ import { extLogger } from "./common";
 import { UserCancellationException } from "./progress";
 import { showBinaryChoiceWithUrlDialog } from "./helpers";
 import { RedactableError } from "./pure/errors";
-import { CodeQLCliServer } from "./cli";
+import { SemVer } from "semver";
 
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
 const key = "REPLACE-APP-INSIGHTS-KEY";
@@ -52,12 +52,14 @@ const baseDataPropertiesToRemove = [
   "common.vscodesessionid",
 ];
 
+const NOT_SET_CLI_VERSION = "not-set";
+
 export class TelemetryListener extends ConfigListener {
   static relevantSettings = [ENABLE_TELEMETRY, CANARY_FEATURES];
 
   private reporter?: TelemetryReporter;
 
-  private _cli?: CodeQLCliServer;
+  private cliVersionStr = NOT_SET_CLI_VERSION;
 
   constructor(
     private readonly id: string,
@@ -150,7 +152,7 @@ export class TelemetryListener extends ConfigListener {
     void this.reporter?.dispose();
   }
 
-  async sendCommandUsage(name: string, executionTime: number, error?: Error) {
+  sendCommandUsage(name: string, executionTime: number, error?: Error) {
     if (!this.reporter) {
       return;
     }
@@ -160,18 +162,13 @@ export class TelemetryListener extends ConfigListener {
       ? CommandCompletion.Cancelled
       : CommandCompletion.Failed;
 
-    const cliVersion = this._cli
-      ? (await this._cli.getVersion()).toString()
-      : // telemetry events that are sent before the cli is initialized will not have a version number
-        "not-set";
-
     this.reporter.sendTelemetryEvent(
       "command-usage",
       {
         name,
         status,
         isCanary: isCanary().toString(),
-        cliVersion,
+        cliVersion: this.cliVersionStr,
       },
       { executionTime },
     );
@@ -187,6 +184,7 @@ export class TelemetryListener extends ConfigListener {
       {
         name,
         isCanary: isCanary().toString(),
+        cliVersion: this.cliVersionStr,
       },
       {},
     );
@@ -202,6 +200,7 @@ export class TelemetryListener extends ConfigListener {
 
     const properties: { [key: string]: string } = {
       isCanary: isCanary().toString(),
+      cliVersion: this.cliVersionStr,
       message: error.redactedMessage,
       ...extraProperties,
     };
@@ -250,8 +249,8 @@ export class TelemetryListener extends ConfigListener {
     return this.reporter;
   }
 
-  set cli(cli: CodeQLCliServer) {
-    this._cli = cli;
+  set cliVersion(version: SemVer | undefined) {
+    this.cliVersionStr = version ? version.toString() : NOT_SET_CLI_VERSION;
   }
 
   private disposeReporter() {
