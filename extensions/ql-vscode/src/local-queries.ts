@@ -267,7 +267,7 @@ export class LocalQueries extends DisposableObject {
         // sure.
         return this.getCurrentQuery(true);
       },
-      "codeQL.createSkeletonQuery": this.createSkeletonQuery.bind(this),
+      "codeQL.createQuery": this.createSkeletonQuery.bind(this),
     };
   }
 
@@ -296,7 +296,7 @@ export class LocalQueries extends DisposableObject {
     );
   }
 
-  private async runQueries(_: Uri | undefined, multi: Uri[]): Promise<void> {
+  private async runQueries(_: unknown, multi: Uri[]): Promise<void> {
     await withProgress(
       async (progress, token) => {
         const maxQueryCount = MAX_QUERIES.getValue() as number;
@@ -427,6 +427,8 @@ export class LocalQueries extends DisposableObject {
     await withProgress(
       async (progress: ProgressCallback, token: CancellationToken) => {
         const credentials = isCanary() ? this.app.credentials : undefined;
+        const contextStoragePath =
+          this.app.workspaceStoragePath || this.app.globalStoragePath;
         const skeletonQueryWizard = new SkeletonQueryWizard(
           this.cliServer,
           progress,
@@ -434,6 +436,7 @@ export class LocalQueries extends DisposableObject {
           extLogger,
           this.databaseManager,
           token,
+          contextStoragePath,
         );
         await skeletonQueryWizard.execute();
       },
