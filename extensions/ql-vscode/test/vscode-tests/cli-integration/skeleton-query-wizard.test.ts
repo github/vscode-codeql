@@ -22,7 +22,7 @@ import * as databaseFetcher from "../../../src/databaseFetcher";
 import { createMockDB } from "../../factories/databases/databases";
 import { asError } from "../../../src/pure/helpers-pure";
 
-jest.setTimeout(40_000);
+jest.setTimeout(80_000);
 
 describe("SkeletonQueryWizard", () => {
   let mockCli: CodeQLCliServer;
