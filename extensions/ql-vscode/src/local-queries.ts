@@ -381,6 +381,8 @@ export class LocalQueries extends DisposableObject {
     await withProgress(
       async (progress: ProgressCallback, token: CancellationToken) => {
         const credentials = isCanary() ? this.app.credentials : undefined;
+        const contextStoragePath =
+          this.app.workspaceStoragePath || this.app.globalStoragePath;
         const skeletonQueryWizard = new SkeletonQueryWizard(
           this.cliServer,
           progress,
@@ -388,6 +390,7 @@ export class LocalQueries extends DisposableObject {
           extLogger,
           this.databaseManager,
           token,
+          contextStoragePath,
         );
         await skeletonQueryWizard.execute();
       },

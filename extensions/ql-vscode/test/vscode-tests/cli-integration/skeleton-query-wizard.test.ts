@@ -83,11 +83,11 @@ describe("SkeletonQueryWizard", () => {
     jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
       {
         name: `codespaces-codeql`,
-        uri: { path: storagePath },
+        uri: { fsPath: storagePath },
       },
       {
         name: "/second/folder/path",
-        uri: { path: storagePath },
+        uri: { fsPath: storagePath },
       },
     ] as WorkspaceFolder[]);
 
@@ -114,6 +114,7 @@ describe("SkeletonQueryWizard", () => {
       extLogger,
       mockDatabaseManager,
       token,
+      storagePath,
     );
 
     askForGitHubRepoSpy = jest
@@ -244,6 +245,7 @@ describe("SkeletonQueryWizard", () => {
           extLogger,
           mockDatabaseManagerWithItems,
           token,
+          storagePath,
         );
       });
 
@@ -305,8 +307,8 @@ describe("SkeletonQueryWizard", () => {
     it("should return the first workspace folder", async () => {
       jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
         {
-          name: "codeql-custom-queries-cpp",
-          uri: { path: "codespaces-codeql" },
+          name: "codespaces-codeql",
+          uri: { fsPath: "codespaces-codeql" },
         },
       ] as WorkspaceFolder[]);
 
@@ -317,6 +319,7 @@ describe("SkeletonQueryWizard", () => {
         extLogger,
         mockDatabaseManager,
         token,
+        storagePath,
       );
 
       expect(wizard.getFirstStoragePath()).toEqual("codespaces-codeql");
@@ -327,11 +330,21 @@ describe("SkeletonQueryWizard", () => {
         jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
           {
             name: "codeql-custom-queries-cpp",
-            uri: { path: "vscode-codeql-starter/codeql-custom-queries-cpp" },
+            uri: {
+              fsPath: join(
+                "vscode-codeql-starter",
+                "codeql-custom-queries-cpp",
+              ),
+            },
           },
           {
             name: "codeql-custom-queries-csharp",
-            uri: { path: "vscode-codeql-starter/codeql-custom-queries-csharp" },
+            uri: {
+              fsPath: join(
+                "vscode-codeql-starter",
+                "codeql-custom-queries-csharp",
+              ),
+            },
           },
         ] as WorkspaceFolder[]);
 
@@ -342,6 +355,7 @@ describe("SkeletonQueryWizard", () => {
           extLogger,
           mockDatabaseManager,
           token,
+          storagePath,
         );
 
         expect(wizard.getFirstStoragePath()).toEqual("vscode-codeql-starter");
