@@ -34,11 +34,11 @@ import { DatabasePanelCommands } from "../../common/commands";
 import { App } from "../../common/app";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
-  kind: string;
+  remoteDatabaseKind: string;
 }
 
 export interface AddListQuickPickItem extends QuickPickItem {
-  kind: DbListKind;
+  databaseKind: DbListKind;
 }
 
 export class DbPanel extends DisposableObject {
@@ -113,19 +113,19 @@ export class DbPanel extends DisposableObject {
     ) {
       await this.addNewRemoteRepo(highlightedItem.parentListName);
     } else {
-      const quickPickItems = [
+      const quickPickItems: RemoteDatabaseQuickPickItem[] = [
         {
           label: "$(repo) From a GitHub repository",
           detail: "Add a variant analysis repository from GitHub",
           alwaysShow: true,
-          kind: "repo",
+          remoteDatabaseKind: "repo",
         },
         {
           label: "$(organization) All repositories of a GitHub org or owner",
           detail:
             "Add a variant analysis list of repositories from a GitHub organization/owner",
           alwaysShow: true,
-          kind: "owner",
+          remoteDatabaseKind: "owner",
         },
       ];
       const databaseKind =
@@ -142,9 +142,9 @@ export class DbPanel extends DisposableObject {
         // We set 'true' to make this a silent exception.
         throw new UserCancellationException("No repository selected", true);
       }
-      if (databaseKind.kind === "repo") {
+      if (databaseKind.remoteDatabaseKind === "repo") {
         await this.addNewRemoteRepo();
-      } else if (databaseKind.kind === "owner") {
+      } else if (databaseKind.remoteDatabaseKind === "owner") {
         await this.addNewRemoteOwner();
       }
     }
