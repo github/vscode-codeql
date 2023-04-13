@@ -8,8 +8,8 @@ import { askForLanguage, isFolderAlreadyInWorkspace } from "./helpers";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "./local-databases";
-import * as databaseFetcher from "./databaseFetcher";
 import { ProgressCallback, UserCancellationException } from "./progress";
+import { askForGitHubRepo, downloadGitHubDatabase } from "./databaseFetcher";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
@@ -69,7 +69,14 @@ export class SkeletonQueryWizard {
     }
 
     // open a query file
-    await this.openExampleFile();
+
+    try {
+      await this.openExampleFile();
+    } catch (e: unknown) {
+      void this.extLogger.log(
+        `Could not open example query file: ${getErrorMessage(e)}`,
+      );
+    }
   }
 
   private async openExampleFile() {
@@ -81,15 +88,9 @@ export class SkeletonQueryWizard {
       join(this.qlPackStoragePath, this.folderName, this.fileName),
     );
 
-    try {
-      void workspace.openTextDocument(queryFileUri).then((doc) => {
-        void Window.showTextDocument(doc);
-      });
-    } catch (e: unknown) {
-      void this.extLogger.log(
-        `Could not open example query file: ${getErrorMessage(e)}`,
-      );
-    }
+    void workspace.openTextDocument(queryFileUri).then((doc) => {
+      void Window.showTextDocument(doc);
+    });
   }
 
   public getFirstStoragePath() {
@@ -117,7 +118,7 @@ export class SkeletonQueryWizard {
     this.progress({
       message: "Choose language",
       step: 1,
-      maxStep: 1,
+      maxStep: 3,
     });
 
     return await askForLanguage(this.cliServer, false);
@@ -131,7 +132,7 @@ export class SkeletonQueryWizard {
     this.progress({
       message: "Creating skeleton QL pack around query",
       step: 2,
-      maxStep: 2,
+      maxStep: 3,
     });
 
     try {
@@ -159,7 +160,7 @@ export class SkeletonQueryWizard {
       message:
         "Skeleton query pack already exists. Creating additional query example file.",
       step: 2,
-      maxStep: 2,
+      maxStep: 3,
     });
 
     try {
@@ -181,13 +182,13 @@ export class SkeletonQueryWizard {
 
   private async determineNextFileName(folderName: string): Promise<string> {
     if (this.qlPackStoragePath === undefined) {
-      throw new Error("Workspace storage path is undefined");
+      throw new Error("QL Pack storage path is undefined");
     }
 
     const folderUri = Uri.file(join(this.qlPackStoragePath, folderName));
     const files = await workspace.fs.readDirectory(folderUri);
     const qlFiles = files.filter(([filename, _fileType]) =>
-      filename.match(/example[0-9]*.ql/),
+      filename.match(/^example[0-9]*\.ql$/),
     );
 
     return `example${qlFiles.length + 1}.ql`;
@@ -195,7 +196,7 @@ export class SkeletonQueryWizard {
 
   private async downloadDatabase() {
     if (this.qlPackStoragePath === undefined) {
-      throw new Error("Workspace storage path is undefined");
+      throw new Error("QL Pack storage path is undefined");
     }
 
     if (this.databaseStoragePath === undefined) {
@@ -213,16 +214,13 @@ export class SkeletonQueryWizard {
     });
 
     const githubRepoNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
-    const chosenRepo = await databaseFetcher.askForGitHubRepo(
-      undefined,
-      githubRepoNwo,
-    );
+    const chosenRepo = await askForGitHubRepo(undefined, githubRepoNwo);
 
     if (!chosenRepo) {
       throw new UserCancellationException("No GitHub repository provided");
     }
 
-    await databaseFetcher.downloadGitHubDatabase(
+    await downloadGitHubDatabase(
       chosenRepo,
       this.databaseManager,
       this.databaseStoragePath,
@@ -240,7 +238,7 @@ export class SkeletonQueryWizard {
     }
 
     if (this.qlPackStoragePath === undefined) {
-      throw new Error("Workspace storage path is undefined");
+      throw new Error("QL Pack storage path is undefined");
     }
 
     const databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];

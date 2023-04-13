@@ -238,7 +238,7 @@ export class LocalQueries extends DisposableObject {
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
       "codeQL.codeLensQuickEval": this.codeLensQuickEval.bind(this),
       "codeQL.quickQuery": this.quickQuery.bind(this),
-      "codeQL.createSkeletonQuery": this.createSkeletonQuery.bind(this),
+      "codeQL.createQuery": this.createSkeletonQuery.bind(this),
     };
   }
 
