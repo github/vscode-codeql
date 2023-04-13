@@ -1445,10 +1445,6 @@
           "when": "config.codeQL.mockGitHubApiServer.enabled && codeQL.mockGitHubApiServer.scenarioLoaded"
         },
         {
-          "command": "codeQL.createQuery",
-          "when": "config.codeQL.canary"
-        },
-        {
           "command": "codeQLTests.acceptOutputContextTestItem",
           "when": "false"
         }
