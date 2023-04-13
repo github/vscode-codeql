@@ -3,7 +3,6 @@ import { TestUICommands } from "./common/commands";
 import { DisposableObject } from "./pure/disposable-object";
 import { getActualFile, getExpectedFile } from "./test-adapter";
 import { TestItem, TextDocumentShowOptions, Uri, window } from "vscode";
-import { showAndLogWarningMessage } from "./helpers";
 import { basename } from "path";
 import { App } from "./common/app";
 import { TestTreeNode } from "./test-tree-node";
@@ -24,6 +23,7 @@ export abstract class TestManagerBase extends DisposableObject {
       "codeQLTests.showOutputDifferences":
         this.showOutputDifferences.bind(this),
       "codeQLTests.acceptOutput": this.acceptOutput.bind(this),
+      "codeQLTests.acceptOutputContextTestItem": this.acceptOutput.bind(this),
     };
   }
 
@@ -53,9 +53,7 @@ export abstract class TestManagerBase extends DisposableObject {
       };
 
       if (!(await pathExists(expectedPath))) {
-        void showAndLogWarningMessage(
-          `'${basename(expectedPath)}' does not exist. Creating an empty file.`,
-        );
+        // Just create a new file.
         await createFile(expectedPath);
       }
 
