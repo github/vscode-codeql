@@ -9,14 +9,16 @@ import {
   handleDownloadPacks,
   handleInstallPackDependencies,
 } from "../../../src/packaging";
-import { mockedQuickPickItem } from "../utils/mocking.helpers";
+import { mockedObject, mockedQuickPickItem } from "../utils/mocking.helpers";
 import { getActivatedExtension } from "../global.helper";
+import { LanguageClient } from "vscode-languageclient/node";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
 
 describe("Packaging commands", () => {
   let cli: CodeQLCliServer;
+  let languageServer: LanguageClient;
   const progress = jest.fn();
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let inputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
@@ -43,6 +45,7 @@ describe("Packaging commands", () => {
 
     const extension = await getActivatedExtension();
     cli = extension.cliServer;
+    languageServer = mockedObject<LanguageClient>({});
   });
 
   it("should download all core query packs", async () => {
@@ -95,7 +98,7 @@ describe("Packaging commands", () => {
       ]),
     );
 
-    await handleInstallPackDependencies(cli, progress);
+    await handleInstallPackDependencies(cli, languageServer, progress);
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
       expect.stringContaining("Finished installing pack dependencies."),
     );
@@ -114,7 +117,7 @@ describe("Packaging commands", () => {
 
     try {
       // expect this to throw an error
-      await handleInstallPackDependencies(cli, progress);
+      await handleInstallPackDependencies(cli, languageServer, progress);
       // This line should not be reached
       expect(true).toBe(false);
     } catch (e) {
