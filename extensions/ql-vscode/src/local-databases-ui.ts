@@ -46,7 +46,10 @@ import { isCanary } from "./config";
 import { App } from "./common/app";
 import { redactableError } from "./pure/errors";
 import { LocalDatabasesCommands } from "./common/commands";
-import { createMultiSelectionCommand } from "./common/selection-commands";
+import {
+  createMultiSelectionCommand,
+  createSingleSelectionCommand,
+} from "./common/selection-commands";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -247,7 +250,10 @@ export class DatabaseUI extends DisposableObject {
       "codeQLDatabases.upgradeDatabase": createMultiSelectionCommand(
         this.handleUpgradeDatabase.bind(this),
       ),
-      "codeQLDatabases.renameDatabase": this.handleRenameDatabase.bind(this),
+      "codeQLDatabases.renameDatabase": createSingleSelectionCommand(
+        this.handleRenameDatabase.bind(this),
+        "database",
+      ),
       "codeQLDatabases.openDatabaseFolder": this.handleOpenFolder.bind(this),
       "codeQLDatabases.addDatabaseSource": this.handleAddSource.bind(this),
       "codeQLDatabases.removeOrphanedDatabases":
@@ -668,10 +674,7 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleRenameDatabase(
     databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined,
   ): Promise<void> {
-    this.assertSingleDatabase(multiSelect);
-
     const newName = await window.showInputBox({
       prompt: "Choose new database name",
       value: databaseItem.name,
@@ -811,14 +814,5 @@ export class DatabaseUI extends DisposableObject {
       dbPath = path_dirname(dbPath);
     }
     return Uri.file(dbPath);
-  }
-
-  private assertSingleDatabase(
-    multiSelect: DatabaseItem[] = [],
-    message = "Please select a single database.",
-  ) {
-    if (multiSelect.length > 1) {
-      throw new Error(message);
-    }
   }
 }
