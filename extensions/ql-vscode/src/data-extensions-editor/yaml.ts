@@ -1,9 +1,16 @@
+import Ajv from "ajv";
+
 import { ExternalApiUsage } from "./external-api-usage";
 import {
   ModeledMethod,
   ModeledMethodType,
   ModeledMethodWithSignature,
 } from "./modeled-method";
+
+import * as dataSchemaJson from "./data-schema.json";
+
+const ajv = new Ajv({ allErrors: true });
+const dataSchemaValidate = ajv.compile(dataSchemaJson);
 
 type ExternalApiUsageByType = {
   externalApiUsage: ExternalApiUsage;
@@ -191,8 +198,14 @@ ${extensions.join("\n")}`;
 export function loadDataExtensionYaml(
   data: any,
 ): Record<string, ModeledMethod> | undefined {
-  if (typeof data !== "object") {
-    return undefined;
+  dataSchemaValidate(data);
+
+  if (dataSchemaValidate.errors) {
+    throw new Error(
+      `Invalid data extension YAML: ${dataSchemaValidate.errors
+        .map((error) => `${error.instancePath} ${error.message}`)
+        .join(", ")}`,
+    );
   }
 
   const extensions = data.extensions;
@@ -204,19 +217,8 @@ export function loadDataExtensionYaml(
 
   for (const extension of extensions) {
     const addsTo = extension.addsTo;
-    if (typeof addsTo !== "object") {
-      continue;
-    }
-
     const extensible = addsTo.extensible;
-    if (typeof extensible !== "string") {
-      continue;
-    }
-
     const data = extension.data;
-    if (!Array.isArray(data)) {
-      continue;
-    }
 
     const definition = Object.values(extensiblePredicateDefinitions).find(
       (definition) => definition.extensiblePredicate === extensible,

@@ -149,14 +149,14 @@ describe("loadDataExtensionYaml", () => {
   });
 
   it("returns undefined if given a string", () => {
-    const data = loadDataExtensionYaml(`extensions:
+    expect(() =>
+      loadDataExtensionYaml(`extensions:
   - addsTo:
       pack: codeql/java-all
       extensible: sinkModel
     data:
       - ["org.sql2o","Connection",true,"createQuery","(String)","","Argument[0]","sql","manual"]
-`);
-
-    expect(data).toBeUndefined();
+`),
+    ).toThrow("Invalid data extension YAML:  must be object");
   });
 });

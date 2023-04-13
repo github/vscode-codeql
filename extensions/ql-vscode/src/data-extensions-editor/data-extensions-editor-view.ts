@@ -1,7 +1,6 @@
 import {
   CancellationTokenSource,
   ExtensionContext,
-  Uri,
   ViewColumn,
   window,
   workspace,
@@ -15,8 +14,8 @@ import {
 import { ProgressUpdate } from "../progress";
 import { QueryRunner } from "../queryRunner";
 import {
+  showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
-  showAndLogWarningMessage,
 } from "../helpers";
 import { extLogger } from "../common";
 import { readFile, writeFile } from "fs-extra";
@@ -61,6 +60,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly queryRunner: QueryRunner,
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
+    private readonly modelFilename: string,
   ) {
     super(ctx);
   }
@@ -148,35 +148,27 @@ export class DataExtensionsEditorView extends AbstractWebview<
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
-    const modelFilename = this.calculateModelFilename();
-    if (!modelFilename) {
-      return;
-    }
-
     const yaml = createDataExtensionYaml(externalApiUsages, modeledMethods);
 
-    await writeFile(modelFilename, yaml);
+    await writeFile(this.modelFilename, yaml);
 
-    void extLogger.log(`Saved data extension YAML to ${modelFilename}`);
+    void extLogger.log(`Saved data extension YAML to ${this.modelFilename}`);
   }
 
   protected async loadExistingModeledMethods(): Promise<void> {
-    const modelFilename = this.calculateModelFilename();
-    if (!modelFilename) {
-      return;
-    }
-
     try {
-      const yaml = await readFile(modelFilename, "utf8");
+      const yaml = await readFile(this.modelFilename, "utf8");
 
       const data = loadYaml(yaml, {
-        filename: modelFilename,
+        filename: this.modelFilename,
       });
 
       const existingModeledMethods = loadDataExtensionYaml(data);
 
       if (!existingModeledMethods) {
-        void showAndLogWarningMessage("Failed to parse data extension YAML.");
+        void showAndLogErrorMessage(
+          `Failed to parse data extension YAML ${this.modelFilename}.`,
+        );
         return;
       }
 
@@ -185,7 +177,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
         modeledMethods: existingModeledMethods,
       });
     } catch (e: unknown) {
-      void extLogger.log(`Unable to read data extension YAML: ${e}`);
+      void showAndLogErrorMessage(
+        `Unable to read data extension YAML ${
+          this.modelFilename
+        }: ${getErrorMessage(e)}`,
+      );
     }
   }
 
@@ -218,7 +214,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
       const bqrsChunk = await readQueryResults({
         cliServer: this.cliServer,
         bqrsPath: queryResult.outputDir.bqrsPath,
-        logger: extLogger,
       });
       if (!bqrsChunk) {
         await this.clearProgress();
@@ -243,7 +238,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       void showAndLogExceptionWithTelemetry(
         redactableError(
           asError(err),
-        )`Failed to load external APi usages: ${getErrorMessage(err)}`,
+        )`Failed to load external API usages: ${getErrorMessage(err)}`,
       );
     }
   }
@@ -364,18 +359,5 @@ export class DataExtensionsEditorView extends AbstractWebview<
       maxStep: 0,
       message: "",
     });
-  }
-
-  private calculateModelFilename(): string | undefined {
-    const workspaceFolder = getQlSubmoduleFolder();
-    if (!workspaceFolder) {
-      return;
-    }
-
-    return Uri.joinPath(
-      workspaceFolder.uri,
-      "java/ql/lib/ext",
-      `${this.databaseItem.name.replaceAll("/", ".")}.model.yml`,
-    ).fsPath;
   }
 }
