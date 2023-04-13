@@ -241,7 +241,9 @@ export class DatabaseUI extends DisposableObject {
         this.handleMakeCurrentDatabase.bind(this),
       "codeQLDatabases.sortByName": this.handleSortByName.bind(this),
       "codeQLDatabases.sortByDateAdded": this.handleSortByDateAdded.bind(this),
-      "codeQLDatabases.removeDatabase": this.handleRemoveDatabase.bind(this),
+      "codeQLDatabases.removeDatabase": createMultiSelectionCommand(
+        this.handleRemoveDatabase.bind(this),
+      ),
       "codeQLDatabases.upgradeDatabase": createMultiSelectionCommand(
         this.handleUpgradeDatabase.bind(this),
       ),
@@ -647,24 +649,15 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private async handleRemoveDatabase(
-    databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined,
+    databaseItems: DatabaseItem[],
   ): Promise<void> {
     return withProgress(
       async (progress, token) => {
-        if (multiSelect?.length) {
-          await Promise.all(
-            multiSelect.map((dbItem) =>
-              this.databaseManager.removeDatabaseItem(progress, token, dbItem),
-            ),
-          );
-        } else {
-          await this.databaseManager.removeDatabaseItem(
-            progress,
-            token,
-            databaseItem,
-          );
-        }
+        await Promise.all(
+          databaseItems.map((dbItem) =>
+            this.databaseManager.removeDatabaseItem(progress, token, dbItem),
+          ),
+        );
       },
       {
         title: "Removing database",
