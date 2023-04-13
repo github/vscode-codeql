@@ -3,12 +3,16 @@ import { qlpackOfDatabase } from "../contextual/queryResolver";
 import { file } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
-import { getOnDiskWorkspaceFolders } from "../helpers";
+import {
+  getOnDiskWorkspaceFolders,
+  showAndLogExceptionWithTelemetry,
+} from "../helpers";
 import { Logger, TeeLogger } from "../common";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseItem } from "../local-databases";
 import { ProgressCallback } from "../progress";
+import { redactableError } from "../pure/errors";
 
 export type RunQueryOptions = {
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveQueriesInSuite">;
@@ -92,18 +96,16 @@ export async function runQuery({
 export type GetResultsOptions = {
   cliServer: Pick<CodeQLCliServer, "bqrsInfo" | "bqrsDecode">;
   bqrsPath: string;
-  logger: Logger;
 };
 
 export async function readQueryResults({
   cliServer,
   bqrsPath,
-  logger,
 }: GetResultsOptions) {
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
-    void logger.log(
-      `Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
+    void showAndLogExceptionWithTelemetry(
+      redactableError`Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
     );
     return undefined;
   }
