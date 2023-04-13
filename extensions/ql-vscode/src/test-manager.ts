@@ -75,7 +75,7 @@ class TestRunLogger implements BaseLogger {
 }
 
 /**
- * Handles test dicovery for a specific workspace folder, and reports back to `TestManager`.
+ * Handles test discovery for a specific workspace folder, and reports back to `TestManager`.
  */
 class WorkspaceFolderHandler extends DisposableObject {
   private readonly testDiscovery: QLTestDiscovery;
