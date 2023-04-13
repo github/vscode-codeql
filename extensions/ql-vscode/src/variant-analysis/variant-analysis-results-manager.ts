@@ -17,7 +17,10 @@ import {
 import { DisposableObject, DisposeHandler } from "../pure/disposable-object";
 import { EventEmitter } from "vscode";
 import { unzipFile } from "../pure/zip";
-import { readRepoTask, writeRepoTask } from "./store/repo-task-store";
+import {
+  readRepoTask,
+  writeRepoTask,
+} from "./repo-tasks-store/repo-task-store";
 
 type CacheKey = `${number}/${string}`;
 
