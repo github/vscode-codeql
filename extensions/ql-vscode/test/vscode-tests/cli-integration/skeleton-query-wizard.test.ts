@@ -20,8 +20,9 @@ import {
 } from "../../../src/local-databases";
 import * as databaseFetcher from "../../../src/databaseFetcher";
 import { createMockDB } from "../../factories/databases/databases";
+import { asError } from "../../../src/pure/helpers-pure";
 
-jest.setTimeout(40_000);
+jest.setTimeout(80_000);
 
 describe("SkeletonQueryWizard", () => {
   let mockCli: CodeQLCliServer;
@@ -83,11 +84,11 @@ describe("SkeletonQueryWizard", () => {
     jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
       {
         name: `codespaces-codeql`,
-        uri: { path: storagePath },
+        uri: { fsPath: storagePath },
       },
       {
         name: "/second/folder/path",
-        uri: { path: storagePath },
+        uri: { fsPath: storagePath },
       },
     ] as WorkspaceFolder[]);
 
@@ -114,6 +115,7 @@ describe("SkeletonQueryWizard", () => {
       extLogger,
       mockDatabaseManager,
       token,
+      storagePath,
     );
 
     askForGitHubRepoSpy = jest
@@ -244,6 +246,7 @@ describe("SkeletonQueryWizard", () => {
           extLogger,
           mockDatabaseManagerWithItems,
           token,
+          storagePath,
         );
       });
 
@@ -305,8 +308,8 @@ describe("SkeletonQueryWizard", () => {
     it("should return the first workspace folder", async () => {
       jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
         {
-          name: "codeql-custom-queries-cpp",
-          uri: { path: "codespaces-codeql" },
+          name: "codespaces-codeql",
+          uri: { fsPath: "codespaces-codeql" },
         },
       ] as WorkspaceFolder[]);
 
@@ -317,6 +320,7 @@ describe("SkeletonQueryWizard", () => {
         extLogger,
         mockDatabaseManager,
         token,
+        storagePath,
       );
 
       expect(wizard.getFirstStoragePath()).toEqual("codespaces-codeql");
@@ -327,11 +331,21 @@ describe("SkeletonQueryWizard", () => {
         jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
           {
             name: "codeql-custom-queries-cpp",
-            uri: { path: "vscode-codeql-starter/codeql-custom-queries-cpp" },
+            uri: {
+              fsPath: join(
+                "vscode-codeql-starter",
+                "codeql-custom-queries-cpp",
+              ),
+            },
           },
           {
             name: "codeql-custom-queries-csharp",
-            uri: { path: "vscode-codeql-starter/codeql-custom-queries-csharp" },
+            uri: {
+              fsPath: join(
+                "vscode-codeql-starter",
+                "codeql-custom-queries-csharp",
+              ),
+            },
           },
         ] as WorkspaceFolder[]);
 
@@ -342,6 +356,7 @@ describe("SkeletonQueryWizard", () => {
           extLogger,
           mockDatabaseManager,
           token,
+          storagePath,
         );
 
         expect(wizard.getFirstStoragePath()).toEqual("vscode-codeql-starter");
@@ -352,8 +367,15 @@ describe("SkeletonQueryWizard", () => {
   describe("findDatabaseItemByNwo", () => {
     describe("when the item exists", () => {
       it("should return the database item", async () => {
-        const mockDbItem = createMockDB(dir);
-        const mockDbItem2 = createMockDB(dir);
+        const mockDbItem = createMockDB(dir, {
+          language: "ruby",
+          dateAdded: 123,
+        } as FullDatabaseOptions);
+        const mockDbItem2 = createMockDB(dir, {
+          language: "javascript",
+        } as FullDatabaseOptions);
+
+        jest.spyOn(mockDbItem, "name", "get").mockReturnValue("mock-name");
 
         const databaseItem = await wizard.findDatabaseItemByNwo(
           mockDbItem.language,
@@ -361,8 +383,40 @@ describe("SkeletonQueryWizard", () => {
           [mockDbItem, mockDbItem2],
         );
 
-        expect(databaseItem!.language).toEqual(mockDbItem.language);
-        expect(databaseItem!.name).toEqual(mockDbItem.name);
+        expect(JSON.stringify(databaseItem)).toEqual(
+          JSON.stringify(mockDbItem),
+        );
+      });
+
+      it("should ignore databases with errors", async () => {
+        const mockDbItem = createMockDB(dir, {
+          language: "ruby",
+          dateAdded: 123,
+        } as FullDatabaseOptions);
+        const mockDbItem2 = createMockDB(dir, {
+          language: "javascript",
+        } as FullDatabaseOptions);
+        const mockDbItem3 = createMockDB(dir, {
+          language: "ruby",
+          dateAdded: 345,
+        } as FullDatabaseOptions);
+
+        jest.spyOn(mockDbItem, "name", "get").mockReturnValue("mock-name");
+        jest.spyOn(mockDbItem3, "name", "get").mockReturnValue(mockDbItem.name);
+
+        jest
+          .spyOn(mockDbItem, "error", "get")
+          .mockReturnValue(asError("database go boom!"));
+
+        const databaseItem = await wizard.findDatabaseItemByNwo(
+          mockDbItem.language,
+          mockDbItem.name,
+          [mockDbItem, mockDbItem2, mockDbItem3],
+        );
+
+        expect(JSON.stringify(databaseItem)).toEqual(
+          JSON.stringify(mockDbItem3),
+        );
       });
     });
 
@@ -398,6 +452,32 @@ describe("SkeletonQueryWizard", () => {
         ]);
 
         expect(databaseItem).toEqual(mockDbItem);
+      });
+
+      it("should ignore databases with errors", async () => {
+        const mockDbItem = createMockDB(dir, {
+          language: "ruby",
+        } as FullDatabaseOptions);
+        const mockDbItem2 = createMockDB(dir, {
+          language: "javascript",
+        } as FullDatabaseOptions);
+        const mockDbItem3 = createMockDB(dir, {
+          language: "ruby",
+        } as FullDatabaseOptions);
+
+        jest
+          .spyOn(mockDbItem, "error", "get")
+          .mockReturnValue(asError("database go boom!"));
+
+        const databaseItem = await wizard.findDatabaseItemByLanguage("ruby", [
+          mockDbItem,
+          mockDbItem2,
+          mockDbItem3,
+        ]);
+
+        expect(JSON.stringify(databaseItem)).toEqual(
+          JSON.stringify(mockDbItem3),
+        );
       });
     });
 

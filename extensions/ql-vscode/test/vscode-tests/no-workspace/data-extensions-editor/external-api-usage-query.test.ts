@@ -10,6 +10,8 @@ import { file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/pure/new-messages";
 import { readFile } from "fs-extra";
 import { load } from "js-yaml";
+import * as helpers from "../../../../src/helpers";
+import { RedactableError } from "../../../../src/pure/errors";
 
 function createMockUri(path = "/a/b/c/foo"): Uri {
   return {
@@ -127,8 +129,18 @@ describe("readQueryResults", () => {
       bqrsDecode: jest.fn(),
     },
     bqrsPath: "/tmp/results.bqrs",
-    logger: createMockLogger(),
   };
+
+  let showAndLogExceptionWithTelemetrySpy: jest.SpiedFunction<
+    typeof helpers.showAndLogExceptionWithTelemetry
+  >;
+
+  beforeEach(() => {
+    showAndLogExceptionWithTelemetrySpy = jest.spyOn(
+      helpers,
+      "showAndLogExceptionWithTelemetry",
+    );
+  });
 
   it("returns undefined when there are no results", async () => {
     options.cliServer.bqrsInfo.mockResolvedValue({
@@ -136,8 +148,8 @@ describe("readQueryResults", () => {
     });
 
     expect(await readQueryResults(options)).toBeUndefined();
-    expect(options.logger.log).toHaveBeenCalledWith(
-      expect.stringMatching(/Expected exactly one result set/),
+    expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
+      expect.any(RedactableError),
     );
   });
 
@@ -166,8 +178,8 @@ describe("readQueryResults", () => {
     });
 
     expect(await readQueryResults(options)).toBeUndefined();
-    expect(options.logger.log).toHaveBeenCalledWith(
-      expect.stringMatching(/Expected exactly one result set/),
+    expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
+      expect.any(RedactableError),
     );
   });
 
