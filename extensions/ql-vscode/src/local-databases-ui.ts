@@ -46,6 +46,7 @@ import { isCanary } from "./config";
 import { App } from "./common/app";
 import { redactableError } from "./pure/errors";
 import { LocalDatabasesCommands } from "./common/commands";
+import { createMultiSelectionCommand } from "./common/selection-commands";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -241,7 +242,9 @@ export class DatabaseUI extends DisposableObject {
       "codeQLDatabases.sortByName": this.handleSortByName.bind(this),
       "codeQLDatabases.sortByDateAdded": this.handleSortByDateAdded.bind(this),
       "codeQLDatabases.removeDatabase": this.handleRemoveDatabase.bind(this),
-      "codeQLDatabases.upgradeDatabase": this.handleUpgradeDatabase.bind(this),
+      "codeQLDatabases.upgradeDatabase": createMultiSelectionCommand(
+        this.handleUpgradeDatabase.bind(this),
+      ),
       "codeQLDatabases.renameDatabase": this.handleRenameDatabase.bind(this),
       "codeQLDatabases.openDatabaseFolder": this.handleOpenFolder.bind(this),
       "codeQLDatabases.addDatabaseSource": this.handleAddSource.bind(this),
@@ -529,17 +532,14 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private async handleUpgradeDatabase(
-    databaseItem: DatabaseItem | undefined,
-    multiSelect: DatabaseItem[] | undefined,
+    databaseItems: DatabaseItem[],
   ): Promise<void> {
     return withProgress(
       async (progress, token) => {
         return await this.handleUpgradeDatabasesInternal(
           progress,
           token,
-          multiSelect === undefined && databaseItem !== undefined
-            ? [databaseItem]
-            : multiSelect || [],
+          databaseItems,
         );
       },
       {
