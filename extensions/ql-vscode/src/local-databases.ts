@@ -11,6 +11,7 @@ import {
   showAndLogExceptionWithTelemetry,
   isFolderAlreadyInWorkspace,
   showBinaryChoiceDialog,
+  getFirstStoragePath,
 } from "./helpers";
 import { ProgressCallback, withProgress } from "./progress";
 import {
@@ -676,11 +677,13 @@ export class DatabaseManager extends DisposableObject {
     }
 
     try {
+      const workspaceStorage = getFirstStoragePath();
+
       const qlPackGenerator = new QlPackGenerator(
         folderName,
         databaseItem.language as QueryLanguage,
         this.cli,
-        this.ctx.storageUri?.fsPath,
+        workspaceStorage,
       );
       await qlPackGenerator.generate();
     } catch (e: unknown) {

@@ -1,7 +1,7 @@
-import { writeFile } from "fs-extra";
+import { mkdir, writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { join } from "path";
-import { Uri, workspace } from "vscode";
+import { Uri } from "vscode";
 import { CodeQLCliServer } from "./cli";
 import { QueryLanguage } from "./common/query-language";
 
@@ -44,14 +44,7 @@ export class QlPackGenerator {
   }
 
   private async createWorkspaceFolder() {
-    await workspace.fs.createDirectory(this.folderUri);
-
-    const end = (workspace.workspaceFolders || []).length;
-
-    workspace.updateWorkspaceFolders(end, 0, {
-      name: this.folderName,
-      uri: this.folderUri,
-    });
+    await mkdir(this.folderUri.fsPath);
   }
 
   private async createQlPackYaml() {
