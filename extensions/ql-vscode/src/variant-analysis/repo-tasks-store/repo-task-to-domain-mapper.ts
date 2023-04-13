@@ -8,7 +8,7 @@ import {
   VariantAnalysisRepoStatusDto,
 } from "./repo-tasks-dto";
 
-export function mapRepoTaskToDomain(
+export function mapRepoTaskToDomainModel(
   repoTask: VariantAnalysisRepositoryTaskDto,
 ): VariantAnalysisRepositoryTask {
   return {
@@ -17,7 +17,9 @@ export function mapRepoTaskToDomain(
       fullName: repoTask.repository.fullName,
       private: repoTask.repository.private,
     },
-    analysisStatus: mapRepoTaskAnalysisStatusToDomain(repoTask.analysisStatus),
+    analysisStatus: mapRepoTaskAnalysisStatusToDomainModel(
+      repoTask.analysisStatus,
+    ),
     resultCount: repoTask.resultCount,
     artifactSizeInBytes: repoTask.artifactSizeInBytes,
     failureMessage: repoTask.failureMessage,
@@ -27,7 +29,7 @@ export function mapRepoTaskToDomain(
   };
 }
 
-function mapRepoTaskAnalysisStatusToDomain(
+function mapRepoTaskAnalysisStatusToDomainModel(
   analysisStatus: VariantAnalysisRepoStatusDto,
 ): VariantAnalysisRepoStatus {
   switch (analysisStatus) {
