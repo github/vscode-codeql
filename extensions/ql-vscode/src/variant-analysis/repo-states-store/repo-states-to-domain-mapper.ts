@@ -4,12 +4,12 @@ import {
   VariantAnalysisScannedRepositoryDownloadStatus,
 } from "../shared/variant-analysis";
 import {
-  VariantAnalysisScannedRepositoryStateData,
-  VariantAnalysisScannedRepositoryDownloadData,
-} from "./repo-states-data-types";
+  VariantAnalysisScannedRepositoryStateDto,
+  VariantAnalysisScannedRepositoryDownloadDto,
+} from "./repo-states-dto";
 
 export function mapRepoStateToDomain(
-  repoState: VariantAnalysisScannedRepositoryStateData,
+  repoState: VariantAnalysisScannedRepositoryStateDto,
 ): VariantAnalysisScannedRepositoryState {
   return {
     repositoryId: repoState.repositoryId,
@@ -19,16 +19,16 @@ export function mapRepoStateToDomain(
 }
 
 function processDownloadStatus(
-  downloadedStatus: VariantAnalysisScannedRepositoryDownloadData,
+  downloadedStatus: VariantAnalysisScannedRepositoryDownloadDto,
 ) {
   switch (downloadedStatus) {
-    case VariantAnalysisScannedRepositoryDownloadData.Pending:
+    case VariantAnalysisScannedRepositoryDownloadDto.Pending:
       return VariantAnalysisScannedRepositoryDownloadStatus.Pending;
-    case VariantAnalysisScannedRepositoryDownloadData.InProgress:
+    case VariantAnalysisScannedRepositoryDownloadDto.InProgress:
       return VariantAnalysisScannedRepositoryDownloadStatus.InProgress;
-    case VariantAnalysisScannedRepositoryDownloadData.Succeeded:
+    case VariantAnalysisScannedRepositoryDownloadDto.Succeeded:
       return VariantAnalysisScannedRepositoryDownloadStatus.Succeeded;
-    case VariantAnalysisScannedRepositoryDownloadData.Failed:
+    case VariantAnalysisScannedRepositoryDownloadDto.Failed:
       return VariantAnalysisScannedRepositoryDownloadStatus.Failed;
     default:
       assertNever(downloadedStatus);

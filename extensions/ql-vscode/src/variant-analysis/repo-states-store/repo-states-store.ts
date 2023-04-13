@@ -1,6 +1,6 @@
 import { outputJson, readJson } from "fs-extra";
 import { VariantAnalysisScannedRepositoryState } from "../shared/variant-analysis";
-import { VariantAnalysisScannedRepositoryStateData } from "./repo-states-data-types";
+import { VariantAnalysisScannedRepositoryStateDto } from "./repo-states-dto";
 import { mapRepoStateToData } from "./repo-states-to-data-mapper";
 import { mapRepoStateToDomain } from "./repo-states-to-domain-mapper";
 
@@ -26,7 +26,7 @@ export async function readRepoStates(
   try {
     const repoStatesData: Record<
       number,
-      VariantAnalysisScannedRepositoryStateData
+      VariantAnalysisScannedRepositoryStateDto
     > = await readJson(storagePath);
 
     // Map from repoStates Data type to the repoStates Domain type
