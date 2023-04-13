@@ -786,7 +786,7 @@ export async function* walkDirectory(
   }
 }
 
-export function getFirstStoragePath() {
+export function getFirstWorkspaceFolder() {
   const workspaceFolders = workspace.workspaceFolders;
 
   if (!workspaceFolders || workspaceFolders.length === 0) {

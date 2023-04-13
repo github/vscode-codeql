@@ -26,7 +26,7 @@ import {
 import { DirResult } from "tmp";
 
 import {
-  getFirstStoragePath,
+  getFirstWorkspaceFolder,
   getInitialQueryContents,
   InvocationRateLimiter,
   isFolderAlreadyInWorkspace,
@@ -673,16 +673,16 @@ describe("prepareCodeTour", () => {
   });
 });
 
-describe("getFirstStoragePath", () => {
+describe("getFirstWorkspaceFolder", () => {
   it("should return the first workspace folder", async () => {
     jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
       {
         name: "codespaces-codeql",
-        uri: { fsPath: "codespaces-codeql" },
+        uri: { fsPath: "codespaces-codeql", scheme: "file" },
       },
     ] as WorkspaceFolder[]);
 
-    expect(getFirstStoragePath()).toEqual("codespaces-codeql");
+    expect(getFirstWorkspaceFolder()).toEqual("codespaces-codeql");
   });
 
   describe("if user is in vscode-codeql-starter workspace", () => {
@@ -692,6 +692,7 @@ describe("getFirstStoragePath", () => {
           name: "codeql-custom-queries-cpp",
           uri: {
             fsPath: join("vscode-codeql-starter", "codeql-custom-queries-cpp"),
+            scheme: "file",
           },
         },
         {
@@ -701,11 +702,12 @@ describe("getFirstStoragePath", () => {
               "vscode-codeql-starter",
               "codeql-custom-queries-csharp",
             ),
+            scheme: "file",
           },
         },
       ] as WorkspaceFolder[]);
 
-      expect(getFirstStoragePath()).toEqual("vscode-codeql-starter");
+      expect(getFirstWorkspaceFolder()).toEqual("vscode-codeql-starter");
     });
   });
 });

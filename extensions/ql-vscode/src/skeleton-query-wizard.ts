@@ -6,7 +6,7 @@ import { Credentials } from "./common/authentication";
 import { QueryLanguage } from "./common/query-language";
 import {
   askForLanguage,
-  getFirstStoragePath,
+  getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
 } from "./helpers";
 import { getErrorMessage } from "./pure/helpers-pure";
@@ -54,7 +54,7 @@ export class SkeletonQueryWizard {
       return;
     }
 
-    this.qlPackStoragePath = getFirstStoragePath();
+    this.qlPackStoragePath = getFirstWorkspaceFolder();
 
     const skeletonPackAlreadyExists = isFolderAlreadyInWorkspace(
       this.folderName,

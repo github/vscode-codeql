@@ -11,7 +11,7 @@ import {
   showAndLogExceptionWithTelemetry,
   isFolderAlreadyInWorkspace,
   showBinaryChoiceDialog,
-  getFirstStoragePath,
+  getFirstWorkspaceFolder,
 } from "./helpers";
 import { ProgressCallback, withProgress } from "./progress";
 import {
@@ -677,7 +677,7 @@ export class DatabaseManager extends DisposableObject {
     }
 
     try {
-      const workspaceStorage = getFirstStoragePath();
+      const workspaceStorage = getFirstWorkspaceFolder();
 
       const qlPackGenerator = new QlPackGenerator(
         folderName,
