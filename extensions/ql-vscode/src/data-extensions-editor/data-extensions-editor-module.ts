@@ -8,6 +8,8 @@ import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { App } from "../common/app";
 import { showAndLogErrorMessage } from "../helpers";
+import { withProgress } from "../progress";
+import { pickExtensionPackModelFile } from "./extension-pack-picker";
 
 export class DataExtensionsEditorModule {
   private readonly queryStorageDir: string;
@@ -49,31 +51,46 @@ export class DataExtensionsEditorModule {
 
   public getCommands(): DataExtensionsEditorCommands {
     return {
-      "codeQL.openDataExtensionsEditor": async () => {
-        const db = this.databaseManager.currentDatabaseItem;
-        if (!db) {
-          void showAndLogErrorMessage("No database selected");
-          return;
-        }
+      "codeQL.openDataExtensionsEditor": async () =>
+        withProgress(
+          async (progress) => {
+            const db = this.databaseManager.currentDatabaseItem;
+            if (!db) {
+              void showAndLogErrorMessage("No database selected");
+              return;
+            }
 
-        if (!(await this.cliServer.cliConstraints.supportsQlpacksKind())) {
-          void showAndLogErrorMessage(
-            `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND.format()} or later.`,
-          );
-          return;
-        }
+            if (!(await this.cliServer.cliConstraints.supportsQlpacksKind())) {
+              void showAndLogErrorMessage(
+                `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND.format()} or later.`,
+              );
+              return;
+            }
 
-        const view = new DataExtensionsEditorView(
-          this.ctx,
-          this.app,
-          this.databaseManager,
-          this.cliServer,
-          this.queryRunner,
-          this.queryStorageDir,
-          db,
-        );
-        await view.openView();
-      },
+            const modelFile = await pickExtensionPackModelFile(
+              this.cliServer,
+              progress,
+            );
+            if (!modelFile) {
+              return;
+            }
+
+            const view = new DataExtensionsEditorView(
+              this.ctx,
+              this.app,
+              this.databaseManager,
+              this.cliServer,
+              this.queryRunner,
+              this.queryStorageDir,
+              db,
+              modelFile,
+            );
+            await view.openView();
+          },
+          {
+            title: "Opening Data Extensions Editor",
+          },
+        ),
     };
   }
 
