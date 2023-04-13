@@ -71,7 +71,7 @@ import {
   readRepoStates,
   REPO_STATES_FILENAME,
   writeRepoStates,
-} from "./store/repo-states-store";
+} from "./repo-states-store/repo-states-store";
 
 export class VariantAnalysisManager
   extends DisposableObject
