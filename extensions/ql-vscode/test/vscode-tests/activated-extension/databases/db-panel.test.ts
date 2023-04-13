@@ -53,7 +53,7 @@ describe("Db panel UI commands", () => {
   it.skip("should add new local db list", async () => {
     // Add db list
     jest.spyOn(window, "showQuickPick").mockResolvedValue({
-      kind: DbListKind.Local,
+      databaseKind: DbListKind.Local,
     } as AddListQuickPickItem);
     jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
     await commandManager.execute(
@@ -73,7 +73,7 @@ describe("Db panel UI commands", () => {
   it("should add new remote repository", async () => {
     // Add db
     jest.spyOn(window, "showQuickPick").mockResolvedValue({
-      kind: "repo",
+      remoteDatabaseKind: "repo",
     } as RemoteDatabaseQuickPickItem);
 
     jest.spyOn(window, "showInputBox").mockResolvedValue("owner1/repo1");
@@ -96,7 +96,7 @@ describe("Db panel UI commands", () => {
   it("should add new remote owner", async () => {
     // Add owner
     jest.spyOn(window, "showQuickPick").mockResolvedValue({
-      kind: "owner",
+      remoteDatabaseKind: "owner",
     } as RemoteDatabaseQuickPickItem);
 
     jest.spyOn(window, "showInputBox").mockResolvedValue("owner1");
