@@ -253,11 +253,18 @@ export class SkeletonQueryWizard {
   }
 
   private async selectOrDownloadDatabase() {
+    if (this.language === undefined) {
+      throw new Error("Language is undefined");
+    }
+
     if (this.qlPackStoragePath === undefined) {
       throw new Error("QL Pack storage path is undefined");
     }
 
-    const existingDatabaseItem = await this.findExistingDatabaseItem();
+    const existingDatabaseItem = await this.findExistingDatabaseItem(
+      this.language,
+      this.databaseManager.databaseItems,
+    );
 
     if (existingDatabaseItem) {
       // select the found database
@@ -277,10 +284,7 @@ export class SkeletonQueryWizard {
       (db) => db.language === language && db.name === databaseNwo,
     );
 
-    if (dbs.length === 0) {
-      return undefined;
-    }
-    return dbs[0];
+    return dbs.pop();
   }
 
   public async findDatabaseItemByLanguage(
@@ -288,25 +292,20 @@ export class SkeletonQueryWizard {
     databaseItems: readonly DatabaseItem[],
   ): Promise<DatabaseItem | undefined> {
     const dbs = databaseItems.filter((db) => db.language === language);
-    if (dbs.length === 0) {
-      return undefined;
-    }
-    return dbs[0];
+
+    return dbs.pop();
   }
 
-  private async findExistingDatabaseItem() {
-    if (this.language === undefined) {
-      throw new Error("Language is undefined");
-    }
+  public async findExistingDatabaseItem(
+    language: string,
+    databaseItems: readonly DatabaseItem[],
+  ): Promise<DatabaseItem | undefined> {
+    const defaultDatabaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[language];
 
-    const defaultDatabaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
-
-    const dbItems = await this.sortDatabaseItemsByDateAdded(
-      this.databaseManager.databaseItems,
-    );
+    const dbItems = await this.sortDatabaseItemsByDateAdded(databaseItems);
 
     const defaultDatabaseItem = await this.findDatabaseItemByNwo(
-      this.language,
+      language,
       defaultDatabaseNwo,
       dbItems,
     );
@@ -315,7 +314,7 @@ export class SkeletonQueryWizard {
       return defaultDatabaseItem;
     }
 
-    return await this.findDatabaseItemByLanguage(this.language, dbItems);
+    return await this.findDatabaseItemByLanguage(language, dbItems);
   }
 
   public async sortDatabaseItemsByDateAdded(

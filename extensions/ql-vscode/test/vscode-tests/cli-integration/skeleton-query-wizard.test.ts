@@ -554,4 +554,73 @@ describe("SkeletonQueryWizard", () => {
       });
     });
   });
+
+  describe("findExistingDatabaseItem", () => {
+    describe("when there are multiple items with the same name", () => {
+      it("should choose the latest one", async () => {
+        const mockDbItem = createMockDB(dir, {
+          language: "javascript",
+          dateAdded: 456,
+        } as FullDatabaseOptions);
+        const mockDbItem2 = createMockDB(dir, {
+          language: "ruby",
+          dateAdded: 789,
+        } as FullDatabaseOptions);
+        const mockDbItem3 = createMockDB(dir, {
+          language: "javascript",
+          dateAdded: 123,
+        } as FullDatabaseOptions);
+        const mockDbItem4 = createMockDB(dir, {
+          language: "javascript",
+          dateAdded: undefined,
+        } as FullDatabaseOptions);
+
+        jest
+          .spyOn(mockDbItem, "name", "get")
+          .mockReturnValue(QUERY_LANGUAGE_TO_DATABASE_REPO["javascript"]);
+        jest
+          .spyOn(mockDbItem2, "name", "get")
+          .mockReturnValue(QUERY_LANGUAGE_TO_DATABASE_REPO["javascript"]);
+
+        const databaseItem = await wizard.findExistingDatabaseItem(
+          "javascript",
+          [mockDbItem, mockDbItem2, mockDbItem3, mockDbItem4],
+        );
+
+        expect(JSON.stringify(databaseItem)).toEqual(
+          JSON.stringify(mockDbItem),
+        );
+      });
+    });
+
+    describe("when there are multiple items with the same language", () => {
+      it("should choose the latest one", async () => {
+        const mockDbItem = createMockDB(dir, {
+          language: "ruby",
+          dateAdded: 789,
+        } as FullDatabaseOptions);
+        const mockDbItem2 = createMockDB(dir, {
+          language: "javascript",
+          dateAdded: 456,
+        } as FullDatabaseOptions);
+        const mockDbItem3 = createMockDB(dir, {
+          language: "ruby",
+          dateAdded: 123,
+        } as FullDatabaseOptions);
+        const mockDbItem4 = createMockDB(dir, {
+          language: "javascript",
+          dateAdded: undefined,
+        } as FullDatabaseOptions);
+
+        const databaseItem = await wizard.findExistingDatabaseItem(
+          "javascript",
+          [mockDbItem, mockDbItem2, mockDbItem3, mockDbItem4],
+        );
+
+        expect(JSON.stringify(databaseItem)).toEqual(
+          JSON.stringify(mockDbItem2),
+        );
+      });
+    });
+  });
 });
