@@ -11,7 +11,7 @@ import type {
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
 } from "../variant-analysis/shared/variant-analysis";
-import { QLDebugConfiguration } from "../debugger/debug-configuration";
+import type { QLDebugConfiguration } from "../debugger/debug-configuration";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from the title bar of a TreeView with
