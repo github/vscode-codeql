@@ -8,6 +8,7 @@ import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from "../helpers";
 import { LocalQueries } from "../local-queries";
 import { getQuickEvalContext, validateQueryPath } from "../run-queries-shared";
 import * as CodeQLProtocol from "./debug-protocol";
+import { getErrorMessage } from "../pure/helpers-pure";
 
 /**
  * The CodeQL launch arguments, as specified in "launch.json".
@@ -76,52 +77,56 @@ export class QLDebugConfigurationProvider
     debugConfiguration: DebugConfiguration,
     _token?: CancellationToken,
   ): Promise<DebugConfiguration | null> {
-    const qlConfiguration = debugConfiguration as QLDebugConfiguration;
-    if (qlConfiguration.query === undefined) {
-      void showAndLogErrorMessage(
-        "No query was specified in the debug configuration.",
+    try {
+      const qlConfiguration = debugConfiguration as QLDebugConfiguration;
+      if (qlConfiguration.query === undefined) {
+        throw new Error("No query was specified in the debug configuration.");
+      }
+      if (qlConfiguration.database === undefined) {
+        throw new Error(
+          "No database was specified in the debug configuration.",
+        );
+      }
+
+      // Fill in defaults here, instead of in `resolveDebugConfiguration`, to avoid the highly
+      // unusual case where one of the computed default values looks like a variable substitution.
+      const additionalPacks = makeArray(
+        qlConfiguration.additionalPacks ?? getOnDiskWorkspaceFolders(),
       );
+
+      // Default to computing the extension packs based on the extension configuration and the search
+      // path.
+      const extensionPacks = makeArray(
+        qlConfiguration.extensionPacks ??
+          (await this.localQueries.getDefaultExtensionPacks(additionalPacks)),
+      );
+
+      const quickEval = qlConfiguration.quickEval ?? false;
+      validateQueryPath(qlConfiguration.query, quickEval);
+
+      const quickEvalContext = quickEval
+        ? await getQuickEvalContext(undefined)
+        : undefined;
+
+      const resultConfiguration: QLResolvedDebugConfiguration = {
+        name: qlConfiguration.name,
+        request: qlConfiguration.request,
+        type: qlConfiguration.type,
+        query: qlConfiguration.query,
+        database: qlConfiguration.database,
+        additionalPacks,
+        extensionPacks,
+        quickEvalContext,
+        noDebug: qlConfiguration.noDebug ?? false,
+      };
+
+      return resultConfiguration;
+    } catch (e) {
+      // Any unhandled exception will result in an OS-native error message box, which seems ugly.
+      // We'll just show a real VS Code error message, then return null to prevent the debug session
+      // from starting.
+      void showAndLogErrorMessage(getErrorMessage(e));
       return null;
     }
-    if (qlConfiguration.database === undefined) {
-      void showAndLogErrorMessage(
-        "No database was specified in the debug configuration.",
-      );
-      return null;
-    }
-
-    // Fill in defaults here, instead of in `resolveDebugConfiguration`, to avoid the highly
-    // unusual case where one of the computed default values looks like a variable substitution.
-    const additionalPacks = makeArray(
-      qlConfiguration.additionalPacks ?? getOnDiskWorkspaceFolders(),
-    );
-
-    // Default to computing the extension packs based on the extension configuration and the search
-    // path.
-    const extensionPacks = makeArray(
-      qlConfiguration.extensionPacks ??
-        (await this.localQueries.getDefaultExtensionPacks(additionalPacks)),
-    );
-
-    const quickEval = qlConfiguration.quickEval ?? false;
-    validateQueryPath(qlConfiguration.query, quickEval);
-
-    const quickEvalContext = quickEval
-      ? await getQuickEvalContext(undefined)
-      : undefined;
-
-    const resultConfiguration: QLResolvedDebugConfiguration = {
-      name: qlConfiguration.name,
-      request: qlConfiguration.request,
-      type: qlConfiguration.type,
-      query: qlConfiguration.query,
-      database: qlConfiguration.database,
-      additionalPacks,
-      extensionPacks,
-      quickEvalContext,
-      noDebug: qlConfiguration.noDebug ?? false,
-    };
-
-    return resultConfiguration;
   }
 }
