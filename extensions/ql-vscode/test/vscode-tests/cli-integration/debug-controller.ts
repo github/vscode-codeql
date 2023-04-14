@@ -211,7 +211,7 @@ export class DebugController
 
   public async createLaunchJson(config: QLDebugConfiguration): Promise<void> {
     const launchJsonPath = join(
-      workspace.workspaceFolders![0].uri.fsPath,
+     getOnDiskWorkspaceFolders()[0],
       ".vscode/launch.json",
     );
 
