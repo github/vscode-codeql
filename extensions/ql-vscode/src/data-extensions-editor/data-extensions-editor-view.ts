@@ -18,7 +18,7 @@ import {
   showAndLogExceptionWithTelemetry,
 } from "../helpers";
 import { extLogger } from "../common";
-import { readFile, writeFile } from "fs-extra";
+import { outputFile, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { DatabaseItem, DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
@@ -150,7 +150,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
   ): Promise<void> {
     const yaml = createDataExtensionYaml(externalApiUsages, modeledMethods);
 
-    await writeFile(this.modelFilename, yaml);
+    await outputFile(this.modelFilename, yaml);
 
     void extLogger.log(`Saved data extension YAML to ${this.modelFilename}`);
   }
