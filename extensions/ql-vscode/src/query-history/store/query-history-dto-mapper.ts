@@ -5,7 +5,6 @@ import {
 } from "../../query-results";
 import { QueryEvaluationInfo } from "../../run-queries-shared";
 import { QueryHistoryInfo } from "../query-history-info";
-import { VariantAnalysisHistoryItem } from "../variant-analysis-history-item";
 import {
   CompletedQueryInfoDto,
   QueryEvaluationInfoDto,
@@ -23,14 +22,14 @@ import {
   SortDirection,
   SortedResultSetInfo,
 } from "../../pure/interface-types";
+import { mapQueryHistoryVariantAnalysisToDomainModel } from "./query-history-variant-analysis-dto-mapper";
 
 export function mapQueryHistoryToDomainModel(
   queries: QueryHistoryItemDto[],
 ): QueryHistoryInfo[] {
   return queries.map((d) => {
     if (d.t === "variant-analysis") {
-      const query: VariantAnalysisHistoryItem = d;
-      return query;
+      return mapQueryHistoryVariantAnalysisToDomainModel(d);
     } else if (d.t === "local") {
       return mapLocalQueryItemToDomainModel(d);
     }
