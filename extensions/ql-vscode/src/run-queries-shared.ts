@@ -455,7 +455,7 @@ export async function getQuickEvalContext(
   const quickEvalPosition = await getSelectedPosition(editor, range);
   let quickEvalText: string;
   if (!editor.selection?.isEmpty) {
-    quickEvalText = editor.document.getText(editor.selection);
+    quickEvalText = editor.document.getText(editor.selection).trim();
   } else {
     // capture the entire line if the user didn't select anything
     const line = editor.document.lineAt(editor.selection.active.line);
