@@ -810,7 +810,9 @@ export function getFirstWorkspaceFolder() {
   // For the vscode-codeql-starter repo, the first folder will be a ql pack
   // so we need to get the parent folder
   if (
-    firstFolderFsPath.includes("vscode-codeql-starter/codeql-custom-queries")
+    firstFolderFsPath.includes(
+      join("vscode-codeql-starter", "codeql-custom-queries"),
+    )
   ) {
     // return the parent folder
     return dirname(firstFolderFsPath);
