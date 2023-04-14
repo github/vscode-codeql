@@ -1495,7 +1495,7 @@
     "@github/markdownlint-github": "^0.3.0",
     "@octokit/plugin-throttling": "^5.0.1",
     "@storybook/addon-actions": "^6.5.17-alpha.0",
-    "@storybook/addon-essentials": "^6.5.17-alpha.0",
+    "@storybook/addon-essentials": "^7.0.4",
     "@storybook/addon-interactions": "^6.5.17-alpha.0",
     "@storybook/addon-links": "^6.5.17-alpha.0",
     "@storybook/builder-webpack5": "^7.0.4",
