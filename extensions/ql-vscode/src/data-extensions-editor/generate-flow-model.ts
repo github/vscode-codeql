@@ -4,7 +4,7 @@ import { join } from "path";
 import { QueryRunner } from "../queryRunner";
 import { CodeQLCliServer } from "../cli";
 import { TeeLogger } from "../common";
-import { extensiblePredicateDefinitions } from "./yaml";
+import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../progress";
 import {
   getOnDiskWorkspaceFolders,
