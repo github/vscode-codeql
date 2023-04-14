@@ -34,8 +34,6 @@ export class QLDebugAdapterDescriptorFactory
         DebugConfigurationProviderTriggerKind.Dynamic,
       ),
     );
-
-    this.push(debug.onDidStartDebugSession(this.handleOnDidStartDebugSession));
   }
 
   public createDebugAdapterDescriptor(
@@ -48,10 +46,5 @@ export class QLDebugAdapterDescriptorFactory
     return new DebugAdapterInlineImplementation(
       new QLDebugSession(this.queryStorageDir, this.queryRunner),
     );
-  }
-
-  private handleOnDidStartDebugSession(session: DebugSession): void {
-    const config = session.configuration;
-    void config;
   }
 }
