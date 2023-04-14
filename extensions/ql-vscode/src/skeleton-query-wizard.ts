@@ -65,7 +65,7 @@ export class SkeletonQueryWizard {
       // just create a new example query file in skeleton QL pack
       await this.createExampleFile();
       // select existing database for language
-      await this.selectExistingDatabase();
+      await this.selectOrDownloadDatabase();
     } else {
       // generate a new skeleton QL pack with query file
       await this.createQlPack();
@@ -216,7 +216,7 @@ export class SkeletonQueryWizard {
     );
   }
 
-  private async selectExistingDatabase() {
+  private async selectOrDownloadDatabase() {
     if (this.qlPackStoragePath === undefined) {
       throw new Error("QL Pack storage path is undefined");
     }
