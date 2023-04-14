@@ -277,8 +277,12 @@ export class SkeletonQueryWizard {
   ): Promise<DatabaseItem | undefined> {
     const dbItems = databaseItems || [];
     const dbs = dbItems.filter(
-      (db) => db.language === language && db.name === databaseNwo,
+      (db) =>
+        db.language === language &&
+        db.name === databaseNwo &&
+        db.error === undefined,
     );
+
     if (dbs.length === 0) {
       return undefined;
     }
@@ -290,7 +294,9 @@ export class SkeletonQueryWizard {
     databaseItems: readonly DatabaseItem[],
   ): Promise<DatabaseItem | undefined> {
     const dbItems = databaseItems || [];
-    const dbs = dbItems.filter((db) => db.language === language);
+    const dbs = dbItems.filter(
+      (db) => db.language === language && db.error === undefined,
+    );
     if (dbs.length === 0) {
       return undefined;
     }

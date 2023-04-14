@@ -10,13 +10,11 @@ import {
 } from "../../pure/helpers-pure";
 import { QueryHistoryInfo } from "../query-history-info";
 import { redactableError } from "../../pure/errors";
-import {
-  ALLOWED_QUERY_HISTORY_VERSIONS,
-  QueryHistoryData,
-  QueryHistoryDataItem,
-} from "./query-history-data";
-import { mapQueryHistoryToDomainModels } from "./data-mapper";
-import { mapQueryHistoryToDataModels } from "./domain-mapper";
+import { QueryHistoryDto, QueryHistoryItemDto } from "./query-history-dto";
+import { mapQueryHistoryToDomainModel } from "./query-history-dto-mapper";
+import { mapQueryHistoryToDto } from "./query-history-domain-mapper";
+
+const ALLOWED_QUERY_HISTORY_VERSIONS = [1, 2];
 
 export async function readQueryHistoryFromFile(
   fsPath: string,
@@ -26,7 +24,7 @@ export async function readQueryHistoryFromFile(
       return [];
     }
 
-    const obj: QueryHistoryData = await readJson(fsPath, {
+    const obj: QueryHistoryDto = await readJson(fsPath, {
       encoding: "utf8",
     });
 
@@ -40,21 +38,21 @@ export async function readQueryHistoryFromFile(
     const queries = obj.queries;
     // Remove remote queries, which are not supported anymore.
     const parsedQueries = queries.filter(
-      (q: QueryHistoryDataItem | { t: "remote" }) => q.t !== "remote",
+      (q: QueryHistoryItemDto | { t: "remote" }) => q.t !== "remote",
     );
 
     // Map the data models to the domain models.
     const domainModels: QueryHistoryInfo[] =
-      mapQueryHistoryToDomainModels(parsedQueries);
+      mapQueryHistoryToDomainModel(parsedQueries);
 
-    // filter out queries that have been deleted on disk
+    // Filter out queries that have been deleted on disk
     // most likely another workspace has deleted them because the
     // queries aged out.
     const filteredDomainModels: Promise<QueryHistoryInfo[]> = asyncFilter(
       domainModels,
       async (q) => {
         if (q.t === "variant-analysis") {
-          // the query history store doesn't know where variant analysises are
+          // The query history store doesn't know where variant analysises are
           // stored so we need to assume here that they exist. We check later
           // to see if they exist on disk.
           return true;
@@ -72,7 +70,7 @@ export async function readQueryHistoryFromFile(
         fullMessage: `Error loading query history.\n${getErrorStack(e)}`,
       },
     );
-    // since the query history is invalid, it should be deleted so this error does not happen on next startup.
+    // Since the query history is invalid, it should be deleted so this error does not happen on next startup.
     await remove(fsPath);
     return [];
   }
@@ -95,13 +93,13 @@ export async function writeQueryHistoryToFile(
     if (!(await pathExists(fsPath))) {
       await mkdir(dirname(fsPath), { recursive: true });
     }
-    // remove incomplete local queries since they cannot be recreated on restart
+    // Remove incomplete local queries since they cannot be recreated on restart
     const filteredQueries = queries.filter((q) =>
       q.t === "local" ? q.completedQuery !== undefined : true,
     );
 
-    // map domain model queries to data model
-    const queryHistoryData = mapQueryHistoryToDataModels(filteredQueries);
+    // Map domain model queries to data model
+    const queryHistoryData = mapQueryHistoryToDto(filteredQueries);
 
     const data = JSON.stringify(
       {

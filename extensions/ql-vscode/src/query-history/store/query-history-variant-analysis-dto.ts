@@ -1,3 +1,6 @@
+// Contains models and consts for the data we want to store in the query history store.
+// Changes to these models should be done carefully and account for backwards compatibility of data.
+
 import { QueryLanguage } from "../../common/query-language";
 import { QueryStatus } from "../../query-status";
 import {
@@ -6,20 +9,19 @@ import {
   VariantAnalysisStatus,
 } from "../../variant-analysis/shared/variant-analysis";
 
-// Data Model for Variant Analysis Query History Items
 // All data points are modelled, except enums.
 
-export interface VariantAnalysisDataItem {
+export interface QueryHistoryVariantAnalysisDto {
   readonly t: "variant-analysis";
   failureReason?: string;
   resultCount?: number;
   status: QueryStatus;
   completed: boolean;
-  variantAnalysis: VariantAnalysisQueryHistoryData;
+  variantAnalysis: VariantAnalysisQueryHistoryDto;
   userSpecifiedLabel?: string;
 }
 
-export interface VariantAnalysisQueryHistoryData {
+export interface VariantAnalysisQueryHistoryDto {
   id: number;
   controllerRepo: {
     id: number;
@@ -44,11 +46,11 @@ export interface VariantAnalysisQueryHistoryData {
   completedAt?: string;
   actionsWorkflowRunId?: number;
   failureReason?: VariantAnalysisFailureReason;
-  scannedRepos?: VariantAnalysisScannedRepositoryData[];
-  skippedRepos?: VariantAnalysisSkippedRepositoriesData;
+  scannedRepos?: VariantAnalysisScannedRepositoryDto[];
+  skippedRepos?: VariantAnalysisSkippedRepositoriesDto;
 }
 
-export interface VariantAnalysisScannedRepositoryData {
+export interface VariantAnalysisScannedRepositoryDto {
   repository: {
     id: number;
     fullName: string;
@@ -62,19 +64,19 @@ export interface VariantAnalysisScannedRepositoryData {
   failureMessage?: string;
 }
 
-export interface VariantAnalysisSkippedRepositoriesData {
-  accessMismatchRepos?: VariantAnalysisSkippedRepositoryGroupData;
-  notFoundRepos?: VariantAnalysisSkippedRepositoryGroupData;
-  noCodeqlDbRepos?: VariantAnalysisSkippedRepositoryGroupData;
-  overLimitRepos?: VariantAnalysisSkippedRepositoryGroupData;
+export interface VariantAnalysisSkippedRepositoriesDto {
+  accessMismatchRepos?: VariantAnalysisSkippedRepositoryGroupDto;
+  notFoundRepos?: VariantAnalysisSkippedRepositoryGroupDto;
+  noCodeqlDbRepos?: VariantAnalysisSkippedRepositoryGroupDto;
+  overLimitRepos?: VariantAnalysisSkippedRepositoryGroupDto;
 }
 
-export interface VariantAnalysisSkippedRepositoryGroupData {
+export interface VariantAnalysisSkippedRepositoryGroupDto {
   repositoryCount: number;
-  repositories: VariantAnalysisSkippedRepositoryData[];
+  repositories: VariantAnalysisSkippedRepositoryDto[];
 }
 
-export interface VariantAnalysisSkippedRepositoryData {
+export interface VariantAnalysisSkippedRepositoryDto {
   id?: number;
   fullName: string;
   private?: boolean;

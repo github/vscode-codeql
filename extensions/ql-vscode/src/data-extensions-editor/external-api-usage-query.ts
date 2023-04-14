@@ -6,7 +6,7 @@ import {
   getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
 } from "../helpers";
-import { Logger, TeeLogger } from "../common";
+import { TeeLogger } from "../common";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseItem } from "../local-databases";
@@ -108,18 +108,16 @@ export async function runQuery({
 export type GetResultsOptions = {
   cliServer: Pick<CodeQLCliServer, "bqrsInfo" | "bqrsDecode">;
   bqrsPath: string;
-  logger: Logger;
 };
 
 export async function readQueryResults({
   cliServer,
   bqrsPath,
-  logger,
 }: GetResultsOptions) {
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
-    void logger.log(
-      `Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
+    void showAndLogExceptionWithTelemetry(
+      redactableError`Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
     );
     return undefined;
   }
