@@ -35,6 +35,15 @@ export type QLDebugConfiguration = DebugConfiguration & QLDebugArgs;
 export type QLResolvedDebugConfiguration = DebugConfiguration &
   CodeQLProtocol.LaunchConfig;
 
+/** If the specified value is a single element, then turn it into an array containing that element. */
+function makeArray<T extends Exclude<any, any[]>>(value: T | T[]): T[] {
+  if (Array.isArray(value)) {
+    return value;
+  } else {
+    return [value];
+  }
+}
+
 /**
  * Implementation of `DebugConfigurationProvider` for CodeQL.
  */
@@ -83,21 +92,16 @@ export class QLDebugConfigurationProvider
 
     // Fill in defaults here, instead of in `resolveDebugConfiguration`, to avoid the highly
     // unusual case where one of the computed default values looks like a variable substitution.
-    const additionalPacks =
-      qlConfiguration.additionalPacks === undefined
-        ? getOnDiskWorkspaceFolders()
-        : typeof qlConfiguration.additionalPacks === "string"
-        ? [qlConfiguration.additionalPacks]
-        : qlConfiguration.additionalPacks;
+    const additionalPacks = makeArray(
+      qlConfiguration.additionalPacks ?? getOnDiskWorkspaceFolders(),
+    );
 
     // Default to computing the extension packs based on the extension configuration and the search
     // path.
-    const extensionPacks =
-      qlConfiguration.extensionPacks === undefined
-        ? await this.localQueries.getDefaultExtensionPacks(additionalPacks)
-        : typeof qlConfiguration.extensionPacks === "string"
-        ? [qlConfiguration.extensionPacks]
-        : qlConfiguration.extensionPacks;
+    const extensionPacks = makeArray(
+      qlConfiguration.extensionPacks ??
+        (await this.localQueries.getDefaultExtensionPacks(additionalPacks)),
+    );
 
     const quickEval = qlConfiguration.quickEval ?? false;
     validateQueryPath(qlConfiguration.query, quickEval);
