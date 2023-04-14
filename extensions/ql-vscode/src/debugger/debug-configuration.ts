@@ -69,13 +69,13 @@ export class QLDebugConfigurationProvider
   ): Promise<DebugConfiguration | null> {
     const qlConfiguration = debugConfiguration as QLDebugConfiguration;
     if (qlConfiguration.query === undefined) {
-      await showAndLogErrorMessage(
+      void showAndLogErrorMessage(
         "No query was specified in the debug configuration.",
       );
       return null;
     }
     if (qlConfiguration.database === undefined) {
-      await showAndLogErrorMessage(
+      void showAndLogErrorMessage(
         "No database was specified in the debug configuration.",
       );
       return null;
