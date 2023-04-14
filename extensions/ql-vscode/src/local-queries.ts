@@ -8,7 +8,7 @@ import {
   window,
 } from "vscode";
 import { BaseLogger, extLogger, Logger, TeeLogger } from "./common";
-import { MAX_QUERIES } from "./config";
+import { isCanary, MAX_QUERIES } from "./config";
 import { gatherQlFiles } from "./pure/files";
 import { basename } from "path";
 import {
@@ -51,6 +51,7 @@ import { App } from "./common/app";
 import { DisposableObject } from "./pure/disposable-object";
 import { QueryResultType } from "./pure/new-messages";
 import { redactableError } from "./pure/errors";
+import { SkeletonQueryWizard } from "./skeleton-query-wizard";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -237,6 +238,7 @@ export class LocalQueries extends DisposableObject {
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
       "codeQL.codeLensQuickEval": this.codeLensQuickEval.bind(this),
       "codeQL.quickQuery": this.quickQuery.bind(this),
+      "codeQL.createQuery": this.createSkeletonQuery.bind(this),
     };
   }
 
@@ -265,7 +267,7 @@ export class LocalQueries extends DisposableObject {
     );
   }
 
-  private async runQueries(_: Uri | undefined, multi: Uri[]): Promise<void> {
+  private async runQueries(_: unknown, multi: Uri[]): Promise<void> {
     await withProgress(
       async (progress, token) => {
         const maxQueryCount = MAX_QUERIES.getValue() as number;
@@ -371,6 +373,29 @@ export class LocalQueries extends DisposableObject {
         ),
       {
         title: "Run Quick Query",
+      },
+    );
+  }
+
+  private async createSkeletonQuery(): Promise<void> {
+    await withProgress(
+      async (progress: ProgressCallback, token: CancellationToken) => {
+        const credentials = isCanary() ? this.app.credentials : undefined;
+        const contextStoragePath =
+          this.app.workspaceStoragePath || this.app.globalStoragePath;
+        const skeletonQueryWizard = new SkeletonQueryWizard(
+          this.cliServer,
+          progress,
+          credentials,
+          extLogger,
+          this.databaseManager,
+          token,
+          contextStoragePath,
+        );
+        await skeletonQueryWizard.execute();
+      },
+      {
+        title: "Create Query",
       },
     );
   }
