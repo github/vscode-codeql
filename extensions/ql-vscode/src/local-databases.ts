@@ -11,6 +11,7 @@ import {
   showAndLogExceptionWithTelemetry,
   isFolderAlreadyInWorkspace,
   showBinaryChoiceDialog,
+  getFirstWorkspaceFolder,
 } from "./helpers";
 import { ProgressCallback, withProgress } from "./progress";
 import {
@@ -29,6 +30,7 @@ import { isCodespacesTemplate } from "./config";
 import { QlPackGenerator } from "./qlpack-generator";
 import { QueryLanguage } from "./common/query-language";
 import { App } from "./common/app";
+import { existsSync } from "fs";
 
 /**
  * databases.ts
@@ -662,8 +664,13 @@ export class DatabaseManager extends DisposableObject {
       return;
     }
 
+    const firstWorkspaceFolder = getFirstWorkspaceFolder();
     const folderName = `codeql-custom-queries-${databaseItem.language}`;
-    if (isFolderAlreadyInWorkspace(folderName)) {
+
+    if (
+      existsSync(join(firstWorkspaceFolder, folderName)) ||
+      isFolderAlreadyInWorkspace(folderName)
+    ) {
       return;
     }
 
@@ -680,7 +687,7 @@ export class DatabaseManager extends DisposableObject {
         folderName,
         databaseItem.language as QueryLanguage,
         this.cli,
-        this.ctx.storageUri?.fsPath,
+        firstWorkspaceFolder,
       );
       await qlPackGenerator.generate();
     } catch (e: unknown) {

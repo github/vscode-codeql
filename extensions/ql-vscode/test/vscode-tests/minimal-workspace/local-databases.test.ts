@@ -687,6 +687,22 @@ describe("local databases", () => {
         );
       });
     });
+
+    describe("when the QL pack already exists", () => {
+      beforeEach(() => {
+        fs.mkdirSync(join(dir.name, `codeql-custom-queries-${language}`));
+      });
+
+      it("should exit early", async () => {
+        showBinaryChoiceDialogSpy = jest
+          .spyOn(helpers, "showBinaryChoiceDialog")
+          .mockResolvedValue(false);
+
+        await (databaseManager as any).createSkeletonPacks(mockDbItem);
+
+        expect(generateSpy).not.toBeCalled();
+      });
+    });
   });
 
   describe("openDatabase", () => {
