@@ -28,7 +28,7 @@ import {
   QueryServerCommands,
 } from "../../../src/common/commands";
 import { ProgressCallback } from "../../../src/progress";
-import { withDebugController } from "./debug-controller";
+import { withDebugController } from "./debugger/debug-controller";
 
 type DebugMode = "localQueries" | "debug";
 

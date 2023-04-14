@@ -7,19 +7,20 @@ import {
   debug,
   workspace,
 } from "vscode";
-import * as CodeQLProtocol from "../../../src/debugger/debug-protocol";
-import { DisposableObject } from "../../../src/pure/disposable-object";
-import { QueryResultType } from "../../../src/pure/legacy-messages";
-import { CoreCompletedQuery } from "../../../src/queryRunner";
-import { QueryOutputDir } from "../../../src/run-queries-shared";
+import * as CodeQLProtocol from "../../../../src/debugger/debug-protocol";
+import { DisposableObject } from "../../../../src/pure/disposable-object";
+import { QueryResultType } from "../../../../src/pure/legacy-messages";
+import { CoreCompletedQuery } from "../../../../src/queryRunner";
+import { QueryOutputDir } from "../../../../src/run-queries-shared";
 import {
   QLDebugArgs,
   QLDebugConfiguration,
-} from "../../../src/debugger/debug-configuration";
+} from "../../../../src/debugger/debug-configuration";
 import { join } from "path";
 import { writeFile } from "fs-extra";
 import { expect } from "@jest/globals";
-import { AppCommandManager } from "../../../src/common/commands";
+import { AppCommandManager } from "../../../../src/common/commands";
+import { getOnDiskWorkspaceFolders } from "../../../../src/helpers";
 
 type Resolver<T> = (value: T) => void;
 
@@ -211,7 +212,7 @@ export class DebugController
 
   public async createLaunchJson(config: QLDebugConfiguration): Promise<void> {
     const launchJsonPath = join(
-     getOnDiskWorkspaceFolders()[0],
+      getOnDiskWorkspaceFolders()[0],
       ".vscode/launch.json",
     );
 

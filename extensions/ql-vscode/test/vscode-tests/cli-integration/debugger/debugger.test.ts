@@ -1,18 +1,18 @@
 import { Selection, Uri, window, workspace } from "vscode";
 import { join } from "path";
 
-import { DatabaseManager } from "../../../src/local-databases";
+import { DatabaseManager } from "../../../../src/local-databases";
 import {
   cleanDatabases,
   ensureTestDatabase,
   getActivatedExtension,
-} from "../global.helper";
-import { describeWithCodeQL } from "../cli";
+} from "../../global.helper";
+import { describeWithCodeQL } from "../../cli";
 import { withDebugController } from "./debug-controller";
-import { CodeQLCliServer } from "../../../src/cli";
-import { QueryOutputDir } from "../../../src/run-queries-shared";
-import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
-import { AllCommands } from "../../../src/common/commands";
+import { CodeQLCliServer } from "../../../../src/cli";
+import { QueryOutputDir } from "../../../../src/run-queries-shared";
+import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
+import { AllCommands } from "../../../../src/common/commands";
 
 jest.setTimeout(30_000);
 
@@ -44,9 +44,9 @@ describeWithCodeQL()("Debugger", () => {
   let databaseManager: DatabaseManager;
   let cli: CodeQLCliServer;
   const appCommands = createVSCodeCommandManager<AllCommands>();
-  const simpleQueryPath = join(__dirname, "data", "simple-query.ql");
-  const quickEvalQueryPath = join(__dirname, "data", "QuickEvalQuery.ql");
-  const quickEvalLibPath = join(__dirname, "data", "QuickEvalLib.qll");
+  const simpleQueryPath = join(__dirname, "..", "data", "simple-query.ql");
+  const quickEvalQueryPath = join(__dirname, "..", "data", "QuickEvalQuery.ql");
+  const quickEvalLibPath = join(__dirname, "..", "data", "QuickEvalLib.qll");
 
   beforeEach(async () => {
     const extension = await getActivatedExtension();
