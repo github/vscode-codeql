@@ -636,7 +636,7 @@ export class DatabaseManager extends DisposableObject {
    * Adds a {@link DatabaseItem} to the list of open databases, if that database is not already on
    * the list.
    *
-   * Typically, the item will have been created by {@link createOrOpenDatabaseItem}.
+   * Typically, the item will have been created by {@link createOrOpenDatabaseItem} or {@link openDatabase}.
    */
   public async addExistingDatabaseItem(
     databaseItem: DatabaseItem,
