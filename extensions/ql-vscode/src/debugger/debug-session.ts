@@ -242,7 +242,10 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   /** A `BaseLogger` that sends output to the debug console. */
   private readonly logger: BaseLogger = {
     log: async (message: string, _options: LogOptions): Promise<void> => {
-      this.sendEvent(new OutputEvent(message, "console"));
+      // Only send the output event if we're still connected to the query evaluation.
+      if (this.runningQuery !== undefined) {
+        this.sendEvent(new OutputEvent(message, "console"));
+      }
     },
   };
   private state: State = "uninitialized";
@@ -317,7 +320,10 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     _args: Protocol.DisconnectArguments,
     _request?: Protocol.Request,
   ): void {
-    this.terminateOrDisconnect(response);
+    // The client is forcing a disconnect. We'll signal cancellation, but since this request means
+    // that the debug session itself is about to go away, we'll stop processing events from the
+    // evaluation to avoid sending them to the client that is no longer interested in them.
+    this.terminateOrDisconnect(response, true);
   }
 
   protected terminateRequest(
@@ -325,13 +331,24 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     _args: Protocol.TerminateArguments,
     _request?: Protocol.Request,
   ): void {
-    this.terminateOrDisconnect(response);
+    // The client is requesting a graceful termination. This will signal the cancellation token of
+    // any in-progress evaluation, but that evaluation will continue to report events (like
+    // progress) until the cancellation takes effect.
+    this.terminateOrDisconnect(response, false);
   }
 
-  private terminateOrDisconnect(response: Protocol.Response): void {
-    if (this.runningQuery !== undefined) {
+  private terminateOrDisconnect(
+    response: Protocol.Response,
+    force: boolean,
+  ): void {
+    const runningQuery = this.runningQuery;
+    if (force) {
+      // Disconnect from the running query so that we stop processing its progress events.
+      this.runningQuery = undefined;
+    }
+    if (runningQuery !== undefined) {
       this.terminateOnComplete = true;
-      this.runningQuery.cancel();
+      runningQuery.cancel();
     } else if (this.state === "stopped") {
       this.terminateAndExit();
     }
@@ -537,7 +554,13 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
       quickEvalContext,
       this.queryStorageDir,
       this.logger,
-      (event) => this.sendEvent(event),
+      (event) => {
+        // If `this.runningQuery` is undefined, it means that we've already disconnected from this
+        // evaluation, and do not want any further events.
+        if (this.runningQuery !== undefined) {
+          this.sendEvent(event);
+        }
+      },
     );
     this.runningQuery = runningQuery;
     this.state = "running";
