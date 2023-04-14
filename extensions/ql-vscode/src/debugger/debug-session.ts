@@ -312,14 +312,6 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     }
   }
 
-  protected configurationDoneRequest(
-    response: Protocol.ConfigurationDoneResponse,
-    args: Protocol.ConfigurationDoneArguments,
-    request?: Protocol.Request,
-  ): void {
-    super.configurationDoneRequest(response, args, request);
-  }
-
   protected disconnectRequest(
     response: Protocol.DisconnectResponse,
     _args: Protocol.DisconnectArguments,

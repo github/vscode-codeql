@@ -8,13 +8,9 @@ import {
   CancellationTokenSource,
 } from "vscode";
 import { DebuggerCommands } from "../common/commands";
-import { isCanary } from "../config";
-import { ResultsView } from "../interface";
-import { WebviewReveal } from "../interface-utils";
 import { DatabaseManager } from "../local-databases";
 import { LocalQueries, LocalQueryRun } from "../local-queries";
 import { DisposableObject } from "../pure/disposable-object";
-import { CompletedLocalQueryInfo } from "../query-results";
 import { CoreQueryResults } from "../queryRunner";
 import {
   getQuickEvalContext,
@@ -145,15 +141,12 @@ export class DebuggerUI
 
   constructor(
     private readonly app: App,
-    private readonly localQueryResultsView: ResultsView,
     private readonly localQueries: LocalQueries,
     private readonly dbm: DatabaseManager,
   ) {
     super();
 
-    if (isCanary()) {
-      this.push(debug.registerDebugAdapterTrackerFactory("codeql", this));
-    }
+    this.push(debug.registerDebugAdapterTrackerFactory("codeql", this));
   }
 
   public getCommands(): DebuggerCommands {
@@ -235,12 +228,5 @@ export class DebuggerUI
     }
 
     return this.getTrackerForSession(session);
-  }
-
-  public async showResultsForCompletedQuery(
-    query: CompletedLocalQueryInfo,
-    forceReveal: WebviewReveal,
-  ): Promise<void> {
-    await this.localQueryResultsView.showResults(query, forceReveal, false);
   }
 }

@@ -876,12 +876,7 @@ async function activateWithInstalledDistribution(
   );
 
   void extLogger.log("Initializing debugger UI.");
-  const debuggerUI = new DebuggerUI(
-    app,
-    localQueryResultsView,
-    localQueries,
-    dbm,
-  );
+  const debuggerUI = new DebuggerUI(app, localQueries, dbm);
   ctx.subscriptions.push(debuggerUI);
 
   const dataExtensionsEditorModule =
