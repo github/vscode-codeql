@@ -1,6 +1,6 @@
-export interface VariantAnalysisRepositoryTaskData {
-  repository: RepositoryData;
-  analysisStatus: VariantAnalysisRepoStatusData;
+export interface VariantAnalysisRepositoryTaskDto {
+  repository: RepositoryDto;
+  analysisStatus: VariantAnalysisRepoStatusDto;
   resultCount?: number;
   artifactSizeInBytes?: number;
   failureMessage?: string;
@@ -9,13 +9,13 @@ export interface VariantAnalysisRepositoryTaskData {
   artifactUrl?: string;
 }
 
-interface RepositoryData {
+interface RepositoryDto {
   id: number;
   fullName: string;
   private: boolean;
 }
 
-export enum VariantAnalysisRepoStatusData {
+export enum VariantAnalysisRepoStatusDto {
   Pending = "pending",
   InProgress = "inProgress",
   Succeeded = "succeeded",

@@ -29,9 +29,6 @@ import { QueryLanguage } from "../../../../src/common/query-language";
 import { readBundledPack } from "../../utils/bundled-pack-helpers";
 import { load } from "js-yaml";
 
-// up to 3 minutes per test
-jest.setTimeout(3 * 60 * 1000);
-
 describe("Variant Analysis Manager", () => {
   let cli: CodeQLCliServer;
   let cancellationTokenSource: CancellationTokenSource;

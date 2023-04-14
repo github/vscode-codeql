@@ -273,6 +273,13 @@ describe("helpers", () => {
   class MockEnvironmentVariableCollection
     implements EnvironmentVariableCollection
   {
+    [Symbol.iterator](): Iterator<
+      [variable: string, mutator: EnvironmentVariableMutator],
+      any,
+      undefined
+    > {
+      throw new Error("Method not implemented.");
+    }
     persistent = false;
     replace(_variable: string, _value: string): void {
       throw new Error("Method not implemented.");

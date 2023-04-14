@@ -16,6 +16,7 @@ import {
   window as Window,
   workspace,
   env,
+  WorkspaceFolder,
 } from "vscode";
 import { CodeQLCliServer, QlpacksInfo } from "./cli";
 import { UserCancellationException } from "./progress";
@@ -249,14 +250,19 @@ export async function showInformationMessageWithAction(
 }
 
 /** Gets all active workspace folders that are on the filesystem. */
-export function getOnDiskWorkspaceFolders() {
+export function getOnDiskWorkspaceFoldersObjects() {
   const workspaceFolders = workspace.workspaceFolders || [];
-  const diskWorkspaceFolders: string[] = [];
+  const diskWorkspaceFolders: WorkspaceFolder[] = [];
   for (const workspaceFolder of workspaceFolders) {
     if (workspaceFolder.uri.scheme === "file")
-      diskWorkspaceFolders.push(workspaceFolder.uri.fsPath);
+      diskWorkspaceFolders.push(workspaceFolder);
   }
   return diskWorkspaceFolders;
+}
+
+/** Gets all active workspace folders that are on the filesystem. */
+export function getOnDiskWorkspaceFolders() {
+  return getOnDiskWorkspaceFoldersObjects().map((folder) => folder.uri.fsPath);
 }
 
 /** Check if folder is already present in workspace */
