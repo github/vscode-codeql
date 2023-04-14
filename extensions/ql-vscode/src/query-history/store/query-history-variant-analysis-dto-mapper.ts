@@ -35,12 +35,12 @@ export function mapQueryHistoryVariantAnalysisToDomainModel(
     resultCount: item.resultCount,
     status: mapQueryStatusToDomainModel(item.status),
     completed: item.completed,
-    variantAnalysis: mapVariantAnalysisDtoToDomainModel(item.variantAnalysis),
+    variantAnalysis: mapVariantAnalysisToDomainModel(item.variantAnalysis),
     userSpecifiedLabel: item.userSpecifiedLabel,
   };
 }
 
-function mapVariantAnalysisDtoToDomainModel(
+function mapVariantAnalysisToDomainModel(
   variantAnalysis: VariantAnalysisDto,
 ): VariantAnalysis {
   return {
