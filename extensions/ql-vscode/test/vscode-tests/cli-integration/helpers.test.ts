@@ -4,9 +4,6 @@ import { CodeQLCliServer } from "../../../src/cli";
 import { tryGetQueryMetadata } from "../../../src/helpers";
 import { getActivatedExtension } from "../global.helper";
 
-// up to 3 minutes per test
-jest.setTimeout(3 * 60 * 1000);
-
 describe("helpers (with CLI)", () => {
   const baseDir = __dirname;
 

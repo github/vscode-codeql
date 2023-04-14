@@ -15,8 +15,6 @@ import { getActivatedExtension } from "../../global.helper";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
 import { AllCommands } from "../../../../src/common/commands";
 
-jest.setTimeout(30_000);
-
 const mockServer = new MockGitHubApiServer();
 beforeAll(() => mockServer.startServer());
 afterEach(() => mockServer.unloadScenario());

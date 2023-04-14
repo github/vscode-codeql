@@ -14,8 +14,6 @@ import { QueryOutputDir } from "../../../../src/run-queries-shared";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
 import { AllCommands } from "../../../../src/common/commands";
 
-jest.setTimeout(30_000);
-
 async function selectForQuickEval(
   path: string,
   line: number,

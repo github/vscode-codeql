@@ -4,13 +4,18 @@ import { join } from "path";
 import { QueryRunner } from "../queryRunner";
 import { CodeQLCliServer } from "../cli";
 import { TeeLogger } from "../common";
-import { extensiblePredicateDefinitions } from "./yaml";
+import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../progress";
-import { getOnDiskWorkspaceFolders } from "../helpers";
+import {
+  getOnDiskWorkspaceFolders,
+  showAndLogExceptionWithTelemetry,
+} from "../helpers";
 import {
   ModeledMethodType,
   ModeledMethodWithSignature,
 } from "./modeled-method";
+import { redactableError } from "../pure/errors";
+import { QueryResultType } from "../pure/new-messages";
 
 type FlowModelOptions = {
   cliServer: CodeQLCliServer;
@@ -67,13 +72,21 @@ async function getModeledMethodsFromFlow(
     token,
     new TeeLogger(queryRunner.logger, queryRun.outputDir.logPath),
   );
+  if (queryResult.resultType !== QueryResultType.SUCCESS) {
+    void showAndLogExceptionWithTelemetry(
+      redactableError`Failed to run ${queryName} query: ${
+        queryResult.message ?? "No message"
+      }`,
+    );
+    return [];
+  }
 
   const bqrsPath = queryResult.outputDir.bqrsPath;
 
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
-    throw new Error(
-      `Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
+    void showAndLogExceptionWithTelemetry(
+      redactableError`Expected exactly one result set, got ${bqrsInfo["result-sets"].length} for ${queryName}`,
     );
   }
 

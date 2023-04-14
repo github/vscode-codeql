@@ -3,7 +3,6 @@ import {
   VSCodeDataGridRow,
   VSCodeDropdown,
   VSCodeOption,
-  VSCodeTextField,
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
 import { useCallback, useMemo } from "react";
@@ -15,12 +14,10 @@ import {
   ModeledMethod,
   ModeledMethodType,
 } from "../../data-extensions-editor/modeled-method";
+import { KindInput } from "./KindInput";
+import { extensiblePredicateDefinitions } from "../../data-extensions-editor/predicates";
 
 const Dropdown = styled(VSCodeDropdown)`
-  width: 100%;
-`;
-
-const TextField = styled(VSCodeTextField)`
   width: 100%;
 `;
 
@@ -107,17 +104,15 @@ export const MethodRow = ({
     },
     [onChange, externalApiUsage, modeledMethod],
   );
-  const handleKindInput = useCallback(
-    (e: InputEvent) => {
+  const handleKindChange = useCallback(
+    (kind: string) => {
       if (!modeledMethod) {
         return;
       }
 
-      const target = e.target as HTMLSelectElement;
-
       onChange(externalApiUsage, {
         ...modeledMethod,
-        kind: target.value as ModeledMethod["kind"],
+        kind,
       });
     },
     [onChange, externalApiUsage, modeledMethod],
@@ -129,6 +124,11 @@ export const MethodRow = ({
       location: externalApiUsage.usages[0].url,
     });
   }, [externalApiUsage]);
+
+  const predicate =
+    modeledMethod?.type && modeledMethod.type !== "none"
+      ? extensiblePredicateDefinitions[modeledMethod.type]
+      : undefined;
 
   return (
     <VSCodeDataGridRow>
@@ -195,10 +195,13 @@ export const MethodRow = ({
           )}
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={7}>
-        {modeledMethod?.type &&
-          ["source", "sink", "summary"].includes(modeledMethod?.type) && (
-            <TextField value={modeledMethod?.kind} onInput={handleKindInput} />
-          )}
+        {predicate?.supportedKinds && (
+          <KindInput
+            kinds={predicate.supportedKinds}
+            value={modeledMethod?.kind}
+            onChange={handleKindChange}
+          />
+        )}
       </VSCodeDataGridCell>
     </VSCodeDataGridRow>
   );

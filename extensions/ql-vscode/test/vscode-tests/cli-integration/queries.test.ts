@@ -73,8 +73,6 @@ async function compileAndRunQuery(
   }
 }
 
-jest.setTimeout(30_000);
-
 const MODES: DebugMode[] = ["localQueries", "debug"];
 
 /**
