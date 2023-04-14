@@ -494,7 +494,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
       case "codeql-quickeval": {
         this.quickEvalRequest(
           response,
-          <CodeQLProtocol.QuickEvalRequest["arguments"]>args,
+          args as CodeQLProtocol.QuickEvalRequest["arguments"],
         );
         break;
       }
