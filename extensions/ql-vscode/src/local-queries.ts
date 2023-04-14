@@ -412,7 +412,7 @@ export class LocalQueries extends DisposableObject {
    * For now, the "active query" is just whatever query is in the active text editor. Once we have a
    * propery "queries" panel, we can provide a way to select the current query there.
    */
-  private async getCurrentQuery(allowLibraryFiles: boolean): Promise<string> {
+  public async getCurrentQuery(allowLibraryFiles: boolean): Promise<string> {
     const editor = window.activeTextEditor;
     if (editor === undefined) {
       throw new Error(

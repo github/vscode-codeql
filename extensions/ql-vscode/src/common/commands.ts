@@ -150,7 +150,7 @@ export type LocalQueryCommands = {
 
 // Debugger commands
 export type DebuggerCommands = {
-  "codeQL.debugQuery": (uri: Uri) => Promise<void>;
+  "codeQL.debugQuery": (uri: Uri | undefined) => Promise<void>;
   "codeQL.debugQueryContextEditor": (uri: Uri) => Promise<void>;
   "codeQL.startDebuggingSelection": () => Promise<void>;
   "codeQL.startDebuggingSelectionContextEditor": () => Promise<void>;

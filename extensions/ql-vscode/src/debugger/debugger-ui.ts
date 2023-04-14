@@ -185,8 +185,11 @@ export class DebuggerUI
     this.sessions.delete(session.id);
   }
 
-  private async debugQuery(uri: Uri): Promise<void> {
-    const queryPath = validateQueryUri(uri, false);
+  private async debugQuery(uri: Uri | undefined): Promise<void> {
+    const queryPath =
+      uri !== undefined
+        ? validateQueryUri(uri, false)
+        : await this.localQueries.getCurrentQuery(false);
 
     // Start debugging with a default configuration that just specifies the query path.
     await debug.startDebugging(undefined, {
