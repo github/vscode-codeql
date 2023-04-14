@@ -12,9 +12,6 @@ import {
 import { mockedQuickPickItem } from "../utils/mocking.helpers";
 import { getActivatedExtension } from "../global.helper";
 
-// up to 3 minutes per test
-jest.setTimeout(3 * 60 * 1000);
-
 describe("Packaging commands", () => {
   let cli: CodeQLCliServer;
   const progress = jest.fn();

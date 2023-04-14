@@ -104,8 +104,6 @@ const nullProgressReporter: ProgressReporter = {
   },
 };
 
-jest.setTimeout(20_000);
-
 describeWithCodeQL()("using the new query server", () => {
   let qs: qsClient.QueryServerClient;
   let cliServer: cli.CodeQLCliServer;

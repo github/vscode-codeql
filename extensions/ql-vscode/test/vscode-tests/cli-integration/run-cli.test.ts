@@ -14,8 +14,6 @@ import { KeyType } from "../../../src/contextual/keyType";
 import { faker } from "@faker-js/faker";
 import { getActivatedExtension } from "../global.helper";
 
-jest.setTimeout(60_000);
-
 /**
  * Perform proper integration tests by running the CLI
  */
