@@ -8,8 +8,10 @@ import { DatabaseKind } from "../../../../src/local-databases";
 import * as queryResolver from "../../../../src/contextual/queryResolver";
 import { file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/pure/new-messages";
-import { readFile } from "fs-extra";
+import { readdir, readFile } from "fs-extra";
 import { load } from "js-yaml";
+import { dirname, join } from "path";
+import { fetchExternalApisQuery } from "../../../../src/data-extensions-editor/queries/java";
 import * as helpers from "../../../../src/helpers";
 import { RedactableError } from "../../../../src/pure/errors";
 
@@ -41,11 +43,6 @@ describe("runQuery", () => {
         resolveQlpacks: jest.fn().mockResolvedValue({
           "my/java-extensions": "/a/b/c/",
         }),
-        resolveQueriesInSuite: jest
-          .fn()
-          .mockResolvedValue([
-            "/home/github/codeql/java/ql/src/Telemetry/FetchExternalAPIs.ql",
-          ]),
       },
       queryRunner: {
         createQueryRun: jest.fn().mockReturnValue({
@@ -58,7 +55,6 @@ describe("runQuery", () => {
         }),
         logger: createMockLogger(),
       },
-      logger: createMockLogger(),
       databaseItem: {
         databaseUri: createMockUri("/a/b/c/src.zip"),
         contents: {
@@ -79,37 +75,12 @@ describe("runQuery", () => {
 
     expect(result?.resultType).toEqual(QueryResultType.SUCCESS);
 
-    expect(options.cliServer.resolveQueriesInSuite).toHaveBeenCalledWith(
-      expect.anything(),
-      [],
-    );
-    const suiteFile = options.cliServer.resolveQueriesInSuite.mock.calls[0][0];
-    const suiteFileContents = await readFile(suiteFile, "utf8");
-    const suiteYaml = load(suiteFileContents);
-    expect(suiteYaml).toEqual([
-      {
-        from: "codeql/java-all",
-        queries: ".",
-        include: {
-          id: "java/telemetry/fetch-external-apis",
-        },
-      },
-      {
-        from: "codeql/java-queries",
-        queries: ".",
-        include: {
-          id: "java/telemetry/fetch-external-apis",
-        },
-      },
-    ]);
-
     expect(options.cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
     expect(options.cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
       "/a/b/c/src.zip",
       {
-        queryPath:
-          "/home/github/codeql/java/ql/src/Telemetry/FetchExternalAPIs.ql",
+        queryPath: expect.stringMatching(/FetchExternalApis\.ql/),
         quickEvalPosition: undefined,
       },
       false,
@@ -119,6 +90,40 @@ describe("runQuery", () => {
       undefined,
       undefined,
     );
+
+    const queryPath =
+      options.queryRunner.createQueryRun.mock.calls[0][1].queryPath;
+    const queryDirectory = dirname(queryPath);
+
+    const queryFiles = await readdir(queryDirectory);
+    expect(queryFiles.sort()).toEqual(
+      ["codeql-pack.yml", "FetchExternalApis.ql", "ExternalApi.qll"].sort(),
+    );
+
+    const suiteFileContents = await readFile(
+      join(queryDirectory, "codeql-pack.yml"),
+      "utf8",
+    );
+    const suiteYaml = load(suiteFileContents);
+    expect(suiteYaml).toEqual({
+      name: "codeql/external-api-usage",
+      version: "0.0.0",
+      dependencies: {
+        "codeql/java-all": "*",
+      },
+    });
+
+    expect(
+      await readFile(join(queryDirectory, "FetchExternalApis.ql"), "utf8"),
+    ).toEqual(fetchExternalApisQuery.mainQuery);
+
+    for (const [filename, contents] of Object.entries(
+      fetchExternalApisQuery.dependencies ?? {},
+    )) {
+      expect(await readFile(join(queryDirectory, filename), "utf8")).toEqual(
+        contents,
+      );
+    }
   });
 });
 
