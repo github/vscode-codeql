@@ -261,7 +261,9 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
             ].join("\n")
           : [
               "",
-              `${event.failureStage?.toLowerCase()} error: ${event.test}`,
+              `${event.failureStage?.toLowerCase() ?? "unknown stage"} error: ${
+                event.test
+              }`,
               event.failureDescription ||
                 `${event.messages[0].severity}: ${event.messages[0].message}`,
               "",

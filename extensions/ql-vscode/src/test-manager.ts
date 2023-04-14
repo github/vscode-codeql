@@ -155,7 +155,7 @@ export class TestManager extends TestManagerBase {
     if (node.uri === undefined || node.uri.scheme !== "file") {
       throw new Error("Selected test is not a CodeQL test.");
     }
-    return node.uri!.fsPath;
+    return node.uri.fsPath;
   }
 
   /** Start tracking tests in the specified workspace folders. */
@@ -256,9 +256,9 @@ export class TestManager extends TestManagerBase {
     const testRun = this.testController.createTestRun(request, undefined, true);
     try {
       const tests: string[] = [];
-      testsToRun.forEach((t) => {
-        testRun.enqueued(t);
-        tests.push(t.uri!.fsPath);
+      testsToRun.forEach((testItem, testPath) => {
+        testRun.enqueued(testItem);
+        tests.push(testPath);
       });
 
       const logger = new TestRunLogger(testRun);

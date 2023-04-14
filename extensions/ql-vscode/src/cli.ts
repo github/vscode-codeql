@@ -448,6 +448,11 @@ export class CodeQLCliServer implements Disposable {
     // Spawn the CodeQL process
     const codeqlPath = await this.getCodeQlPath();
     const childPromise = spawn(codeqlPath, args);
+    // Avoid a runtime message about unhandled rejection.
+    childPromise.catch(() => {
+      /**/
+    });
+
     const child = childPromise.childProcess;
 
     let cancellationRegistration: Disposable | undefined = undefined;
@@ -469,13 +474,9 @@ export class CodeQLCliServer implements Disposable {
       ])) {
         yield event;
       }
+
+      await childPromise;
     } finally {
-      try {
-        await childPromise;
-      } catch (_e) {
-        // We need to await this to avoid an unhandled rejection, but we want to propagate the
-        // original exception.
-      }
       if (cancellationRegistration !== undefined) {
         cancellationRegistration.dispose();
       }
