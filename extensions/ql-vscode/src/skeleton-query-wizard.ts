@@ -273,12 +273,8 @@ export class SkeletonQueryWizard {
     databaseNwo: string,
     databaseItems: readonly DatabaseItem[],
   ): Promise<DatabaseItem | undefined> {
-    const dbItems = databaseItems || [];
-    const dbs = dbItems.filter(
-      (db) =>
-        db.language === language &&
-        db.name === databaseNwo &&
-        db.error === undefined,
+    const dbs = databaseItems.filter(
+      (db) => db.language === language && db.name === databaseNwo,
     );
 
     if (dbs.length === 0) {
@@ -291,10 +287,7 @@ export class SkeletonQueryWizard {
     language: string,
     databaseItems: readonly DatabaseItem[],
   ): Promise<DatabaseItem | undefined> {
-    const dbItems = databaseItems || [];
-    const dbs = dbItems.filter(
-      (db) => db.language === language && db.error === undefined,
-    );
+    const dbs = databaseItems.filter((db) => db.language === language);
     if (dbs.length === 0) {
       return undefined;
     }
@@ -308,19 +301,38 @@ export class SkeletonQueryWizard {
 
     const defaultDatabaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
 
+    const dbItems = await this.sortDatabaseItemsByDateAdded(
+      this.databaseManager.databaseItems,
+    );
+
     const defaultDatabaseItem = await this.findDatabaseItemByNwo(
       this.language,
       defaultDatabaseNwo,
-      this.databaseManager.databaseItems,
+      dbItems,
     );
 
     if (defaultDatabaseItem !== undefined) {
       return defaultDatabaseItem;
     }
 
-    return await this.findDatabaseItemByLanguage(
-      this.language,
-      this.databaseManager.databaseItems,
-    );
+    return await this.findDatabaseItemByLanguage(this.language, dbItems);
+  }
+
+  public async sortDatabaseItemsByDateAdded(
+    databaseItems: readonly DatabaseItem[],
+  ) {
+    const validDbItems = databaseItems.filter((db) => db.error === undefined);
+
+    return validDbItems.sort((a, b) => {
+      if (a.dateAdded === undefined) {
+        return -1;
+      }
+
+      if (b.dateAdded === undefined) {
+        return 1;
+      }
+
+      return a.dateAdded - b.dateAdded;
+    });
   }
 }
