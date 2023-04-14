@@ -30,7 +30,6 @@ import { AllCommands, QueryServerCommands } from "../../../src/common/commands";
 /**
  * Integration tests for queries
  */
-jest.setTimeout(60_000);
 describeWithCodeQL()("Queries", () => {
   let dbItem: DatabaseItem;
   let databaseManager: DatabaseManager;
