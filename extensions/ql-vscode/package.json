@@ -1149,14 +1149,6 @@
           "when": "false"
         },
         {
-          "command": "codeQL.debug.quickEval",
-          "when": "config.codeQL.canary && editorLangId == ql"
-        },
-        {
-          "command": "codeQL.debug.quickEvalContextEditor",
-          "when": "false"
-        },
-        {
           "command": "codeQL.openReferencedFile",
           "when": "resourceExtname == .qlref"
         },
