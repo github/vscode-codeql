@@ -14,14 +14,11 @@ import { Disposable } from "vscode";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import { BaseLogger, LogOptions, queryServerLogger } from "../common";
 import { QueryResultType } from "../pure/new-messages";
-import {
-  CoreCompletedQuery,
-  CoreQueryResults,
-  CoreQueryRun,
-  QueryRunner,
-} from "../queryRunner";
+import { CoreQueryResults, CoreQueryRun, QueryRunner } from "../queryRunner";
 import * as CodeQLProtocol from "./debug-protocol";
 import { QuickEvalContext } from "../run-queries-shared";
+import { getErrorMessage } from "../pure/helpers-pure";
+import { DisposableObject } from "../pure/disposable-object";
 
 // More complete implementations of `Event` for certain events, because the classes from
 // `@vscode/debugadapter` make it more difficult to provide some of the message values.
@@ -132,20 +129,128 @@ const QUERY_THREAD_ID = 1;
 const QUERY_THREAD_NAME = "Evaluation thread";
 
 /**
+ * An active query evaluation within a debug session.
+ *
+ * This class encapsulates the state and resources associated with the running query, to avoid
+ * having multiple properties within `QLDebugSession` that are only defined during query evaluation.
+ */
+class RunningQuery extends DisposableObject {
+  private readonly tokenSource = this.push(new CancellationTokenSource());
+  public readonly queryRun: CoreQueryRun;
+
+  public constructor(
+    queryRunner: QueryRunner,
+    config: CodeQLProtocol.LaunchConfig,
+    private readonly quickEvalContext: QuickEvalContext | undefined,
+    queryStorageDir: string,
+    private readonly logger: BaseLogger,
+    private readonly sendEvent: (event: Event) => void,
+  ) {
+    super();
+
+    // Create the query run, which will give us some information about the query even before the
+    // evaluation has completed.
+    this.queryRun = queryRunner.createQueryRun(
+      config.database,
+      {
+        queryPath: config.query,
+        quickEvalPosition: quickEvalContext?.quickEvalPosition,
+      },
+      true,
+      config.additionalPacks,
+      config.extensionPacks,
+      queryStorageDir,
+      undefined,
+      undefined,
+    );
+  }
+
+  public get id(): string {
+    return this.queryRun.id;
+  }
+
+  /**
+   * Evaluates the query, firing progress events along the way. The evaluation can be cancelled by
+   * calling `cancel()`.
+   *
+   * This function does not throw exceptions to report query evaluation failure. It just returns an
+   * evaluation result with a failure message instead.
+   */
+  public async evaluate(): Promise<
+    CodeQLProtocol.EvaluationCompletedEvent["body"]
+  > {
+    // Send the `EvaluationStarted` event first, to let the client known where the outputs are
+    // going to show up.
+    this.sendEvent(
+      new EvaluationStartedEvent(
+        this.queryRun.id,
+        this.queryRun.outputDir.querySaveDir,
+        this.quickEvalContext,
+      ),
+    );
+
+    try {
+      // Report progress via the debugger protocol.
+      const progressStart = new ProgressStartEvent(
+        this.queryRun.id,
+        "Running query",
+        undefined,
+        0,
+      );
+      progressStart.body.cancellable = true;
+      this.sendEvent(progressStart);
+      try {
+        return await this.queryRun.evaluate(
+          (p) => {
+            const progressUpdate = new ProgressUpdateEvent(
+              this.queryRun.id,
+              p.message,
+              (p.step * 100) / p.maxStep,
+            );
+            this.sendEvent(progressUpdate);
+          },
+          this.tokenSource.token,
+          this.logger,
+        );
+      } finally {
+        this.sendEvent(new ProgressEndEvent(this.queryRun.id));
+      }
+    } catch (e) {
+      const message = getErrorMessage(e);
+      return {
+        resultType: QueryResultType.OTHER_ERROR,
+        message,
+        evaluationTime: 0,
+      };
+    }
+  }
+
+  /**
+   * Attempts to cancel the running evaluation.
+   */
+  public cancel(): void {
+    this.tokenSource.cancel();
+  }
+}
+
+/**
  * An in-process implementation of the debug adapter for CodeQL queries.
  *
  * For now, this is pretty much just a wrapper around the query server.
  */
 export class QLDebugSession extends LoggingDebugSession implements Disposable {
+  /** A `BaseLogger` that sends output to the debug console. */
+  private readonly logger: BaseLogger = {
+    log: async (message: string, _options: LogOptions): Promise<void> => {
+      this.sendEvent(new OutputEvent(message, "console"));
+    },
+  };
   private state: State = "uninitialized";
   private terminateOnComplete = false;
   private args: CodeQLProtocol.LaunchRequest["arguments"] | undefined =
     undefined;
-  private tokenSource: CancellationTokenSource | undefined = undefined;
-  private queryRun: CoreQueryRun | undefined = undefined;
-  private lastResult:
-    | CodeQLProtocol.EvaluationCompletedEvent["body"]
-    | undefined = undefined;
+  private runningQuery: RunningQuery | undefined = undefined;
+  private lastResultType: QueryResultType = QueryResultType.CANCELLATION;
 
   constructor(
     private readonly queryStorageDir: string,
@@ -155,7 +260,9 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   }
 
   public dispose(): void {
-    this.cancelEvaluation();
+    if (this.runningQuery !== undefined) {
+      this.runningQuery.cancel();
+    }
   }
 
   protected dispatchRequest(request: Protocol.Request): void {
@@ -230,19 +337,11 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   }
 
   private terminateOrDisconnect(response: Protocol.Response): void {
-    switch (this.state) {
-      case "running":
-        this.terminateOnComplete = true;
-        this.cancelEvaluation();
-        break;
-
-      case "stopped":
-        this.terminateAndExit();
-        break;
-
-      default:
-        // Ignore
-        break;
+    if (this.runningQuery !== undefined) {
+      this.terminateOnComplete = true;
+      this.runningQuery.cancel();
+    } else if (this.state === "stopped") {
+      this.terminateAndExit();
     }
 
     this.sendResponse(response);
@@ -349,18 +448,11 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     args: Protocol.CancelArguments,
     _request?: Protocol.Request,
   ): void {
-    switch (this.state) {
-      case "running":
-        if (args.progressId !== undefined) {
-          if (this.queryRun!.id === args.progressId) {
-            this.cancelEvaluation();
-          }
-        }
-        break;
-
-      default:
-        // Ignore;
-        break;
+    if (
+      args.progressId !== undefined &&
+      this.runningQuery?.id === args.progressId
+    ) {
+      this.runningQuery.cancel();
     }
 
     this.sendResponse(response);
@@ -436,15 +528,6 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     }
   }
 
-  /** Creates a `BaseLogger` that sends output to the debug console. */
-  private createLogger(): BaseLogger {
-    return {
-      log: async (message: string, _options: LogOptions): Promise<void> => {
-        this.sendEvent(new OutputEvent(message, "console"));
-      },
-    };
-  }
-
   /**
    * Runs the query or quickeval, and notifies the debugger client when the evaluation completes.
    *
@@ -456,75 +539,23 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   ): Promise<void> {
     const args = this.args!;
 
-    this.tokenSource = new CancellationTokenSource();
+    const runningQuery = new RunningQuery(
+      this.queryRunner,
+      args,
+      quickEvalContext,
+      this.queryStorageDir,
+      this.logger,
+      (event) => this.sendEvent(event),
+    );
+    this.runningQuery = runningQuery;
+    this.state = "running";
+
     try {
-      // Create the query run, which will give us some information about the query even before the
-      // evaluation has completed.
-      this.queryRun = this.queryRunner.createQueryRun(
-        args.database,
-        {
-          queryPath: args.query,
-          quickEvalPosition: quickEvalContext?.quickEvalPosition,
-        },
-        true,
-        args.additionalPacks,
-        args.extensionPacks,
-        this.queryStorageDir,
-        undefined,
-        undefined,
-      );
-
-      this.state = "running";
-
-      // Send the `EvaluationStarted` event first, to let the client known where the outputs are
-      // going to show up.
-      this.sendEvent(
-        new EvaluationStartedEvent(
-          this.queryRun.id,
-          this.queryRun.outputDir.querySaveDir,
-          quickEvalContext,
-        ),
-      );
-
-      try {
-        // Report progress via the debugger protocol.
-        const progressStart = new ProgressStartEvent(
-          this.queryRun.id,
-          "Running query",
-          undefined,
-          0,
-        );
-        progressStart.body.cancellable = true;
-        this.sendEvent(progressStart);
-        let result: CoreCompletedQuery;
-        try {
-          result = await this.queryRun.evaluate(
-            (p) => {
-              const progressUpdate = new ProgressUpdateEvent(
-                this.queryRun!.id,
-                p.message,
-                (p.step * 100) / p.maxStep,
-              );
-              this.sendEvent(progressUpdate);
-            },
-            this.tokenSource!.token,
-            this.createLogger(),
-          );
-        } finally {
-          // Report the end of the progress
-          this.sendEvent(new ProgressEndEvent(this.queryRun!.id));
-        }
-        this.completeEvaluation(result);
-      } catch (e) {
-        const message = e instanceof Error ? e.message : "Unknown error";
-        this.completeEvaluation({
-          resultType: QueryResultType.OTHER_ERROR,
-          message,
-          evaluationTime: 0,
-        });
-      }
+      const result = await runningQuery.evaluate();
+      this.completeEvaluation(result);
     } finally {
-      this.disposeTokenSource();
+      this.runningQuery = undefined;
+      runningQuery.dispose();
     }
   }
 
@@ -534,7 +565,7 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
   private completeEvaluation(
     result: CodeQLProtocol.EvaluationCompletedEvent["body"],
   ): void {
-    this.lastResult = result;
+    this.lastResultType = result.resultType;
 
     // Report the evaluation result
     this.sendEvent(new EvaluationCompletedEvent(result));
@@ -546,8 +577,6 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     }
 
     this.reportStopped();
-
-    this.queryRun = undefined;
   }
 
   private reportStopped(): void {
@@ -566,22 +595,8 @@ export class QLDebugSession extends LoggingDebugSession implements Disposable {
     this.sendEvent(new TerminatedEvent());
 
     // Report the debuggee as exited.
-    this.sendEvent(new ExitedEvent(this.lastResult!.resultType));
+    this.sendEvent(new ExitedEvent(this.lastResultType));
 
     this.state = "terminated";
-  }
-
-  private disposeTokenSource(): void {
-    if (this.tokenSource !== undefined) {
-      this.tokenSource!.dispose();
-      this.tokenSource = undefined;
-    }
-  }
-
-  private cancelEvaluation(): void {
-    if (this.tokenSource !== undefined) {
-      this.tokenSource.cancel();
-      this.disposeTokenSource();
-    }
   }
 }
