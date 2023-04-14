@@ -132,7 +132,10 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     await qhm.readQueryHistory();
 
     // Remove the first variant analysis
-    await qhm.handleRemoveHistoryItem(qhm.treeDataProvider.allHistory[0]);
+    await qhm.handleRemoveHistoryItem(
+      qhm.treeDataProvider.allHistory[0],
+      undefined,
+    );
 
     // Add it back to the history
     qhm.addQuery(rawQueryHistory[0]);

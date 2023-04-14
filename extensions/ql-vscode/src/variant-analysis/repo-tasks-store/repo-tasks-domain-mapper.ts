@@ -4,12 +4,12 @@ import {
   VariantAnalysisRepoStatus,
 } from "../shared/variant-analysis";
 import {
-  VariantAnalysisRepositoryTaskData,
-  VariantAnalysisRepoStatusData,
-} from "./repo-task-data-types";
+  VariantAnalysisRepositoryTaskDto,
+  VariantAnalysisRepoStatusDto,
+} from "./repo-tasks-dto";
 
-export function mapRepoTaskToDomain(
-  repoTask: VariantAnalysisRepositoryTaskData,
+export function mapRepoTaskToDomainModel(
+  repoTask: VariantAnalysisRepositoryTaskDto,
 ): VariantAnalysisRepositoryTask {
   return {
     repository: {
@@ -17,7 +17,9 @@ export function mapRepoTaskToDomain(
       fullName: repoTask.repository.fullName,
       private: repoTask.repository.private,
     },
-    analysisStatus: mapRepoTaskAnalysisStatusToDomain(repoTask.analysisStatus),
+    analysisStatus: mapRepoTaskAnalysisStatusToDomainModel(
+      repoTask.analysisStatus,
+    ),
     resultCount: repoTask.resultCount,
     artifactSizeInBytes: repoTask.artifactSizeInBytes,
     failureMessage: repoTask.failureMessage,
@@ -27,21 +29,21 @@ export function mapRepoTaskToDomain(
   };
 }
 
-function mapRepoTaskAnalysisStatusToDomain(
-  analysisStatus: VariantAnalysisRepoStatusData,
+function mapRepoTaskAnalysisStatusToDomainModel(
+  analysisStatus: VariantAnalysisRepoStatusDto,
 ): VariantAnalysisRepoStatus {
   switch (analysisStatus) {
-    case VariantAnalysisRepoStatusData.Pending:
+    case VariantAnalysisRepoStatusDto.Pending:
       return VariantAnalysisRepoStatus.Pending;
-    case VariantAnalysisRepoStatusData.InProgress:
+    case VariantAnalysisRepoStatusDto.InProgress:
       return VariantAnalysisRepoStatus.InProgress;
-    case VariantAnalysisRepoStatusData.Succeeded:
+    case VariantAnalysisRepoStatusDto.Succeeded:
       return VariantAnalysisRepoStatus.Succeeded;
-    case VariantAnalysisRepoStatusData.Failed:
+    case VariantAnalysisRepoStatusDto.Failed:
       return VariantAnalysisRepoStatus.Failed;
-    case VariantAnalysisRepoStatusData.Canceled:
+    case VariantAnalysisRepoStatusDto.Canceled:
       return VariantAnalysisRepoStatus.Canceled;
-    case VariantAnalysisRepoStatusData.TimedOut:
+    case VariantAnalysisRepoStatusDto.TimedOut:
       return VariantAnalysisRepoStatus.TimedOut;
     default:
       assertNever(analysisStatus);

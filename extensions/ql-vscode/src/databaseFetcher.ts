@@ -1,7 +1,7 @@
 import fetch, { Response } from "node-fetch";
 import { zip } from "zip-a-folder";
 import { Open } from "unzipper";
-import { Uri, CancellationToken, window } from "vscode";
+import { Uri, CancellationToken, window, InputBoxOptions } from "vscode";
 import { CodeQLCliServer } from "./cli";
 import {
   ensureDir,
@@ -78,6 +78,10 @@ export async function promptImportInternetDatabase(
  *
  * @param databaseManager the DatabaseManager
  * @param storagePath where to store the unzipped database.
+ * @param credentials the credentials to use to authenticate with GitHub
+ * @param progress the progress callback
+ * @param token the cancellation token
+ * @param cli the CodeQL CLI server
  */
 export async function promptImportGithubDatabase(
   commandManager: AppCommandManager,
@@ -88,21 +92,78 @@ export async function promptImportGithubDatabase(
   token: CancellationToken,
   cli?: CodeQLCliServer,
 ): Promise<DatabaseItem | undefined> {
-  progress({
-    message: "Choose repository",
-    step: 1,
-    maxStep: 2,
-  });
-  const githubRepo = await window.showInputBox({
-    title:
-      'Enter a GitHub repository URL or "name with owner" (e.g. https://github.com/github/codeql or github/codeql)',
-    placeHolder: "https://github.com/<owner>/<repo> or <owner>/<repo>",
-    ignoreFocusOut: true,
-  });
+  const githubRepo = await askForGitHubRepo(progress);
   if (!githubRepo) {
     return;
   }
 
+  const databaseItem = await downloadGitHubDatabase(
+    githubRepo,
+    databaseManager,
+    storagePath,
+    credentials,
+    progress,
+    token,
+    cli,
+  );
+
+  if (databaseItem) {
+    await commandManager.execute("codeQLDatabases.focus");
+    void showAndLogInformationMessage(
+      "Database downloaded and imported successfully.",
+    );
+    return databaseItem;
+  }
+
+  return;
+}
+
+export async function askForGitHubRepo(
+  progress?: ProgressCallback,
+  suggestedValue?: string,
+): Promise<string | undefined> {
+  progress?.({
+    message: "Choose repository",
+    step: 1,
+    maxStep: 2,
+  });
+
+  const options: InputBoxOptions = {
+    title:
+      'Enter a GitHub repository URL or "name with owner" (e.g. https://github.com/github/codeql or github/codeql)',
+    placeHolder: "https://github.com/<owner>/<repo> or <owner>/<repo>",
+    ignoreFocusOut: true,
+  };
+
+  if (suggestedValue) {
+    options.value = suggestedValue;
+  }
+
+  return await window.showInputBox(options);
+}
+
+/**
+ * Downloads a database from GitHub
+ *
+ * @param githubRepo the GitHub repository to download the database from
+ * @param databaseManager the DatabaseManager
+ * @param storagePath where to store the unzipped database.
+ * @param credentials the credentials to use to authenticate with GitHub
+ * @param progress the progress callback
+ * @param token the cancellation token
+ * @param cli the CodeQL CLI server
+ * @param language the language to download. If undefined, the user will be prompted to choose a language.
+ **/
+export async function downloadGitHubDatabase(
+  githubRepo: string,
+  databaseManager: DatabaseManager,
+  storagePath: string,
+  credentials: Credentials | undefined,
+  progress: ProgressCallback,
+  token: CancellationToken,
+  cli?: CodeQLCliServer,
+  language?: string,
+): Promise<DatabaseItem | undefined> {
   const nwo = getNwoFromGitHubUrl(githubRepo) || githubRepo;
   if (!isValidGitHubNwo(nwo)) {
     throw new Error(`Invalid GitHub repository: ${githubRepo}`);
@@ -112,7 +173,12 @@ export async function promptImportGithubDatabase(
     ? await credentials.getOctokit()
     : new Octokit.Octokit({ retry });
 
-  const result = await convertGithubNwoToDatabaseUrl(nwo, octokit, progress);
+  const result = await convertGithubNwoToDatabaseUrl(
+    nwo,
+    octokit,
+    progress,
+    language,
+  );
   if (!result) {
     return;
   }
@@ -130,7 +196,7 @@ export async function promptImportGithubDatabase(
    * We only need the actual token string.
    */
   const octokitToken = ((await octokit.auth()) as { token: string })?.token;
-  const item = await databaseArchiveFetcher(
+  return await databaseArchiveFetcher(
     databaseUrl,
     {
       Accept: "application/zip",
@@ -143,14 +209,6 @@ export async function promptImportGithubDatabase(
     token,
     cli,
   );
-  if (item) {
-    await commandManager.execute("codeQLDatabases.focus");
-    void showAndLogInformationMessage(
-      "Database downloaded and imported successfully.",
-    );
-    return item;
-  }
-  return;
 }
 
 /**
@@ -450,6 +508,7 @@ export async function convertGithubNwoToDatabaseUrl(
   nwo: string,
   octokit: Octokit.Octokit,
   progress: ProgressCallback,
+  language?: string,
 ): Promise<
   | {
       databaseUrl: string;
@@ -468,9 +527,11 @@ export async function convertGithubNwoToDatabaseUrl(
 
     const languages = response.data.map((db: any) => db.language);
 
-    const language = await promptForLanguage(languages, progress);
-    if (!language) {
-      return;
+    if (!language || !languages.includes(language)) {
+      language = await promptForLanguage(languages, progress);
+      if (!language) {
+        return;
+      }
     }
 
     return {
@@ -484,7 +545,7 @@ export async function convertGithubNwoToDatabaseUrl(
   }
 }
 
-async function promptForLanguage(
+export async function promptForLanguage(
   languages: string[],
   progress: ProgressCallback,
 ): Promise<string | undefined> {

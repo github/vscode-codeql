@@ -78,6 +78,52 @@ function renderResultCountString(resultSet: ResultSet): JSX.Element {
   );
 }
 
+function getInterpretedTableName(interpretation: Interpretation): string {
+  return interpretation.data.t === "GraphInterpretationData"
+    ? GRAPH_TABLE_NAME
+    : ALERTS_TABLE_NAME;
+}
+
+function getResultSetNames(
+  interpretation: Interpretation | undefined,
+  parsedResultSets: ParsedResultSets,
+): string[] {
+  return interpretation
+    ? parsedResultSets.resultSetNames.concat([
+        getInterpretedTableName(interpretation),
+      ])
+    : parsedResultSets.resultSetNames;
+}
+
+function getResultSets(
+  rawResultSets: readonly ResultSet[],
+  interpretation: Interpretation | undefined,
+): ResultSet[] {
+  const resultSets: ResultSet[] =
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore 2783 Avoid compilation error for overwriting the t property
+    rawResultSets.map((rs) => ({ t: "RawResultSet", ...rs }));
+
+  if (interpretation !== undefined) {
+    const tableName = getInterpretedTableName(interpretation);
+    resultSets.push({
+      t: "InterpretedResultSet",
+      // FIXME: The values of version, columns, tupleCount are
+      // unused stubs because a InterpretedResultSet schema isn't used the
+      // same way as a RawResultSet. Probably should pull `name` field
+      // out.
+      schema: {
+        name: tableName,
+        rows: 1,
+        columns: [],
+      },
+      name: tableName,
+      interpretation,
+    });
+  }
+  return resultSets;
+}
+
 /**
  * Displays multiple `ResultTable` tables, where the table to be displayed is selected by a
  * dropdown.
@@ -86,57 +132,49 @@ export class ResultTables extends React.Component<
   ResultTablesProps,
   ResultTablesState
 > {
-  private getResultSets(): ResultSet[] {
-    const resultSets: ResultSet[] =
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore 2783
-      this.props.rawResultSets.map((rs) => ({ t: "RawResultSet", ...rs }));
-
-    if (this.props.interpretation !== undefined) {
-      const tableName = this.getInterpretedTableName();
-      resultSets.push({
-        t: "InterpretedResultSet",
-        // FIXME: The values of version, columns, tupleCount are
-        // unused stubs because a InterpretedResultSet schema isn't used the
-        // same way as a RawResultSet. Probably should pull `name` field
-        // out.
-        schema: {
-          name: tableName,
-          rows: 1,
-          columns: [],
-        },
-        name: tableName,
-        interpretation: this.props.interpretation,
-      });
-    }
-    return resultSets;
-  }
-
-  private getInterpretedTableName(): string {
-    return this.props.interpretation?.data.t === "GraphInterpretationData"
-      ? GRAPH_TABLE_NAME
-      : ALERTS_TABLE_NAME;
-  }
-
-  private getResultSetNames(): string[] {
-    return this.props.interpretation
-      ? this.props.parsedResultSets.resultSetNames.concat([
-          this.getInterpretedTableName(),
-        ])
-      : this.props.parsedResultSets.resultSetNames;
-  }
-
   constructor(props: ResultTablesProps) {
     super(props);
     const selectedTable =
       props.parsedResultSets.selectedTable ||
-      getDefaultResultSet(this.getResultSets());
+      getDefaultResultSet(
+        getResultSets(props.rawResultSets, props.interpretation),
+      );
     const selectedPage = `${props.parsedResultSets.pageNumber + 1}`;
     this.state = {
       selectedTable,
       selectedPage,
       problemsViewSelected: false,
     };
+  }
+
+  componentDidUpdate(
+    prevProps: Readonly<ResultTablesProps>,
+    prevState: Readonly<ResultTablesState>,
+    snapshot?: any,
+  ) {
+    const resultSetExists =
+      this.props.parsedResultSets.resultSetNames.some(
+        (v) => this.state.selectedTable === v,
+      ) ||
+      getResultSets(this.props.rawResultSets, this.props.interpretation).some(
+        (v) => this.state.selectedTable === v.schema.name,
+      );
+
+    // If the selected result set does not exist, select the default result set.
+    if (!resultSetExists) {
+      this.setState((state, props) => {
+        const selectedTable =
+          props.parsedResultSets.selectedTable ||
+          getDefaultResultSet(
+            getResultSets(props.rawResultSets, props.interpretation),
+          );
+
+        return {
+          selectedTable,
+          selectedPage: `${props.parsedResultSets.pageNumber + 1}`,
+        };
+      });
+    }
   }
 
   untoggleProblemsView() {
@@ -303,8 +341,14 @@ export class ResultTables extends React.Component<
 
   render(): React.ReactNode {
     const { selectedTable } = this.state;
-    const resultSets = this.getResultSets();
-    const resultSetNames = this.getResultSetNames();
+    const resultSets = getResultSets(
+      this.props.rawResultSets,
+      this.props.interpretation,
+    );
+    const resultSetNames = getResultSetNames(
+      this.props.interpretation,
+      this.props.parsedResultSets,
+    );
 
     const resultSet = resultSets.find(
       (resultSet) => resultSet.schema.name === selectedTable,

@@ -13,12 +13,13 @@ import {
   workspace,
 } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
-import { arch, platform } from "os";
+import { arch, platform, homedir } from "os";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { dirSync } from "tmp-promise";
 import { testExplorerExtensionId, TestHub } from "vscode-test-adapter-api";
 import { lt, parse } from "semver";
+import { watch } from "chokidar";
 
 import { AstViewer } from "./astViewer";
 import {
@@ -194,6 +195,7 @@ function getCommands(
     "codeQL.restartQueryServer": restartQueryServer,
     "codeQL.restartQueryServerOnConfigChange": restartQueryServer,
     "codeQL.restartLegacyQueryServerOnConfigChange": restartQueryServer,
+    "codeQL.restartQueryServerOnExternalConfigChange": restartQueryServer,
     "codeQL.copyVersion": async () => {
       const text = `CodeQL extension version: ${
         extension?.packageJSON.version
@@ -672,6 +674,7 @@ async function activateWithInstalledDistribution(
     extLogger,
   );
   ctx.subscriptions.push(cliServer);
+  watchExternalConfigFile(app, ctx);
 
   const statusBar = new CodeQlStatusBarHandler(
     cliServer,
@@ -1009,6 +1012,34 @@ async function activateWithInstalledDistribution(
       ctx.subscriptions.forEach((d) => d.dispose());
     },
   };
+}
+
+/**
+ * Handle changes to the external config file. This is used to restart the query server
+ * when the user changes options.
+ * See https://docs.github.com/en/code-security/codeql-cli/using-the-codeql-cli/specifying-command-options-in-a-codeql-configuration-file#using-a-codeql-configuration-file
+ */
+function watchExternalConfigFile(app: ExtensionApp, ctx: ExtensionContext) {
+  const home = homedir();
+  if (home) {
+    const configPath = join(home, ".config", "codeql", "config");
+    const configWatcher = watch(configPath, {
+      // These options avoid firing the event twice.
+      persistent: true,
+      ignoreInitial: true,
+      awaitWriteFinish: true,
+    });
+    configWatcher.on("all", async () => {
+      await app.commands.execute(
+        "codeQL.restartQueryServerOnExternalConfigChange",
+      );
+    });
+    ctx.subscriptions.push({
+      dispose: () => {
+        void configWatcher.close();
+      },
+    });
+  }
 }
 
 async function showResultsForComparison(
