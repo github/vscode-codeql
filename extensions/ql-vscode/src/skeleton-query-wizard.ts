@@ -64,14 +64,13 @@ export class SkeletonQueryWizard {
     if (skeletonPackAlreadyExists) {
       // just create a new example query file in skeleton QL pack
       await this.createExampleFile();
-      // select existing database for language
-      await this.selectOrDownloadDatabase();
     } else {
       // generate a new skeleton QL pack with query file
       await this.createQlPack();
-      // download database based on language and select it
-      await this.downloadDatabase();
     }
+
+    // select existing database for language or download a new one
+    await this.selectOrDownloadDatabase();
 
     // open a query file
 
