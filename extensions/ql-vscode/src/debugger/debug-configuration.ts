@@ -67,7 +67,7 @@ export class QLDebugConfigurationProvider
     debugConfiguration: DebugConfiguration,
     _token?: CancellationToken,
   ): Promise<DebugConfiguration | null> {
-    const qlConfiguration = <QLDebugConfiguration>debugConfiguration;
+    const qlConfiguration = debugConfiguration as QLDebugConfiguration;
     if (qlConfiguration.query === undefined) {
       await showAndLogErrorMessage(
         "No query was specified in the debug configuration.",
