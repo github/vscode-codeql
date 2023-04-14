@@ -1022,7 +1022,19 @@ export class DatabaseManager extends DisposableObject {
     token: vscode.CancellationToken,
     dbItem: DatabaseItem,
   ) {
-    await this.qs.deregisterDatabase(progress, token, dbItem);
+    try {
+      await this.qs.deregisterDatabase(progress, token, dbItem);
+    } catch (e) {
+      const message = getErrorMessage(e);
+      if (message === "Connection is disposed.") {
+        // This is expected if the query server is not running.
+        void extLogger.log(
+          `Could not de-register database '${dbItem.name}' because query server is not running.`,
+        );
+        return;
+      }
+      throw e;
+    }
   }
   private async registerDatabase(
     progress: ProgressCallback,

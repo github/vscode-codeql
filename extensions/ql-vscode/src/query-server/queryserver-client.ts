@@ -1,6 +1,6 @@
 import { ensureFile } from "fs-extra";
 
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject, DisposeHandler } from "../pure/disposable-object";
 import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
 import * as cli from "../cli";
@@ -223,5 +223,11 @@ export class QueryServerClient extends DisposableObject {
     } finally {
       delete this.progressCallbacks[id];
     }
+  }
+
+  public dispose(disposeHandler?: DisposeHandler | undefined): void {
+    this.progressCallbacks = {};
+    this.stopQueryServer();
+    super.dispose(disposeHandler);
   }
 }
