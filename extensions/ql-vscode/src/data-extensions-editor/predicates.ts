@@ -12,13 +12,15 @@ export type ExternalApiUsageByType = {
 
 export type ExtensiblePredicateDefinition = {
   extensiblePredicate: string;
-  generateMethodDefinition: (method: ExternalApiUsageByType) => any[];
-  readModeledMethod: (row: any[]) => ModeledMethodWithSignature;
+  generateMethodDefinition: (method: ExternalApiUsageByType) => Tuple[];
+  readModeledMethod: (row: Tuple[]) => ModeledMethodWithSignature;
 
   supportedKinds?: string[];
 };
 
-function readRowToMethod(row: any[]): string {
+type Tuple = boolean | number | string;
+
+function readRowToMethod(row: Tuple[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;
 }
 
@@ -48,8 +50,8 @@ export const extensiblePredicateDefinitions: Record<
       modeledMethod: {
         type: "source",
         input: "",
-        output: row[6],
-        kind: row[7],
+        output: row[6] as string,
+        kind: row[7] as string,
       },
     }),
     supportedKinds: ["remote"],
@@ -75,9 +77,9 @@ export const extensiblePredicateDefinitions: Record<
       signature: readRowToMethod(row),
       modeledMethod: {
         type: "sink",
-        input: row[6],
+        input: row[6] as string,
         output: "",
-        kind: row[7],
+        kind: row[7] as string,
       },
     }),
     supportedKinds: ["sql", "xss", "logging"],
@@ -104,9 +106,9 @@ export const extensiblePredicateDefinitions: Record<
       signature: readRowToMethod(row),
       modeledMethod: {
         type: "summary",
-        input: row[6],
-        output: row[7],
-        kind: row[8],
+        input: row[6] as string,
+        output: row[7] as string,
+        kind: row[8] as string,
       },
     }),
     supportedKinds: ["taint", "value"],
