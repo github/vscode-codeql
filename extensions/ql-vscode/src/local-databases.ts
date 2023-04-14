@@ -30,6 +30,7 @@ import { isCodespacesTemplate } from "./config";
 import { QlPackGenerator } from "./qlpack-generator";
 import { QueryLanguage } from "./common/query-language";
 import { App } from "./common/app";
+import { existsSync } from "fs";
 
 /**
  * databases.ts
@@ -663,8 +664,13 @@ export class DatabaseManager extends DisposableObject {
       return;
     }
 
+    const firstWorkspaceFolder = getFirstWorkspaceFolder();
     const folderName = `codeql-custom-queries-${databaseItem.language}`;
-    if (isFolderAlreadyInWorkspace(folderName)) {
+
+    if (
+      existsSync(join(firstWorkspaceFolder, folderName)) ||
+      isFolderAlreadyInWorkspace(folderName)
+    ) {
       return;
     }
 
@@ -677,8 +683,6 @@ export class DatabaseManager extends DisposableObject {
     }
 
     try {
-      const firstWorkspaceFolder = getFirstWorkspaceFolder();
-
       const qlPackGenerator = new QlPackGenerator(
         folderName,
         databaseItem.language as QueryLanguage,

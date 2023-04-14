@@ -14,6 +14,7 @@ import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "./local-databases";
 import { ProgressCallback, UserCancellationException } from "./progress";
 import { askForGitHubRepo, downloadGitHubDatabase } from "./databaseFetcher";
+import { existsSync } from "fs";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
@@ -56,9 +57,9 @@ export class SkeletonQueryWizard {
 
     this.qlPackStoragePath = getFirstWorkspaceFolder();
 
-    const skeletonPackAlreadyExists = isFolderAlreadyInWorkspace(
-      this.folderName,
-    );
+    const skeletonPackAlreadyExists =
+      existsSync(join(this.qlPackStoragePath, this.folderName)) ||
+      isFolderAlreadyInWorkspace(this.folderName);
 
     if (skeletonPackAlreadyExists) {
       // just create a new example query file in skeleton QL pack
