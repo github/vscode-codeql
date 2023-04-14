@@ -174,6 +174,7 @@ export class DebuggerUI
     session: DebugSession,
   ): DebugAdapterTracker | undefined {
     if (session.type === "codeql") {
+      // The tracker will be disposed in its own `onWillStopSession` handler.
       const tracker = new QLDebugAdapterTracker(
         session,
         this,
