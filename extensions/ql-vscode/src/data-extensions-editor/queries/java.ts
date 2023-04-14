@@ -20,11 +20,7 @@ private Call aUsage(ExternalApi api) {
 private boolean isSupported(ExternalApi api) {
   api.isSupported() and result = true
   or
-  api = any(FlowSummaryImpl::Public::NeutralCallable nsc).asCallable() and result = true
-  or
-  not api.isSupported() and
-  not api = any(FlowSummaryImpl::Public::NeutralCallable nsc).asCallable() and
-  result = false
+  not api.isSupported() and result = false
 }
 
 from ExternalApi api, string apiName, boolean supported, Call usage

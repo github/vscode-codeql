@@ -5,13 +5,12 @@ import {
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import type { Uri } from "vscode";
 import { DatabaseKind } from "../../../../src/local-databases";
-import * as queryResolver from "../../../../src/contextual/queryResolver";
 import { file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/pure/new-messages";
 import { readdir, readFile } from "fs-extra";
 import { load } from "js-yaml";
 import { dirname, join } from "path";
-import { fetchExternalApisQuery } from "../../../../src/data-extensions-editor/queries/java";
+import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries/index";
 import * as helpers from "../../../../src/helpers";
 import { RedactableError } from "../../../../src/pure/errors";
 
@@ -29,100 +28,98 @@ function createMockUri(path = "/a/b/c/foo"): Uri {
 }
 
 describe("runQuery", () => {
-  it("runs the query", async () => {
-    jest.spyOn(queryResolver, "qlpackOfDatabase").mockResolvedValue({
-      dbschemePack: "codeql/java-all",
-      dbschemePackIsLibraryPack: false,
-      queryPack: "codeql/java-queries",
-    });
-
+  it("runs all queries", async () => {
     const logPath = (await file()).path;
 
-    const options = {
-      cliServer: {
-        resolveQlpacks: jest.fn().mockResolvedValue({
-          "my/java-extensions": "/a/b/c/",
-        }),
-      },
-      queryRunner: {
-        createQueryRun: jest.fn().mockReturnValue({
-          evaluate: jest.fn().mockResolvedValue({
-            resultType: QueryResultType.SUCCESS,
+    // Test all queries
+    for (const [lang, query] of Object.entries(fetchExternalApiQueries)) {
+      console.log(`hello ${lang}`);
+      const options = {
+        cliServer: {
+          resolveQlpacks: jest.fn().mockResolvedValue({
+            "my/extensions": "/a/b/c/",
           }),
-          outputDir: {
-            logPath,
-          },
-        }),
-        logger: createMockLogger(),
-      },
-      databaseItem: {
-        databaseUri: createMockUri("/a/b/c/src.zip"),
-        contents: {
-          kind: DatabaseKind.Database,
-          name: "foo",
-          datasetUri: createMockUri(),
         },
-        language: "java",
-      },
-      queryStorageDir: "/tmp/queries",
-      progress: jest.fn(),
-      token: {
-        isCancellationRequested: false,
-        onCancellationRequested: jest.fn(),
-      },
-    };
-    const result = await runQuery(options);
+        queryRunner: {
+          createQueryRun: jest.fn().mockReturnValue({
+            evaluate: jest.fn().mockResolvedValue({
+              resultType: QueryResultType.SUCCESS,
+            }),
+            outputDir: {
+              logPath,
+            },
+          }),
+          logger: createMockLogger(),
+        },
+        databaseItem: {
+          databaseUri: createMockUri("/a/b/c/src.zip"),
+          contents: {
+            kind: DatabaseKind.Database,
+            name: "foo",
+            datasetUri: createMockUri(),
+          },
+          language: lang,
+        },
+        queryStorageDir: "/tmp/queries",
+        progress: jest.fn(),
+        token: {
+          isCancellationRequested: false,
+          onCancellationRequested: jest.fn(),
+        },
+      };
+      const result = await runQuery(options);
 
-    expect(result?.resultType).toEqual(QueryResultType.SUCCESS);
+      expect(result?.resultType).toEqual(QueryResultType.SUCCESS);
 
-    expect(options.cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
-    expect(options.cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
-    expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
-      "/a/b/c/src.zip",
-      {
-        queryPath: expect.stringMatching(/FetchExternalApis\.ql/),
-        quickEvalPosition: undefined,
-      },
-      false,
-      [],
-      ["my/java-extensions"],
-      "/tmp/queries",
-      undefined,
-      undefined,
-    );
-
-    const queryPath =
-      options.queryRunner.createQueryRun.mock.calls[0][1].queryPath;
-    const queryDirectory = dirname(queryPath);
-
-    const queryFiles = await readdir(queryDirectory);
-    expect(queryFiles.sort()).toEqual(
-      ["codeql-pack.yml", "FetchExternalApis.ql", "ExternalApi.qll"].sort(),
-    );
-
-    const suiteFileContents = await readFile(
-      join(queryDirectory, "codeql-pack.yml"),
-      "utf8",
-    );
-    const suiteYaml = load(suiteFileContents);
-    expect(suiteYaml).toEqual({
-      name: "codeql/external-api-usage",
-      version: "0.0.0",
-      dependencies: {
-        "codeql/java-all": "*",
-      },
-    });
-
-    expect(
-      await readFile(join(queryDirectory, "FetchExternalApis.ql"), "utf8"),
-    ).toEqual(fetchExternalApisQuery.mainQuery);
-
-    for (const [filename, contents] of Object.entries(
-      fetchExternalApisQuery.dependencies ?? {},
-    )) {
-      expect(await readFile(join(queryDirectory, filename), "utf8")).toEqual(
-        contents,
+      expect(options.cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
+      expect(options.cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
+      expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
+        "/a/b/c/src.zip",
+        {
+          queryPath: expect.stringMatching(/FetchExternalApis\.ql/),
+          quickEvalPosition: undefined,
+        },
+        false,
+        [],
+        ["my/extensions"],
+        "/tmp/queries",
+        undefined,
+        undefined,
       );
+
+      const queryPath =
+        options.queryRunner.createQueryRun.mock.calls[0][1].queryPath;
+      const queryDirectory = dirname(queryPath);
+
+      const queryFiles = await readdir(queryDirectory);
+      expect(queryFiles.sort()).toEqual(
+        ["codeql-pack.yml", "FetchExternalApis.ql", "ExternalApi.qll"].sort(),
+      );
+
+      const suiteFileContents = await readFile(
+        join(queryDirectory, "codeql-pack.yml"),
+        "utf8",
+      );
+      const suiteYaml = load(suiteFileContents);
+      expect(suiteYaml).toEqual({
+        name: "codeql/external-api-usage",
+        version: "0.0.0",
+        dependencies: {
+          [`codeql/${lang}-all`]: "*",
+        },
+      });
+
+      expect(
+        await readFile(join(queryDirectory, "FetchExternalApis.ql"), "utf8"),
+      ).toEqual(query.mainQuery);
+
+      for (const [filename, contents] of Object.entries(
+        query.dependencies ?? {},
+      )) {
+        expect(await readFile(join(queryDirectory, filename), "utf8")).toEqual(
+          contents,
+        );
+      }
     }
   });
 });
