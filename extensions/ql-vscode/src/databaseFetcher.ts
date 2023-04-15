@@ -27,6 +27,7 @@ import {
 } from "./common/github-url-identifier-helper";
 import { Credentials } from "./common/authentication";
 import { AppCommandManager } from "./common/commands";
+import { ALLOW_HTTP } from "./config";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -49,7 +50,9 @@ export async function promptImportInternetDatabase(
     return;
   }
 
-  validateHttpsUrl(databaseUrl);
+  if (!ALLOW_HTTP.getValue()) {
+    validateHttpsUrl(databaseUrl);
+  }
 
   const item = await databaseArchiveFetcher(
     databaseUrl,

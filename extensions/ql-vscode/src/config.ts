@@ -608,3 +608,12 @@ export const CODESPACES_TEMPLATE = new Setting(
 export function isCodespacesTemplate() {
   return !!CODESPACES_TEMPLATE.getValue<boolean>();
 }
+
+export const ALLOW_HTTP = new Setting(
+  "allowHttp",
+  ROOT_SETTING,
+);
+
+export function allowHttp(): boolean {
+  return ALLOW_HTTP.getValue<boolean>() || false;
+}

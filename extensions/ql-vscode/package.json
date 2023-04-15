@@ -293,6 +293,11 @@
           "scope": "window",
           "minimum": 0,
           "description": "Report a warning for any join order whose metric exceeds this value."
+        },
+        "codeQL.allowHttp": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow databased to be downloaded via HTTP"
         }
       }
     },
