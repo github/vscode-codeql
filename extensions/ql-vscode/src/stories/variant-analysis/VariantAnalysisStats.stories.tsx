@@ -35,6 +35,7 @@ Starting.args = {
   variantAnalysisStatus: VariantAnalysisStatus.InProgress,
   totalRepositoryCount: 10,
   completedRepositoryCount: 0,
+  successfulRepositoryCount: 0,
   skippedRepositoryCount: 0,
 };
 
@@ -43,6 +44,7 @@ Started.args = {
   ...Starting.args,
   resultCount: 99_999,
   completedRepositoryCount: 2,
+  successfulRepositoryCount: 2,
 };
 
 export const StartedWithSkippedRepositories = Template.bind({});
@@ -56,6 +58,7 @@ Succeeded.args = {
   ...Started.args,
   totalRepositoryCount: 1000,
   completedRepositoryCount: 1000,
+  successfulRepositoryCount: 1000,
   variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
   createdAt: new Date(1661262726000),
   completedAt: new Date(1661263446000),
@@ -66,6 +69,7 @@ SucceededWithSkippedRepositories.args = {
   ...Succeeded.args,
   totalRepositoryCount: 10,
   completedRepositoryCount: 10,
+  successfulRepositoryCount: 10,
   skippedRepositoryCount: 6,
 };
 

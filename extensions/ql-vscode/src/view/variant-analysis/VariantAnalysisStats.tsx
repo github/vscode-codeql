@@ -13,6 +13,7 @@ export type VariantAnalysisStatsProps = {
 
   totalRepositoryCount: number;
   completedRepositoryCount: number;
+  successfulRepositoryCount: number;
   skippedRepositoryCount: number;
 
   resultCount?: number | undefined;
@@ -32,6 +33,7 @@ export const VariantAnalysisStats = ({
   variantAnalysisStatus,
   totalRepositoryCount,
   completedRepositoryCount,
+  successfulRepositoryCount,
   skippedRepositoryCount,
   resultCount,
   createdAt,
@@ -79,6 +81,7 @@ export const VariantAnalysisStats = ({
           variantAnalysisStatus={variantAnalysisStatus}
           totalRepositoryCount={totalRepositoryCount}
           completedRepositoryCount={completedRepositoryCount}
+          successfulRepositoryCount={successfulRepositoryCount}
           skippedRepositoryCount={skippedRepositoryCount}
         />
       </StatItem>

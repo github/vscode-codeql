@@ -20,6 +20,7 @@ describe(VariantAnalysisStats.name, () => {
         variantAnalysisStatus={VariantAnalysisStatus.InProgress}
         totalRepositoryCount={10}
         completedRepositoryCount={0}
+        successfulRepositoryCount={0}
         skippedRepositoryCount={0}
         onViewLogsClick={onViewLogsClick}
         createdAt={new Date()}
@@ -40,8 +41,11 @@ describe(VariantAnalysisStats.name, () => {
     expect(screen.queryAllByText("-").length).toBe(1);
   });
 
-  it("renders the number of repositories as a formatted number", () => {
-    render({ totalRepositoryCount: 123456, completedRepositoryCount: 654321 });
+  it("renders the number of successful repositories as a formatted number", () => {
+    render({
+      totalRepositoryCount: 123456,
+      successfulRepositoryCount: 654321,
+    });
 
     expect(screen.getByText("654,321/123,456")).toBeInTheDocument();
   });

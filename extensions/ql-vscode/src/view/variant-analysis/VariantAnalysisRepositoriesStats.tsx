@@ -13,6 +13,7 @@ type Props = {
 
   totalRepositoryCount: number;
   completedRepositoryCount: number;
+  successfulRepositoryCount: number;
   skippedRepositoryCount: number;
 };
 
@@ -20,6 +21,7 @@ export const VariantAnalysisRepositoriesStats = ({
   variantAnalysisStatus,
   totalRepositoryCount,
   completedRepositoryCount,
+  successfulRepositoryCount,
   skippedRepositoryCount,
 }: Props) => {
   if (variantAnalysisStatus === VariantAnalysisStatus.Failed) {
@@ -35,7 +37,7 @@ export const VariantAnalysisRepositoriesStats = ({
 
   return (
     <>
-      {formatDecimal(completedRepositoryCount)}/
+      {formatDecimal(successfulRepositoryCount)}/
       {formatDecimal(totalRepositoryCount)}
       {showWarning && (
         <>
