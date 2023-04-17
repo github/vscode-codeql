@@ -154,6 +154,7 @@ export function filterAndSortRepositoriesWithResults<
     return undefined;
   }
 
+  // If repository IDs are given, then ignore the search value and filter key
   if (
     filterSortState?.repositoryIds &&
     filterSortState.repositoryIds.length > 0
