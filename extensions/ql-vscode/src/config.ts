@@ -611,8 +611,11 @@ export function isCodespacesTemplate() {
 
 const DATABASE_DOWNLOAD_SETTING = new Setting("databaseDownload", ROOT_SETTING);
 
-export const ALLOW_HTTP_SETTING = new Setting("allowHttp", DATABASE_DOWNLOAD_SETTING);
+export const ALLOW_HTTP_SETTING = new Setting(
+  "allowHttp",
+  DATABASE_DOWNLOAD_SETTING,
+);
 
 export function allowHttp(): boolean {
-  return ALLOW_HTTP.getValue<boolean>() || false;
+  return ALLOW_HTTP_SETTING.getValue<boolean>() || false;
 }
