@@ -5,7 +5,7 @@ export const fetchExternalApisQuery: Query = {
  * @name Usage of APIs coming from external libraries
  * @description A list of 3rd party APIs used in the codebase.
  * @tags telemetry
- * @id csharp/telemetry/fetch-external-apis
+ * @id cs/telemetry/fetch-external-apis
  */
 
  import csharp
