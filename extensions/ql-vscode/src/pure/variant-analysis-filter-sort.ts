@@ -4,6 +4,11 @@ import {
 } from "../variant-analysis/shared/repository";
 import { parseDate } from "./date";
 
+export enum FilterKey {
+  All = "all",
+  WithResults = "withResults",
+}
+
 export enum SortKey {
   Name = "name",
   Stars = "stars",
@@ -13,6 +18,7 @@ export enum SortKey {
 
 export type RepositoriesFilterSortState = {
   searchValue: string;
+  filterKey: FilterKey;
   sortKey: SortKey;
 };
 
@@ -22,6 +28,7 @@ export type RepositoriesFilterSortStateWithIds = RepositoriesFilterSortState & {
 
 export const defaultFilterSortState: RepositoriesFilterSortState = {
   searchValue: "",
+  filterKey: FilterKey.All,
   sortKey: SortKey.Name,
 };
 
