@@ -297,7 +297,7 @@
         "codeQL.databaseDownload.allowHttp": {
           "type": "boolean",
           "default": false,
-          "description": "Allow databased to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
+          "description": "Allow database to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
         }
       }
     },
