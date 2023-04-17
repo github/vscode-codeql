@@ -78,17 +78,17 @@ export function compareRepository(
   };
 }
 
-type SortableResult = {
+type FilterAndSortableResult = {
   repository: SortableRepository & Pick<Repository, "id">;
   resultCount?: number;
 };
 
 export function compareWithResults(
   filterSortState: RepositoriesFilterSortState | undefined,
-): (left: SortableResult, right: SortableResult) => number {
+): (left: FilterAndSortableResult, right: FilterAndSortableResult) => number {
   const fallbackSort = compareRepository(filterSortState);
 
-  return (left: SortableResult, right: SortableResult) => {
+  return (left: FilterAndSortableResult, right: FilterAndSortableResult) => {
     // Highest to lowest
     if (filterSortState?.sortKey === SortKey.ResultsCount) {
       const resultCount = (right.resultCount ?? 0) - (left.resultCount ?? 0);
@@ -102,7 +102,7 @@ export function compareWithResults(
 }
 
 export function filterAndSortRepositoriesWithResultsByName<
-  T extends SortableResult,
+  T extends FilterAndSortableResult,
 >(
   repositories: T[] | undefined,
   filterSortState: RepositoriesFilterSortState | undefined,
@@ -116,7 +116,9 @@ export function filterAndSortRepositoriesWithResultsByName<
     .sort(compareWithResults(filterSortState));
 }
 
-export function filterAndSortRepositoriesWithResults<T extends SortableResult>(
+export function filterAndSortRepositoriesWithResults<
+  T extends FilterAndSortableResult,
+>(
   repositories: T[] | undefined,
   filterSortState: RepositoriesFilterSortStateWithIds | undefined,
 ): T[] | undefined {
