@@ -13,8 +13,7 @@ export type VariantAnalysisStatsProps = {
 
   totalRepositoryCount: number;
   completedRepositoryCount: number;
-
-  hasWarnings?: boolean;
+  skippedRepositoryCount: number;
 
   resultCount?: number | undefined;
   createdAt: Date;
@@ -33,7 +32,7 @@ export const VariantAnalysisStats = ({
   variantAnalysisStatus,
   totalRepositoryCount,
   completedRepositoryCount,
-  hasWarnings,
+  skippedRepositoryCount,
   resultCount,
   createdAt,
   completedAt,
@@ -54,13 +53,13 @@ export const VariantAnalysisStats = ({
 
     if (
       variantAnalysisStatus === VariantAnalysisStatus.Succeeded &&
-      hasWarnings
+      skippedRepositoryCount > 0
     ) {
       return "Succeeded warnings";
     }
 
     return "Succeeded";
-  }, [variantAnalysisStatus, hasWarnings]);
+  }, [variantAnalysisStatus, skippedRepositoryCount]);
 
   const duration = useMemo(() => {
     if (!completedAt) {
@@ -80,7 +79,7 @@ export const VariantAnalysisStats = ({
           variantAnalysisStatus={variantAnalysisStatus}
           totalRepositoryCount={totalRepositoryCount}
           completedRepositoryCount={completedRepositoryCount}
-          showWarning={hasWarnings}
+          skippedRepositoryCount={skippedRepositoryCount}
         />
       </StatItem>
       <StatItem title="Duration">

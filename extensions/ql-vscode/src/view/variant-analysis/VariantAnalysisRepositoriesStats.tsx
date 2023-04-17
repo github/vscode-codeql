@@ -13,15 +13,14 @@ type Props = {
 
   totalRepositoryCount: number;
   completedRepositoryCount: number;
-
-  showWarning?: boolean;
+  skippedRepositoryCount: number;
 };
 
 export const VariantAnalysisRepositoriesStats = ({
   variantAnalysisStatus,
   totalRepositoryCount,
   completedRepositoryCount,
-  showWarning,
+  skippedRepositoryCount,
 }: Props) => {
   if (variantAnalysisStatus === VariantAnalysisStatus.Failed) {
     return (
@@ -31,6 +30,8 @@ export const VariantAnalysisRepositoriesStats = ({
       </>
     );
   }
+
+  const showWarning = skippedRepositoryCount > 0;
 
   return (
     <>

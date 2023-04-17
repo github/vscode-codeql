@@ -72,8 +72,8 @@ export const VariantAnalysisHeader = ({
   const resultCount = useMemo(() => {
     return getTotalResultCount(variantAnalysis.scannedRepos);
   }, [variantAnalysis.scannedRepos]);
-  const hasSkippedRepos = useMemo(() => {
-    return getSkippedRepoCount(variantAnalysis.skippedRepos) > 0;
+  const skippedRepositoryCount = useMemo(() => {
+    return getSkippedRepoCount(variantAnalysis.skippedRepos);
   }, [variantAnalysis.skippedRepos]);
   const filteredRepositories = useMemo(() => {
     return filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos, {
@@ -130,8 +130,8 @@ export const VariantAnalysisHeader = ({
         variantAnalysisStatus={variantAnalysis.status}
         totalRepositoryCount={totalScannedRepositoryCount}
         completedRepositoryCount={completedRepositoryCount}
+        skippedRepositoryCount={skippedRepositoryCount}
         resultCount={resultCount}
-        hasWarnings={hasSkippedRepos}
         createdAt={parseDate(variantAnalysis.createdAt)}
         completedAt={parseDate(variantAnalysis.completedAt)}
         onViewLogsClick={onViewLogsClick}

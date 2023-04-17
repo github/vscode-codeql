@@ -34,6 +34,8 @@ export const Starting = Template.bind({});
 Starting.args = {
   variantAnalysisStatus: VariantAnalysisStatus.InProgress,
   totalRepositoryCount: 10,
+  completedRepositoryCount: 0,
+  skippedRepositoryCount: 0,
 };
 
 export const Started = Template.bind({});
@@ -43,10 +45,10 @@ Started.args = {
   completedRepositoryCount: 2,
 };
 
-export const StartedWithWarnings = Template.bind({});
-StartedWithWarnings.args = {
+export const StartedWithSkippedRepositories = Template.bind({});
+StartedWithSkippedRepositories.args = {
   ...Starting.args,
-  hasWarnings: true,
+  skippedRepositoryCount: 3,
 };
 
 export const Succeeded = Template.bind({});
@@ -59,12 +61,12 @@ Succeeded.args = {
   completedAt: new Date(1661263446000),
 };
 
-export const SucceededWithWarnings = Template.bind({});
-SucceededWithWarnings.args = {
+export const SucceededWithSkippedRepositories = Template.bind({});
+SucceededWithSkippedRepositories.args = {
   ...Succeeded.args,
   totalRepositoryCount: 10,
-  completedRepositoryCount: 2,
-  hasWarnings: true,
+  completedRepositoryCount: 10,
+  skippedRepositoryCount: 6,
 };
 
 export const Failed = Template.bind({});
@@ -77,6 +79,6 @@ Failed.args = {
 
 export const Stopped = Template.bind({});
 Stopped.args = {
-  ...SucceededWithWarnings.args,
+  ...SucceededWithSkippedRepositories.args,
   variantAnalysisStatus: VariantAnalysisStatus.Canceled,
 };

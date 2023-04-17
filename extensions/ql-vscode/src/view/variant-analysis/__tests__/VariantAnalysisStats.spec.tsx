@@ -20,6 +20,7 @@ describe(VariantAnalysisStats.name, () => {
         variantAnalysisStatus={VariantAnalysisStatus.InProgress}
         totalRepositoryCount={10}
         completedRepositoryCount={0}
+        skippedRepositoryCount={0}
         onViewLogsClick={onViewLogsClick}
         createdAt={new Date()}
         {...props}
@@ -45,8 +46,8 @@ describe(VariantAnalysisStats.name, () => {
     expect(screen.getByText("654,321/123,456")).toBeInTheDocument();
   });
 
-  it("renders a warning icon when has warnings is set", () => {
-    render({ hasWarnings: true });
+  it("renders a warning icon when skippedRepositoryCount is greater than zero", () => {
+    render({ skippedRepositoryCount: 4 });
 
     expect(
       screen.getByRole("img", {
@@ -103,10 +104,10 @@ describe(VariantAnalysisStats.name, () => {
     expect(screen.getByText("Stopped")).toBeInTheDocument();
   });
 
-  it("renders a succeeded warnings text when the variant analysis status is succeeded and has warnings", () => {
+  it("renders a succeeded warnings text when the variant analysis status is succeeded and skipped repositories count is greater than zero", () => {
     render({
       variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
-      hasWarnings: true,
+      skippedRepositoryCount: 5,
     });
 
     expect(screen.getByText("Succeeded warnings")).toBeInTheDocument();
