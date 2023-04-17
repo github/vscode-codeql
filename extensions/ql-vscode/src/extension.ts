@@ -177,7 +177,13 @@ function getCommands(
         cliServer.restartCliServer();
         await Promise.all([
           queryRunner.restartQueryServer(progress, token),
-          ideServer.restart(),
+          async () => {
+            if (ideServer.isRunning()) {
+              await ideServer.restart();
+            } else {
+              await ideServer.start();
+            }
+          },
         ]);
         void showAndLogInformationMessage("CodeQL Query Server restarted.", {
           outputLogger: queryServerLogger,
