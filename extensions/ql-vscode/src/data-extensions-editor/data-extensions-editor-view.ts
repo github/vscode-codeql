@@ -94,6 +94,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.onWebViewLoaded();
 
         break;
+      case "openModelFile":
+        await window.showTextDocument(
+          await workspace.openTextDocument(this.modelFilename),
+        );
+
+        break;
       case "jumpToUsage":
         await this.jumpToUsage(msg.location);
 
@@ -119,6 +125,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
     super.onWebViewLoaded();
 
     await Promise.all([
+      this.postMessage({
+        t: "setDataExtensionEditorInitialData",
+        modelFilename: this.modelFilename,
+      }),
       this.loadExternalApiUsages(),
       this.loadExistingModeledMethods(),
     ]);

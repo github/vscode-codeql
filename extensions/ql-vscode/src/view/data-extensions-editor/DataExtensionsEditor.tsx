@@ -17,8 +17,21 @@ import { MethodRow } from "./MethodRow";
 import { assertNever } from "../../pure/helpers-pure";
 import { vscode } from "../vscode-api";
 import { calculateModeledPercentage } from "./modeled";
+import { LinkIconButton } from "../variant-analysis/LinkIconButton";
+import { basename } from "../common/path";
+import { ViewTitle } from "../common";
 
-export const DataExtensionsEditorContainer = styled.div`
+const DataExtensionsEditorContainer = styled.div`
+  margin-top: 1rem;
+`;
+
+const DetailsContainer = styled.div`
+  display: flex;
+  gap: 1em;
+  align-items: center;
+`;
+
+const EditorContainer = styled.div`
   margin-top: 1rem;
 `;
 
@@ -34,14 +47,20 @@ const ProgressBar = styled.div<ProgressBarProps>`
 `;
 
 type Props = {
+  initialModelFilename?: string;
   initialExternalApiUsages?: ExternalApiUsage[];
   initialModeledMethods?: Record<string, ModeledMethod>;
 };
 
 export function DataExtensionsEditor({
+  initialModelFilename,
   initialExternalApiUsages = [],
   initialModeledMethods = {},
 }: Props): JSX.Element {
+  const [modelFilename, setModelFilename] = useState<string | undefined>(
+    initialModelFilename,
+  );
+
   const [externalApiUsages, setExternalApiUsages] = useState<
     ExternalApiUsage[]
   >(initialExternalApiUsages);
@@ -59,6 +78,9 @@ export function DataExtensionsEditor({
       if (evt.origin === window.origin) {
         const msg: ToDataExtensionsEditorMessage = evt.data;
         switch (msg.t) {
+          case "setDataExtensionEditorInitialData":
+            setModelFilename(msg.modelFilename);
+            break;
           case "setExternalApiUsages":
             setExternalApiUsages(msg.externalApiUsages);
             break;
@@ -128,6 +150,12 @@ export function DataExtensionsEditor({
     });
   }, []);
 
+  const onOpenModelFileClick = useCallback(() => {
+    vscode.postMessage({
+      t: "openModelFile",
+    });
+  }, []);
+
   return (
     <DataExtensionsEditorContainer>
       {progress.maxStep > 0 && (
@@ -139,15 +167,19 @@ export function DataExtensionsEditor({
 
       {externalApiUsages.length > 0 && (
         <>
-          <div>
-            <h3>External API model stats</h3>
-            <ul>
-              <li>Modeled: {modeledPercentage.toFixed(2)}%</li>
-              <li>Unmodeled: {unModeledPercentage.toFixed(2)}%</li>
-            </ul>
-          </div>
-          <div>
-            <h3>External API modelling</h3>
+          <ViewTitle>Data extensions editor</ViewTitle>
+          <DetailsContainer>
+            {modelFilename && (
+              <LinkIconButton onClick={onOpenModelFileClick}>
+                <span slot="start" className="codicon codicon-file-code"></span>
+                {basename(modelFilename)}
+              </LinkIconButton>
+            )}
+            <div>{modeledPercentage.toFixed(2)}% modeled</div>
+            <div>{unModeledPercentage.toFixed(2)}% unmodeled</div>
+          </DetailsContainer>
+
+          <EditorContainer>
             <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
             &nbsp;
             <VSCodeButton onClick={onGenerateClick}>
@@ -188,7 +220,7 @@ export function DataExtensionsEditor({
                 />
               ))}
             </VSCodeDataGrid>
-          </div>
+          </EditorContainer>
         </>
       )}
     </DataExtensionsEditorContainer>

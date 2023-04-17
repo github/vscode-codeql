@@ -481,6 +481,11 @@ export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
 
 export type FromDataFlowPathsMessage = CommonFromViewMessages;
 
+export interface SetDataExtensionEditorInitialDataMessage {
+  t: "setDataExtensionEditorInitialData";
+  modelFilename: string;
+}
+
 export interface SetExternalApiUsagesMessage {
   t: "setExternalApiUsages";
   externalApiUsages: ExternalApiUsage[];
@@ -511,9 +516,8 @@ export interface JumpToUsageMessage {
   location: ResolvableLocationValue;
 }
 
-export interface SetExistingModeledMethods {
-  t: "setExistingModeledMethods";
-  existingModeledMethods: Record<string, ModeledMethod>;
+export interface OpenModelFileMessage {
+  t: "openModelFile";
 }
 
 export interface SaveModeledMethods {
@@ -527,12 +531,14 @@ export interface GenerateExternalApiMessage {
 }
 
 export type ToDataExtensionsEditorMessage =
+  | SetDataExtensionEditorInitialDataMessage
   | SetExternalApiUsagesMessage
   | ShowProgressMessage
   | AddModeledMethodsMessage;
 
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
+  | OpenModelFileMessage
   | JumpToUsageMessage
   | SaveModeledMethods
   | GenerateExternalApiMessage;
