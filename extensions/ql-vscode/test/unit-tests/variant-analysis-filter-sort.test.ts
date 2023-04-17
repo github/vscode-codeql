@@ -32,10 +32,13 @@ describe(matchesFilter.name, () => {
     "returns $matches if searching for $searchValue",
     ({ searchValue, matches }) => {
       expect(
-        matchesFilter(repository, {
-          ...defaultFilterSortState,
-          searchValue,
-        }),
+        matchesFilter(
+          { repository },
+          {
+            ...defaultFilterSortState,
+            searchValue,
+          },
+        ),
       ).toBe(matches);
     },
   );

@@ -33,14 +33,14 @@ export const defaultFilterSortState: RepositoriesFilterSortState = {
 };
 
 export function matchesFilter(
-  repo: Pick<Repository, "fullName">,
+  item: FilterAndSortableResult,
   filterSortState: RepositoriesFilterSortState | undefined,
 ): boolean {
   if (!filterSortState) {
     return true;
   }
 
-  return repo.fullName
+  return item.repository.fullName
     .toLowerCase()
     .includes(filterSortState.searchValue.toLowerCase());
 }
@@ -117,7 +117,7 @@ export function filterAndSortRepositoriesWithResultsByName<
   }
 
   return repositories
-    .filter((repo) => matchesFilter(repo.repository, filterSortState))
+    .filter((repo) => matchesFilter(repo, filterSortState))
     .sort(compareWithResults(filterSortState));
 }
 

@@ -56,8 +56,8 @@ export const VariantAnalysisSkippedRepositoriesTab = ({
 }: VariantAnalysisSkippedRepositoriesTabProps) => {
   const repositories = useMemo(() => {
     return skippedRepositoryGroup.repositories
-      ?.filter((repo) => {
-        return matchesFilter(repo, filterSortState);
+      ?.filter((repository) => {
+        return matchesFilter({ repository }, filterSortState);
       })
       ?.sort(compareRepository(filterSortState));
   }, [filterSortState, skippedRepositoryGroup.repositories]);
