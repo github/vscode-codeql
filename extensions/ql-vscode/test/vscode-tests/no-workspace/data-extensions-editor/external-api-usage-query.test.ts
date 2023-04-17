@@ -33,7 +33,6 @@ describe("runQuery", () => {
 
     // Test all queries
     for (const [lang, query] of Object.entries(fetchExternalApiQueries)) {
-      console.log(`hello ${lang}`);
       const options = {
         cliServer: {
           resolveQlpacks: jest.fn().mockResolvedValue({
