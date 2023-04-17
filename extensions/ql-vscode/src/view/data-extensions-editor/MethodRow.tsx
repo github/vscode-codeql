@@ -155,7 +155,7 @@ export const MethodRow = ({
             value={modeledMethod?.type ?? "none"}
             onInput={handleTypeInput}
           >
-            <VSCodeOption value="none">Unmodelled</VSCodeOption>
+            <VSCodeOption value="none">Unmodeled</VSCodeOption>
             <VSCodeOption value="source">Source</VSCodeOption>
             <VSCodeOption value="sink">Sink</VSCodeOption>
             <VSCodeOption value="summary">Flow summary</VSCodeOption>
