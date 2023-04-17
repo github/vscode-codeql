@@ -43,6 +43,7 @@ function createDataProperty(
 }
 
 export function createDataExtensionYaml(
+  language: string,
   externalApiUsages: ExternalApiUsage[],
   modeledMethods: Record<string, ModeledMethod>,
 ) {
@@ -69,7 +70,7 @@ export function createDataExtensionYaml(
 
   const extensions = Object.entries(extensiblePredicateDefinitions).map(
     ([type, definition]) => `  - addsTo:
-      pack: codeql/java-all
+      pack: codeql/${language}-all
       extensible: ${definition.extensiblePredicate}
     data:${createDataProperty(
       methodsByType[type as Exclude<ModeledMethodType, "none">],

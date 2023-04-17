@@ -27,6 +27,7 @@ describe("pickExtensionPackModelFile", () => {
   };
   const databaseItem = {
     name: "github/vscode-codeql",
+    language: "java",
   };
 
   const cancellationTokenSource = new CancellationTokenSource();
@@ -299,6 +300,71 @@ describe("pickExtensionPackModelFile", () => {
       library: true,
       extensionTargets: {
         "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    });
+  });
+
+  it("allows user to create an extension pack when there are no extension packs with a different language", async () => {
+    const cliServer = mockCliServer({}, { models: [], data: {} });
+
+    const tmpDir = await dir({
+      unsafeCleanup: true,
+    });
+
+    showQuickPickSpy.mockResolvedValueOnce({
+      label: "codeql-custom-queries-java",
+      path: tmpDir.path,
+    } as QuickPickItem);
+    showInputBoxSpy.mockResolvedValueOnce("my-extension-pack");
+    showInputBoxSpy.mockResolvedValue("models/my-model.yml");
+
+    expect(
+      await pickExtensionPackModelFile(
+        cliServer,
+        {
+          ...databaseItem,
+          language: "csharp",
+        },
+        progress,
+        token,
+      ),
+    ).toEqual(join(tmpDir.path, "my-extension-pack", "models", "my-model.yml"));
+    expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
+    expect(showInputBoxSpy).toHaveBeenCalledTimes(2);
+    expect(showInputBoxSpy).toHaveBeenCalledWith(
+      {
+        title: expect.stringMatching(/extension pack/i),
+        prompt: expect.stringMatching(/extension pack/i),
+        placeHolder: expect.stringMatching(/github\/vscode-codeql-extensions/),
+        validateInput: expect.any(Function),
+      },
+      token,
+    );
+    expect(showInputBoxSpy).toHaveBeenCalledWith(
+      {
+        title: expect.stringMatching(/model file/),
+        value: "models/github.vscode-codeql.model.yml",
+        validateInput: expect.any(Function),
+      },
+      token,
+    );
+    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
+    expect(cliServer.resolveExtensions).toHaveBeenCalled();
+
+    expect(
+      loadYaml(
+        await readFile(
+          join(tmpDir.path, "my-extension-pack", "codeql-pack.yml"),
+          "utf8",
+        ),
+      ),
+    ).toEqual({
+      name: "my-extension-pack",
+      version: "0.0.0",
+      library: true,
+      extensionTargets: {
+        "codeql/csharp-all": "*",
       },
       dataExtensions: ["models/**/*.yml"],
     });

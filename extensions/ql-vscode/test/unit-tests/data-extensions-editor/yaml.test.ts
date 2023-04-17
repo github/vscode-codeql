@@ -6,6 +6,7 @@ import {
 describe("createDataExtensionYaml", () => {
   it("creates the correct YAML file", () => {
     const yaml = createDataExtensionYaml(
+      "java",
       [
         {
           signature: "org.sql2o.Connection#createQuery(String)",
@@ -97,6 +98,32 @@ describe("createDataExtensionYaml", () => {
 
   - addsTo:
       pack: codeql/java-all
+      extensible: neutralModel
+    data: []
+`);
+  });
+
+  it("includes the correct language", () => {
+    const yaml = createDataExtensionYaml("csharp", [], {});
+
+    expect(yaml).toEqual(`extensions:
+  - addsTo:
+      pack: codeql/csharp-all
+      extensible: sourceModel
+    data: []
+
+  - addsTo:
+      pack: codeql/csharp-all
+      extensible: sinkModel
+    data: []
+
+  - addsTo:
+      pack: codeql/csharp-all
+      extensible: summaryModel
+    data: []
+
+  - addsTo:
+      pack: codeql/csharp-all
       extensible: neutralModel
     data: []
 `);
