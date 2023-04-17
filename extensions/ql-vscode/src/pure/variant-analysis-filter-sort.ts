@@ -79,6 +79,11 @@ export function compareRepository(
 }
 
 type FilterAndSortableResult = {
+  repository: SortableRepository;
+  resultCount?: number;
+};
+
+type FilterAndSortableResultWithIds = {
   repository: SortableRepository & Pick<Repository, "id">;
   resultCount?: number;
 };
@@ -117,7 +122,7 @@ export function filterAndSortRepositoriesWithResultsByName<
 }
 
 export function filterAndSortRepositoriesWithResults<
-  T extends FilterAndSortableResult,
+  T extends FilterAndSortableResultWithIds,
 >(
   repositories: T[] | undefined,
   filterSortState: RepositoriesFilterSortStateWithIds | undefined,
