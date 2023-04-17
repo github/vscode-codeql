@@ -148,7 +148,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
-    const yaml = createDataExtensionYaml(externalApiUsages, modeledMethods);
+    const yaml = createDataExtensionYaml(
+      this.databaseItem.language,
+      externalApiUsages,
+      modeledMethods,
+    );
 
     await outputFile(this.modelFilename, yaml);
 

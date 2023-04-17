@@ -23,7 +23,7 @@ const packNameLength = 128;
 
 export async function pickExtensionPackModelFile(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveExtensions">,
-  databaseItem: Pick<DatabaseItem, "name">,
+  databaseItem: Pick<DatabaseItem, "name" | "language">,
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<string | undefined> {
@@ -53,7 +53,7 @@ export async function pickExtensionPackModelFile(
 
 async function pickExtensionPack(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
-  databaseItem: Pick<DatabaseItem, "name">,
+  databaseItem: Pick<DatabaseItem, "name" | "language">,
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<string | undefined> {
@@ -184,7 +184,7 @@ async function pickModelFile(
 }
 
 async function pickNewExtensionPack(
-  databaseItem: Pick<DatabaseItem, "name">,
+  databaseItem: Pick<DatabaseItem, "name" | "language">,
   token: CancellationToken,
 ): Promise<string | undefined> {
   const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
@@ -257,7 +257,7 @@ async function pickNewExtensionPack(
       version: "0.0.0",
       library: true,
       extensionTargets: {
-        "codeql/java-all": "*",
+        [`codeql/${databaseItem.language}-all`]: "*",
       },
       dataExtensions: ["models/**/*.yml"],
     }),
