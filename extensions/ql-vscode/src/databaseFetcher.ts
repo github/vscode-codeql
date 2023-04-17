@@ -27,7 +27,7 @@ import {
 } from "./common/github-url-identifier-helper";
 import { Credentials } from "./common/authentication";
 import { AppCommandManager } from "./common/commands";
-import { ALLOW_HTTP } from "./config";
+import { ALLOW_HTTP_SETTING } from "./config";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -50,9 +50,7 @@ export async function promptImportInternetDatabase(
     return;
   }
 
-  if (!ALLOW_HTTP.getValue()) {
-    validateHttpsUrl(databaseUrl);
-  }
+  validateUrl(databaseUrl);
 
   const item = await databaseArchiveFetcher(
     databaseUrl,
@@ -359,7 +357,7 @@ async function getStorageFolder(storagePath: string, urlStr: string) {
   return folderName;
 }
 
-function validateHttpsUrl(databaseUrl: string) {
+function validateUrl(databaseUrl: string) {
   let uri;
   try {
     uri = Uri.parse(databaseUrl, true);
@@ -367,7 +365,7 @@ function validateHttpsUrl(databaseUrl: string) {
     throw new Error(`Invalid url: ${databaseUrl}`);
   }
 
-  if (uri.scheme !== "https") {
+  if (!ALLOW_HTTP_SETTING.getValue() && uri.scheme !== "https") {
     throw new Error("Must use https for downloading a database.");
   }
 }

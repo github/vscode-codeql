@@ -609,10 +609,9 @@ export function isCodespacesTemplate() {
   return !!CODESPACES_TEMPLATE.getValue<boolean>();
 }
 
-export const ALLOW_HTTP = new Setting(
-  "allowHttp",
-  ROOT_SETTING,
-);
+const DATABASE_DOWNLOAD_SETTING = new Setting("databaseDownload", ROOT_SETTING);
+
+export const ALLOW_HTTP_SETTING = new Setting("allowHttp", DATABASE_DOWNLOAD_SETTING);
 
 export function allowHttp(): boolean {
   return ALLOW_HTTP.getValue<boolean>() || false;

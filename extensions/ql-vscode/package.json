@@ -294,10 +294,10 @@
           "minimum": 0,
           "description": "Report a warning for any join order whose metric exceeds this value."
         },
-        "codeQL.allowHttp": {
+        "codeQL.databaseDownload.allowHttp": {
           "type": "boolean",
           "default": false,
-          "description": "Allow databased to be downloaded via HTTP"
+          "description": "Allow databased to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
         }
       }
     },
