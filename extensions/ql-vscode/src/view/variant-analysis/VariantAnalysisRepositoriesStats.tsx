@@ -33,19 +33,27 @@ export const VariantAnalysisRepositoriesStats = ({
     );
   }
 
+  const showError = successfulRepositoryCount < completedRepositoryCount;
   const showWarning = skippedRepositoryCount > 0;
 
   return (
     <>
       {formatDecimal(successfulRepositoryCount)}/
       {formatDecimal(totalRepositoryCount)}
-      {showWarning && (
+      {showError && (
+        <>
+          <HorizontalSpace size={2} />
+          <ErrorIcon />
+        </>
+      )}
+      {showWarning && !showError && (
         <>
           <HorizontalSpace size={2} />
           <WarningIcon />
         </>
       )}
-      {!showWarning &&
+      {!showError &&
+        !showWarning &&
         variantAnalysisStatus === VariantAnalysisStatus.Succeeded && (
           <>
             <HorizontalSpace size={2} />

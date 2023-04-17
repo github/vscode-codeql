@@ -53,8 +53,19 @@ export const VariantAnalysisStats = ({
       return "Stopped";
     }
 
+    if (
+      variantAnalysisStatus === VariantAnalysisStatus.Succeeded &&
+      successfulRepositoryCount < completedRepositoryCount
+    ) {
+      return "Some analyses failed";
+    }
+
     return "Succeeded";
-  }, [variantAnalysisStatus]);
+  }, [
+    variantAnalysisStatus,
+    successfulRepositoryCount,
+    completedRepositoryCount,
+  ]);
 
   const duration = useMemo(() => {
     if (!completedAt) {

@@ -80,6 +80,53 @@ describe(VariantAnalysisStats.name, () => {
     ).toBeInTheDocument();
   });
 
+  it("renders an error icon when the overall variant analysis status is in progress but some analyses failed", () => {
+    render({
+      variantAnalysisStatus: VariantAnalysisStatus.InProgress,
+      completedRepositoryCount: 10,
+      successfulRepositoryCount: 5,
+    });
+
+    expect(
+      screen.getByRole("img", {
+        name: "Error",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders an error icon when the overall variant analysis status is succeeded but some analyses failed", () => {
+    render({
+      variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
+      completedRepositoryCount: 10,
+      successfulRepositoryCount: 5,
+    });
+
+    expect(
+      screen.getByRole("img", {
+        name: "Error",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders an error icon when some analyses failed but also some repositories were skipped", () => {
+    render({
+      completedRepositoryCount: 10,
+      successfulRepositoryCount: 5,
+      skippedRepositoryCount: 2,
+    });
+
+    expect(
+      screen.getByRole("img", {
+        name: "Error",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("img", {
+        name: "Warning",
+      }),
+    ).not.toBeInTheDocument();
+  });
+
   it("renders a view logs link when the variant analysis status is succeeded", () => {
     render({
       variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
@@ -108,8 +155,28 @@ describe(VariantAnalysisStats.name, () => {
     expect(screen.getByText("Stopped")).toBeInTheDocument();
   });
 
-  it("renders a succeeded text when the variant analysis status is succeeded", () => {
+  it("renders a some analyses failed text when the overall variant analysis status is succeeded but not all analyses successful", () => {
+    render({
+      variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
+      completedRepositoryCount: 10,
+      successfulRepositoryCount: 5,
+    });
+
+    expect(screen.getByText("Some analyses failed")).toBeInTheDocument();
+  });
+
+  it("renders a succeeded text when the variant analysis status is succeeded and successful repository count omitted", () => {
     render({ variantAnalysisStatus: VariantAnalysisStatus.Succeeded });
+
+    expect(screen.getByText("Succeeded")).toBeInTheDocument();
+  });
+
+  it("renders a succeeded text when the variant analysis status is succeeded and successful repository count equals total repository count", () => {
+    render({
+      variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
+      completedRepositoryCount: 10,
+      successfulRepositoryCount: 10,
+    });
 
     expect(screen.getByText("Succeeded")).toBeInTheDocument();
   });

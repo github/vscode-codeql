@@ -53,6 +53,13 @@ StartedWithSkippedRepositories.args = {
   skippedRepositoryCount: 3,
 };
 
+export const StartedWithFailedAnalyses = Template.bind({});
+StartedWithFailedAnalyses.args = {
+  ...Starting.args,
+  completedRepositoryCount: 5,
+  successfulRepositoryCount: 3,
+};
+
 export const Succeeded = Template.bind({});
 Succeeded.args = {
   ...Started.args,
@@ -70,6 +77,22 @@ SucceededWithSkippedRepositories.args = {
   totalRepositoryCount: 10,
   completedRepositoryCount: 10,
   successfulRepositoryCount: 10,
+  skippedRepositoryCount: 6,
+};
+
+export const SucceededWithFailedAnalyses = Template.bind({});
+SucceededWithFailedAnalyses.args = {
+  ...Succeeded.args,
+  totalRepositoryCount: 10,
+  completedRepositoryCount: 10,
+  successfulRepositoryCount: 7,
+};
+
+export const SucceededWithFailedAnalysesAndSkippedRepositories = Template.bind(
+  {},
+);
+SucceededWithFailedAnalysesAndSkippedRepositories.args = {
+  ...SucceededWithFailedAnalyses.args,
   skippedRepositoryCount: 6,
 };
 
