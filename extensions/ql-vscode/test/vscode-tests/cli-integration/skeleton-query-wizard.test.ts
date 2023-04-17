@@ -21,6 +21,7 @@ import {
 import * as databaseFetcher from "../../../src/databaseFetcher";
 import { createMockDB } from "../../factories/databases/databases";
 import { asError } from "../../../src/pure/helpers-pure";
+import { Setting } from "../../../src/config";
 
 describe("SkeletonQueryWizard", () => {
   let mockCli: CodeQLCliServer;
@@ -29,6 +30,7 @@ describe("SkeletonQueryWizard", () => {
   let dir: tmp.DirResult;
   let storagePath: string;
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
+  let showInputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
   let generateSpy: jest.SpiedFunction<
     typeof QlPackGenerator.prototype.generate
   >;
@@ -93,6 +95,9 @@ describe("SkeletonQueryWizard", () => {
     quickPickSpy = jest
       .spyOn(window, "showQuickPick")
       .mockResolvedValueOnce(mockedQuickPickItem(chosenLanguage));
+    showInputBoxSpy = jest
+      .spyOn(window, "showInputBox")
+      .mockResolvedValue(storagePath);
     generateSpy = jest
       .spyOn(QlPackGenerator.prototype, "generate")
       .mockResolvedValue(undefined);
@@ -430,6 +435,118 @@ describe("SkeletonQueryWizard", () => {
         ]);
 
         expect(databaseItem).toBeUndefined();
+      });
+    });
+  });
+
+  describe("determineStoragePath", () => {
+    it("should prompt the user to provide a storage path", async () => {
+      const chosenPath = await wizard.determineStoragePath();
+
+      expect(showInputBoxSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ value: storagePath }),
+      );
+      expect(chosenPath).toEqual(storagePath);
+    });
+
+    it("should write the chosen folder to settings", async () => {
+      const updateValueSpy = jest.spyOn(Setting.prototype, "updateValue");
+
+      await wizard.determineStoragePath();
+
+      expect(updateValueSpy).toHaveBeenCalledWith(storagePath, 1);
+    });
+
+    describe("when the user is using the codespace template", () => {
+      let originalValue: any;
+      let storedPath: string;
+
+      beforeEach(async () => {
+        storedPath = join(dir.name, "pickles-folder");
+        ensureDirSync(storedPath);
+
+        originalValue = workspace
+          .getConfiguration("codeQL.skeletonWizard")
+          .get("folder");
+
+        // Set isCodespacesTemplate to true to indicate we are in the codespace template
+        await workspace
+          .getConfiguration("codeQL")
+          .update("codespacesTemplate", true);
+      });
+
+      afterEach(async () => {
+        await workspace
+          .getConfiguration("codeQL")
+          .update("codespacesTemplate", originalValue);
+      });
+
+      it("should not prompt the user", async () => {
+        const chosenPath = await wizard.determineStoragePath();
+
+        expect(showInputBoxSpy).not.toHaveBeenCalled();
+        expect(chosenPath).toEqual(storagePath);
+      });
+    });
+
+    describe("when there is already a saved storage path in settings", () => {
+      describe("when the saved storage path exists", () => {
+        let originalValue: any;
+        let storedPath: string;
+
+        beforeEach(async () => {
+          storedPath = join(dir.name, "pickles-folder");
+          ensureDirSync(storedPath);
+
+          originalValue = workspace
+            .getConfiguration("codeQL.skeletonWizard")
+            .get("folder");
+          await workspace
+            .getConfiguration("codeQL.skeletonWizard")
+            .update("folder", storedPath);
+        });
+
+        afterEach(async () => {
+          await workspace
+            .getConfiguration("codeQL.skeletonWizard")
+            .update("folder", originalValue);
+        });
+
+        it("should return it and not prompt the user", async () => {
+          const chosenPath = await wizard.determineStoragePath();
+
+          expect(showInputBoxSpy).not.toHaveBeenCalled();
+          expect(chosenPath).toEqual(storedPath);
+        });
+      });
+
+      describe("when the saved storage path does not exist", () => {
+        let originalValue: any;
+        let storedPath: string;
+
+        beforeEach(async () => {
+          storedPath = join(dir.name, "this-folder-does-not-exist");
+
+          originalValue = workspace
+            .getConfiguration("codeQL.skeletonWizard")
+            .get("folder");
+          await workspace
+            .getConfiguration("codeQL.skeletonWizard")
+            .update("folder", storedPath);
+        });
+
+        afterEach(async () => {
+          await workspace
+            .getConfiguration("codeQL.skeletonWizard")
+            .update("folder", originalValue);
+        });
+
+        it("should prompt the user for to provide a new folder name", async () => {
+          const chosenPath = await wizard.determineStoragePath();
+
+          expect(showInputBoxSpy).toHaveBeenCalled();
+          expect(chosenPath).toEqual(storagePath);
+        });
       });
     });
   });

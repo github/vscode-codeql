@@ -619,3 +619,19 @@ export const ALLOW_HTTP_SETTING = new Setting(
 export function allowHttp(): boolean {
   return ALLOW_HTTP_SETTING.getValue<boolean>() || false;
 }
+
+/**
+ * The name of the folder where we want to create skeleton wizard QL packs.
+ **/
+const SKELETON_WIZARD_FOLDER = new Setting(
+  "folder",
+  new Setting("skeletonWizard", ROOT_SETTING),
+);
+
+export function getSkeletonWizardFolder(): string | undefined {
+  return SKELETON_WIZARD_FOLDER.getValue<string>() || undefined;
+}
+
+export async function setSkeletonWizardFolder(folder: string | undefined) {
+  await SKELETON_WIZARD_FOLDER.updateValue(folder, ConfigurationTarget.Global);
+}
