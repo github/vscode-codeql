@@ -87,6 +87,7 @@ export type BuiltInVsCodeCommands = {
   ) => Promise<void>;
   "vscode.open": (uri: Uri) => Promise<void>;
   "vscode.openFolder": (uri: Uri) => Promise<void>;
+  revealInExplorer: (uri: Uri) => Promise<void>;
 };
 
 // Commands that are available before the extension is fully activated.

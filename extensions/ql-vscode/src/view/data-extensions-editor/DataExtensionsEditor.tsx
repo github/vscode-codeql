@@ -47,16 +47,21 @@ const ProgressBar = styled.div<ProgressBarProps>`
 `;
 
 type Props = {
+  initialExtensionPackName?: string;
   initialModelFilename?: string;
   initialExternalApiUsages?: ExternalApiUsage[];
   initialModeledMethods?: Record<string, ModeledMethod>;
 };
 
 export function DataExtensionsEditor({
+  initialExtensionPackName,
   initialModelFilename,
   initialExternalApiUsages = [],
   initialModeledMethods = {},
 }: Props): JSX.Element {
+  const [extensionPackName, setExtensionPackName] = useState<
+    string | undefined
+  >(initialExtensionPackName);
   const [modelFilename, setModelFilename] = useState<string | undefined>(
     initialModelFilename,
   );
@@ -79,6 +84,7 @@ export function DataExtensionsEditor({
         const msg: ToDataExtensionsEditorMessage = evt.data;
         switch (msg.t) {
           case "setDataExtensionEditorInitialData":
+            setExtensionPackName(msg.extensionPackName);
             setModelFilename(msg.modelFilename);
             break;
           case "setExternalApiUsages":
@@ -150,6 +156,12 @@ export function DataExtensionsEditor({
     });
   }, []);
 
+  const onOpenExtensionPackClick = useCallback(() => {
+    vscode.postMessage({
+      t: "openExtensionPack",
+    });
+  }, []);
+
   const onOpenModelFileClick = useCallback(() => {
     vscode.postMessage({
       t: "openModelFile",
@@ -169,6 +181,12 @@ export function DataExtensionsEditor({
         <>
           <ViewTitle>Data extensions editor</ViewTitle>
           <DetailsContainer>
+            {extensionPackName && (
+              <LinkIconButton onClick={onOpenExtensionPackClick}>
+                <span slot="start" className="codicon codicon-package"></span>
+                {extensionPackName}
+              </LinkIconButton>
+            )}
             {modelFilename && (
               <LinkIconButton onClick={onOpenModelFileClick}>
                 <span slot="start" className="codicon codicon-file-code"></span>

@@ -1,6 +1,7 @@
 import {
   CancellationTokenSource,
   ExtensionContext,
+  Uri,
   ViewColumn,
   window,
   workspace,
@@ -34,6 +35,7 @@ import { readQueryResults, runQuery } from "./external-api-usage-query";
 import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
+import { ExtensionPackModelFile } from "./extension-pack-picker";
 
 function getQlSubmoduleFolder(): WorkspaceFolder | undefined {
   const workspaceFolder = workspace.workspaceFolders?.find(
@@ -60,7 +62,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly queryRunner: QueryRunner,
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
-    private readonly modelFilename: string,
+    private readonly modelFile: ExtensionPackModelFile,
   ) {
     super(ctx);
   }
@@ -94,9 +96,16 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.onWebViewLoaded();
 
         break;
+      case "openExtensionPack":
+        await this.app.commands.execute(
+          "revealInExplorer",
+          Uri.file(this.modelFile.extensionPack.path),
+        );
+
+        break;
       case "openModelFile":
         await window.showTextDocument(
-          await workspace.openTextDocument(this.modelFilename),
+          await workspace.openTextDocument(this.modelFile.filename),
         );
 
         break;
@@ -127,7 +136,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
     await Promise.all([
       this.postMessage({
         t: "setDataExtensionEditorInitialData",
-        modelFilename: this.modelFilename,
+        extensionPackName: this.modelFile.extensionPack.name,
+        modelFilename: this.modelFile.filename,
       }),
       this.loadExternalApiUsages(),
       this.loadExistingModeledMethods(),
@@ -164,24 +174,26 @@ export class DataExtensionsEditorView extends AbstractWebview<
       modeledMethods,
     );
 
-    await outputFile(this.modelFilename, yaml);
+    await outputFile(this.modelFile.filename, yaml);
 
-    void extLogger.log(`Saved data extension YAML to ${this.modelFilename}`);
+    void extLogger.log(
+      `Saved data extension YAML to ${this.modelFile.filename}`,
+    );
   }
 
   protected async loadExistingModeledMethods(): Promise<void> {
     try {
-      const yaml = await readFile(this.modelFilename, "utf8");
+      const yaml = await readFile(this.modelFile.filename, "utf8");
 
       const data = loadYaml(yaml, {
-        filename: this.modelFilename,
+        filename: this.modelFile.filename,
       });
 
       const existingModeledMethods = loadDataExtensionYaml(data);
 
       if (!existingModeledMethods) {
         void showAndLogErrorMessage(
-          `Failed to parse data extension YAML ${this.modelFilename}.`,
+          `Failed to parse data extension YAML ${this.modelFile.filename}.`,
         );
         return;
       }
@@ -193,7 +205,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     } catch (e: unknown) {
       void showAndLogErrorMessage(
         `Unable to read data extension YAML ${
-          this.modelFilename
+          this.modelFile.filename
         }: ${getErrorMessage(e)}`,
       );
     }
