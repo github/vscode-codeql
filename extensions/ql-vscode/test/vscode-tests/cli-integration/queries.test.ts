@@ -27,8 +27,6 @@ import { QueryResultType } from "../../../src/pure/new-messages";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
 import { AllCommands, QueryServerCommands } from "../../../src/common/commands";
 
-jest.setTimeout(20_000);
-
 /**
  * Integration tests for queries
  */

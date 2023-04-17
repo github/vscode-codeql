@@ -26,6 +26,7 @@ import {
 import { DirResult } from "tmp";
 
 import {
+  getFirstWorkspaceFolder,
   getInitialQueryContents,
   InvocationRateLimiter,
   isFolderAlreadyInWorkspace,
@@ -272,6 +273,13 @@ describe("helpers", () => {
   class MockEnvironmentVariableCollection
     implements EnvironmentVariableCollection
   {
+    [Symbol.iterator](): Iterator<
+      [variable: string, mutator: EnvironmentVariableMutator],
+      any,
+      undefined
+    > {
+      throw new Error("Method not implemented.");
+    }
     persistent = false;
     replace(_variable: string, _value: string): void {
       throw new Error("Method not implemented.");
@@ -668,6 +676,45 @@ describe("prepareCodeTour", () => {
       await prepareCodeTour(createMockCommandManager({ executeCommand }));
 
       expect(executeCommand).not.toHaveBeenCalled();
+    });
+  });
+});
+
+describe("getFirstWorkspaceFolder", () => {
+  it("should return the first workspace folder", async () => {
+    jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
+      {
+        name: "codespaces-codeql",
+        uri: { fsPath: "codespaces-codeql", scheme: "file" },
+      },
+    ] as WorkspaceFolder[]);
+
+    expect(getFirstWorkspaceFolder()).toEqual("codespaces-codeql");
+  });
+
+  describe("if user is in vscode-codeql-starter workspace", () => {
+    it("should set storage path to parent folder", async () => {
+      jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValue([
+        {
+          name: "codeql-custom-queries-cpp",
+          uri: {
+            fsPath: join("vscode-codeql-starter", "codeql-custom-queries-cpp"),
+            scheme: "file",
+          },
+        },
+        {
+          name: "codeql-custom-queries-csharp",
+          uri: {
+            fsPath: join(
+              "vscode-codeql-starter",
+              "codeql-custom-queries-csharp",
+            ),
+            scheme: "file",
+          },
+        },
+      ] as WorkspaceFolder[]);
+
+      expect(getFirstWorkspaceFolder()).toEqual("vscode-codeql-starter");
     });
   });
 });

@@ -11,6 +11,8 @@ import { showAndLogErrorMessage } from "../helpers";
 import { withProgress } from "../progress";
 import { pickExtensionPackModelFile } from "./extension-pack-picker";
 
+const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
+
 export class DataExtensionsEditorModule {
   private readonly queryStorageDir: string;
 
@@ -51,15 +53,22 @@ export class DataExtensionsEditorModule {
 
   public getCommands(): DataExtensionsEditorCommands {
     return {
-      "codeQL.openDataExtensionsEditor": async () =>
-        withProgress(
-          async (progress) => {
-            const db = this.databaseManager.currentDatabaseItem;
-            if (!db) {
-              void showAndLogErrorMessage("No database selected");
-              return;
-            }
+      "codeQL.openDataExtensionsEditor": async () => {
+        const db = this.databaseManager.currentDatabaseItem;
+        if (!db) {
+          void showAndLogErrorMessage("No database selected");
+          return;
+        }
 
+        if (!SUPPORTED_LANGUAGES.includes(db.language)) {
+          void showAndLogErrorMessage(
+            `The data extensions editor is not supported for ${db.language} databases.`,
+          );
+          return;
+        }
+
+        return withProgress(
+          async (progress, token) => {
             if (!(await this.cliServer.cliConstraints.supportsQlpacksKind())) {
               void showAndLogErrorMessage(
                 `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND.format()} or later.`,
@@ -69,7 +78,9 @@ export class DataExtensionsEditorModule {
 
             const modelFile = await pickExtensionPackModelFile(
               this.cliServer,
+              db,
               progress,
+              token,
             );
             if (!modelFile) {
               return;
@@ -90,7 +101,8 @@ export class DataExtensionsEditorModule {
           {
             title: "Opening Data Extensions Editor",
           },
-        ),
+        );
+      },
     };
   }
 

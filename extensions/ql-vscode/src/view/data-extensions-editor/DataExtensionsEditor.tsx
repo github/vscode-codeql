@@ -16,7 +16,7 @@ import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { MethodRow } from "./MethodRow";
 import { assertNever } from "../../pure/helpers-pure";
 import { vscode } from "../vscode-api";
-import { calculateSupportedPercentage } from "./supported";
+import { calculateModeledPercentage } from "./modeled";
 
 export const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -97,12 +97,12 @@ export function DataExtensionsEditor({
     };
   }, []);
 
-  const supportedPercentage = useMemo(
-    () => calculateSupportedPercentage(externalApiUsages),
+  const modeledPercentage = useMemo(
+    () => calculateModeledPercentage(externalApiUsages),
     [externalApiUsages],
   );
 
-  const unsupportedPercentage = 100 - supportedPercentage;
+  const unModeledPercentage = 100 - modeledPercentage;
 
   const onChange = useCallback(
     (method: ExternalApiUsage, model: ModeledMethod) => {
@@ -140,10 +140,10 @@ export function DataExtensionsEditor({
       {externalApiUsages.length > 0 && (
         <>
           <div>
-            <h3>External API support stats</h3>
+            <h3>External API model stats</h3>
             <ul>
-              <li>Supported: {supportedPercentage.toFixed(2)}%</li>
-              <li>Unsupported: {unsupportedPercentage.toFixed(2)}%</li>
+              <li>Modeled: {modeledPercentage.toFixed(2)}%</li>
+              <li>Unmodeled: {unModeledPercentage.toFixed(2)}%</li>
             </ul>
           </div>
           <div>

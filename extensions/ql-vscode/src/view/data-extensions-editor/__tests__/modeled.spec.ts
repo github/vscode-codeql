@@ -1,13 +1,13 @@
-import { calculateSupportedPercentage } from "../supported";
+import { calculateModeledPercentage } from "../modeled";
 
-describe("calculateSupportedPercentage", () => {
+describe("calculateModeledPercentage", () => {
   it("when there are no external API usages", () => {
-    expect(calculateSupportedPercentage([])).toBe(0);
+    expect(calculateModeledPercentage([])).toBe(0);
   });
 
-  it("when there are is 1 supported external API usage", () => {
+  it("when there are is 1 modeled external API usage", () => {
     expect(
-      calculateSupportedPercentage([
+      calculateModeledPercentage([
         {
           supported: true,
         },
@@ -15,9 +15,9 @@ describe("calculateSupportedPercentage", () => {
     ).toBe(100);
   });
 
-  it("when there are is 1 unsupported external API usage", () => {
+  it("when there are is 1 unmodeled external API usage", () => {
     expect(
-      calculateSupportedPercentage([
+      calculateModeledPercentage([
         {
           supported: false,
         },
@@ -25,9 +25,9 @@ describe("calculateSupportedPercentage", () => {
     ).toBe(0);
   });
 
-  it("when there are multiple supporte and unsupported external API usage", () => {
+  it("when there are multiple modeled and unmodeled external API usage", () => {
     expect(
-      calculateSupportedPercentage([
+      calculateModeledPercentage([
         {
           supported: false,
         },

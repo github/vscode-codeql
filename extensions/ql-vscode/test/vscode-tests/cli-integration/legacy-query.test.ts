@@ -98,8 +98,6 @@ const db: messages.Dataset = {
   workingSet: "default",
 };
 
-jest.setTimeout(60_000);
-
 describeWithCodeQL()("using the legacy query server", () => {
   const nullProgressReporter: ProgressReporter = {
     report: () => {

@@ -16,8 +16,6 @@ import {
 } from "../global.helper";
 import { createMockCommandManager } from "../../__mocks__/commandsMock";
 
-jest.setTimeout(60_000);
-
 /**
  * Run various integration tests for databases
  */

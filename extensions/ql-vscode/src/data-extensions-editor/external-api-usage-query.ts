@@ -1,25 +1,27 @@
 import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
-import { qlpackOfDatabase } from "../contextual/queryResolver";
-import { file } from "tmp-promise";
+import { dir } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
 } from "../helpers";
-import { Logger, TeeLogger } from "../common";
+import { TeeLogger } from "../common";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../cli";
 import { DatabaseItem } from "../local-databases";
 import { ProgressCallback } from "../progress";
+import { fetchExternalApiQueries } from "./queries";
+import { QueryResultType } from "../pure/new-messages";
+import { join } from "path";
 import { redactableError } from "../pure/errors";
+import { QueryLanguage } from "../common/query-language";
 
 export type RunQueryOptions = {
-  cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveQueriesInSuite">;
+  cliServer: Pick<CodeQLCliServer, "resolveQlpacks">;
   queryRunner: Pick<QueryRunner, "createQueryRun" | "logger">;
   databaseItem: Pick<DatabaseItem, "contents" | "databaseUri" | "language">;
   queryStorageDir: string;
-  logger: Logger;
 
   progress: ProgressCallback;
   token: CancellationToken;
@@ -30,54 +32,53 @@ export async function runQuery({
   queryRunner,
   databaseItem,
   queryStorageDir,
-  logger,
   progress,
   token,
 }: RunQueryOptions): Promise<CoreCompletedQuery | undefined> {
-  const qlpacks = await qlpackOfDatabase(cliServer, databaseItem);
+  // The below code is temporary to allow for rapid prototyping of the queries. Once the queries are stabilized, we will
+  // move these queries into the `github/codeql` repository and use them like any other contextual (e.g. AST) queries.
+  // This is intentionally not pretty code, as it will be removed soon.
+  // For a reference of what this should do in the future, see the previous implementation in
+  // https://github.com/github/vscode-codeql/blob/089d3566ef0bc67d9b7cc66e8fd6740b31c1c0b0/extensions/ql-vscode/src/data-extensions-editor/external-api-usage-query.ts#L33-L72
 
-  const packsToSearch = [qlpacks.dbschemePack];
-  if (qlpacks.queryPack) {
-    packsToSearch.push(qlpacks.queryPack);
+  const query = fetchExternalApiQueries[databaseItem.language as QueryLanguage];
+  if (!query) {
+    void showAndLogExceptionWithTelemetry(
+      redactableError`No external API usage query found for language ${databaseItem.language}`,
+    );
+    return;
   }
 
-  const suiteFile = (
-    await file({
-      postfix: ".qls",
-    })
-  ).path;
-  const suiteYaml = [];
-  for (const qlpack of packsToSearch) {
-    suiteYaml.push({
-      from: qlpack,
-      queries: ".",
-      include: {
-        id: `${databaseItem.language}/telemetry/fetch-external-apis`,
-      },
-    });
+  const queryDir = (await dir({ unsafeCleanup: true })).path;
+  const queryFile = join(queryDir, "FetchExternalApis.ql");
+  await writeFile(queryFile, query.mainQuery, "utf8");
+
+  if (query.dependencies) {
+    for (const [filename, contents] of Object.entries(query.dependencies)) {
+      const dependencyFile = join(queryDir, filename);
+      await writeFile(dependencyFile, contents, "utf8");
+    }
   }
-  await writeFile(suiteFile, dumpYaml(suiteYaml), "utf8");
+
+  const syntheticQueryPack = {
+    name: "codeql/external-api-usage",
+    version: "0.0.0",
+    dependencies: {
+      [`codeql/${databaseItem.language}-all`]: "*",
+    },
+  };
+
+  const qlpackFile = join(queryDir, "codeql-pack.yml");
+  await writeFile(qlpackFile, dumpYaml(syntheticQueryPack), "utf8");
 
   const additionalPacks = getOnDiskWorkspaceFolders();
   const extensionPacks = Object.keys(
     await cliServer.resolveQlpacks(additionalPacks, true),
   );
 
-  const queries = await cliServer.resolveQueriesInSuite(
-    suiteFile,
-    getOnDiskWorkspaceFolders(),
-  );
-
-  if (queries.length !== 1) {
-    void logger.log(`Expected exactly one query, got ${queries.length}`);
-    return;
-  }
-
-  const query = queries[0];
-
   const queryRun = queryRunner.createQueryRun(
     databaseItem.databaseUri.fsPath,
-    { queryPath: query, quickEvalPosition: undefined },
+    { queryPath: queryFile, quickEvalPosition: undefined },
     false,
     getOnDiskWorkspaceFolders(),
     extensionPacks,
@@ -86,11 +87,22 @@ export async function runQuery({
     undefined,
   );
 
-  return queryRun.evaluate(
+  const completedQuery = await queryRun.evaluate(
     progress,
     token,
     new TeeLogger(queryRunner.logger, queryRun.outputDir.logPath),
   );
+
+  if (completedQuery.resultType !== QueryResultType.SUCCESS) {
+    void showAndLogExceptionWithTelemetry(
+      redactableError`External API usage query failed: ${
+        completedQuery.message ?? "No message"
+      }`,
+    );
+    return;
+  }
+
+  return completedQuery;
 }
 
 export type GetResultsOptions = {
