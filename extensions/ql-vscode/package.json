@@ -1498,7 +1498,7 @@
     "@storybook/addon-essentials": "^6.5.17-alpha.0",
     "@storybook/addon-interactions": "^6.5.17-alpha.0",
     "@storybook/addon-links": "^6.5.17-alpha.0",
-    "@storybook/builder-webpack5": "^7.0.4",
+    "@storybook/builder-webpack5": "^6.5.17-alpha.0",
     "@storybook/manager-webpack5": "^6.5.17-alpha.0",
     "@storybook/react": "^6.5.17-alpha.0",
     "@storybook/testing-library": "^0.0.13",
