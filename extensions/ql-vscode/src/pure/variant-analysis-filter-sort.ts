@@ -3,6 +3,7 @@ import {
   RepositoryWithMetadata,
 } from "../variant-analysis/shared/repository";
 import { parseDate } from "./date";
+import { assertNever } from "./helpers-pure";
 
 export enum FilterKey {
   All = "all",
@@ -40,9 +41,31 @@ export function matchesFilter(
     return true;
   }
 
-  return item.repository.fullName
-    .toLowerCase()
-    .includes(filterSortState.searchValue.toLowerCase());
+  return (
+    matchesSearch(item.repository, filterSortState.searchValue) &&
+    matchesFilterKey(item.resultCount, filterSortState.filterKey)
+  );
+}
+
+function matchesSearch(
+  repository: SortableRepository,
+  searchValue: string,
+): boolean {
+  return repository.fullName.toLowerCase().includes(searchValue.toLowerCase());
+}
+
+function matchesFilterKey(
+  resultCount: number | undefined,
+  filterKey: FilterKey,
+): boolean {
+  switch (filterKey) {
+    case FilterKey.All:
+      return true;
+    case FilterKey.WithResults:
+      return resultCount !== undefined && resultCount > 0;
+    default:
+      assertNever(filterKey);
+  }
 }
 
 type SortableRepository = Pick<Repository, "fullName"> &
