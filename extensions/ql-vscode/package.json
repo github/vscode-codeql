@@ -683,6 +683,10 @@
         "title": "Accept Test Output"
       },
       {
+        "command": "codeQLTests.acceptOutputContextTestItem",
+        "title": "Accept Test Output"
+      },
+      {
         "command": "codeQLAstViewer.gotoCode",
         "title": "Go To Code"
       },
@@ -975,6 +979,13 @@
           "command": "codeQLTests.acceptOutput",
           "group": "qltest@2",
           "when": "viewItem == testWithSource"
+        }
+      ],
+      "testing/item/context": [
+        {
+          "command": "codeQLTests.acceptOutputContextTestItem",
+          "group": "qltest@1",
+          "when": "controllerId == codeql && testId =~ /^test /"
         }
       ],
       "explorer/context": [
@@ -1325,6 +1336,10 @@
         {
           "command": "codeQL.createQuery",
           "when": "config.codeQL.canary"
+        },
+        {
+          "command": "codeQLTests.acceptOutputContextTestItem",
+          "when": "false"
         }
       ],
       "editor/context": [

@@ -31,6 +31,7 @@ import { CodeQLCliServer } from "./cli";
 import {
   CliConfigListener,
   DistributionConfigListener,
+  isCanary,
   joinOrderWarningThreshold,
   QueryHistoryConfigListener,
   QueryServerConfigListener,
@@ -114,7 +115,6 @@ import {
   BaseCommands,
   PreActivationCommands,
   QueryServerCommands,
-  TestUICommands,
 } from "./common/commands";
 import { LocalQueries } from "./local-queries";
 import { getAstCfgCommands } from "./ast-cfg-commands";
@@ -122,6 +122,9 @@ import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extensions-editor-module";
+import { TestManager } from "./test-manager";
+import { TestRunner } from "./test-runner";
+import { TestManagerBase } from "./test-manager-base";
 
 /**
  * extension.ts
@@ -885,24 +888,33 @@ async function activateWithInstalledDistribution(
     );
 
   void extLogger.log("Initializing QLTest interface.");
-  const testExplorerExtension = extensions.getExtension<TestHub>(
-    testExplorerExtensionId,
-  );
-  let testUiCommands: Partial<TestUICommands> = {};
-  if (testExplorerExtension) {
-    const testHub = testExplorerExtension.exports;
-    const testAdapterFactory = new QLTestAdapterFactory(
-      testHub,
-      cliServer,
-      dbm,
+
+  const testRunner = new TestRunner(dbm, cliServer);
+  ctx.subscriptions.push(testRunner);
+
+  let testManager: TestManagerBase | undefined = undefined;
+  if (isCanary()) {
+    testManager = new TestManager(app, testRunner, cliServer);
+    ctx.subscriptions.push(testManager);
+  } else {
+    const testExplorerExtension = extensions.getExtension<TestHub>(
+      testExplorerExtensionId,
     );
-    ctx.subscriptions.push(testAdapterFactory);
+    if (testExplorerExtension) {
+      const testHub = testExplorerExtension.exports;
+      const testAdapterFactory = new QLTestAdapterFactory(
+        testHub,
+        testRunner,
+        cliServer,
+      );
+      ctx.subscriptions.push(testAdapterFactory);
 
-    const testUIService = new TestUIService(app, testHub);
-    ctx.subscriptions.push(testUIService);
-
-    testUiCommands = testUIService.getCommands();
+      testManager = new TestUIService(app, testHub);
+      ctx.subscriptions.push(testManager);
+    }
   }
+
+  const testUiCommands = testManager?.getCommands() ?? {};
 
   const astViewer = new AstViewer();
   const astTemplateProvider = new TemplatePrintAstProvider(

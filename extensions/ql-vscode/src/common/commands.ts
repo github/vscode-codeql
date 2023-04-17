@@ -298,6 +298,9 @@ export type SummaryLanguageSupportCommands = {
 export type TestUICommands = {
   "codeQLTests.showOutputDifferences": (node: TestTreeNode) => Promise<void>;
   "codeQLTests.acceptOutput": (node: TestTreeNode) => Promise<void>;
+  "codeQLTests.acceptOutputContextTestItem": (
+    node: TestTreeNode,
+  ) => Promise<void>;
 };
 
 export type MockGitHubApiServerCommands = {
