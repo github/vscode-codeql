@@ -12,7 +12,7 @@ export type VariantAnalysisStatsProps = {
   variantAnalysisStatus: VariantAnalysisStatus;
 
   totalRepositoryCount: number;
-  completedRepositoryCount?: number | undefined;
+  completedRepositoryCount: number;
 
   hasWarnings?: boolean;
 
@@ -32,7 +32,7 @@ const Row = styled.div`
 export const VariantAnalysisStats = ({
   variantAnalysisStatus,
   totalRepositoryCount,
-  completedRepositoryCount = 0,
+  completedRepositoryCount,
   hasWarnings,
   resultCount,
   createdAt,

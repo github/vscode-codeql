@@ -19,6 +19,7 @@ describe(VariantAnalysisStats.name, () => {
       <VariantAnalysisStats
         variantAnalysisStatus={VariantAnalysisStatus.InProgress}
         totalRepositoryCount={10}
+        completedRepositoryCount={0}
         onViewLogsClick={onViewLogsClick}
         createdAt={new Date()}
         {...props}

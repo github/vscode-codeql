@@ -12,7 +12,7 @@ type Props = {
   variantAnalysisStatus: VariantAnalysisStatus;
 
   totalRepositoryCount: number;
-  completedRepositoryCount?: number | undefined;
+  completedRepositoryCount: number;
 
   showWarning?: boolean;
 };
@@ -20,7 +20,7 @@ type Props = {
 export const VariantAnalysisRepositoriesStats = ({
   variantAnalysisStatus,
   totalRepositoryCount,
-  completedRepositoryCount = 0,
+  completedRepositoryCount,
   showWarning,
 }: Props) => {
   if (variantAnalysisStatus === VariantAnalysisStatus.Failed) {
