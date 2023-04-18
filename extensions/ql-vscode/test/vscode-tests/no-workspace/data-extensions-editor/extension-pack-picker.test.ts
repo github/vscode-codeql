@@ -73,7 +73,13 @@ describe("pickExtensionPackModelFile", () => {
         progress,
         token,
       ),
-    ).toEqual("/a/b/c/my-extension-pack/models/model.yml");
+    ).toEqual({
+      filename: "/a/b/c/my-extension-pack/models/model.yml",
+      extensionPack: {
+        name: "my-extension-pack",
+        path: "/a/b/c/my-extension-pack",
+      },
+    });
     expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
     expect(showQuickPickSpy).toHaveBeenCalledWith(
       [
@@ -174,7 +180,13 @@ describe("pickExtensionPackModelFile", () => {
         progress,
         token,
       ),
-    ).toEqual(join(tmpDir.path, "models/my-model.yml"));
+    ).toEqual({
+      filename: join(tmpDir.path, "models/my-model.yml"),
+      extensionPack: {
+        name: "my-extension-pack",
+        path: tmpDir.path,
+      },
+    });
     expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
     expect(showQuickPickSpy).toHaveBeenCalledWith(
       [
@@ -264,7 +276,18 @@ describe("pickExtensionPackModelFile", () => {
         progress,
         token,
       ),
-    ).toEqual(join(tmpDir.path, "my-extension-pack", "models", "my-model.yml"));
+    ).toEqual({
+      filename: join(
+        tmpDir.path,
+        "my-extension-pack",
+        "models",
+        "my-model.yml",
+      ),
+      extensionPack: {
+        name: "my-extension-pack",
+        path: join(tmpDir.path, "my-extension-pack"),
+      },
+    });
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
     expect(showInputBoxSpy).toHaveBeenCalledTimes(2);
     expect(showInputBoxSpy).toHaveBeenCalledWith(
@@ -329,7 +352,18 @@ describe("pickExtensionPackModelFile", () => {
         progress,
         token,
       ),
-    ).toEqual(join(tmpDir.path, "my-extension-pack", "models", "my-model.yml"));
+    ).toEqual({
+      filename: join(
+        tmpDir.path,
+        "my-extension-pack",
+        "models",
+        "my-model.yml",
+      ),
+      extensionPack: {
+        name: "my-extension-pack",
+        path: join(tmpDir.path, "my-extension-pack"),
+      },
+    });
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
     expect(showInputBoxSpy).toHaveBeenCalledTimes(2);
     expect(showInputBoxSpy).toHaveBeenCalledWith(
@@ -508,7 +542,13 @@ describe("pickExtensionPackModelFile", () => {
         progress,
         token,
       ),
-    ).toEqual(join(tmpDir.path, "models/my-model.yml"));
+    ).toEqual({
+      filename: join(tmpDir.path, "models", "my-model.yml"),
+      extensionPack: {
+        name: "my-extension-pack",
+        path: tmpDir.path,
+      },
+    });
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
     expect(showInputBoxSpy).toHaveBeenCalledWith(
       {
