@@ -21,26 +21,36 @@ const packNameRegex = new RegExp(
 );
 const packNameLength = 128;
 
+export interface ExtensionPack {
+  name: string;
+  path: string;
+}
+
+export interface ExtensionPackModelFile {
+  filename: string;
+  extensionPack: ExtensionPack;
+}
+
 export async function pickExtensionPackModelFile(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveExtensions">,
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   progress: ProgressCallback,
   token: CancellationToken,
-): Promise<string | undefined> {
-  const extensionPackPath = await pickExtensionPack(
+): Promise<ExtensionPackModelFile | undefined> {
+  const extensionPack = await pickExtensionPack(
     cliServer,
     databaseItem,
     progress,
     token,
   );
-  if (!extensionPackPath) {
-    return;
+  if (!extensionPack) {
+    return undefined;
   }
 
   const modelFile = await pickModelFile(
     cliServer,
     databaseItem,
-    extensionPackPath,
+    extensionPack.path,
     progress,
     token,
   );
@@ -48,7 +58,10 @@ export async function pickExtensionPackModelFile(
     return;
   }
 
-  return modelFile;
+  return {
+    filename: modelFile,
+    extensionPack,
+  };
 }
 
 async function pickExtensionPack(
@@ -56,7 +69,7 @@ async function pickExtensionPack(
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   progress: ProgressCallback,
   token: CancellationToken,
-): Promise<string | undefined> {
+): Promise<ExtensionPack | undefined> {
   progress({
     message: "Resolving extension packs...",
     step: 1,
@@ -117,7 +130,10 @@ async function pickExtensionPack(
     return undefined;
   }
 
-  return extensionPackPaths[0];
+  return {
+    name: extensionPackOption.extensionPack,
+    path: extensionPackPaths[0],
+  };
 }
 
 async function pickModelFile(
@@ -186,7 +202,7 @@ async function pickModelFile(
 async function pickNewExtensionPack(
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   token: CancellationToken,
-): Promise<string | undefined> {
+): Promise<ExtensionPack | undefined> {
   const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
   const workspaceFolderOptions = workspaceFolders.map((folder) => ({
     label: folder.name,
@@ -263,7 +279,10 @@ async function pickNewExtensionPack(
     }),
   );
 
-  return packPath;
+  return {
+    name: packName,
+    path: packPath,
+  };
 }
 
 async function pickNewModelFile(

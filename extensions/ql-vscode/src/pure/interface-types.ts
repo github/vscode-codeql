@@ -483,6 +483,7 @@ export type FromDataFlowPathsMessage = CommonFromViewMessages;
 
 export interface SetDataExtensionEditorInitialDataMessage {
   t: "setDataExtensionEditorInitialData";
+  extensionPackName: string;
   modelFilename: string;
 }
 
@@ -516,6 +517,10 @@ export interface JumpToUsageMessage {
   location: ResolvableLocationValue;
 }
 
+export interface OpenExtensionPackMessage {
+  t: "openExtensionPack";
+}
+
 export interface OpenModelFileMessage {
   t: "openModelFile";
 }
@@ -539,6 +544,7 @@ export type ToDataExtensionsEditorMessage =
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
   | OpenModelFileMessage
+  | OpenExtensionPackMessage
   | JumpToUsageMessage
   | SaveModeledMethods
   | GenerateExternalApiMessage;

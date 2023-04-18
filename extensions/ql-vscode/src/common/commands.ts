@@ -88,6 +88,7 @@ export type BuiltInVsCodeCommands = {
   ) => Promise<void>;
   "vscode.open": (uri: Uri) => Promise<void>;
   "vscode.openFolder": (uri: Uri) => Promise<void>;
+  revealInExplorer: (uri: Uri) => Promise<void>;
   // We type the `config` property specifically as a CodeQL debug configuration, since that's the
   // only kinds we specify anyway.
   "workbench.action.debug.start": (options?: {
