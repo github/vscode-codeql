@@ -108,20 +108,10 @@ describe(VariantAnalysisStats.name, () => {
     expect(screen.getByText("Stopped")).toBeInTheDocument();
   });
 
-  it("renders a succeeded warnings text when the variant analysis status is succeeded and skipped repositories count is greater than zero", () => {
-    render({
-      variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
-      skippedRepositoryCount: 5,
-    });
-
-    expect(screen.getByText("Succeeded warnings")).toBeInTheDocument();
-  });
-
   it("renders a succeeded text when the variant analysis status is succeeded", () => {
     render({ variantAnalysisStatus: VariantAnalysisStatus.Succeeded });
 
     expect(screen.getByText("Succeeded")).toBeInTheDocument();
-    expect(screen.queryByText("Succeeded warnings")).not.toBeInTheDocument();
   });
 
   it("does not render the duration when the completedAt is not set", () => {

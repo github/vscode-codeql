@@ -53,15 +53,8 @@ export const VariantAnalysisStats = ({
       return "Stopped";
     }
 
-    if (
-      variantAnalysisStatus === VariantAnalysisStatus.Succeeded &&
-      skippedRepositoryCount > 0
-    ) {
-      return "Succeeded warnings";
-    }
-
     return "Succeeded";
-  }, [variantAnalysisStatus, skippedRepositoryCount]);
+  }, [variantAnalysisStatus]);
 
   const duration = useMemo(() => {
     if (!completedAt) {
