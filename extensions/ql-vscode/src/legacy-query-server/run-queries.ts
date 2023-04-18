@@ -316,7 +316,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
   logger: Logger,
 ): Promise<CoreQueryResults> {
   if (extensionPacks !== undefined && extensionPacks.length > 0) {
-    await showAndLogWarningMessage(
+    void showAndLogWarningMessage(
       "Legacy query server does not support extension packs.",
     );
   }

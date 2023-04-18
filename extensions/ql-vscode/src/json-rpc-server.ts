@@ -23,6 +23,7 @@ export class ServerProcess implements Disposable {
   dispose(): void {
     void this.logger.log(`Stopping ${this.name}...`);
     this.connection.dispose();
+    this.connection.end();
     this.child.stdin!.end();
     this.child.stderr!.destroy();
     // TODO kill the process if it doesn't terminate after a certain time limit.

@@ -23,7 +23,7 @@ import {
   getErrorStack,
 } from "./pure/helpers-pure";
 import { QueryMetadata, SortDirection } from "./pure/interface-types";
-import { Logger, ProgressReporter } from "./common";
+import { BaseLogger, Logger, ProgressReporter } from "./common";
 import { CompilationMessage } from "./pure/legacy-messages";
 import { sarifParser } from "./sarif-parser";
 import { walkDirectory } from "./helpers";
@@ -149,6 +149,7 @@ export interface TestCompleted {
   compilationMs: number;
   evaluationMs: number;
   expected: string;
+  actual?: string;
   diff: string[] | undefined;
   failureDescription?: string;
   failureStage?: string;
@@ -439,7 +440,7 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     cancellationToken?: CancellationToken,
-    logger?: Logger,
+    logger?: BaseLogger,
   ): AsyncGenerator<string, void, unknown> {
     // Add format argument first, in case commandArgs contains positional parameters.
     const args = [...command, "--format", "jsonz", ...commandArgs];
@@ -447,6 +448,11 @@ export class CodeQLCliServer implements Disposable {
     // Spawn the CodeQL process
     const codeqlPath = await this.getCodeQlPath();
     const childPromise = spawn(codeqlPath, args);
+    // Avoid a runtime message about unhandled rejection.
+    childPromise.catch(() => {
+      /**/
+    });
+
     const child = childPromise.childProcess;
 
     let cancellationRegistration: Disposable | undefined = undefined;
@@ -497,7 +503,7 @@ export class CodeQLCliServer implements Disposable {
       logger,
     }: {
       cancellationToken?: CancellationToken;
-      logger?: Logger;
+      logger?: BaseLogger;
     } = {},
   ): AsyncGenerator<EventType, void, unknown> {
     for await (const event of this.runAsyncCodeQlCliCommandInternal(
@@ -776,7 +782,7 @@ export class CodeQLCliServer implements Disposable {
       logger,
     }: {
       cancellationToken?: CancellationToken;
-      logger?: Logger;
+      logger?: BaseLogger;
     },
   ): AsyncGenerator<TestCompleted, void, unknown> {
     const subcommandArgs = this.cliConfig.additionalTestArguments.concat([
@@ -1661,7 +1667,7 @@ const lineEndings = ["\r\n", "\r", "\n"];
  * @param stream The stream to log.
  * @param logger The logger that will consume the stream output.
  */
-async function logStream(stream: Readable, logger: Logger): Promise<void> {
+async function logStream(stream: Readable, logger: BaseLogger): Promise<void> {
   for await (const line of splitStreamAtSeparators(stream, lineEndings)) {
     // Await the result of log here in order to ensure the logs are written in the correct order.
     await logger.log(line);

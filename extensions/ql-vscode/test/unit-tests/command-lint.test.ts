@@ -7,10 +7,15 @@ type CmdDecl = {
   title?: string;
 };
 
+type DebuggerDecl = {
+  variables?: Record<string, string>;
+};
+
 describe("commands declared in package.json", () => {
   const manifest = readJsonSync(join(__dirname, "../../package.json"));
   const commands = manifest.contributes.commands;
   const menus = manifest.contributes.menus;
+  const debuggers = manifest.contributes.debuggers;
 
   const disabledInPalette: Set<string> = new Set<string>();
 
@@ -60,6 +65,15 @@ describe("commands declared in package.json", () => {
     contribContextMenuCmds.add(command);
   });
 
+  debuggers.forEach((debuggerDecl: DebuggerDecl) => {
+    if (debuggerDecl.variables !== undefined) {
+      for (const command of Object.values(debuggerDecl.variables)) {
+        // Commands used as debug configuration variables need not be enabled in the command palette.
+        paletteCmds.delete(command);
+      }
+    }
+  });
+
   menus.commandPalette.forEach((commandDecl: CmdDecl) => {
     if (commandDecl.when === "false")
       disabledInPalette.add(commandDecl.command);
@@ -85,6 +99,9 @@ describe("commands declared in package.json", () => {
   it("should have the right commands accessible from the command palette", () => {
     paletteCmds.forEach((command) => {
       // command ${command} should be enabled in the command palette
+      if (disabledInPalette.has(command) !== false) {
+        expect(command).toBe("enabled");
+      }
       expect(disabledInPalette.has(command)).toBe(false);
     });
 
