@@ -14,88 +14,92 @@ describe(matchesFilter.name, () => {
     fullName: "github/codeql",
   };
 
-  const testCases = [
-    { searchValue: "", matches: true },
-    { searchValue: "github/codeql", matches: true },
-    { searchValue: "github", matches: true },
-    { searchValue: "git", matches: true },
-    { searchValue: "codeql", matches: true },
-    { searchValue: "code", matches: true },
-    { searchValue: "ql", matches: true },
-    { searchValue: "/", matches: true },
-    { searchValue: "gothub/codeql", matches: false },
-    { searchValue: "hello", matches: false },
-    { searchValue: "cod*ql", matches: false },
-    { searchValue: "cod?ql", matches: false },
-  ];
+  describe("searchValue", () => {
+    const testCases = [
+      { searchValue: "", matches: true },
+      { searchValue: "github/codeql", matches: true },
+      { searchValue: "github", matches: true },
+      { searchValue: "git", matches: true },
+      { searchValue: "codeql", matches: true },
+      { searchValue: "code", matches: true },
+      { searchValue: "ql", matches: true },
+      { searchValue: "/", matches: true },
+      { searchValue: "gothub/codeql", matches: false },
+      { searchValue: "hello", matches: false },
+      { searchValue: "cod*ql", matches: false },
+      { searchValue: "cod?ql", matches: false },
+    ];
 
-  test.each(testCases)(
-    "returns $matches if searching for $searchValue",
-    ({ searchValue, matches }) => {
+    test.each(testCases)(
+      "returns $matches if searching for $searchValue",
+      ({ searchValue, matches }) => {
+        expect(
+          matchesFilter(
+            { repository },
+            {
+              ...defaultFilterSortState,
+              searchValue,
+            },
+          ),
+        ).toBe(matches);
+      },
+    );
+  });
+
+  describe("filterKey", () => {
+    it("returns true if filterKey is all and resultCount is positive", () => {
+      expect(
+        matchesFilter(
+          { repository, resultCount: 1 },
+          { ...defaultFilterSortState, filterKey: FilterKey.All },
+        ),
+      ).toBe(true);
+    });
+
+    it("returns true if filterKey is all and resultCount is zero", () => {
+      expect(
+        matchesFilter(
+          { repository, resultCount: 0 },
+          { ...defaultFilterSortState, filterKey: FilterKey.All },
+        ),
+      ).toBe(true);
+    });
+
+    it("returns true if filterKey is all and resultCount is undefined", () => {
       expect(
         matchesFilter(
           { repository },
-          {
-            ...defaultFilterSortState,
-            searchValue,
-          },
+          { ...defaultFilterSortState, filterKey: FilterKey.All },
         ),
-      ).toBe(matches);
-    },
-  );
+      ).toBe(true);
+    });
 
-  it("returns true if filterKey is all and resultCount is positive", () => {
-    expect(
-      matchesFilter(
-        { repository, resultCount: 1 },
-        { ...defaultFilterSortState, filterKey: FilterKey.All },
-      ),
-    ).toBe(true);
-  });
+    it("returns true if filterKey is withResults and resultCount is positive", () => {
+      expect(
+        matchesFilter(
+          { repository, resultCount: 1 },
+          { ...defaultFilterSortState, filterKey: FilterKey.WithResults },
+        ),
+      ).toBe(true);
+    });
 
-  it("returns true if filterKey is all and resultCount is zero", () => {
-    expect(
-      matchesFilter(
-        { repository, resultCount: 0 },
-        { ...defaultFilterSortState, filterKey: FilterKey.All },
-      ),
-    ).toBe(true);
-  });
+    it("returns false if filterKey is withResults and resultCount is zero", () => {
+      expect(
+        matchesFilter(
+          { repository, resultCount: 0 },
+          { ...defaultFilterSortState, filterKey: FilterKey.WithResults },
+        ),
+      ).toBe(false);
+    });
 
-  it("returns true if filterKey is all and resultCount is undefined", () => {
-    expect(
-      matchesFilter(
-        { repository },
-        { ...defaultFilterSortState, filterKey: FilterKey.All },
-      ),
-    ).toBe(true);
-  });
-
-  it("returns true if filterKey is withResults and resultCount is positive", () => {
-    expect(
-      matchesFilter(
-        { repository, resultCount: 1 },
-        { ...defaultFilterSortState, filterKey: FilterKey.WithResults },
-      ),
-    ).toBe(true);
-  });
-
-  it("returns false if filterKey is withResults and resultCount is zero", () => {
-    expect(
-      matchesFilter(
-        { repository, resultCount: 0 },
-        { ...defaultFilterSortState, filterKey: FilterKey.WithResults },
-      ),
-    ).toBe(false);
-  });
-
-  it("returns false if filterKey is withResults and resultCount is undefined", () => {
-    expect(
-      matchesFilter(
-        { repository },
-        { ...defaultFilterSortState, filterKey: FilterKey.WithResults },
-      ),
-    ).toBe(false);
+    it("returns false if filterKey is withResults and resultCount is undefined", () => {
+      expect(
+        matchesFilter(
+          { repository },
+          { ...defaultFilterSortState, filterKey: FilterKey.WithResults },
+        ),
+      ).toBe(false);
+    });
   });
 });
 
