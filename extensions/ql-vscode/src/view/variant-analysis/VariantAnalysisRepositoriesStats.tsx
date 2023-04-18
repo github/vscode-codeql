@@ -28,7 +28,7 @@ export const VariantAnalysisRepositoriesStats = ({
     return (
       <>
         0<HorizontalSpace size={2} />
-        <ErrorIcon />
+        <ErrorIcon label="Variant analysis failed" />
       </>
     );
   }
@@ -43,13 +43,13 @@ export const VariantAnalysisRepositoriesStats = ({
       {showError && (
         <>
           <HorizontalSpace size={2} />
-          <ErrorIcon />
+          <ErrorIcon label="Some analyses failed" />
         </>
       )}
       {showWarning && !showError && (
         <>
           <HorizontalSpace size={2} />
-          <WarningIcon />
+          <WarningIcon label="Some repositories were skipped" />
         </>
       )}
       {!showError &&

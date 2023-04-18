@@ -55,7 +55,7 @@ describe(VariantAnalysisStats.name, () => {
 
     expect(
       screen.getByRole("img", {
-        name: "Warning",
+        name: "Some repositories were skipped",
       }),
     ).toBeInTheDocument();
   });
@@ -65,7 +65,7 @@ describe(VariantAnalysisStats.name, () => {
 
     expect(
       screen.getByRole("img", {
-        name: "Error",
+        name: "Variant analysis failed",
       }),
     ).toBeInTheDocument();
   });
@@ -89,7 +89,7 @@ describe(VariantAnalysisStats.name, () => {
 
     expect(
       screen.getByRole("img", {
-        name: "Error",
+        name: "Some analyses failed",
       }),
     ).toBeInTheDocument();
   });
@@ -103,7 +103,7 @@ describe(VariantAnalysisStats.name, () => {
 
     expect(
       screen.getByRole("img", {
-        name: "Error",
+        name: "Some analyses failed",
       }),
     ).toBeInTheDocument();
   });
@@ -117,12 +117,12 @@ describe(VariantAnalysisStats.name, () => {
 
     expect(
       screen.getByRole("img", {
-        name: "Error",
+        name: "Some analyses failed",
       }),
     ).toBeInTheDocument();
     expect(
       screen.queryByRole("img", {
-        name: "Warning",
+        name: "Some repositories were skipped",
       }),
     ).not.toBeInTheDocument();
   });
