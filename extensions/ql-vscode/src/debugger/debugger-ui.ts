@@ -9,7 +9,7 @@ import {
 } from "vscode";
 import { DebuggerCommands } from "../common/commands";
 import { DatabaseManager } from "../local-databases";
-import { LocalQueries, LocalQueryRun } from "../local-queries";
+import { LocalQueries } from "../local-queries/local-queries";
 import { DisposableObject } from "../pure/disposable-object";
 import { CoreQueryResults } from "../queryRunner";
 import {
@@ -20,6 +20,7 @@ import {
 import { QLResolvedDebugConfiguration } from "./debug-configuration";
 import * as CodeQLProtocol from "./debug-protocol";
 import { App } from "../common/app";
+import { LocalQueryRun } from "../local-queries/local-query-run";
 
 /**
  * Listens to messages passing between VS Code and the debug adapter, so that we can supplement the

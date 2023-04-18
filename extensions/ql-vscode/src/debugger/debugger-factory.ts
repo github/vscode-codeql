@@ -9,7 +9,7 @@ import {
   ProviderResult,
 } from "vscode";
 import { isCanary } from "../config";
-import { LocalQueries } from "../local-queries";
+import { LocalQueries } from "../local-queries/local-queries";
 import { DisposableObject } from "../pure/disposable-object";
 import { QueryRunner } from "../queryRunner";
 import { QLDebugConfigurationProvider } from "./debug-configuration";
