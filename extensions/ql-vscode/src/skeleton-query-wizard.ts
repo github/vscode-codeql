@@ -64,14 +64,13 @@ export class SkeletonQueryWizard {
     if (skeletonPackAlreadyExists) {
       // just create a new example query file in skeleton QL pack
       await this.createExampleFile();
-      // select existing database for language
-      await this.selectExistingDatabase();
     } else {
       // generate a new skeleton QL pack with query file
       await this.createQlPack();
-      // download database based on language and select it
-      await this.downloadDatabase();
     }
+
+    // select existing database for language or download a new one
+    await this.selectOrDownloadDatabase();
 
     // open a query file
 
@@ -216,41 +215,19 @@ export class SkeletonQueryWizard {
     );
   }
 
-  private async selectExistingDatabase() {
-    if (this.language === undefined) {
-      throw new Error("Language is undefined");
-    }
-
+  private async selectOrDownloadDatabase() {
     if (this.qlPackStoragePath === undefined) {
       throw new Error("QL Pack storage path is undefined");
     }
 
-    const databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
-
-    const existingDatabaseItem = await this.findDatabaseItemByNwo(
-      this.language,
-      databaseNwo,
-      this.databaseManager.databaseItems,
-    );
+    const existingDatabaseItem = await this.findExistingDatabaseItem();
 
     if (existingDatabaseItem) {
       // select the found database
       await this.databaseManager.setCurrentDatabaseItem(existingDatabaseItem);
     } else {
-      const sameLanguageDatabaseItem = await this.findDatabaseItemByLanguage(
-        this.language,
-        this.databaseManager.databaseItems,
-      );
-
-      if (sameLanguageDatabaseItem) {
-        // select the found database
-        await this.databaseManager.setCurrentDatabaseItem(
-          sameLanguageDatabaseItem,
-        );
-      } else {
-        // download new database and select it
-        await this.downloadDatabase();
-      }
+      // download new database and select it
+      await this.downloadDatabase();
     }
   }
 
@@ -285,5 +262,28 @@ export class SkeletonQueryWizard {
       return undefined;
     }
     return dbs[0];
+  }
+
+  private async findExistingDatabaseItem() {
+    if (this.language === undefined) {
+      throw new Error("Language is undefined");
+    }
+
+    const defaultDatabaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
+
+    const defaultDatabaseItem = await this.findDatabaseItemByNwo(
+      this.language,
+      defaultDatabaseNwo,
+      this.databaseManager.databaseItems,
+    );
+
+    if (defaultDatabaseItem !== undefined) {
+      return defaultDatabaseItem;
+    }
+
+    return await this.findDatabaseItemByLanguage(
+      this.language,
+      this.databaseManager.databaseItems,
+    );
   }
 }

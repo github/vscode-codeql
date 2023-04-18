@@ -306,18 +306,21 @@ export class DatabaseUI extends DisposableObject {
               `${workspace.workspaceFolders[0].uri}/.tours/codeql-tutorial-database`,
             );
 
-            let databaseItem = this.databaseManager.findDatabaseItem(uri);
-            const isTutorialDatabase = true;
+            const databaseItem = this.databaseManager.findDatabaseItem(uri);
             if (databaseItem === undefined) {
-              databaseItem = await this.databaseManager.openDatabase(
+              const makeSelected = true;
+              const nameOverride = "CodeQL Tutorial Database";
+              const isTutorialDatabase = true;
+
+              await this.databaseManager.openDatabase(
                 progress,
                 token,
                 uri,
-                "CodeQL Tutorial Database",
+                makeSelected,
+                nameOverride,
                 isTutorialDatabase,
               );
             }
-            await this.databaseManager.setCurrentDatabaseItem(databaseItem);
             await this.handleTourDependencies();
           }
         } catch (e) {
@@ -630,7 +633,7 @@ export class DatabaseUI extends DisposableObject {
               this.queryServer?.cliServer,
             );
           } else {
-            await this.setCurrentDatabase(progress, token, uri);
+            await this.databaseManager.openDatabase(progress, token, uri);
           }
         } catch (e) {
           // rethrow and let this be handled by default error handling.
@@ -752,24 +755,6 @@ export class DatabaseUI extends DisposableObject {
     return this.databaseManager.currentDatabaseItem;
   }
 
-  private async setCurrentDatabase(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    uri: Uri,
-  ): Promise<DatabaseItem | undefined> {
-    let databaseItem = this.databaseManager.findDatabaseItem(uri);
-    if (databaseItem === undefined) {
-      databaseItem = await this.databaseManager.openDatabase(
-        progress,
-        token,
-        uri,
-      );
-    }
-    await this.databaseManager.setCurrentDatabaseItem(databaseItem);
-
-    return databaseItem;
-  }
-
   /**
    * Ask the user for a database directory. Returns the chosen database, or `undefined` if the
    * operation was canceled.
@@ -789,7 +774,11 @@ export class DatabaseUI extends DisposableObject {
         if (byFolder) {
           const fixedUri = await this.fixDbUri(uri);
           // we are selecting a database folder
-          return await this.setCurrentDatabase(progress, token, fixedUri);
+          return await this.databaseManager.openDatabase(
+            progress,
+            token,
+            fixedUri,
+          );
         } else {
           // we are selecting a database archive. Must unzip into a workspace-controlled area
           // before importing.
