@@ -261,10 +261,11 @@ export class SkeletonQueryWizard {
       throw new Error("QL Pack storage path is undefined");
     }
 
-    const existingDatabaseItem = await this.findExistingDatabaseItem(
-      this.language,
-      this.databaseManager.databaseItems,
-    );
+    const existingDatabaseItem =
+      await SkeletonQueryWizard.findExistingDatabaseItem(
+        this.language,
+        this.databaseManager.databaseItems,
+      );
 
     if (existingDatabaseItem) {
       // select the found database
@@ -275,7 +276,7 @@ export class SkeletonQueryWizard {
     }
   }
 
-  public async findDatabaseItemByNwo(
+  public static async findDatabaseItemByNwo(
     language: string,
     databaseNwo: string,
     databaseItems: readonly DatabaseItem[],
@@ -287,7 +288,7 @@ export class SkeletonQueryWizard {
     return dbs.pop();
   }
 
-  public async findDatabaseItemByLanguage(
+  public static async findDatabaseItemByLanguage(
     language: string,
     databaseItems: readonly DatabaseItem[],
   ): Promise<DatabaseItem | undefined> {
@@ -296,15 +297,17 @@ export class SkeletonQueryWizard {
     return dbs.pop();
   }
 
-  public async findExistingDatabaseItem(
+  public static async findExistingDatabaseItem(
     language: string,
     databaseItems: readonly DatabaseItem[],
   ): Promise<DatabaseItem | undefined> {
     const defaultDatabaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[language];
 
-    const dbItems = await this.sortDatabaseItemsByDateAdded(databaseItems);
+    const dbItems = await SkeletonQueryWizard.sortDatabaseItemsByDateAdded(
+      databaseItems,
+    );
 
-    const defaultDatabaseItem = await this.findDatabaseItemByNwo(
+    const defaultDatabaseItem = await SkeletonQueryWizard.findDatabaseItemByNwo(
       language,
       defaultDatabaseNwo,
       dbItems,
@@ -314,10 +317,13 @@ export class SkeletonQueryWizard {
       return defaultDatabaseItem;
     }
 
-    return await this.findDatabaseItemByLanguage(language, dbItems);
+    return await SkeletonQueryWizard.findDatabaseItemByLanguage(
+      language,
+      dbItems,
+    );
   }
 
-  public async sortDatabaseItemsByDateAdded(
+  public static async sortDatabaseItemsByDateAdded(
     databaseItems: readonly DatabaseItem[],
   ) {
     const validDbItems = databaseItems.filter((db) => db.error === undefined);

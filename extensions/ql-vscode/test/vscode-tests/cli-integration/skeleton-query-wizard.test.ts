@@ -320,7 +320,7 @@ describe("SkeletonQueryWizard", () => {
 
         jest.spyOn(mockDbItem, "name", "get").mockReturnValue("mock-name");
 
-        const databaseItem = await wizard.findDatabaseItemByNwo(
+        const databaseItem = await SkeletonQueryWizard.findDatabaseItemByNwo(
           mockDbItem.language,
           mockDbItem.name,
           [mockDbItem, mockDbItem2],
@@ -337,7 +337,7 @@ describe("SkeletonQueryWizard", () => {
         const mockDbItem = createMockDB(dir);
         const mockDbItem2 = createMockDB(dir);
 
-        const databaseItem = await wizard.findDatabaseItemByNwo(
+        const databaseItem = await SkeletonQueryWizard.findDatabaseItemByNwo(
           "ruby",
           "mock-nwo",
           [mockDbItem, mockDbItem2],
@@ -358,10 +358,11 @@ describe("SkeletonQueryWizard", () => {
           language: "javascript",
         } as FullDatabaseOptions);
 
-        const databaseItem = await wizard.findDatabaseItemByLanguage("ruby", [
-          mockDbItem,
-          mockDbItem2,
-        ]);
+        const databaseItem =
+          await SkeletonQueryWizard.findDatabaseItemByLanguage("ruby", [
+            mockDbItem,
+            mockDbItem2,
+          ]);
 
         expect(databaseItem).toEqual(mockDbItem);
       });
@@ -372,10 +373,11 @@ describe("SkeletonQueryWizard", () => {
         const mockDbItem = createMockDB(dir);
         const mockDbItem2 = createMockDB(dir);
 
-        const databaseItem = await wizard.findDatabaseItemByLanguage("ruby", [
-          mockDbItem,
-          mockDbItem2,
-        ]);
+        const databaseItem =
+          await SkeletonQueryWizard.findDatabaseItemByLanguage("ruby", [
+            mockDbItem,
+            mockDbItem2,
+          ]);
 
         expect(databaseItem).toBeUndefined();
       });
@@ -510,12 +512,13 @@ describe("SkeletonQueryWizard", () => {
           dateAdded: 345,
         } as FullDatabaseOptions);
 
-        const sortedList = await wizard.sortDatabaseItemsByDateAdded([
-          mockDbItem,
-          mockDbItem2,
-          mockDbItem3,
-          mockDbItem4,
-        ]);
+        const sortedList =
+          await SkeletonQueryWizard.sortDatabaseItemsByDateAdded([
+            mockDbItem,
+            mockDbItem2,
+            mockDbItem3,
+            mockDbItem4,
+          ]);
 
         expect(sortedList).toEqual([
           mockDbItem3,
@@ -543,12 +546,13 @@ describe("SkeletonQueryWizard", () => {
           .spyOn(mockDbItem, "error", "get")
           .mockReturnValue(asError("database go boom!"));
 
-        const sortedList = await wizard.sortDatabaseItemsByDateAdded([
-          mockDbItem,
-          mockDbItem2,
-          mockDbItem3,
-          mockDbItem4,
-        ]);
+        const sortedList =
+          await SkeletonQueryWizard.sortDatabaseItemsByDateAdded([
+            mockDbItem,
+            mockDbItem2,
+            mockDbItem3,
+            mockDbItem4,
+          ]);
 
         expect(sortedList).toEqual([mockDbItem2, mockDbItem4, mockDbItem3]);
       });
@@ -582,7 +586,7 @@ describe("SkeletonQueryWizard", () => {
           .spyOn(mockDbItem2, "name", "get")
           .mockReturnValue(QUERY_LANGUAGE_TO_DATABASE_REPO["javascript"]);
 
-        const databaseItem = await wizard.findExistingDatabaseItem(
+        const databaseItem = await SkeletonQueryWizard.findExistingDatabaseItem(
           "javascript",
           [mockDbItem, mockDbItem2, mockDbItem3, mockDbItem4],
         );
@@ -612,7 +616,7 @@ describe("SkeletonQueryWizard", () => {
           dateAdded: undefined,
         } as FullDatabaseOptions);
 
-        const databaseItem = await wizard.findExistingDatabaseItem(
+        const databaseItem = await SkeletonQueryWizard.findExistingDatabaseItem(
           "javascript",
           [mockDbItem, mockDbItem2, mockDbItem3, mockDbItem4],
         );
