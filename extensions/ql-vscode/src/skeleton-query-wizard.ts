@@ -269,18 +269,21 @@ export class SkeletonQueryWizard {
       throw new Error("Language is undefined");
     }
 
-    const databaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
+    const defaultDatabaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
 
-    return (
-      (await this.findDatabaseItemByNwo(
-        this.language,
-        databaseNwo,
-        this.databaseManager.databaseItems,
-      )) ||
-      (await this.findDatabaseItemByLanguage(
-        this.language,
-        this.databaseManager.databaseItems,
-      ))
+    const defaultDatabaseItem = await this.findDatabaseItemByNwo(
+      this.language,
+      defaultDatabaseNwo,
+      this.databaseManager.databaseItems,
+    );
+
+    if (defaultDatabaseItem !== undefined) {
+      return defaultDatabaseItem;
+    }
+
+    return await this.findDatabaseItemByLanguage(
+      this.language,
+      this.databaseManager.databaseItems,
     );
   }
 }
