@@ -176,9 +176,7 @@ export type QueryHistoryCommands = {
   "codeQLQueryHistory.sortByCount": () => Promise<void>;
 
   // Commands in the context menu or in the hover menu
-  "codeQLQueryHistory.openQueryTitleMenu": TreeViewTitleMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.openQueryContextMenu": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.removeHistoryItemTitleMenu": TreeViewTitleMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.removeHistoryItemContextMenu": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.removeHistoryItemContextInline": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.renameItem": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
