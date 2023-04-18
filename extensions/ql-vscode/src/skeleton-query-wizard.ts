@@ -19,13 +19,13 @@ import { existsSync } from "fs";
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
 export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
-  cpp: "protocolbuffers/protobuf",
-  csharp: "dotnet/efcore",
-  go: "evanw/esbuild",
-  java: "google/guava",
-  javascript: "facebook/react",
+  cpp: "google/brotli",
+  csharp: "restsharp/RestSharp",
+  go: "spf13/cobra",
+  java: "projectlombok/lombok",
+  javascript: "d3/d3",
   python: "pallets/flask",
-  ruby: "rails/rails",
+  ruby: "jekyll/jekyll",
   swift: "Alamofire/Alamofire",
 };
 

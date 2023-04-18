@@ -158,6 +158,27 @@ describe("decodeBqrsToExternalApiUsages", () => {
     // - Sorting the array of usages is guaranteed to be a stable sort
     expect(decodeBqrsToExternalApiUsages(chunk)).toEqual([
       {
+        signature:
+          "org.springframework.boot.SpringApplication#run(Class,String[])",
+        packageName: "org.springframework.boot",
+        typeName: "SpringApplication",
+        methodName: "run",
+        methodParameters: "(Class,String[])",
+        supported: false,
+        usages: [
+          {
+            label: "run(...)",
+            url: {
+              uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/Sql2oExampleApplication.java",
+              startLine: 9,
+              startColumn: 9,
+              endLine: 9,
+              endColumn: 66,
+            },
+          },
+        ],
+      },
+      {
         signature: "org.sql2o.Connection#createQuery(String)",
         packageName: "org.sql2o",
         typeName: "Connection",
@@ -263,27 +284,6 @@ describe("decodeBqrsToExternalApiUsages", () => {
               startColumn: 9,
               endLine: 29,
               endColumn: 49,
-            },
-          },
-        ],
-      },
-      {
-        signature:
-          "org.springframework.boot.SpringApplication#run(Class,String[])",
-        packageName: "org.springframework.boot",
-        typeName: "SpringApplication",
-        methodName: "run",
-        methodParameters: "(Class,String[])",
-        supported: false,
-        usages: [
-          {
-            label: "run(...)",
-            url: {
-              uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/Sql2oExampleApplication.java",
-              startLine: 9,
-              startColumn: 9,
-              endLine: 9,
-              endColumn: 66,
             },
           },
         ],

@@ -23,7 +23,7 @@ import {
   getErrorStack,
 } from "./pure/helpers-pure";
 import { QueryMetadata, SortDirection } from "./pure/interface-types";
-import { Logger, ProgressReporter } from "./common";
+import { BaseLogger, Logger, ProgressReporter } from "./common";
 import { CompilationMessage } from "./pure/legacy-messages";
 import { sarifParser } from "./sarif-parser";
 import { walkDirectory } from "./helpers";
@@ -149,6 +149,7 @@ export interface TestCompleted {
   compilationMs: number;
   evaluationMs: number;
   expected: string;
+  actual?: string;
   diff: string[] | undefined;
   failureDescription?: string;
   failureStage?: string;
@@ -170,6 +171,8 @@ export type OnLineCallback = (
   line: string,
 ) => Promise<string | undefined> | string | undefined;
 
+type VersionChangedListener = (newVersion: SemVer | undefined) => void;
+
 /**
  * This class manages a cli server started by `codeql execute cli-server` to
  * run commands without the overhead of starting a new java
@@ -187,7 +190,9 @@ export class CodeQLCliServer implements Disposable {
   nullBuffer: Buffer;
 
   /** Version of current cli, lazily computed by the `getVersion()` method */
-  private _version: Promise<SemVer> | undefined;
+  private _version: SemVer | undefined;
+
+  private _versionChangedListeners: VersionChangedListener[] = [];
 
   /**
    * The languages supported by the current version of the CLI, computed by `getSupportedLanguages()`.
@@ -439,7 +444,7 @@ export class CodeQLCliServer implements Disposable {
     command: string[],
     commandArgs: string[],
     cancellationToken?: CancellationToken,
-    logger?: Logger,
+    logger?: BaseLogger,
   ): AsyncGenerator<string, void, unknown> {
     // Add format argument first, in case commandArgs contains positional parameters.
     const args = [...command, "--format", "jsonz", ...commandArgs];
@@ -447,6 +452,11 @@ export class CodeQLCliServer implements Disposable {
     // Spawn the CodeQL process
     const codeqlPath = await this.getCodeQlPath();
     const childPromise = spawn(codeqlPath, args);
+    // Avoid a runtime message about unhandled rejection.
+    childPromise.catch(() => {
+      /**/
+    });
+
     const child = childPromise.childProcess;
 
     let cancellationRegistration: Disposable | undefined = undefined;
@@ -497,7 +507,7 @@ export class CodeQLCliServer implements Disposable {
       logger,
     }: {
       cancellationToken?: CancellationToken;
-      logger?: Logger;
+      logger?: BaseLogger;
     } = {},
   ): AsyncGenerator<EventType, void, unknown> {
     for await (const event of this.runAsyncCodeQlCliCommandInternal(
@@ -776,7 +786,7 @@ export class CodeQLCliServer implements Disposable {
       logger,
     }: {
       cancellationToken?: CancellationToken;
-      logger?: Logger;
+      logger?: BaseLogger;
     },
   ): AsyncGenerator<TestCompleted, void, unknown> {
     const subcommandArgs = this.cliConfig.additionalTestArguments.concat([
@@ -1411,15 +1421,36 @@ export class CodeQLCliServer implements Disposable {
 
   public async getVersion() {
     if (!this._version) {
-      this._version = this.refreshVersion();
-      // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
-      await this.app.commands.execute(
-        "setContext",
-        "codeql.supportsEvalLog",
-        await this.cliConstraints.supportsPerQueryEvalLog(),
-      );
+      try {
+        const newVersion = await this.refreshVersion();
+        this._version = newVersion;
+        this._versionChangedListeners.forEach((listener) =>
+          listener(newVersion),
+        );
+
+        // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
+        await this.app.commands.execute(
+          "setContext",
+          "codeql.supportsEvalLog",
+          newVersion.compare(
+            CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG,
+          ) >= 0,
+        );
+      } catch (e) {
+        this._versionChangedListeners.forEach((listener) =>
+          listener(undefined),
+        );
+        throw e;
+      }
     }
-    return await this._version;
+    return this._version;
+  }
+
+  public addVersionChangedListener(listener: VersionChangedListener) {
+    if (this._version) {
+      listener(this._version);
+    }
+    this._versionChangedListeners.push(listener);
   }
 
   private async refreshVersion() {
@@ -1661,7 +1692,7 @@ const lineEndings = ["\r\n", "\r", "\n"];
  * @param stream The stream to log.
  * @param logger The logger that will consume the stream output.
  */
-async function logStream(stream: Readable, logger: Logger): Promise<void> {
+async function logStream(stream: Readable, logger: BaseLogger): Promise<void> {
   for await (const line of splitStreamAtSeparators(stream, lineEndings)) {
     // Await the result of log here in order to ensure the logs are written in the correct order.
     await logger.log(line);

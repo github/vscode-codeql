@@ -76,6 +76,48 @@
         "editor.wordBasedSuggestions": false
       }
     },
+    "debuggers": [
+      {
+        "type": "codeql",
+        "label": "CodeQL Debugger",
+        "languages": [
+          "ql"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Path to query file (.ql)",
+                "default": "${file}"
+              },
+              "database": {
+                "type": "string",
+                "description": "Path to the target database"
+              },
+              "additionalPacks": {
+                "type": [
+                  "array",
+                  "string"
+                ],
+                "description": "Additional folders to search for library packs. Defaults to searching all workspace folders."
+              },
+              "extensionPacks": {
+                "type": [
+                  "array",
+                  "string"
+                ],
+                "description": "Names of extension packs to include in the evaluation. These are resolved from the locations specified in `additionalPacks`."
+              }
+            }
+          }
+        },
+        "variables": {
+          "currentDatabase": "codeQL.getCurrentDatabase",
+          "currentQuery": "codeQL.getCurrentQuery"
+        }
+      }
+    ],
     "jsonValidation": [
       {
         "fileMatch": "GitHub.vscode-codeql/databases.json",
@@ -293,6 +335,11 @@
           "scope": "window",
           "minimum": 0,
           "description": "Report a warning for any join order whose metric exceeds this value."
+        },
+        "codeQL.databaseDownload.allowHttp": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow database to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
         }
       }
     },
@@ -308,6 +355,30 @@
       {
         "command": "codeQL.runQueryContextEditor",
         "title": "CodeQL: Run Query on Selected Database"
+      },
+      {
+        "command": "codeQL.debugQuery",
+        "title": "CodeQL: Debug Query"
+      },
+      {
+        "command": "codeQL.debugQueryContextEditor",
+        "title": "CodeQL: Debug Query"
+      },
+      {
+        "command": "codeQL.startDebuggingSelection",
+        "title": "CodeQL: Debug Selection"
+      },
+      {
+        "command": "codeQL.startDebuggingSelectionContextEditor",
+        "title": "CodeQL: Debug Selection"
+      },
+      {
+        "command": "codeQL.continueDebuggingSelection",
+        "title": "CodeQL: Debug Selection"
+      },
+      {
+        "command": "codeQL.continueDebuggingSelectionContextEditor",
+        "title": "CodeQL: Debug Selection"
       },
       {
         "command": "codeQL.runQueryOnMultipleDatabases",
@@ -447,6 +518,14 @@
       {
         "command": "codeQL.setCurrentDatabase",
         "title": "CodeQL: Set Current Database"
+      },
+      {
+        "command": "codeQL.getCurrentDatabase",
+        "title": "CodeQL: Get Current Database"
+      },
+      {
+        "command": "codeQL.getCurrentQuery",
+        "title": "CodeQL: Get Current Query"
       },
       {
         "command": "codeQL.viewAst",
@@ -680,6 +759,10 @@
       },
       {
         "command": "codeQLTests.acceptOutput",
+        "title": "Accept Test Output"
+      },
+      {
+        "command": "codeQLTests.acceptOutputContextTestItem",
         "title": "Accept Test Output"
       },
       {
@@ -977,6 +1060,13 @@
           "when": "viewItem == testWithSource"
         }
       ],
+      "testing/item/context": [
+        {
+          "command": "codeQLTests.acceptOutputContextTestItem",
+          "group": "qltest@1",
+          "when": "controllerId == codeql && testId =~ /^test /"
+        }
+      ],
       "explorer/context": [
         {
           "command": "codeQL.setCurrentDatabase",
@@ -1020,6 +1110,30 @@
         },
         {
           "command": "codeQL.runQueryContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.debugQuery",
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql && !inDebugMode"
+        },
+        {
+          "command": "codeQL.debugQueryContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.startDebuggingSelection",
+          "when": "config.codeQL.canary && editorLangId == ql && debugState == inactive && debugConfigurationType == codeql"
+        },
+        {
+          "command": "codeQL.startDebuggingSelectionContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.continueDebuggingSelection",
+          "when": "config.codeQL.canary && editorLangId == ql && debugState == stopped && debugType == codeql"
+        },
+        {
+          "command": "codeQL.continueDebuggingSelectionContextEditor",
           "when": "false"
         },
         {
@@ -1068,6 +1182,14 @@
         },
         {
           "command": "codeQL.setCurrentDatabase",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.getCurrentDatabase",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.getCurrentQuery",
           "when": "false"
         },
         {
@@ -1325,12 +1447,16 @@
         {
           "command": "codeQL.createQuery",
           "when": "config.codeQL.canary"
+        },
+        {
+          "command": "codeQLTests.acceptOutputContextTestItem",
+          "when": "false"
         }
       ],
       "editor/context": [
         {
           "command": "codeQL.runQueryContextEditor",
-          "when": "editorLangId == ql && resourceExtname == .ql"
+          "when": "editorLangId == ql && resourceExtname == .ql && !inDebugMode"
         },
         {
           "command": "codeQL.runQueryOnMultipleDatabasesContextEditor",
@@ -1350,7 +1476,19 @@
         },
         {
           "command": "codeQL.quickEvalContextEditor",
-          "when": "editorLangId == ql"
+          "when": "editorLangId == ql && debugState == inactive"
+        },
+        {
+          "command": "codeQL.debugQueryContextEditor",
+          "when": "config.codeQL.canary && editorLangId == ql && resourceExtname == .ql && !inDebugMode"
+        },
+        {
+          "command": "codeQL.startDebuggingSelectionContextEditor",
+          "when": "config.codeQL.canary && editorLangId == ql && debugState == inactive && debugConfigurationType == codeql"
+        },
+        {
+          "command": "codeQL.continueDebuggingSelectionContextEditor",
+          "when": "config.codeQL.canary && editorLangId == ql && debugState == stopped && debugType == codeql"
         },
         {
           "command": "codeQL.openReferencedFileContextEditor",
@@ -1451,6 +1589,8 @@
     "@octokit/plugin-retry": "^3.0.9",
     "@octokit/rest": "^19.0.4",
     "@vscode/codicons": "^0.0.31",
+    "@vscode/debugadapter": "^1.59.0",
+    "@vscode/debugprotocol": "^1.59.0",
     "@vscode/webview-ui-toolkit": "^1.0.1",
     "ajv": "^8.11.0",
     "child-process-promise": "^2.2.1",
@@ -1498,7 +1638,7 @@
     "@storybook/addon-essentials": "^6.5.17-alpha.0",
     "@storybook/addon-interactions": "^6.5.17-alpha.0",
     "@storybook/addon-links": "^6.5.17-alpha.0",
-    "@storybook/builder-webpack5": "^7.0.4",
+    "@storybook/builder-webpack5": "^6.5.17-alpha.0",
     "@storybook/manager-webpack5": "^6.5.17-alpha.0",
     "@storybook/react": "^6.5.17-alpha.0",
     "@storybook/testing-library": "^0.0.13",

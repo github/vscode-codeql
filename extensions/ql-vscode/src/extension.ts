@@ -31,6 +31,7 @@ import { CodeQLCliServer } from "./cli";
 import {
   CliConfigListener,
   DistributionConfigListener,
+  isCanary,
   joinOrderWarningThreshold,
   QueryHistoryConfigListener,
   QueryServerConfigListener,
@@ -108,20 +109,24 @@ import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analys
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
+import { QLDebugAdapterDescriptorFactory } from "./debugger/debugger-factory";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 import {
   AllExtensionCommands,
   BaseCommands,
   PreActivationCommands,
   QueryServerCommands,
-  TestUICommands,
 } from "./common/commands";
 import { LocalQueries } from "./local-queries";
 import { getAstCfgCommands } from "./ast-cfg-commands";
 import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
+import { DebuggerUI } from "./debugger/debugger-ui";
 import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extensions-editor-module";
+import { TestManager } from "./test-manager";
+import { TestRunner } from "./test-runner";
+import { TestManagerBase } from "./test-manager-base";
 
 /**
  * extension.ts
@@ -177,7 +182,13 @@ function getCommands(
         cliServer.restartCliServer();
         await Promise.all([
           queryRunner.restartQueryServer(progress, token),
-          ideServer.restart(),
+          async () => {
+            if (ideServer.isRunning()) {
+              await ideServer.restart();
+            } else {
+              await ideServer.start();
+            }
+          },
         ]);
         void showAndLogInformationMessage("CodeQL Query Server restarted.", {
           outputLogger: queryServerLogger,
@@ -306,7 +317,7 @@ export async function activate(
 
   const distributionConfigListener = new DistributionConfigListener();
   await initializeLogging(ctx);
-  await initializeTelemetry(extension, ctx);
+  const telemetryListener = await initializeTelemetry(extension, ctx);
   addUnhandledRejectionListener();
   install();
 
@@ -395,6 +406,9 @@ export async function activate(
     variantAnalysisViewSerializer.onExtensionLoaded(
       codeQlExtension.variantAnalysisManager,
     );
+    codeQlExtension.cliServer.addVersionChangedListener((ver) => {
+      telemetryListener.cliVersion = ver;
+    });
   }
 
   return codeQlExtension;
@@ -868,6 +882,15 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(localQueries);
 
+  void extLogger.log("Initializing debugger factory.");
+  ctx.subscriptions.push(
+    new QLDebugAdapterDescriptorFactory(queryStorageDir, qs, localQueries),
+  );
+
+  void extLogger.log("Initializing debugger UI.");
+  const debuggerUI = new DebuggerUI(app, localQueries, dbm);
+  ctx.subscriptions.push(debuggerUI);
+
   const dataExtensionsEditorModule =
     await DataExtensionsEditorModule.initialize(
       ctx,
@@ -879,24 +902,33 @@ async function activateWithInstalledDistribution(
     );
 
   void extLogger.log("Initializing QLTest interface.");
-  const testExplorerExtension = extensions.getExtension<TestHub>(
-    testExplorerExtensionId,
-  );
-  let testUiCommands: Partial<TestUICommands> = {};
-  if (testExplorerExtension) {
-    const testHub = testExplorerExtension.exports;
-    const testAdapterFactory = new QLTestAdapterFactory(
-      testHub,
-      cliServer,
-      dbm,
+
+  const testRunner = new TestRunner(dbm, cliServer);
+  ctx.subscriptions.push(testRunner);
+
+  let testManager: TestManagerBase | undefined = undefined;
+  if (isCanary()) {
+    testManager = new TestManager(app, testRunner, cliServer);
+    ctx.subscriptions.push(testManager);
+  } else {
+    const testExplorerExtension = extensions.getExtension<TestHub>(
+      testExplorerExtensionId,
     );
-    ctx.subscriptions.push(testAdapterFactory);
+    if (testExplorerExtension) {
+      const testHub = testExplorerExtension.exports;
+      const testAdapterFactory = new QLTestAdapterFactory(
+        testHub,
+        testRunner,
+        cliServer,
+      );
+      ctx.subscriptions.push(testAdapterFactory);
 
-    const testUIService = new TestUIService(app, testHub);
-    ctx.subscriptions.push(testUIService);
-
-    testUiCommands = testUIService.getCommands();
+      testManager = new TestUIService(app, testHub);
+      ctx.subscriptions.push(testManager);
+    }
   }
+
+  const testUiCommands = testManager?.getCommands() ?? {};
 
   const astViewer = new AstViewer();
   const astTemplateProvider = new TemplatePrintAstProvider(
@@ -945,6 +977,7 @@ async function activateWithInstalledDistribution(
     ...summaryLanguageSupport.getCommands(),
     ...testUiCommands,
     ...mockServer.getCommands(),
+    ...debuggerUI.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {

@@ -12,6 +12,7 @@ import {
 import { ProgressCallback } from "../progress";
 import { DatabaseItem } from "../local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";
+import { getErrorMessage } from "../pure/helpers-pure";
 
 const maxStep = 3;
 
@@ -21,26 +22,42 @@ const packNameRegex = new RegExp(
 );
 const packNameLength = 128;
 
+export interface ExtensionPack {
+  path: string;
+  yamlPath: string;
+
+  name: string;
+  version: string;
+
+  extensionTargets: Record<string, string>;
+  dataExtensions: string[];
+}
+
+export interface ExtensionPackModelFile {
+  filename: string;
+  extensionPack: ExtensionPack;
+}
+
 export async function pickExtensionPackModelFile(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveExtensions">,
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   progress: ProgressCallback,
   token: CancellationToken,
-): Promise<string | undefined> {
-  const extensionPackPath = await pickExtensionPack(
+): Promise<ExtensionPackModelFile | undefined> {
+  const extensionPack = await pickExtensionPack(
     cliServer,
     databaseItem,
     progress,
     token,
   );
-  if (!extensionPackPath) {
-    return;
+  if (!extensionPack) {
+    return undefined;
   }
 
   const modelFile = await pickModelFile(
     cliServer,
     databaseItem,
-    extensionPackPath,
+    extensionPack,
     progress,
     token,
   );
@@ -48,7 +65,10 @@ export async function pickExtensionPackModelFile(
     return;
   }
 
-  return modelFile;
+  return {
+    filename: modelFile,
+    extensionPack,
+  };
 }
 
 async function pickExtensionPack(
@@ -56,7 +76,7 @@ async function pickExtensionPack(
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   progress: ProgressCallback,
   token: CancellationToken,
-): Promise<string | undefined> {
+): Promise<ExtensionPack | undefined> {
   progress({
     message: "Resolving extension packs...",
     step: 1,
@@ -65,19 +85,72 @@ async function pickExtensionPack(
 
   // Get all existing extension packs in the workspace
   const additionalPacks = getOnDiskWorkspaceFolders();
-  const extensionPacks = await cliServer.resolveQlpacks(additionalPacks, true);
+  const extensionPacksInfo = await cliServer.resolveQlpacks(
+    additionalPacks,
+    true,
+  );
 
-  if (Object.keys(extensionPacks).length === 0) {
+  if (Object.keys(extensionPacksInfo).length === 0) {
     return pickNewExtensionPack(databaseItem, token);
   }
 
-  const options: Array<{ label: string; extensionPack: string | null }> =
-    Object.keys(extensionPacks).map((pack) => ({
-      label: pack,
-      extensionPack: pack,
-    }));
+  const extensionPacks = (
+    await Promise.all(
+      Object.entries(extensionPacksInfo).map(async ([name, paths]) => {
+        if (paths.length !== 1) {
+          void showAndLogErrorMessage(
+            `Extension pack ${name} resolves to multiple paths`,
+            {
+              fullMessage: `Extension pack ${name} resolves to multiple paths: ${paths.join(
+                ", ",
+              )}`,
+            },
+          );
+
+          return undefined;
+        }
+
+        const path = paths[0];
+
+        let extensionPack: ExtensionPack;
+        try {
+          extensionPack = await readExtensionPack(path);
+        } catch (e: unknown) {
+          void showAndLogErrorMessage(`Could not read extension pack ${name}`, {
+            fullMessage: `Could not read extension pack ${name} at ${path}: ${getErrorMessage(
+              e,
+            )}`,
+          });
+
+          return undefined;
+        }
+
+        return extensionPack;
+      }),
+    )
+  ).filter((info): info is ExtensionPack => info !== undefined);
+
+  const extensionPacksForLanguage = extensionPacks.filter(
+    (pack) =>
+      pack.extensionTargets[`codeql/${databaseItem.language}-all`] !==
+      undefined,
+  );
+
+  const options: Array<{
+    label: string;
+    description: string | undefined;
+    detail: string | undefined;
+    extensionPack: ExtensionPack | null;
+  }> = extensionPacksForLanguage.map((pack) => ({
+    label: pack.name,
+    description: pack.version,
+    detail: pack.path,
+    extensionPack: pack,
+  }));
   options.push({
     label: "Create new extension pack",
+    description: undefined,
+    detail: undefined,
     extensionPack: null,
   });
 
@@ -102,54 +175,39 @@ async function pickExtensionPack(
     return pickNewExtensionPack(databaseItem, token);
   }
 
-  const extensionPackPaths = extensionPacks[extensionPackOption.extensionPack];
-  if (extensionPackPaths.length !== 1) {
-    void showAndLogErrorMessage(
-      `Extension pack ${extensionPackOption.extensionPack} could not be resolved to a single location`,
-      {
-        fullMessage: `Extension pack ${
-          extensionPackOption.extensionPack
-        } could not be resolved to a single location. Found ${
-          extensionPackPaths.length
-        } locations: ${extensionPackPaths.join(", ")}.`,
-      },
-    );
-    return undefined;
-  }
-
-  return extensionPackPaths[0];
+  return extensionPackOption.extensionPack;
 }
 
 async function pickModelFile(
   cliServer: Pick<CodeQLCliServer, "resolveExtensions">,
   databaseItem: Pick<DatabaseItem, "name">,
-  extensionPackPath: string,
+  extensionPack: ExtensionPack,
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<string | undefined> {
   // Find the existing model files in the extension pack
   const additionalPacks = getOnDiskWorkspaceFolders();
   const extensions = await cliServer.resolveExtensions(
-    extensionPackPath,
+    extensionPack.path,
     additionalPacks,
   );
 
   const modelFiles = new Set<string>();
 
-  if (extensionPackPath in extensions.data) {
-    for (const extension of extensions.data[extensionPackPath]) {
+  if (extensionPack.path in extensions.data) {
+    for (const extension of extensions.data[extensionPack.path]) {
       modelFiles.add(extension.file);
     }
   }
 
   if (modelFiles.size === 0) {
-    return pickNewModelFile(databaseItem, extensionPackPath, token);
+    return pickNewModelFile(databaseItem, extensionPack, token);
   }
 
   const fileOptions: Array<{ label: string; file: string | null }> = [];
   for (const file of modelFiles) {
     fileOptions.push({
-      label: relative(extensionPackPath, file).replaceAll(sep, "/"),
+      label: relative(extensionPack.path, file).replaceAll(sep, "/"),
       file,
     });
   }
@@ -180,13 +238,13 @@ async function pickModelFile(
     return fileOption.file;
   }
 
-  return pickNewModelFile(databaseItem, extensionPackPath, token);
+  return pickNewModelFile(databaseItem, extensionPack, token);
 }
 
 async function pickNewExtensionPack(
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   token: CancellationToken,
-): Promise<string | undefined> {
+): Promise<ExtensionPack | undefined> {
   const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
   const workspaceFolderOptions = workspaceFolders.map((folder) => ({
     label: folder.name,
@@ -250,63 +308,36 @@ async function pickNewExtensionPack(
 
   const packYamlPath = join(packPath, "codeql-pack.yml");
 
+  const extensionPack: ExtensionPack = {
+    path: packPath,
+    yamlPath: packYamlPath,
+    name,
+    version: "0.0.0",
+    extensionTargets: {
+      [`codeql/${databaseItem.language}-all`]: "*",
+    },
+    dataExtensions: ["models/**/*.yml"],
+  };
+
   await outputFile(
     packYamlPath,
     dumpYaml({
-      name,
-      version: "0.0.0",
+      name: extensionPack.name,
+      version: extensionPack.version,
       library: true,
-      extensionTargets: {
-        [`codeql/${databaseItem.language}-all`]: "*",
-      },
-      dataExtensions: ["models/**/*.yml"],
+      extensionTargets: extensionPack.extensionTargets,
+      dataExtensions: extensionPack.dataExtensions,
     }),
   );
 
-  return packPath;
+  return extensionPack;
 }
 
 async function pickNewModelFile(
   databaseItem: Pick<DatabaseItem, "name">,
-  extensionPackPath: string,
+  extensionPack: ExtensionPack,
   token: CancellationToken,
 ) {
-  const qlpackPath = await getQlPackPath(extensionPackPath);
-  if (!qlpackPath) {
-    void showAndLogErrorMessage(
-      `Could not find any of ${QLPACK_FILENAMES.join(
-        ", ",
-      )} in ${extensionPackPath}`,
-    );
-    return undefined;
-  }
-
-  const qlpack = await loadYaml(await readFile(qlpackPath, "utf8"), {
-    filename: qlpackPath,
-  });
-  if (typeof qlpack !== "object" || qlpack === null) {
-    void showAndLogErrorMessage(`Could not parse ${qlpackPath}`);
-    return undefined;
-  }
-
-  const dataExtensionPatternsValue = qlpack.dataExtensions;
-  if (
-    !(
-      Array.isArray(dataExtensionPatternsValue) ||
-      typeof dataExtensionPatternsValue === "string"
-    )
-  ) {
-    void showAndLogErrorMessage(
-      `Expected 'dataExtensions' to be a string or an array in ${qlpackPath}`,
-    );
-    return undefined;
-  }
-
-  // The YAML allows either a string or an array of strings
-  const dataExtensionPatterns = Array.isArray(dataExtensionPatternsValue)
-    ? dataExtensionPatternsValue
-    : [dataExtensionPatternsValue];
-
   const filename = await window.showInputBox(
     {
       title: "Enter the name of the new model file",
@@ -316,24 +347,25 @@ async function pickNewModelFile(
           return "File name must not be empty";
         }
 
-        const path = resolve(extensionPackPath, value);
+        const path = resolve(extensionPack.path, value);
 
         if (await pathExists(path)) {
           return "File already exists";
         }
 
-        const notInExtensionPack = relative(extensionPackPath, path).startsWith(
-          "..",
-        );
+        const notInExtensionPack = relative(
+          extensionPack.path,
+          path,
+        ).startsWith("..");
         if (notInExtensionPack) {
           return "File must be in the extension pack";
         }
 
-        const matchesPattern = dataExtensionPatterns.some((pattern) =>
+        const matchesPattern = extensionPack.dataExtensions.some((pattern) =>
           minimatch(value, pattern, { matchBase: true }),
         );
         if (!matchesPattern) {
-          return `File must match one of the patterns in 'dataExtensions' in ${qlpackPath}`;
+          return `File must match one of the patterns in 'dataExtensions' in ${extensionPack.yamlPath}`;
         }
 
         return undefined;
@@ -345,5 +377,47 @@ async function pickNewModelFile(
     return undefined;
   }
 
-  return resolve(extensionPackPath, filename);
+  return resolve(extensionPack.path, filename);
+}
+
+async function readExtensionPack(path: string): Promise<ExtensionPack> {
+  const qlpackPath = await getQlPackPath(path);
+  if (!qlpackPath) {
+    throw new Error(
+      `Could not find any of ${QLPACK_FILENAMES.join(", ")} in ${path}`,
+    );
+  }
+
+  const qlpack = await loadYaml(await readFile(qlpackPath, "utf8"), {
+    filename: qlpackPath,
+  });
+  if (typeof qlpack !== "object" || qlpack === null) {
+    throw new Error(`Could not parse ${qlpackPath}`);
+  }
+
+  const dataExtensionValue = qlpack.dataExtensions;
+  if (
+    !(
+      Array.isArray(dataExtensionValue) ||
+      typeof dataExtensionValue === "string"
+    )
+  ) {
+    throw new Error(
+      `Expected 'dataExtensions' to be a string or an array in ${qlpackPath}`,
+    );
+  }
+
+  // The YAML allows either a string or an array of strings
+  const dataExtensions = Array.isArray(dataExtensionValue)
+    ? dataExtensionValue
+    : [dataExtensionValue];
+
+  return {
+    path,
+    yamlPath: qlpackPath,
+    name: qlpack.name,
+    version: qlpack.version,
+    extensionTargets: qlpack.extensionTargets,
+    dataExtensions,
+  };
 }

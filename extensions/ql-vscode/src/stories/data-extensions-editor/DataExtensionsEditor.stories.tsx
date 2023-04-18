@@ -15,6 +15,9 @@ const Template: ComponentStory<typeof DataExtensionsEditorComponent> = (
 
 export const DataExtensionsEditor = Template.bind({});
 DataExtensionsEditor.args = {
+  initialExtensionPackName: "codeql/sql2o-models",
+  initialModelFilename:
+    "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/models/sql2o.yml",
   initialExternalApiUsages: [
     {
       signature: "org.sql2o.Connection#createQuery(String)",

@@ -1,12 +1,19 @@
 import { join } from "path";
 import { load, dump } from "js-yaml";
 import { realpathSync, readFileSync, writeFileSync } from "fs-extra";
-import { CancellationToken, extensions } from "vscode";
-import { DatabaseManager } from "../../src/local-databases";
+import {
+  CancellationToken,
+  CancellationTokenSource,
+  Uri,
+  extensions,
+} from "vscode";
+import { DatabaseItem, DatabaseManager } from "../../src/local-databases";
 import { CodeQLCliServer } from "../../src/cli";
 import { removeWorkspaceRefs } from "../../src/variant-analysis/run-remote-query";
 import { CodeQLExtensionInterface } from "../../src/extension";
 import { ProgressCallback } from "../../src/progress";
+import { importArchiveDatabase } from "../../src/databaseFetcher";
+import { createMockCommandManager } from "../__mocks__/commandsMock";
 
 // This file contains helpers shared between tests that work with an activated extension.
 
@@ -20,6 +27,35 @@ export const dbLoc = join(
   "build/tests/db.zip",
 );
 export let storagePath: string;
+
+/**
+ * Removes any existing databases from the database panel, and loads the test database.
+ */
+export async function ensureTestDatabase(
+  databaseManager: DatabaseManager,
+  cli: CodeQLCliServer | undefined,
+): Promise<DatabaseItem> {
+  // Add a database, but make sure the database manager is empty first
+  await cleanDatabases(databaseManager);
+  const uri = Uri.file(dbLoc);
+  const maybeDbItem = await importArchiveDatabase(
+    createMockCommandManager(),
+    uri.toString(true),
+    databaseManager,
+    storagePath,
+    (_p) => {
+      /**/
+    },
+    new CancellationTokenSource().token,
+    cli,
+  );
+
+  if (!maybeDbItem) {
+    throw new Error("Could not import database");
+  }
+
+  return maybeDbItem;
+}
 
 export function setStoragePath(path: string) {
   storagePath = path;
