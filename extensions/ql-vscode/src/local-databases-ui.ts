@@ -306,13 +306,13 @@ export class DatabaseUI extends DisposableObject {
               `${workspace.workspaceFolders[0].uri}/.tours/codeql-tutorial-database`,
             );
 
-            let databaseItem = this.databaseManager.findDatabaseItem(uri);
+            const databaseItem = this.databaseManager.findDatabaseItem(uri);
             if (databaseItem === undefined) {
               const makeSelected = true;
               const nameOverride = "CodeQL Tutorial Database";
               const isTutorialDatabase = true;
 
-              databaseItem = await this.databaseManager.openDatabase(
+              await this.databaseManager.openDatabase(
                 progress,
                 token,
                 uri,
