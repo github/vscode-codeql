@@ -18,7 +18,7 @@ import {
   showAndLogExceptionWithTelemetry,
 } from "../helpers";
 import { extLogger } from "../common";
-import { outputFile, readFile } from "fs-extra";
+import { outputFile, pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { DatabaseItem, DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
@@ -161,6 +161,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
   protected async loadExistingModeledMethods(): Promise<void> {
     try {
+      if (!(await pathExists(this.modelFilename))) {
+        return;
+      }
+
       const yaml = await readFile(this.modelFilename, "utf8");
 
       const data = loadYaml(yaml, {
