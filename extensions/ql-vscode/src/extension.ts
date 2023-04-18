@@ -109,6 +109,7 @@ import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analys
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { DbModule } from "./databases/db-module";
 import { redactableError } from "./pure/errors";
+import { QLDebugAdapterDescriptorFactory } from "./debugger/debugger-factory";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 import {
   AllExtensionCommands,
@@ -121,6 +122,7 @@ import { getAstCfgCommands } from "./ast-cfg-commands";
 import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
+import { DebuggerUI } from "./debugger/debugger-ui";
 import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extensions-editor-module";
 import { TestManager } from "./test-manager";
 import { TestRunner } from "./test-runner";
@@ -877,6 +879,15 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(localQueries);
 
+  void extLogger.log("Initializing debugger factory.");
+  ctx.subscriptions.push(
+    new QLDebugAdapterDescriptorFactory(queryStorageDir, qs, localQueries),
+  );
+
+  void extLogger.log("Initializing debugger UI.");
+  const debuggerUI = new DebuggerUI(app, localQueries, dbm);
+  ctx.subscriptions.push(debuggerUI);
+
   const dataExtensionsEditorModule =
     await DataExtensionsEditorModule.initialize(
       ctx,
@@ -963,6 +974,7 @@ async function activateWithInstalledDistribution(
     ...summaryLanguageSupport.getCommands(),
     ...testUiCommands,
     ...mockServer.getCommands(),
+    ...debuggerUI.getCommands(),
   };
 
   for (const [commandName, command] of Object.entries(allCommands)) {

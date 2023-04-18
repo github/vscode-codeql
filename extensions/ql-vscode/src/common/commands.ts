@@ -11,6 +11,7 @@ import type {
   VariantAnalysisScannedRepository,
   VariantAnalysisScannedRepositoryResult,
 } from "../variant-analysis/shared/variant-analysis";
+import type { QLDebugConfiguration } from "../debugger/debug-configuration";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from the title bar of a TreeView with
@@ -87,6 +88,15 @@ export type BuiltInVsCodeCommands = {
   ) => Promise<void>;
   "vscode.open": (uri: Uri) => Promise<void>;
   "vscode.openFolder": (uri: Uri) => Promise<void>;
+  // We type the `config` property specifically as a CodeQL debug configuration, since that's the
+  // only kinds we specify anyway.
+  "workbench.action.debug.start": (options?: {
+    config?: Partial<QLDebugConfiguration>;
+    noDebug?: boolean;
+  }) => Promise<void>;
+  "workbench.action.debug.stepInto": () => Promise<void>;
+  "workbench.action.debug.stepOver": () => Promise<void>;
+  "workbench.action.debug.stepOut": () => Promise<void>;
 };
 
 // Commands that are available before the extension is fully activated.
@@ -134,7 +144,18 @@ export type LocalQueryCommands = {
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
   "codeQL.codeLensQuickEval": (uri: Uri, range: Range) => Promise<void>;
   "codeQL.quickQuery": () => Promise<void>;
+  "codeQL.getCurrentQuery": () => Promise<string>;
   "codeQL.createQuery": () => Promise<void>;
+};
+
+// Debugger commands
+export type DebuggerCommands = {
+  "codeQL.debugQuery": (uri: Uri | undefined) => Promise<void>;
+  "codeQL.debugQueryContextEditor": (uri: Uri) => Promise<void>;
+  "codeQL.startDebuggingSelection": () => Promise<void>;
+  "codeQL.startDebuggingSelectionContextEditor": () => Promise<void>;
+  "codeQL.continueDebuggingSelection": () => Promise<void>;
+  "codeQL.continueDebuggingSelectionContextEditor": () => Promise<void>;
 };
 
 export type ResultsViewCommands = {
@@ -219,6 +240,7 @@ export type LocalDatabasesCommands = {
 
   // Internal commands
   "codeQLDatabases.removeOrphanedDatabases": () => Promise<void>;
+  "codeQL.getCurrentDatabase": () => Promise<string | undefined>;
 };
 
 // Commands tied to variant analysis
@@ -317,6 +339,7 @@ export type AllExtensionCommands = BaseCommands &
   ResultsViewCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
+  DebuggerCommands &
   VariantAnalysisCommands &
   DatabasePanelCommands &
   AstCfgCommands &
