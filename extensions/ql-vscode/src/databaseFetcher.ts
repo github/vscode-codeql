@@ -317,13 +317,15 @@ async function databaseArchiveFetcher(
     });
     await ensureZippedSourceLocation(dbPath);
 
+    const makeSelected = true;
+
     const item = await databaseManager.openDatabase(
       progress,
       token,
       Uri.file(dbPath),
+      makeSelected,
       nameOverride,
     );
-    await databaseManager.setCurrentDatabaseItem(item);
     return item;
   } else {
     throw new Error("Database not found in archive.");

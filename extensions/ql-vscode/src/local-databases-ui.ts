@@ -307,17 +307,20 @@ export class DatabaseUI extends DisposableObject {
             );
 
             let databaseItem = this.databaseManager.findDatabaseItem(uri);
-            const isTutorialDatabase = true;
             if (databaseItem === undefined) {
+              const makeSelected = true;
+              const nameOverride = "CodeQL Tutorial Database";
+              const isTutorialDatabase = true;
+
               databaseItem = await this.databaseManager.openDatabase(
                 progress,
                 token,
                 uri,
-                "CodeQL Tutorial Database",
+                makeSelected,
+                nameOverride,
                 isTutorialDatabase,
               );
             }
-            await this.databaseManager.setCurrentDatabaseItem(databaseItem);
             await this.handleTourDependencies();
           }
         } catch (e) {
@@ -758,14 +761,17 @@ export class DatabaseUI extends DisposableObject {
     uri: Uri,
   ): Promise<DatabaseItem | undefined> {
     let databaseItem = this.databaseManager.findDatabaseItem(uri);
+
+    const makeSelected = true;
+
     if (databaseItem === undefined) {
       databaseItem = await this.databaseManager.openDatabase(
         progress,
         token,
         uri,
+        makeSelected,
       );
     }
-    await this.databaseManager.setCurrentDatabaseItem(databaseItem);
 
     return databaseItem;
   }
