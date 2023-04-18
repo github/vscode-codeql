@@ -625,7 +625,7 @@ export function allowHttp(): boolean {
  **/
 const SKELETON_WIZARD_FOLDER = new Setting(
   "folder",
-  new Setting("skeletonWizard", ROOT_SETTING),
+  new Setting("createQuery", ROOT_SETTING),
 );
 
 export function getSkeletonWizardFolder(): string | undefined {

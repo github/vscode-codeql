@@ -466,7 +466,7 @@ describe("SkeletonQueryWizard", () => {
         ensureDirSync(storedPath);
 
         originalValue = workspace
-          .getConfiguration("codeQL.skeletonWizard")
+          .getConfiguration("codeQL.createQuery")
           .get("folder");
 
         // Set isCodespacesTemplate to true to indicate we are in the codespace template
@@ -499,16 +499,16 @@ describe("SkeletonQueryWizard", () => {
           ensureDirSync(storedPath);
 
           originalValue = workspace
-            .getConfiguration("codeQL.skeletonWizard")
+            .getConfiguration("codeQL.createQuery")
             .get("folder");
           await workspace
-            .getConfiguration("codeQL.skeletonWizard")
+            .getConfiguration("codeQL.createQuery")
             .update("folder", storedPath);
         });
 
         afterEach(async () => {
           await workspace
-            .getConfiguration("codeQL.skeletonWizard")
+            .getConfiguration("codeQL.createQuery")
             .update("folder", originalValue);
         });
 
@@ -528,16 +528,16 @@ describe("SkeletonQueryWizard", () => {
           storedPath = join(dir.name, "this-folder-does-not-exist");
 
           originalValue = workspace
-            .getConfiguration("codeQL.skeletonWizard")
+            .getConfiguration("codeQL.createQuery")
             .get("folder");
           await workspace
-            .getConfiguration("codeQL.skeletonWizard")
+            .getConfiguration("codeQL.createQuery")
             .update("folder", storedPath);
         });
 
         afterEach(async () => {
           await workspace
-            .getConfiguration("codeQL.skeletonWizard")
+            .getConfiguration("codeQL.createQuery")
             .update("folder", originalValue);
         });
 
