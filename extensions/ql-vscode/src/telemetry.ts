@@ -19,6 +19,7 @@ import { extLogger } from "./common";
 import { UserCancellationException } from "./progress";
 import { showBinaryChoiceWithUrlDialog } from "./helpers";
 import { RedactableError } from "./pure/errors";
+import { SemVer } from "semver";
 
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
 const key = "REPLACE-APP-INSIGHTS-KEY";
@@ -51,10 +52,14 @@ const baseDataPropertiesToRemove = [
   "common.vscodesessionid",
 ];
 
+const NOT_SET_CLI_VERSION = "not-set";
+
 export class TelemetryListener extends ConfigListener {
   static relevantSettings = [ENABLE_TELEMETRY, CANARY_FEATURES];
 
   private reporter?: TelemetryReporter;
+
+  private cliVersionStr = NOT_SET_CLI_VERSION;
 
   constructor(
     private readonly id: string,
@@ -163,6 +168,7 @@ export class TelemetryListener extends ConfigListener {
         name,
         status,
         isCanary: isCanary().toString(),
+        cliVersion: this.cliVersionStr,
       },
       { executionTime },
     );
@@ -178,6 +184,7 @@ export class TelemetryListener extends ConfigListener {
       {
         name,
         isCanary: isCanary().toString(),
+        cliVersion: this.cliVersionStr,
       },
       {},
     );
@@ -193,6 +200,7 @@ export class TelemetryListener extends ConfigListener {
 
     const properties: { [key: string]: string } = {
       isCanary: isCanary().toString(),
+      cliVersion: this.cliVersionStr,
       message: error.redactedMessage,
       ...extraProperties,
     };
@@ -241,6 +249,10 @@ export class TelemetryListener extends ConfigListener {
     return this.reporter;
   }
 
+  set cliVersion(version: SemVer | undefined) {
+    this.cliVersionStr = version ? version.toString() : NOT_SET_CLI_VERSION;
+  }
+
   private disposeReporter() {
     if (this.reporter) {
       void this.reporter.dispose();
@@ -265,7 +277,7 @@ export let telemetryListener: TelemetryListener | undefined;
 export async function initializeTelemetry(
   extension: Extension<any>,
   ctx: ExtensionContext,
-): Promise<void> {
+): Promise<TelemetryListener> {
   if (telemetryListener !== undefined) {
     throw new Error("Telemetry is already initialized");
   }
@@ -279,4 +291,5 @@ export async function initializeTelemetry(
   // this is a particular problem during integration tests, which will hang if a modal popup is displayed.
   void telemetryListener.initialize();
   ctx.subscriptions.push(telemetryListener);
+  return telemetryListener;
 }
