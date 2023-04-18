@@ -21,7 +21,7 @@ import {
 } from "./qltest-discovery";
 import { Event, EventEmitter, CancellationTokenSource } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
-import { CodeQLCliServer, TestCompleted } from "../codeql-cli/cli";
+import { CodeQLCliServer, AnyTestEvent } from "../codeql-cli/cli";
 import { testLogger } from "../common";
 import { TestRunner } from "./test-runner";
 
@@ -243,42 +243,44 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
     }
   }
 
-  private async processTestEvent(event: TestCompleted): Promise<void> {
-    const state = event.pass
-      ? "passed"
-      : event.messages?.length
-      ? "errored"
-      : "failed";
-    let message: string | undefined;
-    if (event.failureDescription || event.diff?.length) {
-      message =
-        event.failureStage === "RESULT"
-          ? [
-              "",
-              `${state}: ${event.test}`,
-              event.failureDescription || event.diff?.join("\n"),
-              "",
-            ].join("\n")
-          : [
-              "",
-              `${event.failureStage?.toLowerCase() ?? "unknown stage"} error: ${
-                event.test
-              }`,
-              event.failureDescription ||
-                `${event.messages[0].severity}: ${event.messages[0].message}`,
-              "",
-            ].join("\n");
-      void testLogger.log(message);
+  private async processTestEvent(event: AnyTestEvent): Promise<void> {
+    if (event.type === "testCompleted") {
+      const state = event.pass
+        ? "passed"
+        : event.messages?.length
+        ? "errored"
+        : "failed";
+      let message: string | undefined;
+      if (event.failureDescription || event.diff?.length) {
+        message =
+          event.failureStage === "RESULT"
+            ? [
+                "",
+                `${state}: ${event.test}`,
+                event.failureDescription || event.diff?.join("\n"),
+                "",
+              ].join("\n")
+            : [
+                "",
+                `${
+                  event.failureStage?.toLowerCase() ?? "unknown stage"
+                } error: ${event.test}`,
+                event.failureDescription ||
+                  `${event.messages[0].severity}: ${event.messages[0].message}`,
+                "",
+              ].join("\n");
+        void testLogger.log(message);
+      }
+      this._testStates.fire({
+        type: "test",
+        state,
+        test: event.test,
+        message,
+        decorations: event.messages?.map((msg) => ({
+          line: msg.position.line,
+          message: msg.message,
+        })),
+      });
     }
-    this._testStates.fire({
-      type: "test",
-      state,
-      test: event.test,
-      message,
-      decorations: event.messages?.map((msg) => ({
-        line: msg.position.line,
-        message: msg.message,
-      })),
-    });
   }
 }

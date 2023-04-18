@@ -139,10 +139,35 @@ export interface SourceInfo {
  */
 export type ResolvedTests = string[];
 
+export type TestEventType =
+  | "testStarted"
+  | "testCompleted"
+  | "extractionStarted"
+  | "extractionSucceeded"
+  | "extractionFailed";
+
+export interface TestEvent<T extends TestEventType> {
+  type: T;
+}
+
+/**
+ * Fired when a test starts executing.
+ */
+export interface TestStartedEvent extends TestEvent<"testStarted"> {
+  test: string;
+}
+
 /**
  * Event fired by `codeql test run`.
  */
-export interface TestCompleted {
+
+/**
+ * Event fired by `codeql test run` for CLI versions before 2.13.1.
+ *
+ * We translate these into `TestCompletedEvent`s so that the rest of the extension can pretend that
+ * it's using the new event scheme.
+ */
+interface TestResult {
   test: string;
   pass: boolean;
   messages: CompilationMessage[];
@@ -154,6 +179,36 @@ export interface TestCompleted {
   failureDescription?: string;
   failureStage?: string;
 }
+
+/**
+ * Fired when a test completes, whether successful or not.
+ */
+export interface TestCompletedEvent
+  extends TestEvent<"testCompleted">,
+    TestResult {}
+
+/** Fired when database extraction for a directory has started. */
+export interface ExtractionStartedEvent extends TestEvent<"extractionStarted"> {
+  testDirectory: string;
+}
+
+/** Fired when database extraction for a directory has succeeded. */
+export interface ExtractionSucceededEvent
+  extends TestEvent<"extractionSucceeded"> {
+  testDirectory: string;
+}
+
+/** Fired when database extraction for a directory has failed. */
+export interface ExtractionFailedEvent extends TestEvent<"extractionFailed"> {
+  testDirectory: string;
+}
+
+export type AnyTestEvent =
+  | TestStartedEvent
+  | TestCompletedEvent
+  | ExtractionStartedEvent
+  | ExtractionSucceededEvent
+  | ExtractionFailedEvent;
 
 /**
  * Optional arguments for the `bqrsDecode` function
@@ -436,6 +491,7 @@ export class CodeQLCliServer implements Disposable {
    *
    * @param command The `codeql` command to be run, provided as an array of command/subcommand names.
    * @param commandArgs The arguments to pass to the `codeql` command.
+   * @param format The event format option to use.
    * @param cancellationToken CancellationToken to terminate the test process.
    * @param logger Logger to write text output from the command.
    * @returns The sequence of async events produced by the command.
@@ -443,11 +499,12 @@ export class CodeQLCliServer implements Disposable {
   private async *runAsyncCodeQlCliCommandInternal(
     command: string[],
     commandArgs: string[],
-    cancellationToken?: CancellationToken,
-    logger?: BaseLogger,
+    format: "jsonz" | "betterjsonz",
+    cancellationToken: CancellationToken | undefined,
+    logger: BaseLogger | undefined,
   ): AsyncGenerator<string, void, unknown> {
     // Add format argument first, in case commandArgs contains positional parameters.
-    const args = [...command, "--format", "jsonz", ...commandArgs];
+    const args = [...command, "--format", format, ...commandArgs];
 
     // Spawn the CodeQL process
     const codeqlPath = await this.getCodeQlPath();
@@ -501,6 +558,7 @@ export class CodeQLCliServer implements Disposable {
   public async *runAsyncCodeQlCliCommand<EventType>(
     command: string[],
     commandArgs: string[],
+    format: "jsonz" | "betterjsonz",
     description: string,
     {
       cancellationToken,
@@ -513,6 +571,7 @@ export class CodeQLCliServer implements Disposable {
     for await (const event of this.runAsyncCodeQlCliCommandInternal(
       command,
       commandArgs,
+      format,
       cancellationToken,
       logger,
     )) {
@@ -788,7 +847,7 @@ export class CodeQLCliServer implements Disposable {
       cancellationToken?: CancellationToken;
       logger?: BaseLogger;
     },
-  ): AsyncGenerator<TestCompleted, void, unknown> {
+  ): AsyncGenerator<AnyTestEvent, void, unknown> {
     const subcommandArgs = this.cliConfig.additionalTestArguments.concat([
       ...this.getAdditionalPacksArg(workspaces),
       "--threads",
@@ -796,16 +855,27 @@ export class CodeQLCliServer implements Disposable {
       ...testPaths,
     ]);
 
-    for await (const event of this.runAsyncCodeQlCliCommand<TestCompleted>(
-      ["test", "run"],
-      subcommandArgs,
-      "Run CodeQL Tests",
-      {
-        cancellationToken,
-        logger,
-      },
-    )) {
-      yield event;
+    const format = (await this.cliConstraints.supportsRichTestEvents())
+      ? "betterjsonz"
+      : "jsonz";
+    for await (const event of this.runAsyncCodeQlCliCommand<
+      AnyTestEvent | TestResult
+    >(["test", "run"], subcommandArgs, format, "Run CodeQL Tests", {
+      cancellationToken,
+      logger,
+    })) {
+      if (format === "jsonz") {
+        // The original event format only support one event kind. Translate it into a
+        // `TestCompletedEvent`.
+        const testResult = event as TestResult;
+        const translatedEvent: TestCompletedEvent = {
+          type: "testCompleted",
+          ...testResult,
+        };
+        yield translatedEvent;
+      } else {
+        yield event as AnyTestEvent;
+      }
     }
   }
 
@@ -1782,6 +1852,11 @@ export class CliVersionConstraint {
     "2.12.4",
   );
 
+  /**
+   * CLI version that supports the `--format betterjsonz` option for the `codeql test run` command.
+   */
+  public static CLI_VERSION_WITH_RICH_TEST_EVENTS = new SemVer("2.13.1-dev");
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1850,5 +1925,14 @@ export class CliVersionConstraint {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_ADDITIONAL_PACKS_INSTALL,
     );
+  }
+
+  async supportsRichTestEvents() {
+    /*
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_RICH_TEST_EVENTS,
+    );
+    */
+    return true;
   }
 }

@@ -22,7 +22,11 @@ import {
   QLTestFile,
   QLTestNode,
 } from "./qltest-discovery";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import {
+  CodeQLCliServer,
+  TestCompletedEvent,
+  TestStartedEvent,
+} from "../codeql-cli/cli";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { BaseLogger, LogOptions } from "../common";
 import { TestRunner } from "./test-runner";
@@ -102,6 +106,58 @@ class WorkspaceFolderHandler extends DisposableObject {
       this.workspaceFolder,
       testDirectory,
     );
+  }
+}
+
+/**
+ * Tracks the individual tests to be run.
+ */
+class TestRunContext {
+  private readonly testItemsByPath = new Map<string, TestItem>();
+
+  public constructor(request: TestRunRequest, testController: TestController) {
+    if (request.include !== undefined) {
+      // Include these tests, recursively expanding test directories into their list of contained
+      // tests.
+      for (const includedTestItem of request.include) {
+        forEachTest(includedTestItem, (testItem) =>
+          this.testItemsByPath.set(testItem.uri!.fsPath, testItem),
+        );
+      }
+    } else {
+      // Include all of the tests.
+      for (const [, includedTestItem] of testController.items) {
+        forEachTest(includedTestItem, (testItem) =>
+          this.testItemsByPath.set(testItem.uri!.fsPath, testItem),
+        );
+      }
+    }
+    if (request.exclude !== undefined) {
+      // Exclude the specified tests from the set we've computed so far, again recursively expanding
+      // test directories into their list of contained tests.
+      for (const excludedTestItem of request.exclude) {
+        forEachTest(excludedTestItem, (testItem) =>
+          this.testItemsByPath.delete(testItem.uri!.fsPath),
+        );
+      }
+    }
+  }
+
+  public getTestItemByPath(testPath: string): TestItem {
+    // Pass the test path from the event through `Uri` and back via `fsPath` so that it matches
+    // the canonicalization of the URI that we used to create the `TestItem`.
+    const testItem = this.testItemsByPath.get(Uri.file(testPath).fsPath);
+    if (testItem === undefined) {
+      throw new Error(`Unexpected event from unknown test '${testPath}'.`);
+    }
+
+    return testItem;
+  }
+
+  public forEachTest(
+    callback: (testItem: TestItem, testPath: string) => void,
+  ): void {
+    this.testItemsByPath.forEach(callback);
   }
 }
 
@@ -260,11 +316,11 @@ export class TestManager extends TestManagerBase {
     request: TestRunRequest,
     token: CancellationToken,
   ): Promise<void> {
-    const testsToRun = this.computeTestsToRun(request);
+    const testRunContext = new TestRunContext(request, this.testController);
     const testRun = this.testController.createTestRun(request, undefined, true);
     try {
       const tests: string[] = [];
-      testsToRun.forEach((testItem, testPath) => {
+      testRunContext.forEachTest((testItem, testPath) => {
         testRun.enqueued(testItem);
         tests.push(testPath);
       });
@@ -272,72 +328,26 @@ export class TestManager extends TestManagerBase {
       const logger = new TestRunLogger(testRun);
 
       await this.testRunner.run(tests, logger, token, async (event) => {
-        // Pass the test path from the event through `Uri` and back via `fsPath` so that it matches
-        // the canonicalization of the URI that we used to create the `TestItem`.
-        const testItem = testsToRun.get(Uri.file(event.test).fsPath);
-        if (testItem === undefined) {
-          throw new Error(
-            `Unexpected result from unknown test '${event.test}'.`,
-          );
-        }
+        switch (event.type) {
+          case "testStarted":
+            await this.testStarted(
+              event,
+              testRun,
+              testRunContext.getTestItemByPath(event.test),
+            );
+            break;
 
-        const duration = event.compilationMs + event.evaluationMs;
-        if (event.pass) {
-          testRun.passed(testItem, duration);
-        } else {
-          // Construct a list of `TestMessage`s to report for the failure.
-          const testMessages: TestMessage[] = [];
-          if (event.failureDescription !== undefined) {
-            testMessages.push(new TestMessage(event.failureDescription));
-          }
-          if (event.diff?.length && event.actual !== undefined) {
-            // Actual results differ from expected results. Read both sets of results and create a
-            // diff to put in the message.
-            const expected = await tryReadFileContents(
-              event.expected,
-              testMessages,
+          case "testCompleted":
+            await this.testCompleted(
+              event,
+              testRun,
+              testRunContext.getTestItemByPath(event.test),
             );
-            const actual = await tryReadFileContents(
-              event.actual,
-              testMessages,
-            );
-            if (expected !== undefined && actual !== undefined) {
-              testMessages.push(
-                TestMessage.diff(
-                  "Actual output differs from expected",
-                  expected,
-                  actual,
-                ),
-              );
-            }
-          }
-          if (event.messages?.length > 0) {
-            // The test didn't make it far enough to produce results. Transform any error messages
-            // into `TestMessage`s and report the test as "errored".
-            const testMessages = event.messages.map((m) => {
-              const location = new Location(
-                Uri.file(m.position.fileName),
-                new Range(
-                  m.position.line - 1,
-                  m.position.column - 1,
-                  m.position.endLine - 1,
-                  m.position.endColumn - 1,
-                ),
-              );
-              const testMessage = new TestMessage(m.message);
-              testMessage.location = location;
-              return testMessage;
-            });
-            testRun.errored(testItem, testMessages, duration);
-          } else {
-            // Results didn't match expectations. Report the test as "failed".
-            if (testMessages.length === 0) {
-              // If we managed to get here without creating any `TestMessage`s, create a default one
-              // here. Any failed test needs at least one message.
-              testMessages.push(new TestMessage("Test failed"));
-            }
-            testRun.failed(testItem, testMessages, duration);
-          }
+            break;
+
+          default:
+            // Nothing to do for other events for now.
+            break;
         }
       });
     } finally {
@@ -345,37 +355,73 @@ export class TestManager extends TestManagerBase {
     }
   }
 
-  /**
-   * Computes the set of tests to run as specified in the `TestRunRequest` object.
-   */
-  private computeTestsToRun(request: TestRunRequest): Map<string, TestItem> {
-    const testsToRun = new Map<string, TestItem>();
-    if (request.include !== undefined) {
-      // Include these tests, recursively expanding test directories into their list of contained
-      // tests.
-      for (const includedTestItem of request.include) {
-        forEachTest(includedTestItem, (testItem) =>
-          testsToRun.set(testItem.uri!.fsPath, testItem),
-        );
-      }
-    } else {
-      // Include all of the tests.
-      for (const [, includedTestItem] of this.testController.items) {
-        forEachTest(includedTestItem, (testItem) =>
-          testsToRun.set(testItem.uri!.fsPath, testItem),
-        );
-      }
-    }
-    if (request.exclude !== undefined) {
-      // Exclude the specified tests from the set we've computed so far, again recursively expanding
-      // test directories into their list of contained tests.
-      for (const excludedTestItem of request.exclude) {
-        forEachTest(excludedTestItem, (testItem) =>
-          testsToRun.delete(testItem.uri!.fsPath),
-        );
-      }
-    }
+  private async testStarted(
+    _event: TestStartedEvent,
+    testRun: TestRun,
+    testItem: TestItem,
+  ): Promise<void> {
+    testRun.started(testItem);
+  }
 
-    return testsToRun;
+  private async testCompleted(
+    event: TestCompletedEvent,
+    testRun: TestRun,
+    testItem: TestItem,
+  ): Promise<void> {
+    const duration = event.compilationMs + event.evaluationMs;
+    if (event.pass) {
+      testRun.passed(testItem, duration);
+    } else {
+      // Construct a list of `TestMessage`s to report for the failure.
+      const testMessages: TestMessage[] = [];
+      if (event.failureDescription !== undefined) {
+        testMessages.push(new TestMessage(event.failureDescription));
+      }
+      if (event.diff?.length && event.actual !== undefined) {
+        // Actual results differ from expected results. Read both sets of results and create a
+        // diff to put in the message.
+        const expected = await tryReadFileContents(
+          event.expected,
+          testMessages,
+        );
+        const actual = await tryReadFileContents(event.actual, testMessages);
+        if (expected !== undefined && actual !== undefined) {
+          testMessages.push(
+            TestMessage.diff(
+              "Actual output differs from expected",
+              expected,
+              actual,
+            ),
+          );
+        }
+      }
+      if (event.messages?.length > 0) {
+        // The test didn't make it far enough to produce results. Transform any error messages
+        // into `TestMessage`s and report the test as "errored".
+        const testMessages = event.messages.map((m) => {
+          const location = new Location(
+            Uri.file(m.position.fileName),
+            new Range(
+              m.position.line - 1,
+              m.position.column - 1,
+              m.position.endLine - 1,
+              m.position.endColumn - 1,
+            ),
+          );
+          const testMessage = new TestMessage(m.message);
+          testMessage.location = location;
+          return testMessage;
+        });
+        testRun.errored(testItem, testMessages, duration);
+      } else {
+        // Results didn't match expectations. Report the test as "failed".
+        if (testMessages.length === 0) {
+          // If we managed to get here without creating any `TestMessage`s, create a default one
+          // here. Any failed test needs at least one message.
+          testMessages.push(new TestMessage("Test failed"));
+        }
+        testRun.failed(testItem, testMessages, duration);
+      }
+    }
   }
 }

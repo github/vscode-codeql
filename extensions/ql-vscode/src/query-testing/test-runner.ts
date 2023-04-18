@@ -1,5 +1,5 @@
 import { CancellationToken, Uri } from "vscode";
-import { CodeQLCliServer, TestCompleted } from "../codeql-cli/cli";
+import { CodeQLCliServer, AnyTestEvent } from "../codeql-cli/cli";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import {
   getOnDiskWorkspaceFolders,
@@ -33,7 +33,7 @@ export class TestRunner extends DisposableObject {
     tests: string[],
     logger: BaseLogger,
     token: CancellationToken,
-    eventHandler: (event: TestCompleted) => Promise<void>,
+    eventHandler: (event: AnyTestEvent) => Promise<void>,
   ): Promise<void> {
     const currentDatabaseUri =
       this.databaseManager.currentDatabaseItem?.databaseUri;
