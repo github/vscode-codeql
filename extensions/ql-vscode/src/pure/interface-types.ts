@@ -16,6 +16,7 @@ import { ErrorLike } from "./errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 import { ExternalApiUsage } from "../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../data-extensions-editor/modeled-method";
+import { DataExtensionEditorViewState } from "../data-extensions-editor/shared/view-state";
 
 /**
  * This module contains types and code that are shared between
@@ -481,10 +482,9 @@ export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
 
 export type FromDataFlowPathsMessage = CommonFromViewMessages;
 
-export interface SetDataExtensionEditorInitialDataMessage {
-  t: "setDataExtensionEditorInitialData";
-  extensionPackName: string;
-  modelFilename: string;
+export interface SetExtensionPackStateMessage {
+  t: "setDataExtensionEditorViewState";
+  viewState: DataExtensionEditorViewState;
 }
 
 export interface SetExternalApiUsagesMessage {
@@ -536,7 +536,7 @@ export interface GenerateExternalApiMessage {
 }
 
 export type ToDataExtensionsEditorMessage =
-  | SetDataExtensionEditorInitialDataMessage
+  | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
   | ShowProgressMessage
   | AddModeledMethodsMessage;
