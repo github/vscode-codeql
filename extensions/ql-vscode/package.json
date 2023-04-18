@@ -340,6 +340,12 @@
           "type": "boolean",
           "default": false,
           "description": "Allow database to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
+        },
+        "codeQL.createQuery.Folder": {
+          "type": "string",
+          "default": "",
+          "patternErrorMessage": "Please enter a valid folder",
+          "markdownDescription": "The name of the folder where we want to create queries and query packs via the \"CodeQL: Create Query\" command. The folder should exist in the workspace.`)."
         }
       }
     },
