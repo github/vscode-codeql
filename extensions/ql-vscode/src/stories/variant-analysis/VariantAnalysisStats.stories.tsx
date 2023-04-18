@@ -106,6 +106,6 @@ Failed.args = {
 
 export const Stopped = Template.bind({});
 Stopped.args = {
-  ...SucceededWithSkippedRepositories.args,
+  ...Started.args,
   variantAnalysisStatus: VariantAnalysisStatus.Canceled,
 };
