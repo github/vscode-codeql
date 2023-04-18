@@ -17,6 +17,38 @@ type Props = {
   skippedRepositoryCount: number;
 };
 
+function getIcon(
+  variantAnalysisStatus: VariantAnalysisStatus,
+  completedRepositoryCount: number,
+  successfulRepositoryCount: number,
+  skippedRepositoryCount: number,
+) {
+  if (successfulRepositoryCount < completedRepositoryCount) {
+    return (
+      <>
+        <HorizontalSpace size={2} />
+        <ErrorIcon label="Some analyses failed" />
+      </>
+    );
+  } else if (skippedRepositoryCount > 0) {
+    return (
+      <>
+        <HorizontalSpace size={2} />
+        <WarningIcon label="Some repositories were skipped" />
+      </>
+    );
+  } else if (variantAnalysisStatus === VariantAnalysisStatus.Succeeded) {
+    return (
+      <>
+        <HorizontalSpace size={2} />
+        <SuccessIcon label="Completed" />
+      </>
+    );
+  } else {
+    return undefined;
+  }
+}
+
 export const VariantAnalysisRepositoriesStats = ({
   variantAnalysisStatus,
   totalRepositoryCount,
@@ -33,33 +65,16 @@ export const VariantAnalysisRepositoriesStats = ({
     );
   }
 
-  const showError = successfulRepositoryCount < completedRepositoryCount;
-  const showWarning = skippedRepositoryCount > 0;
-
   return (
     <>
       {formatDecimal(successfulRepositoryCount)}/
       {formatDecimal(totalRepositoryCount)}
-      {showError && (
-        <>
-          <HorizontalSpace size={2} />
-          <ErrorIcon label="Some analyses failed" />
-        </>
+      {getIcon(
+        variantAnalysisStatus,
+        completedRepositoryCount,
+        successfulRepositoryCount,
+        skippedRepositoryCount,
       )}
-      {showWarning && !showError && (
-        <>
-          <HorizontalSpace size={2} />
-          <WarningIcon label="Some repositories were skipped" />
-        </>
-      )}
-      {!showError &&
-        !showWarning &&
-        variantAnalysisStatus === VariantAnalysisStatus.Succeeded && (
-          <>
-            <HorizontalSpace size={2} />
-            <SuccessIcon label="Completed" />
-          </>
-        )}
     </>
   );
 };
