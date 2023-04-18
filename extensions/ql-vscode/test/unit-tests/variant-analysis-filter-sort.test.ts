@@ -451,7 +451,7 @@ describe(filterAndSortRepositoriesWithResultsByName.name, () => {
     });
   });
 
-  describe("when sort key and search and filter withResults are given", () => {
+  describe("when sort key, search, and filter withResults are given", () => {
     it("returns the correct results", () => {
       expect(
         filterAndSortRepositoriesWithResultsByName(repositories, {
@@ -548,7 +548,7 @@ describe(filterAndSortRepositoriesWithResults.name, () => {
     });
   });
 
-  describe("when sort key and search and filter withResults are given", () => {
+  describe("when sort key, search, and filter withResults are given", () => {
     it("returns the correct results", () => {
       expect(
         filterAndSortRepositoriesWithResults(repositories, {
