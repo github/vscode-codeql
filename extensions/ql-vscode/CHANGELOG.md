@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Added ability to filter repositories for a variant analysis to only those that have results [#2343](https://github.com/github/vscode-codeql/pull/2343)
+
 ## 1.8.2 - 12 April 2023
 
 - Fix bug where users could end up with the managed CodeQL CLI getting uninstalled during upgrades and not reinstalled. [#2294](https://github.com/github/vscode-codeql/pull/2294)
