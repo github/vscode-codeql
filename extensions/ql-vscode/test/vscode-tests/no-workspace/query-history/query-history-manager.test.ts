@@ -977,24 +977,6 @@ describe("QueryHistoryManager", () => {
         expect(showQuickPickSpy).not.toBeCalled();
       });
 
-      it("should throw an error when a query is not successful", async () => {
-        const thisQuery = localQueryHistory[3];
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-        allHistory[0] = createMockLocalQueryInfo({
-          dbName: "a",
-          queryWithResults: createMockQueryWithResults({
-            didRunSuccessfully: false,
-          }),
-        });
-
-        await expect(
-          (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [
-            thisQuery,
-            allHistory[0],
-          ]),
-        ).rejects.toThrow("Please select a successful query.");
-      });
-
       it("should throw an error when a databases are not the same", async () => {
         queryHistoryManager = await createMockQueryHistory(allHistory);
 
@@ -1042,6 +1024,26 @@ describe("QueryHistoryManager", () => {
           localQueryHistory[0],
         ]);
         expect(doCompareCallback).not.toBeCalled();
+      });
+
+      it("should throw an error when a query is not successful", async () => {
+        const thisQuery = localQueryHistory[3];
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        allHistory[0] = createMockLocalQueryInfo({
+          dbName: "a",
+          queryWithResults: createMockQueryWithResults({
+            didRunSuccessfully: false,
+          }),
+        });
+
+        await expect(
+          queryHistoryManager.handleCompareWith(thisQuery, [
+            thisQuery,
+            allHistory[0],
+          ]),
+        ).rejects.toThrow(
+          "Please only select local queries that have completed successfully.",
+        );
       });
     });
 
