@@ -23,7 +23,7 @@ import {
 import { DisposableObject } from "./pure/disposable-object";
 import { Logger, extLogger } from "./common";
 import { asError, getErrorMessage } from "./pure/helpers-pure";
-import { QueryRunner } from "./queryRunner";
+import { QueryRunner } from "./query-server/queryRunner";
 import { pathsEqual } from "./pure/files";
 import { redactableError } from "./pure/errors";
 import { isCodespacesTemplate } from "./config";

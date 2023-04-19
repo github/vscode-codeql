@@ -3,7 +3,7 @@ import { ProgressCallback } from "../progress";
 import * as messages from "../pure/new-messages";
 import { QueryOutputDir } from "../run-queries-shared";
 import * as qsClient from "./query-server-client";
-import { CoreQueryResults, CoreQueryTarget } from "../queryRunner";
+import { CoreQueryResults, CoreQueryTarget } from "./queryRunner";
 import { Logger } from "../common";
 
 /**

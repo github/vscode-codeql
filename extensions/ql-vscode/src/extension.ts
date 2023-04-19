@@ -99,7 +99,7 @@ import { JoinOrderScannerProvider } from "./log-insights/join-order";
 import { LogScannerService } from "./log-insights/log-scanner-service";
 import { LegacyQueryRunner } from "./query-server/legacy/legacy-query-runner";
 import { NewQueryRunner } from "./query-server/new-query-runner";
-import { QueryRunner } from "./queryRunner";
+import { QueryRunner } from "./query-server/queryRunner";
 import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
 import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";

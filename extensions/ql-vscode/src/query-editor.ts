@@ -1,6 +1,6 @@
 import { Uri, window } from "vscode";
 import { CodeQLCliServer } from "./cli";
-import { QueryRunner } from "./queryRunner";
+import { QueryRunner } from "./query-server/queryRunner";
 import { basename, join } from "path";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { redactableError } from "./pure/errors";

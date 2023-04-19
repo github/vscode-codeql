@@ -8,11 +8,7 @@ import {
   deregisterDatabases,
   registerDatabases,
 } from "../../pure/legacy-messages";
-import {
-  CoreQueryResults,
-  CoreQueryTarget,
-  QueryRunner,
-} from "../../queryRunner";
+import { CoreQueryResults, CoreQueryTarget, QueryRunner } from "../queryRunner";
 import { QueryOutputDir } from "../../run-queries-shared";
 import { QueryServerClient } from "./query-server-client";
 import {
