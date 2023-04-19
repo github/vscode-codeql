@@ -3,6 +3,12 @@ import {
   RepositoryWithMetadata,
 } from "../variant-analysis/shared/repository";
 import { parseDate } from "./date";
+import { assertNever } from "./helpers-pure";
+
+export enum FilterKey {
+  All = "all",
+  WithResults = "withResults",
+}
 
 export enum SortKey {
   Name = "name",
@@ -13,6 +19,7 @@ export enum SortKey {
 
 export type RepositoriesFilterSortState = {
   searchValue: string;
+  filterKey: FilterKey;
   sortKey: SortKey;
 };
 
@@ -22,20 +29,43 @@ export type RepositoriesFilterSortStateWithIds = RepositoriesFilterSortState & {
 
 export const defaultFilterSortState: RepositoriesFilterSortState = {
   searchValue: "",
+  filterKey: FilterKey.All,
   sortKey: SortKey.Name,
 };
 
 export function matchesFilter(
-  repo: Pick<Repository, "fullName">,
+  item: FilterAndSortableResult,
   filterSortState: RepositoriesFilterSortState | undefined,
 ): boolean {
   if (!filterSortState) {
     return true;
   }
 
-  return repo.fullName
-    .toLowerCase()
-    .includes(filterSortState.searchValue.toLowerCase());
+  return (
+    matchesSearch(item.repository, filterSortState.searchValue) &&
+    matchesFilterKey(item.resultCount, filterSortState.filterKey)
+  );
+}
+
+function matchesSearch(
+  repository: SortableRepository,
+  searchValue: string,
+): boolean {
+  return repository.fullName.toLowerCase().includes(searchValue.toLowerCase());
+}
+
+function matchesFilterKey(
+  resultCount: number | undefined,
+  filterKey: FilterKey,
+): boolean {
+  switch (filterKey) {
+    case FilterKey.All:
+      return true;
+    case FilterKey.WithResults:
+      return resultCount !== undefined && resultCount > 0;
+    default:
+      assertNever(filterKey);
+  }
 }
 
 type SortableRepository = Pick<Repository, "fullName"> &
@@ -71,17 +101,22 @@ export function compareRepository(
   };
 }
 
-type SortableResult = {
+type FilterAndSortableResult = {
+  repository: SortableRepository;
+  resultCount?: number;
+};
+
+type FilterAndSortableResultWithIds = {
   repository: SortableRepository & Pick<Repository, "id">;
   resultCount?: number;
 };
 
 export function compareWithResults(
   filterSortState: RepositoriesFilterSortState | undefined,
-): (left: SortableResult, right: SortableResult) => number {
+): (left: FilterAndSortableResult, right: FilterAndSortableResult) => number {
   const fallbackSort = compareRepository(filterSortState);
 
-  return (left: SortableResult, right: SortableResult) => {
+  return (left: FilterAndSortableResult, right: FilterAndSortableResult) => {
     // Highest to lowest
     if (filterSortState?.sortKey === SortKey.ResultsCount) {
       const resultCount = (right.resultCount ?? 0) - (left.resultCount ?? 0);
@@ -95,7 +130,7 @@ export function compareWithResults(
 }
 
 export function filterAndSortRepositoriesWithResultsByName<
-  T extends SortableResult,
+  T extends FilterAndSortableResult,
 >(
   repositories: T[] | undefined,
   filterSortState: RepositoriesFilterSortState | undefined,
@@ -105,11 +140,13 @@ export function filterAndSortRepositoriesWithResultsByName<
   }
 
   return repositories
-    .filter((repo) => matchesFilter(repo.repository, filterSortState))
+    .filter((repo) => matchesFilter(repo, filterSortState))
     .sort(compareWithResults(filterSortState));
 }
 
-export function filterAndSortRepositoriesWithResults<T extends SortableResult>(
+export function filterAndSortRepositoriesWithResults<
+  T extends FilterAndSortableResultWithIds,
+>(
   repositories: T[] | undefined,
   filterSortState: RepositoriesFilterSortStateWithIds | undefined,
 ): T[] | undefined {
@@ -117,6 +154,7 @@ export function filterAndSortRepositoriesWithResults<T extends SortableResult>(
     return undefined;
   }
 
+  // If repository IDs are given, then ignore the search value and filter key
   if (
     filterSortState?.repositoryIds &&
     filterSortState.repositoryIds.length > 0

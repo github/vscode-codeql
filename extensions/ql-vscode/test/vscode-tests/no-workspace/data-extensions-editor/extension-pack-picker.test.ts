@@ -6,10 +6,8 @@ import { dir } from "tmp-promise";
 import { QlpacksInfo, ResolveExtensionsResult } from "../../../../src/cli";
 import * as helpers from "../../../../src/helpers";
 
-import {
-  ExtensionPack,
-  pickExtensionPackModelFile,
-} from "../../../../src/data-extensions-editor/extension-pack-picker";
+import { pickExtensionPackModelFile } from "../../../../src/data-extensions-editor/extension-pack-picker";
+import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
 
 describe("pickExtensionPackModelFile", () => {
   let tmpDir: string;
