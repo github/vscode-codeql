@@ -14,7 +14,12 @@ import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "./local-databases";
 import { ProgressCallback, UserCancellationException } from "./progress";
 import { askForGitHubRepo, downloadGitHubDatabase } from "./databaseFetcher";
-import { existsSync } from "fs";
+import {
+  getSkeletonWizardFolder,
+  isCodespacesTemplate,
+  setSkeletonWizardFolder,
+} from "./config";
+import { existsSync } from "fs-extra";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
@@ -55,7 +60,7 @@ export class SkeletonQueryWizard {
       return;
     }
 
-    this.qlPackStoragePath = getFirstWorkspaceFolder();
+    this.qlPackStoragePath = await this.determineStoragePath();
 
     const skeletonPackAlreadyExists =
       existsSync(join(this.qlPackStoragePath, this.folderName)) ||
@@ -95,6 +100,38 @@ export class SkeletonQueryWizard {
     void workspace.openTextDocument(queryFileUri).then((doc) => {
       void Window.showTextDocument(doc);
     });
+  }
+
+  public async determineStoragePath() {
+    const firstStorageFolder = getFirstWorkspaceFolder();
+
+    if (isCodespacesTemplate()) {
+      return firstStorageFolder;
+    }
+
+    let storageFolder = getSkeletonWizardFolder();
+
+    if (storageFolder === undefined || !existsSync(storageFolder)) {
+      storageFolder = await Window.showInputBox({
+        title:
+          "Please choose a folder in which to create your new query pack. You can change this in the extension settings.",
+        value: firstStorageFolder,
+        ignoreFocusOut: true,
+      });
+    }
+
+    if (storageFolder === undefined) {
+      throw new UserCancellationException("No storage folder entered.");
+    }
+
+    if (!existsSync(storageFolder)) {
+      throw new UserCancellationException(
+        "Invalid folder. Must be a folder that already exists.",
+      );
+    }
+
+    await setSkeletonWizardFolder(storageFolder);
+    return storageFolder;
   }
 
   private async chooseLanguage() {
