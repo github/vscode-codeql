@@ -117,7 +117,7 @@ import {
   PreActivationCommands,
   QueryServerCommands,
 } from "./common/commands";
-import { LocalQueries } from "./local-queries/local-queries";
+import { LocalQueries } from "./local-queries";
 import { getAstCfgCommands } from "./ast-cfg-commands";
 import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
