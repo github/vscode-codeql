@@ -621,6 +621,7 @@ export class DatabaseManager extends DisposableObject {
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     uri: vscode.Uri,
+    makeSelected = false,
     displayName?: string,
     isTutorialDatabase?: boolean,
   ): Promise<DatabaseItem> {
@@ -629,6 +630,7 @@ export class DatabaseManager extends DisposableObject {
     return await this.addExistingDatabaseItem(
       databaseItem,
       progress,
+      makeSelected,
       token,
       isTutorialDatabase,
     );
@@ -643,6 +645,7 @@ export class DatabaseManager extends DisposableObject {
   public async addExistingDatabaseItem(
     databaseItem: DatabaseItem,
     progress: ProgressCallback,
+    makeSelected = true,
     token: vscode.CancellationToken,
     isTutorialDatabase?: boolean,
   ): Promise<DatabaseItem> {
@@ -652,6 +655,9 @@ export class DatabaseManager extends DisposableObject {
     }
 
     await this.addDatabaseItem(progress, token, databaseItem);
+    if (makeSelected) {
+      await this.setCurrentDatabaseItem(databaseItem);
+    }
     await this.addDatabaseSourceArchiveFolder(databaseItem);
 
     if (isCodespacesTemplate() && !isTutorialDatabase) {
