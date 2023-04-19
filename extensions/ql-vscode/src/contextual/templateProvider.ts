@@ -32,7 +32,7 @@ import {
   runContextualQuery,
 } from "./queryResolver";
 import { isCanary, NO_CACHE_AST_VIEWER } from "../config";
-import { CoreCompletedQuery, QueryRunner } from "../query-server/queryRunner";
+import { CoreCompletedQuery, QueryRunner } from "../query-server/query-runner";
 
 /**
  * Runs templated CodeQL queries to find definitions in

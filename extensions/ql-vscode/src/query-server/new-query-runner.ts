@@ -9,7 +9,7 @@ import {
   registerDatabases,
   upgradeDatabase,
 } from "../pure/new-messages";
-import { CoreQueryResults, CoreQueryTarget, QueryRunner } from "./queryRunner";
+import { CoreQueryResults, CoreQueryTarget, QueryRunner } from "./query-runner";
 import { QueryServerClient } from "./query-server-client";
 import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";
 import * as vscode from "vscode";

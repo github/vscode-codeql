@@ -4,7 +4,7 @@ import {
   showAndLogWarningMessage,
   tryGetQueryMetadata,
 } from "../helpers";
-import { CoreQueryResults } from "../query-server/queryRunner";
+import { CoreQueryResults } from "../query-server/query-runner";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
 import { DatabaseItem } from "../local-databases";
 import {

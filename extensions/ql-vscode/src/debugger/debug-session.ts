@@ -18,7 +18,7 @@ import {
   CoreQueryResults,
   CoreQueryRun,
   QueryRunner,
-} from "../query-server/queryRunner";
+} from "../query-server/query-runner";
 import * as CodeQLProtocol from "./debug-protocol";
 import { QuickEvalContext } from "../run-queries-shared";
 import { getErrorMessage } from "../pure/helpers-pure";

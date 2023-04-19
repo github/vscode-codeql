@@ -41,7 +41,7 @@ import {
   promptImportInternetDatabase,
 } from "./databaseFetcher";
 import { asError, asyncFilter, getErrorMessage } from "./pure/helpers-pure";
-import { QueryRunner } from "./query-server/queryRunner";
+import { QueryRunner } from "./query-server/query-runner";
 import { isCanary } from "./config";
 import { App } from "./common/app";
 import { redactableError } from "./pure/errors";
