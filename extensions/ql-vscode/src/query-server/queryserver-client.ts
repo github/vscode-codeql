@@ -12,7 +12,7 @@ import {
   WithProgressId,
 } from "../pure/new-messages";
 import { ProgressCallback, ProgressTask } from "../progress";
-import { ServerProcess } from "../json-rpc-server";
+import { ServerProcess } from "./json-rpc-server";
 import { App } from "../common/app";
 
 type ServerOpts = {
