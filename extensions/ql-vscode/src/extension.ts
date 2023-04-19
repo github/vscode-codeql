@@ -707,9 +707,14 @@ async function activateWithInstalledDistribution(
   for (const glob of PACK_GLOBS) {
     const fsWatcher = workspace.createFileSystemWatcher(glob);
     ctx.subscriptions.push(fsWatcher);
-    fsWatcher.onDidChange(async (_uri) => {
+
+    const clearPackCache = async (_uri: Uri) => {
       await qs.clearPackCache();
-    });
+    };
+
+    fsWatcher.onDidCreate(clearPackCache);
+    fsWatcher.onDidChange(clearPackCache);
+    fsWatcher.onDidDelete(clearPackCache);
   }
 
   void extLogger.log("Initializing database manager.");
