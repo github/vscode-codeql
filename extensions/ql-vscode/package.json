@@ -1419,7 +1419,7 @@
         },
         {
           "command": "codeQL.createQuery",
-          "when": "config.codeQL.canary"
+          "when": "config.codeQL.codespacesTemplate"
         },
         {
           "command": "codeQLTests.acceptOutputContextTestItem",
