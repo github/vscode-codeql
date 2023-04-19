@@ -346,6 +346,12 @@
           "default": "",
           "patternErrorMessage": "Please enter a valid folder",
           "markdownDescription": "The name of the folder where we want to create queries and query packs via the \"CodeQL: Create Query\" command. The folder should exist."
+        },
+        "codeQL.autogenerateQlPacks": {
+          "type": "string",
+          "default": "",
+          "patternErrorMessage": "Please choose between 'Yes', 'No' and 'No, and never ask me again'",
+          "markdownDescription": "The choice of whether to autogenerate QL packs for the current workspace. The choice is 'Yes', 'No' or 'No, and never ask me again'."
         }
       }
     },

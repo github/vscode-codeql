@@ -635,3 +635,16 @@ export function getSkeletonWizardFolder(): string | undefined {
 export async function setSkeletonWizardFolder(folder: string | undefined) {
   await SKELETON_WIZARD_FOLDER.updateValue(folder, ConfigurationTarget.Global);
 }
+
+/**
+ * Option to turn on/off ability to autogenerate QL packs. Values are "Yes" / "No" / "Never ask again"
+ **/
+const AUTOGENERATE_QL_PACKS = new Setting("autogenerateQlPacks", ROOT_SETTING);
+
+export function getAutogenerateQlPacks(): string | undefined {
+  return AUTOGENERATE_QL_PACKS.getValue<string>() || undefined;
+}
+
+export async function setAutogenerateQlPacks(choice: string | undefined) {
+  await AUTOGENERATE_QL_PACKS.updateValue(choice, ConfigurationTarget.Global);
+}
