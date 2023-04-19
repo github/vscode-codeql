@@ -416,7 +416,7 @@ describe("helpers", () => {
     });
   });
 
-  describe("open dialog", () => {
+  describe("showBinaryChoiceDialog", () => {
     let showInformationMessageSpy: jest.SpiedFunction<
       typeof window.showInformationMessage
     >;
@@ -445,6 +445,23 @@ describe("helpers", () => {
       const val = await showBinaryChoiceDialog("xxx");
       expect(val).toBe(false);
     });
+  });
+
+  describe("showInformationMessageWithAction", () => {
+    let showInformationMessageSpy: jest.SpiedFunction<
+      typeof window.showInformationMessage
+    >;
+
+    beforeEach(() => {
+      showInformationMessageSpy = jest
+        .spyOn(window, "showInformationMessage")
+        .mockResolvedValue(undefined);
+    });
+
+    const resolveArg =
+      (index: number) =>
+      (...args: any[]) =>
+        Promise.resolve(args[index]);
 
     it("should show an info dialog and confirm the action", async () => {
       // pretend user chooses to run action
@@ -459,6 +476,23 @@ describe("helpers", () => {
       const val = await showInformationMessageWithAction("xxx", "yyy");
       expect(val).toBe(false);
     });
+  });
+
+  describe("showBinaryChoiceWithUrlDialog", () => {
+    let showInformationMessageSpy: jest.SpiedFunction<
+      typeof window.showInformationMessage
+    >;
+
+    beforeEach(() => {
+      showInformationMessageSpy = jest
+        .spyOn(window, "showInformationMessage")
+        .mockResolvedValue(undefined);
+    });
+
+    const resolveArg =
+      (index: number) =>
+      (...args: any[]) =>
+        Promise.resolve(args[index]);
 
     it("should show a binary choice dialog with a url and return `yes`", async () => {
       // pretend user clicks on the url twice and then clicks 'yes'
