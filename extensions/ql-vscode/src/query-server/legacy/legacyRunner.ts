@@ -14,7 +14,7 @@ import {
   QueryRunner,
 } from "../../queryRunner";
 import { QueryOutputDir } from "../../run-queries-shared";
-import { QueryServerClient } from "./queryserver-client";
+import { QueryServerClient } from "./query-server-client";
 import {
   clearCacheInDatabase,
   compileAndRunQueryAgainstDatabaseCore,

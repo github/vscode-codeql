@@ -7,7 +7,7 @@ import {
 import { ProgressCallback, UserCancellationException } from "../../progress";
 import { extLogger } from "../../common";
 import * as messages from "../../pure/legacy-messages";
-import * as qsClient from "./queryserver-client";
+import * as qsClient from "./query-server-client";
 import * as tmp from "tmp-promise";
 import { dirname } from "path";
 import { DatabaseItem } from "../../local-databases";

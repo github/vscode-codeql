@@ -19,7 +19,7 @@ import { QueryMetadata } from "../../pure/interface-types";
 import { extLogger, Logger } from "../../common";
 import * as messages from "../../pure/legacy-messages";
 import * as newMessages from "../../pure/new-messages";
-import * as qsClient from "./queryserver-client";
+import * as qsClient from "./query-server-client";
 import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { compileDatabaseUpgradeSequence } from "./upgrades";
 import { QueryEvaluationInfo, QueryOutputDir } from "../../run-queries-shared";

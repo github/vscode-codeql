@@ -10,7 +10,7 @@ import {
 } from "../../../src/pure/legacy-messages";
 import * as config from "../../../src/config";
 import { tmpDir } from "../../../src/helpers";
-import { QueryServerClient } from "../../../src/query-server/legacy/queryserver-client";
+import { QueryServerClient } from "../../../src/query-server/legacy/query-server-client";
 import { CodeQLCliServer } from "../../../src/cli";
 import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
 import {
