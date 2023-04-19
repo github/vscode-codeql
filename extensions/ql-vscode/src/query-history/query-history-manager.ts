@@ -235,11 +235,8 @@ export class QueryHistoryManager extends DisposableObject {
       "codeQLQueryHistory.sortByDate": this.handleSortByDate.bind(this),
       "codeQLQueryHistory.sortByCount": this.handleSortByCount.bind(this),
 
-      "codeQLQueryHistory.openQueryTitleMenu": this.handleOpenQuery.bind(this),
       "codeQLQueryHistory.openQueryContextMenu":
         this.handleOpenQuery.bind(this),
-      "codeQLQueryHistory.removeHistoryItemTitleMenu":
-        this.handleRemoveHistoryItem.bind(this),
       "codeQLQueryHistory.removeHistoryItemContextMenu":
         this.handleRemoveHistoryItem.bind(this),
       "codeQLQueryHistory.removeHistoryItemContextInline":
