@@ -98,7 +98,7 @@ import { SummaryLanguageSupport } from "./log-insights/summary-language-support"
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
 import { LogScannerService } from "./log-insights/log-scanner-service";
 import { LegacyQueryRunner } from "./query-server/legacy/legacy-query-runner";
-import { NewQueryRunner } from "./query-server/query-runner";
+import { NewQueryRunner } from "./query-server/new-query-runner";
 import { QueryRunner } from "./queryRunner";
 import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
