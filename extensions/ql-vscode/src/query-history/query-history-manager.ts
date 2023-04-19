@@ -59,6 +59,7 @@ import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { tryOpenExternalFile } from "../vscode-utils/external-files";
+import { createSingleSelectionCommand } from "../common/selection-commands";
 
 /**
  * query-history-manager.ts
@@ -235,8 +236,10 @@ export class QueryHistoryManager extends DisposableObject {
       "codeQLQueryHistory.sortByDate": this.handleSortByDate.bind(this),
       "codeQLQueryHistory.sortByCount": this.handleSortByCount.bind(this),
 
-      "codeQLQueryHistory.openQueryContextMenu":
+      "codeQLQueryHistory.openQueryContextMenu": createSingleSelectionCommand(
         this.handleOpenQuery.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.removeHistoryItemContextMenu":
         this.handleRemoveHistoryItem.bind(this),
       "codeQLQueryHistory.removeHistoryItemContextInline":
@@ -395,35 +398,26 @@ export class QueryHistoryManager extends DisposableObject {
     );
   }
 
-  async handleOpenQuery(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ): Promise<void> {
-    if (!this.assertSingleQuery(multiSelect)) {
-      return;
-    }
-
-    if (singleItem.t === "variant-analysis") {
-      await this.variantAnalysisManager.openQueryFile(
-        singleItem.variantAnalysis.id,
-      );
+  async handleOpenQuery(item: QueryHistoryInfo): Promise<void> {
+    if (item.t === "variant-analysis") {
+      await this.variantAnalysisManager.openQueryFile(item.variantAnalysis.id);
       return;
     }
 
     let queryPath: string;
-    switch (singleItem.t) {
+    switch (item.t) {
       case "local":
-        queryPath = singleItem.initialInfo.queryPath;
+        queryPath = item.initialInfo.queryPath;
         break;
       default:
-        assertNever(singleItem);
+        assertNever(item);
     }
     const textDocument = await workspace.openTextDocument(Uri.file(queryPath));
     const editor = await window.showTextDocument(textDocument, ViewColumn.One);
 
-    if (singleItem.t === "local") {
-      const queryText = singleItem.initialInfo.queryText;
-      if (queryText !== undefined && singleItem.initialInfo.isQuickQuery) {
+    if (item.t === "local") {
+      const queryText = item.initialInfo.queryText;
+      if (queryText !== undefined && item.initialInfo.isQuickQuery) {
         await editor.edit((edit) =>
           edit.replace(
             textDocument.validateRange(
@@ -629,7 +623,7 @@ export class QueryHistoryManager extends DisposableObject {
       singleItem === prevItemClick.item
     ) {
       // show original query file on double click
-      await this.handleOpenQuery(singleItem, [singleItem]);
+      await this.handleOpenQuery(singleItem);
     } else if (
       singleItem.t === "variant-analysis" ||
       singleItem.status === QueryStatus.Completed
