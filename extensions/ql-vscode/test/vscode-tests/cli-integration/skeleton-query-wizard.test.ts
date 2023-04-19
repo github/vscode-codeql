@@ -320,7 +320,7 @@ describe("SkeletonQueryWizard", () => {
 
         jest.spyOn(mockDbItem, "name", "get").mockReturnValue("mock-name");
 
-        const databaseItem = await wizard.findDatabaseItemByNwo(
+        const databaseItem = await SkeletonQueryWizard.findDatabaseItemByNwo(
           mockDbItem.language,
           mockDbItem.name,
           [mockDbItem, mockDbItem2],
@@ -330,37 +330,6 @@ describe("SkeletonQueryWizard", () => {
           JSON.stringify(mockDbItem),
         );
       });
-
-      it("should ignore databases with errors", async () => {
-        const mockDbItem = createMockDB(dir, {
-          language: "ruby",
-          dateAdded: 123,
-        } as FullDatabaseOptions);
-        const mockDbItem2 = createMockDB(dir, {
-          language: "javascript",
-        } as FullDatabaseOptions);
-        const mockDbItem3 = createMockDB(dir, {
-          language: "ruby",
-          dateAdded: 345,
-        } as FullDatabaseOptions);
-
-        jest.spyOn(mockDbItem, "name", "get").mockReturnValue("mock-name");
-        jest.spyOn(mockDbItem3, "name", "get").mockReturnValue(mockDbItem.name);
-
-        jest
-          .spyOn(mockDbItem, "error", "get")
-          .mockReturnValue(asError("database go boom!"));
-
-        const databaseItem = await wizard.findDatabaseItemByNwo(
-          mockDbItem.language,
-          mockDbItem.name,
-          [mockDbItem, mockDbItem2, mockDbItem3],
-        );
-
-        expect(JSON.stringify(databaseItem)).toEqual(
-          JSON.stringify(mockDbItem3),
-        );
-      });
     });
 
     describe("when the item doesn't exist", () => {
@@ -368,7 +337,7 @@ describe("SkeletonQueryWizard", () => {
         const mockDbItem = createMockDB(dir);
         const mockDbItem2 = createMockDB(dir);
 
-        const databaseItem = await wizard.findDatabaseItemByNwo(
+        const databaseItem = await SkeletonQueryWizard.findDatabaseItemByNwo(
           "ruby",
           "mock-nwo",
           [mockDbItem, mockDbItem2],
@@ -389,38 +358,13 @@ describe("SkeletonQueryWizard", () => {
           language: "javascript",
         } as FullDatabaseOptions);
 
-        const databaseItem = await wizard.findDatabaseItemByLanguage("ruby", [
-          mockDbItem,
-          mockDbItem2,
-        ]);
+        const databaseItem =
+          await SkeletonQueryWizard.findDatabaseItemByLanguage("ruby", [
+            mockDbItem,
+            mockDbItem2,
+          ]);
 
         expect(databaseItem).toEqual(mockDbItem);
-      });
-
-      it("should ignore databases with errors", async () => {
-        const mockDbItem = createMockDB(dir, {
-          language: "ruby",
-        } as FullDatabaseOptions);
-        const mockDbItem2 = createMockDB(dir, {
-          language: "javascript",
-        } as FullDatabaseOptions);
-        const mockDbItem3 = createMockDB(dir, {
-          language: "ruby",
-        } as FullDatabaseOptions);
-
-        jest
-          .spyOn(mockDbItem, "error", "get")
-          .mockReturnValue(asError("database go boom!"));
-
-        const databaseItem = await wizard.findDatabaseItemByLanguage("ruby", [
-          mockDbItem,
-          mockDbItem2,
-          mockDbItem3,
-        ]);
-
-        expect(JSON.stringify(databaseItem)).toEqual(
-          JSON.stringify(mockDbItem3),
-        );
       });
     });
 
@@ -429,10 +373,11 @@ describe("SkeletonQueryWizard", () => {
         const mockDbItem = createMockDB(dir);
         const mockDbItem2 = createMockDB(dir);
 
-        const databaseItem = await wizard.findDatabaseItemByLanguage("ruby", [
-          mockDbItem,
-          mockDbItem2,
-        ]);
+        const databaseItem =
+          await SkeletonQueryWizard.findDatabaseItemByLanguage("ruby", [
+            mockDbItem,
+            mockDbItem2,
+          ]);
 
         expect(databaseItem).toBeUndefined();
       });
@@ -547,6 +492,138 @@ describe("SkeletonQueryWizard", () => {
           expect(showInputBoxSpy).toHaveBeenCalled();
           expect(chosenPath).toEqual(storagePath);
         });
+      });
+    });
+  });
+
+  describe("sortDatabaseItemsByDateAdded", () => {
+    describe("should return a sorted list", () => {
+      it("should sort the items by dateAdded", async () => {
+        const mockDbItem = createMockDB(dir, {
+          dateAdded: 678,
+        } as FullDatabaseOptions);
+        const mockDbItem2 = createMockDB(dir, {
+          dateAdded: 123,
+        } as FullDatabaseOptions);
+        const mockDbItem3 = createMockDB(dir, {
+          dateAdded: undefined,
+        } as FullDatabaseOptions);
+        const mockDbItem4 = createMockDB(dir, {
+          dateAdded: 345,
+        } as FullDatabaseOptions);
+
+        const sortedList =
+          await SkeletonQueryWizard.sortDatabaseItemsByDateAdded([
+            mockDbItem,
+            mockDbItem2,
+            mockDbItem3,
+            mockDbItem4,
+          ]);
+
+        expect(sortedList).toEqual([
+          mockDbItem3,
+          mockDbItem2,
+          mockDbItem4,
+          mockDbItem,
+        ]);
+      });
+
+      it("should ignore databases with errors", async () => {
+        const mockDbItem = createMockDB(dir, {
+          dateAdded: 678,
+        } as FullDatabaseOptions);
+        const mockDbItem2 = createMockDB(dir, {
+          dateAdded: undefined,
+        } as FullDatabaseOptions);
+        const mockDbItem3 = createMockDB(dir, {
+          dateAdded: 345,
+        } as FullDatabaseOptions);
+        const mockDbItem4 = createMockDB(dir, {
+          dateAdded: 123,
+        } as FullDatabaseOptions);
+
+        jest
+          .spyOn(mockDbItem, "error", "get")
+          .mockReturnValue(asError("database go boom!"));
+
+        const sortedList =
+          await SkeletonQueryWizard.sortDatabaseItemsByDateAdded([
+            mockDbItem,
+            mockDbItem2,
+            mockDbItem3,
+            mockDbItem4,
+          ]);
+
+        expect(sortedList).toEqual([mockDbItem2, mockDbItem4, mockDbItem3]);
+      });
+    });
+  });
+
+  describe("findExistingDatabaseItem", () => {
+    describe("when there are multiple items with the same name", () => {
+      it("should choose the latest one", async () => {
+        const mockDbItem = createMockDB(dir, {
+          language: "javascript",
+          dateAdded: 456,
+        } as FullDatabaseOptions);
+        const mockDbItem2 = createMockDB(dir, {
+          language: "ruby",
+          dateAdded: 789,
+        } as FullDatabaseOptions);
+        const mockDbItem3 = createMockDB(dir, {
+          language: "javascript",
+          dateAdded: 123,
+        } as FullDatabaseOptions);
+        const mockDbItem4 = createMockDB(dir, {
+          language: "javascript",
+          dateAdded: undefined,
+        } as FullDatabaseOptions);
+
+        jest
+          .spyOn(mockDbItem, "name", "get")
+          .mockReturnValue(QUERY_LANGUAGE_TO_DATABASE_REPO["javascript"]);
+        jest
+          .spyOn(mockDbItem2, "name", "get")
+          .mockReturnValue(QUERY_LANGUAGE_TO_DATABASE_REPO["javascript"]);
+
+        const databaseItem = await SkeletonQueryWizard.findExistingDatabaseItem(
+          "javascript",
+          [mockDbItem, mockDbItem2, mockDbItem3, mockDbItem4],
+        );
+
+        expect(JSON.stringify(databaseItem)).toEqual(
+          JSON.stringify(mockDbItem),
+        );
+      });
+    });
+
+    describe("when there are multiple items with the same language", () => {
+      it("should choose the latest one", async () => {
+        const mockDbItem = createMockDB(dir, {
+          language: "ruby",
+          dateAdded: 789,
+        } as FullDatabaseOptions);
+        const mockDbItem2 = createMockDB(dir, {
+          language: "javascript",
+          dateAdded: 456,
+        } as FullDatabaseOptions);
+        const mockDbItem3 = createMockDB(dir, {
+          language: "ruby",
+          dateAdded: 123,
+        } as FullDatabaseOptions);
+        const mockDbItem4 = createMockDB(dir, {
+          language: "javascript",
+          dateAdded: undefined,
+        } as FullDatabaseOptions);
+
+        const databaseItem = await SkeletonQueryWizard.findExistingDatabaseItem(
+          "javascript",
+          [mockDbItem, mockDbItem2, mockDbItem3, mockDbItem4],
+        );
+
+        expect(JSON.stringify(databaseItem)).toEqual(
+          JSON.stringify(mockDbItem2),
+        );
       });
     });
   });

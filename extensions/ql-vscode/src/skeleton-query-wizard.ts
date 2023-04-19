@@ -253,11 +253,19 @@ export class SkeletonQueryWizard {
   }
 
   private async selectOrDownloadDatabase() {
+    if (this.language === undefined) {
+      throw new Error("Language is undefined");
+    }
+
     if (this.qlPackStoragePath === undefined) {
       throw new Error("QL Pack storage path is undefined");
     }
 
-    const existingDatabaseItem = await this.findExistingDatabaseItem();
+    const existingDatabaseItem =
+      await SkeletonQueryWizard.findExistingDatabaseItem(
+        this.language,
+        this.databaseManager.databaseItems,
+      );
 
     if (existingDatabaseItem) {
       // select the found database
@@ -268,59 +276,68 @@ export class SkeletonQueryWizard {
     }
   }
 
-  public async findDatabaseItemByNwo(
+  public static async findDatabaseItemByNwo(
     language: string,
     databaseNwo: string,
     databaseItems: readonly DatabaseItem[],
   ): Promise<DatabaseItem | undefined> {
-    const dbItems = databaseItems || [];
-    const dbs = dbItems.filter(
-      (db) =>
-        db.language === language &&
-        db.name === databaseNwo &&
-        db.error === undefined,
+    const dbs = databaseItems.filter(
+      (db) => db.language === language && db.name === databaseNwo,
     );
 
-    if (dbs.length === 0) {
-      return undefined;
-    }
-    return dbs[0];
+    return dbs.pop();
   }
 
-  public async findDatabaseItemByLanguage(
+  public static async findDatabaseItemByLanguage(
     language: string,
     databaseItems: readonly DatabaseItem[],
   ): Promise<DatabaseItem | undefined> {
-    const dbItems = databaseItems || [];
-    const dbs = dbItems.filter(
-      (db) => db.language === language && db.error === undefined,
-    );
-    if (dbs.length === 0) {
-      return undefined;
-    }
-    return dbs[0];
+    const dbs = databaseItems.filter((db) => db.language === language);
+
+    return dbs.pop();
   }
 
-  private async findExistingDatabaseItem() {
-    if (this.language === undefined) {
-      throw new Error("Language is undefined");
-    }
+  public static async findExistingDatabaseItem(
+    language: string,
+    databaseItems: readonly DatabaseItem[],
+  ): Promise<DatabaseItem | undefined> {
+    const defaultDatabaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[language];
 
-    const defaultDatabaseNwo = QUERY_LANGUAGE_TO_DATABASE_REPO[this.language];
+    const dbItems = await SkeletonQueryWizard.sortDatabaseItemsByDateAdded(
+      databaseItems,
+    );
 
-    const defaultDatabaseItem = await this.findDatabaseItemByNwo(
-      this.language,
+    const defaultDatabaseItem = await SkeletonQueryWizard.findDatabaseItemByNwo(
+      language,
       defaultDatabaseNwo,
-      this.databaseManager.databaseItems,
+      dbItems,
     );
 
     if (defaultDatabaseItem !== undefined) {
       return defaultDatabaseItem;
     }
 
-    return await this.findDatabaseItemByLanguage(
-      this.language,
-      this.databaseManager.databaseItems,
+    return await SkeletonQueryWizard.findDatabaseItemByLanguage(
+      language,
+      dbItems,
     );
+  }
+
+  public static async sortDatabaseItemsByDateAdded(
+    databaseItems: readonly DatabaseItem[],
+  ) {
+    const validDbItems = databaseItems.filter((db) => db.error === undefined);
+
+    return validDbItems.sort((a, b) => {
+      if (a.dateAdded === undefined) {
+        return -1;
+      }
+
+      if (b.dateAdded === undefined) {
+        return 1;
+      }
+
+      return a.dateAdded - b.dateAdded;
+    });
   }
 }
