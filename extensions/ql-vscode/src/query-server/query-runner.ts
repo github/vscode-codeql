@@ -10,7 +10,7 @@ import {
   upgradeDatabase,
 } from "../pure/new-messages";
 import { CoreQueryResults, CoreQueryTarget, QueryRunner } from "../queryRunner";
-import { QueryServerClient } from "./queryserver-client";
+import { QueryServerClient } from "./query-server-client";
 import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";
 import * as vscode from "vscode";
 import { getOnDiskWorkspaceFolders } from "../helpers";

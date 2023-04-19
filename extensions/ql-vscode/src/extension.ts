@@ -84,7 +84,7 @@ import {
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { CompletedLocalQueryInfo } from "./query-results";
 import { QueryServerClient as LegacyQueryServerClient } from "./query-server/legacy/query-server-client";
-import { QueryServerClient } from "./query-server/queryserver-client";
+import { QueryServerClient } from "./query-server/query-server-client";
 import { QLTestAdapterFactory } from "./test-adapter";
 import { TestUIService } from "./test-ui";
 import { CompareView } from "./compare/compare-view";
