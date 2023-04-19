@@ -14,21 +14,6 @@ import type {
 import type { QLDebugConfiguration } from "../debugger/debug-configuration";
 
 // A command function matching the signature that VS Code calls when
-// a command is invoked from the title bar of a TreeView with
-// canSelectMany set to true.
-//
-// It is possible to get any combination of singleItem and multiSelect
-// to be undefined. This is because it is possible to click a title bar
-// option without interacting with any individual items first, or even
-// when there are no items present at all.
-// If both singleItem and multiSelect are defined, then singleItem will
-// be contained within multiSelect.
-export type TreeViewTitleMultiSelectionCommandFunction<Item> = (
-  singleItem: Item | undefined,
-  multiSelect: Item[] | undefined,
-) => Promise<void>;
-
-// A command function matching the signature that VS Code calls when
 // a command is invoked from a context menu on a TreeView with
 // canSelectMany set to true.
 //
@@ -193,7 +178,7 @@ export type QueryHistoryCommands = {
   "codeQLQueryHistory.viewCsvAlerts": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.viewSarifAlerts": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.viewDil": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
-  "codeQLQueryHistory.itemClicked": TreeViewTitleMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.itemClicked": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.openOnGithub": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.copyRepoList": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
 
