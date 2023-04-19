@@ -5,7 +5,7 @@ import {
   WorkspaceFolder,
 } from "vscode";
 import { getOnDiskWorkspaceFolders, showAndLogErrorMessage } from "../helpers";
-import { LocalQueries } from "../local-queries";
+import { LocalQueries } from "../local-queries/local-queries";
 import { getQuickEvalContext, validateQueryPath } from "../run-queries-shared";
 import * as CodeQLProtocol from "./debug-protocol";
 import { getErrorMessage } from "../pure/helpers-pure";
