@@ -2,11 +2,13 @@ import * as React from "react";
 import { Dispatch, SetStateAction, useCallback } from "react";
 import styled from "styled-components";
 import {
+  FilterKey,
   RepositoriesFilterSortState,
   SortKey,
 } from "../../pure/variant-analysis-filter-sort";
 import { RepositoriesSearch } from "./RepositoriesSearch";
 import { RepositoriesSort } from "./RepositoriesSort";
+import { RepositoriesFilter } from "./RepositoriesFilter";
 
 type Props = {
   value: RepositoriesFilterSortState;
@@ -25,6 +27,10 @@ const RepositoriesSearchColumn = styled(RepositoriesSearch)`
   flex: 3;
 `;
 
+const RepositoriesFilterColumn = styled(RepositoriesFilter)`
+  flex: 1;
+`;
+
 const RepositoriesSortColumn = styled(RepositoriesSort)`
   flex: 1;
 `;
@@ -35,6 +41,16 @@ export const RepositoriesSearchSortRow = ({ value, onChange }: Props) => {
       onChange((oldValue) => ({
         ...oldValue,
         searchValue,
+      }));
+    },
+    [onChange],
+  );
+
+  const handleFilterKeyChange = useCallback(
+    (filterKey: FilterKey) => {
+      onChange((oldValue) => ({
+        ...oldValue,
+        filterKey,
       }));
     },
     [onChange],
@@ -55,6 +71,10 @@ export const RepositoriesSearchSortRow = ({ value, onChange }: Props) => {
       <RepositoriesSearchColumn
         value={value.searchValue}
         onChange={handleSearchValueChange}
+      />
+      <RepositoriesFilterColumn
+        value={value.filterKey}
+        onChange={handleFilterKeyChange}
       />
       <RepositoriesSortColumn
         value={value.sortKey}
