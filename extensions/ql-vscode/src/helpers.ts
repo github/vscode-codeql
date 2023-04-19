@@ -256,6 +256,46 @@ export function isWorkspaceFolderOnDisk(
   return workspaceFolder.uri.scheme === "file";
 }
 
+/**
+ * Opens a modal dialog for the user to make a choice between yes/no/never be asked again.
+ *
+ * @param message The message to show.
+ * @param modal If true (the default), show a modal dialog box, otherwise dialog is non-modal and can
+ *        be closed even if the user does not make a choice.
+ * @param yesTitle The text in the box indicating the affirmative choice.
+ * @param noTitle The text in the box indicating the negative choice.
+ * @param neverTitle The text in the box indicating the opt out choice.
+ *
+ * @return
+ *  `Yes` if the user clicks 'Yes',
+ *  `No` if the user clicks 'No' or cancels the dialog,
+ *  `No, and never ask me again` if the user clicks 'No, and never ask me again',
+ *  `undefined` if the dialog is closed without the user making a choice.
+ */
+export async function showNeverAskAgainDialog(
+  message: string,
+  modal = true,
+  yesTitle = "Yes",
+  noTitle = "No",
+  neverAskAgainTitle = "No, and never ask me again",
+): Promise<string | undefined> {
+  const yesItem = { title: yesTitle, isCloseAffordance: true };
+  const noItem = { title: noTitle, isCloseAffordance: false };
+  const neverAskAgainItem = {
+    title: neverAskAgainTitle,
+    isCloseAffordance: false,
+  };
+  const chosenItem = await Window.showInformationMessage(
+    message,
+    { modal },
+    yesItem,
+    noItem,
+    neverAskAgainItem,
+  );
+
+  return chosenItem?.title;
+}
+
 /** Gets all active workspace folders that are on the filesystem. */
 export function getOnDiskWorkspaceFoldersObjects() {
   const workspaceFolders = workspace.workspaceFolders ?? [];
