@@ -16,7 +16,7 @@ import { DatabaseItem } from "../local-databases";
 import { extLogger, TeeLogger } from "../common";
 import { CancellationToken } from "vscode";
 import { ProgressCallback } from "../progress";
-import { CoreCompletedQuery, QueryRunner } from "../query-server/query-runner";
+import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { redactableError } from "../pure/errors";
 import { QLPACK_FILENAMES } from "../pure/ql";
 

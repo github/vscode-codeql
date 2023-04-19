@@ -21,7 +21,7 @@ import {
   QueryEvaluationInfo,
   QueryWithResults,
 } from "./run-queries-shared";
-import { formatLegacyMessage } from "./query-server/legacy/run-queries";
+import { formatLegacyMessage } from "./query-server/legacy";
 import { sarifParser } from "./sarif-parser";
 
 /**

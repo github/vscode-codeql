@@ -83,8 +83,10 @@ import {
 } from "./common";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { CompletedLocalQueryInfo } from "./query-results";
-import { QueryServerClient as LegacyQueryServerClient } from "./query-server/legacy/query-server-client";
-import { QueryServerClient } from "./query-server/query-server-client";
+import {
+  LegacyQueryRunner,
+  QueryServerClient as LegacyQueryServerClient,
+} from "./query-server/legacy";
 import { QLTestAdapterFactory } from "./test-adapter";
 import { TestUIService } from "./test-ui";
 import { CompareView } from "./compare/compare-view";
@@ -97,9 +99,6 @@ import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
 import { LogScannerService } from "./log-insights/log-scanner-service";
-import { LegacyQueryRunner } from "./query-server/legacy/legacy-query-runner";
-import { NewQueryRunner } from "./query-server/new-query-runner";
-import { QueryRunner } from "./query-server/query-runner";
 import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
 import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
@@ -127,6 +126,7 @@ import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extens
 import { TestManager } from "./test-manager";
 import { TestRunner } from "./test-runner";
 import { TestManagerBase } from "./test-manager-base";
+import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 
 /**
  * extension.ts

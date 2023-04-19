@@ -10,7 +10,7 @@ import {
 import { DebuggerCommands } from "../common/commands";
 import { DatabaseManager } from "../local-databases";
 import { DisposableObject } from "../pure/disposable-object";
-import { CoreQueryResults } from "../query-server/query-runner";
+import { CoreQueryResults } from "../query-server";
 import {
   getQuickEvalContext,
   QueryOutputDir,

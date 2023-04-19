@@ -20,7 +20,7 @@ import {
 } from "./queryResolver";
 import { CancellationToken, LocationLink, Uri } from "vscode";
 import { QueryOutputDir } from "../run-queries-shared";
-import { QueryRunner } from "../query-server/query-runner";
+import { QueryRunner } from "../query-server";
 import { QueryResultType } from "../pure/new-messages";
 
 export const SELECT_QUERY_NAME = "#select";

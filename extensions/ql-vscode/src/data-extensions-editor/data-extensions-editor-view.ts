@@ -13,7 +13,7 @@ import {
   ToDataExtensionsEditorMessage,
 } from "../pure/interface-types";
 import { ProgressUpdate } from "../progress";
-import { QueryRunner } from "../query-server/query-runner";
+import { QueryRunner } from "../query-server";
 import {
   showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
