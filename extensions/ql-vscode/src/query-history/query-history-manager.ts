@@ -59,7 +59,10 @@ import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { tryOpenExternalFile } from "../vscode-utils/external-files";
-import { createSingleSelectionCommand } from "../common/selection-commands";
+import {
+  createMultiSelectionCommand,
+  createSingleSelectionCommand,
+} from "../common/selection-commands";
 
 /**
  * query-history-manager.ts
@@ -241,9 +244,9 @@ export class QueryHistoryManager extends DisposableObject {
         "query",
       ),
       "codeQLQueryHistory.removeHistoryItemContextMenu":
-        this.handleRemoveHistoryItem.bind(this),
+        createMultiSelectionCommand(this.handleRemoveHistoryItem.bind(this)),
       "codeQLQueryHistory.removeHistoryItemContextInline":
-        this.handleRemoveHistoryItem.bind(this),
+        createMultiSelectionCommand(this.handleRemoveHistoryItem.bind(this)),
       "codeQLQueryHistory.renameItem": this.handleRenameItem.bind(this),
       "codeQLQueryHistory.compareWith": this.handleCompareWith.bind(this),
       "codeQLQueryHistory.showEvalLog": this.handleShowEvalLog.bind(this),
@@ -448,13 +451,9 @@ export class QueryHistoryManager extends DisposableObject {
     );
   }
 
-  async handleRemoveHistoryItem(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    multiSelect ||= [singleItem];
+  async handleRemoveHistoryItem(items: QueryHistoryInfo[]) {
     await Promise.all(
-      multiSelect.map(async (item) => {
+      items.map(async (item) => {
         if (item.t === "local") {
           // Removing in progress local queries is not supported. They must be cancelled first.
           if (item.status !== QueryStatus.InProgress) {

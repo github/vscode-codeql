@@ -278,9 +278,7 @@ describe("QueryHistoryManager", () => {
           );
 
           // remove an item
-          await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-            toDelete,
-          ]);
+          await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
         });
 
         it("should remove the item", () => {
@@ -320,9 +318,7 @@ describe("QueryHistoryManager", () => {
           await queryHistoryManager.treeView.reveal(toDelete, {
             select: true,
           });
-          await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-            toDelete,
-          ]);
+          await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
         });
 
         it("should remove the item", () => {
@@ -401,9 +397,7 @@ describe("QueryHistoryManager", () => {
 
           it("should remove the item", async () => {
             // remove an item
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
             expect(
               variantAnalysisManagerStub.removeVariantAnalysis,
@@ -415,9 +409,7 @@ describe("QueryHistoryManager", () => {
 
           it("should not change the selection", async () => {
             // remove an item
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
             expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
               selected,
@@ -429,9 +421,7 @@ describe("QueryHistoryManager", () => {
 
           it("should show a modal asking 'Are you sure?'", async () => {
             // remove an item
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
             expect(showBinaryChoiceDialogSpy).toHaveBeenCalledWith(
               "You are about to delete this query: a-query-name (javascript). Are you sure?",
@@ -440,9 +430,7 @@ describe("QueryHistoryManager", () => {
 
           it("should show a toast notification with a link to GitHub Actions", async () => {
             // remove an item
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
             expect(showInformationMessageWithActionSpy).toHaveBeenCalled();
           });
@@ -454,9 +442,7 @@ describe("QueryHistoryManager", () => {
 
             it("should not delete the item", async () => {
               // remove an item
-              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-                toDelete,
-              ]);
+              await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
               expect(queryHistoryManager.treeDataProvider.allHistory).toContain(
                 toDelete,
@@ -465,9 +451,7 @@ describe("QueryHistoryManager", () => {
 
             it("should not show a toast notification", async () => {
               // remove an item
-              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-                toDelete,
-              ]);
+              await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
               expect(
                 showInformationMessageWithActionSpy,
@@ -493,9 +477,7 @@ describe("QueryHistoryManager", () => {
             await queryHistoryManager.treeView.reveal(toDelete, {
               select: true,
             });
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
           });
 
           it("should remove the item", () => {
@@ -555,9 +537,7 @@ describe("QueryHistoryManager", () => {
             );
 
             // remove an item
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
           });
 
           it("should remove the item", () => {
@@ -600,9 +580,7 @@ describe("QueryHistoryManager", () => {
             await queryHistoryManager.treeView.reveal(toDelete, {
               select: true,
             });
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
           });
 
           it("should remove the item", () => {
