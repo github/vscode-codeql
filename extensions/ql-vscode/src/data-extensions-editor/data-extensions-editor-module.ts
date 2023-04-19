@@ -78,6 +78,7 @@ export class DataExtensionsEditorModule {
 
             const modelFile = await pickExtensionPackModelFile(
               this.cliServer,
+              this.queryRunner,
               db,
               progress,
               token,

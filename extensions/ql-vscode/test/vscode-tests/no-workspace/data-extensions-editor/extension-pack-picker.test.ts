@@ -32,6 +32,9 @@ describe("pickExtensionPackModelFile", () => {
   let showAndLogErrorMessageSpy: jest.SpiedFunction<
     typeof helpers.showAndLogErrorMessage
   >;
+  const extensionPackClearer = {
+    clearPackCache: jest.fn(),
+  };
 
   beforeEach(async () => {
     tmpDir = (
@@ -99,6 +102,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -173,6 +177,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -207,6 +212,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -235,6 +241,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -273,6 +280,7 @@ describe("pickExtensionPackModelFile", () => {
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(cliServer.resolveExtensions).toHaveBeenCalled();
+    expect(extensionPackClearer.clearPackCache).toHaveBeenCalledTimes(1);
 
     expect(
       loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
@@ -306,6 +314,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         {
           ...databaseItem,
           language: "csharp",
@@ -369,6 +378,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -392,6 +402,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -421,6 +432,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -460,6 +472,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -496,6 +509,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -535,6 +549,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -583,6 +598,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -641,6 +657,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -702,6 +719,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -760,6 +778,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -783,6 +802,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -851,6 +871,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -935,6 +956,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         databaseItem,
         progress,
         token,
@@ -975,6 +997,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await pickExtensionPackModelFile(
         cliServer,
+        extensionPackClearer,
         {
           ...databaseItem,
           language: "csharp",

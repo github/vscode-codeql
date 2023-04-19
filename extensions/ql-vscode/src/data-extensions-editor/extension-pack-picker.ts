@@ -23,14 +23,20 @@ const packNameRegex = new RegExp(
 );
 const packNameLength = 128;
 
+interface PackCacheClearer {
+  clearPackCache(): Promise<void>;
+}
+
 export async function pickExtensionPackModelFile(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveExtensions">,
+  packCacheClearer: PackCacheClearer,
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<ExtensionPackModelFile | undefined> {
   const extensionPack = await pickExtensionPack(
     cliServer,
+    packCacheClearer,
     databaseItem,
     progress,
     token,
@@ -58,6 +64,7 @@ export async function pickExtensionPackModelFile(
 
 async function pickExtensionPack(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
+  packCacheClearer: PackCacheClearer,
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   progress: ProgressCallback,
   token: CancellationToken,
@@ -76,7 +83,7 @@ async function pickExtensionPack(
   );
 
   if (Object.keys(extensionPacksInfo).length === 0) {
-    return pickNewExtensionPack(databaseItem, token);
+    return pickNewExtensionPack(packCacheClearer, databaseItem, token);
   }
 
   const extensionPacks = (
@@ -157,7 +164,7 @@ async function pickExtensionPack(
   }
 
   if (!extensionPackOption.extensionPack) {
-    return pickNewExtensionPack(databaseItem, token);
+    return pickNewExtensionPack(packCacheClearer, databaseItem, token);
   }
 
   return extensionPackOption.extensionPack;
@@ -227,6 +234,7 @@ async function pickModelFile(
 }
 
 async function pickNewExtensionPack(
+  packCacheClearer: PackCacheClearer,
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   token: CancellationToken,
 ): Promise<ExtensionPack | undefined> {
@@ -314,6 +322,10 @@ async function pickNewExtensionPack(
       dataExtensions: extensionPack.dataExtensions,
     }),
   );
+
+  // VS Code does not pick up the change to the codeql-pack.yml file even though a watcher is
+  // registered. Therefore, we manually clear the pack cache.
+  await packCacheClearer.clearPackCache();
 
   return extensionPack;
 }
