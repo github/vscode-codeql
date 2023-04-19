@@ -108,6 +108,20 @@ describe(VariantAnalysisStats.name, () => {
     ).toBeInTheDocument();
   });
 
+  it("renders an error icon when the overall variant analysis status is canceled and some analyses failed", () => {
+    render({
+      variantAnalysisStatus: VariantAnalysisStatus.Canceled,
+      completedRepositoryCount: 10,
+      successfulRepositoryCount: 5,
+    });
+
+    expect(
+      screen.getByRole("img", {
+        name: "Some analyses were stopped",
+      }),
+    ).toBeInTheDocument();
+  });
+
   it("renders an error icon when some analyses failed but also some repositories were skipped", () => {
     render({
       completedRepositoryCount: 10,

@@ -108,4 +108,5 @@ export const Stopped = Template.bind({});
 Stopped.args = {
   ...Started.args,
   variantAnalysisStatus: VariantAnalysisStatus.Canceled,
+  completedRepositoryCount: 10,
 };

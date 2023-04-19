@@ -24,12 +24,21 @@ function getIcon(
   skippedRepositoryCount: number,
 ) {
   if (successfulRepositoryCount < completedRepositoryCount) {
-    return (
-      <>
-        <HorizontalSpace size={2} />
-        <ErrorIcon label="Some analyses failed" />
-      </>
-    );
+    if (variantAnalysisStatus === VariantAnalysisStatus.Canceled) {
+      return (
+        <>
+          <HorizontalSpace size={2} />
+          <ErrorIcon label="Some analyses were stopped" />
+        </>
+      );
+    } else {
+      return (
+        <>
+          <HorizontalSpace size={2} />
+          <ErrorIcon label="Some analyses failed" />
+        </>
+      );
+    }
   } else if (skippedRepositoryCount > 0) {
     return (
       <>
