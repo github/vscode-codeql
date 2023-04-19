@@ -422,8 +422,12 @@ describe("SkeletonQueryWizard", () => {
 
       afterEach(async () => {
         await workspace
+          .getConfiguration("codeQL.createQuery")
+          .update("folder", originalValue);
+
+        await workspace
           .getConfiguration("codeQL")
-          .update("codespacesTemplate", originalValue);
+          .update("codespacesTemplate", false);
       });
 
       it("should not prompt the user", async () => {
