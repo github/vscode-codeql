@@ -247,7 +247,10 @@ export class QueryHistoryManager extends DisposableObject {
         createMultiSelectionCommand(this.handleRemoveHistoryItem.bind(this)),
       "codeQLQueryHistory.removeHistoryItemContextInline":
         createMultiSelectionCommand(this.handleRemoveHistoryItem.bind(this)),
-      "codeQLQueryHistory.renameItem": this.handleRenameItem.bind(this),
+      "codeQLQueryHistory.renameItem": createSingleSelectionCommand(
+        this.handleRenameItem.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.compareWith": this.handleCompareWith.bind(this),
       "codeQLQueryHistory.showEvalLog": this.handleShowEvalLog.bind(this),
       "codeQLQueryHistory.showEvalLogSummary":
@@ -543,17 +546,10 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async handleRenameItem(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ): Promise<void> {
-    if (!this.assertSingleQuery(multiSelect)) {
-      return;
-    }
-
+  async handleRenameItem(item: QueryHistoryInfo): Promise<void> {
     const response = await window.showInputBox({
       placeHolder: `(use default: ${this.queryHistoryConfigListener.format})`,
-      value: singleItem.userSpecifiedLabel ?? "",
+      value: item.userSpecifiedLabel ?? "",
       title: "Set query label",
       prompt:
         "Set the query history item label. See the description of the codeQL.queryHistory.format setting for more information.",
@@ -561,7 +557,7 @@ export class QueryHistoryManager extends DisposableObject {
     // undefined response means the user cancelled the dialog; don't change anything
     if (response !== undefined) {
       // Interpret empty string response as 'go back to using default'
-      singleItem.userSpecifiedLabel = response === "" ? undefined : response;
+      item.userSpecifiedLabel = response === "" ? undefined : response;
       await this.refreshTreeView();
     }
   }
