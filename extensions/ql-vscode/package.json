@@ -345,7 +345,7 @@
           "type": "string",
           "default": "",
           "patternErrorMessage": "Please enter a valid folder",
-          "markdownDescription": "The name of the folder where we want to create queries and query packs via the \"CodeQL: Create Query\" command. The folder should exist in the workspace."
+          "markdownDescription": "The name of the folder where we want to create queries and query packs via the \"CodeQL: Create Query\" command. The folder should exist."
         }
       }
     },
