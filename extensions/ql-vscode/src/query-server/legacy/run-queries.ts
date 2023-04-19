@@ -3,29 +3,29 @@ import { basename } from "path";
 import { CancellationToken, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 
-import * as cli from "../cli";
+import * as cli from "../../cli";
 import {
   DatabaseContentsWithDbScheme,
   DatabaseItem,
   DatabaseResolver,
-} from "../local-databases";
+} from "../../local-databases";
 import {
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
   upgradesTmpDir,
-} from "../helpers";
-import { ProgressCallback } from "../progress";
-import { QueryMetadata } from "../pure/interface-types";
-import { extLogger, Logger } from "../common";
-import * as messages from "../pure/legacy-messages";
-import * as newMessages from "../pure/new-messages";
+} from "../../helpers";
+import { ProgressCallback } from "../../progress";
+import { QueryMetadata } from "../../pure/interface-types";
+import { extLogger, Logger } from "../../common";
+import * as messages from "../../pure/legacy-messages";
+import * as newMessages from "../../pure/new-messages";
 import * as qsClient from "./queryserver-client";
-import { asError, getErrorMessage } from "../pure/helpers-pure";
+import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { compileDatabaseUpgradeSequence } from "./upgrades";
-import { QueryEvaluationInfo, QueryOutputDir } from "../run-queries-shared";
-import { redactableError } from "../pure/errors";
-import { CoreQueryResults, CoreQueryTarget } from "../queryRunner";
-import { Position } from "../pure/messages-shared";
+import { QueryEvaluationInfo, QueryOutputDir } from "../../run-queries-shared";
+import { redactableError } from "../../pure/errors";
+import { CoreQueryResults, CoreQueryTarget } from "../../queryRunner";
+import { Position } from "../../pure/messages-shared";
 
 export async function compileQuery(
   qs: qsClient.QueryServerClient,

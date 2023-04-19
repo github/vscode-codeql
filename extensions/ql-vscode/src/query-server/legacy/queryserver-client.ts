@@ -1,21 +1,21 @@
 import { ensureFile } from "fs-extra";
 
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../../pure/disposable-object";
 import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
-import * as cli from "../cli";
-import { QueryServerConfig } from "../config";
-import { Logger, ProgressReporter } from "../common";
+import * as cli from "../../cli";
+import { QueryServerConfig } from "../../config";
+import { Logger, ProgressReporter } from "../../common";
 import {
   completeQuery,
   EvaluationResult,
   progress,
   ProgressMessage,
   WithProgressId,
-} from "../pure/legacy-messages";
-import { ProgressCallback, ProgressTask } from "../progress";
-import { ServerProcess } from "../json-rpc-server";
-import { App } from "../common/app";
+} from "../../pure/legacy-messages";
+import { ProgressCallback, ProgressTask } from "../../progress";
+import { ServerProcess } from "../../json-rpc-server";
+import { App } from "../../common/app";
 
 type WithProgressReporting = (
   task: (

@@ -83,7 +83,7 @@ import {
 } from "./common";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { CompletedLocalQueryInfo } from "./query-results";
-import { QueryServerClient as LegacyQueryServerClient } from "./legacy-query-server/queryserver-client";
+import { QueryServerClient as LegacyQueryServerClient } from "./query-server/legacy/queryserver-client";
 import { QueryServerClient } from "./query-server/queryserver-client";
 import { QLTestAdapterFactory } from "./test-adapter";
 import { TestUIService } from "./test-ui";
@@ -97,7 +97,7 @@ import { EvalLogViewer } from "./eval-log-viewer";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
 import { LogScannerService } from "./log-insights/log-scanner-service";
-import { LegacyQueryRunner } from "./legacy-query-server/legacyRunner";
+import { LegacyQueryRunner } from "./query-server/legacy/legacyRunner";
 import { NewQueryRunner } from "./query-server/query-runner";
 import { QueryRunner } from "./queryRunner";
 import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";

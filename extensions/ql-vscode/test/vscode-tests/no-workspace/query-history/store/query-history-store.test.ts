@@ -13,7 +13,7 @@ import { DatabaseInfo } from "../../../../../src/pure/interface-types";
 import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../../../src/helpers";
 import { QueryResultType } from "../../../../../src/pure/legacy-messages";
-import { QueryInProgress } from "../../../../../src/legacy-query-server/run-queries";
+import { QueryInProgress } from "../../../../../src/query-server/legacy/run-queries";
 import { VariantAnalysisHistoryItem } from "../../../../../src/query-history/variant-analysis-history-item";
 import { QueryHistoryInfo } from "../../../../../src/query-history/query-history-info";
 import { createMockVariantAnalysisHistoryItem } from "../../../../factories/query-history/variant-analysis-history-item";
