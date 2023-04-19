@@ -6,7 +6,7 @@ import {
   TemplatePrintCfgProvider,
 } from "./contextual/templateProvider";
 import { AstCfgCommands } from "./common/commands";
-import { LocalQueries } from "./local-queries";
+import { LocalQueries } from "./local-queries/local-queries";
 
 type AstCfgOptions = {
   localQueries: LocalQueries;
