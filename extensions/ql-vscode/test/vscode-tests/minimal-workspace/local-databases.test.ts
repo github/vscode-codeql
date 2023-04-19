@@ -44,8 +44,8 @@ describe("local databases", () => {
   let packAddSpy: jest.Mock<any, []>;
   let logSpy: jest.Mock<any, []>;
 
-  let showBinaryChoiceDialogSpy: jest.SpiedFunction<
-    typeof helpers.showBinaryChoiceDialog
+  let showNeverAskAgainDialogSpy: jest.SpiedFunction<
+    typeof helpers.showNeverAskAgainDialog
   >;
 
   let dir: tmp.DirResult;
@@ -63,9 +63,9 @@ describe("local databases", () => {
       /* */
     });
 
-    showBinaryChoiceDialogSpy = jest
-      .spyOn(helpers, "showBinaryChoiceDialog")
-      .mockResolvedValue(true);
+    showNeverAskAgainDialogSpy = jest
+      .spyOn(helpers, "showNeverAskAgainDialog")
+      .mockResolvedValue("Yes");
 
     extensionContextStoragePath = dir.name;
 
@@ -646,20 +646,49 @@ describe("local databases", () => {
     });
 
     describe("when the language is set", () => {
+      let originalValue: string | undefined;
+
+      beforeEach(() => {
+        originalValue = workspace
+          .getConfiguration("codeQL")
+          .get("autogenerateQlPacks");
+      });
+
+      afterEach(async () => {
+        await workspace
+          .getConfiguration("codeQL")
+          .update("autogenerateQlPacks", originalValue);
+      });
+
       it("should offer the user to set up a skeleton QL pack", async () => {
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
-        expect(showBinaryChoiceDialogSpy).toBeCalledTimes(1);
+        expect(showNeverAskAgainDialogSpy).toBeCalledTimes(1);
       });
 
       it("should return early if the user refuses help", async () => {
-        showBinaryChoiceDialogSpy = jest
-          .spyOn(helpers, "showBinaryChoiceDialog")
-          .mockResolvedValue(false);
+        showNeverAskAgainDialogSpy = jest
+          .spyOn(helpers, "showNeverAskAgainDialog")
+          .mockResolvedValue("No");
 
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
         expect(generateSpy).not.toBeCalled();
+      });
+
+      it("should return early and write choice to settings if user wants to never be asked again", async () => {
+        showNeverAskAgainDialogSpy = jest
+          .spyOn(helpers, "showNeverAskAgainDialog")
+          .mockResolvedValue("No, and never ask me again");
+        const updateValueSpy = jest.spyOn(Setting.prototype, "updateValue");
+
+        await (databaseManager as any).createSkeletonPacks(mockDbItem);
+
+        expect(generateSpy).not.toBeCalled();
+        expect(updateValueSpy).toHaveBeenCalledWith(
+          "No, and never ask me again",
+          1,
+        );
       });
 
       it("should create the skeleton QL pack for the user", async () => {
@@ -694,9 +723,9 @@ describe("local databases", () => {
       });
 
       it("should exit early", async () => {
-        showBinaryChoiceDialogSpy = jest
-          .spyOn(helpers, "showBinaryChoiceDialog")
-          .mockResolvedValue(false);
+        showNeverAskAgainDialogSpy = jest
+          .spyOn(helpers, "showNeverAskAgainDialog")
+          .mockResolvedValue("No");
 
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
