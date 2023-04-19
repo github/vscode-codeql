@@ -17,7 +17,7 @@ import {
   QueryInProgress,
   compileQuery as compileQueryLegacy,
 } from "../../../src/query-server/legacy/run-queries";
-import { LegacyQueryRunner } from "../../../src/query-server/legacy/legacyRunner";
+import { LegacyQueryRunner } from "../../../src/query-server/legacy/legacy-query-runner";
 import { DatabaseItem } from "../../../src/local-databases";
 import { DeepPartial, mockedObject } from "../utils/mocking.helpers";
 import { BqrsKind } from "../../../src/pure/bqrs-cli-types";
