@@ -256,8 +256,10 @@ export class QueryHistoryManager extends DisposableObject {
         this.handleShowEvalLog.bind(this),
         "query",
       ),
-      "codeQLQueryHistory.showEvalLogSummary":
+      "codeQLQueryHistory.showEvalLogSummary": createSingleSelectionCommand(
         this.handleShowEvalLogSummary.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.showEvalLogViewer":
         this.handleShowEvalLogViewer.bind(this),
       "codeQLQueryHistory.showQueryLog": createSingleSelectionCommand(
@@ -740,28 +742,18 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async handleShowEvalLogSummary(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    // Only applicable to an individual local query
-    if (!this.assertSingleQuery(multiSelect) || singleItem.t !== "local") {
+  async handleShowEvalLogSummary(item: QueryHistoryInfo) {
+    if (item.t !== "local") {
       return;
     }
 
-    if (singleItem.evalLogSummaryLocation) {
-      await tryOpenExternalFile(
-        this.app.commands,
-        singleItem.evalLogSummaryLocation,
-      );
+    if (item.evalLogSummaryLocation) {
+      await tryOpenExternalFile(this.app.commands, item.evalLogSummaryLocation);
       return;
     }
 
     // Summary log file doesn't exist.
-    if (
-      singleItem.evalLogLocation &&
-      (await pathExists(singleItem.evalLogLocation))
-    ) {
+    if (item.evalLogLocation && (await pathExists(item.evalLogLocation))) {
       // If raw log does exist, then the summary log is still being generated.
       this.warnInProgressEvalLogSummary();
     } else {
