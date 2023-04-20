@@ -304,7 +304,10 @@ export class QueryHistoryManager extends DisposableObject {
         this.handleOpenOnGithub.bind(this),
         "query",
       ),
-      "codeQLQueryHistory.copyRepoList": this.handleCopyRepoList.bind(this),
+      "codeQLQueryHistory.copyRepoList": createSingleSelectionCommand(
+        this.handleCopyRepoList.bind(this),
+        "query",
+      ),
 
       "codeQL.exportSelectedVariantAnalysisResults":
         this.exportSelectedVariantAnalysisResults.bind(this),
@@ -920,21 +923,14 @@ export class QueryHistoryManager extends DisposableObject {
     );
   }
 
-  async handleCopyRepoList(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    // Variant analyses only
-    if (
-      !this.assertSingleQuery(multiSelect) ||
-      singleItem.t !== "variant-analysis"
-    ) {
+  async handleCopyRepoList(item: QueryHistoryInfo) {
+    if (item.t !== "variant-analysis") {
       return;
     }
 
     await this.app.commands.execute(
       "codeQL.copyVariantAnalysisRepoList",
-      singleItem.variantAnalysis.id,
+      item.variantAnalysis.id,
     );
   }
 
