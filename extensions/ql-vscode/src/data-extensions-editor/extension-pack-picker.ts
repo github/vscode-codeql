@@ -13,6 +13,7 @@ import { ProgressCallback } from "../progress";
 import { DatabaseItem } from "../local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";
 import { getErrorMessage } from "../pure/helpers-pure";
+import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
 
 const maxStep = 3;
 
@@ -21,22 +22,6 @@ const packNameRegex = new RegExp(
   `^(?:(?<scope>${packNamePartRegex.source})/)?(?<name>${packNamePartRegex.source})$`,
 );
 const packNameLength = 128;
-
-export interface ExtensionPack {
-  path: string;
-  yamlPath: string;
-
-  name: string;
-  version: string;
-
-  extensionTargets: Record<string, string>;
-  dataExtensions: string[];
-}
-
-export interface ExtensionPackModelFile {
-  filename: string;
-  extensionPack: ExtensionPack;
-}
 
 export async function pickExtensionPackModelFile(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveExtensions">,

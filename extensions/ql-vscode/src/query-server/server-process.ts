@@ -1,4 +1,4 @@
-import { Logger } from "./common";
+import { Logger } from "../common";
 import * as cp from "child_process";
 import { Disposable } from "vscode";
 import { MessageConnection } from "vscode-jsonrpc";

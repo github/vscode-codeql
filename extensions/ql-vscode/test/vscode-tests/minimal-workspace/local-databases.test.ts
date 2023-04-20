@@ -20,7 +20,7 @@ import {
   encodeSourceArchiveUri,
 } from "../../../src/archive-filesystem-provider";
 import { testDisposeHandler } from "../test-dispose-handler";
-import { QueryRunner } from "../../../src/queryRunner";
+import { QueryRunner } from "../../../src/query-server/query-runner";
 import * as helpers from "../../../src/helpers";
 import { Setting } from "../../../src/config";
 import { QlPackGenerator } from "../../../src/qlpack-generator";

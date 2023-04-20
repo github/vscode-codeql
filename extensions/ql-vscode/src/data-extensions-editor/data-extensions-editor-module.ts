@@ -2,7 +2,7 @@ import { ExtensionContext } from "vscode";
 import { DataExtensionsEditorView } from "./data-extensions-editor-view";
 import { DataExtensionsEditorCommands } from "../common/commands";
 import { CliVersionConstraint, CodeQLCliServer } from "../cli";
-import { QueryRunner } from "../queryRunner";
+import { QueryRunner } from "../query-server";
 import { DatabaseManager } from "../local-databases";
 import { ensureDir } from "fs-extra";
 import { join } from "path";

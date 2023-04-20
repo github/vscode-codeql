@@ -49,7 +49,7 @@ import { EvalLogViewer } from "../eval-log-viewer";
 import EvalLogTreeBuilder from "../eval-log-tree-builder";
 import { EvalLogData, parseViewerData } from "../pure/log-summary-parser";
 import { QueryWithResults } from "../run-queries-shared";
-import { QueryRunner } from "../queryRunner";
+import { QueryRunner } from "../query-server";
 import { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../variant-analysis/shared/variant-analysis";
@@ -235,11 +235,8 @@ export class QueryHistoryManager extends DisposableObject {
       "codeQLQueryHistory.sortByDate": this.handleSortByDate.bind(this),
       "codeQLQueryHistory.sortByCount": this.handleSortByCount.bind(this),
 
-      "codeQLQueryHistory.openQueryTitleMenu": this.handleOpenQuery.bind(this),
       "codeQLQueryHistory.openQueryContextMenu":
         this.handleOpenQuery.bind(this),
-      "codeQLQueryHistory.removeHistoryItemTitleMenu":
-        this.handleRemoveHistoryItem.bind(this),
       "codeQLQueryHistory.removeHistoryItemContextMenu":
         this.handleRemoveHistoryItem.bind(this),
       "codeQLQueryHistory.removeHistoryItemContextInline":

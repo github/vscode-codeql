@@ -340,6 +340,12 @@
           "type": "boolean",
           "default": false,
           "description": "Allow database to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
+        },
+        "codeQL.createQuery.folder": {
+          "type": "string",
+          "default": "",
+          "patternErrorMessage": "Please enter a valid folder",
+          "markdownDescription": "The name of the folder where we want to create queries and query packs via the \"CodeQL: Create Query\" command. The folder should exist."
         }
       }
     },
@@ -628,11 +634,6 @@
         "title": "CodeQL: Check for CLI Updates"
       },
       {
-        "command": "codeQLQueryHistory.openQueryTitleMenu",
-        "title": "View Query",
-        "icon": "$(edit)"
-      },
-      {
         "command": "codeQLQueryHistory.openQueryContextMenu",
         "title": "View Query",
         "icon": "$(edit)"
@@ -641,11 +642,6 @@
         "command": "codeQLQueryHistory.itemClicked",
         "title": "Open Query Results",
         "icon": "$(preview)"
-      },
-      {
-        "command": "codeQLQueryHistory.removeHistoryItemTitleMenu",
-        "title": "Delete",
-        "icon": "$(trash)"
       },
       {
         "command": "codeQLQueryHistory.removeHistoryItemContextMenu",
@@ -845,21 +841,6 @@
         {
           "command": "codeQLDatabases.chooseDatabaseGithub",
           "when": "view == codeQLDatabases",
-          "group": "navigation"
-        },
-        {
-          "command": "codeQLQueryHistory.openQueryTitleMenu",
-          "when": "view == codeQLQueryHistory",
-          "group": "navigation"
-        },
-        {
-          "command": "codeQLQueryHistory.itemClicked",
-          "when": "view == codeQLQueryHistory",
-          "group": "navigation"
-        },
-        {
-          "command": "codeQLQueryHistory.removeHistoryItemTitleMenu",
-          "when": "view == codeQLQueryHistory",
           "group": "navigation"
         },
         {
@@ -1305,15 +1286,7 @@
           "when": "false"
         },
         {
-          "command": "codeQLQueryHistory.openQueryTitleMenu",
-          "when": "false"
-        },
-        {
           "command": "codeQLQueryHistory.openQueryContextMenu",
-          "when": "false"
-        },
-        {
-          "command": "codeQLQueryHistory.removeHistoryItemTitleMenu",
           "when": "false"
         },
         {
@@ -1446,7 +1419,7 @@
         },
         {
           "command": "codeQL.createQuery",
-          "when": "config.codeQL.canary"
+          "when": "config.codeQL.codespacesTemplate"
         },
         {
           "command": "codeQLTests.acceptOutputContextTestItem",
