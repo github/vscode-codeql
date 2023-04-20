@@ -280,7 +280,10 @@ export class QueryHistoryManager extends DisposableObject {
         this.handleCancel.bind(this),
       ),
       "codeQLQueryHistory.exportResults": this.handleExportResults.bind(this),
-      "codeQLQueryHistory.viewCsvResults": this.handleViewCsvResults.bind(this),
+      "codeQLQueryHistory.viewCsvResults": createSingleSelectionCommand(
+        this.handleViewCsvResults.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.viewCsvAlerts": this.handleViewCsvAlerts.bind(this),
       "codeQLQueryHistory.viewSarifAlerts": createSingleSelectionCommand(
         this.handleViewSarifAlerts.bind(this),
@@ -856,19 +859,11 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async handleViewCsvResults(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    // Local queries only
-    if (
-      !this.assertSingleQuery(multiSelect) ||
-      singleItem.t !== "local" ||
-      !singleItem.completedQuery
-    ) {
+  async handleViewCsvResults(item: QueryHistoryInfo) {
+    if (item.t !== "local" || !item.completedQuery) {
       return;
     }
-    const query = singleItem.completedQuery.query;
+    const query = item.completedQuery.query;
     if (await query.hasCsv()) {
       void tryOpenExternalFile(this.app.commands, query.csvPath);
       return;
