@@ -268,7 +268,10 @@ export class QueryHistoryManager extends DisposableObject {
       "codeQLQueryHistory.viewSarifAlerts":
         this.handleViewSarifAlerts.bind(this),
       "codeQLQueryHistory.viewDil": this.handleViewDil.bind(this),
-      "codeQLQueryHistory.itemClicked": this.handleItemClicked.bind(this),
+      "codeQLQueryHistory.itemClicked": createSingleSelectionCommand(
+        this.handleItemClicked.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.openOnGithub": this.handleOpenOnGithub.bind(this),
       "codeQLQueryHistory.copyRepoList": this.handleCopyRepoList.bind(this),
 
@@ -598,33 +601,26 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async handleItemClicked(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    if (!this.assertSingleQuery(multiSelect)) {
-      return;
-    }
-
-    this.treeDataProvider.setCurrentItem(singleItem);
+  async handleItemClicked(item: QueryHistoryInfo) {
+    this.treeDataProvider.setCurrentItem(item);
 
     const now = new Date();
     const prevItemClick = this.lastItemClick;
-    this.lastItemClick = { time: now, item: singleItem };
+    this.lastItemClick = { time: now, item };
 
     if (
       prevItemClick !== undefined &&
       now.valueOf() - prevItemClick.time.valueOf() < DOUBLE_CLICK_TIME &&
-      singleItem === prevItemClick.item
+      item === prevItemClick.item
     ) {
       // show original query file on double click
-      await this.handleOpenQuery(singleItem);
+      await this.handleOpenQuery(item);
     } else if (
-      singleItem.t === "variant-analysis" ||
-      singleItem.status === QueryStatus.Completed
+      item.t === "variant-analysis" ||
+      item.status === QueryStatus.Completed
     ) {
       // show results on single click (if results view is available)
-      await this.openQueryResults(singleItem);
+      await this.openQueryResults(item);
     }
   }
 

@@ -155,9 +155,7 @@ describe("QueryHistoryManager", () => {
           it("should show results", async () => {
             queryHistoryManager = await createMockQueryHistory(allHistory);
             const itemClicked = localQueryHistory[0];
-            await queryHistoryManager.handleItemClicked(itemClicked, [
-              itemClicked,
-            ]);
+            await queryHistoryManager.handleItemClicked(itemClicked);
 
             expect(
               localQueriesResultsViewStub.showResults,
@@ -175,9 +173,7 @@ describe("QueryHistoryManager", () => {
           it("should do nothing", async () => {
             queryHistoryManager = await createMockQueryHistory(allHistory);
             const itemClicked = localQueryHistory[2];
-            await queryHistoryManager.handleItemClicked(itemClicked, [
-              itemClicked,
-            ]);
+            await queryHistoryManager.handleItemClicked(itemClicked);
 
             expect(
               localQueriesResultsViewStub.showResults,
@@ -191,9 +187,7 @@ describe("QueryHistoryManager", () => {
           it("should show results", async () => {
             queryHistoryManager = await createMockQueryHistory(allHistory);
             const itemClicked = variantAnalysisHistory[0];
-            await queryHistoryManager.handleItemClicked(itemClicked, [
-              itemClicked,
-            ]);
+            await queryHistoryManager.handleItemClicked(itemClicked);
 
             expect(variantAnalysisManagerStub.showView).toHaveBeenCalledTimes(
               1,
@@ -211,9 +205,7 @@ describe("QueryHistoryManager", () => {
           it("should show results", async () => {
             queryHistoryManager = await createMockQueryHistory(allHistory);
             const itemClicked = variantAnalysisHistory[1];
-            await queryHistoryManager.handleItemClicked(itemClicked, [
-              itemClicked,
-            ]);
+            await queryHistoryManager.handleItemClicked(itemClicked);
 
             expect(variantAnalysisManagerStub.showView).toHaveBeenCalledTimes(
               1,
@@ -226,25 +218,6 @@ describe("QueryHistoryManager", () => {
             );
           });
         });
-      });
-    });
-
-    describe("double click", () => {
-      it("should do nothing", async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-        const itemClicked = allHistory[0];
-        const secondItemClicked = allHistory[1];
-
-        await queryHistoryManager.handleItemClicked(itemClicked, [
-          itemClicked,
-          secondItemClicked,
-        ]);
-
-        expect(localQueriesResultsViewStub.showResults).not.toHaveBeenCalled();
-        expect(variantAnalysisManagerStub.showView).not.toBeCalled();
-        expect(
-          queryHistoryManager.treeDataProvider.getCurrent(),
-        ).toBeUndefined();
       });
     });
   });

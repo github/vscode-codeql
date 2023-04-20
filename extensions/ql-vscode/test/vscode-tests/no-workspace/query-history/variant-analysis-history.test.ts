@@ -177,7 +177,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
   it("should handle a click", async () => {
     await qhm.readQueryHistory();
 
-    await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0], []);
+    await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0]);
     expect(showViewStub).toBeCalledWith(rawQueryHistory[0].variantAnalysis.id);
   });
 
