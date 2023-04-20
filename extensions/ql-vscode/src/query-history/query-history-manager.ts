@@ -252,7 +252,10 @@ export class QueryHistoryManager extends DisposableObject {
         "query",
       ),
       "codeQLQueryHistory.compareWith": this.handleCompareWith.bind(this),
-      "codeQLQueryHistory.showEvalLog": this.handleShowEvalLog.bind(this),
+      "codeQLQueryHistory.showEvalLog": createSingleSelectionCommand(
+        this.handleShowEvalLog.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.showEvalLogSummary":
         this.handleShowEvalLogSummary.bind(this),
       "codeQLQueryHistory.showEvalLogViewer":
@@ -725,17 +728,13 @@ export class QueryHistoryManager extends DisposableObject {
     );
   }
 
-  async handleShowEvalLog(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    // Only applicable to an individual local query
-    if (!this.assertSingleQuery(multiSelect) || singleItem.t !== "local") {
+  async handleShowEvalLog(item: QueryHistoryInfo) {
+    if (item.t !== "local") {
       return;
     }
 
-    if (singleItem.evalLogLocation) {
-      await tryOpenExternalFile(this.app.commands, singleItem.evalLogLocation);
+    if (item.evalLogLocation) {
+      await tryOpenExternalFile(this.app.commands, item.evalLogLocation);
     } else {
       this.warnNoEvalLogs();
     }
