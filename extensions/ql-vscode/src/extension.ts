@@ -72,7 +72,7 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "./pure/helpers-pure";
-import { spawnIdeServer } from "./ide-server";
+import { spawnIdeServer } from "./language-support/ide-server";
 import { ResultsView } from "./interface";
 import { WebviewReveal } from "./interface-utils";
 import {
