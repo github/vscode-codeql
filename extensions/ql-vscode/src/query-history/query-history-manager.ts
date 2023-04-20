@@ -262,8 +262,10 @@ export class QueryHistoryManager extends DisposableObject {
         "query",
       ),
       "codeQLQueryHistory.showQueryText": this.handleShowQueryText.bind(this),
-      "codeQLQueryHistory.openQueryDirectory":
+      "codeQLQueryHistory.openQueryDirectory": createSingleSelectionCommand(
         this.handleOpenQueryDirectory.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.cancel": this.handleCancel.bind(this),
       "codeQLQueryHistory.exportResults": this.handleExportResults.bind(this),
       "codeQLQueryHistory.viewCsvResults": this.handleViewCsvResults.bind(this),
@@ -661,31 +663,24 @@ export class QueryHistoryManager extends DisposableObject {
     throw new Error("Unable to get query directory");
   }
 
-  async handleOpenQueryDirectory(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    if (!this.assertSingleQuery(multiSelect)) {
-      return;
-    }
-
+  async handleOpenQueryDirectory(item: QueryHistoryInfo) {
     let externalFilePath: string | undefined;
-    if (singleItem.t === "local") {
-      if (singleItem.completedQuery) {
+    if (item.t === "local") {
+      if (item.completedQuery) {
         externalFilePath = join(
-          singleItem.completedQuery.query.querySaveDir,
+          item.completedQuery.query.querySaveDir,
           "timestamp",
         );
       }
-    } else if (singleItem.t === "variant-analysis") {
+    } else if (item.t === "variant-analysis") {
       externalFilePath = join(
         this.variantAnalysisManager.getVariantAnalysisStorageLocation(
-          singleItem.variantAnalysis.id,
+          item.variantAnalysis.id,
         ),
         "timestamp",
       );
     } else {
-      assertNever(singleItem);
+      assertNever(item);
     }
 
     if (externalFilePath) {
