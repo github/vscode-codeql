@@ -292,7 +292,10 @@ export class QueryHistoryManager extends DisposableObject {
         this.handleViewSarifAlerts.bind(this),
         "query",
       ),
-      "codeQLQueryHistory.viewDil": this.handleViewDil.bind(this),
+      "codeQLQueryHistory.viewDil": createSingleSelectionCommand(
+        this.handleViewDil.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.itemClicked": createSingleSelectionCommand(
         this.handleItemClicked.bind(this),
         "query",
@@ -890,22 +893,14 @@ export class QueryHistoryManager extends DisposableObject {
     );
   }
 
-  async handleViewDil(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    // Local queries only
-    if (
-      !this.assertSingleQuery(multiSelect) ||
-      singleItem.t !== "local" ||
-      !singleItem.completedQuery
-    ) {
+  async handleViewDil(item: QueryHistoryInfo) {
+    if (item.t !== "local" || !item.completedQuery) {
       return;
     }
 
     await tryOpenExternalFile(
       this.app.commands,
-      await singleItem.completedQuery.query.ensureDilPath(this.qs.cliServer),
+      await item.completedQuery.query.ensureDilPath(this.qs.cliServer),
     );
   }
 
