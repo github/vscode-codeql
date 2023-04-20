@@ -260,8 +260,10 @@ export class QueryHistoryManager extends DisposableObject {
         this.handleShowEvalLogSummary.bind(this),
         "query",
       ),
-      "codeQLQueryHistory.showEvalLogViewer":
+      "codeQLQueryHistory.showEvalLogViewer": createSingleSelectionCommand(
         this.handleShowEvalLogViewer.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.showQueryLog": createSingleSelectionCommand(
         this.handleShowQueryLog.bind(this),
         "query",
@@ -761,17 +763,13 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async handleShowEvalLogViewer(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    // Only applicable to an individual local query
-    if (!this.assertSingleQuery(multiSelect) || singleItem.t !== "local") {
+  async handleShowEvalLogViewer(item: QueryHistoryInfo) {
+    if (item.t !== "local") {
       return;
     }
 
     // If the JSON summary file location wasn't saved, display error
-    if (singleItem.jsonEvalLogSummaryLocation === undefined) {
+    if (item.jsonEvalLogSummaryLocation === undefined) {
       this.warnInProgressEvalLogViewer();
       return;
     }
@@ -779,16 +777,16 @@ export class QueryHistoryManager extends DisposableObject {
     // TODO(angelapwen): Stream the file in.
     try {
       const evalLogData: EvalLogData[] = await parseViewerData(
-        singleItem.jsonEvalLogSummaryLocation,
+        item.jsonEvalLogSummaryLocation,
       );
       const evalLogTreeBuilder = new EvalLogTreeBuilder(
-        singleItem.getQueryName(),
+        item.getQueryName(),
         evalLogData,
       );
       this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
     } catch (e) {
       throw new Error(
-        `Could not read evaluator log summary JSON file to generate viewer data at ${singleItem.jsonEvalLogSummaryLocation}.`,
+        `Could not read evaluator log summary JSON file to generate viewer data at ${item.jsonEvalLogSummaryLocation}.`,
       );
     }
   }
