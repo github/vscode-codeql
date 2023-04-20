@@ -300,7 +300,10 @@ export class QueryHistoryManager extends DisposableObject {
         this.handleItemClicked.bind(this),
         "query",
       ),
-      "codeQLQueryHistory.openOnGithub": this.handleOpenOnGithub.bind(this),
+      "codeQLQueryHistory.openOnGithub": createSingleSelectionCommand(
+        this.handleOpenOnGithub.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.copyRepoList": this.handleCopyRepoList.bind(this),
 
       "codeQL.exportSelectedVariantAnalysisResults":
@@ -904,18 +907,12 @@ export class QueryHistoryManager extends DisposableObject {
     );
   }
 
-  async handleOpenOnGithub(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    if (
-      !this.assertSingleQuery(multiSelect) ||
-      singleItem.t !== "variant-analysis"
-    ) {
+  async handleOpenOnGithub(item: QueryHistoryInfo) {
+    if (item.t !== "variant-analysis") {
       return;
     }
 
-    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(singleItem);
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(item);
 
     await this.app.commands.execute(
       "vscode.open",
