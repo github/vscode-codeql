@@ -282,8 +282,10 @@ export class QueryHistoryManager extends DisposableObject {
       "codeQLQueryHistory.exportResults": this.handleExportResults.bind(this),
       "codeQLQueryHistory.viewCsvResults": this.handleViewCsvResults.bind(this),
       "codeQLQueryHistory.viewCsvAlerts": this.handleViewCsvAlerts.bind(this),
-      "codeQLQueryHistory.viewSarifAlerts":
+      "codeQLQueryHistory.viewSarifAlerts": createSingleSelectionCommand(
         this.handleViewSarifAlerts.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.viewDil": this.handleViewDil.bind(this),
       "codeQLQueryHistory.itemClicked": createSingleSelectionCommand(
         this.handleItemClicked.bind(this),
@@ -834,20 +836,12 @@ export class QueryHistoryManager extends DisposableObject {
     await window.showTextDocument(doc, { preview: false });
   }
 
-  async handleViewSarifAlerts(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    // Local queries only
-    if (
-      !this.assertSingleQuery(multiSelect) ||
-      singleItem.t !== "local" ||
-      !singleItem.completedQuery
-    ) {
+  async handleViewSarifAlerts(item: QueryHistoryInfo) {
+    if (item.t !== "local" || !item.completedQuery) {
       return;
     }
 
-    const query = singleItem.completedQuery.query;
+    const query = item.completedQuery.query;
     const hasInterpretedResults = query.canHaveInterpretedResults();
     if (hasInterpretedResults) {
       await tryOpenExternalFile(
@@ -855,7 +849,7 @@ export class QueryHistoryManager extends DisposableObject {
         query.resultsPaths.interpretedResultsPath,
       );
     } else {
-      const label = this.labelProvider.getLabel(singleItem);
+      const label = this.labelProvider.getLabel(item);
       void showAndLogInformationMessage(
         `Query ${label} has no interpreted results.`,
       );
