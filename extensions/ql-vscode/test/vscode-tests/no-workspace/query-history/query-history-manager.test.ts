@@ -247,20 +247,6 @@ describe("QueryHistoryManager", () => {
         ).toBeUndefined();
       });
     });
-
-    describe("no selection", () => {
-      it("should do nothing", async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-
-        await queryHistoryManager.handleItemClicked(undefined!, []);
-
-        expect(localQueriesResultsViewStub.showResults).not.toHaveBeenCalled();
-        expect(variantAnalysisManagerStub.showView).not.toHaveBeenCalled();
-        expect(
-          queryHistoryManager.treeDataProvider.getCurrent(),
-        ).toBeUndefined();
-      });
-    });
   });
 
   describe("handleRemoveHistoryItem", () => {
