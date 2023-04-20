@@ -273,7 +273,9 @@ export class QueryHistoryManager extends DisposableObject {
         this.handleOpenQueryDirectory.bind(this),
         "query",
       ),
-      "codeQLQueryHistory.cancel": this.handleCancel.bind(this),
+      "codeQLQueryHistory.cancel": createMultiSelectionCommand(
+        this.handleCancel.bind(this),
+      ),
       "codeQLQueryHistory.exportResults": this.handleExportResults.bind(this),
       "codeQLQueryHistory.viewCsvResults": this.handleViewCsvResults.bind(this),
       "codeQLQueryHistory.viewCsvAlerts": this.handleViewCsvAlerts.bind(this),
@@ -791,13 +793,8 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async handleCancel(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
-    multiSelect ||= [singleItem];
-
-    const results = multiSelect.map(async (item) => {
+  async handleCancel(items: QueryHistoryInfo[]) {
+    const results = items.map(async (item) => {
       if (item.status === QueryStatus.InProgress) {
         if (item.t === "local") {
           item.cancel();

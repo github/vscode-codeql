@@ -591,7 +591,7 @@ describe("QueryHistoryManager", () => {
         const inProgress1 = localQueryHistory[4];
         const cancelSpy = jest.spyOn(inProgress1, "cancel");
 
-        await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
+        await queryHistoryManager.handleCancel([inProgress1]);
         expect(cancelSpy).toBeCalledTimes(1);
       });
 
@@ -605,10 +605,7 @@ describe("QueryHistoryManager", () => {
         const cancelSpy1 = jest.spyOn(inProgress1, "cancel");
         const cancelSpy2 = jest.spyOn(inProgress2, "cancel");
 
-        await queryHistoryManager.handleCancel(inProgress1, [
-          inProgress1,
-          inProgress2,
-        ]);
+        await queryHistoryManager.handleCancel([inProgress1, inProgress2]);
         expect(cancelSpy1).toBeCalled();
         expect(cancelSpy2).toBeCalled();
       });
@@ -619,7 +616,7 @@ describe("QueryHistoryManager", () => {
         // cancelling the selected item
         const inProgress1 = variantAnalysisHistory[1];
 
-        await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
+        await queryHistoryManager.handleCancel([inProgress1]);
         expect(cancelVariantAnalysisSpy).toBeCalledWith(
           inProgress1.variantAnalysis.id,
         );
@@ -632,10 +629,7 @@ describe("QueryHistoryManager", () => {
         const inProgress1 = variantAnalysisHistory[1];
         const inProgress2 = variantAnalysisHistory[3];
 
-        await queryHistoryManager.handleCancel(inProgress1, [
-          inProgress1,
-          inProgress2,
-        ]);
+        await queryHistoryManager.handleCancel([inProgress1, inProgress2]);
         expect(cancelVariantAnalysisSpy).toBeCalledWith(
           inProgress1.variantAnalysis.id,
         );
@@ -653,7 +647,7 @@ describe("QueryHistoryManager", () => {
         const completed = localQueryHistory[0];
         const cancelSpy = jest.spyOn(completed, "cancel");
 
-        await queryHistoryManager.handleCancel(completed, [completed]);
+        await queryHistoryManager.handleCancel([completed]);
         expect(cancelSpy).not.toBeCalledTimes(1);
       });
 
@@ -667,7 +661,7 @@ describe("QueryHistoryManager", () => {
         const cancelSpy = jest.spyOn(completed, "cancel");
         const cancelSpy2 = jest.spyOn(failed, "cancel");
 
-        await queryHistoryManager.handleCancel(completed, [completed, failed]);
+        await queryHistoryManager.handleCancel([completed, failed]);
         expect(cancelSpy).not.toBeCalledTimes(1);
         expect(cancelSpy2).not.toBeCalledTimes(1);
       });
@@ -678,9 +672,7 @@ describe("QueryHistoryManager", () => {
         // cancelling the selected item
         const completedVariantAnalysis = variantAnalysisHistory[0];
 
-        await queryHistoryManager.handleCancel(completedVariantAnalysis, [
-          completedVariantAnalysis,
-        ]);
+        await queryHistoryManager.handleCancel([completedVariantAnalysis]);
         expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
           completedVariantAnalysis.variantAnalysis,
         );
@@ -693,7 +685,7 @@ describe("QueryHistoryManager", () => {
         const completedVariantAnalysis = variantAnalysisHistory[0];
         const failedVariantAnalysis = variantAnalysisHistory[2];
 
-        await queryHistoryManager.handleCancel(completedVariantAnalysis, [
+        await queryHistoryManager.handleCancel([
           completedVariantAnalysis,
           failedVariantAnalysis,
         ]);
