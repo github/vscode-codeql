@@ -279,7 +279,10 @@ export class QueryHistoryManager extends DisposableObject {
       "codeQLQueryHistory.cancel": createMultiSelectionCommand(
         this.handleCancel.bind(this),
       ),
-      "codeQLQueryHistory.exportResults": this.handleExportResults.bind(this),
+      "codeQLQueryHistory.exportResults": createSingleSelectionCommand(
+        this.handleExportResults.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.viewCsvResults": createSingleSelectionCommand(
         this.handleViewCsvResults.bind(this),
         "query",
@@ -934,21 +937,12 @@ export class QueryHistoryManager extends DisposableObject {
     );
   }
 
-  async handleExportResults(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ): Promise<void> {
-    // Variant analysis only
-    if (
-      !this.assertSingleQuery(multiSelect) ||
-      singleItem.t !== "variant-analysis"
-    ) {
+  async handleExportResults(item: QueryHistoryInfo): Promise<void> {
+    if (item.t !== "variant-analysis") {
       return;
     }
 
-    await this.variantAnalysisManager.exportResults(
-      singleItem.variantAnalysis.id,
-    );
+    await this.variantAnalysisManager.exportResults(item.variantAnalysis.id);
   }
 
   /**

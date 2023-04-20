@@ -726,7 +726,7 @@ describe("QueryHistoryManager", () => {
       queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
       const item = localQueryHistory[4];
-      await queryHistoryManager.handleExportResults(item, [item]);
+      await queryHistoryManager.handleExportResults(item);
 
       expect(variantAnalysisManagerStub.exportResults).not.toBeCalled();
     });
@@ -735,19 +735,10 @@ describe("QueryHistoryManager", () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
 
       const item = variantAnalysisHistory[1];
-      await queryHistoryManager.handleExportResults(item, [item]);
+      await queryHistoryManager.handleExportResults(item);
       expect(variantAnalysisManagerStub.exportResults).toBeCalledWith(
         item.variantAnalysis.id,
       );
-    });
-
-    it("should not export results for multiple variant analyses", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      const item1 = variantAnalysisHistory[1];
-      const item2 = variantAnalysisHistory[3];
-      await queryHistoryManager.handleExportResults(item1, [item1, item2]);
-      expect(variantAnalysisManagerStub.exportResults).not.toBeCalled();
     });
   });
 
