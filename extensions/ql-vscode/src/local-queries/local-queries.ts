@@ -21,7 +21,7 @@ import {
   showBinaryChoiceDialog,
 } from "../helpers";
 import { displayQuickQuery } from "../quick-query";
-import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
+import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
 import { DatabaseUI } from "../local-databases-ui";
 import { ResultsView } from "../interface";

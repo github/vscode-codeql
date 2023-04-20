@@ -10,14 +10,16 @@ import {
 } from "../../../src/pure/legacy-messages";
 import * as config from "../../../src/config";
 import { tmpDir } from "../../../src/helpers";
-import { QueryServerClient } from "../../../src/legacy-query-server/queryserver-client";
 import { CodeQLCliServer } from "../../../src/cli";
 import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
 import {
   QueryInProgress,
   compileQuery as compileQueryLegacy,
-} from "../../../src/legacy-query-server/run-queries";
-import { LegacyQueryRunner } from "../../../src/legacy-query-server/legacyRunner";
+} from "../../../src/query-server/legacy/run-queries";
+import {
+  LegacyQueryRunner,
+  QueryServerClient,
+} from "../../../src/query-server/legacy";
 import { DatabaseItem } from "../../../src/local-databases";
 import { DeepPartial, mockedObject } from "../utils/mocking.helpers";
 import { BqrsKind } from "../../../src/pure/bqrs-cli-types";

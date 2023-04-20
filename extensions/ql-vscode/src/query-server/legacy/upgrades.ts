@@ -3,16 +3,16 @@ import {
   getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
   tmpDir,
-} from "../helpers";
-import { ProgressCallback, UserCancellationException } from "../progress";
-import { extLogger } from "../common";
-import * as messages from "../pure/legacy-messages";
-import * as qsClient from "./queryserver-client";
+} from "../../helpers";
+import { ProgressCallback, UserCancellationException } from "../../progress";
+import { extLogger } from "../../common";
+import * as messages from "../../pure/legacy-messages";
+import * as qsClient from "./query-server-client";
 import * as tmp from "tmp-promise";
 import { dirname } from "path";
-import { DatabaseItem } from "../local-databases";
-import { asError, getErrorMessage } from "../pure/helpers-pure";
-import { redactableError } from "../pure/errors";
+import { DatabaseItem } from "../../local-databases";
+import { asError, getErrorMessage } from "../../pure/helpers-pure";
+import { redactableError } from "../../pure/errors";
 
 /**
  * Maximum number of lines to include from database upgrade message,

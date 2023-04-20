@@ -48,7 +48,7 @@ import { EvalLogViewer } from "../eval-log-viewer";
 import EvalLogTreeBuilder from "../eval-log-tree-builder";
 import { EvalLogData, parseViewerData } from "../pure/log-summary-parser";
 import { QueryWithResults } from "../run-queries-shared";
-import { QueryRunner } from "../queryRunner";
+import { QueryRunner } from "../query-server";
 import { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";
 import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../variant-analysis/shared/variant-analysis";
@@ -394,38 +394,34 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleOpenQuery(
-    singleItem: QueryHistoryInfo | undefined,
+    singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ): Promise<void> {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
+    if (!this.assertSingleQuery(multiSelect)) {
       return;
     }
 
-    if (finalSingleItem.t === "variant-analysis") {
+    if (singleItem.t === "variant-analysis") {
       await this.variantAnalysisManager.openQueryFile(
-        finalSingleItem.variantAnalysis.id,
+        singleItem.variantAnalysis.id,
       );
       return;
     }
 
     let queryPath: string;
-    switch (finalSingleItem.t) {
+    switch (singleItem.t) {
       case "local":
-        queryPath = finalSingleItem.initialInfo.queryPath;
+        queryPath = singleItem.initialInfo.queryPath;
         break;
       default:
-        assertNever(finalSingleItem);
+        assertNever(singleItem);
     }
     const textDocument = await workspace.openTextDocument(Uri.file(queryPath));
     const editor = await window.showTextDocument(textDocument, ViewColumn.One);
 
-    if (finalSingleItem.t === "local") {
-      const queryText = finalSingleItem.initialInfo.queryText;
-      if (queryText !== undefined && finalSingleItem.initialInfo.isQuickQuery) {
+    if (singleItem.t === "local") {
+      const queryText = singleItem.initialInfo.queryText;
+      if (queryText !== undefined && singleItem.initialInfo.isQuickQuery) {
         await editor.edit((edit) =>
           edit.replace(
             textDocument.validateRange(
@@ -457,16 +453,12 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleRemoveHistoryItem(
-    singleItem: QueryHistoryInfo | undefined,
+    singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-    const toDelete = finalMultiSelect || [finalSingleItem];
+    multiSelect ||= [singleItem];
     await Promise.all(
-      toDelete.map(async (item) => {
+      multiSelect.map(async (item) => {
         if (item.t === "local") {
           // Removing in progress local queries is not supported. They must be cancelled first.
           if (item.status !== QueryStatus.InProgress) {
@@ -560,18 +552,13 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ): Promise<void> {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
+    if (!this.assertSingleQuery(multiSelect)) {
       return;
     }
 
     const response = await window.showInputBox({
       placeHolder: `(use default: ${this.queryHistoryConfigListener.format})`,
-      value: finalSingleItem.userSpecifiedLabel ?? "",
+      value: singleItem.userSpecifiedLabel ?? "",
       title: "Set query label",
       prompt:
         "Set the query history item label. See the description of the codeQL.queryHistory.format setting for more information.",
@@ -579,8 +566,7 @@ export class QueryHistoryManager extends DisposableObject {
     // undefined response means the user cancelled the dialog; don't change anything
     if (response !== undefined) {
       // Interpret empty string response as 'go back to using default'
-      finalSingleItem.userSpecifiedLabel =
-        response === "" ? undefined : response;
+      singleItem.userSpecifiedLabel = response === "" ? undefined : response;
       await this.refreshTreeView();
     }
   }
@@ -628,36 +614,32 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async handleItemClicked(
-    singleItem: QueryHistoryInfo | undefined,
+    singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
+    if (!this.assertSingleQuery(multiSelect)) {
       return;
     }
 
-    this.treeDataProvider.setCurrentItem(finalSingleItem);
+    this.treeDataProvider.setCurrentItem(singleItem);
 
     const now = new Date();
     const prevItemClick = this.lastItemClick;
-    this.lastItemClick = { time: now, item: finalSingleItem };
+    this.lastItemClick = { time: now, item: singleItem };
 
     if (
       prevItemClick !== undefined &&
       now.valueOf() - prevItemClick.time.valueOf() < DOUBLE_CLICK_TIME &&
-      finalSingleItem === prevItemClick.item
+      singleItem === prevItemClick.item
     ) {
       // show original query file on double click
-      await this.handleOpenQuery(finalSingleItem, [finalSingleItem]);
+      await this.handleOpenQuery(singleItem, [singleItem]);
     } else if (
-      finalSingleItem.t === "variant-analysis" ||
-      finalSingleItem.status === QueryStatus.Completed
+      singleItem.t === "variant-analysis" ||
+      singleItem.status === QueryStatus.Completed
     ) {
       // show results on single click (if results view is available)
-      await this.openQueryResults(finalSingleItem);
+      await this.openQueryResults(singleItem);
     }
   }
 
@@ -706,32 +688,27 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
+    if (!this.assertSingleQuery(multiSelect)) {
       return;
     }
 
     let externalFilePath: string | undefined;
-    if (finalSingleItem.t === "local") {
-      if (finalSingleItem.completedQuery) {
+    if (singleItem.t === "local") {
+      if (singleItem.completedQuery) {
         externalFilePath = join(
-          finalSingleItem.completedQuery.query.querySaveDir,
+          singleItem.completedQuery.query.querySaveDir,
           "timestamp",
         );
       }
-    } else if (finalSingleItem.t === "variant-analysis") {
+    } else if (singleItem.t === "variant-analysis") {
       externalFilePath = join(
         this.variantAnalysisManager.getVariantAnalysisStorageLocation(
-          finalSingleItem.variantAnalysis.id,
+          singleItem.variantAnalysis.id,
         ),
         "timestamp",
       );
     } else {
-      assertNever(finalSingleItem);
+      assertNever(singleItem);
     }
 
     if (externalFilePath) {
@@ -780,25 +757,13 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
     // Only applicable to an individual local query
-    if (
-      !this.assertSingleQuery(finalMultiSelect) ||
-      !finalSingleItem ||
-      finalSingleItem.t !== "local"
-    ) {
+    if (!this.assertSingleQuery(multiSelect) || singleItem.t !== "local") {
       return;
     }
 
-    if (finalSingleItem.evalLogLocation) {
-      await tryOpenExternalFile(
-        this.app.commands,
-        finalSingleItem.evalLogLocation,
-      );
+    if (singleItem.evalLogLocation) {
+      await tryOpenExternalFile(this.app.commands, singleItem.evalLogLocation);
     } else {
       this.warnNoEvalLogs();
     }
@@ -808,32 +773,23 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
     // Only applicable to an individual local query
-    if (
-      !this.assertSingleQuery(finalMultiSelect) ||
-      !finalSingleItem ||
-      finalSingleItem.t !== "local"
-    ) {
+    if (!this.assertSingleQuery(multiSelect) || singleItem.t !== "local") {
       return;
     }
 
-    if (finalSingleItem.evalLogSummaryLocation) {
+    if (singleItem.evalLogSummaryLocation) {
       await tryOpenExternalFile(
         this.app.commands,
-        finalSingleItem.evalLogSummaryLocation,
+        singleItem.evalLogSummaryLocation,
       );
       return;
     }
 
     // Summary log file doesn't exist.
     if (
-      finalSingleItem.evalLogLocation &&
-      (await pathExists(finalSingleItem.evalLogLocation))
+      singleItem.evalLogLocation &&
+      (await pathExists(singleItem.evalLogLocation))
     ) {
       // If raw log does exist, then the summary log is still being generated.
       this.warnInProgressEvalLogSummary();
@@ -846,21 +802,13 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
     // Only applicable to an individual local query
-    if (
-      !this.assertSingleQuery(finalMultiSelect) ||
-      !finalSingleItem ||
-      finalSingleItem.t !== "local"
-    ) {
+    if (!this.assertSingleQuery(multiSelect) || singleItem.t !== "local") {
       return;
     }
 
     // If the JSON summary file location wasn't saved, display error
-    if (finalSingleItem.jsonEvalLogSummaryLocation === undefined) {
+    if (singleItem.jsonEvalLogSummaryLocation === undefined) {
       this.warnInProgressEvalLogViewer();
       return;
     }
@@ -868,16 +816,16 @@ export class QueryHistoryManager extends DisposableObject {
     // TODO(angelapwen): Stream the file in.
     try {
       const evalLogData: EvalLogData[] = await parseViewerData(
-        finalSingleItem.jsonEvalLogSummaryLocation,
+        singleItem.jsonEvalLogSummaryLocation,
       );
       const evalLogTreeBuilder = new EvalLogTreeBuilder(
-        finalSingleItem.getQueryName(),
+        singleItem.getQueryName(),
         evalLogData,
       );
       this.evalLogViewer.updateRoots(await evalLogTreeBuilder.getRoots());
     } catch (e) {
       throw new Error(
-        `Could not read evaluator log summary JSON file to generate viewer data at ${finalSingleItem.jsonEvalLogSummaryLocation}.`,
+        `Could not read evaluator log summary JSON file to generate viewer data at ${singleItem.jsonEvalLogSummaryLocation}.`,
       );
     }
   }
@@ -886,14 +834,9 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
+    multiSelect ||= [singleItem];
 
-    const selected = finalMultiSelect || [finalSingleItem];
-
-    const results = selected.map(async (item) => {
+    const results = multiSelect.map(async (item) => {
       if (item.status === QueryStatus.InProgress) {
         if (item.t === "local") {
           item.cancel();
@@ -914,18 +857,13 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] = [],
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
+    if (!this.assertSingleQuery(multiSelect)) {
       return;
     }
 
-    if (finalSingleItem.t === "variant-analysis") {
+    if (singleItem.t === "variant-analysis") {
       await this.variantAnalysisManager.openQueryText(
-        finalSingleItem.variantAnalysis.id,
+        singleItem.variantAnalysis.id,
       );
       return;
     }
@@ -933,14 +871,13 @@ export class QueryHistoryManager extends DisposableObject {
     const params = new URLSearchParams({
       isQuickEval: String(
         !!(
-          finalSingleItem.t === "local" &&
-          finalSingleItem.initialInfo.quickEvalPosition
+          singleItem.t === "local" && singleItem.initialInfo.quickEvalPosition
         ),
       ),
-      queryText: encodeURIComponent(getQueryText(finalSingleItem)),
+      queryText: encodeURIComponent(getQueryText(singleItem)),
     });
 
-    const queryId = getQueryId(finalSingleItem);
+    const queryId = getQueryId(singleItem);
 
     const uri = Uri.parse(`codeql:${queryId}.ql?${params.toString()}`, true);
     const doc = await workspace.openTextDocument(uri);
@@ -951,22 +888,16 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
     // Local queries only
     if (
-      !this.assertSingleQuery(finalMultiSelect) ||
-      !finalSingleItem ||
-      finalSingleItem.t !== "local" ||
-      !finalSingleItem.completedQuery
+      !this.assertSingleQuery(multiSelect) ||
+      singleItem.t !== "local" ||
+      !singleItem.completedQuery
     ) {
       return;
     }
 
-    const query = finalSingleItem.completedQuery.query;
+    const query = singleItem.completedQuery.query;
     const hasInterpretedResults = query.canHaveInterpretedResults();
     if (hasInterpretedResults) {
       await tryOpenExternalFile(
@@ -974,7 +905,7 @@ export class QueryHistoryManager extends DisposableObject {
         query.resultsPaths.interpretedResultsPath,
       );
     } else {
-      const label = this.labelProvider.getLabel(finalSingleItem);
+      const label = this.labelProvider.getLabel(singleItem);
       void showAndLogInformationMessage(
         `Query ${label} has no interpreted results.`,
       );
@@ -985,21 +916,15 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
     // Local queries only
     if (
-      !this.assertSingleQuery(finalMultiSelect) ||
-      !finalSingleItem ||
-      finalSingleItem.t !== "local" ||
-      !finalSingleItem.completedQuery
+      !this.assertSingleQuery(multiSelect) ||
+      singleItem.t !== "local" ||
+      !singleItem.completedQuery
     ) {
       return;
     }
-    const query = finalSingleItem.completedQuery.query;
+    const query = singleItem.completedQuery.query;
     if (await query.hasCsv()) {
       void tryOpenExternalFile(this.app.commands, query.csvPath);
       return;
@@ -1013,24 +938,18 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
     // Local queries only
     if (
-      !this.assertSingleQuery(finalMultiSelect) ||
-      !finalSingleItem ||
-      finalSingleItem.t !== "local" ||
-      !finalSingleItem.completedQuery
+      !this.assertSingleQuery(multiSelect) ||
+      singleItem.t !== "local" ||
+      !singleItem.completedQuery
     ) {
       return;
     }
 
     await tryOpenExternalFile(
       this.app.commands,
-      await finalSingleItem.completedQuery.query.ensureCsvAlerts(
+      await singleItem.completedQuery.query.ensureCsvAlerts(
         this.qs.cliServer,
         this.dbm,
       ),
@@ -1041,26 +960,18 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
     // Local queries only
     if (
-      !this.assertSingleQuery(finalMultiSelect) ||
-      !finalSingleItem ||
-      finalSingleItem.t !== "local" ||
-      !finalSingleItem.completedQuery
+      !this.assertSingleQuery(multiSelect) ||
+      singleItem.t !== "local" ||
+      !singleItem.completedQuery
     ) {
       return;
     }
 
     await tryOpenExternalFile(
       this.app.commands,
-      await finalSingleItem.completedQuery.query.ensureDilPath(
-        this.qs.cliServer,
-      ),
+      await singleItem.completedQuery.query.ensureDilPath(this.qs.cliServer),
     );
   }
 
@@ -1068,20 +979,14 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
-    if (!this.assertSingleQuery(finalMultiSelect) || !finalSingleItem) {
+    if (
+      !this.assertSingleQuery(multiSelect) ||
+      singleItem.t !== "variant-analysis"
+    ) {
       return;
     }
 
-    if (finalSingleItem.t === "local") {
-      return;
-    }
-
-    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(finalSingleItem);
+    const actionsWorkflowRunUrl = getActionsWorkflowRunUrl(singleItem);
 
     await this.app.commands.execute(
       "vscode.open",
@@ -1093,23 +998,17 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
     // Variant analyses only
     if (
-      !this.assertSingleQuery(finalMultiSelect) ||
-      !finalSingleItem ||
-      finalSingleItem.t !== "variant-analysis"
+      !this.assertSingleQuery(multiSelect) ||
+      singleItem.t !== "variant-analysis"
     ) {
       return;
     }
 
     await this.app.commands.execute(
       "codeQL.copyVariantAnalysisRepoList",
-      finalSingleItem.variantAnalysis.id,
+      singleItem.variantAnalysis.id,
     );
   }
 
@@ -1117,22 +1016,16 @@ export class QueryHistoryManager extends DisposableObject {
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ): Promise<void> {
-    const { finalSingleItem, finalMultiSelect } = this.determineSelection(
-      singleItem,
-      multiSelect,
-    );
-
     // Variant analysis only
     if (
-      !this.assertSingleQuery(finalMultiSelect) ||
-      !finalSingleItem ||
-      finalSingleItem.t !== "variant-analysis"
+      !this.assertSingleQuery(multiSelect) ||
+      singleItem.t !== "variant-analysis"
     ) {
       return;
     }
 
     await this.variantAnalysisManager.exportResults(
-      finalSingleItem.variantAnalysis.id,
+      singleItem.variantAnalysis.id,
     );
   }
 
@@ -1259,52 +1152,6 @@ export class QueryHistoryManager extends DisposableObject {
     ) {
       this.compareWithItem = undefined;
     }
-  }
-
-  /**
-   * If no items are selected, attempt to grab the selection from the treeview.
-   * However, often the treeview itself does not have any selection. In this case,
-   * grab the selection from the `treeDataProvider` current item.
-   *
-   * We need to use this method because when clicking on commands from the view title
-   * bar, the selections are not passed in.
-   *
-   * @param singleItem the single item selected, or undefined if no item is selected
-   * @param multiSelect a multi-select or undefined if no items are selected
-   */
-  private determineSelection(
-    singleItem: QueryHistoryInfo | undefined,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ): {
-    finalSingleItem: QueryHistoryInfo | undefined;
-    finalMultiSelect: QueryHistoryInfo[];
-  } {
-    if (!singleItem && !multiSelect?.[0]) {
-      const selection = this.treeView.selection;
-      const current = this.treeDataProvider.getCurrent();
-      if (selection?.length) {
-        return {
-          finalSingleItem: selection[0],
-          finalMultiSelect: [...selection],
-        };
-      } else if (current) {
-        return {
-          finalSingleItem: current,
-          finalMultiSelect: [current],
-        };
-      }
-    }
-
-    // ensure we only return undefined if we have neither a single or multi-selecion
-    if (singleItem && !multiSelect?.[0]) {
-      multiSelect = [singleItem];
-    } else if (!singleItem && multiSelect?.[0]) {
-      singleItem = multiSelect[0];
-    }
-    return {
-      finalSingleItem: singleItem,
-      finalMultiSelect: multiSelect || [],
-    };
   }
 
   async refreshTreeView(): Promise<void> {

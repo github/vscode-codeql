@@ -1,21 +1,24 @@
 import { ensureFile } from "fs-extra";
 
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject, DisposeHandler } from "../pure/disposable-object";
 import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
 import * as cli from "../cli";
 import { QueryServerConfig } from "../config";
 import { Logger, ProgressReporter } from "../common";
 import {
-  completeQuery,
-  EvaluationResult,
   progress,
   ProgressMessage,
   WithProgressId,
-} from "../pure/legacy-messages";
+} from "../pure/new-messages";
 import { ProgressCallback, ProgressTask } from "../progress";
-import { ServerProcess } from "../json-rpc-server";
+import { ServerProcess } from "./server-process";
 import { App } from "../common/app";
+
+type ServerOpts = {
+  logger: Logger;
+  contextStoragePath: string;
+};
 
 type WithProgressReporting = (
   task: (
@@ -23,11 +26,6 @@ type WithProgressReporting = (
     token: CancellationToken,
   ) => Thenable<void>,
 ) => Thenable<void>;
-
-type ServerOpts = {
-  logger: Logger;
-  contextStoragePath: string;
-};
 
 /**
  * Client that manages a query server process.
@@ -37,7 +35,6 @@ type ServerOpts = {
  */
 export class QueryServerClient extends DisposableObject {
   serverProcess?: ServerProcess;
-  evaluationResultCallbacks: { [key: number]: (res: EvaluationResult) => void };
   progressCallbacks: {
     [key: number]: ((res: ProgressMessage) => void) | undefined;
   };
@@ -71,7 +68,7 @@ export class QueryServerClient extends DisposableObject {
     if (config.onDidChangeConfiguration !== undefined) {
       this.push(
         config.onDidChangeConfiguration(() =>
-          app.commands.execute("codeQL.restartLegacyQueryServerOnConfigChange"),
+          app.commands.execute("codeQL.restartQueryServerOnConfigChange"),
         ),
       );
     }
@@ -79,7 +76,6 @@ export class QueryServerClient extends DisposableObject {
     this.nextCallback = 0;
     this.nextProgress = 0;
     this.progressCallbacks = {};
-    this.evaluationResultCallbacks = {};
   }
 
   get logger(): Logger {
@@ -126,6 +122,8 @@ export class QueryServerClient extends DisposableObject {
   private async startQueryServerImpl(
     progressReporter: ProgressReporter,
   ): Promise<void> {
+    void this.logger.log("Starting NEW query server.");
+
     const ramArgs = await this.cliServer.resolveRam(
       this.config.queryMemoryMb,
       progressReporter,
@@ -143,24 +141,16 @@ export class QueryServerClient extends DisposableObject {
       args.push(this.config.cacheSize.toString());
     }
 
-    args.push("--require-db-registration");
+    const structuredLogFile = `${this.opts.contextStoragePath}/structured-evaluator-log.json`;
+    await ensureFile(structuredLogFile);
 
-    if (!(await this.cliServer.cliConstraints.supportsPerQueryEvalLog())) {
-      args.push("--old-eval-stats");
-    }
+    args.push("--evaluator-log");
+    args.push(structuredLogFile);
 
-    if (await this.cliServer.cliConstraints.supportsStructuredEvalLog()) {
-      const structuredLogFile = `${this.opts.contextStoragePath}/structured-evaluator-log.json`;
-      await ensureFile(structuredLogFile);
-
-      args.push("--evaluator-log");
-      args.push(structuredLogFile);
-
-      // We hard-code the verbosity level to 5 and minify to false.
-      // This will be the behavior of the per-query structured logging in the CLI after 2.8.3.
-      args.push("--evaluator-log-level");
-      args.push("5");
-    }
+    // We hard-code the verbosity level to 5 and minify to false.
+    // This will be the behavior of the per-query structured logging in the CLI after 2.8.3.
+    args.push("--evaluator-log-level");
+    args.push("5");
 
     if (this.config.debug) {
       args.push("--debug", "--tuple-counting");
@@ -168,14 +158,14 @@ export class QueryServerClient extends DisposableObject {
 
     if (cli.shouldDebugQueryServer()) {
       args.push(
-        "-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9010,server=n,suspend=y,quiet=y",
+        "-J=-agentlib:jdwp=transport=dt_socket,address=localhost:9010,server=y,suspend=y,quiet=y",
       );
     }
 
     const child = cli.spawnServer(
       this.config.codeQlPath,
       "CodeQL query server",
-      ["execute", "query-server"],
+      ["execute", "query-server2"],
       args,
       this.logger,
       (data) =>
@@ -187,16 +177,6 @@ export class QueryServerClient extends DisposableObject {
     );
     progressReporter.report({ message: "Connecting to CodeQL query server" });
     const connection = createMessageConnection(child.stdout, child.stdin);
-    connection.onRequest(completeQuery, (res) => {
-      if (!(res.runId in this.evaluationResultCallbacks)) {
-        void this.logger.log(
-          `No callback associated with run id ${res.runId}, continuing without executing any callback`,
-        );
-      } else {
-        this.evaluationResultCallbacks[res.runId](res);
-      }
-      return {};
-    });
     connection.onNotification(progress, (res) => {
       const callback = this.progressCallbacks[res.id];
       if (callback) {
@@ -206,27 +186,16 @@ export class QueryServerClient extends DisposableObject {
     this.serverProcess = new ServerProcess(
       child,
       connection,
-      "Query server",
+      "Query Server 2",
       this.logger,
     );
     // Ensure the server process is disposed together with this client.
     this.track(this.serverProcess);
     connection.listen();
-    progressReporter.report({ message: "Connected to CodeQL query server" });
+    progressReporter.report({ message: "Connected to CodeQL query server v2" });
     this.nextCallback = 0;
     this.nextProgress = 0;
     this.progressCallbacks = {};
-    this.evaluationResultCallbacks = {};
-  }
-
-  registerCallback(callback: (res: EvaluationResult) => void): number {
-    const id = this.nextCallback++;
-    this.evaluationResultCallbacks[id] = callback;
-    return id;
-  }
-
-  unRegisterCallback(id: number): void {
-    delete this.evaluationResultCallbacks[id];
   }
 
   get serverProcessPid(): number {
@@ -241,6 +210,7 @@ export class QueryServerClient extends DisposableObject {
   ): Promise<R> {
     const id = this.nextProgress++;
     this.progressCallbacks[id] = progress;
+
     try {
       if (this.serverProcess === undefined) {
         throw new Error("No query server process found.");
@@ -253,5 +223,11 @@ export class QueryServerClient extends DisposableObject {
     } finally {
       delete this.progressCallbacks[id];
     }
+  }
+
+  public dispose(disposeHandler?: DisposeHandler | undefined): void {
+    this.progressCallbacks = {};
+    this.stopQueryServer();
+    super.dispose(disposeHandler);
   }
 }

@@ -16,7 +16,7 @@ import { testDisposeHandler } from "../../test-dispose-handler";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
-import { QueryRunner } from "../../../../src/queryRunner";
+import { QueryRunner } from "../../../../src/query-server/query-runner";
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { mockedObject } from "../../utils/mocking.helpers";

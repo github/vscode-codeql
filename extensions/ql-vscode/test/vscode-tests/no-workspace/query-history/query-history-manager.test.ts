@@ -10,7 +10,7 @@ import { tmpDir } from "../../../../src/helpers";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { ResultsView } from "../../../../src/interface";
 import { EvalLogViewer } from "../../../../src/eval-log-viewer";
-import { QueryRunner } from "../../../../src/queryRunner";
+import { QueryRunner } from "../../../../src/query-server/query-runner";
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryInfo } from "../../../../src/query-history/query-history-info";
 import {
@@ -242,20 +242,6 @@ describe("QueryHistoryManager", () => {
 
         expect(localQueriesResultsViewStub.showResults).not.toHaveBeenCalled();
         expect(variantAnalysisManagerStub.showView).not.toBeCalled();
-        expect(
-          queryHistoryManager.treeDataProvider.getCurrent(),
-        ).toBeUndefined();
-      });
-    });
-
-    describe("no selection", () => {
-      it("should do nothing", async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-
-        await queryHistoryManager.handleItemClicked(undefined!, []);
-
-        expect(localQueriesResultsViewStub.showResults).not.toHaveBeenCalled();
-        expect(variantAnalysisManagerStub.showView).not.toHaveBeenCalled();
         expect(
           queryHistoryManager.treeDataProvider.getCurrent(),
         ).toBeUndefined();
@@ -828,93 +814,6 @@ describe("QueryHistoryManager", () => {
       const item2 = variantAnalysisHistory[3];
       await queryHistoryManager.handleExportResults(item1, [item1, item2]);
       expect(variantAnalysisManagerStub.exportResults).not.toBeCalled();
-    });
-  });
-
-  describe("determineSelection", () => {
-    const singleItem = "a";
-    const multipleItems = ["b", "c", "d"];
-
-    it("should get the selection from parameters", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      const selection = (queryHistoryManager as any).determineSelection(
-        singleItem,
-        multipleItems,
-      );
-      expect(selection).toEqual({
-        finalSingleItem: singleItem,
-        finalMultiSelect: multipleItems,
-      });
-    });
-
-    it("should get the selection when single selection is empty", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      const selection = (queryHistoryManager as any).determineSelection(
-        undefined,
-        multipleItems,
-      );
-      expect(selection).toEqual({
-        finalSingleItem: multipleItems[0],
-        finalMultiSelect: multipleItems,
-      });
-    });
-
-    it("should get the selection when multi-selection is empty", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      const selection = (queryHistoryManager as any).determineSelection(
-        singleItem,
-        undefined,
-      );
-      expect(selection).toEqual({
-        finalSingleItem: singleItem,
-        finalMultiSelect: [singleItem],
-      });
-    });
-
-    it("should get the selection from the treeView when both selections are empty", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      const p = new Promise<void>((done) => {
-        queryHistoryManager!.treeView.onDidChangeSelection((s) => {
-          if (s.selection[0] !== allHistory[1]) {
-            return;
-          }
-          const selection = (queryHistoryManager as any).determineSelection(
-            undefined,
-            undefined,
-          );
-          expect(selection).toEqual({
-            finalSingleItem: allHistory[1],
-            finalMultiSelect: [allHistory[1]],
-          });
-          done();
-        });
-      });
-
-      // I can't explain why, but the first time the onDidChangeSelection event fires, the selection is
-      // not correct (it is inexplicably allHistory[2]). So we fire the event a second time to get the
-      // correct selection.
-      await queryHistoryManager.treeView.reveal(allHistory[0], {
-        select: true,
-      });
-      await queryHistoryManager.treeView.reveal(allHistory[1], {
-        select: true,
-      });
-      await p;
-    });
-
-    it.skip("should get the selection from the treeDataProvider when both selections and the treeView are empty", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-      await queryHistoryManager.treeView.reveal(allHistory[1], {
-        select: true,
-      });
-      const selection = (queryHistoryManager as any).determineSelection(
-        undefined,
-        undefined,
-      );
-      expect(selection).toEqual({
-        finalSingleItem: allHistory[1],
-        finalMultiSelect: [allHistory[1]],
-      });
     });
   });
 
