@@ -141,7 +141,7 @@ export class SkeletonQueryWizard {
       maxStep: 3,
     });
 
-    return await askForLanguage(this.cliServer, false);
+    return await askForLanguage(this.cliServer, true);
   }
 
   private async createQlPack() {
