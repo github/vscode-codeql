@@ -118,7 +118,7 @@ import {
 } from "./common/commands";
 import { LocalQueries } from "./local-queries";
 import { getAstCfgCommands } from "./ast-cfg-commands";
-import { getQueryEditorCommands } from "./query-editor";
+import { getQueryEditorCommands } from "./language-support/query-editor";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";

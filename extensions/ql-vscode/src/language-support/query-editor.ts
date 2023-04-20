@@ -1,11 +1,11 @@
 import { Uri, window } from "vscode";
-import { CodeQLCliServer } from "./cli";
-import { QueryRunner } from "./query-server";
+import { CodeQLCliServer } from "../cli";
+import { QueryRunner } from "../query-server";
 import { basename, join } from "path";
-import { getErrorMessage } from "./pure/helpers-pure";
-import { redactableError } from "./pure/errors";
-import { showAndLogExceptionWithTelemetry } from "./helpers";
-import { AppCommandManager, QueryEditorCommands } from "./common/commands";
+import { getErrorMessage } from "../pure/helpers-pure";
+import { redactableError } from "../pure/errors";
+import { showAndLogExceptionWithTelemetry } from "../helpers";
+import { AppCommandManager, QueryEditorCommands } from "../common/commands";
 
 type QueryEditorOptions = {
   commandManager: AppCommandManager;
