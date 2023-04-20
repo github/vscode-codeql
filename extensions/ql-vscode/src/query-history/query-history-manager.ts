@@ -257,7 +257,10 @@ export class QueryHistoryManager extends DisposableObject {
         this.handleShowEvalLogSummary.bind(this),
       "codeQLQueryHistory.showEvalLogViewer":
         this.handleShowEvalLogViewer.bind(this),
-      "codeQLQueryHistory.showQueryLog": this.handleShowQueryLog.bind(this),
+      "codeQLQueryHistory.showQueryLog": createSingleSelectionCommand(
+        this.handleShowQueryLog.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.showQueryText": this.handleShowQueryText.bind(this),
       "codeQLQueryHistory.openQueryDirectory":
         this.handleOpenQueryDirectory.bind(this),
@@ -624,23 +627,16 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  async handleShowQueryLog(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] | undefined,
-  ) {
+  async handleShowQueryLog(item: QueryHistoryInfo) {
     // Local queries only
-    if (!this.assertSingleQuery(multiSelect) || singleItem?.t !== "local") {
+    if (item?.t !== "local" || !item.completedQuery) {
       return;
     }
 
-    if (!singleItem.completedQuery) {
-      return;
-    }
-
-    if (singleItem.completedQuery.logFileLocation) {
+    if (item.completedQuery.logFileLocation) {
       await tryOpenExternalFile(
         this.app.commands,
-        singleItem.completedQuery.logFileLocation,
+        item.completedQuery.logFileLocation,
       );
     } else {
       void showAndLogWarningMessage("No log file available");
