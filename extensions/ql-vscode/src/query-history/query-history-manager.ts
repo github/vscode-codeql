@@ -268,7 +268,10 @@ export class QueryHistoryManager extends DisposableObject {
         this.handleShowQueryLog.bind(this),
         "query",
       ),
-      "codeQLQueryHistory.showQueryText": this.handleShowQueryText.bind(this),
+      "codeQLQueryHistory.showQueryText": createSingleSelectionCommand(
+        this.handleShowQueryText.bind(this),
+        "query",
+      ),
       "codeQLQueryHistory.openQueryDirectory": createSingleSelectionCommand(
         this.handleOpenQueryDirectory.bind(this),
         "query",
@@ -811,31 +814,20 @@ export class QueryHistoryManager extends DisposableObject {
     await Promise.all(results);
   }
 
-  async handleShowQueryText(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[] = [],
-  ) {
-    if (!this.assertSingleQuery(multiSelect)) {
-      return;
-    }
-
-    if (singleItem.t === "variant-analysis") {
-      await this.variantAnalysisManager.openQueryText(
-        singleItem.variantAnalysis.id,
-      );
+  async handleShowQueryText(item: QueryHistoryInfo) {
+    if (item.t === "variant-analysis") {
+      await this.variantAnalysisManager.openQueryText(item.variantAnalysis.id);
       return;
     }
 
     const params = new URLSearchParams({
       isQuickEval: String(
-        !!(
-          singleItem.t === "local" && singleItem.initialInfo.quickEvalPosition
-        ),
+        !!(item.t === "local" && item.initialInfo.quickEvalPosition),
       ),
-      queryText: encodeURIComponent(getQueryText(singleItem)),
+      queryText: encodeURIComponent(getQueryText(item)),
     });
 
-    const queryId = getQueryId(singleItem);
+    const queryId = getQueryId(item);
 
     const uri = Uri.parse(`codeql:${queryId}.ql?${params.toString()}`, true);
     const doc = await workspace.openTextDocument(uri);

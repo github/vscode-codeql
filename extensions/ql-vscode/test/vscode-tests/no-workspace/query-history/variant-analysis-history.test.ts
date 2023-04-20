@@ -183,7 +183,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
 
   it("should get the query text", async () => {
     await qhm.readQueryHistory();
-    await qhm.handleShowQueryText(qhm.treeDataProvider.allHistory[0], []);
+    await qhm.handleShowQueryText(qhm.treeDataProvider.allHistory[0]);
 
     expect(openQueryTextSpy).toHaveBeenCalledWith(
       rawQueryHistory[0].variantAnalysis.id,
