@@ -1,16 +1,20 @@
 import { CancellationToken } from "vscode";
-import { CodeQLCliServer } from "../cli";
-import { ProgressCallback } from "../progress";
-import { Logger } from "../common";
-import { DatabaseItem } from "../local-databases";
+import { CodeQLCliServer } from "../../cli";
+import { ProgressCallback } from "../../progress";
+import { Logger } from "../../common";
+import { DatabaseItem } from "../../local-databases";
 import {
   Dataset,
   deregisterDatabases,
   registerDatabases,
-} from "../pure/legacy-messages";
-import { CoreQueryResults, CoreQueryTarget, QueryRunner } from "../queryRunner";
-import { QueryOutputDir } from "../run-queries-shared";
-import { QueryServerClient } from "./queryserver-client";
+} from "../../pure/legacy-messages";
+import {
+  CoreQueryResults,
+  CoreQueryTarget,
+  QueryRunner,
+} from "../query-runner";
+import { QueryOutputDir } from "../../run-queries-shared";
+import { QueryServerClient } from "./query-server-client";
 import {
   clearCacheInDatabase,
   compileAndRunQueryAgainstDatabaseCore,

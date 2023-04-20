@@ -1,4 +1,4 @@
-import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
+import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { dir } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
