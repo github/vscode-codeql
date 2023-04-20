@@ -14,7 +14,6 @@ import {
 } from "vscode";
 import { QueryHistoryConfig } from "../config";
 import {
-  showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
@@ -1045,17 +1044,6 @@ export class QueryHistoryManager extends DisposableObject {
     const choice = await window.showQuickPick(comparableQueryLabels);
 
     return choice?.query;
-  }
-
-  private assertSingleQuery(
-    multiSelect: QueryHistoryInfo[] = [],
-    message = "Please select a single query.",
-  ) {
-    if (multiSelect.length > 1) {
-      void showAndLogErrorMessage(message);
-      return false;
-    }
-    return true;
   }
 
   /**
