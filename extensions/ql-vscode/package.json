@@ -1632,7 +1632,7 @@
     "@types/js-yaml": "^3.12.5",
     "@types/jszip": "~3.1.6",
     "@types/nanoid": "^3.0.0",
-    "@types/node": "^16.11.25",
+    "@types/node": "^18.15.12",
     "@types/node-fetch": "~2.5.2",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
