@@ -36,7 +36,7 @@ import {
   QueryHistoryConfigListener,
   QueryServerConfigListener,
 } from "./config";
-import { install } from "./languageSupport";
+import { install } from "./language-support/language-support";
 import { DatabaseManager } from "./local-databases";
 import { DatabaseUI } from "./local-databases-ui";
 import {

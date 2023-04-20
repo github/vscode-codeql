@@ -12,7 +12,7 @@ import { languages, IndentAction, OnEnterRule } from "vscode";
  */
 export function install() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const langConfig = require("../language-configuration.json");
+  const langConfig = require("../../language-configuration.json");
   // setLanguageConfiguration requires a regexp for the wordpattern, not a string
   langConfig.wordPattern = new RegExp(langConfig.wordPattern);
   langConfig.onEnterRules = onEnterRules;
