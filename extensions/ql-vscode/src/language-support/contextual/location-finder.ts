@@ -1,27 +1,27 @@
 import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
-} from "../archive-filesystem-provider";
+} from "../../archive-filesystem-provider";
 import {
   ColumnKindCode,
   EntityValue,
   getResultSetSchema,
   ResultSetSchema,
-} from "../pure/bqrs-cli-types";
-import { CodeQLCliServer } from "../cli";
-import { DatabaseManager, DatabaseItem } from "../local-databases";
-import fileRangeFromURI from "./fileRangeFromURI";
-import { ProgressCallback } from "../progress";
-import { KeyType } from "./keyType";
+} from "../../pure/bqrs-cli-types";
+import { CodeQLCliServer } from "../../cli";
+import { DatabaseManager, DatabaseItem } from "../../local-databases";
+import fileRangeFromURI from "./file-range-from-uri";
+import { ProgressCallback } from "../../progress";
+import { KeyType } from "./key-type";
 import {
   qlpackOfDatabase,
   resolveQueries,
   runContextualQuery,
-} from "./queryResolver";
+} from "./query-resolver";
 import { CancellationToken, LocationLink, Uri } from "vscode";
-import { QueryOutputDir } from "../run-queries-shared";
-import { QueryRunner } from "../query-server";
-import { QueryResultType } from "../pure/new-messages";
+import { QueryOutputDir } from "../../run-queries-shared";
+import { QueryRunner } from "../../query-server";
+import { QueryResultType } from "../../pure/new-messages";
 
 export const SELECT_QUERY_NAME = "#select";
 export const TEMPLATE_NAME = "selectedSourceFile";

@@ -9,8 +9,8 @@ import {
   getQlPackForDbscheme,
   languageToDbScheme,
 } from "../../../src/helpers";
-import { resolveQueries } from "../../../src/contextual/queryResolver";
-import { KeyType } from "../../../src/contextual/keyType";
+import { resolveQueries } from "../../../src/language-support/contextual/query-resolver";
+import { KeyType } from "../../../src/language-support/contextual/key-type";
 import { faker } from "@faker-js/faker";
 import { getActivatedExtension } from "../global.helper";
 

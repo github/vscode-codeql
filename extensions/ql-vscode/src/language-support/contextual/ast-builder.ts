@@ -1,10 +1,14 @@
-import { CodeQLCliServer } from "../cli";
-import { DecodedBqrsChunk, BqrsId, EntityValue } from "../pure/bqrs-cli-types";
-import { DatabaseItem } from "../local-databases";
-import { ChildAstItem, AstItem } from "../astViewer";
-import fileRangeFromURI from "./fileRangeFromURI";
+import { CodeQLCliServer } from "../../cli";
+import {
+  DecodedBqrsChunk,
+  BqrsId,
+  EntityValue,
+} from "../../pure/bqrs-cli-types";
+import { DatabaseItem } from "../../local-databases";
+import { ChildAstItem, AstItem } from "../../astViewer";
+import fileRangeFromURI from "./file-range-from-uri";
 import { Uri } from "vscode";
-import { QueryOutputDir } from "../run-queries-shared";
+import { QueryOutputDir } from "../../run-queries-shared";
 
 /**
  * A class that wraps a tree of QL results from a query that

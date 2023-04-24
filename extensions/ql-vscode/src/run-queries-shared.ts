@@ -24,7 +24,7 @@ import { ensureMetadataIsComplete, InitialQueryInfo } from "./query-results";
 import { isQuickQueryPath } from "./local-queries";
 import { nanoid } from "nanoid";
 import { CodeQLCliServer } from "./cli";
-import { SELECT_QUERY_NAME } from "./contextual/locationFinder";
+import { SELECT_QUERY_NAME } from "./language-support/contextual/location-finder";
 import { DatabaseManager } from "./local-databases";
 import { DecodedBqrsChunk, EntityValue } from "./pure/bqrs-cli-types";
 import { BaseLogger, extLogger } from "./common";

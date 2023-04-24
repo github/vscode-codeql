@@ -1,12 +1,12 @@
 import { Uri, Range } from "vscode";
 
-import fileRangeFromURI from "../../../../src/contextual/fileRangeFromURI";
-import { DatabaseItem } from "../../../../src/local-databases";
+import fileRangeFromURI from "../../../../../src/language-support/contextual/file-range-from-uri";
+import { DatabaseItem } from "../../../../../src/local-databases";
 import {
   WholeFileLocation,
   LineColumnLocation,
-} from "../../../../src/pure/bqrs-cli-types";
-import { mockDatabaseItem } from "../../utils/mocking.helpers";
+} from "../../../../../src/pure/bqrs-cli-types";
+import { mockDatabaseItem } from "../../../utils/mocking.helpers";
 
 describe("fileRangeFromURI", () => {
   it("should return undefined when value is not a file URI", () => {

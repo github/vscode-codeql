@@ -9,16 +9,21 @@ import {
   getOnDiskWorkspaceFolders,
   QlPacksForLanguage,
   showAndLogExceptionWithTelemetry,
-} from "../helpers";
-import { KeyType, kindOfKeyType, nameOfKeyType, tagOfKeyType } from "./keyType";
-import { CodeQLCliServer } from "../cli";
-import { DatabaseItem } from "../local-databases";
-import { extLogger, TeeLogger } from "../common";
+} from "../../helpers";
+import {
+  KeyType,
+  kindOfKeyType,
+  nameOfKeyType,
+  tagOfKeyType,
+} from "./key-type";
+import { CodeQLCliServer } from "../../cli";
+import { DatabaseItem } from "../../local-databases";
+import { extLogger, TeeLogger } from "../../common";
 import { CancellationToken } from "vscode";
-import { ProgressCallback } from "../progress";
-import { CoreCompletedQuery, QueryRunner } from "../query-server";
-import { redactableError } from "../pure/errors";
-import { QLPACK_FILENAMES } from "../pure/ql";
+import { ProgressCallback } from "../../progress";
+import { CoreCompletedQuery, QueryRunner } from "../../query-server";
+import { redactableError } from "../../pure/errors";
+import { QLPACK_FILENAMES } from "../../pure/ql";
 
 export async function qlpackOfDatabase(
   cli: Pick<CodeQLCliServer, "resolveQlpacks">,

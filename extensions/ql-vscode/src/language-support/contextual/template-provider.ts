@@ -14,25 +14,25 @@ import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
   zipArchiveScheme,
-} from "../archive-filesystem-provider";
-import { CodeQLCliServer } from "../cli";
-import { DatabaseManager } from "../local-databases";
-import { CachedOperation } from "../helpers";
-import { ProgressCallback, withProgress } from "../progress";
-import AstBuilder from "./astBuilder";
-import { KeyType } from "./keyType";
+} from "../../archive-filesystem-provider";
+import { CodeQLCliServer } from "../../cli";
+import { DatabaseManager } from "../../local-databases";
+import { CachedOperation } from "../../helpers";
+import { ProgressCallback, withProgress } from "../../progress";
+import AstBuilder from "./ast-builder";
+import { KeyType } from "./key-type";
 import {
   FullLocationLink,
   getLocationsForUriString,
   TEMPLATE_NAME,
-} from "./locationFinder";
+} from "./location-finder";
 import {
   qlpackOfDatabase,
   resolveQueries,
   runContextualQuery,
-} from "./queryResolver";
-import { isCanary, NO_CACHE_AST_VIEWER } from "../config";
-import { CoreCompletedQuery, QueryRunner } from "../query-server";
+} from "./query-resolver";
+import { isCanary, NO_CACHE_AST_VIEWER } from "../../config";
+import { CoreCompletedQuery, QueryRunner } from "../../query-server";
 
 /**
  * Runs templated CodeQL queries to find definitions in

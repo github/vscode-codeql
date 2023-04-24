@@ -47,7 +47,7 @@ import {
   TemplatePrintCfgProvider,
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
-} from "./contextual/templateProvider";
+} from "./language-support/contextual/template-provider";
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
   DistributionKind,

@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 
-import { UrlValue, LineColumnLocation } from "../pure/bqrs-cli-types";
-import { isEmptyPath } from "../pure/bqrs-utils";
-import { DatabaseItem } from "../local-databases";
+import { UrlValue, LineColumnLocation } from "../../pure/bqrs-cli-types";
+import { isEmptyPath } from "../../pure/bqrs-utils";
+import { DatabaseItem } from "../../local-databases";
 
 export default function fileRangeFromURI(
   uri: UrlValue | undefined,
