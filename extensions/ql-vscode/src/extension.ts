@@ -36,7 +36,11 @@ import {
   QueryHistoryConfigListener,
   QueryServerConfigListener,
 } from "./config";
-import { install } from "./languageSupport";
+import {
+  install,
+  spawnIdeServer,
+  getQueryEditorCommands,
+} from "./language-support";
 import { DatabaseManager } from "./local-databases";
 import { DatabaseUI } from "./local-databases-ui";
 import {
@@ -72,7 +76,6 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "./pure/helpers-pure";
-import { spawnIdeServer } from "./ide-server";
 import { ResultsView } from "./interface";
 import { WebviewReveal } from "./interface-utils";
 import {
@@ -118,7 +121,6 @@ import {
 } from "./common/commands";
 import { LocalQueries } from "./local-queries";
 import { getAstCfgCommands } from "./ast-cfg-commands";
-import { getQueryEditorCommands } from "./query-editor";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
