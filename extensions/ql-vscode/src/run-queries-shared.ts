@@ -21,7 +21,7 @@ import {
   readdir,
 } from "fs-extra";
 import { ensureMetadataIsComplete, InitialQueryInfo } from "./query-results";
-import { isQuickQueryPath } from "./local-queries/quick-query";
+import { isQuickQueryPath } from "./local-queries";
 import { nanoid } from "nanoid";
 import { CodeQLCliServer } from "./cli";
 import { SELECT_QUERY_NAME } from "./contextual/locationFinder";
