@@ -4,7 +4,7 @@ import { AstViewer } from "./astViewer";
 import {
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
-} from "./language-support/contextual/template-provider";
+} from "./language-support";
 import { AstCfgCommands } from "./common/commands";
 import { LocalQueries } from "./local-queries";
 

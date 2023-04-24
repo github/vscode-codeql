@@ -6,15 +6,15 @@ import {
 } from "../../pure/bqrs-cli-types";
 import { DatabaseItem } from "../../local-databases";
 import { ChildAstItem, AstItem } from "../../astViewer";
-import fileRangeFromURI from "./file-range-from-uri";
 import { Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
+import { fileRangeFromURI } from ".";
 
 /**
  * A class that wraps a tree of QL results from a query that
  * has an @kind of graph
  */
-export default class AstBuilder {
+export class AstBuilder {
   private roots: AstItem[] | undefined;
   private bqrsPath: string;
   constructor(

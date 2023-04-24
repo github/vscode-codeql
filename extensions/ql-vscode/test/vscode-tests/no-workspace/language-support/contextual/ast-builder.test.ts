@@ -1,11 +1,11 @@
 import { readFileSync } from "fs-extra";
 
-import AstBuilder from "../../../../../src/language-support/contextual/ast-builder";
 import { CodeQLCliServer } from "../../../../../src/cli";
 import { Uri } from "vscode";
 import { QueryOutputDir } from "../../../../../src/run-queries-shared";
 import { mockDatabaseItem, mockedObject } from "../../../utils/mocking.helpers";
 import path from "path";
+import { AstBuilder } from "../../../../../src/language-support";
 
 /**
  *

@@ -39,15 +39,13 @@ import {
   install,
   spawnIdeServer,
   getQueryEditorCommands,
-} from "./language-support";
-import { DatabaseManager } from "./local-databases";
-import { DatabaseUI } from "./local-databases-ui";
-import {
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
-} from "./language-support/contextual/template-provider";
+} from "./language-support";
+import { DatabaseManager } from "./local-databases";
+import { DatabaseUI } from "./local-databases-ui";
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
   DistributionKind,

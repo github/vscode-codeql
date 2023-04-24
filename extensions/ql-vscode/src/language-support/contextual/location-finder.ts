@@ -10,7 +10,6 @@ import {
 } from "../../pure/bqrs-cli-types";
 import { CodeQLCliServer } from "../../cli";
 import { DatabaseManager, DatabaseItem } from "../../local-databases";
-import fileRangeFromURI from "./file-range-from-uri";
 import { ProgressCallback } from "../../progress";
 import { KeyType } from "./key-type";
 import {
@@ -22,6 +21,7 @@ import { CancellationToken, LocationLink, Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
 import { QueryRunner } from "../../query-server";
 import { QueryResultType } from "../../pure/new-messages";
+import { fileRangeFromURI } from ".";
 
 export const SELECT_QUERY_NAME = "#select";
 export const TEMPLATE_NAME = "selectedSourceFile";

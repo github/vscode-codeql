@@ -19,7 +19,6 @@ import { CodeQLCliServer } from "../../cli";
 import { DatabaseManager } from "../../local-databases";
 import { CachedOperation } from "../../helpers";
 import { ProgressCallback, withProgress } from "../../progress";
-import AstBuilder from "./ast-builder";
 import { KeyType } from "./key-type";
 import {
   FullLocationLink,
@@ -33,6 +32,7 @@ import {
 } from "./query-resolver";
 import { isCanary, NO_CACHE_AST_VIEWER } from "../../config";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
+import { AstBuilder } from ".";
 
 /**
  * Runs templated CodeQL queries to find definitions in

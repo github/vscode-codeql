@@ -4,7 +4,7 @@ import { UrlValue, LineColumnLocation } from "../../pure/bqrs-cli-types";
 import { isEmptyPath } from "../../pure/bqrs-utils";
 import { DatabaseItem } from "../../local-databases";
 
-export default function fileRangeFromURI(
+export function fileRangeFromURI(
   uri: UrlValue | undefined,
   db: DatabaseItem,
 ): vscode.Location | undefined {

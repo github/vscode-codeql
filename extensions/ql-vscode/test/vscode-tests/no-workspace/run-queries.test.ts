@@ -11,7 +11,7 @@ import {
 import * as config from "../../../src/config";
 import { tmpDir } from "../../../src/helpers";
 import { CodeQLCliServer } from "../../../src/cli";
-import { SELECT_QUERY_NAME } from "../../../src/language-support/contextual/location-finder";
+import { SELECT_QUERY_NAME } from "../../../src/language-support";
 import {
   QueryInProgress,
   compileQuery as compileQueryLegacy,
