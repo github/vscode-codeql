@@ -21,7 +21,7 @@ import { testExplorerExtensionId, TestHub } from "vscode-test-adapter-api";
 import { lt, parse } from "semver";
 import { watch } from "chokidar";
 
-import { AstViewer } from "./astViewer";
+import { AstViewer } from "./language-support/ast-viewer/ast-viewer";
 import {
   activate as archiveFilesystemProvider_activate,
   zipArchiveScheme,

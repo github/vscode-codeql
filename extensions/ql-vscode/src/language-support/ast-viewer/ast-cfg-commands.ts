@@ -1,6 +1,6 @@
 import { Uri, window } from "vscode";
 import { withProgress } from "../../progress";
-import { AstViewer } from "../../astViewer";
+import { AstViewer } from "./ast-viewer";
 import { TemplatePrintAstProvider, TemplatePrintCfgProvider } from "..";
 import { AstCfgCommands } from "../../common/commands";
 import { LocalQueries } from "../../local-queries";

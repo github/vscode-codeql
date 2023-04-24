@@ -5,7 +5,7 @@ import {
   EntityValue,
 } from "../../pure/bqrs-cli-types";
 import { DatabaseItem } from "../../local-databases";
-import { ChildAstItem, AstItem } from "../../astViewer";
+import { ChildAstItem, AstItem } from "../ast-viewer/ast-viewer";
 import { Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
 import { fileRangeFromURI } from ".";
