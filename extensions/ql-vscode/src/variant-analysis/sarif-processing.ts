@@ -238,7 +238,7 @@ function getCodeFlows(
 
   if (result.codeFlows) {
     for (const codeFlow of result.codeFlows) {
-      const threadFlows = [];
+      const threadFlows: ThreadFlow[] = [];
 
       for (const threadFlow of codeFlow.threadFlows) {
         for (const threadFlowLocation of threadFlow.locations) {
@@ -260,7 +260,7 @@ function getCodeFlows(
             },
             codeSnippet,
             highlightedRegion,
-          } as ThreadFlow);
+          });
         }
       }
 
