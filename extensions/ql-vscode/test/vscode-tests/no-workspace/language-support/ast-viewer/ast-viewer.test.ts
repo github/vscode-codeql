@@ -138,7 +138,10 @@ describe("AstViewer", () => {
 
   async function buildAst() {
     const astRoots = load(
-      await readFile(`${__dirname}/data/astViewer.yml`, "utf8"),
+      await readFile(
+        `${__dirname}/../../data/language-support/ast-viewer/ast-viewer.yml`,
+        "utf8",
+      ),
     ) as AstItem[];
 
     // convert range properties into vscode.Range instances
