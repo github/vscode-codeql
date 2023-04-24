@@ -117,7 +117,7 @@ import {
   QueryServerCommands,
 } from "./common/commands";
 import { LocalQueries, QuickEvalCodeLensProvider } from "./local-queries";
-import { getAstCfgCommands } from "./ast-cfg-commands";
+import { getAstCfgCommands } from "./language-support/ast-viewer/ast-cfg-commands";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
