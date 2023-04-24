@@ -20,7 +20,7 @@ import {
   showAndLogWarningMessage,
   showBinaryChoiceDialog,
 } from "../helpers";
-import { displayQuickQuery } from "../quick-query";
+import { displayQuickQuery } from "./quick-query";
 import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
 import { DatabaseUI } from "../local-databases-ui";
