@@ -5,7 +5,7 @@ import {
   Command,
   Range,
 } from "vscode";
-import { isQuickEvalCodelensEnabled } from "./config";
+import { isQuickEvalCodelensEnabled } from "../config";
 
 class QuickEvalCodeLensProvider implements CodeLensProvider {
   async provideCodeLenses(document: TextDocument): Promise<CodeLens[]> {

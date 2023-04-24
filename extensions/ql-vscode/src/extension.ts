@@ -26,7 +26,7 @@ import {
   activate as archiveFilesystemProvider_activate,
   zipArchiveScheme,
 } from "./archive-filesystem-provider";
-import QuickEvalCodeLensProvider from "./quickEvalCodeLensProvider";
+import QuickEvalCodeLensProvider from "./local-queries/quick-eval-code-lens-provider";
 import { CodeQLCliServer } from "./cli";
 import {
   CliConfigListener,
