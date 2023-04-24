@@ -5,10 +5,10 @@ import {
   EntityValue,
 } from "../../pure/bqrs-cli-types";
 import { DatabaseItem } from "../../local-databases";
-import { ChildAstItem, AstItem } from "../ast-viewer/ast-viewer";
+import { ChildAstItem, AstItem } from "./ast-viewer";
 import { Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
-import { fileRangeFromURI } from ".";
+import { fileRangeFromURI } from "../contextual";
 
 /**
  * A class that wraps a tree of QL results from a query that

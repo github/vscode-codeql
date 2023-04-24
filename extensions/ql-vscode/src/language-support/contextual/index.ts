@@ -1,4 +1,4 @@
-export * from "./ast-builder";
+export * from "../ast-viewer/ast-builder";
 export * from "./file-range-from-uri";
 export * from "./key-type";
 export * from "./location-finder";
