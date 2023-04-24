@@ -5,9 +5,9 @@ import {
   Command,
   Range,
 } from "vscode";
-import { isQuickEvalCodelensEnabled } from "./config";
+import { isQuickEvalCodelensEnabled } from "../config";
 
-class QuickEvalCodeLensProvider implements CodeLensProvider {
+export class QuickEvalCodeLensProvider implements CodeLensProvider {
   async provideCodeLenses(document: TextDocument): Promise<CodeLens[]> {
     const codeLenses: CodeLens[] = [];
 
@@ -43,5 +43,3 @@ class QuickEvalCodeLensProvider implements CodeLensProvider {
     return codeLenses;
   }
 }
-
-export default QuickEvalCodeLensProvider;

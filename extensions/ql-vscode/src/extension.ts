@@ -26,7 +26,6 @@ import {
   activate as archiveFilesystemProvider_activate,
   zipArchiveScheme,
 } from "./archive-filesystem-provider";
-import QuickEvalCodeLensProvider from "./quickEvalCodeLensProvider";
 import { CodeQLCliServer } from "./cli";
 import {
   CliConfigListener,
@@ -119,7 +118,7 @@ import {
   PreActivationCommands,
   QueryServerCommands,
 } from "./common/commands";
-import { LocalQueries } from "./local-queries";
+import { LocalQueries, QuickEvalCodeLensProvider } from "./local-queries";
 import { getAstCfgCommands } from "./ast-cfg-commands";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";

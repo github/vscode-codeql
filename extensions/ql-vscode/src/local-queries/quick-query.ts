@@ -3,18 +3,18 @@ import { dump, load } from "js-yaml";
 import { basename, join } from "path";
 import { CancellationToken, window as Window, workspace, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
-import { CodeQLCliServer } from "./cli";
-import { DatabaseUI } from "./local-databases-ui";
+import { CodeQLCliServer } from "../cli";
+import { DatabaseUI } from "../local-databases-ui";
 import {
   getInitialQueryContents,
   getPrimaryDbscheme,
   getQlPackForDbscheme,
   showBinaryChoiceDialog,
-} from "./helpers";
-import { ProgressCallback, UserCancellationException } from "./progress";
-import { getErrorMessage } from "./pure/helpers-pure";
-import { FALLBACK_QLPACK_FILENAME, getQlPackPath } from "./pure/ql";
-import { App } from "./common/app";
+} from "../helpers";
+import { ProgressCallback, UserCancellationException } from "../progress";
+import { getErrorMessage } from "../pure/helpers-pure";
+import { FALLBACK_QLPACK_FILENAME, getQlPackPath } from "../pure/ql";
+import { App } from "../common/app";
 
 const QUICK_QUERIES_DIR_NAME = "quick-queries";
 const QUICK_QUERY_QUERY_NAME = "quick-query.ql";
