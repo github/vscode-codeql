@@ -28,6 +28,7 @@ import { BaseLogger, LogOptions } from "./common";
 import { TestRunner } from "./test-runner";
 import { TestManagerBase } from "./test-manager-base";
 import { App } from "./common/app";
+import { isWorkspaceFolderOnDisk } from "./helpers";
 
 /**
  * Returns the complete text content of the specified file. If there is an error reading the file,
@@ -162,15 +163,22 @@ export class TestManager extends TestManagerBase {
   private startTrackingWorkspaceFolders(
     workspaceFolders: readonly WorkspaceFolder[],
   ): void {
-    for (const workspaceFolder of workspaceFolders) {
-      const workspaceFolderHandler = new WorkspaceFolderHandler(
-        workspaceFolder,
-        this,
-        this.cliServer,
-      );
-      this.track(workspaceFolderHandler);
-      this.workspaceFolderHandlers.set(workspaceFolder, workspaceFolderHandler);
-    }
+    // Only track on-disk workspace folders, to avoid trying to run the CLI test discovery command
+    // on random URIs.
+    workspaceFolders
+      .filter(isWorkspaceFolderOnDisk)
+      .forEach((workspaceFolder) => {
+        const workspaceFolderHandler = new WorkspaceFolderHandler(
+          workspaceFolder,
+          this,
+          this.cliServer,
+        );
+        this.track(workspaceFolderHandler);
+        this.workspaceFolderHandlers.set(
+          workspaceFolder,
+          workspaceFolderHandler,
+        );
+      });
   }
 
   /** Stop tracking tests in the specified workspace folders. */

@@ -249,15 +249,17 @@ export async function showInformationMessageWithAction(
   return chosenItem === actionItem;
 }
 
+/** Returns true if the specified workspace folder is on the file system. */
+export function isWorkspaceFolderOnDisk(
+  workspaceFolder: WorkspaceFolder,
+): boolean {
+  return workspaceFolder.uri.scheme === "file";
+}
+
 /** Gets all active workspace folders that are on the filesystem. */
 export function getOnDiskWorkspaceFoldersObjects() {
-  const workspaceFolders = workspace.workspaceFolders || [];
-  const diskWorkspaceFolders: WorkspaceFolder[] = [];
-  for (const workspaceFolder of workspaceFolders) {
-    if (workspaceFolder.uri.scheme === "file")
-      diskWorkspaceFolders.push(workspaceFolder);
-  }
-  return diskWorkspaceFolders;
+  const workspaceFolders = workspace.workspaceFolders ?? [];
+  return workspaceFolders.filter(isWorkspaceFolderOnDisk);
 }
 
 /** Gets all active workspace folders that are on the filesystem. */
