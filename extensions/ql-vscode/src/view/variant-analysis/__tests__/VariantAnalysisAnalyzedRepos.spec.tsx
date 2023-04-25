@@ -17,6 +17,7 @@ import {
   defaultFilterSortState,
   SortKey,
 } from "../../../pure/variant-analysis-filter-sort";
+import { act } from "react-dom/test-utils";
 
 describe(VariantAnalysisAnalyzedRepos.name, () => {
   const defaultVariantAnalysis = createMockVariantAnalysis({
@@ -155,11 +156,15 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
     expect(
       screen.queryByText("This is an empty block."),
     ).not.toBeInTheDocument();
-    await userEvent.click(
-      screen.getByRole("button", {
-        name: /octodemo\/hello-world-2/,
-      }),
-    );
+
+    await act(async () => {
+      await userEvent.click(
+        screen.getByRole("button", {
+          name: /octodemo\/hello-world-2/,
+        }),
+      );
+    });
+
     expect(screen.getByText("This is an empty block.")).toBeInTheDocument();
   });
 

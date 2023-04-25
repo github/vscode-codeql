@@ -1,5 +1,10 @@
 import * as React from "react";
-import { render as reactRender, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  render as reactRender,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
@@ -319,11 +324,13 @@ describe(RepoRow.name, () => {
       status: VariantAnalysisRepoStatus.TimedOut,
     });
 
-    await userEvent.click(
-      screen.getByRole("button", {
-        expanded: false,
-      }),
-    );
+    await act(async () => {
+      await userEvent.click(
+        screen.getByRole("button", {
+          expanded: false,
+        }),
+      );
+    });
 
     screen.getByRole("button", {
       expanded: true,
@@ -342,11 +349,13 @@ describe(RepoRow.name, () => {
       interpretedResults: [],
     });
 
-    await userEvent.click(
-      screen.getByRole("button", {
-        expanded: false,
-      }),
-    );
+    await act(async () => {
+      await userEvent.click(
+        screen.getByRole("button", {
+          expanded: false,
+        }),
+      );
+    });
 
     expect(
       screen.getByRole("button", {
@@ -365,11 +374,13 @@ describe(RepoRow.name, () => {
       },
     });
 
-    await userEvent.click(
-      screen.getByRole("button", {
-        expanded: false,
-      }),
-    );
+    await act(async () => {
+      await userEvent.click(
+        screen.getByRole("button", {
+          expanded: false,
+        }),
+      );
+    });
 
     expect((window as any).vsCodeApi.postMessage).toHaveBeenCalledWith({
       t: "requestRepositoryResults",
