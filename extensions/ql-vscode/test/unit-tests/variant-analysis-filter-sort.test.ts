@@ -127,7 +127,7 @@ describe(compareRepository.name, () => {
     });
   });
 
-  describe("when sort key is name", () => {
+  describe("when sort key is 'Alphabetically'", () => {
     const sorter = compareRepository({
       ...defaultFilterSortState,
       sortKey: SortKey.Name,
