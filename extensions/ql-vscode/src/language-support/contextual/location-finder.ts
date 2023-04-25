@@ -21,7 +21,7 @@ import { CancellationToken, LocationLink, Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
 import { QueryRunner } from "../../query-server";
 import { QueryResultType } from "../../pure/new-messages";
-import { fileRangeFromURI } from ".";
+import { fileRangeFromURI } from "./file-range-from-uri";
 
 export const SELECT_QUERY_NAME = "#select";
 export const TEMPLATE_NAME = "selectedSourceFile";

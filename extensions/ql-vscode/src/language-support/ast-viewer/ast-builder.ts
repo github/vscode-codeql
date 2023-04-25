@@ -8,7 +8,7 @@ import { DatabaseItem } from "../../local-databases";
 import { ChildAstItem, AstItem } from "./ast-viewer";
 import { Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
-import { fileRangeFromURI } from "../contextual";
+import { fileRangeFromURI } from "../contextual/file-range-from-uri";
 
 /**
  * A class that wraps a tree of QL results from a query that

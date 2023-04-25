@@ -32,7 +32,7 @@ import {
 } from "./query-resolver";
 import { isCanary, NO_CACHE_AST_VIEWER } from "../../config";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
-import { AstBuilder } from ".";
+import { AstBuilder } from "../ast-viewer/ast-builder";
 
 /**
  * Runs templated CodeQL queries to find definitions in
