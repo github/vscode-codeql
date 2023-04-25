@@ -592,12 +592,7 @@ export class QueryHistoryManager extends DisposableObject {
       );
     }
 
-    const fromItem =
-      this.compareWithItem &&
-      this.isSuccessfulCompletedLocalQueryInfo(this.compareWithItem) &&
-      multiSelect.includes(this.compareWithItem)
-        ? this.compareWithItem
-        : singleItem;
+    const fromItem = this.getFromQueryToCompare(singleItem, multiSelect);
 
     let toItem: CompletedLocalQueryInfo | undefined = undefined;
     try {
@@ -1067,6 +1062,21 @@ export class QueryHistoryManager extends DisposableObject {
         this.treeDataProvider.refresh();
         void this.treeView.reveal(current, { select: true });
       }
+    }
+  }
+
+  private getFromQueryToCompare(
+    singleItem: CompletedLocalQueryInfo,
+    multiSelect: CompletedLocalQueryInfo[],
+  ): CompletedLocalQueryInfo {
+    if (
+      this.compareWithItem &&
+      this.isSuccessfulCompletedLocalQueryInfo(this.compareWithItem) &&
+      multiSelect.includes(this.compareWithItem)
+    ) {
+      return this.compareWithItem;
+    } else {
+      return singleItem;
     }
   }
 
