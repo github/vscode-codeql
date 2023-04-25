@@ -168,6 +168,16 @@ export function tryGetRule(
   return undefined;
 }
 
+function getFilePath(
+  physicalLocation: sarif.PhysicalLocation,
+): string | undefined {
+  const filePath = physicalLocation.artifactLocation?.uri;
+  if (filePath === undefined || filePath === "" || filePath === "file:/") {
+    return undefined;
+  }
+  return filePath;
+}
+
 function getCodeSnippet(
   contextRegion?: sarif.Region,
   region?: sarif.Region,
@@ -244,7 +254,7 @@ function getCodeFlows(
         for (const threadFlowLocation of threadFlow.locations) {
           const physicalLocation =
             threadFlowLocation!.location!.physicalLocation!;
-          const filePath = physicalLocation!.artifactLocation!.uri!;
+          const filePath = getFilePath(physicalLocation);
           const codeSnippet = getCodeSnippet(
             physicalLocation.contextRegion,
             physicalLocation.region,
@@ -253,14 +263,16 @@ function getCodeFlows(
             ? getHighlightedRegion(physicalLocation.region)
             : undefined;
 
-          threadFlows.push({
-            fileLink: {
-              fileLinkPrefix,
-              filePath,
-            },
-            codeSnippet,
-            highlightedRegion,
-          });
+          if (filePath !== undefined) {
+            threadFlows.push({
+              fileLink: {
+                fileLinkPrefix,
+                filePath,
+              },
+              codeSnippet,
+              highlightedRegion,
+            });
+          }
         }
       }
 
