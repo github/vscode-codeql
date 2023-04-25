@@ -1,5 +1,5 @@
 import * as React from "react";
-import { render as reactRender, screen } from "@testing-library/react";
+import { act, render as reactRender, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   VariantAnalysisRepoStatus,
@@ -17,7 +17,6 @@ import {
   defaultFilterSortState,
   SortKey,
 } from "../../../pure/variant-analysis-filter-sort";
-import { act } from "react-dom/test-utils";
 
 describe(VariantAnalysisAnalyzedRepos.name, () => {
   const defaultVariantAnalysis = createMockVariantAnalysis({
