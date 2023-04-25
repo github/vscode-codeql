@@ -34,7 +34,7 @@ export const LastUpdated = ({ lastUpdated }: Props) => {
   return (
     <div>
       <IconContainer>
-        <Codicon name="repo-push" label="Last updated" />
+        <Codicon name="repo-push" label="Most recent commit" />
       </IconContainer>
       <Duration>{humanizeRelativeTime(date.getTime() - Date.now())}</Duration>
     </div>
