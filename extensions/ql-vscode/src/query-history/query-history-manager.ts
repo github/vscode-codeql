@@ -1082,24 +1082,24 @@ export class QueryHistoryManager extends DisposableObject {
 
   private async findOtherQueryToCompare(
     fromItem: CompletedLocalQueryInfo,
-    allItemsSelected: CompletedLocalQueryInfo[],
+    allSelectedItems: CompletedLocalQueryInfo[],
   ): Promise<CompletedLocalQueryInfo | undefined> {
     const dbName = fromItem.initialInfo.databaseInfo.name;
 
     // If exactly 2 items are selected, return the one that
     // isn't being used as the "from" item.
-    if (allItemsSelected.length === 2) {
+    if (allSelectedItems.length === 2) {
       const otherItem =
-        fromItem === allItemsSelected[0]
-          ? allItemsSelected[1]
-          : allItemsSelected[0];
+        fromItem === allSelectedItems[0]
+          ? allSelectedItems[1]
+          : allSelectedItems[0];
       if (otherItem.initialInfo.databaseInfo.name !== dbName) {
         throw new Error("Query databases must be the same.");
       }
       return otherItem;
     }
 
-    if (allItemsSelected.length > 2) {
+    if (allSelectedItems.length > 2) {
       throw new Error("Please select no more than 2 queries.");
     }
 
