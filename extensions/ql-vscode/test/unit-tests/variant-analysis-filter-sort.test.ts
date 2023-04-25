@@ -199,7 +199,7 @@ describe(compareRepository.name, () => {
     });
   });
 
-  describe("when sort key is last updated", () => {
+  describe("when sort key is 'Most recent commit'", () => {
     const sorter = compareRepository({
       ...defaultFilterSortState,
       sortKey: SortKey.LastUpdated,
@@ -297,7 +297,7 @@ describe(compareWithResults.name, () => {
     });
   });
 
-  describe("when sort key is last updated", () => {
+  describe("when sort key is 'Most recent commit'", () => {
     const sorter = compareWithResults({
       ...defaultFilterSortState,
       sortKey: SortKey.LastUpdated,
