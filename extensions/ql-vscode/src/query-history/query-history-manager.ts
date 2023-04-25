@@ -1086,7 +1086,8 @@ export class QueryHistoryManager extends DisposableObject {
   ): Promise<CompletedLocalQueryInfo | undefined> {
     const dbName = fromItem.initialInfo.databaseInfo.name;
 
-    // if exactly 2 queries are selected, use those
+    // If exactly 2 items are selected, return the one that
+    // isn't being used as the "from" item.
     if (allItemsSelected.length === 2) {
       const otherItem =
         fromItem === allItemsSelected[0]
@@ -1102,7 +1103,7 @@ export class QueryHistoryManager extends DisposableObject {
       throw new Error("Please select no more than 2 queries.");
     }
 
-    // otherwise, let the user choose
+    // Otherwise, present a dialog so the user can choose the item they want to use.
     const comparableQueryLabels = this.treeDataProvider.allHistory
       .filter(this.isSuccessfulCompletedLocalQueryInfo)
       .filter(
