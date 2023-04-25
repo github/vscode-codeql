@@ -1084,7 +1084,7 @@ export class QueryHistoryManager extends DisposableObject {
     fromItem: CompletedLocalQueryInfo,
     allSelectedItems: CompletedLocalQueryInfo[],
   ): Promise<CompletedLocalQueryInfo | undefined> {
-    const dbName = fromItem.initialInfo.databaseInfo.name;
+    const dbName = fromItem.databaseName;
 
     // If exactly 2 items are selected, return the one that
     // isn't being used as the "from" item.
@@ -1093,7 +1093,7 @@ export class QueryHistoryManager extends DisposableObject {
         fromItem === allSelectedItems[0]
           ? allSelectedItems[1]
           : allSelectedItems[0];
-      if (otherItem.initialInfo.databaseInfo.name !== dbName) {
+      if (otherItem.databaseName !== dbName) {
         throw new Error("Query databases must be the same.");
       }
       return otherItem;
@@ -1108,12 +1108,11 @@ export class QueryHistoryManager extends DisposableObject {
       .filter(this.isSuccessfulCompletedLocalQueryInfo)
       .filter(
         (otherItem) =>
-          otherItem !== fromItem &&
-          otherItem.initialInfo.databaseInfo.name === dbName,
+          otherItem !== fromItem && otherItem.databaseName === dbName,
       )
       .map((item) => ({
         label: this.labelProvider.getLabel(item),
-        description: item.initialInfo.databaseInfo.name,
+        description: item.databaseName,
         detail: item.completedQuery.statusString,
         query: item,
       }));
