@@ -15,7 +15,6 @@ import {
 import { QueryHistoryConfig } from "../config";
 import {
   showAndLogErrorMessage,
-  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
   showBinaryChoiceDialog,
@@ -25,7 +24,7 @@ import { extLogger } from "../common";
 import { URLSearchParams } from "url";
 import { DisposableObject } from "../pure/disposable-object";
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../pure/time";
-import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import {
   getActionsWorkflowRunUrl,
@@ -54,7 +53,6 @@ import { VariantAnalysisManager } from "../variant-analysis/variant-analysis-man
 import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { getTotalResultCount } from "../variant-analysis/shared/variant-analysis";
 import { HistoryTreeDataProvider } from "./history-tree-data-provider";
-import { redactableError } from "../pure/errors";
 import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryCommands } from "../common/commands";
 import { App } from "../common/app";
@@ -573,39 +571,40 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
+  isSuccessfulCompletedLocalQueryInfo(
+    item: QueryHistoryInfo,
+  ): item is CompletedLocalQueryInfo {
+    return item.t === "local" && item.completedQuery?.successful === true;
+  }
+
   async handleCompareWith(
     singleItem: QueryHistoryInfo,
     multiSelect: QueryHistoryInfo[] | undefined,
   ) {
     multiSelect ||= [singleItem];
 
-    try {
-      // local queries only
-      if (singleItem?.t !== "local") {
-        throw new Error("Please select a local query.");
-      }
-
-      if (!singleItem.completedQuery?.successful) {
-        throw new Error(
-          "Please select a query that has completed successfully.",
-        );
-      }
-
-      const from = this.compareWithItem || singleItem;
-      const to = await this.findOtherQueryToCompare(from, multiSelect);
-
-      if (from.completed && to?.completed) {
-        await this.doCompareCallback(
-          from as CompletedLocalQueryInfo,
-          to as CompletedLocalQueryInfo,
-        );
-      }
-    } catch (e) {
-      void showAndLogExceptionWithTelemetry(
-        redactableError(
-          asError(e),
-        )`Failed to compare queries: ${getErrorMessage(e)}`,
+    if (
+      !this.isSuccessfulCompletedLocalQueryInfo(singleItem) ||
+      !multiSelect.every(this.isSuccessfulCompletedLocalQueryInfo)
+    ) {
+      throw new Error(
+        "Please only select local queries that have completed successfully.",
       );
+    }
+
+    const fromItem = this.getFromQueryToCompare(singleItem, multiSelect);
+
+    let toItem: CompletedLocalQueryInfo | undefined = undefined;
+    try {
+      toItem = await this.findOtherQueryToCompare(fromItem, multiSelect);
+    } catch (e) {
+      void showAndLogErrorMessage(
+        `Failed to compare queries: ${getErrorMessage(e)}`,
+      );
+    }
+
+    if (toItem !== undefined) {
+      await this.doCompareCallback(fromItem, toItem);
     }
   }
 
@@ -1066,58 +1065,56 @@ export class QueryHistoryManager extends DisposableObject {
     }
   }
 
-  private async findOtherQueryToCompare(
-    singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
-  ): Promise<CompletedLocalQueryInfo | undefined> {
-    // Variant analyses cannot be compared
+  private getFromQueryToCompare(
+    singleItem: CompletedLocalQueryInfo,
+    multiSelect: CompletedLocalQueryInfo[],
+  ): CompletedLocalQueryInfo {
     if (
-      singleItem.t !== "local" ||
-      multiSelect.some((s) => s.t !== "local") ||
-      !singleItem.completedQuery
+      this.compareWithItem &&
+      this.isSuccessfulCompletedLocalQueryInfo(this.compareWithItem) &&
+      multiSelect.includes(this.compareWithItem)
     ) {
-      return undefined;
+      return this.compareWithItem;
+    } else {
+      return singleItem;
     }
-    const dbName = singleItem.initialInfo.databaseInfo.name;
+  }
 
-    // if exactly 2 queries are selected, use those
-    if (multiSelect?.length === 2) {
-      // return the query that is not the first selected one
-      const otherQuery = (
-        singleItem === multiSelect[0] ? multiSelect[1] : multiSelect[0]
-      ) as LocalQueryInfo;
-      if (!otherQuery.completedQuery) {
-        throw new Error("Please select a completed query.");
-      }
-      if (!otherQuery.completedQuery.successful) {
-        throw new Error("Please select a successful query.");
-      }
-      if (otherQuery.initialInfo.databaseInfo.name !== dbName) {
+  private async findOtherQueryToCompare(
+    fromItem: CompletedLocalQueryInfo,
+    allSelectedItems: CompletedLocalQueryInfo[],
+  ): Promise<CompletedLocalQueryInfo | undefined> {
+    const dbName = fromItem.databaseName;
+
+    // If exactly 2 items are selected, return the one that
+    // isn't being used as the "from" item.
+    if (allSelectedItems.length === 2) {
+      const otherItem =
+        fromItem === allSelectedItems[0]
+          ? allSelectedItems[1]
+          : allSelectedItems[0];
+      if (otherItem.databaseName !== dbName) {
         throw new Error("Query databases must be the same.");
       }
-      return otherQuery as CompletedLocalQueryInfo;
+      return otherItem;
     }
 
-    if (multiSelect?.length > 2) {
+    if (allSelectedItems.length > 2) {
       throw new Error("Please select no more than 2 queries.");
     }
 
-    // otherwise, let the user choose
+    // Otherwise, present a dialog so the user can choose the item they want to use.
     const comparableQueryLabels = this.treeDataProvider.allHistory
+      .filter(this.isSuccessfulCompletedLocalQueryInfo)
       .filter(
-        (otherQuery) =>
-          otherQuery !== singleItem &&
-          otherQuery.t === "local" &&
-          otherQuery.completedQuery &&
-          otherQuery.completedQuery.successful &&
-          otherQuery.initialInfo.databaseInfo.name === dbName,
+        (otherItem) =>
+          otherItem !== fromItem && otherItem.databaseName === dbName,
       )
       .map((item) => ({
         label: this.labelProvider.getLabel(item),
-        description: (item as CompletedLocalQueryInfo).initialInfo.databaseInfo
-          .name,
-        detail: (item as CompletedLocalQueryInfo).completedQuery.statusString,
-        query: item as CompletedLocalQueryInfo,
+        description: item.databaseName,
+        detail: item.completedQuery.statusString,
+        query: item,
       }));
     if (comparableQueryLabels.length < 1) {
       throw new Error("No other queries available to compare with.");

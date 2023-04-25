@@ -313,4 +313,8 @@ export class LocalQueryInfo {
       return QueryStatus.Failed;
     }
   }
+
+  get databaseName() {
+    return this.initialInfo.databaseInfo.name;
+  }
 }
