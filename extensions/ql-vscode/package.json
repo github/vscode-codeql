@@ -21,7 +21,8 @@
     "Programming Languages"
   ],
   "extensionDependencies": [
-    "hbenl.vscode-test-explorer"
+    "hbenl.vscode-test-explorer",
+    "ms-vscode.vscode-js-profile-flame"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
@@ -644,6 +645,11 @@
         "icon": "$(preview)"
       },
       {
+        "command": "codeQLQueryHistory.profileQueryPerformance",
+        "title": "Profile Query Performance",
+        "icon": "$(watch)"
+      },
+      {
         "command": "codeQLQueryHistory.removeHistoryItemContextMenu",
         "title": "Delete",
         "icon": "$(trash)"
@@ -882,6 +888,11 @@
           "command": "codeQLVariantAnalysisRepositories.addNewList",
           "when": "view == codeQLVariantAnalysisRepositories && codeQLVariantAnalysisRepositories.configError == false",
           "group": "navigation"
+        },
+        {
+          "command": "codeQLQueryHistory.profileQueryPerformance",
+          "when": "view == codeQLQueryHistory",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -1039,6 +1050,16 @@
           "command": "codeQLTests.acceptOutput",
           "group": "qltest@2",
           "when": "viewItem == testWithSource"
+        },
+        {
+          "command": "codeQLQueryHistory.profileQueryPerformance",
+          "group": "7_queryHistory@0",
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
+        },
+        {
+          "command": "codeQLQueryHistory.profileQueryPerformance",
+          "group": "inline",
+          "when": "viewItem == interpretedResultsItem || viewItem == rawResultsItem || viewItem == remoteResultsItem || viewItem == cancelledResultsItem || viewItem == cancelledRemoteResultsItem"
         }
       ],
       "testing/item/context": [
@@ -1423,6 +1444,10 @@
         },
         {
           "command": "codeQLTests.acceptOutputContextTestItem",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueryHistory.profileQueryPerformance",
           "when": "false"
         }
       ],
