@@ -153,7 +153,7 @@ describe(compareRepository.name, () => {
     });
   });
 
-  describe("when sort key is stars", () => {
+  describe("when sort key is 'Popularity'", () => {
     const sorter = compareRepository({
       ...defaultFilterSortState,
       sortKey: SortKey.Stars,
@@ -271,7 +271,7 @@ describe(compareWithResults.name, () => {
     });
   });
 
-  describe("when sort key is stars", () => {
+  describe("when sort key is 'Popularity'", () => {
     const sorter = compareWithResults({
       ...defaultFilterSortState,
       sortKey: SortKey.Stars,
