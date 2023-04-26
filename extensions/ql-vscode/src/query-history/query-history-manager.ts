@@ -57,7 +57,7 @@ import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { tryOpenExternalFile } from "../vscode-utils/external-files";
-import { convertJSONSummaryEvaluatorLog } from "./profileConverter";
+import { convertJSONSummaryEvaluatorLog } from "./query-history-profile-converter";
 /**
  * query-history-manager.ts
  * ------------
