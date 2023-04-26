@@ -1,4 +1,4 @@
-import EvalLogTreeBuilder from "../../../../src/query-evaluation-logging/eval-log-tree-builder";
+import { EvalLogTreeBuilder } from "../../../../src/query-evaluation-logging";
 import { EvalLogData } from "../../../../src/pure/log-summary-parser";
 
 describe("EvalLogTreeBuilder", () => {

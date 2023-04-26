@@ -3,7 +3,7 @@ import {
   ChildEvalLogTreeItem,
   EvalLogTreeItem,
   EvalLogViewer,
-} from "../../../../src/query-evaluation-logging/eval-log-viewer";
+} from "../../../../src/query-evaluation-logging";
 import { testDisposeHandler } from "../../test-dispose-handler";
 
 describe("EvalLogViewer", () => {
