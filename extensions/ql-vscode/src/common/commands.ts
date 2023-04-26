@@ -181,6 +181,7 @@ export type QueryHistoryCommands = {
   "codeQLQueryHistory.itemClicked": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.openOnGithub": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
   "codeQLQueryHistory.copyRepoList": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
+  "codeQLQueryHistory.profileQueryPerformance": TreeViewContextMultiSelectionCommandFunction<QueryHistoryInfo>;
 
   // Commands in the command palette
   "codeQL.exportSelectedVariantAnalysisResults": () => Promise<void>;

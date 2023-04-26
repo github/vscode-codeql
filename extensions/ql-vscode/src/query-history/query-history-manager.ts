@@ -1043,8 +1043,8 @@ export class QueryHistoryManager extends DisposableObject {
 
   async profileQueryPerformance(
     singleItem: QueryHistoryInfo,
-    multiSelect: QueryHistoryInfo[],
-  ) {
+    multiSelect: QueryHistoryInfo[] | undefined,
+  ): Promise<void> {
     void extLogger.log("Profiling performance of selected query...");
 
     if (
