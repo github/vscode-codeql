@@ -2,7 +2,7 @@ import fetch, { Response } from "node-fetch";
 import { zip } from "zip-a-folder";
 import { Open } from "unzipper";
 import { Uri, CancellationToken, window, InputBoxOptions } from "vscode";
-import { CodeQLCliServer } from "./cli";
+import { CodeQLCliServer } from "../cli";
 import {
   ensureDir,
   realpath as fs_realpath,
@@ -16,18 +16,18 @@ import { basename, join } from "path";
 import * as Octokit from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 
-import { DatabaseManager, DatabaseItem } from "./local-databases";
-import { showAndLogInformationMessage, tmpDir } from "./helpers";
-import { reportStreamProgress, ProgressCallback } from "./progress";
-import { extLogger } from "./common";
-import { getErrorMessage } from "./pure/helpers-pure";
+import { DatabaseManager, DatabaseItem } from "../local-databases";
+import { showAndLogInformationMessage, tmpDir } from "../helpers";
+import { reportStreamProgress, ProgressCallback } from "../progress";
+import { extLogger } from "../common";
+import { getErrorMessage } from "../pure/helpers-pure";
 import {
   getNwoFromGitHubUrl,
   isValidGitHubNwo,
-} from "./common/github-url-identifier-helper";
-import { Credentials } from "./common/authentication";
-import { AppCommandManager } from "./common/commands";
-import { ALLOW_HTTP_SETTING } from "./config";
+} from "../common/github-url-identifier-helper";
+import { Credentials } from "../common/authentication";
+import { AppCommandManager } from "../common/commands";
+import { ALLOW_HTTP_SETTING } from "../config";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.

@@ -25,7 +25,7 @@ import { DatabaseItem, DatabaseManager } from "../local-databases";
 import { CodeQLCliServer } from "../cli";
 import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { generateFlowModel } from "./generate-flow-model";
-import { promptImportGithubDatabase } from "../databaseFetcher";
+import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
 import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
 import { showResolvableLocation } from "../interface-utils";

@@ -1,25 +1,25 @@
 import { join } from "path";
 import { CancellationToken, Uri, window } from "vscode";
 
-import { CodeQLCliServer } from "../../../src/cli";
-import { DatabaseManager } from "../../../src/local-databases";
+import { CodeQLCliServer } from "../../../../src/cli";
+import { DatabaseManager } from "../../../../src/local-databases";
 import {
   importArchiveDatabase,
   promptImportInternetDatabase,
-} from "../../../src/databaseFetcher";
+} from "../../../../src/databases/database-fetcher";
 import {
   cleanDatabases,
   dbLoc,
   DB_URL,
   getActivatedExtension,
   storagePath,
-} from "../global.helper";
-import { createMockCommandManager } from "../../__mocks__/commandsMock";
+} from "../../global.helper";
+import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 
 /**
  * Run various integration tests for databases
  */
-describe("DatabaseFetcher", () => {
+describe("database-fetcher", () => {
   let databaseManager: DatabaseManager;
   let inputBoxStub: jest.SpiedFunction<typeof window.showInputBox>;
   let cli: CodeQLCliServer;

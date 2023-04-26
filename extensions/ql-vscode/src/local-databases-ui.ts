@@ -39,7 +39,7 @@ import {
   importArchiveDatabase,
   promptImportGithubDatabase,
   promptImportInternetDatabase,
-} from "./databaseFetcher";
+} from "./databases/database-fetcher";
 import { asError, asyncFilter, getErrorMessage } from "./pure/helpers-pure";
 import { QueryRunner } from "./query-server";
 import { isCanary } from "./config";
