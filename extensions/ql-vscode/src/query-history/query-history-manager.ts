@@ -57,7 +57,7 @@ import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { tryOpenExternalFile } from "../vscode-utils/external-files";
-
+import { convertJSONSummaryEvaluatorLog } from "./profileConverter";
 /**
  * query-history-manager.ts
  * ------------
@@ -260,9 +260,10 @@ export class QueryHistoryManager extends DisposableObject {
       "codeQLQueryHistory.itemClicked": this.handleItemClicked.bind(this),
       "codeQLQueryHistory.openOnGithub": this.handleOpenOnGithub.bind(this),
       "codeQLQueryHistory.copyRepoList": this.handleCopyRepoList.bind(this),
-
       "codeQL.exportSelectedVariantAnalysisResults":
         this.exportSelectedVariantAnalysisResults.bind(this),
+      "codeQLQueryHistory.profileQueryPerformance":
+        this.profileQueryPerformance.bind(this),
     };
   }
 
@@ -1038,6 +1039,37 @@ export class QueryHistoryManager extends DisposableObject {
     await this.variantAnalysisManager.exportResults(
       queryHistoryItem.variantAnalysis.id,
     );
+  }
+
+  async profileQueryPerformance(
+    singleItem: QueryHistoryInfo,
+    multiSelect: QueryHistoryInfo[],
+  ) {
+    void extLogger.log("Profiling performance of selected query...");
+
+    if (
+      !this.assertSingleQuery(multiSelect) ||
+      singleItem.t === "variant-analysis"
+    ) {
+      return;
+    }
+
+    if (singleItem.jsonEvalLogSummaryLocation) {
+      // CPU profiles are stored alongside the JSON summary
+      const cpuProfile = `${singleItem.jsonEvalLogSummaryLocation}.cpuprofile`;
+
+      // create the CPU profile if it doesn't already exist
+      if (!(await pathExists(cpuProfile)))
+        convertJSONSummaryEvaluatorLog(
+          singleItem.jsonEvalLogSummaryLocation,
+          cpuProfile,
+        );
+
+      // open the CPU profile in the editor (which is an extension)
+      await this.app.commands.execute("vscode.open", Uri.file(cpuProfile));
+    } else {
+      this.warnNoEvalLogs();
+    }
   }
 
   addQuery(item: QueryHistoryInfo) {

@@ -72,7 +72,7 @@ export function convertJSONSummaryEvaluatorLog(
       continue;
     }
 
-    // calculate min max while we are at it.
+    // calculate the min and max while we are at it.
     if (tsMax < parsed.completionTimeUs) {
       tsMax = parsed.completionTimeUs;
     }
