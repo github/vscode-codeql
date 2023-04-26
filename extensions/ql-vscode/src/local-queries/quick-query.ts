@@ -4,7 +4,7 @@ import { basename, join } from "path";
 import { CancellationToken, window as Window, workspace, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 import { CodeQLCliServer } from "../cli";
-import { DatabaseUI } from "../local-databases-ui";
+import { DatabaseUI } from "../databases/local-databases-ui";
 import {
   getInitialQueryContents,
   getPrimaryDbscheme,

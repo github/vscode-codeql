@@ -23,7 +23,7 @@ import {
 import { displayQuickQuery } from "./quick-query";
 import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
-import { DatabaseUI } from "../local-databases-ui";
+import { DatabaseUI } from "../databases/local-databases-ui";
 import { ResultsView } from "../interface";
 import { DatabaseItem, DatabaseManager } from "../local-databases";
 import {
