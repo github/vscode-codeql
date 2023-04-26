@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.8.3 - 26 April 2023
 
 - Added ability to filter repositories for a variant analysis to only those that have results [#2343](https://github.com/github/vscode-codeql/pull/2343)
 - Add new configuration option to allow downloading databases from http, non-secure servers. [#2332](https://github.com/github/vscode-codeql/pull/2332)
