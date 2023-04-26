@@ -9,7 +9,7 @@ import {
 import { join } from "path";
 
 import { ExtensionContext, Uri } from "vscode";
-import { DatabaseManager } from "../../../../src/local-databases";
+import { DatabaseManager } from "../../../../src/databases/local-databases";
 import { tmpDir, walkDirectory } from "../../../../src/helpers";
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";

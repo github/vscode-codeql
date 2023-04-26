@@ -2,7 +2,7 @@ import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../../cli";
 import { ProgressCallback } from "../../progress";
 import { Logger } from "../../common";
-import { DatabaseItem } from "../../local-databases";
+import { DatabaseItem } from "../../databases/local-databases";
 import {
   Dataset,
   deregisterDatabases,

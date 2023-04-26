@@ -8,7 +8,7 @@ import {
   CancellationTokenSource,
 } from "vscode";
 import { DebuggerCommands } from "../common/commands";
-import { DatabaseManager } from "../local-databases";
+import { DatabaseManager } from "../databases/local-databases";
 import { DisposableObject } from "../pure/disposable-object";
 import { CoreQueryResults } from "../query-server";
 import {

@@ -21,7 +21,7 @@ import {
 import { extLogger } from "../common";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
-import { DatabaseItem, DatabaseManager } from "../local-databases";
+import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../cli";
 import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { generateFlowModel } from "./generate-flow-model";

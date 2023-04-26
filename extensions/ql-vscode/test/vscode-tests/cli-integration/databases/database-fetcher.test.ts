@@ -2,7 +2,7 @@ import { join } from "path";
 import { CancellationToken, Uri, window } from "vscode";
 
 import { CodeQLCliServer } from "../../../../src/cli";
-import { DatabaseManager } from "../../../../src/local-databases";
+import { DatabaseManager } from "../../../../src/databases/local-databases";
 import {
   importArchiveDatabase,
   promptImportInternetDatabase,

@@ -7,7 +7,10 @@ import {
   Uri,
   extensions,
 } from "vscode";
-import { DatabaseItem, DatabaseManager } from "../../src/local-databases";
+import {
+  DatabaseItem,
+  DatabaseManager,
+} from "../../src/databases/local-databases";
 import { CodeQLCliServer } from "../../src/cli";
 import { removeWorkspaceRefs } from "../../src/variant-analysis/run-remote-query";
 import { CodeQLExtensionInterface } from "../../src/extension";

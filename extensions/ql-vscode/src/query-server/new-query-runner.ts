@@ -1,6 +1,6 @@
 import { CancellationToken } from "vscode";
 import { ProgressCallback, UserCancellationException } from "../progress";
-import { DatabaseItem } from "../local-databases";
+import { DatabaseItem } from "../databases/local-databases";
 import {
   clearCache,
   ClearCacheParams,

@@ -10,7 +10,7 @@ import {
   showAndLogErrorMessage,
 } from "../helpers";
 import { ProgressCallback } from "../progress";
-import { DatabaseItem } from "../local-databases";
+import { DatabaseItem } from "../databases/local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";

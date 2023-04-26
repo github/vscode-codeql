@@ -1,6 +1,6 @@
 import { Uri, Range } from "vscode";
 
-import { DatabaseItem } from "../../../../../src/local-databases";
+import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import {
   WholeFileLocation,
   LineColumnLocation,

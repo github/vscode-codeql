@@ -8,7 +8,7 @@ import {
   DatabaseContentsWithDbScheme,
   DatabaseItem,
   DatabaseResolver,
-} from "../../local-databases";
+} from "../../databases/local-databases";
 import {
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,

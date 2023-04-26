@@ -32,7 +32,7 @@ import {
   getQueryText,
   QueryHistoryInfo,
 } from "./query-history-info";
-import { DatabaseManager } from "../local-databases";
+import { DatabaseManager } from "../databases/local-databases";
 import { registerQueryHistoryScrubber } from "./query-history-scrubber";
 import {
   QueryStatus,

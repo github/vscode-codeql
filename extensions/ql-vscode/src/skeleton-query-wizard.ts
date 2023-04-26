@@ -11,7 +11,7 @@ import {
 } from "./helpers";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
-import { DatabaseItem, DatabaseManager } from "./local-databases";
+import { DatabaseItem, DatabaseManager } from "./databases/local-databases";
 import { ProgressCallback, UserCancellationException } from "./progress";
 import {
   askForGitHubRepo,

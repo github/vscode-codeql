@@ -21,7 +21,7 @@ import {
   DatabaseChangedEvent,
   DatabaseItem,
   DatabaseManager,
-} from "../local-databases";
+} from "./local-databases";
 import {
   ProgressCallback,
   ProgressContext,
