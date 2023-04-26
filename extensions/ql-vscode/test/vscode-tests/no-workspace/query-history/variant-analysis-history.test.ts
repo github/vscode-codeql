@@ -15,7 +15,7 @@ import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { ResultsView } from "../../../../src/interface";
-import { EvalLogViewer } from "../../../../src/eval-log-viewer";
+import { EvalLogViewer } from "../../../../src/query-evaluation-logging";
 import { QueryRunner } from "../../../../src/query-server/query-runner";
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";

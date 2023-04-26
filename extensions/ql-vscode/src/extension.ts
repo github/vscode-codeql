@@ -94,7 +94,7 @@ import { ProgressCallback, withProgress } from "./progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
-import { EvalLogViewer } from "./eval-log-viewer";
+import { EvalLogViewer } from "./query-evaluation-logging";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
 import { LogScannerService } from "./log-insights/log-scanner-service";
