@@ -8,7 +8,7 @@ import * as helpers from "../../../../src/helpers";
 import {
   handleDownloadPacks,
   handleInstallPackDependencies,
-} from "../../../../src/packaging/packaging";
+} from "../../../../src/packaging";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { getActivatedExtension } from "../../global.helper";
 

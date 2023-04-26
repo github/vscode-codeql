@@ -92,7 +92,7 @@ import { CompareView } from "./compare/compare-view";
 import { initializeTelemetry } from "./telemetry";
 import { ProgressCallback, withProgress } from "./progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
-import { getPackagingCommands } from "./packaging/packaging";
+import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { EvalLogViewer } from "./query-evaluation-logging";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
