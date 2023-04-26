@@ -15,19 +15,19 @@ import {
 } from "vscode";
 import { basename } from "path";
 
-import { DatabaseItem } from "./local-databases";
-import { UrlValue, BqrsId } from "./pure/bqrs-cli-types";
-import { showLocation } from "./interface-utils";
+import { DatabaseItem } from "../../local-databases";
+import { UrlValue, BqrsId } from "../../pure/bqrs-cli-types";
+import { showLocation } from "../../interface-utils";
 import {
   isStringLoc,
   isWholeFileLoc,
   isLineColumnLoc,
-} from "./pure/bqrs-utils";
-import { DisposableObject } from "./pure/disposable-object";
-import { showAndLogExceptionWithTelemetry } from "./helpers";
-import { asError, getErrorMessage } from "./pure/helpers-pure";
-import { redactableError } from "./pure/errors";
-import { AstViewerCommands } from "./common/commands";
+} from "../../pure/bqrs-utils";
+import { DisposableObject } from "../../pure/disposable-object";
+import { showAndLogExceptionWithTelemetry } from "../../helpers";
+import { asError, getErrorMessage } from "../../pure/helpers-pure";
+import { redactableError } from "../../pure/errors";
+import { AstViewerCommands } from "../../common/commands";
 
 export interface AstItem {
   id: BqrsId;

@@ -1,16 +1,16 @@
 import { load } from "js-yaml";
 import * as fs from "fs-extra";
 
-import { KeyType } from "../../../../src/contextual/keyType";
-import { getErrorMessage } from "../../../../src/pure/helpers-pure";
+import { getErrorMessage } from "../../../../../src/pure/helpers-pure";
 
-import * as helpers from "../../../../src/helpers";
+import * as helpers from "../../../../../src/helpers";
 import {
+  KeyType,
   qlpackOfDatabase,
   resolveQueries,
-} from "../../../../src/contextual/queryResolver";
-import { CodeQLCliServer } from "../../../../src/cli";
-import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
+} from "../../../../../src/language-support";
+import { CodeQLCliServer } from "../../../../../src/cli";
+import { mockDatabaseItem, mockedObject } from "../../../utils/mocking.helpers";
 
 describe("queryResolver", () => {
   let getQlPackForDbschemeSpy: jest.SpiedFunction<

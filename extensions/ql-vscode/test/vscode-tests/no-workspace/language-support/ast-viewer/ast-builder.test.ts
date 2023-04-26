@@ -1,15 +1,15 @@
 import { readFileSync } from "fs-extra";
 
-import AstBuilder from "../../../../src/contextual/astBuilder";
-import { CodeQLCliServer } from "../../../../src/cli";
+import { CodeQLCliServer } from "../../../../../src/cli";
 import { Uri } from "vscode";
-import { QueryOutputDir } from "../../../../src/run-queries-shared";
-import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
+import { QueryOutputDir } from "../../../../../src/run-queries-shared";
+import { mockDatabaseItem, mockedObject } from "../../../utils/mocking.helpers";
 import path from "path";
+import { AstBuilder } from "../../../../../src/language-support";
 
 /**
  *
-This test uses an AST generated from this file (already BQRS-decoded in ../data/astBuilder.json):
+This test uses an AST generated from this file (already BQRS-decoded in ../data/language-support/ast-viewer/ast-builder.json):
 
 #include <common.h>
 
@@ -161,7 +161,10 @@ describe("AstBuilder", () => {
     const index = mapper[resultSet] as number;
     if (index >= 0 && index <= 2) {
       return JSON.parse(
-        readFileSync(`${__dirname}/../data/astBuilder.json`, "utf8"),
+        readFileSync(
+          `${__dirname}/../../data/language-support/ast-viewer/ast-builder.json`,
+          "utf8",
+        ),
       )[index];
     } else {
       throw new Error(`Invalid resultSet: ${resultSet}`);

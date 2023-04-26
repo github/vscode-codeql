@@ -21,7 +21,7 @@ import {
   CoreCompletedQuery,
   QueryRunner,
 } from "../../../src/query-server/query-runner";
-import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
+import { SELECT_QUERY_NAME } from "../../../src/language-support";
 import { LocalQueries } from "../../../src/local-queries";
 import { QueryResultType } from "../../../src/pure/new-messages";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";

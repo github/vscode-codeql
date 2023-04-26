@@ -20,8 +20,6 @@ import { dirSync } from "tmp-promise";
 import { testExplorerExtensionId, TestHub } from "vscode-test-adapter-api";
 import { lt, parse } from "semver";
 import { watch } from "chokidar";
-
-import { AstViewer } from "./astViewer";
 import {
   activate as archiveFilesystemProvider_activate,
   zipArchiveScheme,
@@ -36,18 +34,17 @@ import {
   QueryServerConfigListener,
 } from "./config";
 import {
+  AstViewer,
   install,
   spawnIdeServer,
   getQueryEditorCommands,
-} from "./language-support";
-import { DatabaseManager } from "./local-databases";
-import { DatabaseUI } from "./local-databases-ui";
-import {
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
-} from "./contextual/templateProvider";
+} from "./language-support";
+import { DatabaseManager } from "./local-databases";
+import { DatabaseUI } from "./local-databases-ui";
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
   DistributionKind,
@@ -119,7 +116,7 @@ import {
   QueryServerCommands,
 } from "./common/commands";
 import { LocalQueries, QuickEvalCodeLensProvider } from "./local-queries";
-import { getAstCfgCommands } from "./ast-cfg-commands";
+import { getAstCfgCommands } from "./language-support/ast-viewer/ast-cfg-commands";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
