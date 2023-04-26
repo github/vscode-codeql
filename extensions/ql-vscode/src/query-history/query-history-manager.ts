@@ -45,7 +45,7 @@ import { HistoryItemLabelProvider } from "./history-item-label-provider";
 import { ResultsView } from "../interface";
 import { WebviewReveal } from "../interface-utils";
 import { EvalLogViewer } from "../eval-log-viewer";
-import EvalLogTreeBuilder from "../eval-log-tree-builder";
+import EvalLogTreeBuilder from "../query-evaluation-logging/eval-log-tree-builder";
 import { EvalLogData, parseViewerData } from "../pure/log-summary-parser";
 import { QueryWithResults } from "../run-queries-shared";
 import { QueryRunner } from "../query-server";
