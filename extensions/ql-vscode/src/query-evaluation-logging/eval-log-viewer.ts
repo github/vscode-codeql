@@ -8,11 +8,11 @@ import {
   EventEmitter,
   TreeItemCollapsibleState,
 } from "vscode";
-import { DisposableObject } from "./pure/disposable-object";
-import { showAndLogExceptionWithTelemetry } from "./helpers";
-import { asError, getErrorMessage } from "./pure/helpers-pure";
-import { redactableError } from "./pure/errors";
-import { EvalLogViewerCommands } from "./common/commands";
+import { DisposableObject } from "../pure/disposable-object";
+import { showAndLogExceptionWithTelemetry } from "../helpers";
+import { asError, getErrorMessage } from "../pure/helpers-pure";
+import { redactableError } from "../pure/errors";
+import { EvalLogViewerCommands } from "../common/commands";
 
 export interface EvalLogTreeItem {
   label?: string;

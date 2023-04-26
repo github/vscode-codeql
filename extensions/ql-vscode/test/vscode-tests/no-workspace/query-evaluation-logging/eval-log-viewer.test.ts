@@ -3,8 +3,8 @@ import {
   ChildEvalLogTreeItem,
   EvalLogTreeItem,
   EvalLogViewer,
-} from "../../../src/eval-log-viewer";
-import { testDisposeHandler } from "../test-dispose-handler";
+} from "../../../../src/query-evaluation-logging/eval-log-viewer";
+import { testDisposeHandler } from "../../test-dispose-handler";
 
 describe("EvalLogViewer", () => {
   let roots: EvalLogTreeItem[];
