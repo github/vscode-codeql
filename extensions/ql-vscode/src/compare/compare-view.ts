@@ -7,7 +7,7 @@ import {
 } from "../pure/interface-types";
 import { Logger } from "../common";
 import { CodeQLCliServer } from "../cli";
-import { DatabaseManager } from "../local-databases";
+import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../interface-utils";
 import {
   transformBqrsResultSet,

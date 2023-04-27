@@ -16,7 +16,7 @@ import {
   DatabaseEventKind,
   DatabaseItem,
   DatabaseManager,
-} from "./local-databases";
+} from "./databases/local-databases";
 import { showAndLogExceptionWithTelemetry } from "./helpers";
 import {
   asError,

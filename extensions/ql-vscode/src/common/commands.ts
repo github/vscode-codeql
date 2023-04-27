@@ -2,7 +2,7 @@ import type { CommandManager } from "../packages/commands";
 import type { Uri, Range, TextDocumentShowOptions } from "vscode";
 import type { AstItem } from "../language-support";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
-import type { DatabaseItem } from "../local-databases";
+import type { DatabaseItem } from "../databases/local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
 import type { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-filter-sort";
 import type { TestTreeNode } from "../test-tree-node";

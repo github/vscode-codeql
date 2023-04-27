@@ -43,8 +43,8 @@ import {
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
 } from "./language-support";
-import { DatabaseManager } from "./local-databases";
-import { DatabaseUI } from "./local-databases-ui";
+import { DatabaseManager } from "./databases/local-databases";
+import { DatabaseUI } from "./databases/local-databases-ui";
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
   DistributionKind,

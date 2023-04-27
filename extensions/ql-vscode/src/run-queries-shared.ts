@@ -25,7 +25,7 @@ import { isQuickQueryPath } from "./local-queries";
 import { nanoid } from "nanoid";
 import { CodeQLCliServer } from "./cli";
 import { SELECT_QUERY_NAME } from "./language-support";
-import { DatabaseManager } from "./local-databases";
+import { DatabaseManager } from "./databases/local-databases";
 import { DecodedBqrsChunk, EntityValue } from "./pure/bqrs-cli-types";
 import { BaseLogger, extLogger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";

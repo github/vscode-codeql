@@ -1,7 +1,7 @@
 import { Selection, Uri, window, workspace } from "vscode";
 import { join } from "path";
 
-import { DatabaseManager } from "../../../../src/local-databases";
+import { DatabaseManager } from "../../../../src/databases/local-databases";
 import {
   cleanDatabases,
   ensureTestDatabase,

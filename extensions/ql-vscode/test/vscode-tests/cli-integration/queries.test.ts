@@ -9,7 +9,10 @@ import {
 } from "fs-extra";
 import { load, dump } from "js-yaml";
 
-import { DatabaseItem, DatabaseManager } from "../../../src/local-databases";
+import {
+  DatabaseItem,
+  DatabaseManager,
+} from "../../../src/databases/local-databases";
 import {
   cleanDatabases,
   ensureTestDatabase,

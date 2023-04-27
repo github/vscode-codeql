@@ -1,5 +1,5 @@
 import { join, basename, dirname as path_dirname } from "path";
-import { DisposableObject } from "./pure/disposable-object";
+import { DisposableObject } from "../pure/disposable-object";
 import {
   Event,
   EventEmitter,
@@ -27,25 +27,25 @@ import {
   ProgressContext,
   withInheritedProgress,
   withProgress,
-} from "./progress";
+} from "../progress";
 import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
   showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
-} from "./helpers";
-import { extLogger } from "./common";
+} from "../helpers";
+import { extLogger } from "../common";
 import {
   importArchiveDatabase,
   promptImportGithubDatabase,
   promptImportInternetDatabase,
-} from "./databaseFetcher";
-import { asError, asyncFilter, getErrorMessage } from "./pure/helpers-pure";
-import { QueryRunner } from "./query-server";
-import { isCanary } from "./config";
-import { App } from "./common/app";
-import { redactableError } from "./pure/errors";
-import { LocalDatabasesCommands } from "./common/commands";
+} from "./database-fetcher";
+import { asError, asyncFilter, getErrorMessage } from "../pure/helpers-pure";
+import { QueryRunner } from "../query-server";
+import { isCanary } from "../config";
+import { App } from "../common/app";
+import { redactableError } from "../pure/errors";
+import { LocalDatabasesCommands } from "../common/commands";
 
 enum SortOrder {
   NameAsc = "NameAsc",

@@ -5,7 +5,7 @@ import { extLogger } from "../../../../src/common";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { QueryHistoryConfigListener } from "../../../../src/config";
 import { LocalQueryInfo } from "../../../../src/query-results";
-import { DatabaseManager } from "../../../../src/local-databases";
+import { DatabaseManager } from "../../../../src/databases/local-databases";
 import { tmpDir } from "../../../../src/helpers";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { ResultsView } from "../../../../src/interface";

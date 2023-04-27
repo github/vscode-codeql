@@ -4,7 +4,7 @@ import {
   DatabaseContents,
   DatabaseItemImpl,
   FullDatabaseOptions,
-} from "../../../src/local-databases";
+} from "../../../src/databases/local-databases";
 import { DirResult } from "tmp";
 
 export function mockDbOptions(): FullDatabaseOptions {

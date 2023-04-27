@@ -20,7 +20,7 @@ import {
   LegacyQueryRunner,
   QueryServerClient,
 } from "../../../src/query-server/legacy";
-import { DatabaseItem } from "../../../src/local-databases";
+import { DatabaseItem } from "../../../src/databases/local-databases";
 import { DeepPartial, mockedObject } from "../utils/mocking.helpers";
 import { BqrsKind } from "../../../src/pure/bqrs-cli-types";
 

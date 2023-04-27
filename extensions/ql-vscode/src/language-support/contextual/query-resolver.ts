@@ -17,7 +17,7 @@ import {
   tagOfKeyType,
 } from "./key-type";
 import { CodeQLCliServer } from "../../cli";
-import { DatabaseItem } from "../../local-databases";
+import { DatabaseItem } from "../../databases/local-databases";
 import { extLogger, TeeLogger } from "../../common";
 import { CancellationToken } from "vscode";
 import { ProgressCallback } from "../../progress";
