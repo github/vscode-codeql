@@ -6,14 +6,14 @@ import { window } from "vscode";
 import {
   convertGithubNwoToDatabaseUrl,
   findDirWithFile,
-} from "../../../src/databaseFetcher";
+} from "../../../../src/databases/database-fetcher";
 import * as Octokit from "@octokit/rest";
-import { mockedQuickPickItem } from "../utils/mocking.helpers";
+import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 
 // These tests make API calls and may need extra time to complete.
 jest.setTimeout(10000);
 
-describe("databaseFetcher", () => {
+describe("database-fetcher", () => {
   describe("convertGithubNwoToDatabaseUrl", () => {
     let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
 

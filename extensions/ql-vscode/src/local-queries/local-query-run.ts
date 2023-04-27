@@ -6,7 +6,7 @@ import {
 } from "../helpers";
 import { CoreQueryResults } from "../query-server";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
-import { DatabaseItem } from "../local-databases";
+import { DatabaseItem } from "../databases/local-databases";
 import {
   EvaluatorLogPaths,
   generateEvalLogSummaries,

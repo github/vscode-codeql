@@ -1,10 +1,10 @@
 import { readFile } from "fs-extra";
 import { load } from "js-yaml";
 
-import { AstViewer, AstItem } from "../../../src/astViewer";
+import { AstViewer, AstItem } from "../../../../../src/language-support";
 import { commands, Range, Uri } from "vscode";
-import { testDisposeHandler } from "../test-dispose-handler";
-import { mockDatabaseItem } from "../utils/mocking.helpers";
+import { testDisposeHandler } from "../../../test-dispose-handler";
+import { mockDatabaseItem } from "../../../utils/mocking.helpers";
 
 describe("AstViewer", () => {
   let astRoots: AstItem[];
@@ -135,7 +135,10 @@ describe("AstViewer", () => {
 
   async function buildAst() {
     const astRoots = load(
-      await readFile(`${__dirname}/data/astViewer.yml`, "utf8"),
+      await readFile(
+        `${__dirname}/../../data/language-support/ast-viewer/ast-viewer.yml`,
+        "utf8",
+      ),
     ) as AstItem[];
 
     // convert range properties into vscode.Range instances

@@ -5,11 +5,11 @@ import { extLogger } from "../../../../src/common";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { QueryHistoryConfigListener } from "../../../../src/config";
 import { LocalQueryInfo } from "../../../../src/query-results";
-import { DatabaseManager } from "../../../../src/local-databases";
+import { DatabaseManager } from "../../../../src/databases/local-databases";
 import { tmpDir } from "../../../../src/helpers";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { ResultsView } from "../../../../src/interface";
-import { EvalLogViewer } from "../../../../src/eval-log-viewer";
+import { EvalLogViewer } from "../../../../src/query-evaluation-logging";
 import { QueryRunner } from "../../../../src/query-server/query-runner";
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryInfo } from "../../../../src/query-history/query-history-info";
@@ -801,24 +801,6 @@ describe("QueryHistoryManager", () => {
         expect(showQuickPickSpy).not.toBeCalled();
       });
 
-      it("should throw an error when a query is not successful", async () => {
-        const thisQuery = localQueryHistory[3];
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-        allHistory[0] = createMockLocalQueryInfo({
-          dbName: "a",
-          queryWithResults: createMockQueryWithResults({
-            didRunSuccessfully: false,
-          }),
-        });
-
-        await expect(
-          (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [
-            thisQuery,
-            allHistory[0],
-          ]),
-        ).rejects.toThrow("Please select a successful query.");
-      });
-
       it("should throw an error when a databases are not the same", async () => {
         queryHistoryManager = await createMockQueryHistory(allHistory);
 
@@ -866,6 +848,26 @@ describe("QueryHistoryManager", () => {
           localQueryHistory[0],
         ]);
         expect(doCompareCallback).not.toBeCalled();
+      });
+
+      it("should throw an error when a query is not successful", async () => {
+        const thisQuery = localQueryHistory[3];
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        allHistory[0] = createMockLocalQueryInfo({
+          dbName: "a",
+          queryWithResults: createMockQueryWithResults({
+            didRunSuccessfully: false,
+          }),
+        });
+
+        await expect(
+          queryHistoryManager.handleCompareWith(thisQuery, [
+            thisQuery,
+            allHistory[0],
+          ]),
+        ).rejects.toThrow(
+          "Please only select local queries that have completed successfully.",
+        );
       });
     });
 

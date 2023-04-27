@@ -4,7 +4,7 @@ import {
 } from "../../../../src/data-extensions-editor/external-api-usage-query";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import type { Uri } from "vscode";
-import { DatabaseKind } from "../../../../src/local-databases";
+import { DatabaseKind } from "../../../../src/databases/local-databases";
 import { file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/pure/new-messages";
 import { readdir, readFile } from "fs-extra";

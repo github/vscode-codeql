@@ -213,13 +213,13 @@ DataExtensionsEditor.args = {
     },
     "org.sql2o.Connection#createQuery(String)": {
       type: "summary",
-      input: "Argument[-1]",
+      input: "Argument[this]",
       output: "ReturnValue",
       kind: "taint",
     },
     "org.sql2o.Sql2o#open()": {
       type: "summary",
-      input: "Argument[-1]",
+      input: "Argument[this]",
       output: "ReturnValue",
       kind: "taint",
     },

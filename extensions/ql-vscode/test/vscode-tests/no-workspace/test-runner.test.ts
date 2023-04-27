@@ -5,7 +5,7 @@ import {
   DatabaseItemImpl,
   DatabaseManager,
   FullDatabaseOptions,
-} from "../../../src/local-databases";
+} from "../../../src/databases/local-databases";
 import { mockedObject } from "../utils/mocking.helpers";
 import { TestRunner } from "../../../src/test-runner";
 import { createMockLogger } from "../../__mocks__/loggerMock";

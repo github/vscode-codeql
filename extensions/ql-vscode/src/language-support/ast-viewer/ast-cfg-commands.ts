@@ -1,12 +1,12 @@
 import { Uri, window } from "vscode";
-import { withProgress } from "./progress";
-import { AstViewer } from "./astViewer";
+import { withProgress } from "../../progress";
+import { AstViewer } from "./ast-viewer";
+import { AstCfgCommands } from "../../common/commands";
+import { LocalQueries } from "../../local-queries";
 import {
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
-} from "./contextual/templateProvider";
-import { AstCfgCommands } from "./common/commands";
-import { LocalQueries } from "./local-queries";
+} from "../contextual/template-provider";
 
 type AstCfgOptions = {
   localQueries: LocalQueries;

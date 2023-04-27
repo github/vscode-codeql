@@ -2,7 +2,7 @@ import { pathExists, stat, remove } from "fs-extra";
 import { glob } from "glob";
 import { join, basename, resolve, relative, dirname, extname } from "path";
 import * as vscode from "vscode";
-import * as cli from "./cli";
+import * as cli from "../cli";
 import { ExtensionContext } from "vscode";
 import {
   showAndLogWarningMessage,
@@ -12,24 +12,24 @@ import {
   isFolderAlreadyInWorkspace,
   showBinaryChoiceDialog,
   getFirstWorkspaceFolder,
-} from "./helpers";
-import { ProgressCallback, withProgress } from "./progress";
+} from "../helpers";
+import { ProgressCallback, withProgress } from "../progress";
 import {
   zipArchiveScheme,
   encodeArchiveBasePath,
   decodeSourceArchiveUri,
   encodeSourceArchiveUri,
-} from "./archive-filesystem-provider";
-import { DisposableObject } from "./pure/disposable-object";
-import { Logger, extLogger } from "./common";
-import { asError, getErrorMessage } from "./pure/helpers-pure";
-import { QueryRunner } from "./query-server";
-import { pathsEqual } from "./pure/files";
-import { redactableError } from "./pure/errors";
-import { isCodespacesTemplate } from "./config";
-import { QlPackGenerator } from "./qlpack-generator";
-import { QueryLanguage } from "./common/query-language";
-import { App } from "./common/app";
+} from "../archive-filesystem-provider";
+import { DisposableObject } from "../pure/disposable-object";
+import { Logger, extLogger } from "../common";
+import { asError, getErrorMessage } from "../pure/helpers-pure";
+import { QueryRunner } from "../query-server";
+import { pathsEqual } from "../pure/files";
+import { redactableError } from "../pure/errors";
+import { isCodespacesTemplate } from "../config";
+import { QlPackGenerator } from "../qlpack-generator";
+import { QueryLanguage } from "../common/query-language";
+import { App } from "../common/app";
 import { existsSync } from "fs";
 
 /**

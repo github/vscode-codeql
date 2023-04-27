@@ -1,8 +1,8 @@
 import { ChildEvalLogTreeItem, EvalLogTreeItem } from "./eval-log-viewer";
-import { EvalLogData as EvalLogData } from "./pure/log-summary-parser";
+import { EvalLogData as EvalLogData } from "../pure/log-summary-parser";
 
 /** Builds the tree data for the evaluator log viewer for a single query run. */
-export default class EvalLogTreeBuilder {
+export class EvalLogTreeBuilder {
   private queryName: string;
   private evalLogDataItems: EvalLogData[];
 
