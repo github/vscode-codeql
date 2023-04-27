@@ -621,19 +621,19 @@ export function allowHttp(): boolean {
 }
 
 /**
- * The name of the folder where we want to create skeleton wizard QL packs.
+ * The name of the folder where we want to create QL packs.
  **/
-const SKELETON_WIZARD_FOLDER = new Setting(
+const QL_PACK_LOCATION = new Setting(
   "qlPackLocation",
   new Setting("createQuery", ROOT_SETTING),
 );
 
-export function getSkeletonWizardFolder(): string | undefined {
-  return SKELETON_WIZARD_FOLDER.getValue<string>() || undefined;
+export function getQlPackLocation(): string | undefined {
+  return QL_PACK_LOCATION.getValue<string>() || undefined;
 }
 
-export async function setSkeletonWizardFolder(folder: string | undefined) {
-  await SKELETON_WIZARD_FOLDER.updateValue(folder, ConfigurationTarget.Global);
+export async function setQlPackLocation(folder: string | undefined) {
+  await QL_PACK_LOCATION.updateValue(folder, ConfigurationTarget.Global);
 }
 
 /**
