@@ -112,6 +112,7 @@ export class TestRunner extends DisposableObject {
             },
             token,
             uri,
+            false,
           );
           await this.databaseManager.renameDatabaseItem(
             reopenedDatabase,

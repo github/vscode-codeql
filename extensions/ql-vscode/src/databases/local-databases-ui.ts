@@ -636,13 +636,7 @@ export class DatabaseUI extends DisposableObject {
               this.queryServer?.cliServer,
             );
           } else {
-            const makeSelected = true;
-            await this.databaseManager.openDatabase(
-              progress,
-              token,
-              uri,
-              makeSelected,
-            );
+            await this.databaseManager.openDatabase(progress, token, uri);
           }
         } catch (e) {
           // rethrow and let this be handled by default error handling.
@@ -757,12 +751,10 @@ export class DatabaseUI extends DisposableObject {
         if (byFolder) {
           const fixedUri = await this.fixDbUri(uri);
           // we are selecting a database folder
-          const makeSelected = true;
           return await this.databaseManager.openDatabase(
             progress,
             token,
             fixedUri,
-            makeSelected,
           );
         } else {
           // we are selecting a database archive. Must unzip into a workspace-controlled area

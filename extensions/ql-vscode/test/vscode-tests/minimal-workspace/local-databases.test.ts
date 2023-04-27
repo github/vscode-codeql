@@ -753,13 +753,10 @@ describe("local databases", () => {
     });
 
     it("should set the database as the currently selected one", async () => {
-      const makeSelected = true;
-
       await databaseManager.openDatabase(
         {} as ProgressCallback,
         {} as CancellationToken,
         mockDbItem.databaseUri,
-        makeSelected,
       );
 
       expect(setCurrentDatabaseItemSpy).toBeCalledTimes(1);

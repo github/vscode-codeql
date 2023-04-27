@@ -621,7 +621,7 @@ export class DatabaseManager extends DisposableObject {
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     uri: vscode.Uri,
-    makeSelected = false,
+    makeSelected = true,
     displayName?: string,
     isTutorialDatabase?: boolean,
   ): Promise<DatabaseItem> {
