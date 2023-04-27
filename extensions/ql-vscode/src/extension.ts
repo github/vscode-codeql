@@ -102,7 +102,7 @@ import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
 import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
 import { createVariantAnalysisContentProvider } from "./variant-analysis/variant-analysis-content-provider";
-import { VSCodeMockGitHubApiServer } from "./mocks/vscode-mock-gh-api-server";
+import { VSCodeMockGitHubApiServer } from "./variant-analysis/gh-api/mocks/vscode-mock-gh-api-server";
 import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { DbModule } from "./databases/db-module";

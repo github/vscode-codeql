@@ -8,7 +8,7 @@ import {
   workspace,
 } from "vscode";
 
-import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
+import { MockGitHubApiServer } from "../../../../src/variant-analysis/gh-api/mocks/mock-gh-api-server";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { setRemoteControllerRepo } from "../../../../src/config";
 import { getActivatedExtension } from "../../global.helper";

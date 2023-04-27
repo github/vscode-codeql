@@ -8,13 +8,19 @@ import { getFiles } from "./util/files";
 
 const extensionDirectory = resolve(__dirname, "..");
 const rootDirectory = resolve(extensionDirectory, "../..");
-const scenariosDirectory = resolve(extensionDirectory, "src/mocks/scenarios");
+const scenariosDirectory = resolve(
+  extensionDirectory,
+  "src/variant-analysis/gh-api/mocks/scenarios",
+);
 
 const debug = process.env.RUNNER_DEBUG || process.argv.includes("--debug");
 
 async function lintScenarios() {
   const schema = createGenerator({
-    path: resolve(extensionDirectory, "src/mocks/gh-api-request.ts"),
+    path: resolve(
+      extensionDirectory,
+      "src/variant-analysis/gh-api/mocks/gh-api-request.ts",
+    ),
     tsconfig: resolve(extensionDirectory, "tsconfig.json"),
     type: "GitHubApiRequest",
     skipTypeCheck: true,
