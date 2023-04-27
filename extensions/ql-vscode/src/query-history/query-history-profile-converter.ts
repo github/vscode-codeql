@@ -230,7 +230,7 @@ export function convertJSONSummaryEvaluatorLog(
       callFrame: {
         functionName: e.predicateName,
         scriptId: "0",
-        url: "",
+        url: `RA Hash: ${e.raHash}`,
         lineNumber: 0,
         columnNumber: 0,
       },

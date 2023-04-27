@@ -62,6 +62,21 @@ describe("query history profile converter", () => {
     expect(getExecutionBounds(ras).min).toBe(1660166907957000);
   });
 
+  it("update execution profile", () => {
+    // Note
+    // --------------------------------------------------------
+    // To update the execution profile uncomment the lines below.
+    // Make sure to comment them back out before committing.
+    // const outFile = convertJSONSummaryEvaluatorLog(
+    //   logSummary,
+    //   tmp.fileSync().name,
+    // );
+    // fs.writeFileSync(
+    //   exampleProfile,
+    //   JSON.stringify(JSON.parse(fs.readFileSync(outFile, "utf8")), null, 2),
+    // );
+  });
+
   it("it should create a valid profile", () => {
     // Note
     // --------------------------------------------------------

@@ -623,6 +623,11 @@ export async function generateEvalLogSummaries(
   }
   let jsonSummary: string | undefined = undefined;
   let summarySymbols: string | undefined = undefined;
+
+  // Generate JSON summary for viewer.
+  jsonSummary = outputDir.jsonEvalLogSummaryPath;
+  await cliServer.generateJsonLogSummary(log, jsonSummary);
+
   if (isCanary()) {
     // Generate JSON summary for viewer.
     jsonSummary = outputDir.jsonEvalLogSummaryPath;
