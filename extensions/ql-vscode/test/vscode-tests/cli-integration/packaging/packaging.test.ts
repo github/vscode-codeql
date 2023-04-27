@@ -82,7 +82,7 @@ describe("Packaging commands", () => {
   });
 
   it("should install valid workspace pack", async () => {
-    const rootDir = join(__dirname, "./data");
+    const rootDir = join(__dirname, "../data");
     quickPickSpy.mockResolvedValue(
       mockedQuickPickItem([
         {
@@ -99,7 +99,7 @@ describe("Packaging commands", () => {
   });
 
   it("should throw an error when installing invalid workspace pack", async () => {
-    const rootDir = join(__dirname, "../data-invalid-pack");
+    const rootDir = join(__dirname, "../../data-invalid-pack");
     quickPickSpy.mockResolvedValue(
       mockedQuickPickItem([
         {
