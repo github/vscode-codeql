@@ -549,7 +549,7 @@ describe("helpers", () => {
     const title =
       "We've noticed you don't have a CodeQL pack available to analyze this database. Can we set up a query pack for you?";
 
-    it("should show a binary choice dialog and return `Yes`", async () => {
+    it("should show a ternary choice dialog and return `Yes`", async () => {
       // pretend user chooses 'Yes'
       const yesItem = resolveArg(2);
       showInformationMessageSpy.mockImplementationOnce(yesItem);
@@ -558,7 +558,7 @@ describe("helpers", () => {
       expect(answer).toBe("Yes");
     });
 
-    it("should show a binary choice dialog and return `No`", async () => {
+    it("should show a ternary choice dialog and return `No`", async () => {
       // pretend user chooses 'No'
       const noItem = resolveArg(3);
       showInformationMessageSpy.mockImplementationOnce(noItem);
@@ -567,7 +567,7 @@ describe("helpers", () => {
       expect(answer).toBe("No");
     });
 
-    it("should show a binary choice dialog and return `No, and never ask me again`", async () => {
+    it("should show a ternary choice dialog and return `No, and never ask me again`", async () => {
       // pretend user chooses 'No, and never ask me again'
       const neverAskAgainItem = resolveArg(4);
       showInformationMessageSpy.mockImplementationOnce(neverAskAgainItem);
