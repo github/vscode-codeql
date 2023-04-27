@@ -1,7 +1,7 @@
 import { window } from "vscode";
 import { join } from "path";
 
-import { CodeQLCliServer } from "../../../../src/cli";
+import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getErrorMessage } from "../../../../src/pure/helpers-pure";
 
 import * as helpers from "../../../../src/helpers";

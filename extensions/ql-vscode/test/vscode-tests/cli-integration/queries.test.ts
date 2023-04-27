@@ -18,7 +18,10 @@ import {
   ensureTestDatabase,
   getActivatedExtension,
 } from "../global.helper";
-import { CliVersionConstraint, CodeQLCliServer } from "../../../src/cli";
+import {
+  CliVersionConstraint,
+  CodeQLCliServer,
+} from "../../../src/codeql-cli/cli";
 import { describeWithCodeQL } from "../cli";
 import {
   CoreCompletedQuery,

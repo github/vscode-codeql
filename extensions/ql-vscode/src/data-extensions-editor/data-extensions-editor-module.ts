@@ -1,7 +1,7 @@
 import { ExtensionContext } from "vscode";
 import { DataExtensionsEditorView } from "./data-extensions-editor-view";
 import { DataExtensionsEditorCommands } from "../common/commands";
-import { CliVersionConstraint, CodeQLCliServer } from "../cli";
+import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
 import { DatabaseManager } from "../databases/local-databases";
 import { ensureDir } from "fs-extra";

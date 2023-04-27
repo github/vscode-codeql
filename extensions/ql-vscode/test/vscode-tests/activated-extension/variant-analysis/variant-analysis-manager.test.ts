@@ -17,7 +17,7 @@ import * as fetchModule from "node-fetch";
 import { Response } from "node-fetch";
 
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
-import { CodeQLCliServer } from "../../../../src/cli";
+import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getActivatedExtension, storagePath } from "../../global.helper";
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";

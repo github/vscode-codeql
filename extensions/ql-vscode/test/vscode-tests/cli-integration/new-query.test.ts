@@ -3,7 +3,7 @@ import { dirSync } from "tmp";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import * as messages from "../../../src/pure/new-messages";
 import * as qsClient from "../../../src/query-server/query-server-client";
-import * as cli from "../../../src/cli";
+import * as cli from "../../../src/codeql-cli/cli";
 import { CellValue } from "../../../src/pure/bqrs-cli-types";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../../src/query-server/query-server-client";

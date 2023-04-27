@@ -2,7 +2,7 @@ import fetch, { Response } from "node-fetch";
 import { zip } from "zip-a-folder";
 import { Open } from "unzipper";
 import { Uri, CancellationToken, window, InputBoxOptions } from "vscode";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import {
   ensureDir,
   realpath as fs_realpath,

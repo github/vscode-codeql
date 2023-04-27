@@ -14,7 +14,7 @@ import {
 } from "../../../src/databases/local-databases";
 import { Logger } from "../../../src/common";
 import { ProgressCallback } from "../../../src/progress";
-import { CodeQLCliServer, DbInfo } from "../../../src/cli";
+import { CodeQLCliServer, DbInfo } from "../../../src/codeql-cli/cli";
 import {
   encodeArchiveBasePath,
   encodeSourceArchiveUri,

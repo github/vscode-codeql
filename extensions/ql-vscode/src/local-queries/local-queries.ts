@@ -37,7 +37,7 @@ import {
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "../interface-utils";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { DisposableObject } from "../pure/disposable-object";

@@ -1,4 +1,4 @@
-import { CodeQLCliServer } from "../../../src/cli";
+import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import {
   QUERY_LANGUAGE_TO_DATABASE_REPO,
   SkeletonQueryWizard,

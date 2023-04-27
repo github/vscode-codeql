@@ -2,7 +2,7 @@ import { CancellationToken } from "vscode";
 import { DatabaseItem } from "../databases/local-databases";
 import { join } from "path";
 import { QueryRunner } from "../query-server";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { TeeLogger } from "../common";
 import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../progress";

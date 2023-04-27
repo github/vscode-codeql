@@ -5,7 +5,7 @@ import { pathToFileURL } from "url";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import * as messages from "../../../src/pure/legacy-messages";
 import * as qsClient from "../../../src/query-server/legacy/query-server-client";
-import * as cli from "../../../src/cli";
+import * as cli from "../../../src/codeql-cli/cli";
 import { CellValue } from "../../../src/pure/bqrs-cli-types";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../../src/query-server/legacy/query-server-client";

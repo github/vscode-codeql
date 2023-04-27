@@ -22,7 +22,7 @@ import {
   QLTestFile,
   QLTestNode,
 } from "./qltest-discovery";
-import { CodeQLCliServer } from "./cli";
+import { CodeQLCliServer } from "./codeql-cli/cli";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { BaseLogger, LogOptions } from "./common";
 import { TestRunner } from "./test-runner";

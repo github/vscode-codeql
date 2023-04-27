@@ -9,7 +9,7 @@ import {
   qlpackOfDatabase,
   resolveQueries,
 } from "../../../../../src/language-support";
-import { CodeQLCliServer } from "../../../../../src/cli";
+import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { mockDatabaseItem, mockedObject } from "../../../utils/mocking.helpers";
 
 describe("queryResolver", () => {

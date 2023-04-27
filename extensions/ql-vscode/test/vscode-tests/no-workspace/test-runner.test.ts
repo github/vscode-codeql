@@ -1,5 +1,5 @@
 import { CancellationTokenSource, Uri } from "vscode";
-import { CodeQLCliServer } from "../../../src/cli";
+import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import {
   DatabaseItem,
   DatabaseItemImpl,

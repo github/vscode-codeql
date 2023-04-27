@@ -55,7 +55,7 @@ import {
   UserCancellationException,
   withProgress,
 } from "../progress";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,

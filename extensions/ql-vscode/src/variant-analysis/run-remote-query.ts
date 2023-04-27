@@ -11,7 +11,7 @@ import {
   tmpDir,
 } from "../helpers";
 import { Credentials } from "../common/authentication";
-import * as cli from "../cli";
+import * as cli from "../codeql-cli/cli";
 import { extLogger } from "../common";
 import {
   getActionBranch,

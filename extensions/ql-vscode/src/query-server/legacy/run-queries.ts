@@ -3,7 +3,7 @@ import { basename } from "path";
 import { CancellationToken, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 
-import * as cli from "../../cli";
+import * as cli from "../../codeql-cli/cli";
 import {
   DatabaseContentsWithDbScheme,
   DatabaseItem,

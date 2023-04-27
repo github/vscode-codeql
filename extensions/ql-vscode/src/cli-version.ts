@@ -1,5 +1,5 @@
 import * as semver from "semver";
-import { runCodeQlCliCommand } from "./cli";
+import { runCodeQlCliCommand } from "./codeql-cli/cli";
 import { Logger } from "./common";
 import { getErrorMessage } from "./pure/helpers-pure";
 

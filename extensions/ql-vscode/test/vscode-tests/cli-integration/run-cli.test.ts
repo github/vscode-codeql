@@ -2,7 +2,10 @@ import { authentication, Uri } from "vscode";
 import { join } from "path";
 import { SemVer } from "semver";
 
-import { CodeQLCliServer, QueryInfoByLanguage } from "../../../src/cli";
+import {
+  CodeQLCliServer,
+  QueryInfoByLanguage,
+} from "../../../src/codeql-cli/cli";
 import { itWithCodeQL } from "../cli";
 import {
   getOnDiskWorkspaceFolders,

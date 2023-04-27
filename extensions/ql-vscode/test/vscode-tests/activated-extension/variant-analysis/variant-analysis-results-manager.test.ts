@@ -6,7 +6,7 @@ import * as fetchModule from "node-fetch";
 import { RequestInfo, RequestInit, Response } from "node-fetch";
 
 import { VariantAnalysisResultsManager } from "../../../../src/variant-analysis/variant-analysis-results-manager";
-import { CodeQLCliServer } from "../../../../src/cli";
+import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { storagePath } from "../../global.helper";
 import { faker } from "@faker-js/faker";
 import { createMockVariantAnalysisRepositoryTask } from "../../../factories/variant-analysis/shared/variant-analysis-repo-tasks";

@@ -1,5 +1,5 @@
 import { CancellationToken, Uri } from "vscode";
-import { CodeQLCliServer, TestCompleted } from "./cli";
+import { CodeQLCliServer, TestCompleted } from "./codeql-cli/cli";
 import { DatabaseItem, DatabaseManager } from "./databases/local-databases";
 import {
   getOnDiskWorkspaceFolders,

@@ -24,7 +24,7 @@ import {
   activate as archiveFilesystemProvider_activate,
   zipArchiveScheme,
 } from "./archive-filesystem-provider";
-import { CodeQLCliServer } from "./cli";
+import { CodeQLCliServer } from "./codeql-cli/cli";
 import {
   CliConfigListener,
   DistributionConfigListener,

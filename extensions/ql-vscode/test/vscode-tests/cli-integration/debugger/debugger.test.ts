@@ -9,7 +9,7 @@ import {
 } from "../../global.helper";
 import { describeWithCodeQL } from "../../cli";
 import { withDebugController } from "./debug-controller";
-import { CodeQLCliServer } from "../../../../src/cli";
+import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
 import { AllCommands } from "../../../../src/common/commands";

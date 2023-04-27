@@ -10,7 +10,7 @@ import {
 } from "../../../src/pure/legacy-messages";
 import * as config from "../../../src/config";
 import { tmpDir } from "../../../src/helpers";
-import { CodeQLCliServer } from "../../../src/cli";
+import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { SELECT_QUERY_NAME } from "../../../src/language-support";
 import {
   QueryInProgress,

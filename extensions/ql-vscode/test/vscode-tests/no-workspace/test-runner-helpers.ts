@@ -1,6 +1,6 @@
 import { Uri } from "vscode";
 import { mockedObject } from "../utils/mocking.helpers";
-import { CodeQLCliServer } from "../../../src/cli";
+import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { DatabaseManager } from "../../../src/databases/local-databases";
 
 /**
