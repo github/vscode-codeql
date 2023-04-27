@@ -624,7 +624,7 @@ export function allowHttp(): boolean {
  * The name of the folder where we want to create skeleton wizard QL packs.
  **/
 const SKELETON_WIZARD_FOLDER = new Setting(
-  "folder",
+  "qlPackLocation",
   new Setting("createQuery", ROOT_SETTING),
 );
 
