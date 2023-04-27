@@ -1,7 +1,7 @@
 import * as semver from "semver";
-import { runCodeQlCliCommand } from "./codeql-cli/cli";
-import { Logger } from "./common";
-import { getErrorMessage } from "./pure/helpers-pure";
+import { runCodeQlCliCommand } from "./cli";
+import { Logger } from "../common";
+import { getErrorMessage } from "../pure/helpers-pure";
 
 /**
  * Get the version of a CodeQL CLI.
