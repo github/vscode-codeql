@@ -1,16 +1,16 @@
 import { window } from "vscode";
 import { join } from "path";
 
-import { CodeQLCliServer } from "../../../src/cli";
-import { getErrorMessage } from "../../../src/pure/helpers-pure";
+import { CodeQLCliServer } from "../../../../src/cli";
+import { getErrorMessage } from "../../../../src/pure/helpers-pure";
 
-import * as helpers from "../../../src/helpers";
+import * as helpers from "../../../../src/helpers";
 import {
   handleDownloadPacks,
   handleInstallPackDependencies,
-} from "../../../src/packaging";
-import { mockedQuickPickItem } from "../utils/mocking.helpers";
-import { getActivatedExtension } from "../global.helper";
+} from "../../../../src/packaging";
+import { mockedQuickPickItem } from "../../utils/mocking.helpers";
+import { getActivatedExtension } from "../../global.helper";
 
 describe("Packaging commands", () => {
   let cli: CodeQLCliServer;
@@ -82,7 +82,7 @@ describe("Packaging commands", () => {
   });
 
   it("should install valid workspace pack", async () => {
-    const rootDir = join(__dirname, "./data");
+    const rootDir = join(__dirname, "../data");
     quickPickSpy.mockResolvedValue(
       mockedQuickPickItem([
         {
@@ -99,7 +99,7 @@ describe("Packaging commands", () => {
   });
 
   it("should throw an error when installing invalid workspace pack", async () => {
-    const rootDir = join(__dirname, "../data-invalid-pack");
+    const rootDir = join(__dirname, "../../data-invalid-pack");
     quickPickSpy.mockResolvedValue(
       mockedQuickPickItem([
         {
