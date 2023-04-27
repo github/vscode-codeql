@@ -650,13 +650,13 @@ describe("local databases", () => {
 
       beforeEach(() => {
         originalValue = workspace
-          .getConfiguration("codeQL")
+          .getConfiguration("codeQL.createQuery")
           .get("autogenerateQlPacks");
       });
 
       afterEach(async () => {
         await workspace
-          .getConfiguration("codeQL")
+          .getConfiguration("codeQL.createQuery")
           .update("autogenerateQlPacks", originalValue);
       });
 

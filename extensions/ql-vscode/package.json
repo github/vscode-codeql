@@ -347,7 +347,7 @@
           "patternErrorMessage": "Please enter a valid folder",
           "markdownDescription": "The name of the folder where we want to create queries and query packs via the \"CodeQL: Create Query\" command. The folder should exist."
         },
-        "codeQL.autogenerateQlPacks": {
+        "codeQL.createQuery.autogenerateQlPacks": {
           "type": "string",
           "default": "",
           "patternErrorMessage": "Please choose between 'Yes', 'No' and 'No, and never ask me again'",
