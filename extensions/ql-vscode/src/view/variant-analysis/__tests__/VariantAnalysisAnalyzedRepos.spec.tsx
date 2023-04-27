@@ -191,7 +191,7 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
     render({
       filterSortState: {
         ...defaultFilterSortState,
-        sortKey: SortKey.Stars,
+        sortKey: SortKey.Popularity,
       },
     });
 
@@ -210,7 +210,7 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
     render({
       filterSortState: {
         ...defaultFilterSortState,
-        sortKey: SortKey.ResultsCount,
+        sortKey: SortKey.NumberOfResults,
       },
     });
 
