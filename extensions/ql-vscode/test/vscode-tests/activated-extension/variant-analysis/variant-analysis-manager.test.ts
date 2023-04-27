@@ -750,7 +750,7 @@ describe("Variant Analysis Manager", () => {
           variantAnalysis.id,
           {
             ...defaultFilterSortState,
-            sortKey: SortKey.ResultsCount,
+            sortKey: SortKey.NumberOfResults,
           },
         );
 

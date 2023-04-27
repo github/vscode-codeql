@@ -178,7 +178,7 @@ describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
       },
       filterSortState: {
         ...defaultFilterSortState,
-        sortKey: SortKey.Stars,
+        sortKey: SortKey.Popularity,
       },
     });
 
@@ -190,7 +190,7 @@ describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
     expect(rows[2]).toHaveTextContent("octodemo/hello-galaxy");
   });
 
-  it("does not use the result count sort key", async () => {
+  it("does not use the 'number of results' sort key", async () => {
     render({
       alertTitle: "No database",
       alertMessage:
@@ -211,7 +211,7 @@ describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
       },
       filterSortState: {
         ...defaultFilterSortState,
-        sortKey: SortKey.ResultsCount,
+        sortKey: SortKey.NumberOfResults,
       },
     });
 

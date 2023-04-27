@@ -130,7 +130,7 @@ describe(compareRepository.name, () => {
   describe("when sort key is 'Alphabetically'", () => {
     const sorter = compareRepository({
       ...defaultFilterSortState,
-      sortKey: SortKey.Name,
+      sortKey: SortKey.Alphabetically,
     });
 
     const left = {
@@ -156,7 +156,7 @@ describe(compareRepository.name, () => {
   describe("when sort key is 'Popularity'", () => {
     const sorter = compareRepository({
       ...defaultFilterSortState,
-      sortKey: SortKey.Stars,
+      sortKey: SortKey.Popularity,
     });
 
     const left = {
@@ -202,7 +202,7 @@ describe(compareRepository.name, () => {
   describe("when sort key is 'Most recent commit'", () => {
     const sorter = compareRepository({
       ...defaultFilterSortState,
-      sortKey: SortKey.LastUpdated,
+      sortKey: SortKey.MostRecentCommit,
     });
 
     const left = {
@@ -274,7 +274,7 @@ describe(compareWithResults.name, () => {
   describe("when sort key is 'Popularity'", () => {
     const sorter = compareWithResults({
       ...defaultFilterSortState,
-      sortKey: SortKey.Stars,
+      sortKey: SortKey.Popularity,
     });
 
     const left = {
@@ -300,7 +300,7 @@ describe(compareWithResults.name, () => {
   describe("when sort key is 'Most recent commit'", () => {
     const sorter = compareWithResults({
       ...defaultFilterSortState,
-      sortKey: SortKey.LastUpdated,
+      sortKey: SortKey.MostRecentCommit,
     });
 
     const left = {
@@ -326,7 +326,7 @@ describe(compareWithResults.name, () => {
   describe("when sort key is results count", () => {
     const sorter = compareWithResults({
       ...defaultFilterSortState,
-      sortKey: SortKey.ResultsCount,
+      sortKey: SortKey.NumberOfResults,
     });
 
     const left = {
@@ -416,7 +416,7 @@ describe(filterAndSortRepositoriesWithResultsByName.name, () => {
       expect(
         filterAndSortRepositoriesWithResultsByName(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
         }),
       ).toEqual([
         repositories[3],
@@ -432,7 +432,7 @@ describe(filterAndSortRepositoriesWithResultsByName.name, () => {
       expect(
         filterAndSortRepositoriesWithResultsByName(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
           searchValue: "la",
         }),
       ).toEqual([repositories[2], repositories[0]]);
@@ -444,7 +444,7 @@ describe(filterAndSortRepositoriesWithResultsByName.name, () => {
       expect(
         filterAndSortRepositoriesWithResultsByName(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
           filterKey: FilterKey.WithResults,
         }),
       ).toEqual([repositories[3], repositories[2], repositories[0]]);
@@ -455,7 +455,7 @@ describe(filterAndSortRepositoriesWithResultsByName.name, () => {
     it("returns the correct results", () => {
       expect(
         filterAndSortRepositoriesWithResultsByName(repositories, {
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
           filterKey: FilterKey.WithResults,
           searchValue: "r",
         }),
@@ -501,7 +501,7 @@ describe(filterAndSortRepositoriesWithResults.name, () => {
       expect(
         filterAndSortRepositoriesWithResults(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
         }),
       ).toEqual([
         repositories[3],
@@ -517,7 +517,7 @@ describe(filterAndSortRepositoriesWithResults.name, () => {
       expect(
         filterAndSortRepositoriesWithResults(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
           searchValue: "la",
         }),
       ).toEqual([repositories[2], repositories[0]]);
@@ -529,7 +529,7 @@ describe(filterAndSortRepositoriesWithResults.name, () => {
       expect(
         filterAndSortRepositoriesWithResults(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
           filterKey: FilterKey.WithResults,
         }),
       ).toEqual([repositories[3], repositories[2], repositories[0]]);
@@ -541,7 +541,7 @@ describe(filterAndSortRepositoriesWithResults.name, () => {
       expect(
         filterAndSortRepositoriesWithResults(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
           filterKey: FilterKey.WithResults,
         }),
       ).toEqual([repositories[3], repositories[2], repositories[0]]);
@@ -553,7 +553,7 @@ describe(filterAndSortRepositoriesWithResults.name, () => {
       expect(
         filterAndSortRepositoriesWithResults(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
           filterKey: FilterKey.WithResults,
           searchValue: "r",
         }),
@@ -565,7 +565,7 @@ describe(filterAndSortRepositoriesWithResults.name, () => {
     it("returns the correct results", () => {
       expect(
         filterAndSortRepositoriesWithResults(repositories, {
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
           filterKey: FilterKey.WithResults,
           searchValue: "la",
           repositoryIds: [
