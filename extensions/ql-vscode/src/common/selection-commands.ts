@@ -15,7 +15,7 @@ type CreateSupertypeOf<Super, Sub extends Super> = Sub;
 
 // This asserts that SelectionCommand is assignable to all of the different types of
 // SelectionCommand defined in commands.ts. The intention is the output from the helpers
-// in this file can be used with any of the select command types and cna handle any of
+// in this file can be used with any of the select command types and can handle any of
 // the inputs.
 type SelectionCommand<T extends NotArray> = CreateSupertypeOf<
   TreeViewContextMultiSelectionCommandFunction<T> &
