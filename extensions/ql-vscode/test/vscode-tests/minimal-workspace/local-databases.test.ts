@@ -749,7 +749,7 @@ describe("local databases", () => {
         mockDbItem.databaseUri,
       );
 
-      expect(resolveDatabaseContentsSpy).toBeCalledTimes(1);
+      expect(resolveDatabaseContentsSpy).toBeCalledTimes(2);
     });
 
     it("should set the database as the currently selected one", async () => {
