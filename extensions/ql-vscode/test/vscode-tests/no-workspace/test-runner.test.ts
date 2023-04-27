@@ -172,6 +172,7 @@ describe("test-runner", () => {
       expect.anything(),
       expect.anything(),
       preTestDatabaseItem.databaseUri,
+      false,
     );
 
     expect(renameDatabaseItemSpy).toBeCalledTimes(1);
