@@ -5,22 +5,22 @@ import { delimiter, dirname, join } from "path";
 import * as semver from "semver";
 import { parse } from "url";
 import { ExtensionContext, Event } from "vscode";
-import { DistributionConfig } from "./config";
+import { DistributionConfig } from "../config";
 import {
   InvocationRateLimiter,
   InvocationRateLimiterResultKind,
   showAndLogErrorMessage,
   showAndLogWarningMessage,
-} from "./helpers";
-import { extLogger } from "./common";
-import { getCodeQlCliVersion } from "./codeql-cli/cli-version";
-import { ProgressCallback, reportStreamProgress } from "./progress";
+} from "../helpers";
+import { extLogger } from "../common";
+import { getCodeQlCliVersion } from "./cli-version";
+import { ProgressCallback, reportStreamProgress } from "../progress";
 import {
   codeQlLauncherName,
   deprecatedCodeQlLauncherName,
   extractZipArchive,
   getRequiredAssetName,
-} from "./pure/distribution";
+} from "../pure/distribution";
 
 /**
  * distribution.ts

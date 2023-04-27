@@ -54,7 +54,7 @@ import {
   FindDistributionResultKind,
   GithubApiError,
   GithubRateLimitedError,
-} from "./distribution";
+} from "./codeql-cli/distribution";
 import {
   showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,

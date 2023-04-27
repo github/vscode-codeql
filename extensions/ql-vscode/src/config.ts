@@ -6,7 +6,7 @@ import {
   ConfigurationChangeEvent,
   ConfigurationTarget,
 } from "vscode";
-import { DistributionManager } from "./distribution";
+import { DistributionManager } from "./codeql-cli/distribution";
 import { extLogger } from "./common";
 import { ONE_DAY_IN_MS } from "./pure/time";
 

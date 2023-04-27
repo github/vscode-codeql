@@ -1,8 +1,8 @@
 import * as fetch from "node-fetch";
 import { Range } from "semver";
 
-import * as helpers from "../../../src/helpers";
-import { extLogger } from "../../../src/common";
+import * as helpers from "../../../../src/helpers";
+import { extLogger } from "../../../../src/common";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
@@ -13,7 +13,7 @@ import {
   ReleasesApiConsumer,
   getExecutableFromDirectory,
   DistributionManager,
-} from "../../../src/distribution";
+} from "../../../../src/codeql-cli/distribution";
 import { DirectoryResult } from "tmp-promise";
 
 jest.mock("os", () => {

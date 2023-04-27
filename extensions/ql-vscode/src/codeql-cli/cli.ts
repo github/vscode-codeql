@@ -16,7 +16,7 @@ import { allowCanaryQueryServer, CliConfig } from "../config";
 import {
   DistributionProvider,
   FindDistributionResultKind,
-} from "../distribution";
+} from "./distribution";
 import {
   assertNever,
   getErrorMessage,
