@@ -39,7 +39,7 @@ describe(RepoRow.name, () => {
       screen.queryByRole("img", {
         // There should not be any icons, except for the icons which are always shown
         name: (name) =>
-          !["expand", "stars count", "last updated"].includes(
+          !["expand", "stars count", "most recent commit"].includes(
             name.toLowerCase(),
           ),
       }),
@@ -293,7 +293,7 @@ describe(RepoRow.name, () => {
     expect(screen.getByText("last month")).toBeInTheDocument();
     expect(
       screen.getByRole("img", {
-        name: "Last updated",
+        name: "Most recent commit",
       }),
     ).toBeInTheDocument();
   });
@@ -314,7 +314,7 @@ describe(RepoRow.name, () => {
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("img", {
-        name: "Last updated",
+        name: "Most recent commit",
       }),
     ).not.toBeInTheDocument();
   });

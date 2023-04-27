@@ -206,7 +206,7 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
     expect(rows[5]).toHaveTextContent("octodemo/hello-world-6");
   });
 
-  it("uses the results count sort key", async () => {
+  it("uses the 'Number of results' sort key", async () => {
     render({
       filterSortState: {
         ...defaultFilterSortState,
