@@ -5,6 +5,7 @@ import {
   getSkippedRepoCount,
   getTotalResultCount,
   hasRepoScanCompleted,
+  isRepoScanSuccessful,
   VariantAnalysis,
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryState,
@@ -69,11 +70,17 @@ export const VariantAnalysisHeader = ({
         ?.length ?? 0
     );
   }, [variantAnalysis.scannedRepos]);
+  const successfulRepositoryCount = useMemo(() => {
+    return (
+      variantAnalysis.scannedRepos?.filter((repo) => isRepoScanSuccessful(repo))
+        ?.length ?? 0
+    );
+  }, [variantAnalysis.scannedRepos]);
   const resultCount = useMemo(() => {
     return getTotalResultCount(variantAnalysis.scannedRepos);
   }, [variantAnalysis.scannedRepos]);
-  const hasSkippedRepos = useMemo(() => {
-    return getSkippedRepoCount(variantAnalysis.skippedRepos) > 0;
+  const skippedRepositoryCount = useMemo(() => {
+    return getSkippedRepoCount(variantAnalysis.skippedRepos);
   }, [variantAnalysis.skippedRepos]);
   const filteredRepositories = useMemo(() => {
     return filterAndSortRepositoriesWithResults(variantAnalysis.scannedRepos, {
@@ -130,8 +137,9 @@ export const VariantAnalysisHeader = ({
         variantAnalysisStatus={variantAnalysis.status}
         totalRepositoryCount={totalScannedRepositoryCount}
         completedRepositoryCount={completedRepositoryCount}
+        successfulRepositoryCount={successfulRepositoryCount}
+        skippedRepositoryCount={skippedRepositoryCount}
         resultCount={resultCount}
-        hasWarnings={hasSkippedRepos}
         createdAt={parseDate(variantAnalysis.createdAt)}
         completedAt={parseDate(variantAnalysis.completedAt)}
         onViewLogsClick={onViewLogsClick}

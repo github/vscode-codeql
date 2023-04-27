@@ -34,6 +34,9 @@ export const Starting = Template.bind({});
 Starting.args = {
   variantAnalysisStatus: VariantAnalysisStatus.InProgress,
   totalRepositoryCount: 10,
+  completedRepositoryCount: 0,
+  successfulRepositoryCount: 0,
+  skippedRepositoryCount: 0,
 };
 
 export const Started = Template.bind({});
@@ -41,12 +44,20 @@ Started.args = {
   ...Starting.args,
   resultCount: 99_999,
   completedRepositoryCount: 2,
+  successfulRepositoryCount: 2,
 };
 
-export const StartedWithWarnings = Template.bind({});
-StartedWithWarnings.args = {
+export const StartedWithSkippedRepositories = Template.bind({});
+StartedWithSkippedRepositories.args = {
   ...Starting.args,
-  hasWarnings: true,
+  skippedRepositoryCount: 3,
+};
+
+export const StartedWithFailedAnalyses = Template.bind({});
+StartedWithFailedAnalyses.args = {
+  ...Starting.args,
+  completedRepositoryCount: 5,
+  successfulRepositoryCount: 3,
 };
 
 export const Succeeded = Template.bind({});
@@ -54,17 +65,35 @@ Succeeded.args = {
   ...Started.args,
   totalRepositoryCount: 1000,
   completedRepositoryCount: 1000,
+  successfulRepositoryCount: 1000,
   variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
   createdAt: new Date(1661262726000),
   completedAt: new Date(1661263446000),
 };
 
-export const SucceededWithWarnings = Template.bind({});
-SucceededWithWarnings.args = {
+export const SucceededWithSkippedRepositories = Template.bind({});
+SucceededWithSkippedRepositories.args = {
   ...Succeeded.args,
   totalRepositoryCount: 10,
-  completedRepositoryCount: 2,
-  hasWarnings: true,
+  completedRepositoryCount: 10,
+  successfulRepositoryCount: 10,
+  skippedRepositoryCount: 6,
+};
+
+export const SucceededWithFailedAnalyses = Template.bind({});
+SucceededWithFailedAnalyses.args = {
+  ...Succeeded.args,
+  totalRepositoryCount: 10,
+  completedRepositoryCount: 10,
+  successfulRepositoryCount: 7,
+};
+
+export const SucceededWithFailedAnalysesAndSkippedRepositories = Template.bind(
+  {},
+);
+SucceededWithFailedAnalysesAndSkippedRepositories.args = {
+  ...SucceededWithFailedAnalyses.args,
+  skippedRepositoryCount: 6,
 };
 
 export const Failed = Template.bind({});
@@ -77,6 +106,7 @@ Failed.args = {
 
 export const Stopped = Template.bind({});
 Stopped.args = {
-  ...SucceededWithWarnings.args,
+  ...Started.args,
   variantAnalysisStatus: VariantAnalysisStatus.Canceled,
+  completedRepositoryCount: 10,
 };
