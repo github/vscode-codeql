@@ -19,7 +19,7 @@ export default {
 } as ComponentMeta<typeof RepositoriesSortComponent>;
 
 export const RepositoriesSort = () => {
-  const [value, setValue] = useState(SortKey.Name);
+  const [value, setValue] = useState(SortKey.Alphabetically);
 
   return <RepositoriesSortComponent value={value} onChange={setValue} />;
 };

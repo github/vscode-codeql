@@ -2,8 +2,8 @@ import { CancellationToken } from "vscode";
 import { ProgressCallback } from "../progress";
 import * as messages from "../pure/new-messages";
 import { QueryOutputDir } from "../run-queries-shared";
-import * as qsClient from "./queryserver-client";
-import { CoreQueryResults, CoreQueryTarget } from "../queryRunner";
+import * as qsClient from "./query-server-client";
+import { CoreQueryResults, CoreQueryTarget } from "./query-runner";
 import { Logger } from "../common";
 
 /**

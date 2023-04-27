@@ -11,7 +11,7 @@ import {
   DatabaseResolver,
   findSourceArchive,
   FullDatabaseOptions,
-} from "../../../src/local-databases";
+} from "../../../src/databases/local-databases";
 import { Logger } from "../../../src/common";
 import { ProgressCallback } from "../../../src/progress";
 import { CodeQLCliServer, DbInfo } from "../../../src/cli";
@@ -20,7 +20,7 @@ import {
   encodeSourceArchiveUri,
 } from "../../../src/archive-filesystem-provider";
 import { testDisposeHandler } from "../test-dispose-handler";
-import { QueryRunner } from "../../../src/queryRunner";
+import { QueryRunner } from "../../../src/query-server/query-runner";
 import * as helpers from "../../../src/helpers";
 import { Setting } from "../../../src/config";
 import { QlPackGenerator } from "../../../src/qlpack-generator";
@@ -708,6 +708,7 @@ describe("local databases", () => {
   describe("openDatabase", () => {
     let createSkeletonPacksSpy: jest.SpyInstance;
     let resolveDatabaseContentsSpy: jest.SpyInstance;
+    let setCurrentDatabaseItemSpy: jest.SpyInstance;
     let addDatabaseSourceArchiveFolderSpy: jest.SpyInstance;
     let mockDbItem: DatabaseItemImpl;
 
@@ -721,6 +722,11 @@ describe("local databases", () => {
       resolveDatabaseContentsSpy = jest
         .spyOn(DatabaseResolver, "resolveDatabaseContents")
         .mockResolvedValue({} as DatabaseContentsWithDbScheme);
+
+      setCurrentDatabaseItemSpy = jest.spyOn(
+        databaseManager,
+        "setCurrentDatabaseItem",
+      );
 
       addDatabaseSourceArchiveFolderSpy = jest.spyOn(
         databaseManager,
@@ -746,6 +752,19 @@ describe("local databases", () => {
       expect(resolveDatabaseContentsSpy).toBeCalledTimes(1);
     });
 
+    it("should set the database as the currently selected one", async () => {
+      const makeSelected = true;
+
+      await databaseManager.openDatabase(
+        {} as ProgressCallback,
+        {} as CancellationToken,
+        mockDbItem.databaseUri,
+        makeSelected,
+      );
+
+      expect(setCurrentDatabaseItemSpy).toBeCalledTimes(1);
+    });
+
     it("should add database source archive folder", async () => {
       await databaseManager.openDatabase(
         {} as ProgressCallback,
@@ -762,12 +781,15 @@ describe("local databases", () => {
           jest.spyOn(Setting.prototype, "getValue").mockReturnValue(true);
 
           const isTutorialDatabase = true;
+          const makeSelected = true;
+          const nameOverride = "CodeQL Tutorial Database";
 
           await databaseManager.openDatabase(
             {} as ProgressCallback,
             {} as CancellationToken,
             mockDbItem.databaseUri,
-            "CodeQL Tutorial Database",
+            makeSelected,
+            nameOverride,
             isTutorialDatabase,
           );
 

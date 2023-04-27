@@ -4,6 +4,7 @@ import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,
   filterAndSortRepositoriesWithResultsByName,
+  FilterKey,
   matchesFilter,
   SortKey,
 } from "../../src/pure/variant-analysis-filter-sort";
@@ -13,32 +14,93 @@ describe(matchesFilter.name, () => {
     fullName: "github/codeql",
   };
 
-  const testCases = [
-    { searchValue: "", matches: true },
-    { searchValue: "github/codeql", matches: true },
-    { searchValue: "github", matches: true },
-    { searchValue: "git", matches: true },
-    { searchValue: "codeql", matches: true },
-    { searchValue: "code", matches: true },
-    { searchValue: "ql", matches: true },
-    { searchValue: "/", matches: true },
-    { searchValue: "gothub/codeql", matches: false },
-    { searchValue: "hello", matches: false },
-    { searchValue: "cod*ql", matches: false },
-    { searchValue: "cod?ql", matches: false },
-  ];
+  describe("searchValue", () => {
+    const testCases = [
+      { searchValue: "", matches: true },
+      { searchValue: "github/codeql", matches: true },
+      { searchValue: "github", matches: true },
+      { searchValue: "git", matches: true },
+      { searchValue: "codeql", matches: true },
+      { searchValue: "code", matches: true },
+      { searchValue: "ql", matches: true },
+      { searchValue: "/", matches: true },
+      { searchValue: "gothub/codeql", matches: false },
+      { searchValue: "hello", matches: false },
+      { searchValue: "cod*ql", matches: false },
+      { searchValue: "cod?ql", matches: false },
+    ];
 
-  test.each(testCases)(
-    "returns $matches if searching for $searchValue",
-    ({ searchValue, matches }) => {
+    test.each(testCases)(
+      "returns $matches if searching for $searchValue",
+      ({ searchValue, matches }) => {
+        expect(
+          matchesFilter(
+            { repository },
+            {
+              ...defaultFilterSortState,
+              searchValue,
+            },
+          ),
+        ).toBe(matches);
+      },
+    );
+  });
+
+  describe("filterKey", () => {
+    it("returns true if filterKey is all and resultCount is positive", () => {
       expect(
-        matchesFilter(repository, {
-          ...defaultFilterSortState,
-          searchValue,
-        }),
-      ).toBe(matches);
-    },
-  );
+        matchesFilter(
+          { repository, resultCount: 1 },
+          { ...defaultFilterSortState, filterKey: FilterKey.All },
+        ),
+      ).toBe(true);
+    });
+
+    it("returns true if filterKey is all and resultCount is zero", () => {
+      expect(
+        matchesFilter(
+          { repository, resultCount: 0 },
+          { ...defaultFilterSortState, filterKey: FilterKey.All },
+        ),
+      ).toBe(true);
+    });
+
+    it("returns true if filterKey is all and resultCount is undefined", () => {
+      expect(
+        matchesFilter(
+          { repository },
+          { ...defaultFilterSortState, filterKey: FilterKey.All },
+        ),
+      ).toBe(true);
+    });
+
+    it("returns true if filterKey is withResults and resultCount is positive", () => {
+      expect(
+        matchesFilter(
+          { repository, resultCount: 1 },
+          { ...defaultFilterSortState, filterKey: FilterKey.WithResults },
+        ),
+      ).toBe(true);
+    });
+
+    it("returns false if filterKey is withResults and resultCount is zero", () => {
+      expect(
+        matchesFilter(
+          { repository, resultCount: 0 },
+          { ...defaultFilterSortState, filterKey: FilterKey.WithResults },
+        ),
+      ).toBe(false);
+    });
+
+    it("returns false if filterKey is withResults and resultCount is undefined", () => {
+      expect(
+        matchesFilter(
+          { repository },
+          { ...defaultFilterSortState, filterKey: FilterKey.WithResults },
+        ),
+      ).toBe(false);
+    });
+  });
 });
 
 describe(compareRepository.name, () => {
@@ -65,10 +127,10 @@ describe(compareRepository.name, () => {
     });
   });
 
-  describe("when sort key is name", () => {
+  describe("when sort key is 'Alphabetically'", () => {
     const sorter = compareRepository({
       ...defaultFilterSortState,
-      sortKey: SortKey.Name,
+      sortKey: SortKey.Alphabetically,
     });
 
     const left = {
@@ -91,10 +153,10 @@ describe(compareRepository.name, () => {
     });
   });
 
-  describe("when sort key is stars", () => {
+  describe("when sort key is 'Popularity'", () => {
     const sorter = compareRepository({
       ...defaultFilterSortState,
-      sortKey: SortKey.Stars,
+      sortKey: SortKey.Popularity,
     });
 
     const left = {
@@ -137,10 +199,10 @@ describe(compareRepository.name, () => {
     });
   });
 
-  describe("when sort key is last updated", () => {
+  describe("when sort key is 'Most recent commit'", () => {
     const sorter = compareRepository({
       ...defaultFilterSortState,
-      sortKey: SortKey.LastUpdated,
+      sortKey: SortKey.MostRecentCommit,
     });
 
     const left = {
@@ -209,10 +271,10 @@ describe(compareWithResults.name, () => {
     });
   });
 
-  describe("when sort key is stars", () => {
+  describe("when sort key is 'Popularity'", () => {
     const sorter = compareWithResults({
       ...defaultFilterSortState,
-      sortKey: SortKey.Stars,
+      sortKey: SortKey.Popularity,
     });
 
     const left = {
@@ -235,10 +297,10 @@ describe(compareWithResults.name, () => {
     });
   });
 
-  describe("when sort key is last updated", () => {
+  describe("when sort key is 'Most recent commit'", () => {
     const sorter = compareWithResults({
       ...defaultFilterSortState,
-      sortKey: SortKey.LastUpdated,
+      sortKey: SortKey.MostRecentCommit,
     });
 
     const left = {
@@ -264,7 +326,7 @@ describe(compareWithResults.name, () => {
   describe("when sort key is results count", () => {
     const sorter = compareWithResults({
       ...defaultFilterSortState,
-      sortKey: SortKey.ResultsCount,
+      sortKey: SortKey.NumberOfResults,
     });
 
     const left = {
@@ -349,12 +411,12 @@ describe(filterAndSortRepositoriesWithResultsByName.name, () => {
     },
   ];
 
-  describe("when sort key is given without filter", () => {
+  describe("when sort key is given without search or filter", () => {
     it("returns the correct results", () => {
       expect(
         filterAndSortRepositoriesWithResultsByName(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
         }),
       ).toEqual([
         repositories[3],
@@ -365,15 +427,39 @@ describe(filterAndSortRepositoriesWithResultsByName.name, () => {
     });
   });
 
-  describe("when sort key and search filter are given", () => {
+  describe("when sort key and search are given without filter", () => {
     it("returns the correct results", () => {
       expect(
         filterAndSortRepositoriesWithResultsByName(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
           searchValue: "la",
         }),
       ).toEqual([repositories[2], repositories[0]]);
+    });
+  });
+
+  describe("when sort key and filter withResults are given without search", () => {
+    it("returns the correct results", () => {
+      expect(
+        filterAndSortRepositoriesWithResultsByName(repositories, {
+          ...defaultFilterSortState,
+          sortKey: SortKey.NumberOfResults,
+          filterKey: FilterKey.WithResults,
+        }),
+      ).toEqual([repositories[3], repositories[2], repositories[0]]);
+    });
+  });
+
+  describe("when sort key, search, and filter withResults are given", () => {
+    it("returns the correct results", () => {
+      expect(
+        filterAndSortRepositoriesWithResultsByName(repositories, {
+          sortKey: SortKey.NumberOfResults,
+          filterKey: FilterKey.WithResults,
+          searchValue: "r",
+        }),
+      ).toEqual([repositories[3]]);
     });
   });
 });
@@ -410,12 +496,12 @@ describe(filterAndSortRepositoriesWithResults.name, () => {
     },
   ];
 
-  describe("when sort key is given without filter", () => {
+  describe("when sort key is given", () => {
     it("returns the correct results", () => {
       expect(
         filterAndSortRepositoriesWithResults(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
         }),
       ).toEqual([
         repositories[3],
@@ -426,24 +512,61 @@ describe(filterAndSortRepositoriesWithResults.name, () => {
     });
   });
 
-  describe("when sort key and search filter are given", () => {
+  describe("when sort key and search are given", () => {
     it("returns the correct results", () => {
       expect(
         filterAndSortRepositoriesWithResults(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
           searchValue: "la",
         }),
       ).toEqual([repositories[2], repositories[0]]);
     });
   });
 
-  describe("when sort key, search filter, and repository ids are given", () => {
+  describe("when sort key and filter withResults are given", () => {
     it("returns the correct results", () => {
       expect(
         filterAndSortRepositoriesWithResults(repositories, {
           ...defaultFilterSortState,
-          sortKey: SortKey.ResultsCount,
+          sortKey: SortKey.NumberOfResults,
+          filterKey: FilterKey.WithResults,
+        }),
+      ).toEqual([repositories[3], repositories[2], repositories[0]]);
+    });
+  });
+
+  describe("when sort key and filter withResults are given", () => {
+    it("returns the correct results", () => {
+      expect(
+        filterAndSortRepositoriesWithResults(repositories, {
+          ...defaultFilterSortState,
+          sortKey: SortKey.NumberOfResults,
+          filterKey: FilterKey.WithResults,
+        }),
+      ).toEqual([repositories[3], repositories[2], repositories[0]]);
+    });
+  });
+
+  describe("when sort key, search, and filter withResults are given", () => {
+    it("returns the correct results", () => {
+      expect(
+        filterAndSortRepositoriesWithResults(repositories, {
+          ...defaultFilterSortState,
+          sortKey: SortKey.NumberOfResults,
+          filterKey: FilterKey.WithResults,
+          searchValue: "r",
+        }),
+      ).toEqual([repositories[3]]);
+    });
+  });
+
+  describe("when sort key, search, filter withResults, and repository ids are given", () => {
+    it("returns the correct results", () => {
+      expect(
+        filterAndSortRepositoriesWithResults(repositories, {
+          sortKey: SortKey.NumberOfResults,
+          filterKey: FilterKey.WithResults,
           searchValue: "la",
           repositoryIds: [
             repositories[1].repository.id,

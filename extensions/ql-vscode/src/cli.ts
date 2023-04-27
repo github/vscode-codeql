@@ -171,6 +171,8 @@ export type OnLineCallback = (
   line: string,
 ) => Promise<string | undefined> | string | undefined;
 
+type VersionChangedListener = (newVersion: SemVer | undefined) => void;
+
 /**
  * This class manages a cli server started by `codeql execute cli-server` to
  * run commands without the overhead of starting a new java
@@ -188,7 +190,9 @@ export class CodeQLCliServer implements Disposable {
   nullBuffer: Buffer;
 
   /** Version of current cli, lazily computed by the `getVersion()` method */
-  private _version: Promise<SemVer> | undefined;
+  private _version: SemVer | undefined;
+
+  private _versionChangedListeners: VersionChangedListener[] = [];
 
   /**
    * The languages supported by the current version of the CLI, computed by `getSupportedLanguages()`.
@@ -1417,15 +1421,36 @@ export class CodeQLCliServer implements Disposable {
 
   public async getVersion() {
     if (!this._version) {
-      this._version = this.refreshVersion();
-      // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
-      await this.app.commands.execute(
-        "setContext",
-        "codeql.supportsEvalLog",
-        await this.cliConstraints.supportsPerQueryEvalLog(),
-      );
+      try {
+        const newVersion = await this.refreshVersion();
+        this._version = newVersion;
+        this._versionChangedListeners.forEach((listener) =>
+          listener(newVersion),
+        );
+
+        // this._version is only undefined upon config change, so we reset CLI-based context key only when necessary.
+        await this.app.commands.execute(
+          "setContext",
+          "codeql.supportsEvalLog",
+          newVersion.compare(
+            CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG,
+          ) >= 0,
+        );
+      } catch (e) {
+        this._versionChangedListeners.forEach((listener) =>
+          listener(undefined),
+        );
+        throw e;
+      }
     }
-    return await this._version;
+    return this._version;
+  }
+
+  public addVersionChangedListener(listener: VersionChangedListener) {
+    if (this._version) {
+      listener(this._version);
+    }
+    this._versionChangedListeners.push(listener);
   }
 
   private async refreshVersion() {

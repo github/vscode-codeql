@@ -1,5 +1,10 @@
 import * as React from "react";
-import { render as reactRender, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  render as reactRender,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisScannedRepositoryDownloadStatus,
@@ -34,7 +39,7 @@ describe(RepoRow.name, () => {
       screen.queryByRole("img", {
         // There should not be any icons, except for the icons which are always shown
         name: (name) =>
-          !["expand", "stars count", "last updated"].includes(
+          !["expand", "stars count", "most recent commit"].includes(
             name.toLowerCase(),
           ),
       }),
@@ -288,7 +293,7 @@ describe(RepoRow.name, () => {
     expect(screen.getByText("last month")).toBeInTheDocument();
     expect(
       screen.getByRole("img", {
-        name: "Last updated",
+        name: "Most recent commit",
       }),
     ).toBeInTheDocument();
   });
@@ -309,7 +314,7 @@ describe(RepoRow.name, () => {
     ).not.toBeInTheDocument();
     expect(
       screen.queryByRole("img", {
-        name: "Last updated",
+        name: "Most recent commit",
       }),
     ).not.toBeInTheDocument();
   });
@@ -319,11 +324,13 @@ describe(RepoRow.name, () => {
       status: VariantAnalysisRepoStatus.TimedOut,
     });
 
-    await userEvent.click(
-      screen.getByRole("button", {
-        expanded: false,
-      }),
-    );
+    await act(async () => {
+      await userEvent.click(
+        screen.getByRole("button", {
+          expanded: false,
+        }),
+      );
+    });
 
     screen.getByRole("button", {
       expanded: true,
@@ -342,11 +349,13 @@ describe(RepoRow.name, () => {
       interpretedResults: [],
     });
 
-    await userEvent.click(
-      screen.getByRole("button", {
-        expanded: false,
-      }),
-    );
+    await act(async () => {
+      await userEvent.click(
+        screen.getByRole("button", {
+          expanded: false,
+        }),
+      );
+    });
 
     expect(
       screen.getByRole("button", {
@@ -365,11 +374,13 @@ describe(RepoRow.name, () => {
       },
     });
 
-    await userEvent.click(
-      screen.getByRole("button", {
-        expanded: false,
-      }),
-    );
+    await act(async () => {
+      await userEvent.click(
+        screen.getByRole("button", {
+          expanded: false,
+        }),
+      );
+    });
 
     expect((window as any).vsCodeApi.postMessage).toHaveBeenCalledWith({
       t: "requestRepositoryResults",

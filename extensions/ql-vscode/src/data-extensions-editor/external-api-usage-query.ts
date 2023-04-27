@@ -1,4 +1,4 @@
-import { CoreCompletedQuery, QueryRunner } from "../queryRunner";
+import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { dir } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
@@ -9,7 +9,7 @@ import {
 import { TeeLogger } from "../common";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../cli";
-import { DatabaseItem } from "../local-databases";
+import { DatabaseItem } from "../databases/local-databases";
 import { ProgressCallback } from "../progress";
 import { fetchExternalApiQueries } from "./queries";
 import { QueryResultType } from "../pure/new-messages";

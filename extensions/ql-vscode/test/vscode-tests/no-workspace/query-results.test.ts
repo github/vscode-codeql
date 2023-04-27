@@ -24,7 +24,7 @@ import { tmpDir } from "../../../src/helpers";
 import {
   formatLegacyMessage,
   QueryInProgress,
-} from "../../../src/legacy-query-server/run-queries";
+} from "../../../src/query-server/legacy/run-queries";
 import {
   EvaluationResult,
   QueryResultType,

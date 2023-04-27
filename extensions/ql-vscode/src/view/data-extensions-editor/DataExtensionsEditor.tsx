@@ -20,6 +20,7 @@ import { calculateModeledPercentage } from "./modeled";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
 import { basename } from "../common/path";
 import { ViewTitle } from "../common";
+import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 
 const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -28,6 +29,12 @@ const DataExtensionsEditorContainer = styled.div`
 const DetailsContainer = styled.div`
   display: flex;
   gap: 1em;
+  align-items: center;
+`;
+
+const NonExistingModelFileContainer = styled.div`
+  display: flex;
+  gap: 0.2em;
   align-items: center;
 `;
 
@@ -47,24 +54,19 @@ const ProgressBar = styled.div<ProgressBarProps>`
 `;
 
 type Props = {
-  initialExtensionPackName?: string;
-  initialModelFilename?: string;
+  initialViewState?: DataExtensionEditorViewState;
   initialExternalApiUsages?: ExternalApiUsage[];
   initialModeledMethods?: Record<string, ModeledMethod>;
 };
 
 export function DataExtensionsEditor({
-  initialExtensionPackName,
-  initialModelFilename,
+  initialViewState,
   initialExternalApiUsages = [],
   initialModeledMethods = {},
 }: Props): JSX.Element {
-  const [extensionPackName, setExtensionPackName] = useState<
-    string | undefined
-  >(initialExtensionPackName);
-  const [modelFilename, setModelFilename] = useState<string | undefined>(
-    initialModelFilename,
-  );
+  const [viewState, setViewState] = useState<
+    DataExtensionEditorViewState | undefined
+  >(initialViewState);
 
   const [externalApiUsages, setExternalApiUsages] = useState<
     ExternalApiUsage[]
@@ -83,9 +85,8 @@ export function DataExtensionsEditor({
       if (evt.origin === window.origin) {
         const msg: ToDataExtensionsEditorMessage = evt.data;
         switch (msg.t) {
-          case "setDataExtensionEditorInitialData":
-            setExtensionPackName(msg.extensionPackName);
-            setModelFilename(msg.modelFilename);
+          case "setDataExtensionEditorViewState":
+            setViewState(msg.viewState);
             break;
           case "setExternalApiUsages":
             setExternalApiUsages(msg.externalApiUsages);
@@ -181,17 +182,27 @@ export function DataExtensionsEditor({
         <>
           <ViewTitle>Data extensions editor</ViewTitle>
           <DetailsContainer>
-            {extensionPackName && (
-              <LinkIconButton onClick={onOpenExtensionPackClick}>
-                <span slot="start" className="codicon codicon-package"></span>
-                {extensionPackName}
-              </LinkIconButton>
-            )}
-            {modelFilename && (
-              <LinkIconButton onClick={onOpenModelFileClick}>
-                <span slot="start" className="codicon codicon-file-code"></span>
-                {basename(modelFilename)}
-              </LinkIconButton>
+            {viewState?.extensionPackModelFile && (
+              <>
+                <LinkIconButton onClick={onOpenExtensionPackClick}>
+                  <span slot="start" className="codicon codicon-package"></span>
+                  {viewState.extensionPackModelFile.extensionPack.name}
+                </LinkIconButton>
+                {viewState.modelFileExists ? (
+                  <LinkIconButton onClick={onOpenModelFileClick}>
+                    <span
+                      slot="start"
+                      className="codicon codicon-file-code"
+                    ></span>
+                    {basename(viewState.extensionPackModelFile.filename)}
+                  </LinkIconButton>
+                ) : (
+                  <NonExistingModelFileContainer>
+                    <span className="codicon codicon-file-code"></span>
+                    {basename(viewState.extensionPackModelFile.filename)}
+                  </NonExistingModelFileContainer>
+                )}
+              </>
             )}
             <div>{modeledPercentage.toFixed(2)}% modeled</div>
             <div>{unModeledPercentage.toFixed(2)}% unmodeled</div>

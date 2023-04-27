@@ -2,7 +2,11 @@
 
 ## [UNRELEASED]
 
+## 1.8.3 - 26 April 2023
+
+- Added ability to filter repositories for a variant analysis to only those that have results [#2343](https://github.com/github/vscode-codeql/pull/2343)
 - Add new configuration option to allow downloading databases from http, non-secure servers. [#2332](https://github.com/github/vscode-codeql/pull/2332)
+- Remove title actions from the query history panel that depended on history items being selected. [#2350](https://github.com/github/vscode-codeql/pull/2350)
 
 ## 1.8.2 - 12 April 2023
 

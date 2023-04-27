@@ -21,7 +21,7 @@ import {
   QueryEvaluationInfo,
   QueryWithResults,
 } from "./run-queries-shared";
-import { formatLegacyMessage } from "./legacy-query-server/run-queries";
+import { formatLegacyMessage } from "./query-server/legacy";
 import { sarifParser } from "./sarif-parser";
 
 /**
@@ -312,5 +312,9 @@ export class LocalQueryInfo {
     } else {
       return QueryStatus.Failed;
     }
+  }
+
+  get databaseName() {
+    return this.initialInfo.databaseInfo.name;
   }
 }

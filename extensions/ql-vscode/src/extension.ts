@@ -20,13 +20,10 @@ import { dirSync } from "tmp-promise";
 import { testExplorerExtensionId, TestHub } from "vscode-test-adapter-api";
 import { lt, parse } from "semver";
 import { watch } from "chokidar";
-
-import { AstViewer } from "./astViewer";
 import {
   activate as archiveFilesystemProvider_activate,
   zipArchiveScheme,
 } from "./archive-filesystem-provider";
-import QuickEvalCodeLensProvider from "./quickEvalCodeLensProvider";
 import { CodeQLCliServer } from "./cli";
 import {
   CliConfigListener,
@@ -36,15 +33,18 @@ import {
   QueryHistoryConfigListener,
   QueryServerConfigListener,
 } from "./config";
-import { install } from "./languageSupport";
-import { DatabaseManager } from "./local-databases";
-import { DatabaseUI } from "./local-databases-ui";
 import {
+  AstViewer,
+  install,
+  spawnIdeServer,
+  getQueryEditorCommands,
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
-} from "./contextual/templateProvider";
+} from "./language-support";
+import { DatabaseManager } from "./databases/local-databases";
+import { DatabaseUI } from "./databases/local-databases-ui";
 import {
   DEFAULT_DISTRIBUTION_VERSION_RANGE,
   DistributionKind,
@@ -72,7 +72,6 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "./pure/helpers-pure";
-import { spawnIdeServer } from "./ide-server";
 import { ResultsView } from "./interface";
 import { WebviewReveal } from "./interface-utils";
 import {
@@ -83,8 +82,10 @@ import {
 } from "./common";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { CompletedLocalQueryInfo } from "./query-results";
-import { QueryServerClient as LegacyQueryServerClient } from "./legacy-query-server/queryserver-client";
-import { QueryServerClient } from "./query-server/queryserver-client";
+import {
+  LegacyQueryRunner,
+  QueryServerClient as LegacyQueryServerClient,
+} from "./query-server/legacy";
 import { QLTestAdapterFactory } from "./test-adapter";
 import { TestUIService } from "./test-ui";
 import { CompareView } from "./compare/compare-view";
@@ -93,13 +94,10 @@ import { ProgressCallback, withProgress } from "./progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
-import { EvalLogViewer } from "./eval-log-viewer";
+import { EvalLogViewer } from "./query-evaluation-logging";
 import { SummaryLanguageSupport } from "./log-insights/summary-language-support";
 import { JoinOrderScannerProvider } from "./log-insights/join-order";
 import { LogScannerService } from "./log-insights/log-scanner-service";
-import { LegacyQueryRunner } from "./legacy-query-server/legacyRunner";
-import { NewQueryRunner } from "./query-server/query-runner";
-import { QueryRunner } from "./queryRunner";
 import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
 import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
@@ -117,9 +115,8 @@ import {
   PreActivationCommands,
   QueryServerCommands,
 } from "./common/commands";
-import { LocalQueries } from "./local-queries";
-import { getAstCfgCommands } from "./ast-cfg-commands";
-import { getQueryEditorCommands } from "./query-editor";
+import { LocalQueries, QuickEvalCodeLensProvider } from "./local-queries";
+import { getAstCfgCommands } from "./language-support/ast-viewer/ast-cfg-commands";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
@@ -127,6 +124,7 @@ import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extens
 import { TestManager } from "./test-manager";
 import { TestRunner } from "./test-runner";
 import { TestManagerBase } from "./test-manager-base";
+import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 
 /**
  * extension.ts
@@ -317,7 +315,7 @@ export async function activate(
 
   const distributionConfigListener = new DistributionConfigListener();
   await initializeLogging(ctx);
-  await initializeTelemetry(extension, ctx);
+  const telemetryListener = await initializeTelemetry(extension, ctx);
   addUnhandledRejectionListener();
   install();
 
@@ -406,6 +404,9 @@ export async function activate(
     variantAnalysisViewSerializer.onExtensionLoaded(
       codeQlExtension.variantAnalysisManager,
     );
+    codeQlExtension.cliServer.addVersionChangedListener((ver) => {
+      telemetryListener.cliVersion = ver;
+    });
   }
 
   return codeQlExtension;
@@ -704,9 +705,14 @@ async function activateWithInstalledDistribution(
   for (const glob of PACK_GLOBS) {
     const fsWatcher = workspace.createFileSystemWatcher(glob);
     ctx.subscriptions.push(fsWatcher);
-    fsWatcher.onDidChange(async (_uri) => {
+
+    const clearPackCache = async (_uri: Uri) => {
       await qs.clearPackCache();
-    });
+    };
+
+    fsWatcher.onDidCreate(clearPackCache);
+    fsWatcher.onDidChange(clearPackCache);
+    fsWatcher.onDidDelete(clearPackCache);
   }
 
   void extLogger.log("Initializing database manager.");

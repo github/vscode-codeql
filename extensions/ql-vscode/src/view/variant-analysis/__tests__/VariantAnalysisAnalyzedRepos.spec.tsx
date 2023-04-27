@@ -1,5 +1,5 @@
 import * as React from "react";
-import { render as reactRender, screen } from "@testing-library/react";
+import { act, render as reactRender, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   VariantAnalysisRepoStatus,
@@ -155,11 +155,15 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
     expect(
       screen.queryByText("This is an empty block."),
     ).not.toBeInTheDocument();
-    await userEvent.click(
-      screen.getByRole("button", {
-        name: /octodemo\/hello-world-2/,
-      }),
-    );
+
+    await act(async () => {
+      await userEvent.click(
+        screen.getByRole("button", {
+          name: /octodemo\/hello-world-2/,
+        }),
+      );
+    });
+
     expect(screen.getByText("This is an empty block.")).toBeInTheDocument();
   });
 
@@ -187,7 +191,7 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
     render({
       filterSortState: {
         ...defaultFilterSortState,
-        sortKey: SortKey.Stars,
+        sortKey: SortKey.Popularity,
       },
     });
 
@@ -202,11 +206,11 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
     expect(rows[5]).toHaveTextContent("octodemo/hello-world-6");
   });
 
-  it("uses the results count sort key", async () => {
+  it("uses the 'Number of results' sort key", async () => {
     render({
       filterSortState: {
         ...defaultFilterSortState,
-        sortKey: SortKey.ResultsCount,
+        sortKey: SortKey.NumberOfResults,
       },
     });
 

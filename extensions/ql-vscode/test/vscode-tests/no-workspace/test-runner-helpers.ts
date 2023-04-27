@@ -1,7 +1,7 @@
 import { Uri } from "vscode";
 import { mockedObject } from "../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../src/cli";
-import { DatabaseManager } from "../../../src/local-databases";
+import { DatabaseManager } from "../../../src/databases/local-databases";
 
 /**
  * Fake QL tests used by various tests.

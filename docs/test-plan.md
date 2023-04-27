@@ -258,10 +258,10 @@ This requires running a MRVA query and seeing the results view.
    2. When the file does not exist
 7. Can open query text
 8. Can sort repos
-   1. By name
-   2. By results
-   3. By stars
-   4. By last updated
+   1. Alphabetically
+   2. By number of results
+   3. By popularity
+   4. By most recent commit
 9. Can filter repos
 10. Shows correct statistics
     1. Total number of results

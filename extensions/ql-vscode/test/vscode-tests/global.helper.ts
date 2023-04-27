@@ -7,12 +7,15 @@ import {
   Uri,
   extensions,
 } from "vscode";
-import { DatabaseItem, DatabaseManager } from "../../src/local-databases";
+import {
+  DatabaseItem,
+  DatabaseManager,
+} from "../../src/databases/local-databases";
 import { CodeQLCliServer } from "../../src/cli";
 import { removeWorkspaceRefs } from "../../src/variant-analysis/run-remote-query";
 import { CodeQLExtensionInterface } from "../../src/extension";
 import { ProgressCallback } from "../../src/progress";
-import { importArchiveDatabase } from "../../src/databaseFetcher";
+import { importArchiveDatabase } from "../../src/databases/database-fetcher";
 import { createMockCommandManager } from "../__mocks__/commandsMock";
 
 // This file contains helpers shared between tests that work with an activated extension.

@@ -13,7 +13,7 @@ import {
   ToDataExtensionsEditorMessage,
 } from "../pure/interface-types";
 import { ProgressUpdate } from "../progress";
-import { QueryRunner } from "../queryRunner";
+import { QueryRunner } from "../query-server";
 import {
   showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
@@ -21,11 +21,11 @@ import {
 import { extLogger } from "../common";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
-import { DatabaseItem, DatabaseManager } from "../local-databases";
+import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../cli";
 import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { generateFlowModel } from "./generate-flow-model";
-import { promptImportGithubDatabase } from "../databaseFetcher";
+import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
 import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
 import { showResolvableLocation } from "../interface-utils";
@@ -35,7 +35,7 @@ import { readQueryResults, runQuery } from "./external-api-usage-query";
 import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
-import { ExtensionPackModelFile } from "./extension-pack-picker";
+import { ExtensionPackModelFile } from "./shared/extension-pack";
 
 function getQlSubmoduleFolder(): WorkspaceFolder | undefined {
   const workspaceFolder = workspace.workspaceFolders?.find(
@@ -118,7 +118,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
           msg.externalApiUsages,
           msg.modeledMethods,
         );
-        await this.loadExternalApiUsages();
+        await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
 
         break;
       case "generateExternalApi":
@@ -134,14 +134,20 @@ export class DataExtensionsEditorView extends AbstractWebview<
     super.onWebViewLoaded();
 
     await Promise.all([
-      this.postMessage({
-        t: "setDataExtensionEditorInitialData",
-        extensionPackName: this.modelFile.extensionPack.name,
-        modelFilename: this.modelFile.filename,
-      }),
+      this.setViewState(),
       this.loadExternalApiUsages(),
       this.loadExistingModeledMethods(),
     ]);
+  }
+
+  private async setViewState(): Promise<void> {
+    await this.postMessage({
+      t: "setDataExtensionEditorViewState",
+      viewState: {
+        extensionPackModelFile: this.modelFile,
+        modelFileExists: await pathExists(this.modelFile.filename),
+      },
+    });
   }
 
   protected async jumpToUsage(

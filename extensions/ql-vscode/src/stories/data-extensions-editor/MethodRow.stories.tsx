@@ -47,7 +47,7 @@ MethodRow.args = {
   },
   modeledMethod: {
     type: "summary",
-    input: "Argument[-1]",
+    input: "Argument[this]",
     output: "ReturnValue",
     kind: "taint",
   },
