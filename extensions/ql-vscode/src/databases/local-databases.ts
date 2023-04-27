@@ -645,12 +645,15 @@ export class DatabaseManager extends DisposableObject {
   public async addExistingDatabaseItem(
     databaseItem: DatabaseItem,
     progress: ProgressCallback,
-    makeSelected = true,
+    makeSelected: boolean,
     token: vscode.CancellationToken,
     isTutorialDatabase?: boolean,
   ): Promise<DatabaseItem> {
     const existingItem = this.findDatabaseItem(databaseItem.databaseUri);
     if (existingItem !== undefined) {
+      if (makeSelected) {
+        await this.setCurrentDatabaseItem(existingItem);
+      }
       return existingItem;
     }
 
