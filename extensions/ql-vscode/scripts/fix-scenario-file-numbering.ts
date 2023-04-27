@@ -20,7 +20,10 @@ if (process.argv.length !== 3) {
 const scenarioName = process.argv[2];
 
 const extensionDirectory = resolve(__dirname, "..");
-const scenariosDirectory = resolve(extensionDirectory, "src/mocks/scenarios");
+const scenariosDirectory = resolve(
+  extensionDirectory,
+  "src/variant-analysis/gh-api/mocks/scenarios",
+);
 const scenarioDirectory = resolve(scenariosDirectory, scenarioName);
 
 async function fixScenarioFiles() {
