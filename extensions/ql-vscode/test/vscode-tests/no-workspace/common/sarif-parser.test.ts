@@ -1,9 +1,9 @@
 import { join } from "path";
 
-import { sarifParser } from "../../../src/sarif-parser";
+import { sarifParser } from "../../../../src/common/sarif-parser";
 
 describe("sarif parser", () => {
-  const sarifDir = join(__dirname, "data/sarif");
+  const sarifDir = join(__dirname, "../data/sarif");
   it("should parse a valid SARIF file", async () => {
     const result = await sarifParser(join(sarifDir, "validSarif.sarif"));
     expect(result.version).toBeDefined();
