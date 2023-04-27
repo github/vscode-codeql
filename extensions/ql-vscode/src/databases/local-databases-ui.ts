@@ -573,11 +573,6 @@ export class DatabaseUI extends DisposableObject {
             "Received request to upgrade database, but there is no running query server.",
           );
         }
-        if (databaseItem === undefined) {
-          throw new Error(
-            "Received request to upgrade database, but no database was provided.",
-          );
-        }
         if (databaseItem.contents === undefined) {
           throw new Error(
             "Received request to upgrade database, but database contents could not be found.",
