@@ -1,0 +1,5379 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "callFrame": {
+        "functionName": "params",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 2,
+      "callFrame": {
+        "functionName": "localvariables",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 3,
+      "callFrame": {
+        "functionName": "globalvariables",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 4,
+      "callFrame": {
+        "functionName": "membervariables",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 5,
+      "callFrame": {
+        "functionName": "stmts",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 6,
+      "callFrame": {
+        "functionName": "exprconv",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 7,
+      "callFrame": {
+        "functionName": "expr_ancestor",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 8,
+      "callFrame": {
+        "functionName": "usertypes",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 9,
+      "callFrame": {
+        "functionName": "initialisers",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 10,
+      "callFrame": {
+        "functionName": "var_def",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 11,
+      "callFrame": {
+        "functionName": "var_decls",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 12,
+      "callFrame": {
+        "functionName": "fun_decls",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 13,
+      "callFrame": {
+        "functionName": "type_decls",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 14,
+      "callFrame": {
+        "functionName": "builtintypes",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 15,
+      "callFrame": {
+        "functionName": "derivedtypes",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 16,
+      "callFrame": {
+        "functionName": "ptrtomembers",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 17,
+      "callFrame": {
+        "functionName": "exprparents",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 18,
+      "callFrame": {
+        "functionName": "routinetypes",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 19,
+      "callFrame": {
+        "functionName": "decltypes",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 20,
+      "callFrame": {
+        "functionName": "exprs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 21,
+      "callFrame": {
+        "functionName": "usertypes_0#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        8
+      ]
+    },
+    {
+      "id": 22,
+      "callFrame": {
+        "functionName": "globalvariables_0#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        3
+      ]
+    },
+    {
+      "id": 23,
+      "callFrame": {
+        "functionName": "usertypes_20#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        8
+      ]
+    },
+    {
+      "id": 24,
+      "callFrame": {
+        "functionName": "expr_ancestor_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        7
+      ]
+    },
+    {
+      "id": 25,
+      "callFrame": {
+        "functionName": "functions",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 26,
+      "callFrame": {
+        "functionName": "@type#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        8,
+        18,
+        16,
+        15,
+        14
+      ]
+    },
+    {
+      "id": 27,
+      "callFrame": {
+        "functionName": "function_entry_point",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 28,
+      "callFrame": {
+        "functionName": "stmtparents",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 29,
+      "callFrame": {
+        "functionName": "ResolveClass::Cached::isClass#eb2868f4#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        23
+      ]
+    },
+    {
+      "id": 30,
+      "callFrame": {
+        "functionName": "iscall",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 31,
+      "callFrame": {
+        "functionName": "enumconstants",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 32,
+      "callFrame": {
+        "functionName": "@variable#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": 33,
+      "callFrame": {
+        "functionName": "folders",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 34,
+      "callFrame": {
+        "functionName": "files",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 35,
+      "callFrame": {
+        "functionName": "type_def",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 36,
+      "callFrame": {
+        "functionName": "iscall_0#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        30
+      ]
+    },
+    {
+      "id": 37,
+      "callFrame": {
+        "functionName": "attribute_arg_name",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 38,
+      "callFrame": {
+        "functionName": "fun_def",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 39,
+      "callFrame": {
+        "functionName": "File::Container::toString#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        34,
+        33
+      ]
+    },
+    {
+      "id": 40,
+      "callFrame": {
+        "functionName": "@variable#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        22,
+        1,
+        2,
+        4
+      ]
+    },
+    {
+      "id": 41,
+      "callFrame": {
+        "functionName": "attribute_args",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 42,
+      "callFrame": {
+        "functionName": "attribute_arg_value",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 43,
+      "callFrame": {
+        "functionName": "param_decl_bind",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 44,
+      "callFrame": {
+        "functionName": "attribute_args_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        41
+      ]
+    },
+    {
+      "id": 45,
+      "callFrame": {
+        "functionName": "specialnamequalifyingelements",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 46,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#3",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        44
+      ]
+    },
+    {
+      "id": 47,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#2",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        44
+      ]
+    },
+    {
+      "id": 48,
+      "callFrame": {
+        "functionName": "namequalifiers",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 49,
+      "callFrame": {
+        "functionName": "fold",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 50,
+      "callFrame": {
+        "functionName": "namespaces",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 51,
+      "callFrame": {
+        "functionName": "param_decl_bind_0#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        43
+      ]
+    },
+    {
+      "id": 52,
+      "callFrame": {
+        "functionName": "static_asserts",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 53,
+      "callFrame": {
+        "functionName": "preprocdirects",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 54,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#shared#1",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        51,
+        10
+      ]
+    },
+    {
+      "id": 55,
+      "callFrame": {
+        "functionName": "query::isStmtWithInitializer#f0820431#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        5
+      ]
+    },
+    {
+      "id": 56,
+      "callFrame": {
+        "functionName": "lambda_capture",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 57,
+      "callFrame": {
+        "functionName": "usings",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 58,
+      "callFrame": {
+        "functionName": "Declaration::DeclarationEntry::isDefinition#dispred#f0820431#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        38,
+        10,
+        35
+      ]
+    },
+    {
+      "id": 59,
+      "callFrame": {
+        "functionName": "code_block",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 60,
+      "callFrame": {
+        "functionName": "Variable::VariableDeclarationEntry::getName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        11
+      ]
+    },
+    {
+      "id": 61,
+      "callFrame": {
+        "functionName": "namespace_decls",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 62,
+      "callFrame": {
+        "functionName": "type_mentions",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 63,
+      "callFrame": {
+        "functionName": "frienddecls",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 64,
+      "callFrame": {
+        "functionName": "preprocdirects_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        53
+      ]
+    },
+    {
+      "id": 65,
+      "callFrame": {
+        "functionName": "Variable::ParameterDeclarationEntry::getAnonymousParameterDescription#dispred#f0820431#ff#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        11
+      ]
+    },
+    {
+      "id": 66,
+      "callFrame": {
+        "functionName": "exprconv_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        6
+      ]
+    },
+    {
+      "id": 67,
+      "callFrame": {
+        "functionName": "Include::Include#class#feab3531#f#antijoin_rhs#1",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        64
+      ]
+    },
+    {
+      "id": 68,
+      "callFrame": {
+        "functionName": "Include::Include#class#feab3531#f#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        64
+      ]
+    },
+    {
+      "id": 69,
+      "callFrame": {
+        "functionName": "preproctext",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 70,
+      "callFrame": {
+        "functionName": "attributes",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 71,
+      "callFrame": {
+        "functionName": "macroinvocations",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 72,
+      "callFrame": {
+        "functionName": "attributes_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        70
+      ]
+    },
+    {
+      "id": 73,
+      "callFrame": {
+        "functionName": "Include::Include#class#feab3531#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        68,
+        67,
+        64
+      ]
+    },
+    {
+      "id": 74,
+      "callFrame": {
+        "functionName": "derivations",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 75,
+      "callFrame": {
+        "functionName": "Macro::Macro::getBody#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        64,
+        69
+      ]
+    },
+    {
+      "id": 76,
+      "callFrame": {
+        "functionName": "Macro::Macro::getHead#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        64,
+        69
+      ]
+    },
+    {
+      "id": 77,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#1",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        72
+      ]
+    },
+    {
+      "id": 78,
+      "callFrame": {
+        "functionName": "Macro::Macro::getBody#dispred#f0820431#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        75
+      ]
+    },
+    {
+      "id": 79,
+      "callFrame": {
+        "functionName": "diagnostics",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 80,
+      "callFrame": {
+        "functionName": "xmlEncoding",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 81,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#7",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        78
+      ]
+    },
+    {
+      "id": 82,
+      "callFrame": {
+        "functionName": "specifiers",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 83,
+      "callFrame": {
+        "functionName": "files_0#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        34
+      ]
+    },
+    {
+      "id": 84,
+      "callFrame": {
+        "functionName": "namespaces_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        50
+      ]
+    },
+    {
+      "id": 85,
+      "callFrame": {
+        "functionName": "comments",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 86,
+      "callFrame": {
+        "functionName": "stmts_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        5
+      ]
+    },
+    {
+      "id": 87,
+      "callFrame": {
+        "functionName": "condition_decl_bind",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 88,
+      "callFrame": {
+        "functionName": "Namespace::Namespace_not_GlobalNamespace#f#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        84
+      ]
+    },
+    {
+      "id": 89,
+      "callFrame": {
+        "functionName": "mangled_name",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 90,
+      "callFrame": {
+        "functionName": "m#Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        73,
+        64
+      ]
+    },
+    {
+      "id": 91,
+      "callFrame": {
+        "functionName": "Declaration::DeclarationEntry#class#4bfb53be#b",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        7,
+        13,
+        12,
+        11
+      ]
+    },
+    {
+      "id": 92,
+      "callFrame": {
+        "functionName": "Namespace::Namespace_not_GlobalNamespace#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        50,
+        88
+      ]
+    },
+    {
+      "id": 93,
+      "callFrame": {
+        "functionName": "is_complete",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 94,
+      "callFrame": {
+        "functionName": "mangled_name#nonempty",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        89
+      ]
+    },
+    {
+      "id": 95,
+      "callFrame": {
+        "functionName": "stmt_decl_entry_bind",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 96,
+      "callFrame": {
+        "functionName": "ResolveClass::getTopLevelClassName#eb2868f4#ff#shared",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        94
+      ]
+    },
+    {
+      "id": 97,
+      "callFrame": {
+        "functionName": "Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        90,
+        69
+      ]
+    },
+    {
+      "id": 98,
+      "callFrame": {
+        "functionName": "Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf_0#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        97
+      ]
+    },
+    {
+      "id": 99,
+      "callFrame": {
+        "functionName": "Include::Include::getIncludeText#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        73,
+        97
+      ]
+    },
+    {
+      "id": 100,
+      "callFrame": {
+        "functionName": "stmt_decl_entry_bind_20#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        95
+      ]
+    },
+    {
+      "id": 101,
+      "callFrame": {
+        "functionName": "Stmt::DeclStmt::getADeclarationEntry#dispred#f0820431#fb",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        7,
+        91,
+        100
+      ]
+    },
+    {
+      "id": 102,
+      "callFrame": {
+        "functionName": "ResolveClass::getClassMangledName#eb2868f4#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        89,
+        29
+      ]
+    },
+    {
+      "id": 103,
+      "callFrame": {
+        "functionName": "Enclosing::exprEnclosingElement#c50c5fbf#ff#join_rhs#2",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        101,
+        24
+      ]
+    },
+    {
+      "id": 104,
+      "callFrame": {
+        "functionName": "Stmt::DeclStmt::getADeclarationEntry#dispred#f0820431#fb_1#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        101
+      ]
+    },
+    {
+      "id": 105,
+      "callFrame": {
+        "functionName": "attribute_arg_type",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 106,
+      "callFrame": {
+        "functionName": "uuidof_bind",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 107,
+      "callFrame": {
+        "functionName": "var_decls_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        11
+      ]
+    },
+    {
+      "id": 108,
+      "callFrame": {
+        "functionName": "ResolveGlobalVariable::hasDefinition#ac30c42f#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        22,
+        107,
+        10
+      ]
+    },
+    {
+      "id": 109,
+      "callFrame": {
+        "functionName": "ResolveGlobalVariable::onlyOneCompleteGlobalVariableExistsWithMangledName#ac30c42f#f#count_range",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        108,
+        89
+      ]
+    },
+    {
+      "id": 110,
+      "callFrame": {
+        "functionName": "ResolveClass::onlyOneCompleteClassExistsWithMangledName#eb2868f4#f#count_range",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        93,
+        102
+      ]
+    },
+    {
+      "id": 111,
+      "callFrame": {
+        "functionName": "ResolveGlobalVariable::Cached::resolveGlobalVariable#ac30c42f#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        40
+      ]
+    },
+    {
+      "id": 112,
+      "callFrame": {
+        "functionName": "values",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 113,
+      "callFrame": {
+        "functionName": "Namespace::Namespace::getQualifiedName#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        50
+      ]
+    },
+    {
+      "id": 114,
+      "callFrame": {
+        "functionName": "Namespace::Namespace::getFriendlyName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        92,
+        113,
+        84
+      ]
+    },
+    {
+      "id": 115,
+      "callFrame": {
+        "functionName": "funbind",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 116,
+      "callFrame": {
+        "functionName": "ResolveClass::onlyOneCompleteClassExistsWithMangledName#eb2868f4#f#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        110
+      ]
+    },
+    {
+      "id": 117,
+      "callFrame": {
+        "functionName": "ResolveClass::onlyOneCompleteClassExistsWithMangledName#eb2868f4#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        116
+      ]
+    },
+    {
+      "id": 118,
+      "callFrame": {
+        "functionName": "ResolveClass::existsCompleteWithMangledName#eb2868f4#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        110,
+        117
+      ]
+    },
+    {
+      "id": 119,
+      "callFrame": {
+        "functionName": "locations_expr",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 120,
+      "callFrame": {
+        "functionName": "ResolveClass::existsIncompleteWithMangledName#eb2868f4#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        102,
+        93
+      ]
+    },
+    {
+      "id": 121,
+      "callFrame": {
+        "functionName": "Initializer::Initializer::getDeclaration#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        9,
+        32
+      ]
+    },
+    {
+      "id": 122,
+      "callFrame": {
+        "functionName": "ResolveClass::hasCompleteTwin#eb2868f4#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        118,
+        120
+      ]
+    },
+    {
+      "id": 123,
+      "callFrame": {
+        "functionName": "ResolveGlobalVariable::Cached::isVariable#ac30c42f#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        40,
+        22,
+        111
+      ]
+    },
+    {
+      "id": 124,
+      "callFrame": {
+        "functionName": "Initializer::Initializer::getDeclaration#dispred#f0820431#ff_0#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        121
+      ]
+    },
+    {
+      "id": 125,
+      "callFrame": {
+        "functionName": "project#ResolveClass::hasCompleteTwin#eb2868f4#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        122
+      ]
+    },
+    {
+      "id": 126,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#shared#2",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        9,
+        121
+      ]
+    },
+    {
+      "id": 127,
+      "callFrame": {
+        "functionName": "ResolveClass::Cached::resolveClass#eb2868f4#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        8,
+        122,
+        125
+      ]
+    },
+    {
+      "id": 128,
+      "callFrame": {
+        "functionName": "project#ResolveClass::Cached::resolveClass#eb2868f4#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        127
+      ]
+    },
+    {
+      "id": 129,
+      "callFrame": {
+        "functionName": "Parameter::Parameter#class#ed81dd8f#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        1
+      ]
+    },
+    {
+      "id": 130,
+      "callFrame": {
+        "functionName": "project#Initializer::Initializer::getDeclaration#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        121
+      ]
+    },
+    {
+      "id": 131,
+      "callFrame": {
+        "functionName": "Parameter::Parameter#class#ed81dd8f#b",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        130,
+        1
+      ]
+    },
+    {
+      "id": 132,
+      "callFrame": {
+        "functionName": "Parameter::Parameter::getIndex#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        1,
+        129
+      ]
+    },
+    {
+      "id": 133,
+      "callFrame": {
+        "functionName": "ResolveClass::Cached::isType#eb2868f4#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        26,
+        29,
+        128
+      ]
+    },
+    {
+      "id": 134,
+      "callFrame": {
+        "functionName": "member",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 135,
+      "callFrame": {
+        "functionName": "sizeof_bind",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 136,
+      "callFrame": {
+        "functionName": "#select#query#fff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        28,
+        55
+      ]
+    },
+    {
+      "id": 137,
+      "callFrame": {
+        "functionName": "varbind",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 138,
+      "callFrame": {
+        "functionName": "Type::RoutineType#class#2e8eb3ef#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        18
+      ]
+    },
+    {
+      "id": 139,
+      "callFrame": {
+        "functionName": "Declaration::DeclarationEntry::getDeclaration#dispred#f0820431#bf",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        7,
+        12,
+        13,
+        11
+      ]
+    },
+    {
+      "id": 140,
+      "callFrame": {
+        "functionName": "Type::DerivedType::getName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        15
+      ]
+    },
+    {
+      "id": 141,
+      "callFrame": {
+        "functionName": "UserType::UserType#class#f5951597#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        21
+      ]
+    },
+    {
+      "id": 142,
+      "callFrame": {
+        "functionName": "type_decls_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        13
+      ]
+    },
+    {
+      "id": 143,
+      "callFrame": {
+        "functionName": "UserType::UserType::getName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        8,
+        141
+      ]
+    },
+    {
+      "id": 144,
+      "callFrame": {
+        "functionName": "Type::BuiltInType::getName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        14
+      ]
+    },
+    {
+      "id": 145,
+      "callFrame": {
+        "functionName": "Class::Class#bacd9b46#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 146,
+      "callFrame": {
+        "functionName": "UserType::TypeDeclarationEntry::getType#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        142,
+        13,
+        21
+      ]
+    },
+    {
+      "id": 147,
+      "callFrame": {
+        "functionName": "NameQualifiers::NameQualifyingElement::getName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        143,
+        50,
+        45
+      ]
+    },
+    {
+      "id": 148,
+      "callFrame": {
+        "functionName": "Type::RoutineType::getReturnType#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        18,
+        138,
+        21
+      ]
+    },
+    {
+      "id": 149,
+      "callFrame": {
+        "functionName": "Type::Type::getName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        143,
+        140,
+        144,
+        138
+      ]
+    },
+    {
+      "id": 150,
+      "callFrame": {
+        "functionName": "Cast::SizeofTypeOperator::getTypeOperand#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        135,
+        20,
+        21
+      ]
+    },
+    {
+      "id": 151,
+      "callFrame": {
+        "functionName": "Class::Class::getCanonicalMember#dispred#f0820431#fff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        145,
+        134,
+        21,
+        32
+      ]
+    },
+    {
+      "id": 152,
+      "callFrame": {
+        "functionName": "Class::Class::getCanonicalMember#dispred#f0820431#fff_201#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        151
+      ]
+    },
+    {
+      "id": 153,
+      "callFrame": {
+        "functionName": "function_return_type",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 154,
+      "callFrame": {
+        "functionName": "Declaration::DeclarationEntry::getName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        60,
+        12,
+        146,
+        149
+      ]
+    },
+    {
+      "id": 155,
+      "callFrame": {
+        "functionName": "Variable::VariableDeclarationEntry::getVariable#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        11
+      ]
+    },
+    {
+      "id": 156,
+      "callFrame": {
+        "functionName": "function_instantiation",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 157,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#shared#3",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        126,
+        121
+      ]
+    },
+    {
+      "id": 158,
+      "callFrame": {
+        "functionName": "fun_specialized",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 159,
+      "callFrame": {
+        "functionName": "fun_decls_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        12
+      ]
+    },
+    {
+      "id": 160,
+      "callFrame": {
+        "functionName": "fun_decls_1#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        12
+      ]
+    },
+    {
+      "id": 161,
+      "callFrame": {
+        "functionName": "Function::Function::declEntry#dispred#f0820431#fb",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        38,
+        12,
+        158
+      ]
+    },
+    {
+      "id": 162,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#shared",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        154,
+        58
+      ]
+    },
+    {
+      "id": 163,
+      "callFrame": {
+        "functionName": "Function::Function::getADeclarationEntry#dispred#f0820431#fb",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        161,
+        38,
+        160,
+        156,
+        159
+      ]
+    },
+    {
+      "id": 164,
+      "callFrame": {
+        "functionName": "type_decls_1#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        13
+      ]
+    },
+    {
+      "id": 165,
+      "callFrame": {
+        "functionName": "stmtparents_20#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 166,
+      "callFrame": {
+        "functionName": "ResolveClass::Cached::resolveClass#eb2868f4#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 167,
+      "callFrame": {
+        "functionName": "expr_types",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 168,
+      "callFrame": {
+        "functionName": "class_instantiation",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 169,
+      "callFrame": {
+        "functionName": "Variable::VariableDeclarationEntry::getVariable#dispred#f0820431#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        155
+      ]
+    },
+    {
+      "id": 170,
+      "callFrame": {
+        "functionName": "UserType::UserType::getADeclarationEntry#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        164,
+        141,
+        166,
+        142,
+        21
+      ]
+    },
+    {
+      "id": 171,
+      "callFrame": {
+        "functionName": "Declaration::DeclarationEntry::getDeclaration#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        155,
+        146,
+        141,
+        12
+      ]
+    },
+    {
+      "id": 172,
+      "callFrame": {
+        "functionName": "Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        129,
+        169,
+        156,
+        132
+      ]
+    },
+    {
+      "id": 173,
+      "callFrame": {
+        "functionName": "Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        172
+      ]
+    },
+    {
+      "id": 174,
+      "callFrame": {
+        "functionName": "exprs_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        20
+      ]
+    },
+    {
+      "id": 175,
+      "callFrame": {
+        "functionName": "Declaration::Declaration::getDefinition#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        10,
+        155,
+        163,
+        38,
+        170,
+        35
+      ]
+    },
+    {
+      "id": 176,
+      "callFrame": {
+        "functionName": "@access#f#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174
+      ]
+    },
+    {
+      "id": 177,
+      "callFrame": {
+        "functionName": "Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        65,
+        173
+      ]
+    },
+    {
+      "id": 178,
+      "callFrame": {
+        "functionName": "project#Declaration::Declaration::getDefinition#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        175
+      ]
+    },
+    {
+      "id": 179,
+      "callFrame": {
+        "functionName": "exprconv_1#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        6
+      ]
+    },
+    {
+      "id": 180,
+      "callFrame": {
+        "functionName": "Call::Call#39248e3c#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        36,
+        174
+      ]
+    },
+    {
+      "id": 181,
+      "callFrame": {
+        "functionName": "valuebind",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 182,
+      "callFrame": {
+        "functionName": "Call::FunctionCall#39248e3c#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        36,
+        180
+      ]
+    },
+    {
+      "id": 183,
+      "callFrame": {
+        "functionName": "Call::FunctionCall::getTarget#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        182,
+        115
+      ]
+    },
+    {
+      "id": 184,
+      "callFrame": {
+        "functionName": "@access#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        176,
+        174
+      ]
+    },
+    {
+      "id": 185,
+      "callFrame": {
+        "functionName": "valuebind_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        181
+      ]
+    },
+    {
+      "id": 186,
+      "callFrame": {
+        "functionName": "project#Call::FunctionCall::getTarget#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        183
+      ]
+    },
+    {
+      "id": 187,
+      "callFrame": {
+        "functionName": "Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        154,
+        171,
+        178
+      ]
+    },
+    {
+      "id": 188,
+      "callFrame": {
+        "functionName": "m#Declaration::Declaration::isMember#dispred#f0820431#b",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        186,
+        4
+      ]
+    },
+    {
+      "id": 189,
+      "callFrame": {
+        "functionName": "variable_instantiation",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 190,
+      "callFrame": {
+        "functionName": "is_variable_template",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 191,
+      "callFrame": {
+        "functionName": "Class::Class::getAMember#dispred#f0820431#2#ffb",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        152,
+        188,
+        190
+      ]
+    },
+    {
+      "id": 192,
+      "callFrame": {
+        "functionName": "project#Class::Class::getAMember#dispred#f0820431#2#ffb",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        191
+      ]
+    },
+    {
+      "id": 193,
+      "callFrame": {
+        "functionName": "Declaration::Declaration::isMember#dispred#f0820431#b",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        188,
+        192
+      ]
+    },
+    {
+      "id": 194,
+      "callFrame": {
+        "functionName": "Variable::MemberVariable#7a968d4e#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        193
+      ]
+    },
+    {
+      "id": 195,
+      "callFrame": {
+        "functionName": "fieldoffsets",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 196,
+      "callFrame": {
+        "functionName": "Field::Field#class#1b3cf47e#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        194,
+        195
+      ]
+    },
+    {
+      "id": 197,
+      "callFrame": {
+        "functionName": "Call::DestructorFieldDestruction::getTarget#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174,
+        137,
+        196
+      ]
+    },
+    {
+      "id": 198,
+      "callFrame": {
+        "functionName": "Call::ConstructorFieldInit::getTarget#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174,
+        137,
+        196
+      ]
+    },
+    {
+      "id": 199,
+      "callFrame": {
+        "functionName": "locations_expr_23450#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        119
+      ]
+    },
+    {
+      "id": 200,
+      "callFrame": {
+        "functionName": "Variable::MemberVariable::getName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        4,
+        194
+      ]
+    },
+    {
+      "id": 201,
+      "callFrame": {
+        "functionName": "Call::Call#39248e3c#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        30,
+        174
+      ]
+    },
+    {
+      "id": 202,
+      "callFrame": {
+        "functionName": "Cast::AlignofTypeOperator::getTypeOperand#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174,
+        135,
+        21
+      ]
+    },
+    {
+      "id": 203,
+      "callFrame": {
+        "functionName": "Call::FunctionCall#39248e3c#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        30,
+        201
+      ]
+    },
+    {
+      "id": 204,
+      "callFrame": {
+        "functionName": "project#Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        177
+      ]
+    },
+    {
+      "id": 205,
+      "callFrame": {
+        "functionName": "Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        177
+      ]
+    },
+    {
+      "id": 206,
+      "callFrame": {
+        "functionName": "Cast::Conversion#class#1f33e835#b",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174,
+        179
+      ]
+    },
+    {
+      "id": 207,
+      "callFrame": {
+        "functionName": "Expr::Expr::getValue#dispred#f0820431#bf",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174,
+        185,
+        112
+      ]
+    },
+    {
+      "id": 208,
+      "callFrame": {
+        "functionName": "Expr::Expr::getValue#dispred#f0820431#bf_0#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        207
+      ]
+    },
+    {
+      "id": 209,
+      "callFrame": {
+        "functionName": "Assignment::AssignOperation#class#9d5edc7a#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174
+      ]
+    },
+    {
+      "id": 210,
+      "callFrame": {
+        "functionName": "Variable::Variable::getName#dispred#f0820431#ff#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        60,
+        205,
+        177,
+        10
+      ]
+    },
+    {
+      "id": 211,
+      "callFrame": {
+        "functionName": "Expr::BinaryOperation#class#ef463c5d#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174
+      ]
+    },
+    {
+      "id": 212,
+      "callFrame": {
+        "functionName": "Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        154,
+        187,
+        171,
+        178,
+        175
+      ]
+    },
+    {
+      "id": 213,
+      "callFrame": {
+        "functionName": "#select#query#fff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        17,
+        55
+      ]
+    },
+    {
+      "id": 214,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#4",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        162,
+        154,
+        212
+      ]
+    },
+    {
+      "id": 215,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#5",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        54,
+        60,
+        212
+      ]
+    },
+    {
+      "id": 216,
+      "callFrame": {
+        "functionName": "Expr::UnaryOperation#class#ef463c5d#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174
+      ]
+    },
+    {
+      "id": 217,
+      "callFrame": {
+        "functionName": "files_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        34
+      ]
+    },
+    {
+      "id": 218,
+      "callFrame": {
+        "functionName": "Variable::Variable::getName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        200,
+        2,
+        3,
+        60,
+        205,
+        10,
+        210,
+        132,
+        204
+      ]
+    },
+    {
+      "id": 219,
+      "callFrame": {
+        "functionName": "project#Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        212
+      ]
+    },
+    {
+      "id": 220,
+      "callFrame": {
+        "functionName": "Enclosing::exprEnclosingElement#c50c5fbf#ff#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        66,
+        206
+      ]
+    },
+    {
+      "id": 221,
+      "callFrame": {
+        "functionName": "Variable::ParameterDeclarationEntry::getAnonymousParameterDescription#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        43,
+        65,
+        219,
+        212
+      ]
+    },
+    {
+      "id": 222,
+      "callFrame": {
+        "functionName": "locations_default",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 223,
+      "callFrame": {
+        "functionName": "MemberFunction::MemberFunction#5d715d12#b",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        186,
+        193
+      ]
+    },
+    {
+      "id": 224,
+      "callFrame": {
+        "functionName": "locations_stmt",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 225,
+      "callFrame": {
+        "functionName": "m#Class::Class::getCanonicalMember#dispred#f0820431#ffb",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 226,
+      "callFrame": {
+        "functionName": "Declaration::Declaration::getName#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        143,
+        218,
+        25,
+        31,
+        63,
+        145
+      ]
+    },
+    {
+      "id": 227,
+      "callFrame": {
+        "functionName": "Class::Class::getCanonicalMember#dispred#f0820431#ffb",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        134,
+        225
+      ]
+    },
+    {
+      "id": 228,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#max_range",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        157,
+        226
+      ]
+    },
+    {
+      "id": 229,
+      "callFrame": {
+        "functionName": "Call::FunctionCall::getTarget#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        183
+      ]
+    },
+    {
+      "id": 230,
+      "callFrame": {
+        "functionName": "Call::FunctionCall::getTarget#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 231,
+      "callFrame": {
+        "functionName": "project#Call::FunctionCall::getTarget#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        229
+      ]
+    },
+    {
+      "id": 232,
+      "callFrame": {
+        "functionName": "Access::Access#8878f617#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        184,
+        36,
+        176
+      ]
+    },
+    {
+      "id": 233,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#max_term",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        157,
+        226
+      ]
+    },
+    {
+      "id": 234,
+      "callFrame": {
+        "functionName": "Access::FunctionAccess#class#8878f617#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        176,
+        232,
+        36
+      ]
+    },
+    {
+      "id": 235,
+      "callFrame": {
+        "functionName": "Access::FunctionAccess::getTarget#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        234,
+        115
+      ]
+    },
+    {
+      "id": 236,
+      "callFrame": {
+        "functionName": "Access::FunctionAccess::getTarget#dispred#f0820431#ff_0#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        235
+      ]
+    },
+    {
+      "id": 237,
+      "callFrame": {
+        "functionName": "Expr::Operation::getOperator#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174
+      ]
+    },
+    {
+      "id": 238,
+      "callFrame": {
+        "functionName": "Access::VariableAccess#8878f617#f#shared",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174,
+        232
+      ]
+    },
+    {
+      "id": 239,
+      "callFrame": {
+        "functionName": "m#Expr::Expr::getChild#dispred#f0820431#bff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174
+      ]
+    },
+    {
+      "id": 240,
+      "callFrame": {
+        "functionName": "m#Stmt::Stmt::getChild#dispred#f0820431#bff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        86
+      ]
+    },
+    {
+      "id": 241,
+      "callFrame": {
+        "functionName": "varbind_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        137
+      ]
+    },
+    {
+      "id": 242,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        228,
+        233
+      ]
+    },
+    {
+      "id": 243,
+      "callFrame": {
+        "functionName": "Location::Location::fullLocationInfo#dispred#f0820431#ffffff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        119,
+        224,
+        222
+      ]
+    },
+    {
+      "id": 244,
+      "callFrame": {
+        "functionName": "Access::VariableAccess#8878f617#f#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        238,
+        137,
+        31
+      ]
+    },
+    {
+      "id": 245,
+      "callFrame": {
+        "functionName": "Expr::Expr::getChild#dispred#f0820431#bff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        239
+      ]
+    },
+    {
+      "id": 246,
+      "callFrame": {
+        "functionName": "Expr::Expr::getChild#dispred#f0820431#bff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        245
+      ]
+    },
+    {
+      "id": 247,
+      "callFrame": {
+        "functionName": "Expr::Expr::getChild#dispred#f0820431#bff_02#count_range",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        245
+      ]
+    },
+    {
+      "id": 248,
+      "callFrame": {
+        "functionName": "Access::VariableAccess#8878f617#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        238,
+        244
+      ]
+    },
+    {
+      "id": 249,
+      "callFrame": {
+        "functionName": "project#Expr::Expr::getChild#dispred#f0820431#bff#2",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        246
+      ]
+    },
+    {
+      "id": 250,
+      "callFrame": {
+        "functionName": "Expr::FoldExpr::isUnaryFold#dispred#f0820431#f#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        247
+      ]
+    },
+    {
+      "id": 251,
+      "callFrame": {
+        "functionName": "Expr::FoldExpr::isUnaryFold#dispred#f0820431#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174,
+        250
+      ]
+    },
+    {
+      "id": 252,
+      "callFrame": {
+        "functionName": "Access::FieldAccess#class#8878f617#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        196,
+        241,
+        248
+      ]
+    },
+    {
+      "id": 253,
+      "callFrame": {
+        "functionName": "Stmt::Stmt::getChild#dispred#f0820431#bff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        240
+      ]
+    },
+    {
+      "id": 254,
+      "callFrame": {
+        "functionName": "Stmt::Stmt::getChild#dispred#f0820431#bff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        253
+      ]
+    },
+    {
+      "id": 255,
+      "callFrame": {
+        "functionName": "project#Stmt::Stmt::getChild#dispred#f0820431#bff#2",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        254
+      ]
+    },
+    {
+      "id": 256,
+      "callFrame": {
+        "functionName": "project#Stmt::Stmt::getChild#dispred#f0820431#bff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        254
+      ]
+    },
+    {
+      "id": 257,
+      "callFrame": {
+        "functionName": "Stmt::DefaultCase#class#af82e98b#f#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        86,
+        5,
+        256
+      ]
+    },
+    {
+      "id": 258,
+      "callFrame": {
+        "functionName": "Stmt::DefaultCase#class#af82e98b#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        86,
+        257
+      ]
+    },
+    {
+      "id": 259,
+      "callFrame": {
+        "functionName": "Expr::Expr::getParent#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        21,
+        32
+      ]
+    },
+    {
+      "id": 260,
+      "callFrame": {
+        "functionName": "Location::Location::fullLocationInfo#dispred#f0820431#ffffff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        243
+      ]
+    },
+    {
+      "id": 261,
+      "callFrame": {
+        "functionName": "Location::UnknownLocation#bd5c7591#b",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        217,
+        260
+      ]
+    },
+    {
+      "id": 262,
+      "callFrame": {
+        "functionName": "Location::UnknownExprLocation#class#bd5c7591#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        199,
+        261
+      ]
+    },
+    {
+      "id": 263,
+      "callFrame": {
+        "functionName": "Access::VariableAccess::getTarget#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        137,
+        248
+      ]
+    },
+    {
+      "id": 264,
+      "callFrame": {
+        "functionName": "m#Expr::Expr::getEnclosingStmt#f0820431#bf",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        9,
+        259,
+        66
+      ]
+    },
+    {
+      "id": 265,
+      "callFrame": {
+        "functionName": "stmts_0#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        5
+      ]
+    },
+    {
+      "id": 266,
+      "callFrame": {
+        "functionName": "Expr::Expr::getEnclosingStmt#f0820431#bf#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        259,
+        264
+      ]
+    },
+    {
+      "id": 267,
+      "callFrame": {
+        "functionName": "stmt_decl_bind",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 268,
+      "callFrame": {
+        "functionName": "stmt_decl_bind_20#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        267
+      ]
+    },
+    {
+      "id": 269,
+      "callFrame": {
+        "functionName": "Variable::Variable::getInitializer#dispred#f0820431#fb",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        9,
+        264,
+        121
+      ]
+    },
+    {
+      "id": 270,
+      "callFrame": {
+        "functionName": "Variable::LocalVariable#class#7a968d4e#b",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        2,
+        269,
+        9,
+        264
+      ]
+    },
+    {
+      "id": 271,
+      "callFrame": {
+        "functionName": "Expr::Expr::getParent#dispred#f0820431#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        259
+      ]
+    },
+    {
+      "id": 272,
+      "callFrame": {
+        "functionName": "Expr::Expr::getEnclosingStmt#f0820431#bf",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        265,
+        271,
+        264,
+        270,
+        268,
+        5,
+        269,
+        9,
+        6,
+        266
+      ]
+    },
+    {
+      "id": 273,
+      "callFrame": {
+        "functionName": "Initializer::Initializer::getEnclosingStmt#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        9,
+        272
+      ]
+    },
+    {
+      "id": 274,
+      "callFrame": {
+        "functionName": "Initializer::Initializer::getEnclosingStmt#dispred#f0820431#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        273
+      ]
+    },
+    {
+      "id": 275,
+      "callFrame": {
+        "functionName": "project#Initializer::Initializer::getEnclosingStmt#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        273
+      ]
+    },
+    {
+      "id": 276,
+      "callFrame": {
+        "functionName": "Enclosing::exprEnclosingElement#c50c5fbf#ff#join_rhs#1",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        9,
+        273
+      ]
+    },
+    {
+      "id": 277,
+      "callFrame": {
+        "functionName": "Enclosing::exprEnclosingElement#c50c5fbf#ff#shared",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        9,
+        275
+      ]
+    },
+    {
+      "id": 278,
+      "callFrame": {
+        "functionName": "Expr::Expr::getExprLocationOverride#f0820431#ff#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        20,
+        262,
+        259
+      ]
+    },
+    {
+      "id": 279,
+      "callFrame": {
+        "functionName": "Expr::Expr::getExprLocationOverride#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        278,
+        20,
+        261,
+        271,
+        262
+      ]
+    },
+    {
+      "id": 280,
+      "callFrame": {
+        "functionName": "project#Expr::Expr::getExprLocationOverride#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        279
+      ]
+    },
+    {
+      "id": 281,
+      "callFrame": {
+        "functionName": "Access::Access::getTarget#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        263,
+        252,
+        196,
+        31,
+        241,
+        232,
+        137
+      ]
+    },
+    {
+      "id": 282,
+      "callFrame": {
+        "functionName": "Expr::Expr::getLocation#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        279,
+        20,
+        280
+      ]
+    },
+    {
+      "id": 283,
+      "callFrame": {
+        "functionName": "Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        281
+      ]
+    },
+    {
+      "id": 284,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        248,
+        281
+      ]
+    },
+    {
+      "id": 285,
+      "callFrame": {
+        "functionName": "Expr::Expr::getLocation#dispred#f0820431#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        282
+      ]
+    },
+    {
+      "id": 286,
+      "callFrame": {
+        "functionName": "Expr::Expr::getType#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        167,
+        21
+      ]
+    },
+    {
+      "id": 287,
+      "callFrame": {
+        "functionName": "Type::DerivedType#class#2e8eb3ef#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        15
+      ]
+    },
+    {
+      "id": 288,
+      "callFrame": {
+        "functionName": "TypedefType::TypedefType#class#2045b2ea#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        23
+      ]
+    },
+    {
+      "id": 289,
+      "callFrame": {
+        "functionName": "Type::Type_not_Decltype_DerivedType_TypedefType#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        287,
+        288
+      ]
+    },
+    {
+      "id": 290,
+      "callFrame": {
+        "functionName": "typedefbase",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 291,
+      "callFrame": {
+        "functionName": "Type::DerivedType::getBaseType#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        15,
+        287,
+        21
+      ]
+    },
+    {
+      "id": 292,
+      "callFrame": {
+        "functionName": "TypedefType::TypedefType::getBaseType#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        290,
+        288,
+        21
+      ]
+    },
+    {
+      "id": 293,
+      "callFrame": {
+        "functionName": "Type::DerivedType::getBaseType#dispred#f0820431#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        291
+      ]
+    },
+    {
+      "id": 294,
+      "callFrame": {
+        "functionName": "TypedefType::TypedefType::getBaseType#dispred#f0820431#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        292
+      ]
+    },
+    {
+      "id": 295,
+      "callFrame": {
+        "functionName": "Type::Type::stripType#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        289,
+        294,
+        293
+      ]
+    },
+    {
+      "id": 296,
+      "callFrame": {
+        "functionName": "Call::FunctionCall::getTargetType#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        203,
+        286,
+        295
+      ]
+    },
+    {
+      "id": 297,
+      "callFrame": {
+        "functionName": "m#Function::Function::getType#dispred#f0820431#bf#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        230,
+        296,
+        138
+      ]
+    },
+    {
+      "id": 298,
+      "callFrame": {
+        "functionName": "m#Function::Function::getType#dispred#f0820431#bf#shared",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        230,
+        297
+      ]
+    },
+    {
+      "id": 299,
+      "callFrame": {
+        "functionName": "Location::Location::fullLocationInfo#dispred#f0820431#ffffff_20#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        243
+      ]
+    },
+    {
+      "id": 300,
+      "callFrame": {
+        "functionName": "m#Class::Class::getCanonicalMember#dispred#f0820431#ffb",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        4
+      ]
+    },
+    {
+      "id": 301,
+      "callFrame": {
+        "functionName": "member_201#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        134
+      ]
+    },
+    {
+      "id": 302,
+      "callFrame": {
+        "functionName": "Class::Class::getCanonicalMember#dispred#f0820431#ffb",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        300,
+        301
+      ]
+    },
+    {
+      "id": 303,
+      "callFrame": {
+        "functionName": "Declaration::Declaration::isMember#dispred#f0820431#b",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        4
+      ]
+    },
+    {
+      "id": 304,
+      "callFrame": {
+        "functionName": "Field::Field#class#1b3cf47e#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        303,
+        195
+      ]
+    },
+    {
+      "id": 305,
+      "callFrame": {
+        "functionName": "Expr::Expr::getType#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        286,
+        203,
+        298,
+        296,
+        138,
+        148
+      ]
+    },
+    {
+      "id": 306,
+      "callFrame": {
+        "functionName": "Access::Access::getTarget#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        263,
+        304
+      ]
+    },
+    {
+      "id": 307,
+      "callFrame": {
+        "functionName": "builtintypes_02#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        14
+      ]
+    },
+    {
+      "id": 308,
+      "callFrame": {
+        "functionName": "Lambda::Closure#class#ea6054ce#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174,
+        145
+      ]
+    },
+    {
+      "id": 309,
+      "callFrame": {
+        "functionName": "Expr::ReThrowExpr#class#ef463c5d#f",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        174,
+        307
+      ]
+    },
+    {
+      "id": 310,
+      "callFrame": {
+        "functionName": "Declaration::Declaration::getDescription#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        226,
+        308
+      ]
+    },
+    {
+      "id": 311,
+      "callFrame": {
+        "functionName": "Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        306
+      ]
+    },
+    {
+      "id": 312,
+      "callFrame": {
+        "functionName": "Enclosing::stmtEnclosingElement#c50c5fbf#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        27,
+        165,
+        25,
+        271,
+        277,
+        121,
+        7,
+        104,
+        139,
+        24,
+        101,
+        6,
+        206,
+        274,
+        9,
+        103,
+        276,
+        220
+      ]
+    },
+    {
+      "id": 313,
+      "callFrame": {
+        "functionName": "Enclosing::exprEnclosingElement#c50c5fbf#ff_10#join_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 314,
+      "callFrame": {
+        "functionName": "Expr::Expr::getEnclosingFunction#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        25,
+        313
+      ]
+    },
+    {
+      "id": 315,
+      "callFrame": {
+        "functionName": "Element::ElementBase::toString#dispred#f0820431#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        140,
+        144,
+        310,
+        114,
+        39,
+        83,
+        82,
+        138,
+        51,
+        221,
+        258,
+        85,
+        34,
+        216,
+        237,
+        79,
+        86,
+        174,
+        68,
+        99,
+        309,
+        64,
+        284,
+        281,
+        218,
+        59,
+        209,
+        211,
+        67,
+        70,
+        77,
+        45,
+        234,
+        236,
+        248,
+        76,
+        75,
+        74,
+        31,
+        283,
+        72,
+        126,
+        242,
+        150,
+        149,
+        97,
+        62,
+        44,
+        202,
+        235,
+        25,
+        61,
+        71,
+        207,
+        56,
+        200,
+        98,
+        182,
+        231,
+        81,
+        229,
+        9,
+        124,
+        198,
+        249,
+        180,
+        52,
+        197,
+        208,
+        255,
+        49,
+        251,
+        48,
+        21,
+        147,
+        54,
+        215,
+        11,
+        212,
+        47,
+        42,
+        46,
+        10,
+        43,
+        37,
+        58,
+        154,
+        162,
+        214
+      ]
+    },
+    {
+      "id": 316,
+      "callFrame": {
+        "functionName": "#select#ff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        243,
+        285,
+        306,
+        299,
+        311,
+        282,
+        314
+      ]
+    },
+    {
+      "id": 317,
+      "callFrame": {
+        "functionName": "#select#query#ffffffffffffff#shared",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        316,
+        282
+      ]
+    },
+    {
+      "id": 318,
+      "callFrame": {
+        "functionName": "Location::Location::hasLocationInfo#dispred#f0820431#ffffff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        243,
+        39
+      ]
+    },
+    {
+      "id": 319,
+      "callFrame": {
+        "functionName": "#select#query#ffffffffffffff#antijoin_rhs",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        317,
+        318
+      ]
+    },
+    {
+      "id": 320,
+      "callFrame": {
+        "functionName": "#select#query#ffffffffffffff#shared#1",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        317,
+        318,
+        316,
+        319
+      ]
+    },
+    {
+      "id": 321,
+      "callFrame": {
+        "functionName": "project#Element::ElementBase::toString#dispred#f0820431",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": []
+    },
+    {
+      "id": 322,
+      "callFrame": {
+        "functionName": "#select#query#ffffffffffffff#shared#2",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        320,
+        282
+      ]
+    },
+    {
+      "id": 323,
+      "callFrame": {
+        "functionName": "#select#query#ffffffffffffff#antijoin_rhs#1",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        322,
+        318
+      ]
+    },
+    {
+      "id": 324,
+      "callFrame": {
+        "functionName": "#select#query#ffffffffffffff",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "hitCount": 1,
+      "children": [
+        322,
+        318,
+        320,
+        323,
+        321
+      ]
+    }
+  ],
+  "startTime": 1660166907957000,
+  "endTime": 1660167058484000,
+  "samples": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120,
+    121,
+    122,
+    123,
+    124,
+    125,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    136,
+    137,
+    138,
+    139,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
+    146,
+    147,
+    148,
+    149,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157,
+    158,
+    159,
+    160,
+    161,
+    162,
+    163,
+    164,
+    165,
+    166,
+    167,
+    168,
+    169,
+    170,
+    171,
+    172,
+    173,
+    174,
+    175,
+    176,
+    177,
+    178,
+    179,
+    180,
+    181,
+    182,
+    183,
+    184,
+    185,
+    186,
+    187,
+    188,
+    189,
+    190,
+    191,
+    192,
+    193,
+    194,
+    195,
+    196,
+    197,
+    198,
+    199,
+    200,
+    201,
+    202,
+    203,
+    204,
+    205,
+    206,
+    207,
+    208,
+    209,
+    210,
+    211,
+    212,
+    213,
+    214,
+    215,
+    216,
+    217,
+    218,
+    219,
+    220,
+    221,
+    222,
+    223,
+    224,
+    225,
+    226,
+    227,
+    228,
+    229,
+    230,
+    231,
+    232,
+    233,
+    234,
+    235,
+    236,
+    237,
+    238,
+    239,
+    240,
+    241,
+    242,
+    243,
+    244,
+    245,
+    246,
+    247,
+    248,
+    249,
+    250,
+    251,
+    252,
+    253,
+    254,
+    255,
+    256,
+    257,
+    258,
+    259,
+    260,
+    261,
+    262,
+    263,
+    264,
+    265,
+    266,
+    267,
+    268,
+    269,
+    270,
+    271,
+    272,
+    273,
+    274,
+    275,
+    276,
+    277,
+    278,
+    279,
+    280,
+    281,
+    282,
+    283,
+    284,
+    285,
+    286,
+    287,
+    288,
+    289,
+    290,
+    291,
+    292,
+    293,
+    294,
+    295,
+    296,
+    297,
+    298,
+    299,
+    300,
+    301,
+    302,
+    303,
+    304,
+    305,
+    306,
+    307,
+    308,
+    309,
+    310,
+    311,
+    312,
+    313,
+    314,
+    315,
+    316,
+    317,
+    318,
+    319,
+    320,
+    321,
+    322,
+    323,
+    324
+  ],
+  "timeDeltas": [
+    103000,
+    103000,
+    103000,
+    103000,
+    75000,
+    116000,
+    3000,
+    7000,
+    18000,
+    30000,
+    38000,
+    8000,
+    3000,
+    3000,
+    5000,
+    8000,
+    194000,
+    3000,
+    0,
+    194000,
+    88000,
+    88000,
+    8000,
+    97000,
+    3000,
+    53000,
+    2000,
+    13000,
+    17000,
+    4000,
+    3000,
+    114000,
+    2000,
+    3000,
+    3000,
+    7000,
+    2000,
+    3000,
+    12000,
+    45000,
+    5000,
+    3000,
+    16000,
+    4000,
+    2000,
+    0,
+    0,
+    0,
+    0,
+    2000,
+    3000,
+    1000,
+    4000,
+    7000,
+    108000,
+    0,
+    0,
+    33000,
+    0,
+    46000,
+    0,
+    7000,
+    0,
+    32000,
+    13000,
+    190000,
+    1000,
+    1000,
+    9000,
+    5000,
+    34000,
+    4000,
+    8000,
+    0,
+    13000,
+    10000,
+    1000,
+    10000,
+    0,
+    0,
+    1000,
+    2000,
+    1000,
+    1000,
+    6000,
+    82000,
+    0,
+    3000,
+    6000,
+    22000,
+    2000,
+    1000,
+    2000,
+    1000,
+    3000,
+    1000,
+    4000,
+    1000,
+    2000,
+    8000,
+    4000,
+    12000,
+    1000,
+    1000,
+    0,
+    0,
+    30000,
+    1000,
+    1000,
+    10000,
+    8000,
+    24000,
+    31000,
+    1000,
+    5000,
+    29000,
+    1000,
+    1000,
+    54000,
+    2000,
+    18000,
+    2000,
+    29000,
+    3000,
+    0,
+    4000,
+    4000,
+    3000,
+    6000,
+    8000,
+    7000,
+    4000,
+    13000,
+    2000,
+    2000,
+    176000,
+    40000,
+    1000,
+    2000,
+    2000,
+    1000,
+    1000,
+    1000,
+    4000,
+    1000,
+    4000,
+    2000,
+    7000,
+    9000,
+    14000,
+    11000,
+    3000,
+    5000,
+    44000,
+    84000,
+    1000,
+    14000,
+    0,
+    7000,
+    11000,
+    10000,
+    8000,
+    8000,
+    1000,
+    93000,
+    1000,
+    86000,
+    0,
+    16000,
+    9000,
+    36000,
+    5000,
+    8000,
+    388000,
+    21000,
+    5000,
+    11000,
+    7000,
+    20000,
+    23000,
+    32000,
+    6000,
+    7000,
+    45000,
+    23000,
+    10000,
+    47000,
+    3000,
+    0,
+    0,
+    3000,
+    4000,
+    1000,
+    1000,
+    2000,
+    2000,
+    0,
+    0,
+    240000,
+    2000,
+    7000,
+    4000,
+    5000,
+    6000,
+    6000,
+    78000,
+    51000,
+    4000,
+    6000,
+    36000,
+    65000,
+    127000,
+    495000,
+    5000,
+    4000,
+    35000,
+    1000,
+    60000,
+    6000,
+    68000,
+    7000,
+    21000,
+    0,
+    14000,
+    4000,
+    26000,
+    2000,
+    12000,
+    18000,
+    14000,
+    5000,
+    169000,
+    10000,
+    3000,
+    1000,
+    1000,
+    138000,
+    26000,
+    1000,
+    1000,
+    40000,
+    41000,
+    102000,
+    128000,
+    124000,
+    1000,
+    1000,
+    5000,
+    0,
+    1000,
+    1000,
+    25000,
+    155000,
+    1000,
+    0,
+    1000,
+    2000,
+    0,
+    203000,
+    116000,
+    1000,
+    2000,
+    104000,
+    18000,
+    4000,
+    4000,
+    5000,
+    2000,
+    11000,
+    4000,
+    46000,
+    17000,
+    4000,
+    2000,
+    2000,
+    7000,
+    4000,
+    125000,
+    6000,
+    1000,
+    149000,
+    52000,
+    35000,
+    57000,
+    44000,
+    820000,
+    1000,
+    1000,
+    1000,
+    2000,
+    3000,
+    2000,
+    1000,
+    1000,
+    16000,
+    10000,
+    9000,
+    3000,
+    78000,
+    1000,
+    1000,
+    2000,
+    1000,
+    1000,
+    43000,
+    47000,
+    0,
+    1000,
+    1000,
+    4000,
+    24000,
+    577000,
+    38000,
+    67000,
+    575000,
+    148341000,
+    31000,
+    56000,
+    20000,
+    34000,
+    23000,
+    24000,
+    20000,
+    139000
+  ]
+}
