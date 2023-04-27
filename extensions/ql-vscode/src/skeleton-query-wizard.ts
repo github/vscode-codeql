@@ -1,6 +1,6 @@
 import { join } from "path";
 import { CancellationToken, Uri, workspace, window as Window } from "vscode";
-import { CodeQLCliServer } from "./cli";
+import { CodeQLCliServer } from "./codeql-cli/cli";
 import { OutputChannelLogger } from "./common";
 import { Credentials } from "./common/authentication";
 import { QueryLanguage } from "./common/query-language";

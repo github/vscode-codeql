@@ -5,7 +5,10 @@ import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-cli
 import { join } from "path";
 
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
-import { CliVersionConstraint, CodeQLCliServer } from "../../../../src/cli";
+import {
+  CliVersionConstraint,
+  CodeQLCliServer,
+} from "../../../../src/codeql-cli/cli";
 import {
   fixWorkspaceReferences,
   getActivatedExtension,

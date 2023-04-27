@@ -18,7 +18,7 @@ import {
   env,
   WorkspaceFolder,
 } from "vscode";
-import { CodeQLCliServer, QlpacksInfo } from "./cli";
+import { CodeQLCliServer, QlpacksInfo } from "./codeql-cli/cli";
 import { UserCancellationException } from "./progress";
 import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";

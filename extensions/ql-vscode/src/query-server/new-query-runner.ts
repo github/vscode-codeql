@@ -14,7 +14,7 @@ import { QueryServerClient } from "./query-server-client";
 import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";
 import * as vscode from "vscode";
 import { getOnDiskWorkspaceFolders } from "../helpers";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { Logger } from "../common";
 import { QueryOutputDir } from "../run-queries-shared";
 

@@ -17,7 +17,7 @@ import {
 } from "../run-queries-shared";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "../interface-utils";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryResultType } from "../pure/new-messages";
 import { redactableError } from "../pure/errors";
 import { LocalQueries } from "./local-queries";

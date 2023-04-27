@@ -1,4 +1,4 @@
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { Logger } from "../common";
 import { transformBqrsResultSet } from "../pure/bqrs-cli-types";
 import { AnalysisRawResults } from "./shared/analysis-result";

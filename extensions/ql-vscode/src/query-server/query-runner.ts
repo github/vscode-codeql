@@ -1,5 +1,5 @@
 import { CancellationToken } from "vscode";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { ProgressCallback } from "../progress";
 import { DatabaseItem } from "../databases/local-databases";
 import { QueryOutputDir } from "../run-queries-shared";

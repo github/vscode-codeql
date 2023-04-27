@@ -9,7 +9,7 @@ import {
   env,
 } from "vscode";
 import { MultiFileSystemWatcher } from "./vscode-utils/multi-file-system-watcher";
-import { CodeQLCliServer } from "./cli";
+import { CodeQLCliServer } from "./codeql-cli/cli";
 import { pathExists } from "fs-extra";
 
 /**

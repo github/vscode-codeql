@@ -8,7 +8,7 @@ import {
   getResultSetSchema,
   ResultSetSchema,
 } from "../../pure/bqrs-cli-types";
-import { CodeQLCliServer } from "../../cli";
+import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseManager, DatabaseItem } from "../../databases/local-databases";
 import { ProgressCallback } from "../../progress";
 import { KeyType } from "./key-type";

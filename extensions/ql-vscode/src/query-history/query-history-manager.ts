@@ -40,7 +40,7 @@ import {
 } from "../query-status";
 import { readQueryHistoryFromFile, writeQueryHistoryToFile } from "./store";
 import { pathExists } from "fs-extra";
-import { CliVersionConstraint } from "../cli";
+import { CliVersionConstraint } from "../codeql-cli/cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
 import { ResultsView } from "../interface";
 import { WebviewReveal } from "../interface-utils";

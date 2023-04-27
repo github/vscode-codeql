@@ -1,6 +1,6 @@
 import { join } from "path";
 
-import { CodeQLCliServer } from "../../../src/cli";
+import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { tryGetQueryMetadata } from "../../../src/helpers";
 import { getActivatedExtension } from "../global.helper";
 

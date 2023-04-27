@@ -11,8 +11,8 @@ import tk from "tree-kill";
 import { promisify } from "util";
 import { CancellationToken, Disposable, Uri } from "vscode";
 
-import { BQRSInfo, DecodedBqrsChunk } from "./pure/bqrs-cli-types";
-import { allowCanaryQueryServer, CliConfig } from "./config";
+import { BQRSInfo, DecodedBqrsChunk } from "../pure/bqrs-cli-types";
+import { allowCanaryQueryServer, CliConfig } from "../config";
 import {
   DistributionProvider,
   FindDistributionResultKind,
@@ -21,14 +21,14 @@ import {
   assertNever,
   getErrorMessage,
   getErrorStack,
-} from "./pure/helpers-pure";
-import { QueryMetadata, SortDirection } from "./pure/interface-types";
-import { BaseLogger, Logger, ProgressReporter } from "./common";
-import { CompilationMessage } from "./pure/legacy-messages";
-import { sarifParser } from "./sarif-parser";
-import { walkDirectory } from "./helpers";
-import { App } from "./common/app";
-import { QueryLanguage } from "./common/query-language";
+} from "../pure/helpers-pure";
+import { QueryMetadata, SortDirection } from "../pure/interface-types";
+import { BaseLogger, Logger, ProgressReporter } from "../common";
+import { CompilationMessage } from "../pure/legacy-messages";
+import { sarifParser } from "../sarif-parser";
+import { walkDirectory } from "../helpers";
+import { App } from "../common/app";
+import { QueryLanguage } from "../common/query-language";
 
 /**
  * The version of the SARIF format that we are using.

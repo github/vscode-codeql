@@ -6,7 +6,7 @@ import {
   QueryCompareResult,
 } from "../pure/interface-types";
 import { Logger } from "../common";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../interface-utils";
 import {

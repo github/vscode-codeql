@@ -16,7 +16,7 @@ import {
   nameOfKeyType,
   tagOfKeyType,
 } from "./key-type";
-import { CodeQLCliServer } from "../../cli";
+import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseItem } from "../../databases/local-databases";
 import { extLogger, TeeLogger } from "../../common";
 import { CancellationToken } from "vscode";

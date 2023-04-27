@@ -8,7 +8,7 @@ import {
 } from "../helpers";
 import { TeeLogger } from "../common";
 import { CancellationToken } from "vscode";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseItem } from "../databases/local-databases";
 import { ProgressCallback } from "../progress";
 import { fetchExternalApiQueries } from "./queries";

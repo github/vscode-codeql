@@ -1,6 +1,6 @@
 import { readFileSync } from "fs-extra";
 
-import { CodeQLCliServer } from "../../../../../src/cli";
+import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { Uri } from "vscode";
 import { QueryOutputDir } from "../../../../../src/run-queries-shared";
 import { mockDatabaseItem, mockedObject } from "../../../utils/mocking.helpers";

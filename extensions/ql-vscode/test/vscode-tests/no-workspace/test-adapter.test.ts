@@ -11,7 +11,7 @@ import {
 } from "vscode";
 
 import { QLTestAdapter } from "../../../src/test-adapter";
-import { CodeQLCliServer } from "../../../src/cli";
+import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { DatabaseManager } from "../../../src/databases/local-databases";
 import { mockedObject } from "../utils/mocking.helpers";
 import { TestRunner } from "../../../src/test-runner";

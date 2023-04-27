@@ -21,7 +21,7 @@ import {
 } from "./qltest-discovery";
 import { Event, EventEmitter, CancellationTokenSource } from "vscode";
 import { DisposableObject } from "./pure/disposable-object";
-import { CodeQLCliServer, TestCompleted } from "./cli";
+import { CodeQLCliServer, TestCompleted } from "./codeql-cli/cli";
 import { testLogger } from "./common";
 import { TestRunner } from "./test-runner";
 

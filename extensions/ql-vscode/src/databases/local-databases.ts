@@ -2,7 +2,7 @@ import { pathExists, stat, remove } from "fs-extra";
 import { glob } from "glob";
 import { join, basename, resolve, relative, dirname, extname } from "path";
 import * as vscode from "vscode";
-import * as cli from "../cli";
+import * as cli from "../codeql-cli/cli";
 import { ExtensionContext } from "vscode";
 import {
   showAndLogWarningMessage,
