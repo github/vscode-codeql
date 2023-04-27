@@ -746,7 +746,7 @@ export class DatabaseManager extends DisposableObject {
       return;
     }
 
-    if (getAutogenerateQlPacks() === "No, and never ask me again") {
+    if (getAutogenerateQlPacks() === "never") {
       return;
     }
 
@@ -759,7 +759,7 @@ export class DatabaseManager extends DisposableObject {
     }
 
     if (answer === "No, and never ask me again") {
-      await setAutogenerateQlPacks("No, and never ask me again");
+      await setAutogenerateQlPacks("never");
       return;
     }
 

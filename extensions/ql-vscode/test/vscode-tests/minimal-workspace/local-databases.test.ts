@@ -685,10 +685,7 @@ describe("local databases", () => {
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
         expect(generateSpy).not.toBeCalled();
-        expect(updateValueSpy).toHaveBeenCalledWith(
-          "No, and never ask me again",
-          1,
-        );
+        expect(updateValueSpy).toHaveBeenCalledWith("never", 1);
       });
 
       it("should create the skeleton QL pack for the user", async () => {
