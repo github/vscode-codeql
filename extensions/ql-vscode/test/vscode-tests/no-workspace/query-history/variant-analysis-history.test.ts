@@ -132,10 +132,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
     await qhm.readQueryHistory();
 
     // Remove the first variant analysis
-    await qhm.handleRemoveHistoryItem(
-      qhm.treeDataProvider.allHistory[0],
-      undefined,
-    );
+    await qhm.handleRemoveHistoryItem([qhm.treeDataProvider.allHistory[0]]);
 
     // Add it back to the history
     qhm.addQuery(rawQueryHistory[0]);
@@ -152,7 +149,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
 
     // Remove both queries
     // Just for fun, let's do it in reverse order
-    await qhm.handleRemoveHistoryItem(undefined!, [
+    await qhm.handleRemoveHistoryItem([
       qhm.treeDataProvider.allHistory[1],
       qhm.treeDataProvider.allHistory[0],
     ]);
@@ -180,13 +177,13 @@ describe("Variant Analyses and QueryHistoryManager", () => {
   it("should handle a click", async () => {
     await qhm.readQueryHistory();
 
-    await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0], []);
+    await qhm.handleItemClicked(qhm.treeDataProvider.allHistory[0]);
     expect(showViewStub).toBeCalledWith(rawQueryHistory[0].variantAnalysis.id);
   });
 
   it("should get the query text", async () => {
     await qhm.readQueryHistory();
-    await qhm.handleShowQueryText(qhm.treeDataProvider.allHistory[0], []);
+    await qhm.handleShowQueryText(qhm.treeDataProvider.allHistory[0]);
 
     expect(openQueryTextSpy).toHaveBeenCalledWith(
       rawQueryHistory[0].variantAnalysis.id,

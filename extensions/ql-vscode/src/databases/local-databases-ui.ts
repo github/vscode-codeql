@@ -46,6 +46,10 @@ import { isCanary } from "../config";
 import { App } from "../common/app";
 import { redactableError } from "../pure/errors";
 import { LocalDatabasesCommands } from "../common/commands";
+import {
+  createMultiSelectionCommand,
+  createSingleSelectionCommand,
+} from "../common/selection-commands";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -240,11 +244,22 @@ export class DatabaseUI extends DisposableObject {
         this.handleMakeCurrentDatabase.bind(this),
       "codeQLDatabases.sortByName": this.handleSortByName.bind(this),
       "codeQLDatabases.sortByDateAdded": this.handleSortByDateAdded.bind(this),
-      "codeQLDatabases.removeDatabase": this.handleRemoveDatabase.bind(this),
-      "codeQLDatabases.upgradeDatabase": this.handleUpgradeDatabase.bind(this),
-      "codeQLDatabases.renameDatabase": this.handleRenameDatabase.bind(this),
-      "codeQLDatabases.openDatabaseFolder": this.handleOpenFolder.bind(this),
-      "codeQLDatabases.addDatabaseSource": this.handleAddSource.bind(this),
+      "codeQLDatabases.removeDatabase": createMultiSelectionCommand(
+        this.handleRemoveDatabase.bind(this),
+      ),
+      "codeQLDatabases.upgradeDatabase": createMultiSelectionCommand(
+        this.handleUpgradeDatabase.bind(this),
+      ),
+      "codeQLDatabases.renameDatabase": createSingleSelectionCommand(
+        this.handleRenameDatabase.bind(this),
+        "database",
+      ),
+      "codeQLDatabases.openDatabaseFolder": createMultiSelectionCommand(
+        this.handleOpenFolder.bind(this),
+      ),
+      "codeQLDatabases.addDatabaseSource": createMultiSelectionCommand(
+        this.handleAddSource.bind(this),
+      ),
       "codeQLDatabases.removeOrphanedDatabases":
         this.handleRemoveOrphanedDatabases.bind(this),
     };
@@ -515,12 +530,11 @@ export class DatabaseUI extends DisposableObject {
   private async handleUpgradeCurrentDatabase(): Promise<void> {
     return withProgress(
       async (progress, token) => {
-        await this.handleUpgradeDatabaseInternal(
-          progress,
-          token,
-          this.databaseManager.currentDatabaseItem,
-          [],
-        );
+        if (this.databaseManager.currentDatabaseItem !== undefined) {
+          await this.handleUpgradeDatabasesInternal(progress, token, [
+            this.databaseManager.currentDatabaseItem,
+          ]);
+        }
       },
       {
         title: "Upgrading current database",
@@ -530,16 +544,14 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private async handleUpgradeDatabase(
-    databaseItem: DatabaseItem | undefined,
-    multiSelect: DatabaseItem[] | undefined,
+    databaseItems: DatabaseItem[],
   ): Promise<void> {
     return withProgress(
       async (progress, token) => {
-        return await this.handleUpgradeDatabaseInternal(
+        return await this.handleUpgradeDatabasesInternal(
           progress,
           token,
-          databaseItem,
-          multiSelect,
+          databaseItems,
         );
       },
       {
@@ -549,46 +561,37 @@ export class DatabaseUI extends DisposableObject {
     );
   }
 
-  private async handleUpgradeDatabaseInternal(
+  private async handleUpgradeDatabasesInternal(
     progress: ProgressCallback,
     token: CancellationToken,
-    databaseItem: DatabaseItem | undefined,
-    multiSelect: DatabaseItem[] | undefined,
+    databaseItems: DatabaseItem[],
   ): Promise<void> {
-    if (multiSelect?.length) {
-      await Promise.all(
-        multiSelect.map((dbItem) =>
-          this.handleUpgradeDatabaseInternal(progress, token, dbItem, []),
-        ),
-      );
-    }
-    if (this.queryServer === undefined) {
-      throw new Error(
-        "Received request to upgrade database, but there is no running query server.",
-      );
-    }
-    if (databaseItem === undefined) {
-      throw new Error(
-        "Received request to upgrade database, but no database was provided.",
-      );
-    }
-    if (databaseItem.contents === undefined) {
-      throw new Error(
-        "Received request to upgrade database, but database contents could not be found.",
-      );
-    }
-    if (databaseItem.contents.dbSchemeUri === undefined) {
-      throw new Error(
-        "Received request to upgrade database, but database has no schema.",
-      );
-    }
+    await Promise.all(
+      databaseItems.map(async (databaseItem) => {
+        if (this.queryServer === undefined) {
+          throw new Error(
+            "Received request to upgrade database, but there is no running query server.",
+          );
+        }
+        if (databaseItem.contents === undefined) {
+          throw new Error(
+            "Received request to upgrade database, but database contents could not be found.",
+          );
+        }
+        if (databaseItem.contents.dbSchemeUri === undefined) {
+          throw new Error(
+            "Received request to upgrade database, but database has no schema.",
+          );
+        }
 
-    // Search for upgrade scripts in any workspace folders available
+        // Search for upgrade scripts in any workspace folders available
 
-    await this.queryServer.upgradeDatabaseExplicit(
-      databaseItem,
-      progress,
-      token,
+        await this.queryServer.upgradeDatabaseExplicit(
+          databaseItem,
+          progress,
+          token,
+        );
+      }),
     );
   }
 
@@ -651,24 +654,15 @@ export class DatabaseUI extends DisposableObject {
   }
 
   private async handleRemoveDatabase(
-    databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined,
+    databaseItems: DatabaseItem[],
   ): Promise<void> {
     return withProgress(
       async (progress, token) => {
-        if (multiSelect?.length) {
-          await Promise.all(
-            multiSelect.map((dbItem) =>
-              this.databaseManager.removeDatabaseItem(progress, token, dbItem),
-            ),
-          );
-        } else {
-          await this.databaseManager.removeDatabaseItem(
-            progress,
-            token,
-            databaseItem,
-          );
-        }
+        await Promise.all(
+          databaseItems.map((dbItem) =>
+            this.databaseManager.removeDatabaseItem(progress, token, dbItem),
+          ),
+        );
       },
       {
         title: "Removing database",
@@ -679,10 +673,7 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleRenameDatabase(
     databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined,
   ): Promise<void> {
-    this.assertSingleDatabase(multiSelect);
-
     const newName = await window.showInputBox({
       prompt: "Choose new database name",
       value: databaseItem.name,
@@ -693,17 +684,10 @@ export class DatabaseUI extends DisposableObject {
     }
   }
 
-  private async handleOpenFolder(
-    databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined,
-  ): Promise<void> {
-    if (multiSelect?.length) {
-      await Promise.all(
-        multiSelect.map((dbItem) => env.openExternal(dbItem.databaseUri)),
-      );
-    } else {
-      await env.openExternal(databaseItem.databaseUri);
-    }
+  private async handleOpenFolder(databaseItems: DatabaseItem[]): Promise<void> {
+    await Promise.all(
+      databaseItems.map((dbItem) => env.openExternal(dbItem.databaseUri)),
+    );
   }
 
   /**
@@ -711,16 +695,9 @@ export class DatabaseUI extends DisposableObject {
    * When a database is first added in the "Databases" view, its source folder is added to the workspace.
    * If the source folder is removed from the workspace for some reason, we want to be able to re-add it if need be.
    */
-  private async handleAddSource(
-    databaseItem: DatabaseItem,
-    multiSelect: DatabaseItem[] | undefined,
-  ): Promise<void> {
-    if (multiSelect?.length) {
-      for (const dbItem of multiSelect) {
-        await this.databaseManager.addDatabaseSourceArchiveFolder(dbItem);
-      }
-    } else {
-      await this.databaseManager.addDatabaseSourceArchiveFolder(databaseItem);
+  private async handleAddSource(databaseItems: DatabaseItem[]): Promise<void> {
+    for (const dbItem of databaseItems) {
+      await this.databaseManager.addDatabaseSourceArchiveFolder(dbItem);
     }
   }
 
@@ -822,14 +799,5 @@ export class DatabaseUI extends DisposableObject {
       dbPath = path_dirname(dbPath);
     }
     return Uri.file(dbPath);
-  }
-
-  private assertSingleDatabase(
-    multiSelect: DatabaseItem[] = [],
-    message = "Please select a single database.",
-  ) {
-    if (multiSelect.length > 1) {
-      throw new Error(message);
-    }
   }
 }
