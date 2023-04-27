@@ -345,13 +345,22 @@
           "type": "string",
           "default": "",
           "patternErrorMessage": "Please enter a valid folder",
-          "markdownDescription": "The name of the folder where we want to create queries and query packs via the \"CodeQL: Create Query\" command. The folder should exist."
+          "markdownDescription": "The name of the folder where we want to create queries and QL packs via the \"CodeQL: Create Query\" command. The folder should exist."
         },
         "codeQL.createQuery.autogenerateQlPacks": {
           "type": "string",
-          "default": "",
-          "patternErrorMessage": "Please choose between 'Yes', 'No' and 'No, and never ask me again'",
-          "markdownDescription": "The choice of whether to autogenerate QL packs for the current workspace. The choice is 'Yes', 'No' or 'No, and never ask me again'."
+          "default": "ask",
+          "enum": [
+            "ask",
+            "yes",
+            "never"
+          ],
+          "enumDescriptions": [
+            "Ask each time a new local CodeQL database is added.",
+            "Always automatically create a QL pack if one does not already exist.",
+            "Never automatically create a QL pack."
+          ],
+          "description": "Should a QL pack be created when downloading a CodeQL database and a QL pack does not already exist."
         }
       }
     },
