@@ -55,7 +55,7 @@ import { HistoryTreeDataProvider } from "./history-tree-data-provider";
 import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryCommands } from "../common/commands";
 import { App } from "../common/app";
-import { tryOpenExternalFile } from "../vscode-utils/external-files";
+import { tryOpenExternalFile } from "../common/vscode/external-files";
 import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
