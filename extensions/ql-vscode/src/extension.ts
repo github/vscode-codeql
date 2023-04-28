@@ -86,7 +86,7 @@ import {
   LegacyQueryRunner,
   QueryServerClient as LegacyQueryServerClient,
 } from "./query-server/legacy";
-import { QLTestAdapterFactory } from "./test-adapter";
+import { QLTestAdapterFactory } from "./query-testing/test-adapter";
 import { TestUIService } from "./test-ui";
 import { CompareView } from "./compare/compare-view";
 import { initializeTelemetry } from "./telemetry";
