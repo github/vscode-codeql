@@ -283,12 +283,9 @@ function generateMarkdownForPathResults(
           language,
           threadFlow.highlightedRegion,
         );
-        // Indent the snippet to fit with the numbered list.
-        // The indentation is "n + 2" where the list number is an n-digit number.
+        const indentation = " ".repeat(listNumber.toString().length + 2);
         pathLines.push(
-          ...codeSnippet.map((line) =>
-            (" ".repeat(listNumber.toString().length + 2) + line).trimEnd(),
-          ),
+          ...codeSnippet.map((line) => indentation + line.trimEnd()),
         );
       }
     }
