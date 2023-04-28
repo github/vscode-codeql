@@ -7,7 +7,10 @@ import {
   workspace,
   WorkspaceFolder,
 } from "vscode";
-import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
+import {
+  AbstractWebview,
+  WebviewPanelConfig,
+} from "../common/vscode/abstract-webview";
 import {
   FromDataExtensionsEditorMessage,
   ToDataExtensionsEditorMessage,

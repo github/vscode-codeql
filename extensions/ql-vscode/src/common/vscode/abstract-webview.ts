@@ -9,13 +9,13 @@ import {
 } from "vscode";
 import { join } from "path";
 
-import { DisposableObject, DisposeHandler } from "./pure/disposable-object";
-import { tmpDir } from "./helpers";
+import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
+import { tmpDir } from "../../helpers";
 import {
   getHtmlForWebview,
   WebviewMessage,
   WebviewView,
-} from "./interface-utils";
+} from "../../interface-utils";
 
 export type WebviewPanelConfig = {
   viewId: string;
