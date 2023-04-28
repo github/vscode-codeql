@@ -337,6 +337,7 @@ export class LocalQueries extends DisposableObject {
     token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
     range?: Range,
+    templates?: Record<string, string>,
   ): Promise<void> {
     await this.compileAndRunQueryInternal(
       quickEval,
@@ -345,6 +346,7 @@ export class LocalQueries extends DisposableObject {
       token,
       databaseItem,
       range,
+      templates,
     );
   }
 
@@ -356,6 +358,7 @@ export class LocalQueries extends DisposableObject {
     token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
     range?: Range,
+    templates?: Record<string, string>,
   ): Promise<CoreCompletedQuery> {
     let queryPath: string;
     if (queryUri !== undefined) {
@@ -395,7 +398,7 @@ export class LocalQueries extends DisposableObject {
       extensionPacks,
       this.queryStorageDir,
       undefined,
-      undefined,
+      templates,
     );
 
     // handle cancellation from the history view.

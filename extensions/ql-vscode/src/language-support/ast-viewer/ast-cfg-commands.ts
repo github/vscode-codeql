@@ -52,6 +52,8 @@ export function getAstCfgCommands({
             progress,
             token,
             undefined,
+            undefined,
+            res[1],
           );
         }
       },
