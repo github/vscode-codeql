@@ -7,11 +7,11 @@ import {
   TestEvent,
   TestSuiteEvent,
 } from "vscode-test-adapter-api";
-import { TestTreeNode } from "./query-testing/test-tree-node";
-import { DisposableObject } from "./pure/disposable-object";
-import { QLTestAdapter } from "./query-testing/test-adapter";
-import { App } from "./common/app";
-import { TestManagerBase } from "./query-testing/test-manager-base";
+import { TestTreeNode } from "./test-tree-node";
+import { DisposableObject } from "../pure/disposable-object";
+import { QLTestAdapter } from "./test-adapter";
+import { App } from "../common/app";
+import { TestManagerBase } from "./test-manager-base";
 
 type VSCodeTestEvent =
   | TestRunStartedEvent

@@ -87,7 +87,7 @@ import {
   QueryServerClient as LegacyQueryServerClient,
 } from "./query-server/legacy";
 import { QLTestAdapterFactory } from "./query-testing/test-adapter";
-import { TestUIService } from "./test-ui";
+import { TestUIService } from "./query-testing/test-ui";
 import { CompareView } from "./compare/compare-view";
 import { initializeTelemetry } from "./telemetry";
 import { ProgressCallback, withProgress } from "./common/vscode/progress";
