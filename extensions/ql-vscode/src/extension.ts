@@ -86,8 +86,8 @@ import {
   LegacyQueryRunner,
   QueryServerClient as LegacyQueryServerClient,
 } from "./query-server/legacy";
-import { QLTestAdapterFactory } from "./test-adapter";
-import { TestUIService } from "./test-ui";
+import { QLTestAdapterFactory } from "./query-testing/test-adapter";
+import { TestUIService } from "./query-testing/test-ui";
 import { CompareView } from "./compare/compare-view";
 import { initializeTelemetry } from "./telemetry";
 import { ProgressCallback, withProgress } from "./common/vscode/progress";
@@ -121,9 +121,9 @@ import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
 import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extensions-editor-module";
-import { TestManager } from "./test-manager";
-import { TestRunner } from "./test-runner";
-import { TestManagerBase } from "./test-manager-base";
+import { TestManager } from "./query-testing/test-manager";
+import { TestRunner } from "./query-testing/test-runner";
+import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 
 /**

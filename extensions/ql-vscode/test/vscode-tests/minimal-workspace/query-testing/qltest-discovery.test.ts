@@ -2,12 +2,12 @@ import { Uri, WorkspaceFolder } from "vscode";
 import * as fs from "fs-extra";
 import { join } from "path";
 
-import { QLTestDiscovery } from "../../../src/qltest-discovery";
+import { QLTestDiscovery } from "../../../../src/query-testing/qltest-discovery";
 import { DirectoryResult } from "tmp-promise";
 import * as tmp from "tmp-promise";
 
-import "../../matchers/toEqualPath";
-import { mockedObject } from "../utils/mocking.helpers";
+import "../../../matchers/toEqualPath";
+import { mockedObject } from "../../utils/mocking.helpers";
 
 describe("qltest-discovery", () => {
   describe("discoverTests", () => {
