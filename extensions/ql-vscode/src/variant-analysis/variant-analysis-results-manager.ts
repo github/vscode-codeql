@@ -5,7 +5,7 @@ import { join } from "path";
 
 import { Logger } from "../common";
 import { AnalysisAlert, AnalysisRawResults } from "./shared/analysis-result";
-import { sarifParser } from "../sarif-parser";
+import { sarifParser } from "../common/sarif-parser";
 import { extractAnalysisAlerts } from "./sarif-processing";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { extractRawResults } from "./bqrs-processing";

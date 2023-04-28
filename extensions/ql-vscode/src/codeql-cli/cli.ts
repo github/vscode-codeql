@@ -25,7 +25,7 @@ import {
 import { QueryMetadata, SortDirection } from "../pure/interface-types";
 import { BaseLogger, Logger, ProgressReporter } from "../common";
 import { CompilationMessage } from "../pure/legacy-messages";
-import { sarifParser } from "../sarif-parser";
+import { sarifParser } from "../common/sarif-parser";
 import { walkDirectory } from "../helpers";
 import { App } from "../common/app";
 import { QueryLanguage } from "../common/query-language";

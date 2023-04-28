@@ -22,7 +22,7 @@ import {
   QueryWithResults,
 } from "./run-queries-shared";
 import { formatLegacyMessage } from "./query-server/legacy";
-import { sarifParser } from "./sarif-parser";
+import { sarifParser } from "./common/sarif-parser";
 
 /**
  * query-results.ts

@@ -1,7 +1,7 @@
 import * as Sarif from "sarif";
 import { createReadStream } from "fs-extra";
 import { connectTo } from "stream-json/Assembler";
-import { getErrorMessage } from "./pure/helpers-pure";
+import { getErrorMessage } from "../pure/helpers-pure";
 import { withParser } from "stream-json/filters/Pick";
 
 const DUMMY_TOOL: Sarif.Tool = { driver: { name: "" } };
