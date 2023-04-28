@@ -11,7 +11,7 @@ import { TestTreeNode } from "./test-tree-node";
 import { DisposableObject } from "./pure/disposable-object";
 import { QLTestAdapter } from "./query-testing/test-adapter";
 import { App } from "./common/app";
-import { TestManagerBase } from "./test-manager-base";
+import { TestManagerBase } from "./query-testing/test-manager-base";
 
 type VSCodeTestEvent =
   | TestRunStartedEvent

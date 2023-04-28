@@ -26,7 +26,7 @@ import { CodeQLCliServer } from "./codeql-cli/cli";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { BaseLogger, LogOptions } from "./common";
 import { TestRunner } from "./test-runner";
-import { TestManagerBase } from "./test-manager-base";
+import { TestManagerBase } from "./query-testing/test-manager-base";
 import { App } from "./common/app";
 import { isWorkspaceFolderOnDisk } from "./helpers";
 

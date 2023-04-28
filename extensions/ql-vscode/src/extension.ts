@@ -123,7 +123,7 @@ import { DebuggerUI } from "./debugger/debugger-ui";
 import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extensions-editor-module";
 import { TestManager } from "./test-manager";
 import { TestRunner } from "./test-runner";
-import { TestManagerBase } from "./test-manager-base";
+import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 
 /**
