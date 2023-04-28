@@ -10,7 +10,7 @@ import { TeeLogger } from "../common";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseItem } from "../databases/local-databases";
-import { ProgressCallback } from "../progress";
+import { ProgressCallback } from "../common/vscode/progress";
 import { fetchExternalApiQueries } from "./queries";
 import { QueryResultType } from "../pure/new-messages";
 import { join } from "path";

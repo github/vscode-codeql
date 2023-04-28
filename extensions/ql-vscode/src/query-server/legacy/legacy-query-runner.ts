@@ -1,6 +1,6 @@
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { ProgressCallback } from "../../progress";
+import { ProgressCallback } from "../../common/vscode/progress";
 import { Logger } from "../../common";
 import { DatabaseItem } from "../../databases/local-databases";
 import {

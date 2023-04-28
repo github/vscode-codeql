@@ -11,7 +11,7 @@ import {
   ProgressMessage,
   WithProgressId,
 } from "../pure/new-messages";
-import { ProgressCallback, ProgressTask } from "../progress";
+import { ProgressCallback, ProgressTask } from "../common/vscode/progress";
 import { ServerProcess } from "./server-process";
 import { App } from "../common/app";
 

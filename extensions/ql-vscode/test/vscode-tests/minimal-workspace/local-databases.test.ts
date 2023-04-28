@@ -13,12 +13,12 @@ import {
   FullDatabaseOptions,
 } from "../../../src/databases/local-databases";
 import { Logger } from "../../../src/common";
-import { ProgressCallback } from "../../../src/progress";
+import { ProgressCallback } from "../../../src/common/vscode/progress";
 import { CodeQLCliServer, DbInfo } from "../../../src/codeql-cli/cli";
 import {
   encodeArchiveBasePath,
   encodeSourceArchiveUri,
-} from "../../../src/archive-filesystem-provider";
+} from "../../../src/common/vscode/archive-filesystem-provider";
 import { testDisposeHandler } from "../test-dispose-handler";
 import { QueryRunner } from "../../../src/query-server/query-runner";
 import * as helpers from "../../../src/helpers";

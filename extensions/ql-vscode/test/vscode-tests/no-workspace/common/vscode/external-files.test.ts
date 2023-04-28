@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { tryOpenExternalFile } from "../../../../../src/vscode-utils/external-files";
+import { tryOpenExternalFile } from "../../../../../src/common/vscode/external-files";
 import { createMockCommandManager } from "../../../../__mocks__/commandsMock";
 import { mockedObject } from "../../../utils/mocking.helpers";
 

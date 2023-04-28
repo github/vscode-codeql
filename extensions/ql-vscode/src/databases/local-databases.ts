@@ -13,13 +13,13 @@ import {
   showBinaryChoiceDialog,
   getFirstWorkspaceFolder,
 } from "../helpers";
-import { ProgressCallback, withProgress } from "../progress";
+import { ProgressCallback, withProgress } from "../common/vscode/progress";
 import {
   zipArchiveScheme,
   encodeArchiveBasePath,
   decodeSourceArchiveUri,
   encodeSourceArchiveUri,
-} from "../archive-filesystem-provider";
+} from "../common/vscode/archive-filesystem-provider";
 import { DisposableObject } from "../pure/disposable-object";
 import { Logger, extLogger } from "../common";
 import { asError, getErrorMessage } from "../pure/helpers-pure";

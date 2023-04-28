@@ -1,5 +1,8 @@
 import { ExtensionContext, ViewColumn } from "vscode";
-import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
+import {
+  AbstractWebview,
+  WebviewPanelConfig,
+} from "../common/vscode/abstract-webview";
 import { extLogger } from "../common";
 import {
   FromVariantAnalysisMessage,

@@ -7,12 +7,15 @@ import {
   workspace,
   WorkspaceFolder,
 } from "vscode";
-import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
+import {
+  AbstractWebview,
+  WebviewPanelConfig,
+} from "../common/vscode/abstract-webview";
 import {
   FromDataExtensionsEditorMessage,
   ToDataExtensionsEditorMessage,
 } from "../pure/interface-types";
-import { ProgressUpdate } from "../progress";
+import { ProgressUpdate } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
 import {
   showAndLogErrorMessage,

@@ -1,4 +1,8 @@
-import { ProgressCallback, ProgressUpdate, withProgress } from "../progress";
+import {
+  ProgressCallback,
+  ProgressUpdate,
+  withProgress,
+} from "../common/vscode/progress";
 import {
   CancellationToken,
   CancellationTokenSource,

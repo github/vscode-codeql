@@ -6,7 +6,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { UserCancellationException } from "../../progress";
+import { UserCancellationException } from "../../common/vscode/progress";
 import {
   getNwoFromGitHubUrl,
   isValidGitHubNwo,

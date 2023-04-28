@@ -7,7 +7,7 @@ import {
   getErrorStack,
 } from "../../pure/helpers-pure";
 import { redactableError } from "../../pure/errors";
-import { UserCancellationException } from "../../progress";
+import { UserCancellationException } from "./progress";
 import {
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
