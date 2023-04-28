@@ -14,7 +14,7 @@ import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
   zipArchiveScheme,
-} from "../../archive-filesystem-provider";
+} from "../../common/vscode/archive-filesystem-provider";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseManager } from "../../databases/local-databases";
 import { CachedOperation } from "../../helpers";

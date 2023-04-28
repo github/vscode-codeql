@@ -1,7 +1,7 @@
 import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
-} from "../../archive-filesystem-provider";
+} from "../../common/vscode/archive-filesystem-provider";
 import {
   ColumnKindCode,
   EntityValue,

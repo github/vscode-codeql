@@ -7,7 +7,7 @@ import {
   decodeSourceArchiveUri,
   ZipFileReference,
   zipArchiveScheme,
-} from "../../../src/archive-filesystem-provider";
+} from "../../../../../src/common/vscode/archive-filesystem-provider";
 import { FileType, FileSystemError, Uri } from "vscode";
 
 describe("archive-filesystem-provider", () => {
@@ -16,7 +16,7 @@ describe("archive-filesystem-provider", () => {
     const uri = encodeSourceArchiveUri({
       sourceArchiveZipPath: resolve(
         __dirname,
-        "data/archive-filesystem-provider-test/single_file.zip",
+        "../../data/archive-filesystem-provider-test/single_file.zip",
       ),
       pathWithinSourceArchive: "/aFileName.txt",
     });
@@ -29,7 +29,7 @@ describe("archive-filesystem-provider", () => {
     const uri = encodeSourceArchiveUri({
       sourceArchiveZipPath: resolve(
         __dirname,
-        "data/archive-filesystem-provider-test/zip_with_folder.zip",
+        "../../data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
       pathWithinSourceArchive: "folder1/textFile.txt",
     });
@@ -42,7 +42,7 @@ describe("archive-filesystem-provider", () => {
     const uri = encodeSourceArchiveUri({
       sourceArchiveZipPath: resolve(
         __dirname,
-        "data/archive-filesystem-provider-test/zip_with_folder.zip",
+        "../../data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
       pathWithinSourceArchive: "folder1",
     });
@@ -59,7 +59,7 @@ describe("archive-filesystem-provider", () => {
     const uri = encodeSourceArchiveUri({
       sourceArchiveZipPath: resolve(
         __dirname,
-        "data/archive-filesystem-provider-test/zip_with_folder.zip",
+        "../../data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
       pathWithinSourceArchive: "folder1/not-here",
     });
@@ -76,7 +76,7 @@ describe("archive-filesystem-provider", () => {
     const uri = encodeSourceArchiveUri({
       sourceArchiveZipPath: resolve(
         __dirname,
-        "data/archive-filesystem-provider-test/zip_with_folder.zip",
+        "../../data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
       pathWithinSourceArchive: "folder1/not-here",
     });
@@ -93,7 +93,7 @@ describe("archive-filesystem-provider", () => {
     const uri = encodeSourceArchiveUri({
       sourceArchiveZipPath: resolve(
         __dirname,
-        "data/archive-filesystem-provider-test/zip_with_folder.zip",
+        "../../data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
       pathWithinSourceArchive: "folder1/textFile.txt",
     });
@@ -110,7 +110,7 @@ describe("archive-filesystem-provider", () => {
     const uri = encodeSourceArchiveUri({
       sourceArchiveZipPath: resolve(
         __dirname,
-        "data/archive-filesystem-provider-test/zip_with_folder.zip",
+        "../../data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
       pathWithinSourceArchive: "folder1/folder2",
     });
@@ -127,7 +127,7 @@ describe("archive-filesystem-provider", () => {
     const uri = encodeSourceArchiveUri({
       sourceArchiveZipPath: resolve(
         __dirname,
-        "data/archive-filesystem-provider-test/zip_with_folder.zip",
+        "../../data/archive-filesystem-provider-test/zip_with_folder.zip",
       ),
       pathWithinSourceArchive: "folder1/folder2",
     });

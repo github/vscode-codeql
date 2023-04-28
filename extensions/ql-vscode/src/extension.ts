@@ -23,7 +23,7 @@ import { watch } from "chokidar";
 import {
   activate as archiveFilesystemProvider_activate,
   zipArchiveScheme,
-} from "./archive-filesystem-provider";
+} from "./common/vscode/archive-filesystem-provider";
 import { CodeQLCliServer } from "./codeql-cli/cli";
 import {
   CliConfigListener,

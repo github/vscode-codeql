@@ -1,7 +1,7 @@
 import { pathExists } from "fs-extra";
 import * as unzipper from "unzipper";
 import * as vscode from "vscode";
-import { extLogger } from "./common";
+import { extLogger } from "..";
 
 // All path operations in this file must be on paths *within* the zip
 // archive.
