@@ -12,7 +12,7 @@ import {
   window,
 } from "vscode";
 import { isCanary, AUTOSAVE_SETTING } from "./config";
-import { UserCancellationException } from "./progress";
+import { UserCancellationException } from "./common/vscode/progress";
 import {
   pathExists,
   readFile,

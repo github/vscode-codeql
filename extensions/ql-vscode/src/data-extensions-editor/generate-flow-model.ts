@@ -5,7 +5,7 @@ import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { TeeLogger } from "../common";
 import { extensiblePredicateDefinitions } from "./predicates";
-import { ProgressCallback } from "../progress";
+import { ProgressCallback } from "../common/vscode/progress";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,

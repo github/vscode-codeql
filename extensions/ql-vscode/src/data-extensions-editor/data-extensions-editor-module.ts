@@ -8,7 +8,7 @@ import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { App } from "../common/app";
 import { showAndLogErrorMessage } from "../helpers";
-import { withProgress } from "../progress";
+import { withProgress } from "../common/vscode/progress";
 import { pickExtensionPackModelFile } from "./extension-pack-picker";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];

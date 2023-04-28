@@ -4,7 +4,10 @@ import {
   showAndLogExceptionWithTelemetry,
   tmpDir,
 } from "../../helpers";
-import { ProgressCallback, UserCancellationException } from "../../progress";
+import {
+  ProgressCallback,
+  UserCancellationException,
+} from "../../common/vscode/progress";
 import { extLogger } from "../../common";
 import * as messages from "../../pure/legacy-messages";
 import * as qsClient from "./query-server-client";

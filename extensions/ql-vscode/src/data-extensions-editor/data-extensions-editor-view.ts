@@ -15,7 +15,7 @@ import {
   FromDataExtensionsEditorMessage,
   ToDataExtensionsEditorMessage,
 } from "../pure/interface-types";
-import { ProgressUpdate } from "../progress";
+import { ProgressUpdate } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
 import {
   showAndLogErrorMessage,

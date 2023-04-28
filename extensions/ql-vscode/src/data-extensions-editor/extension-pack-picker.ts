@@ -9,7 +9,7 @@ import {
   getOnDiskWorkspaceFoldersObjects,
   showAndLogErrorMessage,
 } from "../helpers";
-import { ProgressCallback } from "../progress";
+import { ProgressCallback } from "../common/vscode/progress";
 import { DatabaseItem } from "../databases/local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";
 import { getErrorMessage } from "../pure/helpers-pure";

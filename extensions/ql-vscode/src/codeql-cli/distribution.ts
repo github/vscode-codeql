@@ -14,7 +14,10 @@ import {
 } from "../helpers";
 import { extLogger } from "../common";
 import { getCodeQlCliVersion } from "./cli-version";
-import { ProgressCallback, reportStreamProgress } from "../progress";
+import {
+  ProgressCallback,
+  reportStreamProgress,
+} from "../common/vscode/progress";
 import {
   codeQlLauncherName,
   deprecatedCodeQlLauncherName,

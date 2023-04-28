@@ -11,7 +11,10 @@ import {
   getQlPackForDbscheme,
   showBinaryChoiceDialog,
 } from "../helpers";
-import { ProgressCallback, UserCancellationException } from "../progress";
+import {
+  ProgressCallback,
+  UserCancellationException,
+} from "../common/vscode/progress";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { FALLBACK_QLPACK_FILENAME, getQlPackPath } from "../pure/ql";
 import { App } from "../common/app";

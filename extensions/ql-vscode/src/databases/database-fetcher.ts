@@ -18,7 +18,10 @@ import { retry } from "@octokit/plugin-retry";
 
 import { DatabaseManager, DatabaseItem } from "./local-databases";
 import { showAndLogInformationMessage, tmpDir } from "../helpers";
-import { reportStreamProgress, ProgressCallback } from "../progress";
+import {
+  reportStreamProgress,
+  ProgressCallback,
+} from "../common/vscode/progress";
 import { extLogger } from "../common";
 import { getErrorMessage } from "../pure/helpers-pure";
 import {

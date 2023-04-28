@@ -12,7 +12,10 @@ import {
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "./databases/local-databases";
-import { ProgressCallback, UserCancellationException } from "./progress";
+import {
+  ProgressCallback,
+  UserCancellationException,
+} from "./common/vscode/progress";
 import {
   askForGitHubRepo,
   downloadGitHubDatabase,

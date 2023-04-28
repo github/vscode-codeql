@@ -13,7 +13,7 @@ import {
   showBinaryChoiceDialog,
   getFirstWorkspaceFolder,
 } from "../helpers";
-import { ProgressCallback, withProgress } from "../progress";
+import { ProgressCallback, withProgress } from "../common/vscode/progress";
 import {
   zipArchiveScheme,
   encodeArchiveBasePath,
