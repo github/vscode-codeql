@@ -9,7 +9,11 @@ import {
 import { DistributionManager } from "./codeql-cli/distribution";
 import { extLogger } from "./common";
 import { ONE_DAY_IN_MS } from "./pure/time";
-import { FilterKey, SortKey } from "./pure/variant-analysis-filter-sort";
+import {
+  FilterKey,
+  SortKey,
+  defaultFilterSortState,
+} from "./pure/variant-analysis-filter-sort";
 
 export const ALL_SETTINGS: Setting[] = [];
 
@@ -540,7 +544,7 @@ export function getVariantAnalysisFilterResults(): FilterKey {
   if (Object.values(FilterKey).includes(value as FilterKey)) {
     return value as FilterKey;
   } else {
-    return FilterKey.WithResults;
+    return defaultFilterSortState.filterKey;
   }
 }
 
@@ -554,7 +558,7 @@ export function getVariantAnalysisSortResults(): SortKey {
   if (Object.values(SortKey).includes(value as SortKey)) {
     return value as SortKey;
   } else {
-    return SortKey.NumberOfResults;
+    return defaultFilterSortState.sortKey;
   }
 }
 
