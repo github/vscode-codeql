@@ -1,5 +1,5 @@
 import { dirname, basename, join, normalize, relative, extname } from "path";
-import { Discovery } from "./query-testing/discovery";
+import { Discovery } from "./discovery";
 import {
   EventEmitter,
   Event,
@@ -8,8 +8,8 @@ import {
   WorkspaceFolder,
   env,
 } from "vscode";
-import { MultiFileSystemWatcher } from "./common/vscode/multi-file-system-watcher";
-import { CodeQLCliServer } from "./codeql-cli/cli";
+import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathExists } from "fs-extra";
 
 /**

@@ -21,7 +21,7 @@ import {
   QLTestDiscovery,
   QLTestFile,
   QLTestNode,
-} from "../qltest-discovery";
+} from "./qltest-discovery";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { BaseLogger, LogOptions } from "../common";
