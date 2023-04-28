@@ -5,7 +5,7 @@ import { getActualFile, getExpectedFile } from "./test-adapter";
 import { TestItem, TextDocumentShowOptions, Uri, window } from "vscode";
 import { basename } from "path";
 import { App } from "../common/app";
-import { TestTreeNode } from "../test-tree-node";
+import { TestTreeNode } from "./test-tree-node";
 
 export type TestNode = TestTreeNode | TestItem;
 
