@@ -9,7 +9,7 @@ import {
 } from "../../src/pure/variant-analysis-filter-sort";
 
 /** A filterSortState that matches everything */
-const permissiveFilterSortState = {
+export const permissiveFilterSortState = {
   searchValue: "",
   filterKey: FilterKey.All,
   sortKey: SortKey.Alphabetically,
