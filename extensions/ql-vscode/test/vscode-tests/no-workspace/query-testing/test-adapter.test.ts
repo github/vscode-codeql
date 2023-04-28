@@ -14,13 +14,13 @@ import { QLTestAdapter } from "../../../../src/query-testing/test-adapter";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { DatabaseManager } from "../../../../src/databases/local-databases";
 import { mockedObject } from "../../utils/mocking.helpers";
-import { TestRunner } from "../../../../src/test-runner";
+import { TestRunner } from "../../../../src/query-testing/test-runner";
 import {
   createMockCliServerForTestRun,
   mockEmptyDatabaseManager,
   mockTestsInfo,
-} from "../test-runner-helpers";
-import { TestManager } from "../../../../src/test-manager";
+} from "./test-runner-helpers";
+import { TestManager } from "../../../../src/query-testing/test-manager";
 import { createMockApp } from "../../../__mocks__/appMock";
 
 type IdTestItemPair = [id: string, testItem: TestItem];

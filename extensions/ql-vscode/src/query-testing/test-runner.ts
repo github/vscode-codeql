@@ -1,16 +1,16 @@
 import { CancellationToken, Uri } from "vscode";
-import { CodeQLCliServer, TestCompleted } from "./codeql-cli/cli";
-import { DatabaseItem, DatabaseManager } from "./databases/local-databases";
+import { CodeQLCliServer, TestCompleted } from "../codeql-cli/cli";
+import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
-} from "./helpers";
-import { asError, getErrorMessage } from "./pure/helpers-pure";
-import { redactableError } from "./pure/errors";
+} from "../helpers";
+import { asError, getErrorMessage } from "../pure/helpers-pure";
+import { redactableError } from "../pure/errors";
 import { access } from "fs-extra";
-import { BaseLogger } from "./common";
-import { DisposableObject } from "./pure/disposable-object";
+import { BaseLogger } from "../common";
+import { DisposableObject } from "../pure/disposable-object";
 
 async function isFileAccessible(uri: Uri): Promise<boolean> {
   try {

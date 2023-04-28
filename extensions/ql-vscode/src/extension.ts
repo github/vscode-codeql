@@ -121,8 +121,8 @@ import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
 import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extensions-editor-module";
-import { TestManager } from "./test-manager";
-import { TestRunner } from "./test-runner";
+import { TestManager } from "./query-testing/test-manager";
+import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 
