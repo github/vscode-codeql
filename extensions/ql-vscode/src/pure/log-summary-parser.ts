@@ -1,4 +1,4 @@
-import { readJsonlFile } from "../log-insights/jsonl-reader";
+import { readJsonlFile } from "../common/jsonl-reader";
 
 // TODO(angelapwen): Only load in necessary information and
 // location in bytes for this log to save memory.

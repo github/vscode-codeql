@@ -1,5 +1,5 @@
 import { SummaryEvent } from "./log-summary";
-import { readJsonlFile } from "./jsonl-reader";
+import { readJsonlFile } from "../common/jsonl-reader";
 
 /**
  * Callback interface used to report diagnostics from a log scanner.
