@@ -329,6 +329,36 @@
           "patternErrorMessage": "Please enter a valid GitHub repository",
           "markdownDescription": "[For internal use only] The name of the GitHub repository in which the GitHub Actions workflow is run when using the \"Run Variant Analysis\" command. The repository should be of the form `<owner>/<repo>`)."
         },
+        "codeQL.variantAnalysis.filterResults": {
+          "type": "string",
+          "default": "withResults",
+          "enum": [
+            "all",
+            "withResults"
+          ],
+          "enumDescriptions": [
+            "Show all repositories in the results view.",
+            "Show only repositories with results in the results view."
+          ],
+          "description": "The filter to apply to the variant analysis results view."
+        },
+        "codeQL.variantAnalysis.sortResults": {
+          "type": "string",
+          "default": "numberOfResults",
+          "enum": [
+            "alphabetically",
+            "popularity",
+            "mostRecentCommit",
+            "numberOfResults"
+          ],
+          "enumDescriptions": [
+            "Sort repositories alphabetically in the results view.",
+            "Sort repositories by popularity in the results view.",
+            "Sort repositories by most recent commit in the results view.",
+            "Sort repositories by number of results in the results view."
+          ],
+          "description": "The default sorting order for repositories in the variant analysis results view."
+        },
         "codeQL.logInsights.joinOrderWarningThreshold": {
           "type": "number",
           "default": 50,

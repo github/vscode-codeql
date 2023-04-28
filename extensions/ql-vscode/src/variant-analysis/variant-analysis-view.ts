@@ -27,6 +27,10 @@ import { redactableError } from "../pure/errors";
 import { DataFlowPathsView } from "./data-flow-paths-view";
 import { DataFlowPaths } from "./shared/data-flow-paths";
 import { App } from "../common/app";
+import {
+  getVariantAnalysisFilterResults,
+  getVariantAnalysisSortResults,
+} from "../config";
 
 export class VariantAnalysisView
   extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage>
@@ -186,9 +190,16 @@ export class VariantAnalysisView
       return;
     }
 
+    const filterSortState = {
+      searchValue: "",
+      filterKey: getVariantAnalysisFilterResults(),
+      sortKey: getVariantAnalysisSortResults(),
+    };
+
     await this.postMessage({
       t: "setVariantAnalysis",
       variantAnalysis,
+      filterSortState,
     });
 
     const repoStates = await this.manager.getRepoStates(this.variantAnalysisId);
