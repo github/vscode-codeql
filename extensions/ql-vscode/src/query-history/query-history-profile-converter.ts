@@ -1,9 +1,18 @@
 import * as fs from "fs";
 import { Protocol as P } from "devtools-protocol";
 
+export interface Position {
+  startLine: number;
+  startColumn: number;
+  endLine: number;
+  endColumn: number;
+  url: string;
+}
+
 export interface RAHashable {
   raHash: string;
   completionTime: string;
+  position: Position;
   completionTimeUs: number;
   evaluationStrategy: string;
   dependencies?: any;
@@ -44,8 +53,7 @@ export function indexRaElements(ras: RAHashable[]): Map<string, RAIndexed> {
 }
 
 /**
- * Both of these properties are needed for each row so this function will provide a
- * way to filter them out.
+ * Filters out rows that don't contain all the necessary fields.
  * @param row
  * @returns true if the row is not a compute row.
  */
@@ -55,6 +63,10 @@ export function isNonComputeRow(row: any) {
   }
 
   if (!("predicateName" in row)) {
+    return true;
+  }
+
+  if (!("position" in row)) {
     return true;
   }
 
@@ -91,6 +103,32 @@ export function jsonLogToArrayOfJSON(
 }
 
 /**
+ * Decodes a position string into a position object.
+ * @param position The position string.
+ * @returns A decoded position object.
+ */
+export function decodePositionFromString(position: string): Position {
+  const lastColon = position.lastIndexOf(":");
+
+  const positionPart = position.substring(lastColon + 1);
+  const urlPart = position.substring(0, lastColon);
+
+  const parts = positionPart.split("-");
+  const startLine = parts[0].split(",")[0];
+  const startColumn = parts[0].split(",")[1];
+  const endLine = parts[1].split(",")[0];
+  const endColumn = parts[1].split(",")[1];
+
+  return {
+    url: urlPart,
+    startLine: parseInt(startLine),
+    startColumn: parseInt(startColumn),
+    endLine: parseInt(endLine),
+    endColumn: parseInt(endColumn),
+  };
+}
+
+/**
  * Converts a JSON log to an array of RAHashable objects.
  * @param log The JSON log to convert.
  * @returns An array of RAHashable objects.
@@ -99,21 +137,22 @@ export function jsonLogToRALog(log: any[]): RAHashable[] {
   const raRows: RAHashable[] = [];
 
   for (const row of log) {
-    row.completionTimeUs = new Date(row.completionTime).getTime() * 1000;
-
-    const raHashableRow = row as RAHashable;
-
     // only let these rows contribute
     if (
       !(
-        raHashableRow.evaluationStrategy === "COMPUTE_SIMPLE" ||
-        raHashableRow.evaluationStrategy === "COMPUTE_RECURSIVE" ||
-        raHashableRow.evaluationStrategy === "EXTENSIONAL" ||
-        raHashableRow.evaluationStrategy === "COMPUTED_EXTENSIONAL"
+        row.evaluationStrategy === "COMPUTE_SIMPLE" ||
+        row.evaluationStrategy === "COMPUTE_RECURSIVE" ||
+        row.evaluationStrategy === "EXTENSIONAL" ||
+        row.evaluationStrategy === "COMPUTED_EXTENSIONAL"
       )
     ) {
       continue;
     }
+
+    row.completionTimeUs = new Date(row.completionTime).getTime() * 1000;
+    row.position = decodePositionFromString(row.position);
+
+    const raHashableRow = row as RAHashable;
 
     raRows.push(raHashableRow);
   }
@@ -236,9 +275,9 @@ export function convertJSONSummaryEvaluatorLog(
       callFrame: {
         functionName: e.predicateName,
         scriptId: `${e.raHash}`,
-        url: `RA Hash: ${e.raHash}`,
-        lineNumber: -1,
-        columnNumber: -1,
+        url: `${e.position.url}`,
+        lineNumber: e.position.startLine,
+        columnNumber: e.position.startColumn,
       },
       hitCount: 1, // everything will have just one hit.
       children: dependencies,

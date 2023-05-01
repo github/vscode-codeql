@@ -5,6 +5,7 @@ import * as fs from "fs";
 import {
   RAHashable,
   convertJSONSummaryEvaluatorLog,
+  decodePositionFromString,
   getExecutionBounds,
   indexRaElements,
   isNonComputeRow,
@@ -25,7 +26,11 @@ describe("query history profile converter", () => {
 
   it("should filter the right rows", () => {
     expect(
-      isNonComputeRow({ completionTime: "foo", predicateName: "bar" }),
+      isNonComputeRow({
+        completionTime: "foo",
+        predicateName: "bar",
+        position: "",
+      }),
     ).toBe(false);
     expect(isNonComputeRow({ predicateName: "bar" })).toBe(true);
     expect(isNonComputeRow({ completionTime: "foo" })).toBe(true);
@@ -35,7 +40,7 @@ describe("query history profile converter", () => {
   it("it should read the right number of rows", () => {
     // filtering on
     let rows = jsonLogToArrayOfJSON(logSummary);
-    expect(rows.length).toBe(417);
+    expect(rows.length).toBe(336);
 
     // filtering off
     rows = jsonLogToArrayOfJSON(logSummary, false);
@@ -47,7 +52,22 @@ describe("query history profile converter", () => {
 
     const ras = jsonLogToRALog(rows);
 
-    expect(ras.length).toBe(324);
+    expect(ras.length).toBe(335);
+  });
+
+  it("it should properly decode position data", () => {
+    const p1 = decodePositionFromString("/home/jls.file.file:1,2-3,4");
+    const p2 = decodePositionFromString("C:\\a-path\\jls.file.file:1,2-3,4");
+
+    expect(p1.startLine).toEqual(1);
+    expect(p1.endLine).toEqual(3);
+    expect(p1.startColumn).toEqual(2);
+    expect(p1.endColumn).toEqual(4);
+
+    expect(p2.startLine).toEqual(1);
+    expect(p2.endLine).toEqual(3);
+    expect(p2.startColumn).toEqual(2);
+    expect(p2.endColumn).toEqual(4);
   });
 
   it("it should result compute the right bounds", () => {
@@ -108,6 +128,13 @@ describe("query history profile converter", () => {
         millis: 0,
         predicateName: "",
         dependencies: { obj1: "raHash2" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
       },
       {
         raHash: "raHash2",
@@ -117,6 +144,13 @@ describe("query history profile converter", () => {
         millis: 0,
         predicateName: "",
         dependencies: { obj2: "raHash4", obj3: "raHash2" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
       },
       {
         raHash: "raHash2",
@@ -126,6 +160,13 @@ describe("query history profile converter", () => {
         millis: 0,
         predicateName: "",
         dependencies: { obj4: "raHash4", obj5: "raHash5" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
       },
     ];
 
@@ -147,6 +188,13 @@ describe("query history profile converter", () => {
         evaluationStrategy: "",
         millis: 0,
         predicateName: "",
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
       },
       {
         raHash: "raHash2",
@@ -155,6 +203,13 @@ describe("query history profile converter", () => {
         evaluationStrategy: "",
         millis: 0,
         predicateName: "",
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
       },
     ];
 
@@ -173,6 +228,13 @@ describe("query history profile converter", () => {
         evaluationStrategy: "",
         millis: 0,
         predicateName: "",
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
       },
       {
         raHash: "raHash",
@@ -181,6 +243,13 @@ describe("query history profile converter", () => {
         evaluationStrategy: "",
         millis: 0,
         predicateName: "",
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
       },
     ];
 
