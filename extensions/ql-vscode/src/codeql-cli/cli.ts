@@ -1855,7 +1855,7 @@ export class CliVersionConstraint {
   /**
    * CLI version that supports the `--format betterjsonz` option for the `codeql test run` command.
    */
-  public static CLI_VERSION_WITH_RICH_TEST_EVENTS = new SemVer("2.13.1-dev");
+  public static CLI_VERSION_WITH_RICH_TEST_EVENTS = new SemVer("2.13.1");
 
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
@@ -1928,11 +1928,8 @@ export class CliVersionConstraint {
   }
 
   async supportsRichTestEvents() {
-    /*
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_RICH_TEST_EVENTS,
     );
-    */
-    return true;
   }
 }
