@@ -1,5 +1,5 @@
 import * as React from "react";
-import { render as reactRender, screen } from "@testing-library/react";
+import { render as reactRender, screen, waitFor } from "@testing-library/react";
 import {
   VariantAnalysisFailureReason,
   VariantAnalysisStatus,
@@ -54,11 +54,8 @@ describe(VariantAnalysis.name, () => {
     const variantAnalysis = createMockVariantAnalysis({});
     render({ variantAnalysis });
 
-    // Without this await, `getByDisplayValue` could not find any selected dropdown option.
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(screen.getByDisplayValue("With results")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Number of results")).toBeInTheDocument();
+    await waitFor(() => screen.getByDisplayValue("With results"));
+    await waitFor(() => screen.getByDisplayValue("Number of results"));
 
     await postMessage<ToVariantAnalysisMessage>({
       t: "setVariantAnalysis",
