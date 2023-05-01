@@ -276,7 +276,7 @@ export function convertJSONSummaryEvaluatorLog(
         functionName: e.predicateName,
         scriptId: `${e.raHash}`,
         url: `${e.position.url}`,
-        lineNumber: e.position.startLine,
+        lineNumber: e.position.startLine - 1, // the profiler expects 0-based line numbers
         columnNumber: e.position.startColumn,
       },
       hitCount: 1, // everything will have just one hit.
