@@ -329,7 +329,7 @@
           "patternErrorMessage": "Please enter a valid GitHub repository",
           "markdownDescription": "[For internal use only] The name of the GitHub repository in which the GitHub Actions workflow is run when using the \"Run Variant Analysis\" command. The repository should be of the form `<owner>/<repo>`)."
         },
-        "codeQL.variantAnalysis.filterResults": {
+        "codeQL.variantAnalysis.defaultResultsFilter": {
           "type": "string",
           "default": "withResults",
           "enum": [
@@ -340,9 +340,9 @@
             "Show all repositories in the results view.",
             "Show only repositories with results in the results view."
           ],
-          "description": "The filter to apply to the variant analysis results view."
+          "description": "The default filter to apply to the variant analysis results view."
         },
-        "codeQL.variantAnalysis.sortResults": {
+        "codeQL.variantAnalysis.defaultResultsSort": {
           "type": "string",
           "default": "numberOfResults",
           "enum": [

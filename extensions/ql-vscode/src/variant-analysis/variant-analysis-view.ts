@@ -28,8 +28,8 @@ import { DataFlowPathsView } from "./data-flow-paths-view";
 import { DataFlowPaths } from "./shared/data-flow-paths";
 import { App } from "../common/app";
 import {
-  getVariantAnalysisFilterResults,
-  getVariantAnalysisSortResults,
+  getVariantAnalysisDefaultResultsFilter,
+  getVariantAnalysisDefaultResultsSort,
 } from "../config";
 
 export class VariantAnalysisView
@@ -192,8 +192,8 @@ export class VariantAnalysisView
 
     const filterSortState = {
       searchValue: "",
-      filterKey: getVariantAnalysisFilterResults(),
-      sortKey: getVariantAnalysisSortResults(),
+      filterKey: getVariantAnalysisDefaultResultsFilter(),
+      sortKey: getVariantAnalysisDefaultResultsSort(),
     };
 
     await this.postMessage({

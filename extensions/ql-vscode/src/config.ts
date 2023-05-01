@@ -535,11 +535,11 @@ export class VariantAnalysisConfigListener
 }
 
 const VARIANT_ANALYSIS_FILTER_RESULTS = new Setting(
-  "filterResults",
+  "defaultResultsFilter",
   VARIANT_ANALYSIS_SETTING,
 );
 
-export function getVariantAnalysisFilterResults(): FilterKey {
+export function getVariantAnalysisDefaultResultsFilter(): FilterKey {
   const value = VARIANT_ANALYSIS_FILTER_RESULTS.getValue<string>();
   if (Object.values(FilterKey).includes(value as FilterKey)) {
     return value as FilterKey;
@@ -549,11 +549,11 @@ export function getVariantAnalysisFilterResults(): FilterKey {
 }
 
 const VARIANT_ANALYSIS_SORT_RESULTS = new Setting(
-  "sortResults",
+  "defaultResultsSort",
   VARIANT_ANALYSIS_SETTING,
 );
 
-export function getVariantAnalysisSortResults(): SortKey {
+export function getVariantAnalysisDefaultResultsSort(): SortKey {
   const value = VARIANT_ANALYSIS_SORT_RESULTS.getValue<string>();
   if (Object.values(SortKey).includes(value as SortKey)) {
     return value as SortKey;
