@@ -58,7 +58,7 @@ describe("query history profile converter", () => {
     expect(getExecutionBounds(ras).min).toBeLessThan(
       getExecutionBounds(ras).max,
     );
-    expect(getExecutionBounds(ras).max).toBe(1660167058484000);
+    expect(getExecutionBounds(ras).max).toBe(1660167066709000);
     expect(getExecutionBounds(ras).min).toBe(1660166907957000);
   });
 

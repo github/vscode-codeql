@@ -108,7 +108,8 @@ export function jsonLogToRALog(log: any[]): RAHashable[] {
       !(
         raHashableRow.evaluationStrategy === "COMPUTE_SIMPLE" ||
         raHashableRow.evaluationStrategy === "COMPUTE_RECURSIVE" ||
-        raHashableRow.evaluationStrategy === "EXTENSIONAL"
+        raHashableRow.evaluationStrategy === "EXTENSIONAL" ||
+        raHashableRow.evaluationStrategy === "COMPUTED_EXTENSIONAL"
       )
     ) {
       continue;
@@ -144,7 +145,9 @@ export function pruneRADependencies(
 }
 
 /**
- * Gets the execution bounds of a RA log in terms of the min and max completionTimeUs.
+ * Gets the execution bounds of a RA log in terms of the min and max completionTimeUs. Note that this works by
+ * iterating over the entire log and summing the reported execution times. The reported `min` time is
+ * simply the first timestamp we see.
  * @param raLog The log
  * @returns the ExecutionBounds for the given log.
  */
@@ -152,15 +155,18 @@ export function getExecutionBounds(raLog: RAHashable[]): ExecutionBounds {
   let tsMax = 0;
   let tsMin = 0;
 
+  let tsSum = 0;
+
   for (const row of raLog) {
-    if (tsMax < row.completionTimeUs) {
-      tsMax = row.completionTimeUs;
-    }
+    tsSum = tsSum + row.millis * 1000;
 
     if (tsMin === 0 || row.completionTimeUs < tsMin) {
       tsMin = row.completionTimeUs;
     }
   }
+
+  // the max is the min + the sum of all the millis
+  tsMax = tsMin + tsSum;
 
   return {
     min: tsMin,
@@ -229,10 +235,10 @@ export function convertJSONSummaryEvaluatorLog(
       id: raDatabase.get(e.raHash)!.index,
       callFrame: {
         functionName: e.predicateName,
-        scriptId: "0",
+        scriptId: `${e.raHash}`,
         url: `RA Hash: ${e.raHash}`,
-        lineNumber: 0,
-        columnNumber: 0,
+        lineNumber: -1,
+        columnNumber: -1,
       },
       hitCount: 1, // everything will have just one hit.
       children: dependencies,
@@ -246,8 +252,11 @@ export function convertJSONSummaryEvaluatorLog(
   profile.samples = raRows.map((e) => raDatabase.get(e.raHash)!.index);
 
   ///
-  /// Deltas -- this is the difference in time between the two samples
+  /// Deltas -- this is the difference in time between the two samples.
+  //  Each sample must have at least 1ms of time (otherwise we will travel
+  //  back in time).
   ///
+  //profile.timeDeltas = raRows.map((e) => Math.max(e.millis, 1) * 1000);
   profile.timeDeltas = raRows.map((e) => e.millis * 1000);
 
   ///
