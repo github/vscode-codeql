@@ -199,6 +199,10 @@ export class VariantAnalysisView
     await this.postMessage({
       t: "setVariantAnalysis",
       variantAnalysis,
+    });
+
+    await this.postMessage({
+      t: "setFilterSortState",
       filterSortState,
     });
 

@@ -408,7 +408,11 @@ export interface ParsedResultSets {
 export interface SetVariantAnalysisMessage {
   t: "setVariantAnalysis";
   variantAnalysis: VariantAnalysis;
-  filterSortState?: RepositoriesFilterSortState;
+}
+
+export interface setFilterSortStateMessage {
+  t: "setFilterSortState";
+  filterSortState: RepositoriesFilterSortState;
 }
 
 export type VariantAnalysisState = {
@@ -463,6 +467,7 @@ export interface ShowDataFlowPathsMessage {
 
 export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
+  | setFilterSortStateMessage
   | SetRepoResultsMessage
   | SetRepoStatesMessage;
 

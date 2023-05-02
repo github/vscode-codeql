@@ -58,8 +58,7 @@ describe(VariantAnalysis.name, () => {
     await waitFor(() => screen.getByDisplayValue("Number of results"));
 
     await postMessage<ToVariantAnalysisMessage>({
-      t: "setVariantAnalysis",
-      variantAnalysis,
+      t: "setFilterSortState",
       filterSortState: {
         searchValue: "",
         filterKey: FilterKey.All,
