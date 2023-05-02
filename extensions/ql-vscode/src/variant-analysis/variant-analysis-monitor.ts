@@ -14,6 +14,7 @@ import { sleep } from "../pure/time";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { showAndLogWarningMessage } from "../helpers";
 import { App } from "../common/app";
+import { extLogger } from "../common";
 
 export class VariantAnalysisMonitor extends DisposableObject {
   // With a sleep of 5 seconds, the maximum number of attempts takes
@@ -41,6 +42,8 @@ export class VariantAnalysisMonitor extends DisposableObject {
     let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];
 
+    let lastErrorShown: string | undefined = undefined;
+
     while (attemptCount <= VariantAnalysisMonitor.maxAttemptCount) {
       await sleep(VariantAnalysisMonitor.sleepTime);
 
@@ -56,13 +59,22 @@ export class VariantAnalysisMonitor extends DisposableObject {
           variantAnalysis.id,
         );
       } catch (e) {
-        void showAndLogWarningMessage(
-          `Error while monitoring variant analysis ${
-            variantAnalysis.query.name
-          } (${variantAnalysis.query.language}) [${new Date(
-            variantAnalysis.executionStartTime,
-          ).toLocaleString(env.language)}]: ${getErrorMessage(e)}`,
-        );
+        const errorMessage = getErrorMessage(e);
+
+        const message = `Error while monitoring variant analysis ${
+          variantAnalysis.query.name
+        } (${variantAnalysis.query.language}) [${new Date(
+          variantAnalysis.executionStartTime,
+        ).toLocaleString(env.language)}]: ${errorMessage}`;
+
+        // If we have already shown this error to the user, don't show it again.
+        if (lastErrorShown === errorMessage) {
+          void extLogger.log(message);
+        } else {
+          void showAndLogWarningMessage(message);
+          lastErrorShown = errorMessage;
+        }
+
         continue;
       }
 
@@ -84,6 +96,9 @@ export class VariantAnalysisMonitor extends DisposableObject {
       }
 
       attemptCount++;
+
+      // Reset the last error shown if we have successfully retrieved the variant analysis.
+      lastErrorShown = undefined;
     }
   }
 
