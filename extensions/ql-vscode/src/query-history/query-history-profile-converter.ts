@@ -275,7 +275,8 @@ export function convertJSONSummaryEvaluatorLog(
       callFrame: {
         functionName: e.predicateName,
         scriptId: `${e.raHash}`,
-        url: `${e.position.url}`,
+        //url: `${e.position.url}`,
+        url: `RA HASH: ${e.raHash}`, //`${e.position.url}`,
         lineNumber: e.position.startLine - 1, // the profiler expects 0-based line numbers
         columnNumber: e.position.startColumn,
       },
@@ -285,18 +286,42 @@ export function convertJSONSummaryEvaluatorLog(
     return n;
   });
 
+  //
+  // Profiles require a root node that is the time before profiling starts. We
+  // mock that up here.
+  //
+  const rootNode: P.Profiler.ProfileNode = {
+    id: 0,
+    callFrame: {
+      functionName: "(root)",
+      scriptId: "0",
+      url: "",
+      lineNumber: -1,
+      columnNumber: -1,
+    },
+    hitCount: 0, // everything will have just one hit.
+    children: [],
+  };
+
+  profile.nodes.unshift(rootNode);
+
   ///
   /// Compute samples -- this is really just every id once.
   ///
   profile.samples = raRows.map((e) => raDatabase.get(e.raHash)!.index);
+
+  // Append the padding sample
+  profile.samples.push(0);
 
   ///
   /// Deltas -- this is the difference in time between the two samples.
   //  Each sample must have at least 1ms of time (otherwise we will travel
   //  back in time).
   ///
-  //profile.timeDeltas = raRows.map((e) => Math.max(e.millis, 1) * 1000);
   profile.timeDeltas = raRows.map((e) => e.millis * 1000);
+
+  // Add in the bookend padding sample
+  profile.timeDeltas.unshift(0);
 
   ///
   /// Write out the profile

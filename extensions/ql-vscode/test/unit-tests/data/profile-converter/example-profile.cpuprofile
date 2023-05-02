@@ -1,11 +1,23 @@
 {
   "nodes": [
     {
+      "id": 0,
+      "callFrame": {
+        "functionName": "(root)",
+        "scriptId": "0",
+        "url": "",
+        "lineNumber": -1,
+        "columnNumber": -1
+      },
+      "hitCount": 0,
+      "children": []
+    },
+    {
       "id": 1,
       "callFrame": {
         "functionName": "params",
         "scriptId": "d090e7q4tnlr6h30omabn66n2da",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: d090e7q4tnlr6h30omabn66n2da",
         "lineNumber": 488,
         "columnNumber": 1
       },
@@ -17,7 +29,7 @@
       "callFrame": {
         "functionName": "localvariables",
         "scriptId": "111495kh3b6m9sku94i8oj4pqr3",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 111495kh3b6m9sku94i8oj4pqr3",
         "lineNumber": 513,
         "columnNumber": 1
       },
@@ -29,7 +41,7 @@
       "callFrame": {
         "functionName": "globalvariables",
         "scriptId": "2b4839pss7ki8gosmgnk6jcfjt1",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 2b4839pss7ki8gosmgnk6jcfjt1",
         "lineNumber": 506,
         "columnNumber": 1
       },
@@ -41,7 +53,7 @@
       "callFrame": {
         "functionName": "membervariables",
         "scriptId": "7c37bduotvpfjjrgej2r6r84p4b",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 7c37bduotvpfjjrgej2r6r84p4b",
         "lineNumber": 499,
         "columnNumber": 1
       },
@@ -53,7 +65,7 @@
       "callFrame": {
         "functionName": "stmts",
         "scriptId": "7a398429ti3kj9d80pf7drffoh1",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 7a398429ti3kj9d80pf7drffoh1",
         "lineNumber": 1817,
         "columnNumber": 1
       },
@@ -65,7 +77,7 @@
       "callFrame": {
         "functionName": "exprconv",
         "scriptId": "ff49855htg34cr357mjg0pjpnpf",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: ff49855htg34cr357mjg0pjpnpf",
         "lineNumber": 1065,
         "columnNumber": 1
       },
@@ -77,7 +89,7 @@
       "callFrame": {
         "functionName": "expr_ancestor",
         "scriptId": "4590572fcfvn8d9ukg7kmiigb24",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 4590572fcfvn8d9ukg7kmiigb24",
         "lineNumber": 1442,
         "columnNumber": 1
       },
@@ -89,7 +101,7 @@
       "callFrame": {
         "functionName": "usertypes",
         "scriptId": "c10195ctfthoommu9q08d5rci34",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: c10195ctfthoommu9q08d5rci34",
         "lineNumber": 689,
         "columnNumber": 1
       },
@@ -101,7 +113,7 @@
       "callFrame": {
         "functionName": "initialisers",
         "scriptId": "d39cf8a1icrggbbc4g34qjqsqa1",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: d39cf8a1icrggbbc4g34qjqsqa1",
         "lineNumber": 1431,
         "columnNumber": 1
       },
@@ -113,7 +125,7 @@
       "callFrame": {
         "functionName": "var_def",
         "scriptId": "a427a78knumk074qs3frhkdcsl8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: a427a78knumk074qs3frhkdcsl8",
         "lineNumber": 443,
         "columnNumber": 1
       },
@@ -125,7 +137,7 @@
       "callFrame": {
         "functionName": "var_decls",
         "scriptId": "19e663f6klnnoolnln7bm5fsf2a",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 19e663f6klnnoolnln7bm5fsf2a",
         "lineNumber": 435,
         "columnNumber": 1
       },
@@ -137,7 +149,7 @@
       "callFrame": {
         "functionName": "fun_decls",
         "scriptId": "4993a2gkk04l6oafdrv8j2d47ga",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 4993a2gkk04l6oafdrv8j2d47ga",
         "lineNumber": 396,
         "columnNumber": 1
       },
@@ -149,7 +161,7 @@
       "callFrame": {
         "functionName": "type_decls",
         "scriptId": "24a2balph6rbvqhb3m1k7pjpin0",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 24a2balph6rbvqhb3m1k7pjpin0",
         "lineNumber": 450,
         "columnNumber": 1
       },
@@ -161,7 +173,7 @@
       "callFrame": {
         "functionName": "builtintypes",
         "scriptId": "75ec32pgvetbmdlamosulu2rjef",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 75ec32pgvetbmdlamosulu2rjef",
         "lineNumber": 595,
         "columnNumber": 1
       },
@@ -173,7 +185,7 @@
       "callFrame": {
         "functionName": "derivedtypes",
         "scriptId": "8dfb6bscm7bke1cl6illlc7u8k4",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 8dfb6bscm7bke1cl6illlc7u8k4",
         "lineNumber": 621,
         "columnNumber": 1
       },
@@ -185,7 +197,7 @@
       "callFrame": {
         "functionName": "ptrtomembers",
         "scriptId": "97c6277aqmam35sl31temrfofre",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 97c6277aqmam35sl31temrfofre",
         "lineNumber": 806,
         "columnNumber": 1
       },
@@ -197,7 +209,7 @@
       "callFrame": {
         "functionName": "exprparents",
         "scriptId": "79364e1157kbirt0k84e0i0aec8",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 79364e1157kbirt0k84e0i0aec8",
         "lineNumber": 1102,
         "columnNumber": 1
       },
@@ -209,7 +221,7 @@
       "callFrame": {
         "functionName": "routinetypes",
         "scriptId": "73563dqdgofcni857o7aprhdgr4",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 73563dqdgofcni857o7aprhdgr4",
         "lineNumber": 795,
         "columnNumber": 1
       },
@@ -221,7 +233,7 @@
       "callFrame": {
         "functionName": "decltypes",
         "scriptId": "3a01870sqjgo49g3nrlgg2qsjg4",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 3a01870sqjgo49g3nrlgg2qsjg4",
         "lineNumber": 644,
         "columnNumber": 1
       },
@@ -233,7 +245,7 @@
       "callFrame": {
         "functionName": "exprs",
         "scriptId": "56ea56nfg1f2tdlq3h1ierbst3a",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 56ea56nfg1f2tdlq3h1ierbst3a",
         "lineNumber": 1447,
         "columnNumber": 1
       },
@@ -245,7 +257,7 @@
       "callFrame": {
         "functionName": "usertypes_0#antijoin_rhs",
         "scriptId": "95da6cug8cip2m8k6s57qjd14p4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 95da6cug8cip2m8k6s57qjd14p4",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -259,7 +271,7 @@
       "callFrame": {
         "functionName": "globalvariables_0#antijoin_rhs",
         "scriptId": "ea537b18m1251cdp00lp73c4ss1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: ea537b18m1251cdp00lp73c4ss1",
         "lineNumber": 534,
         "columnNumber": 1
       },
@@ -273,7 +285,7 @@
       "callFrame": {
         "functionName": "usertypes_20#join_rhs",
         "scriptId": "2e3e1ad1ra485cdgeblnafjpie3",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: 2e3e1ad1ra485cdgeblnafjpie3",
         "lineNumber": 112,
         "columnNumber": 3
       },
@@ -287,7 +299,7 @@
       "callFrame": {
         "functionName": "expr_ancestor_10#join_rhs",
         "scriptId": "64953d3ql9fvegp8lv2q4lt4fd0",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Enclosing.qll",
+        "url": "RA HASH: 64953d3ql9fvegp8lv2q4lt4fd0",
         "lineNumber": 16,
         "columnNumber": 1
       },
@@ -301,7 +313,7 @@
       "callFrame": {
         "functionName": "functions",
         "scriptId": "a7bb44o93bk5d64edin5qq128r0",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: a7bb44o93bk5d64edin5qq128r0",
         "lineNumber": 356,
         "columnNumber": 1
       },
@@ -313,7 +325,7 @@
       "callFrame": {
         "functionName": "@type#f",
         "scriptId": "6213c7pqpkgs0qduk1tsu11ab8e",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 6213c7pqpkgs0qduk1tsu11ab8e",
         "lineNumber": 936,
         "columnNumber": 1
       },
@@ -331,7 +343,7 @@
       "callFrame": {
         "functionName": "function_entry_point",
         "scriptId": "b48c04c2s0mmnmg7q1fev8k54d8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: b48c04c2s0mmnmg7q1fev8k54d8",
         "lineNumber": 362,
         "columnNumber": 1
       },
@@ -343,7 +355,7 @@
       "callFrame": {
         "functionName": "stmtparents",
         "scriptId": "3b06515o0l7jaur3nki6ggv7c53",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\stmtparents.rele9a518baf14f4322ac243578a8e1391386ff030f6515381300128294551\\old.dbscheme",
+        "url": "RA HASH: 3b06515o0l7jaur3nki6ggv7c53",
         "lineNumber": 1928,
         "columnNumber": 1
       },
@@ -355,7 +367,7 @@
       "callFrame": {
         "functionName": "ResolveClass::Cached::isClass#eb2868f4#f",
         "scriptId": "d2f6f0vq547an4vgd2l53jm5699",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: d2f6f0vq547an4vgd2l53jm5699",
         "lineNumber": 112,
         "columnNumber": 3
       },
@@ -369,7 +381,7 @@
       "callFrame": {
         "functionName": "iscall",
         "scriptId": "6793187vdajk31pj0ajr52cu85e",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 6793187vdajk31pj0ajr52cu85e",
         "lineNumber": 1154,
         "columnNumber": 1
       },
@@ -381,7 +393,7 @@
       "callFrame": {
         "functionName": "ResolveClass::Cached::isClass#eb2868f4#f",
         "scriptId": "b11d6bcumifg21befashf33b4g3",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: b11d6bcumifg21befashf33b4g3",
         "lineNumber": 112,
         "columnNumber": 3
       },
@@ -393,7 +405,7 @@
       "callFrame": {
         "functionName": "enumconstants",
         "scriptId": "b687f43hut9uaipufkfb5ccnok4",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: b687f43hut9uaipufkfb5ccnok4",
         "lineNumber": 525,
         "columnNumber": 1
       },
@@ -405,7 +417,7 @@
       "callFrame": {
         "functionName": "@variable#f",
         "scriptId": "aeab1cjdifv15av5ftki3347nhe",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: aeab1cjdifv15av5ftki3347nhe",
         "lineNumber": 534,
         "columnNumber": 1
       },
@@ -422,7 +434,7 @@
       "callFrame": {
         "functionName": "folders",
         "scriptId": "0c06f761am45c978h480cggik2e",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 0c06f761am45c978h480cggik2e",
         "lineNumber": 276,
         "columnNumber": 1
       },
@@ -434,7 +446,7 @@
       "callFrame": {
         "functionName": "files",
         "scriptId": "7f5fb8keqhfuljbsrqi6cka5a1f",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 7f5fb8keqhfuljbsrqi6cka5a1f",
         "lineNumber": 271,
         "columnNumber": 1
       },
@@ -446,7 +458,7 @@
       "callFrame": {
         "functionName": "type_def",
         "scriptId": "b4d31fmo7rtktfarajhbi807tj5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: b4d31fmo7rtktfarajhbi807tj5",
         "lineNumber": 455,
         "columnNumber": 1
       },
@@ -458,7 +470,7 @@
       "callFrame": {
         "functionName": "iscall_0#antijoin_rhs",
         "scriptId": "529cf0o8krceqscefq2ru4h0h22",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: 529cf0o8krceqscefq2ru4h0h22",
         "lineNumber": 16,
         "columnNumber": 3
       },
@@ -472,7 +484,7 @@
       "callFrame": {
         "functionName": "attribute_arg_name",
         "scriptId": "cf4be9rr2lpb6fucbt8bi3ts4de",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: cf4be9rr2lpb6fucbt8bi3ts4de",
         "lineNumber": 911,
         "columnNumber": 1
       },
@@ -484,7 +496,7 @@
       "callFrame": {
         "functionName": "fun_def",
         "scriptId": "7b1a5169scls3540rn7l8mc7h59",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 7b1a5169scls3540rn7l8mc7h59",
         "lineNumber": 404,
         "columnNumber": 1
       },
@@ -496,7 +508,7 @@
       "callFrame": {
         "functionName": "File::Container::toString#f0820431#ff",
         "scriptId": "f619196et831u782kri8f1e92qc",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\File.qll",
+        "url": "RA HASH: f619196et831u782kri8f1e92qc",
         "lineNumber": 163,
         "columnNumber": 19
       },
@@ -511,7 +523,7 @@
       "callFrame": {
         "functionName": "@variable#f",
         "scriptId": "4f7caba5dsgk1r6entcv25ano4d",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 4f7caba5dsgk1r6entcv25ano4d",
         "lineNumber": 534,
         "columnNumber": 1
       },
@@ -528,7 +540,7 @@
       "callFrame": {
         "functionName": "attribute_args",
         "scriptId": "5397fd5be48t0ikr4h0f4ccf4f4",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 5397fd5be48t0ikr4h0f4ccf4f4",
         "lineNumber": 888,
         "columnNumber": 1
       },
@@ -540,7 +552,7 @@
       "callFrame": {
         "functionName": "attribute_arg_value",
         "scriptId": "0ec74f4cf2b3ie74lkqi73h2s44",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 0ec74f4cf2b3ie74lkqi73h2s44",
         "lineNumber": 903,
         "columnNumber": 1
       },
@@ -552,7 +564,7 @@
       "callFrame": {
         "functionName": "param_decl_bind",
         "scriptId": "784ecebi2of8g6rj1mgiclc06l3",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 784ecebi2of8g6rj1mgiclc06l3",
         "lineNumber": 429,
         "columnNumber": 1
       },
@@ -564,7 +576,7 @@
       "callFrame": {
         "functionName": "attribute_args_10#join_rhs",
         "scriptId": "3be0580ld116n2jtjpgtodj45v1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 3be0580ld116n2jtjpgtodj45v1",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -578,7 +590,7 @@
       "callFrame": {
         "functionName": "specialnamequalifyingelements",
         "scriptId": "381468i4ncf462h2to5m7bf3mg3",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 381468i4ncf462h2to5m7bf3mg3",
         "lineNumber": 1161,
         "columnNumber": 1
       },
@@ -590,7 +602,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#3",
         "scriptId": "b50f9eclrn7lcuaig2u6g3aha70",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: b50f9eclrn7lcuaig2u6g3aha70",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -604,7 +616,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#2",
         "scriptId": "d77fc6ba27gauq3kreenvqgj01d",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: d77fc6ba27gauq3kreenvqgj01d",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -618,7 +630,7 @@
       "callFrame": {
         "functionName": "namequalifiers",
         "scriptId": "39c36b6ne5vccs9no9kbl54pon0",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 39c36b6ne5vccs9no9kbl54pon0",
         "lineNumber": 1171,
         "columnNumber": 1
       },
@@ -630,7 +642,7 @@
       "callFrame": {
         "functionName": "fold",
         "scriptId": "d6a489c648m2p3ftr9nk05a9abe",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: d6a489c648m2p3ftr9nk05a9abe",
         "lineNumber": 1825,
         "columnNumber": 1
       },
@@ -642,7 +654,7 @@
       "callFrame": {
         "functionName": "namespaces",
         "scriptId": "444594tcomqqm1eeubunuqiiap0",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 444594tcomqqm1eeubunuqiiap0",
         "lineNumber": 1086,
         "columnNumber": 1
       },
@@ -654,7 +666,7 @@
       "callFrame": {
         "functionName": "param_decl_bind_0#antijoin_rhs",
         "scriptId": "76251fa7llqs6brv1h2spucduv7",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 76251fa7llqs6brv1h2spucduv7",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -668,7 +680,7 @@
       "callFrame": {
         "functionName": "static_asserts",
         "scriptId": "2b777ahnpqgcvabqcq3qi6583s7",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 2b777ahnpqgcvabqcq3qi6583s7",
         "lineNumber": 479,
         "columnNumber": 1
       },
@@ -680,7 +692,7 @@
       "callFrame": {
         "functionName": "preprocdirects",
         "scriptId": "501680ijsq1sagbea2uqpclm871",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 501680ijsq1sagbea2uqpclm871",
         "lineNumber": 1967,
         "columnNumber": 1
       },
@@ -692,7 +704,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#shared#1",
         "scriptId": "308849hf6k3tb7n8r58e6n3m98e",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 308849hf6k3tb7n8r58e6n3m98e",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -707,7 +719,7 @@
       "callFrame": {
         "functionName": "query::isStmtWithInitializer#f0820431#f",
         "scriptId": "98bf61n5u6ah253pa33022cb9eb",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\query.ql",
+        "url": "RA HASH: 98bf61n5u6ah253pa33022cb9eb",
         "lineNumber": 12,
         "columnNumber": 1
       },
@@ -721,7 +733,7 @@
       "callFrame": {
         "functionName": "lambda_capture",
         "scriptId": "a91605j57d31u1f53jdg0vp6ngc",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: a91605j57d31u1f53jdg0vp6ngc",
         "lineNumber": 1785,
         "columnNumber": 1
       },
@@ -733,7 +745,7 @@
       "callFrame": {
         "functionName": "usings",
         "scriptId": "4c8bb9rcbu5pit41jrm08ko2ggc",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 4c8bb9rcbu5pit41jrm08ko2ggc",
         "lineNumber": 467,
         "columnNumber": 1
       },
@@ -745,7 +757,7 @@
       "callFrame": {
         "functionName": "Declaration::DeclarationEntry::isDefinition#dispred#f0820431#f",
         "scriptId": "4380772qdcpm8epl3n8qbdtp07c",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: 4380772qdcpm8epl3n8qbdtp07c",
         "lineNumber": 374,
         "columnNumber": 3
       },
@@ -761,7 +773,7 @@
       "callFrame": {
         "functionName": "code_block",
         "scriptId": "92a2f8hcollo3fb0eu1ufbh8fp7",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 92a2f8hcollo3fb0eu1ufbh8fp7",
         "lineNumber": 1788,
         "columnNumber": 1
       },
@@ -773,7 +785,7 @@
       "callFrame": {
         "functionName": "Variable::VariableDeclarationEntry::getName#dispred#f0820431#ff",
         "scriptId": "353354ak9qmtgb2pkdm7f9uv7e3",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Variable.qll",
+        "url": "RA HASH: 353354ak9qmtgb2pkdm7f9uv7e3",
         "lineNumber": 219,
         "columnNumber": 3
       },
@@ -787,7 +799,7 @@
       "callFrame": {
         "functionName": "namespace_decls",
         "scriptId": "321806gb901anaoamipg3hn9dt2",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 321806gb901anaoamipg3hn9dt2",
         "lineNumber": 460,
         "columnNumber": 1
       },
@@ -799,7 +811,7 @@
       "callFrame": {
         "functionName": "type_mentions",
         "scriptId": "d61bf7n1gonre7hd42g75rkhc84",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: d61bf7n1gonre7hd42g75rkhc84",
         "lineNumber": 739,
         "columnNumber": 1
       },
@@ -811,7 +823,7 @@
       "callFrame": {
         "functionName": "frienddecls",
         "scriptId": "d054f4pe8716at0f0vtceu8iqad",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: d054f4pe8716at0f0vtceu8iqad",
         "lineNumber": 997,
         "columnNumber": 1
       },
@@ -823,7 +835,7 @@
       "callFrame": {
         "functionName": "preprocdirects_10#join_rhs",
         "scriptId": "28baa7haapfunikslgv7o507ut3",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Include.qll",
+        "url": "RA HASH: 28baa7haapfunikslgv7o507ut3",
         "lineNumber": 7,
         "columnNumber": 1
       },
@@ -837,7 +849,7 @@
       "callFrame": {
         "functionName": "Variable::ParameterDeclarationEntry::getAnonymousParameterDescription#dispred#f0820431#ff#antijoin_rhs",
         "scriptId": "18e3c2lkfgn912k0p1abcli290b",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Variable.qll",
+        "url": "RA HASH: 18e3c2lkfgn912k0p1abcli290b",
         "lineNumber": 286,
         "columnNumber": 3
       },
@@ -851,7 +863,7 @@
       "callFrame": {
         "functionName": "exprconv_10#join_rhs",
         "scriptId": "d60daaas71d07nq9hqbk1b2vkh4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: d60daaas71d07nq9hqbk1b2vkh4",
         "lineNumber": 30,
         "columnNumber": 17
       },
@@ -865,7 +877,7 @@
       "callFrame": {
         "functionName": "Include::Include#class#feab3531#f#antijoin_rhs#1",
         "scriptId": "be7e81fg31h0iqfctbj95ig6i2d",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Include.qll",
+        "url": "RA HASH: be7e81fg31h0iqfctbj95ig6i2d",
         "lineNumber": 7,
         "columnNumber": 1
       },
@@ -879,7 +891,7 @@
       "callFrame": {
         "functionName": "Include::Include#class#feab3531#f#antijoin_rhs",
         "scriptId": "beecd6738kc8m60pu8t0d11pore",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Include.qll",
+        "url": "RA HASH: beecd6738kc8m60pu8t0d11pore",
         "lineNumber": 7,
         "columnNumber": 1
       },
@@ -893,7 +905,7 @@
       "callFrame": {
         "functionName": "preproctext",
         "scriptId": "1c114bp9vsmb28scf1v9p1u9r6d",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 1c114bp9vsmb28scf1v9p1u9r6d",
         "lineNumber": 2031,
         "columnNumber": 1
       },
@@ -905,7 +917,7 @@
       "callFrame": {
         "functionName": "attributes",
         "scriptId": "dadb21ho5uvf9obbobs26ksqg29",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: dadb21ho5uvf9obbobs26ksqg29",
         "lineNumber": 871,
         "columnNumber": 1
       },
@@ -917,7 +929,7 @@
       "callFrame": {
         "functionName": "macroinvocations",
         "scriptId": "fd93fdj9jivr0o8sgd29ue1aova",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: fd93fdj9jivr0o8sgd29ue1aova",
         "lineNumber": 311,
         "columnNumber": 1
       },
@@ -929,7 +941,7 @@
       "callFrame": {
         "functionName": "attributes_10#join_rhs",
         "scriptId": "27699f98g7217nfv55t6sqbefbf",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 27699f98g7217nfv55t6sqbefbf",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -943,7 +955,7 @@
       "callFrame": {
         "functionName": "Include::Include#class#feab3531#f",
         "scriptId": "fe3d9cc3kj3h9f3j44ks89em3e9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Include.qll",
+        "url": "RA HASH: fe3d9cc3kj3h9f3j44ks89em3e9",
         "lineNumber": 7,
         "columnNumber": 1
       },
@@ -959,7 +971,7 @@
       "callFrame": {
         "functionName": "derivations",
         "scriptId": "447923iinm6l2kruaksrq3faq39",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 447923iinm6l2kruaksrq3faq39",
         "lineNumber": 962,
         "columnNumber": 1
       },
@@ -971,7 +983,7 @@
       "callFrame": {
         "functionName": "Macro::Macro::getBody#dispred#f0820431#ff",
         "scriptId": "53f3bfvkvtrloq2kj50bh0oi2gc",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Macro.qll",
+        "url": "RA HASH: 53f3bfvkvtrloq2kj50bh0oi2gc",
         "lineNumber": 17,
         "columnNumber": 3
       },
@@ -986,7 +998,7 @@
       "callFrame": {
         "functionName": "Macro::Macro::getHead#dispred#f0820431#ff",
         "scriptId": "3078ad36ujp52jqnbt1g2n5t5dd",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Macro.qll",
+        "url": "RA HASH: 3078ad36ujp52jqnbt1g2n5t5dd",
         "lineNumber": 9,
         "columnNumber": 3
       },
@@ -1001,7 +1013,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#1",
         "scriptId": "4545fafjnspbjqno642udv7it0a",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 4545fafjnspbjqno642udv7it0a",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -1015,7 +1027,7 @@
       "callFrame": {
         "functionName": "Macro::Macro::getBody#dispred#f0820431#ff_10#join_rhs",
         "scriptId": "a3a788jger39gvndri8d6q3g8ra",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: a3a788jger39gvndri8d6q3g8ra",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -1029,7 +1041,7 @@
       "callFrame": {
         "functionName": "diagnostics",
         "scriptId": "a154fejk0bt293sdhr9g2jmjjec",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: a154fejk0bt293sdhr9g2jmjjec",
         "lineNumber": 262,
         "columnNumber": 1
       },
@@ -1041,7 +1053,7 @@
       "callFrame": {
         "functionName": "xmlEncoding",
         "scriptId": "b4ddc7rul83mhlsgo7a5b764qq4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: b4ddc7rul83mhlsgo7a5b764qq4",
         "lineNumber": 2054,
         "columnNumber": 1
       },
@@ -1053,7 +1065,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#7",
         "scriptId": "ef427dd6m7f8gupqpreoiuniag2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: ef427dd6m7f8gupqpreoiuniag2",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -1067,7 +1079,7 @@
       "callFrame": {
         "functionName": "specifiers",
         "scriptId": "4020f4d16rf6lcptf7bb3of07r8",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 4020f4d16rf6lcptf7bb3of07r8",
         "lineNumber": 851,
         "columnNumber": 1
       },
@@ -1079,7 +1091,7 @@
       "callFrame": {
         "functionName": "files_0#antijoin_rhs",
         "scriptId": "316d2bvq9gc8l3gu5gqstr5d7l4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 316d2bvq9gc8l3gu5gqstr5d7l4",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -1093,7 +1105,7 @@
       "callFrame": {
         "functionName": "namespaces_10#join_rhs",
         "scriptId": "bbe9fb5po52vsvate2rmm1of253",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Namespace.qll",
+        "url": "RA HASH: bbe9fb5po52vsvate2rmm1of253",
         "lineNumber": 33,
         "columnNumber": 7
       },
@@ -1107,7 +1119,7 @@
       "callFrame": {
         "functionName": "comments",
         "scriptId": "5aefd6p057qvie5nbj3umh56100",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\old.dbscheme",
+        "url": "RA HASH: 5aefd6p057qvie5nbj3umh56100",
         "lineNumber": 1054,
         "columnNumber": 1
       },
@@ -1119,7 +1131,7 @@
       "callFrame": {
         "functionName": "stmts_10#join_rhs",
         "scriptId": "cc41237e8dcp25luvv67lgoqq8e",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\stmts\\Stmt.qll",
+        "url": "RA HASH: cc41237e8dcp25luvv67lgoqq8e",
         "lineNumber": 12,
         "columnNumber": 3
       },
@@ -1133,7 +1145,7 @@
       "callFrame": {
         "functionName": "condition_decl_bind",
         "scriptId": "bf56137euh0fd2peclmsni20cl0",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: bf56137euh0fd2peclmsni20cl0",
         "lineNumber": 1766,
         "columnNumber": 1
       },
@@ -1145,7 +1157,7 @@
       "callFrame": {
         "functionName": "Namespace::Namespace_not_GlobalNamespace#f#antijoin_rhs",
         "scriptId": "14c8f7srs7hjdsujsavtbn3hk2f",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Namespace.qll",
+        "url": "RA HASH: 14c8f7srs7hjdsujsavtbn3hk2f",
         "lineNumber": 33,
         "columnNumber": 7
       },
@@ -1159,7 +1171,7 @@
       "callFrame": {
         "functionName": "mangled_name",
         "scriptId": "9dde677pk65e919mh1g5an4c15f",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 9dde677pk65e919mh1g5an4c15f",
         "lineNumber": 708,
         "columnNumber": 1
       },
@@ -1171,7 +1183,7 @@
       "callFrame": {
         "functionName": "m#Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf",
         "scriptId": "978811c5o0qbdc4pjgtkfiu8t25",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Preprocessor.qll",
+        "url": "RA HASH: 978811c5o0qbdc4pjgtkfiu8t25",
         "lineNumber": 18,
         "columnNumber": 3
       },
@@ -1186,7 +1198,7 @@
       "callFrame": {
         "functionName": "Declaration::DeclarationEntry#class#4bfb53be#b",
         "scriptId": "53bd06glhfc50e4rbbm2igj18f3",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: 53bd06glhfc50e4rbbm2igj18f3",
         "lineNumber": 305,
         "columnNumber": 1
       },
@@ -1203,7 +1215,7 @@
       "callFrame": {
         "functionName": "Namespace::Namespace_not_GlobalNamespace#f",
         "scriptId": "043459orchlrqv4sai5fg45irc0",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Namespace.qll",
+        "url": "RA HASH: 043459orchlrqv4sai5fg45irc0",
         "lineNumber": 33,
         "columnNumber": 7
       },
@@ -1218,7 +1230,7 @@
       "callFrame": {
         "functionName": "is_complete",
         "scriptId": "4cf88ad62gq66tq7mn9m2c22fke",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 4cf88ad62gq66tq7mn9m2c22fke",
         "lineNumber": 716,
         "columnNumber": 1
       },
@@ -1230,7 +1242,7 @@
       "callFrame": {
         "functionName": "mangled_name#nonempty",
         "scriptId": "2541ecufo3fdpvep3bn7frdvigf",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 2541ecufo3fdpvep3bn7frdvigf",
         "lineNumber": 708,
         "columnNumber": 1
       },
@@ -1244,7 +1256,7 @@
       "callFrame": {
         "functionName": "stmt_decl_entry_bind",
         "scriptId": "3f163d4af7900535i0ep6qcm043",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 3f163d4af7900535i0ep6qcm043",
         "lineNumber": 1973,
         "columnNumber": 1
       },
@@ -1256,7 +1268,7 @@
       "callFrame": {
         "functionName": "ResolveClass::getTopLevelClassName#eb2868f4#ff#shared",
         "scriptId": "0d4a79svtjl4ht8hft5j1pmuf52",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: 0d4a79svtjl4ht8hft5j1pmuf52",
         "lineNumber": 2,
         "columnNumber": 1
       },
@@ -1270,7 +1282,7 @@
       "callFrame": {
         "functionName": "Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf",
         "scriptId": "0f7c33rvva1q5o73e7rmh846d8d",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Preprocessor.qll",
+        "url": "RA HASH: 0f7c33rvva1q5o73e7rmh846d8d",
         "lineNumber": 18,
         "columnNumber": 3
       },
@@ -1285,7 +1297,7 @@
       "callFrame": {
         "functionName": "Preprocessor::PreprocessorDirective::getHead#dispred#f0820431#bf_0#antijoin_rhs",
         "scriptId": "6fcdc4ofh2j031br94ekahnsji1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 6fcdc4ofh2j031br94ekahnsji1",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -1299,7 +1311,7 @@
       "callFrame": {
         "functionName": "Include::Include::getIncludeText#dispred#f0820431#ff",
         "scriptId": "6b0274766b43hptkbrj5a18g49b",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Include.qll",
+        "url": "RA HASH: 6b0274766b43hptkbrj5a18g49b",
         "lineNumber": 21,
         "columnNumber": 3
       },
@@ -1314,7 +1326,7 @@
       "callFrame": {
         "functionName": "stmt_decl_entry_bind_20#join_rhs",
         "scriptId": "e898d66lt2s4g1v7pfsi2c9erpb",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\stmts\\Stmt.qll",
+        "url": "RA HASH: e898d66lt2s4g1v7pfsi2c9erpb",
         "lineNumber": 1992,
         "columnNumber": 3
       },
@@ -1328,7 +1340,7 @@
       "callFrame": {
         "functionName": "Stmt::DeclStmt::getADeclarationEntry#dispred#f0820431#fb",
         "scriptId": "505e6ea2mhjek37vqvqrs427hbe",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\stmts\\Stmt.qll",
+        "url": "RA HASH: 505e6ea2mhjek37vqvqrs427hbe",
         "lineNumber": 1992,
         "columnNumber": 3
       },
@@ -1344,7 +1356,7 @@
       "callFrame": {
         "functionName": "ResolveClass::getClassMangledName#eb2868f4#ff",
         "scriptId": "24f6c7258i58t3au89ufllt6ms0",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: 24f6c7258i58t3au89ufllt6ms0",
         "lineNumber": 56,
         "columnNumber": 1
       },
@@ -1359,7 +1371,7 @@
       "callFrame": {
         "functionName": "Enclosing::exprEnclosingElement#c50c5fbf#ff#join_rhs#2",
         "scriptId": "68001b2olgt0tikfpqi95jkjtk7",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Enclosing.qll",
+        "url": "RA HASH: 68001b2olgt0tikfpqi95jkjtk7",
         "lineNumber": 16,
         "columnNumber": 1
       },
@@ -1374,7 +1386,7 @@
       "callFrame": {
         "functionName": "Stmt::DeclStmt::getADeclarationEntry#dispred#f0820431#fb_1#antijoin_rhs",
         "scriptId": "e8cb85hfaacsp54kv4ahf3psr78",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Enclosing.qll",
+        "url": "RA HASH: e8cb85hfaacsp54kv4ahf3psr78",
         "lineNumber": 16,
         "columnNumber": 1
       },
@@ -1388,7 +1400,7 @@
       "callFrame": {
         "functionName": "attribute_arg_type",
         "scriptId": "159a5ck9l5gc4rkuffddgg6484a",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 159a5ck9l5gc4rkuffddgg6484a",
         "lineNumber": 907,
         "columnNumber": 1
       },
@@ -1400,7 +1412,7 @@
       "callFrame": {
         "functionName": "uuidof_bind",
         "scriptId": "49faa0ae1cr3aftuf4m6qedgrk3",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 49faa0ae1cr3aftuf4m6qedgrk3",
         "lineNumber": 1776,
         "columnNumber": 1
       },
@@ -1412,7 +1424,7 @@
       "callFrame": {
         "functionName": "var_decls_10#join_rhs",
         "scriptId": "5bd5003rk4pdjj92bept8iflv86",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveGlobalVariable.qll",
+        "url": "RA HASH: 5bd5003rk4pdjj92bept8iflv86",
         "lineNumber": 0,
         "columnNumber": 1
       },
@@ -1426,7 +1438,7 @@
       "callFrame": {
         "functionName": "ResolveGlobalVariable::hasDefinition#ac30c42f#f",
         "scriptId": "54f1df5eanrq6mjkq3tcl99es38",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveGlobalVariable.qll",
+        "url": "RA HASH: 54f1df5eanrq6mjkq3tcl99es38",
         "lineNumber": 0,
         "columnNumber": 1
       },
@@ -1442,7 +1454,7 @@
       "callFrame": {
         "functionName": "ResolveGlobalVariable::onlyOneCompleteGlobalVariableExistsWithMangledName#ac30c42f#f#count_range",
         "scriptId": "a340a0hq5pu18lqq2orc5lh2e5b",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveGlobalVariable.qll",
+        "url": "RA HASH: a340a0hq5pu18lqq2orc5lh2e5b",
         "lineNumber": 4,
         "columnNumber": 1
       },
@@ -1457,7 +1469,7 @@
       "callFrame": {
         "functionName": "ResolveClass::onlyOneCompleteClassExistsWithMangledName#eb2868f4#f#count_range",
         "scriptId": "e77559gj95512343upkandsesn8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: e77559gj95512343upkandsesn8",
         "lineNumber": 70,
         "columnNumber": 1
       },
@@ -1472,7 +1484,7 @@
       "callFrame": {
         "functionName": "ResolveGlobalVariable::Cached::resolveGlobalVariable#ac30c42f#ff",
         "scriptId": "cf84577uk1kr0arjnjkiqfrlroe",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveGlobalVariable.qll",
+        "url": "RA HASH: cf84577uk1kr0arjnjkiqfrlroe",
         "lineNumber": 37,
         "columnNumber": 3
       },
@@ -1486,7 +1498,7 @@
       "callFrame": {
         "functionName": "values",
         "scriptId": "f6ff4eq4hh9l66jo2q6fgp5mck3",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: f6ff4eq4hh9l66jo2q6fgp5mck3",
         "lineNumber": 1376,
         "columnNumber": 1
       },
@@ -1498,7 +1510,7 @@
       "callFrame": {
         "functionName": "ResolveGlobalVariable::Cached::resolveGlobalVariable#ac30c42f#ff",
         "scriptId": "da85a8769r62cskd8idv6dtinb2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveGlobalVariable.qll",
+        "url": "RA HASH: da85a8769r62cskd8idv6dtinb2",
         "lineNumber": 37,
         "columnNumber": 3
       },
@@ -1510,7 +1522,7 @@
       "callFrame": {
         "functionName": "Namespace::Namespace::getQualifiedName#f0820431#ff",
         "scriptId": "4b68f8u8413f0cq0kdllnq3rk72",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Namespace.qll",
+        "url": "RA HASH: 4b68f8u8413f0cq0kdllnq3rk72",
         "lineNumber": 61,
         "columnNumber": 10
       },
@@ -1524,7 +1536,7 @@
       "callFrame": {
         "functionName": "Namespace::Namespace::getFriendlyName#dispred#f0820431#ff",
         "scriptId": "d03d3a4c88ofr5ctj9n4i7ra3e4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Namespace.qll",
+        "url": "RA HASH: d03d3a4c88ofr5ctj9n4i7ra3e4",
         "lineNumber": 91,
         "columnNumber": 3
       },
@@ -1540,7 +1552,7 @@
       "callFrame": {
         "functionName": "funbind",
         "scriptId": "8057edi8viiq0fbb2ut69d46dj9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 8057edi8viiq0fbb2ut69d46dj9",
         "lineNumber": 1183,
         "columnNumber": 1
       },
@@ -1552,7 +1564,7 @@
       "callFrame": {
         "functionName": "ResolveClass::onlyOneCompleteClassExistsWithMangledName#eb2868f4#f#join_rhs",
         "scriptId": "6ddbfbs40ktkq0tbgg3jo0d16na",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: 6ddbfbs40ktkq0tbgg3jo0d16na",
         "lineNumber": 70,
         "columnNumber": 1
       },
@@ -1566,7 +1578,7 @@
       "callFrame": {
         "functionName": "ResolveClass::onlyOneCompleteClassExistsWithMangledName#eb2868f4#f",
         "scriptId": "2a73c1n2oqmj5vtv6a75vfpk675",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: 2a73c1n2oqmj5vtv6a75vfpk675",
         "lineNumber": 70,
         "columnNumber": 1
       },
@@ -1580,7 +1592,7 @@
       "callFrame": {
         "functionName": "ResolveClass::existsCompleteWithMangledName#eb2868f4#ff",
         "scriptId": "2486303f27joo9g68ndelhdd1j1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: 2486303f27joo9g68ndelhdd1j1",
         "lineNumber": 62,
         "columnNumber": 1
       },
@@ -1595,7 +1607,7 @@
       "callFrame": {
         "functionName": "locations_expr",
         "scriptId": "e2f48di291bqfs3semk6idgdah5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: e2f48di291bqfs3semk6idgdah5",
         "lineNumber": 235,
         "columnNumber": 1
       },
@@ -1607,7 +1619,7 @@
       "callFrame": {
         "functionName": "ResolveClass::existsIncompleteWithMangledName#eb2868f4#ff",
         "scriptId": "f7c4b0r48rsta8gb5akjv7vbslb",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: f7c4b0r48rsta8gb5akjv7vbslb",
         "lineNumber": 75,
         "columnNumber": 1
       },
@@ -1622,7 +1634,7 @@
       "callFrame": {
         "functionName": "Initializer::Initializer::getDeclaration#dispred#f0820431#ff",
         "scriptId": "dcf789h5id6rmfuakkdfasd7ldf",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Initializer.qll",
+        "url": "RA HASH: dcf789h5id6rmfuakkdfasd7ldf",
         "lineNumber": 41,
         "columnNumber": 3
       },
@@ -1638,7 +1650,7 @@
       "callFrame": {
         "functionName": "ResolveClass::hasCompleteTwin#eb2868f4#ff",
         "scriptId": "fd2927uc5kgg4fgdg23loun2n2a",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: fd2927uc5kgg4fgdg23loun2n2a",
         "lineNumber": 82,
         "columnNumber": 1
       },
@@ -1653,7 +1665,7 @@
       "callFrame": {
         "functionName": "ResolveGlobalVariable::Cached::isVariable#ac30c42f#f",
         "scriptId": "7a1066u856ha7tjitscgkbadhf9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveGlobalVariable.qll",
+        "url": "RA HASH: 7a1066u856ha7tjitscgkbadhf9",
         "lineNumber": 50,
         "columnNumber": 3
       },
@@ -1669,7 +1681,7 @@
       "callFrame": {
         "functionName": "Initializer::Initializer::getDeclaration#dispred#f0820431#ff_0#antijoin_rhs",
         "scriptId": "3b7d11p4c4e9mvbu14hc5b84t0e",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 3b7d11p4c4e9mvbu14hc5b84t0e",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -1683,7 +1695,7 @@
       "callFrame": {
         "functionName": "project#ResolveClass::hasCompleteTwin#eb2868f4#ff",
         "scriptId": "e5b4bcorh0d4gtsdi1d05545s71",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: e5b4bcorh0d4gtsdi1d05545s71",
         "lineNumber": 82,
         "columnNumber": 1
       },
@@ -1697,7 +1709,7 @@
       "callFrame": {
         "functionName": "ResolveGlobalVariable::Cached::isVariable#ac30c42f#f",
         "scriptId": "820e54uma8ge48bt57kubqkdag1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveGlobalVariable.qll",
+        "url": "RA HASH: 820e54uma8ge48bt57kubqkdag1",
         "lineNumber": 50,
         "columnNumber": 3
       },
@@ -1709,7 +1721,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#shared#2",
         "scriptId": "27c8c1dcq39mrl2s05gje3qc74c",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 27c8c1dcq39mrl2s05gje3qc74c",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -1724,7 +1736,7 @@
       "callFrame": {
         "functionName": "ResolveClass::Cached::resolveClass#eb2868f4#ff",
         "scriptId": "b2a97emm8g2borqss3q1ithbsf1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: b2a97emm8g2borqss3q1ithbsf1",
         "lineNumber": 97,
         "columnNumber": 3
       },
@@ -1740,7 +1752,7 @@
       "callFrame": {
         "functionName": "project#ResolveClass::Cached::resolveClass#eb2868f4#ff",
         "scriptId": "071b3ddctqfv392jbrqadrlvta8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: 071b3ddctqfv392jbrqadrlvta8",
         "lineNumber": 97,
         "columnNumber": 3
       },
@@ -1754,7 +1766,7 @@
       "callFrame": {
         "functionName": "Parameter::Parameter#class#ed81dd8f#f",
         "scriptId": "39d5d2nccctdkfs67nb5ehta6ge",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Parameter.qll",
+        "url": "RA HASH: 39d5d2nccctdkfs67nb5ehta6ge",
         "lineNumber": 8,
         "columnNumber": 1
       },
@@ -1769,7 +1781,7 @@
       "callFrame": {
         "functionName": "ResolveClass::Cached::resolveClass#eb2868f4#ff",
         "scriptId": "6425a8tgaaqfsggujsb60fqkuqe",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: 6425a8tgaaqfsggujsb60fqkuqe",
         "lineNumber": 97,
         "columnNumber": 3
       },
@@ -1781,7 +1793,7 @@
       "callFrame": {
         "functionName": "project#Initializer::Initializer::getDeclaration#dispred#f0820431#ff",
         "scriptId": "55d114f4sdqi2stctc8vhkfvuj8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Initializer.qll",
+        "url": "RA HASH: 55d114f4sdqi2stctc8vhkfvuj8",
         "lineNumber": 41,
         "columnNumber": 3
       },
@@ -1795,7 +1807,7 @@
       "callFrame": {
         "functionName": "Parameter::Parameter#class#ed81dd8f#b",
         "scriptId": "e700ffcbm2nvau0qc6991ke8ahb",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Parameter.qll",
+        "url": "RA HASH: e700ffcbm2nvau0qc6991ke8ahb",
         "lineNumber": 8,
         "columnNumber": 1
       },
@@ -1811,7 +1823,7 @@
       "callFrame": {
         "functionName": "Parameter::Parameter::getIndex#dispred#f0820431#ff",
         "scriptId": "9794f2ntc3dscnec46gnipss9g9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Parameter.qll",
+        "url": "RA HASH: 9794f2ntc3dscnec46gnipss9g9",
         "lineNumber": 120,
         "columnNumber": 3
       },
@@ -1826,7 +1838,7 @@
       "callFrame": {
         "functionName": "ResolveClass::Cached::isType#eb2868f4#f",
         "scriptId": "1fc9ac6onv7vaupqcmfcd4cpcb0",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: 1fc9ac6onv7vaupqcmfcd4cpcb0",
         "lineNumber": 126,
         "columnNumber": 3
       },
@@ -1842,7 +1854,7 @@
       "callFrame": {
         "functionName": "member",
         "scriptId": "8b3f22jtvpn0s9e0s4dgoden071",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 8b3f22jtvpn0s9e0s4dgoden071",
         "lineNumber": 949,
         "columnNumber": 1
       },
@@ -1854,7 +1866,7 @@
       "callFrame": {
         "functionName": "ResolveClass::Cached::isType#eb2868f4#f",
         "scriptId": "34c70bu24f3qru86sj48qiih5d9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\internal\\ResolveClass.qll",
+        "url": "RA HASH: 34c70bu24f3qru86sj48qiih5d9",
         "lineNumber": 126,
         "columnNumber": 3
       },
@@ -1866,7 +1878,7 @@
       "callFrame": {
         "functionName": "sizeof_bind",
         "scriptId": "28ea22saqlal1d6bsnrqagq7mo9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 28ea22saqlal1d6bsnrqagq7mo9",
         "lineNumber": 1783,
         "columnNumber": 1
       },
@@ -1878,7 +1890,7 @@
       "callFrame": {
         "functionName": "#select#query#fff",
         "scriptId": "139654uu97n1nhv6pvidnh51q27",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\stmtparents.rele9a518baf14f4322ac243578a8e1391386ff030f6515381300128294551\\query.ql",
+        "url": "RA HASH: 139654uu97n1nhv6pvidnh51q27",
         "lineNumber": 12,
         "columnNumber": 1
       },
@@ -1893,7 +1905,7 @@
       "callFrame": {
         "functionName": "varbind",
         "scriptId": "b770b3dd00tr01siqj3tgilh4q2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: b770b3dd00tr01siqj3tgilh4q2",
         "lineNumber": 1178,
         "columnNumber": 1
       },
@@ -1905,7 +1917,7 @@
       "callFrame": {
         "functionName": "Type::RoutineType#class#2e8eb3ef#f",
         "scriptId": "c28897b38t1afpec2hvnpfsfci5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Type.qll",
+        "url": "RA HASH: c28897b38t1afpec2hvnpfsfci5",
         "lineNumber": 1552,
         "columnNumber": 1
       },
@@ -1920,7 +1932,7 @@
       "callFrame": {
         "functionName": "#select#query#fff",
         "scriptId": "1f8231p17fv7mnmfdrhkkrd17bf",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\stmtparents.rele9a518baf14f4322ac243578a8e1391386ff030f6515381300128294551\\query.ql",
+        "url": "RA HASH: 1f8231p17fv7mnmfdrhkkrd17bf",
         "lineNumber": 12,
         "columnNumber": 1
       },
@@ -1932,7 +1944,7 @@
       "callFrame": {
         "functionName": "Declaration::DeclarationEntry::getDeclaration#dispred#f0820431#bf",
         "scriptId": "df7d4cm0530dpn7gltrte6te2b2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: df7d4cm0530dpn7gltrte6te2b2",
         "lineNumber": 334,
         "columnNumber": 3
       },
@@ -1953,7 +1965,7 @@
       "callFrame": {
         "functionName": "Type::DerivedType::getName#dispred#f0820431#ff",
         "scriptId": "4773123to6rq2m662d9guv6kgp8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Type.qll",
+        "url": "RA HASH: 4773123to6rq2m662d9guv6kgp8",
         "lineNumber": 1071,
         "columnNumber": 3
       },
@@ -1968,7 +1980,7 @@
       "callFrame": {
         "functionName": "UserType::UserType#class#f5951597#f",
         "scriptId": "67426dr56f0inkn51godckpilca",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\UserType.qll",
+        "url": "RA HASH: 67426dr56f0inkn51godckpilca",
         "lineNumber": 10,
         "columnNumber": 1
       },
@@ -1983,7 +1995,7 @@
       "callFrame": {
         "functionName": "type_decls_10#join_rhs",
         "scriptId": "7b8a876g23n9dr3ks45vfadgdc1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\UserType.qll",
+        "url": "RA HASH: 7b8a876g23n9dr3ks45vfadgdc1",
         "lineNumber": 115,
         "columnNumber": 3
       },
@@ -1997,7 +2009,7 @@
       "callFrame": {
         "functionName": "UserType::UserType::getName#dispred#f0820431#ff",
         "scriptId": "3dfdadperuubb8o68dmb96utja1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\UserType.qll",
+        "url": "RA HASH: 3dfdadperuubb8o68dmb96utja1",
         "lineNumber": 21,
         "columnNumber": 3
       },
@@ -2012,7 +2024,7 @@
       "callFrame": {
         "functionName": "Type::BuiltInType::getName#dispred#f0820431#ff",
         "scriptId": "e7f9a01c1msggqhhikklo0pdhr2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Type.qll",
+        "url": "RA HASH: e7f9a01c1msggqhhikklo0pdhr2",
         "lineNumber": 309,
         "columnNumber": 3
       },
@@ -2027,7 +2039,7 @@
       "callFrame": {
         "functionName": "Class::Class#bacd9b46#f",
         "scriptId": "f6e9b02njp6rh9im38j6aidq5fc",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Class.qll",
+        "url": "RA HASH: f6e9b02njp6rh9im38j6aidq5fc",
         "lineNumber": 33,
         "columnNumber": 3
       },
@@ -2042,7 +2054,7 @@
       "callFrame": {
         "functionName": "UserType::TypeDeclarationEntry::getType#dispred#f0820431#ff",
         "scriptId": "856bd8g3beni7tivlef0l68lcsc",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\UserType.qll",
+        "url": "RA HASH: 856bd8g3beni7tivlef0l68lcsc",
         "lineNumber": 115,
         "columnNumber": 3
       },
@@ -2060,7 +2072,7 @@
       "callFrame": {
         "functionName": "NameQualifiers::NameQualifyingElement::getName#dispred#f0820431#ff",
         "scriptId": "ea2afe07afeq5c0qedoi4b2i8ca",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\NameQualifiers.qll",
+        "url": "RA HASH: ea2afe07afeq5c0qedoi4b2i8ca",
         "lineNumber": 153,
         "columnNumber": 3
       },
@@ -2076,7 +2088,7 @@
       "callFrame": {
         "functionName": "Type::RoutineType::getReturnType#dispred#f0820431#ff",
         "scriptId": "b325f9lien7jldmkh4vm7621vf2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Type.qll",
+        "url": "RA HASH: b325f9lien7jldmkh4vm7621vf2",
         "lineNumber": 1582,
         "columnNumber": 3
       },
@@ -2094,7 +2106,7 @@
       "callFrame": {
         "functionName": "Type::Type::getName#dispred#f0820431#ff",
         "scriptId": "eb8ebemc6a7n611tcuppt8sld23",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Type.qll",
+        "url": "RA HASH: eb8ebemc6a7n611tcuppt8sld23",
         "lineNumber": 16,
         "columnNumber": 3
       },
@@ -2111,7 +2123,7 @@
       "callFrame": {
         "functionName": "Cast::SizeofTypeOperator::getTypeOperand#dispred#f0820431#ff",
         "scriptId": "d1b01bjc2t7rp353m3lk73m0948",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Cast.qll",
+        "url": "RA HASH: d1b01bjc2t7rp353m3lk73m0948",
         "lineNumber": 744,
         "columnNumber": 3
       },
@@ -2129,7 +2141,7 @@
       "callFrame": {
         "functionName": "Class::Class::getCanonicalMember#dispred#f0820431#fff",
         "scriptId": "2aefc4brogs8rusuui4tm6f0151",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Class.qll",
+        "url": "RA HASH: 2aefc4brogs8rusuui4tm6f0151",
         "lineNumber": 90,
         "columnNumber": 3
       },
@@ -2147,7 +2159,7 @@
       "callFrame": {
         "functionName": "Class::Class::getCanonicalMember#dispred#f0820431#fff_201#join_rhs",
         "scriptId": "314c00k0mhdh4m1t6abvddoiv61",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Class.qll",
+        "url": "RA HASH: 314c00k0mhdh4m1t6abvddoiv61",
         "lineNumber": 100,
         "columnNumber": 3
       },
@@ -2161,7 +2173,7 @@
       "callFrame": {
         "functionName": "function_return_type",
         "scriptId": "4e3186khqch4qtd1tnvnj98jcpa",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 4e3186khqch4qtd1tnvnj98jcpa",
         "lineNumber": 364,
         "columnNumber": 1
       },
@@ -2173,7 +2185,7 @@
       "callFrame": {
         "functionName": "Declaration::DeclarationEntry::getName#dispred#f0820431#ff",
         "scriptId": "10891e0b6kqnofs5lijpa8n6uvb",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: 10891e0b6kqnofs5lijpa8n6uvb",
         "lineNumber": 347,
         "columnNumber": 3
       },
@@ -2190,7 +2202,7 @@
       "callFrame": {
         "functionName": "Variable::VariableDeclarationEntry::getVariable#dispred#f0820431#ff",
         "scriptId": "bc104abs54s5689em991rl86ek1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Variable.qll",
+        "url": "RA HASH: bc104abs54s5689em991rl86ek1",
         "lineNumber": 214,
         "columnNumber": 3
       },
@@ -2206,7 +2218,7 @@
       "callFrame": {
         "functionName": "function_instantiation",
         "scriptId": "fcd39e3da9fuas537fmf6kpikd9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: fcd39e3da9fuas537fmf6kpikd9",
         "lineNumber": 748,
         "columnNumber": 1
       },
@@ -2218,7 +2230,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#shared#3",
         "scriptId": "e499a9mq61dhg1mgj0v4ov4he23",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: e499a9mq61dhg1mgj0v4ov4he23",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -2233,7 +2245,7 @@
       "callFrame": {
         "functionName": "fun_specialized",
         "scriptId": "2d34b92m5gvjgjeu4u5up5vp6b4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 2d34b92m5gvjgjeu4u5up5vp6b4",
         "lineNumber": 405,
         "columnNumber": 1
       },
@@ -2245,7 +2257,7 @@
       "callFrame": {
         "functionName": "fun_decls_10#join_rhs",
         "scriptId": "5c921acmlc3li7ajiat2auo4bsb",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Function.qll",
+        "url": "RA HASH: 5c921acmlc3li7ajiat2auo4bsb",
         "lineNumber": 224,
         "columnNumber": 3
       },
@@ -2259,7 +2271,7 @@
       "callFrame": {
         "functionName": "fun_decls_1#join_rhs",
         "scriptId": "f53113ph3g1l6hc6nckfarniir6",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Function.qll",
+        "url": "RA HASH: f53113ph3g1l6hc6nckfarniir6",
         "lineNumber": 224,
         "columnNumber": 3
       },
@@ -2273,7 +2285,7 @@
       "callFrame": {
         "functionName": "Function::Function::declEntry#dispred#f0820431#fb",
         "scriptId": "2b365achm0556lu2j5j3unfv1d1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Function.qll",
+        "url": "RA HASH: 2b365achm0556lu2j5j3unfv1d1",
         "lineNumber": 239,
         "columnNumber": 3
       },
@@ -2289,7 +2301,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#shared",
         "scriptId": "0aa1e6dnh37oq8rt0g3vvfk3hb1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 0aa1e6dnh37oq8rt0g3vvfk3hb1",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -2304,7 +2316,7 @@
       "callFrame": {
         "functionName": "Function::Function::getADeclarationEntry#dispred#f0820431#fb",
         "scriptId": "1a784emdvon8in5e2km8u1hgam9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Function.qll",
+        "url": "RA HASH: 1a784emdvon8in5e2km8u1hgam9",
         "lineNumber": 224,
         "columnNumber": 3
       },
@@ -2322,7 +2334,7 @@
       "callFrame": {
         "functionName": "type_decls_1#join_rhs",
         "scriptId": "c27fca86865n3m9ahiu4ai758vd",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\UserType.qll",
+        "url": "RA HASH: c27fca86865n3m9ahiu4ai758vd",
         "lineNumber": 49,
         "columnNumber": 33
       },
@@ -2336,7 +2348,7 @@
       "callFrame": {
         "functionName": "stmtparents_20#join_rhs",
         "scriptId": "d7f752hpjaoouf507s2s4hs39ec",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Enclosing.qll",
+        "url": "RA HASH: d7f752hpjaoouf507s2s4hs39ec",
         "lineNumber": 6,
         "columnNumber": 1
       },
@@ -2350,7 +2362,7 @@
       "callFrame": {
         "functionName": "ResolveClass::Cached::resolveClass#eb2868f4#ff_10#join_rhs",
         "scriptId": "df0499d4anvs0pfkgjr99absmi6",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\UserType.qll",
+        "url": "RA HASH: df0499d4anvs0pfkgjr99absmi6",
         "lineNumber": 49,
         "columnNumber": 33
       },
@@ -2364,7 +2376,7 @@
       "callFrame": {
         "functionName": "expr_types",
         "scriptId": "2277b7soiij7vlul6o9sjs4o1la",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 2277b7soiij7vlul6o9sjs4o1la",
         "lineNumber": 1464,
         "columnNumber": 1
       },
@@ -2376,7 +2388,7 @@
       "callFrame": {
         "functionName": "class_instantiation",
         "scriptId": "e123ee3m4un02n2hig8q4nc1fec",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: e123ee3m4un02n2hig8q4nc1fec",
         "lineNumber": 719,
         "columnNumber": 1
       },
@@ -2388,7 +2400,7 @@
       "callFrame": {
         "functionName": "Variable::VariableDeclarationEntry::getVariable#dispred#f0820431#ff_10#join_rhs",
         "scriptId": "d60f1almom96cj84pnniugndbh9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Parameter.qll",
+        "url": "RA HASH: d60f1almom96cj84pnniugndbh9",
         "lineNumber": 78,
         "columnNumber": 3
       },
@@ -2402,7 +2414,7 @@
       "callFrame": {
         "functionName": "UserType::UserType::getADeclarationEntry#f0820431#ff",
         "scriptId": "62a793kgm73dje8nsqe459c6j9c",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\UserType.qll",
+        "url": "RA HASH: 62a793kgm73dje8nsqe459c6j9c",
         "lineNumber": 49,
         "columnNumber": 33
       },
@@ -2421,7 +2433,7 @@
       "callFrame": {
         "functionName": "Declaration::DeclarationEntry::getDeclaration#dispred#f0820431#ff",
         "scriptId": "23d5663b1sgojtdqgba7klf02t1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: 23d5663b1sgojtdqgba7klf02t1",
         "lineNumber": 334,
         "columnNumber": 3
       },
@@ -2438,7 +2450,7 @@
       "callFrame": {
         "functionName": "Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff",
         "scriptId": "c600b20q1ej9im3n5hja4m12og2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Parameter.qll",
+        "url": "RA HASH: c600b20q1ej9im3n5hja4m12og2",
         "lineNumber": 78,
         "columnNumber": 3
       },
@@ -2455,7 +2467,7 @@
       "callFrame": {
         "functionName": "Parameter::Parameter::getAnEffectiveDeclarationEntry#dispred#f0820431#ff_10#join_rhs",
         "scriptId": "3a6465aanlr3228mtc3653a5gcb",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Parameter.qll",
+        "url": "RA HASH: 3a6465aanlr3228mtc3653a5gcb",
         "lineNumber": 74,
         "columnNumber": 3
       },
@@ -2469,7 +2481,7 @@
       "callFrame": {
         "functionName": "exprs_10#join_rhs",
         "scriptId": "3530b97bsqv6mvmi2rtlmksnvvc",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Cast.qll",
+        "url": "RA HASH: 3530b97bsqv6mvmi2rtlmksnvvc",
         "lineNumber": 8,
         "columnNumber": 1
       },
@@ -2483,7 +2495,7 @@
       "callFrame": {
         "functionName": "Declaration::Declaration::getDefinition#dispred#f0820431#ff",
         "scriptId": "ca6898479uq5l0qqec2n31s03g6",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: ca6898479uq5l0qqec2n31s03g6",
         "lineNumber": 173,
         "columnNumber": 3
       },
@@ -2502,7 +2514,7 @@
       "callFrame": {
         "functionName": "@access#f#antijoin_rhs",
         "scriptId": "d7df6ela423lior4flati1vu14a",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: d7df6ela423lior4flati1vu14a",
         "lineNumber": 1823,
         "columnNumber": 1
       },
@@ -2516,7 +2528,7 @@
       "callFrame": {
         "functionName": "Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff",
         "scriptId": "cb59ab7ugr3051b3j24ocp200b0",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Parameter.qll",
+        "url": "RA HASH: cb59ab7ugr3051b3j24ocp200b0",
         "lineNumber": 74,
         "columnNumber": 3
       },
@@ -2531,7 +2543,7 @@
       "callFrame": {
         "functionName": "project#Declaration::Declaration::getDefinition#dispred#f0820431#ff",
         "scriptId": "5cbde744fr7070u06nt3dijaqk9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: 5cbde744fr7070u06nt3dijaqk9",
         "lineNumber": 173,
         "columnNumber": 3
       },
@@ -2545,7 +2557,7 @@
       "callFrame": {
         "functionName": "exprconv_1#join_rhs",
         "scriptId": "a78c049o4v84k43q6oo2hi128o1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Cast.qll",
+        "url": "RA HASH: a78c049o4v84k43q6oo2hi128o1",
         "lineNumber": 8,
         "columnNumber": 1
       },
@@ -2559,7 +2571,7 @@
       "callFrame": {
         "functionName": "Call::Call#39248e3c#f",
         "scriptId": "9f11929rhe4jv95c7mekt8693kd",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: 9f11929rhe4jv95c7mekt8693kd",
         "lineNumber": 24,
         "columnNumber": 3
       },
@@ -2574,7 +2586,7 @@
       "callFrame": {
         "functionName": "valuebind",
         "scriptId": "30bc3a41ro9rcbg1bgern4m5k82",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 30bc3a41ro9rcbg1bgern4m5k82",
         "lineNumber": 1388,
         "columnNumber": 1
       },
@@ -2586,7 +2598,7 @@
       "callFrame": {
         "functionName": "Call::FunctionCall#39248e3c#f",
         "scriptId": "c48684no3nchd22a8ib57flacc2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: c48684no3nchd22a8ib57flacc2",
         "lineNumber": 164,
         "columnNumber": 3
       },
@@ -2601,7 +2613,7 @@
       "callFrame": {
         "functionName": "Call::FunctionCall::getTarget#f0820431#ff",
         "scriptId": "f85a2a84krfqmudq6ipu2kj7u89",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: f85a2a84krfqmudq6ipu2kj7u89",
         "lineNumber": 262,
         "columnNumber": 21
       },
@@ -2616,7 +2628,7 @@
       "callFrame": {
         "functionName": "@access#f",
         "scriptId": "4feb95nsgdn2ri8as0h9kcpl573",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 4feb95nsgdn2ri8as0h9kcpl573",
         "lineNumber": 1823,
         "columnNumber": 1
       },
@@ -2631,7 +2643,7 @@
       "callFrame": {
         "functionName": "valuebind_10#join_rhs",
         "scriptId": "c0f2c6ou4b5uk9nudplo06c5kl5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: c0f2c6ou4b5uk9nudplo06c5kl5",
         "lineNumber": 122,
         "columnNumber": 3
       },
@@ -2645,7 +2657,7 @@
       "callFrame": {
         "functionName": "project#Call::FunctionCall::getTarget#f0820431#ff",
         "scriptId": "e5b0c7lg3vibb5n3rudb3dorq06",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: e5b0c7lg3vibb5n3rudb3dorq06",
         "lineNumber": 262,
         "columnNumber": 21
       },
@@ -2659,7 +2671,7 @@
       "callFrame": {
         "functionName": "Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff#antijoin_rhs",
         "scriptId": "25954695ueg607rkjqkji5ggic4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: 25954695ueg607rkjqkji5ggic4",
         "lineNumber": 324,
         "columnNumber": 3
       },
@@ -2675,7 +2687,7 @@
       "callFrame": {
         "functionName": "m#Declaration::Declaration::isMember#dispred#f0820431#b",
         "scriptId": "f1c03bljvncq12sqc1ji61bbqje",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: f1c03bljvncq12sqc1ji61bbqje",
         "lineNumber": 210,
         "columnNumber": 3
       },
@@ -2690,7 +2702,7 @@
       "callFrame": {
         "functionName": "variable_instantiation",
         "scriptId": "f694d012h9nfsq48aptb10di975",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: f694d012h9nfsq48aptb10di975",
         "lineNumber": 764,
         "columnNumber": 1
       },
@@ -2702,7 +2714,7 @@
       "callFrame": {
         "functionName": "is_variable_template",
         "scriptId": "c2335a4feh15rmin4qmm1cduhl7",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: c2335a4feh15rmin4qmm1cduhl7",
         "lineNumber": 763,
         "columnNumber": 1
       },
@@ -2714,7 +2726,7 @@
       "callFrame": {
         "functionName": "Class::Class::getAMember#dispred#f0820431#2#ffb",
         "scriptId": "0498b4vhp3t1lqtjoiiobngj5s8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Class.qll",
+        "url": "RA HASH: 0498b4vhp3t1lqtjoiiobngj5s8",
         "lineNumber": 100,
         "columnNumber": 3
       },
@@ -2730,7 +2742,7 @@
       "callFrame": {
         "functionName": "project#Class::Class::getAMember#dispred#f0820431#2#ffb",
         "scriptId": "ad6d7aqpnbq0v2eskblafm74v51",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Class.qll",
+        "url": "RA HASH: ad6d7aqpnbq0v2eskblafm74v51",
         "lineNumber": 100,
         "columnNumber": 3
       },
@@ -2744,7 +2756,7 @@
       "callFrame": {
         "functionName": "Declaration::Declaration::isMember#dispred#f0820431#b",
         "scriptId": "9f6509fn9ru5e6tbedv9skgmba8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: 9f6509fn9ru5e6tbedv9skgmba8",
         "lineNumber": 210,
         "columnNumber": 3
       },
@@ -2759,7 +2771,7 @@
       "callFrame": {
         "functionName": "Variable::MemberVariable#7a968d4e#f",
         "scriptId": "bcfbf1d728v9ihajmh8tacbjitc",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Variable.qll",
+        "url": "RA HASH: bcfbf1d728v9ihajmh8tacbjitc",
         "lineNumber": 530,
         "columnNumber": 3
       },
@@ -2774,7 +2786,7 @@
       "callFrame": {
         "functionName": "fieldoffsets",
         "scriptId": "3040ee401amduqiuf7miko5gmt4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: 3040ee401amduqiuf7miko5gmt4",
         "lineNumber": 1393,
         "columnNumber": 1
       },
@@ -2786,7 +2798,7 @@
       "callFrame": {
         "functionName": "Field::Field#class#1b3cf47e#f",
         "scriptId": "61418129rsd6dv2t50bart37e00",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Field.qll",
+        "url": "RA HASH: 61418129rsd6dv2t50bart37e00",
         "lineNumber": 7,
         "columnNumber": 1
       },
@@ -2801,7 +2813,7 @@
       "callFrame": {
         "functionName": "Call::DestructorFieldDestruction::getTarget#dispred#f0820431#ff",
         "scriptId": "a15b76ljum9c1cp2tkfnomn70e4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: a15b76ljum9c1cp2tkfnomn70e4",
         "lineNumber": 655,
         "columnNumber": 3
       },
@@ -2818,7 +2830,7 @@
       "callFrame": {
         "functionName": "Call::ConstructorFieldInit::getTarget#dispred#f0820431#ff",
         "scriptId": "7f608f4rhkk8pnspvoaidp9ldu6",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: 7f608f4rhkk8pnspvoaidp9ldu6",
         "lineNumber": 576,
         "columnNumber": 3
       },
@@ -2835,7 +2847,7 @@
       "callFrame": {
         "functionName": "locations_expr_23450#join_rhs",
         "scriptId": "0bc7abbb0b18lsmk0k0jr1hvdmb",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Location.qll",
+        "url": "RA HASH: 0bc7abbb0b18lsmk0k0jr1hvdmb",
         "lineNumber": 154,
         "columnNumber": 1
       },
@@ -2849,7 +2861,7 @@
       "callFrame": {
         "functionName": "Variable::MemberVariable::getName#dispred#f0820431#ff",
         "scriptId": "d5f8c1f1hmeek8bje16bgbp22q6",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Variable.qll",
+        "url": "RA HASH: d5f8c1f1hmeek8bje16bgbp22q6",
         "lineNumber": 543,
         "columnNumber": 3
       },
@@ -2864,7 +2876,7 @@
       "callFrame": {
         "functionName": "Call::Call#39248e3c#f",
         "scriptId": "267ba2j3vstl4ska8odmg5i1dba",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: 267ba2j3vstl4ska8odmg5i1dba",
         "lineNumber": 24,
         "columnNumber": 3
       },
@@ -2879,7 +2891,7 @@
       "callFrame": {
         "functionName": "Cast::AlignofTypeOperator::getTypeOperand#dispred#f0820431#ff",
         "scriptId": "615b67vahla6to12d7mqk835an9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Cast.qll",
+        "url": "RA HASH: 615b67vahla6to12d7mqk835an9",
         "lineNumber": 787,
         "columnNumber": 3
       },
@@ -2897,7 +2909,7 @@
       "callFrame": {
         "functionName": "Call::FunctionCall#39248e3c#f",
         "scriptId": "037922bo4sihit0bn09deleo59b",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: 037922bo4sihit0bn09deleo59b",
         "lineNumber": 164,
         "columnNumber": 3
       },
@@ -2912,7 +2924,7 @@
       "callFrame": {
         "functionName": "project#Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff",
         "scriptId": "8eafabk1jjtdfpuii7kfeflq9p5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Parameter.qll",
+        "url": "RA HASH: 8eafabk1jjtdfpuii7kfeflq9p5",
         "lineNumber": 74,
         "columnNumber": 3
       },
@@ -2926,7 +2938,7 @@
       "callFrame": {
         "functionName": "Parameter::Parameter::getANamedDeclarationEntry#dispred#f0820431#ff_10#join_rhs",
         "scriptId": "475e7erp703knn56am79c4ed3c5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Variable.qll",
+        "url": "RA HASH: 475e7erp703knn56am79c4ed3c5",
         "lineNumber": 67,
         "columnNumber": 3
       },
@@ -2940,7 +2952,7 @@
       "callFrame": {
         "functionName": "Cast::Conversion#class#1f33e835#b",
         "scriptId": "b23ff24ork1iapti8d3463nckq6",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Cast.qll",
+        "url": "RA HASH: b23ff24ork1iapti8d3463nckq6",
         "lineNumber": 8,
         "columnNumber": 1
       },
@@ -2955,7 +2967,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getValue#dispred#f0820431#bf",
         "scriptId": "2891548aljmvbffr00eismcu2ua",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 2891548aljmvbffr00eismcu2ua",
         "lineNumber": 122,
         "columnNumber": 3
       },
@@ -2971,7 +2983,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getValue#dispred#f0820431#bf_0#antijoin_rhs",
         "scriptId": "7ff9e4mn9lid2jcetq2rtg51g2a",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 7ff9e4mn9lid2jcetq2rtg51g2a",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -2985,7 +2997,7 @@
       "callFrame": {
         "functionName": "Assignment::AssignOperation#class#9d5edc7a#f",
         "scriptId": "c7d2da60ir6lc2tt26iq650i259",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Assignment.qll",
+        "url": "RA HASH: c7d2da60ir6lc2tt26iq650i259",
         "lineNumber": 49,
         "columnNumber": 1
       },
@@ -2999,7 +3011,7 @@
       "callFrame": {
         "functionName": "Variable::Variable::getName#dispred#f0820431#ff#antijoin_rhs",
         "scriptId": "c66d3dau0jkcgi1m9jrchjc51f7",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Variable.qll",
+        "url": "RA HASH: c66d3dau0jkcgi1m9jrchjc51f7",
         "lineNumber": 67,
         "columnNumber": 3
       },
@@ -3016,7 +3028,7 @@
       "callFrame": {
         "functionName": "Expr::BinaryOperation#class#ef463c5d#f",
         "scriptId": "c4f76binsl1psrlucid4idavdq4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: c4f76binsl1psrlucid4idavdq4",
         "lineNumber": 528,
         "columnNumber": 1
       },
@@ -3030,7 +3042,7 @@
       "callFrame": {
         "functionName": "Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff",
         "scriptId": "361324qac1tpovtfah7660phno8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: 361324qac1tpovtfah7660phno8",
         "lineNumber": 324,
         "columnNumber": 3
       },
@@ -3048,7 +3060,7 @@
       "callFrame": {
         "functionName": "#select#query#fff",
         "scriptId": "1717458ds4b7khs86d8heiraasd",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\query.ql",
+        "url": "RA HASH: 1717458ds4b7khs86d8heiraasd",
         "lineNumber": 16,
         "columnNumber": 1
       },
@@ -3063,7 +3075,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#4",
         "scriptId": "a84d43mi7q241i6vn9ee7r7jh68",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: a84d43mi7q241i6vn9ee7r7jh68",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -3079,7 +3091,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs#5",
         "scriptId": "8fb2f93mtv67r1k9oi1o5rghos3",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 8fb2f93mtv67r1k9oi1o5rghos3",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -3095,7 +3107,7 @@
       "callFrame": {
         "functionName": "Expr::UnaryOperation#class#ef463c5d#f",
         "scriptId": "5a0c76g3ooo66qcd3nbb1f1pird",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 5a0c76g3ooo66qcd3nbb1f1pird",
         "lineNumber": 514,
         "columnNumber": 1
       },
@@ -3109,7 +3121,7 @@
       "callFrame": {
         "functionName": "files_10#join_rhs",
         "scriptId": "60e29eg9c2egvhe5m7ja1nh2o1e",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Location.qll",
+        "url": "RA HASH: 60e29eg9c2egvhe5m7ja1nh2o1e",
         "lineNumber": 143,
         "columnNumber": 3
       },
@@ -3123,7 +3135,7 @@
       "callFrame": {
         "functionName": "Variable::Variable::getName#dispred#f0820431#ff",
         "scriptId": "9020ccncme1vn8gftlc348ilbv2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Variable.qll",
+        "url": "RA HASH: 9020ccncme1vn8gftlc348ilbv2",
         "lineNumber": 67,
         "columnNumber": 3
       },
@@ -3146,7 +3158,7 @@
       "callFrame": {
         "functionName": "project#Declaration::DeclarationEntry::getCanonicalName#dispred#f0820431#ff",
         "scriptId": "8a184b7flpbqrq1khschbih65cd",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: 8a184b7flpbqrq1khschbih65cd",
         "lineNumber": 324,
         "columnNumber": 3
       },
@@ -3160,7 +3172,7 @@
       "callFrame": {
         "functionName": "Enclosing::exprEnclosingElement#c50c5fbf#ff#join_rhs",
         "scriptId": "a42d37dob7favvo6k41oe3k1hre",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Enclosing.qll",
+        "url": "RA HASH: a42d37dob7favvo6k41oe3k1hre",
         "lineNumber": 16,
         "columnNumber": 1
       },
@@ -3175,7 +3187,7 @@
       "callFrame": {
         "functionName": "Variable::ParameterDeclarationEntry::getAnonymousParameterDescription#dispred#f0820431#ff",
         "scriptId": "a33c4en26qbqh4pdg1bb6bjret2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Variable.qll",
+        "url": "RA HASH: a33c4en26qbqh4pdg1bb6bjret2",
         "lineNumber": 286,
         "columnNumber": 3
       },
@@ -3192,7 +3204,7 @@
       "callFrame": {
         "functionName": "locations_default",
         "scriptId": "b09bd3sc21dh83kqvf6jm5dauc6",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: b09bd3sc21dh83kqvf6jm5dauc6",
         "lineNumber": 201,
         "columnNumber": 1
       },
@@ -3204,7 +3216,7 @@
       "callFrame": {
         "functionName": "MemberFunction::MemberFunction#5d715d12#b",
         "scriptId": "31fa93s850tckmjvku3l8k7mko7",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\MemberFunction.qll",
+        "url": "RA HASH: 31fa93s850tckmjvku3l8k7mko7",
         "lineNumber": 25,
         "columnNumber": 3
       },
@@ -3219,7 +3231,7 @@
       "callFrame": {
         "functionName": "locations_stmt",
         "scriptId": "fc3124kl18bb1s5716r48kdu6fe",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: fc3124kl18bb1s5716r48kdu6fe",
         "lineNumber": 218,
         "columnNumber": 1
       },
@@ -3231,7 +3243,7 @@
       "callFrame": {
         "functionName": "m#Class::Class::getCanonicalMember#dispred#f0820431#ffb",
         "scriptId": "f947f0rq2vajjn1hb88l136tpa6",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Class.qll",
+        "url": "RA HASH: f947f0rq2vajjn1hb88l136tpa6",
         "lineNumber": 90,
         "columnNumber": 3
       },
@@ -3243,7 +3255,7 @@
       "callFrame": {
         "functionName": "Declaration::Declaration::getName#dispred#f0820431#ff",
         "scriptId": "7c75c6rdrqj3nai1vpr5l66v9t2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: 7c75c6rdrqj3nai1vpr5l66v9t2",
         "lineNumber": 111,
         "columnNumber": 3
       },
@@ -3263,7 +3275,7 @@
       "callFrame": {
         "functionName": "Class::Class::getCanonicalMember#dispred#f0820431#ffb",
         "scriptId": "6feae7vbhhsp99f73bjpfk7qijc",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Class.qll",
+        "url": "RA HASH: 6feae7vbhhsp99f73bjpfk7qijc",
         "lineNumber": 90,
         "columnNumber": 3
       },
@@ -3280,7 +3292,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#max_range",
         "scriptId": "1df09bupo7ee66hd8ohvvl0rfke",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 1df09bupo7ee66hd8ohvvl0rfke",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -3295,7 +3307,7 @@
       "callFrame": {
         "functionName": "Call::FunctionCall::getTarget#dispred#f0820431#ff",
         "scriptId": "e8d4d846dp19a31eq1rv27ab5g5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: e8d4d846dp19a31eq1rv27ab5g5",
         "lineNumber": 254,
         "columnNumber": 3
       },
@@ -3309,7 +3321,7 @@
       "callFrame": {
         "functionName": "Call::FunctionCall::getTarget#dispred#f0820431#ff",
         "scriptId": "c5f4afvmrcjddpv13ee094gq2a0",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: c5f4afvmrcjddpv13ee094gq2a0",
         "lineNumber": 254,
         "columnNumber": 3
       },
@@ -3321,7 +3333,7 @@
       "callFrame": {
         "functionName": "project#Call::FunctionCall::getTarget#dispred#f0820431#ff",
         "scriptId": "357af4vm1crmtl701s0ep0422v9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: 357af4vm1crmtl701s0ep0422v9",
         "lineNumber": 254,
         "columnNumber": 3
       },
@@ -3335,7 +3347,7 @@
       "callFrame": {
         "functionName": "Access::Access#8878f617#f",
         "scriptId": "9023ecvvpdea7mk4fksi1080kgc",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: 9023ecvvpdea7mk4fksi1080kgc",
         "lineNumber": 16,
         "columnNumber": 3
       },
@@ -3351,7 +3363,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#max_term",
         "scriptId": "c04edck1e6ps6e2njri9ig4qa89",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: c04edck1e6ps6e2njri9ig4qa89",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -3366,7 +3378,7 @@
       "callFrame": {
         "functionName": "Access::FunctionAccess#class#8878f617#f",
         "scriptId": "177860qn18ruruq5js662948lt4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: 177860qn18ruruq5js662948lt4",
         "lineNumber": 342,
         "columnNumber": 1
       },
@@ -3382,7 +3394,7 @@
       "callFrame": {
         "functionName": "Access::FunctionAccess::getTarget#dispred#f0820431#ff",
         "scriptId": "8adbef33nsct1qpanrmao8g8q90",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: 8adbef33nsct1qpanrmao8g8q90",
         "lineNumber": 367,
         "columnNumber": 3
       },
@@ -3397,7 +3409,7 @@
       "callFrame": {
         "functionName": "Access::FunctionAccess::getTarget#dispred#f0820431#ff_0#antijoin_rhs",
         "scriptId": "8494f6llfo6bg6jo8ct14r27s16",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 8494f6llfo6bg6jo8ct14r27s16",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -3411,7 +3423,7 @@
       "callFrame": {
         "functionName": "Expr::Operation::getOperator#dispred#f0820431#ff",
         "scriptId": "ee038856qvvv8j0hq5a3ukvanb6",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: ee038856qvvv8j0hq5a3ukvanb6",
         "lineNumber": 507,
         "columnNumber": 3
       },
@@ -3425,7 +3437,7 @@
       "callFrame": {
         "functionName": "Access::VariableAccess#8878f617#f#shared",
         "scriptId": "ceeef7apms3r48e6dnrgl38pl14",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: ceeef7apms3r48e6dnrgl38pl14",
         "lineNumber": 70,
         "columnNumber": 3
       },
@@ -3440,7 +3452,7 @@
       "callFrame": {
         "functionName": "#select#query#fff",
         "scriptId": "4178c1esvkmi0g23ntp2ouj1rp5",
-        "url": "C:\\Users\\dabartol\\AppData\\Local\\Temp\\exprparents.rele9a518baf14f4322ac243578a8e1391386ff030f5711433667813069844\\query.ql",
+        "url": "RA HASH: 4178c1esvkmi0g23ntp2ouj1rp5",
         "lineNumber": 16,
         "columnNumber": 1
       },
@@ -3452,7 +3464,7 @@
       "callFrame": {
         "functionName": "m#Expr::Expr::getChild#dispred#f0820431#bff",
         "scriptId": "ea4ab1lijdb7t4upt2042dj08ne",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: ea4ab1lijdb7t4upt2042dj08ne",
         "lineNumber": 15,
         "columnNumber": 3
       },
@@ -3466,7 +3478,7 @@
       "callFrame": {
         "functionName": "m#Stmt::Stmt::getChild#dispred#f0820431#bff",
         "scriptId": "2e0896tc694efpi63ro75505lld",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\stmts\\Stmt.qll",
+        "url": "RA HASH: 2e0896tc694efpi63ro75505lld",
         "lineNumber": 12,
         "columnNumber": 3
       },
@@ -3480,7 +3492,7 @@
       "callFrame": {
         "functionName": "varbind_10#join_rhs",
         "scriptId": "2ad5a3d3qiinsaohskpjaukpt18",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: 2ad5a3d3qiinsaohskpjaukpt18",
         "lineNumber": 158,
         "columnNumber": 1
       },
@@ -3494,7 +3506,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#join_rhs",
         "scriptId": "09ba37hdbvn6mrcg0v2v4u0l6u5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 09ba37hdbvn6mrcg0v2v4u0l6u5",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -3509,7 +3521,7 @@
       "callFrame": {
         "functionName": "Location::Location::fullLocationInfo#dispred#f0820431#ffffff",
         "scriptId": "6d5520630p5b5u45b23gi9u7f92",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Location.qll",
+        "url": "RA HASH: 6d5520630p5b5u45b23gi9u7f92",
         "lineNumber": 42,
         "columnNumber": 3
       },
@@ -3525,7 +3537,7 @@
       "callFrame": {
         "functionName": "Access::VariableAccess#8878f617#f#antijoin_rhs",
         "scriptId": "0efe9f74fl6nespncqphuoe7c18",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: 0efe9f74fl6nespncqphuoe7c18",
         "lineNumber": 70,
         "columnNumber": 3
       },
@@ -3541,7 +3553,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getChild#dispred#f0820431#bff",
         "scriptId": "254712uhiqai314msm7i8u9ilt7",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 254712uhiqai314msm7i8u9ilt7",
         "lineNumber": 15,
         "columnNumber": 3
       },
@@ -3556,7 +3568,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getChild#dispred#f0820431#bff_10#join_rhs",
         "scriptId": "78c7f1v0e0qc2ihhi4blgpg0319",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 78c7f1v0e0qc2ihhi4blgpg0319",
         "lineNumber": 15,
         "columnNumber": 3
       },
@@ -3570,7 +3582,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getChild#dispred#f0820431#bff_02#count_range",
         "scriptId": "d47667og0o89m3jgvvltqv7mj17",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: d47667og0o89m3jgvvltqv7mj17",
         "lineNumber": 1240,
         "columnNumber": 3
       },
@@ -3584,7 +3596,7 @@
       "callFrame": {
         "functionName": "Access::VariableAccess#8878f617#f",
         "scriptId": "6c7824ks7qhqs1lnio52lbmd9ca",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: 6c7824ks7qhqs1lnio52lbmd9ca",
         "lineNumber": 70,
         "columnNumber": 3
       },
@@ -3599,7 +3611,7 @@
       "callFrame": {
         "functionName": "project#Expr::Expr::getChild#dispred#f0820431#bff#2",
         "scriptId": "d840783qk8c487j51clealt4oe0",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: d840783qk8c487j51clealt4oe0",
         "lineNumber": 15,
         "columnNumber": 3
       },
@@ -3613,7 +3625,7 @@
       "callFrame": {
         "functionName": "Expr::FoldExpr::isUnaryFold#dispred#f0820431#f#join_rhs",
         "scriptId": "92831612lu6i3cfcdkrn19fkmga",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 92831612lu6i3cfcdkrn19fkmga",
         "lineNumber": 1240,
         "columnNumber": 3
       },
@@ -3627,7 +3639,7 @@
       "callFrame": {
         "functionName": "Expr::FoldExpr::isUnaryFold#dispred#f0820431#f",
         "scriptId": "c20d69aqet0d752bshconkqpse6",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: c20d69aqet0d752bshconkqpse6",
         "lineNumber": 1240,
         "columnNumber": 3
       },
@@ -3642,7 +3654,7 @@
       "callFrame": {
         "functionName": "Access::FieldAccess#class#8878f617#f",
         "scriptId": "4b4a07g94mu3p5loat8ja2np9d4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: 4b4a07g94mu3p5loat8ja2np9d4",
         "lineNumber": 158,
         "columnNumber": 1
       },
@@ -3659,7 +3671,7 @@
       "callFrame": {
         "functionName": "Stmt::Stmt::getChild#dispred#f0820431#bff",
         "scriptId": "14aff5sbhpvcv1sp16on7p4hj3c",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\stmts\\Stmt.qll",
+        "url": "RA HASH: 14aff5sbhpvcv1sp16on7p4hj3c",
         "lineNumber": 12,
         "columnNumber": 3
       },
@@ -3674,7 +3686,7 @@
       "callFrame": {
         "functionName": "Stmt::Stmt::getChild#dispred#f0820431#bff_10#join_rhs",
         "scriptId": "c399196eu4dbmsntvo9puk0fhl0",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\stmts\\Stmt.qll",
+        "url": "RA HASH: c399196eu4dbmsntvo9puk0fhl0",
         "lineNumber": 12,
         "columnNumber": 3
       },
@@ -3688,7 +3700,7 @@
       "callFrame": {
         "functionName": "project#Stmt::Stmt::getChild#dispred#f0820431#bff#2",
         "scriptId": "cc7752qqcgt16ld00fta2vvejob",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\stmts\\Stmt.qll",
+        "url": "RA HASH: cc7752qqcgt16ld00fta2vvejob",
         "lineNumber": 12,
         "columnNumber": 3
       },
@@ -3702,7 +3714,7 @@
       "callFrame": {
         "functionName": "project#Stmt::Stmt::getChild#dispred#f0820431#bff",
         "scriptId": "21d0ea27p4dhgb2vgpc1ilmb1ie",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\stmts\\Stmt.qll",
+        "url": "RA HASH: 21d0ea27p4dhgb2vgpc1ilmb1ie",
         "lineNumber": 12,
         "columnNumber": 3
       },
@@ -3716,7 +3728,7 @@
       "callFrame": {
         "functionName": "Stmt::DefaultCase#class#af82e98b#f#antijoin_rhs",
         "scriptId": "49cab1qqt2maglgf6fjb6p6ls25",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\stmts\\Stmt.qll",
+        "url": "RA HASH: 49cab1qqt2maglgf6fjb6p6ls25",
         "lineNumber": 1473,
         "columnNumber": 1
       },
@@ -3732,7 +3744,7 @@
       "callFrame": {
         "functionName": "Stmt::DefaultCase#class#af82e98b#f",
         "scriptId": "4e633c23bjs3d5ulii21tdha386",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\stmts\\Stmt.qll",
+        "url": "RA HASH: 4e633c23bjs3d5ulii21tdha386",
         "lineNumber": 1473,
         "columnNumber": 1
       },
@@ -3747,7 +3759,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getParent#dispred#f0820431#ff",
         "scriptId": "b87812ldcv59610pagsgpencl54",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: b87812ldcv59610pagsgpencl54",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -3763,7 +3775,7 @@
       "callFrame": {
         "functionName": "Location::Location::fullLocationInfo#dispred#f0820431#ffffff_10#join_rhs",
         "scriptId": "3f8cc8fgb85vh2vri36q5j6auo7",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Location.qll",
+        "url": "RA HASH: 3f8cc8fgb85vh2vri36q5j6auo7",
         "lineNumber": 143,
         "columnNumber": 3
       },
@@ -3777,7 +3789,7 @@
       "callFrame": {
         "functionName": "Location::UnknownLocation#bd5c7591#b",
         "scriptId": "9b36f9o8fkl4fi2hmekj3fbrbbe",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Location.qll",
+        "url": "RA HASH: 9b36f9o8fkl4fi2hmekj3fbrbbe",
         "lineNumber": 143,
         "columnNumber": 3
       },
@@ -3792,7 +3804,7 @@
       "callFrame": {
         "functionName": "Location::UnknownExprLocation#class#bd5c7591#f",
         "scriptId": "6f4f59bj9vut7sp2en8khtmpopc",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Location.qll",
+        "url": "RA HASH: 6f4f59bj9vut7sp2en8khtmpopc",
         "lineNumber": 154,
         "columnNumber": 1
       },
@@ -3807,7 +3819,7 @@
       "callFrame": {
         "functionName": "Access::VariableAccess::getTarget#f0820431#ff",
         "scriptId": "b11fae0m1nhm2vpfd3c7kopqcm4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: b11fae0m1nhm2vpfd3c7kopqcm4",
         "lineNumber": 75,
         "columnNumber": 21
       },
@@ -3824,7 +3836,7 @@
       "callFrame": {
         "functionName": "m#Expr::Expr::getEnclosingStmt#f0820431#bf",
         "scriptId": "f0b06f8fk4mv0b88tk0v2ilm9sb",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: f0b06f8fk4mv0b88tk0v2ilm9sb",
         "lineNumber": 30,
         "columnNumber": 17
       },
@@ -3840,7 +3852,7 @@
       "callFrame": {
         "functionName": "stmts_0#join_rhs",
         "scriptId": "5e72e4gnhp6v4p0ro0e6ukqf0c9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 5e72e4gnhp6v4p0ro0e6ukqf0c9",
         "lineNumber": 30,
         "columnNumber": 17
       },
@@ -3854,7 +3866,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getEnclosingStmt#f0820431#bf#join_rhs",
         "scriptId": "2e683dkvgehta6f7mr5g9q5vjn9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 2e683dkvgehta6f7mr5g9q5vjn9",
         "lineNumber": 30,
         "columnNumber": 17
       },
@@ -3869,7 +3881,7 @@
       "callFrame": {
         "functionName": "stmt_decl_bind",
         "scriptId": "b1dd32c4c01vqhlm1s502565fj1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: b1dd32c4c01vqhlm1s502565fj1",
         "lineNumber": 1967,
         "columnNumber": 1
       },
@@ -3881,7 +3893,7 @@
       "callFrame": {
         "functionName": "stmt_decl_bind_20#join_rhs",
         "scriptId": "a15139aoc237p3gs6eg8k2fbgp4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: a15139aoc237p3gs6eg8k2fbgp4",
         "lineNumber": 30,
         "columnNumber": 17
       },
@@ -3895,7 +3907,7 @@
       "callFrame": {
         "functionName": "Variable::Variable::getInitializer#dispred#f0820431#fb",
         "scriptId": "e87e08dq84ded1posds1f3lqvf8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Variable.qll",
+        "url": "RA HASH: e87e08dq84ded1posds1f3lqvf8",
         "lineNumber": 39,
         "columnNumber": 3
       },
@@ -3912,7 +3924,7 @@
       "callFrame": {
         "functionName": "Variable::LocalVariable#class#7a968d4e#b",
         "scriptId": "b8501c3sag5ljm62qp6tbv6qp59",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Variable.qll",
+        "url": "RA HASH: b8501c3sag5ljm62qp6tbv6qp59",
         "lineNumber": 373,
         "columnNumber": 1
       },
@@ -3929,7 +3941,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getParent#dispred#f0820431#ff_10#join_rhs",
         "scriptId": "1a7d5d6ra506jog8p2a089jpd4d",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 1a7d5d6ra506jog8p2a089jpd4d",
         "lineNumber": 30,
         "columnNumber": 17
       },
@@ -3943,7 +3955,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getEnclosingStmt#f0820431#bf",
         "scriptId": "575a28aqc1cl1507249fk98cfh7",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 575a28aqc1cl1507249fk98cfh7",
         "lineNumber": 30,
         "columnNumber": 17
       },
@@ -3967,7 +3979,7 @@
       "callFrame": {
         "functionName": "Initializer::Initializer::getEnclosingStmt#dispred#f0820431#ff",
         "scriptId": "8454ef6sh0k2r1c98bp3q18s44d",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Initializer.qll",
+        "url": "RA HASH: 8454ef6sh0k2r1c98bp3q18s44d",
         "lineNumber": 52,
         "columnNumber": 3
       },
@@ -3982,7 +3994,7 @@
       "callFrame": {
         "functionName": "Initializer::Initializer::getEnclosingStmt#dispred#f0820431#ff_10#join_rhs",
         "scriptId": "9aa1710n2hg2bq6707q1hr9opk5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Enclosing.qll",
+        "url": "RA HASH: 9aa1710n2hg2bq6707q1hr9opk5",
         "lineNumber": 16,
         "columnNumber": 1
       },
@@ -3996,7 +4008,7 @@
       "callFrame": {
         "functionName": "project#Initializer::Initializer::getEnclosingStmt#dispred#f0820431#ff",
         "scriptId": "3bc6ff96avek03b0hrogu7o3553",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Initializer.qll",
+        "url": "RA HASH: 3bc6ff96avek03b0hrogu7o3553",
         "lineNumber": 52,
         "columnNumber": 3
       },
@@ -4010,7 +4022,7 @@
       "callFrame": {
         "functionName": "Enclosing::exprEnclosingElement#c50c5fbf#ff#join_rhs#1",
         "scriptId": "0c8d97g3049hsqgr0t0prcrh8f8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Enclosing.qll",
+        "url": "RA HASH: 0c8d97g3049hsqgr0t0prcrh8f8",
         "lineNumber": 16,
         "columnNumber": 1
       },
@@ -4025,7 +4037,7 @@
       "callFrame": {
         "functionName": "Enclosing::exprEnclosingElement#c50c5fbf#ff#shared",
         "scriptId": "4f2d2flhaf8532adgdehs6lonuf",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Enclosing.qll",
+        "url": "RA HASH: 4f2d2flhaf8532adgdehs6lonuf",
         "lineNumber": 16,
         "columnNumber": 1
       },
@@ -4040,7 +4052,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getExprLocationOverride#f0820431#ff#join_rhs",
         "scriptId": "eb9339l8tcoa3lnjiv3sbecff77",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: eb9339l8tcoa3lnjiv3sbecff77",
         "lineNumber": 72,
         "columnNumber": 20
       },
@@ -4056,7 +4068,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getExprLocationOverride#f0820431#ff",
         "scriptId": "978dcfcsotu251da1rb1t4ivgl9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 978dcfcsotu251da1rb1t4ivgl9",
         "lineNumber": 72,
         "columnNumber": 20
       },
@@ -4074,7 +4086,7 @@
       "callFrame": {
         "functionName": "project#Expr::Expr::getExprLocationOverride#f0820431#ff",
         "scriptId": "a36325or20dbpc2932t03tdsk4d",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: a36325or20dbpc2932t03tdsk4d",
         "lineNumber": 72,
         "columnNumber": 20
       },
@@ -4088,7 +4100,7 @@
       "callFrame": {
         "functionName": "Access::Access::getTarget#dispred#f0820431#ff",
         "scriptId": "94c3a9eh7irma0p01pv6r76f0g3",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: 94c3a9eh7irma0p01pv6r76f0g3",
         "lineNumber": 18,
         "columnNumber": 3
       },
@@ -4108,7 +4120,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getLocation#dispred#f0820431#ff",
         "scriptId": "041df63fgpb7j4ofhusq62n1gl2",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 041df63fgpb7j4ofhusq62n1gl2",
         "lineNumber": 60,
         "columnNumber": 3
       },
@@ -4124,7 +4136,7 @@
       "callFrame": {
         "functionName": "Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs",
         "scriptId": "d0d06dqe96t5etn4om3i3giqahc",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: d0d06dqe96t5etn4om3i3giqahc",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -4138,7 +4150,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff#antijoin_rhs",
         "scriptId": "19535911mdou7hg6sn2ptfta050",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 19535911mdou7hg6sn2ptfta050",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -4154,7 +4166,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getLocation#dispred#f0820431#ff_10#join_rhs",
         "scriptId": "6860a8b89m36f4jr2l8jne7t9p4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\src\\Likely Bugs\\Arithmetic\\BadAdditionOverflowCheck.ql",
+        "url": "RA HASH: 6860a8b89m36f4jr2l8jne7t9p4",
         "lineNumber": 20,
         "columnNumber": 1
       },
@@ -4168,7 +4180,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getType#f0820431#ff",
         "scriptId": "886634bqhnmvsa25bgll315i24f",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 886634bqhnmvsa25bgll315i24f",
         "lineNumber": 102,
         "columnNumber": 8
       },
@@ -4185,7 +4197,7 @@
       "callFrame": {
         "functionName": "Type::DerivedType#class#2e8eb3ef#f",
         "scriptId": "b9c1182vjr3e0736juh4m6hbo07",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Type.qll",
+        "url": "RA HASH: b9c1182vjr3e0736juh4m6hbo07",
         "lineNumber": 1057,
         "columnNumber": 1
       },
@@ -4200,7 +4212,7 @@
       "callFrame": {
         "functionName": "TypedefType::TypedefType#class#2045b2ea#f",
         "scriptId": "8133d8m907hv222h0anift35l99",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\TypedefType.qll",
+        "url": "RA HASH: 8133d8m907hv222h0anift35l99",
         "lineNumber": 7,
         "columnNumber": 1
       },
@@ -4215,7 +4227,7 @@
       "callFrame": {
         "functionName": "Type::Type_not_Decltype_DerivedType_TypedefType#f",
         "scriptId": "2824beqfldtpvbcln1lv0i82g32",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Type.qll",
+        "url": "RA HASH: 2824beqfldtpvbcln1lv0i82g32",
         "lineNumber": 13,
         "columnNumber": 7
       },
@@ -4231,7 +4243,7 @@
       "callFrame": {
         "functionName": "typedefbase",
         "scriptId": "f909e739mec42s4p2ii1sn5orec",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmlecode.cpp.dbscheme",
+        "url": "RA HASH: f909e739mec42s4p2ii1sn5orec",
         "lineNumber": 639,
         "columnNumber": 1
       },
@@ -4243,7 +4255,7 @@
       "callFrame": {
         "functionName": "Type::DerivedType::getBaseType#dispred#f0820431#ff",
         "scriptId": "abfc6bk25taqc51rjhr6rrp1kab",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Type.qll",
+        "url": "RA HASH: abfc6bk25taqc51rjhr6rrp1kab",
         "lineNumber": 1073,
         "columnNumber": 3
       },
@@ -4261,7 +4273,7 @@
       "callFrame": {
         "functionName": "TypedefType::TypedefType::getBaseType#dispred#f0820431#ff",
         "scriptId": "db2a292ejtna0c844frehukvgab",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\TypedefType.qll",
+        "url": "RA HASH: db2a292ejtna0c844frehukvgab",
         "lineNumber": 20,
         "columnNumber": 3
       },
@@ -4279,7 +4291,7 @@
       "callFrame": {
         "functionName": "Type::DerivedType::getBaseType#dispred#f0820431#ff_10#join_rhs",
         "scriptId": "358bd51ijrrq5cgr5r3k71lqti5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Type.qll",
+        "url": "RA HASH: 358bd51ijrrq5cgr5r3k71lqti5",
         "lineNumber": 284,
         "columnNumber": 3
       },
@@ -4293,7 +4305,7 @@
       "callFrame": {
         "functionName": "TypedefType::TypedefType::getBaseType#dispred#f0820431#ff_10#join_rhs",
         "scriptId": "a6c653skbqq85bse9qq2h21hso5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Type.qll",
+        "url": "RA HASH: a6c653skbqq85bse9qq2h21hso5",
         "lineNumber": 284,
         "columnNumber": 3
       },
@@ -4307,7 +4319,7 @@
       "callFrame": {
         "functionName": "Type::Type::stripType#dispred#f0820431#ff",
         "scriptId": "da2866f8dijb0303nddciekf6g9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Type.qll",
+        "url": "RA HASH: da2866f8dijb0303nddciekf6g9",
         "lineNumber": 284,
         "columnNumber": 3
       },
@@ -4323,7 +4335,7 @@
       "callFrame": {
         "functionName": "Call::FunctionCall::getTargetType#dispred#f0820431#ff",
         "scriptId": "02405a7t7a5dsaieqdu8qrjjfk3",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Call.qll",
+        "url": "RA HASH: 02405a7t7a5dsaieqdu8qrjjfk3",
         "lineNumber": 219,
         "columnNumber": 3
       },
@@ -4339,7 +4351,7 @@
       "callFrame": {
         "functionName": "m#Function::Function::getType#dispred#f0820431#bf#antijoin_rhs",
         "scriptId": "affd1dvur1cmoda5lnbst5hkmq4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Function.qll",
+        "url": "RA HASH: affd1dvur1cmoda5lnbst5hkmq4",
         "lineNumber": 167,
         "columnNumber": 3
       },
@@ -4355,7 +4367,7 @@
       "callFrame": {
         "functionName": "m#Function::Function::getType#dispred#f0820431#bf#shared",
         "scriptId": "4df8399q0hgqealbhpffeapqcqc",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Function.qll",
+        "url": "RA HASH: 4df8399q0hgqealbhpffeapqcqc",
         "lineNumber": 167,
         "columnNumber": 3
       },
@@ -4370,7 +4382,7 @@
       "callFrame": {
         "functionName": "Location::Location::fullLocationInfo#dispred#f0820431#ffffff_20#join_rhs",
         "scriptId": "14d9670i5smssh3t5k6ueet9eg5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\src\\Likely Bugs\\Arithmetic\\BadAdditionOverflowCheck.ql",
+        "url": "RA HASH: 14d9670i5smssh3t5k6ueet9eg5",
         "lineNumber": 20,
         "columnNumber": 1
       },
@@ -4384,7 +4396,7 @@
       "callFrame": {
         "functionName": "m#Class::Class::getCanonicalMember#dispred#f0820431#ffb",
         "scriptId": "6f0453459sc89dlagr7amfkvcce",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Class.qll",
+        "url": "RA HASH: 6f0453459sc89dlagr7amfkvcce",
         "lineNumber": 90,
         "columnNumber": 3
       },
@@ -4398,7 +4410,7 @@
       "callFrame": {
         "functionName": "member_201#join_rhs",
         "scriptId": "ed09e9ne4dsnr59ff38m8844a8c",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Class.qll",
+        "url": "RA HASH: ed09e9ne4dsnr59ff38m8844a8c",
         "lineNumber": 90,
         "columnNumber": 3
       },
@@ -4412,7 +4424,7 @@
       "callFrame": {
         "functionName": "Class::Class::getCanonicalMember#dispred#f0820431#ffb",
         "scriptId": "71e31fg0m2m83ss1mhfoea3ndd8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Class.qll",
+        "url": "RA HASH: 71e31fg0m2m83ss1mhfoea3ndd8",
         "lineNumber": 90,
         "columnNumber": 3
       },
@@ -4430,7 +4442,7 @@
       "callFrame": {
         "functionName": "Declaration::Declaration::isMember#dispred#f0820431#b",
         "scriptId": "af0cf734sr9op66q1be4l0v548d",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: af0cf734sr9op66q1be4l0v548d",
         "lineNumber": 210,
         "columnNumber": 3
       },
@@ -4444,7 +4456,7 @@
       "callFrame": {
         "functionName": "Field::Field#class#1b3cf47e#f",
         "scriptId": "a403773kahm05ioedma7bpo3q45",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Field.qll",
+        "url": "RA HASH: a403773kahm05ioedma7bpo3q45",
         "lineNumber": 7,
         "columnNumber": 1
       },
@@ -4460,7 +4472,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getType#dispred#f0820431#ff",
         "scriptId": "3ea9494hepef6v35m3ma8o67t23",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 3ea9494hepef6v35m3ma8o67t23",
         "lineNumber": 94,
         "columnNumber": 3
       },
@@ -4479,7 +4491,7 @@
       "callFrame": {
         "functionName": "Access::Access::getTarget#dispred#f0820431#ff",
         "scriptId": "6dc90aqk5vku7a2fpgr2jkjm4j0",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Access.qll",
+        "url": "RA HASH: 6dc90aqk5vku7a2fpgr2jkjm4j0",
         "lineNumber": 18,
         "columnNumber": 3
       },
@@ -4494,7 +4506,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getType#dispred#f0820431#ff",
         "scriptId": "1ae02f23rs78s3gvpb2jmrne8m8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 1ae02f23rs78s3gvpb2jmrne8m8",
         "lineNumber": 94,
         "columnNumber": 3
       },
@@ -4506,7 +4518,7 @@
       "callFrame": {
         "functionName": "builtintypes_02#join_rhs",
         "scriptId": "862b07qfrf3m6moglteimpc1710",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 862b07qfrf3m6moglteimpc1710",
         "lineNumber": 1173,
         "columnNumber": 1
       },
@@ -4520,7 +4532,7 @@
       "callFrame": {
         "functionName": "Lambda::Closure#class#ea6054ce#f",
         "scriptId": "1c2060s53er0h6k102em1iioq44",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Lambda.qll",
+        "url": "RA HASH: 1c2060s53er0h6k102em1iioq44",
         "lineNumber": 69,
         "columnNumber": 1
       },
@@ -4536,7 +4548,7 @@
       "callFrame": {
         "functionName": "Expr::ReThrowExpr#class#ef463c5d#f",
         "scriptId": "7576becg99af7cng39cod5ibqpd",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: 7576becg99af7cng39cod5ibqpd",
         "lineNumber": 1173,
         "columnNumber": 1
       },
@@ -4552,7 +4564,7 @@
       "callFrame": {
         "functionName": "Declaration::Declaration::getDescription#dispred#f0820431#ff",
         "scriptId": "4c332bkfos27hgbf9tsroa7vel9",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Declaration.qll",
+        "url": "RA HASH: 4c332bkfos27hgbf9tsroa7vel9",
         "lineNumber": 104,
         "columnNumber": 3
       },
@@ -4567,7 +4579,7 @@
       "callFrame": {
         "functionName": "Access::Access::getTarget#dispred#f0820431#ff_10#join_rhs",
         "scriptId": "dcb7b0m1btie36sq0vskchcvepa",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\src\\Likely Bugs\\Arithmetic\\BadAdditionOverflowCheck.ql",
+        "url": "RA HASH: dcb7b0m1btie36sq0vskchcvepa",
         "lineNumber": 20,
         "columnNumber": 1
       },
@@ -4581,7 +4593,7 @@
       "callFrame": {
         "functionName": "Enclosing::stmtEnclosingElement#c50c5fbf#ff",
         "scriptId": "7cc60xtoigvl1lheqqa12d8fmi4",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Enclosing.qll",
+        "url": "RA HASH: 7cc60xtoigvl1lheqqa12d8fmi4",
         "lineNumber": 6,
         "columnNumber": 1
       },
@@ -4612,7 +4624,7 @@
       "callFrame": {
         "functionName": "Enclosing::exprEnclosingElement#c50c5fbf#ff",
         "scriptId": "fd1337kifdpgvg9q03mekjie7d0",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Enclosing.qll",
+        "url": "RA HASH: fd1337kifdpgvg9q03mekjie7d0",
         "lineNumber": 16,
         "columnNumber": 1
       },
@@ -4624,7 +4636,7 @@
       "callFrame": {
         "functionName": "Enclosing::stmtEnclosingElement#c50c5fbf#ff",
         "scriptId": "e7653cb4j2r0o7urf9q56gk2vrd",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Enclosing.qll",
+        "url": "RA HASH: e7653cb4j2r0o7urf9q56gk2vrd",
         "lineNumber": 6,
         "columnNumber": 1
       },
@@ -4636,7 +4648,7 @@
       "callFrame": {
         "functionName": "Enclosing::exprEnclosingElement#c50c5fbf#ff_10#join_rhs",
         "scriptId": "e3bec7911anup42u55r5fnu6q3a",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: e3bec7911anup42u55r5fnu6q3a",
         "lineNumber": 24,
         "columnNumber": 3
       },
@@ -4650,7 +4662,7 @@
       "callFrame": {
         "functionName": "Expr::Expr::getEnclosingFunction#dispred#f0820431#ff",
         "scriptId": "a416d2f4hjco4oha1vjcfqculq5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\exprs\\Expr.qll",
+        "url": "RA HASH: a416d2f4hjco4oha1vjcfqculq5",
         "lineNumber": 24,
         "columnNumber": 3
       },
@@ -4665,7 +4677,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff",
         "scriptId": "55ddfc21rhjqi8lf8rhkpfl1dg8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 55ddfc21rhjqi8lf8rhkpfl1dg8",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -4770,7 +4782,7 @@
       "callFrame": {
         "functionName": "Element::ElementBase::toString#dispred#f0820431#ff",
         "scriptId": "966812g6968j8ja8hlgihop4k30",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: 966812g6968j8ja8hlgihop4k30",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -4782,7 +4794,7 @@
       "callFrame": {
         "functionName": "#select#ff",
         "scriptId": "1bb43c97jpmuh8r2v0f9hktim63",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\src\\Likely Bugs\\Arithmetic\\BadAdditionOverflowCheck.ql",
+        "url": "RA HASH: 1bb43c97jpmuh8r2v0f9hktim63",
         "lineNumber": 20,
         "columnNumber": 1
       },
@@ -4802,7 +4814,7 @@
       "callFrame": {
         "functionName": "#select#query#ffffffffffffff#shared",
         "scriptId": "c34c60l5v5n6e0kb43kpbks9189",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\src\\Likely Bugs\\Arithmetic\\BadAdditionOverflowCheck.ql",
+        "url": "RA HASH: c34c60l5v5n6e0kb43kpbks9189",
         "lineNumber": 20,
         "columnNumber": 1
       },
@@ -4817,7 +4829,7 @@
       "callFrame": {
         "functionName": "Location::Location::hasLocationInfo#dispred#f0820431#ffffff",
         "scriptId": "246dd4utksn7p319ea3ma05jum7",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Location.qll",
+        "url": "RA HASH: 246dd4utksn7p319ea3ma05jum7",
         "lineNumber": 58,
         "columnNumber": 3
       },
@@ -4832,7 +4844,7 @@
       "callFrame": {
         "functionName": "#select#query#ffffffffffffff#antijoin_rhs",
         "scriptId": "09604dm1dl4vjtqslai4h80ttt7",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\src\\Likely Bugs\\Arithmetic\\BadAdditionOverflowCheck.ql",
+        "url": "RA HASH: 09604dm1dl4vjtqslai4h80ttt7",
         "lineNumber": 20,
         "columnNumber": 1
       },
@@ -4847,7 +4859,7 @@
       "callFrame": {
         "functionName": "#select#query#ffffffffffffff#shared#1",
         "scriptId": "617c2b8gf1lq60g0h6uh3rbc4mf",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\src\\Likely Bugs\\Arithmetic\\BadAdditionOverflowCheck.ql",
+        "url": "RA HASH: 617c2b8gf1lq60g0h6uh3rbc4mf",
         "lineNumber": 20,
         "columnNumber": 1
       },
@@ -4864,7 +4876,7 @@
       "callFrame": {
         "functionName": "project#Element::ElementBase::toString#dispred#f0820431",
         "scriptId": "f5b2143i1p87oiuhqo54q1r5eb1",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\lib\\semmle\\code\\cpp\\Element.qll",
+        "url": "RA HASH: f5b2143i1p87oiuhqo54q1r5eb1",
         "lineNumber": 57,
         "columnNumber": 3
       },
@@ -4878,7 +4890,7 @@
       "callFrame": {
         "functionName": "#select#query#ffffffffffffff#shared#2",
         "scriptId": "3569bdpdntnfsp6fsjuu87ng0v5",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\src\\Likely Bugs\\Arithmetic\\BadAdditionOverflowCheck.ql",
+        "url": "RA HASH: 3569bdpdntnfsp6fsjuu87ng0v5",
         "lineNumber": 20,
         "columnNumber": 1
       },
@@ -4893,7 +4905,7 @@
       "callFrame": {
         "functionName": "#select#query#ffffffffffffff#antijoin_rhs#1",
         "scriptId": "4cf8f287shdssv36q142q5p6gib",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\src\\Likely Bugs\\Arithmetic\\BadAdditionOverflowCheck.ql",
+        "url": "RA HASH: 4cf8f287shdssv36q142q5p6gib",
         "lineNumber": 20,
         "columnNumber": 1
       },
@@ -4908,7 +4920,7 @@
       "callFrame": {
         "functionName": "#select#query#ffffffffffffff",
         "scriptId": "ece30ao6rensnka4ndi0hdg6nj8",
-        "url": "C:\\Src\\Work\\perf-debugging\\semmle-code\\ql\\cpp\\ql\\src\\Likely Bugs\\Arithmetic\\BadAdditionOverflowCheck.ql",
+        "url": "RA HASH: ece30ao6rensnka4ndi0hdg6nj8",
         "lineNumber": 20,
         "columnNumber": 1
       },
@@ -5260,9 +5272,11 @@
     332,
     333,
     334,
-    335
+    335,
+    0
   ],
   "timeDeltas": [
+    0,
     103000,
     103000,
     103000,
