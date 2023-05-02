@@ -172,7 +172,14 @@ function getFilePath(
   physicalLocation: sarif.PhysicalLocation,
 ): string | undefined {
   const filePath = physicalLocation.artifactLocation?.uri;
-  if (filePath === undefined || filePath === "" || filePath === "file:/") {
+  // We expect the location uri value to be a relative file path, with no scheme.
+  // We only need to support output from CodeQL here, so we can be quite strict,
+  // even though the SARIF spec supports many more types of URI.
+  if (
+    filePath === undefined ||
+    filePath === "" ||
+    filePath.startsWith("file:")
+  ) {
     return undefined;
   }
   return filePath;
