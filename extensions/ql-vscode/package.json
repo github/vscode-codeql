@@ -343,7 +343,6 @@
         },
         "codeQL.createQuery.qlPackLocation": {
           "type": "string",
-          "default": "",
           "patternErrorMessage": "Please enter a valid folder",
           "markdownDescription": "The name of the folder where we want to create queries and QL packs via the \"CodeQL: Create Query\" command. The folder should exist."
         },
