@@ -2,15 +2,17 @@ import { authentication, Uri } from "vscode";
 import { join } from "path";
 import { SemVer } from "semver";
 
-import { CodeQLCliServer, QueryInfoByLanguage } from "../../../src/cli";
+import {
+  CodeQLCliServer,
+  QueryInfoByLanguage,
+} from "../../../src/codeql-cli/cli";
 import { itWithCodeQL } from "../cli";
 import {
   getOnDiskWorkspaceFolders,
   getQlPackForDbscheme,
   languageToDbScheme,
 } from "../../../src/helpers";
-import { resolveQueries } from "../../../src/contextual/queryResolver";
-import { KeyType } from "../../../src/contextual/keyType";
+import { KeyType, resolveQueries } from "../../../src/language-support";
 import { faker } from "@faker-js/faker";
 import { getActivatedExtension } from "../global.helper";
 

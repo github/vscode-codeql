@@ -5,7 +5,10 @@ import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-cli
 import { join } from "path";
 
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
-import { CliVersionConstraint, CodeQLCliServer } from "../../../../src/cli";
+import {
+  CliVersionConstraint,
+  CodeQLCliServer,
+} from "../../../../src/codeql-cli/cli";
 import {
   fixWorkspaceReferences,
   getActivatedExtension,
@@ -19,7 +22,7 @@ import {
 } from "../../../../src/variant-analysis/shared/variant-analysis";
 import { VariantAnalysis as VariantAnalysisApiResponse } from "../../../../src/variant-analysis/gh-api/variant-analysis";
 import { createMockApiResponse } from "../../../factories/variant-analysis/gh-api/variant-analysis-api-response";
-import { UserCancellationException } from "../../../../src/progress";
+import { UserCancellationException } from "../../../../src/common/vscode/progress";
 import { Repository } from "../../../../src/variant-analysis/gh-api/repository";
 import { DbManager } from "../../../../src/databases/db-manager";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";

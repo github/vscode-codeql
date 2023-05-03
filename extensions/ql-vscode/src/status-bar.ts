@@ -5,7 +5,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { CodeQLCliServer } from "./cli";
+import { CodeQLCliServer } from "./codeql-cli/cli";
 import {
   CANARY_FEATURES,
   CUSTOM_CODEQL_PATH_SETTING,

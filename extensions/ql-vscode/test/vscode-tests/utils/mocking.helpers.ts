@@ -1,5 +1,5 @@
 import { QuickPickItem, window, Uri } from "vscode";
-import { DatabaseItem } from "../../../src/local-databases";
+import { DatabaseItem } from "../../../src/databases/local-databases";
 
 export type DeepPartial<T> = T extends object
   ? {

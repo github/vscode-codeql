@@ -1,5 +1,8 @@
 import { ExtensionContext, ViewColumn } from "vscode";
-import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
+import {
+  AbstractWebview,
+  WebviewPanelConfig,
+} from "../common/vscode/abstract-webview";
 import { extLogger } from "../common";
 import {
   FromVariantAnalysisMessage,
@@ -24,6 +27,10 @@ import { redactableError } from "../pure/errors";
 import { DataFlowPathsView } from "./data-flow-paths-view";
 import { DataFlowPaths } from "./shared/data-flow-paths";
 import { App } from "../common/app";
+import {
+  getVariantAnalysisDefaultResultsFilter,
+  getVariantAnalysisDefaultResultsSort,
+} from "../config";
 
 export class VariantAnalysisView
   extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage>
@@ -183,9 +190,20 @@ export class VariantAnalysisView
       return;
     }
 
+    const filterSortState = {
+      searchValue: "",
+      filterKey: getVariantAnalysisDefaultResultsFilter(),
+      sortKey: getVariantAnalysisDefaultResultsSort(),
+    };
+
     await this.postMessage({
       t: "setVariantAnalysis",
       variantAnalysis,
+    });
+
+    await this.postMessage({
+      t: "setFilterSortState",
+      filterSortState,
     });
 
     const repoStates = await this.manager.getRepoStates(this.variantAnalysisId);

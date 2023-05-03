@@ -1,11 +1,14 @@
 import * as React from "react";
-import { render as reactRender, screen } from "@testing-library/react";
+import { render as reactRender, screen, waitFor } from "@testing-library/react";
 import {
   VariantAnalysisFailureReason,
   VariantAnalysisStatus,
 } from "../../../variant-analysis/shared/variant-analysis";
 import { VariantAnalysis, VariantAnalysisProps } from "../VariantAnalysis";
 import { createMockVariantAnalysis } from "../../../../test/factories/variant-analysis/shared/variant-analysis";
+import { ToVariantAnalysisMessage } from "../../../pure/interface-types";
+import { FilterKey, SortKey } from "../../../pure/variant-analysis-filter-sort";
+import { postMessage } from "../../common/post-message";
 
 describe(VariantAnalysis.name, () => {
   const render = (props: Partial<VariantAnalysisProps> = {}) =>
@@ -45,5 +48,30 @@ describe(VariantAnalysis.name, () => {
         "No repositories available after processing. No repositories were analyzed.",
       ),
     ).toBeInTheDocument();
+  });
+
+  it("renders results view with correct filter and sort state", async () => {
+    const variantAnalysis = createMockVariantAnalysis({});
+    render({ variantAnalysis });
+
+    await waitFor(() => screen.getByDisplayValue("All"));
+    await waitFor(() => screen.getByDisplayValue("Number of results"));
+
+    await postMessage<ToVariantAnalysisMessage>({
+      t: "setFilterSortState",
+      filterSortState: {
+        searchValue: "",
+        filterKey: FilterKey.WithResults,
+        sortKey: SortKey.Alphabetically,
+      },
+    });
+
+    expect(screen.getByDisplayValue("With results")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Alphabetically")).toBeInTheDocument();
+
+    expect(screen.queryByDisplayValue("All")).not.toBeInTheDocument();
+    expect(
+      screen.queryByDisplayValue("Number of results"),
+    ).not.toBeInTheDocument();
   });
 });

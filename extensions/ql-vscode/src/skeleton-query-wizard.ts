@@ -1,6 +1,6 @@
 import { join } from "path";
 import { CancellationToken, Uri, workspace, window as Window } from "vscode";
-import { CodeQLCliServer } from "./cli";
+import { CodeQLCliServer } from "./codeql-cli/cli";
 import { OutputChannelLogger } from "./common";
 import { Credentials } from "./common/authentication";
 import { QueryLanguage } from "./common/query-language";
@@ -11,9 +11,15 @@ import {
 } from "./helpers";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
-import { DatabaseItem, DatabaseManager } from "./local-databases";
-import { ProgressCallback, UserCancellationException } from "./progress";
-import { askForGitHubRepo, downloadGitHubDatabase } from "./databaseFetcher";
+import { DatabaseItem, DatabaseManager } from "./databases/local-databases";
+import {
+  ProgressCallback,
+  UserCancellationException,
+} from "./common/vscode/progress";
+import {
+  askForGitHubRepo,
+  downloadGitHubDatabase,
+} from "./databases/database-fetcher";
 import {
   getSkeletonWizardFolder,
   isCodespacesTemplate,

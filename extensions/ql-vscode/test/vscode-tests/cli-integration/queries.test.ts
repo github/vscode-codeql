@@ -9,19 +9,25 @@ import {
 } from "fs-extra";
 import { load, dump } from "js-yaml";
 
-import { DatabaseItem, DatabaseManager } from "../../../src/local-databases";
+import {
+  DatabaseItem,
+  DatabaseManager,
+} from "../../../src/databases/local-databases";
 import {
   cleanDatabases,
   ensureTestDatabase,
   getActivatedExtension,
 } from "../global.helper";
-import { CliVersionConstraint, CodeQLCliServer } from "../../../src/cli";
+import {
+  CliVersionConstraint,
+  CodeQLCliServer,
+} from "../../../src/codeql-cli/cli";
 import { describeWithCodeQL } from "../cli";
 import {
   CoreCompletedQuery,
   QueryRunner,
 } from "../../../src/query-server/query-runner";
-import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
+import { SELECT_QUERY_NAME } from "../../../src/language-support";
 import { LocalQueries } from "../../../src/local-queries";
 import { QueryResultType } from "../../../src/pure/new-messages";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
@@ -30,7 +36,7 @@ import {
   AppCommandManager,
   QueryServerCommands,
 } from "../../../src/common/commands";
-import { ProgressCallback } from "../../../src/progress";
+import { ProgressCallback } from "../../../src/common/vscode/progress";
 import { withDebugController } from "./debugger/debug-controller";
 
 type DebugMode = "localQueries" | "debug";

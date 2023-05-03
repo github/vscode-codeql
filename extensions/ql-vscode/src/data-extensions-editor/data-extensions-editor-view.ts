@@ -7,12 +7,15 @@ import {
   workspace,
   WorkspaceFolder,
 } from "vscode";
-import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
+import {
+  AbstractWebview,
+  WebviewPanelConfig,
+} from "../common/vscode/abstract-webview";
 import {
   FromDataExtensionsEditorMessage,
   ToDataExtensionsEditorMessage,
 } from "../pure/interface-types";
-import { ProgressUpdate } from "../progress";
+import { ProgressUpdate } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
 import {
   showAndLogErrorMessage,
@@ -21,11 +24,11 @@ import {
 import { extLogger } from "../common";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
-import { DatabaseItem, DatabaseManager } from "../local-databases";
-import { CodeQLCliServer } from "../cli";
+import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { generateFlowModel } from "./generate-flow-model";
-import { promptImportGithubDatabase } from "../databaseFetcher";
+import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
 import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
 import { showResolvableLocation } from "../interface-utils";

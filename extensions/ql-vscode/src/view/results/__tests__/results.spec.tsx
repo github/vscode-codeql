@@ -1,5 +1,5 @@
 import * as React from "react";
-import { act, render as reactRender, screen } from "@testing-library/react";
+import { render as reactRender, screen } from "@testing-library/react";
 import { ResultsApp } from "../results";
 import {
   Interpretation,
@@ -9,6 +9,7 @@ import {
 import * as fs from "fs-extra";
 import { resolve } from "path";
 import { ColumnKindCode } from "../../../pure/bqrs-cli-types";
+import { postMessage } from "../../common/post-message";
 
 const exampleSarif = fs.readJSONSync(
   resolve(
@@ -19,22 +20,6 @@ const exampleSarif = fs.readJSONSync(
 
 describe(ResultsApp.name, () => {
   const render = () => reactRender(<ResultsApp />);
-  const postMessage = async (msg: IntoResultsViewMsg) => {
-    await act(async () => {
-      // window.postMessage doesn't set the origin correctly, see
-      // https://github.com/jsdom/jsdom/issues/2745
-      window.dispatchEvent(
-        new MessageEvent("message", {
-          source: window,
-          origin: window.location.origin,
-          data: msg,
-        }),
-      );
-
-      // The event is dispatched asynchronously, so we need to wait for it to be handled.
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    });
-  };
 
   it("renders results", async () => {
     render();
@@ -98,13 +83,13 @@ describe(ResultsApp.name, () => {
       },
     };
 
-    await postMessage(message);
+    await postMessage<IntoResultsViewMsg>(message);
 
     expect(
       screen.getByText("'x' is assigned a value but never used."),
     ).toBeInTheDocument();
 
-    await postMessage({
+    await postMessage<IntoResultsViewMsg>({
       ...message,
       t: "showInterpretedPage",
       pageNumber: 1,
@@ -124,7 +109,7 @@ describe(ResultsApp.name, () => {
   it("renders results when switching between queries with different result set names", async () => {
     render();
 
-    await postMessage({
+    await postMessage<IntoResultsViewMsg>({
       t: "setState",
       interpretation: undefined,
       origResultsPaths: {
@@ -162,7 +147,7 @@ describe(ResultsApp.name, () => {
 
     expect(screen.getByText("foobar1")).toBeInTheDocument();
 
-    await postMessage({
+    await postMessage<IntoResultsViewMsg>({
       t: "setState",
       interpretation: undefined,
       origResultsPaths: {

@@ -10,8 +10,8 @@ import {
 } from "../../../src/pure/legacy-messages";
 import * as config from "../../../src/config";
 import { tmpDir } from "../../../src/helpers";
-import { CodeQLCliServer } from "../../../src/cli";
-import { SELECT_QUERY_NAME } from "../../../src/contextual/locationFinder";
+import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
+import { SELECT_QUERY_NAME } from "../../../src/language-support";
 import {
   QueryInProgress,
   compileQuery as compileQueryLegacy,
@@ -20,7 +20,7 @@ import {
   LegacyQueryRunner,
   QueryServerClient,
 } from "../../../src/query-server/legacy";
-import { DatabaseItem } from "../../../src/local-databases";
+import { DatabaseItem } from "../../../src/databases/local-databases";
 import { DeepPartial, mockedObject } from "../utils/mocking.helpers";
 import { BqrsKind } from "../../../src/pure/bqrs-cli-types";
 

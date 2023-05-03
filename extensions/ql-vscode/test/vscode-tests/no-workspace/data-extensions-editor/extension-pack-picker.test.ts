@@ -3,7 +3,10 @@ import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { outputFile, readFile } from "fs-extra";
 import { join } from "path";
 import { dir } from "tmp-promise";
-import { QlpacksInfo, ResolveExtensionsResult } from "../../../../src/cli";
+import {
+  QlpacksInfo,
+  ResolveExtensionsResult,
+} from "../../../../src/codeql-cli/cli";
 import * as helpers from "../../../../src/helpers";
 
 import { pickExtensionPackModelFile } from "../../../../src/data-extensions-editor/extension-pack-picker";

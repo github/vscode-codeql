@@ -16,7 +16,7 @@ import {
 } from "./config";
 import * as appInsights from "applicationinsights";
 import { extLogger } from "./common";
-import { UserCancellationException } from "./progress";
+import { UserCancellationException } from "./common/vscode/progress";
 import { showBinaryChoiceWithUrlDialog } from "./helpers";
 import { RedactableError } from "./pure/errors";
 import { SemVer } from "semver";

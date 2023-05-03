@@ -87,6 +87,8 @@ export function VariantAnalysis({
           vscode.setState({
             variantAnalysisId: msg.variantAnalysis.id,
           });
+        } else if (msg.t === "setFilterSortState") {
+          setFilterSortState(msg.filterSortState);
         } else if (msg.t === "setRepoResults") {
           setRepoResults((oldRepoResults) => {
             const newRepoIds = msg.repoResults.map((r) => r.repositoryId);

@@ -22,6 +22,7 @@ import {
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
+import * as helpers from "../../../../src/helpers";
 
 jest.setTimeout(60_000);
 
@@ -193,6 +194,93 @@ describe("Variant Analysis Monitor", () => {
 
         expect(mockGetVariantAnalysis).toBeCalledTimes(4);
         expect(mockEecuteCommand).toBeCalledTimes(5);
+      });
+    });
+
+    describe("when some responses fail", () => {
+      let showAndLogWarningMessageSpy: jest.SpiedFunction<
+        typeof helpers.showAndLogWarningMessage
+      >;
+
+      let scannedRepos: ApiVariantAnalysisScannedRepository[];
+
+      beforeEach(async () => {
+        showAndLogWarningMessageSpy = jest
+          .spyOn(helpers, "showAndLogWarningMessage")
+          .mockResolvedValue(undefined);
+
+        scannedRepos = createMockScannedRepos([
+          "pending",
+          "in_progress",
+          "in_progress",
+          "in_progress",
+          "pending",
+          "pending",
+        ]);
+        mockApiResponse = createMockApiResponse("in_progress", scannedRepos);
+        mockGetVariantAnalysis.mockResolvedValueOnce(mockApiResponse);
+
+        mockGetVariantAnalysis.mockRejectedValueOnce(
+          new Error("No internet connection"),
+        );
+        mockGetVariantAnalysis.mockRejectedValueOnce(
+          new Error("No internet connection"),
+        );
+        mockGetVariantAnalysis.mockRejectedValueOnce(
+          new Error("My different error"),
+        );
+
+        let nextApiResponse = {
+          ...mockApiResponse,
+          scanned_repositories: [...scannedRepos.map((r) => ({ ...r }))],
+        };
+        nextApiResponse.scanned_repositories[0].analysis_status = "succeeded";
+        nextApiResponse.scanned_repositories[1].analysis_status = "succeeded";
+
+        mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
+
+        mockGetVariantAnalysis.mockRejectedValueOnce(
+          new Error("My different error"),
+        );
+        mockGetVariantAnalysis.mockRejectedValueOnce(
+          new Error("My different error"),
+        );
+        mockGetVariantAnalysis.mockRejectedValueOnce(
+          new Error("Another different error"),
+        );
+
+        nextApiResponse = {
+          ...mockApiResponse,
+          scanned_repositories: [...scannedRepos.map((r) => ({ ...r }))],
+        };
+        nextApiResponse.scanned_repositories[2].analysis_status = "succeeded";
+        nextApiResponse.scanned_repositories[3].analysis_status = "succeeded";
+        nextApiResponse.scanned_repositories[4].analysis_status = "failed";
+        nextApiResponse.scanned_repositories[5].analysis_status = "succeeded";
+        nextApiResponse.status = "succeeded";
+        mockGetVariantAnalysis.mockResolvedValueOnce(nextApiResponse);
+      });
+
+      it("should only trigger the warning once per error", async () => {
+        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
+
+        expect(showAndLogWarningMessageSpy).toBeCalledTimes(4);
+        expect(showAndLogWarningMessageSpy).toHaveBeenNthCalledWith(
+          1,
+          expect.stringMatching(/No internet connection/),
+        );
+        expect(showAndLogWarningMessageSpy).toHaveBeenNthCalledWith(
+          2,
+          expect.stringMatching(/My different error/),
+        );
+        expect(showAndLogWarningMessageSpy).toHaveBeenNthCalledWith(
+          3,
+          expect.stringMatching(/My different error/),
+        );
+        expect(showAndLogWarningMessageSpy).toHaveBeenNthCalledWith(
+          4,
+          expect.stringMatching(/Another different error/),
+        );
       });
     });
 

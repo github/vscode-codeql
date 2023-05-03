@@ -1,4 +1,8 @@
-import { ProgressCallback, ProgressUpdate, withProgress } from "../progress";
+import {
+  ProgressCallback,
+  ProgressUpdate,
+  withProgress,
+} from "../common/vscode/progress";
 import {
   CancellationToken,
   CancellationTokenSource,
@@ -23,9 +27,9 @@ import {
 import { displayQuickQuery } from "./quick-query";
 import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
-import { DatabaseUI } from "../local-databases-ui";
+import { DatabaseUI } from "../databases/local-databases-ui";
 import { ResultsView } from "../interface";
-import { DatabaseItem, DatabaseManager } from "../local-databases";
+import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import {
   createInitialQueryInfo,
   getQuickEvalContext,
@@ -37,12 +41,13 @@ import {
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "../interface-utils";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { DisposableObject } from "../pure/disposable-object";
 import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
+import { createMultiSelectionCommand } from "../common/selection-commands";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -89,7 +94,9 @@ export class LocalQueries extends DisposableObject {
         this.runQueryOnMultipleDatabases.bind(this),
       "codeQL.runQueryOnMultipleDatabasesContextEditor":
         this.runQueryOnMultipleDatabases.bind(this),
-      "codeQL.runQueries": this.runQueries.bind(this),
+      "codeQL.runQueries": createMultiSelectionCommand(
+        this.runQueries.bind(this),
+      ),
       "codeQL.quickEval": this.quickEval.bind(this),
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
       "codeQL.codeLensQuickEval": this.codeLensQuickEval.bind(this),
@@ -130,12 +137,12 @@ export class LocalQueries extends DisposableObject {
     );
   }
 
-  private async runQueries(_: unknown, multi: Uri[]): Promise<void> {
+  private async runQueries(fileURIs: Uri[]): Promise<void> {
     await withProgress(
       async (progress, token) => {
         const maxQueryCount = MAX_QUERIES.getValue() as number;
         const [files, dirFound] = await gatherQlFiles(
-          multi.map((uri) => uri.fsPath),
+          fileURIs.map((uri) => uri.fsPath),
         );
         if (files.length > maxQueryCount) {
           throw new Error(
@@ -330,6 +337,7 @@ export class LocalQueries extends DisposableObject {
     token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
     range?: Range,
+    templates?: Record<string, string>,
   ): Promise<void> {
     await this.compileAndRunQueryInternal(
       quickEval,
@@ -338,6 +346,7 @@ export class LocalQueries extends DisposableObject {
       token,
       databaseItem,
       range,
+      templates,
     );
   }
 
@@ -349,6 +358,7 @@ export class LocalQueries extends DisposableObject {
     token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
     range?: Range,
+    templates?: Record<string, string>,
   ): Promise<CoreCompletedQuery> {
     let queryPath: string;
     if (queryUri !== undefined) {
@@ -388,7 +398,7 @@ export class LocalQueries extends DisposableObject {
       extensionPacks,
       this.queryStorageDir,
       undefined,
-      undefined,
+      templates,
     );
 
     // handle cancellation from the history view.

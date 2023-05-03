@@ -1,14 +1,14 @@
 import { ExtensionContext } from "vscode";
 import { DataExtensionsEditorView } from "./data-extensions-editor-view";
 import { DataExtensionsEditorCommands } from "../common/commands";
-import { CliVersionConstraint, CodeQLCliServer } from "../cli";
+import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
-import { DatabaseManager } from "../local-databases";
+import { DatabaseManager } from "../databases/local-databases";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { App } from "../common/app";
 import { showAndLogErrorMessage } from "../helpers";
-import { withProgress } from "../progress";
+import { withProgress } from "../common/vscode/progress";
 import { pickExtensionPackModelFile } from "./extension-pack-picker";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];

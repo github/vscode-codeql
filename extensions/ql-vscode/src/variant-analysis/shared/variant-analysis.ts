@@ -216,6 +216,16 @@ export function hasRepoScanCompleted(
 
 /**
  * @param repo
+ * @returns whether the repo scan completed successfully
+ */
+export function isRepoScanSuccessful(
+  repo: VariantAnalysisScannedRepository,
+): boolean {
+  return repo.analysisStatus === VariantAnalysisRepoStatus.Succeeded;
+}
+
+/**
+ * @param repo
  * @returns whether the repo scan has an artifact that can be downloaded
  */
 export function repoHasDownloadableArtifact(

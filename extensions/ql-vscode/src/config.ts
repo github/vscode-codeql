@@ -6,9 +6,14 @@ import {
   ConfigurationChangeEvent,
   ConfigurationTarget,
 } from "vscode";
-import { DistributionManager } from "./distribution";
+import { DistributionManager } from "./codeql-cli/distribution";
 import { extLogger } from "./common";
 import { ONE_DAY_IN_MS } from "./pure/time";
+import {
+  FilterKey,
+  SortKey,
+  defaultFilterSortState,
+} from "./pure/variant-analysis-filter-sort";
 
 export const ALL_SETTINGS: Setting[] = [];
 
@@ -69,6 +74,10 @@ const ROOT_SETTING = new Setting("codeQL");
 // Global configuration
 const TELEMETRY_SETTING = new Setting("telemetry", ROOT_SETTING);
 const AST_VIEWER_SETTING = new Setting("astViewer", ROOT_SETTING);
+const CONTEXTUAL_QUERIES_SETTINGS = new Setting(
+  "contextualQueries",
+  ROOT_SETTING,
+);
 const GLOBAL_TELEMETRY_SETTING = new Setting("telemetry");
 const LOG_INSIGHTS_SETTING = new Setting("logInsights", ROOT_SETTING);
 
@@ -479,11 +488,19 @@ export function joinOrderWarningThreshold(): number {
 }
 
 /**
- * Avoids caching in the AST viewer if the user is also a canary user.
+ * Hidden setting: Avoids caching in the AST viewer if the user is also a canary user.
  */
 export const NO_CACHE_AST_VIEWER = new Setting(
   "disableCache",
   AST_VIEWER_SETTING,
+);
+
+/**
+ * Hidden setting: Avoids caching in jump to def and find refs contextual queries if the user is also a canary user.
+ */
+export const NO_CACHE_CONTEXTUAL_QUERIES = new Setting(
+  "disableCache",
+  CONTEXTUAL_QUERIES_SETTINGS,
 );
 
 // Settings for variant analysis
@@ -526,6 +543,34 @@ export class VariantAnalysisConfigListener
 
   public get controllerRepo(): string | undefined {
     return getRemoteControllerRepo();
+  }
+}
+
+const VARIANT_ANALYSIS_FILTER_RESULTS = new Setting(
+  "defaultResultsFilter",
+  VARIANT_ANALYSIS_SETTING,
+);
+
+export function getVariantAnalysisDefaultResultsFilter(): FilterKey {
+  const value = VARIANT_ANALYSIS_FILTER_RESULTS.getValue<string>();
+  if (Object.values(FilterKey).includes(value as FilterKey)) {
+    return value as FilterKey;
+  } else {
+    return defaultFilterSortState.filterKey;
+  }
+}
+
+const VARIANT_ANALYSIS_SORT_RESULTS = new Setting(
+  "defaultResultsSort",
+  VARIANT_ANALYSIS_SETTING,
+);
+
+export function getVariantAnalysisDefaultResultsSort(): SortKey {
+  const value = VARIANT_ANALYSIS_SORT_RESULTS.getValue<string>();
+  if (Object.values(SortKey).includes(value as SortKey)) {
+    return value as SortKey;
+  } else {
+    return defaultFilterSortState.sortKey;
   }
 }
 

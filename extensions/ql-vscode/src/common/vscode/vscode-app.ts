@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { VSCodeCredentials } from "../../authentication";
+import { VSCodeCredentials } from "./authentication";
 import { Disposable } from "../../pure/disposable-object";
 import { App, AppMode } from "../app";
 import { AppEventEmitter } from "../events";

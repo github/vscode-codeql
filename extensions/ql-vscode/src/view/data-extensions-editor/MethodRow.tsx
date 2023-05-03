@@ -64,8 +64,8 @@ export const MethodRow = ({
       const target = e.target as HTMLSelectElement;
 
       onChange(externalApiUsage, {
-        // If there are no arguments, we will default to "this", which is Argument[-1]
-        input: argumentsList.length === 0 ? "Argument[-1]" : "Argument[0]",
+        // If there are no arguments, we will default to "Argument[this]"
+        input: argumentsList.length === 0 ? "Argument[this]" : "Argument[0]",
         output: "ReturnType",
         kind: "value",
         ...modeledMethod,
@@ -167,9 +167,7 @@ export const MethodRow = ({
         {modeledMethod?.type &&
           ["sink", "summary"].includes(modeledMethod?.type) && (
             <Dropdown value={modeledMethod?.input} onInput={handleInputInput}>
-              <VSCodeOption value="Argument[-1]">
-                Argument[-1]: this
-              </VSCodeOption>
+              <VSCodeOption value="Argument[this]">Argument[this]</VSCodeOption>
               {argumentsList.map((argument, index) => (
                 <VSCodeOption key={argument} value={`Argument[${index}]`}>
                   Argument[{index}]: {argument}
@@ -183,9 +181,7 @@ export const MethodRow = ({
           ["source", "summary"].includes(modeledMethod?.type) && (
             <Dropdown value={modeledMethod?.output} onInput={handleOutputInput}>
               <VSCodeOption value="ReturnValue">ReturnValue</VSCodeOption>
-              <VSCodeOption value="Argument[-1]">
-                Argument[-1]: this
-              </VSCodeOption>
+              <VSCodeOption value="Argument[this]">Argument[this]</VSCodeOption>
               {argumentsList.map((argument, index) => (
                 <VSCodeOption key={argument} value={`Argument[${index}]`}>
                   Argument[{index}]: {argument}

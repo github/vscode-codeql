@@ -1,4 +1,4 @@
-import { CodeQLCliServer } from "../../../src/cli";
+import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import {
   QUERY_LANGUAGE_TO_DATABASE_REPO,
   SkeletonQueryWizard,
@@ -17,8 +17,8 @@ import {
   DatabaseItem,
   DatabaseManager,
   FullDatabaseOptions,
-} from "../../../src/local-databases";
-import * as databaseFetcher from "../../../src/databaseFetcher";
+} from "../../../src/databases/local-databases";
+import * as databaseFetcher from "../../../src/databases/database-fetcher";
 import { createMockDB } from "../../factories/databases/databases";
 import { asError } from "../../../src/pure/helpers-pure";
 import { Setting } from "../../../src/config";

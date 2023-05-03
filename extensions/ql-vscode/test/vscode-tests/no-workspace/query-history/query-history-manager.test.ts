@@ -5,11 +5,11 @@ import { extLogger } from "../../../../src/common";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { QueryHistoryConfigListener } from "../../../../src/config";
 import { LocalQueryInfo } from "../../../../src/query-results";
-import { DatabaseManager } from "../../../../src/local-databases";
+import { DatabaseManager } from "../../../../src/databases/local-databases";
 import { tmpDir } from "../../../../src/helpers";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { ResultsView } from "../../../../src/interface";
-import { EvalLogViewer } from "../../../../src/eval-log-viewer";
+import { EvalLogViewer } from "../../../../src/query-evaluation-logging";
 import { QueryRunner } from "../../../../src/query-server/query-runner";
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import { QueryHistoryInfo } from "../../../../src/query-history/query-history-info";
@@ -155,9 +155,7 @@ describe("QueryHistoryManager", () => {
           it("should show results", async () => {
             queryHistoryManager = await createMockQueryHistory(allHistory);
             const itemClicked = localQueryHistory[0];
-            await queryHistoryManager.handleItemClicked(itemClicked, [
-              itemClicked,
-            ]);
+            await queryHistoryManager.handleItemClicked(itemClicked);
 
             expect(
               localQueriesResultsViewStub.showResults,
@@ -175,9 +173,7 @@ describe("QueryHistoryManager", () => {
           it("should do nothing", async () => {
             queryHistoryManager = await createMockQueryHistory(allHistory);
             const itemClicked = localQueryHistory[2];
-            await queryHistoryManager.handleItemClicked(itemClicked, [
-              itemClicked,
-            ]);
+            await queryHistoryManager.handleItemClicked(itemClicked);
 
             expect(
               localQueriesResultsViewStub.showResults,
@@ -191,9 +187,7 @@ describe("QueryHistoryManager", () => {
           it("should show results", async () => {
             queryHistoryManager = await createMockQueryHistory(allHistory);
             const itemClicked = variantAnalysisHistory[0];
-            await queryHistoryManager.handleItemClicked(itemClicked, [
-              itemClicked,
-            ]);
+            await queryHistoryManager.handleItemClicked(itemClicked);
 
             expect(variantAnalysisManagerStub.showView).toHaveBeenCalledTimes(
               1,
@@ -211,9 +205,7 @@ describe("QueryHistoryManager", () => {
           it("should show results", async () => {
             queryHistoryManager = await createMockQueryHistory(allHistory);
             const itemClicked = variantAnalysisHistory[1];
-            await queryHistoryManager.handleItemClicked(itemClicked, [
-              itemClicked,
-            ]);
+            await queryHistoryManager.handleItemClicked(itemClicked);
 
             expect(variantAnalysisManagerStub.showView).toHaveBeenCalledTimes(
               1,
@@ -226,25 +218,6 @@ describe("QueryHistoryManager", () => {
             );
           });
         });
-      });
-    });
-
-    describe("double click", () => {
-      it("should do nothing", async () => {
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-        const itemClicked = allHistory[0];
-        const secondItemClicked = allHistory[1];
-
-        await queryHistoryManager.handleItemClicked(itemClicked, [
-          itemClicked,
-          secondItemClicked,
-        ]);
-
-        expect(localQueriesResultsViewStub.showResults).not.toHaveBeenCalled();
-        expect(variantAnalysisManagerStub.showView).not.toBeCalled();
-        expect(
-          queryHistoryManager.treeDataProvider.getCurrent(),
-        ).toBeUndefined();
       });
     });
   });
@@ -278,9 +251,7 @@ describe("QueryHistoryManager", () => {
           );
 
           // remove an item
-          await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-            toDelete,
-          ]);
+          await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
         });
 
         it("should remove the item", () => {
@@ -320,9 +291,7 @@ describe("QueryHistoryManager", () => {
           await queryHistoryManager.treeView.reveal(toDelete, {
             select: true,
           });
-          await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-            toDelete,
-          ]);
+          await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
         });
 
         it("should remove the item", () => {
@@ -401,9 +370,7 @@ describe("QueryHistoryManager", () => {
 
           it("should remove the item", async () => {
             // remove an item
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
             expect(
               variantAnalysisManagerStub.removeVariantAnalysis,
@@ -415,9 +382,7 @@ describe("QueryHistoryManager", () => {
 
           it("should not change the selection", async () => {
             // remove an item
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
             expect(queryHistoryManager.treeDataProvider.getCurrent()).toEqual(
               selected,
@@ -429,9 +394,7 @@ describe("QueryHistoryManager", () => {
 
           it("should show a modal asking 'Are you sure?'", async () => {
             // remove an item
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
             expect(showBinaryChoiceDialogSpy).toHaveBeenCalledWith(
               "You are about to delete this query: a-query-name (javascript). Are you sure?",
@@ -440,9 +403,7 @@ describe("QueryHistoryManager", () => {
 
           it("should show a toast notification with a link to GitHub Actions", async () => {
             // remove an item
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
             expect(showInformationMessageWithActionSpy).toHaveBeenCalled();
           });
@@ -454,9 +415,7 @@ describe("QueryHistoryManager", () => {
 
             it("should not delete the item", async () => {
               // remove an item
-              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-                toDelete,
-              ]);
+              await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
               expect(queryHistoryManager.treeDataProvider.allHistory).toContain(
                 toDelete,
@@ -465,9 +424,7 @@ describe("QueryHistoryManager", () => {
 
             it("should not show a toast notification", async () => {
               // remove an item
-              await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-                toDelete,
-              ]);
+              await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
 
               expect(
                 showInformationMessageWithActionSpy,
@@ -493,9 +450,7 @@ describe("QueryHistoryManager", () => {
             await queryHistoryManager.treeView.reveal(toDelete, {
               select: true,
             });
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
           });
 
           it("should remove the item", () => {
@@ -555,9 +510,7 @@ describe("QueryHistoryManager", () => {
             );
 
             // remove an item
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
           });
 
           it("should remove the item", () => {
@@ -600,9 +553,7 @@ describe("QueryHistoryManager", () => {
             await queryHistoryManager.treeView.reveal(toDelete, {
               select: true,
             });
-            await queryHistoryManager.handleRemoveHistoryItem(toDelete, [
-              toDelete,
-            ]);
+            await queryHistoryManager.handleRemoveHistoryItem([toDelete]);
           });
 
           it("should remove the item", () => {
@@ -640,7 +591,7 @@ describe("QueryHistoryManager", () => {
         const inProgress1 = localQueryHistory[4];
         const cancelSpy = jest.spyOn(inProgress1, "cancel");
 
-        await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
+        await queryHistoryManager.handleCancel([inProgress1]);
         expect(cancelSpy).toBeCalledTimes(1);
       });
 
@@ -654,10 +605,7 @@ describe("QueryHistoryManager", () => {
         const cancelSpy1 = jest.spyOn(inProgress1, "cancel");
         const cancelSpy2 = jest.spyOn(inProgress2, "cancel");
 
-        await queryHistoryManager.handleCancel(inProgress1, [
-          inProgress1,
-          inProgress2,
-        ]);
+        await queryHistoryManager.handleCancel([inProgress1, inProgress2]);
         expect(cancelSpy1).toBeCalled();
         expect(cancelSpy2).toBeCalled();
       });
@@ -668,7 +616,7 @@ describe("QueryHistoryManager", () => {
         // cancelling the selected item
         const inProgress1 = variantAnalysisHistory[1];
 
-        await queryHistoryManager.handleCancel(inProgress1, [inProgress1]);
+        await queryHistoryManager.handleCancel([inProgress1]);
         expect(cancelVariantAnalysisSpy).toBeCalledWith(
           inProgress1.variantAnalysis.id,
         );
@@ -681,10 +629,7 @@ describe("QueryHistoryManager", () => {
         const inProgress1 = variantAnalysisHistory[1];
         const inProgress2 = variantAnalysisHistory[3];
 
-        await queryHistoryManager.handleCancel(inProgress1, [
-          inProgress1,
-          inProgress2,
-        ]);
+        await queryHistoryManager.handleCancel([inProgress1, inProgress2]);
         expect(cancelVariantAnalysisSpy).toBeCalledWith(
           inProgress1.variantAnalysis.id,
         );
@@ -702,7 +647,7 @@ describe("QueryHistoryManager", () => {
         const completed = localQueryHistory[0];
         const cancelSpy = jest.spyOn(completed, "cancel");
 
-        await queryHistoryManager.handleCancel(completed, [completed]);
+        await queryHistoryManager.handleCancel([completed]);
         expect(cancelSpy).not.toBeCalledTimes(1);
       });
 
@@ -716,7 +661,7 @@ describe("QueryHistoryManager", () => {
         const cancelSpy = jest.spyOn(completed, "cancel");
         const cancelSpy2 = jest.spyOn(failed, "cancel");
 
-        await queryHistoryManager.handleCancel(completed, [completed, failed]);
+        await queryHistoryManager.handleCancel([completed, failed]);
         expect(cancelSpy).not.toBeCalledTimes(1);
         expect(cancelSpy2).not.toBeCalledTimes(1);
       });
@@ -727,9 +672,7 @@ describe("QueryHistoryManager", () => {
         // cancelling the selected item
         const completedVariantAnalysis = variantAnalysisHistory[0];
 
-        await queryHistoryManager.handleCancel(completedVariantAnalysis, [
-          completedVariantAnalysis,
-        ]);
+        await queryHistoryManager.handleCancel([completedVariantAnalysis]);
         expect(cancelVariantAnalysisSpy).not.toBeCalledWith(
           completedVariantAnalysis.variantAnalysis,
         );
@@ -742,7 +685,7 @@ describe("QueryHistoryManager", () => {
         const completedVariantAnalysis = variantAnalysisHistory[0];
         const failedVariantAnalysis = variantAnalysisHistory[2];
 
-        await queryHistoryManager.handleCancel(completedVariantAnalysis, [
+        await queryHistoryManager.handleCancel([
           completedVariantAnalysis,
           failedVariantAnalysis,
         ]);
@@ -761,7 +704,7 @@ describe("QueryHistoryManager", () => {
       queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
       const item = localQueryHistory[4];
-      await queryHistoryManager.handleCopyRepoList(item, [item]);
+      await queryHistoryManager.handleCopyRepoList(item);
 
       expect(executeCommand).not.toBeCalled();
     });
@@ -770,20 +713,11 @@ describe("QueryHistoryManager", () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
 
       const item = variantAnalysisHistory[1];
-      await queryHistoryManager.handleCopyRepoList(item, [item]);
+      await queryHistoryManager.handleCopyRepoList(item);
       expect(executeCommand).toBeCalledWith(
         "codeQL.copyVariantAnalysisRepoList",
         item.variantAnalysis.id,
       );
-    });
-
-    it("should not copy repo list for multiple variant analyses", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      const item1 = variantAnalysisHistory[1];
-      const item2 = variantAnalysisHistory[3];
-      await queryHistoryManager.handleCopyRepoList(item1, [item1, item2]);
-      expect(executeCommand).not.toBeCalled();
     });
   });
 
@@ -792,7 +726,7 @@ describe("QueryHistoryManager", () => {
       queryHistoryManager = await createMockQueryHistory(localQueryHistory);
 
       const item = localQueryHistory[4];
-      await queryHistoryManager.handleExportResults(item, [item]);
+      await queryHistoryManager.handleExportResults(item);
 
       expect(variantAnalysisManagerStub.exportResults).not.toBeCalled();
     });
@@ -801,19 +735,10 @@ describe("QueryHistoryManager", () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
 
       const item = variantAnalysisHistory[1];
-      await queryHistoryManager.handleExportResults(item, [item]);
+      await queryHistoryManager.handleExportResults(item);
       expect(variantAnalysisManagerStub.exportResults).toBeCalledWith(
         item.variantAnalysis.id,
       );
-    });
-
-    it("should not export results for multiple variant analyses", async () => {
-      queryHistoryManager = await createMockQueryHistory(allHistory);
-
-      const item1 = variantAnalysisHistory[1];
-      const item2 = variantAnalysisHistory[3];
-      await queryHistoryManager.handleExportResults(item1, [item1, item2]);
-      expect(variantAnalysisManagerStub.exportResults).not.toBeCalled();
     });
   });
 
@@ -876,24 +801,6 @@ describe("QueryHistoryManager", () => {
         expect(showQuickPickSpy).not.toBeCalled();
       });
 
-      it("should throw an error when a query is not successful", async () => {
-        const thisQuery = localQueryHistory[3];
-        queryHistoryManager = await createMockQueryHistory(allHistory);
-        allHistory[0] = createMockLocalQueryInfo({
-          dbName: "a",
-          queryWithResults: createMockQueryWithResults({
-            didRunSuccessfully: false,
-          }),
-        });
-
-        await expect(
-          (queryHistoryManager as any).findOtherQueryToCompare(thisQuery, [
-            thisQuery,
-            allHistory[0],
-          ]),
-        ).rejects.toThrow("Please select a successful query.");
-      });
-
       it("should throw an error when a databases are not the same", async () => {
         queryHistoryManager = await createMockQueryHistory(allHistory);
 
@@ -941,6 +848,26 @@ describe("QueryHistoryManager", () => {
           localQueryHistory[0],
         ]);
         expect(doCompareCallback).not.toBeCalled();
+      });
+
+      it("should throw an error when a query is not successful", async () => {
+        const thisQuery = localQueryHistory[3];
+        queryHistoryManager = await createMockQueryHistory(allHistory);
+        allHistory[0] = createMockLocalQueryInfo({
+          dbName: "a",
+          queryWithResults: createMockQueryWithResults({
+            didRunSuccessfully: false,
+          }),
+        });
+
+        await expect(
+          queryHistoryManager.handleCompareWith(thisQuery, [
+            thisQuery,
+            allHistory[0],
+          ]),
+        ).rejects.toThrow(
+          "Please only select local queries that have completed successfully.",
+        );
       });
     });
 

@@ -10,7 +10,7 @@
       * New telemetry events are added.
       * Deprecation or removal of commands.
       * Accumulation of many changes, none of which are individually big enough to warrant a minor bump, but which together are. This does not include changes which are purely internal to the extension, such as refactoring, or which are only available behind a feature flag.
-1. Double-check that the node version we're using matches the one used for VS Code. If it doesn't, you will then need to update the node version in the following files:
+1. Double-check that the node version we're using matches the one used for VS Code. You can find this info by seleting "About Visual Studio Code" from the top menu. If it doesn't match, you will then need to update the node version in the following files:
     * `.nvmrc` - this will enable `nvm` to automatically switch to the correct node version when you're in the project folder
     * `.github/workflows/main.yml` - all the "node-version: '[VERSION]'" settings
     * `.github/workflows/release.yml` - the "node-version: '[VERSION]'" setting

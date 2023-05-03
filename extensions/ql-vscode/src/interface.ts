@@ -10,13 +10,13 @@ import {
   env,
   WebviewPanel,
 } from "vscode";
-import * as cli from "./cli";
-import { CodeQLCliServer } from "./cli";
+import * as cli from "./codeql-cli/cli";
+import { CodeQLCliServer } from "./codeql-cli/cli";
 import {
   DatabaseEventKind,
   DatabaseItem,
   DatabaseManager,
-} from "./local-databases";
+} from "./databases/local-databases";
 import { showAndLogExceptionWithTelemetry } from "./helpers";
 import {
   asError,
@@ -66,7 +66,10 @@ import {
   transformBqrsResultSet,
   ResultSetSchema,
 } from "./pure/bqrs-cli-types";
-import { AbstractWebview, WebviewPanelConfig } from "./abstract-webview";
+import {
+  AbstractWebview,
+  WebviewPanelConfig,
+} from "./common/vscode/abstract-webview";
 import { isCanary, PAGE_SIZE } from "./config";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
 import { telemetryListener } from "./telemetry";

@@ -6,7 +6,7 @@ import {
   ProgressCallback,
   UserCancellationException,
   withProgress,
-} from "../progress";
+} from "../common/vscode/progress";
 import { showInformationMessageWithAction } from "../helpers";
 import { extLogger } from "../common";
 import { createGist } from "./gh-api/gh-api-client";

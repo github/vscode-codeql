@@ -11,10 +11,10 @@ export enum FilterKey {
 }
 
 export enum SortKey {
-  Name = "name",
-  Stars = "stars",
-  LastUpdated = "lastUpdated",
-  ResultsCount = "resultsCount",
+  Alphabetically = "alphabetically",
+  Popularity = "popularity",
+  MostRecentCommit = "mostRecentCommit",
+  NumberOfResults = "numberOfResults",
 }
 
 export type RepositoriesFilterSortState = {
@@ -30,7 +30,7 @@ export type RepositoriesFilterSortStateWithIds = RepositoriesFilterSortState & {
 export const defaultFilterSortState: RepositoriesFilterSortState = {
   searchValue: "",
   filterKey: FilterKey.All,
-  sortKey: SortKey.Name,
+  sortKey: SortKey.NumberOfResults,
 };
 
 export function matchesFilter(
@@ -76,7 +76,7 @@ export function compareRepository(
 ): (left: SortableRepository, right: SortableRepository) => number {
   return (left: SortableRepository, right: SortableRepository) => {
     // Highest to lowest
-    if (filterSortState?.sortKey === SortKey.Stars) {
+    if (filterSortState?.sortKey === SortKey.Popularity) {
       const stargazersCount =
         (right.stargazersCount ?? 0) - (left.stargazersCount ?? 0);
       if (stargazersCount !== 0) {
@@ -85,7 +85,7 @@ export function compareRepository(
     }
 
     // Newest to oldest
-    if (filterSortState?.sortKey === SortKey.LastUpdated) {
+    if (filterSortState?.sortKey === SortKey.MostRecentCommit) {
       const lastUpdated =
         (parseDate(right.updatedAt)?.getTime() ?? 0) -
         (parseDate(left.updatedAt)?.getTime() ?? 0);
@@ -118,7 +118,7 @@ export function compareWithResults(
 
   return (left: FilterAndSortableResult, right: FilterAndSortableResult) => {
     // Highest to lowest
-    if (filterSortState?.sortKey === SortKey.ResultsCount) {
+    if (filterSortState?.sortKey === SortKey.NumberOfResults) {
       const resultCount = (right.resultCount ?? 0) - (left.resultCount ?? 0);
       if (resultCount !== 0) {
         return resultCount;

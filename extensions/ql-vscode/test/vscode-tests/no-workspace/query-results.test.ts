@@ -18,7 +18,7 @@ import {
   SortDirection,
   SortedResultSetInfo,
 } from "../../../src/pure/interface-types";
-import { CodeQLCliServer, SourceInfo } from "../../../src/cli";
+import { CodeQLCliServer, SourceInfo } from "../../../src/codeql-cli/cli";
 import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../src/helpers";
 import {

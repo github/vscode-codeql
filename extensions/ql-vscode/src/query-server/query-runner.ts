@@ -1,7 +1,7 @@
 import { CancellationToken } from "vscode";
-import { CodeQLCliServer } from "../cli";
-import { ProgressCallback } from "../progress";
-import { DatabaseItem } from "../local-databases";
+import { CodeQLCliServer } from "../codeql-cli/cli";
+import { ProgressCallback } from "../common/vscode/progress";
+import { DatabaseItem } from "../databases/local-databases";
 import { QueryOutputDir } from "../run-queries-shared";
 import { Position, QueryResultType } from "../pure/new-messages";
 import { BaseLogger, Logger } from "../common";

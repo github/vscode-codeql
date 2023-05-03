@@ -11,14 +11,14 @@ import {
   DatabaseResolver,
   findSourceArchive,
   FullDatabaseOptions,
-} from "../../../src/local-databases";
+} from "../../../src/databases/local-databases";
 import { Logger } from "../../../src/common";
-import { ProgressCallback } from "../../../src/progress";
-import { CodeQLCliServer, DbInfo } from "../../../src/cli";
+import { ProgressCallback } from "../../../src/common/vscode/progress";
+import { CodeQLCliServer, DbInfo } from "../../../src/codeql-cli/cli";
 import {
   encodeArchiveBasePath,
   encodeSourceArchiveUri,
-} from "../../../src/archive-filesystem-provider";
+} from "../../../src/common/vscode/archive-filesystem-provider";
 import { testDisposeHandler } from "../test-dispose-handler";
 import { QueryRunner } from "../../../src/query-server/query-runner";
 import * as helpers from "../../../src/helpers";
@@ -749,17 +749,14 @@ describe("local databases", () => {
         mockDbItem.databaseUri,
       );
 
-      expect(resolveDatabaseContentsSpy).toBeCalledTimes(1);
+      expect(resolveDatabaseContentsSpy).toBeCalledTimes(2);
     });
 
     it("should set the database as the currently selected one", async () => {
-      const makeSelected = true;
-
       await databaseManager.openDatabase(
         {} as ProgressCallback,
         {} as CancellationToken,
         mockDbItem.databaseUri,
-        makeSelected,
       );
 
       expect(setCurrentDatabaseItemSpy).toBeCalledTimes(1);

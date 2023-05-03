@@ -11,7 +11,10 @@ import {
   VariantAnalysisScannedRepositoryResult,
   VariantAnalysisScannedRepositoryState,
 } from "../variant-analysis/shared/variant-analysis";
-import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
+import {
+  RepositoriesFilterSortState,
+  RepositoriesFilterSortStateWithIds,
+} from "./variant-analysis-filter-sort";
 import { ErrorLike } from "./errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 import { ExternalApiUsage } from "../data-extensions-editor/external-api-usage";
@@ -407,6 +410,11 @@ export interface SetVariantAnalysisMessage {
   variantAnalysis: VariantAnalysis;
 }
 
+export interface SetFilterSortStateMessage {
+  t: "setFilterSortState";
+  filterSortState: RepositoriesFilterSortState;
+}
+
 export type VariantAnalysisState = {
   variantAnalysisId: number;
 };
@@ -459,6 +467,7 @@ export interface ShowDataFlowPathsMessage {
 
 export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
+  | SetFilterSortStateMessage
   | SetRepoResultsMessage
   | SetRepoStatesMessage;
 

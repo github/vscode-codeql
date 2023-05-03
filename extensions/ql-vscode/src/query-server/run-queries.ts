@@ -1,5 +1,5 @@
 import { CancellationToken } from "vscode";
-import { ProgressCallback } from "../progress";
+import { ProgressCallback } from "../common/vscode/progress";
 import * as messages from "../pure/new-messages";
 import { QueryOutputDir } from "../run-queries-shared";
 import * as qsClient from "./query-server-client";
