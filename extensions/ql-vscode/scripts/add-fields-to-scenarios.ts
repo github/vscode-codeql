@@ -18,13 +18,16 @@ import { Octokit, type RestEndpointMethodTypes } from "@octokit/rest";
 import { throttling } from "@octokit/plugin-throttling";
 
 import { getFiles } from "./util/files";
-import type { GitHubApiRequest } from "../src/mocks/gh-api-request";
-import { isGetVariantAnalysisRequest } from "../src/mocks/gh-api-request";
+import type { GitHubApiRequest } from "../src/variant-analysis/gh-api/mocks/gh-api-request";
+import { isGetVariantAnalysisRequest } from "../src/variant-analysis/gh-api/mocks/gh-api-request";
 import { VariantAnalysis } from "../src/variant-analysis/gh-api/variant-analysis";
 import { RepositoryWithMetadata } from "../src/variant-analysis/gh-api/repository";
 
 const extensionDirectory = resolve(__dirname, "..");
-const scenariosDirectory = resolve(extensionDirectory, "src/mocks/scenarios");
+const scenariosDirectory = resolve(
+  extensionDirectory,
+  "src/variant-analysis/gh-api/mocks/scenarios",
+);
 
 // Make sure we don't run into rate limits by automatically waiting until we can
 // make another request.

@@ -1,16 +1,16 @@
 import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
-} from "../../archive-filesystem-provider";
+} from "../../common/vscode/archive-filesystem-provider";
 import {
   ColumnKindCode,
   EntityValue,
   getResultSetSchema,
   ResultSetSchema,
 } from "../../pure/bqrs-cli-types";
-import { CodeQLCliServer } from "../../cli";
+import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseManager, DatabaseItem } from "../../databases/local-databases";
-import { ProgressCallback } from "../../progress";
+import { ProgressCallback } from "../../common/vscode/progress";
 import { KeyType } from "./key-type";
 import {
   qlpackOfDatabase,

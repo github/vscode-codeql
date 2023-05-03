@@ -11,10 +11,10 @@ import {
   DatabaseItem,
   DatabaseManager,
 } from "../../src/databases/local-databases";
-import { CodeQLCliServer } from "../../src/cli";
+import { CodeQLCliServer } from "../../src/codeql-cli/cli";
 import { removeWorkspaceRefs } from "../../src/variant-analysis/run-remote-query";
 import { CodeQLExtensionInterface } from "../../src/extension";
-import { ProgressCallback } from "../../src/progress";
+import { ProgressCallback } from "../../src/common/vscode/progress";
 import { importArchiveDatabase } from "../../src/databases/database-fetcher";
 import { createMockCommandManager } from "../__mocks__/commandsMock";
 

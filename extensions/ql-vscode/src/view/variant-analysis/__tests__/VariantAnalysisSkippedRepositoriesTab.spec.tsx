@@ -4,10 +4,8 @@ import {
   VariantAnalysisSkippedRepositoriesTab,
   VariantAnalysisSkippedRepositoriesTabProps,
 } from "../VariantAnalysisSkippedRepositoriesTab";
-import {
-  defaultFilterSortState,
-  SortKey,
-} from "../../../pure/variant-analysis-filter-sort";
+import { SortKey } from "../../../pure/variant-analysis-filter-sort";
+import { permissiveFilterSortState } from "../../../../test/unit-tests/variant-analysis-filter-sort.test";
 
 describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
   const render = (props: VariantAnalysisSkippedRepositoriesTabProps) =>
@@ -142,7 +140,7 @@ describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
         ],
       },
       filterSortState: {
-        ...defaultFilterSortState,
+        ...permissiveFilterSortState,
         searchValue: "world",
       },
     });
@@ -177,7 +175,7 @@ describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
         ],
       },
       filterSortState: {
-        ...defaultFilterSortState,
+        ...permissiveFilterSortState,
         sortKey: SortKey.Popularity,
       },
     });
@@ -210,7 +208,7 @@ describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
         ],
       },
       filterSortState: {
-        ...defaultFilterSortState,
+        ...permissiveFilterSortState,
         sortKey: SortKey.NumberOfResults,
       },
     });

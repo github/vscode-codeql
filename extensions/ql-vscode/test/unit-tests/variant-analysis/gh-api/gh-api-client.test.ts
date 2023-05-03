@@ -5,11 +5,11 @@ import {
   submitVariantAnalysis,
 } from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import { createMockSubmission } from "../../../factories/variant-analysis/shared/variant-analysis-submission";
-import { MockGitHubApiServer } from "../../../../src/mocks/mock-gh-api-server";
+import { MockGitHubApiServer } from "../../../../src/variant-analysis/gh-api/mocks/mock-gh-api-server";
 
-import { response } from "../../../../src/mocks/scenarios/problem-query-success/0-getRepo.json";
-import { response as variantAnalysisJson_response } from "../../../../src/mocks/scenarios/problem-query-success/1-submitVariantAnalysis.json";
-import { response as variantAnalysisRepoJson_response } from "../../../../src/mocks/scenarios/problem-query-success/9-getVariantAnalysisRepo.json";
+import { response } from "../../../../src/variant-analysis/gh-api/mocks/scenarios/problem-query-success/0-getRepo.json";
+import { response as variantAnalysisJson_response } from "../../../../src/variant-analysis/gh-api/mocks/scenarios/problem-query-success/1-submitVariantAnalysis.json";
+import { response as variantAnalysisRepoJson_response } from "../../../../src/variant-analysis/gh-api/mocks/scenarios/problem-query-success/9-getVariantAnalysisRepo.json";
 import { testCredentialsWithRealOctokit } from "../../../factories/authentication";
 
 const mockServer = new MockGitHubApiServer();

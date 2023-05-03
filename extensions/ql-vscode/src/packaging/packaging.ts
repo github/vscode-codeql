@@ -1,4 +1,4 @@
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import {
   getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
@@ -9,7 +9,7 @@ import {
   ProgressCallback,
   UserCancellationException,
   withProgress,
-} from "../progress";
+} from "../common/vscode/progress";
 import { extLogger } from "../common";
 import { asError, getErrorStack } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";

@@ -54,8 +54,8 @@ import {
   ProgressCallback,
   UserCancellationException,
   withProgress,
-} from "../progress";
-import { CodeQLCliServer } from "../cli";
+} from "../common/vscode/progress";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,

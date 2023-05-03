@@ -23,8 +23,8 @@ import { watch } from "chokidar";
 import {
   activate as archiveFilesystemProvider_activate,
   zipArchiveScheme,
-} from "./archive-filesystem-provider";
-import { CodeQLCliServer } from "./cli";
+} from "./common/vscode/archive-filesystem-provider";
+import { CodeQLCliServer } from "./codeql-cli/cli";
 import {
   CliConfigListener,
   DistributionConfigListener,
@@ -54,7 +54,7 @@ import {
   FindDistributionResultKind,
   GithubApiError,
   GithubRateLimitedError,
-} from "./distribution";
+} from "./codeql-cli/distribution";
 import {
   showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
@@ -86,11 +86,11 @@ import {
   LegacyQueryRunner,
   QueryServerClient as LegacyQueryServerClient,
 } from "./query-server/legacy";
-import { QLTestAdapterFactory } from "./test-adapter";
-import { TestUIService } from "./test-ui";
+import { QLTestAdapterFactory } from "./query-testing/test-adapter";
+import { TestUIService } from "./query-testing/test-ui";
 import { CompareView } from "./compare/compare-view";
 import { initializeTelemetry } from "./telemetry";
-import { ProgressCallback, withProgress } from "./progress";
+import { ProgressCallback, withProgress } from "./common/vscode/progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";
 import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
@@ -102,7 +102,7 @@ import { VariantAnalysisView } from "./variant-analysis/variant-analysis-view";
 import { VariantAnalysisViewSerializer } from "./variant-analysis/variant-analysis-view-serializer";
 import { VariantAnalysisManager } from "./variant-analysis/variant-analysis-manager";
 import { createVariantAnalysisContentProvider } from "./variant-analysis/variant-analysis-content-provider";
-import { VSCodeMockGitHubApiServer } from "./mocks/vscode-mock-gh-api-server";
+import { VSCodeMockGitHubApiServer } from "./variant-analysis/gh-api/mocks/vscode-mock-gh-api-server";
 import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { DbModule } from "./databases/db-module";
@@ -121,9 +121,9 @@ import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
 import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extensions-editor-module";
-import { TestManager } from "./test-manager";
-import { TestRunner } from "./test-runner";
-import { TestManagerBase } from "./test-manager-base";
+import { TestManager } from "./query-testing/test-manager";
+import { TestRunner } from "./query-testing/test-runner";
+import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 
 /**

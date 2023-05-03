@@ -3,7 +3,7 @@ import { dump, load } from "js-yaml";
 import { basename, join } from "path";
 import { CancellationToken, window as Window, workspace, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseUI } from "../databases/local-databases-ui";
 import {
   getInitialQueryContents,
@@ -11,7 +11,10 @@ import {
   getQlPackForDbscheme,
   showBinaryChoiceDialog,
 } from "../helpers";
-import { ProgressCallback, UserCancellationException } from "../progress";
+import {
+  ProgressCallback,
+  UserCancellationException,
+} from "../common/vscode/progress";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { FALLBACK_QLPACK_FILENAME, getQlPackPath } from "../pure/ql";
 import { App } from "../common/app";

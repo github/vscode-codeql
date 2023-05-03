@@ -2,6 +2,15 @@
 
 ## [UNRELEASED]
 
+- Add settings `codeQL.variantAnalysis.defaultResultsFilter` and `codeQL.variantAnalysis.defaultResultsSort` for configuring how variant analysis results are filtered and sorted in the results view. The default is to show all repositories, and to sort by the number of results. [#2392](https://github.com/github/vscode-codeql/pull/2392)
+
+## 1.8.4 - 3 May 2023
+
+- Avoid repeated error messages when unable to monitor a variant analysis. [#2396](https://github.com/github/vscode-codeql/pull/2396)
+- Fix bug where a variant analysis didn't display the `#select` results set correctly when the [query metadata](https://codeql.github.com/docs/writing-codeql-queries/about-codeql-queries/#query-metadata) didn't exactly match the query results. [#2395](https://github.com/github/vscode-codeql/pull/2395)
+- On the variant analysis results page, show the count of successful analyses instead of completed analyses, and indicate the reason why analyses were not successful. [#2349](https://github.com/github/vscode-codeql/pull/2349)
+- Fix bug where the "CodeQL: Set Current Database" command didn't always select the database. [#2384](https://github.com/github/vscode-codeql/pull/2384)
+
 ## 1.8.3 - 26 April 2023
 
 - Added ability to filter repositories for a variant analysis to only those that have results [#2343](https://github.com/github/vscode-codeql/pull/2343)

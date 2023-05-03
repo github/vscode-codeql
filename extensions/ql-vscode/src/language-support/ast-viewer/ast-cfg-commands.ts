@@ -1,5 +1,5 @@
 import { Uri, window } from "vscode";
-import { withProgress } from "../../progress";
+import { withProgress } from "../../common/vscode/progress";
 import { AstViewer } from "./ast-viewer";
 import { AstCfgCommands } from "../../common/commands";
 import { LocalQueries } from "../../local-queries";
@@ -52,6 +52,8 @@ export function getAstCfgCommands({
             progress,
             token,
             undefined,
+            undefined,
+            res[1],
           );
         }
       },

@@ -27,7 +27,7 @@ import {
   ProgressContext,
   withInheritedProgress,
   withProgress,
-} from "../progress";
+} from "../common/vscode/progress";
 import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,

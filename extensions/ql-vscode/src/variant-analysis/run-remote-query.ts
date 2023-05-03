@@ -11,14 +11,17 @@ import {
   tmpDir,
 } from "../helpers";
 import { Credentials } from "../common/authentication";
-import * as cli from "../cli";
+import * as cli from "../codeql-cli/cli";
 import { extLogger } from "../common";
 import {
   getActionBranch,
   getRemoteControllerRepo,
   setRemoteControllerRepo,
 } from "../config";
-import { ProgressCallback, UserCancellationException } from "../progress";
+import {
+  ProgressCallback,
+  UserCancellationException,
+} from "../common/vscode/progress";
 import { RequestError } from "@octokit/types/dist-types";
 import { QueryMetadata } from "../pure/interface-types";
 import { getErrorMessage, REPO_REGEX } from "../pure/helpers-pure";

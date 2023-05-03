@@ -39,7 +39,7 @@ import {
   showNeverAskAgainDialog,
   walkDirectory,
 } from "../../../src/helpers";
-import { reportStreamProgress } from "../../../src/progress";
+import { reportStreamProgress } from "../../../src/common/vscode/progress";
 import { QueryLanguage } from "../../../src/common/query-language";
 import { Setting } from "../../../src/config";
 import { createMockCommandManager } from "../../__mocks__/commandsMock";

@@ -6,7 +6,7 @@ import {
   QueryCompareResult,
 } from "../pure/interface-types";
 import { Logger } from "../common";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../interface-utils";
 import {
@@ -18,7 +18,10 @@ import resultsDiff from "./resultsDiff";
 import { CompletedLocalQueryInfo } from "../query-results";
 import { assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
-import { AbstractWebview, WebviewPanelConfig } from "../abstract-webview";
+import {
+  AbstractWebview,
+  WebviewPanelConfig,
+} from "../common/vscode/abstract-webview";
 import { telemetryListener } from "../telemetry";
 import { redactableError } from "../pure/errors";
 import { showAndLogExceptionWithTelemetry } from "../helpers";

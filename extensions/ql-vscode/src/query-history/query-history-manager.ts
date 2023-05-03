@@ -40,7 +40,7 @@ import {
 } from "../query-status";
 import { readQueryHistoryFromFile, writeQueryHistoryToFile } from "./store";
 import { pathExists } from "fs-extra";
-import { CliVersionConstraint } from "../cli";
+import { CliVersionConstraint } from "../codeql-cli/cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
 import { ResultsView } from "../interface";
 import { WebviewReveal } from "../interface-utils";
@@ -55,7 +55,7 @@ import { HistoryTreeDataProvider } from "./history-tree-data-provider";
 import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryCommands } from "../common/commands";
 import { App } from "../common/app";
-import { tryOpenExternalFile } from "../vscode-utils/external-files";
+import { tryOpenExternalFile } from "../common/vscode/external-files";
 import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,

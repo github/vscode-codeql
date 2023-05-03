@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.8.4",
+  "version": "1.8.5",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -328,6 +328,36 @@
           "pattern": "^$|^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+/[a-zA-Z0-9-_]+$",
           "patternErrorMessage": "Please enter a valid GitHub repository",
           "markdownDescription": "[For internal use only] The name of the GitHub repository in which the GitHub Actions workflow is run when using the \"Run Variant Analysis\" command. The repository should be of the form `<owner>/<repo>`)."
+        },
+        "codeQL.variantAnalysis.defaultResultsFilter": {
+          "type": "string",
+          "default": "all",
+          "enum": [
+            "all",
+            "withResults"
+          ],
+          "enumDescriptions": [
+            "Show all repositories in the results view.",
+            "Show only repositories with results in the results view."
+          ],
+          "description": "The default filter to apply to the variant analysis results view."
+        },
+        "codeQL.variantAnalysis.defaultResultsSort": {
+          "type": "string",
+          "default": "numberOfResults",
+          "enum": [
+            "alphabetically",
+            "popularity",
+            "mostRecentCommit",
+            "numberOfResults"
+          ],
+          "enumDescriptions": [
+            "Sort repositories alphabetically in the results view.",
+            "Sort repositories by popularity in the results view.",
+            "Sort repositories by most recent commit in the results view.",
+            "Sort repositories by number of results in the results view."
+          ],
+          "description": "The default sorting order for repositories in the variant analysis results view."
         },
         "codeQL.logInsights.joinOrderWarningThreshold": {
           "type": "number",
@@ -1696,7 +1726,7 @@
     "markdownlint-cli2-formatter-pretty": "^0.0.4",
     "mini-css-extract-plugin": "^2.6.1",
     "npm-run-all": "^4.1.5",
-    "patch-package": "^6.5.0",
+    "patch-package": "^7.0.0",
     "prettier": "^2.7.1",
     "tar-stream": "^3.0.0",
     "through2": "^4.0.2",

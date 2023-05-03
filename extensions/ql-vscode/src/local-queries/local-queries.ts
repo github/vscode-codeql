@@ -1,4 +1,8 @@
-import { ProgressCallback, ProgressUpdate, withProgress } from "../progress";
+import {
+  ProgressCallback,
+  ProgressUpdate,
+  withProgress,
+} from "../common/vscode/progress";
 import {
   CancellationToken,
   CancellationTokenSource,
@@ -37,7 +41,7 @@ import {
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "../interface-utils";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
-import { CodeQLCliServer } from "../cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { DisposableObject } from "../pure/disposable-object";
@@ -333,6 +337,7 @@ export class LocalQueries extends DisposableObject {
     token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
     range?: Range,
+    templates?: Record<string, string>,
   ): Promise<void> {
     await this.compileAndRunQueryInternal(
       quickEval,
@@ -341,6 +346,7 @@ export class LocalQueries extends DisposableObject {
       token,
       databaseItem,
       range,
+      templates,
     );
   }
 
@@ -352,6 +358,7 @@ export class LocalQueries extends DisposableObject {
     token: CancellationToken,
     databaseItem: DatabaseItem | undefined,
     range?: Range,
+    templates?: Record<string, string>,
   ): Promise<CoreCompletedQuery> {
     let queryPath: string;
     if (queryUri !== undefined) {
@@ -391,7 +398,7 @@ export class LocalQueries extends DisposableObject {
       extensionPacks,
       this.queryStorageDir,
       undefined,
-      undefined,
+      templates,
     );
 
     // handle cancellation from the history view.

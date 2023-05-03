@@ -1,4 +1,4 @@
-import { CodeQLCliServer } from "../../cli";
+import { CodeQLCliServer } from "../../codeql-cli/cli";
 import {
   DecodedBqrsChunk,
   BqrsId,

@@ -2,7 +2,7 @@ import { pathExists, stat, remove } from "fs-extra";
 import { glob } from "glob";
 import { join, basename, resolve, relative, dirname, extname } from "path";
 import * as vscode from "vscode";
-import * as cli from "../cli";
+import * as cli from "../codeql-cli/cli";
 import { ExtensionContext } from "vscode";
 import {
   showAndLogWarningMessage,
@@ -13,13 +13,13 @@ import {
   getFirstWorkspaceFolder,
   showNeverAskAgainDialog,
 } from "../helpers";
-import { ProgressCallback, withProgress } from "../progress";
+import { ProgressCallback, withProgress } from "../common/vscode/progress";
 import {
   zipArchiveScheme,
   encodeArchiveBasePath,
   decodeSourceArchiveUri,
   encodeSourceArchiveUri,
-} from "../archive-filesystem-provider";
+} from "../common/vscode/archive-filesystem-provider";
 import { DisposableObject } from "../pure/disposable-object";
 import { Logger, extLogger } from "../common";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
@@ -625,7 +625,7 @@ export class DatabaseManager extends DisposableObject {
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     uri: vscode.Uri,
-    makeSelected = false,
+    makeSelected = true,
     displayName?: string,
     isTutorialDatabase?: boolean,
   ): Promise<DatabaseItem> {
@@ -649,12 +649,15 @@ export class DatabaseManager extends DisposableObject {
   public async addExistingDatabaseItem(
     databaseItem: DatabaseItem,
     progress: ProgressCallback,
-    makeSelected = true,
+    makeSelected: boolean,
     token: vscode.CancellationToken,
     isTutorialDatabase?: boolean,
   ): Promise<DatabaseItem> {
     const existingItem = this.findDatabaseItem(databaseItem.databaseUri);
     if (existingItem !== undefined) {
+      if (makeSelected) {
+        await this.setCurrentDatabaseItem(existingItem);
+      }
       return existingItem;
     }
 

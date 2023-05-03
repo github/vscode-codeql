@@ -1,4 +1,4 @@
-import { UserCancellationException } from "../progress";
+import { UserCancellationException } from "../common/vscode/progress";
 import { DbManager } from "../databases/db-manager";
 import { DbItemKind } from "../databases/db-item";
 

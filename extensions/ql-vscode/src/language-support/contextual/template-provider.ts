@@ -14,11 +14,11 @@ import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
   zipArchiveScheme,
-} from "../../archive-filesystem-provider";
-import { CodeQLCliServer } from "../../cli";
+} from "../../common/vscode/archive-filesystem-provider";
+import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseManager } from "../../databases/local-databases";
 import { CachedOperation } from "../../helpers";
-import { ProgressCallback, withProgress } from "../../progress";
+import { ProgressCallback, withProgress } from "../../common/vscode/progress";
 import { KeyType } from "./key-type";
 import {
   FullLocationLink,
@@ -30,7 +30,11 @@ import {
   resolveQueries,
   runContextualQuery,
 } from "./query-resolver";
-import { isCanary, NO_CACHE_AST_VIEWER } from "../../config";
+import {
+  isCanary,
+  NO_CACHE_AST_VIEWER,
+  NO_CACHE_CONTEXTUAL_QUERIES,
+} from "../../config";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { AstBuilder } from "../ast-viewer/ast-builder";
 
@@ -59,7 +63,10 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
     position: Position,
     _token: CancellationToken,
   ): Promise<LocationLink[]> {
-    const fileLinks = await this.cache.get(document.uri.toString());
+    const fileLinks = this.shouldUseCache()
+      ? await this.cache.get(document.uri.toString())
+      : await this.getDefinitions(document.uri.toString());
+
     const locLinks: LocationLink[] = [];
     for (const link of fileLinks) {
       if (link.originSelectionRange!.contains(position)) {
@@ -67,6 +74,10 @@ export class TemplateQueryDefinitionProvider implements DefinitionProvider {
       }
     }
     return locLinks;
+  }
+
+  private shouldUseCache() {
+    return !(isCanary() && NO_CACHE_CONTEXTUAL_QUERIES.getValue<boolean>());
   }
 
   private async getDefinitions(uriString: string): Promise<LocationLink[]> {
@@ -118,7 +129,10 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
     _context: ReferenceContext,
     _token: CancellationToken,
   ): Promise<Location[]> {
-    const fileLinks = await this.cache.get(document.uri.toString());
+    const fileLinks = this.shouldUseCache()
+      ? await this.cache.get(document.uri.toString())
+      : await this.getReferences(document.uri.toString());
+
     const locLinks: Location[] = [];
     for (const link of fileLinks) {
       if (link.targetRange!.contains(position)) {
@@ -129,6 +143,10 @@ export class TemplateQueryReferenceProvider implements ReferenceProvider {
       }
     }
     return locLinks;
+  }
+
+  private shouldUseCache() {
+    return !(isCanary() && NO_CACHE_CONTEXTUAL_QUERIES.getValue<boolean>());
   }
 
   private async getReferences(uriString: string): Promise<FullLocationLink[]> {
@@ -182,7 +200,7 @@ export class TemplatePrintAstProvider {
         "Cannot view the AST. Please select a valid source file inside a CodeQL database.",
       );
     }
-    const completedQuery = this.shouldCache()
+    const completedQuery = this.shouldUseCache()
       ? await this.cache.get(fileUri.toString(), progress, token)
       : await this.getAst(fileUri.toString(), progress, token);
 
@@ -194,7 +212,7 @@ export class TemplatePrintAstProvider {
     );
   }
 
-  private shouldCache() {
+  private shouldUseCache() {
     return !(isCanary() && NO_CACHE_AST_VIEWER.getValue<boolean>());
   }
 
@@ -271,7 +289,14 @@ export class TemplatePrintCfgProvider {
     if (!document) {
       return;
     }
-    return await this.cache.get(document.uri.toString());
+
+    return this.shouldUseCache()
+      ? await this.cache.get(document.uri.toString())
+      : await this.getCfgUri(document.uri.toString());
+  }
+
+  private shouldUseCache() {
+    return !(isCanary() && NO_CACHE_AST_VIEWER.getValue<boolean>());
   }
 
   private async getCfgUri(

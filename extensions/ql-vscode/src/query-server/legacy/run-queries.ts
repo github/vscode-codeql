@@ -3,7 +3,7 @@ import { basename } from "path";
 import { CancellationToken, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 
-import * as cli from "../../cli";
+import * as cli from "../../codeql-cli/cli";
 import {
   DatabaseContentsWithDbScheme,
   DatabaseItem,
@@ -14,7 +14,7 @@ import {
   showAndLogWarningMessage,
   upgradesTmpDir,
 } from "../../helpers";
-import { ProgressCallback } from "../../progress";
+import { ProgressCallback } from "../../common/vscode/progress";
 import { QueryMetadata } from "../../pure/interface-types";
 import { extLogger, Logger } from "../../common";
 import * as messages from "../../pure/legacy-messages";

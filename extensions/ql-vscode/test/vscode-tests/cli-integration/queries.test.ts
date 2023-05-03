@@ -18,7 +18,10 @@ import {
   ensureTestDatabase,
   getActivatedExtension,
 } from "../global.helper";
-import { CliVersionConstraint, CodeQLCliServer } from "../../../src/cli";
+import {
+  CliVersionConstraint,
+  CodeQLCliServer,
+} from "../../../src/codeql-cli/cli";
 import { describeWithCodeQL } from "../cli";
 import {
   CoreCompletedQuery,
@@ -33,7 +36,7 @@ import {
   AppCommandManager,
   QueryServerCommands,
 } from "../../../src/common/commands";
-import { ProgressCallback } from "../../../src/progress";
+import { ProgressCallback } from "../../../src/common/vscode/progress";
 import { withDebugController } from "./debugger/debug-controller";
 
 type DebugMode = "localQueries" | "debug";

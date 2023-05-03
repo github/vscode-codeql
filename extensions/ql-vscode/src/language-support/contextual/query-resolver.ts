@@ -16,11 +16,11 @@ import {
   nameOfKeyType,
   tagOfKeyType,
 } from "./key-type";
-import { CodeQLCliServer } from "../../cli";
+import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseItem } from "../../databases/local-databases";
 import { extLogger, TeeLogger } from "../../common";
 import { CancellationToken } from "vscode";
-import { ProgressCallback } from "../../progress";
+import { ProgressCallback } from "../../common/vscode/progress";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { redactableError } from "../../pure/errors";
 import { QLPACK_FILENAMES } from "../../pure/ql";

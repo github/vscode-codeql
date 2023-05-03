@@ -13,10 +13,8 @@ import {
 import { createMockVariantAnalysis } from "../../../../test/factories/variant-analysis/shared/variant-analysis";
 import { createMockRepositoryWithMetadata } from "../../../../test/factories/variant-analysis/shared/repository";
 import { createMockScannedRepo } from "../../../../test/factories/variant-analysis/shared/scanned-repositories";
-import {
-  defaultFilterSortState,
-  SortKey,
-} from "../../../pure/variant-analysis-filter-sort";
+import { SortKey } from "../../../pure/variant-analysis-filter-sort";
+import { permissiveFilterSortState } from "../../../../test/unit-tests/variant-analysis-filter-sort.test";
 
 describe(VariantAnalysisAnalyzedRepos.name, () => {
   const defaultVariantAnalysis = createMockVariantAnalysis({
@@ -170,7 +168,7 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
   it("uses the search value", () => {
     render({
       filterSortState: {
-        ...defaultFilterSortState,
+        ...permissiveFilterSortState,
         searchValue: "world-2",
       },
     });
@@ -190,7 +188,7 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
   it("uses the sort key", async () => {
     render({
       filterSortState: {
-        ...defaultFilterSortState,
+        ...permissiveFilterSortState,
         sortKey: SortKey.Popularity,
       },
     });
@@ -209,7 +207,7 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
   it("uses the 'Number of results' sort key", async () => {
     render({
       filterSortState: {
-        ...defaultFilterSortState,
+        ...permissiveFilterSortState,
         sortKey: SortKey.NumberOfResults,
       },
     });
