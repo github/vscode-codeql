@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.8.4 - 3 May 2023
 
 - Avoid repeated error messages when unable to monitor a variant analysis. [#2396](https://github.com/github/vscode-codeql/pull/2396)
