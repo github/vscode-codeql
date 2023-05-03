@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Add settings `codeQL.variantAnalysis.defaultResultsFilter` and `codeQL.variantAnalysis.defaultResultsSort` for configuring how variant analysis results are filtered and sorted in the results view. The default is to show all repositories, and to sort by the number of results. [#2392](https://github.com/github/vscode-codeql/pull/2392)
+
 ## 1.8.4 - 3 May 2023
 
 - Avoid repeated error messages when unable to monitor a variant analysis. [#2396](https://github.com/github/vscode-codeql/pull/2396)

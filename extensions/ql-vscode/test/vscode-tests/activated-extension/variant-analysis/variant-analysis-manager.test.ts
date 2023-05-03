@@ -36,10 +36,7 @@ import {
 import { createTimestampFile } from "../../../../src/helpers";
 import { createMockVariantAnalysisRepoTask } from "../../../factories/variant-analysis/gh-api/variant-analysis-repo-task";
 import { VariantAnalysisRepoTask } from "../../../../src/variant-analysis/gh-api/variant-analysis";
-import {
-  defaultFilterSortState,
-  SortKey,
-} from "../../../../src/pure/variant-analysis-filter-sort";
+import { SortKey } from "../../../../src/pure/variant-analysis-filter-sort";
 import { DbManager } from "../../../../src/databases/db-manager";
 import { App } from "../../../../src/common/app";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";
@@ -49,6 +46,7 @@ import {
   REPO_STATES_FILENAME,
   writeRepoStates,
 } from "../../../../src/variant-analysis/repo-states-store";
+import { permissiveFilterSortState } from "../../../unit-tests/variant-analysis-filter-sort.test";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);
@@ -738,9 +736,9 @@ describe("Variant Analysis Manager", () => {
         expect(parsed).toEqual({
           name: "new-repo-list",
           repositories: [
-            scannedRepos[4].repository.fullName,
             scannedRepos[2].repository.fullName,
             scannedRepos[0].repository.fullName,
+            scannedRepos[4].repository.fullName,
           ],
         });
       });
@@ -749,7 +747,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.copyRepoListToClipboard(
           variantAnalysis.id,
           {
-            ...defaultFilterSortState,
+            ...permissiveFilterSortState,
             sortKey: SortKey.NumberOfResults,
           },
         );
@@ -772,7 +770,7 @@ describe("Variant Analysis Manager", () => {
         await variantAnalysisManager.copyRepoListToClipboard(
           variantAnalysis.id,
           {
-            ...defaultFilterSortState,
+            ...permissiveFilterSortState,
             searchValue: "ban",
           },
         );
