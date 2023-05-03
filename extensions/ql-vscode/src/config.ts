@@ -639,14 +639,14 @@ export async function setQlPackLocation(folder: string | undefined) {
 }
 
 /**
- * Option to turn on/off ability to autogenerate QL packs. The options are "ask", "yes", "never"
+ * Option to turn on/off ability to autogenerate QL packs. The options are "ask" and "never"
  **/
 const AUTOGENERATE_QL_PACKS = new Setting(
   "autogenerateQlPacks",
   CREATE_QUERY_COMMAND,
 );
 
-const AutogenerateQLPacksValues = ["ask", "yes", "never"] as const;
+const AutogenerateQLPacksValues = ["ask", "never"] as const;
 type AutogenerateQLPacks = typeof AutogenerateQLPacksValues[number];
 
 export function getAutogenerateQlPacks(): AutogenerateQLPacks {

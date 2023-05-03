@@ -351,15 +351,13 @@
           "default": "ask",
           "enum": [
             "ask",
-            "yes",
             "never"
           ],
           "enumDescriptions": [
-            "Ask each time a new local CodeQL database is added.",
-            "Always automatically create a QL pack if one does not already exist.",
-            "Never automatically create a QL pack."
+            "Ask to create a QL pack when a new CodeQL database is added.",
+            "Never create a QL pack when a new CodeQL database is added."
           ],
-          "description": "Should a QL pack be created when downloading a CodeQL database and a QL pack does not already exist."
+          "description": "Ask the user to generate a QL pack when a new CodeQL database is downloaded."
         }
       }
     },
