@@ -410,7 +410,7 @@ export interface SetVariantAnalysisMessage {
   variantAnalysis: VariantAnalysis;
 }
 
-export interface setFilterSortStateMessage {
+export interface SetFilterSortStateMessage {
   t: "setFilterSortState";
   filterSortState: RepositoriesFilterSortState;
 }
@@ -467,7 +467,7 @@ export interface ShowDataFlowPathsMessage {
 
 export type ToVariantAnalysisMessage =
   | SetVariantAnalysisMessage
-  | setFilterSortStateMessage
+  | SetFilterSortStateMessage
   | SetRepoResultsMessage
   | SetRepoStatesMessage;
 
