@@ -18,7 +18,9 @@ choose to go through some of the Optional Test Cases.
 
 ## Required Test Cases
 
-### Test Case 1: MRVA - Running a problem path query and viewing results
+### MRVA
+
+#### Test Case 1: Running a problem path query and viewing results
 
 1. Open the [javascript UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
 2. Run a MRVA against the following repo list:
@@ -47,7 +49,7 @@ choose to go through some of the Optional Test Cases.
 6. Once the query completes:
    - Check that the query history item is updated to show the query status as "complete"
 
-### Test Case 2: MRVA - Running a problem query and viewing results
+#### Test Case 2: Running a problem query and viewing results
 
 1. Open the [javascript ReDoS query](https://github.com/github/codeql/blob/main/javascript/ql/src/Performance/ReDoS.ql).
 2. Run a MRVA against the "Top 10" repositories.
@@ -60,7 +62,7 @@ choose to go through some of the Optional Test Cases.
 
    ![highlighted-code-snippet](images/highlighted-code-snippet.png)
 
-### Test Case 3: MRVA - Running a non-problem query and viewing results
+#### Test Case 3: Running a non-problem query and viewing results
 
 1. Open the [cpp FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
 2. Run a MRVA against a single repository (e.g. `google/brotli`).
@@ -73,7 +75,7 @@ choose to go through some of the Optional Test Cases.
 
    ![results-table](images/results-table.png)
 
-### Test Case 4: MRVA - Interacting with query history
+#### Test Case 4: Interacting with query history
 
 1. Click a history item (for MRVA):
    - Check that exporting results works
@@ -84,7 +86,7 @@ choose to go through some of the Optional Test Cases.
 3. Click "View Logs":
    - Check that the correct workflow is opened
 
-### Test Case 5: MRVA - Canceling a variant analysis run
+#### Test Case 5: Canceling a variant analysis run
 
 Run one of the above MRVAs, but cancel it from within VS Code:
 
@@ -92,9 +94,11 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 - Check that the workflow run is also canceled.
 - Check that any available results are visible in VS Code.
 
-### Test Case 6: MRVA - Change to a different colour theme
+### General
 
-Open one of the above MRVAs, try changing to a different colour theme and check that everything looks sensible.
+#### Test case 1: Change to a different colour theme
+
+Open at least one of the above MRVAs and at least one local query, then try changing to a different colour theme and check that everything looks sensible.
 Are there any components that are not showing up?
 
 ## Optional Test Cases
