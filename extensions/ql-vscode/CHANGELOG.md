@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.8.4 - 3 May 2023
 
 - Avoid repeated error messages when unable to monitor a MRVA query. [#2396](https://github.com/github/vscode-codeql/pull/2396)
 - Fix MRVA not displaying the `#select` results set correctly when the query metadata does not exactly match results sets. [#2395](https://github.com/github/vscode-codeql/pull/2395)
