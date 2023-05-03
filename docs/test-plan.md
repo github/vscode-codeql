@@ -20,7 +20,7 @@ choose to go through some of the Optional Test Cases.
 
 ### Test Case 1: MRVA - Running a problem path query and viewing results
 
-1. Open the [UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
+1. Open the [javascript UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
 2. Run a MRVA against the following repo list:
 
    ```json
@@ -49,25 +49,29 @@ choose to go through some of the Optional Test Cases.
 
 ### Test Case 2: MRVA - Running a problem query and viewing results
 
-1. Open the [ReDoS query](https://github.com/github/codeql/blob/main/javascript/ql/src/Performance/ReDoS.ql).
+1. Open the [javascript ReDoS query](https://github.com/github/codeql/blob/main/javascript/ql/src/Performance/ReDoS.ql).
 2. Run a MRVA against the "Top 10" repositories.
-3. Check that there is a notification message.
+3. Check that a notification message pops up and the results view is opened.
 4. Check the query history. It should:
    - Show that an item has been added to the query history
    - The item should be marked as "in progress".
-5. Once the query starts:
-   - Check that a notification is shown with a link to the results view
+5. Once the query completes:
    - Check that the results are rendered with an alert message and a highlighted code snippet:
-![highlighted-code-snippet](images/highlighted-code-snippet.png)
+
+   ![highlighted-code-snippet](images/highlighted-code-snippet.png)
 
 ### Test Case 3: MRVA - Running a non-problem query and viewing results
 
-1. Open the [FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
+1. Open the [cpp FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
 2. Run a MRVA against a single repository (e.g. `google/brotli`).
-3. Once the query starts:
-   - Open the query results
+3. Check that a notification message pops up and the results view is opened.
+4. Check the query history. It should:
+   - Show that an item has been added to the query history
+   - The item should be marked as "in progress".
+5. Once the query completes:
    - Check that the results show up in a table:
-![results-table](images/results-table.png)
+
+   ![results-table](images/results-table.png)
 
 ### Test Case 4: MRVA - Interacting with query history
 
@@ -75,9 +79,9 @@ choose to go through some of the Optional Test Cases.
    - Check that exporting results works
    - Check that sorting results works
    - Check that copying repo lists works
-2. Open the query results directory:
+2. Click "Open Results Directory":
    - Check that the correct directory is opened and there are results in it
-3. View logs
+3. Click "View Logs":
    - Check that the correct workflow is opened
 
 ### Test Case 5: MRVA - Canceling a variant analysis run
