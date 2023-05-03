@@ -2,6 +2,9 @@
 
 ## [UNRELEASED]
 
+- Avoid repeated error messages when unable to monitor a MRVA query. [#2396](https://github.com/github/vscode-codeql/pull/2396)
+- Fix MRVA not displaying the `#select` results set correctly when the query metadata does not exactly match results sets. [#2395](https://github.com/github/vscode-codeql/pull/2395)
+- Adds `codeQL.contextualQueries.disableCache` setting to help library authours to run and debug the find references and find dependencies contetextual queries without relying on the implicit cache. [#2385](https://github.com/github/vscode-codeql/pull/2385)
 - On the variant analysis results page, show the count of successful analyses instead of completed analyses, and indicate the reason why analyses were not successful. [#2349](https://github.com/github/vscode-codeql/pull/2349)
 - Fix bug where the "CodeQL: Set Current Database" command didn't always select the database. [#2384](https://github.com/github/vscode-codeql/pull/2384)
 
