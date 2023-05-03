@@ -646,10 +646,14 @@ const AUTOGENERATE_QL_PACKS = new Setting(
   CREATE_QUERY_COMMAND,
 );
 
-export function getAutogenerateQlPacks(): string | undefined {
-  return AUTOGENERATE_QL_PACKS.getValue<string>() || undefined;
+const AutogenerateQLPacksValues = ["ask", "yes", "never"] as const;
+type AutogenerateQLPacks = typeof AutogenerateQLPacksValues[number];
+
+export function getAutogenerateQlPacks(): AutogenerateQLPacks {
+  const value = AUTOGENERATE_QL_PACKS.getValue<AutogenerateQLPacks>();
+  return AutogenerateQLPacksValues.includes(value) ? value : "ask";
 }
 
-export async function setAutogenerateQlPacks(choice: string | undefined) {
+export async function setAutogenerateQlPacks(choice: AutogenerateQLPacks) {
   await AUTOGENERATE_QL_PACKS.updateValue(choice, ConfigurationTarget.Global);
 }
