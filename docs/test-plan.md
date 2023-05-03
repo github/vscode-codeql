@@ -11,16 +11,67 @@ We don't need to test features (and permutations of features) that are covered b
 
 ## Before releasing the VS Code extension
 
-- Go through the required test cases listed below
+- Run at least one local query and MRVA using the existing version of the extension (to generate "old" query history items).
+- Go through the required test cases listed below.
 - Check major PRs since the previous release for specific one-off things to test. Based on that, you might want to
 choose to go through some of the Optional Test Cases.
-- Run a query using the existing version of the extension (to generate an "old" query history item)
 
 ## Required Test Cases
 
-### Test Case 1: MRVA - Running a problem path query and viewing results
+### Local databases
 
-1. Open the [UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
+#### Test case 1: Download a database from GitHub
+
+1. Click "Download Database from GitHub" and enter `angular-cn/ng-nice` and select the javascript language if prompted
+
+#### Test case 2: Import a database from an archive
+
+1. Obtain a javascript database for `babel/babel`
+   - You can do `gh api "/repos/babel/babel/code-scanning/codeql/databases/javascript" -H "Accept: application/zip" > babel.zip` to fetch a database from GitHub.
+2. Click "Choose Database from Archive" and select the file you just downloaded above.
+
+### Local queries
+
+#### Test case 1: Running a path problem query and viewing results
+
+1. Open the [javascript UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
+2. Select the `angular-cn/ng-nice` database (or download it if you don't have one already)
+3. Run a local query.
+4. Once the query completes:
+   - Check that the result messages are rendered
+   - Check that the paths can be opened and paths are rendered correctly
+   - Check that alert locations can be clicked on
+
+#### Test case 2: Running a problem query and viewing results
+
+1. Open the [javascript UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
+2. Select the `babel/babel` database (or download it if you don't have one already)
+3. Run a local query.
+4. Once the query completes:
+   - Check that the result messages are rendered
+   - Check that alert locations can be clicked on
+
+#### Test case 3: Running a non-probem query and viewing results
+
+1. Open the [cpp FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
+2. Select the `google/brotli` database (or download it if you don't have one already)
+3. Run a local query.
+4. Once the query completes:
+   - Check that the results table is rendered
+   - Check that alert locations can be clicked on
+
+#### Test case 3: Can use AST viewer
+
+1. Click on any code location from a previous query to open a source file from a database
+2. Open the AST viewing panel and click "View AST"
+3. Once the AST is computed:
+   - Check that it can be navigated
+
+### MRVA
+
+#### Test Case 1: Running a path problem query and viewing results
+
+1. Open the [javascript UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
 2. Run a MRVA against the following repo list:
 
    ```json
@@ -47,40 +98,44 @@ choose to go through some of the Optional Test Cases.
 6. Once the query completes:
    - Check that the query history item is updated to show the query status as "complete"
 
-### Test Case 2: MRVA - Running a problem query and viewing results
+#### Test Case 2: Running a problem query and viewing results
 
-1. Open the [ReDoS query](https://github.com/github/codeql/blob/main/javascript/ql/src/Performance/ReDoS.ql).
+1. Open the [javascript ReDoS query](https://github.com/github/codeql/blob/main/javascript/ql/src/Performance/ReDoS.ql).
 2. Run a MRVA against the "Top 10" repositories.
-3. Check that there is a notification message.
+3. Check that a notification message pops up and the results view is opened.
 4. Check the query history. It should:
    - Show that an item has been added to the query history
    - The item should be marked as "in progress".
-5. Once the query starts:
-   - Check that a notification is shown with a link to the results view
+5. Once the query completes:
    - Check that the results are rendered with an alert message and a highlighted code snippet:
-![highlighted-code-snippet](images/highlighted-code-snippet.png)
 
-### Test Case 3: MRVA - Running a non-problem query and viewing results
+   ![highlighted-code-snippet](images/highlighted-code-snippet.png)
 
-1. Open the [FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
+#### Test Case 3: Running a non-problem query and viewing results
+
+1. Open the [cpp FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
 2. Run a MRVA against a single repository (e.g. `google/brotli`).
-3. Once the query starts:
-   - Open the query results
+3. Check that a notification message pops up and the results view is opened.
+4. Check the query history. It should:
+   - Show that an item has been added to the query history
+   - The item should be marked as "in progress".
+5. Once the query completes:
    - Check that the results show up in a table:
-![results-table](images/results-table.png)
 
-### Test Case 4: MRVA - Interacting with query history
+   ![results-table](images/results-table.png)
+
+#### Test Case 4: Interacting with query history
 
 1. Click a history item (for MRVA):
    - Check that exporting results works
    - Check that sorting results works
    - Check that copying repo lists works
-2. Open the query results directory:
+2. Click "Open Results Directory":
    - Check that the correct directory is opened and there are results in it
-3. View logs
+3. Click "View Logs":
    - Check that the correct workflow is opened
 
-### Test Case 5: MRVA - Canceling a variant analysis run
+#### Test Case 5: Canceling a variant analysis run
 
 Run one of the above MRVAs, but cancel it from within VS Code:
 
@@ -88,9 +143,11 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 - Check that the workflow run is also canceled.
 - Check that any available results are visible in VS Code.
 
-### Test Case 6: MRVA - Change to a different colour theme
+### General
 
-Open one of the above MRVAs, try changing to a different colour theme and check that everything looks sensible.
+#### Test case 1: Change to a different colour theme
+
+Open at least one of the above MRVAs and at least one local query, then try changing to a different colour theme and check that everything looks sensible.
 Are there any components that are not showing up?
 
 ## Optional Test Cases
