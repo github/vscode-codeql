@@ -1,6 +1,6 @@
-import { DisposableObject } from "./pure/disposable-object";
-import { extLogger } from "./common";
-import { getErrorMessage } from "./pure/helpers-pure";
+import { DisposableObject } from "../pure/disposable-object";
+import { extLogger } from "../common";
+import { getErrorMessage } from "../pure/helpers-pure";
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of

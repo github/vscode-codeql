@@ -1,10 +1,10 @@
 import { copy, createFile, lstat, pathExists } from "fs-extra";
-import { TestUICommands } from "./common/commands";
-import { DisposableObject } from "./pure/disposable-object";
+import { TestUICommands } from "../common/commands";
+import { DisposableObject } from "../pure/disposable-object";
 import { getActualFile, getExpectedFile } from "./test-adapter";
 import { TestItem, TextDocumentShowOptions, Uri, window } from "vscode";
 import { basename } from "path";
-import { App } from "./common/app";
+import { App } from "../common/app";
 import { TestTreeNode } from "./test-tree-node";
 
 export type TestNode = TestTreeNode | TestItem;

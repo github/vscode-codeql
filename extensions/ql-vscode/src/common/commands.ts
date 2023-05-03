@@ -5,7 +5,7 @@ import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../databases/local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
 import type { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-filter-sort";
-import type { TestTreeNode } from "../test-tree-node";
+import type { TestTreeNode } from "../query-testing/test-tree-node";
 import type {
   VariantAnalysis,
   VariantAnalysisScannedRepository,

@@ -8,9 +8,9 @@ import {
   TestSuiteEvent,
 } from "vscode-test-adapter-api";
 import { TestTreeNode } from "./test-tree-node";
-import { DisposableObject } from "./pure/disposable-object";
+import { DisposableObject } from "../pure/disposable-object";
 import { QLTestAdapter } from "./test-adapter";
-import { App } from "./common/app";
+import { App } from "../common/app";
 import { TestManagerBase } from "./test-manager-base";
 
 type VSCodeTestEvent =

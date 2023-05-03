@@ -15,20 +15,20 @@ import {
   tests,
   workspace,
 } from "vscode";
-import { DisposableObject } from "./pure/disposable-object";
+import { DisposableObject } from "../pure/disposable-object";
 import {
   QLTestDirectory,
   QLTestDiscovery,
   QLTestFile,
   QLTestNode,
 } from "./qltest-discovery";
-import { CodeQLCliServer } from "./codeql-cli/cli";
-import { getErrorMessage } from "./pure/helpers-pure";
-import { BaseLogger, LogOptions } from "./common";
+import { CodeQLCliServer } from "../codeql-cli/cli";
+import { getErrorMessage } from "../pure/helpers-pure";
+import { BaseLogger, LogOptions } from "../common";
 import { TestRunner } from "./test-runner";
 import { TestManagerBase } from "./test-manager-base";
-import { App } from "./common/app";
-import { isWorkspaceFolderOnDisk } from "./helpers";
+import { App } from "../common/app";
+import { isWorkspaceFolderOnDisk } from "../helpers";
 
 /**
  * Returns the complete text content of the specified file. If there is an error reading the file,

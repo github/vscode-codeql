@@ -1,14 +1,14 @@
 import { CancellationTokenSource, Uri } from "vscode";
-import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
+import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import {
   DatabaseItem,
   DatabaseItemImpl,
   DatabaseManager,
   FullDatabaseOptions,
-} from "../../../src/databases/local-databases";
-import { mockedObject } from "../utils/mocking.helpers";
-import { TestRunner } from "../../../src/test-runner";
-import { createMockLogger } from "../../__mocks__/loggerMock";
+} from "../../../../src/databases/local-databases";
+import { mockedObject } from "../../utils/mocking.helpers";
+import { TestRunner } from "../../../../src/query-testing/test-runner";
+import { createMockLogger } from "../../../__mocks__/loggerMock";
 import {
   createMockCliServerForTestRun,
   mockTestsInfo,

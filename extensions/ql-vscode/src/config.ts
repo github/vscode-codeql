@@ -74,6 +74,10 @@ const ROOT_SETTING = new Setting("codeQL");
 // Global configuration
 const TELEMETRY_SETTING = new Setting("telemetry", ROOT_SETTING);
 const AST_VIEWER_SETTING = new Setting("astViewer", ROOT_SETTING);
+const CONTEXTUAL_QUERIES_SETTINGS = new Setting(
+  "contextualQueries",
+  ROOT_SETTING,
+);
 const GLOBAL_TELEMETRY_SETTING = new Setting("telemetry");
 const LOG_INSIGHTS_SETTING = new Setting("logInsights", ROOT_SETTING);
 
@@ -484,11 +488,19 @@ export function joinOrderWarningThreshold(): number {
 }
 
 /**
- * Avoids caching in the AST viewer if the user is also a canary user.
+ * Hidden setting: Avoids caching in the AST viewer if the user is also a canary user.
  */
 export const NO_CACHE_AST_VIEWER = new Setting(
   "disableCache",
   AST_VIEWER_SETTING,
+);
+
+/**
+ * Hidden setting: Avoids caching in jump to def and find refs contextual queries if the user is also a canary user.
+ */
+export const NO_CACHE_CONTEXTUAL_QUERIES = new Setting(
+  "disableCache",
+  CONTEXTUAL_QUERIES_SETTINGS,
 );
 
 // Settings for variant analysis
