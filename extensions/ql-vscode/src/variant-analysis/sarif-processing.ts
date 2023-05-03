@@ -168,7 +168,7 @@ export function tryGetRule(
   return undefined;
 }
 
-function getFilePath(
+function tryGetFilePath(
   physicalLocation: sarif.PhysicalLocation,
 ): string | undefined {
   const filePath = physicalLocation.artifactLocation?.uri;
@@ -261,7 +261,7 @@ function getCodeFlows(
         for (const threadFlowLocation of threadFlow.locations) {
           const physicalLocation =
             threadFlowLocation!.location!.physicalLocation!;
-          const filePath = getFilePath(physicalLocation);
+          const filePath = tryGetFilePath(physicalLocation);
           const codeSnippet = getCodeSnippet(
             physicalLocation.contextRegion,
             physicalLocation.region,
