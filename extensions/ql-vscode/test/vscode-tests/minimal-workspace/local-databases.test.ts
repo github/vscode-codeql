@@ -646,20 +646,6 @@ describe("local databases", () => {
     });
 
     describe("when the language is set", () => {
-      let originalValue: string | undefined;
-
-      beforeEach(() => {
-        originalValue = workspace
-          .getConfiguration("codeQL.createQuery")
-          .get("autogenerateQlPacks");
-      });
-
-      afterEach(async () => {
-        await workspace
-          .getConfiguration("codeQL.createQuery")
-          .update("autogenerateQlPacks", originalValue);
-      });
-
       it("should offer the user to set up a skeleton QL pack", async () => {
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
 
