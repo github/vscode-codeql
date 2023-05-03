@@ -11,10 +11,10 @@ We don't need to test features (and permutations of features) that are covered b
 
 ## Before releasing the VS Code extension
 
-- Go through the required test cases listed below
+- Run at least one local query and MRVA using the existing version of the extension (to generate "old" query history items).
+- Go through the required test cases listed below.
 - Check major PRs since the previous release for specific one-off things to test. Based on that, you might want to
 choose to go through some of the Optional Test Cases.
-- Run a query using the existing version of the extension (to generate an "old" query history item)
 
 ## Required Test Cases
 
