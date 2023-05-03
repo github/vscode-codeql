@@ -18,9 +18,58 @@ choose to go through some of the Optional Test Cases.
 
 ## Required Test Cases
 
+### Local databases
+
+#### Test case 1: Download a database from GitHub
+
+1. Click "Download Database from GitHub" and enter `angular-cn/ng-nice` and select the javascript language if prompted
+
+#### Test case 2: Import a database from an archive
+
+1. Obtain a javascript database for `babel/babel`
+   - You can do `gh api "/repos/babel/babel/code-scanning/codeql/databases/javascript" -H "Accept: application/zip" > babel.zip` to fetch a database from GitHub.
+2. Click "Choose Database from Archive" and select the file you just downloaded above.
+
+### Local queries
+
+#### Test case 1: Running a path problem query and viewing results
+
+1. Open the [javascript UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
+2. Select the `angular-cn/ng-nice` database (or download it if you don't have one already)
+3. Run a local query.
+4. Once the query completes:
+   - Check that the result messages are rendered
+   - Check that the paths can be opened and paths are rendered correctly
+   - Check that alert locations can be clicked on
+
+#### Test case 2: Running a problem query and viewing results
+
+1. Open the [javascript UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
+2. Select the `babel/babel` database (or download it if you don't have one already)
+3. Run a local query.
+4. Once the query completes:
+   - Check that the result messages are rendered
+   - Check that alert locations can be clicked on
+
+#### Test case 3: Running a non-probem query and viewing results
+
+1. Open the [cpp FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
+2. Select the `google/brotli` database (or download it if you don't have one already)
+3. Run a local query.
+4. Once the query completes:
+   - Check that the results table is rendered
+   - Check that alert locations can be clicked on
+
+#### Test case 3: Can use AST viewer
+
+1. Click on any code location from a previous query to open a source file from a database
+2. Open the AST viewing panel and click "View AST"
+3. Once the AST is computed:
+   - Check that it can be navigated
+
 ### MRVA
 
-#### Test Case 1: Running a problem path query and viewing results
+#### Test Case 1: Running a path problem query and viewing results
 
 1. Open the [javascript UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
 2. Run a MRVA against the following repo list:
