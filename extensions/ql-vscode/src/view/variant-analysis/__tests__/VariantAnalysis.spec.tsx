@@ -54,22 +54,22 @@ describe(VariantAnalysis.name, () => {
     const variantAnalysis = createMockVariantAnalysis({});
     render({ variantAnalysis });
 
-    await waitFor(() => screen.getByDisplayValue("With results"));
+    await waitFor(() => screen.getByDisplayValue("All"));
     await waitFor(() => screen.getByDisplayValue("Number of results"));
 
     await postMessage<ToVariantAnalysisMessage>({
       t: "setFilterSortState",
       filterSortState: {
         searchValue: "",
-        filterKey: FilterKey.All,
+        filterKey: FilterKey.WithResults,
         sortKey: SortKey.Alphabetically,
       },
     });
 
-    expect(screen.getByDisplayValue("All")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("With results")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Alphabetically")).toBeInTheDocument();
 
-    expect(screen.queryByDisplayValue("With results")).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue("All")).not.toBeInTheDocument();
     expect(
       screen.queryByDisplayValue("Number of results"),
     ).not.toBeInTheDocument();

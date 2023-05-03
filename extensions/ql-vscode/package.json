@@ -331,7 +331,7 @@
         },
         "codeQL.variantAnalysis.defaultResultsFilter": {
           "type": "string",
-          "default": "withResults",
+          "default": "all",
           "enum": [
             "all",
             "withResults"

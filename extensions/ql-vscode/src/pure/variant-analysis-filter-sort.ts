@@ -29,7 +29,7 @@ export type RepositoriesFilterSortStateWithIds = RepositoriesFilterSortState & {
 
 export const defaultFilterSortState: RepositoriesFilterSortState = {
   searchValue: "",
-  filterKey: FilterKey.WithResults,
+  filterKey: FilterKey.All,
   sortKey: SortKey.NumberOfResults,
 };
 
