@@ -168,7 +168,7 @@ export function tryGetRule(
   return undefined;
 }
 
-function tryGetFilePath(
+export function tryGetFilePath(
   physicalLocation: sarif.PhysicalLocation,
 ): string | undefined {
   const filePath = physicalLocation.artifactLocation?.uri;

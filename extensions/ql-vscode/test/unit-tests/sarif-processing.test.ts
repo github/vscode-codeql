@@ -1,6 +1,7 @@
 import * as sarif from "sarif";
 import {
   extractAnalysisAlerts,
+  tryGetFilePath,
   tryGetRule,
   tryGetSeverity,
 } from "../../src/variant-analysis/sarif-processing";
@@ -285,6 +286,51 @@ describe("SARIF processing", () => {
         expect(rule).toBeTruthy();
         expect(rule!.id).toBe("D");
       });
+    });
+  });
+
+  describe("tryGetFilePath", () => {
+    it("should return value when uri is a file path", () => {
+      const physicalLocation: sarif.PhysicalLocation = {
+        artifactLocation: {
+          uri: "foo/bar",
+        },
+      };
+      expect(tryGetFilePath(physicalLocation)).toBe("foo/bar");
+    });
+
+    it("should return undefined when uri has a file scheme", () => {
+      const physicalLocation: sarif.PhysicalLocation = {
+        artifactLocation: {
+          uri: "file:/",
+        },
+      };
+      expect(tryGetFilePath(physicalLocation)).toBe(undefined);
+    });
+
+    it("should return undefined when uri is empty", () => {
+      const physicalLocation: sarif.PhysicalLocation = {
+        artifactLocation: {
+          uri: "",
+        },
+      };
+      expect(tryGetFilePath(physicalLocation)).toBe(undefined);
+    });
+
+    it("should return undefined if artifact location uri is undefined", () => {
+      const physicalLocation: sarif.PhysicalLocation = {
+        artifactLocation: {
+          uri: undefined,
+        },
+      };
+      expect(tryGetFilePath(physicalLocation)).toBe(undefined);
+    });
+
+    it("should return undefined if artifact location is undefined", () => {
+      const physicalLocation: sarif.PhysicalLocation = {
+        artifactLocation: undefined,
+      };
+      expect(tryGetFilePath(physicalLocation)).toBe(undefined);
     });
   });
 
