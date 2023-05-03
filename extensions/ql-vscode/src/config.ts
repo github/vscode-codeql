@@ -621,12 +621,14 @@ export function allowHttp(): boolean {
 }
 
 /**
+ * Parent setting for all settings related to the "Create Query" command.
+ */
+const CREATE_QUERY_COMMAND = new Setting("createQuery", ROOT_SETTING);
+
+/**
  * The name of the folder where we want to create QL packs.
  **/
-const QL_PACK_LOCATION = new Setting(
-  "qlPackLocation",
-  new Setting("createQuery", ROOT_SETTING),
-);
+const QL_PACK_LOCATION = new Setting("qlPackLocation", CREATE_QUERY_COMMAND);
 
 export function getQlPackLocation(): string | undefined {
   return QL_PACK_LOCATION.getValue<string>() || undefined;
@@ -641,7 +643,7 @@ export async function setQlPackLocation(folder: string | undefined) {
  **/
 const AUTOGENERATE_QL_PACKS = new Setting(
   "autogenerateQlPacks",
-  new Setting("createQuery", ROOT_SETTING),
+  CREATE_QUERY_COMMAND,
 );
 
 export function getAutogenerateQlPacks(): string | undefined {
