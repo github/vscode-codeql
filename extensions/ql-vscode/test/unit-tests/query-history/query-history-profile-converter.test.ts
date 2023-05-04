@@ -6,11 +6,17 @@ import {
   RAHashable,
   convertJSONSummaryEvaluatorLog,
   decodePositionFromString,
+  getDeepestExecutionRoot,
   getExecutionBounds,
+  getExecutionDepth,
+  getExecutionRoots,
+  getInDependencyOrder,
+  getIncomingEdges,
   indexRaElements,
   isNonComputeRow,
   jsonLogToArrayOfJSON,
   jsonLogToRALog,
+  pruneNodesUnreachableFromRoot,
   pruneRADependencies,
 } from "../../../src/query-history/query-history-profile-converter";
 
@@ -37,7 +43,7 @@ describe("query history profile converter", () => {
     expect(isNonComputeRow({})).toBe(true);
   });
 
-  it("it should read the right number of rows", () => {
+  it("should read the right number of rows", () => {
     // filtering on
     let rows = jsonLogToArrayOfJSON(logSummary);
     expect(rows.length).toBe(336);
@@ -47,7 +53,7 @@ describe("query history profile converter", () => {
     expect(rows.length).toBe(418);
   });
 
-  it("it should result in the right number of computational rows", () => {
+  it("should result in the right number of computational rows", () => {
     const rows = jsonLogToArrayOfJSON(logSummary);
 
     const ras = jsonLogToRALog(rows);
@@ -55,7 +61,7 @@ describe("query history profile converter", () => {
     expect(ras.length).toBe(335);
   });
 
-  it("it should properly decode position data", () => {
+  it("should properly decode position data", () => {
     const p1 = decodePositionFromString("/home/jls.file.file:1,2-3,4");
     const p2 = decodePositionFromString("C:\\a-path\\jls.file.file:1,2-3,4");
 
@@ -70,7 +76,7 @@ describe("query history profile converter", () => {
     expect(p2.endColumn).toEqual(4);
   });
 
-  it("it should result compute the right bounds", () => {
+  it("should result compute the right bounds", () => {
     const rows = jsonLogToArrayOfJSON(logSummary);
 
     const ras = jsonLogToRALog(rows);
@@ -97,7 +103,513 @@ describe("query history profile converter", () => {
     // );
   });
 
-  it("it should create a valid profile", () => {
+  it("should compute the right execution depth", () => {
+    const raRows: RAHashable[] = [
+      {
+        raHash: "raHash1",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash2" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash2",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj4: "raHash4", obj5: "raHash5" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash4",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj5: "raHash5" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash11",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash4" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash111",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash2" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+    ];
+
+    const index = indexRaElements(raRows);
+    const roots = getExecutionRoots(raRows);
+
+    expect(roots.length).toBe(3);
+    expect(roots[0].raHash).toBe("raHash1");
+    expect(getExecutionDepth(roots[0], index)).toBe(2);
+    expect(roots[1].raHash).toBe("raHash11");
+    expect(getExecutionDepth(roots[1], index)).toBe(1);
+    expect(roots[2].raHash).toBe("raHash111");
+    expect(getExecutionDepth(roots[2], index)).toBe(2);
+  });
+
+  it("should prune infeasible execution paths", () => {
+    const raRows: RAHashable[] = [
+      {
+        raHash: "raHash1",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash2" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash2",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj4: "raHash4", obj5: "raHash5" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash4",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj5: "raHash5" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash5",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: {},
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash11",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash4" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+    ];
+
+    const deps = getInDependencyOrder(raRows);
+    const db = indexRaElements(raRows);
+    const deepest = getDeepestExecutionRoot(raRows, db)!;
+
+    expect(deps[0].raHash).toBe("raHash5");
+    expect(deps[1].raHash).toBe("raHash4");
+    expect(deps[2].raHash).toBe("raHash2");
+    expect(deps[3].raHash).toBe("raHash11");
+    expect(deps[4].raHash).toBe("raHash1");
+
+    const updatedDeps = pruneNodesUnreachableFromRoot(
+      deps,
+      db,
+      deepest?.raHash,
+    );
+
+    expect(updatedDeps[0].raHash).toBe("raHash5");
+    expect(updatedDeps[1].raHash).toBe("raHash4");
+    expect(updatedDeps[2].raHash).toBe("raHash2");
+    expect(updatedDeps[4].raHash).toBe("raHash1");
+  });
+  it("should compute the right dependency order", () => {
+    const raRows: RAHashable[] = [
+      {
+        raHash: "raHash1",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash2" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash2",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj4: "raHash4", obj5: "raHash5" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash4",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj5: "raHash5" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash5",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: {},
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash11",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash4" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+    ];
+
+    const deps = getInDependencyOrder(raRows);
+    expect(deps[0].raHash).toBe("raHash5");
+    expect(deps[1].raHash).toBe("raHash4");
+    expect(deps[2].raHash).toBe("raHash2");
+    expect(deps[3].raHash).toBe("raHash11");
+    expect(deps[4].raHash).toBe("raHash1");
+  });
+
+  it("should find all the incoming edges", () => {
+    const raRows: RAHashable[] = [
+      {
+        raHash: "raHash1",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash2" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash2",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj4: "raHash4", obj5: "raHash5" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash4",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj5: "raHash5" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash11",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash4" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+    ];
+
+    const edges = getIncomingEdges(raRows);
+    expect(edges.size).toBe(3);
+  });
+
+  it("should find the deepest root", () => {
+    const raRows: RAHashable[] = [
+      {
+        raHash: "raHash1",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash2" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash2",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj4: "raHash4", obj5: "raHash5" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash4",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj5: "raHash5" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash11",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash4" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+    ];
+
+    const index = indexRaElements(raRows);
+    const roots = getExecutionRoots(raRows);
+
+    expect(roots.length).toBe(2);
+    expect(roots[0].raHash).toBe("raHash1");
+    expect(roots[1].raHash).toBe("raHash11");
+
+    const deepestRoot = getDeepestExecutionRoot(roots, index);
+
+    expect(deepestRoot).toBeDefined();
+    expect(deepestRoot!.raHash).toEqual("raHash1");
+  });
+
+  it("should get valid execution roots", () => {
+    const raRows: RAHashable[] = [
+      {
+        raHash: "raHash1",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash2" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash2",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj2: "raHash4", obj3: "raHash2" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+      {
+        raHash: "raHash11",
+        completionTime: "",
+        completionTimeUs: 0,
+        evaluationStrategy: "",
+        millis: 0,
+        predicateName: "",
+        dependencies: { obj1: "raHash2" },
+        position: {
+          startLine: 0,
+          endLine: 0,
+          startColumn: 0,
+          endColumn: 0,
+          url: "",
+        },
+      },
+    ];
+
+    const roots = getExecutionRoots(raRows);
+
+    expect(roots.length).toBe(2);
+    expect(["raHash11", "raHash1"]).toContain(roots[0].raHash);
+    expect(["raHash11", "raHash1"]).toContain(roots[1].raHash);
+    expect(roots[0].raHash).not.toEqual(roots[1].raHash);
+  });
+
+  it("should create a valid profile", () => {
     // Note
     // --------------------------------------------------------
     // to update the expected output file comment out this line and then
@@ -118,7 +630,7 @@ describe("query history profile converter", () => {
     );
   });
 
-  it("it should prune dependencies that don't exist", () => {
+  it("should prune dependencies that don't exist", () => {
     const raHashes: RAHashable[] = [
       {
         raHash: "raHash1",
@@ -179,7 +691,7 @@ describe("query history profile converter", () => {
     expect(raHashes[2].dependencies).toEqual({});
   });
 
-  it("indexes should be sequential for non-identical objects", () => {
+  it("should make sure indexes are sequential for non-identical objects", () => {
     const raHashes: RAHashable[] = [
       {
         raHash: "raHash1",
@@ -219,7 +731,7 @@ describe("query history profile converter", () => {
     expect(raHashIndex.size).toEqual(2);
   });
 
-  it("indexes shouldn't increment for identical objects", () => {
+  it("should make sure indexes shouldn't increment for identical objects", () => {
     const raHashes: RAHashable[] = [
       {
         raHash: "raHash",

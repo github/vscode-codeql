@@ -214,6 +214,229 @@ export function getExecutionBounds(raLog: RAHashable[]): ExecutionBounds {
 }
 
 /**
+ * Gets all the incoming edges for a given RA log.
+ * @param raLog the RA log to get the incoming edges for.
+ * @returns all of the incoming edges.
+ */
+export function getIncomingEdges(raLog: RAHashable[]): Set<string> {
+  const incomingEdges: Set<string> = new Set<string>();
+
+  for (const row of raLog) {
+    for (const k in row.dependencies) {
+      if (!incomingEdges.has(row.dependencies[k])) {
+        incomingEdges.add(row.dependencies[k]);
+      }
+    }
+  }
+
+  return incomingEdges;
+}
+
+/**
+ * Gets all the roots for a given RA log. A root is defined as a node that has no incoming edges.
+ * @param raLog The RA log to get the roots for.
+ * @returns A list of roots.
+ */
+export function getExecutionRoots(raLog: RAHashable[]): RAHashable[] {
+  const roots: RAHashable[] = [];
+
+  // first get all of the potential incoming edges.
+  const incomingEdges = getIncomingEdges(raLog);
+
+  for (const row of raLog) {
+    // if there are no incoming edges
+    if (!incomingEdges.has(row.raHash)) {
+      roots.push(row);
+    }
+  }
+
+  return roots;
+}
+
+/**
+ * Gets the provided nodes in dependency order.
+ * @param raRows a list of nodes.
+ * @returns The dependency ordered nodes.
+ */
+export function getInDependencyOrder(raRows: RAHashable[]): RAHashable[] {
+  const inDegree = new Map<string, RAIndexed>();
+  const dependencyOrder: RAHashable[] = [];
+
+  // set all indegrees to zero
+  for (const row of raRows) {
+    inDegree.set(row.raHash, {
+      ra: row,
+      index: 0,
+    });
+  }
+  // compute indegree for each node
+  for (const row of raRows) {
+    // work over the indegrees of the
+    for (const dep in row?.dependencies) {
+      if (inDegree.has(row.dependencies[dep])) {
+        const ra = inDegree.get(row.dependencies[dep])!;
+        ra.index = ra.index + 1;
+        inDegree.set(row.dependencies[dep], ra);
+      } else {
+        inDegree.set(row.dependencies[dep], {
+          ra: row,
+          index: 1,
+        });
+      }
+    }
+  }
+
+  // Queue up all nodes with indegree 0 (which should really just
+  // be the root of all execution).
+  const queue: RAHashable[] = [];
+  let numIterations = 0;
+
+  for (const row of raRows) {
+    if (inDegree.get(row.raHash)?.index === 0) {
+      queue.push(row);
+    }
+  }
+
+  while (queue.length > 0) {
+    const vertex = queue.shift()!;
+    dependencyOrder.push(vertex);
+
+    // iterate over all dependencies
+    // and decrease indegree by 1
+    for (const n in vertex.dependencies) {
+      const depdendencyHash = vertex.dependencies[n];
+      if (inDegree.has(depdendencyHash)) {
+        inDegree.get(depdendencyHash)!.index--;
+
+        if (inDegree.get(depdendencyHash)!.index === 0) {
+          queue.push(inDegree.get(depdendencyHash)!.ra);
+        }
+      }
+    }
+    numIterations++;
+  }
+
+  if (numIterations !== raRows.length) {
+    //throw new Error("Cycle detected in dependency graph");
+  }
+
+  return dependencyOrder.reverse();
+}
+/**
+ * Prunes all nodes that are unreachable from the given root.
+ * @param raRows The rows to prune -- typically the output of getInDependencyOrder.
+ * @param raDatabase The database to use for lookups.
+ * @param root the root to consider as the starting point.
+ */
+export function pruneNodesUnreachableFromRoot(
+  raRows: RAHashable[],
+  raDatabase: Map<string, RAIndexed>,
+  root: string,
+): RAHashable[] {
+  const queue: RAHashable[] = [raDatabase.get(root)!.ra];
+
+  const visited = new Set<string>();
+
+  while (queue.length > 0) {
+    const vertex: RAHashable = queue.pop()!;
+
+    if (!visited.has(vertex.raHash)) {
+      visited.add(vertex.raHash);
+
+      for (const k in vertex.dependencies) {
+        const edge = raDatabase.get(vertex.dependencies[k]);
+
+        if (edge !== undefined) {
+          queue.push(edge.ra);
+        }
+      }
+    }
+  }
+
+  const prunedRows = raRows.filter((row) => visited.has(row.raHash));
+
+  // It is possible some dependencies were orphaned. So in that
+  // case we need to remove them.
+  const prunedDatabase = indexRaElements(prunedRows);
+  pruneRADependencies(prunedRows, prunedDatabase);
+
+  return prunedRows;
+}
+/**
+ * Get the depth of a given hash root.
+ * @param raRow the root.
+ * @param raDatabase A lookup database.
+ * @returns the depth of the root.
+ */
+export function getExecutionDepth(
+  raRow: RAHashable,
+  raDatabase: Map<string, RAIndexed>,
+): number {
+  let currentDepth = 0;
+  let maxDepth = 0;
+
+  const queue: RAHashable[] = [raRow];
+  const visited = new Set<string>();
+
+  while (queue.length > 0) {
+    const vertex: RAHashable = queue.pop()!;
+
+    if (!visited.has(vertex.raHash)) {
+      visited.add(vertex.raHash);
+
+      const oldQLength = queue.length;
+
+      for (const k in vertex.dependencies) {
+        const edge = raDatabase.get(vertex.dependencies[k]);
+
+        if (edge !== undefined) {
+          queue.push(edge.ra);
+        }
+      }
+
+      // we don't just increment the depth because
+      // it is possible there are orphaned dependencies
+      // that we actually don't have even though they
+      // exist in the dependency list.
+      if (queue.length > oldQLength) {
+        currentDepth = currentDepth + 1;
+      }
+    } else {
+      currentDepth = currentDepth - 1;
+    }
+    maxDepth = Math.max(maxDepth, currentDepth);
+  }
+  return maxDepth;
+}
+
+/**
+ * Gets the deepest execution root from a list of RA rows.
+ * @param raRows The roots to search.
+ * @param raDatabase An index of all RA rows.
+ * @returns The deepest execution root.
+ */
+export function getDeepestExecutionRoot(
+  raRows: RAHashable[],
+  raDatabase: Map<string, RAIndexed>,
+): RAHashable | undefined {
+  let executionRoot: RAHashable | undefined;
+  let executionDepth = 0;
+
+  const executionRoots = getExecutionRoots(raRows);
+
+  for (const root of executionRoots) {
+    const depth = getExecutionDepth(root, raDatabase);
+
+    if (depth > executionDepth) {
+      executionDepth = depth;
+      executionRoot = root;
+    }
+  }
+
+  return executionRoot;
+}
+
+/**
  * Converts a JSON summary evaluator log to a cpuprofiler format. Documentation on this
  * format can be found here: https://chromedevtools.github.io/devtools-protocol/tot/Profiler/#type-Profile
  *
@@ -234,16 +457,44 @@ export function convertJSONSummaryEvaluatorLog(
 
   // convert the log to an array of JSON objects in RA format.
   // we sort the resulting array by completionTimeUs
-  const raRows = jsonLogToRALog(jsonLogToArrayOfJSON(evaluatorLog)).sort(
-    (a, b) => a.completionTimeUs - b.completionTimeUs,
-  );
+  let raRows: RAHashable[] = jsonLogToRALog(
+    jsonLogToArrayOfJSON(evaluatorLog),
+  ).sort((a, b) => a.completionTimeUs - b.completionTimeUs);
 
   // create an index of the raHashes for faster lookups
+
   const raDatabase: Map<string, RAIndexed> = indexRaElements(raRows);
 
   // filter the raRows dependencies since it is possible some of the dependencies
   // reference things that may not exist in the final graph
   pruneRADependencies(raRows, raDatabase);
+
+  // find the "root" to base execution off of. Because of the way that execution works
+  // it is possible to end up with multiple roots. Some of these roots may be "orphaned"
+  // and not used by the general computation path due to the way that the evaluator works.
+  const executionRoot = getDeepestExecutionRoot(
+    getExecutionRoots(raRows),
+    raDatabase,
+  );
+
+  if (executionRoot === undefined) {
+    throw new Error(
+      "No execution root found. This is likely a bug in the profiler.",
+    );
+  }
+  // compute the logical execution order of the RA rows
+  const raRowsInDepOrder = getInDependencyOrder(raRows);
+
+  // we want to exclude any paths that don't require the deepest execution root, so we
+  // do that here.
+  const prunedRows = pruneNodesUnreachableFromRoot(
+    raRowsInDepOrder,
+    raDatabase,
+    executionRoot.raHash,
+  );
+
+  // swap out the raRows
+  raRows = prunedRows;
 
   // build up graph
   //console.log(raDatabase.size)
