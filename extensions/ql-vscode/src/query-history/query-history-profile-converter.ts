@@ -463,7 +463,7 @@ export function convertJSONSummaryEvaluatorLog(
 
   // create an index of the raHashes for faster lookups
 
-  const raDatabase: Map<string, RAIndexed> = indexRaElements(raRows);
+  let raDatabase: Map<string, RAIndexed> = indexRaElements(raRows);
 
   // filter the raRows dependencies since it is possible some of the dependencies
   // reference things that may not exist in the final graph
@@ -495,6 +495,11 @@ export function convertJSONSummaryEvaluatorLog(
 
   // swap out the raRows
   raRows = prunedRows;
+
+  // this is not strictly necessary, but it is nice to have things
+  // in a consistent order that is easy to check by hand. Namely,
+  // we index the rows to give them sequential ids.
+  raDatabase = indexRaElements(raRows);
 
   // build up graph
   //console.log(raDatabase.size)
