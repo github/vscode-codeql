@@ -412,7 +412,7 @@ describe("SkeletonQueryWizard", () => {
 
         originalValue = workspace
           .getConfiguration("codeQL.createQuery")
-          .get("folder");
+          .get("qlPackLocation");
 
         // Set isCodespacesTemplate to true to indicate we are in the codespace template
         await workspace
@@ -422,8 +422,12 @@ describe("SkeletonQueryWizard", () => {
 
       afterEach(async () => {
         await workspace
+          .getConfiguration("codeQL.createQuery")
+          .update("qlPackLocation", originalValue);
+
+        await workspace
           .getConfiguration("codeQL")
-          .update("codespacesTemplate", originalValue);
+          .update("codespacesTemplate", false);
       });
 
       it("should not prompt the user", async () => {
@@ -445,16 +449,16 @@ describe("SkeletonQueryWizard", () => {
 
           originalValue = workspace
             .getConfiguration("codeQL.createQuery")
-            .get("folder");
+            .get("qlPackLocation");
           await workspace
             .getConfiguration("codeQL.createQuery")
-            .update("folder", storedPath);
+            .update("qlPackLocation", storedPath);
         });
 
         afterEach(async () => {
           await workspace
             .getConfiguration("codeQL.createQuery")
-            .update("folder", originalValue);
+            .update("qlPackLocation", originalValue);
         });
 
         it("should return it and not prompt the user", async () => {
@@ -474,16 +478,16 @@ describe("SkeletonQueryWizard", () => {
 
           originalValue = workspace
             .getConfiguration("codeQL.createQuery")
-            .get("folder");
+            .get("qlPackLocation");
           await workspace
             .getConfiguration("codeQL.createQuery")
-            .update("folder", storedPath);
+            .update("qlPackLocation", storedPath);
         });
 
         afterEach(async () => {
           await workspace
             .getConfiguration("codeQL.createQuery")
-            .update("folder", originalValue);
+            .update("qlPackLocation", originalValue);
         });
 
         it("should prompt the user for to provide a new folder name", async () => {

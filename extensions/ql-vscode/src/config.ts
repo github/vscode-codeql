@@ -666,17 +666,39 @@ export function allowHttp(): boolean {
 }
 
 /**
- * The name of the folder where we want to create skeleton wizard QL packs.
- **/
-const SKELETON_WIZARD_FOLDER = new Setting(
-  "folder",
-  new Setting("createQuery", ROOT_SETTING),
-);
+ * Parent setting for all settings related to the "Create Query" command.
+ */
+const CREATE_QUERY_COMMAND = new Setting("createQuery", ROOT_SETTING);
 
-export function getSkeletonWizardFolder(): string | undefined {
-  return SKELETON_WIZARD_FOLDER.getValue<string>() || undefined;
+/**
+ * The name of the folder where we want to create QL packs.
+ **/
+const QL_PACK_LOCATION = new Setting("qlPackLocation", CREATE_QUERY_COMMAND);
+
+export function getQlPackLocation(): string | undefined {
+  return QL_PACK_LOCATION.getValue<string>() || undefined;
 }
 
-export async function setSkeletonWizardFolder(folder: string | undefined) {
-  await SKELETON_WIZARD_FOLDER.updateValue(folder, ConfigurationTarget.Global);
+export async function setQlPackLocation(folder: string | undefined) {
+  await QL_PACK_LOCATION.updateValue(folder, ConfigurationTarget.Global);
+}
+
+/**
+ * Whether to ask the user to autogenerate a QL pack. The options are "ask" and "never".
+ **/
+const AUTOGENERATE_QL_PACKS = new Setting(
+  "autogenerateQlPacks",
+  CREATE_QUERY_COMMAND,
+);
+
+const AutogenerateQLPacksValues = ["ask", "never"] as const;
+type AutogenerateQLPacks = typeof AutogenerateQLPacksValues[number];
+
+export function getAutogenerateQlPacks(): AutogenerateQLPacks {
+  const value = AUTOGENERATE_QL_PACKS.getValue<AutogenerateQLPacks>();
+  return AutogenerateQLPacksValues.includes(value) ? value : "ask";
+}
+
+export async function setAutogenerateQlPacks(choice: AutogenerateQLPacks) {
+  await AUTOGENERATE_QL_PACKS.updateValue(choice, ConfigurationTarget.Global);
 }

@@ -10,8 +10,8 @@ import {
   isLikelyDatabaseRoot,
   showAndLogExceptionWithTelemetry,
   isFolderAlreadyInWorkspace,
-  showBinaryChoiceDialog,
   getFirstWorkspaceFolder,
+  showNeverAskAgainDialog,
 } from "../helpers";
 import { ProgressCallback, withProgress } from "../common/vscode/progress";
 import {
@@ -26,7 +26,11 @@ import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { QueryRunner } from "../query-server";
 import { pathsEqual } from "../pure/files";
 import { redactableError } from "../pure/errors";
-import { isCodespacesTemplate } from "../config";
+import {
+  getAutogenerateQlPacks,
+  isCodespacesTemplate,
+  setAutogenerateQlPacks,
+} from "../config";
 import { QlPackGenerator } from "../qlpack-generator";
 import { QueryLanguage } from "../common/query-language";
 import { App } from "../common/app";
@@ -745,11 +749,20 @@ export class DatabaseManager extends DisposableObject {
       return;
     }
 
-    const answer = await showBinaryChoiceDialog(
+    if (getAutogenerateQlPacks() === "never") {
+      return;
+    }
+
+    const answer = await showNeverAskAgainDialog(
       `We've noticed you don't have a CodeQL pack available to analyze this database. Can we set up a query pack for you?`,
     );
 
-    if (!answer) {
+    if (answer === "No") {
+      return;
+    }
+
+    if (answer === "No, and never ask me again") {
+      await setAutogenerateQlPacks("never");
       return;
     }
 

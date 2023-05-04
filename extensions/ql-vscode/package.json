@@ -371,11 +371,23 @@
           "default": false,
           "description": "Allow database to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
         },
-        "codeQL.createQuery.folder": {
+        "codeQL.createQuery.qlPackLocation": {
           "type": "string",
-          "default": "",
           "patternErrorMessage": "Please enter a valid folder",
-          "markdownDescription": "The name of the folder where we want to create queries and query packs via the \"CodeQL: Create Query\" command. The folder should exist."
+          "markdownDescription": "The name of the folder where we want to create queries and QL packs via the \"CodeQL: Create Query\" command. The folder should exist."
+        },
+        "codeQL.createQuery.autogenerateQlPacks": {
+          "type": "string",
+          "default": "ask",
+          "enum": [
+            "ask",
+            "never"
+          ],
+          "enumDescriptions": [
+            "Ask to create a QL pack when a new CodeQL database is added.",
+            "Never create a QL pack when a new CodeQL database is added."
+          ],
+          "description": "Ask the user to generate a QL pack when a new CodeQL database is downloaded."
         }
       }
     },

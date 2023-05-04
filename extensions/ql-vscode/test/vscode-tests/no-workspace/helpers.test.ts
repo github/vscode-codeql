@@ -36,6 +36,7 @@ import {
   showBinaryChoiceDialog,
   showBinaryChoiceWithUrlDialog,
   showInformationMessageWithAction,
+  showNeverAskAgainDialog,
   walkDirectory,
 } from "../../../src/helpers";
 import { reportStreamProgress } from "../../../src/common/vscode/progress";
@@ -416,7 +417,7 @@ describe("helpers", () => {
     });
   });
 
-  describe("open dialog", () => {
+  describe("showBinaryChoiceDialog", () => {
     let showInformationMessageSpy: jest.SpiedFunction<
       typeof window.showInformationMessage
     >;
@@ -445,6 +446,23 @@ describe("helpers", () => {
       const val = await showBinaryChoiceDialog("xxx");
       expect(val).toBe(false);
     });
+  });
+
+  describe("showInformationMessageWithAction", () => {
+    let showInformationMessageSpy: jest.SpiedFunction<
+      typeof window.showInformationMessage
+    >;
+
+    beforeEach(() => {
+      showInformationMessageSpy = jest
+        .spyOn(window, "showInformationMessage")
+        .mockResolvedValue(undefined);
+    });
+
+    const resolveArg =
+      (index: number) =>
+      (...args: any[]) =>
+        Promise.resolve(args[index]);
 
     it("should show an info dialog and confirm the action", async () => {
       // pretend user chooses to run action
@@ -459,6 +477,23 @@ describe("helpers", () => {
       const val = await showInformationMessageWithAction("xxx", "yyy");
       expect(val).toBe(false);
     });
+  });
+
+  describe("showBinaryChoiceWithUrlDialog", () => {
+    let showInformationMessageSpy: jest.SpiedFunction<
+      typeof window.showInformationMessage
+    >;
+
+    beforeEach(() => {
+      showInformationMessageSpy = jest
+        .spyOn(window, "showInformationMessage")
+        .mockResolvedValue(undefined);
+    });
+
+    const resolveArg =
+      (index: number) =>
+      (...args: any[]) =>
+        Promise.resolve(args[index]);
 
     it("should show a binary choice dialog with a url and return `yes`", async () => {
       // pretend user clicks on the url twice and then clicks 'yes'
@@ -492,6 +527,53 @@ describe("helpers", () => {
       // No choice was made
       expect(val).toBeUndefined();
       expect(showInformationMessageSpy).toHaveBeenCalledTimes(5);
+    });
+  });
+
+  describe("showNeverAskAgainDialog", () => {
+    let showInformationMessageSpy: jest.SpiedFunction<
+      typeof window.showInformationMessage
+    >;
+
+    beforeEach(() => {
+      showInformationMessageSpy = jest
+        .spyOn(window, "showInformationMessage")
+        .mockResolvedValue(undefined);
+    });
+
+    const resolveArg =
+      (index: number) =>
+      (...args: any[]) =>
+        Promise.resolve(args[index]);
+
+    const title =
+      "We've noticed you don't have a CodeQL pack available to analyze this database. Can we set up a query pack for you?";
+
+    it("should show a ternary choice dialog and return `Yes`", async () => {
+      // pretend user chooses 'Yes'
+      const yesItem = resolveArg(2);
+      showInformationMessageSpy.mockImplementationOnce(yesItem);
+
+      const answer = await showNeverAskAgainDialog(title);
+      expect(answer).toBe("Yes");
+    });
+
+    it("should show a ternary choice dialog and return `No`", async () => {
+      // pretend user chooses 'No'
+      const noItem = resolveArg(3);
+      showInformationMessageSpy.mockImplementationOnce(noItem);
+
+      const answer = await showNeverAskAgainDialog(title);
+      expect(answer).toBe("No");
+    });
+
+    it("should show a ternary choice dialog and return `No, and never ask me again`", async () => {
+      // pretend user chooses 'No, and never ask me again'
+      const neverAskAgainItem = resolveArg(4);
+      showInformationMessageSpy.mockImplementationOnce(neverAskAgainItem);
+
+      const answer = await showNeverAskAgainDialog(title);
+      expect(answer).toBe("No, and never ask me again");
     });
   });
 });

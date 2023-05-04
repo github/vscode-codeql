@@ -21,9 +21,9 @@ import {
   downloadGitHubDatabase,
 } from "./databases/database-fetcher";
 import {
-  getSkeletonWizardFolder,
+  getQlPackLocation,
   isCodespacesTemplate,
-  setSkeletonWizardFolder,
+  setQlPackLocation,
 } from "./config";
 import { existsSync } from "fs-extra";
 
@@ -115,7 +115,7 @@ export class SkeletonQueryWizard {
       return firstStorageFolder;
     }
 
-    let storageFolder = getSkeletonWizardFolder();
+    let storageFolder = getQlPackLocation();
 
     if (storageFolder === undefined || !existsSync(storageFolder)) {
       storageFolder = await Window.showInputBox({
@@ -136,7 +136,7 @@ export class SkeletonQueryWizard {
       );
     }
 
-    await setSkeletonWizardFolder(storageFolder);
+    await setQlPackLocation(storageFolder);
     return storageFolder;
   }
 
