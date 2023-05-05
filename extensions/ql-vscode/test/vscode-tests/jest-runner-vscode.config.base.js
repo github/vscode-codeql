@@ -7,7 +7,9 @@ const rootDir = path.resolve(__dirname, "../..");
 
 /** @type import("jest-runner-vscode").RunnerOptions */
 const config = {
-  version: "stable",
+  // Temporary until https://github.com/github/vscode-codeql/issues/2402 is fixed
+  // version: "stable",
+  version: "1.77.3",
   launchArgs: [
     "--disable-gpu",
     "--extensions-dir=" + path.join(rootDir, ".vscode-test", "extensions"),
