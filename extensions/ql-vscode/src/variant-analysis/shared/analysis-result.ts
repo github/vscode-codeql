@@ -42,7 +42,7 @@ export interface CodeFlow {
 
 export interface ThreadFlow {
   fileLink: FileLink;
-  codeSnippet: CodeSnippet;
+  codeSnippet?: CodeSnippet;
   highlightedRegion?: HighlightedRegion;
   message?: AnalysisMessage;
 }

@@ -275,17 +275,19 @@ function generateMarkdownForPathResults(
         threadFlow.highlightedRegion?.startLine,
         threadFlow.highlightedRegion?.endLine,
       );
-      const codeSnippet = generateMarkdownForCodeSnippet(
-        threadFlow.codeSnippet,
-        language,
-        threadFlow.highlightedRegion,
-      );
-      // Indent the snippet to fit with the numbered list.
-      // The indentation is "n + 2" where the list number is an n-digit number.
-      const codeSnippetIndented = codeSnippet.map((line) =>
-        (" ".repeat(listNumber.toString().length + 2) + line).trimEnd(),
-      );
-      pathLines.push(`${listNumber}. ${link}`, ...codeSnippetIndented);
+      pathLines.push(`${listNumber}. ${link}`);
+
+      if (threadFlow.codeSnippet) {
+        const codeSnippet = generateMarkdownForCodeSnippet(
+          threadFlow.codeSnippet,
+          language,
+          threadFlow.highlightedRegion,
+        );
+        const indentation = " ".repeat(listNumber.toString().length + 2);
+        pathLines.push(
+          ...codeSnippet.map((line) => (indentation + line).trimEnd()),
+        );
+      }
     }
     lines.push(...buildExpandableMarkdownSection(title, pathLines));
   }
