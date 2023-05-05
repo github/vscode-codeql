@@ -168,6 +168,23 @@ export function tryGetRule(
   return undefined;
 }
 
+export function tryGetFilePath(
+  physicalLocation: sarif.PhysicalLocation,
+): string | undefined {
+  const filePath = physicalLocation.artifactLocation?.uri;
+  // We expect the location uri value to be a relative file path, with no scheme.
+  // We only need to support output from CodeQL here, so we can be quite strict,
+  // even though the SARIF spec supports many more types of URI.
+  if (
+    filePath === undefined ||
+    filePath === "" ||
+    filePath.startsWith("file:")
+  ) {
+    return undefined;
+  }
+  return filePath;
+}
+
 function getCodeSnippet(
   contextRegion?: sarif.Region,
   region?: sarif.Region,
@@ -238,13 +255,13 @@ function getCodeFlows(
 
   if (result.codeFlows) {
     for (const codeFlow of result.codeFlows) {
-      const threadFlows = [];
+      const threadFlows: ThreadFlow[] = [];
 
       for (const threadFlow of codeFlow.threadFlows) {
         for (const threadFlowLocation of threadFlow.locations) {
           const physicalLocation =
             threadFlowLocation!.location!.physicalLocation!;
-          const filePath = physicalLocation!.artifactLocation!.uri!;
+          const filePath = tryGetFilePath(physicalLocation);
           const codeSnippet = getCodeSnippet(
             physicalLocation.contextRegion,
             physicalLocation.region,
@@ -253,14 +270,16 @@ function getCodeFlows(
             ? getHighlightedRegion(physicalLocation.region)
             : undefined;
 
-          threadFlows.push({
-            fileLink: {
-              fileLinkPrefix,
-              filePath,
-            },
-            codeSnippet,
-            highlightedRegion,
-          } as ThreadFlow);
+          if (filePath !== undefined) {
+            threadFlows.push({
+              fileLink: {
+                fileLinkPrefix,
+                filePath,
+              },
+              codeSnippet,
+              highlightedRegion,
+            });
+          }
         }
       }
 
