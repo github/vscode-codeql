@@ -285,7 +285,7 @@ function generateMarkdownForPathResults(
         );
         const indentation = " ".repeat(listNumber.toString().length + 2);
         pathLines.push(
-          ...codeSnippet.map((line) => indentation + line.trimEnd()),
+          ...codeSnippet.map((line) => (indentation + line).trimEnd()),
         );
       }
     }
