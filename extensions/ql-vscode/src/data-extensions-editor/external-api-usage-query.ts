@@ -78,7 +78,11 @@ export async function runQuery({
 
   const queryRun = queryRunner.createQueryRun(
     databaseItem.databaseUri.fsPath,
-    { queryPath: queryFile, quickEvalPosition: undefined },
+    {
+      queryPath: queryFile,
+      quickEvalPosition: undefined,
+      quickEvalCountOnly: false,
+    },
     false,
     getOnDiskWorkspaceFolders(),
     extensionPacks,

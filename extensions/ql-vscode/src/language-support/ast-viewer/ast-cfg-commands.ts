@@ -2,7 +2,7 @@ import { Uri, window } from "vscode";
 import { withProgress } from "../../common/vscode/progress";
 import { AstViewer } from "./ast-viewer";
 import { AstCfgCommands } from "../../common/commands";
-import { LocalQueries } from "../../local-queries";
+import { LocalQueries, QuickEvalType } from "../../local-queries";
 import {
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
@@ -47,7 +47,7 @@ export function getAstCfgCommands({
         );
         if (res) {
           await localQueries.compileAndRunQuery(
-            false,
+            QuickEvalType.None,
             res[0],
             progress,
             token,

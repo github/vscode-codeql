@@ -105,7 +105,7 @@ export class QLDebugConfigurationProvider
       validateQueryPath(qlConfiguration.query, quickEval);
 
       const quickEvalContext = quickEval
-        ? await getQuickEvalContext(undefined)
+        ? await getQuickEvalContext(undefined, false)
         : undefined;
 
       const resultConfiguration: QLResolvedDebugConfiguration = {

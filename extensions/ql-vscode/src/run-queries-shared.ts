@@ -433,6 +433,7 @@ export function validateQueryPath(
 export interface QuickEvalContext {
   quickEvalPosition: messages.Position;
   quickEvalText: string;
+  quickEvalCount: boolean;
 }
 
 /**
@@ -443,6 +444,7 @@ export interface QuickEvalContext {
  */
 export async function getQuickEvalContext(
   range: Range | undefined,
+  isCountOnly: boolean,
 ): Promise<QuickEvalContext> {
   const editor = window.activeTextEditor;
   if (editor === undefined) {
@@ -465,6 +467,7 @@ export async function getQuickEvalContext(
   return {
     quickEvalPosition,
     quickEvalText,
+    quickEvalCount: isCountOnly,
   };
 }
 
