@@ -1525,10 +1525,23 @@ export function spawnServer(
     );
   }
 
+  let lastStdout: any = undefined;
+  child.stdout!.on("data", (data) => {
+    lastStdout = data;
+  });
   // Set up event listeners.
-  child.on("close", (code) =>
-    logger.log(`Child process exited with code ${code}`),
-  );
+  child.on("close", async (code, signal) => {
+    if (code !== null)
+      await logger.log(`Child process exited with code ${code}`);
+    if (signal)
+      await logger.log(
+        `Child process exited due to receipt of signal ${signal}`,
+      );
+    // If the process exited abnormally, log the last stdout message,
+    // It may be from the jvm.
+    if (code !== 0)
+      await logger.log(`Last stdout was "${lastStdout.toString()}"`);
+  });
   child.stderr!.on("data", stderrListener);
   if (stdoutListener !== undefined) {
     child.stdout!.on("data", stdoutListener);
