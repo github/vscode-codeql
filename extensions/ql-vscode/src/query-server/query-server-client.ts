@@ -11,9 +11,14 @@ import {
   ProgressMessage,
   WithProgressId,
 } from "../pure/new-messages";
-import { ProgressCallback, ProgressTask } from "../common/vscode/progress";
+import {
+  ProgressCallback,
+  ProgressTask,
+  withProgress,
+} from "../common/vscode/progress";
 import { ServerProcess } from "./server-process";
 import { App } from "../common/app";
+import { showAndLogErrorMessage } from "../helpers";
 
 type ServerOpts = {
   logger: Logger;
@@ -26,6 +31,8 @@ type WithProgressReporting = (
     token: CancellationToken,
   ) => Thenable<void>,
 ) => Thenable<void>;
+
+const MAX_UNEXPECTED_TERMINATIONS = 5;
 
 /**
  * Client that manages a query server process.
@@ -40,6 +47,9 @@ export class QueryServerClient extends DisposableObject {
   };
   nextCallback: number;
   nextProgress: number;
+
+  unexpectedTerminationCount = 0;
+
   withProgressReporting: WithProgressReporting;
 
   private readonly queryServerStartListeners = [] as Array<ProgressTask<void>>;
@@ -91,8 +101,48 @@ export class QueryServerClient extends DisposableObject {
     }
   }
 
-  /** Restarts the query server by disposing of the current server process and then starting a new one. */
+  /**
+   * Restarts the query server by disposing of the current server process and then starting a new one.
+   * This resets the unexpected termination count. As hopefulyl it is an indication that the user has fixed the
+   * issue.
+   */
   async restartQueryServer(
+    progress: ProgressCallback,
+    token: CancellationToken,
+  ): Promise<void> {
+    // Reset the unexpected termination count when we restart the query server manually
+    // or due to config change
+    this.unexpectedTerminationCount = 0;
+    await this.restartQueryServerInternal(progress, token);
+  }
+
+  /**
+   * Try and restart the query server if it has unexpectedly terminated.
+   */
+  private restartQueryServerOnFailure() {
+    if (this.unexpectedTerminationCount < MAX_UNEXPECTED_TERMINATIONS) {
+      void withProgress(
+        async (progress, token) =>
+          this.restartQueryServerInternal(progress, token),
+        {
+          title: "Restarting CodeQL query server due to unexpected termination",
+        },
+      );
+    } else {
+      void showAndLogErrorMessage(
+        "The CodeQL query server has unexpectedly terminated too many times. Please check the logs for errors. You can manually restart the query server using the command 'CodeQL: Restart query server'.",
+      );
+      // Make sure we dispose anyway to reject all pending requests.
+      this.serverProcess?.dispose();
+    }
+    this.unexpectedTerminationCount++;
+  }
+
+  /**
+   * Restarts the query server by disposing of the current server process and then starting a new one.
+   * This does not reset the unexpected termination count.
+   */
+  private async restartQueryServerInternal(
     progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
@@ -196,6 +246,9 @@ export class QueryServerClient extends DisposableObject {
     this.nextCallback = 0;
     this.nextProgress = 0;
     this.progressCallbacks = {};
+    child.on("close", () => {
+      this.restartQueryServerOnFailure();
+    });
   }
 
   get serverProcessPid(): number {

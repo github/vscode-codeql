@@ -1539,7 +1539,7 @@ export function spawnServer(
       );
     // If the process exited abnormally, log the last stdout message,
     // It may be from the jvm.
-    if (code !== 0)
+    if (code !== 0 && lastStdout !== undefined)
       await logger.log(`Last stdout was "${lastStdout.toString()}"`);
   });
   child.stderr!.on("data", stderrListener);
