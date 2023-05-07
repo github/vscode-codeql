@@ -5,7 +5,7 @@ export function createRemoteFileRef(
   startLine?: number,
   endLine?: number,
 ): string {
-  if (startLine && endLine) {
+  if (startLine && endLine && startLine !== endLine) {
     return `${fileLink.fileLinkPrefix}/${fileLink.filePath}#L${startLine}-L${endLine}`;
   } else if (startLine) {
     return `${fileLink.fileLinkPrefix}/${fileLink.filePath}#L${startLine}`;

@@ -1,6 +1,6 @@
 ### meteor/meteor
 
-[packages/deprecated/markdown/showdown.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/packages/deprecated/markdown/showdown.js#L415-L415)
+[packages/deprecated/markdown/showdown.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/packages/deprecated/markdown/showdown.js#L415)
 
 <pre><code class="javascript">		/g,hashElement);
 	*/
@@ -13,7 +13,7 @@
 
 ----------------------------------------
 
-[packages/deprecated/markdown/showdown.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/packages/deprecated/markdown/showdown.js#L523-L523)
+[packages/deprecated/markdown/showdown.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/packages/deprecated/markdown/showdown.js#L523)
 
 <pre><code class="javascript">	// Build a regex to find HTML tags and comments.  See Friedl's
 	// "Mastering Regular Expressions", 2nd Ed., pp. 200-201.
@@ -26,7 +26,7 @@
 
 ----------------------------------------
 
-[tools/tests/apps/modules/imports/links/acorn/src/parseutil.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/tools/tests/apps/modules/imports/links/acorn/src/parseutil.js#L9-L9)
+[tools/tests/apps/modules/imports/links/acorn/src/parseutil.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/tools/tests/apps/modules/imports/links/acorn/src/parseutil.js#L9)
 
 <pre><code class="javascript">// ## Parser utilities
 
@@ -39,7 +39,7 @@ pp.strictDirective = function(start) {
 
 ----------------------------------------
 
-[tools/tests/apps/modules/imports/links/acorn/src/parseutil.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/tools/tests/apps/modules/imports/links/acorn/src/parseutil.js#L9-L9)
+[tools/tests/apps/modules/imports/links/acorn/src/parseutil.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/tools/tests/apps/modules/imports/links/acorn/src/parseutil.js#L9)
 
 <pre><code class="javascript">const literal = /^(?:'((?:\\.|[^'])*?)'|"(<strong>(?:\\.|[^"])*?</strong>)")/</code></pre>
 
