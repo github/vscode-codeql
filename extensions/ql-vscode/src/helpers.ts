@@ -25,7 +25,7 @@ import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
 import { getQlPackPath } from "./pure/ql";
-import { dbSchemeToLanguage } from "./common/query-language";
+import { dbSchemeToLanguage, QueryLanguage } from "./common/query-language";
 import { isCodespacesTemplate } from "./config";
 import { AppCommandManager } from "./common/commands";
 
@@ -726,6 +726,10 @@ export async function isLikelyDbLanguageFolder(dbPath: string) {
   );
 }
 
+export function isQueryLanguage(language: string): language is QueryLanguage {
+  return Object.values(QueryLanguage).includes(language as QueryLanguage);
+}
+
 /**
  * Finds the language that a query targets.
  * If it can't be autodetected, prompt the user to specify the language manually.
@@ -733,7 +737,7 @@ export async function isLikelyDbLanguageFolder(dbPath: string) {
 export async function findLanguage(
   cliServer: CodeQLCliServer,
   queryUri: Uri | undefined,
-): Promise<string | undefined> {
+): Promise<QueryLanguage | undefined> {
   const uri = queryUri || Window.activeTextEditor?.document.uri;
   if (uri !== undefined) {
     try {
@@ -743,7 +747,14 @@ export async function findLanguage(
       );
       const language = Object.keys(queryInfo.byLanguage)[0];
       void extLogger.log(`Detected query language: ${language}`);
-      return language;
+
+      if (isQueryLanguage(language)) {
+        return language;
+      }
+
+      void extLogger.log(
+        "Query language is unsupported. Select language manually.",
+      );
     } catch (e) {
       void extLogger.log(
         "Could not autodetect query language. Select language manually.",
@@ -758,7 +769,7 @@ export async function findLanguage(
 export async function askForLanguage(
   cliServer: CodeQLCliServer,
   throwOnEmpty = true,
-): Promise<string | undefined> {
+): Promise<QueryLanguage | undefined> {
   const language = await Window.showQuickPick(
     await cliServer.getSupportedLanguages(),
     {
@@ -775,7 +786,16 @@ export async function askForLanguage(
         "Language not found. Language must be specified manually.",
       );
     }
+    return undefined;
   }
+
+  if (!isQueryLanguage(language)) {
+    void showAndLogErrorMessage(
+      `Language '${language}' is not supported. Language must be specified manually.`,
+    );
+    return undefined;
+  }
+
   return language;
 }
 

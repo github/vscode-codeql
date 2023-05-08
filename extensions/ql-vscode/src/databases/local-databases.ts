@@ -12,6 +12,7 @@ import {
   isFolderAlreadyInWorkspace,
   getFirstWorkspaceFolder,
   showNeverAskAgainDialog,
+  isQueryLanguage,
 } from "../helpers";
 import { ProgressCallback, withProgress } from "../common/vscode/progress";
 import {
@@ -32,7 +33,6 @@ import {
   setAutogenerateQlPacks,
 } from "../config";
 import { QlPackGenerator } from "../qlpack-generator";
-import { QueryLanguage } from "../common/query-language";
 import { App } from "../common/app";
 import { existsSync } from "fs";
 
@@ -739,6 +739,13 @@ export class DatabaseManager extends DisposableObject {
       return;
     }
 
+    if (!isQueryLanguage(databaseItem.language)) {
+      void this.logger.log(
+        "Could not create skeleton QL pack because the selected database's language is not supported.",
+      );
+      return;
+    }
+
     const firstWorkspaceFolder = getFirstWorkspaceFolder();
     const folderName = `codeql-custom-queries-${databaseItem.language}`;
 
@@ -769,7 +776,7 @@ export class DatabaseManager extends DisposableObject {
     try {
       const qlPackGenerator = new QlPackGenerator(
         folderName,
-        databaseItem.language as QueryLanguage,
+        databaseItem.language,
         this.cli,
         firstWorkspaceFolder,
       );
