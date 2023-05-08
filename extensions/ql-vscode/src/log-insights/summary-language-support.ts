@@ -78,6 +78,7 @@ export class SummaryLanguageSupport extends DisposableObject {
   public getCommands(): SummaryLanguageSupportCommands {
     return {
       "codeQL.gotoQL": this.handleGotoQL.bind(this),
+      "codeQL.gotoQLContextEditor": this.handleGotoQL.bind(this),
     };
   }
 

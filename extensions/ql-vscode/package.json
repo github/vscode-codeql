@@ -477,6 +477,14 @@
         "title": "CodeQL: Preview Query Help"
       },
       {
+        "command": "codeQL.previewQueryHelpContextExplorer",
+        "title": "CodeQL: Preview Query Help"
+      },
+      {
+        "command": "codeQL.previewQueryHelpContextEditor",
+        "title": "CodeQL: Preview Query Help"
+      },
+      {
         "command": "codeQL.quickQuery",
         "title": "CodeQL: Quick Query"
       },
@@ -829,6 +837,11 @@
         "enablement": "codeql.hasQLSource"
       },
       {
+        "command": "codeQL.gotoQLContextEditor",
+        "title": "CodeQL: Go to QL Code",
+        "enablement": "codeql.hasQLSource"
+      },
+      {
         "command": "codeQL.openDataExtensionsEditor",
         "title": "CodeQL: Open Data Extensions Editor"
       },
@@ -1117,7 +1130,7 @@
           "when": "resourceExtname == .qlref"
         },
         {
-          "command": "codeQL.previewQueryHelp",
+          "command": "codeQL.previewQueryHelpContextExplorer",
           "group": "9_qlCommands",
           "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
         }
@@ -1202,6 +1215,14 @@
         {
           "command": "codeQL.previewQueryHelp",
           "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
+        },
+        {
+          "command": "codeQL.previewQueryHelpContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.previewQueryHelpContextExplorer",
+          "when": "false"
         },
         {
           "command": "codeQL.setCurrentDatabase",
@@ -1466,6 +1487,10 @@
         {
           "command": "codeQLTests.acceptOutputContextTestItem",
           "when": "false"
+        },
+        {
+          "command": "codeQL.gotoQLContextEditor",
+          "when": "false"
         }
       ],
       "editor/context": [
@@ -1510,11 +1535,11 @@
           "when": "resourceExtname == .qlref"
         },
         {
-          "command": "codeQL.previewQueryHelp",
+          "command": "codeQL.previewQueryHelpContextEditor",
           "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
         },
         {
-          "command": "codeQL.gotoQL",
+          "command": "codeQL.gotoQLContextEditor",
           "when": "editorLangId == ql-summary && config.codeQL.canary"
         }
       ]
