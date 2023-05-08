@@ -1,6 +1,7 @@
 import { join } from "path";
 
 import {
+  containsPath,
   gatherQlFiles,
   getDirectoryNamesInsidePath,
   pathsEqual,
@@ -200,6 +201,101 @@ describe("pathsEqual", () => {
       }
 
       expect(pathsEqual(path1, path2, platform)).toEqual(expected);
+    },
+  );
+});
+
+describe("containsPath", () => {
+  const testCases: Array<{
+    path1: string;
+    path2: string;
+    platform: NodeJS.Platform;
+    expected: boolean;
+  }> = [
+    {
+      path1:
+        "/home/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      path2:
+        "/home/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript/example.ql",
+      platform: "linux",
+      expected: true,
+    },
+    {
+      path1:
+        "/HOME/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      path2:
+        "/home/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript/example.ql",
+      platform: "linux",
+      expected: false,
+    },
+    {
+      path1:
+        "/home/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript/example.ql",
+      path2:
+        "/home/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      platform: "linux",
+      expected: false,
+    },
+    {
+      path1:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      path2:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript/example.ql",
+      platform: "win32",
+      expected: true,
+    },
+    {
+      path1:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      path2:
+        "c:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript/example.ql",
+      platform: "win32",
+      expected: true,
+    },
+    {
+      path1:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      path2:
+        "D:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript/example.ql",
+      platform: "win32",
+      expected: false,
+    },
+    {
+      path1:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript/example.ql",
+      path2:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      platform: "win32",
+      expected: false,
+    },
+    {
+      path1:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      path2:
+        "C:\\Users\\github\\projects\\vscode-codeql-starter\\codeql-custom-queries-javascript\\example.ql",
+      platform: "win32",
+      expected: true,
+    },
+    {
+      path1:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      path2:
+        "D:\\Users\\github\\projects\\vscode-codeql-starter\\codeql-custom-queries-javascript\\example.ql",
+      platform: "win32",
+      expected: false,
+    },
+  ];
+
+  test.each(testCases)(
+    "$path1 contains $path2 on $platform = $expected",
+    ({ path1, path2, platform, expected }) => {
+      if (platform !== process.platform) {
+        // We're using the platform-specific path.resolve, so we can't really run
+        // these tests on all platforms.
+        return;
+      }
+
+      expect(containsPath(path1, path2, platform)).toEqual(expected);
     },
   );
 });
