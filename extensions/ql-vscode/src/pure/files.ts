@@ -51,21 +51,37 @@ export async function getDirectoryNamesInsidePath(
   return dirNames;
 }
 
+function normalizePath(path: string, platform: NodeJS.Platform): string {
+  // On Windows, "C:/", "C:\", and "c:/" are all equivalent. We need
+  // to normalize the paths to ensure they all get resolved to the
+  // same format. On Windows, we also need to do the comparison
+  // case-insensitively.
+  path = resolve(path);
+  if (platform === "win32") {
+    path = path.toLowerCase();
+  }
+  return path;
+}
+
 export function pathsEqual(
   path1: string,
   path2: string,
   platform: NodeJS.Platform,
 ): boolean {
-  // On Windows, "C:/", "C:\", and "c:/" are all equivalent. We need
-  // to normalize the paths to ensure they all get resolved to the
-  // same format. On Windows, we also need to do the comparison
-  // case-insensitively.
-  path1 = resolve(path1);
-  path2 = resolve(path2);
-  if (platform === "win32") {
-    return path1.toLowerCase() === path2.toLowerCase();
-  }
-  return path1 === path2;
+  return normalizePath(path1, platform) === normalizePath(path2, platform);
+}
+
+/**
+ * Returns true if path1 contains path2.
+ */
+export function containsPath(
+  path1: string,
+  path2: string,
+  platform: NodeJS.Platform,
+): boolean {
+  return normalizePath(path2, platform).startsWith(
+    normalizePath(path1, platform),
+  );
 }
 
 export async function readDirFullPaths(path: string): Promise<string[]> {

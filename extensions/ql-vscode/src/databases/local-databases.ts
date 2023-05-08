@@ -24,7 +24,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { Logger, extLogger } from "../common";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { QueryRunner } from "../query-server";
-import { pathsEqual } from "../pure/files";
+import { containsPath, pathsEqual } from "../pure/files";
 import { redactableError } from "../pure/errors";
 import {
   getAutogenerateQlPacks,
@@ -1157,7 +1157,7 @@ export class DatabaseManager extends DisposableObject {
     // but storagePath will have an uppercase drive letter. Be sure to compare
     // URIs to URIs only
     if (storageUri) {
-      return uri.fsPath.startsWith(storageUri.fsPath);
+      return containsPath(storageUri.fsPath, uri.fsPath, process.platform);
     }
     return false;
   }
