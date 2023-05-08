@@ -115,6 +115,10 @@ export type QueryEditorCommands = {
     selectedQuery: Uri,
   ) => Promise<void>;
   "codeQL.previewQueryHelp": (selectedQuery: Uri) => Promise<void>;
+  "codeQL.previewQueryHelpContextEditor": (selectedQuery: Uri) => Promise<void>;
+  "codeQL.previewQueryHelpContextExplorer": (
+    selectedQuery: Uri,
+  ) => Promise<void>;
 };
 
 // Commands used for running local queries

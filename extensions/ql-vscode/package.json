@@ -477,6 +477,14 @@
         "title": "CodeQL: Preview Query Help"
       },
       {
+        "command": "codeQL.previewQueryHelpContextExplorer",
+        "title": "CodeQL: Preview Query Help"
+      },
+      {
+        "command": "codeQL.previewQueryHelpContextEditor",
+        "title": "CodeQL: Preview Query Help"
+      },
+      {
         "command": "codeQL.quickQuery",
         "title": "CodeQL: Quick Query"
       },
@@ -1122,7 +1130,7 @@
           "when": "resourceExtname == .qlref"
         },
         {
-          "command": "codeQL.previewQueryHelp",
+          "command": "codeQL.previewQueryHelpContextExplorer",
           "group": "9_qlCommands",
           "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
         }
@@ -1207,6 +1215,14 @@
         {
           "command": "codeQL.previewQueryHelp",
           "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
+        },
+        {
+          "command": "codeQL.previewQueryHelpContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.previewQueryHelpContextExplorer",
+          "when": "false"
         },
         {
           "command": "codeQL.setCurrentDatabase",
@@ -1519,7 +1535,7 @@
           "when": "resourceExtname == .qlref"
         },
         {
-          "command": "codeQL.previewQueryHelp",
+          "command": "codeQL.previewQueryHelpContextEditor",
           "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
         },
         {
