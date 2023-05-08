@@ -275,68 +275,66 @@ export class TestManager extends TestManagerBase {
         // Pass the test path from the event through `Uri` and back via `fsPath` so that it matches
         // the canonicalization of the URI that we used to create the `TestItem`.
         const testItem = testsToRun.get(Uri.file(event.test).fsPath);
-        if (testItem === undefined) {
-          throw new Error(
-            `Unexpected result from unknown test '${event.test}'.`,
-          );
-        }
-
-        const duration = event.compilationMs + event.evaluationMs;
-        if (event.pass) {
-          testRun.passed(testItem, duration);
-        } else {
-          // Construct a list of `TestMessage`s to report for the failure.
-          const testMessages: TestMessage[] = [];
-          if (event.failureDescription !== undefined) {
-            testMessages.push(new TestMessage(event.failureDescription));
-          }
-          if (event.diff?.length && event.actual !== undefined) {
-            // Actual results differ from expected results. Read both sets of results and create a
-            // diff to put in the message.
-            const expected = await tryReadFileContents(
-              event.expected,
-              testMessages,
-            );
-            const actual = await tryReadFileContents(
-              event.actual,
-              testMessages,
-            );
-            if (expected !== undefined && actual !== undefined) {
-              testMessages.push(
-                TestMessage.diff(
-                  "Actual output differs from expected",
-                  expected,
-                  actual,
-                ),
-              );
-            }
-          }
-          if (event.messages?.length > 0) {
-            // The test didn't make it far enough to produce results. Transform any error messages
-            // into `TestMessage`s and report the test as "errored".
-            const testMessages = event.messages.map((m) => {
-              const location = new Location(
-                Uri.file(m.position.fileName),
-                new Range(
-                  m.position.line - 1,
-                  m.position.column - 1,
-                  m.position.endLine - 1,
-                  m.position.endColumn - 1,
-                ),
-              );
-              const testMessage = new TestMessage(m.message);
-              testMessage.location = location;
-              return testMessage;
-            });
-            testRun.errored(testItem, testMessages, duration);
+        // If the user manually adds the `--check-databases` option, we can get events for the
+        // corresponding database check tests. Just ignore these for now.
+        if (testItem !== undefined) {
+          const duration = event.compilationMs + event.evaluationMs;
+          if (event.pass) {
+            testRun.passed(testItem, duration);
           } else {
-            // Results didn't match expectations. Report the test as "failed".
-            if (testMessages.length === 0) {
-              // If we managed to get here without creating any `TestMessage`s, create a default one
-              // here. Any failed test needs at least one message.
-              testMessages.push(new TestMessage("Test failed"));
+            // Construct a list of `TestMessage`s to report for the failure.
+            const testMessages: TestMessage[] = [];
+            if (event.failureDescription !== undefined) {
+              testMessages.push(new TestMessage(event.failureDescription));
             }
-            testRun.failed(testItem, testMessages, duration);
+            if (event.diff?.length && event.actual !== undefined) {
+              // Actual results differ from expected results. Read both sets of results and create a
+              // diff to put in the message.
+              const expected = await tryReadFileContents(
+                event.expected,
+                testMessages,
+              );
+              const actual = await tryReadFileContents(
+                event.actual,
+                testMessages,
+              );
+              if (expected !== undefined && actual !== undefined) {
+                testMessages.push(
+                  TestMessage.diff(
+                    "Actual output differs from expected",
+                    expected,
+                    actual,
+                  ),
+                );
+              }
+            }
+            if (event.messages?.length > 0) {
+              // The test didn't make it far enough to produce results. Transform any error messages
+              // into `TestMessage`s and report the test as "errored".
+              const testMessages = event.messages.map((m) => {
+                const location = new Location(
+                  Uri.file(m.position.fileName),
+                  new Range(
+                    m.position.line - 1,
+                    m.position.column - 1,
+                    m.position.endLine - 1,
+                    m.position.endColumn - 1,
+                  ),
+                );
+                const testMessage = new TestMessage(m.message);
+                testMessage.location = location;
+                return testMessage;
+              });
+              testRun.errored(testItem, testMessages, duration);
+            } else {
+              // Results didn't match expectations. Report the test as "failed".
+              if (testMessages.length === 0) {
+                // If we managed to get here without creating any `TestMessage`s, create a default one
+                // here. Any failed test needs at least one message.
+                testMessages.push(new TestMessage("Test failed"));
+              }
+              testRun.failed(testItem, testMessages, duration);
+            }
           }
         }
       });

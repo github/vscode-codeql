@@ -476,7 +476,11 @@ export class CodeQLCliServer implements Disposable {
       for await (const event of splitStreamAtSeparators(child.stdout!, [
         "\0",
       ])) {
-        yield event;
+        // We sometimes see an empty string emitted as an output record from the CLI. Just ignore
+        // it.
+        if (event !== "") {
+          yield event;
+        }
       }
 
       await childPromise;
