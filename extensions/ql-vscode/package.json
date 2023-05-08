@@ -829,6 +829,11 @@
         "enablement": "codeql.hasQLSource"
       },
       {
+        "command": "codeQL.gotoQLContextEditor",
+        "title": "CodeQL: Go to QL Code",
+        "enablement": "codeql.hasQLSource"
+      },
+      {
         "command": "codeQL.openDataExtensionsEditor",
         "title": "CodeQL: Open Data Extensions Editor"
       },
@@ -1466,6 +1471,10 @@
         {
           "command": "codeQLTests.acceptOutputContextTestItem",
           "when": "false"
+        },
+        {
+          "command": "codeQL.gotoQLContextEditor",
+          "when": "false"
         }
       ],
       "editor/context": [
@@ -1514,7 +1523,7 @@
           "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
         },
         {
-          "command": "codeQL.gotoQL",
+          "command": "codeQL.gotoQLContextEditor",
           "when": "editorLangId == ql-summary && config.codeQL.canary"
         }
       ]

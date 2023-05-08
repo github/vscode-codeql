@@ -299,6 +299,7 @@ export type EvalLogViewerCommands = {
 
 export type SummaryLanguageSupportCommands = {
   "codeQL.gotoQL": () => Promise<void>;
+  "codeQL.gotoQLContextEditor": () => Promise<void>;
 };
 
 export type TestUICommands = {
