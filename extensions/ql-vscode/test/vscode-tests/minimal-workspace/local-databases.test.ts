@@ -277,7 +277,7 @@ describe("local databases", () => {
       updateSpy.mockClear();
 
       // pretend that the database location is not controlled by the extension
-      (databaseManager as any).ctx.storagePath = "hucairz";
+      (databaseManager as any).ctx.storageUri = Uri.file("hucairz");
       extensionContextStoragePath = "hucairz";
 
       await databaseManager.removeDatabaseItem(
