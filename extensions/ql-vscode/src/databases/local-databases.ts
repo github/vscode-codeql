@@ -1153,9 +1153,6 @@ export class DatabaseManager extends DisposableObject {
 
   private isExtensionControlledLocation(uri: vscode.Uri) {
     const storageUri = this.ctx.storageUri || this.ctx.globalStorageUri;
-    // the uri.fsPath function on windows returns a lowercase drive letter,
-    // but storagePath will have an uppercase drive letter. Be sure to compare
-    // URIs to URIs only
     if (storageUri) {
       return containsPath(storageUri.fsPath, uri.fsPath, process.platform);
     }
