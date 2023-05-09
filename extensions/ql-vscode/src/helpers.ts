@@ -791,7 +791,9 @@ export async function askForLanguage(
 
   if (!isQueryLanguage(language)) {
     void showAndLogErrorMessage(
-      `Language '${language}' is not supported. Language must be specified manually.`,
+      `Language '${language}' is not supported. Only languages ${Object.values(
+        QueryLanguage,
+      ).join(", ")} are supported.`,
     );
     return undefined;
   }
