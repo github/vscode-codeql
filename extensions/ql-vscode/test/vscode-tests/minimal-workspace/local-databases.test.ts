@@ -80,8 +80,7 @@ describe("local databases", () => {
         dynamicProperties: {
           // pretend like databases added in the temp dir are controlled by the extension
           // so that they are deleted upon removal
-          storagePath: () => extensionContextStoragePath,
-          storageUri: () => Uri.parse(extensionContextStoragePath),
+          storageUri: () => Uri.file(extensionContextStoragePath),
         },
       },
     );
@@ -277,7 +276,7 @@ describe("local databases", () => {
       updateSpy.mockClear();
 
       // pretend that the database location is not controlled by the extension
-      (databaseManager as any).ctx.storagePath = "hucairz";
+      (databaseManager as any).ctx.storageUri = Uri.file("hucairz");
       extensionContextStoragePath = "hucairz";
 
       await databaseManager.removeDatabaseItem(

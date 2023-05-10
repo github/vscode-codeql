@@ -505,7 +505,7 @@ class ExtensionSpecificDistributionManager {
         0,
       ) || "";
     return join(
-      this.extensionContext.globalStoragePath,
+      this.extensionContext.globalStorageUri.fsPath,
       ExtensionSpecificDistributionManager._currentDistributionFolderBaseName +
         distributionFolderIndex,
     );

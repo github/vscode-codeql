@@ -24,7 +24,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { Logger, extLogger } from "../common";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { QueryRunner } from "../query-server";
-import { pathsEqual } from "../pure/files";
+import { containsPath, pathsEqual } from "../pure/files";
 import { redactableError } from "../pure/errors";
 import {
   getAutogenerateQlPacks,
@@ -1152,12 +1152,9 @@ export class DatabaseManager extends DisposableObject {
   }
 
   private isExtensionControlledLocation(uri: vscode.Uri) {
-    const storagePath = this.ctx.storagePath || this.ctx.globalStoragePath;
-    // the uri.fsPath function on windows returns a lowercase drive letter,
-    // but storagePath will have an uppercase drive letter. Be sure to compare
-    // URIs to URIs only
-    if (storagePath) {
-      return uri.fsPath.startsWith(vscode.Uri.file(storagePath).fsPath);
+    const storageUri = this.ctx.storageUri || this.ctx.globalStorageUri;
+    if (storageUri) {
+      return containsPath(storageUri.fsPath, uri.fsPath, process.platform);
     }
     return false;
   }
