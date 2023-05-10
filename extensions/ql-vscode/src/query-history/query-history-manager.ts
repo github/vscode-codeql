@@ -1059,11 +1059,16 @@ export class QueryHistoryManager extends DisposableObject {
       const cpuProfile = `${singleItem.jsonEvalLogSummaryLocation}.cpuprofile`;
 
       // create the CPU profile if it doesn't already exist
-      if (!(await pathExists(cpuProfile)))
-        convertJSONSummaryEvaluatorLog(
-          singleItem.jsonEvalLogSummaryLocation,
-          cpuProfile,
-        );
+      // if (!(await pathExists(cpuProfile)))
+      //   convertJSONSummaryEvaluatorLog(
+      //     singleItem.jsonEvalLogSummaryLocation,
+      //     cpuProfile,
+      //   );
+
+      convertJSONSummaryEvaluatorLog(
+        singleItem.jsonEvalLogSummaryLocation,
+        cpuProfile,
+      );
 
       // open the CPU profile in the editor (which is an extension)
       await this.app.commands.execute("vscode.open", Uri.file(cpuProfile));

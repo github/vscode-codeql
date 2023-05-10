@@ -253,6 +253,78 @@ export function getExecutionRoots(raLog: RAHashable[]): RAHashable[] {
   return roots;
 }
 
+export function getInPreOrder(
+  root: RAHashable,
+  raRows: RAHashable[],
+  idx: Map<string, RAIndexed>,
+): RAHashable[] {
+  let preOrder = [root];
+
+  for (const dep in root.dependencies) {
+    const child = idx.get(root.dependencies[dep]);
+
+    if (child !== undefined) {
+      preOrder = preOrder.concat(getInPreOrder(child.ra, raRows, idx));
+    }
+  }
+
+  return preOrder;
+}
+
+export function getInDependencyOrder2Util(
+  v: string,
+  visited: Set<string>,
+  stack: string[],
+  idx: Map<string, RAIndexed>,
+) {
+  visited.add(v);
+
+  const root = idx.get(v);
+
+  if (root !== undefined) {
+    for (const dep in root.ra.dependencies) {
+      if (!visited.has(root.ra.dependencies[dep])) {
+        getInDependencyOrder2Util(
+          root.ra.dependencies[dep],
+          visited,
+          stack,
+          idx,
+        );
+      }
+    }
+
+    stack.push(v);
+  }
+}
+
+export function getInDependencyOrder2(
+  root: RAHashable,
+  raRows: RAHashable[],
+): RAHashable[] {
+  const stack = [];
+  const idx = indexRaElements(raRows);
+  const rows = raRows;
+  rows.unshift(root);
+
+  const visited = new Set<string>();
+
+  for (const row of rows) {
+    if (!visited.has(row.raHash)) {
+      getInDependencyOrder2Util(row.raHash, visited, stack, idx);
+    }
+  }
+
+  const result = [];
+  for (const v of stack) {
+    const n = idx.get(v);
+    if (n !== undefined) {
+      result.push(n.ra);
+    }
+  }
+
+  return result;
+}
+
 /**
  * Gets the provided nodes in dependency order.
  * @param raRows a list of nodes.
@@ -297,22 +369,39 @@ export function getInDependencyOrder(raRows: RAHashable[]): RAHashable[] {
     }
   }
 
+  // create a utility lookup index
+  const lookupIdx = indexRaElements(raRows);
+
   while (queue.length > 0) {
     const vertex = queue.shift()!;
     dependencyOrder.push(vertex);
 
     // iterate over all dependencies
     // and decrease indegree by 1
+    let toAdd: RAHashable[] = [];
     for (const n in vertex.dependencies) {
       const depdendencyHash = vertex.dependencies[n];
       if (inDegree.has(depdendencyHash)) {
         inDegree.get(depdendencyHash)!.index--;
 
         if (inDegree.get(depdendencyHash)!.index === 0) {
-          queue.push(inDegree.get(depdendencyHash)!.ra);
+          //queue.push(inDegree.get(depdendencyHash)!.ra);
+          toAdd.push(inDegree.get(depdendencyHash)!.ra);
         }
       }
     }
+
+    // If there are multiple additions to be made, add them in the order
+    // of most shallow depth.
+    toAdd = toAdd.sort(
+      (a, b) =>
+        getExecutionDepth(a, lookupIdx) - getExecutionDepth(b, lookupIdx),
+    );
+
+    for (const a of toAdd) {
+      queue.push(a);
+    }
+
     numIterations++;
   }
 
@@ -427,7 +516,7 @@ export function getDeepestExecutionRoot(
   for (const root of executionRoots) {
     const depth = getExecutionDepth(root, raDatabase);
 
-    if (depth > executionDepth) {
+    if (depth > executionDepth && root.predicateName.indexOf("select") > -1) {
       executionDepth = depth;
       executionRoot = root;
     }
@@ -482,19 +571,23 @@ export function convertJSONSummaryEvaluatorLog(
       "No execution root found. This is likely a bug in the profiler.",
     );
   }
-  // compute the logical execution order of the RA rows
-  const raRowsInDepOrder = getInDependencyOrder(raRows);
+  // // compute the logical execution order of the RA rows
+
+  // let raRowsInDepOrder = getInPreOrder(
+  //   executionRoot,
+  //   raRows,
+  //   raDatabase,
+  // ).reverse();
 
   // we want to exclude any paths that don't require the deepest execution root, so we
   // do that here.
   const prunedRows = pruneNodesUnreachableFromRoot(
-    raRowsInDepOrder,
+    raRows,
     raDatabase,
     executionRoot.raHash,
   );
 
-  // swap out the raRows
-  raRows = prunedRows;
+  raRows = getInDependencyOrder2(executionRoot, prunedRows);
 
   // this is not strictly necessary, but it is nice to have things
   // in a consistent order that is easy to check by hand. Namely,
