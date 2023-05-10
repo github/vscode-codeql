@@ -82,7 +82,16 @@ export const extensiblePredicateDefinitions: Record<
         kind: row[7] as string,
       },
     }),
-    supportedKinds: ["sql", "xss", "logging"],
+    supportedKinds: [
+      "command-injection",
+      "html-injection",
+      "log-injection",
+      "response-splitting",
+      "path-injection",
+      "sql-injection",
+      "url-redirection",
+      "xpath-injection",
+    ],
   },
   summary: {
     extensiblePredicate: "summaryModel",
