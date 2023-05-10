@@ -1,5 +1,5 @@
 import { DisposableObject } from "../pure/disposable-object";
-import { extLogger } from ".";
+import { extLogger } from "./logging/vscode/loggers";
 import { getErrorMessage } from "../pure/helpers-pure";
 
 /**
