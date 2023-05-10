@@ -1,5 +1,5 @@
 import { DisposableObject } from "../pure/disposable-object";
-import { extLogger } from "../common";
+import { extLogger } from ".";
 import { getErrorMessage } from "../pure/helpers-pure";
 
 /**
