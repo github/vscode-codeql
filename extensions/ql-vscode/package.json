@@ -36,6 +36,7 @@
   "activationEvents": [
     "onLanguage:ql",
     "onLanguage:ql-summary",
+    "onView:codeQLQueries",
     "onView:codeQLDatabases",
     "onView:codeQLVariantAnalysisRepositories",
     "onView:codeQLQueryHistory",
@@ -1555,6 +1556,11 @@
     },
     "views": {
       "ql-container": [
+        {
+          "id": "codeQLQueries",
+          "name": "Queries",
+          "when": "config.codeQL.canary && config.codeQL.queriesPanel"
+        },
         {
           "id": "codeQLDatabases",
           "name": "Databases"
