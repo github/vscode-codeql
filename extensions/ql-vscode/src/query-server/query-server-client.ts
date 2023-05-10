@@ -103,7 +103,7 @@ export class QueryServerClient extends DisposableObject {
 
   /**
    * Restarts the query server by disposing of the current server process and then starting a new one.
-   * This resets the unexpected termination count. As hopefulyl it is an indication that the user has fixed the
+   * This resets the unexpected termination count. As hopefully it is an indication that the user has fixed the
    * issue.
    */
   async restartQueryServer(
