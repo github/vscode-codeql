@@ -1532,15 +1532,15 @@ export function spawnServer(
   // Set up event listeners.
   child.on("close", async (code, signal) => {
     if (code !== null)
-      await logger.log(`Child process exited with code ${code}`);
+      void logger.log(`Child process exited with code ${code}`);
     if (signal)
-      await logger.log(
+      void logger.log(
         `Child process exited due to receipt of signal ${signal}`,
       );
     // If the process exited abnormally, log the last stdout message,
     // It may be from the jvm.
     if (code !== 0 && lastStdout !== undefined)
-      await logger.log(`Last stdout was "${lastStdout.toString()}"`);
+      void logger.log(`Last stdout was "${lastStdout.toString()}"`);
   });
   child.stderr!.on("data", stderrListener);
   if (stdoutListener !== undefined) {
