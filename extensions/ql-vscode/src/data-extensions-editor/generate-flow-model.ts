@@ -1,6 +1,6 @@
 import { CancellationToken } from "vscode";
 import { DatabaseItem } from "../databases/local-databases";
-import { join } from "path";
+import { basename } from "path";
 import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { TeeLogger } from "../common";
@@ -16,44 +16,83 @@ import {
 } from "./modeled-method";
 import { redactableError } from "../pure/errors";
 import { QueryResultType } from "../pure/new-messages";
+import { file } from "tmp-promise";
+import { writeFile } from "fs-extra";
+import { dump } from "js-yaml";
+import { qlpackOfDatabase } from "../language-support";
 
 type FlowModelOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   queryStorageDir: string;
-  qlDir: string;
   databaseItem: DatabaseItem;
   progress: ProgressCallback;
   token: CancellationToken;
   onResults: (results: ModeledMethodWithSignature[]) => void | Promise<void>;
 };
 
+export async function resolveQueries(
+  cliServer: CodeQLCliServer,
+  databaseItem: DatabaseItem,
+): Promise<string[]> {
+  const qlpacks = await qlpackOfDatabase(cliServer, databaseItem);
+
+  const packsToSearch: string[] = [];
+
+  // The CLI can handle both library packs and query packs, so search both packs in order.
+  packsToSearch.push(qlpacks.dbschemePack);
+  if (qlpacks.queryPack !== undefined) {
+    packsToSearch.push(qlpacks.queryPack);
+  }
+
+  const suiteFile = (
+    await file({
+      postfix: ".qls",
+    })
+  ).path;
+  const suiteYaml = [];
+  for (const qlpack of packsToSearch) {
+    suiteYaml.push({
+      from: qlpack,
+      queries: ".",
+      include: {
+        "tags contain": "modelgenerator",
+      },
+    });
+  }
+  await writeFile(suiteFile, dump(suiteYaml), "utf8");
+
+  return await cliServer.resolveQueriesInSuite(
+    suiteFile,
+    getOnDiskWorkspaceFolders(),
+  );
+}
+
 async function getModeledMethodsFromFlow(
   type: Exclude<ModeledMethodType, "none">,
-  queryName: string,
+  queryPath: string | undefined,
   queryStep: number,
   {
     cliServer,
     queryRunner,
     queryStorageDir,
-    qlDir,
     databaseItem,
     progress,
     token,
   }: Omit<FlowModelOptions, "onResults">,
 ): Promise<ModeledMethodWithSignature[]> {
-  const definition = extensiblePredicateDefinitions[type];
+  if (queryPath === undefined) {
+    void showAndLogExceptionWithTelemetry(
+      redactableError`Failed to find ${type} query`,
+    );
+    return [];
+  }
 
-  const query = join(
-    qlDir,
-    databaseItem.language,
-    "ql/src/utils/modelgenerator",
-    queryName,
-  );
+  const definition = extensiblePredicateDefinitions[type];
 
   const queryRun = queryRunner.createQueryRun(
     databaseItem.databaseUri.fsPath,
-    { queryPath: query, quickEvalPosition: undefined },
+    { queryPath, quickEvalPosition: undefined },
     false,
     getOnDiskWorkspaceFolders(),
     undefined,
@@ -74,7 +113,7 @@ async function getModeledMethodsFromFlow(
   );
   if (queryResult.resultType !== QueryResultType.SUCCESS) {
     void showAndLogExceptionWithTelemetry(
-      redactableError`Failed to run ${queryName} query: ${
+      redactableError`Failed to run ${basename(queryPath)} query: ${
         queryResult.message ?? "No message"
       }`,
     );
@@ -86,7 +125,9 @@ async function getModeledMethodsFromFlow(
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
     void showAndLogExceptionWithTelemetry(
-      redactableError`Expected exactly one result set, got ${bqrsInfo["result-sets"].length} for ${queryName}`,
+      redactableError`Expected exactly one result set, got ${
+        bqrsInfo["result-sets"].length
+      } for ${basename(queryPath)}`,
     );
   }
 
@@ -112,9 +153,16 @@ export async function generateFlowModel({
   onResults,
   ...options
 }: FlowModelOptions) {
+  const queries = await resolveQueries(options.cliServer, options.databaseItem);
+
+  const queriesByBasename: Record<string, string> = {};
+  for (const query of queries) {
+    queriesByBasename[basename(query)] = query;
+  }
+
   const summaryResults = await getModeledMethodsFromFlow(
     "summary",
-    "CaptureSummaryModels.ql",
+    queriesByBasename["CaptureSummaryModels.ql"],
     0,
     options,
   );
@@ -124,7 +172,7 @@ export async function generateFlowModel({
 
   const sinkResults = await getModeledMethodsFromFlow(
     "sink",
-    "CaptureSinkModels.ql",
+    queriesByBasename["CaptureSinkModels.ql"],
     1,
     options,
   );
@@ -134,7 +182,7 @@ export async function generateFlowModel({
 
   const sourceResults = await getModeledMethodsFromFlow(
     "source",
-    "CaptureSourceModels.ql",
+    queriesByBasename["CaptureSourceModels.ql"],
     2,
     options,
   );
@@ -144,7 +192,7 @@ export async function generateFlowModel({
 
   const neutralResults = await getModeledMethodsFromFlow(
     "neutral",
-    "CaptureNeutralModels.ql",
+    queriesByBasename["CaptureNeutralModels.ql"],
     3,
     options,
   );

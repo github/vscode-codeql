@@ -5,7 +5,6 @@ import {
   ViewColumn,
   window,
   workspace,
-  WorkspaceFolder,
 } from "vscode";
 import {
   AbstractWebview,
@@ -39,19 +38,6 @@ import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPackModelFile } from "./shared/extension-pack";
-
-function getQlSubmoduleFolder(): WorkspaceFolder | undefined {
-  const workspaceFolder = workspace.workspaceFolders?.find(
-    (folder) => folder.name === "ql",
-  );
-  if (!workspaceFolder) {
-    void extLogger.log("No workspace folder 'ql' found");
-
-    return;
-  }
-
-  return workspaceFolder;
-}
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -309,11 +295,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
     // but we need to set it back to the originally selected database.
     await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
 
-    const workspaceFolder = getQlSubmoduleFolder();
-    if (!workspaceFolder) {
-      return;
-    }
-
     await this.showProgress({
       step: 0,
       maxStep: 4000,
@@ -325,7 +306,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
         queryStorageDir: this.queryStorageDir,
-        qlDir: workspaceFolder.uri.fsPath,
         databaseItem: database,
         onResults: async (results) => {
           const modeledMethodsByName: Record<string, ModeledMethod> = {};
