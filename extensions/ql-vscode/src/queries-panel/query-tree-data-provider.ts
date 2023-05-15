@@ -22,6 +22,28 @@ export class QueryTreeDataProvider
         tooltip: "path1",
         children: [],
       },
+      {
+        label: "name2",
+        tooltip: "path2",
+        children: [
+          {
+            label: "name3",
+            tooltip: "path3",
+            children: [],
+          },
+          {
+            label: "name4",
+            tooltip: "path4",
+            children: [
+              {
+                label: "name5",
+                tooltip: "path5",
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
     ];
   }
 
@@ -33,7 +55,14 @@ export class QueryTreeDataProvider
   public getTreeItem(
     item: QueryTreeViewItem,
   ): vscode.TreeItem | Thenable<vscode.TreeItem> {
-    return item;
+    const state = item.children.length
+      ? vscode.TreeItemCollapsibleState.Collapsed
+      : vscode.TreeItemCollapsibleState.None;
+
+    const treeItem = new vscode.TreeItem(item.label, state);
+    treeItem.tooltip = item.tooltip;
+
+    return treeItem;
   }
 
   /**
@@ -46,9 +75,9 @@ export class QueryTreeDataProvider
   ): vscode.ProviderResult<QueryTreeViewItem[]> {
     if (!item) {
       // We're at the root.
-      return Promise.resolve(this.queryTreeItems);
+      return this.queryTreeItems;
     } else {
-      return Promise.resolve(item.children);
+      return item.children;
     }
   }
 }
