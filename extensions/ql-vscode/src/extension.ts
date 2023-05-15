@@ -733,8 +733,7 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(databaseUI);
 
-  void extLogger.log("Initializing queries panel.");
-  await QueriesModule.initialize(app);
+  QueriesModule.initialize(app);
 
   void extLogger.log("Initializing evaluator log viewer.");
   const evalLogViewer = new EvalLogViewer();

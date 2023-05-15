@@ -1,3 +1,4 @@
+import { extLogger } from "../common";
 import { App, AppMode } from "../common/app";
 import { isCanary, showQueriesPanel } from "../config";
 import { DisposableObject } from "../pure/disposable-object";
@@ -10,21 +11,23 @@ export class QueriesModule extends DisposableObject {
     super();
   }
 
-  private async initialize(app: App): Promise<void> {
+  private initialize(app: App): void {
     if (app.mode === AppMode.Production || !isCanary() || !showQueriesPanel()) {
       // Currently, we only want to expose the new panel when we are in development and canary mode
       // and the developer has enabled the "Show queries panel" flag.
       return;
     }
+    void extLogger.log("Initializing queries panel.");
+
     this.queriesPanel = new QueriesPanel();
     this.push(this.queriesPanel);
   }
 
-  public static async initialize(app: App): Promise<QueriesModule> {
+  public static initialize(app: App): QueriesModule {
     const queriesModule = new QueriesModule(app);
     app.subscriptions.push(queriesModule);
 
-    await queriesModule.initialize(app);
+    queriesModule.initialize(app);
     return queriesModule;
   }
 }
