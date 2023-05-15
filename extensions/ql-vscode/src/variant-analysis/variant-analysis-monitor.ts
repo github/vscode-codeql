@@ -27,6 +27,8 @@ export class VariantAnalysisMonitor extends DisposableObject {
   );
   readonly onVariantAnalysisChange = this._onVariantAnalysisChange.event;
 
+  private readonly monitoringVariantAnalyses = new Set<number>();
+
   constructor(
     private readonly app: App,
     private readonly shouldCancelMonitor: (
@@ -37,6 +39,24 @@ export class VariantAnalysisMonitor extends DisposableObject {
   }
 
   public async monitorVariantAnalysis(
+    variantAnalysis: VariantAnalysis,
+  ): Promise<void> {
+    if (this.monitoringVariantAnalyses.has(variantAnalysis.id)) {
+      void extLogger.log(
+        `Already monitoring variant analysis ${variantAnalysis.id}`,
+      );
+      return;
+    }
+
+    this.monitoringVariantAnalyses.add(variantAnalysis.id);
+    try {
+      await this._monitorVariantAnalysis(variantAnalysis);
+    } finally {
+      this.monitoringVariantAnalyses.delete(variantAnalysis.id);
+    }
+  }
+
+  private async _monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
     let attemptCount = 0;
