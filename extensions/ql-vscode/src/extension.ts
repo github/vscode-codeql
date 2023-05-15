@@ -125,6 +125,7 @@ import { TestManager } from "./query-testing/test-manager";
 import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
+import { QueriesModule } from "./queries-panel/queries-module";
 
 /**
  * extension.ts
@@ -731,6 +732,8 @@ async function activateWithInstalledDistribution(
     ctx.extensionPath,
   );
   ctx.subscriptions.push(databaseUI);
+
+  QueriesModule.initialize(app);
 
   void extLogger.log("Initializing evaluator log viewer.");
   const evalLogViewer = new EvalLogViewer();
