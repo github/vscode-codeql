@@ -125,7 +125,7 @@ import { TestManager } from "./query-testing/test-manager";
 import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
-import { QueriesPanel } from "./queries-panel/queries-panel";
+import { QueriesModule } from "./queries-panel/queries-module";
 
 /**
  * extension.ts
@@ -734,9 +734,7 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(databaseUI);
 
   void extLogger.log("Initializing queries panel.");
-
-  const queriesPanel = new QueriesPanel();
-  ctx.subscriptions.push(queriesPanel);
+  await QueriesModule.initialize(app);
 
   void extLogger.log("Initializing evaluator log viewer.");
   const evalLogViewer = new EvalLogViewer();
