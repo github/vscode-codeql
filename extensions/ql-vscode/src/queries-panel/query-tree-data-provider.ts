@@ -1,10 +1,6 @@
 import * as vscode from "vscode";
 import { QueryTreeViewItem } from "./query-tree-view-item";
 import { DisposableObject } from "../pure/disposable-object";
-import { QueryFile } from "./query-node";
-
-// Temporary mock node, just to populate the tree view.
-const node1 = new QueryFile("path1", "name1");
 
 export class QueryTreeDataProvider
   extends DisposableObject
@@ -19,11 +15,11 @@ export class QueryTreeDataProvider
   }
 
   private createTree(): QueryTreeViewItem[] {
+    // Temporary mock data, just to populate the tree view.
     return [
       {
-        queryNode: node1,
-        label: node1.name,
-        tooltip: node1.path,
+        label: "name1",
+        tooltip: "path1",
         children: [],
       },
     ];
