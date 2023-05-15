@@ -70,6 +70,10 @@ export const MethodRow = ({
         kind: "value",
         ...modeledMethod,
         type: target.value as ModeledMethodType,
+        provenance:
+          modeledMethod?.provenance === "df-generated"
+            ? "df-manual"
+            : "editor-manual",
       });
     },
     [onChange, externalApiUsage, modeledMethod, argumentsList],

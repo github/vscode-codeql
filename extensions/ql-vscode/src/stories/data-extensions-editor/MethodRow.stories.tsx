@@ -50,5 +50,6 @@ MethodRow.args = {
     input: "Argument[this]",
     output: "ReturnValue",
     kind: "taint",
+    provenance: "editor-manual",
   },
 };

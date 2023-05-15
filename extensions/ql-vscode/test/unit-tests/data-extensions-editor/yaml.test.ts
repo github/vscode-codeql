@@ -75,6 +75,7 @@ describe("createDataExtensionYaml", () => {
           input: "Argument[0]",
           output: "",
           kind: "sql",
+          provenance: "df-generated",
         },
       },
     );
@@ -89,7 +90,7 @@ describe("createDataExtensionYaml", () => {
       pack: codeql/java-all
       extensible: sinkModel
     data:
-      - ["org.sql2o","Connection",true,"createQuery","(String)","","Argument[0]","sql","manual"]
+      - ["org.sql2o","Connection",true,"createQuery","(String)","","Argument[0]","sql","df-generated"]
 
   - addsTo:
       pack: codeql/java-all
@@ -171,6 +172,7 @@ describe("loadDataExtensionYaml", () => {
         kind: "sql",
         output: "",
         type: "sink",
+        provenance: "manual",
       },
     });
   });

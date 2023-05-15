@@ -3,6 +3,7 @@ import {
   ModeledMethod,
   ModeledMethodType,
   ModeledMethodWithSignature,
+  Provenance,
 } from "./modeled-method";
 
 export type ExternalApiUsageByType = {
@@ -43,7 +44,7 @@ export const extensiblePredicateDefinitions: Record<
       "",
       method.modeledMethod.output,
       method.modeledMethod.kind,
-      "manual",
+      method.modeledMethod.provenance,
     ],
     readModeledMethod: (row) => ({
       signature: readRowToMethod(row),
@@ -52,6 +53,7 @@ export const extensiblePredicateDefinitions: Record<
         input: "",
         output: row[6] as string,
         kind: row[7] as string,
+        provenance: row[8] as Provenance,
       },
     }),
     supportedKinds: ["remote"],
@@ -71,7 +73,7 @@ export const extensiblePredicateDefinitions: Record<
       "",
       method.modeledMethod.input,
       method.modeledMethod.kind,
-      "manual",
+      method.modeledMethod.provenance,
     ],
     readModeledMethod: (row) => ({
       signature: readRowToMethod(row),
@@ -80,6 +82,7 @@ export const extensiblePredicateDefinitions: Record<
         input: row[6] as string,
         output: "",
         kind: row[7] as string,
+        provenance: row[8] as Provenance,
       },
     }),
     supportedKinds: ["sql", "xss", "logging"],
@@ -100,7 +103,7 @@ export const extensiblePredicateDefinitions: Record<
       method.modeledMethod.input,
       method.modeledMethod.output,
       method.modeledMethod.kind,
-      "manual",
+      method.modeledMethod.provenance,
     ],
     readModeledMethod: (row) => ({
       signature: readRowToMethod(row),
@@ -109,6 +112,7 @@ export const extensiblePredicateDefinitions: Record<
         input: row[6] as string,
         output: row[7] as string,
         kind: row[8] as string,
+        provenance: row[9] as Provenance,
       },
     }),
     supportedKinds: ["taint", "value"],
@@ -123,7 +127,7 @@ export const extensiblePredicateDefinitions: Record<
       method.externalApiUsage.typeName,
       method.externalApiUsage.methodName,
       method.externalApiUsage.methodParameters,
-      "manual",
+      method.modeledMethod.provenance,
     ],
     readModeledMethod: (row) => ({
       signature: `${row[0]}.${row[1]}#${row[2]}${row[3]}`,
@@ -132,6 +136,7 @@ export const extensiblePredicateDefinitions: Record<
         input: "",
         output: "",
         kind: "",
+        provenance: row[4] as Provenance,
       },
     }),
   },
