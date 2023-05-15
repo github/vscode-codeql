@@ -3,7 +3,7 @@ import * as Octokit from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 import { Credentials } from "../authentication";
 
-const GITHUB_AUTH_PROVIDER_ID = "github";
+export const GITHUB_AUTH_PROVIDER_ID = "github";
 
 // We need 'repo' scope for triggering workflows, 'gist' scope for exporting results to Gist,
 // and 'read:packages' for reading private CodeQL packages.

@@ -39,6 +39,10 @@ export class VariantAnalysisMonitor extends DisposableObject {
     super();
   }
 
+  public isMonitoringVariantAnalysis(variantAnalysisId: number): boolean {
+    return this.monitoringVariantAnalyses.has(variantAnalysisId);
+  }
+
   public async monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
