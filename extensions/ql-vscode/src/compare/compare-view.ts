@@ -175,21 +175,40 @@ export class CompareView extends AbstractWebview<
     const commonResultSetNames = fromSchemaNames.filter((name) =>
       toSchemaNames.includes(name),
     );
+
+    // Fall back on the default result set names if there are no common ones.
+    const defaultFromResultSetName = fromSchemaNames.find((name) =>
+      name.startsWith("#"),
+    );
+    const defaultToResultSetName = toSchemaNames.find((name) =>
+      name.startsWith("#"),
+    );
+
+    if (
+      commonResultSetNames.length === 0 &&
+      !(defaultFromResultSetName || defaultToResultSetName)
+    ) {
+      throw new Error(
+        "No common result sets found between the two queries. Please check that the queries are compatible.",
+      );
+    }
+
     const currentResultSetName =
       selectedResultSetName || commonResultSetNames[0];
     const fromResultSet = await this.getResultSet(
       fromSchemas,
-      currentResultSetName,
+      currentResultSetName || defaultFromResultSetName!,
       from.completedQuery.query.resultsPaths.resultsPath,
     );
     const toResultSet = await this.getResultSet(
       toSchemas,
-      currentResultSetName,
+      currentResultSetName || defaultToResultSetName!,
       to.completedQuery.query.resultsPaths.resultsPath,
     );
     return [
       commonResultSetNames,
-      currentResultSetName,
+      currentResultSetName ||
+        `${defaultFromResultSetName} <-> ${defaultToResultSetName}`,
       fromResultSet,
       toResultSet,
     ];
