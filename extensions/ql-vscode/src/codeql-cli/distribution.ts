@@ -3,7 +3,7 @@ import { pathExists, mkdtemp, createWriteStream, remove } from "fs-extra";
 import { tmpdir } from "os";
 import { delimiter, dirname, join } from "path";
 import * as semver from "semver";
-import { parse } from "url";
+import { URL } from "url";
 import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "../config";
 import {
@@ -505,7 +505,7 @@ class ExtensionSpecificDistributionManager {
         0,
       ) || "";
     return join(
-      this.extensionContext.globalStoragePath,
+      this.extensionContext.globalStorageUri.fsPath,
       ExtensionSpecificDistributionManager._currentDistributionFolderBaseName +
         distributionFolderIndex,
     );
@@ -670,7 +670,7 @@ export class ReleasesApiConsumer {
       redirectUrl &&
       redirectCount < ReleasesApiConsumer._maxRedirects
     ) {
-      const parsedRedirectUrl = parse(redirectUrl);
+      const parsedRedirectUrl = new URL(redirectUrl);
       if (parsedRedirectUrl.protocol !== "https:") {
         throw new Error("Encountered a non-https redirect, rejecting");
       }

@@ -1,5 +1,5 @@
 import { dirname, basename, join, normalize, relative, extname } from "path";
-import { Discovery } from "./discovery";
+import { Discovery } from "../common/discovery";
 import {
   EventEmitter,
   Event,
