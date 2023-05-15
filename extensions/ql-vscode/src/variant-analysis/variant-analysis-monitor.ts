@@ -1,5 +1,6 @@
 import { env, EventEmitter } from "vscode";
 import { getVariantAnalysis } from "./gh-api/gh-api-client";
+import { RequestError } from "@octokit/request-error";
 
 import {
   isFinalVariantAnalysisStatus,
@@ -59,6 +60,12 @@ export class VariantAnalysisMonitor extends DisposableObject {
   private async _monitorVariantAnalysis(
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
+    const variantAnalysisLabel = `${variantAnalysis.query.name} (${
+      variantAnalysis.query.language
+    }) [${new Date(variantAnalysis.executionStartTime).toLocaleString(
+      env.language,
+    )}]`;
+
     let attemptCount = 0;
     const scannedReposDownloaded: number[] = [];
 
@@ -81,11 +88,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
       } catch (e) {
         const errorMessage = getErrorMessage(e);
 
-        const message = `Error while monitoring variant analysis ${
-          variantAnalysis.query.name
-        } (${variantAnalysis.query.language}) [${new Date(
-          variantAnalysis.executionStartTime,
-        ).toLocaleString(env.language)}]: ${errorMessage}`;
+        const message = `Error while monitoring variant analysis ${variantAnalysisLabel}: ${errorMessage}`;
 
         // If we have already shown this error to the user, don't show it again.
         if (lastErrorShown === errorMessage) {
@@ -93,6 +96,19 @@ export class VariantAnalysisMonitor extends DisposableObject {
         } else {
           void showAndLogWarningMessage(message);
           lastErrorShown = errorMessage;
+        }
+
+        if (e instanceof RequestError && e.status === 404) {
+          // We want to show the error message to the user, but we don't want to
+          // keep polling for the variant analysis if it no longer exists.
+          // Therefore, this block is down here rather than at the top of the
+          // catch block.
+          void extLogger.log(
+            `Variant analysis ${variantAnalysisLabel} no longer exists or is no longer accessible, stopping monitoring.`,
+          );
+          // Cancel monitoring on 404, as this probably means the user does not have access to it anymore
+          // e.g. lost access to repo, or repo was deleted
+          return;
         }
 
         continue;
