@@ -1,4 +1,5 @@
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
+import { RequestError } from "@octokit/request-error";
 import { VariantAnalysisMonitor } from "../../../../src/variant-analysis/variant-analysis-monitor";
 import {
   VariantAnalysis as VariantAnalysisApiResponse,
@@ -295,6 +296,55 @@ describe("Variant Analysis Monitor", () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
         expect(mockEecuteCommand).not.toBeCalled();
+      });
+    });
+
+    describe("when a 404 is returned", () => {
+      let showAndLogWarningMessageSpy: jest.SpiedFunction<
+        typeof helpers.showAndLogWarningMessage
+      >;
+
+      beforeEach(async () => {
+        showAndLogWarningMessageSpy = jest
+          .spyOn(helpers, "showAndLogWarningMessage")
+          .mockResolvedValue(undefined);
+
+        const scannedRepos = createMockScannedRepos([
+          "pending",
+          "in_progress",
+          "in_progress",
+          "in_progress",
+          "pending",
+          "pending",
+        ]);
+        mockApiResponse = createMockApiResponse("in_progress", scannedRepos);
+        mockGetVariantAnalysis.mockResolvedValueOnce(mockApiResponse);
+
+        mockGetVariantAnalysis.mockRejectedValueOnce(
+          new RequestError("Not Found", 404, {
+            request: {
+              method: "GET",
+              url: "",
+              headers: {},
+            },
+            response: {
+              status: 404,
+              headers: {},
+              url: "",
+              data: {},
+            },
+          }),
+        );
+      });
+
+      it("should stop requesting the variant analysis", async () => {
+        await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
+
+        expect(mockGetVariantAnalysis).toHaveBeenCalledTimes(2);
+        expect(showAndLogWarningMessageSpy).toHaveBeenCalledTimes(1);
+        expect(showAndLogWarningMessageSpy).toHaveBeenCalledWith(
+          expect.stringMatching(/not found/i),
+        );
       });
     });
   });
