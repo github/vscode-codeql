@@ -17,33 +17,13 @@ export class QueryTreeDataProvider
   private createTree(): QueryTreeViewItem[] {
     // Temporary mock data, just to populate the tree view.
     return [
-      {
-        label: "name1",
-        tooltip: "path1",
-        children: [],
-      },
-      {
-        label: "name2",
-        tooltip: "path2",
-        children: [
-          {
-            label: "name3",
-            tooltip: "path3",
-            children: [],
-          },
-          {
-            label: "name4",
-            tooltip: "path4",
-            children: [
-              {
-                label: "name5",
-                tooltip: "path5",
-                children: [],
-              },
-            ],
-          },
-        ],
-      },
+      new QueryTreeViewItem("name1", "path1", []),
+      new QueryTreeViewItem("name2", "path2", [
+        new QueryTreeViewItem("name3", "path3", []),
+        new QueryTreeViewItem("name4", "path4", [
+          new QueryTreeViewItem("name5", "path5", []),
+        ]),
+      ]),
     ];
   }
 
@@ -55,14 +35,7 @@ export class QueryTreeDataProvider
   public getTreeItem(
     item: QueryTreeViewItem,
   ): vscode.TreeItem | Thenable<vscode.TreeItem> {
-    const state = item.children.length
-      ? vscode.TreeItemCollapsibleState.Collapsed
-      : vscode.TreeItemCollapsibleState.None;
-
-    const treeItem = new vscode.TreeItem(item.label, state);
-    treeItem.tooltip = item.tooltip;
-
-    return treeItem;
+    return item;
   }
 
   /**
