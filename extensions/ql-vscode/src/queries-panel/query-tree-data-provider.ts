@@ -17,11 +17,13 @@ export class QueryTreeDataProvider
   private createTree(): QueryTreeViewItem[] {
     // Temporary mock data, just to populate the tree view.
     return [
-      {
-        label: "name1",
-        tooltip: "path1",
-        children: [],
-      },
+      new QueryTreeViewItem("name1", "path1", []),
+      new QueryTreeViewItem("name2", "path2", [
+        new QueryTreeViewItem("name3", "path3", []),
+        new QueryTreeViewItem("name4", "path4", [
+          new QueryTreeViewItem("name5", "path5", []),
+        ]),
+      ]),
     ];
   }
 
@@ -46,9 +48,9 @@ export class QueryTreeDataProvider
   ): vscode.ProviderResult<QueryTreeViewItem[]> {
     if (!item) {
       // We're at the root.
-      return Promise.resolve(this.queryTreeItems);
+      return this.queryTreeItems;
     } else {
-      return Promise.resolve(item.children);
+      return item.children;
     }
   }
 }
