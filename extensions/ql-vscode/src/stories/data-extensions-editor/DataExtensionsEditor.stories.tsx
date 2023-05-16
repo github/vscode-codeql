@@ -224,7 +224,7 @@ DataExtensionsEditor.args = {
       input: "Argument[this]",
       output: "ReturnValue",
       kind: "taint",
-      provenance: "editor-manual",
+      provenance: "manual",
     },
     "org.sql2o.Query#executeScalar(Class)": {
       type: "neutral",
