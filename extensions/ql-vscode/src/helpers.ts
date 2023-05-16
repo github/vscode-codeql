@@ -98,7 +98,7 @@ export async function showAndLogErrorMessage(
   return internalShowAndLog(
     dropLinesExceptInitial(message),
     Window.showErrorMessage,
-    options,
+    { fullMessage: message, ...options },
   );
 }
 
