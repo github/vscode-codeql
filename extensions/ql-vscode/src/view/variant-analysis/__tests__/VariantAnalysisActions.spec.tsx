@@ -99,11 +99,26 @@ describe(VariantAnalysisActions.name, () => {
       variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
       showResultActions: true,
       hasSelectedRepositories: true,
+      hasFilteredRepositories: true,
     });
 
     expect(screen.getByText("Export selected results")).toBeInTheDocument();
     expect(
       screen.getByText("Copy selected repositories as a list"),
+    ).toBeInTheDocument();
+  });
+
+  it("changes the text on the buttons when repositories are filtered", async () => {
+    render({
+      variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
+      showResultActions: true,
+      hasSelectedRepositories: false,
+      hasFilteredRepositories: true,
+    });
+
+    expect(screen.getByText("Export filtered results")).toBeInTheDocument();
+    expect(
+      screen.getByText("Copy filtered repositories as a list"),
     ).toBeInTheDocument();
   });
 });

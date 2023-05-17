@@ -16,6 +16,7 @@ export type VariantAnalysisActionsProps = {
   exportResultsDisabled?: boolean;
 
   hasSelectedRepositories?: boolean;
+  hasFilteredRepositories?: boolean;
 };
 
 const Container = styled.div`
@@ -28,6 +29,28 @@ const Button = styled(VSCodeButton)`
   white-space: nowrap;
 `;
 
+const chooseText = ({
+  hasSelectedRepositories,
+  hasFilteredRepositories,
+  normalText,
+  selectedText,
+  filteredText,
+}: {
+  hasSelectedRepositories?: boolean;
+  hasFilteredRepositories?: boolean;
+  normalText: string;
+  selectedText: string;
+  filteredText: string;
+}) => {
+  if (hasSelectedRepositories) {
+    return selectedText;
+  }
+  if (hasFilteredRepositories) {
+    return filteredText;
+  }
+  return normalText;
+};
+
 export const VariantAnalysisActions = ({
   variantAnalysisStatus,
   onStopQueryClick,
@@ -38,6 +61,7 @@ export const VariantAnalysisActions = ({
   copyRepositoryListDisabled,
   exportResultsDisabled,
   hasSelectedRepositories,
+  hasFilteredRepositories,
 }: VariantAnalysisActionsProps) => {
   return (
     <Container>
@@ -48,18 +72,26 @@ export const VariantAnalysisActions = ({
             onClick={onCopyRepositoryListClick}
             disabled={copyRepositoryListDisabled}
           >
-            {hasSelectedRepositories
-              ? "Copy selected repositories as a list"
-              : "Copy repository list"}
+            {chooseText({
+              hasSelectedRepositories,
+              hasFilteredRepositories,
+              normalText: "Copy repository list",
+              selectedText: "Copy selected repositories as a list",
+              filteredText: "Copy filtered repositories as a list",
+            })}
           </Button>
           <Button
             appearance="primary"
             onClick={onExportResultsClick}
             disabled={exportResultsDisabled}
           >
-            {hasSelectedRepositories
-              ? "Export selected results"
-              : "Export results"}
+            {chooseText({
+              hasSelectedRepositories,
+              hasFilteredRepositories,
+              normalText: "Export results",
+              selectedText: "Export selected results",
+              filteredText: "Export filtered results",
+            })}
           </Button>
         </>
       )}
