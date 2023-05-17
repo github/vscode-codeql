@@ -14,6 +14,8 @@ export type VariantAnalysisActionsProps = {
   onExportResultsClick: () => void;
   copyRepositoryListDisabled?: boolean;
   exportResultsDisabled?: boolean;
+
+  hasSelectedRepositories?: boolean;
 };
 
 const Container = styled.div`
@@ -35,6 +37,7 @@ export const VariantAnalysisActions = ({
   onExportResultsClick,
   copyRepositoryListDisabled,
   exportResultsDisabled,
+  hasSelectedRepositories,
 }: VariantAnalysisActionsProps) => {
   return (
     <Container>
@@ -45,14 +48,18 @@ export const VariantAnalysisActions = ({
             onClick={onCopyRepositoryListClick}
             disabled={copyRepositoryListDisabled}
           >
-            Copy repository list
+            {hasSelectedRepositories
+              ? "Copy selected repositories as a list"
+              : "Copy repository list"}
           </Button>
           <Button
             appearance="primary"
             onClick={onExportResultsClick}
             disabled={exportResultsDisabled}
           >
-            Export results
+            {hasSelectedRepositories
+              ? "Export selected results"
+              : "Export results"}
           </Button>
         </>
       )}

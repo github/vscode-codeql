@@ -93,4 +93,17 @@ describe(VariantAnalysisActions.name, () => {
 
     expect(container.querySelectorAll("vscode-button").length).toEqual(0);
   });
+
+  it("changes the text on the buttons when repositories are selected", async () => {
+    render({
+      variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
+      showResultActions: true,
+      hasSelectedRepositories: true,
+    });
+
+    expect(screen.getByText("Export selected results")).toBeInTheDocument();
+    expect(
+      screen.getByText("Copy selected repositories as a list"),
+    ).toBeInTheDocument();
+  });
 });

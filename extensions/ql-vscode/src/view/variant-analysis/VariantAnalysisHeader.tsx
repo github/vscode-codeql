@@ -131,6 +131,9 @@ export const VariantAnalysisHeader = ({
           stopQueryDisabled={!variantAnalysis.actionsWorkflowRunId}
           exportResultsDisabled={!hasDownloadedRepos}
           copyRepositoryListDisabled={!hasReposWithResults}
+          hasSelectedRepositories={
+            selectedRepositoryIds && selectedRepositoryIds.length > 0
+          }
         />
       </Row>
       <VariantAnalysisStats
