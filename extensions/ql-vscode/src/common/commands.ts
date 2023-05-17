@@ -251,6 +251,9 @@ export type VariantAnalysisCommands = {
   "codeQL.monitorRehydratedVariantAnalysis": (
     variantAnalysis: VariantAnalysis,
   ) => Promise<void>;
+  "codeQL.monitorReauthenticatedVariantAnalysis": (
+    variantAnalysis: VariantAnalysis,
+  ) => Promise<void>;
   "codeQL.openVariantAnalysisLogs": (
     variantAnalysisId: number,
   ) => Promise<void>;

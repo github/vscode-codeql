@@ -5,6 +5,8 @@ import {
   getVariantAnalysisRepo,
 } from "./gh-api/gh-api-client";
 import {
+  authentication,
+  AuthenticationSessionsChangeEvent,
   CancellationToken,
   env,
   EventEmitter,
@@ -72,6 +74,7 @@ import {
   REPO_STATES_FILENAME,
   writeRepoStates,
 } from "./repo-states-store";
+import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -131,6 +134,10 @@ export class VariantAnalysisManager
     this.variantAnalysisResultsManager.onResultLoaded(
       this.onRepoResultLoaded.bind(this),
     );
+
+    this.push(
+      authentication.onDidChangeSessions(this.onDidChangeSessions.bind(this)),
+    );
   }
 
   getCommands(): VariantAnalysisCommands {
@@ -143,6 +150,8 @@ export class VariantAnalysisManager
       "codeQL.monitorNewVariantAnalysis":
         this.monitorVariantAnalysis.bind(this),
       "codeQL.monitorRehydratedVariantAnalysis":
+        this.monitorVariantAnalysis.bind(this),
+      "codeQL.monitorReauthenticatedVariantAnalysis":
         this.monitorVariantAnalysis.bind(this),
       "codeQL.openVariantAnalysisLogs": this.openVariantAnalysisLogs.bind(this),
       "codeQL.openVariantAnalysisView": this.showView.bind(this),
@@ -502,6 +511,38 @@ export class VariantAnalysisManager
     }
 
     repoStates[repoState.repositoryId] = repoState;
+  }
+
+  private async onDidChangeSessions(
+    event: AuthenticationSessionsChangeEvent,
+  ): Promise<void> {
+    if (event.provider.id !== GITHUB_AUTH_PROVIDER_ID) {
+      return;
+    }
+
+    for (const variantAnalysis of this.variantAnalyses.values()) {
+      if (
+        this.variantAnalysisMonitor.isMonitoringVariantAnalysis(
+          variantAnalysis.id,
+        )
+      ) {
+        continue;
+      }
+
+      if (
+        await isVariantAnalysisComplete(
+          variantAnalysis,
+          this.makeResultDownloadChecker(variantAnalysis),
+        )
+      ) {
+        continue;
+      }
+
+      void this.app.commands.execute(
+        "codeQL.monitorReauthenticatedVariantAnalysis",
+        variantAnalysis,
+      );
+    }
   }
 
   public async monitorVariantAnalysis(

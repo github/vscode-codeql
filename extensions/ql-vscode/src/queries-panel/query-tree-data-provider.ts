@@ -17,11 +17,20 @@ export class QueryTreeDataProvider
   private createTree(): QueryTreeViewItem[] {
     // Temporary mock data, just to populate the tree view.
     return [
-      {
-        label: "name1",
-        tooltip: "path1",
-        children: [],
-      },
+      new QueryTreeViewItem("custom-pack", [
+        new QueryTreeViewItem("custom-pack/example.ql", []),
+      ]),
+      new QueryTreeViewItem("ql", [
+        new QueryTreeViewItem("ql/javascript", [
+          new QueryTreeViewItem("ql/javascript/example.ql", []),
+        ]),
+        new QueryTreeViewItem("ql/go", [
+          new QueryTreeViewItem("ql/go/security", [
+            new QueryTreeViewItem("ql/go/security/query1.ql", []),
+            new QueryTreeViewItem("ql/go/security/query2.ql", []),
+          ]),
+        ]),
+      ]),
     ];
   }
 
@@ -30,9 +39,7 @@ export class QueryTreeDataProvider
    * @param item The item to represent.
    * @returns The UI presentation of the item.
    */
-  public getTreeItem(
-    item: QueryTreeViewItem,
-  ): vscode.TreeItem | Thenable<vscode.TreeItem> {
+  public getTreeItem(item: QueryTreeViewItem): vscode.TreeItem {
     return item;
   }
 
@@ -41,14 +48,12 @@ export class QueryTreeDataProvider
    * @param item The item to expand.
    * @returns The children of the item.
    */
-  public getChildren(
-    item?: QueryTreeViewItem,
-  ): vscode.ProviderResult<QueryTreeViewItem[]> {
+  public getChildren(item?: QueryTreeViewItem): QueryTreeViewItem[] {
     if (!item) {
       // We're at the root.
-      return Promise.resolve(this.queryTreeItems);
+      return this.queryTreeItems;
     } else {
-      return Promise.resolve(item.children);
+      return item.children;
     }
   }
 }

@@ -4,6 +4,7 @@
 
 - Add settings `codeQL.variantAnalysis.defaultResultsFilter` and `codeQL.variantAnalysis.defaultResultsSort` for configuring how variant analysis results are filtered and sorted in the results view. The default is to show all repositories, and to sort by the number of results. [#2392](https://github.com/github/vscode-codeql/pull/2392)
 - Fix bug to ensure error messages have complete stack trace in message logs. [#2425](https://github.com/github/vscode-codeql/pull/2425)
+- Fix bug where the `CodeQL: Compare Query` command did not work for comparing quick-eval queries. [#2422](https://github.com/github/vscode-codeql/pull/2422)
 
 ## 1.8.4 - 3 May 2023
 
