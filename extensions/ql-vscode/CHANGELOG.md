@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Add settings `codeQL.variantAnalysis.defaultResultsFilter` and `codeQL.variantAnalysis.defaultResultsSort` for configuring how variant analysis results are filtered and sorted in the results view. The default is to show all repositories, and to sort by the number of results. [#2392](https://github.com/github/vscode-codeql/pull/2392)
+- Update text of copy and export buttons in variant analysis results view to clarify that they only copy/export the selected/filtered results. [#2427](https://github.com/github/vscode-codeql/pull/2427)
 
 ## 1.8.4 - 3 May 2023
 
