@@ -517,6 +517,10 @@
         "icon": "$(new-folder)"
       },
       {
+        "command": "codeQLVariantAnalysisRepositories.importCodeSearch",
+        "title": "Import Repos from GitHub Code Search"
+      },
+      {
         "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
         "title": "Select"
       },
@@ -962,6 +966,11 @@
           "group": "2_qlContextMenu@1"
         },
         {
+          "command": "codeQLVariantAnalysisRepositories.importCodeSearch",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canImportCodeSearch/",
+          "group": "2_qlContextMenu@1"
+        },
+        {
           "command": "codeQLDatabases.setCurrentDatabase",
           "group": "inline",
           "when": "view == codeQLDatabases && viewItem != currentDatabase"
@@ -1295,6 +1304,10 @@
         },
         {
           "command": "codeQLVariantAnalysisRepositories.removeItemContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.importCodeSearch",
           "when": "false"
         },
         {

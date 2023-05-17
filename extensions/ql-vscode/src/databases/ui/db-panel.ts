@@ -93,6 +93,8 @@ export class DbPanel extends DisposableObject {
         this.renameItem.bind(this),
       "codeQLVariantAnalysisRepositories.removeItemContextMenu":
         this.removeItem.bind(this),
+      "codeQLVariantAnalysisRepositories.importCodeSearch":
+        this.importCodeSearch.bind(this),
     };
   }
 
@@ -321,6 +323,12 @@ export class DbPanel extends DisposableObject {
       );
     }
     await this.dbManager.removeDbItem(treeViewItem.dbItem);
+  }
+
+  private async importCodeSearch(treeViewItem: DbTreeViewItem): Promise<void> {
+    if (treeViewItem.dbItem === undefined) {
+      throw new Error("Please select a valid list to add code search results.");
+    }
   }
 
   private async onDidCollapseElement(
