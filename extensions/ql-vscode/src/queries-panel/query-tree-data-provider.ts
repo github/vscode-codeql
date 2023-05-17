@@ -32,9 +32,7 @@ export class QueryTreeDataProvider
    * @param item The item to represent.
    * @returns The UI presentation of the item.
    */
-  public getTreeItem(
-    item: QueryTreeViewItem,
-  ): vscode.TreeItem | Thenable<vscode.TreeItem> {
+  public getTreeItem(item: QueryTreeViewItem): vscode.TreeItem {
     return item;
   }
 
@@ -43,9 +41,7 @@ export class QueryTreeDataProvider
    * @param item The item to expand.
    * @returns The children of the item.
    */
-  public getChildren(
-    item?: QueryTreeViewItem,
-  ): vscode.ProviderResult<QueryTreeViewItem[]> {
+  public getChildren(item?: QueryTreeViewItem): QueryTreeViewItem[] {
     if (!item) {
       // We're at the root.
       return this.queryTreeItems;
