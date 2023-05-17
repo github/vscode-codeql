@@ -8,10 +8,12 @@ export class QueryTreeViewItem extends vscode.TreeItem {
     this.collapsibleState = this.children.length
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
-    this.command = {
-      title: "Open",
-      command: "vscode.open",
-      arguments: [vscode.Uri.file(path)],
-    };
+    if (this.children.length === 0) {
+      this.command = {
+        title: "Open",
+        command: "vscode.open",
+        arguments: [vscode.Uri.file(path)],
+      };
+    }
   }
 }
