@@ -39,6 +39,7 @@ export class QueryTreeDataProvider
     fileTreeDirectory: FileTreeNode,
   ): QueryTreeViewItem {
     return new QueryTreeViewItem(
+      fileTreeDirectory.name,
       fileTreeDirectory.path,
       fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),
     );

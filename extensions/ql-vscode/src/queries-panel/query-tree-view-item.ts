@@ -1,9 +1,12 @@
 import * as vscode from "vscode";
-import { basename } from "path";
 
 export class QueryTreeViewItem extends vscode.TreeItem {
-  constructor(path: string, public readonly children: QueryTreeViewItem[]) {
-    super(basename(path));
+  constructor(
+    name: string,
+    path: string,
+    public readonly children: QueryTreeViewItem[],
+  ) {
+    super(name);
     this.tooltip = path;
     this.collapsibleState = this.children.length
       ? vscode.TreeItemCollapsibleState.Collapsed
