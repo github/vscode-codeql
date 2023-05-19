@@ -13,17 +13,17 @@ import {
   TestHub,
 } from "vscode-test-adapter-api";
 import { TestAdapterRegistrar } from "vscode-test-adapter-util";
-import {
-  QLTestFile,
-  QLTestNode,
-  QLTestDirectory,
-  QLTestDiscovery,
-} from "./qltest-discovery";
+import { QLTestDiscovery } from "./qltest-discovery";
 import { Event, EventEmitter, CancellationTokenSource } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
 import { CodeQLCliServer, TestCompleted } from "../codeql-cli/cli";
 import { testLogger } from "../common";
 import { TestRunner } from "./test-runner";
+import {
+  FileTreeDirectory,
+  FileTreeLeaf,
+  FileTreeNode,
+} from "../common/file-tree-nodes";
 
 /**
  * Get the full path of the `.expected` file for the specified QL test.
@@ -135,7 +135,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   }
 
   private static createTestOrSuiteInfos(
-    testNodes: readonly QLTestNode[],
+    testNodes: readonly FileTreeNode[],
   ): Array<TestSuiteInfo | TestInfo> {
     return testNodes.map((childNode) => {
       return QLTestAdapter.createTestOrSuiteInfo(childNode);
@@ -143,18 +143,18 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   }
 
   private static createTestOrSuiteInfo(
-    testNode: QLTestNode,
+    testNode: FileTreeNode,
   ): TestSuiteInfo | TestInfo {
-    if (testNode instanceof QLTestFile) {
+    if (testNode instanceof FileTreeLeaf) {
       return QLTestAdapter.createTestInfo(testNode);
-    } else if (testNode instanceof QLTestDirectory) {
+    } else if (testNode instanceof FileTreeDirectory) {
       return QLTestAdapter.createTestSuiteInfo(testNode, testNode.name);
     } else {
       throw new Error("Unexpected test type.");
     }
   }
 
-  private static createTestInfo(testFile: QLTestFile): TestInfo {
+  private static createTestInfo(testFile: FileTreeLeaf): TestInfo {
     return {
       type: "test",
       id: testFile.path,
@@ -165,7 +165,7 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   }
 
   private static createTestSuiteInfo(
-    testDirectory: QLTestDirectory,
+    testDirectory: FileTreeDirectory,
     label: string,
   ): TestSuiteInfo {
     return {
