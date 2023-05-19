@@ -135,6 +135,11 @@ export interface SourceInfo {
 }
 
 /**
+ * The expected output of `codeql resolve queries`.
+ */
+export type ResolvedQueries = string[];
+
+/**
  * The expected output of `codeql resolve tests`.
  */
 export type ResolvedTests = string[];
@@ -728,6 +733,20 @@ export class CodeQLCliServer implements Disposable {
         subcommandArgs,
         "Resolving query by language",
       ),
+    );
+  }
+
+  /**
+   * Finds all available queries in a given directory.
+   * @param queryDir Root of directory tree to search for queries.
+   * @returns The list of queries that were found.
+   */
+  public async resolveQueries(queryDir: string): Promise<ResolvedQueries> {
+    const subcommandArgs = [queryDir];
+    return await this.runJsonCodeQlCliCommand<ResolvedQueries>(
+      ["resolve", "queries"],
+      subcommandArgs,
+      "Resolving queries",
     );
   }
 
