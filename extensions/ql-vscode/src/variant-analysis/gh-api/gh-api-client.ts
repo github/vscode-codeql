@@ -8,6 +8,26 @@ import {
 } from "./variant-analysis";
 import { Repository } from "./repository";
 
+export async function getCodeSearchRepositories(
+  credentials: Credentials,
+  query: string,
+): Promise<string[]> {
+  const octokit = await credentials.getOctokit();
+
+  const response = await octokit.rest.search.repos({
+    q: query,
+    per_page: 100,
+  });
+
+  if (response.status === 200) {
+    const nwos = response.data.items.map((item) => item.full_name);
+
+    return [...new Set(nwos)];
+  }
+
+  return [];
+}
+
 export async function submitVariantAnalysis(
   credentials: Credentials,
   submissionDetails: VariantAnalysisSubmission,
