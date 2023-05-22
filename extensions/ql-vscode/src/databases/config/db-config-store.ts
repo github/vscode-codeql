@@ -61,7 +61,9 @@ export class DbConfigStore extends DisposableObject {
     this.configErrors = [];
     this.configWatcher = undefined;
     this.configValidator = new DbConfigValidator(app.extensionPath);
-    this.onDidChangeConfigEventEmitter = app.createEventEmitter<void>();
+    this.onDidChangeConfigEventEmitter = this.push(
+      app.createEventEmitter<void>(),
+    );
     this.onDidChangeConfig = this.onDidChangeConfigEventEmitter.event;
   }
 
