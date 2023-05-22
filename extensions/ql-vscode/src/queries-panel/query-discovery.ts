@@ -104,34 +104,40 @@ export class QueryDiscovery extends Discovery<QueryDiscoveryResults> {
   ): Promise<FileTreeDirectory[]> {
     const rootDirectories = [];
     for (const workspaceFolder of workspaceFolders) {
-      rootDirectories.push(
-        await this.discoverQueriesInWorkspace(workspaceFolder),
+      const rootDirectory = await this.discoverQueriesInWorkspace(
+        workspaceFolder,
       );
+      if (rootDirectory !== undefined) {
+        rootDirectories.push(rootDirectory);
+      }
     }
     return rootDirectories;
   }
 
   private async discoverQueriesInWorkspace(
     workspaceFolder: WorkspaceFolder,
-  ): Promise<FileTreeDirectory> {
+  ): Promise<FileTreeDirectory | undefined> {
     const fullPath = workspaceFolder.uri.fsPath;
     const name = workspaceFolder.name;
-    const rootDirectory = new FileTreeDirectory(fullPath, name);
 
     // Don't try discovery on workspace folders that don't exist on the filesystem
-    if (await pathExists(fullPath)) {
-      const resolvedQueries = await this.cliServer.resolveQueries(fullPath);
-      for (const queryPath of resolvedQueries) {
-        const relativePath = normalize(relative(fullPath, queryPath));
-        const dirName = dirname(relativePath);
-        const parentDirectory = rootDirectory.createDirectory(dirName);
-        parentDirectory.addChild(
-          new FileTreeLeaf(queryPath, basename(queryPath)),
-        );
-      }
-
-      rootDirectory.finish();
+    if (!(await pathExists(fullPath))) {
+      return undefined;
     }
+
+    const rootDirectory = new FileTreeDirectory(fullPath, name);
+
+    const resolvedQueries = await this.cliServer.resolveQueries(fullPath);
+    for (const queryPath of resolvedQueries) {
+      const relativePath = normalize(relative(fullPath, queryPath));
+      const dirName = dirname(relativePath);
+      const parentDirectory = rootDirectory.createDirectory(dirName);
+      parentDirectory.addChild(
+        new FileTreeLeaf(queryPath, basename(queryPath)),
+      );
+    }
+
+    rootDirectory.finish();
     return rootDirectory;
   }
 }
