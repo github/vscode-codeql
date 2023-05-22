@@ -1,7 +1,6 @@
 import { dirname, basename, normalize, relative } from "path";
 import { Discovery } from "../common/discovery";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { pathExists } from "fs-extra";
 import {
   Event,
   EventEmitter,
@@ -12,7 +11,7 @@ import {
 import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
 import { App } from "../common/app";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
-import { getOnDiskWorkspaceFolders } from "../helpers";
+import { getOnDiskWorkspaceFoldersObjects } from "../helpers";
 
 /**
  * The results of discovering queries.
@@ -44,10 +43,7 @@ export class QueryDiscovery extends Discovery<QueryDiscoveryResults> {
     new MultiFileSystemWatcher(),
   );
 
-  constructor(
-    private readonly app: App,
-    private readonly cliServer: CodeQLCliServer,
-  ) {
+  constructor(app: App, private readonly cliServer: CodeQLCliServer) {
     super("Query Discovery");
 
     this.push(app.onDidChangeWorkspaceFolders(this.refresh.bind(this)));
@@ -66,8 +62,8 @@ export class QueryDiscovery extends Discovery<QueryDiscoveryResults> {
   }
 
   protected async discover(): Promise<QueryDiscoveryResults> {
-    const workspaceFolders = this.app.workspaceFolders;
-    if (workspaceFolders === undefined || workspaceFolders.length === 0) {
+    const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
+    if (workspaceFolders.length === 0) {
       return {
         queries: [],
         watchPaths: [],
@@ -105,29 +101,18 @@ export class QueryDiscovery extends Discovery<QueryDiscoveryResults> {
   ): Promise<FileTreeDirectory[]> {
     const rootDirectories = [];
     for (const workspaceFolder of workspaceFolders) {
-      const rootDirectory = await this.discoverQueriesInWorkspace(
-        workspaceFolder,
+      rootDirectories.push(
+        await this.discoverQueriesInWorkspace(workspaceFolder),
       );
-      if (rootDirectory !== undefined) {
-        rootDirectories.push(rootDirectory);
-      }
     }
     return rootDirectories;
   }
 
   private async discoverQueriesInWorkspace(
     workspaceFolder: WorkspaceFolder,
-  ): Promise<FileTreeDirectory | undefined> {
+  ): Promise<FileTreeDirectory> {
     const fullPath = workspaceFolder.uri.fsPath;
     const name = workspaceFolder.name;
-
-    // Don't try discovery on workspace folders that don't exist on the filesystem
-    if (
-      !(await pathExists(fullPath)) ||
-      !getOnDiskWorkspaceFolders().includes(fullPath)
-    ) {
-      return undefined;
-    }
 
     const rootDirectory = new FileTreeDirectory(fullPath, name);
 
