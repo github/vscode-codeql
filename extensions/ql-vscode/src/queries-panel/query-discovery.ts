@@ -12,6 +12,7 @@ import {
 import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
 import { App } from "../common/app";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
+import { getOnDiskWorkspaceFolders } from "../helpers";
 
 /**
  * The results of discovering queries.
@@ -121,7 +122,10 @@ export class QueryDiscovery extends Discovery<QueryDiscoveryResults> {
     const name = workspaceFolder.name;
 
     // Don't try discovery on workspace folders that don't exist on the filesystem
-    if (!(await pathExists(fullPath))) {
+    if (
+      !(await pathExists(fullPath)) ||
+      !getOnDiskWorkspaceFolders().includes(fullPath)
+    ) {
       return undefined;
     }
 
