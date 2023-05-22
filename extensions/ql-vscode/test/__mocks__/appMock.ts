@@ -63,4 +63,8 @@ export class MockAppEventEmitter<T> implements AppEventEmitter<T> {
   public fire(): void {
     // no-op
   }
+
+  public dispose() {
+    // no-op
+  }
 }
