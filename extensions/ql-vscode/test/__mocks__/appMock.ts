@@ -8,6 +8,11 @@ import { testCredentialsWithStub } from "../factories/authentication";
 import { Credentials } from "../../src/common/authentication";
 import { AppCommandManager } from "../../src/common/commands";
 import { createMockCommandManager } from "./commandsMock";
+import type {
+  Event,
+  WorkspaceFolder,
+  WorkspaceFoldersChangeEvent,
+} from "vscode";
 
 export function createMockApp({
   extensionPath = "/mock/extension/path",
@@ -15,6 +20,8 @@ export function createMockApp({
   globalStoragePath = "/mock/global/storage/path",
   createEventEmitter = <T>() => new MockAppEventEmitter<T>(),
   workspaceState = createMockMemento(),
+  workspaceFolders = [],
+  onDidChangeWorkspaceFolders = jest.fn(),
   credentials = testCredentialsWithStub(),
   commands = createMockCommandManager(),
 }: {
@@ -23,6 +30,8 @@ export function createMockApp({
   globalStoragePath?: string;
   createEventEmitter?: <T>() => AppEventEmitter<T>;
   workspaceState?: Memento;
+  workspaceFolders?: readonly WorkspaceFolder[] | undefined;
+  onDidChangeWorkspaceFolders?: Event<WorkspaceFoldersChangeEvent>;
   credentials?: Credentials;
   commands?: AppCommandManager;
 }): App {
@@ -34,6 +43,8 @@ export function createMockApp({
     workspaceStoragePath,
     globalStoragePath,
     workspaceState,
+    workspaceFolders,
+    onDidChangeWorkspaceFolders,
     createEventEmitter,
     credentials,
     commands,
