@@ -32,6 +32,8 @@ import { getControllerRepo } from "../../variant-analysis/run-remote-query";
 import { getErrorMessage } from "../../pure/helpers-pure";
 import { DatabasePanelCommands } from "../../common/commands";
 import { App } from "../../common/app";
+import { getCodeSearchRepositories } from "../../variant-analysis/gh-api/gh-api-client";
+import { QueryLanguage } from "../../common/query-language";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   remoteDatabaseKind: string;
@@ -39,6 +41,10 @@ export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
 
 export interface AddListQuickPickItem extends QuickPickItem {
   databaseKind: DbListKind;
+}
+
+export interface CodeSearchQuickPickItem extends QuickPickItem {
+  language: string;
 }
 
 export class DbPanel extends DisposableObject {
@@ -326,9 +332,51 @@ export class DbPanel extends DisposableObject {
   }
 
   private async importCodeSearch(treeViewItem: DbTreeViewItem): Promise<void> {
-    if (treeViewItem.dbItem === undefined) {
+    if (treeViewItem.dbItem?.kind !== DbItemKind.RemoteUserDefinedList) {
       throw new Error("Please select a valid list to add code search results.");
     }
+
+    const languageQuickPickItems: CodeSearchQuickPickItem[] = Object.values(
+      QueryLanguage,
+    ).map((language) => ({
+      label: language.toString(),
+      alwaysShow: true,
+      language: language.toString(),
+    }));
+
+    const codeSearchLanguage =
+      await window.showQuickPick<CodeSearchQuickPickItem>(
+        languageQuickPickItems,
+        {
+          title: "Select the language you want to query",
+          placeHolder: "Select an option",
+          ignoreFocusOut: true,
+        },
+      );
+    if (!codeSearchLanguage) {
+      // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
+      // We set 'true' to make this a silent exception.
+      throw new UserCancellationException("No language selected", true);
+    }
+
+    const codeSearchQuery = await window.showInputBox({
+      title: "Code search query",
+      prompt: "Insert code search query",
+      placeHolder: "org:github",
+    });
+    if (codeSearchQuery === undefined || codeSearchQuery === "") {
+      return;
+    }
+
+    const repositories = await getCodeSearchRepositories(
+      this.app.credentials,
+      `${codeSearchQuery} language:${codeSearchLanguage.language}`,
+    );
+
+    await this.dbManager.addNewRemoteReposToList(
+      repositories,
+      treeViewItem.dbItem.listName,
+    );
   }
 
   private async onDidCollapseElement(

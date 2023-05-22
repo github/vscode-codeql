@@ -100,6 +100,13 @@ export class DbManager {
     await this.dbConfigStore.addRemoteRepo(nwo, parentList);
   }
 
+  public async addNewRemoteReposToList(
+    nwoList: string[],
+    parentList: string,
+  ): Promise<void> {
+    await this.dbConfigStore.addRemoteReposToList(nwoList, parentList);
+  }
+
   public async addNewRemoteOwner(owner: string): Promise<void> {
     await this.dbConfigStore.addRemoteOwner(owner);
   }

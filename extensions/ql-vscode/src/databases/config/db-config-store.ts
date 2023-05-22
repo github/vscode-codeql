@@ -145,6 +145,31 @@ export class DbConfigStore extends DisposableObject {
     await this.writeConfig(config);
   }
 
+  public async addRemoteReposToList(
+    repoNwoList: string[],
+    parentList: string,
+  ): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot add variant analysis repos if config is not loaded");
+    }
+
+    const config = cloneDbConfig(this.config);
+    const parent = config.databases.variantAnalysis.repositoryLists.find(
+      (list) => list.name === parentList,
+    );
+    if (!parent) {
+      throw Error(`Cannot find parent list '${parentList}'`);
+    }
+
+    const newRepositoriesList = new Set([
+      ...new Set(parent.repositories),
+      ...new Set(repoNwoList),
+    ]);
+    parent.repositories = [...newRepositoriesList];
+
+    await this.writeConfig(config);
+  }
+
   public async addRemoteRepo(
     repoNwo: string,
     parentList?: string,
