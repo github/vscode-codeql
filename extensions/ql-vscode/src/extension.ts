@@ -426,7 +426,7 @@ export async function activate(
       void showAndLogWarningMessage(
         `You are using an unsupported version of the CodeQL CLI (${ver}). ` +
           `The minimum supported version is ${CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION}. ` +
-          `Please upgrade to the latest version of the CodeQL CLI.`,
+          `Please upgrade to a newer version of the CodeQL CLI.`,
       );
       unsupportedWarningShown = true;
     });
