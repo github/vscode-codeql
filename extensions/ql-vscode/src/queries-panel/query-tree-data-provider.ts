@@ -17,11 +17,18 @@ export class QueryTreeDataProvider
   private createTree(): QueryTreeViewItem[] {
     // Temporary mock data, just to populate the tree view.
     return [
-      new QueryTreeViewItem("name1", "path1", []),
-      new QueryTreeViewItem("name2", "path2", [
-        new QueryTreeViewItem("name3", "path3", []),
-        new QueryTreeViewItem("name4", "path4", [
-          new QueryTreeViewItem("name5", "path5", []),
+      new QueryTreeViewItem("custom-pack", [
+        new QueryTreeViewItem("custom-pack/example.ql", []),
+      ]),
+      new QueryTreeViewItem("ql", [
+        new QueryTreeViewItem("ql/javascript", [
+          new QueryTreeViewItem("ql/javascript/example.ql", []),
+        ]),
+        new QueryTreeViewItem("ql/go", [
+          new QueryTreeViewItem("ql/go/security", [
+            new QueryTreeViewItem("ql/go/security/query1.ql", []),
+            new QueryTreeViewItem("ql/go/security/query2.ql", []),
+          ]),
         ]),
       ]),
     ];
