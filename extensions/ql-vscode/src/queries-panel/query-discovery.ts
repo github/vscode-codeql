@@ -43,7 +43,10 @@ export class QueryDiscovery extends Discovery<QueryDiscoveryResults> {
     new MultiFileSystemWatcher(),
   );
 
-  constructor(app: App, private readonly cliServer: CodeQLCliServer) {
+  constructor(
+    private readonly app: App,
+    private readonly cliServer: CodeQLCliServer,
+  ) {
     super("Query Discovery");
 
     this.push(app.onDidChangeWorkspaceFolders(this.refresh.bind(this)));
@@ -62,7 +65,7 @@ export class QueryDiscovery extends Discovery<QueryDiscoveryResults> {
   }
 
   protected async discover(): Promise<QueryDiscoveryResults> {
-    const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
+    const workspaceFolders = getOnDiskWorkspaceFoldersObjects(this.app);
     if (workspaceFolders.length === 0) {
       return {
         queries: [],

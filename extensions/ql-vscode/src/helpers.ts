@@ -28,6 +28,7 @@ import { getQlPackPath } from "./pure/ql";
 import { dbSchemeToLanguage } from "./common/query-language";
 import { isCodespacesTemplate } from "./config";
 import { AppCommandManager } from "./common/commands";
+import { App } from "./common/app";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -297,14 +298,18 @@ export async function showNeverAskAgainDialog(
 }
 
 /** Gets all active workspace folders that are on the filesystem. */
-export function getOnDiskWorkspaceFoldersObjects() {
-  const workspaceFolders = workspace.workspaceFolders ?? [];
+export function getOnDiskWorkspaceFoldersObjects(app?: App) {
+  const workspaceFolders =
+    (app !== undefined ? app.workspaceFolders : workspace.workspaceFolders) ??
+    [];
   return workspaceFolders.filter(isWorkspaceFolderOnDisk);
 }
 
 /** Gets all active workspace folders that are on the filesystem. */
-export function getOnDiskWorkspaceFolders() {
-  return getOnDiskWorkspaceFoldersObjects().map((folder) => folder.uri.fsPath);
+export function getOnDiskWorkspaceFolders(app?: App) {
+  return getOnDiskWorkspaceFoldersObjects(app).map(
+    (folder) => folder.uri.fsPath,
+  );
 }
 
 /** Check if folder is already present in workspace */
