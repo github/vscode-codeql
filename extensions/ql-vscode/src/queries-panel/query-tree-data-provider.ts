@@ -1,37 +1,48 @@
-import * as vscode from "vscode";
+import { Event, EventEmitter, TreeDataProvider, TreeItem } from "vscode";
 import { QueryTreeViewItem } from "./query-tree-view-item";
 import { DisposableObject } from "../pure/disposable-object";
+import { QueryDiscovery } from "./query-discovery";
+import { FileTreeNode } from "../common/file-tree-nodes";
 
 export class QueryTreeDataProvider
   extends DisposableObject
-  implements vscode.TreeDataProvider<QueryTreeViewItem>
+  implements TreeDataProvider<QueryTreeViewItem>
 {
   private queryTreeItems: QueryTreeViewItem[];
 
-  public constructor() {
+  private readonly onDidChangeTreeDataEmitter = this.push(
+    new EventEmitter<void>(),
+  );
+
+  public constructor(private readonly queryDiscovery: QueryDiscovery) {
     super();
+
+    queryDiscovery.onDidChangeQueries(() => {
+      this.queryTreeItems = this.createTree();
+      this.onDidChangeTreeDataEmitter.fire();
+    });
 
     this.queryTreeItems = this.createTree();
   }
 
+  public get onDidChangeTreeData(): Event<void> {
+    return this.onDidChangeTreeDataEmitter.event;
+  }
+
   private createTree(): QueryTreeViewItem[] {
-    // Temporary mock data, just to populate the tree view.
-    return [
-      new QueryTreeViewItem("custom-pack", [
-        new QueryTreeViewItem("custom-pack/example.ql", []),
-      ]),
-      new QueryTreeViewItem("ql", [
-        new QueryTreeViewItem("ql/javascript", [
-          new QueryTreeViewItem("ql/javascript/example.ql", []),
-        ]),
-        new QueryTreeViewItem("ql/go", [
-          new QueryTreeViewItem("ql/go/security", [
-            new QueryTreeViewItem("ql/go/security/query1.ql", []),
-            new QueryTreeViewItem("ql/go/security/query2.ql", []),
-          ]),
-        ]),
-      ]),
-    ];
+    return (this.queryDiscovery.queries || []).map(
+      this.convertFileTreeNode.bind(this),
+    );
+  }
+
+  private convertFileTreeNode(
+    fileTreeDirectory: FileTreeNode,
+  ): QueryTreeViewItem {
+    return new QueryTreeViewItem(
+      fileTreeDirectory.name,
+      fileTreeDirectory.path,
+      fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),
+    );
   }
 
   /**
@@ -39,7 +50,7 @@ export class QueryTreeDataProvider
    * @param item The item to represent.
    * @returns The UI presentation of the item.
    */
-  public getTreeItem(item: QueryTreeViewItem): vscode.TreeItem {
+  public getTreeItem(item: QueryTreeViewItem): TreeItem {
     return item;
   }
 
