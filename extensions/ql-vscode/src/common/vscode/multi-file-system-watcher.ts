@@ -1,12 +1,13 @@
 import { DisposableObject } from "../../pure/disposable-object";
-import { EventEmitter, Event, Uri, GlobPattern, workspace } from "vscode";
+import { EventEmitter, Event, Uri, GlobPattern } from "vscode";
+import { App } from "../app";
 
 /**
  * A collection of `FileSystemWatcher` objects. Disposing this object disposes all of the individual
  * `FileSystemWatcher` objects and their event registrations.
  */
 class WatcherCollection extends DisposableObject {
-  constructor() {
+  constructor(private readonly app: App) {
     super();
   }
 
@@ -22,7 +23,7 @@ class WatcherCollection extends DisposableObject {
     listener: (e: Uri) => any,
     thisArgs: any,
   ): void {
-    const watcher = workspace.createFileSystemWatcher(pattern);
+    const watcher = this.app.createFileSystemWatcher(pattern);
     this.push(watcher.onDidCreate(listener, thisArgs));
     this.push(watcher.onDidChange(listener, thisArgs));
     this.push(watcher.onDidDelete(listener, thisArgs));
@@ -35,10 +36,12 @@ class WatcherCollection extends DisposableObject {
  */
 export class MultiFileSystemWatcher extends DisposableObject {
   private readonly _onDidChange = this.push(new EventEmitter<Uri>());
-  private watchers = this.track(new WatcherCollection());
+  private watchers;
 
-  constructor() {
+  constructor(private readonly app: App) {
     super();
+
+    this.watchers = this.track(new WatcherCollection(app));
   }
 
   /**
@@ -61,7 +64,7 @@ export class MultiFileSystemWatcher extends DisposableObject {
    */
   public clear(): void {
     this.disposeAndStopTracking(this.watchers);
-    this.watchers = this.track(new WatcherCollection());
+    this.watchers = this.track(new WatcherCollection(this.app));
   }
 
   private handleDidChange(uri: Uri): void {

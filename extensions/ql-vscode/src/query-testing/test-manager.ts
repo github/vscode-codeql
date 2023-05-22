@@ -84,11 +84,12 @@ class WorkspaceFolderHandler extends DisposableObject {
   public constructor(
     private readonly workspaceFolder: WorkspaceFolder,
     private readonly testUI: TestManager,
+    app: App,
     cliServer: CodeQLCliServer,
   ) {
     super();
 
-    this.testDiscovery = new QLTestDiscovery(workspaceFolder, cliServer);
+    this.testDiscovery = new QLTestDiscovery(workspaceFolder, app, cliServer);
     this.push(
       this.testDiscovery.onDidChangeTests(this.handleDidChangeTests, this),
     );
@@ -171,6 +172,7 @@ export class TestManager extends TestManagerBase {
         const workspaceFolderHandler = new WorkspaceFolderHandler(
           workspaceFolder,
           this,
+          this.app,
           this.cliServer,
         );
         this.track(workspaceFolderHandler);

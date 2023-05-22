@@ -47,6 +47,10 @@ export class ExtensionApp implements App {
     return vscode.workspace.onDidChangeWorkspaceFolders;
   }
 
+  public get createFileSystemWatcher() {
+    return vscode.workspace.createFileSystemWatcher;
+  }
+
   public get subscriptions(): Disposable[] {
     return this.extensionContext.subscriptions;
   }

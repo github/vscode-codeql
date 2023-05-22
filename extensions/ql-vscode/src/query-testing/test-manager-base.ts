@@ -14,7 +14,7 @@ export type TestNode = TestTreeNode | TestItem;
  * both.
  */
 export abstract class TestManagerBase extends DisposableObject {
-  protected constructor(private readonly app: App) {
+  protected constructor(protected readonly app: App) {
     super();
   }
 

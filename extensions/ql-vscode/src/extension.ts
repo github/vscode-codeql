@@ -947,6 +947,7 @@ async function activateWithInstalledDistribution(
       const testAdapterFactory = new QLTestAdapterFactory(
         testHub,
         testRunner,
+        app,
         cliServer,
       );
       ctx.subscriptions.push(testAdapterFactory);

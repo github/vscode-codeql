@@ -46,6 +46,7 @@ describe("test-adapter", () => {
         uri: Uri.parse("file:/ab/c"),
       }),
       testRunner,
+      createMockApp({}),
       fakeCliServer,
     );
 

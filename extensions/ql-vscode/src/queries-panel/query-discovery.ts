@@ -39,14 +39,14 @@ export class QueryDiscovery extends Discovery<QueryDiscoveryResults> {
   private readonly onDidChangeQueriesEmitter = this.push(
     new EventEmitter<void>(),
   );
-  private readonly watcher: MultiFileSystemWatcher = this.push(
-    new MultiFileSystemWatcher(),
-  );
+  private readonly watcher: MultiFileSystemWatcher;
 
   constructor(app: App, private readonly cliServer: CodeQLCliServer) {
     super("Query Discovery");
 
     this.push(app.onDidChangeWorkspaceFolders(this.refresh.bind(this)));
+
+    this.watcher = this.push(new MultiFileSystemWatcher(app));
     this.push(this.watcher.onDidChange(this.refresh.bind(this)));
   }
 

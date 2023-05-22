@@ -8,6 +8,7 @@ import type {
   WorkspaceFolder,
   Event,
   WorkspaceFoldersChangeEvent,
+  workspace,
 } from "vscode";
 
 export interface App {
@@ -21,6 +22,7 @@ export interface App {
   readonly workspaceState: Memento;
   readonly workspaceFolders: readonly WorkspaceFolder[] | undefined;
   readonly onDidChangeWorkspaceFolders: Event<WorkspaceFoldersChangeEvent>;
+  readonly createFileSystemWatcher: typeof workspace.createFileSystemWatcher;
   readonly credentials: Credentials;
   readonly commands: AppCommandManager;
 }

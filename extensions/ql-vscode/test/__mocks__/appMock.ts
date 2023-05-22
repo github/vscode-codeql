@@ -12,6 +12,7 @@ import type {
   Event,
   WorkspaceFolder,
   WorkspaceFoldersChangeEvent,
+  workspace,
 } from "vscode";
 
 export function createMockApp({
@@ -22,6 +23,9 @@ export function createMockApp({
   workspaceState = createMockMemento(),
   workspaceFolders = [],
   onDidChangeWorkspaceFolders = jest.fn(),
+  createFileSystemWatcher = jest.fn().mockImplementation(() => {
+    throw Error("Not implemented");
+  }),
   credentials = testCredentialsWithStub(),
   commands = createMockCommandManager(),
 }: {
@@ -32,6 +36,7 @@ export function createMockApp({
   workspaceState?: Memento;
   workspaceFolders?: readonly WorkspaceFolder[] | undefined;
   onDidChangeWorkspaceFolders?: Event<WorkspaceFoldersChangeEvent>;
+  createFileSystemWatcher?: typeof workspace.createFileSystemWatcher;
   credentials?: Credentials;
   commands?: AppCommandManager;
 }): App {
@@ -45,6 +50,7 @@ export function createMockApp({
     workspaceState,
     workspaceFolders,
     onDidChangeWorkspaceFolders,
+    createFileSystemWatcher,
     createEventEmitter,
     credentials,
     commands,

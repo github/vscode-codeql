@@ -24,6 +24,7 @@ import {
   FileTreeLeaf,
   FileTreeNode,
 } from "../common/file-tree-nodes";
+import { App } from "../common/app";
 
 /**
  * Get the full path of the `.expected` file for the specified QL test.
@@ -65,6 +66,7 @@ export class QLTestAdapterFactory extends DisposableObject {
   constructor(
     testHub: TestHub,
     testRunner: TestRunner,
+    app: App,
     cliServer: CodeQLCliServer,
   ) {
     super();
@@ -74,7 +76,7 @@ export class QLTestAdapterFactory extends DisposableObject {
       new TestAdapterRegistrar(
         testHub,
         (workspaceFolder) =>
-          new QLTestAdapter(workspaceFolder, testRunner, cliServer),
+          new QLTestAdapter(workspaceFolder, testRunner, app, cliServer),
       ),
     );
   }
@@ -108,12 +110,13 @@ export class QLTestAdapter extends DisposableObject implements TestAdapter {
   constructor(
     public readonly workspaceFolder: vscode.WorkspaceFolder,
     private readonly testRunner: TestRunner,
+    app: App,
     cliServer: CodeQLCliServer,
   ) {
     super();
 
     this.qlTestDiscovery = this.push(
-      new QLTestDiscovery(workspaceFolder, cliServer),
+      new QLTestDiscovery(workspaceFolder, app, cliServer),
     );
     this.qlTestDiscovery.refresh();
 

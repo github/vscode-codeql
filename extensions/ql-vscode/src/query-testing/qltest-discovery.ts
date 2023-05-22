@@ -11,6 +11,7 @@ import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watch
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathExists } from "fs-extra";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
+import { App } from "../common/app";
 
 /**
  * The results of discovering QL tests.
@@ -33,17 +34,17 @@ interface QLTestDiscoveryResults {
  */
 export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
   private readonly _onDidChangeTests = this.push(new EventEmitter<void>());
-  private readonly watcher: MultiFileSystemWatcher = this.push(
-    new MultiFileSystemWatcher(),
-  );
+  private readonly watcher: MultiFileSystemWatcher;
   private _testDirectory: FileTreeDirectory | undefined;
 
   constructor(
     private readonly workspaceFolder: WorkspaceFolder,
+    app: App,
     private readonly cliServer: CodeQLCliServer,
   ) {
     super("QL Test Discovery");
 
+    this.watcher = this.push(new MultiFileSystemWatcher(app));
     this.push(this.watcher.onDidChange(this.handleDidChange, this));
   }
 

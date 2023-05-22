@@ -8,6 +8,7 @@ import * as tmp from "tmp-promise";
 
 import "../../../matchers/toEqualPath";
 import { mockedObject } from "../../utils/mocking.helpers";
+import { createMockApp } from "../../../__mocks__/appMock";
 
 describe("qltest-discovery", () => {
   describe("discoverTests", () => {
@@ -39,6 +40,7 @@ describe("qltest-discovery", () => {
           uri: baseUri,
           name: "My tests",
         }),
+        createMockApp({}),
         {
           resolveTests() {
             return [dFile, eFile, iFile];
