@@ -76,6 +76,7 @@ import {
 } from "./repo-states-store";
 import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
 import { FetchError } from "node-fetch";
+import { extLogger } from "../common";
 
 const maxRetryCount = 3;
 
@@ -632,8 +633,14 @@ export class VariantAnalysisManager
               e instanceof FetchError &&
               (e.code === "ETIMEDOUT" || e.code === "ECONNRESET")
             ) {
+              void extLogger.log(
+                `Timeout while trying to download variant analysis with id: ${variantAnalysis.id}. Retrying...`,
+              );
               continue;
             }
+            void extLogger.log(
+              `Failed to download variable analysis after ${retry} attempts.`,
+            );
             throw e;
           }
         }
