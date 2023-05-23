@@ -75,6 +75,7 @@ import {
   writeRepoStates,
 } from "./repo-states-store";
 import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
+import { FetchError } from "node-fetch";
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -613,12 +614,27 @@ export class VariantAnalysisManager
             });
           }
         };
-        await this.variantAnalysisResultsManager.download(
-          variantAnalysis.id,
-          repoTask,
-          this.getVariantAnalysisStorageLocation(variantAnalysis.id),
-          updateRepoStateCallback,
-        );
+        let retry = 0;
+        for (;;) {
+          try {
+            await this.variantAnalysisResultsManager.download(
+              variantAnalysis.id,
+              repoTask,
+              this.getVariantAnalysisStorageLocation(variantAnalysis.id),
+              updateRepoStateCallback,
+            );
+            break;
+          } catch (e) {
+            if (
+              retry++ < 3 &&
+              e instanceof FetchError &&
+              (e.code === "ETIMEDOUT" || e.code === "ECONNRESET")
+            ) {
+              continue;
+            }
+            throw e;
+          }
+        }
       } catch (e) {
         repoState.downloadStatus =
           VariantAnalysisScannedRepositoryDownloadStatus.Failed;
