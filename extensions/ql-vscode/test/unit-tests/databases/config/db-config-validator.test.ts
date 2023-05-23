@@ -169,4 +169,35 @@ describe("db config validation", () => {
         "There are databases with the same name in the dbList1 list: db1",
     });
   });
+
+  it("should return error when there are more than 1000 repos in one list", async () => {
+    const dbConfig = createDbConfig({
+      localLists: [
+        {
+          name: "dbList1",
+          databases: [...Array(1001).keys()].map((i) =>
+            createLocalDbConfigItem({ name: `db${i}` }),
+          ),
+        },
+      ],
+      remoteLists: [
+        {
+          name: "dbList2",
+          repositories: [...Array(1001).keys()].map((i) => `owner/repo${i}`),
+        },
+      ],
+    });
+
+    const validationOutput = configValidator.validate(dbConfig);
+
+    expect(validationOutput).toHaveLength(2);
+    expect(validationOutput[0]).toEqual({
+      kind: DbConfigValidationErrorKind.DuplicateNames,
+      message: "The list dbList1 has more than 1000 entries",
+    });
+    expect(validationOutput[1]).toEqual({
+      kind: DbConfigValidationErrorKind.DuplicateNames,
+      message: "The list dbList2 has more than 1000 entries",
+    });
+  });
 });

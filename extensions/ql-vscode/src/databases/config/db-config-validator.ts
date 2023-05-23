@@ -42,6 +42,7 @@ export class DbConfigValidator {
       ...this.validateDbNames(dbConfig),
       ...this.validateDbNamesInLists(dbConfig),
       ...this.validateOwners(dbConfig),
+      ...this.validateDbListsLength(dbConfig),
     ];
   }
 
@@ -140,6 +141,29 @@ export class DbConfigValidator {
         message: `There are owners with the same name: ${dups.join(", ")}`,
       });
     }
+    return errors;
+  }
+
+  private validateDbListsLength(dbConfig: DbConfig): DbConfigValidationError[] {
+    const errors: DbConfigValidationError[] = [];
+
+    const buildError = (listName: string) => ({
+      kind: DbConfigValidationErrorKind.DuplicateNames,
+      message: `The list ${listName} has more than 1000 entries`,
+    });
+
+    for (const list of dbConfig.databases.local.lists) {
+      if (list.databases.length > 1000) {
+        errors.push(buildError(list.name));
+      }
+    }
+
+    for (const list of dbConfig.databases.variantAnalysis.repositoryLists) {
+      if (list.repositories.length > 1000) {
+        errors.push(buildError(list.name));
+      }
+    }
+
     return errors;
   }
 }
