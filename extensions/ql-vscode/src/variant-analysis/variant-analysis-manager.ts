@@ -77,6 +77,8 @@ import {
 import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
 import { FetchError } from "node-fetch";
 
+const maxRetryCount = 3;
+
 export class VariantAnalysisManager
   extends DisposableObject
   implements VariantAnalysisViewManager<VariantAnalysisView>
@@ -626,7 +628,7 @@ export class VariantAnalysisManager
             break;
           } catch (e) {
             if (
-              retry++ < 3 &&
+              retry++ < maxRetryCount &&
               e instanceof FetchError &&
               (e.code === "ETIMEDOUT" || e.code === "ECONNRESET")
             ) {
