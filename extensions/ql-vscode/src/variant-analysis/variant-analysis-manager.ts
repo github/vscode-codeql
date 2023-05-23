@@ -639,7 +639,7 @@ export class VariantAnalysisManager
               continue;
             }
             void extLogger.log(
-              `Failed to download variable analysis after ${retry} attempts.`,
+              `Failed to download variant analysis after ${retry} attempts.`,
             );
             throw e;
           }
