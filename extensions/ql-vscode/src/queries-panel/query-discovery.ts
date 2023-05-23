@@ -6,6 +6,7 @@ import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watch
 import { App } from "../common/app";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import { getOnDiskWorkspaceFoldersObjects } from "../helpers";
+import { AppEventEmitter } from "../common/events";
 
 /**
  * The results of discovering queries.
@@ -30,7 +31,7 @@ interface QueryDiscoveryResults {
 export class QueryDiscovery extends Discovery<QueryDiscoveryResults> {
   private results: QueryDiscoveryResults | undefined;
 
-  private readonly onDidChangeQueriesEmitter;
+  private readonly onDidChangeQueriesEmitter: AppEventEmitter<void>;
   private readonly watcher: MultiFileSystemWatcher = this.push(
     new MultiFileSystemWatcher(),
   );
