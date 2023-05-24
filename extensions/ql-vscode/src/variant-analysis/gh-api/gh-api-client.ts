@@ -14,18 +14,16 @@ export async function getCodeSearchRepositories(
 ): Promise<string[]> {
   const octokit = await credentials.getOctokit();
 
-  const response = await octokit.rest.search.repos({
-    q: query,
-    per_page: 100,
-  });
+  const nwos = await octokit.paginate(
+    octokit.rest.search.repos,
+    {
+      q: query,
+      per_page: 100,
+    },
+    (response) => response.data.map((item) => item.full_name),
+  );
 
-  if (response.status === 200) {
-    const nwos = response.data.items.map((item) => item.full_name);
-
-    return [...new Set(nwos)];
-  }
-
-  return [];
+  return [...new Set(nwos)];
 }
 
 export async function submitVariantAnalysis(
