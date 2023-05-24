@@ -179,7 +179,14 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    await this.dbManager.addNewRemoteRepo(nwo, parentList);
+    const truncatedRepositories = await this.dbManager.addNewRemoteRepo(
+      nwo,
+      parentList,
+    );
+
+    if (parentList) {
+      this.truncatedReposNote(truncatedRepositories, parentList);
+    }
   }
 
   private async addNewRemoteOwner(): Promise<void> {
@@ -373,10 +380,27 @@ export class DbPanel extends DisposableObject {
       `${codeSearchQuery} language:${codeSearchLanguage.language}`,
     );
 
-    await this.dbManager.addNewRemoteReposToList(
+    const truncatedRepositories = await this.dbManager.addNewRemoteReposToList(
       repositories,
       treeViewItem.dbItem.listName,
     );
+    this.truncatedReposNote(
+      truncatedRepositories,
+      treeViewItem.dbItem.listName,
+    );
+  }
+
+  private truncatedReposNote(
+    truncatedRepositories: string[],
+    listName: string,
+  ) {
+    if (truncatedRepositories.length > 0) {
+      void showAndLogErrorMessage(
+        `Some repositories were not added to '${listName}' because a list can only have 1000 entries. Excluded repositories: ${truncatedRepositories.join(
+          ", ",
+        )}`,
+      );
+    }
   }
 
   private async onDidCollapseElement(

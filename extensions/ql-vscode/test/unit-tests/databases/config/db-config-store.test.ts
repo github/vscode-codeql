@@ -282,7 +282,7 @@ describe("db config store", () => {
       configStore.dispose();
     });
 
-    it("should add no more than 1000 repositories to a list", async () => {
+    it("should add no more than 1000 repositories to a remote list using #addRemoteReposToList", async () => {
       // Initial set up
       const dbConfig = createDbConfig({
         remoteLists: [
@@ -296,7 +296,7 @@ describe("db config store", () => {
       const configStore = await initializeConfig(dbConfig, configPath, app);
 
       // Add
-      await configStore.addRemoteReposToList(
+      const reponse = await configStore.addRemoteReposToList(
         [...Array(1001).keys()].map((i) => `owner/db${i}`),
         "list1",
       );
@@ -311,6 +311,38 @@ describe("db config store", () => {
       expect(updatedRemoteDbs.repositoryLists[0].repositories).toHaveLength(
         1000,
       );
+      expect(reponse).toEqual(["owner/db1000"]);
+
+      configStore.dispose();
+    });
+
+    it("should add no more than 1000 repositories to a remote list using #addRemoteRepo", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "list1",
+            repositories: [...Array(1000).keys()].map((i) => `owner/db${i}`),
+          },
+        ],
+      });
+
+      const configStore = await initializeConfig(dbConfig, configPath, app);
+
+      // Add
+      const reponse = await configStore.addRemoteRepo("owner/db1000", "list1");
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
+      expect(updatedRemoteDbs.repositories).toHaveLength(0);
+      expect(updatedRemoteDbs.repositoryLists).toHaveLength(1);
+      expect(updatedRemoteDbs.repositoryLists[0].repositories).toHaveLength(
+        1000,
+      );
+      expect(reponse).toEqual(["owner/db1000"]);
 
       configStore.dispose();
     });

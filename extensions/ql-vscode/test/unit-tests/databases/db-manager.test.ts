@@ -115,6 +115,46 @@ describe("db manager", () => {
         });
       });
 
+      it("should return truncated repos when adding to a user defined list using #addNewRemoteReposToList", async () => {
+        const dbConfig: DbConfig = createDbConfig({
+          remoteLists: [
+            {
+              name: "my-list-1",
+              repositories: [...Array(1000).keys()].map((i) => `owner/db${i}`),
+            },
+          ],
+        });
+
+        await saveDbConfig(dbConfig);
+
+        const response = await dbManager.addNewRemoteReposToList(
+          ["owner2/repo2"],
+          "my-list-1",
+        );
+
+        expect(response).toEqual(["owner2/repo2"]);
+      });
+
+      it("should return truncated repos when adding to a user defined list using #addNewRemoteRepo", async () => {
+        const dbConfig: DbConfig = createDbConfig({
+          remoteLists: [
+            {
+              name: "my-list-1",
+              repositories: [...Array(1000).keys()].map((i) => `owner/db${i}`),
+            },
+          ],
+        });
+
+        await saveDbConfig(dbConfig);
+
+        const response = await dbManager.addNewRemoteRepo(
+          "owner2/repo2",
+          "my-list-1",
+        );
+
+        expect(response).toEqual(["owner2/repo2"]);
+      });
+
       it("should add a new remote repo to a user defined list", async () => {
         const dbConfig: DbConfig = createDbConfig({
           remoteLists: [
