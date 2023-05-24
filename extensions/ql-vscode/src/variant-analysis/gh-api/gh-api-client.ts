@@ -7,21 +7,36 @@ import {
   VariantAnalysisSubmissionRequest,
 } from "./variant-analysis";
 import { Repository } from "./repository";
+import { Progress } from "vscode";
+import { CancellationToken } from "vscode-jsonrpc";
 
 export async function getCodeSearchRepositories(
   credentials: Credentials,
   query: string,
+  progress: Progress<{
+    message?: string | undefined;
+    increment?: number | undefined;
+  }>,
+  token: CancellationToken,
 ): Promise<string[]> {
+  let nwos: string[] = [];
   const octokit = await credentials.getOctokit();
-
-  const nwos = await octokit.paginate(
+  for await (const response of octokit.paginate.iterator(
     octokit.rest.search.repos,
     {
       q: query,
       per_page: 100,
     },
-    (response) => response.data.map((item) => item.full_name),
-  );
+  )) {
+    nwos.push(...response.data.map((item) => item.full_name));
+    const numberOfRequests = Math.ceil(response.data.total_count / 99);
+    const increment = numberOfRequests < 10 ? 80 / numberOfRequests : 8;
+    progress.report({ increment });
+    if (token.isCancellationRequested) {
+      nwos = [];
+      break;
+    }
+  }
 
   return [...new Set(nwos)];
 }

@@ -1,4 +1,5 @@
 import {
+  ProgressLocation,
   QuickPickItem,
   TreeView,
   TreeViewExpansionEvent,
@@ -13,7 +14,10 @@ import {
   getOwnerFromGitHubUrl,
   isValidGitHubOwner,
 } from "../../common/github-url-identifier-helper";
-import { showAndLogErrorMessage } from "../../helpers";
+import {
+  showAndLogErrorMessage,
+  showAndLogInformationMessage,
+} from "../../helpers";
 import { DisposableObject } from "../../pure/disposable-object";
 import {
   DbItem,
@@ -343,6 +347,8 @@ export class DbPanel extends DisposableObject {
       throw new Error("Please select a valid list to add code search results.");
     }
 
+    const listName = treeViewItem.dbItem.listName;
+
     const languageQuickPickItems: CodeSearchQuickPickItem[] = Object.values(
       QueryLanguage,
     ).map((language) => ({
@@ -375,18 +381,33 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    const repositories = await getCodeSearchRepositories(
-      this.app.credentials,
-      `${codeSearchQuery} language:${codeSearchLanguage.language}`,
-    );
+    void window.withProgress(
+      {
+        location: ProgressLocation.Notification,
+        title: "Searching for repositories... This might take a while",
+        cancellable: true,
+      },
+      async (progress, token) => {
+        progress.report({ increment: 10 });
 
-    const truncatedRepositories = await this.dbManager.addNewRemoteReposToList(
-      repositories,
-      treeViewItem.dbItem.listName,
-    );
-    this.truncatedReposNote(
-      truncatedRepositories,
-      treeViewItem.dbItem.listName,
+        const repositories = await getCodeSearchRepositories(
+          this.app.credentials,
+          `${codeSearchQuery} language:${codeSearchLanguage.language}`,
+          progress,
+          token,
+        );
+
+        token.onCancellationRequested(() => {
+          void showAndLogInformationMessage("Code search cancelled");
+          return;
+        });
+
+        progress.report({ increment: 10, message: "Processing results..." });
+
+        const truncatedRepositories =
+          await this.dbManager.addNewRemoteReposToList(repositories, listName);
+        this.truncatedReposNote(truncatedRepositories, listName);
+      },
     );
   }
 
