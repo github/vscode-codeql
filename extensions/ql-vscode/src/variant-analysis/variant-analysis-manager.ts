@@ -634,7 +634,9 @@ export class VariantAnalysisManager
               (e.code === "ETIMEDOUT" || e.code === "ECONNRESET")
             ) {
               void extLogger.log(
-                `Timeout while trying to download variant analysis with id: ${variantAnalysis.id}. Retrying...`,
+                `Timeout while trying to download variant analysis with id: ${
+                  variantAnalysis.id
+                }. Error: ${getErrorMessage(e)}. Retrying...`,
               );
               continue;
             }
