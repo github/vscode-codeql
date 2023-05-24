@@ -41,6 +41,9 @@ export class FileTreeDirectory extends FileTreeNode {
   }
 
   public createDirectory(relativePath: string): FileTreeDirectory {
+    if (relativePath === ".") {
+      return this;
+    }
     const dirName = dirname(relativePath);
     if (dirName === ".") {
       return this.createChildDirectory(relativePath);
