@@ -35,6 +35,10 @@ import { QlPackGenerator } from "../qlpack-generator";
 import { QueryLanguage } from "../common/query-language";
 import { App } from "../common/app";
 import { existsSync } from "fs";
+import {
+  DatabaseOptions,
+  FullDatabaseOptions,
+} from "./local-databases/database-options";
 
 /**
  * databases.ts
@@ -57,19 +61,6 @@ const CURRENT_DB = "currentDatabase";
  * persist the list of databases across sessions.
  */
 const DB_LIST = "databaseList";
-
-export interface DatabaseOptions {
-  displayName?: string;
-  ignoreSourceArchive?: boolean;
-  dateAdded?: number | undefined;
-  language?: string;
-}
-
-export interface FullDatabaseOptions extends DatabaseOptions {
-  ignoreSourceArchive: boolean;
-  dateAdded: number | undefined;
-  language: string | undefined;
-}
 
 interface PersistedDatabaseItem {
   uri: string;
