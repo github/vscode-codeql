@@ -1,4 +1,4 @@
-import { appendFile, pathExists } from "fs-extra";
+import { appendFile, pathExists, rm } from "fs-extra";
 import fetch from "node-fetch";
 import { EOL } from "os";
 import { join } from "path";
@@ -81,6 +81,9 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     await writeRepoTask(resultDirectory, repoTask);
 
     const zipFilePath = join(resultDirectory, "results.zip");
+
+    // in case of restarted download delete possible artifact from previous download
+    await rm(zipFilePath, { force: true });
 
     const response = await fetch(repoTask.artifactUrl);
 
