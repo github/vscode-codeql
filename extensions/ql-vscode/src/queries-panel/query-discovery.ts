@@ -7,6 +7,7 @@ import { App } from "../common/app";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import { getOnDiskWorkspaceFoldersObjects } from "../helpers";
 import { AppEventEmitter } from "../common/events";
+import { QueryDiscoverer } from "./query-tree-data-provider";
 
 /**
  * The results of discovering queries.
@@ -28,7 +29,10 @@ interface QueryDiscoveryResults {
 /**
  * Discovers all query files contained in the QL packs in a given workspace folder.
  */
-export class QueryDiscovery extends Discovery<QueryDiscoveryResults> {
+export class QueryDiscovery
+  extends Discovery<QueryDiscoveryResults>
+  implements QueryDiscoverer
+{
   private results: QueryDiscoveryResults | undefined;
 
   private readonly onDidChangeQueriesEmitter: AppEventEmitter<void>;

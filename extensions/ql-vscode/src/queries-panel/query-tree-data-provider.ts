@@ -1,8 +1,12 @@
 import { Event, EventEmitter, TreeDataProvider, TreeItem } from "vscode";
 import { QueryTreeViewItem } from "./query-tree-view-item";
 import { DisposableObject } from "../pure/disposable-object";
-import { QueryDiscovery } from "./query-discovery";
 import { FileTreeNode } from "../common/file-tree-nodes";
+
+export interface QueryDiscoverer {
+  readonly queries: FileTreeNode[] | undefined;
+  readonly onDidChangeQueries: Event<void>;
+}
 
 export class QueryTreeDataProvider
   extends DisposableObject
@@ -14,10 +18,10 @@ export class QueryTreeDataProvider
     new EventEmitter<void>(),
   );
 
-  public constructor(private readonly queryDiscovery: QueryDiscovery) {
+  public constructor(private readonly queryDiscoverer: QueryDiscoverer) {
     super();
 
-    queryDiscovery.onDidChangeQueries(() => {
+    queryDiscoverer.onDidChangeQueries(() => {
       this.queryTreeItems = this.createTree();
       this.onDidChangeTreeDataEmitter.fire();
     });
@@ -30,7 +34,7 @@ export class QueryTreeDataProvider
   }
 
   private createTree(): QueryTreeViewItem[] {
-    return (this.queryDiscovery.queries || []).map(
+    return (this.queryDiscoverer.queries || []).map(
       this.convertFileTreeNode.bind(this),
     );
   }
