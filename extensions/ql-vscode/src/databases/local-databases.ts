@@ -32,8 +32,16 @@ import {
 } from "./local-databases/database-item";
 import { DatabaseItemImpl } from "./local-databases/database-item-impl";
 import { DatabaseResolver } from "./local-databases/database-resolver";
+import {
+  DatabaseChangedEvent,
+  DatabaseEventKind,
+} from "./local-databases/database-events";
 
 export { DatabaseContentsWithDbScheme } from "./local-databases/database-contents";
+export {
+  DatabaseChangedEvent,
+  DatabaseEventKind,
+} from "./local-databases/database-events";
 export { DatabaseItem } from "./local-databases/database-item";
 export { DatabaseResolver } from "./local-databases/database-resolver";
 
@@ -58,24 +66,6 @@ const CURRENT_DB = "currentDatabase";
  * persist the list of databases across sessions.
  */
 const DB_LIST = "databaseList";
-
-export enum DatabaseEventKind {
-  Add = "Add",
-  Remove = "Remove",
-
-  // Fired when databases are refreshed from persisted state
-  Refresh = "Refresh",
-
-  // Fired when the current database changes
-  Change = "Change",
-
-  Rename = "Rename",
-}
-
-export interface DatabaseChangedEvent {
-  kind: DatabaseEventKind;
-  item: DatabaseItem | undefined;
-}
 
 /**
  * A promise that resolves to an event's result value when the event
