@@ -165,8 +165,12 @@ export class DbConfigStore extends DisposableObject {
       ...new Set(parent.repositories),
       ...new Set(repoNwoList),
     ]);
-    parent.repositories = [...newRepositoriesList];
 
+    if (newRepositoriesList.size > 1000) {
+      parent.repositories = [...Array.from(newRepositoriesList).slice(0, 1000)];
+    } else {
+      parent.repositories = [...newRepositoriesList];
+    }
     await this.writeConfig(config);
   }
 
