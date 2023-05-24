@@ -14,12 +14,9 @@ import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
 import { isLikelyDatabaseRoot } from "../../helpers";
 import { stat } from "fs-extra";
 import { pathsEqual } from "../../pure/files";
-import {
-  DatabaseChangedEvent,
-  DatabaseEventKind,
-  DatabaseResolver,
-} from "../local-databases";
+import { DatabaseChangedEvent, DatabaseEventKind } from "../local-databases";
 import { DatabaseContents } from "./database-contents";
+import { DatabaseResolver } from "./database-resolver";
 
 export class DatabaseItemImpl implements DatabaseItem {
   private _error: Error | undefined = undefined;
