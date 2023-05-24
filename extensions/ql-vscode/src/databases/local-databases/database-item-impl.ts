@@ -16,10 +16,10 @@ import { stat } from "fs-extra";
 import { pathsEqual } from "../../pure/files";
 import {
   DatabaseChangedEvent,
-  DatabaseContents,
   DatabaseEventKind,
   DatabaseResolver,
 } from "../local-databases";
+import { DatabaseContents } from "./database-contents";
 
 export class DatabaseItemImpl implements DatabaseItem {
   private _error: Error | undefined = undefined;

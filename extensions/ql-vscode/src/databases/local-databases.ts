@@ -35,7 +35,13 @@ import {
   PersistedDatabaseItem,
 } from "./local-databases/database-item";
 import { DatabaseItemImpl } from "./local-databases/database-item-impl";
+import {
+  DatabaseContents,
+  DatabaseContentsWithDbScheme,
+  DatabaseKind,
+} from "./local-databases/database-contents";
 
+export { DatabaseContentsWithDbScheme } from "./local-databases/database-contents";
 export { DatabaseItem } from "./local-databases/database-item";
 
 /**
@@ -59,35 +65,6 @@ const CURRENT_DB = "currentDatabase";
  * persist the list of databases across sessions.
  */
 const DB_LIST = "databaseList";
-
-/**
- * The layout of the database.
- */
-export enum DatabaseKind {
-  /** A CodeQL database */
-  Database,
-  /** A raw QL dataset */
-  RawDataset,
-}
-
-export interface DatabaseContents {
-  /** The layout of the database */
-  kind: DatabaseKind;
-  /**
-   * The name of the database.
-   */
-  name: string;
-  /** The URI of the QL dataset within the database. */
-  datasetUri: vscode.Uri;
-  /** The URI of the source archive within the database, if one exists. */
-  sourceArchiveUri?: vscode.Uri;
-  /** The URI of the CodeQL database scheme within the database, if exactly one exists. */
-  dbSchemeUri?: vscode.Uri;
-}
-
-export interface DatabaseContentsWithDbScheme extends DatabaseContents {
-  dbSchemeUri: vscode.Uri; // Always present
-}
 
 /**
  * An error thrown when we cannot find a valid database in a putative

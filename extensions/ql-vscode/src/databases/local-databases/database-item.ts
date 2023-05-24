@@ -1,6 +1,6 @@
 import vscode from "vscode";
 import * as cli from "../../codeql-cli/cli";
-import { DatabaseContents } from "../local-databases";
+import { DatabaseContents } from "./database-contents";
 import { DatabaseOptions } from "./database-options";
 
 /** An item in the list of available databases */
