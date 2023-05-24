@@ -35,10 +35,13 @@ import { QlPackGenerator } from "../qlpack-generator";
 import { QueryLanguage } from "../common/query-language";
 import { App } from "../common/app";
 import { existsSync } from "fs";
+import { FullDatabaseOptions } from "./local-databases/database-options";
 import {
-  DatabaseOptions,
-  FullDatabaseOptions,
-} from "./local-databases/database-options";
+  DatabaseItem,
+  PersistedDatabaseItem,
+} from "./local-databases/database-item";
+
+export { DatabaseItem } from "./local-databases/database-item";
 
 /**
  * databases.ts
@@ -61,11 +64,6 @@ const CURRENT_DB = "currentDatabase";
  * persist the list of databases across sessions.
  */
 const DB_LIST = "databaseList";
-
-interface PersistedDatabaseItem {
-  uri: string;
-  options?: DatabaseOptions;
-}
 
 /**
  * The layout of the database.
@@ -224,88 +222,6 @@ export class DatabaseResolver {
       sourceArchiveUri,
     };
   }
-}
-
-/** An item in the list of available databases */
-export interface DatabaseItem {
-  /** The URI of the database */
-  readonly databaseUri: vscode.Uri;
-  /** The name of the database to be displayed in the UI */
-  name: string;
-
-  /** The primary language of the database or empty string if unknown */
-  readonly language: string;
-  /** The URI of the database's source archive, or `undefined` if no source archive is to be used. */
-  readonly sourceArchive: vscode.Uri | undefined;
-  /**
-   * The contents of the database.
-   * Will be `undefined` if the database is invalid. Can be updated by calling `refresh()`.
-   */
-  readonly contents: DatabaseContents | undefined;
-
-  /**
-   * The date this database was added as a unix timestamp. Or undefined if we don't know.
-   */
-  readonly dateAdded: number | undefined;
-
-  /** If the database is invalid, describes why. */
-  readonly error: Error | undefined;
-  /**
-   * Resolves the contents of the database.
-   *
-   * @remarks
-   * The contents include the database directory, source archive, and metadata about the database.
-   * If the database is invalid, `this.error` is updated with the error object that describes why
-   * the database is invalid. This error is also thrown.
-   */
-  refresh(): Promise<void>;
-  /**
-   * Resolves a filename to its URI in the source archive.
-   *
-   * @param file Filename within the source archive. May be `undefined` to return a dummy file path.
-   */
-  resolveSourceFile(file: string | undefined): vscode.Uri;
-
-  /**
-   * Holds if the database item has a `.dbinfo` or `codeql-database.yml` file.
-   */
-  hasMetadataFile(): Promise<boolean>;
-
-  /**
-   * Returns `sourceLocationPrefix` of exported database.
-   */
-  getSourceLocationPrefix(server: cli.CodeQLCliServer): Promise<string>;
-
-  /**
-   * Returns dataset folder of exported database.
-   */
-  getDatasetFolder(server: cli.CodeQLCliServer): Promise<string>;
-
-  /**
-   * Returns the root uri of the virtual filesystem for this database's source archive,
-   * as displayed in the filesystem explorer.
-   */
-  getSourceArchiveExplorerUri(): vscode.Uri;
-
-  /**
-   * Holds if `uri` belongs to this database's source archive.
-   */
-  belongsToSourceArchiveExplorerUri(uri: vscode.Uri): boolean;
-
-  /**
-   * Whether the database may be affected by test execution for the given path.
-   */
-  isAffectedByTest(testPath: string): Promise<boolean>;
-
-  /**
-   * Gets the state of this database, to be persisted in the workspace state.
-   */
-  getPersistedState(): PersistedDatabaseItem;
-
-  /**
-   * Verifies that this database item has a zipped source folder. Returns an error message if it does not.
-   */
-  verifyZippedSources(): string | undefined;
 }
 
 export enum DatabaseEventKind {
