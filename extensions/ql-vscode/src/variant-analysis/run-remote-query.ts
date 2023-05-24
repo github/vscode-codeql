@@ -379,7 +379,8 @@ async function fixPackFile(
   }
   const qlpack = load(await readFile(packPath, "utf8")) as QlPack;
 
-  qlpack.name = QUERY_PACK_NAME;
+  // Use original name
+  // qlpack.name = QUERY_PACK_NAME;
   updateDefaultSuite(qlpack, packRelativePath);
   removeWorkspaceRefs(qlpack);
 
