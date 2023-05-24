@@ -7,9 +7,6 @@ import { QueriesPanel } from "./queries-panel";
 import { QueryDiscovery } from "./query-discovery";
 
 export class QueriesModule extends DisposableObject {
-  private queriesPanel: QueriesPanel | undefined;
-  private queryDiscovery: QueryDiscovery | undefined;
-
   private constructor(readonly app: App) {
     super();
   }
@@ -22,12 +19,12 @@ export class QueriesModule extends DisposableObject {
     }
     void extLogger.log("Initializing queries panel.");
 
-    this.queryDiscovery = new QueryDiscovery(app, cliServer);
-    this.push(this.queryDiscovery);
-    this.queryDiscovery.refresh();
+    const queryDiscovery = new QueryDiscovery(app, cliServer);
+    this.push(queryDiscovery);
+    queryDiscovery.refresh();
 
-    this.queriesPanel = new QueriesPanel(this.queryDiscovery);
-    this.push(this.queriesPanel);
+    const queriesPanel = new QueriesPanel(queryDiscovery);
+    this.push(queriesPanel);
   }
 
   public static initialize(
