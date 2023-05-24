@@ -12,7 +12,7 @@ import { QueryDiscoverer } from "./query-tree-data-provider";
 /**
  * The results of discovering queries.
  */
-interface QueryDiscoveryResults {
+export interface QueryDiscoveryResults {
   /**
    * A tree of directories and query files.
    * May have multiple roots because of multiple workspaces.
