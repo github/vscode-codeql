@@ -103,8 +103,8 @@ export class DbPanel extends DisposableObject {
         this.renameItem.bind(this),
       "codeQLVariantAnalysisRepositories.removeItemContextMenu":
         this.removeItem.bind(this),
-      "codeQLVariantAnalysisRepositories.importCodeSearch":
-        this.importCodeSearch.bind(this),
+      "codeQLVariantAnalysisRepositories.importFromCodeSearch":
+        this.importFromCodeSearch.bind(this),
     };
   }
 
@@ -342,7 +342,9 @@ export class DbPanel extends DisposableObject {
     await this.dbManager.removeDbItem(treeViewItem.dbItem);
   }
 
-  private async importCodeSearch(treeViewItem: DbTreeViewItem): Promise<void> {
+  private async importFromCodeSearch(
+    treeViewItem: DbTreeViewItem,
+  ): Promise<void> {
     if (treeViewItem.dbItem?.kind !== DbItemKind.RemoteUserDefinedList) {
       throw new Error("Please select a valid list to add code search results.");
     }

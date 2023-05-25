@@ -517,7 +517,7 @@
         "icon": "$(new-folder)"
       },
       {
-        "command": "codeQLVariantAnalysisRepositories.importCodeSearch",
+        "command": "codeQLVariantAnalysisRepositories.importFromCodeSearch",
         "title": "Import Repos from GitHub Code Search"
       },
       {
@@ -966,7 +966,7 @@
           "group": "2_qlContextMenu@1"
         },
         {
-          "command": "codeQLVariantAnalysisRepositories.importCodeSearch",
+          "command": "codeQLVariantAnalysisRepositories.importFromCodeSearch",
           "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canImportCodeSearch/",
           "group": "2_qlContextMenu@1"
         },
@@ -1307,7 +1307,7 @@
           "when": "false"
         },
         {
-          "command": "codeQLVariantAnalysisRepositories.importCodeSearch",
+          "command": "codeQLVariantAnalysisRepositories.importFromCodeSearch",
           "when": "false"
         },
         {
