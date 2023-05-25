@@ -42,7 +42,7 @@ export abstract class Discovery<T> extends DisposableObject {
     } else {
       // No discovery in progress, so start one now.
       this.discoveryInProgress = true;
-      this.launchDiscovery();
+      void this.launchDiscovery();
     }
   }
 
@@ -51,34 +51,33 @@ export abstract class Discovery<T> extends DisposableObject {
    * discovery operation completes, the `update` function will be invoked with the results of the
    * discovery.
    */
-  private launchDiscovery(): void {
-    const discoveryPromise = this.discover();
-    discoveryPromise
-      .then((results) => {
-        if (!this.retry) {
-          // Update any listeners with the results of the discovery.
-          this.discoveryInProgress = false;
-          this.update(results);
-        }
-      })
+  private async launchDiscovery(): Promise<void> {
+    let results: T | undefined;
+    try {
+      results = await this.discover();
+    } catch (err) {
+      void extLogger.log(
+        `${this.name} failed. Reason: ${getErrorMessage(err)}`,
+      );
+      results = undefined;
+    }
 
-      .catch((err: unknown) => {
-        void extLogger.log(
-          `${this.name} failed. Reason: ${getErrorMessage(err)}`,
-        );
-      })
+    if (this.retry) {
+      // Another refresh request came in while we were still running a previous discovery
+      // operation. Since the discovery results we just computed are now stale, we'll launch
+      // another discovery operation instead of updating.
+      // Note that by doing this inside of `finally`, we will relaunch discovery even if the
+      // initial discovery operation failed.
+      this.retry = false;
+      await this.launchDiscovery();
+    } else {
+      this.discoveryInProgress = false;
 
-      .finally(() => {
-        if (this.retry) {
-          // Another refresh request came in while we were still running a previous discovery
-          // operation. Since the discovery results we just computed are now stale, we'll launch
-          // another discovery operation instead of updating.
-          // Note that by doing this inside of `finally`, we will relaunch discovery even if the
-          // initial discovery operation failed.
-          this.retry = false;
-          this.launchDiscovery();
-        }
-      });
+      // If the discovery was successful, then update any listeners with the results.
+      if (results !== undefined) {
+        this.update(results);
+      }
+    }
   }
 
   /**
