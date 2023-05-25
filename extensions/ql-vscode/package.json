@@ -1594,6 +1594,10 @@
         "contents": "You have no query history items at the moment.\n\nSelect a database to run a CodeQL query and get your first results."
       },
       {
+        "view": "codeQLQueries",
+        "contents": "This workspace doesn't contain any CodeQL queries at the moment."
+      },
+      {
         "view": "codeQLDatabases",
         "contents": "Add a CodeQL database:\n[From a folder](command:codeQLDatabases.chooseDatabaseFolder)\n[From an archive](command:codeQLDatabases.chooseDatabaseArchive)\n[From a URL (as a zip file)](command:codeQLDatabases.chooseDatabaseInternet)\n[From GitHub](command:codeQLDatabases.chooseDatabaseGithub)"
       },
