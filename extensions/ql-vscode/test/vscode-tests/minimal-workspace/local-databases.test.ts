@@ -9,7 +9,6 @@ import {
   DatabaseItemImpl,
   DatabaseManager,
   DatabaseResolver,
-  findSourceArchive,
   FullDatabaseOptions,
 } from "../../../src/databases/local-databases";
 import { Logger } from "../../../src/common";
@@ -32,6 +31,7 @@ import {
   mockDbOptions,
   sourceLocationUri,
 } from "../../factories/databases/databases";
+import { findSourceArchive } from "../../../src/databases/local-databases/database-resolver";
 
 describe("local databases", () => {
   let databaseManager: DatabaseManager;
