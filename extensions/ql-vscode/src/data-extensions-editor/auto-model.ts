@@ -48,13 +48,11 @@ export function createAutoModelRequest(
           modeledMethod.type === "none"
             ? undefined
             : toMethodClassification(modeledMethod),
-        usages: externalApiUsage.usages.map((usage) => usage.label),
+        usages: externalApiUsage.usages
+          .slice(0, 10)
+          .map((usage) => usage.label),
         input: `Argument[${argumentIndex}]`,
       };
-
-      if (method.usages.length > 10) {
-        method.usages = method.usages.slice(0, 10);
-      }
 
       if (modeledMethod.type === "none") {
         request.candidates.push(method);
@@ -64,12 +62,8 @@ export function createAutoModelRequest(
     }
   }
 
-  if (request.candidates.length > 100) {
-    request.candidates = request.candidates.slice(0, 100);
-  }
-  if (request.samples.length > 20) {
-    request.samples = request.samples.slice(0, 20);
-  }
+  request.candidates = request.candidates.slice(0, 100);
+  request.samples = request.samples.slice(0, 20);
 
   return request;
 }
