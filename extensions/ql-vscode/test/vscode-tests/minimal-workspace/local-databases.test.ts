@@ -327,7 +327,7 @@ describe("local databases", () => {
         mockDbOptions(),
         Uri.parse("file:/sourceArchive-uri/"),
       );
-      (db as any)._contents.sourceArchiveUri = undefined;
+      (db as any).contents.sourceArchiveUri = undefined;
       expect(() => db.resolveSourceFile("abc")).toThrowError(
         "Scheme is missing",
       );
@@ -339,7 +339,7 @@ describe("local databases", () => {
         mockDbOptions(),
         Uri.parse("file:/sourceArchive-uri/"),
       );
-      (db as any)._contents.sourceArchiveUri = undefined;
+      (db as any).contents.sourceArchiveUri = undefined;
       expect(() => db.resolveSourceFile("http://abc")).toThrowError(
         "Invalid uri scheme",
       );
@@ -352,7 +352,7 @@ describe("local databases", () => {
           mockDbOptions(),
           Uri.parse("file:/sourceArchive-uri/"),
         );
-        (db as any)._contents.sourceArchiveUri = undefined;
+        (db as any).contents.sourceArchiveUri = undefined;
         const resolved = db.resolveSourceFile(undefined);
         expect(resolved.toString(true)).toBe(dbLocationUri(dir).toString(true));
       });
@@ -363,7 +363,7 @@ describe("local databases", () => {
           mockDbOptions(),
           Uri.parse("file:/sourceArchive-uri/"),
         );
-        (db as any)._contents.sourceArchiveUri = undefined;
+        (db as any).contents.sourceArchiveUri = undefined;
         const resolved = db.resolveSourceFile("file:");
         expect(resolved.toString()).toBe("file:///");
       });

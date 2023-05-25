@@ -173,14 +173,7 @@ export class DatabaseManager extends DisposableObject {
       dateAdded: Date.now(),
       language: await this.getPrimaryLanguage(uri.fsPath),
     };
-    const databaseItem = new DatabaseItemImpl(
-      uri,
-      contents,
-      fullOptions,
-      (event) => {
-        this._onDidChangeDatabaseItem.fire(event);
-      },
-    );
+    const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions);
 
     return databaseItem;
   }
@@ -359,14 +352,7 @@ export class DatabaseManager extends DisposableObject {
       dateAdded,
       language,
     };
-    const item = new DatabaseItemImpl(
-      dbBaseUri,
-      undefined,
-      fullOptions,
-      (event) => {
-        this._onDidChangeDatabaseItem.fire(event);
-      },
-    );
+    const item = new DatabaseItemImpl(dbBaseUri, undefined, fullOptions);
 
     // Avoid persisting the database state after adding since that should happen only after
     // all databases have been added.
@@ -407,7 +393,7 @@ export class DatabaseManager extends DisposableObject {
             database,
           );
           try {
-            await databaseItem.refresh();
+            await this.refreshDatabase(databaseItem);
             await this.registerDatabase(progress, token, databaseItem);
             if (currentDatabaseUri === database.uri) {
               await this.setCurrentDatabaseItem(databaseItem, true);
@@ -449,8 +435,12 @@ export class DatabaseManager extends DisposableObject {
     item: DatabaseItem | undefined,
     skipRefresh = false,
   ): Promise<void> {
-    if (!skipRefresh && item !== undefined) {
-      await item.refresh(); // Will throw on invalid database.
+    if (
+      !skipRefresh &&
+      item !== undefined &&
+      item instanceof DatabaseItemImpl
+    ) {
+      await this.refreshDatabase(item); // Will throw on invalid database.
     }
     if (this._currentDatabaseItem !== item) {
       this._currentDatabaseItem = item;
@@ -614,6 +604,34 @@ export class DatabaseManager extends DisposableObject {
     dbItem: DatabaseItem,
   ) {
     await this.qs.registerDatabase(progress, token, dbItem);
+  }
+
+  /**
+   * Resolves the contents of the database.
+   *
+   * @remarks
+   * The contents include the database directory, source archive, and metadata about the database.
+   * If the database is invalid, `databaseItem.error` is updated with the error object that describes why
+   * the database is invalid. This error is also thrown.
+   */
+  private async refreshDatabase(databaseItem: DatabaseItemImpl) {
+    try {
+      try {
+        databaseItem.contents = await DatabaseResolver.resolveDatabaseContents(
+          databaseItem.databaseUri,
+        );
+        databaseItem.error = undefined;
+      } catch (e) {
+        databaseItem.contents = undefined;
+        databaseItem.error = asError(e);
+        throw e;
+      }
+    } finally {
+      this._onDidChangeDatabaseItem.fire({
+        kind: DatabaseEventKind.Refresh,
+        item: databaseItem,
+      });
+    }
   }
 
   private updatePersistedCurrentDatabaseItem(): void {

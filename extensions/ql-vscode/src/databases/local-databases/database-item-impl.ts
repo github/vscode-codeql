@@ -3,7 +3,6 @@ import * as cli from "../../codeql-cli/cli";
 import vscode from "vscode";
 import { FullDatabaseOptions } from "./database-options";
 import { basename, dirname, join, relative } from "path";
-import { asError } from "../../pure/helpers-pure";
 import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
@@ -15,12 +14,11 @@ import { isLikelyDatabaseRoot } from "../../helpers";
 import { stat } from "fs-extra";
 import { pathsEqual } from "../../pure/files";
 import { DatabaseContents } from "./database-contents";
-import { DatabaseResolver } from "./database-resolver";
-import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
 
 export class DatabaseItemImpl implements DatabaseItem {
-  private _error: Error | undefined = undefined;
-  private _contents: DatabaseContents | undefined;
+  // These are only public in the implementation, they are readonly in the interface
+  public error: Error | undefined = undefined;
+  public contents: DatabaseContents | undefined;
   /** A cache of database info */
   private _dbinfo: cli.DbInfo | undefined;
 
@@ -28,16 +26,15 @@ export class DatabaseItemImpl implements DatabaseItem {
     public readonly databaseUri: vscode.Uri,
     contents: DatabaseContents | undefined,
     private options: FullDatabaseOptions,
-    private readonly onChanged: (event: DatabaseChangedEvent) => void,
   ) {
-    this._contents = contents;
+    this.contents = contents;
   }
 
   public get name(): string {
     if (this.options.displayName) {
       return this.options.displayName;
-    } else if (this._contents) {
-      return this._contents.name;
+    } else if (this.contents) {
+      return this.contents.name;
     } else {
       return basename(this.databaseUri.fsPath);
     }
@@ -48,43 +45,15 @@ export class DatabaseItemImpl implements DatabaseItem {
   }
 
   public get sourceArchive(): vscode.Uri | undefined {
-    if (this.options.ignoreSourceArchive || this._contents === undefined) {
+    if (this.options.ignoreSourceArchive || this.contents === undefined) {
       return undefined;
     } else {
-      return this._contents.sourceArchiveUri;
+      return this.contents.sourceArchiveUri;
     }
-  }
-
-  public get contents(): DatabaseContents | undefined {
-    return this._contents;
   }
 
   public get dateAdded(): number | undefined {
     return this.options.dateAdded;
-  }
-
-  public get error(): Error | undefined {
-    return this._error;
-  }
-
-  public async refresh(): Promise<void> {
-    try {
-      try {
-        this._contents = await DatabaseResolver.resolveDatabaseContents(
-          this.databaseUri,
-        );
-        this._error = undefined;
-      } catch (e) {
-        this._contents = undefined;
-        this._error = asError(e);
-        throw e;
-      }
-    } finally {
-      this.onChanged({
-        kind: DatabaseEventKind.Refresh,
-        item: this,
-      });
-    }
   }
 
   public resolveSourceFile(uriStr: string | undefined): vscode.Uri {

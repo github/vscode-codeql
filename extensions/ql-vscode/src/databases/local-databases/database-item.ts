@@ -27,15 +27,7 @@ export interface DatabaseItem {
 
   /** If the database is invalid, describes why. */
   readonly error: Error | undefined;
-  /**
-   * Resolves the contents of the database.
-   *
-   * @remarks
-   * The contents include the database directory, source archive, and metadata about the database.
-   * If the database is invalid, `this.error` is updated with the error object that describes why
-   * the database is invalid. This error is also thrown.
-   */
-  refresh(): Promise<void>;
+
   /**
    * Resolves a filename to its URI in the source archive.
    *
