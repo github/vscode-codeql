@@ -385,8 +385,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
-    const request = createAutoModelRequest(
-      this.databaseItem.language,
+    const request = await createAutoModelRequest(
+      this.databaseItem,
       externalApiUsages,
       modeledMethods,
     );

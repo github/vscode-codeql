@@ -1,6 +1,11 @@
 import { createAutoModelRequest } from "../../../src/data-extensions-editor/auto-model";
 import { ExternalApiUsage } from "../../../src/data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../../src/data-extensions-editor/modeled-method";
+import {
+  createMockDB,
+  mockDbOptions,
+} from "../../factories/databases/databases";
+import * as tmp from "tmp";
 
 describe("createAutoModelRequest", () => {
   const externalApiUsages: ExternalApiUsage[] = [
@@ -177,6 +182,8 @@ describe("createAutoModelRequest", () => {
     },
   ];
 
+  let dir: tmp.DirResult;
+
   const modeledMethods: Record<string, ModeledMethod> = {
     "org.sql2o.Sql2o#open()": {
       type: "neutral",
@@ -192,9 +199,21 @@ describe("createAutoModelRequest", () => {
     },
   };
 
+  beforeEach(() => {
+    dir = tmp.dirSync({
+      prefix: "auto_model",
+      unsafeCleanup: true,
+    });
+  });
+
   it("creates a matching request", () => {
+    const db = createMockDB(dir, {
+      ...mockDbOptions(),
+      language: "java",
+    });
+
     expect(
-      createAutoModelRequest("java", externalApiUsages, modeledMethods),
+      createAutoModelRequest(db, externalApiUsages, modeledMethods),
     ).toEqual({
       language: "java",
       samples: [
