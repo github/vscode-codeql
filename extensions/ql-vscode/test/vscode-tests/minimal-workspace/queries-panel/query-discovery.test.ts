@@ -10,7 +10,6 @@ import { QueryDiscovery } from "../../../../src/queries-panel/query-discovery";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { mockedObject } from "../../utils/mocking.helpers";
 import { basename, join, sep } from "path";
-import { sleep } from "../../../../src/pure/time";
 
 describe("QueryDiscovery", () => {
   beforeEach(() => {
@@ -171,8 +170,7 @@ describe("QueryDiscovery", () => {
 
       onWatcherDidChangeEvent.fire(workspace.workspaceFolders![0].uri);
 
-      // Wait for refresh to finish
-      await sleep(100);
+      await discovery.getCurrentRefreshPromise();
 
       expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(2);
     });
@@ -202,8 +200,7 @@ describe("QueryDiscovery", () => {
 
       onDidChangeWorkspaceFoldersEvent.fire({ added: [], removed: [] });
 
-      // Wait for refresh to finish
-      await sleep(100);
+      await discovery.getCurrentRefreshPromise();
 
       expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(2);
     });
