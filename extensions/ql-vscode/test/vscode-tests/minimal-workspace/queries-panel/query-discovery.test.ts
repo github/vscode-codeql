@@ -12,7 +12,7 @@ import {
 } from "../../../../src/queries-panel/query-discovery";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { mockedObject } from "../../utils/mocking.helpers";
-import { basename, join } from "path";
+import { basename, join, sep } from "path";
 import { sleep } from "../../../../src/pure/time";
 
 describe("QueryDiscovery", () => {
@@ -101,7 +101,11 @@ describe("QueryDiscovery", () => {
     });
 
     it("calls resolveQueries once for each workspace", async () => {
-      const workspaceRoots = ["/workspace1", "/workspace2", "/workspace3"];
+      const workspaceRoots = [
+        `${sep}workspace1`,
+        `${sep}workspace2`,
+        `${sep}workspace3`,
+      ];
       jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValueOnce(
         workspaceRoots.map((root, index) => ({
           uri: Uri.file(root),
