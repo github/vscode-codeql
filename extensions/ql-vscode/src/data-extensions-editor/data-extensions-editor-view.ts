@@ -39,6 +39,12 @@ import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPackModelFile } from "./shared/extension-pack";
+import { autoModel } from "./auto-model-api";
+import {
+  classificationTypeToModeledMethodType,
+  createAutoModelRequest,
+} from "./auto-model";
+import { showLlmGeneration } from "../config";
 
 function getQlSubmoduleFolder(): WorkspaceFolder | undefined {
   const workspaceFolder = workspace.workspaceFolders?.find(
@@ -128,6 +134,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.generateModeledMethods();
 
         break;
+      case "generateExternalApiFromLlm":
+        await this.generateModeledMethodsFromLlm(
+          msg.externalApiUsages,
+          msg.modeledMethods,
+        );
+
+        break;
       default:
         assertNever(msg);
     }
@@ -149,6 +162,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       viewState: {
         extensionPackModelFile: this.modelFile,
         modelFileExists: await pathExists(this.modelFile.filename),
+        showLlmButton: showLlmGeneration(),
       },
     });
   }
@@ -365,6 +379,40 @@ export class DataExtensionsEditorView extends AbstractWebview<
     );
 
     await this.clearProgress();
+  }
+
+  private async generateModeledMethodsFromLlm(
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ): Promise<void> {
+    const request = createAutoModelRequest(
+      this.databaseItem.language,
+      externalApiUsages,
+      modeledMethods,
+    );
+
+    const response = await autoModel(this.app.credentials, request);
+
+    const modeledMethodsByName: Record<string, ModeledMethod> = {};
+
+    for (const method of response.predicted) {
+      if (method.classification === undefined) {
+        continue;
+      }
+
+      modeledMethodsByName[method.signature] = {
+        type: classificationTypeToModeledMethodType(method.classification.type),
+        kind: method.classification.kind,
+        input: method.input ?? "",
+        output: method.output ?? "",
+      };
+    }
+
+    await this.postMessage({
+      t: "addModeledMethods",
+      modeledMethods: modeledMethodsByName,
+      overrideNone: true,
+    });
   }
 
   /*

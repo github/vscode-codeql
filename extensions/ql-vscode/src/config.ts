@@ -711,3 +711,10 @@ const QUERIES_PANEL = new Setting("queriesPanel", ROOT_SETTING);
 export function showQueriesPanel(): boolean {
   return !!QUERIES_PANEL.getValue<boolean>();
 }
+
+const DATA_EXTENSIONS = new Setting("dataExtensions", ROOT_SETTING);
+const LLM_GENERATION = new Setting("llmGeneration", DATA_EXTENSIONS);
+
+export function showLlmGeneration(): boolean {
+  return !!LLM_GENERATION.getValue<boolean>();
+}

@@ -1,38 +1,30 @@
-import * as React from "react";
+import { createAutoModelRequest } from "../../../src/data-extensions-editor/auto-model";
+import { ExternalApiUsage } from "../../../src/data-extensions-editor/external-api-usage";
+import { ModeledMethod } from "../../../src/data-extensions-editor/modeled-method";
 
-import { ComponentMeta, ComponentStory } from "@storybook/react";
-
-import { DataExtensionsEditor as DataExtensionsEditorComponent } from "../../view/data-extensions-editor/DataExtensionsEditor";
-
-export default {
-  title: "Data Extensions Editor/Data Extensions Editor",
-  component: DataExtensionsEditorComponent,
-} as ComponentMeta<typeof DataExtensionsEditorComponent>;
-
-const Template: ComponentStory<typeof DataExtensionsEditorComponent> = (
-  args,
-) => <DataExtensionsEditorComponent {...args} />;
-
-export const DataExtensionsEditor = Template.bind({});
-DataExtensionsEditor.args = {
-  initialViewState: {
-    extensionPackModelFile: {
-      extensionPack: {
-        path: "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o",
-        yamlPath:
-          "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/codeql-pack.yml",
-        name: "codeql/sql2o-models",
-        version: "0.0.0",
-        extensionTargets: {},
-        dataExtensions: [],
-      },
-      filename:
-        "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/models/sql2o.yml",
+describe("createAutoModelRequest", () => {
+  const externalApiUsages: ExternalApiUsage[] = [
+    {
+      signature:
+        "org.springframework.boot.SpringApplication#run(Class,String[])",
+      packageName: "org.springframework.boot",
+      typeName: "SpringApplication",
+      methodName: "run",
+      methodParameters: "(Class,String[])",
+      supported: false,
+      usages: [
+        {
+          label: "run(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/Sql2oExampleApplication.java",
+            startLine: 9,
+            startColumn: 9,
+            endLine: 9,
+            endColumn: 66,
+          },
+        },
+      ],
     },
-    modelFileExists: true,
-    showLlmButton: true,
-  },
-  initialExternalApiUsages: [
     {
       signature: "org.sql2o.Connection#createQuery(String)",
       packageName: "org.sql2o",
@@ -99,7 +91,7 @@ DataExtensionsEditor.args = {
       typeName: "Sql2o",
       methodName: "open",
       methodParameters: "()",
-      supported: false,
+      supported: true,
       usages: [
         {
           label: "open(...)",
@@ -144,33 +136,12 @@ DataExtensionsEditor.args = {
       ],
     },
     {
-      signature:
-        "org.springframework.boot.SpringApplication#run(Class,String[])",
-      packageName: "org.springframework.boot",
-      typeName: "SpringApplication",
-      methodName: "run",
-      methodParameters: "(Class,String[])",
-      supported: false,
-      usages: [
-        {
-          label: "run(...)",
-          url: {
-            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/Sql2oExampleApplication.java",
-            startLine: 9,
-            startColumn: 9,
-            endLine: 9,
-            endColumn: 66,
-          },
-        },
-      ],
-    },
-    {
       signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
       packageName: "org.sql2o",
       typeName: "Sql2o",
       methodName: "Sql2o",
       methodParameters: "(String,String,String)",
-      supported: false,
+      supported: true,
       usages: [
         {
           label: "new Sql2o(...)",
@@ -190,7 +161,7 @@ DataExtensionsEditor.args = {
       typeName: "Sql2o",
       methodName: "Sql2o",
       methodParameters: "(String)",
-      supported: false,
+      supported: true,
       usages: [
         {
           label: "new Sql2o(...)",
@@ -204,37 +175,109 @@ DataExtensionsEditor.args = {
         },
       ],
     },
-  ],
-  initialModeledMethods: {
+  ];
+
+  const modeledMethods: Record<string, ModeledMethod> = {
+    "org.sql2o.Sql2o#open()": {
+      type: "neutral",
+      kind: "",
+      input: "",
+      output: "",
+    },
     "org.sql2o.Sql2o#Sql2o(String)": {
       type: "sink",
+      kind: "jndi-injection",
       input: "Argument[0]",
       output: "",
-      kind: "jndi-injection",
     },
-    "org.sql2o.Connection#createQuery(String)": {
-      type: "summary",
-      input: "Argument[this]",
-      output: "ReturnValue",
-      kind: "taint",
-    },
-    "org.sql2o.Sql2o#open()": {
-      type: "summary",
-      input: "Argument[this]",
-      output: "ReturnValue",
-      kind: "taint",
-    },
-    "org.sql2o.Query#executeScalar(Class)": {
-      type: "neutral",
-      input: "",
-      output: "",
-      kind: "",
-    },
-    "org.sql2o.Sql2o#Sql2o(String,String,String)": {
-      type: "neutral",
-      input: "",
-      output: "",
-      kind: "",
-    },
-  },
-};
+  };
+
+  it("creates a matching request", () => {
+    expect(
+      createAutoModelRequest("java", externalApiUsages, modeledMethods),
+    ).toEqual({
+      language: "java",
+      samples: [
+        {
+          package: "org.sql2o",
+          type: "Sql2o",
+          name: "Sql2o",
+          signature: "(String)",
+          classification: {
+            type: "CLASSIFICATION_TYPE_SINK",
+            kind: "jndi-injection",
+            explanation: "",
+          },
+          usages: ["new Sql2o(...)"],
+          input: "Argument[0]",
+        },
+      ],
+      candidates: [
+        {
+          package: "org.sql2o",
+          type: "Connection",
+          name: "createQuery",
+          signature: "(String)",
+          usages: ["createQuery(...)", "createQuery(...)"],
+          input: "Argument[0]",
+        },
+        {
+          package: "org.sql2o",
+          type: "Query",
+          name: "executeScalar",
+          signature: "(Class)",
+          usages: ["executeScalar(...)", "executeScalar(...)"],
+          input: "Argument[0]",
+        },
+        {
+          package: "org.springframework.boot",
+          type: "SpringApplication",
+          name: "run",
+          signature: "(Class,String[])",
+          usages: ["run(...)"],
+          input: "Argument[0]",
+        },
+        {
+          package: "org.springframework.boot",
+          type: "SpringApplication",
+          name: "run",
+          signature: "(Class,String[])",
+          usages: ["run(...)"],
+          input: "Argument[1]",
+        },
+        {
+          package: "java.io",
+          type: "PrintStream",
+          name: "println",
+          signature: "(String)",
+          usages: ["println(...)"],
+          input: "Argument[0]",
+        },
+        {
+          package: "org.sql2o",
+          type: "Sql2o",
+          name: "Sql2o",
+          signature: "(String,String,String)",
+          usages: ["new Sql2o(...)"],
+          input: "Argument[0]",
+        },
+        {
+          package: "org.sql2o",
+          type: "Sql2o",
+          name: "Sql2o",
+          signature: "(String,String,String)",
+          usages: ["new Sql2o(...)"],
+          input: "Argument[1]",
+        },
+        {
+          package: "org.sql2o",
+          type: "Sql2o",
+          name: "Sql2o",
+          signature: "(String,String,String)",
+          usages: ["new Sql2o(...)"],
+          input: "Argument[2]",
+        },
+      ],
+    });
+  });
+});
