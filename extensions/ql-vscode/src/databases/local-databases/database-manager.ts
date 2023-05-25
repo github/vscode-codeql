@@ -83,7 +83,7 @@ export class DatabaseManager extends DisposableObject {
   readonly onDidChangeCurrentDatabaseItem =
     this._onDidChangeCurrentDatabaseItem.event;
 
-  private readonly _databaseItems: DatabaseItem[] = [];
+  private readonly _databaseItems: DatabaseItemImpl[] = [];
   private _currentDatabaseItem: DatabaseItem | undefined = undefined;
 
   constructor(
@@ -127,8 +127,8 @@ export class DatabaseManager extends DisposableObject {
    *
    * Typically, the item will have been created by {@link createOrOpenDatabaseItem} or {@link openDatabase}.
    */
-  public async addExistingDatabaseItem(
-    databaseItem: DatabaseItem,
+  private async addExistingDatabaseItem(
+    databaseItem: DatabaseItemImpl,
     progress: ProgressCallback,
     makeSelected: boolean,
     token: vscode.CancellationToken,
@@ -162,7 +162,7 @@ export class DatabaseManager extends DisposableObject {
   private async createDatabaseItem(
     uri: vscode.Uri,
     displayName: string | undefined,
-  ): Promise<DatabaseItem> {
+  ): Promise<DatabaseItemImpl> {
     const contents = await DatabaseResolver.resolveDatabaseContents(uri);
     // Ignore the source archive for QLTest databases by default.
     const isQLTestDatabase = extname(uri.fsPath) === ".testproj";
@@ -173,14 +173,7 @@ export class DatabaseManager extends DisposableObject {
       dateAdded: Date.now(),
       language: await this.getPrimaryLanguage(uri.fsPath),
     };
-    const databaseItem = new DatabaseItemImpl(
-      uri,
-      contents,
-      fullOptions,
-      (event) => {
-        this._onDidChangeDatabaseItem.fire(event);
-      },
-    );
+    const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions);
 
     return databaseItem;
   }
@@ -329,7 +322,7 @@ export class DatabaseManager extends DisposableObject {
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     state: PersistedDatabaseItem,
-  ): Promise<DatabaseItem> {
+  ): Promise<DatabaseItemImpl> {
     let displayName: string | undefined = undefined;
     let ignoreSourceArchive = false;
     let dateAdded = undefined;
@@ -359,14 +352,7 @@ export class DatabaseManager extends DisposableObject {
       dateAdded,
       language,
     };
-    const item = new DatabaseItemImpl(
-      dbBaseUri,
-      undefined,
-      fullOptions,
-      (event) => {
-        this._onDidChangeDatabaseItem.fire(event);
-      },
-    );
+    const item = new DatabaseItemImpl(dbBaseUri, undefined, fullOptions);
 
     // Avoid persisting the database state after adding since that should happen only after
     // all databases have been added.
@@ -407,7 +393,7 @@ export class DatabaseManager extends DisposableObject {
             database,
           );
           try {
-            await databaseItem.refresh();
+            await this.refreshDatabase(databaseItem);
             await this.registerDatabase(progress, token, databaseItem);
             if (currentDatabaseUri === database.uri) {
               await this.setCurrentDatabaseItem(databaseItem, true);
@@ -449,8 +435,12 @@ export class DatabaseManager extends DisposableObject {
     item: DatabaseItem | undefined,
     skipRefresh = false,
   ): Promise<void> {
-    if (!skipRefresh && item !== undefined) {
-      await item.refresh(); // Will throw on invalid database.
+    if (
+      !skipRefresh &&
+      item !== undefined &&
+      item instanceof DatabaseItemImpl
+    ) {
+      await this.refreshDatabase(item); // Will throw on invalid database.
     }
     if (this._currentDatabaseItem !== item) {
       this._currentDatabaseItem = item;
@@ -499,7 +489,7 @@ export class DatabaseManager extends DisposableObject {
   private async addDatabaseItem(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
-    item: DatabaseItem,
+    item: DatabaseItemImpl,
     updatePersistedState = true,
   ) {
     this._databaseItems.push(item);
@@ -614,6 +604,34 @@ export class DatabaseManager extends DisposableObject {
     dbItem: DatabaseItem,
   ) {
     await this.qs.registerDatabase(progress, token, dbItem);
+  }
+
+  /**
+   * Resolves the contents of the database.
+   *
+   * @remarks
+   * The contents include the database directory, source archive, and metadata about the database.
+   * If the database is invalid, `databaseItem.error` is updated with the error object that describes why
+   * the database is invalid. This error is also thrown.
+   */
+  private async refreshDatabase(databaseItem: DatabaseItemImpl) {
+    try {
+      try {
+        databaseItem.contents = await DatabaseResolver.resolveDatabaseContents(
+          databaseItem.databaseUri,
+        );
+        databaseItem.error = undefined;
+      } catch (e) {
+        databaseItem.contents = undefined;
+        databaseItem.error = asError(e);
+        throw e;
+      }
+    } finally {
+      this._onDidChangeDatabaseItem.fire({
+        kind: DatabaseEventKind.Refresh,
+        item: databaseItem,
+      });
+    }
   }
 
   private updatePersistedCurrentDatabaseItem(): void {
