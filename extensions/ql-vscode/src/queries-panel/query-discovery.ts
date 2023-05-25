@@ -12,7 +12,7 @@ import { QueryDiscoverer } from "./query-tree-data-provider";
 /**
  * The results of discovering queries.
  */
-interface QueryDiscoveryResults {
+export interface QueryDiscoveryResults {
   /**
    * A tree of directories and query files.
    * May have multiple roots because of multiple workspaces.
@@ -99,22 +99,26 @@ export class QueryDiscovery
   ): Promise<FileTreeDirectory[]> {
     const rootDirectories = [];
     for (const workspaceFolder of workspaceFolders) {
-      rootDirectories.push(
-        await this.discoverQueriesInWorkspace(workspaceFolder),
-      );
+      const root = await this.discoverQueriesInWorkspace(workspaceFolder);
+      if (root !== undefined) {
+        rootDirectories.push(root);
+      }
     }
     return rootDirectories;
   }
 
   private async discoverQueriesInWorkspace(
     workspaceFolder: WorkspaceFolder,
-  ): Promise<FileTreeDirectory> {
+  ): Promise<FileTreeDirectory | undefined> {
     const fullPath = workspaceFolder.uri.fsPath;
     const name = workspaceFolder.name;
 
-    const rootDirectory = new FileTreeDirectory(fullPath, name);
-
     const resolvedQueries = await this.cliServer.resolveQueries(fullPath);
+    if (resolvedQueries.length === 0) {
+      return undefined;
+    }
+
+    const rootDirectory = new FileTreeDirectory(fullPath, name);
     for (const queryPath of resolvedQueries) {
       const relativePath = normalize(relative(fullPath, queryPath));
       const dirName = dirname(relativePath);
