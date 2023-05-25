@@ -163,7 +163,7 @@ export class DbConfigStore extends DisposableObject {
 
     // Remove duplicates from the list of repositories.
     const newRepositoriesList = [
-      ...new Set([...new Set(parent.repositories), ...new Set(repoNwoList)]),
+      ...new Set([...parent.repositories, ...repoNwoList]),
     ];
 
     parent.repositories = newRepositoriesList.slice(0, 1000);

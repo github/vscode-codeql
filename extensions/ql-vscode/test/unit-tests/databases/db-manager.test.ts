@@ -115,7 +115,7 @@ describe("db manager", () => {
         });
       });
 
-      it("should return truncated repos when adding to a user defined list using #addNewRemoteReposToList", async () => {
+      it("should return truncated repos when adding multiple repos to a user defined list", async () => {
         const dbConfig: DbConfig = createDbConfig({
           remoteLists: [
             {
@@ -135,7 +135,7 @@ describe("db manager", () => {
         expect(response).toEqual(["owner2/repo2"]);
       });
 
-      it("should return truncated repos when adding to a user defined list using #addNewRemoteRepo", async () => {
+      it("should return truncated repos when adding one repo to a user defined list", async () => {
         const dbConfig: DbConfig = createDbConfig({
           remoteLists: [
             {

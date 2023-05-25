@@ -189,7 +189,7 @@ export class DbPanel extends DisposableObject {
     );
 
     if (parentList) {
-      this.truncatedReposNote(truncatedRepositories, parentList);
+      this.reportAnyTruncatedRepos(truncatedRepositories, parentList);
     }
   }
 
@@ -369,9 +369,7 @@ export class DbPanel extends DisposableObject {
         },
       );
     if (!codeSearchLanguage) {
-      // We don't need to display a warning pop-up in this case, since the user just escaped out of the operation.
-      // We set 'true' to make this a silent exception.
-      throw new UserCancellationException("No language selected", true);
+      return;
     }
 
     const codeSearchQuery = await window.showInputBox({
@@ -408,12 +406,12 @@ export class DbPanel extends DisposableObject {
 
         const truncatedRepositories =
           await this.dbManager.addNewRemoteReposToList(repositories, listName);
-        this.truncatedReposNote(truncatedRepositories, listName);
+        this.reportAnyTruncatedRepos(truncatedRepositories, listName);
       },
     );
   }
 
-  private truncatedReposNote(
+  private reportAnyTruncatedRepos(
     truncatedRepositories: string[],
     listName: string,
   ) {
