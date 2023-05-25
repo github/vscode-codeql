@@ -9,7 +9,7 @@ import { getErrorMessage } from "../pure/helpers-pure";
  */
 export abstract class Discovery<T> extends DisposableObject {
   private retry = false;
-  private discoveryInProgress = false;
+  private currentDiscoveryPromise: Promise<void> | undefined;
 
   constructor(private readonly name: string) {
     super();
@@ -18,8 +18,10 @@ export abstract class Discovery<T> extends DisposableObject {
   /**
    * Force the discovery process to run. Normally invoked by the derived class when a relevant file
    * system change is detected.
+   *
+   * Returns a promise that resolves when the refresh is complete, including any retries.
    */
-  public refresh(): void {
+  public refresh(): Promise<void> {
     // We avoid having multiple discovery operations in progress at the same time. Otherwise, if we
     // got a storm of refresh requests due to, say, the copying or deletion of a large directory
     // tree, we could potentially spawn a separate simultaneous discovery operation for each
@@ -36,14 +38,14 @@ export abstract class Discovery<T> extends DisposableObject {
     // other change notifications that might be coming along. However, this would create more
     // latency in the common case, in order to save a bit of latency in the uncommon case.
 
-    if (this.discoveryInProgress) {
+    if (this.currentDiscoveryPromise !== undefined) {
       // There's already a discovery operation in progress. Tell it to restart when it's done.
       this.retry = true;
     } else {
       // No discovery in progress, so start one now.
-      this.discoveryInProgress = true;
-      void this.launchDiscovery();
+      this.currentDiscoveryPromise = this.launchDiscovery();
     }
+    return this.currentDiscoveryPromise;
   }
 
   /**
@@ -71,7 +73,7 @@ export abstract class Discovery<T> extends DisposableObject {
       this.retry = false;
       await this.launchDiscovery();
     } else {
-      this.discoveryInProgress = false;
+      this.currentDiscoveryPromise = undefined;
 
       // If the discovery was successful, then update any listeners with the results.
       if (results !== undefined) {
