@@ -83,7 +83,7 @@ export class DatabaseManager extends DisposableObject {
   readonly onDidChangeCurrentDatabaseItem =
     this._onDidChangeCurrentDatabaseItem.event;
 
-  private readonly _databaseItems: DatabaseItem[] = [];
+  private readonly _databaseItems: DatabaseItemImpl[] = [];
   private _currentDatabaseItem: DatabaseItem | undefined = undefined;
 
   constructor(
@@ -127,8 +127,8 @@ export class DatabaseManager extends DisposableObject {
    *
    * Typically, the item will have been created by {@link createOrOpenDatabaseItem} or {@link openDatabase}.
    */
-  public async addExistingDatabaseItem(
-    databaseItem: DatabaseItem,
+  private async addExistingDatabaseItem(
+    databaseItem: DatabaseItemImpl,
     progress: ProgressCallback,
     makeSelected: boolean,
     token: vscode.CancellationToken,
@@ -162,7 +162,7 @@ export class DatabaseManager extends DisposableObject {
   private async createDatabaseItem(
     uri: vscode.Uri,
     displayName: string | undefined,
-  ): Promise<DatabaseItem> {
+  ): Promise<DatabaseItemImpl> {
     const contents = await DatabaseResolver.resolveDatabaseContents(uri);
     // Ignore the source archive for QLTest databases by default.
     const isQLTestDatabase = extname(uri.fsPath) === ".testproj";
@@ -329,7 +329,7 @@ export class DatabaseManager extends DisposableObject {
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     state: PersistedDatabaseItem,
-  ): Promise<DatabaseItem> {
+  ): Promise<DatabaseItemImpl> {
     let displayName: string | undefined = undefined;
     let ignoreSourceArchive = false;
     let dateAdded = undefined;
@@ -499,7 +499,7 @@ export class DatabaseManager extends DisposableObject {
   private async addDatabaseItem(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
-    item: DatabaseItem,
+    item: DatabaseItemImpl,
     updatePersistedState = true,
   ) {
     this._databaseItems.push(item);
