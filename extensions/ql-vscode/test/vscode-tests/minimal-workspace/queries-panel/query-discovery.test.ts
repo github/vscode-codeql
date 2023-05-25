@@ -100,7 +100,7 @@ describe("QueryDiscovery", () => {
       );
     });
 
-    it("calls resolveQueries once for each workspace", async () => {
+    it("calls resolveQueries once for each workspace folder", async () => {
       const workspaceRoots = [
         `${sep}workspace1`,
         `${sep}workspace2`,
