@@ -41,8 +41,8 @@ import { ModeledMethod } from "./modeled-method";
 import { ExtensionPackModelFile } from "./shared/extension-pack";
 import { autoModel } from "./auto-model-api";
 import {
-  classificationTypeToModeledMethodType,
   createAutoModelRequest,
+  parsePredictedClassifications,
 } from "./auto-model";
 import { showLlmGeneration } from "../config";
 
@@ -393,24 +393,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
     const response = await autoModel(this.app.credentials, request);
 
-    const modeledMethodsByName: Record<string, ModeledMethod> = {};
-
-    for (const method of response.predicted) {
-      if (method.classification === undefined) {
-        continue;
-      }
-
-      modeledMethodsByName[method.signature] = {
-        type: classificationTypeToModeledMethodType(method.classification.type),
-        kind: method.classification.kind,
-        input: method.input ?? "",
-        output: method.output ?? "",
-      };
-    }
+    const predictedModeledMethods = parsePredictedClassifications(
+      response.predicted,
+    );
 
     await this.postMessage({
       t: "addModeledMethods",
-      modeledMethods: modeledMethodsByName,
+      modeledMethods: predictedModeledMethods,
       overrideNone: true,
     });
   }

@@ -68,6 +68,61 @@ export function createAutoModelRequest(
   return request;
 }
 
+export function parsePredictedClassifications(
+  predicted: Method[],
+): Record<string, ModeledMethod> {
+  const predictedBySignature: Record<string, Method[]> = {};
+  for (const method of predicted) {
+    if (!method.classification) {
+      continue;
+    }
+
+    const signature = toFullMethodSignature(method);
+
+    if (!(signature in predictedBySignature)) {
+      predictedBySignature[signature] = [];
+    }
+
+    predictedBySignature[signature].push(method);
+  }
+
+  const modeledMethods: Record<string, ModeledMethod> = {};
+
+  for (const signature in predictedBySignature) {
+    const predictedMethods = predictedBySignature[signature];
+
+    const sinks = predictedMethods.filter(
+      (method) => method.classification?.type === ClassificationType.Sink,
+    );
+    if (sinks.length === 0) {
+      // For now, model any method for which none of its arguments are modeled as sinks as neutral
+      modeledMethods[signature] = {
+        type: "neutral",
+        kind: "",
+        input: "",
+        output: "",
+      };
+      continue;
+    }
+
+    // Order the sinks by the input alphabetically. This will ensure that the first argument is always
+    // first in the list of sinks, the second argument is always second, etc.
+    // If we get back "Argument[1]" and "Argument[3]", "Argument[1]" should always be first
+    sinks.sort((a, b) => (a.input ?? "").localeCompare(b.input ?? ""));
+
+    const sink = sinks[0];
+
+    modeledMethods[signature] = {
+      type: "sink",
+      kind: sink.classification?.kind ?? "",
+      input: sink.input ?? "",
+      output: sink.output ?? "",
+    };
+  }
+
+  return modeledMethods;
+}
+
 function toMethodClassificationType(
   type: ModeledMethodType,
 ): ClassificationType {
@@ -93,19 +148,6 @@ function toMethodClassification(modeledMethod: ModeledMethod): Classification {
   };
 }
 
-export function classificationTypeToModeledMethodType(
-  type: ClassificationType,
-): ModeledMethodType {
-  switch (type) {
-    case ClassificationType.Source:
-      return "source";
-    case ClassificationType.Sink:
-      return "sink";
-    case ClassificationType.Summary:
-      return "summary";
-    case ClassificationType.Neutral:
-      return "neutral";
-    default:
-      return "none";
-  }
+function toFullMethodSignature(method: Method): string {
+  return `${method.package}.${method.type}.${method.name}${method.signature}`;
 }

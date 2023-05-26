@@ -1,6 +1,13 @@
-import { createAutoModelRequest } from "../../../src/data-extensions-editor/auto-model";
+import {
+  createAutoModelRequest,
+  parsePredictedClassifications,
+} from "../../../src/data-extensions-editor/auto-model";
 import { ExternalApiUsage } from "../../../src/data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../../src/data-extensions-editor/modeled-method";
+import {
+  ClassificationType,
+  Method,
+} from "../../../src/data-extensions-editor/auto-model-api";
 
 describe("createAutoModelRequest", () => {
   const externalApiUsages: ExternalApiUsage[] = [
@@ -278,6 +285,99 @@ describe("createAutoModelRequest", () => {
           input: "Argument[2]",
         },
       ],
+    });
+  });
+});
+
+describe("parsePredictedClassifications", () => {
+  const predictions: Method[] = [
+    {
+      package: "org.sql2o",
+      type: "Sql2o",
+      name: "createQuery",
+      signature: "(String)",
+      usages: ["createQuery(...)", "createQuery(...)"],
+      input: "Argument[0]",
+      classification: {
+        type: ClassificationType.Sink,
+        kind: "sql injection sink",
+        explanation: "",
+      },
+    },
+    {
+      package: "org.sql2o",
+      type: "Sql2o",
+      name: "executeScalar",
+      signature: "(Class)",
+      usages: ["executeScalar(...)", "executeScalar(...)"],
+      input: "Argument[0]",
+      classification: {
+        type: ClassificationType.Neutral,
+        kind: "",
+        explanation: "not a sink",
+      },
+    },
+    {
+      package: "org.sql2o",
+      type: "Sql2o",
+      name: "Sql2o",
+      signature: "(String,String,String)",
+      usages: ["new Sql2o(...)"],
+      input: "Argument[0]",
+      classification: {
+        type: ClassificationType.Neutral,
+        kind: "",
+        explanation: "not a sink",
+      },
+    },
+    {
+      package: "org.sql2o",
+      type: "Sql2o",
+      name: "Sql2o",
+      signature: "(String,String,String)",
+      usages: ["new Sql2o(...)"],
+      input: "Argument[1]",
+      classification: {
+        type: ClassificationType.Sink,
+        kind: "sql injection sink",
+        explanation: "not a sink",
+      },
+    },
+    {
+      package: "org.sql2o",
+      type: "Sql2o",
+      name: "Sql2o",
+      signature: "(String,String,String)",
+      usages: ["new Sql2o(...)"],
+      input: "Argument[2]",
+      classification: {
+        type: ClassificationType.Sink,
+        kind: "sql injection sink",
+        explanation: "not a sink",
+      },
+    },
+  ];
+
+  it("correctly parses the output", () => {
+    expect(parsePredictedClassifications(predictions)).toEqual({
+      "org.sql2o.Sql2o.createQuery(String)": {
+        type: "sink",
+        kind: "sql injection sink",
+        input: "Argument[0]",
+        output: "",
+      },
+      "org.sql2o.Sql2o.executeScalar(Class)": {
+        type: "neutral",
+        kind: "",
+        input: "",
+        output: "",
+      },
+      "org.sql2o.Sql2o.Sql2o(String,String,String)": {
+        type: "sink",
+        kind: "sql injection sink",
+        input: "Argument[1]",
+        output: "",
+      },
     });
   });
 });
