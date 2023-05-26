@@ -222,7 +222,7 @@ describe("Variant Analysis Manager", () => {
       it("should run a remote query that is part of a qlpack", async () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-qlpack/in-pack.ql",
-          expectedPackName: "codeql-remote/query",
+          expectedPackName: "github/remote-query-pack",
           filesThatExist: ["in-pack.ql", "lib.qll"],
           filesThatDoNotExist: [],
           qlxFilesThatExist: ["in-pack.qlx"],
@@ -232,7 +232,7 @@ describe("Variant Analysis Manager", () => {
       it("should run a remote query that is not part of a qlpack", async () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-no-qlpack/in-pack.ql",
-          expectedPackName: "",
+          expectedPackName: "codeql-remote/query",
           filesThatExist: ["in-pack.ql"],
           filesThatDoNotExist: ["lib.qll", "not-in-pack.ql"],
           qlxFilesThatExist: ["in-pack.qlx"],
