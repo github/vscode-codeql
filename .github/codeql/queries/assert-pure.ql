@@ -1,21 +1,44 @@
 /**
  * @name Unwanted dependency on vscode API
- * @kind problem
+ * @kind path-problem
  * @problem.severity error
  * @id vscode-codeql/assert-pure
  * @description The modules stored under `pure` and tested in the `pure-tests`
  * are intended to be "pure".
  */
+
 import javascript
 
-class VSCodeImport extends ASTNode {
-  VSCodeImport() {
-    this.(Import).getImportedPath().getValue() = "vscode"
+class VSCodeImport extends AstNode {
+  VSCodeImport() { this.(Import).getImportedPath().getValue() = "vscode" }
+}
+
+class PureFile extends File {
+  PureFile() {
+    (
+      this.getRelativePath().regexpMatch(".*/src/pure/.*") or
+      this.getRelativePath().regexpMatch(".*/src/common/.*")
+    ) and
+    not this.getRelativePath().regexpMatch(".*/src/common/vscode/.*")
   }
+}
+
+Import getANonTypeOnlyImport(Module m) {
+  result = m.getAnImport() and not result.(ImportDeclaration).isTypeOnly()
+}
+
+Module getANonTypeOnlyImportedModule(Module m) {
+  result = getANonTypeOnlyImport(m).getImportedModule()
+}
+
+query predicate edges(AstNode a, AstNode b) {
+  getANonTypeOnlyImport(a) = b or
+  a.(Import).getImportedModule() = b
 }
 
 from Module m, VSCodeImport v
 where
-  m.getFile().getRelativePath().regexpMatch(".*src/pure/.*")  and
-  m.getAnImportedModule*().getAnImport() = v
-select m, "This module is not pure: it has a transitive dependency on the vscode API imported $@", v, "here"
+  m.getFile() instanceof PureFile and
+  getANonTypeOnlyImport(getANonTypeOnlyImportedModule*(m)) = v
+select m, m, v,
+  "This module is not pure: it has a transitive dependency on the vscode API imported $@", v, "here"
