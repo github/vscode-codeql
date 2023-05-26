@@ -62,8 +62,8 @@ export function createAutoModelRequest(
     }
   }
 
-  request.candidates = request.candidates.slice(0, 100);
-  request.samples = request.samples.slice(0, 20);
+  request.candidates = request.candidates.slice(0, 20);
+  request.samples = request.samples.slice(0, 100);
 
   return request;
 }
