@@ -218,7 +218,7 @@ export class CodeQLCliServer implements Disposable {
     private readonly app: App,
     private distributionProvider: DistributionProvider,
     private cliConfig: CliConfig,
-    private logger: Logger,
+    public readonly logger: Logger,
   ) {
     this.commandQueue = [];
     this.commandInProcess = false;
