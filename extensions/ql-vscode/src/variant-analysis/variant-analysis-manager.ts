@@ -75,6 +75,10 @@ import {
   writeRepoStates,
 } from "./repo-states-store";
 import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
+import { FetchError } from "node-fetch";
+import { extLogger } from "../common";
+
+const maxRetryCount = 3;
 
 export class VariantAnalysisManager
   extends DisposableObject
@@ -613,12 +617,35 @@ export class VariantAnalysisManager
             });
           }
         };
-        await this.variantAnalysisResultsManager.download(
-          variantAnalysis.id,
-          repoTask,
-          this.getVariantAnalysisStorageLocation(variantAnalysis.id),
-          updateRepoStateCallback,
-        );
+        let retry = 0;
+        for (;;) {
+          try {
+            await this.variantAnalysisResultsManager.download(
+              variantAnalysis.id,
+              repoTask,
+              this.getVariantAnalysisStorageLocation(variantAnalysis.id),
+              updateRepoStateCallback,
+            );
+            break;
+          } catch (e) {
+            if (
+              retry++ < maxRetryCount &&
+              e instanceof FetchError &&
+              (e.code === "ETIMEDOUT" || e.code === "ECONNRESET")
+            ) {
+              void extLogger.log(
+                `Timeout while trying to download variant analysis with id: ${
+                  variantAnalysis.id
+                }. Error: ${getErrorMessage(e)}. Retrying...`,
+              );
+              continue;
+            }
+            void extLogger.log(
+              `Failed to download variant analysis after ${retry} attempts.`,
+            );
+            throw e;
+          }
+        }
       } catch (e) {
         repoState.downloadStatus =
           VariantAnalysisScannedRepositoryDownloadStatus.Failed;
