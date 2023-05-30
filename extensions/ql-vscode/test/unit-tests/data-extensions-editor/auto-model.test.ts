@@ -341,7 +341,7 @@ describe("parsePredictedClassifications", () => {
       classification: {
         type: ClassificationType.Sink,
         kind: "sql injection sink",
-        explanation: "not a sink",
+        explanation: "",
       },
     },
     {
@@ -354,7 +354,7 @@ describe("parsePredictedClassifications", () => {
       classification: {
         type: ClassificationType.Sink,
         kind: "sql injection sink",
-        explanation: "not a sink",
+        explanation: "",
       },
     },
   ];
