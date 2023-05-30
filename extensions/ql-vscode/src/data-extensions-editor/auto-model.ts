@@ -116,7 +116,7 @@ export function parsePredictedClassifications(
     // Order the sinks by the input alphabetically. This will ensure that the first argument is always
     // first in the list of sinks, the second argument is always second, etc.
     // If we get back "Argument[1]" and "Argument[3]", "Argument[1]" should always be first
-    sinks.sort((a, b) => (a.input ?? "").localeCompare(b.input ?? ""));
+    sinks.sort((a, b) => compareInputOutput(a.input ?? "", b.input ?? ""));
 
     const sink = sinks[0];
 
@@ -158,4 +158,61 @@ function toMethodClassification(modeledMethod: ModeledMethod): Classification {
 
 function toFullMethodSignature(method: Method): string {
   return `${method.package}.${method.type}#${method.name}${method.signature}`;
+}
+
+const argumentRegex = /^Argument\[(\d+)]$/;
+
+// Argument[this] is before ReturnValue
+const nonNumericArgumentOrder = ["Argument[this]", "ReturnValue"];
+
+/**
+ * Compare two inputs or outputs matching `Argument[<number>]`, `Argument[this]`, or `ReturnValue`.
+ * If they are the same, return 0. If a is less than b, returns a negative number.
+ * If a is greater than b, returns a positive number.
+ */
+export function compareInputOutput(a: string, b: string): number {
+  if (a === b) {
+    return 0;
+  }
+
+  const aMatch = a.match(argumentRegex);
+  const bMatch = b.match(argumentRegex);
+
+  // Numeric arguments are always first
+  if (aMatch && !bMatch) {
+    return -1;
+  }
+  if (!aMatch && bMatch) {
+    return 1;
+  }
+
+  // Neither is an argument
+  if (!aMatch && !bMatch) {
+    const aIndex = nonNumericArgumentOrder.indexOf(a);
+    const bIndex = nonNumericArgumentOrder.indexOf(b);
+
+    // If either one is unknown, it is sorted last
+    if (aIndex === -1 && bIndex === -1) {
+      return a.localeCompare(b);
+    }
+    if (aIndex === -1) {
+      return 1;
+    }
+    if (bIndex === -1) {
+      return -1;
+    }
+
+    return aIndex - bIndex;
+  }
+
+  // This case shouldn't happen, but makes TypeScript happy
+  if (!aMatch || !bMatch) {
+    return 0;
+  }
+
+  // Both are arguments
+  const aIndex = parseInt(aMatch[1]);
+  const bIndex = parseInt(bMatch[1]);
+
+  return aIndex - bIndex;
 }

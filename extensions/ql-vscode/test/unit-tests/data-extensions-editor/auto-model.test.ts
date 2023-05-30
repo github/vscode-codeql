@@ -1,4 +1,5 @@
 import {
+  compareInputOutput,
   createAutoModelRequest,
   parsePredictedClassifications,
 } from "../../../src/data-extensions-editor/auto-model";
@@ -379,5 +380,51 @@ describe("parsePredictedClassifications", () => {
         output: "",
       },
     });
+  });
+});
+
+describe("compareInputOutput", () => {
+  it("with two small numeric arguments", () => {
+    expect(
+      compareInputOutput("Argument[0]", "Argument[1]"),
+    ).toBeLessThanOrEqual(-1);
+  });
+
+  it("with one larger non-alphabetic argument", () => {
+    expect(
+      compareInputOutput("Argument[10]", "Argument[2]"),
+    ).toBeGreaterThanOrEqual(1);
+  });
+
+  it("with one non-numeric arguments", () => {
+    expect(
+      compareInputOutput("Argument[5]", "Argument[this]"),
+    ).toBeLessThanOrEqual(-1);
+  });
+
+  it("with two non-numeric arguments", () => {
+    expect(
+      compareInputOutput("ReturnValue", "Argument[this]"),
+    ).toBeGreaterThanOrEqual(1);
+  });
+
+  it("with one unknown argument in the a position", () => {
+    expect(
+      compareInputOutput("FooBar", "Argument[this]"),
+    ).toBeGreaterThanOrEqual(1);
+  });
+
+  it("with one unknown argument in the b position", () => {
+    expect(compareInputOutput("Argument[this]", "FooBar")).toBeLessThanOrEqual(
+      -1,
+    );
+  });
+
+  it("with one empty string arguments", () => {
+    expect(compareInputOutput("Argument[5]", "")).toBeLessThanOrEqual(-1);
+  });
+
+  it("with two unknown arguments", () => {
+    expect(compareInputOutput("FooBar", "BarFoo")).toBeGreaterThanOrEqual(1);
   });
 });
