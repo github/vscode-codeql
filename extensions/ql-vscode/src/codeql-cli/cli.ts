@@ -1483,6 +1483,13 @@ export class CodeQLCliServer implements Disposable {
             CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG,
           ) >= 0,
         );
+        await this.app.commands.execute(
+          "setContext",
+          "codeql.supportsQuickEvalCount",
+          newVersion.compare(
+            CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
+          ) >= 0,
+        );
       } catch (e) {
         this._versionChangedListeners.forEach((listener) =>
           listener(undefined),
