@@ -68,6 +68,14 @@ export function createAutoModelRequest(
   return request;
 }
 
+/**
+ * For now, we have a simplified model that only models methods as sinks. It does not model methods as neutral,
+ * so we aren't actually able to correctly determine that a method is neutral; it could still be a source or summary.
+ * However, to keep this method simple and give output to the user, we will model any method for which none of its
+ * arguments are modeled as sinks as neutral.
+ *
+ * If there are multiple arguments which are modeled as sinks, we will only model the first one.
+ */
 export function parsePredictedClassifications(
   predicted: Method[],
 ): Record<string, ModeledMethod> {
