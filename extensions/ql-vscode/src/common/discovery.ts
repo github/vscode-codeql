@@ -51,7 +51,9 @@ export abstract class Discovery<T> extends DisposableObject {
       this.restartWhenFinished = true;
     } else {
       // No discovery in progress, so start one now.
-      this.currentDiscoveryPromise = this.launchDiscovery();
+      this.currentDiscoveryPromise = this.launchDiscovery().finally(() => {
+        this.currentDiscoveryPromise = undefined;
+      });
     }
     return this.currentDiscoveryPromise;
   }
@@ -81,8 +83,6 @@ export abstract class Discovery<T> extends DisposableObject {
       this.restartWhenFinished = false;
       await this.launchDiscovery();
     } else {
-      this.currentDiscoveryPromise = undefined;
-
       // If the discovery was successful, then update any listeners with the results.
       if (results !== undefined) {
         this.update(results);
