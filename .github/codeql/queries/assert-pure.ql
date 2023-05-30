@@ -27,10 +27,6 @@ Import getANonTypeOnlyImport(Module m) {
   result = m.getAnImport() and not result.(ImportDeclaration).isTypeOnly()
 }
 
-Module getANonTypeOnlyImportedModule(Module m) {
-  result = getANonTypeOnlyImport(m).getImportedModule()
-}
-
 query predicate edges(AstNode a, AstNode b) {
   getANonTypeOnlyImport(a) = b or
   a.(Import).getImportedModule() = b
@@ -39,6 +35,6 @@ query predicate edges(AstNode a, AstNode b) {
 from Module m, VSCodeImport v
 where
   m.getFile() instanceof PureFile and
-  getANonTypeOnlyImport(getANonTypeOnlyImportedModule*(m)) = v
+  edges+(m, v)
 select m, m, v,
   "This module is not pure: it has a transitive dependency on the vscode API imported $@", v, "here"
