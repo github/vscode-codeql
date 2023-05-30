@@ -16,6 +16,10 @@ export interface CoreQueryTarget {
    * `query`.
    */
   quickEvalPosition?: Position;
+  /**
+   * If this is quick eval, whether to only count the number of results.
+   */
+  quickEvalCountOnly?: boolean;
 }
 
 export interface CoreQueryResults {

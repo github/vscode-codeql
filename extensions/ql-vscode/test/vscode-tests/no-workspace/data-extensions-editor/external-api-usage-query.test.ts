@@ -77,6 +77,7 @@ describe("runQuery", () => {
         {
           queryPath: expect.stringMatching(/FetchExternalApis\.ql/),
           quickEvalPosition: undefined,
+          quickEvalCountOnly: false,
         },
         false,
         [],

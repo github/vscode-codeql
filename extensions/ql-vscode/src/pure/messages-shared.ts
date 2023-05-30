@@ -68,6 +68,14 @@ export interface CompilationTarget {
  */
 export interface QuickEvalOptions {
   quickEvalPos?: Position;
+  /**
+   * Whether to only count the number of results.
+   *
+   * This is only supported by the new query server
+   * but it isn't worth having a separate type and
+   * it is fine to have an ignored optional field.
+   */
+  countOnly?: boolean;
 }
 
 /**

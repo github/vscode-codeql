@@ -155,6 +155,7 @@ class RunningQuery extends DisposableObject {
       {
         queryPath: config.query,
         quickEvalPosition: quickEvalContext?.quickEvalPosition,
+        quickEvalCountOnly: quickEvalContext?.quickEvalCount,
       },
       true,
       config.additionalPacks,
