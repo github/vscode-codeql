@@ -544,6 +544,12 @@ export interface GenerateExternalApiMessage {
   t: "generateExternalApi";
 }
 
+export interface GenerateExternalApiFromLlmMessage {
+  t: "generateExternalApiFromLlm";
+  externalApiUsages: ExternalApiUsage[];
+  modeledMethods: Record<string, ModeledMethod>;
+}
+
 export type ToDataExtensionsEditorMessage =
   | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
@@ -556,4 +562,5 @@ export type FromDataExtensionsEditorMessage =
   | OpenExtensionPackMessage
   | JumpToUsageMessage
   | SaveModeledMethods
-  | GenerateExternalApiMessage;
+  | GenerateExternalApiMessage
+  | GenerateExternalApiFromLlmMessage;
