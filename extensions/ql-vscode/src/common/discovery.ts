@@ -8,7 +8,7 @@ import { getErrorMessage } from "../pure/helpers-pure";
  * same time.
  */
 export abstract class Discovery<T> extends DisposableObject {
-  private retry = false;
+  private restartWhenFinished = false;
   private currentDiscoveryPromise: Promise<void> | undefined;
 
   constructor(private readonly name: string) {
@@ -48,7 +48,7 @@ export abstract class Discovery<T> extends DisposableObject {
 
     if (this.currentDiscoveryPromise !== undefined) {
       // There's already a discovery operation in progress. Tell it to restart when it's done.
-      this.retry = true;
+      this.restartWhenFinished = true;
     } else {
       // No discovery in progress, so start one now.
       this.currentDiscoveryPromise = this.launchDiscovery();
@@ -72,13 +72,13 @@ export abstract class Discovery<T> extends DisposableObject {
       results = undefined;
     }
 
-    if (this.retry) {
+    if (this.restartWhenFinished) {
       // Another refresh request came in while we were still running a previous discovery
       // operation. Since the discovery results we just computed are now stale, we'll launch
       // another discovery operation instead of updating.
-      // Note that by doing this inside of `finally`, we will relaunch discovery even if the
-      // initial discovery operation failed.
-      this.retry = false;
+      // We want to relaunch discovery regardless of if the initial discovery operation
+      // succeeded or failed.
+      this.restartWhenFinished = false;
       await this.launchDiscovery();
     } else {
       this.currentDiscoveryPromise = undefined;
