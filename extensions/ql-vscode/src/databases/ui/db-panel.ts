@@ -363,7 +363,7 @@ export class DbPanel extends DisposableObject {
       await window.showQuickPick<CodeSearchQuickPickItem>(
         languageQuickPickItems,
         {
-          title: "Select the language you want to query",
+          title: "Select a language for your search",
           placeHolder: "Select an option",
           ignoreFocusOut: true,
         },
@@ -373,8 +373,9 @@ export class DbPanel extends DisposableObject {
     }
 
     const codeSearchQuery = await window.showInputBox({
-      title: "Code search query",
-      prompt: "Insert code search query",
+      title: "GitHub Code Search",
+      prompt:
+        "Use [GitHub's Code Search syntax](https://docs.github.com/en/search-github/github-code-search/understanding-github-code-search-syntax), including code qualifiers, regular expressions, and boolean operations, to search for repositories.",
       placeHolder: "org:github",
     });
     if (codeSearchQuery === undefined || codeSearchQuery === "") {

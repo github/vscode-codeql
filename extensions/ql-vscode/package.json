@@ -518,7 +518,7 @@
       },
       {
         "command": "codeQLVariantAnalysisRepositories.importFromCodeSearch",
-        "title": "Import Repos from GitHub Code Search"
+        "title": "Add repositories with GitHub Code Search"
       },
       {
         "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
