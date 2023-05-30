@@ -170,7 +170,7 @@ describe("QueryDiscovery", () => {
 
       onWatcherDidChangeEvent.fire(workspace.workspaceFolders![0].uri);
 
-      await discovery.getCurrentRefreshPromise();
+      await discovery.waitForCurrentRefresh();
 
       expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(2);
     });
@@ -200,7 +200,7 @@ describe("QueryDiscovery", () => {
 
       onDidChangeWorkspaceFoldersEvent.fire({ added: [], removed: [] });
 
-      await discovery.getCurrentRefreshPromise();
+      await discovery.waitForCurrentRefresh();
 
       expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(2);
     });

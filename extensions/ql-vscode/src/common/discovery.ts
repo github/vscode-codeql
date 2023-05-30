@@ -19,7 +19,7 @@ export abstract class Discovery<T> extends DisposableObject {
    * Returns the promise of the currently running refresh operation, if one is in progress.
    * Otherwise returns a promise that resolves immediately.
    */
-  public getCurrentRefreshPromise(): Promise<void> {
+  public waitForCurrentRefresh(): Promise<void> {
     return this.currentDiscoveryPromise ?? Promise.resolve();
   }
 
