@@ -149,5 +149,5 @@ function toMethodClassification(modeledMethod: ModeledMethod): Classification {
 }
 
 function toFullMethodSignature(method: Method): string {
-  return `${method.package}.${method.type}.${method.name}${method.signature}`;
+  return `${method.package}.${method.type}#${method.name}${method.signature}`;
 }

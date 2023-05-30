@@ -360,19 +360,19 @@ describe("parsePredictedClassifications", () => {
 
   it("correctly parses the output", () => {
     expect(parsePredictedClassifications(predictions)).toEqual({
-      "org.sql2o.Sql2o.createQuery(String)": {
+      "org.sql2o.Sql2o#createQuery(String)": {
         type: "sink",
         kind: "sql injection sink",
         input: "Argument[0]",
         output: "",
       },
-      "org.sql2o.Sql2o.executeScalar(Class)": {
+      "org.sql2o.Sql2o#executeScalar(Class)": {
         type: "neutral",
         kind: "",
         input: "",
         output: "",
       },
-      "org.sql2o.Sql2o.Sql2o(String,String,String)": {
+      "org.sql2o.Sql2o#Sql2o(String,String,String)": {
         type: "sink",
         kind: "sql injection sink",
         input: "Argument[1]",
