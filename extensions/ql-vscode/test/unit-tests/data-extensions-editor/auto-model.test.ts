@@ -200,9 +200,36 @@ describe("createAutoModelRequest", () => {
     },
   };
 
+  const usages: Record<string, string[]> = {
+    "org.springframework.boot.SpringApplication#run(Class,String[])": [
+      "public class Sql2oExampleApplication {\n    public static void main(String[] args) {\n        SpringApplication.run(Sql2oExampleApplication.class, args);\n    }\n}",
+    ],
+    "org.sql2o.Connection#createQuery(String)": [
+      '    public String index(@RequestParam("id") String id) {\n        try (var con = sql2o.open()) {\n            con.createQuery("select 1 where id = " + id).executeScalar(Integer.class);\n        }\n\n',
+      '\n        try (var con = sql2o.open()) {\n            con.createQuery("select 1").executeScalar(Integer.class);\n        }\n\n',
+    ],
+    "org.sql2o.Query#executeScalar(Class)": [
+      '    public String index(@RequestParam("id") String id) {\n        try (var con = sql2o.open()) {\n            con.createQuery("select 1 where id = " + id).executeScalar(Integer.class);\n        }\n\n',
+      '\n        try (var con = sql2o.open()) {\n            con.createQuery("select 1").executeScalar(Integer.class);\n        }\n\n',
+    ],
+    "org.sql2o.Sql2o#open()": [
+      '    @GetMapping("/")\n    public String index(@RequestParam("id") String id) {\n        try (var con = sql2o.open()) {\n            con.createQuery("select 1 where id = " + id).executeScalar(Integer.class);\n        }\n',
+      '        Sql2o sql2o = new Sql2o(url);\n\n        try (var con = sql2o.open()) {\n            con.createQuery("select 1").executeScalar(Integer.class);\n        }\n',
+    ],
+    "java.io.PrintStream#println(String)": [
+      '        }\n\n        System.out.println("Connected to " + url);\n\n        return "Greetings from Spring Boot!";\n',
+    ],
+    "org.sql2o.Sql2o#Sql2o(String,String,String)": [
+      '@RestController\npublic class HelloController {\n    private final Sql2o sql2o = new Sql2o("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1","sa", "");\n\n    @GetMapping("/")\n',
+    ],
+    "org.sql2o.Sql2o#Sql2o(String)": [
+      '    @GetMapping("/connect")\n    public String connect(@RequestParam("url") String url) {\n        Sql2o sql2o = new Sql2o(url);\n\n        try (var con = sql2o.open()) {\n',
+    ],
+  };
+
   it("creates a matching request", () => {
     expect(
-      createAutoModelRequest("java", externalApiUsages, modeledMethods),
+      createAutoModelRequest("java", externalApiUsages, modeledMethods, usages),
     ).toEqual({
       language: "java",
       samples: [
@@ -216,7 +243,7 @@ describe("createAutoModelRequest", () => {
             kind: "jndi-injection",
             explanation: "",
           },
-          usages: ["new Sql2o(...)"],
+          usages: usages["org.sql2o.Sql2o#Sql2o(String)"],
           input: "Argument[0]",
         },
       ],
@@ -226,64 +253,78 @@ describe("createAutoModelRequest", () => {
           type: "Connection",
           name: "createQuery",
           signature: "(String)",
-          usages: ["createQuery(...)", "createQuery(...)"],
+          usages: usages["org.sql2o.Connection#createQuery(String)"],
           input: "Argument[0]",
+          classification: undefined,
         },
         {
           package: "org.sql2o",
           type: "Query",
           name: "executeScalar",
           signature: "(Class)",
-          usages: ["executeScalar(...)", "executeScalar(...)"],
+          usages: usages["org.sql2o.Query#executeScalar(Class)"],
           input: "Argument[0]",
+          classification: undefined,
         },
         {
           package: "org.springframework.boot",
           type: "SpringApplication",
           name: "run",
           signature: "(Class,String[])",
-          usages: ["run(...)"],
+          usages:
+            usages[
+              "org.springframework.boot.SpringApplication#run(Class,String[])"
+            ],
           input: "Argument[0]",
+          classification: undefined,
         },
         {
           package: "org.springframework.boot",
           type: "SpringApplication",
           name: "run",
           signature: "(Class,String[])",
-          usages: ["run(...)"],
+          usages:
+            usages[
+              "org.springframework.boot.SpringApplication#run(Class,String[])"
+            ],
           input: "Argument[1]",
+          classification: undefined,
         },
         {
           package: "java.io",
           type: "PrintStream",
           name: "println",
           signature: "(String)",
-          usages: ["println(...)"],
+          usages: usages["java.io.PrintStream#println(String)"],
           input: "Argument[0]",
+          classification: undefined,
         },
         {
           package: "org.sql2o",
           type: "Sql2o",
           name: "Sql2o",
           signature: "(String,String,String)",
-          usages: ["new Sql2o(...)"],
+          usages: usages["org.sql2o.Sql2o#Sql2o(String,String,String)"],
           input: "Argument[0]",
+          classification: undefined,
         },
         {
           package: "org.sql2o",
           type: "Sql2o",
           name: "Sql2o",
           signature: "(String,String,String)",
-          usages: ["new Sql2o(...)"],
+          usages: usages["org.sql2o.Sql2o#Sql2o(String,String,String)"],
           input: "Argument[1]",
+          classification: undefined,
         },
         {
           package: "org.sql2o",
           type: "Sql2o",
           name: "Sql2o",
           signature: "(String,String,String)",
-          usages: ["new Sql2o(...)"],
+          usages: usages["org.sql2o.Sql2o#Sql2o(String,String,String)"],
           input: "Argument[2]",
+          classification: undefined,
         },
       ],
     });

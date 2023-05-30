@@ -43,12 +43,16 @@ export interface DatabaseItem {
   /**
    * Returns `sourceLocationPrefix` of exported database.
    */
-  getSourceLocationPrefix(server: cli.CodeQLCliServer): Promise<string>;
+  getSourceLocationPrefix(
+    server: Pick<cli.CodeQLCliServer, "resolveDatabase">,
+  ): Promise<string>;
 
   /**
    * Returns dataset folder of exported database.
    */
-  getDatasetFolder(server: cli.CodeQLCliServer): Promise<string>;
+  getDatasetFolder(
+    server: Pick<cli.CodeQLCliServer, "resolveDatabase">,
+  ): Promise<string>;
 
   /**
    * Returns the root uri of the virtual filesystem for this database's source archive,

@@ -786,7 +786,7 @@ export async function askForLanguage(
  * @returns A promise that resolves to the query metadata, if available.
  */
 export async function tryGetQueryMetadata(
-  cliServer: CodeQLCliServer,
+  cliServer: Pick<CodeQLCliServer, "resolveMetadata">,
   queryPath: string,
 ): Promise<QueryMetadata | undefined> {
   try {
