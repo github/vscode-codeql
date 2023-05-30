@@ -9,8 +9,8 @@
 
 import javascript
 
-class VSCodeImport extends AstNode {
-  VSCodeImport() { this.(Import).getImportedPath().getValue() = "vscode" }
+class VSCodeImport extends ImportDeclaration {
+  VSCodeImport() { this.getImportedPath().getValue() = "vscode" }
 }
 
 class PureFile extends File {
