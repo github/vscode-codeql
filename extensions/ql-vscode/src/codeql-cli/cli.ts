@@ -1818,6 +1818,8 @@ export class CliVersionConstraint {
     "2.12.4",
   );
 
+  public static CLI_VERSION_GLOBAL_CACHE = new SemVer("2.12.4");
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1886,5 +1888,9 @@ export class CliVersionConstraint {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_ADDITIONAL_PACKS_INSTALL,
     );
+  }
+
+  async usesGlobalCompilationCache() {
+    return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_GLOBAL_CACHE);
   }
 }

@@ -116,12 +116,16 @@ async function generateQueryPack(
 
   let precompilationOpts: string[] = [];
   if (await cliServer.cliConstraints.supportsQlxRemote()) {
-    const ccache = join(originalPackRoot, ".cache");
-    precompilationOpts = [
-      "--qlx",
-      "--no-default-compilation-cache",
-      `--compilation-cache=${ccache}`,
-    ];
+    if (await cliServer.cliConstraints.usesGlobalCompilationCache()) {
+      precompilationOpts = ["--qlx"];
+    } else {
+      const ccache = join(originalPackRoot, ".cache");
+      precompilationOpts = [
+        "--qlx",
+        "--no-default-compilation-cache",
+        `--compilation-cache=${ccache}`,
+      ];
+    }
   } else {
     precompilationOpts = ["--no-precompile"];
   }
