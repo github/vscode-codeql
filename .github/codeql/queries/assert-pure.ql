@@ -19,7 +19,7 @@ class PureFile extends File {
       this.getRelativePath().regexpMatch(".*/src/pure/.*") or
       this.getRelativePath().regexpMatch(".*/src/common/.*")
     ) and
-    not this.getRelativePath().regexpMatch(".*/src/common/vscode/.*")
+    not this.getRelativePath().regexpMatch(".*/vscode/.*")
   }
 }
 
