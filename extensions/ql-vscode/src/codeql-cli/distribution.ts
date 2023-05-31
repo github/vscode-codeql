@@ -6,12 +6,7 @@ import * as semver from "semver";
 import { URL } from "url";
 import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "../config";
-import {
-  InvocationRateLimiter,
-  InvocationRateLimiterResultKind,
-  showAndLogErrorMessage,
-  showAndLogWarningMessage,
-} from "../helpers";
+import { showAndLogErrorMessage, showAndLogWarningMessage } from "../helpers";
 import { extLogger } from "../common";
 import { getCodeQlCliVersion } from "./cli-version";
 import {
@@ -24,6 +19,10 @@ import {
   extractZipArchive,
   getRequiredAssetName,
 } from "../pure/distribution";
+import {
+  InvocationRateLimiter,
+  InvocationRateLimiterResultKind,
+} from "../invocation-rate-limiter";
 
 /**
  * distribution.ts
