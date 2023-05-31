@@ -42,9 +42,14 @@ export function getAstCfgCommands({
   const viewCfg = async () =>
     withProgress(
       async (progress, token) => {
-        const res = await cfgTemplateProvider.provideCfgUri(
-          window.activeTextEditor?.document,
-        );
+        const editor = window.activeTextEditor;
+        const res = !editor
+          ? undefined
+          : await cfgTemplateProvider.provideCfgUri(
+              editor.document,
+              editor.selection.active.line + 1,
+              editor.selection.active.character + 1,
+            );
         if (res) {
           await localQueries.compileAndRunQuery(
             QuickEvalType.None,

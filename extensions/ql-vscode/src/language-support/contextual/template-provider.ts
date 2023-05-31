@@ -23,7 +23,9 @@ import { KeyType } from "./key-type";
 import {
   FullLocationLink,
   getLocationsForUriString,
-  TEMPLATE_NAME,
+  SELECTED_SOURCE_FILE,
+  SELECTED_SOURCE_LINE,
+  SELECTED_SOURCE_COLUMN,
 } from "./location-finder";
 import {
   qlpackOfDatabase,
@@ -253,7 +255,7 @@ export class TemplatePrintAstProvider {
 
     const query = queries[0];
     const templates: Record<string, string> = {
-      [TEMPLATE_NAME]: zippedArchive.pathWithinSourceArchive,
+      [SELECTED_SOURCE_FILE]: zippedArchive.pathWithinSourceArchive,
     };
 
     const results = await runContextualQuery(
@@ -284,15 +286,17 @@ export class TemplatePrintCfgProvider {
   }
 
   async provideCfgUri(
-    document?: TextDocument,
+    document: TextDocument,
+    line: number,
+    character: number,
   ): Promise<[Uri, Record<string, string>] | undefined> {
-    if (!document) {
-      return;
-    }
-
     return this.shouldUseCache()
-      ? await this.cache.get(document.uri.toString())
-      : await this.getCfgUri(document.uri.toString());
+      ? await this.cache.get(
+          `${document.uri.toString()}#${line}:${character}`,
+          line,
+          character,
+        )
+      : await this.getCfgUri(document.uri.toString(), line, character);
   }
 
   private shouldUseCache() {
@@ -301,6 +305,8 @@ export class TemplatePrintCfgProvider {
 
   private async getCfgUri(
     uriString: string,
+    line: number,
+    character: number,
   ): Promise<[Uri, Record<string, string>]> {
     const uri = Uri.parse(uriString, true);
     if (uri.scheme !== zipArchiveScheme) {
@@ -342,7 +348,9 @@ export class TemplatePrintCfgProvider {
     const queryUri = Uri.file(queries[0]);
 
     const templates: Record<string, string> = {
-      [TEMPLATE_NAME]: zippedArchive.pathWithinSourceArchive,
+      [SELECTED_SOURCE_FILE]: zippedArchive.pathWithinSourceArchive,
+      [SELECTED_SOURCE_LINE]: line.toString(),
+      [SELECTED_SOURCE_COLUMN]: character.toString(),
     };
 
     return [queryUri, templates];
