@@ -18,7 +18,7 @@ describe("Invocation rate limiter", () => {
     func: () => Promise<T>,
   ): InvocationRateLimiter<T> {
     return new InvocationRateLimiter(
-      new MockGlobalStorage(),
+      new MockMemento(),
       funcIdentifier,
       func,
       (s) => createDate(s),
@@ -51,12 +51,6 @@ describe("Invocation rate limiter", () => {
      */
     async update(key: string, value: any): Promise<void> {
       this.map.set(key, value);
-    }
-  }
-
-  class MockGlobalStorage extends MockMemento {
-    public setKeysForSync(_keys: string[]): void {
-      return;
     }
   }
 
