@@ -145,6 +145,10 @@ export class DbConfigStore extends DisposableObject {
     await this.writeConfig(config);
   }
 
+  /**
+   * Adds a list of remote repositories to an existing repository list and removes duplicates.
+   * @returns a list of repositories that were not added because the list reached 1000 entries.
+   */
   public async addRemoteReposToList(
     repoNwoList: string[],
     parentList: string,
@@ -173,6 +177,10 @@ export class DbConfigStore extends DisposableObject {
     return truncatedRepositories;
   }
 
+  /**
+   * Adds one remote repository
+   * @returns either nothing, or, if a parentList is given AND the number of repos on that list reaches 1000 returns the repo that was not added.
+   */
   public async addRemoteRepo(
     repoNwo: string,
     parentList?: string,
