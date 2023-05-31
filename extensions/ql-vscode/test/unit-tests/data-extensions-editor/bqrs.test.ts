@@ -12,126 +12,6 @@ describe("decodeBqrsToExternalApiUsages", () => {
     tuples: [
       [
         {
-          label: "new Sql2o(...)",
-          url: {
-            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-            startLine: 10,
-            startColumn: 33,
-            endLine: 10,
-            endColumn: 88,
-          },
-        },
-        "org.sql2o.Sql2o#Sql2o(String,String,String)",
-        "false",
-        "supported",
-      ],
-      [
-        {
-          label: "open(...)",
-          url: {
-            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-            startLine: 14,
-            startColumn: 24,
-            endLine: 14,
-            endColumn: 35,
-          },
-        },
-        "org.sql2o.Sql2o#open()",
-        "false",
-        "supported",
-      ],
-      [
-        {
-          label: "executeScalar(...)",
-          url: {
-            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-            startLine: 15,
-            startColumn: 13,
-            endLine: 15,
-            endColumn: 85,
-          },
-        },
-        "org.sql2o.Query#executeScalar(Class)",
-        "false",
-        "supported",
-      ],
-      [
-        {
-          label: "createQuery(...)",
-          url: {
-            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-            startLine: 15,
-            startColumn: 13,
-            endLine: 15,
-            endColumn: 56,
-          },
-        },
-        "org.sql2o.Connection#createQuery(String)",
-        "false",
-        "supported",
-      ],
-      [
-        {
-          label: "new Sql2o(...)",
-          url: {
-            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-            startLine: 23,
-            startColumn: 23,
-            endLine: 23,
-            endColumn: 36,
-          },
-        },
-        "org.sql2o.Sql2o#Sql2o(String)",
-        "false",
-        "supported",
-      ],
-      [
-        {
-          label: "open(...)",
-          url: {
-            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-            startLine: 25,
-            startColumn: 24,
-            endLine: 25,
-            endColumn: 35,
-          },
-        },
-        "org.sql2o.Sql2o#open()",
-        "false",
-        "supported",
-      ],
-      [
-        {
-          label: "executeScalar(...)",
-          url: {
-            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-            startLine: 26,
-            startColumn: 13,
-            endLine: 26,
-            endColumn: 68,
-          },
-        },
-        "org.sql2o.Query#executeScalar(Class)",
-        "false",
-        "supported",
-      ],
-      [
-        {
-          label: "createQuery(...)",
-          url: {
-            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-            startLine: 26,
-            startColumn: 13,
-            endLine: 26,
-            endColumn: 39,
-          },
-        },
-        "org.sql2o.Connection#createQuery(String)",
-        "false",
-        "supported",
-      ],
-      [
-        {
           label: "println(...)",
           url: {
             uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
@@ -158,6 +38,126 @@ describe("decodeBqrsToExternalApiUsages", () => {
         },
         "org.springframework.boot.SpringApplication#run(Class,String[])",
         "false",
+        "supported",
+      ],
+      [
+        {
+          label: "createQuery(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+            startLine: 15,
+            startColumn: 13,
+            endLine: 15,
+            endColumn: 56,
+          },
+        },
+        "org.sql2o.Connection#createQuery(String)",
+        "true",
+        "supported",
+      ],
+      [
+        {
+          label: "createQuery(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+            startLine: 26,
+            startColumn: 13,
+            endLine: 26,
+            endColumn: 39,
+          },
+        },
+        "org.sql2o.Connection#createQuery(String)",
+        "true",
+        "supported",
+      ],
+      [
+        {
+          label: "executeScalar(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+            startLine: 15,
+            startColumn: 13,
+            endLine: 15,
+            endColumn: 85,
+          },
+        },
+        "org.sql2o.Query#executeScalar(Class)",
+        "true",
+        "supported",
+      ],
+      [
+        {
+          label: "executeScalar(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+            startLine: 26,
+            startColumn: 13,
+            endLine: 26,
+            endColumn: 68,
+          },
+        },
+        "org.sql2o.Query#executeScalar(Class)",
+        "true",
+        "supported",
+      ],
+      [
+        {
+          label: "open(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+            startLine: 14,
+            startColumn: 24,
+            endLine: 14,
+            endColumn: 35,
+          },
+        },
+        "org.sql2o.Sql2o#open()",
+        "true",
+        "supported",
+      ],
+      [
+        {
+          label: "open(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+            startLine: 25,
+            startColumn: 24,
+            endLine: 25,
+            endColumn: 35,
+          },
+        },
+        "org.sql2o.Sql2o#open()",
+        "true",
+        "supported",
+      ],
+      [
+        {
+          label: "new Sql2o(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+            startLine: 10,
+            startColumn: 33,
+            endLine: 10,
+            endColumn: 88,
+          },
+        },
+        "org.sql2o.Sql2o#Sql2o(String,String,String)",
+        "true",
+        "supported",
+      ],
+      [
+        {
+          label: "new Sql2o(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+            startLine: 23,
+            startColumn: 23,
+            endLine: 23,
+            endColumn: 36,
+          },
+        },
+        "org.sql2o.Sql2o#Sql2o(String)",
+        "true",
         "supported",
       ],
     ],
