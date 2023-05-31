@@ -92,7 +92,7 @@ class WorkspaceFolderHandler extends DisposableObject {
     this.push(
       this.testDiscovery.onDidChangeTests(this.handleDidChangeTests, this),
     );
-    this.testDiscovery.refresh();
+    void this.testDiscovery.refresh();
   }
 
   private handleDidChangeTests(): void {

@@ -64,7 +64,7 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
 
   private handleDidChange(uri: Uri): void {
     if (!QLTestDiscovery.ignoreTestPath(uri.fsPath)) {
-      this.refresh();
+      void this.refresh();
     }
   }
   protected async discover(): Promise<QLTestDiscoveryResults> {

@@ -21,7 +21,7 @@ export class QueriesModule extends DisposableObject {
 
     const queryDiscovery = new QueryDiscovery(app, cliServer);
     this.push(queryDiscovery);
-    queryDiscovery.refresh();
+    void queryDiscovery.refresh();
 
     const queriesPanel = new QueriesPanel(queryDiscovery);
     this.push(queriesPanel);
