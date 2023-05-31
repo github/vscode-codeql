@@ -57,7 +57,7 @@ export async function getAutoModelUsages({
   progress({
     maxStep,
     step: 1100,
-    message: "Retrieving source locatin prefix",
+    message: "Retrieving source location prefix",
   });
 
   const sourceLocationPrefix = await databaseItem.getSourceLocationPrefix(
