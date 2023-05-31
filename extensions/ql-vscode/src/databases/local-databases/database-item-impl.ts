@@ -121,9 +121,7 @@ export class DatabaseItemImpl implements DatabaseItem {
   /**
    * Returns information about a database.
    */
-  private async getDbInfo(
-    server: Pick<cli.CodeQLCliServer, "resolveDatabase">,
-  ): Promise<cli.DbInfo> {
+  private async getDbInfo(server: cli.CodeQLCliServer): Promise<cli.DbInfo> {
     if (this._dbinfo === undefined) {
       this._dbinfo = await server.resolveDatabase(this.databaseUri.fsPath);
     }
@@ -135,7 +133,7 @@ export class DatabaseItemImpl implements DatabaseItem {
    * has a `.dbinfo` file, which is the source of the prefix.
    */
   public async getSourceLocationPrefix(
-    server: Pick<cli.CodeQLCliServer, "resolveDatabase">,
+    server: cli.CodeQLCliServer,
   ): Promise<string> {
     const dbInfo = await this.getDbInfo(server);
     return dbInfo.sourceLocationPrefix;
@@ -144,9 +142,7 @@ export class DatabaseItemImpl implements DatabaseItem {
   /**
    * Returns path to dataset folder of database.
    */
-  public async getDatasetFolder(
-    server: Pick<cli.CodeQLCliServer, "resolveDatabase">,
-  ): Promise<string> {
+  public async getDatasetFolder(server: cli.CodeQLCliServer): Promise<string> {
     const dbInfo = await this.getDbInfo(server);
     return dbInfo.datasetFolder;
   }

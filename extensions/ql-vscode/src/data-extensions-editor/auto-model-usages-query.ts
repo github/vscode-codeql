@@ -8,19 +8,9 @@ import { interpretResultsSarif } from "../query-results";
 import { ProgressCallback } from "../common/vscode/progress";
 
 type Options = {
-  cliServer: Pick<
-    CodeQLCliServer,
-    "resolveDatabase" | "resolveQlpacks" | "interpretBqrsSarif"
-  >;
-  queryRunner: Pick<QueryRunner, "createQueryRun" | "logger">;
-  databaseItem: Pick<
-    DatabaseItem,
-    | "contents"
-    | "databaseUri"
-    | "language"
-    | "sourceArchive"
-    | "getSourceLocationPrefix"
-  >;
+  cliServer: CodeQLCliServer;
+  queryRunner: QueryRunner;
+  databaseItem: DatabaseItem;
   queryStorageDir: string;
 
   progress: ProgressCallback;

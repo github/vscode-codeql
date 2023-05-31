@@ -135,7 +135,7 @@ export class CompletedQueryInfo implements QueryWithResults {
  * Call cli command to interpret SARIF results.
  */
 export async function interpretResultsSarif(
-  cli: Pick<cli.CodeQLCliServer, "interpretBqrsSarif">,
+  cli: cli.CodeQLCliServer,
   metadata: QueryMetadata | undefined,
   resultsPaths: ResultsPaths,
   sourceInfo?: cli.SourceInfo,
