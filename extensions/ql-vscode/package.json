@@ -458,6 +458,10 @@
         "title": "CodeQL: Quick Evaluation"
       },
       {
+        "command": "codeQL.quickEvalCount",
+        "title": "CodeQL: Quick Evaluation Count"
+      },
+      {
         "command": "codeQL.quickEvalContextEditor",
         "title": "CodeQL: Quick Evaluation"
       },
@@ -1219,6 +1223,10 @@
         {
           "command": "codeQL.quickEval",
           "when": "editorLangId == ql"
+        },
+        {
+          "command": "codeQL.quickEvalCount",
+          "when": "editorLangId == ql && codeql.supportsQuickEvalCount"
         },
         {
           "command": "codeQL.quickEvalContextEditor",
