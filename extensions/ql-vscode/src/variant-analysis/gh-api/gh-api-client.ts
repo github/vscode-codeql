@@ -29,9 +29,13 @@ export async function getCodeSearchRepositories(
     },
   )) {
     nwos.push(...response.data.map((item) => item.full_name));
-    const numberOfRequests = Math.ceil(response.data.total_count / 99);
-    const increment = numberOfRequests < 10 ? 80 / numberOfRequests : 8;
+    // calculate progress bar: 80% of the progress bar is used for the code search
+    const totalNumberOfRequests = Math.ceil(response.data.total_count / 100);
+    // Since we have a maximum 10 of requests, we use a fixed increment whenever the totalNumberOfRequests is greater than 10
+    const increment =
+      totalNumberOfRequests < 10 ? 80 / totalNumberOfRequests : 8;
     progress.report({ increment });
+
     if (token.isCancellationRequested) {
       nwos = [];
       break;
