@@ -10,14 +10,7 @@ import { glob } from "glob";
 import { load } from "js-yaml";
 import { join, basename, dirname } from "path";
 import { dirSync } from "tmp-promise";
-import {
-  ExtensionContext,
-  Uri,
-  window as Window,
-  workspace,
-  env,
-  WorkspaceFolder,
-} from "vscode";
+import { Uri, window as Window, workspace, env, WorkspaceFolder } from "vscode";
 import { CodeQLCliServer, QlpacksInfo } from "./codeql-cli/cli";
 import { UserCancellationException } from "./common/vscode/progress";
 import { extLogger, OutputChannelLogger } from "./common";
@@ -361,106 +354,6 @@ export async function prepareCodeTour(
       await commandManager.execute("vscode.openFolder", tutorialWorkspaceUri);
     }
   }
-}
-
-/**
- * Provides a utility method to invoke a function only if a minimum time interval has elapsed since
- * the last invocation of that function.
- */
-export class InvocationRateLimiter<T> {
-  constructor(
-    extensionContext: ExtensionContext,
-    funcIdentifier: string,
-    func: () => Promise<T>,
-    createDate: (dateString?: string) => Date = (s) =>
-      s ? new Date(s) : new Date(),
-  ) {
-    this._createDate = createDate;
-    this._extensionContext = extensionContext;
-    this._func = func;
-    this._funcIdentifier = funcIdentifier;
-  }
-
-  /**
-   * Invoke the function if `minSecondsSinceLastInvocation` seconds have elapsed since the last invocation.
-   */
-  public async invokeFunctionIfIntervalElapsed(
-    minSecondsSinceLastInvocation: number,
-  ): Promise<InvocationRateLimiterResult<T>> {
-    const updateCheckStartDate = this._createDate();
-    const lastInvocationDate = this.getLastInvocationDate();
-    if (
-      minSecondsSinceLastInvocation &&
-      lastInvocationDate &&
-      lastInvocationDate <= updateCheckStartDate &&
-      lastInvocationDate.getTime() + minSecondsSinceLastInvocation * 1000 >
-        updateCheckStartDate.getTime()
-    ) {
-      return createRateLimitedResult();
-    }
-    const result = await this._func();
-    await this.setLastInvocationDate(updateCheckStartDate);
-    return createInvokedResult(result);
-  }
-
-  private getLastInvocationDate(): Date | undefined {
-    const maybeDateString: string | undefined =
-      this._extensionContext.globalState.get(
-        InvocationRateLimiter._invocationRateLimiterPrefix +
-          this._funcIdentifier,
-      );
-    return maybeDateString ? this._createDate(maybeDateString) : undefined;
-  }
-
-  private async setLastInvocationDate(date: Date): Promise<void> {
-    return await this._extensionContext.globalState.update(
-      InvocationRateLimiter._invocationRateLimiterPrefix + this._funcIdentifier,
-      date,
-    );
-  }
-
-  private readonly _createDate: (dateString?: string) => Date;
-  private readonly _extensionContext: ExtensionContext;
-  private readonly _func: () => Promise<T>;
-  private readonly _funcIdentifier: string;
-
-  private static readonly _invocationRateLimiterPrefix =
-    "invocationRateLimiter_lastInvocationDate_";
-}
-
-export enum InvocationRateLimiterResultKind {
-  Invoked,
-  RateLimited,
-}
-
-/**
- * The function was invoked and returned the value `result`.
- */
-interface InvokedResult<T> {
-  kind: InvocationRateLimiterResultKind.Invoked;
-  result: T;
-}
-
-/**
- * The function was not invoked as the minimum interval since the last invocation had not elapsed.
- */
-interface RateLimitedResult {
-  kind: InvocationRateLimiterResultKind.RateLimited;
-}
-
-type InvocationRateLimiterResult<T> = InvokedResult<T> | RateLimitedResult;
-
-function createInvokedResult<T>(result: T): InvokedResult<T> {
-  return {
-    kind: InvocationRateLimiterResultKind.Invoked,
-    result,
-  };
-}
-
-function createRateLimitedResult(): RateLimitedResult {
-  return {
-    kind: InvocationRateLimiterResultKind.RateLimited,
-  };
 }
 
 export interface QlPacksForLanguage {
