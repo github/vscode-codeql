@@ -1,4 +1,4 @@
-import { ExtensionContext } from "vscode";
+import { Memento } from "./common/memento";
 
 /**
  * Provides a utility method to invoke a function only if a minimum time interval has elapsed since
@@ -6,7 +6,7 @@ import { ExtensionContext } from "vscode";
  */
 export class InvocationRateLimiter<T> {
   constructor(
-    private readonly extensionContext: ExtensionContext,
+    private readonly globalState: Memento,
     private readonly funcIdentifier: string,
     private readonly func: () => Promise<T>,
     private readonly createDate: (dateString?: string) => Date = (s) =>
@@ -36,16 +36,14 @@ export class InvocationRateLimiter<T> {
   }
 
   private getLastInvocationDate(): Date | undefined {
-    const maybeDateString: string | undefined =
-      this.extensionContext.globalState.get(
-        InvocationRateLimiter._invocationRateLimiterPrefix +
-          this.funcIdentifier,
-      );
+    const maybeDateString: string | undefined = this.globalState.get(
+      InvocationRateLimiter._invocationRateLimiterPrefix + this.funcIdentifier,
+    );
     return maybeDateString ? this.createDate(maybeDateString) : undefined;
   }
 
   private async setLastInvocationDate(date: Date): Promise<void> {
-    return await this.extensionContext.globalState.update(
+    return await this.globalState.update(
       InvocationRateLimiter._invocationRateLimiterPrefix + this.funcIdentifier,
       date,
     );

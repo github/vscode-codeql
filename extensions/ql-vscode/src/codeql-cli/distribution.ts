@@ -75,7 +75,7 @@ export class DistributionManager implements DistributionProvider {
         extensionContext,
       );
     this.updateCheckRateLimiter = new InvocationRateLimiter(
-      extensionContext,
+      extensionContext.globalState,
       "extensionSpecificDistributionUpdateCheck",
       () =>
         this.extensionSpecificDistributionManager.checkForUpdatesToDistribution(),
