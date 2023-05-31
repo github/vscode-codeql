@@ -1,11 +1,4 @@
-import {
-  ensureDirSync,
-  readFile,
-  pathExists,
-  ensureDir,
-  writeFile,
-  opendir,
-} from "fs-extra";
+import { ensureDirSync, readFile, pathExists } from "fs-extra";
 import { glob } from "glob";
 import { load } from "js-yaml";
 import { join, basename, dirname } from "path";
@@ -795,42 +788,6 @@ export async function tryGetQueryMetadata(
     // Ignore errors and provide no metadata.
     void extLogger.log(`Couldn't resolve metadata for ${queryPath}: ${e}`);
     return;
-  }
-}
-
-/**
- * Creates a file in the query directory that indicates when this query was created.
- * This is important for keeping track of when queries should be removed.
- *
- * @param queryPath The directory that will contain all files relevant to a query result.
- * It does not need to exist.
- */
-export async function createTimestampFile(storagePath: string) {
-  const timestampPath = join(storagePath, "timestamp");
-  await ensureDir(storagePath);
-  await writeFile(timestampPath, Date.now().toString(), "utf8");
-}
-
-/**
- * Recursively walk a directory and return the full path to all files found.
- * Symbolic links are ignored.
- *
- * @param dir the directory to walk
- *
- * @return An iterator of the full path to all files recursively found in the directory.
- */
-export async function* walkDirectory(
-  dir: string,
-): AsyncIterableIterator<string> {
-  const seenFiles = new Set<string>();
-  for await (const d of await opendir(dir)) {
-    const entry = join(dir, d.name);
-    seenFiles.add(entry);
-    if (d.isDirectory()) {
-      yield* walkDirectory(entry);
-    } else if (d.isFile()) {
-      yield entry;
-    }
   }
 }
 

@@ -17,7 +17,6 @@ import { isCanary, MAX_QUERIES } from "../config";
 import { gatherQlFiles } from "../pure/files";
 import { basename } from "path";
 import {
-  createTimestampFile,
   findLanguage,
   getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
@@ -40,7 +39,11 @@ import {
 } from "../run-queries-shared";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "../interface-utils";
-import { asError, getErrorMessage } from "../pure/helpers-pure";
+import {
+  asError,
+  createTimestampFile,
+  getErrorMessage,
+} from "../pure/helpers-pure";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";
 import { App } from "../common/app";

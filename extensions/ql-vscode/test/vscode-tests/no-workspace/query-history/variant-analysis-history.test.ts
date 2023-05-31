@@ -10,7 +10,7 @@ import { join } from "path";
 
 import { ExtensionContext, Uri } from "vscode";
 import { DatabaseManager } from "../../../../src/databases/local-databases";
-import { tmpDir, walkDirectory } from "../../../../src/helpers";
+import { tmpDir } from "../../../../src/helpers";
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
@@ -22,6 +22,7 @@ import { QueryHistoryManager } from "../../../../src/query-history/query-history
 import { mockedObject } from "../../utils/mocking.helpers";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 import { createMockApp } from "../../../__mocks__/appMock";
+import { walkDirectory } from "../../../../src/pure/helpers-pure";
 
 // set a higher timeout since recursive delete may take a while, expecially on Windows.
 jest.setTimeout(120000);

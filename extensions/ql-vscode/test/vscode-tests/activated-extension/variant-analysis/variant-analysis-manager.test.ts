@@ -33,7 +33,6 @@ import {
   createMockScannedRepo,
   createMockScannedRepos,
 } from "../../../factories/variant-analysis/shared/scanned-repositories";
-import { createTimestampFile } from "../../../../src/helpers";
 import { createMockVariantAnalysisRepoTask } from "../../../factories/variant-analysis/gh-api/variant-analysis-repo-task";
 import { VariantAnalysisRepoTask } from "../../../../src/variant-analysis/gh-api/variant-analysis";
 import { SortKey } from "../../../../src/pure/variant-analysis-filter-sort";
@@ -47,6 +46,7 @@ import {
   writeRepoStates,
 } from "../../../../src/variant-analysis/repo-states-store";
 import { permissiveFilterSortState } from "../../../unit-tests/variant-analysis-filter-sort.test";
+import { createTimestampFile } from "../../../../src/pure/helpers-pure";
 
 // up to 3 minutes per test
 jest.setTimeout(3 * 60 * 1000);

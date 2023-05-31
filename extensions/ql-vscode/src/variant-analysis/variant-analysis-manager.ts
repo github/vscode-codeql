@@ -30,7 +30,7 @@ import {
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisSubmission,
 } from "./shared/variant-analysis";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { createTimestampFile, getErrorMessage } from "../pure/helpers-pure";
 import { VariantAnalysisView } from "./variant-analysis-view";
 import { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
 import {
@@ -44,7 +44,6 @@ import {
 } from "./variant-analysis-processor";
 import PQueue from "p-queue";
 import {
-  createTimestampFile,
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
