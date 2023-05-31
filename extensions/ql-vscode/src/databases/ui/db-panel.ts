@@ -1,4 +1,5 @@
 import {
+  ProgressLocation,
   QuickPickItem,
   TreeView,
   TreeViewExpansionEvent,
@@ -13,7 +14,10 @@ import {
   getOwnerFromGitHubUrl,
   isValidGitHubOwner,
 } from "../../common/github-url-identifier-helper";
-import { showAndLogErrorMessage } from "../../helpers";
+import {
+  showAndLogErrorMessage,
+  showAndLogInformationMessage,
+} from "../../helpers";
 import { DisposableObject } from "../../pure/disposable-object";
 import {
   DbItem,
@@ -32,6 +36,8 @@ import { getControllerRepo } from "../../variant-analysis/run-remote-query";
 import { getErrorMessage } from "../../pure/helpers-pure";
 import { DatabasePanelCommands } from "../../common/commands";
 import { App } from "../../common/app";
+import { getCodeSearchRepositories } from "../../variant-analysis/gh-api/gh-api-client";
+import { QueryLanguage } from "../../common/query-language";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   remoteDatabaseKind: string;
@@ -39,6 +45,10 @@ export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
 
 export interface AddListQuickPickItem extends QuickPickItem {
   databaseKind: DbListKind;
+}
+
+export interface CodeSearchQuickPickItem extends QuickPickItem {
+  language: string;
 }
 
 export class DbPanel extends DisposableObject {
@@ -93,6 +103,8 @@ export class DbPanel extends DisposableObject {
         this.renameItem.bind(this),
       "codeQLVariantAnalysisRepositories.removeItemContextMenu":
         this.removeItem.bind(this),
+      "codeQLVariantAnalysisRepositories.importFromCodeSearch":
+        this.importFromCodeSearch.bind(this),
     };
   }
 
@@ -171,7 +183,14 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    await this.dbManager.addNewRemoteRepo(nwo, parentList);
+    const truncatedRepositories = await this.dbManager.addNewRemoteRepo(
+      nwo,
+      parentList,
+    );
+
+    if (parentList) {
+      this.reportAnyTruncatedRepos(truncatedRepositories, parentList);
+    }
   }
 
   private async addNewRemoteOwner(): Promise<void> {
@@ -321,6 +340,89 @@ export class DbPanel extends DisposableObject {
       );
     }
     await this.dbManager.removeDbItem(treeViewItem.dbItem);
+  }
+
+  private async importFromCodeSearch(
+    treeViewItem: DbTreeViewItem,
+  ): Promise<void> {
+    if (treeViewItem.dbItem?.kind !== DbItemKind.RemoteUserDefinedList) {
+      throw new Error("Please select a valid list to add code search results.");
+    }
+
+    const listName = treeViewItem.dbItem.listName;
+
+    const languageQuickPickItems: CodeSearchQuickPickItem[] = Object.values(
+      QueryLanguage,
+    ).map((language) => ({
+      label: language.toString(),
+      alwaysShow: true,
+      language: language.toString(),
+    }));
+
+    const codeSearchLanguage =
+      await window.showQuickPick<CodeSearchQuickPickItem>(
+        languageQuickPickItems,
+        {
+          title: "Select a language for your search",
+          placeHolder: "Select an option",
+          ignoreFocusOut: true,
+        },
+      );
+    if (!codeSearchLanguage) {
+      return;
+    }
+
+    const codeSearchQuery = await window.showInputBox({
+      title: "GitHub Code Search",
+      prompt:
+        "Use [GitHub's Code Search syntax](https://docs.github.com/en/search-github/github-code-search/understanding-github-code-search-syntax), including code qualifiers, regular expressions, and boolean operations, to search for repositories.",
+      placeHolder: "org:github",
+    });
+    if (codeSearchQuery === undefined || codeSearchQuery === "") {
+      return;
+    }
+
+    void window.withProgress(
+      {
+        location: ProgressLocation.Notification,
+        title: "Searching for repositories... This might take a while",
+        cancellable: true,
+      },
+      async (progress, token) => {
+        progress.report({ increment: 10 });
+
+        const repositories = await getCodeSearchRepositories(
+          this.app.credentials,
+          `${codeSearchQuery} language:${codeSearchLanguage.language}`,
+          progress,
+          token,
+        );
+
+        token.onCancellationRequested(() => {
+          void showAndLogInformationMessage("Code search cancelled");
+          return;
+        });
+
+        progress.report({ increment: 10, message: "Processing results..." });
+
+        const truncatedRepositories =
+          await this.dbManager.addNewRemoteReposToList(repositories, listName);
+        this.reportAnyTruncatedRepos(truncatedRepositories, listName);
+      },
+    );
+  }
+
+  private reportAnyTruncatedRepos(
+    truncatedRepositories: string[],
+    listName: string,
+  ) {
+    if (truncatedRepositories.length > 0) {
+      void showAndLogErrorMessage(
+        `Some repositories were not added to '${listName}' because a list can only have 1000 entries. Excluded repositories: ${truncatedRepositories.join(
+          ", ",
+        )}`,
+      );
+    }
   }
 
   private async onDidCollapseElement(

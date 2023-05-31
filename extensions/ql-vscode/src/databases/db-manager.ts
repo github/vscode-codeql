@@ -101,8 +101,15 @@ export class DbManager extends DisposableObject {
   public async addNewRemoteRepo(
     nwo: string,
     parentList?: string,
-  ): Promise<void> {
-    await this.dbConfigStore.addRemoteRepo(nwo, parentList);
+  ): Promise<string[]> {
+    return await this.dbConfigStore.addRemoteRepo(nwo, parentList);
+  }
+
+  public async addNewRemoteReposToList(
+    nwoList: string[],
+    parentList: string,
+  ): Promise<string[]> {
+    return await this.dbConfigStore.addRemoteReposToList(nwoList, parentList);
   }
 
   public async addNewRemoteOwner(owner: string): Promise<void> {
