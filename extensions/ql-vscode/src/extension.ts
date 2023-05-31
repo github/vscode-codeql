@@ -128,6 +128,7 @@ import { TestManager } from "./test-manager";
 import { TestRunner } from "./test-runner";
 import { TestManagerBase } from "./test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
+import { PerformanceEditorView } from "./performance-editor/performance-editor-view";
 
 /**
  * extension.ts
@@ -767,6 +768,15 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(localQueryResultsView);
 
+  void extLogger.log("Initializing performance editor view interface.");
+  const localPerformanceEditorView = new PerformanceEditorView(
+    ctx,
+    dbm,
+    queryServerLogger,
+    labelProvider,
+  );
+  ctx.subscriptions.push(localPerformanceEditorView);
+
   void extLogger.log("Initializing variant analysis manager.");
 
   const dbModule = await DbModule.initialize(app);
@@ -809,6 +819,7 @@ async function activateWithInstalledDistribution(
     qs,
     dbm,
     localQueryResultsView,
+    localPerformanceEditorView,
     variantAnalysisManager,
     evalLogViewer,
     queryHistoryDirs,

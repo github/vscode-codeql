@@ -18,7 +18,7 @@ import {
  * @param millis the time in ms.
  * @returns a PerformanceEntryData object
  */
-function pdh(id: string, millis = 0): PerformanceEntryData {
+function pdh(id: string, millis = 1): PerformanceEntryData {
   return {
     raHash: id,
     completionTime: "0",
@@ -132,6 +132,19 @@ describe("performance editor view model tests", () => {
     graph.addEdge("a", "b");
     graph.addEdge("b", "c");
     graph.addEdge("d", "c");
+
+    console.log(JSON.stringify(graph, null, 2));
+
+    const ss = JSON.stringify(graph.export());
+
+    const graph2: DirectedGraph<PerformanceEntryData> =
+      new DirectedGraph<PerformanceEntryData>();
+
+    graph2.import(JSON.parse(ss));
+
+    const gg: PerformanceGraph = PerformanceGraph.fromGraph(graph2);
+
+    console.log(gg.getTotalTime());
 
     console.log(countConnectedComponents(graph));
     console.log(topologicalSort(graph));

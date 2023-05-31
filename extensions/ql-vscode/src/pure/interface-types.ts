@@ -17,6 +17,7 @@ import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 import { ExternalApiUsage } from "../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../data-extensions-editor/modeled-method";
 import { DataExtensionEditorViewState } from "../data-extensions-editor/shared/view-state";
+import { PerformanceEditorRow } from "../performance-editor/performance-editor-model";
 
 /**
  * This module contains types and code that are shared between
@@ -535,6 +536,11 @@ export interface GenerateExternalApiMessage {
   t: "generateExternalApi";
 }
 
+export interface JumpToPredicateMessage {
+  t: "jumpToPredicate";
+  location: ResolvableLocationValue;
+}
+
 export type ToDataExtensionsEditorMessage =
   | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
@@ -548,3 +554,14 @@ export type FromDataExtensionsEditorMessage =
   | JumpToUsageMessage
   | SaveModeledMethods
   | GenerateExternalApiMessage;
+
+export type IntoPerformanceEditorViewMsg = SetPerformanceEditorViewStateMsg;
+
+export type FromPerformanceEditorViewMsg =
+  | CommonFromViewMessages
+  | JumpToPredicateMessage;
+
+export interface SetPerformanceEditorViewStateMsg {
+  t: "setState";
+  performanceEditorRows: PerformanceEditorRow[];
+}

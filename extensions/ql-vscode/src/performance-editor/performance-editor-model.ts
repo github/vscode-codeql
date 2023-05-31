@@ -36,16 +36,22 @@ export interface PerformanceEntryData {
   predicateName: string;
 }
 
-interface PerformanceEditorRow {
+export interface PerformanceEditorRow {
   predicateName: string;
   selfTime: number;
+  selfTimeAmortized: number;
   aggregateTime: number;
+  aggregateTimeAmortized: number;
   percentOfTotalSelf: number;
+  percentOfTotalSelfAmortized: number;
   percentOfTotalAggregate: number;
+  percentOfTotalAggregateAmortized: number;
+  uses: number;
   position: Position;
   dependencies?: PerformanceEditorDetail[];
+  raHash: string;
 }
-interface PerformanceEditorDetail {
+export interface PerformanceEditorDetail {
   detail: PerformanceEditorRow;
   depth: number;
 }
@@ -143,7 +149,9 @@ export class PerformanceGraph {
 
       if (
         depth > executionDepth &&
-        (!restrictToSelects || root.indexOf("select") > -1)
+        (!restrictToSelects ||
+          this.graph.getNodeAttributes(root).predicateName.indexOf("select") >
+            -1)
       ) {
         executionDepth = depth;
         executionRoot = root;
@@ -181,6 +189,28 @@ export class PerformanceGraph {
   }
 
   /**
+   * Prunes a graph, excluding nodes not reachable from the root.
+   * @param root the root to prune to.
+   */
+  public pruneToRoot(root: string): void {
+    // first perform a traversal to find all the nodes that are reachable from the root
+
+    const reachableNodes = new Set<string>();
+
+    reachableNodes.add(root);
+
+    dfsFromNode(this.graph, root, function (node, _attr, _depth) {
+      reachableNodes.add(node);
+    });
+
+    const toPrune = this.graph.filterNodes((e) => !reachableNodes.has(e));
+
+    for (const node of toPrune) {
+      this.graph.dropNode(node);
+    }
+  }
+
+  /**
    * Computes the rows for a given graph.
    * @returns the rows.
    */
@@ -192,22 +222,87 @@ export class PerformanceGraph {
     });
   }
 
+  public getNumberOfPredicateUses(node: string): number {
+    return this.graph.inDegree(node) + 1;
+  }
+
+  public getCostOfNode(node: string, amortize = false): number {
+    const attributes = this.graph.getNodeAttributes(node);
+
+    if (amortize) {
+      return attributes.millis / this.getNumberOfPredicateUses(node);
+    }
+
+    return attributes.millis;
+  }
   /**
    * Computes the row for a given node.
    * @param node The node to compute.
    * @returns the row.
    */
-  public buildPerformanceEditorRow(node: string): PerformanceEditorRow {
+  public buildPerformanceEditorRow(
+    node: string,
+    parent?: PerformanceEditorRow,
+    orderedAggregateTime?: number,
+    orderedAggregateTimeAmortized?: number,
+  ): PerformanceEditorRow {
     const attributes = this.graph.getNodeAttributes(node);
 
+    // in the case where the parent node isn't specified,
+    // the amortized "total" time remains constant since the "total"
+    // calculation is based on simply summing (one time) all nodes.
+    let totalTime = this.getTotalTime();
+    let totalTimeAmortized = totalTime;
+
+    // if the parent node is specified, the "total time"
+    // is based on the parent node's total time. This calculation
+    // must take into account if the time was amortized or not.
+    if (parent) {
+      totalTime = parent.aggregateTime;
+      totalTimeAmortized = parent.aggregateTimeAmortized;
+    }
+
+    const predicateName = attributes.predicateName;
+    const selfTime = this.getCostOfNode(node);
+    const selfTimeAmortized = this.getCostOfNode(node, true);
+
+    let aggregateTime = 0;
+    let aggregateTimeAmortized = 0;
+
+    if (
+      orderedAggregateTime === undefined ||
+      orderedAggregateTimeAmortized === undefined
+    ) {
+      aggregateTime = this.computeAggregateTime(node);
+      aggregateTimeAmortized = this.computeAggregateTime(node, true);
+    } else {
+      aggregateTime = orderedAggregateTime;
+      aggregateTimeAmortized = orderedAggregateTimeAmortized;
+    }
+
+    const percentOfTotalSelf = (selfTime / totalTime) * 100;
+    const percentOfTotalSelfAmortized =
+      (selfTimeAmortized / totalTimeAmortized) * 100;
+    const percentOfTotalAggregate = (aggregateTime / totalTime) * 100;
+    const percentOfTotalAggregateAmortized =
+      (aggregateTimeAmortized / totalTimeAmortized) * 100;
+    const position = attributes.position;
+    const uses = this.getNumberOfPredicateUses(node);
+    const raHash = node;
+
     return {
-      predicateName: attributes.predicateName,
-      selfTime: attributes.millis,
-      aggregateTime: this.computeAggregateTime(node),
-      percentOfTotalSelf: (attributes.millis / this.getTotalTime()) * 100,
-      percentOfTotalAggregate:
-        (this.computeAggregateTime(node) / this.getTotalTime()) * 100,
-      position: attributes.position,
+      predicateName,
+      selfTime,
+      selfTimeAmortized,
+      aggregateTime,
+      aggregateTimeAmortized,
+      percentOfTotalSelf,
+      percentOfTotalSelfAmortized,
+      percentOfTotalAggregate,
+      percentOfTotalAggregateAmortized,
+      position,
+      uses,
+      raHash,
     };
   }
 
@@ -221,7 +316,7 @@ export class PerformanceGraph {
   ): PerformanceEditorDetail[] {
     // obtain a list of all of the children.
     const children: string[] = [];
-    dfsFromNode(this.graph, row.predicateName, function (node, _attr, _depth) {
+    dfsFromNode(this.graph, row.raHash, function (node, _attr, _depth) {
       children.push(node);
     });
 
@@ -234,8 +329,28 @@ export class PerformanceGraph {
 
     // assign depths to each child
     const details: PerformanceEditorDetail[] = children.map((child, index) => {
+      // from the starting point on, compute the aggregate time for this child.
+      // note that we preserve the ordering here because it is a simplified ordering
+      // of the dependency graph that is easier to understand.
+
+      // It also has a clear invariant that the aggregate time
+      const aggregateTime = this.computeAggregateTimeFromOrdering(
+        index,
+        children,
+      );
+      const aggregateTimeAmortized = this.computeAggregateTimeFromOrdering(
+        index,
+        children,
+        true,
+      );
+
       return {
-        detail: this.buildPerformanceEditorRow(child),
+        detail: this.buildPerformanceEditorRow(
+          child,
+          row,
+          aggregateTime,
+          aggregateTimeAmortized,
+        ),
         depth: index,
       };
     });
@@ -282,15 +397,11 @@ export class PerformanceGraph {
 
     // ensure that none of the nodes in the group have a edge to this node
     for (const n of group) {
-      dfsFromNode(
-        this.graph,
-        n.detail.predicateName,
-        function (node, _attr, _depth) {
-          if (node === next.detail.predicateName) {
-            hasPath = true;
-          }
-        },
-      );
+      dfsFromNode(this.graph, n.detail.raHash, function (node, _attr, _depth) {
+        if (node === next.detail.raHash) {
+          hasPath = true;
+        }
+      });
     }
 
     if (hasPath) {
@@ -343,11 +454,25 @@ export class PerformanceGraph {
    * @param root The root to start from.
    * @returns The total time of a given root plus all of its dependencies.
    */
-  public computeAggregateTime(root: string): number {
-    let total = this.graph.getNodeAttributes(root).millis;
-    dfsFromNode(this.graph, root, function (_node, attr, _depth) {
-      total += attr.millis;
+  public computeAggregateTime(root: string, amortize = false): number {
+    let total = 0;
+    dfsFromNode(this.graph, root, (node, _attr, _depth) => {
+      total += this.getCostOfNode(node, amortize);
     });
+    return total;
+  }
+
+  public computeAggregateTimeFromOrdering(
+    childIdx: number,
+    ordering: string[],
+    amortize = false,
+  ): number {
+    let total = 0;
+
+    // starting at the child index, compute the aggregate time.
+    for (let i = childIdx; i < ordering.length; i++) {
+      total += this.getCostOfNode(ordering[i], amortize);
+    }
     return total;
   }
 }

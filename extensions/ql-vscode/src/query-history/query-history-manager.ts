@@ -57,7 +57,7 @@ import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { tryOpenExternalFile } from "../vscode-utils/external-files";
-import { convertJSONSummaryEvaluatorLog } from "./query-history-profile-converter";
+import { PerformanceEditorView } from "../performance-editor/performance-editor-view";
 /**
  * query-history-manager.ts
  * ------------
@@ -130,6 +130,7 @@ export class QueryHistoryManager extends DisposableObject {
     private readonly qs: QueryRunner,
     private readonly dbm: DatabaseManager,
     private readonly localQueriesResultsView: ResultsView,
+    private readonly localPerformanceEditorView: PerformanceEditorView,
     private readonly variantAnalysisManager: VariantAnalysisManager,
     private readonly evalLogViewer: EvalLogViewer,
     private readonly queryHistoryDirs: QueryHistoryDirs,
@@ -1056,7 +1057,7 @@ export class QueryHistoryManager extends DisposableObject {
 
     if (singleItem.jsonEvalLogSummaryLocation) {
       // CPU profiles are stored alongside the JSON summary
-      const cpuProfile = `${singleItem.jsonEvalLogSummaryLocation}.cpuprofile`;
+      //const cpuProfile = `${singleItem.jsonEvalLogSummaryLocation}.cpuprofile`;
 
       // create the CPU profile if it doesn't already exist
       // if (!(await pathExists(cpuProfile)))
@@ -1065,13 +1066,18 @@ export class QueryHistoryManager extends DisposableObject {
       //     cpuProfile,
       //   );
 
-      convertJSONSummaryEvaluatorLog(
-        singleItem.jsonEvalLogSummaryLocation,
-        cpuProfile,
-      );
+      // convertJSONSummaryEvaluatorLog(
+      //   singleItem.jsonEvalLogSummaryLocation,
+      //   cpuProfile,
+      // );
 
       // open the CPU profile in the editor (which is an extension)
-      await this.app.commands.execute("vscode.open", Uri.file(cpuProfile));
+      ///await this.app.commands.execute("vscode.open", Uri.file(cpuProfile));
+
+      await this.localPerformanceEditorView.showResults(
+        singleItem as CompletedLocalQueryInfo,
+        WebviewReveal.Forced,
+      );
     } else {
       this.warnNoEvalLogs();
     }

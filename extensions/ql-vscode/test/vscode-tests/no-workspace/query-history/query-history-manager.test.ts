@@ -29,6 +29,7 @@ import { createMockQueryHistoryDirs } from "../../../factories/query-history/que
 import { createMockApp } from "../../../__mocks__/appMock";
 import { App } from "../../../../src/common/app";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
+import { PerformanceEditorView } from "../../../../src/performance-editor/performance-editor-view";
 
 describe("QueryHistoryManager", () => {
   const mockExtensionLocation = join(tmpDir.name, "mock-extension-location");
@@ -999,6 +1000,7 @@ describe("QueryHistoryManager", () => {
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
+      {} as PerformanceEditorView,
       variantAnalysisManagerStub,
       {} as EvalLogViewer,
       createMockQueryHistoryDirs(),

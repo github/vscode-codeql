@@ -1591,6 +1591,7 @@
     "@vscode/debugprotocol": "^1.59.0",
     "@vscode/webview-ui-toolkit": "^1.0.1",
     "ajv": "^8.11.0",
+    "allotment": "^1.19.0",
     "child-process-promise": "^2.2.1",
     "chokidar": "^3.5.3",
     "classnames": "~2.2.6",

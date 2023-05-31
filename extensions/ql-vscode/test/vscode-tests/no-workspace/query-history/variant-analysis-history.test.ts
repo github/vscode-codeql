@@ -22,6 +22,7 @@ import { QueryHistoryManager } from "../../../../src/query-history/query-history
 import { mockedObject } from "../../utils/mocking.helpers";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 import { createMockApp } from "../../../__mocks__/appMock";
+import { PerformanceEditorView } from "../../../../src/performance-editor/performance-editor-view";
 
 // set a higher timeout since recursive delete may take a while, expecially on Windows.
 jest.setTimeout(120000);
@@ -78,6 +79,7 @@ describe("Variant Analyses and QueryHistoryManager", () => {
       {} as QueryRunner,
       {} as DatabaseManager,
       localQueriesResultsViewStub,
+      {} as PerformanceEditorView,
       variantAnalysisManagerStub,
       {} as EvalLogViewer,
       createMockQueryHistoryDirs({ localQueriesDirPath: STORAGE_DIR }),

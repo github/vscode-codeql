@@ -1,0 +1,166 @@
+.rows {
+  font-family: var(--vscode-editor-font-family);
+  /* flex-grow: 1;
+    overflow: auto; */
+}
+
+.row {
+  /* display: flex; */
+  height: 25px;
+  font-family: var(--vscode-font-family);
+
+  /* cursor: default;
+    user-select: none; */
+}
+
+.fixedWidth {
+  font-family: var(--vscode-editor-font-family);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 1.1em;
+}
+
+.fixedWidth > div.codicon {
+  font-size: 14px;
+  vertical-align: middle;
+  display: table-cell;
+}
+
+.fixedWidth > div.predicate {
+  padding-left: 3px;
+  vertical-align: middle;
+  display: table-cell;
+}
+
+.row:focus {
+  /* outline: 0;
+    background: var(--vscode-list-focusBackground);
+    color: var(--vscode-list-focusForeground); */
+}
+
+.row > div {
+  /* margin: 2px 4px; */
+}
+
+.duration,
+.heading.timing {
+  text-align: right;
+  width: 110px;
+}
+
+.heading.timing {
+  cursor: pointer;
+}
+
+.heading svg {
+  display: inline-block;
+  height: 1em;
+  margin-right: 0.25em;
+}
+
+.duration {
+  color: var(--vscode-terminal-ansiYellow);
+  font-weight: bold;
+}
+
+.predicate {
+  color: var(--vscode-);
+}
+
+.duration > span {
+  position: relative;
+}
+
+.location {
+  color: var(--vscode-terminal-foreground);
+  padding-left: 10px;
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  overflow: hidden;
+  opacity: 0.5;
+}
+
+.location a {
+  color: var(--vscode-terminal-foreground);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.location a:hover {
+  text-decoration: underline;
+}
+
+.location a:focus {
+  text-decoration: underline;
+  outline: 1px solid var(--vscode-focusBorder);
+}
+
+.fn,
+.file {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.fn {
+  max-width: 80%;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.file {
+  font-family: var(--vscode-font-family);
+  direction: rtl;
+  flex-grow: 1;
+  margin-left: 2em;
+  font-size: 0.8em;
+  opacity: 0.8;
+  flex-shrink: 1;
+}
+
+.activeSort {
+  text-decoration: underline;
+}
+
+.predicateChildren {
+  opacity: 0.4;
+}
+
+.expander {
+  background: none;
+  opacity: 0.7;
+  outline: 0;
+  border: 0;
+  flex-shrink: 0;
+}
+
+.expander svg,
+.expander {
+  width: 1em;
+}
+
+.row:hover .expander {
+  opacity: 1;
+}
+
+.impactBar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: -1;
+  transform-origin: 100%;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+:global(.vscode-light) .impactBar {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+:global(.vscode-high-contrast) .impactBar {
+  background: #fff;
+}
