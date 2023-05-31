@@ -286,7 +286,7 @@ describe("Launcher path", () => {
     const manager = new DistributionManager(
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
-      undefined as any,
+      {} as any,
     );
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
@@ -304,7 +304,7 @@ describe("Launcher path", () => {
     const manager = new DistributionManager(
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
-      undefined as any,
+      {} as any,
     );
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
@@ -319,7 +319,7 @@ describe("Launcher path", () => {
     const manager = new DistributionManager(
       { customCodeQlPath: pathToCmd } as any,
       {} as any,
-      undefined as any,
+      {} as any,
     );
 
     const result = await manager.getCodeQlPathWithoutVersionCheck();
