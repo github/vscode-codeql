@@ -412,10 +412,10 @@ export class CodeQLCliServer implements Disposable {
         const newError =
           stderrBuffers.length === 0
             ? new Error(
-                `${description} failed with args ${argsString}:${EOL}${err}`,
+                `${description} failed with args:${EOL}    ${argsString}${EOL}${err}`,
               )
             : new Error(
-                `${description} failed with args ${argsString}:${EOL}${Buffer.concat(
+                `${description} failed with args:${EOL}    ${argsString}${EOL}${Buffer.concat(
                   stderrBuffers,
                 ).toString("utf8")}`,
               );
