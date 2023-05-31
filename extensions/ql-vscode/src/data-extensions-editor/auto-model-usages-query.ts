@@ -16,13 +16,15 @@ type Options = {
   progress: ProgressCallback;
 };
 
+export type UsageSnippetsBySignature = Record<string, string[]>;
+
 export async function getAutoModelUsages({
   cliServer,
   queryRunner,
   databaseItem,
   queryStorageDir,
   progress,
-}: Options): Promise<Record<string, string[]>> {
+}: Options): Promise<UsageSnippetsBySignature> {
   const maxStep = 1500;
 
   const cancellationTokenSource = new CancellationTokenSource();

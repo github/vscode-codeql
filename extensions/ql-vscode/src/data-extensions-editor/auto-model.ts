@@ -6,12 +6,13 @@ import {
   Method,
   ModelRequest,
 } from "./auto-model-api";
+import type { UsageSnippetsBySignature } from "./auto-model-usages-query";
 
 export function createAutoModelRequest(
   language: string,
   externalApiUsages: ExternalApiUsage[],
   modeledMethods: Record<string, ModeledMethod>,
-  usages: Record<string, string[]>,
+  usages: UsageSnippetsBySignature,
 ): ModelRequest {
   const request: ModelRequest = {
     language,
