@@ -59,7 +59,7 @@ import { tryOpenExternalFile } from "../common/vscode/external-files";
 import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
-} from "../common/selection-commands";
+} from "../common/vscode/selection-commands";
 
 /**
  * query-history-manager.ts
