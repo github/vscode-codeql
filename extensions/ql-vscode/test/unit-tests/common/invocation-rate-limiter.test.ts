@@ -1,5 +1,5 @@
-import { Memento } from "vscode";
-import { InvocationRateLimiter } from "../../../src/invocation-rate-limiter";
+import type { Memento } from "vscode";
+import { InvocationRateLimiter } from "../../../src/common/invocation-rate-limiter";
 
 describe("Invocation rate limiter", () => {
   // 1 January 2020

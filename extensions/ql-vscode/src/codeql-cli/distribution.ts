@@ -22,7 +22,7 @@ import {
 import {
   InvocationRateLimiter,
   InvocationRateLimiterResultKind,
-} from "../invocation-rate-limiter";
+} from "../common/invocation-rate-limiter";
 
 /**
  * distribution.ts
