@@ -29,6 +29,9 @@ export async function getAutoModelUsages({
 
   const cancellationTokenSource = new CancellationTokenSource();
 
+  // This will re-run the query that was already run when opening the data extensions editor. This
+  // might be unnecessary, but this makes it really easy to get the path to the BQRS file which we
+  // need to interpret the results.
   const queryResult = await runQuery({
     cliServer,
     queryRunner,
@@ -52,6 +55,9 @@ export async function getAutoModelUsages({
     message: "Retrieving source location prefix",
   });
 
+  // CodeQL needs to have access to the database to be able to retrieve the
+  // snippets from it. The source location prefix is used to determine the
+  // base path of the database.
   const sourceLocationPrefix = await databaseItem.getSourceLocationPrefix(
     cliServer,
   );
@@ -70,9 +76,17 @@ export async function getAutoModelUsages({
     message: "Interpreting results",
   });
 
+  // Convert the results to SARIF so that Codeql will retrieve the snippets
+  // from the datababe. This means we don't need to do that in the extension
+  // and everything is handled by the CodeQL CLI.
   const sarif = await interpretResultsSarif(
     cliServer,
     {
+      // To interpret the results we need to provide metadata about the query. We could do this using
+      // `resolveMetadata` but that would be an extra call to the CodeQL CLI server and would require
+      // us to know the path to the query on the filesystem. Since we know what the metadata should
+      // look like and the only metadata that the CodeQL CLI requires is an ID and the kind, we can
+      // simply use constants here.
       kind: "problem",
       id: "usage",
     },
@@ -100,6 +114,7 @@ export async function getAutoModelUsages({
     throw new Error("No results");
   }
 
+  // This will group the snippets by the method signature.
   for (const result of results) {
     const signature = result.message.text;
 
