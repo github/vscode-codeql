@@ -5,6 +5,7 @@ export const fetchExternalApisQuery: Query = {
  * @name Usage of APIs coming from external libraries
  * @description A list of 3rd party APIs used in the codebase. Excludes test and generated code.
  * @tags telemetry
+ * @kind problem
  * @id java/telemetry/fetch-external-apis
  */
 
@@ -27,28 +28,7 @@ where
   apiName = api.getApiName() and
   supported = isSupported(api) and
   usage = aUsage(api)
-select apiName, supported, usage
-`,
-  usagesQuery: `/**
- * @name Usage of APIs coming from external libraries
- * @description A list of 3rd party APIs used in the codebase. Excludes test and generated code.
- * @kind problem
- * @id java/telemetry/fetch-external-api-usages
- */
-
-import java
-import ExternalApi
-
-private Call aUsage(ExternalApi api) {
-  result.getCallee().getSourceDeclaration() = api and
-  not result.getFile() instanceof GeneratedFile
-}
-
-from ExternalApi api, string apiName, Call usage
-where
-  apiName = api.getApiName() and
-  usage = aUsage(api)
-select usage, apiName
+select usage, apiName, supported.toString(), "supported"
 `,
   dependencies: {
     "ExternalApi.qll": `/** Provides classes and predicates related to handling APIs from external libraries. */

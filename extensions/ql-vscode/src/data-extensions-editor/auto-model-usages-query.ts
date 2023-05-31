@@ -37,7 +37,7 @@ export async function getAutoModelUsages({
 
   const cancellationTokenSource = new CancellationTokenSource();
 
-  const queryResult = await runQuery("usagesQuery", {
+  const queryResult = await runQuery({
     cliServer,
     queryRunner,
     queryStorageDir,

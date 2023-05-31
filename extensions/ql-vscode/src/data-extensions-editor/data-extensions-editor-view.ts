@@ -243,7 +243,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     const cancellationTokenSource = new CancellationTokenSource();
 
     try {
-      const queryResult = await runQuery("mainQuery", {
+      const queryResult = await runQuery({
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
         databaseItem: this.databaseItem,
