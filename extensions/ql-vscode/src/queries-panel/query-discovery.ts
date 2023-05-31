@@ -8,6 +8,7 @@ import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import { getOnDiskWorkspaceFoldersObjects } from "../helpers";
 import { AppEventEmitter } from "../common/events";
 import { QueryDiscoverer } from "./query-tree-data-provider";
+import { extLogger } from "../common";
 
 /**
  * The results of discovering queries.
@@ -41,7 +42,7 @@ export class QueryDiscovery
   );
 
   constructor(app: App, private readonly cliServer: CodeQLCliServer) {
-    super("Query Discovery");
+    super("Query Discovery", extLogger);
 
     this.onDidChangeQueriesEmitter = this.push(app.createEventEmitter<void>());
     this.push(app.onDidChangeWorkspaceFolders(this.refresh.bind(this)));
