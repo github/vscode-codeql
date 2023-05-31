@@ -1,6 +1,6 @@
 import { DisposableObject } from "../pure/disposable-object";
-import { extLogger } from "./logging/vscode/loggers";
 import { getErrorMessage } from "../pure/helpers-pure";
+import { Logger } from "./logging";
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of
@@ -11,7 +11,7 @@ export abstract class Discovery<T> extends DisposableObject {
   private retry = false;
   private discoveryInProgress = false;
 
-  constructor(private readonly name: string) {
+  constructor(private readonly name: string, private readonly logger: Logger) {
     super();
   }
 
@@ -63,7 +63,7 @@ export abstract class Discovery<T> extends DisposableObject {
       })
 
       .catch((err: unknown) => {
-        void extLogger.log(
+        void this.logger.log(
           `${this.name} failed. Reason: ${getErrorMessage(err)}`,
         );
       })
