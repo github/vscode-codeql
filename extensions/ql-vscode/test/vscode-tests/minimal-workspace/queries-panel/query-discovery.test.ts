@@ -164,6 +164,30 @@ describe("QueryDiscovery", () => {
 
       expect(resolveQueryByLanguage).toHaveBeenCalledTimes(3);
     });
+
+    it("merges together all queries from QueryInfoByLanguage", async () => {
+      const cli = mockedObject<CodeQLCliServer>({
+        resolveQueryByLanguage: mockResolveQueryByLanguage((queryDir) => ({
+          byLanguage: {
+            java: [join(queryDir, "query1.ql")],
+            cpp: [join(queryDir, "query2.ql")],
+          },
+          multipleDeclaredLanguages: [join(queryDir, "query3.ql")],
+          noDeclaredLanguage: [join(queryDir, "query4.ql")],
+        })),
+      });
+
+      const discovery = new QueryDiscovery(createMockApp({}), cli);
+      await discovery.refresh();
+      const queries = discovery.queries;
+      expect(queries).toBeDefined();
+
+      expect(queries![0].children.length).toEqual(4);
+      expect(queries![0].children[0].name).toEqual("query1.ql");
+      expect(queries![0].children[1].name).toEqual("query2.ql");
+      expect(queries![0].children[2].name).toEqual("query3.ql");
+      expect(queries![0].children[3].name).toEqual("query4.ql");
+    });
   });
 
   describe("onDidChangeQueries", () => {
