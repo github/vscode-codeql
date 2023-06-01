@@ -114,7 +114,12 @@ export class QueryDiscovery
     const fullPath = workspaceFolder.uri.fsPath;
     const name = workspaceFolder.name;
 
-    const resolvedQueries = await this.cliServer.resolveQueries(fullPath);
+    // We don't want to log each invocation of resolveQueries, since it clutters up the log.
+    const silent = true;
+    const resolvedQueries = await this.cliServer.resolveQueries(
+      fullPath,
+      silent,
+    );
     if (resolvedQueries.length === 0) {
       return undefined;
     }
