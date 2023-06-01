@@ -5,7 +5,10 @@ import {
   WorkspaceFoldersChangeEvent,
   workspace,
 } from "vscode";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import {
+  CodeQLCliServer,
+  QueryInfoByLanguage,
+} from "../../../../src/codeql-cli/cli";
 import { QueryDiscovery } from "../../../../src/queries-panel/query-discovery";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { mockedObject } from "../../utils/mocking.helpers";
@@ -16,11 +19,42 @@ describe("QueryDiscovery", () => {
     expect(workspace.workspaceFolders?.length).toEqual(1);
   });
 
+  function mockResolveQueryByLanguage(
+    dataFn: (queryDir: string) => {
+      byLanguage?: Record<string, string[]>;
+      noDeclaredLanguage?: string[];
+      multipleDeclaredLanguages?: string[];
+    },
+  ) {
+    return jest.fn().mockImplementation((queryDir: Uri) => {
+      const data = dataFn(queryDir.fsPath);
+      const value: QueryInfoByLanguage = {
+        byLanguage: Object.keys(data.byLanguage || {}).reduce((result, key) => {
+          result[key] = queriesArrayToRecord(data.byLanguage![key]);
+          return result;
+        }, {} as QueryInfoByLanguage["byLanguage"]),
+        noDeclaredLanguage: queriesArrayToRecord(data.noDeclaredLanguage || []),
+        multipleDeclaredLanguages: queriesArrayToRecord(
+          data.multipleDeclaredLanguages || [],
+        ),
+      };
+      return Promise.resolve(value);
+    });
+  }
+
+  function queriesArrayToRecord(queries: string[]): Record<string, unknown> {
+    const result: Record<string, unknown> = {};
+    for (const query of queries) {
+      result[query] = {};
+    }
+    return result;
+  }
+
   describe("queries", () => {
     it("should return empty list when no QL files are present", async () => {
-      const resolveQueries = jest.fn().mockResolvedValue([]);
+      const resolveQueryByLanguage = mockResolveQueryByLanguage(() => ({}));
       const cli = mockedObject<CodeQLCliServer>({
-        resolveQueries,
+        resolveQueryByLanguage,
       });
 
       const discovery = new QueryDiscovery(createMockApp({}), cli);
@@ -28,19 +62,20 @@ describe("QueryDiscovery", () => {
       const queries = discovery.queries;
 
       expect(queries).toEqual([]);
-      expect(resolveQueries).toHaveBeenCalledTimes(1);
+      expect(resolveQueryByLanguage).toHaveBeenCalledTimes(1);
     });
 
     it("should organise query files into directories", async () => {
-      const workspaceRoot = workspace.workspaceFolders![0].uri.fsPath;
       const cli = mockedObject<CodeQLCliServer>({
-        resolveQueries: jest
-          .fn()
-          .mockResolvedValue([
-            join(workspaceRoot, "dir1/query1.ql"),
-            join(workspaceRoot, "dir2/query2.ql"),
-            join(workspaceRoot, "query3.ql"),
-          ]),
+        resolveQueryByLanguage: mockResolveQueryByLanguage((queryDir) => ({
+          byLanguage: {
+            java: [
+              join(queryDir, "dir1/query1.ql"),
+              join(queryDir, "dir2/query2.ql"),
+              join(queryDir, "query3.ql"),
+            ],
+          },
+        })),
       });
 
       const discovery = new QueryDiscovery(createMockApp({}), cli);
@@ -59,14 +94,15 @@ describe("QueryDiscovery", () => {
     });
 
     it("should collapse directories containing only a single element", async () => {
-      const workspaceRoot = workspace.workspaceFolders![0].uri.fsPath;
       const cli = mockedObject<CodeQLCliServer>({
-        resolveQueries: jest
-          .fn()
-          .mockResolvedValue([
-            join(workspaceRoot, "dir1/query1.ql"),
-            join(workspaceRoot, "dir1/dir2/dir3/dir3/query2.ql"),
-          ]),
+        resolveQueryByLanguage: mockResolveQueryByLanguage((queryDir) => ({
+          byLanguage: {
+            java: [
+              join(queryDir, "dir1/query1.ql"),
+              join(queryDir, "dir1/dir2/dir3/dir3/query2.ql"),
+            ],
+          },
+        })),
       });
 
       const discovery = new QueryDiscovery(createMockApp({}), cli);
@@ -101,17 +137,19 @@ describe("QueryDiscovery", () => {
         })),
       );
 
-      const resolveQueries = jest.fn().mockImplementation((queryDir) => {
+      const resolveQueryByLanguage = mockResolveQueryByLanguage((queryDir) => {
         const workspaceIndex = workspaceRoots.indexOf(queryDir);
         if (workspaceIndex === -1) {
           throw new Error("Unexpected workspace");
         }
-        return Promise.resolve([
-          join(queryDir, `query${workspaceIndex + 1}.ql`),
-        ]);
+        return {
+          byLanguage: {
+            java: [join(queryDir, `query${workspaceIndex + 1}.ql`)],
+          },
+        };
       });
       const cli = mockedObject<CodeQLCliServer>({
-        resolveQueries,
+        resolveQueryByLanguage,
       });
 
       const discovery = new QueryDiscovery(createMockApp({}), cli);
@@ -124,7 +162,7 @@ describe("QueryDiscovery", () => {
       expect(queries![1].children[0].name).toEqual("query2.ql");
       expect(queries![2].children[0].name).toEqual("query3.ql");
 
-      expect(resolveQueries).toHaveBeenCalledTimes(3);
+      expect(resolveQueryByLanguage).toHaveBeenCalledTimes(3);
     });
   });
 
@@ -146,11 +184,12 @@ describe("QueryDiscovery", () => {
       );
       createFileSystemWatcherSpy.mockReturnValue(watcher);
 
-      const workspaceRoot = workspace.workspaceFolders![0].uri.fsPath;
       const cli = mockedObject<CodeQLCliServer>({
-        resolveQueries: jest
-          .fn()
-          .mockResolvedValue([join(workspaceRoot, "query1.ql")]),
+        resolveQueryByLanguage: mockResolveQueryByLanguage((queryDir) => ({
+          byLanguage: {
+            java: [join(queryDir, "query1.ql")],
+          },
+        })),
       });
 
       const discovery = new QueryDiscovery(
@@ -187,7 +226,7 @@ describe("QueryDiscovery", () => {
           onDidChangeWorkspaceFolders: onDidChangeWorkspaceFoldersEvent.event,
         }),
         mockedObject<CodeQLCliServer>({
-          resolveQueries: jest.fn().mockResolvedValue([]),
+          resolveQueryByLanguage: mockResolveQueryByLanguage(() => ({})),
         }),
       );
 

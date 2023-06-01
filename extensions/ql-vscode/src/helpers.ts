@@ -560,8 +560,8 @@ export async function findLanguage(
   if (uri !== undefined) {
     try {
       const queryInfo = await cliServer.resolveQueryByLanguage(
-        getOnDiskWorkspaceFolders(),
         uri,
+        getOnDiskWorkspaceFolders(),
       );
       const language = Object.keys(queryInfo.byLanguage)[0];
       void extLogger.log(`Detected query language: ${language}`);

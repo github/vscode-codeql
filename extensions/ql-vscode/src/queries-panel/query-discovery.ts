@@ -1,6 +1,6 @@
 import { dirname, basename, normalize, relative } from "path";
 import { Discovery } from "../common/discovery";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import { CodeQLCliServer, QueryInfoByLanguage } from "../codeql-cli/cli";
 import { Event, RelativePattern, Uri, WorkspaceFolder } from "vscode";
 import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
 import { App } from "../common/app";
@@ -96,11 +96,15 @@ export class QueryDiscovery
    *   no queries were found.
    */
   private async discoverQueries(
-    workspaceFolders: readonly WorkspaceFolder[],
+    workspaceFolders: WorkspaceFolder[],
   ): Promise<FileTreeDirectory[]> {
     const rootDirectories = [];
+    const allWorkspceFolderPaths = workspaceFolders.map((f) => f.uri.fsPath);
     for (const workspaceFolder of workspaceFolders) {
-      const root = await this.discoverQueriesInWorkspace(workspaceFolder);
+      const root = await this.discoverQueriesInWorkspaceFolder(
+        workspaceFolder,
+        allWorkspceFolderPaths,
+      );
       if (root !== undefined) {
         rootDirectories.push(root);
       }
@@ -108,33 +112,65 @@ export class QueryDiscovery
     return rootDirectories;
   }
 
-  private async discoverQueriesInWorkspace(
+  private async discoverQueriesInWorkspaceFolder(
     workspaceFolder: WorkspaceFolder,
+    allWorkspaceFolderPaths: string[],
   ): Promise<FileTreeDirectory | undefined> {
-    const fullPath = workspaceFolder.uri.fsPath;
-    const name = workspaceFolder.name;
-
     // We don't want to log each invocation of resolveQueries, since it clutters up the log.
     const silent = true;
-    const resolvedQueries = await this.cliServer.resolveQueries(
-      fullPath,
+    const resolvedQueries = await this.cliServer.resolveQueryByLanguage(
+      workspaceFolder.uri,
+      allWorkspaceFolderPaths,
       silent,
     );
-    if (resolvedQueries.length === 0) {
+
+    const queries = getQueryPaths(resolvedQueries);
+    if (queries.length === 0) {
       return undefined;
     }
 
-    const rootDirectory = new FileTreeDirectory(fullPath, name);
-    for (const queryPath of resolvedQueries) {
-      const relativePath = normalize(relative(fullPath, queryPath));
+    const rootDirectory = new FileTreeDirectory(
+      workspaceFolder.uri.fsPath,
+      workspaceFolder.name,
+    );
+    for (const query of queries) {
+      const relativePath = normalize(
+        relative(workspaceFolder.uri.fsPath, query.path),
+      );
       const dirName = dirname(relativePath);
       const parentDirectory = rootDirectory.createDirectory(dirName);
       parentDirectory.addChild(
-        new FileTreeLeaf(queryPath, basename(queryPath)),
+        new FileTreeLeaf(query.path, basename(query.path)),
       );
     }
 
     rootDirectory.finish();
     return rootDirectory;
   }
+}
+
+interface QueryData {
+  path: string;
+  language: string | undefined;
+}
+
+function getQueryPaths(resolvedQueries: QueryInfoByLanguage): QueryData[] {
+  const queryPaths: QueryData[] = [];
+
+  const languages = Object.keys(resolvedQueries.byLanguage);
+  for (const language of languages) {
+    for (const path of Object.keys(resolvedQueries.byLanguage[language])) {
+      queryPaths.push({ path, language });
+    }
+  }
+
+  for (const path of Object.keys(resolvedQueries.multipleDeclaredLanguages)) {
+    queryPaths.push({ path, language: undefined });
+  }
+
+  for (const path of Object.keys(resolvedQueries.noDeclaredLanguage)) {
+    queryPaths.push({ path, language: undefined });
+  }
+
+  return queryPaths;
 }

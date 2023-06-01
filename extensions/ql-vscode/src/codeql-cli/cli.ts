@@ -135,11 +135,6 @@ export interface SourceInfo {
 }
 
 /**
- * The expected output of `codeql resolve queries`.
- */
-export type ResolvedQueries = string[];
-
-/**
  * The expected output of `codeql resolve tests`.
  */
 export type ResolvedTests = string[];
@@ -734,42 +729,27 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Resolves the language for a query.
    * @param queryUri The URI of the query
+   * @param workspaceFolders All workspace folders, to be used to search for additional packs.
+   * @param silent If true, don't print logs to the CodeQL extension log.
    */
   async resolveQueryByLanguage(
-    workspaces: string[],
     queryUri: Uri,
+    workspaceFolders: string[],
+    silent?: boolean,
   ): Promise<QueryInfoByLanguage> {
     const subcommandArgs = [
       "--format",
       "bylanguage",
       queryUri.fsPath,
-      ...this.getAdditionalPacksArg(workspaces),
+      ...this.getAdditionalPacksArg(workspaceFolders),
     ];
     return JSON.parse(
       await this.runCodeQlCliCommand(
         ["resolve", "queries"],
         subcommandArgs,
         "Resolving query by language",
+        { silent },
       ),
-    );
-  }
-
-  /**
-   * Finds all available queries in a given directory.
-   * @param queryDir Root of directory tree to search for queries.
-   * @param silent If true, don't print logs to the CodeQL extension log.
-   * @returns The list of queries that were found.
-   */
-  public async resolveQueries(
-    queryDir: string,
-    silent?: boolean,
-  ): Promise<ResolvedQueries> {
-    const subcommandArgs = [queryDir];
-    return await this.runJsonCodeQlCliCommand<ResolvedQueries>(
-      ["resolve", "queries"],
-      subcommandArgs,
-      "Resolving queries",
-      { silent },
     );
   }
 

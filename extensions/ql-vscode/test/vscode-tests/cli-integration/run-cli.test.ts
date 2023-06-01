@@ -49,16 +49,18 @@ describe("Use cli", () => {
 
   describe("silent logging", () => {
     it("should log command output", async () => {
-      const queryDir = getOnDiskWorkspaceFolders()[0];
-      await cli.resolveQueries(queryDir);
+      const workspaceFolders = getOnDiskWorkspaceFolders();
+      const queryDir = Uri.file(workspaceFolders[0]);
+      await cli.resolveQueryByLanguage(queryDir, workspaceFolders);
 
       expect(logSpy).toHaveBeenCalled();
     });
 
     it("shouldn't log command output if the `silent` flag is set", async () => {
-      const queryDir = getOnDiskWorkspaceFolders()[0];
+      const workspaceFolders = getOnDiskWorkspaceFolders();
+      const queryDir = Uri.file(workspaceFolders[0]);
       const silent = true;
-      await cli.resolveQueries(queryDir, silent);
+      await cli.resolveQueryByLanguage(queryDir, workspaceFolders, silent);
 
       expect(logSpy).not.toHaveBeenCalled();
     });
@@ -87,8 +89,8 @@ describe("Use cli", () => {
   itWithCodeQL()("should resolve query by language", async () => {
     const queryPath = join(__dirname, "data", "simple-javascript-query.ql");
     const queryInfo: QueryInfoByLanguage = await cli.resolveQueryByLanguage(
-      getOnDiskWorkspaceFolders(),
       Uri.file(queryPath),
+      getOnDiskWorkspaceFolders(),
     );
     expect(Object.keys(queryInfo.byLanguage)[0]).toEqual("javascript");
   });
