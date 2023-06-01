@@ -24,7 +24,9 @@ import { QueryResultType } from "../../pure/new-messages";
 import { fileRangeFromURI } from "./file-range-from-uri";
 
 export const SELECT_QUERY_NAME = "#select";
-export const TEMPLATE_NAME = "selectedSourceFile";
+export const SELECTED_SOURCE_FILE = "selectedSourceFile";
+export const SELECTED_SOURCE_LINE = "selectedSourceLine";
+export const SELECTED_SOURCE_COLUMN = "selectedSourceColumn";
 
 export interface FullLocationLink extends LocationLink {
   originUri: Uri;
@@ -124,7 +126,7 @@ async function getLinksFromResults(
 
 function createTemplates(path: string): Record<string, string> {
   return {
-    [TEMPLATE_NAME]: path,
+    [SELECTED_SOURCE_FILE]: path,
   };
 }
 
