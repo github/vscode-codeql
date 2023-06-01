@@ -10,7 +10,7 @@ import {
   isCodespacesTemplate,
   setAutogenerateQlPacks,
 } from "../../config";
-import { extname, join } from "path";
+import { join } from "path";
 import { FullDatabaseOptions } from "./database-options";
 import { DatabaseItemImpl } from "./database-item-impl";
 import {
@@ -164,10 +164,7 @@ export class DatabaseManager extends DisposableObject {
     displayName: string | undefined,
   ): Promise<DatabaseItemImpl> {
     const contents = await DatabaseResolver.resolveDatabaseContents(uri);
-    // Ignore the source archive for QLTest databases by default.
-    const isQLTestDatabase = extname(uri.fsPath) === ".testproj";
     const fullOptions: FullDatabaseOptions = {
-      ignoreSourceArchive: isQLTestDatabase,
       // If a displayName is not passed in, the basename of folder containing the database is used.
       displayName,
       dateAdded: Date.now(),
@@ -324,15 +321,11 @@ export class DatabaseManager extends DisposableObject {
     state: PersistedDatabaseItem,
   ): Promise<DatabaseItemImpl> {
     let displayName: string | undefined = undefined;
-    let ignoreSourceArchive = false;
     let dateAdded = undefined;
     let language = undefined;
     if (state.options) {
       if (typeof state.options.displayName === "string") {
         displayName = state.options.displayName;
-      }
-      if (typeof state.options.ignoreSourceArchive === "boolean") {
-        ignoreSourceArchive = state.options.ignoreSourceArchive;
       }
       if (typeof state.options.dateAdded === "number") {
         dateAdded = state.options.dateAdded;
@@ -347,7 +340,6 @@ export class DatabaseManager extends DisposableObject {
     }
 
     const fullOptions: FullDatabaseOptions = {
-      ignoreSourceArchive,
       displayName,
       dateAdded,
       language,
