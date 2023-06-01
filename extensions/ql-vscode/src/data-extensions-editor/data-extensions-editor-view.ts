@@ -45,6 +45,7 @@ import {
   parsePredictedClassifications,
 } from "./auto-model";
 import { showLlmGeneration } from "../config";
+import { getAutoModelUsages } from "./auto-model-usages-query";
 
 function getQlSubmoduleFolder(): WorkspaceFolder | undefined {
   const workspaceFolder = workspace.workspaceFolders?.find(
@@ -385,23 +386,66 @@ export class DataExtensionsEditorView extends AbstractWebview<
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
+    const maxStep = 3000;
+
+    await this.showProgress({
+      step: 0,
+      maxStep,
+      message: "Retrieving usages",
+    });
+
+    const usages = await getAutoModelUsages({
+      cliServer: this.cliServer,
+      queryRunner: this.queryRunner,
+      queryStorageDir: this.queryStorageDir,
+      databaseItem: this.databaseItem,
+      progress: (update) => this.showProgress(update, maxStep),
+    });
+
+    await this.showProgress({
+      step: 1800,
+      maxStep,
+      message: "Creating request",
+    });
+
     const request = createAutoModelRequest(
       this.databaseItem.language,
       externalApiUsages,
       modeledMethods,
+      usages,
     );
 
+    await this.showProgress({
+      step: 2000,
+      maxStep,
+      message: "Sending request",
+    });
+
     const response = await autoModel(this.app.credentials, request);
+
+    await this.showProgress({
+      step: 2500,
+      maxStep,
+      message: "Parsing response",
+    });
 
     const predictedModeledMethods = parsePredictedClassifications(
       response.predicted,
     );
+
+    await this.showProgress({
+      step: 2800,
+      maxStep,
+      message: "Applying results",
+    });
 
     await this.postMessage({
       t: "addModeledMethods",
       modeledMethods: predictedModeledMethods,
       overrideNone: true,
     });
+
+    await this.clearProgress();
   }
 
   /*

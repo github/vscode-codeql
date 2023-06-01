@@ -47,7 +47,7 @@ import { App } from "../common/app";
 import { DisposableObject } from "../pure/disposable-object";
 import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
-import { createMultiSelectionCommand } from "../common/selection-commands";
+import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;

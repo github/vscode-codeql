@@ -49,7 +49,7 @@ import { LocalDatabasesCommands } from "../common/commands";
 import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
-} from "../common/selection-commands";
+} from "../common/vscode/selection-commands";
 
 enum SortOrder {
   NameAsc = "NameAsc",

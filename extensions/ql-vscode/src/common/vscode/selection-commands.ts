@@ -1,9 +1,9 @@
-import { showAndLogErrorMessage } from "../helpers";
+import { showAndLogErrorMessage } from "../../helpers";
 import {
   ExplorerSelectionCommandFunction,
   TreeViewContextMultiSelectionCommandFunction,
   TreeViewContextSingleSelectionCommandFunction,
-} from "./commands";
+} from "../commands";
 
 // A hack to match types that are not an array, which is useful to help avoid
 // misusing createSingleSelectionCommand, e.g. where T accidentally gets instantiated

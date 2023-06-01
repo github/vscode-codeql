@@ -6,14 +6,10 @@ import {
   workspace,
 } from "vscode";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import {
-  QueryDiscovery,
-  QueryDiscoveryResults,
-} from "../../../../src/queries-panel/query-discovery";
+import { QueryDiscovery } from "../../../../src/queries-panel/query-discovery";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { mockedObject } from "../../utils/mocking.helpers";
 import { basename, join, sep } from "path";
-import { sleep } from "../../../../src/pure/time";
 
 describe("QueryDiscovery", () => {
   beforeEach(() => {
@@ -28,11 +24,10 @@ describe("QueryDiscovery", () => {
       });
 
       const discovery = new QueryDiscovery(createMockApp({}), cli);
-      const results: QueryDiscoveryResults = await (
-        discovery as any
-      ).discover();
+      await discovery.refresh();
+      const queries = discovery.queries;
 
-      expect(results.queries).toEqual([]);
+      expect(queries).toEqual([]);
       expect(resolveQueries).toHaveBeenCalledTimes(1);
     });
 
@@ -49,22 +44,18 @@ describe("QueryDiscovery", () => {
       });
 
       const discovery = new QueryDiscovery(createMockApp({}), cli);
-      const results: QueryDiscoveryResults = await (
-        discovery as any
-      ).discover();
+      await discovery.refresh();
+      const queries = discovery.queries;
+      expect(queries).toBeDefined();
 
-      expect(results.queries[0].children.length).toEqual(3);
-      expect(results.queries[0].children[0].name).toEqual("dir1");
-      expect(results.queries[0].children[0].children.length).toEqual(1);
-      expect(results.queries[0].children[0].children[0].name).toEqual(
-        "query1.ql",
-      );
-      expect(results.queries[0].children[1].name).toEqual("dir2");
-      expect(results.queries[0].children[1].children.length).toEqual(1);
-      expect(results.queries[0].children[1].children[0].name).toEqual(
-        "query2.ql",
-      );
-      expect(results.queries[0].children[2].name).toEqual("query3.ql");
+      expect(queries![0].children.length).toEqual(3);
+      expect(queries![0].children[0].name).toEqual("dir1");
+      expect(queries![0].children[0].children.length).toEqual(1);
+      expect(queries![0].children[0].children[0].name).toEqual("query1.ql");
+      expect(queries![0].children[1].name).toEqual("dir2");
+      expect(queries![0].children[1].children.length).toEqual(1);
+      expect(queries![0].children[1].children[0].name).toEqual("query2.ql");
+      expect(queries![0].children[2].name).toEqual("query3.ql");
     });
 
     it("should collapse directories containing only a single element", async () => {
@@ -79,25 +70,21 @@ describe("QueryDiscovery", () => {
       });
 
       const discovery = new QueryDiscovery(createMockApp({}), cli);
-      const results: QueryDiscoveryResults = await (
-        discovery as any
-      ).discover();
+      await discovery.refresh();
+      const queries = discovery.queries;
+      expect(queries).toBeDefined();
 
-      expect(results.queries[0].children.length).toEqual(1);
-      expect(results.queries[0].children[0].name).toEqual("dir1");
-      expect(results.queries[0].children[0].children.length).toEqual(2);
-      expect(results.queries[0].children[0].children[0].name).toEqual(
+      expect(queries![0].children.length).toEqual(1);
+      expect(queries![0].children[0].name).toEqual("dir1");
+      expect(queries![0].children[0].children.length).toEqual(2);
+      expect(queries![0].children[0].children[0].name).toEqual(
         "dir2 / dir3 / dir3",
       );
-      expect(
-        results.queries[0].children[0].children[0].children.length,
-      ).toEqual(1);
-      expect(
-        results.queries[0].children[0].children[0].children[0].name,
-      ).toEqual("query2.ql");
-      expect(results.queries[0].children[0].children[1].name).toEqual(
-        "query1.ql",
+      expect(queries![0].children[0].children[0].children.length).toEqual(1);
+      expect(queries![0].children[0].children[0].children[0].name).toEqual(
+        "query2.ql",
       );
+      expect(queries![0].children[0].children[1].name).toEqual("query1.ql");
     });
 
     it("calls resolveQueries once for each workspace folder", async () => {
@@ -128,14 +115,14 @@ describe("QueryDiscovery", () => {
       });
 
       const discovery = new QueryDiscovery(createMockApp({}), cli);
-      const results: QueryDiscoveryResults = await (
-        discovery as any
-      ).discover();
+      await discovery.refresh();
+      const queries = discovery.queries;
+      expect(queries).toBeDefined();
 
-      expect(results.queries.length).toEqual(3);
-      expect(results.queries[0].children[0].name).toEqual("query1.ql");
-      expect(results.queries[1].children[0].name).toEqual("query2.ql");
-      expect(results.queries[2].children[0].name).toEqual("query3.ql");
+      expect(queries!.length).toEqual(3);
+      expect(queries![0].children[0].name).toEqual("query1.ql");
+      expect(queries![1].children[0].name).toEqual("query2.ql");
+      expect(queries![2].children[0].name).toEqual("query3.ql");
 
       expect(resolveQueries).toHaveBeenCalledTimes(3);
     });
@@ -176,16 +163,14 @@ describe("QueryDiscovery", () => {
       const onDidChangeQueriesSpy = jest.fn();
       discovery.onDidChangeQueries(onDidChangeQueriesSpy);
 
-      const results = await (discovery as any).discover();
-      (discovery as any).update(results);
+      await discovery.refresh();
 
       expect(createFileSystemWatcherSpy).toHaveBeenCalledTimes(2);
       expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(1);
 
       onWatcherDidChangeEvent.fire(workspace.workspaceFolders![0].uri);
 
-      // Wait for refresh to finish
-      await sleep(100);
+      await discovery.waitForCurrentRefresh();
 
       expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(2);
     });
@@ -209,15 +194,13 @@ describe("QueryDiscovery", () => {
       const onDidChangeQueriesSpy = jest.fn();
       discovery.onDidChangeQueries(onDidChangeQueriesSpy);
 
-      const results = await (discovery as any).discover();
-      (discovery as any).update(results);
+      await discovery.refresh();
 
       expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(1);
 
       onDidChangeWorkspaceFoldersEvent.fire({ added: [], removed: [] });
 
-      // Wait for refresh to finish
-      await sleep(100);
+      await discovery.waitForCurrentRefresh();
 
       expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(2);
     });

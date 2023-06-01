@@ -6,11 +6,13 @@ import {
   Method,
   ModelRequest,
 } from "./auto-model-api";
+import type { UsageSnippetsBySignature } from "./auto-model-usages-query";
 
 export function createAutoModelRequest(
   language: string,
   externalApiUsages: ExternalApiUsage[],
   modeledMethods: Record<string, ModeledMethod>,
+  usages: UsageSnippetsBySignature,
 ): ModelRequest {
   const request: ModelRequest = {
     language,
@@ -28,6 +30,10 @@ export function createAutoModelRequest(
     ] ?? {
       type: "none",
     };
+
+    const usagesForMethod =
+      usages[externalApiUsage.signature] ??
+      externalApiUsage.usages.map((usage) => usage.label);
 
     const numberOfArguments =
       externalApiUsage.methodParameters === "()"
@@ -48,9 +54,7 @@ export function createAutoModelRequest(
           modeledMethod.type === "none"
             ? undefined
             : toMethodClassification(modeledMethod),
-        usages: externalApiUsage.usages
-          .slice(0, 10)
-          .map((usage) => usage.label),
+        usages: usagesForMethod.slice(0, 10),
         input: `Argument[${argumentIndex}]`,
       };
 

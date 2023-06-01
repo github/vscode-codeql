@@ -218,7 +218,7 @@ export class CodeQLCliServer implements Disposable {
     private readonly app: App,
     private distributionProvider: DistributionProvider,
     private cliConfig: CliConfig,
-    private logger: Logger,
+    public readonly logger: Logger,
   ) {
     this.commandQueue = [];
     this.commandInProcess = false;
@@ -330,6 +330,7 @@ export class CodeQLCliServer implements Disposable {
     commandArgs: string[],
     description: string,
     onLine?: OnLineCallback,
+    silent?: boolean,
   ): Promise<string> {
     const stderrBuffers: Buffer[] = [];
     if (this.commandInProcess) {
@@ -349,7 +350,12 @@ export class CodeQLCliServer implements Disposable {
       // Compute the full args array
       const args = command.concat(LOGGING_FLAGS).concat(commandArgs);
       const argsString = args.join(" ");
-      void this.logger.log(`${description} using CodeQL CLI: ${argsString}...`);
+      // If we are running silently, we don't want to print anything to the console.
+      if (!silent) {
+        void this.logger.log(
+          `${description} using CodeQL CLI: ${argsString}...`,
+        );
+      }
       try {
         await new Promise<void>((resolve, reject) => {
           // Start listening to stdout
@@ -395,24 +401,30 @@ export class CodeQLCliServer implements Disposable {
         const fullBuffer = Buffer.concat(stdoutBuffers);
         // Make sure we remove the terminator;
         const data = fullBuffer.toString("utf8", 0, fullBuffer.length - 1);
-        void this.logger.log("CLI command succeeded.");
+        if (!silent) {
+          void this.logger.log("CLI command succeeded.");
+        }
         return data;
       } catch (err) {
         // Kill the process if it isn't already dead.
         this.killProcessIfRunning();
-        // Report the error (if there is a stderr then use that otherwise just report the error cod or nodejs error)
+        // Report the error (if there is a stderr then use that otherwise just report the error code or nodejs error)
         const newError =
           stderrBuffers.length === 0
-            ? new Error(`${description} failed: ${err}`)
+            ? new Error(
+                `${description} failed with args:${EOL}    ${argsString}${EOL}${err}`,
+              )
             : new Error(
-                `${description} failed: ${Buffer.concat(stderrBuffers).toString(
-                  "utf8",
-                )}`,
+                `${description} failed with args:${EOL}    ${argsString}${EOL}${Buffer.concat(
+                  stderrBuffers,
+                ).toString("utf8")}`,
               );
         newError.stack += getErrorStack(err);
         throw newError;
       } finally {
-        void this.logger.log(Buffer.concat(stderrBuffers).toString("utf8"));
+        if (!silent) {
+          void this.logger.log(Buffer.concat(stderrBuffers).toString("utf8"));
+        }
         // Remove the listeners we set up.
         process.stdout.removeAllListeners("data");
         process.stderr.removeAllListeners("data");
@@ -549,9 +561,11 @@ export class CodeQLCliServer implements Disposable {
     {
       progressReporter,
       onLine,
+      silent = false,
     }: {
       progressReporter?: ProgressReporter;
       onLine?: OnLineCallback;
+      silent?: boolean;
     } = {},
   ): Promise<string> {
     if (progressReporter) {
@@ -567,6 +581,7 @@ export class CodeQLCliServer implements Disposable {
             commandArgs,
             description,
             onLine,
+            silent,
           ).then(resolve, reject);
         } catch (err) {
           reject(err);
@@ -600,10 +615,12 @@ export class CodeQLCliServer implements Disposable {
       addFormat = true,
       progressReporter,
       onLine,
+      silent = false,
     }: {
       addFormat?: boolean;
       progressReporter?: ProgressReporter;
       onLine?: OnLineCallback;
+      silent?: boolean;
     } = {},
   ): Promise<OutputType> {
     let args: string[] = [];
@@ -614,6 +631,7 @@ export class CodeQLCliServer implements Disposable {
     const result = await this.runCodeQlCliCommand(command, args, description, {
       progressReporter,
       onLine,
+      silent,
     });
     try {
       return JSON.parse(result) as OutputType;
@@ -739,14 +757,19 @@ export class CodeQLCliServer implements Disposable {
   /**
    * Finds all available queries in a given directory.
    * @param queryDir Root of directory tree to search for queries.
+   * @param silent If true, don't print logs to the CodeQL extension log.
    * @returns The list of queries that were found.
    */
-  public async resolveQueries(queryDir: string): Promise<ResolvedQueries> {
+  public async resolveQueries(
+    queryDir: string,
+    silent?: boolean,
+  ): Promise<ResolvedQueries> {
     const subcommandArgs = [queryDir];
     return await this.runJsonCodeQlCliCommand<ResolvedQueries>(
       ["resolve", "queries"],
       subcommandArgs,
       "Resolving queries",
+      { silent },
     );
   }
 
@@ -1050,6 +1073,7 @@ export class CodeQLCliServer implements Disposable {
     resultsPath: string,
     interpretedResultsPath: string,
     sourceInfo?: SourceInfo,
+    args?: string[],
   ): Promise<sarif.Log> {
     const additionalArgs = [
       // TODO: This flag means that we don't group interpreted results
@@ -1057,6 +1081,7 @@ export class CodeQLCliServer implements Disposable {
       // interpretation with and without this flag, or do some
       // grouping client-side.
       "--no-group-results",
+      ...(args ?? []),
     ];
 
     await this.runInterpretCommand(
