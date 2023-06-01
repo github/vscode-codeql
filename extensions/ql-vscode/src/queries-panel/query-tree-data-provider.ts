@@ -4,7 +4,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { FileTreeNode } from "../common/file-tree-nodes";
 
 export interface QueryDiscoverer {
-  readonly queries: FileTreeNode[] | undefined;
+  readonly queries: Array<FileTreeNode<string>> | undefined;
   readonly onDidChangeQueries: Event<void>;
 }
 
@@ -40,11 +40,12 @@ export class QueryTreeDataProvider
   }
 
   private convertFileTreeNode(
-    fileTreeDirectory: FileTreeNode,
+    fileTreeDirectory: FileTreeNode<string>,
   ): QueryTreeViewItem {
     return new QueryTreeViewItem(
       fileTreeDirectory.name,
       fileTreeDirectory.path,
+      fileTreeDirectory.data,
       fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),
     );
   }

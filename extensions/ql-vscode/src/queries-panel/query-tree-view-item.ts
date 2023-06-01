@@ -4,10 +4,12 @@ export class QueryTreeViewItem extends vscode.TreeItem {
   constructor(
     name: string,
     path: string,
+    language: string | undefined,
     public readonly children: QueryTreeViewItem[],
   ) {
     super(name);
     this.tooltip = path;
+    this.description = language;
     this.collapsibleState = this.children.length
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
