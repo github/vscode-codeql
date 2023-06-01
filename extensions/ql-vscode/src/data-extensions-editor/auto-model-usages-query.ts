@@ -107,7 +107,7 @@ export async function getAutoModelUsages({
     message: "Parsing results",
   });
 
-  const snippets: Record<string, string[]> = {};
+  const snippets: UsageSnippetsBySignature = {};
 
   const results = sarif.runs[0]?.results;
   if (!results) {
