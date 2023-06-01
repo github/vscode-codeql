@@ -10,7 +10,7 @@ import { QueryResultType } from "../../../../src/pure/new-messages";
 import { readdir, readFile } from "fs-extra";
 import { load } from "js-yaml";
 import { dirname, join } from "path";
-import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries/index";
+import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries";
 import * as helpers from "../../../../src/helpers";
 import { RedactableError } from "../../../../src/pure/errors";
 
@@ -162,18 +162,20 @@ describe("readQueryResults", () => {
           name: "#select",
           rows: 10,
           columns: [
-            { name: "apiName", kind: "s" },
-            { name: "supported", kind: "b" },
             { name: "usage", kind: "e" },
+            { name: "apiName", kind: "s" },
+            { kind: "s" },
+            { kind: "s" },
           ],
         },
         {
           name: "#select2",
           rows: 10,
           columns: [
-            { name: "apiName", kind: "s" },
-            { name: "supported", kind: "b" },
             { name: "usage", kind: "e" },
+            { name: "apiName", kind: "s" },
+            { kind: "s" },
+            { kind: "s" },
           ],
         },
       ],
@@ -192,9 +194,10 @@ describe("readQueryResults", () => {
           name: "#select",
           rows: 10,
           columns: [
-            { name: "apiName", kind: "s" },
-            { name: "supported", kind: "b" },
             { name: "usage", kind: "e" },
+            { name: "apiName", kind: "s" },
+            { kind: "s" },
+            { kind: "s" },
           ],
         },
       ],
@@ -202,9 +205,10 @@ describe("readQueryResults", () => {
     });
     const decodedResultSet = {
       columns: [
-        { name: "apiName", kind: "String" },
-        { name: "supported", kind: "Boolean" },
-        { name: "usage", kind: "Entity" },
+        { name: "usage", kind: "e" },
+        { name: "apiName", kind: "s" },
+        { kind: "s" },
+        { kind: "s" },
       ],
       tuples: [
         [

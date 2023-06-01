@@ -1073,6 +1073,7 @@ export class CodeQLCliServer implements Disposable {
     resultsPath: string,
     interpretedResultsPath: string,
     sourceInfo?: SourceInfo,
+    args?: string[],
   ): Promise<sarif.Log> {
     const additionalArgs = [
       // TODO: This flag means that we don't group interpreted results
@@ -1080,6 +1081,7 @@ export class CodeQLCliServer implements Disposable {
       // interpretation with and without this flag, or do some
       // grouping client-side.
       "--no-group-results",
+      ...(args ?? []),
     ];
 
     await this.runInterpretCommand(
