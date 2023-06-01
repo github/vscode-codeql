@@ -109,7 +109,7 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
         const dirName = dirname(relativePath);
         const parentDirectory = rootDirectory.createDirectory(dirName);
         parentDirectory.addChild(
-          new FileTreeLeaf(testPath, basename(testPath)),
+          new FileTreeLeaf(testPath, basename(testPath), undefined),
         );
       }
 

@@ -33,12 +33,12 @@ describe("QueryTreeDataProvider", () => {
         queries: [
           new FileTreeDirectory("dir1", "dir1", [
             new FileTreeDirectory("dir1/dir2", "dir2", [
-              new FileTreeLeaf("dir1/dir2/file1", "file1"),
-              new FileTreeLeaf("dir1/dir2/file1", "file2"),
+              new FileTreeLeaf("dir1/dir2/file1", "file1", undefined),
+              new FileTreeLeaf("dir1/dir2/file1", "file2", undefined),
             ]),
           ]),
           new FileTreeDirectory("dir3", "dir3", [
-            new FileTreeLeaf("dir3/file3", "file3"),
+            new FileTreeLeaf("dir3/file3", "file3", undefined),
           ]),
         ],
         onDidChangeQueries: jest.fn(),
@@ -71,7 +71,7 @@ describe("QueryTreeDataProvider", () => {
       const queryDiscoverer: QueryDiscoverer = {
         queries: [
           new FileTreeDirectory("dir1", "dir1", [
-            new FileTreeLeaf("dir1/file1", "file1"),
+            new FileTreeLeaf("dir1/file1", "file1", undefined),
           ]),
         ],
         onDidChangeQueries: onDidChangeQueriesEmitter.event,
@@ -82,7 +82,7 @@ describe("QueryTreeDataProvider", () => {
 
       queryDiscoverer.queries?.push(
         new FileTreeDirectory("dir2", "dir2", [
-          new FileTreeLeaf("dir2/file2", "file2"),
+          new FileTreeLeaf("dir2/file2", "file2", undefined),
         ]),
       );
       onDidChangeQueriesEmitter.fire();

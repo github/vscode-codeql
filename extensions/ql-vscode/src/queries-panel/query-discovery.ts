@@ -130,7 +130,7 @@ export class QueryDiscovery
       const dirName = dirname(relativePath);
       const parentDirectory = rootDirectory.createDirectory(dirName);
       parentDirectory.addChild(
-        new FileTreeLeaf(queryPath, basename(queryPath)),
+        new FileTreeLeaf(queryPath, basename(queryPath), undefined),
       );
     }
 
