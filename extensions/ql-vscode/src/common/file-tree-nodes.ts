@@ -8,7 +8,7 @@ export abstract class FileTreeNode<T = undefined> {
   constructor(
     private _path: string,
     private _name: string,
-    private _data: T | undefined,
+    private _data?: T,
   ) {}
 
   public get path(): string {
@@ -37,7 +37,7 @@ export class FileTreeDirectory<T = undefined> extends FileTreeNode<T> {
     _name: string,
     private _children: Array<FileTreeNode<T>> = [],
   ) {
-    super(_path, _name, undefined);
+    super(_path, _name);
   }
 
   public get children(): ReadonlyArray<FileTreeNode<T>> {
