@@ -225,6 +225,7 @@ describe("query-results", () => {
           resultsPath,
           interpretedResultsPath,
           sourceInfo,
+          undefined,
         );
       },
       2 * 60 * 1000, // up to 2 minutes per test
@@ -249,6 +250,7 @@ describe("query-results", () => {
           resultsPath,
           interpretedResultsPath,
           sourceInfo,
+          undefined,
         );
       },
       2 * 60 * 1000, // up to 2 minutes per test

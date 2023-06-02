@@ -157,6 +157,14 @@ export function DataExtensionsEditor({
     });
   }, []);
 
+  const onGenerateFromLlmClick = useCallback(() => {
+    vscode.postMessage({
+      t: "generateExternalApiFromLlm",
+      externalApiUsages,
+      modeledMethods,
+    });
+  }, [externalApiUsages, modeledMethods]);
+
   const onOpenExtensionPackClick = useCallback(() => {
     vscode.postMessage({
       t: "openExtensionPack",
@@ -214,6 +222,14 @@ export function DataExtensionsEditor({
             <VSCodeButton onClick={onGenerateClick}>
               Download and generate
             </VSCodeButton>
+            {viewState?.showLlmButton && (
+              <>
+                &nbsp;
+                <VSCodeButton onClick={onGenerateFromLlmClick}>
+                  Generate using LLM
+                </VSCodeButton>
+              </>
+            )}
             <br />
             <br />
             <VSCodeDataGrid>

@@ -33,7 +33,6 @@ export function createMockDB(
       datasetUri: databaseUri,
     } as DatabaseContents,
     dbOptions,
-    () => void 0,
   );
 }
 

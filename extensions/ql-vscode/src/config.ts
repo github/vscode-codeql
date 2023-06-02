@@ -702,3 +702,19 @@ export function getAutogenerateQlPacks(): AutogenerateQLPacks {
 export async function setAutogenerateQlPacks(choice: AutogenerateQLPacks) {
   await AUTOGENERATE_QL_PACKS.updateValue(choice, ConfigurationTarget.Global);
 }
+
+/**
+ * A flag indicating whether to show the queries panel in the QL view container.
+ */
+const QUERIES_PANEL = new Setting("queriesPanel", ROOT_SETTING);
+
+export function showQueriesPanel(): boolean {
+  return !!QUERIES_PANEL.getValue<boolean>();
+}
+
+const DATA_EXTENSIONS = new Setting("dataExtensions", ROOT_SETTING);
+const LLM_GENERATION = new Setting("llmGeneration", DATA_EXTENSIONS);
+
+export function showLlmGeneration(): boolean {
+  return !!LLM_GENERATION.getValue<boolean>();
+}

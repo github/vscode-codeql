@@ -222,6 +222,7 @@ describe("Variant Analysis Manager", () => {
       it("should run a remote query that is part of a qlpack", async () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-qlpack/in-pack.ql",
+          expectedPackName: "github/remote-query-pack",
           filesThatExist: ["in-pack.ql", "lib.qll"],
           filesThatDoNotExist: [],
           qlxFilesThatExist: ["in-pack.qlx"],
@@ -231,6 +232,7 @@ describe("Variant Analysis Manager", () => {
       it("should run a remote query that is not part of a qlpack", async () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-no-qlpack/in-pack.ql",
+          expectedPackName: "codeql-remote/query",
           filesThatExist: ["in-pack.ql"],
           filesThatDoNotExist: ["lib.qll", "not-in-pack.ql"],
           qlxFilesThatExist: ["in-pack.qlx"],
@@ -240,6 +242,7 @@ describe("Variant Analysis Manager", () => {
       it("should run a remote query that is nested inside a qlpack", async () => {
         await doVariantAnalysisTest({
           queryPath: "data-remote-qlpack-nested/subfolder/in-pack.ql",
+          expectedPackName: "github/remote-query-pack",
           filesThatExist: ["subfolder/in-pack.ql", "otherfolder/lib.qll"],
           filesThatDoNotExist: ["subfolder/not-in-pack.ql"],
           qlxFilesThatExist: ["subfolder/in-pack.qlx"],
@@ -256,6 +259,7 @@ describe("Variant Analysis Manager", () => {
         await cli.setUseExtensionPacks(true);
         await doVariantAnalysisTest({
           queryPath: "data-remote-qlpack-nested/subfolder/in-pack.ql",
+          expectedPackName: "github/remote-query-pack",
           filesThatExist: [
             "subfolder/in-pack.ql",
             "otherfolder/lib.qll",
@@ -273,12 +277,14 @@ describe("Variant Analysis Manager", () => {
 
     async function doVariantAnalysisTest({
       queryPath,
+      expectedPackName,
       filesThatExist,
       qlxFilesThatExist,
       filesThatDoNotExist,
       dependenciesToCheck = ["codeql/javascript-all"],
     }: {
       queryPath: string;
+      expectedPackName: string;
       filesThatExist: string[];
       qlxFilesThatExist: string[];
       filesThatDoNotExist: string[];
@@ -332,7 +338,7 @@ describe("Variant Analysis Manager", () => {
       const qlpackContents = load(
         packFS.fileContents(packFileName).toString("utf-8"),
       );
-      expect(qlpackContents.name).toEqual("codeql-remote/query");
+      expect(qlpackContents.name).toEqual(expectedPackName);
       expect(qlpackContents.version).toEqual("0.0.0");
       expect(qlpackContents.dependencies?.["codeql/javascript-all"]).toEqual(
         "*",

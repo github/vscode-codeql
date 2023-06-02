@@ -36,6 +36,7 @@
   "activationEvents": [
     "onLanguage:ql",
     "onLanguage:ql-summary",
+    "onView:codeQLQueries",
     "onView:codeQLDatabases",
     "onView:codeQLVariantAnalysisRepositories",
     "onView:codeQLQueryHistory",
@@ -477,6 +478,14 @@
         "title": "CodeQL: Preview Query Help"
       },
       {
+        "command": "codeQL.previewQueryHelpContextExplorer",
+        "title": "CodeQL: Preview Query Help"
+      },
+      {
+        "command": "codeQL.previewQueryHelpContextEditor",
+        "title": "CodeQL: Preview Query Help"
+      },
+      {
         "command": "codeQL.quickQuery",
         "title": "CodeQL: Quick Query"
       },
@@ -506,6 +515,10 @@
         "command": "codeQLVariantAnalysisRepositories.addNewList",
         "title": "Add new list",
         "icon": "$(new-folder)"
+      },
+      {
+        "command": "codeQLVariantAnalysisRepositories.importFromCodeSearch",
+        "title": "Add repositories with GitHub Code Search"
       },
       {
         "command": "codeQLVariantAnalysisRepositories.setSelectedItem",
@@ -829,6 +842,11 @@
         "enablement": "codeql.hasQLSource"
       },
       {
+        "command": "codeQL.gotoQLContextEditor",
+        "title": "CodeQL: Go to QL Code",
+        "enablement": "codeql.hasQLSource"
+      },
+      {
         "command": "codeQL.openDataExtensionsEditor",
         "title": "CodeQL: Open Data Extensions Editor"
       },
@@ -945,6 +963,11 @@
         {
           "command": "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu",
           "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canBeOpenedOnGitHub/",
+          "group": "2_qlContextMenu@1"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.importFromCodeSearch",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canImportCodeSearch/",
           "group": "2_qlContextMenu@1"
         },
         {
@@ -1117,7 +1140,7 @@
           "when": "resourceExtname == .qlref"
         },
         {
-          "command": "codeQL.previewQueryHelp",
+          "command": "codeQL.previewQueryHelpContextExplorer",
           "group": "9_qlCommands",
           "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
         }
@@ -1204,6 +1227,14 @@
           "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
         },
         {
+          "command": "codeQL.previewQueryHelpContextEditor",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.previewQueryHelpContextExplorer",
+          "when": "false"
+        },
+        {
           "command": "codeQL.setCurrentDatabase",
           "when": "false"
         },
@@ -1273,6 +1304,10 @@
         },
         {
           "command": "codeQLVariantAnalysisRepositories.removeItemContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLVariantAnalysisRepositories.importFromCodeSearch",
           "when": "false"
         },
         {
@@ -1466,6 +1501,10 @@
         {
           "command": "codeQLTests.acceptOutputContextTestItem",
           "when": "false"
+        },
+        {
+          "command": "codeQL.gotoQLContextEditor",
+          "when": "false"
         }
       ],
       "editor/context": [
@@ -1510,11 +1549,11 @@
           "when": "resourceExtname == .qlref"
         },
         {
-          "command": "codeQL.previewQueryHelp",
+          "command": "codeQL.previewQueryHelpContextEditor",
           "when": "resourceExtname == .qhelp && isWorkspaceTrusted"
         },
         {
-          "command": "codeQL.gotoQL",
+          "command": "codeQL.gotoQLContextEditor",
           "when": "editorLangId == ql-summary && config.codeQL.canary"
         }
       ]
@@ -1530,6 +1569,11 @@
     },
     "views": {
       "ql-container": [
+        {
+          "id": "codeQLQueries",
+          "name": "Queries",
+          "when": "config.codeQL.canary && config.codeQL.queriesPanel"
+        },
         {
           "id": "codeQLDatabases",
           "name": "Databases"
@@ -1561,6 +1605,10 @@
       {
         "view": "codeQLQueryHistory",
         "contents": "You have no query history items at the moment.\n\nSelect a database to run a CodeQL query and get your first results."
+      },
+      {
+        "view": "codeQLQueries",
+        "contents": "This workspace doesn't contain any CodeQL queries at the moment."
       },
       {
         "view": "codeQLDatabases",

@@ -28,7 +28,7 @@ import {
   QueryRunner,
 } from "../../../src/query-server/query-runner";
 import { SELECT_QUERY_NAME } from "../../../src/language-support";
-import { LocalQueries } from "../../../src/local-queries";
+import { LocalQueries, QuickEvalType } from "../../../src/local-queries";
 import { QueryResultType } from "../../../src/pure/new-messages";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
 import {
@@ -45,7 +45,7 @@ async function compileAndRunQuery(
   mode: DebugMode,
   appCommands: AppCommandManager,
   localQueries: LocalQueries,
-  quickEval: boolean,
+  quickEval: QuickEvalType,
   queryUri: Uri,
   progress: ProgressCallback,
   token: CancellationToken,
@@ -184,7 +184,7 @@ describeWithCodeQL()("Queries", () => {
         mode,
         appCommandManager,
         localQueries,
-        false,
+        QuickEvalType.None,
         Uri.file(queryUsingExtensionPath),
         progress,
         token,
@@ -218,7 +218,7 @@ describeWithCodeQL()("Queries", () => {
         mode,
         appCommandManager,
         localQueries,
-        false,
+        QuickEvalType.None,
         Uri.file(queryPath),
         progress,
         token,
@@ -238,7 +238,7 @@ describeWithCodeQL()("Queries", () => {
         mode,
         appCommandManager,
         localQueries,
-        false,
+        QuickEvalType.None,
         Uri.file(queryPath),
         progress,
         token,

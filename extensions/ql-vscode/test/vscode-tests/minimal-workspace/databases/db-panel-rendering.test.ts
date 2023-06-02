@@ -349,7 +349,12 @@ describe("db panel rendering nodes", () => {
     expect(item.tooltip).toBeUndefined();
     expect(item.iconPath).toBeUndefined();
     expect(item.collapsibleState).toBe(TreeItemCollapsibleState.Collapsed);
-    checkDbItemActions(item, ["canBeSelected", "canBeRenamed", "canBeRemoved"]);
+    checkDbItemActions(item, [
+      "canBeSelected",
+      "canBeRenamed",
+      "canBeRemoved",
+      "canImportCodeSearch",
+    ]);
     expect(item.children).toBeTruthy();
     expect(item.children.length).toBe(repos.length);
 

@@ -115,7 +115,7 @@ export type BqrsKind =
   | "Entity";
 
 interface BqrsColumn {
-  name: string;
+  name?: string;
   kind: BqrsKind;
 }
 export interface DecodedBqrsChunk {

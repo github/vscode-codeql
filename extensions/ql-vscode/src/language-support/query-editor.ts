@@ -38,6 +38,20 @@ export function getQueryEditorCommands({
         qhelpTmpDir,
         selectedQuery,
       ),
+    "codeQL.previewQueryHelpContextEditor": async (selectedQuery: Uri) =>
+      await previewQueryHelp(
+        commandManager,
+        cliServer,
+        qhelpTmpDir,
+        selectedQuery,
+      ),
+    "codeQL.previewQueryHelpContextExplorer": async (selectedQuery: Uri) =>
+      await previewQueryHelp(
+        commandManager,
+        cliServer,
+        qhelpTmpDir,
+        selectedQuery,
+      ),
   };
 }
 

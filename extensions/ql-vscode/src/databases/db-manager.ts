@@ -1,6 +1,7 @@
 import { App } from "../common/app";
 import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
+import { DisposableObject } from "../pure/disposable-object";
 import { DbConfigStore } from "./config/db-config-store";
 import {
   DbItem,
@@ -23,7 +24,7 @@ import {
 import { createRemoteTree } from "./db-tree-creator";
 import { DbConfigValidationError } from "./db-validation-errors";
 
-export class DbManager {
+export class DbManager extends DisposableObject {
   public readonly onDbItemsChanged: AppEvent<void>;
   public static readonly DB_EXPANDED_STATE_KEY = "db_expanded";
   private readonly onDbItemsChangesEventEmitter: AppEventEmitter<void>;
@@ -32,7 +33,11 @@ export class DbManager {
     private readonly app: App,
     private readonly dbConfigStore: DbConfigStore,
   ) {
-    this.onDbItemsChangesEventEmitter = app.createEventEmitter<void>();
+    super();
+
+    this.onDbItemsChangesEventEmitter = this.push(
+      app.createEventEmitter<void>(),
+    );
     this.onDbItemsChanged = this.onDbItemsChangesEventEmitter.event;
 
     this.dbConfigStore.onDidChangeConfig(() => {
@@ -96,8 +101,15 @@ export class DbManager {
   public async addNewRemoteRepo(
     nwo: string,
     parentList?: string,
-  ): Promise<void> {
-    await this.dbConfigStore.addRemoteRepo(nwo, parentList);
+  ): Promise<string[]> {
+    return await this.dbConfigStore.addRemoteRepo(nwo, parentList);
+  }
+
+  public async addNewRemoteReposToList(
+    nwoList: string[],
+    parentList: string,
+  ): Promise<string[]> {
+    return await this.dbConfigStore.addRemoteReposToList(nwoList, parentList);
   }
 
   public async addNewRemoteOwner(owner: string): Promise<void> {

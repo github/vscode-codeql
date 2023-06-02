@@ -3,15 +3,10 @@ import { pathExists, mkdtemp, createWriteStream, remove } from "fs-extra";
 import { tmpdir } from "os";
 import { delimiter, dirname, join } from "path";
 import * as semver from "semver";
-import { parse } from "url";
+import { URL } from "url";
 import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "../config";
-import {
-  InvocationRateLimiter,
-  InvocationRateLimiterResultKind,
-  showAndLogErrorMessage,
-  showAndLogWarningMessage,
-} from "../helpers";
+import { showAndLogErrorMessage, showAndLogWarningMessage } from "../helpers";
 import { extLogger } from "../common";
 import { getCodeQlCliVersion } from "./cli-version";
 import {
@@ -24,6 +19,10 @@ import {
   extractZipArchive,
   getRequiredAssetName,
 } from "../pure/distribution";
+import {
+  InvocationRateLimiter,
+  InvocationRateLimiterResultKind,
+} from "../common/invocation-rate-limiter";
 
 /**
  * distribution.ts
@@ -76,7 +75,7 @@ export class DistributionManager implements DistributionProvider {
         extensionContext,
       );
     this.updateCheckRateLimiter = new InvocationRateLimiter(
-      extensionContext,
+      extensionContext.globalState,
       "extensionSpecificDistributionUpdateCheck",
       () =>
         this.extensionSpecificDistributionManager.checkForUpdatesToDistribution(),
@@ -505,7 +504,7 @@ class ExtensionSpecificDistributionManager {
         0,
       ) || "";
     return join(
-      this.extensionContext.globalStoragePath,
+      this.extensionContext.globalStorageUri.fsPath,
       ExtensionSpecificDistributionManager._currentDistributionFolderBaseName +
         distributionFolderIndex,
     );
@@ -670,7 +669,7 @@ export class ReleasesApiConsumer {
       redirectUrl &&
       redirectCount < ReleasesApiConsumer._maxRedirects
     ) {
-      const parsedRedirectUrl = parse(redirectUrl);
+      const parsedRedirectUrl = new URL(redirectUrl);
       if (parsedRedirectUrl.protocol !== "https:") {
         throw new Error("Encountered a non-https redirect, rejecting");
       }

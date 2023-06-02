@@ -49,7 +49,6 @@ export function registerCommandWithErrorHandling(
       const errorMessage = redactableError(error)`${
         getErrorMessage(e) || e
       } (${commandId})`;
-      const errorStack = getErrorStack(e);
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
@@ -61,6 +60,7 @@ export function registerCommandWithErrorHandling(
         }
       } else {
         // Include the full stack in the error log only.
+        const errorStack = getErrorStack(e);
         const fullMessage = errorStack
           ? `${errorMessage.fullMessage}\n${errorStack}`
           : errorMessage.fullMessage;

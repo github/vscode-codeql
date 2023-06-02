@@ -115,6 +115,10 @@ export type QueryEditorCommands = {
     selectedQuery: Uri,
   ) => Promise<void>;
   "codeQL.previewQueryHelp": (selectedQuery: Uri) => Promise<void>;
+  "codeQL.previewQueryHelpContextEditor": (selectedQuery: Uri) => Promise<void>;
+  "codeQL.previewQueryHelpContextExplorer": (
+    selectedQuery: Uri,
+  ) => Promise<void>;
 };
 
 // Commands used for running local queries
@@ -247,6 +251,9 @@ export type VariantAnalysisCommands = {
   "codeQL.monitorRehydratedVariantAnalysis": (
     variantAnalysis: VariantAnalysis,
   ) => Promise<void>;
+  "codeQL.monitorReauthenticatedVariantAnalysis": (
+    variantAnalysis: VariantAnalysis,
+  ) => Promise<void>;
   "codeQL.openVariantAnalysisLogs": (
     variantAnalysisId: number,
   ) => Promise<void>;
@@ -268,6 +275,7 @@ export type DatabasePanelCommands = {
   "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
   "codeQLVariantAnalysisRepositories.renameItemContextMenu": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
   "codeQLVariantAnalysisRepositories.removeItemContextMenu": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.importFromCodeSearch": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
 };
 
 export type AstCfgCommands = {
@@ -299,6 +307,7 @@ export type EvalLogViewerCommands = {
 
 export type SummaryLanguageSupportCommands = {
   "codeQL.gotoQL": () => Promise<void>;
+  "codeQL.gotoQLContextEditor": () => Promise<void>;
 };
 
 export type TestUICommands = {
