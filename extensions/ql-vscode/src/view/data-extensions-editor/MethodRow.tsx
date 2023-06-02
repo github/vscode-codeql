@@ -13,6 +13,7 @@ import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usag
 import {
   ModeledMethod,
   ModeledMethodType,
+  Provenance,
 } from "../../data-extensions-editor/modeled-method";
 import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../data-extensions-editor/predicates";
@@ -63,6 +64,13 @@ export const MethodRow = ({
     (e: InputEvent) => {
       const target = e.target as HTMLSelectElement;
 
+      let newProvenance: Provenance = "manual";
+      if (modeledMethod?.provenance === "df-generated") {
+        newProvenance = "df-manual";
+      } else if (modeledMethod?.provenance === "ai-generated") {
+        newProvenance = "ai-manual";
+      }
+
       onChange(externalApiUsage, {
         // If there are no arguments, we will default to "Argument[this]"
         input: argumentsList.length === 0 ? "Argument[this]" : "Argument[0]",
@@ -70,6 +78,7 @@ export const MethodRow = ({
         kind: "value",
         ...modeledMethod,
         type: target.value as ModeledMethodType,
+        provenance: newProvenance,
       });
     },
     [onChange, externalApiUsage, modeledMethod, argumentsList],
