@@ -14,6 +14,7 @@
 - Update text of copy and export buttons in variant analysis results view to clarify that they only copy/export the selected/filtered results. [#2427](https://github.com/github/vscode-codeql/pull/2427)
 - Add warning when using unsupported CodeQL CLI version. [#2428](https://github.com/github/vscode-codeql/pull/2428)
 - Retry variant analysis results download if connection times out. [#2440](https://github.com/github/vscode-codeql/pull/2440)
+- Add `CodeQL: Quick Evaluation Count` command to generate the count of the selected item without having to compute locations or strings.
 
 ## 1.8.4 - 3 May 2023
 
