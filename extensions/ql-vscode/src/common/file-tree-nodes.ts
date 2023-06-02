@@ -100,7 +100,7 @@ export class FileTreeDirectory<T = undefined> extends FileTreeNode<T> {
  * A single file.
  */
 export class FileTreeLeaf<T = undefined> extends FileTreeNode<T> {
-  constructor(_path: string, _name: string, _data: T) {
+  constructor(_path: string, _name: string, _data?: T) {
     super(_path, _name, _data);
   }
 
