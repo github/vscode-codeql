@@ -9,6 +9,8 @@ import {
 import { Repository } from "./repository";
 import { Progress } from "vscode";
 import { CancellationToken } from "vscode-jsonrpc";
+import { throttling } from "@octokit/plugin-throttling";
+import { Octokit } from "@octokit/rest";
 
 export async function getCodeSearchRepositories(
   credentials: Credentials,
@@ -20,18 +22,46 @@ export async function getCodeSearchRepositories(
   token: CancellationToken,
 ): Promise<string[]> {
   let nwos: string[] = [];
-  const octokit = await credentials.getOctokit();
+  const MyOctokit = Octokit.plugin(throttling);
+  const auth = await credentials.getAccessToken();
+
+  const octokit = new MyOctokit({
+    auth,
+    throttle: {
+      onRateLimit: (
+        retryAfter: number,
+        options: any,
+        octokit: Octokit,
+      ): boolean => {
+        octokit.log.warn(
+          `Request quota exhausted for request ${options.method} ${options.url}. Retrying after ${retryAfter} seconds!`,
+        );
+
+        return true;
+      },
+      onSecondaryRateLimit: (
+        _retryAfter: number,
+        options: any,
+        octokit: Octokit,
+      ): void => {
+        octokit.log.warn(
+          `SecondaryRateLimit detected for request ${options.method} ${options.url}`,
+        );
+      },
+    },
+  });
+
   for await (const response of octokit.paginate.iterator(
-    octokit.rest.search.repos,
+    octokit.rest.search.code,
     {
       q: query,
       per_page: 100,
     },
   )) {
-    nwos.push(...response.data.map((item) => item.full_name));
+    nwos.push(...response.data.map((item) => item.repository.full_name));
     // calculate progress bar: 80% of the progress bar is used for the code search
     const totalNumberOfRequests = Math.ceil(response.data.total_count / 100);
-    // Since we have a maximum 10 of requests, we use a fixed increment whenever the totalNumberOfRequests is greater than 10
+    // Since we have a maximum of 1000 responses of the api, we can use a fixed increment whenever the totalNumberOfRequests would be greater than 10
     const increment =
       totalNumberOfRequests < 10 ? 80 / totalNumberOfRequests : 8;
     progress.report({ increment });
