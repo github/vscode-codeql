@@ -31,7 +31,7 @@ type FlowModelOptions = {
   onResults: (results: ModeledMethodWithSignature[]) => void | Promise<void>;
 };
 
-export async function resolveQueries(
+async function resolveQueries(
   cliServer: CodeQLCliServer,
   databaseItem: DatabaseItem,
 ): Promise<string[]> {
