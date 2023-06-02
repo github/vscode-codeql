@@ -16,12 +16,7 @@ import {
   workspace,
 } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
-import {
-  QLTestDirectory,
-  QLTestDiscovery,
-  QLTestFile,
-  QLTestNode,
-} from "./qltest-discovery";
+import { QLTestDiscovery } from "./qltest-discovery";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { BaseLogger, LogOptions } from "../common";
@@ -29,6 +24,11 @@ import { TestRunner } from "./test-runner";
 import { TestManagerBase } from "./test-manager-base";
 import { App } from "../common/app";
 import { isWorkspaceFolderOnDisk } from "../helpers";
+import {
+  FileTreeDirectory,
+  FileTreeLeaf,
+  FileTreeNode,
+} from "../common/file-tree-nodes";
 
 /**
  * Returns the complete text content of the specified file. If there is an error reading the file,
@@ -92,7 +92,7 @@ class WorkspaceFolderHandler extends DisposableObject {
     this.push(
       this.testDiscovery.onDidChangeTests(this.handleDidChangeTests, this),
     );
-    this.testDiscovery.refresh();
+    void this.testDiscovery.refresh();
   }
 
   private handleDidChangeTests(): void {
@@ -209,7 +209,7 @@ export class TestManager extends TestManagerBase {
    */
   public updateTestsForWorkspaceFolder(
     workspaceFolder: WorkspaceFolder,
-    testDirectory: QLTestDirectory | undefined,
+    testDirectory: FileTreeDirectory | undefined,
   ): void {
     if (testDirectory !== undefined) {
       // Adding an item with the same ID as an existing item will replace it, which is exactly what
@@ -229,9 +229,9 @@ export class TestManager extends TestManagerBase {
   /**
    * Creates a tree of `TestItem`s from the root `QlTestNode` provided by test discovery.
    */
-  private createTestItemTree(node: QLTestNode, isRoot: boolean): TestItem {
+  private createTestItemTree(node: FileTreeNode, isRoot: boolean): TestItem {
     // Prefix the ID to identify it as a directory or a test
-    const itemType = node instanceof QLTestDirectory ? "dir" : "test";
+    const itemType = node instanceof FileTreeDirectory ? "dir" : "test";
     const testItem = this.testController.createTestItem(
       // For the root of a workspace folder, use the full path as the ID. Otherwise, use the node's
       // name as the ID, since it's shorter but still unique.
@@ -242,7 +242,7 @@ export class TestManager extends TestManagerBase {
 
     for (const childNode of node.children) {
       const childItem = this.createTestItemTree(childNode, false);
-      if (childNode instanceof QLTestFile) {
+      if (childNode instanceof FileTreeLeaf) {
         childItem.range = new Range(0, 0, 0, 0);
       }
       testItem.children.add(childItem);

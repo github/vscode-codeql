@@ -4,14 +4,13 @@ import { DecodedBqrsChunk } from "../../../src/pure/bqrs-cli-types";
 describe("decodeBqrsToExternalApiUsages", () => {
   const chunk: DecodedBqrsChunk = {
     columns: [
-      { name: "apiName", kind: "String" },
-      { name: "supported", kind: "Boolean" },
       { name: "usage", kind: "Entity" },
+      { name: "apiName", kind: "String" },
+      { kind: "String" },
+      { kind: "String" },
     ],
     tuples: [
       [
-        "java.io.PrintStream#println(String)",
-        true,
         {
           label: "println(...)",
           url: {
@@ -22,10 +21,11 @@ describe("decodeBqrsToExternalApiUsages", () => {
             endColumn: 49,
           },
         },
+        "java.io.PrintStream#println(String)",
+        "true",
+        "supported",
       ],
       [
-        "org.springframework.boot.SpringApplication#run(Class,String[])",
-        false,
         {
           label: "run(...)",
           url: {
@@ -36,10 +36,11 @@ describe("decodeBqrsToExternalApiUsages", () => {
             endColumn: 66,
           },
         },
+        "org.springframework.boot.SpringApplication#run(Class,String[])",
+        "false",
+        "supported",
       ],
       [
-        "org.sql2o.Connection#createQuery(String)",
-        true,
         {
           label: "createQuery(...)",
           url: {
@@ -50,10 +51,11 @@ describe("decodeBqrsToExternalApiUsages", () => {
             endColumn: 56,
           },
         },
+        "org.sql2o.Connection#createQuery(String)",
+        "true",
+        "supported",
       ],
       [
-        "org.sql2o.Connection#createQuery(String)",
-        true,
         {
           label: "createQuery(...)",
           url: {
@@ -64,10 +66,11 @@ describe("decodeBqrsToExternalApiUsages", () => {
             endColumn: 39,
           },
         },
+        "org.sql2o.Connection#createQuery(String)",
+        "true",
+        "supported",
       ],
       [
-        "org.sql2o.Query#executeScalar(Class)",
-        true,
         {
           label: "executeScalar(...)",
           url: {
@@ -78,10 +81,11 @@ describe("decodeBqrsToExternalApiUsages", () => {
             endColumn: 85,
           },
         },
+        "org.sql2o.Query#executeScalar(Class)",
+        "true",
+        "supported",
       ],
       [
-        "org.sql2o.Query#executeScalar(Class)",
-        true,
         {
           label: "executeScalar(...)",
           url: {
@@ -92,10 +96,11 @@ describe("decodeBqrsToExternalApiUsages", () => {
             endColumn: 68,
           },
         },
+        "org.sql2o.Query#executeScalar(Class)",
+        "true",
+        "supported",
       ],
       [
-        "org.sql2o.Sql2o#open()",
-        true,
         {
           label: "open(...)",
           url: {
@@ -106,10 +111,11 @@ describe("decodeBqrsToExternalApiUsages", () => {
             endColumn: 35,
           },
         },
+        "org.sql2o.Sql2o#open()",
+        "true",
+        "supported",
       ],
       [
-        "org.sql2o.Sql2o#open()",
-        true,
         {
           label: "open(...)",
           url: {
@@ -120,10 +126,11 @@ describe("decodeBqrsToExternalApiUsages", () => {
             endColumn: 35,
           },
         },
+        "org.sql2o.Sql2o#open()",
+        "true",
+        "supported",
       ],
       [
-        "org.sql2o.Sql2o#Sql2o(String,String,String)",
-        true,
         {
           label: "new Sql2o(...)",
           url: {
@@ -134,10 +141,11 @@ describe("decodeBqrsToExternalApiUsages", () => {
             endColumn: 88,
           },
         },
+        "org.sql2o.Sql2o#Sql2o(String,String,String)",
+        "true",
+        "supported",
       ],
       [
-        "org.sql2o.Sql2o#Sql2o(String)",
-        true,
         {
           label: "new Sql2o(...)",
           url: {
@@ -148,6 +156,9 @@ describe("decodeBqrsToExternalApiUsages", () => {
             endColumn: 36,
           },
         },
+        "org.sql2o.Sql2o#Sql2o(String)",
+        "true",
+        "supported",
       ],
     ],
   };

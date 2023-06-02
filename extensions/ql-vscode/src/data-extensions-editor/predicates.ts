@@ -120,13 +120,14 @@ export const extensiblePredicateDefinitions: Record<
   neutral: {
     extensiblePredicate: "neutralModel",
     // extensible predicate neutralModel(
-    //   string package, string type, string name, string signature, string provenance
+    //   string package, string type, string name, string signature, string kind, string provenance
     // );
     generateMethodDefinition: (method) => [
       method.externalApiUsage.packageName,
       method.externalApiUsage.typeName,
       method.externalApiUsage.methodName,
       method.externalApiUsage.methodParameters,
+      method.modeledMethod.kind,
       method.modeledMethod.provenance,
     ],
     readModeledMethod: (row) => ({
@@ -135,9 +136,10 @@ export const extensiblePredicateDefinitions: Record<
         type: "neutral",
         input: "",
         output: "",
-        kind: "",
-        provenance: row[4] as Provenance,
+        kind: row[4] as string,
+        provenance: row[5] as Provenance,
       },
     }),
+    supportedKinds: ["summary", "source", "sink"],
   },
 };

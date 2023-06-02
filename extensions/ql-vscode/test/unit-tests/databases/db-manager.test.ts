@@ -88,6 +88,73 @@ describe("db manager", () => {
         ).toEqual("owner2/repo2");
       });
 
+      it("should add new remote repos to a user defined list", async () => {
+        const dbConfig: DbConfig = createDbConfig({
+          remoteLists: [
+            {
+              name: "my-list-1",
+              repositories: ["owner1/repo1"],
+            },
+          ],
+        });
+
+        await saveDbConfig(dbConfig);
+
+        await dbManager.addNewRemoteReposToList(["owner2/repo2"], "my-list-1");
+
+        const dbConfigFileContents = await readDbConfigDirectly();
+        expect(
+          dbConfigFileContents.databases.variantAnalysis.repositoryLists.length,
+        ).toBe(1);
+
+        expect(
+          dbConfigFileContents.databases.variantAnalysis.repositoryLists[0],
+        ).toEqual({
+          name: "my-list-1",
+          repositories: ["owner1/repo1", "owner2/repo2"],
+        });
+      });
+
+      it("should return truncated repos when adding multiple repos to a user defined list", async () => {
+        const dbConfig: DbConfig = createDbConfig({
+          remoteLists: [
+            {
+              name: "my-list-1",
+              repositories: [...Array(1000).keys()].map((i) => `owner/db${i}`),
+            },
+          ],
+        });
+
+        await saveDbConfig(dbConfig);
+
+        const response = await dbManager.addNewRemoteReposToList(
+          ["owner2/repo2"],
+          "my-list-1",
+        );
+
+        expect(response).toEqual(["owner2/repo2"]);
+      });
+
+      it("should return truncated repos when adding one repo to a user defined list", async () => {
+        const dbConfig: DbConfig = createDbConfig({
+          remoteLists: [
+            {
+              name: "my-list-1",
+              repositories: [...Array(1000).keys()].map((i) => `owner/db${i}`),
+            },
+          ],
+        });
+
+        await saveDbConfig(dbConfig);
+
+        const response = await dbManager.addNewRemoteRepo(
+          "owner2/repo2",
+          "my-list-1",
+        );
+
+        expect(response).toEqual(["owner2/repo2"]);
+      });
+
       it("should add a new remote repo to a user defined list", async () => {
         const dbConfig: DbConfig = createDbConfig({
           remoteLists: [

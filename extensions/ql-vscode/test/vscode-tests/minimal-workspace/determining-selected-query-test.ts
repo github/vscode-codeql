@@ -26,7 +26,7 @@ export function run() {
 
     it("should allow ql files to be quick-evaled", async () => {
       await showQlDocument("query.ql");
-      const q = await getQuickEvalContext(undefined);
+      const q = await getQuickEvalContext(undefined, false);
       expect(
         q.quickEvalPosition.fileName.endsWith(
           join("ql-vscode", "test", "data", "query.ql"),
@@ -36,7 +36,7 @@ export function run() {
 
     it("should allow qll files to be quick-evaled", async () => {
       await showQlDocument("library.qll");
-      const q = await getQuickEvalContext(undefined);
+      const q = await getQuickEvalContext(undefined, false);
       expect(
         q.quickEvalPosition.fileName.endsWith(
           join("ql-vscode", "test", "data", "library.qll"),
@@ -55,7 +55,7 @@ export function run() {
 
     it("should reject non-ql[l] files when running a quick eval", async () => {
       await showQlDocument("textfile.txt");
-      await expect(getQuickEvalContext(undefined)).rejects.toThrow(
+      await expect(getQuickEvalContext(undefined, false)).rejects.toThrow(
         "The selected resource is not a CodeQL file",
       );
     });

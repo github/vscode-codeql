@@ -62,12 +62,17 @@ describe("getDbItemActions", () => {
     expect(actions.length).toEqual(0);
   });
 
-  it("should set canBeSelected, canBeRemoved and canBeRenamed for remote user defined db list", () => {
+  it("should set canBeSelected, canBeRemoved, canBeRenamed and canImportCodeSearch for remote user defined db list", () => {
     const dbItem = createRemoteUserDefinedListDbItem();
 
     const actions = getDbItemActions(dbItem);
 
-    expect(actions).toEqual(["canBeSelected", "canBeRemoved", "canBeRenamed"]);
+    expect(actions).toEqual([
+      "canBeSelected",
+      "canBeRemoved",
+      "canBeRenamed",
+      "canImportCodeSearch",
+    ]);
   });
 
   it("should not set canBeSelected for remote user defined db list that is already selected", () => {

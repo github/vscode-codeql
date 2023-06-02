@@ -1,17 +1,17 @@
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import { extLogger } from "../common";
 import { App, AppMode } from "../common/app";
 import { isCanary, showQueriesPanel } from "../config";
 import { DisposableObject } from "../pure/disposable-object";
 import { QueriesPanel } from "./queries-panel";
+import { QueryDiscovery } from "./query-discovery";
 
 export class QueriesModule extends DisposableObject {
-  private queriesPanel: QueriesPanel | undefined;
-
   private constructor(readonly app: App) {
     super();
   }
 
-  private initialize(app: App): void {
+  private initialize(app: App, cliServer: CodeQLCliServer): void {
     if (app.mode === AppMode.Production || !isCanary() || !showQueriesPanel()) {
       // Currently, we only want to expose the new panel when we are in development and canary mode
       // and the developer has enabled the "Show queries panel" flag.
@@ -19,15 +19,22 @@ export class QueriesModule extends DisposableObject {
     }
     void extLogger.log("Initializing queries panel.");
 
-    this.queriesPanel = new QueriesPanel();
-    this.push(this.queriesPanel);
+    const queryDiscovery = new QueryDiscovery(app, cliServer);
+    this.push(queryDiscovery);
+    void queryDiscovery.refresh();
+
+    const queriesPanel = new QueriesPanel(queryDiscovery);
+    this.push(queriesPanel);
   }
 
-  public static initialize(app: App): QueriesModule {
+  public static initialize(
+    app: App,
+    cliServer: CodeQLCliServer,
+  ): QueriesModule {
     const queriesModule = new QueriesModule(app);
     app.subscriptions.push(queriesModule);
 
-    queriesModule.initialize(app);
+    queriesModule.initialize(app, cliServer);
     return queriesModule;
   }
 }
