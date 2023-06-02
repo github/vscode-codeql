@@ -191,12 +191,14 @@ describe("createAutoModelRequest", () => {
       kind: "",
       input: "",
       output: "",
+      provenance: "manual",
     },
     "org.sql2o.Sql2o#Sql2o(String)": {
       type: "sink",
       kind: "jndi-injection",
       input: "Argument[0]",
       output: "",
+      provenance: "manual",
     },
   };
 
@@ -407,18 +409,21 @@ describe("parsePredictedClassifications", () => {
         kind: "sql injection sink",
         input: "Argument[0]",
         output: "",
+        provenance: "ai-generated",
       },
       "org.sql2o.Sql2o#executeScalar(Class)": {
         type: "neutral",
-        kind: "",
+        kind: "summary",
         input: "",
         output: "",
+        provenance: "ai-generated",
       },
       "org.sql2o.Sql2o#Sql2o(String,String,String)": {
         type: "sink",
         kind: "sql injection sink",
         input: "Argument[1]",
         output: "",
+        provenance: "ai-generated",
       },
     });
   });

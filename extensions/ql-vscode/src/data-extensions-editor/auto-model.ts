@@ -110,9 +110,10 @@ export function parsePredictedClassifications(
       // For now, model any method for which none of its arguments are modeled as sinks as neutral
       modeledMethods[signature] = {
         type: "neutral",
-        kind: "",
+        kind: "summary",
         input: "",
         output: "",
+        provenance: "ai-generated",
       };
       continue;
     }
@@ -129,6 +130,7 @@ export function parsePredictedClassifications(
       kind: sink.classification?.kind ?? "",
       input: sink.input ?? "",
       output: sink.output ?? "",
+      provenance: "ai-generated",
     };
   }
 
