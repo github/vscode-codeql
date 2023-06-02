@@ -9,40 +9,18 @@ import {
 import { Repository } from "./repository";
 import { Progress } from "vscode";
 import { CancellationToken } from "vscode-jsonrpc";
-import { throttling } from "@octokit/plugin-throttling";
 import { Octokit } from "@octokit/rest";
-import { showAndLogWarningMessage } from "../../helpers";
 
 export async function getCodeSearchRepositories(
-  credentials: Credentials,
   query: string,
   progress: Progress<{
     message?: string | undefined;
     increment?: number | undefined;
   }>,
   token: CancellationToken,
+  octokit: Octokit,
 ): Promise<string[]> {
   let nwos: string[] = [];
-  const MyOctokit = Octokit.plugin(throttling);
-  const auth = await credentials.getAccessToken();
-
-  const octokit = new MyOctokit({
-    auth,
-    throttle: {
-      onRateLimit: (retryAfter: number, options: any): boolean => {
-        void showAndLogWarningMessage(
-          `Request quota exhausted for request ${options.method} ${options.url}. Retrying after ${retryAfter} seconds!`,
-        );
-
-        return true;
-      },
-      onSecondaryRateLimit: (_retryAfter: number, options: any): void => {
-        void showAndLogWarningMessage(
-          `SecondaryRateLimit detected for request ${options.method} ${options.url}`,
-        );
-      },
-    },
-  });
 
   for await (const response of octokit.paginate.iterator(
     octokit.rest.search.code,

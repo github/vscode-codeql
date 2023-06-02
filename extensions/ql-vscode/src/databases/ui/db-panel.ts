@@ -17,6 +17,7 @@ import {
 import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
+  showAndLogWarningMessage,
 } from "../../helpers";
 import { DisposableObject } from "../../pure/disposable-object";
 import {
@@ -38,6 +39,9 @@ import { DatabasePanelCommands } from "../../common/commands";
 import { App } from "../../common/app";
 import { getCodeSearchRepositories } from "../../variant-analysis/gh-api/gh-api-client";
 import { QueryLanguage } from "../../common/query-language";
+import { retry } from "@octokit/plugin-retry";
+import { throttling } from "@octokit/plugin-throttling";
+import { Octokit } from "@octokit/rest";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   remoteDatabaseKind: string;
@@ -402,10 +406,10 @@ export class DbPanel extends DisposableObject {
         progress.report({ increment: 10 });
 
         const repositories = await getCodeSearchRepositories(
-          this.app.credentials,
           `${codeSearchQuery} ${languagePrompt}`,
           progress,
           token,
+          await this.getOctokitForSearch(),
         );
 
         token.onCancellationRequested(() => {
@@ -498,5 +502,31 @@ export class DbPanel extends DisposableObject {
         )}`,
       );
     }
+  }
+
+  // since we don't have access to the extensions log methods we initialize octokit here
+  private async getOctokitForSearch(): Promise<Octokit> {
+    const MyOctokit = Octokit.plugin(throttling);
+    const auth = await this.app.credentials.getAccessToken();
+
+    const octokit = new MyOctokit({
+      auth,
+      retry,
+      throttle: {
+        onRateLimit: (retryAfter: number, options: any): boolean => {
+          void showAndLogWarningMessage(
+            `Request quota exhausted for request ${options.method} ${options.url}. Retrying after ${retryAfter} seconds!`,
+          );
+
+          return true;
+        },
+        onSecondaryRateLimit: (_retryAfter: number, options: any): void => {
+          void showAndLogWarningMessage(
+            `SecondaryRateLimit detected for request ${options.method} ${options.url}`,
+          );
+        },
+      },
+    });
+    return octokit;
   }
 }
