@@ -7,6 +7,7 @@ import {
   workspace,
   WorkspaceFolder,
 } from "vscode";
+import { RequestError } from "@octokit/request-error";
 import {
   AbstractWebview,
   WebviewPanelConfig,
@@ -39,7 +40,7 @@ import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPackModelFile } from "./shared/extension-pack";
-import { autoModel } from "./auto-model-api";
+import { autoModel, ModelRequest, ModelResponse } from "./auto-model-api";
 import {
   createAutoModelRequest,
   parsePredictedClassifications,
@@ -421,7 +422,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
       message: "Sending request",
     });
 
-    const response = await autoModel(this.app.credentials, request);
+    const response = await this.callAutoModelApi(request);
+    if (!response) {
+      return;
+    }
 
     await this.showProgress({
       step: 2500,
@@ -478,5 +482,22 @@ export class DataExtensionsEditorView extends AbstractWebview<
       maxStep: 0,
       message: "",
     });
+  }
+
+  private async callAutoModelApi(
+    request: ModelRequest,
+  ): Promise<ModelResponse | null> {
+    try {
+      return await autoModel(this.app.credentials, request);
+    } catch (e) {
+      if (e instanceof RequestError && e.status === 429) {
+        void showAndLogExceptionWithTelemetry(
+          redactableError(e)`Rate limit hit, please try again soon.`,
+        );
+        return null;
+      } else {
+        throw e;
+      }
+    }
   }
 }
