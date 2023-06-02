@@ -17,7 +17,7 @@ import {
 } from "../../common/vscode/archive-filesystem-provider";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseManager } from "../../databases/local-databases";
-import { CachedOperation } from "../../pure/cached-operation";
+import { CachedOperation } from "./cached-operation";
 import { ProgressCallback, withProgress } from "../../common/vscode/progress";
 import { KeyType } from "./key-type";
 import {
