@@ -47,7 +47,7 @@ import { App } from "../common/app";
 import { DisposableObject } from "../pure/disposable-object";
 import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
-import { createMultiSelectionCommand } from "../common/selection-commands";
+import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -70,6 +70,12 @@ async function promptToSaveQueryIfNeeded(query: SelectedQuery): Promise<void> {
       await promptUserToSaveChanges(openDocument);
     }
   }
+}
+
+export enum QuickEvalType {
+  None,
+  QuickEval,
+  QuickEvalCount,
 }
 
 export class LocalQueries extends DisposableObject {
@@ -115,7 +121,13 @@ export class LocalQueries extends DisposableObject {
   private async runQuery(uri: Uri | undefined): Promise<void> {
     await withProgress(
       async (progress, token) => {
-        await this.compileAndRunQuery(false, uri, progress, token, undefined);
+        await this.compileAndRunQuery(
+          QuickEvalType.None,
+          uri,
+          progress,
+          token,
+          undefined,
+        );
       },
       {
         title: "Running query",
@@ -185,7 +197,7 @@ export class LocalQueries extends DisposableObject {
         await Promise.all(
           queryUris.map(async (uri) =>
             this.compileAndRunQuery(
-              false,
+              QuickEvalType.None,
               uri,
               wrappedProgress,
               token,
@@ -204,7 +216,13 @@ export class LocalQueries extends DisposableObject {
   private async quickEval(uri: Uri): Promise<void> {
     await withProgress(
       async (progress, token) => {
-        await this.compileAndRunQuery(true, uri, progress, token, undefined);
+        await this.compileAndRunQuery(
+          QuickEvalType.QuickEval,
+          uri,
+          progress,
+          token,
+          undefined,
+        );
       },
       {
         title: "Running query",
@@ -217,7 +235,7 @@ export class LocalQueries extends DisposableObject {
     await withProgress(
       async (progress, token) =>
         await this.compileAndRunQuery(
-          true,
+          QuickEvalType.QuickEval,
           uri,
           progress,
           token,
@@ -331,7 +349,7 @@ export class LocalQueries extends DisposableObject {
   }
 
   public async compileAndRunQuery(
-    quickEval: boolean,
+    quickEval: QuickEvalType,
     queryUri: Uri | undefined,
     progress: ProgressCallback,
     token: CancellationToken,
@@ -352,7 +370,7 @@ export class LocalQueries extends DisposableObject {
 
   /** Used by tests */
   public async compileAndRunQueryInternal(
-    quickEval: boolean,
+    quickEval: QuickEvalType,
     queryUri: Uri | undefined,
     progress: ProgressCallback,
     token: CancellationToken,
@@ -364,15 +382,20 @@ export class LocalQueries extends DisposableObject {
     if (queryUri !== undefined) {
       // The query URI is provided by the command, most likely because the command was run from an
       // editor context menu. Use the provided URI, but make sure it's a valid query.
-      queryPath = validateQueryUri(queryUri, quickEval);
+      queryPath = validateQueryUri(queryUri, quickEval !== QuickEvalType.None);
     } else {
       // Use the currently selected query.
-      queryPath = await this.getCurrentQuery(quickEval);
+      queryPath = await this.getCurrentQuery(quickEval !== QuickEvalType.None);
     }
 
     const selectedQuery: SelectedQuery = {
       queryPath,
-      quickEval: quickEval ? await getQuickEvalContext(range) : undefined,
+      quickEval: quickEval
+        ? await getQuickEvalContext(
+            range,
+            quickEval === QuickEvalType.QuickEvalCount,
+          )
+        : undefined,
     };
 
     // If no databaseItem is specified, use the database currently selected in the Databases UI
@@ -392,6 +415,7 @@ export class LocalQueries extends DisposableObject {
       {
         queryPath: selectedQuery.queryPath,
         quickEvalPosition: selectedQuery.quickEval?.quickEvalPosition,
+        quickEvalCountOnly: selectedQuery.quickEval?.quickEvalCount,
       },
       true,
       additionalPacks,
@@ -481,7 +505,7 @@ export class LocalQueries extends DisposableObject {
       for (const item of quickpick) {
         try {
           await this.compileAndRunQuery(
-            false,
+            QuickEvalType.None,
             uri,
             progress,
             token,

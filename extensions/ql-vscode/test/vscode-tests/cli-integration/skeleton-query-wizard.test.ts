@@ -546,9 +546,7 @@ describe("SkeletonQueryWizard", () => {
           dateAdded: 123,
         } as FullDatabaseOptions);
 
-        jest
-          .spyOn(mockDbItem, "error", "get")
-          .mockReturnValue(asError("database go boom!"));
+        mockDbItem.error = asError("database go boom!");
 
         const sortedList =
           await SkeletonQueryWizard.sortDatabaseItemsByDateAdded([

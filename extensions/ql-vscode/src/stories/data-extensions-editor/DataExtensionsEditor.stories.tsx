@@ -30,6 +30,7 @@ DataExtensionsEditor.args = {
         "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/models/sql2o.yml",
     },
     modelFileExists: true,
+    showLlmButton: true,
   },
   initialExternalApiUsages: [
     {
@@ -210,30 +211,35 @@ DataExtensionsEditor.args = {
       input: "Argument[0]",
       output: "",
       kind: "jndi-injection",
+      provenance: "df-generated",
     },
     "org.sql2o.Connection#createQuery(String)": {
       type: "summary",
       input: "Argument[this]",
       output: "ReturnValue",
       kind: "taint",
+      provenance: "df-manual",
     },
     "org.sql2o.Sql2o#open()": {
       type: "summary",
       input: "Argument[this]",
       output: "ReturnValue",
       kind: "taint",
+      provenance: "manual",
     },
     "org.sql2o.Query#executeScalar(Class)": {
       type: "neutral",
       input: "",
       output: "",
       kind: "",
+      provenance: "df-generated",
     },
     "org.sql2o.Sql2o#Sql2o(String,String,String)": {
       type: "neutral",
       input: "",
       output: "",
       kind: "",
+      provenance: "df-generated",
     },
   },
 };

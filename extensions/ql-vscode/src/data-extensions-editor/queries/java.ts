@@ -5,11 +5,11 @@ export const fetchExternalApisQuery: Query = {
  * @name Usage of APIs coming from external libraries
  * @description A list of 3rd party APIs used in the codebase. Excludes test and generated code.
  * @tags telemetry
+ * @kind problem
  * @id java/telemetry/fetch-external-apis
  */
 
 import java
-import semmle.code.java.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
 import ExternalApi
 
 private Call aUsage(ExternalApi api) {
@@ -28,7 +28,7 @@ where
   apiName = api.getApiName() and
   supported = isSupported(api) and
   usage = aUsage(api)
-select apiName, supported, usage
+select usage, apiName, supported.toString(), "supported"
 `,
   dependencies: {
     "ExternalApi.qll": `/** Provides classes and predicates related to handling APIs from external libraries. */

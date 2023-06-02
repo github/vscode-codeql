@@ -39,6 +39,7 @@ import {
   QLPACK_FILENAMES,
   QLPACK_LOCK_FILENAMES,
 } from "../pure/ql";
+import { QueryLanguage } from "../common/query-language";
 
 export interface QlPack {
   name: string;
@@ -76,7 +77,7 @@ async function generateQueryPack(
   const targetQueryFileName = join(queryPackDir, packRelativePath);
   const workspaceFolders = getOnDiskWorkspaceFolders();
 
-  let language: string | undefined;
+  let language: QueryLanguage | undefined;
 
   // Check if the query is already in a query pack.
   // If so, copy the entire query pack to the temporary directory.
@@ -116,12 +117,16 @@ async function generateQueryPack(
 
   let precompilationOpts: string[] = [];
   if (await cliServer.cliConstraints.supportsQlxRemote()) {
-    const ccache = join(originalPackRoot, ".cache");
-    precompilationOpts = [
-      "--qlx",
-      "--no-default-compilation-cache",
-      `--compilation-cache=${ccache}`,
-    ];
+    if (await cliServer.cliConstraints.usesGlobalCompilationCache()) {
+      precompilationOpts = ["--qlx"];
+    } else {
+      const ccache = join(originalPackRoot, ".cache");
+      precompilationOpts = [
+        "--qlx",
+        "--no-default-compilation-cache",
+        `--compilation-cache=${ccache}`,
+      ];
+    }
   } else {
     precompilationOpts = ["--no-precompile"];
   }
@@ -379,7 +384,6 @@ async function fixPackFile(
   }
   const qlpack = load(await readFile(packPath, "utf8")) as QlPack;
 
-  qlpack.name = QUERY_PACK_NAME;
   updateDefaultSuite(qlpack, packRelativePath);
   removeWorkspaceRefs(qlpack);
 

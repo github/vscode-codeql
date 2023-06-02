@@ -1,28 +1,52 @@
-import * as vscode from "vscode";
+import { Event, EventEmitter, TreeDataProvider, TreeItem } from "vscode";
 import { QueryTreeViewItem } from "./query-tree-view-item";
 import { DisposableObject } from "../pure/disposable-object";
+import { FileTreeNode } from "../common/file-tree-nodes";
+
+export interface QueryDiscoverer {
+  readonly queries: FileTreeNode[] | undefined;
+  readonly onDidChangeQueries: Event<void>;
+}
 
 export class QueryTreeDataProvider
   extends DisposableObject
-  implements vscode.TreeDataProvider<QueryTreeViewItem>
+  implements TreeDataProvider<QueryTreeViewItem>
 {
   private queryTreeItems: QueryTreeViewItem[];
 
-  public constructor() {
+  private readonly onDidChangeTreeDataEmitter = this.push(
+    new EventEmitter<void>(),
+  );
+
+  public constructor(private readonly queryDiscoverer: QueryDiscoverer) {
     super();
+
+    queryDiscoverer.onDidChangeQueries(() => {
+      this.queryTreeItems = this.createTree();
+      this.onDidChangeTreeDataEmitter.fire();
+    });
 
     this.queryTreeItems = this.createTree();
   }
 
+  public get onDidChangeTreeData(): Event<void> {
+    return this.onDidChangeTreeDataEmitter.event;
+  }
+
   private createTree(): QueryTreeViewItem[] {
-    // Temporary mock data, just to populate the tree view.
-    return [
-      {
-        label: "name1",
-        tooltip: "path1",
-        children: [],
-      },
-    ];
+    return (this.queryDiscoverer.queries || []).map(
+      this.convertFileTreeNode.bind(this),
+    );
+  }
+
+  private convertFileTreeNode(
+    fileTreeDirectory: FileTreeNode,
+  ): QueryTreeViewItem {
+    return new QueryTreeViewItem(
+      fileTreeDirectory.name,
+      fileTreeDirectory.path,
+      fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),
+    );
   }
 
   /**
@@ -30,9 +54,7 @@ export class QueryTreeDataProvider
    * @param item The item to represent.
    * @returns The UI presentation of the item.
    */
-  public getTreeItem(
-    item: QueryTreeViewItem,
-  ): vscode.TreeItem | Thenable<vscode.TreeItem> {
+  public getTreeItem(item: QueryTreeViewItem): TreeItem {
     return item;
   }
 
@@ -41,14 +63,12 @@ export class QueryTreeDataProvider
    * @param item The item to expand.
    * @returns The children of the item.
    */
-  public getChildren(
-    item?: QueryTreeViewItem,
-  ): vscode.ProviderResult<QueryTreeViewItem[]> {
+  public getChildren(item?: QueryTreeViewItem): QueryTreeViewItem[] {
     if (!item) {
       // We're at the root.
-      return Promise.resolve(this.queryTreeItems);
+      return this.queryTreeItems;
     } else {
-      return Promise.resolve(item.children);
+      return item.children;
     }
   }
 }

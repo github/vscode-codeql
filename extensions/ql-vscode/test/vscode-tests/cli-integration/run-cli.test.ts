@@ -15,6 +15,7 @@ import {
 import { KeyType, resolveQueries } from "../../../src/language-support";
 import { faker } from "@faker-js/faker";
 import { getActivatedExtension } from "../global.helper";
+import { BaseLogger } from "../../../src/common";
 
 /**
  * Perform proper integration tests by running the CLI
@@ -23,10 +24,14 @@ describe("Use cli", () => {
   let cli: CodeQLCliServer;
   let supportedLanguages: string[];
 
+  let logSpy: jest.SpiedFunction<BaseLogger["log"]>;
+
   beforeEach(async () => {
     const extension = await getActivatedExtension();
     cli = extension.cliServer;
     supportedLanguages = await cli.getSupportedLanguages();
+
+    logSpy = jest.spyOn(cli.logger, "log");
   });
 
   if (process.env.CLI_VERSION && process.env.CLI_VERSION !== "nightly") {
@@ -40,6 +45,23 @@ describe("Use cli", () => {
   it("should resolve ram", async () => {
     const result = await (cli as any).resolveRam(8192);
     expect(result).toEqual(["-J-Xmx4096M", "--off-heap-ram=4096"]);
+  });
+
+  describe("silent logging", () => {
+    it("should log command output", async () => {
+      const queryDir = getOnDiskWorkspaceFolders()[0];
+      await cli.resolveQueries(queryDir);
+
+      expect(logSpy).toHaveBeenCalled();
+    });
+
+    it("shouldn't log command output if the `silent` flag is set", async () => {
+      const queryDir = getOnDiskWorkspaceFolders()[0];
+      const silent = true;
+      await cli.resolveQueries(queryDir, silent);
+
+      expect(logSpy).not.toHaveBeenCalled();
+    });
   });
 
   itWithCodeQL()("should resolve query packs", async () => {

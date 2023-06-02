@@ -5,8 +5,8 @@ import {
   ViewColumn,
   window,
   workspace,
-  WorkspaceFolder,
 } from "vscode";
+import { RequestError } from "@octokit/request-error";
 import {
   AbstractWebview,
   WebviewPanelConfig,
@@ -39,19 +39,13 @@ import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPackModelFile } from "./shared/extension-pack";
-
-function getQlSubmoduleFolder(): WorkspaceFolder | undefined {
-  const workspaceFolder = workspace.workspaceFolders?.find(
-    (folder) => folder.name === "ql",
-  );
-  if (!workspaceFolder) {
-    void extLogger.log("No workspace folder 'ql' found");
-
-    return;
-  }
-
-  return workspaceFolder;
-}
+import { autoModel, ModelRequest, ModelResponse } from "./auto-model-api";
+import {
+  createAutoModelRequest,
+  parsePredictedClassifications,
+} from "./auto-model";
+import { showLlmGeneration } from "../config";
+import { getAutoModelUsages } from "./auto-model-usages-query";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -128,6 +122,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.generateModeledMethods();
 
         break;
+      case "generateExternalApiFromLlm":
+        await this.generateModeledMethodsFromLlm(
+          msg.externalApiUsages,
+          msg.modeledMethods,
+        );
+
+        break;
       default:
         assertNever(msg);
     }
@@ -149,6 +150,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       viewState: {
         extensionPackModelFile: this.modelFile,
         modelFileExists: await pathExists(this.modelFile.filename),
+        showLlmButton: showLlmGeneration(),
       },
     });
   }
@@ -309,11 +311,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
     // but we need to set it back to the originally selected database.
     await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
 
-    const workspaceFolder = getQlSubmoduleFolder();
-    if (!workspaceFolder) {
-      return;
-    }
-
     await this.showProgress({
       step: 0,
       maxStep: 4000,
@@ -325,7 +322,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
         queryStorageDir: this.queryStorageDir,
-        qlDir: workspaceFolder.uri.fsPath,
         databaseItem: database,
         onResults: async (results) => {
           const modeledMethodsByName: Record<string, ModeledMethod> = {};
@@ -367,6 +363,75 @@ export class DataExtensionsEditorView extends AbstractWebview<
     await this.clearProgress();
   }
 
+  private async generateModeledMethodsFromLlm(
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ): Promise<void> {
+    const maxStep = 3000;
+
+    await this.showProgress({
+      step: 0,
+      maxStep,
+      message: "Retrieving usages",
+    });
+
+    const usages = await getAutoModelUsages({
+      cliServer: this.cliServer,
+      queryRunner: this.queryRunner,
+      queryStorageDir: this.queryStorageDir,
+      databaseItem: this.databaseItem,
+      progress: (update) => this.showProgress(update, maxStep),
+    });
+
+    await this.showProgress({
+      step: 1800,
+      maxStep,
+      message: "Creating request",
+    });
+
+    const request = createAutoModelRequest(
+      this.databaseItem.language,
+      externalApiUsages,
+      modeledMethods,
+      usages,
+    );
+
+    await this.showProgress({
+      step: 2000,
+      maxStep,
+      message: "Sending request",
+    });
+
+    const response = await this.callAutoModelApi(request);
+    if (!response) {
+      return;
+    }
+
+    await this.showProgress({
+      step: 2500,
+      maxStep,
+      message: "Parsing response",
+    });
+
+    const predictedModeledMethods = parsePredictedClassifications(
+      response.predicted,
+    );
+
+    await this.showProgress({
+      step: 2800,
+      maxStep,
+      message: "Applying results",
+    });
+
+    await this.postMessage({
+      t: "addModeledMethods",
+      modeledMethods: predictedModeledMethods,
+      overrideNone: true,
+    });
+
+    await this.clearProgress();
+  }
+
   /*
    * Progress in this class is a bit weird. Most of the progress is based on running the query.
    * Query progress is always between 0 and 1000. However, we still have some steps that need
@@ -397,5 +462,24 @@ export class DataExtensionsEditorView extends AbstractWebview<
       maxStep: 0,
       message: "",
     });
+  }
+
+  private async callAutoModelApi(
+    request: ModelRequest,
+  ): Promise<ModelResponse | null> {
+    try {
+      return await autoModel(this.app.credentials, request);
+    } catch (e) {
+      await this.clearProgress();
+
+      if (e instanceof RequestError && e.status === 429) {
+        void showAndLogExceptionWithTelemetry(
+          redactableError(e)`Rate limit hit, please try again soon.`,
+        );
+        return null;
+      } else {
+        throw e;
+      }
+    }
   }
 }

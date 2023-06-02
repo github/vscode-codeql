@@ -5,30 +5,28 @@ export const fetchExternalApisQuery: Query = {
  * @name Usage of APIs coming from external libraries
  * @description A list of 3rd party APIs used in the codebase.
  * @tags telemetry
+ * @kind problem
  * @id cs/telemetry/fetch-external-apis
  */
 
- import csharp
- import semmle.code.csharp.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
- import ExternalApi
- 
- private Call aUsage(ExternalApi api) {
-   result.getTarget().getUnboundDeclaration() = api
- }
- 
- private boolean isSupported(ExternalApi api) {
-   api.isSupported() and result = true
-   or
-   not api.isSupported() and
-   result = false
- }
- 
- from ExternalApi api, string apiName, boolean supported, Call usage
- where
-   apiName = api.getApiName() and
-   supported = isSupported(api) and
-   usage = aUsage(api)
- select apiName, supported, usage
+import csharp
+import ExternalApi
+
+private Call aUsage(ExternalApi api) { result.getTarget().getUnboundDeclaration() = api }
+
+private boolean isSupported(ExternalApi api) {
+  api.isSupported() and result = true
+  or
+  not api.isSupported() and
+  result = false
+}
+
+from ExternalApi api, string apiName, boolean supported, Call usage
+where
+  apiName = api.getApiName() and
+  supported = isSupported(api) and
+  usage = aUsage(api)
+select usage, apiName, supported.toString(), "supported"
 `,
   dependencies: {
     "ExternalApi.qll": `/** Provides classes and predicates related to handling APIs from external libraries. */

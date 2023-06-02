@@ -17,7 +17,7 @@ export class DbModule extends DisposableObject {
     super();
 
     this.dbConfigStore = new DbConfigStore(app);
-    this.dbManager = new DbManager(app, this.dbConfigStore);
+    this.dbManager = this.push(new DbManager(app, this.dbConfigStore));
   }
 
   public static async initialize(app: App): Promise<DbModule> {

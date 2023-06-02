@@ -10,14 +10,7 @@ import { glob } from "glob";
 import { load } from "js-yaml";
 import { join, basename, dirname } from "path";
 import { dirSync } from "tmp-promise";
-import {
-  ExtensionContext,
-  Uri,
-  window as Window,
-  workspace,
-  env,
-  WorkspaceFolder,
-} from "vscode";
+import { Uri, window as Window, workspace, env, WorkspaceFolder } from "vscode";
 import { CodeQLCliServer, QlpacksInfo } from "./codeql-cli/cli";
 import { UserCancellationException } from "./common/vscode/progress";
 import { extLogger, OutputChannelLogger } from "./common";
@@ -25,7 +18,7 @@ import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
 import { getQlPackPath } from "./pure/ql";
-import { dbSchemeToLanguage } from "./common/query-language";
+import { dbSchemeToLanguage, QueryLanguage } from "./common/query-language";
 import { isCodespacesTemplate } from "./config";
 import { AppCommandManager } from "./common/commands";
 
@@ -98,7 +91,7 @@ export async function showAndLogErrorMessage(
   return internalShowAndLog(
     dropLinesExceptInitial(message),
     Window.showErrorMessage,
-    options,
+    { fullMessage: message, ...options },
   );
 }
 
@@ -363,106 +356,6 @@ export async function prepareCodeTour(
   }
 }
 
-/**
- * Provides a utility method to invoke a function only if a minimum time interval has elapsed since
- * the last invocation of that function.
- */
-export class InvocationRateLimiter<T> {
-  constructor(
-    extensionContext: ExtensionContext,
-    funcIdentifier: string,
-    func: () => Promise<T>,
-    createDate: (dateString?: string) => Date = (s) =>
-      s ? new Date(s) : new Date(),
-  ) {
-    this._createDate = createDate;
-    this._extensionContext = extensionContext;
-    this._func = func;
-    this._funcIdentifier = funcIdentifier;
-  }
-
-  /**
-   * Invoke the function if `minSecondsSinceLastInvocation` seconds have elapsed since the last invocation.
-   */
-  public async invokeFunctionIfIntervalElapsed(
-    minSecondsSinceLastInvocation: number,
-  ): Promise<InvocationRateLimiterResult<T>> {
-    const updateCheckStartDate = this._createDate();
-    const lastInvocationDate = this.getLastInvocationDate();
-    if (
-      minSecondsSinceLastInvocation &&
-      lastInvocationDate &&
-      lastInvocationDate <= updateCheckStartDate &&
-      lastInvocationDate.getTime() + minSecondsSinceLastInvocation * 1000 >
-        updateCheckStartDate.getTime()
-    ) {
-      return createRateLimitedResult();
-    }
-    const result = await this._func();
-    await this.setLastInvocationDate(updateCheckStartDate);
-    return createInvokedResult(result);
-  }
-
-  private getLastInvocationDate(): Date | undefined {
-    const maybeDateString: string | undefined =
-      this._extensionContext.globalState.get(
-        InvocationRateLimiter._invocationRateLimiterPrefix +
-          this._funcIdentifier,
-      );
-    return maybeDateString ? this._createDate(maybeDateString) : undefined;
-  }
-
-  private async setLastInvocationDate(date: Date): Promise<void> {
-    return await this._extensionContext.globalState.update(
-      InvocationRateLimiter._invocationRateLimiterPrefix + this._funcIdentifier,
-      date,
-    );
-  }
-
-  private readonly _createDate: (dateString?: string) => Date;
-  private readonly _extensionContext: ExtensionContext;
-  private readonly _func: () => Promise<T>;
-  private readonly _funcIdentifier: string;
-
-  private static readonly _invocationRateLimiterPrefix =
-    "invocationRateLimiter_lastInvocationDate_";
-}
-
-export enum InvocationRateLimiterResultKind {
-  Invoked,
-  RateLimited,
-}
-
-/**
- * The function was invoked and returned the value `result`.
- */
-interface InvokedResult<T> {
-  kind: InvocationRateLimiterResultKind.Invoked;
-  result: T;
-}
-
-/**
- * The function was not invoked as the minimum interval since the last invocation had not elapsed.
- */
-interface RateLimitedResult {
-  kind: InvocationRateLimiterResultKind.RateLimited;
-}
-
-type InvocationRateLimiterResult<T> = InvokedResult<T> | RateLimitedResult;
-
-function createInvokedResult<T>(result: T): InvokedResult<T> {
-  return {
-    kind: InvocationRateLimiterResultKind.Invoked,
-    result,
-  };
-}
-
-function createRateLimitedResult(): RateLimitedResult {
-  return {
-    kind: InvocationRateLimiterResultKind.RateLimited,
-  };
-}
-
 export interface QlPacksForLanguage {
   /** The name of the pack containing the dbscheme. */
   dbschemePack: string;
@@ -585,77 +478,6 @@ export async function getPrimaryDbscheme(
 }
 
 /**
- * A cached mapping from strings to value of type U.
- */
-export class CachedOperation<U> {
-  private readonly operation: (t: string, ...args: any[]) => Promise<U>;
-  private readonly cached: Map<string, U>;
-  private readonly lru: string[];
-  private readonly inProgressCallbacks: Map<
-    string,
-    Array<[(u: U) => void, (reason?: any) => void]>
-  >;
-
-  constructor(
-    operation: (t: string, ...args: any[]) => Promise<U>,
-    private cacheSize = 100,
-  ) {
-    this.operation = operation;
-    this.lru = [];
-    this.inProgressCallbacks = new Map<
-      string,
-      Array<[(u: U) => void, (reason?: any) => void]>
-    >();
-    this.cached = new Map<string, U>();
-  }
-
-  async get(t: string, ...args: any[]): Promise<U> {
-    // Try and retrieve from the cache
-    const fromCache = this.cached.get(t);
-    if (fromCache !== undefined) {
-      // Move to end of lru list
-      this.lru.push(
-        this.lru.splice(
-          this.lru.findIndex((v) => v === t),
-          1,
-        )[0],
-      );
-      return fromCache;
-    }
-    // Otherwise check if in progress
-    const inProgressCallback = this.inProgressCallbacks.get(t);
-    if (inProgressCallback !== undefined) {
-      // If so wait for it to resolve
-      return await new Promise((resolve, reject) => {
-        inProgressCallback.push([resolve, reject]);
-      });
-    }
-
-    // Otherwise compute the new value, but leave a callback to allow sharing work
-    const callbacks: Array<[(u: U) => void, (reason?: any) => void]> = [];
-    this.inProgressCallbacks.set(t, callbacks);
-    try {
-      const result = await this.operation(t, ...args);
-      callbacks.forEach((f) => f[0](result));
-      this.inProgressCallbacks.delete(t);
-      if (this.lru.length > this.cacheSize) {
-        const toRemove = this.lru.shift()!;
-        this.cached.delete(toRemove);
-      }
-      this.lru.push(t);
-      this.cached.set(t, result);
-      return result;
-    } catch (e) {
-      // Rethrow error on all callbacks
-      callbacks.forEach((f) => f[1](e));
-      throw e;
-    } finally {
-      this.inProgressCallbacks.delete(t);
-    }
-  }
-}
-
-/**
  * The following functions al heuristically determine metadata about databases.
  */
 
@@ -726,6 +548,10 @@ export async function isLikelyDbLanguageFolder(dbPath: string) {
   );
 }
 
+export function isQueryLanguage(language: string): language is QueryLanguage {
+  return Object.values(QueryLanguage).includes(language as QueryLanguage);
+}
+
 /**
  * Finds the language that a query targets.
  * If it can't be autodetected, prompt the user to specify the language manually.
@@ -733,7 +559,7 @@ export async function isLikelyDbLanguageFolder(dbPath: string) {
 export async function findLanguage(
   cliServer: CodeQLCliServer,
   queryUri: Uri | undefined,
-): Promise<string | undefined> {
+): Promise<QueryLanguage | undefined> {
   const uri = queryUri || Window.activeTextEditor?.document.uri;
   if (uri !== undefined) {
     try {
@@ -743,7 +569,14 @@ export async function findLanguage(
       );
       const language = Object.keys(queryInfo.byLanguage)[0];
       void extLogger.log(`Detected query language: ${language}`);
-      return language;
+
+      if (isQueryLanguage(language)) {
+        return language;
+      }
+
+      void extLogger.log(
+        "Query language is unsupported. Select language manually.",
+      );
     } catch (e) {
       void extLogger.log(
         "Could not autodetect query language. Select language manually.",
@@ -758,7 +591,7 @@ export async function findLanguage(
 export async function askForLanguage(
   cliServer: CodeQLCliServer,
   throwOnEmpty = true,
-): Promise<string | undefined> {
+): Promise<QueryLanguage | undefined> {
   const language = await Window.showQuickPick(
     await cliServer.getSupportedLanguages(),
     {
@@ -775,7 +608,18 @@ export async function askForLanguage(
         "Language not found. Language must be specified manually.",
       );
     }
+    return undefined;
   }
+
+  if (!isQueryLanguage(language)) {
+    void showAndLogErrorMessage(
+      `Language '${language}' is not supported. Only languages ${Object.values(
+        QueryLanguage,
+      ).join(", ")} are supported.`,
+    );
+    return undefined;
+  }
+
   return language;
 }
 

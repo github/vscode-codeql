@@ -36,7 +36,10 @@ export async function compileAndRunQueryAgainstDatabaseCore(
   const target =
     query.quickEvalPosition !== undefined
       ? {
-          quickEval: { quickEvalPos: query.quickEvalPosition },
+          quickEval: {
+            quickEvalPos: query.quickEvalPosition,
+            countOnly: query.quickEvalCountOnly,
+          },
         }
       : { query: {} };
 

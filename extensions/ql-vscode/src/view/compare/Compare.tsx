@@ -59,9 +59,7 @@ export function Compare(_: Record<string, never>): JSX.Element {
     return (
       <>
         <div className="vscode-codeql__compare-header">
-          <div className="vscode-codeql__compare-header-item">
-            Table to compare:
-          </div>
+          <div className="vscode-codeql__compare-header-item">Comparing:</div>
           <CompareSelector
             availableResultSets={comparison.commonResultSetNames}
             currentResultSetName={comparison.currentResultSetName}
