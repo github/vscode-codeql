@@ -490,6 +490,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
     try {
       return await autoModel(this.app.credentials, request);
     } catch (e) {
+      await this.clearProgress();
+
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(
           redactableError(e)`Rate limit hit, please try again soon.`,
