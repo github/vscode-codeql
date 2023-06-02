@@ -4,7 +4,8 @@ export type DbTreeViewItemAction =
   | "canBeSelected"
   | "canBeRemoved"
   | "canBeRenamed"
-  | "canBeOpenedOnGitHub";
+  | "canBeOpenedOnGitHub"
+  | "canImportCodeSearch";
 
 export function getDbItemActions(dbItem: DbItem): DbTreeViewItemAction[] {
   const actions: DbTreeViewItemAction[] = [];
@@ -21,7 +22,9 @@ export function getDbItemActions(dbItem: DbItem): DbTreeViewItemAction[] {
   if (canBeOpenedOnGitHub(dbItem)) {
     actions.push("canBeOpenedOnGitHub");
   }
-
+  if (canImportCodeSearch(dbItem)) {
+    actions.push("canImportCodeSearch");
+  }
   return actions;
 }
 
@@ -58,6 +61,10 @@ function canBeRenamed(dbItem: DbItem): boolean {
 
 function canBeOpenedOnGitHub(dbItem: DbItem): boolean {
   return dbItemKindsThatCanBeOpenedOnGitHub.includes(dbItem.kind);
+}
+
+function canImportCodeSearch(dbItem: DbItem): boolean {
+  return DbItemKind.RemoteUserDefinedList === dbItem.kind;
 }
 
 export function getGitHubUrl(dbItem: DbItem): string | undefined {

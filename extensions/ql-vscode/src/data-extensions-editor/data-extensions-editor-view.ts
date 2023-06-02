@@ -38,6 +38,13 @@ import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPackModelFile } from "./shared/extension-pack";
+import { autoModel } from "./auto-model-api";
+import {
+  createAutoModelRequest,
+  parsePredictedClassifications,
+} from "./auto-model";
+import { showLlmGeneration } from "../config";
+import { getAutoModelUsages } from "./auto-model-usages-query";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -114,6 +121,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.generateModeledMethods();
 
         break;
+      case "generateExternalApiFromLlm":
+        await this.generateModeledMethodsFromLlm(
+          msg.externalApiUsages,
+          msg.modeledMethods,
+        );
+
+        break;
       default:
         assertNever(msg);
     }
@@ -135,6 +149,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       viewState: {
         extensionPackModelFile: this.modelFile,
         modelFileExists: await pathExists(this.modelFile.filename),
+        showLlmButton: showLlmGeneration(),
       },
     });
   }
@@ -343,6 +358,72 @@ export class DataExtensionsEditorView extends AbstractWebview<
       tokenSource.token,
       database,
     );
+
+    await this.clearProgress();
+  }
+
+  private async generateModeledMethodsFromLlm(
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ): Promise<void> {
+    const maxStep = 3000;
+
+    await this.showProgress({
+      step: 0,
+      maxStep,
+      message: "Retrieving usages",
+    });
+
+    const usages = await getAutoModelUsages({
+      cliServer: this.cliServer,
+      queryRunner: this.queryRunner,
+      queryStorageDir: this.queryStorageDir,
+      databaseItem: this.databaseItem,
+      progress: (update) => this.showProgress(update, maxStep),
+    });
+
+    await this.showProgress({
+      step: 1800,
+      maxStep,
+      message: "Creating request",
+    });
+
+    const request = createAutoModelRequest(
+      this.databaseItem.language,
+      externalApiUsages,
+      modeledMethods,
+      usages,
+    );
+
+    await this.showProgress({
+      step: 2000,
+      maxStep,
+      message: "Sending request",
+    });
+
+    const response = await autoModel(this.app.credentials, request);
+
+    await this.showProgress({
+      step: 2500,
+      maxStep,
+      message: "Parsing response",
+    });
+
+    const predictedModeledMethods = parsePredictedClassifications(
+      response.predicted,
+    );
+
+    await this.showProgress({
+      step: 2800,
+      maxStep,
+      message: "Applying results",
+    });
+
+    await this.postMessage({
+      t: "addModeledMethods",
+      modeledMethods: predictedModeledMethods,
+      overrideNone: true,
+    });
 
     await this.clearProgress();
   }

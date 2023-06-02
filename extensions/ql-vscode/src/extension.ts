@@ -24,7 +24,7 @@ import {
   activate as archiveFilesystemProvider_activate,
   zipArchiveScheme,
 } from "./common/vscode/archive-filesystem-provider";
-import { CodeQLCliServer } from "./codeql-cli/cli";
+import { CliVersionConstraint, CodeQLCliServer } from "./codeql-cli/cli";
 import {
   CliConfigListener,
   DistributionConfigListener,
@@ -125,6 +125,7 @@ import { TestManager } from "./query-testing/test-manager";
 import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
+import { QueriesModule } from "./queries-panel/queries-module";
 
 /**
  * extension.ts
@@ -406,6 +407,28 @@ export async function activate(
     );
     codeQlExtension.cliServer.addVersionChangedListener((ver) => {
       telemetryListener.cliVersion = ver;
+    });
+
+    let unsupportedWarningShown = false;
+    codeQlExtension.cliServer.addVersionChangedListener((ver) => {
+      if (!ver) {
+        return;
+      }
+
+      if (unsupportedWarningShown) {
+        return;
+      }
+
+      if (CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION.compare(ver) < 0) {
+        return;
+      }
+
+      void showAndLogWarningMessage(
+        `You are using an unsupported version of the CodeQL CLI (${ver}). ` +
+          `The minimum supported version is ${CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION}. ` +
+          `Please upgrade to a newer version of the CodeQL CLI.`,
+      );
+      unsupportedWarningShown = true;
     });
   }
 
@@ -731,6 +754,8 @@ async function activateWithInstalledDistribution(
     ctx.extensionPath,
   );
   ctx.subscriptions.push(databaseUI);
+
+  QueriesModule.initialize(app, cliServer);
 
   void extLogger.log("Initializing evaluator log viewer.");
   const evalLogViewer = new EvalLogViewer();

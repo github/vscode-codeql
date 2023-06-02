@@ -7,9 +7,9 @@ export function decodeBqrsToExternalApiUsages(
   const methodsByApiName = new Map<string, ExternalApiUsage>();
 
   chunk?.tuples.forEach((tuple) => {
-    const signature = tuple[0] as string;
-    const supported = tuple[1] as boolean;
-    const usage = tuple[2] as Call;
+    const usage = tuple[0] as Call;
+    const signature = tuple[1] as string;
+    const supported = (tuple[2] as string) === "true";
 
     const [packageWithType, methodDeclaration] = signature.split("#");
 

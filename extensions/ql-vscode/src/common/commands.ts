@@ -251,6 +251,9 @@ export type VariantAnalysisCommands = {
   "codeQL.monitorRehydratedVariantAnalysis": (
     variantAnalysis: VariantAnalysis,
   ) => Promise<void>;
+  "codeQL.monitorReauthenticatedVariantAnalysis": (
+    variantAnalysis: VariantAnalysis,
+  ) => Promise<void>;
   "codeQL.openVariantAnalysisLogs": (
     variantAnalysisId: number,
   ) => Promise<void>;
@@ -272,6 +275,7 @@ export type DatabasePanelCommands = {
   "codeQLVariantAnalysisRepositories.openOnGitHubContextMenu": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
   "codeQLVariantAnalysisRepositories.renameItemContextMenu": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
   "codeQLVariantAnalysisRepositories.removeItemContextMenu": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
+  "codeQLVariantAnalysisRepositories.importFromCodeSearch": TreeViewContextSingleSelectionCommandFunction<DbTreeViewItem>;
 };
 
 export type AstCfgCommands = {

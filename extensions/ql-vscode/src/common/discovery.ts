@@ -1,6 +1,6 @@
 import { DisposableObject } from "../pure/disposable-object";
-import { extLogger } from "./logging/vscode/loggers";
 import { getErrorMessage } from "../pure/helpers-pure";
+import { Logger } from "./logging";
 
 /**
  * Base class for "discovery" operations, which scan the file system to find specific kinds of
@@ -8,18 +8,28 @@ import { getErrorMessage } from "../pure/helpers-pure";
  * same time.
  */
 export abstract class Discovery<T> extends DisposableObject {
-  private retry = false;
-  private discoveryInProgress = false;
+  private restartWhenFinished = false;
+  private currentDiscoveryPromise: Promise<void> | undefined;
 
-  constructor(private readonly name: string) {
+  constructor(private readonly name: string, private readonly logger: Logger) {
     super();
+  }
+
+  /**
+   * Returns the promise of the currently running refresh operation, if one is in progress.
+   * Otherwise returns a promise that resolves immediately.
+   */
+  public waitForCurrentRefresh(): Promise<void> {
+    return this.currentDiscoveryPromise ?? Promise.resolve();
   }
 
   /**
    * Force the discovery process to run. Normally invoked by the derived class when a relevant file
    * system change is detected.
+   *
+   * Returns a promise that resolves when the refresh is complete, including any retries.
    */
-  public refresh(): void {
+  public refresh(): Promise<void> {
     // We avoid having multiple discovery operations in progress at the same time. Otherwise, if we
     // got a storm of refresh requests due to, say, the copying or deletion of a large directory
     // tree, we could potentially spawn a separate simultaneous discovery operation for each
@@ -36,14 +46,16 @@ export abstract class Discovery<T> extends DisposableObject {
     // other change notifications that might be coming along. However, this would create more
     // latency in the common case, in order to save a bit of latency in the uncommon case.
 
-    if (this.discoveryInProgress) {
+    if (this.currentDiscoveryPromise !== undefined) {
       // There's already a discovery operation in progress. Tell it to restart when it's done.
-      this.retry = true;
+      this.restartWhenFinished = true;
     } else {
       // No discovery in progress, so start one now.
-      this.discoveryInProgress = true;
-      this.launchDiscovery();
+      this.currentDiscoveryPromise = this.launchDiscovery().finally(() => {
+        this.currentDiscoveryPromise = undefined;
+      });
     }
+    return this.currentDiscoveryPromise;
   }
 
   /**
@@ -51,34 +63,31 @@ export abstract class Discovery<T> extends DisposableObject {
    * discovery operation completes, the `update` function will be invoked with the results of the
    * discovery.
    */
-  private launchDiscovery(): void {
-    const discoveryPromise = this.discover();
-    discoveryPromise
-      .then((results) => {
-        if (!this.retry) {
-          // Update any listeners with the results of the discovery.
-          this.discoveryInProgress = false;
-          this.update(results);
-        }
-      })
+  private async launchDiscovery(): Promise<void> {
+    let results: T | undefined;
+    try {
+      results = await this.discover();
+    } catch (err) {
+      void this.logger.log(
+        `${this.name} failed. Reason: ${getErrorMessage(err)}`,
+      );
+      results = undefined;
+    }
 
-      .catch((err: unknown) => {
-        void extLogger.log(
-          `${this.name} failed. Reason: ${getErrorMessage(err)}`,
-        );
-      })
-
-      .finally(() => {
-        if (this.retry) {
-          // Another refresh request came in while we were still running a previous discovery
-          // operation. Since the discovery results we just computed are now stale, we'll launch
-          // another discovery operation instead of updating.
-          // Note that by doing this inside of `finally`, we will relaunch discovery even if the
-          // initial discovery operation failed.
-          this.retry = false;
-          this.launchDiscovery();
-        }
-      });
+    if (this.restartWhenFinished) {
+      // Another refresh request came in while we were still running a previous discovery
+      // operation. Since the discovery results we just computed are now stale, we'll launch
+      // another discovery operation instead of updating.
+      // We want to relaunch discovery regardless of if the initial discovery operation
+      // succeeded or failed.
+      this.restartWhenFinished = false;
+      await this.launchDiscovery();
+    } else {
+      // If the discovery was successful, then update any listeners with the results.
+      if (results !== undefined) {
+        this.update(results);
+      }
+    }
   }
 
   /**

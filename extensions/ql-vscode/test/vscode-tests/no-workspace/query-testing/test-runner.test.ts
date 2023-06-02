@@ -40,17 +40,11 @@ describe("test-runner", () => {
     Uri.file("/path/to/test/dir/dir.testproj"),
     undefined,
     mockedObject<FullDatabaseOptions>({ displayName: "custom display name" }),
-    (_) => {
-      /* no change event listener */
-    },
   );
   const postTestDatabaseItem = new DatabaseItemImpl(
     Uri.file("/path/to/test/dir/dir.testproj"),
     undefined,
     mockedObject<FullDatabaseOptions>({ displayName: "default name" }),
-    (_) => {
-      /* no change event listener */
-    },
   );
 
   beforeEach(() => {

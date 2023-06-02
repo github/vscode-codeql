@@ -52,12 +52,14 @@ describe("qltest-discovery", () => {
     });
 
     it("should run discovery", async () => {
-      const result = await (qlTestDiscover as any).discover();
-      expect(result.watchPath).toEqualPath(baseDir);
-      expect(result.testDirectory.path).toEqualPath(baseDir);
-      expect(result.testDirectory.name).toBe("My tests");
+      await qlTestDiscover.refresh();
+      const testDirectory = qlTestDiscover.testDirectory;
+      expect(testDirectory).toBeDefined();
 
-      let children = result.testDirectory.children;
+      expect(testDirectory!.path).toEqualPath(baseDir);
+      expect(testDirectory!.name).toBe("My tests");
+
+      let children = testDirectory!.children;
       expect(children.length).toBe(1);
 
       expect(children[0].path).toEqualPath(cDir);
@@ -83,12 +85,14 @@ describe("qltest-discovery", () => {
     it("should avoid discovery if a folder does not exist", async () => {
       await fs.remove(baseDir);
 
-      const result = await (qlTestDiscover as any).discover();
-      expect(result.watchPath).toEqualPath(baseDir);
-      expect(result.testDirectory.path).toEqualPath(baseDir);
-      expect(result.testDirectory.name).toBe("My tests");
+      await qlTestDiscover.refresh();
+      const testDirectory = qlTestDiscover.testDirectory;
+      expect(testDirectory).toBeDefined();
 
-      expect(result.testDirectory.children.length).toBe(0);
+      expect(testDirectory!.path).toEqualPath(baseDir);
+      expect(testDirectory!.name).toBe("My tests");
+
+      expect(testDirectory!.children.length).toBe(0);
     });
   });
 });

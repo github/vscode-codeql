@@ -92,7 +92,11 @@ async function getModeledMethodsFromFlow(
 
   const queryRun = queryRunner.createQueryRun(
     databaseItem.databaseUri.fsPath,
-    { queryPath, quickEvalPosition: undefined },
+    {
+      queryPath,
+      quickEvalPosition: undefined,
+      quickEvalCountOnly: false,
+    },
     false,
     getOnDiskWorkspaceFolders(),
     undefined,

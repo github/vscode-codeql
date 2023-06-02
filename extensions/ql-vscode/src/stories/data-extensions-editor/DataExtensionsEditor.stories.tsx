@@ -30,6 +30,7 @@ DataExtensionsEditor.args = {
         "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/models/sql2o.yml",
     },
     modelFileExists: true,
+    showLlmButton: true,
   },
   initialExternalApiUsages: [
     {

@@ -74,7 +74,7 @@ class QLDebugAdapterTracker
 
   public async quickEval(): Promise<void> {
     const args: CodeQLProtocol.QuickEvalRequest["arguments"] = {
-      quickEvalContext: await getQuickEvalContext(undefined),
+      quickEvalContext: await getQuickEvalContext(undefined, false),
     };
     await this.session.customRequest("codeql-quickeval", args);
   }
