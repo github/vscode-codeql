@@ -41,7 +41,7 @@ export const QUERY_LANGUAGE_TO_DATABASE_REPO: QueryLanguagesToDatabaseMap = {
 };
 
 export class SkeletonQueryWizard {
-  private language: string | undefined;
+  private language: QueryLanguage | undefined;
   private fileName = "example.ql";
   private qlPackStoragePath: string | undefined;
 
@@ -154,6 +154,9 @@ export class SkeletonQueryWizard {
     if (this.folderName === undefined) {
       throw new Error("Folder name is undefined");
     }
+    if (this.language === undefined) {
+      throw new Error("Language is undefined");
+    }
 
     this.progress({
       message: "Creating skeleton QL pack around query",
@@ -164,7 +167,7 @@ export class SkeletonQueryWizard {
     try {
       const qlPackGenerator = new QlPackGenerator(
         this.folderName,
-        this.language as QueryLanguage,
+        this.language,
         this.cliServer,
         this.qlPackStoragePath,
       );
@@ -181,6 +184,9 @@ export class SkeletonQueryWizard {
     if (this.folderName === undefined) {
       throw new Error("Folder name is undefined");
     }
+    if (this.language === undefined) {
+      throw new Error("Language is undefined");
+    }
 
     this.progress({
       message:
@@ -192,7 +198,7 @@ export class SkeletonQueryWizard {
     try {
       const qlPackGenerator = new QlPackGenerator(
         this.folderName,
-        this.language as QueryLanguage,
+        this.language,
         this.cliServer,
         this.qlPackStoragePath,
       );

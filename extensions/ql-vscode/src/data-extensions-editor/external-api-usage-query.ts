@@ -4,6 +4,7 @@ import { writeFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
 import {
   getOnDiskWorkspaceFolders,
+  isQueryLanguage,
   showAndLogExceptionWithTelemetry,
 } from "../helpers";
 import { TeeLogger } from "../common";
@@ -15,7 +16,6 @@ import { fetchExternalApiQueries } from "./queries";
 import { QueryResultType } from "../pure/new-messages";
 import { join } from "path";
 import { redactableError } from "../pure/errors";
-import { QueryLanguage } from "../common/query-language";
 
 export type RunQueryOptions = {
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">;
@@ -41,7 +41,14 @@ export async function runQuery({
   // For a reference of what this should do in the future, see the previous implementation in
   // https://github.com/github/vscode-codeql/blob/089d3566ef0bc67d9b7cc66e8fd6740b31c1c0b0/extensions/ql-vscode/src/data-extensions-editor/external-api-usage-query.ts#L33-L72
 
-  const query = fetchExternalApiQueries[databaseItem.language as QueryLanguage];
+  if (!isQueryLanguage(databaseItem.language)) {
+    void showAndLogExceptionWithTelemetry(
+      redactableError`Unsupported database language ${databaseItem.language}`,
+    );
+    return;
+  }
+
+  const query = fetchExternalApiQueries[databaseItem.language];
   if (!query) {
     void showAndLogExceptionWithTelemetry(
       redactableError`No external API usage query found for language ${databaseItem.language}`,

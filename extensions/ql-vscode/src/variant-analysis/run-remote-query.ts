@@ -39,6 +39,7 @@ import {
   QLPACK_FILENAMES,
   QLPACK_LOCK_FILENAMES,
 } from "../pure/ql";
+import { QueryLanguage } from "../common/query-language";
 
 export interface QlPack {
   name: string;
@@ -76,7 +77,7 @@ async function generateQueryPack(
   const targetQueryFileName = join(queryPackDir, packRelativePath);
   const workspaceFolders = getOnDiskWorkspaceFolders();
 
-  let language: string | undefined;
+  let language: QueryLanguage | undefined;
 
   // Check if the query is already in a query pack.
   // If so, copy the entire query pack to the temporary directory.
