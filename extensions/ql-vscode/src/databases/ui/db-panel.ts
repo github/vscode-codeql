@@ -351,13 +351,19 @@ export class DbPanel extends DisposableObject {
 
     const listName = treeViewItem.dbItem.listName;
 
-    const languageQuickPickItems: CodeSearchQuickPickItem[] = Object.values(
-      QueryLanguage,
-    ).map((language) => ({
-      label: language.toString(),
-      alwaysShow: true,
-      language: language.toString(),
-    }));
+    const languageQuickPickItems: CodeSearchQuickPickItem[] = [
+      {
+        label: "No specific language",
+        alwaysShow: true,
+        language: "",
+      },
+    ].concat(
+      Object.values(QueryLanguage).map((language) => ({
+        label: language.toString(),
+        alwaysShow: true,
+        language: language.toString(),
+      })),
+    );
 
     const codeSearchLanguage =
       await window.showQuickPick<CodeSearchQuickPickItem>(
@@ -371,6 +377,10 @@ export class DbPanel extends DisposableObject {
     if (!codeSearchLanguage) {
       return;
     }
+
+    const languagePrompt = codeSearchLanguage.language
+      ? `language:${codeSearchLanguage.language}`
+      : "";
 
     const codeSearchQuery = await window.showInputBox({
       title: "GitHub Code Search",
@@ -393,7 +403,7 @@ export class DbPanel extends DisposableObject {
 
         const repositories = await getCodeSearchRepositories(
           this.app.credentials,
-          `${codeSearchQuery} language:${codeSearchLanguage.language}`,
+          `${codeSearchQuery} ${languagePrompt}`,
           progress,
           token,
         );
