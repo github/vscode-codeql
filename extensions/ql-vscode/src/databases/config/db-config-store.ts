@@ -1,7 +1,6 @@
 import { pathExists, outputJSON, readJSON, readJSONSync } from "fs-extra";
 import { join } from "path";
 import {
-  clearLocalDbConfig,
   cloneDbConfig,
   DbConfig,
   initializeLocalDbConfig,
@@ -16,6 +15,7 @@ import {
   SelectedDbItem,
   DB_CONFIG_VERSION,
   SelectedDbItemKind,
+  LocalDatabase,
 } from "./db-config";
 import * as chokidar from "chokidar";
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
@@ -183,6 +183,42 @@ export class DbConfigStore extends DisposableObject {
    * Adds one remote repository
    * @returns either nothing, or, if a parentList is given AND the number of repos on that list reaches 1000 returns the repo that was not added.
    */
+  public async addLocalDb(
+    dbItem: LocalDatabaseDbItem,
+    parentList?: string,
+  ): Promise<void> {
+    if (!this.config) {
+      throw Error("Cannot add database if config is not loaded");
+    }
+
+    if (this.doesLocalDbExist(dbItem.databaseName, parentList)) {
+      throw Error(
+        `A database with the name '${dbItem.databaseName}' already exists`,
+      );
+    }
+
+    const item: LocalDatabase = {
+      name: dbItem.databaseName,
+      dateAdded: dbItem.dateAdded,
+      language: dbItem.language,
+      storagePath: dbItem.storagePath,
+    };
+
+    const config = cloneDbConfig(this.config);
+    if (parentList) {
+      const parent = config.databases.local.lists.find(
+        (list) => list.name === parentList,
+      );
+      if (!parent) {
+        throw Error(`Cannot find parent list '${parentList}'`);
+      }
+      parent.databases.push(item);
+    } else {
+      config.databases.local.databases.push(item);
+    }
+    await this.writeConfig(config);
+  }
+
   public async addRemoteRepo(
     repoNwo: string,
     parentList?: string,
@@ -356,7 +392,7 @@ export class DbConfigStore extends DisposableObject {
   public doesLocalDbExist(dbName: string, listName?: string): boolean {
     if (!this.config) {
       throw Error(
-        "Cannot check variant analysis repository existence if config is not loaded",
+        "Cannot check local database existence if config is not loaded",
       );
     }
 
@@ -395,7 +431,7 @@ export class DbConfigStore extends DisposableObject {
   }
 
   private async writeConfig(config: DbConfig): Promise<void> {
-    clearLocalDbConfig(config);
+    this.config = config;
     await outputJSON(this.configPath, config, {
       spaces: 2,
     });

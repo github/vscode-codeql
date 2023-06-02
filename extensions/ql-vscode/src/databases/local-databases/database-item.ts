@@ -1,7 +1,6 @@
 import vscode from "vscode";
 import * as cli from "../../codeql-cli/cli";
 import { DatabaseContents } from "./database-contents";
-import { DatabaseOptions } from "./database-options";
 
 /** An item in the list of available databases */
 export interface DatabaseItem {
@@ -67,17 +66,7 @@ export interface DatabaseItem {
   isAffectedByTest(testPath: string): Promise<boolean>;
 
   /**
-   * Gets the state of this database, to be persisted in the workspace state.
-   */
-  getPersistedState(): PersistedDatabaseItem;
-
-  /**
    * Verifies that this database item has a zipped source folder. Returns an error message if it does not.
    */
   verifyZippedSources(): string | undefined;
-}
-
-export interface PersistedDatabaseItem {
-  uri: string;
-  options?: DatabaseOptions;
 }

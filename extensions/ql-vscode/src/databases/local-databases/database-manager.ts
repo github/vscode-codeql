@@ -4,43 +4,31 @@ import { DisposableObject } from "../../pure/disposable-object";
 import { App } from "../../common/app";
 import { QueryRunner } from "../../query-server";
 import * as cli from "../../codeql-cli/cli";
-import { ProgressCallback, withProgress } from "../../common/vscode/progress";
+import { ProgressCallback } from "../../common/vscode/progress";
 import {
   getAutogenerateQlPacks,
   isCodespacesTemplate,
   setAutogenerateQlPacks,
 } from "../../config";
-import { extname, join } from "path";
+import { join } from "path";
 import { FullDatabaseOptions } from "./database-options";
 import { DatabaseItemImpl } from "./database-item-impl";
 import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
   isQueryLanguage,
-  showAndLogExceptionWithTelemetry,
   showNeverAskAgainDialog,
 } from "../../helpers";
 import { existsSync } from "fs";
 import { QlPackGenerator } from "../../qlpack-generator";
 import { asError, getErrorMessage } from "../../pure/helpers-pure";
-import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
-import { redactableError } from "../../pure/errors";
+import { DatabaseItem } from "./database-item";
 import { remove } from "fs-extra";
 import { containsPath } from "../../pure/files";
 import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
 import { DatabaseResolver } from "./database-resolver";
-
-/**
- * The name of the key in the workspaceState dictionary in which we
- * persist the current database across sessions.
- */
-const CURRENT_DB = "currentDatabase";
-
-/**
- * The name of the key in the workspaceState dictionary in which we
- * persist the list of databases across sessions.
- */
-const DB_LIST = "databaseList";
+import { DatabasePersistenceManager } from "./database-persistence-manager";
+import { getPrimaryLanguage } from "./helpers";
 
 /**
  * A promise that resolves to an event's result value when the event
@@ -91,6 +79,7 @@ export class DatabaseManager extends DisposableObject {
     private readonly app: App,
     private readonly qs: QueryRunner,
     private readonly cli: cli.CodeQLCliServer,
+    private readonly persistenceManager: DatabasePersistenceManager,
     public logger: Logger,
   ) {
     super();
@@ -164,14 +153,11 @@ export class DatabaseManager extends DisposableObject {
     displayName: string | undefined,
   ): Promise<DatabaseItemImpl> {
     const contents = await DatabaseResolver.resolveDatabaseContents(uri);
-    // Ignore the source archive for QLTest databases by default.
-    const isQLTestDatabase = extname(uri.fsPath) === ".testproj";
     const fullOptions: FullDatabaseOptions = {
-      ignoreSourceArchive: isQLTestDatabase,
       // If a displayName is not passed in, the basename of folder containing the database is used.
       displayName,
       dateAdded: Date.now(),
-      language: await this.getPrimaryLanguage(uri.fsPath),
+      language: await getPrimaryLanguage(this.cli, uri.fsPath),
     };
     const databaseItem = new DatabaseItemImpl(uri, contents, fullOptions);
 
@@ -325,111 +311,6 @@ export class DatabaseManager extends DisposableObject {
     }
   }
 
-  private async createDatabaseItemFromPersistedState(
-    progress: ProgressCallback,
-    token: vscode.CancellationToken,
-    state: PersistedDatabaseItem,
-  ): Promise<DatabaseItemImpl> {
-    let displayName: string | undefined = undefined;
-    let ignoreSourceArchive = false;
-    let dateAdded = undefined;
-    let language = undefined;
-    if (state.options) {
-      if (typeof state.options.displayName === "string") {
-        displayName = state.options.displayName;
-      }
-      if (typeof state.options.ignoreSourceArchive === "boolean") {
-        ignoreSourceArchive = state.options.ignoreSourceArchive;
-      }
-      if (typeof state.options.dateAdded === "number") {
-        dateAdded = state.options.dateAdded;
-      }
-      language = state.options.language;
-    }
-
-    const dbBaseUri = vscode.Uri.parse(state.uri, true);
-    if (language === undefined) {
-      // we haven't been successful yet at getting the language. try again
-      language = await this.getPrimaryLanguage(dbBaseUri.fsPath);
-    }
-
-    const fullOptions: FullDatabaseOptions = {
-      ignoreSourceArchive,
-      displayName,
-      dateAdded,
-      language,
-    };
-    const item = new DatabaseItemImpl(dbBaseUri, undefined, fullOptions);
-
-    // Avoid persisting the database state after adding since that should happen only after
-    // all databases have been added.
-    await this.addDatabaseItem(progress, token, item, false);
-    return item;
-  }
-
-  public async loadPersistedState(): Promise<void> {
-    return withProgress(async (progress, token) => {
-      const currentDatabaseUri =
-        this.ctx.workspaceState.get<string>(CURRENT_DB);
-      const databases = this.ctx.workspaceState.get<PersistedDatabaseItem[]>(
-        DB_LIST,
-        [],
-      );
-      let step = 0;
-      progress({
-        maxStep: databases.length,
-        message: "Loading persisted databases",
-        step,
-      });
-      try {
-        void this.logger.log(
-          `Found ${databases.length} persisted databases: ${databases
-            .map((db) => db.uri)
-            .join(", ")}`,
-        );
-        for (const database of databases) {
-          progress({
-            maxStep: databases.length,
-            message: `Loading ${database.options?.displayName || "databases"}`,
-            step: ++step,
-          });
-
-          const databaseItem = await this.createDatabaseItemFromPersistedState(
-            progress,
-            token,
-            database,
-          );
-          try {
-            await this.refreshDatabase(databaseItem);
-            await this.registerDatabase(progress, token, databaseItem);
-            if (currentDatabaseUri === database.uri) {
-              await this.setCurrentDatabaseItem(databaseItem, true);
-            }
-            void this.logger.log(
-              `Loaded database ${databaseItem.name} at URI ${database.uri}.`,
-            );
-          } catch (e) {
-            // When loading from persisted state, leave invalid databases in the list. They will be
-            // marked as invalid, and cannot be set as the current database.
-            void this.logger.log(
-              `Error loading database ${database.uri}: ${e}.`,
-            );
-          }
-        }
-        await this.updatePersistedDatabaseList();
-      } catch (e) {
-        // database list had an unexpected type - nothing to be done?
-        void showAndLogExceptionWithTelemetry(
-          redactableError(
-            asError(e),
-          )`Database list loading failed: ${getErrorMessage(e)}`,
-        );
-      }
-
-      void this.logger.log("Finished loading persisted databases.");
-    });
-  }
-
   public get databaseItems(): readonly DatabaseItem[] {
     return this._databaseItems;
   }
@@ -447,11 +328,11 @@ export class DatabaseManager extends DisposableObject {
       item !== undefined &&
       item instanceof DatabaseItemImpl
     ) {
-      await this.refreshDatabase(item); // Will throw on invalid database.
+      await this.refreshDatabaseItem(item); // Will throw on invalid database.
     }
     if (this._currentDatabaseItem !== item) {
       this._currentDatabaseItem = item;
-      this.updatePersistedCurrentDatabaseItem();
+      await this.persistenceManager.setCurrentDatabaseItem(item);
 
       await this.app.commands.execute(
         "setContext",
@@ -493,6 +374,14 @@ export class DatabaseManager extends DisposableObject {
     );
   }
 
+  public async addDatabaseItemWithoutPersistence(
+    progress: ProgressCallback,
+    token: vscode.CancellationToken,
+    item: DatabaseItemImpl,
+  ) {
+    await this.addDatabaseItem(progress, token, item, false);
+  }
+
   private async addDatabaseItem(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
@@ -502,7 +391,7 @@ export class DatabaseManager extends DisposableObject {
     this._databaseItems.push(item);
 
     if (updatePersistedState) {
-      await this.updatePersistedDatabaseList();
+      await this.persistenceManager.addDatabaseItem(item);
     }
 
     // Add this database item to the allow-list
@@ -518,9 +407,31 @@ export class DatabaseManager extends DisposableObject {
     });
   }
 
-  public async renameDatabaseItem(item: DatabaseItem, newName: string) {
+  public async renameDatabaseItem(
+    item: DatabaseItem,
+    newName: string,
+    updatePersistedState = true,
+  ) {
+    if (updatePersistedState) {
+      await this.persistenceManager.renameDatabaseItem(item, newName);
+    }
     item.name = newName;
-    await this.updatePersistedDatabaseList();
+    this._onDidChangeDatabaseItem.fire({
+      // pass undefined so that the entire tree is rebuilt in order to re-sort
+      item: undefined,
+      kind: DatabaseEventKind.Rename,
+    });
+  }
+
+  public async setDatabaseItemLanguageAndDateAdded(
+    item: DatabaseItem,
+    language: string,
+    dateAdded: number | undefined,
+  ) {
+    if (!(item instanceof DatabaseItemImpl)) {
+      throw new Error("Cannot set language and date added for non-impl item");
+    }
+    item.setLanguageAndDateAdded(language, dateAdded);
     this._onDidChangeDatabaseItem.fire({
       // pass undefined so that the entire tree is rebuilt in order to re-sort
       item: undefined,
@@ -532,6 +443,7 @@ export class DatabaseManager extends DisposableObject {
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     item: DatabaseItem,
+    updatePersistedState = true,
   ) {
     if (this._currentDatabaseItem === item) {
       this._currentDatabaseItem = undefined;
@@ -542,7 +454,9 @@ export class DatabaseManager extends DisposableObject {
     if (index >= 0) {
       this._databaseItems.splice(index, 1);
     }
-    await this.updatePersistedDatabaseList();
+    if (updatePersistedState) {
+      await this.persistenceManager.removeDatabaseItem(item);
+    }
 
     // Delete folder from workspace, if it is still there
     const folderIndex = (vscode.workspace.workspaceFolders || []).findIndex(
@@ -605,7 +519,8 @@ export class DatabaseManager extends DisposableObject {
       throw e;
     }
   }
-  private async registerDatabase(
+
+  public async registerDatabase(
     progress: ProgressCallback,
     token: vscode.CancellationToken,
     dbItem: DatabaseItem,
@@ -621,7 +536,7 @@ export class DatabaseManager extends DisposableObject {
    * If the database is invalid, `databaseItem.error` is updated with the error object that describes why
    * the database is invalid. This error is also thrown.
    */
-  private async refreshDatabase(databaseItem: DatabaseItemImpl) {
+  public async refreshDatabaseItem(databaseItem: DatabaseItemImpl) {
     try {
       try {
         databaseItem.contents = await DatabaseResolver.resolveDatabaseContents(
@@ -641,32 +556,11 @@ export class DatabaseManager extends DisposableObject {
     }
   }
 
-  private updatePersistedCurrentDatabaseItem(): void {
-    void this.ctx.workspaceState.update(
-      CURRENT_DB,
-      this._currentDatabaseItem
-        ? this._currentDatabaseItem.databaseUri.toString(true)
-        : undefined,
-    );
-  }
-
-  private async updatePersistedDatabaseList(): Promise<void> {
-    await this.ctx.workspaceState.update(
-      DB_LIST,
-      this._databaseItems.map((item) => item.getPersistedState()),
-    );
-  }
-
   private isExtensionControlledLocation(uri: vscode.Uri) {
     const storageUri = this.ctx.storageUri || this.ctx.globalStorageUri;
     if (storageUri) {
       return containsPath(storageUri.fsPath, uri.fsPath, process.platform);
     }
     return false;
-  }
-
-  private async getPrimaryLanguage(dbPath: string) {
-    const dbInfo = await this.cli.resolveDatabase(dbPath);
-    return dbInfo.languages?.[0] || "";
   }
 }

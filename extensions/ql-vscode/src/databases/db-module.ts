@@ -10,7 +10,7 @@ import { DatabasePanelCommands } from "../common/commands";
 
 export class DbModule extends DisposableObject {
   public readonly dbManager: DbManager;
-  private readonly dbConfigStore: DbConfigStore;
+  public readonly dbConfigStore: DbConfigStore;
   private dbPanel: DbPanel | undefined;
 
   private constructor(app: App) {

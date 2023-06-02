@@ -126,6 +126,10 @@ import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
+import { WorkspaceStateDatabasePersistenceManager } from "./databases/local-databases/workspace-state-database-persistence-manager";
+import { MultiDatabasePersistenceManager } from "./databases/local-databases/multi-database-persistence-manager";
+import { DbConfigPersistenceManager } from "./databases/config/db-config-persistence-manager";
+import { DbConfigDatabaseManagerUpdater } from "./databases/config/db-config-database-manager-updater";
 
 /**
  * extension.ts
@@ -738,11 +742,48 @@ async function activateWithInstalledDistribution(
     fsWatcher.onDidDelete(clearPackCache);
   }
 
-  void extLogger.log("Initializing database manager.");
-  const dbm = new DatabaseManager(ctx, app, qs, cliServer, extLogger);
+  const dbModule = await DbModule.initialize(app);
 
-  // Let this run async.
-  void dbm.loadPersistedState();
+  void extLogger.log("Initializing database manager.");
+  const workspaceStateDatabasePersistenceManager =
+    new WorkspaceStateDatabasePersistenceManager(ctx, cliServer, extLogger);
+
+  const dbConfigPersistenceManager = new DbConfigPersistenceManager(
+    dbModule.dbConfigStore,
+  );
+
+  const databasePersistenceManager = new MultiDatabasePersistenceManager([
+    workspaceStateDatabasePersistenceManager,
+    dbConfigPersistenceManager,
+  ]);
+
+  ctx.subscriptions.push(dbConfigPersistenceManager);
+  ctx.subscriptions.push(workspaceStateDatabasePersistenceManager);
+  ctx.subscriptions.push(databasePersistenceManager);
+  const dbm = new DatabaseManager(
+    ctx,
+    app,
+    qs,
+    cliServer,
+    databasePersistenceManager,
+    extLogger,
+  );
+
+  if (1 === 1) {
+    const databaseUpdater = await DbConfigDatabaseManagerUpdater.initialize(
+      dbModule.dbConfigStore,
+      dbm,
+      extLogger,
+    );
+
+    ctx.subscriptions.push(databaseUpdater);
+
+    // Let this run async.
+    void databaseUpdater.loadDatabases();
+  } else {
+    // Let this run async.
+    void workspaceStateDatabasePersistenceManager.loadPersistedState(dbm);
+  }
 
   ctx.subscriptions.push(dbm);
   void extLogger.log("Initializing database panel.");
@@ -790,8 +831,6 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(localQueryResultsView);
 
   void extLogger.log("Initializing variant analysis manager.");
-
-  const dbModule = await DbModule.initialize(app);
 
   const variantAnalysisStorageDir = join(
     ctx.globalStorageUri.fsPath,

@@ -32,6 +32,7 @@ import {
   sourceLocationUri,
 } from "../../factories/databases/databases";
 import { findSourceArchive } from "../../../src/databases/local-databases/database-resolver";
+import { DatabasePersistenceManager } from "../../../src/databases/local-databases/database-persistence-manager";
 
 describe("local databases", () => {
   let databaseManager: DatabaseManager;
@@ -99,6 +100,7 @@ describe("local databases", () => {
         resolveDatabase: resolveDatabaseSpy,
         packAdd: packAddSpy,
       }),
+      mockedObject<DatabasePersistenceManager>({}),
       mockedObject<Logger>({
         log: logSpy,
       }),
@@ -634,7 +636,6 @@ describe("local databases", () => {
 
       const options: FullDatabaseOptions = {
         dateAdded: 123,
-        ignoreSourceArchive: false,
         language,
       };
       mockDbItem = createMockDB(dir, options);

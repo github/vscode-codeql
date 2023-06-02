@@ -2,14 +2,14 @@
 import * as cli from "../../codeql-cli/cli";
 import vscode from "vscode";
 import { FullDatabaseOptions } from "./database-options";
-import { basename, dirname, join, relative } from "path";
+import { basename, dirname, extname, join, relative } from "path";
 import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
   encodeSourceArchiveUri,
   zipArchiveScheme,
 } from "../../common/vscode/archive-filesystem-provider";
-import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
+import { DatabaseItem } from "./database-item";
 import { isLikelyDatabaseRoot } from "../../helpers";
 import { stat } from "fs-extra";
 import { pathsEqual } from "../../pure/files";
@@ -21,6 +21,10 @@ export class DatabaseItemImpl implements DatabaseItem {
   public contents: DatabaseContents | undefined;
   /** A cache of database info */
   private _dbinfo: cli.DbInfo | undefined;
+
+  // Ignore the source archive for QLTest databases by default.
+  private readonly ignoreSourceArchive =
+    extname(this.databaseUri.fsPath) === ".testproj";
 
   public constructor(
     public readonly databaseUri: vscode.Uri,
@@ -45,7 +49,7 @@ export class DatabaseItemImpl implements DatabaseItem {
   }
 
   public get sourceArchive(): vscode.Uri | undefined {
-    if (this.options.ignoreSourceArchive || this.contents === undefined) {
+    if (this.ignoreSourceArchive || this.contents === undefined) {
       return undefined;
     } else {
       return this.contents.sourceArchiveUri;
@@ -54,6 +58,14 @@ export class DatabaseItemImpl implements DatabaseItem {
 
   public get dateAdded(): number | undefined {
     return this.options.dateAdded;
+  }
+
+  public setLanguageAndDateAdded(
+    language: string,
+    dateAdded: number | undefined,
+  ) {
+    this.options.language = language;
+    this.options.dateAdded = dateAdded;
   }
 
   public resolveSourceFile(uriStr: string | undefined): vscode.Uri {
@@ -99,16 +111,6 @@ export class DatabaseItemImpl implements DatabaseItem {
     } else {
       return sourceArchive;
     }
-  }
-
-  /**
-   * Gets the state of this database, to be persisted in the workspace state.
-   */
-  public getPersistedState(): PersistedDatabaseItem {
-    return {
-      uri: this.databaseUri.toString(true),
-      options: this.options,
-    };
   }
 
   /**

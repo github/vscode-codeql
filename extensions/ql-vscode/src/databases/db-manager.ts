@@ -21,7 +21,7 @@ import {
   getSelectedDbItem,
   mapDbItemToSelectedDbItem,
 } from "./db-item-selection";
-import { createRemoteTree } from "./db-tree-creator";
+import { createLocalTree, createRemoteTree } from "./db-tree-creator";
 import { DbConfigValidationError } from "./db-validation-errors";
 
 export class DbManager extends DisposableObject {
@@ -63,8 +63,10 @@ export class DbManager extends DisposableObject {
 
     const expandedItems = this.getExpandedItems();
 
-    const remoteTree = createRemoteTree(configResult.value, expandedItems);
-    return ValueResult.ok(remoteTree.children);
+    return ValueResult.ok([
+      createRemoteTree(configResult.value, expandedItems),
+      createLocalTree(configResult.value, expandedItems),
+    ]);
   }
 
   public getConfigPath(): string {

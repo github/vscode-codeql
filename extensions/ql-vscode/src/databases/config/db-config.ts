@@ -331,34 +331,22 @@ export function removeRemoteOwner(
 }
 
 /**
- * Removes local db config from a db config object, if one is set.
- * We do this because we don't want to expose this feature to users
- * yet (since it's only partially implemented), but we also don't want
- * to remove all the code we've already implemented.
- * @param config The config object to change.
- * @returns Any removed local db config.
- */
-export function clearLocalDbConfig(
-  config: DbConfig,
-): LocalDbConfig | undefined {
-  let localDbs = undefined;
-
-  if (config && config.databases && config.databases.local) {
-    localDbs = config.databases.local;
-    delete (config.databases as any).local;
-  }
-
-  return localDbs;
-}
-
-/**
  * Initializes the local db config, if the config object contains
  * database configuration.
  * @param config The config object to change.
  */
 export function initializeLocalDbConfig(config: DbConfig): void {
   if (config.databases) {
-    config.databases.local = { lists: [], databases: [] };
+    if (!config.databases.local) {
+      config.databases.local = { lists: [], databases: [] };
+    } else {
+      if (!config.databases.local?.lists) {
+        config.databases.local.lists = [];
+      }
+      if (!config.databases.local?.databases) {
+        config.databases.local.databases = [];
+      }
+    }
   }
 }
 
