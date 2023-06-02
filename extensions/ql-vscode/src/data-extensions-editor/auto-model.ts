@@ -85,10 +85,6 @@ export function parsePredictedClassifications(
 ): Record<string, ModeledMethod> {
   const predictedBySignature: Record<string, Method[]> = {};
   for (const method of predicted) {
-    if (!method.classification) {
-      continue;
-    }
-
     const signature = toFullMethodSignature(method);
 
     if (!(signature in predictedBySignature)) {
