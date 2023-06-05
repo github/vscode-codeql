@@ -1844,6 +1844,13 @@ export class CliVersionConstraint {
 
   public static CLI_VERSION_GLOBAL_CACHE = new SemVer("2.12.4");
 
+  /**
+   * CLI version where the langauge server supports visisbility change notifications.
+   */
+  public static CLI_VERSION_WITH_VISIBILITY_NOTIFICATIONS = new SemVer(
+    "2.14.0",
+  );
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1916,5 +1923,11 @@ export class CliVersionConstraint {
 
   async usesGlobalCompilationCache() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_GLOBAL_CACHE);
+  }
+
+  async supportsVisibilityNotifications() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_VISIBILITY_NOTIFICATIONS,
+    );
   }
 }
