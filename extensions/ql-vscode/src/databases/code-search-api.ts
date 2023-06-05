@@ -53,14 +53,14 @@ async function provideOctokitWithThrottling(
     throttle: {
       onRateLimit: (retryAfter: number, options: any): boolean => {
         void showAndLogWarningMessage(
-          `Request quota exhausted for request ${options.method} ${options.url}. Retrying after ${retryAfter} seconds!`,
+          `Rate Limit detected for request ${options.method} ${options.url}. Retrying after ${retryAfter} seconds!`,
         );
 
         return true;
       },
       onSecondaryRateLimit: (_retryAfter: number, options: any): void => {
         void showAndLogWarningMessage(
-          `SecondaryRateLimit detected for request ${options.method} ${options.url}`,
+          `Secondary Rate Limit detected for request ${options.method} ${options.url}`,
         );
       },
     },
