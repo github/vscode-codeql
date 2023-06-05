@@ -1037,6 +1037,17 @@ async function activateWithInstalledDistribution(
       void ideServer.stop();
     },
   });
+
+  // Handle visibility changes in the ideserver
+  if (await cliServer.cliConstraints.supportsVisibilityNotifications()) {
+    Window.onDidChangeVisibleTextEditors((editors) => {
+      ideServer.notifyVisibilityChange(editors);
+    });
+    // Send an inital notification to the language server
+    // to set the initial state of the visible editors.
+    ideServer.notifyVisibilityChange(Window.visibleTextEditors);
+  }
+
   // Jump-to-definition and find-references
   void extLogger.log("Registering jump-to-definition handlers.");
 

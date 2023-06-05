@@ -1,5 +1,9 @@
-import { ProgressLocation, window } from "vscode";
-import { LanguageClient, StreamInfo } from "vscode-languageclient/node";
+import { ProgressLocation, TextEditor, window } from "vscode";
+import {
+  LanguageClient,
+  NotificationType,
+  StreamInfo,
+} from "vscode-languageclient/node";
 import { shouldDebugIdeServer, spawnServer } from "../codeql-cli/cli";
 import { QueryServerConfig } from "../config";
 import { ideServerLogger } from "../common";
@@ -41,6 +45,15 @@ export class CodeQLLanguageClient extends LanguageClient {
       true,
     );
   }
+
+  notifyVisibilityChange(editors: readonly TextEditor[]) {
+    const files = editors
+      .filter((e) => e.document.uri.scheme === "file")
+      .map((e) => e.document.uri.toString());
+    void this.sendNotification(didChangeVisibileFiles, {
+      visibleFiles: files,
+    });
+  }
 }
 
 /** Starts a new CodeQL language server process, sending progress messages to the status bar. */
@@ -70,3 +83,13 @@ async function spawnIdeServer(config: QueryServerConfig): Promise<StreamInfo> {
     },
   );
 }
+
+/**
+ * Custom notification type for when the set of visible files changes.
+ */
+interface DidChangeVisibileFilesParams {
+  visibleFiles: string[];
+}
+
+const didChangeVisibileFiles: NotificationType<DidChangeVisibileFilesParams> =
+  new NotificationType("textDocument/codeQLDidChangeVisibleFiles");
