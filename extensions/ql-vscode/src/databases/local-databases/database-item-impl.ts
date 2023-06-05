@@ -2,7 +2,7 @@
 import * as cli from "../../codeql-cli/cli";
 import vscode from "vscode";
 import { FullDatabaseOptions } from "./database-options";
-import { basename, dirname, join, relative } from "path";
+import { basename, dirname, extname, join, relative } from "path";
 import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
@@ -45,11 +45,16 @@ export class DatabaseItemImpl implements DatabaseItem {
   }
 
   public get sourceArchive(): vscode.Uri | undefined {
-    if (this.options.ignoreSourceArchive || this.contents === undefined) {
+    if (this.ignoreSourceArchive || this.contents === undefined) {
       return undefined;
     } else {
       return this.contents.sourceArchiveUri;
     }
+  }
+
+  private get ignoreSourceArchive(): boolean {
+    // Ignore the source archive for QLTest databases.
+    return extname(this.databaseUri.fsPath) === ".testproj";
   }
 
   public get dateAdded(): number | undefined {

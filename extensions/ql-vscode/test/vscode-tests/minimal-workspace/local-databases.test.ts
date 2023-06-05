@@ -634,7 +634,6 @@ describe("local databases", () => {
 
       const options: FullDatabaseOptions = {
         dateAdded: 123,
-        ignoreSourceArchive: false,
         language,
       };
       mockDbItem = createMockDB(dir, options);

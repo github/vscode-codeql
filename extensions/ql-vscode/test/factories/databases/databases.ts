@@ -10,7 +10,6 @@ import { DirResult } from "tmp";
 export function mockDbOptions(): FullDatabaseOptions {
   return {
     dateAdded: 123,
-    ignoreSourceArchive: false,
     language: "",
   };
 }
