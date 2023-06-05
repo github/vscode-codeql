@@ -12,6 +12,7 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathExists } from "fs-extra";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import { extLogger } from "../common";
+import { VSCodeLocalizer } from "../common/vscode/vscode-localizer";
 
 /**
  * The results of discovering QL tests.
@@ -97,7 +98,11 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
   private async discoverTests(): Promise<FileTreeDirectory> {
     const fullPath = this.workspaceFolder.uri.fsPath;
     const name = this.workspaceFolder.name;
-    const rootDirectory = new FileTreeDirectory(fullPath, name);
+    const rootDirectory = new FileTreeDirectory(
+      fullPath,
+      name,
+      new VSCodeLocalizer(),
+    );
 
     // Don't try discovery on workspace folders that don't exist on the filesystem
     if (await pathExists(fullPath)) {

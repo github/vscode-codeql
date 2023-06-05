@@ -7,8 +7,11 @@ import {
   QueryDiscoverer,
   QueryTreeDataProvider,
 } from "../../../../src/queries-panel/query-tree-data-provider";
+import { VSCodeLocalizer } from "../../../../src/common/vscode/vscode-localizer";
 
 describe("QueryTreeDataProvider", () => {
+  const localizer = new VSCodeLocalizer();
+
   describe("getChildren", () => {
     it("returns no children when queries is undefined", async () => {
       const dataProvider = new QueryTreeDataProvider({
@@ -31,8 +34,8 @@ describe("QueryTreeDataProvider", () => {
     it("converts FileTreeNode to QueryTreeViewItem", async () => {
       const dataProvider = new QueryTreeDataProvider({
         queries: [
-          new FileTreeDirectory<string>("dir1", "dir1", [
-            new FileTreeDirectory<string>("dir1/dir2", "dir2", [
+          new FileTreeDirectory<string>("dir1", "dir1", localizer, [
+            new FileTreeDirectory<string>("dir1/dir2", "dir2", localizer, [
               new FileTreeLeaf<string>(
                 "dir1/dir2/file1",
                 "file1",
@@ -45,7 +48,7 @@ describe("QueryTreeDataProvider", () => {
               ),
             ]),
           ]),
-          new FileTreeDirectory<string>("dir3", "dir3", [
+          new FileTreeDirectory<string>("dir3", "dir3", localizer, [
             new FileTreeLeaf<string>("dir3/file3", "file3", "javascript"),
           ]),
         ],
@@ -78,7 +81,7 @@ describe("QueryTreeDataProvider", () => {
       const onDidChangeQueriesEmitter = new EventEmitter<void>();
       const queryDiscoverer: QueryDiscoverer = {
         queries: [
-          new FileTreeDirectory<string>("dir1", "dir1", [
+          new FileTreeDirectory<string>("dir1", "dir1", localizer, [
             new FileTreeLeaf<string>("dir1/file1", "file1", "javascript"),
           ]),
         ],
@@ -89,7 +92,7 @@ describe("QueryTreeDataProvider", () => {
       expect(dataProvider.getChildren().length).toEqual(1);
 
       queryDiscoverer.queries?.push(
-        new FileTreeDirectory<string>("dir2", "dir2", [
+        new FileTreeDirectory<string>("dir2", "dir2", localizer, [
           new FileTreeLeaf<string>("dir2/file2", "file2", "javascript"),
         ]),
       );

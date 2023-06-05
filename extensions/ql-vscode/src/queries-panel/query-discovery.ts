@@ -9,6 +9,7 @@ import { getOnDiskWorkspaceFoldersObjects } from "../helpers";
 import { AppEventEmitter } from "../common/events";
 import { QueryDiscoverer } from "./query-tree-data-provider";
 import { extLogger } from "../common";
+import { VSCodeLocalizer } from "../common/vscode/vscode-localizer";
 
 /**
  * The results of discovering queries.
@@ -124,7 +125,11 @@ export class QueryDiscovery
       return undefined;
     }
 
-    const rootDirectory = new FileTreeDirectory<string>(fullPath, name);
+    const rootDirectory = new FileTreeDirectory<string>(
+      fullPath,
+      name,
+      new VSCodeLocalizer(),
+    );
     for (const queryPath of resolvedQueries) {
       const relativePath = normalize(relative(fullPath, queryPath));
       const dirName = dirname(relativePath);
