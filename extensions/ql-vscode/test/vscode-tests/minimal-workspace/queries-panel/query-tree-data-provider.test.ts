@@ -31,14 +31,22 @@ describe("QueryTreeDataProvider", () => {
     it("converts FileTreeNode to QueryTreeViewItem", async () => {
       const dataProvider = new QueryTreeDataProvider({
         queries: [
-          new FileTreeDirectory("dir1", "dir1", [
-            new FileTreeDirectory("dir1/dir2", "dir2", [
-              new FileTreeLeaf("dir1/dir2/file1", "file1"),
-              new FileTreeLeaf("dir1/dir2/file1", "file2"),
+          new FileTreeDirectory<string>("dir1", "dir1", [
+            new FileTreeDirectory<string>("dir1/dir2", "dir2", [
+              new FileTreeLeaf<string>(
+                "dir1/dir2/file1",
+                "file1",
+                "javascript",
+              ),
+              new FileTreeLeaf<string>(
+                "dir1/dir2/file1",
+                "file2",
+                "javascript",
+              ),
             ]),
           ]),
-          new FileTreeDirectory("dir3", "dir3", [
-            new FileTreeLeaf("dir3/file3", "file3"),
+          new FileTreeDirectory<string>("dir3", "dir3", [
+            new FileTreeLeaf<string>("dir3/file3", "file3", "javascript"),
           ]),
         ],
         onDidChangeQueries: jest.fn(),
@@ -70,8 +78,8 @@ describe("QueryTreeDataProvider", () => {
       const onDidChangeQueriesEmitter = new EventEmitter<void>();
       const queryDiscoverer: QueryDiscoverer = {
         queries: [
-          new FileTreeDirectory("dir1", "dir1", [
-            new FileTreeLeaf("dir1/file1", "file1"),
+          new FileTreeDirectory<string>("dir1", "dir1", [
+            new FileTreeLeaf<string>("dir1/file1", "file1", "javascript"),
           ]),
         ],
         onDidChangeQueries: onDidChangeQueriesEmitter.event,
@@ -81,8 +89,8 @@ describe("QueryTreeDataProvider", () => {
       expect(dataProvider.getChildren().length).toEqual(1);
 
       queryDiscoverer.queries?.push(
-        new FileTreeDirectory("dir2", "dir2", [
-          new FileTreeLeaf("dir2/file2", "file2"),
+        new FileTreeDirectory<string>("dir2", "dir2", [
+          new FileTreeLeaf<string>("dir2/file2", "file2", "javascript"),
         ]),
       );
       onDidChangeQueriesEmitter.fire();

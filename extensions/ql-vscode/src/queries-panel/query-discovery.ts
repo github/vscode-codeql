@@ -18,7 +18,7 @@ export interface QueryDiscoveryResults {
    * A tree of directories and query files.
    * May have multiple roots because of multiple workspaces.
    */
-  queries: FileTreeDirectory[];
+  queries: Array<FileTreeDirectory<string>>;
 
   /**
    * File system paths to watch. If any ql file changes in these directories
@@ -49,7 +49,7 @@ export class QueryDiscovery
     this.push(this.watcher.onDidChange(this.refresh.bind(this)));
   }
 
-  public get queries(): FileTreeDirectory[] | undefined {
+  public get queries(): Array<FileTreeDirectory<string>> | undefined {
     return this.results?.queries;
   }
 
@@ -97,7 +97,7 @@ export class QueryDiscovery
    */
   private async discoverQueries(
     workspaceFolders: readonly WorkspaceFolder[],
-  ): Promise<FileTreeDirectory[]> {
+  ): Promise<Array<FileTreeDirectory<string>>> {
     const rootDirectories = [];
     for (const workspaceFolder of workspaceFolders) {
       const root = await this.discoverQueriesInWorkspace(workspaceFolder);
@@ -110,7 +110,7 @@ export class QueryDiscovery
 
   private async discoverQueriesInWorkspace(
     workspaceFolder: WorkspaceFolder,
-  ): Promise<FileTreeDirectory | undefined> {
+  ): Promise<FileTreeDirectory<string> | undefined> {
     const fullPath = workspaceFolder.uri.fsPath;
     const name = workspaceFolder.name;
 
@@ -124,13 +124,13 @@ export class QueryDiscovery
       return undefined;
     }
 
-    const rootDirectory = new FileTreeDirectory(fullPath, name);
+    const rootDirectory = new FileTreeDirectory<string>(fullPath, name);
     for (const queryPath of resolvedQueries) {
       const relativePath = normalize(relative(fullPath, queryPath));
       const dirName = dirname(relativePath);
       const parentDirectory = rootDirectory.createDirectory(dirName);
       parentDirectory.addChild(
-        new FileTreeLeaf(queryPath, basename(queryPath)),
+        new FileTreeLeaf<string>(queryPath, basename(queryPath), "language"),
       );
     }
 

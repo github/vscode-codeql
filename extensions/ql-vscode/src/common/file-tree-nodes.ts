@@ -4,8 +4,12 @@ import { env } from "vscode";
 /**
  * A node in the tree of files. This will be either a `FileTreeDirectory` or a `FileTreeLeaf`.
  */
-export abstract class FileTreeNode {
-  constructor(private _path: string, private _name: string) {}
+export abstract class FileTreeNode<T = undefined> {
+  constructor(
+    private _path: string,
+    private _name: string,
+    private _data?: T,
+  ) {}
 
   public get path(): string {
     return this._path;
@@ -15,7 +19,11 @@ export abstract class FileTreeNode {
     return this._name;
   }
 
-  public abstract get children(): readonly FileTreeNode[];
+  public get data(): T | undefined {
+    return this._data;
+  }
+
+  public abstract get children(): ReadonlyArray<FileTreeNode<T>>;
 
   public abstract finish(): void;
 }
@@ -23,24 +31,24 @@ export abstract class FileTreeNode {
 /**
  * A directory containing one or more files or other directories.
  */
-export class FileTreeDirectory extends FileTreeNode {
+export class FileTreeDirectory<T = undefined> extends FileTreeNode<T> {
   constructor(
     _path: string,
     _name: string,
-    private _children: FileTreeNode[] = [],
+    private _children: Array<FileTreeNode<T>> = [],
   ) {
     super(_path, _name);
   }
 
-  public get children(): readonly FileTreeNode[] {
+  public get children(): ReadonlyArray<FileTreeNode<T>> {
     return this._children;
   }
 
-  public addChild(child: FileTreeNode): void {
+  public addChild(child: FileTreeNode<T>): void {
     this._children.push(child);
   }
 
-  public createDirectory(relativePath: string): FileTreeDirectory {
+  public createDirectory(relativePath: string): FileTreeDirectory<T> {
     if (relativePath === ".") {
       return this;
     }
@@ -66,7 +74,7 @@ export class FileTreeDirectory extends FileTreeNode {
         child.children[0] instanceof FileTreeDirectory
       ) {
         // collapse children
-        const replacement = new FileTreeDirectory(
+        const replacement = new FileTreeDirectory<T>(
           child.children[0].path,
           `${child.name} / ${child.children[0].name}`,
           Array.from(child.children[0].children),
@@ -76,12 +84,12 @@ export class FileTreeDirectory extends FileTreeNode {
     });
   }
 
-  private createChildDirectory(name: string): FileTreeDirectory {
+  private createChildDirectory(name: string): FileTreeDirectory<T> {
     const existingChild = this._children.find((child) => child.name === name);
     if (existingChild !== undefined) {
-      return existingChild as FileTreeDirectory;
+      return existingChild as FileTreeDirectory<T>;
     } else {
-      const newChild = new FileTreeDirectory(join(this.path, name), name);
+      const newChild = new FileTreeDirectory<T>(join(this.path, name), name);
       this.addChild(newChild);
       return newChild;
     }
@@ -91,12 +99,12 @@ export class FileTreeDirectory extends FileTreeNode {
 /**
  * A single file.
  */
-export class FileTreeLeaf extends FileTreeNode {
-  constructor(_path: string, _name: string) {
-    super(_path, _name);
+export class FileTreeLeaf<T = undefined> extends FileTreeNode<T> {
+  constructor(_path: string, _name: string, _data?: T) {
+    super(_path, _name, _data);
   }
 
-  public get children(): readonly FileTreeNode[] {
+  public get children(): ReadonlyArray<FileTreeNode<T>> {
     return [];
   }
 
