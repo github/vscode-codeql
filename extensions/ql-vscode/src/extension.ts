@@ -36,12 +36,12 @@ import {
 import {
   AstViewer,
   install,
-  spawnIdeServer,
   getQueryEditorCommands,
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
+  createIDEServer,
 } from "./language-support";
 import { DatabaseManager } from "./databases/local-databases";
 import { DatabaseUI } from "./databases/local-databases-ui";
@@ -903,24 +903,7 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(tmpDirDisposal);
 
   void extLogger.log("Initializing CodeQL language server.");
-  const client = new LanguageClient(
-    "codeQL.lsp",
-    "CodeQL Language Server",
-    () => spawnIdeServer(qlConfigurationListener),
-    {
-      documentSelector: [
-        { language: "ql", scheme: "file" },
-        { language: "yaml", scheme: "file", pattern: "**/qlpack.yml" },
-        { language: "yaml", scheme: "file", pattern: "**/codeql-pack.yml" },
-      ],
-      synchronize: {
-        configurationSection: "codeQL",
-      },
-      // Ensure that language server exceptions are logged to the same channel as its output.
-      outputChannel: ideServerLogger.outputChannel,
-    },
-    true,
-  );
+  const ideServer = createIDEServer(qlConfigurationListener);
 
   const localQueries = new LocalQueries(
     app,
@@ -1002,7 +985,7 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllExtensionCommands = {
-    ...getCommands(app, cliServer, qs, client),
+    ...getCommands(app, cliServer, qs, ideServer),
     ...getQueryEditorCommands({
       commandManager: app.commands,
       queryRunner: qs,
@@ -1048,10 +1031,10 @@ async function activateWithInstalledDistribution(
   }
 
   void extLogger.log("Starting language server.");
-  await client.start();
+  await ideServer.start();
   ctx.subscriptions.push({
     dispose: () => {
-      void client.stop();
+      void ideServer.stop();
     },
   });
   // Jump-to-definition and find-references
