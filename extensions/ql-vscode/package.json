@@ -967,7 +967,7 @@
         },
         {
           "command": "codeQLVariantAnalysisRepositories.importFromCodeSearch",
-          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canImportCodeSearch/",
+          "when": "view == codeQLVariantAnalysisRepositories && viewItem =~ /canImportCodeSearch/ && config.codeQL.codeSearch",
           "group": "2_qlContextMenu@1"
         },
         {
