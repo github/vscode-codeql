@@ -8,6 +8,7 @@ import { Memento } from "../memento";
 import { VSCodeAppEventEmitter } from "./events";
 import { AppCommandManager, QueryServerCommandManager } from "../commands";
 import { createVSCodeCommandManager } from "./commands";
+import { AppEnvironmentContext } from "./environment-context";
 
 export class ExtensionApp implements App {
   public readonly credentials: VSCodeCredentials;
@@ -71,8 +72,6 @@ export class ExtensionApp implements App {
   }
 
   public get environment(): EnvironmentContext {
-    return {
-      language: vscode.env.language,
-    };
+    return new AppEnvironmentContext();
   }
 }
