@@ -1,7 +1,7 @@
 import { dirname, basename, normalize, relative } from "path";
 import { Discovery } from "../common/discovery";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { Event, RelativePattern, Uri, WorkspaceFolder } from "vscode";
+import { Event, RelativePattern, Uri, WorkspaceFolder, env } from "vscode";
 import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
 import { App } from "../common/app";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
@@ -124,7 +124,7 @@ export class QueryDiscovery
       return undefined;
     }
 
-    const rootDirectory = new FileTreeDirectory<string>(fullPath, name);
+    const rootDirectory = new FileTreeDirectory<string>(fullPath, name, env);
     for (const queryPath of resolvedQueries) {
       const relativePath = normalize(relative(fullPath, queryPath));
       const dirName = dirname(relativePath);

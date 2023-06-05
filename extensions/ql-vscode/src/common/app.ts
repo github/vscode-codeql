@@ -23,10 +23,15 @@ export interface App {
   readonly onDidChangeWorkspaceFolders: Event<WorkspaceFoldersChangeEvent>;
   readonly credentials: Credentials;
   readonly commands: AppCommandManager;
+  readonly environment: EnvironmentContext;
 }
 
 export enum AppMode {
   Production = 1,
   Development = 2,
   Test = 3,
+}
+
+export interface EnvironmentContext {
+  language: string;
 }

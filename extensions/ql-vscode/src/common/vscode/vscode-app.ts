@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { VSCodeCredentials } from "./authentication";
 import { Disposable } from "../../pure/disposable-object";
-import { App, AppMode } from "../app";
+import { App, AppMode, EnvironmentContext } from "../app";
 import { AppEventEmitter } from "../events";
 import { extLogger, Logger, queryServerLogger } from "../logging";
 import { Memento } from "../memento";
@@ -68,5 +68,11 @@ export class ExtensionApp implements App {
 
   public createEventEmitter<T>(): AppEventEmitter<T> {
     return new VSCodeAppEventEmitter<T>();
+  }
+
+  public get environment(): EnvironmentContext {
+    return {
+      language: vscode.env.language,
+    };
   }
 }
