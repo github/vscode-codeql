@@ -232,7 +232,7 @@ describe("pickExtensionPackModelFile", () => {
       label: "codeql-custom-queries-java",
       path: tmpDir.path,
     } as QuickPickItem);
-    showInputBoxSpy.mockResolvedValueOnce("new-extension-pack");
+    showInputBoxSpy.mockResolvedValueOnce("pack/new-extension-pack");
     showInputBoxSpy.mockResolvedValue("models/my-model.yml");
 
     expect(
@@ -247,7 +247,7 @@ describe("pickExtensionPackModelFile", () => {
       extensionPack: {
         path: newPackDir,
         yamlPath: join(newPackDir, "codeql-pack.yml"),
-        name: "new-extension-pack",
+        name: "pack/new-extension-pack",
         version: "0.0.0",
         extensionTargets: {
           "codeql/java-all": "*",
@@ -280,7 +280,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
     ).toEqual({
-      name: "new-extension-pack",
+      name: "pack/new-extension-pack",
       version: "0.0.0",
       library: true,
       extensionTargets: {
@@ -303,7 +303,7 @@ describe("pickExtensionPackModelFile", () => {
       label: "codeql-custom-queries-java",
       path: tmpDir.path,
     } as QuickPickItem);
-    showInputBoxSpy.mockResolvedValueOnce("new-extension-pack");
+    showInputBoxSpy.mockResolvedValueOnce("pack/new-extension-pack");
     showInputBoxSpy.mockResolvedValue("models/my-model.yml");
 
     expect(
@@ -321,7 +321,7 @@ describe("pickExtensionPackModelFile", () => {
       extensionPack: {
         path: newPackDir,
         yamlPath: join(newPackDir, "codeql-pack.yml"),
-        name: "new-extension-pack",
+        name: "pack/new-extension-pack",
         version: "0.0.0",
         extensionTargets: {
           "codeql/csharp-all": "*",
@@ -354,7 +354,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
     ).toEqual({
-      name: "new-extension-pack",
+      name: "pack/new-extension-pack",
       version: "0.0.0",
       library: true,
       extensionTargets: {
@@ -806,6 +806,12 @@ describe("pickExtensionPackModelFile", () => {
       "Invalid package name: a pack name must contain only lowercase ASCII letters, ASCII digits, and hyphens",
     );
     expect(await validateFile("VSCODE")).toEqual(
+      "Invalid package name: a pack name must contain a slash to separate the scope from the pack name",
+    );
+    expect(await validateFile("github/")).toEqual(
+      "Invalid package name: a pack name must contain only lowercase ASCII letters, ASCII digits, and hyphens",
+    );
+    expect(await validateFile("github/VSCODE")).toEqual(
       "Invalid package name: a pack name must contain only lowercase ASCII letters, ASCII digits, and hyphens",
     );
     expect(await validateFile("github/vscode-codeql-")).toEqual(
@@ -814,7 +820,7 @@ describe("pickExtensionPackModelFile", () => {
     expect(
       await validateFile("github/vscode-codeql-extensions"),
     ).toBeUndefined();
-    expect(await validateFile("vscode-codeql-extensions")).toBeUndefined();
+    expect(await validateFile("pack/vscode-codeql-extensions")).toBeUndefined();
   });
 
   it("validates the file input", async () => {

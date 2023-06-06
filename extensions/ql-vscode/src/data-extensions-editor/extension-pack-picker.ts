@@ -19,7 +19,7 @@ const maxStep = 3;
 
 const packNamePartRegex = /[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
 const packNameRegex = new RegExp(
-  `^(?:(?<scope>${packNamePartRegex.source})/)?(?<name>${packNamePartRegex.source})$`,
+  `^(?<scope>${packNamePartRegex.source})/(?<name>${packNamePartRegex.source})$`,
 );
 const packNameLength = 128;
 
@@ -246,11 +246,16 @@ async function pickNewExtensionPack(
     return undefined;
   }
 
+  let examplePackName = `${databaseItem.name}-extensions`;
+  if (!examplePackName.includes("/")) {
+    examplePackName = `pack/${examplePackName}`;
+  }
+
   const packName = await window.showInputBox(
     {
       title: "Create new extension pack",
       prompt: "Enter name of extension pack",
-      placeHolder: `e.g. ${databaseItem.name}-extensions`,
+      placeHolder: `e.g. ${examplePackName}`,
       validateInput: async (value: string): Promise<string | undefined> => {
         if (!value) {
           return "Pack name must not be empty";
@@ -262,6 +267,10 @@ async function pickNewExtensionPack(
 
         const matches = packNameRegex.exec(value);
         if (!matches?.groups) {
+          if (!value.includes("/")) {
+            return "Invalid package name: a pack name must contain a slash to separate the scope from the pack name";
+          }
+
           return "Invalid package name: a pack name must contain only lowercase ASCII letters, ASCII digits, and hyphens";
         }
 
@@ -296,7 +305,7 @@ async function pickNewExtensionPack(
   const extensionPack: ExtensionPack = {
     path: packPath,
     yamlPath: packYamlPath,
-    name,
+    name: packName,
     version: "0.0.0",
     extensionTargets: {
       [`codeql/${databaseItem.language}-all`]: "*",
