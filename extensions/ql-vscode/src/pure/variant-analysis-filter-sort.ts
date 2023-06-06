@@ -94,8 +94,9 @@ export function compareRepository(
       }
     }
 
-    // Fall back on name compare
-    return left.fullName.localeCompare(right.fullName, undefined, {
+    // Fall back on name compare. Use en-US because the repository name does not contain
+    // special characters due to restrictions in GitHub owner/repository names.
+    return left.fullName.localeCompare(right.fullName, "en-US", {
       sensitivity: "base",
     });
   };
