@@ -1,13 +1,12 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## 1.8.5 - 1 June 2023
+## 1.8.5 - 6 June 2023
 
 - Add settings `codeQL.variantAnalysis.defaultResultsFilter` and `codeQL.variantAnalysis.defaultResultsSort` for configuring how variant analysis results are filtered and sorted in the results view. The default is to show all repositories, and to sort by the number of results. [#2392](https://github.com/github/vscode-codeql/pull/2392)
 - Fix bug to ensure error messages have complete stack trace in message logs. [#2425](https://github.com/github/vscode-codeql/pull/2425)
 - Fix bug where the `CodeQL: Compare Query` command did not work for comparing quick-eval queries. [#2422](https://github.com/github/vscode-codeql/pull/2422)
 - Update text of copy and export buttons in variant analysis results view to clarify that they only copy/export the selected/filtered results. [#2427](https://github.com/github/vscode-codeql/pull/2427)
 - Add warning when using unsupported CodeQL CLI version. [#2428](https://github.com/github/vscode-codeql/pull/2428)
-- Add repositories to a variant analysis list with GitHub Code Search. [#2439](https://github.com/github/vscode-codeql/pull/2439)
 - Retry MRVA results download if connection times out. [#2440](https://github.com/github/vscode-codeql/pull/2440)
 
 ## 1.8.4 - 3 May 2023
