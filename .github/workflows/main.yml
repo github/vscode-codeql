@@ -22,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.14.2'
+          node-version: '16.17.1'
           cache: 'npm'
           cache-dependency-path: extensions/ql-vscode/package-lock.json
 
@@ -80,7 +80,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.14.2'
+          node-version: '16.17.1'
           cache: 'npm'
           cache-dependency-path: extensions/ql-vscode/package-lock.json
 
@@ -124,7 +124,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.14.2'
+          node-version: '16.17.1'
           cache: 'npm'
           cache-dependency-path: extensions/ql-vscode/package-lock.json
 
@@ -158,7 +158,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.14.2'
+          node-version: '16.17.1'
           cache: 'npm'
           cache-dependency-path: extensions/ql-vscode/package-lock.json
 
@@ -225,7 +225,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: '16.14.2'
+          node-version: '16.17.1'
           cache: 'npm'
           cache-dependency-path: extensions/ql-vscode/package-lock.json
 
