@@ -195,7 +195,8 @@ export function compareInputOutput(a: string, b: string): number {
 
     // If either one is unknown, it is sorted last
     if (aIndex === -1 && bIndex === -1) {
-      return a.localeCompare(b);
+      // Use en-US because these are well-known strings that are not localized
+      return a.localeCompare(b, "en-US");
     }
     if (aIndex === -1) {
       return 1;
