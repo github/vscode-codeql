@@ -258,7 +258,12 @@ export class ResultsView extends AbstractWebview<
           this.onWebViewLoaded();
           break;
         case "viewSourceFile": {
-          await jumpToLocation(msg, this.databaseManager, this.logger);
+          await jumpToLocation(
+            msg.databaseUri,
+            msg.loc,
+            this.databaseManager,
+            this.logger,
+          );
           break;
         }
         case "toggleDiagnostics": {

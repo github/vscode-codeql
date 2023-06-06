@@ -19,7 +19,7 @@ import {
   isLineColumnLoc,
   tryGetResolvableLocation,
 } from "../../pure/bqrs-utils";
-import { ViewSourceFileMsg } from "../../pure/interface-types";
+import { getErrorMessage } from "../../pure/helpers-pure";
 import { Logger } from "../../common";
 import { DatabaseItem } from "./database-item";
 import { DatabaseManager } from "./database-manager";
@@ -139,27 +139,22 @@ export async function showLocation(location?: Location) {
 }
 
 export async function jumpToLocation(
-  msg: ViewSourceFileMsg,
+  databaseUri: string,
+  loc: ResolvableLocationValue,
   databaseManager: DatabaseManager,
   logger: Logger,
 ) {
-  const databaseItem = databaseManager.findDatabaseItem(
-    Uri.parse(msg.databaseUri),
-  );
+  const databaseItem = databaseManager.findDatabaseItem(Uri.parse(databaseUri));
   if (databaseItem !== undefined) {
     try {
-      await showResolvableLocation(msg.loc, databaseItem);
+      await showResolvableLocation(loc, databaseItem);
     } catch (e) {
-      if (e instanceof Error) {
-        if (e.message.match(/File not found/)) {
-          void Window.showErrorMessage(
-            "Original file of this result is not in the database's source archive.",
-          );
-        } else {
-          void logger.log(`Unable to handleMsgFromView: ${e.message}`);
-        }
+      if (e instanceof Error && e.message.match(/File not found/)) {
+        void Window.showErrorMessage(
+          "Original file of this result is not in the database's source archive.",
+        );
       } else {
-        void logger.log(`Unable to handleMsgFromView: ${e}`);
+        void logger.log(`Unable to jump to location: ${getErrorMessage(e)}`);
       }
     }
   }
