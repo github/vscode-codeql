@@ -1,4 +1,4 @@
-import { App, AppMode } from "../../src/common/app";
+import { App, AppMode, EnvironmentContext } from "../../src/common/app";
 import { AppEvent, AppEventEmitter } from "../../src/common/events";
 import { Memento } from "../../src/common/memento";
 import { Disposable } from "../../src/pure/disposable-object";
@@ -24,6 +24,7 @@ export function createMockApp({
   onDidChangeWorkspaceFolders = jest.fn(),
   credentials = testCredentialsWithStub(),
   commands = createMockCommandManager(),
+  environment = createMockEnvironmentContext(),
 }: {
   extensionPath?: string;
   workspaceStoragePath?: string;
@@ -34,6 +35,7 @@ export function createMockApp({
   onDidChangeWorkspaceFolders?: Event<WorkspaceFoldersChangeEvent>;
   credentials?: Credentials;
   commands?: AppCommandManager;
+  environment?: EnvironmentContext;
 }): App {
   return {
     mode: AppMode.Test,
@@ -48,6 +50,7 @@ export function createMockApp({
     createEventEmitter,
     credentials,
     commands,
+    environment,
   };
 }
 
@@ -67,4 +70,10 @@ export class MockAppEventEmitter<T> implements AppEventEmitter<T> {
   public dispose() {
     // no-op
   }
+}
+
+export function createMockEnvironmentContext(): EnvironmentContext {
+  return {
+    language: "en-US",
+  };
 }

@@ -1,5 +1,5 @@
 import { basename, dirname, join } from "path";
-import { env } from "vscode";
+import { EnvironmentContext } from "./app";
 
 /**
  * A node in the tree of files. This will be either a `FileTreeDirectory` or a `FileTreeLeaf`.
@@ -35,6 +35,7 @@ export class FileTreeDirectory<T = undefined> extends FileTreeNode<T> {
   constructor(
     _path: string,
     _name: string,
+    protected readonly env: EnvironmentContext,
     private _children: Array<FileTreeNode<T>> = [],
   ) {
     super(_path, _name);
@@ -66,7 +67,9 @@ export class FileTreeDirectory<T = undefined> extends FileTreeNode<T> {
     this._children.filter(
       (child) => child instanceof FileTreeLeaf || child.children.length > 0,
     );
-    this._children.sort((a, b) => a.name.localeCompare(b.name, env.language));
+    this._children.sort((a, b) =>
+      a.name.localeCompare(b.name, this.env.language),
+    );
     this._children.forEach((child, i) => {
       child.finish();
       if (
@@ -77,6 +80,7 @@ export class FileTreeDirectory<T = undefined> extends FileTreeNode<T> {
         const replacement = new FileTreeDirectory<T>(
           child.children[0].path,
           `${child.name} / ${child.children[0].name}`,
+          this.env,
           Array.from(child.children[0].children),
         );
         this._children[i] = replacement;
@@ -89,7 +93,11 @@ export class FileTreeDirectory<T = undefined> extends FileTreeNode<T> {
     if (existingChild !== undefined) {
       return existingChild as FileTreeDirectory<T>;
     } else {
-      const newChild = new FileTreeDirectory<T>(join(this.path, name), name);
+      const newChild = new FileTreeDirectory<T>(
+        join(this.path, name),
+        name,
+        this.env,
+      );
       this.addChild(newChild);
       return newChild;
     }

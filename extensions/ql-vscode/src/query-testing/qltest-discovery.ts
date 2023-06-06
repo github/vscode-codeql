@@ -6,6 +6,7 @@ import {
   Uri,
   RelativePattern,
   WorkspaceFolder,
+  env,
 } from "vscode";
 import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
 import { CodeQLCliServer } from "../codeql-cli/cli";
@@ -97,7 +98,7 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
   private async discoverTests(): Promise<FileTreeDirectory> {
     const fullPath = this.workspaceFolder.uri.fsPath;
     const name = this.workspaceFolder.name;
-    const rootDirectory = new FileTreeDirectory(fullPath, name);
+    const rootDirectory = new FileTreeDirectory(fullPath, name, env);
 
     // Don't try discovery on workspace folders that don't exist on the filesystem
     if (await pathExists(fullPath)) {

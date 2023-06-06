@@ -41,7 +41,10 @@ export class QueryDiscovery
     new MultiFileSystemWatcher(),
   );
 
-  constructor(app: App, private readonly cliServer: CodeQLCliServer) {
+  constructor(
+    private readonly app: App,
+    private readonly cliServer: CodeQLCliServer,
+  ) {
     super("Query Discovery", extLogger);
 
     this.onDidChangeQueriesEmitter = this.push(app.createEventEmitter<void>());
@@ -124,7 +127,11 @@ export class QueryDiscovery
       return undefined;
     }
 
-    const rootDirectory = new FileTreeDirectory<string>(fullPath, name);
+    const rootDirectory = new FileTreeDirectory<string>(
+      fullPath,
+      name,
+      this.app.environment,
+    );
     for (const queryPath of resolvedQueries) {
       const relativePath = normalize(relative(fullPath, queryPath));
       const dirName = dirname(relativePath);
