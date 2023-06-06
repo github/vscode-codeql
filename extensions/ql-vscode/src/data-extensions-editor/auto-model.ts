@@ -8,6 +8,12 @@ import {
 } from "./auto-model-api";
 import type { UsageSnippetsBySignature } from "./auto-model-usages-query";
 
+// Soft limit on the number of candidates to send to the model.
+// Note that the model may return fewer than this number of candidates.
+const candidateLimit = 20;
+// Soft limit on the number of samples to send to the model.
+const sampleLimit = 100;
+
 export function createAutoModelRequest(
   language: string,
   externalApiUsages: ExternalApiUsage[],
@@ -40,8 +46,10 @@ export function createAutoModelRequest(
         ? 0
         : externalApiUsage.methodParameters.split(",").length;
 
+    const candidates = [];
+    const samples = [];
     for (
-      let argumentIndex = 0;
+      let argumentIndex = -1; // Start at -1 which means `this` as in `this.method()`
       argumentIndex < numberOfArguments;
       argumentIndex++
     ) {
@@ -54,20 +62,28 @@ export function createAutoModelRequest(
           modeledMethod.type === "none"
             ? undefined
             : toMethodClassification(modeledMethod),
-        usages: usagesForMethod.slice(0, 10),
+        usages: usagesForMethod.slice(0, 6), // At most 6 usages per argument
         input: `Argument[${argumentIndex}]`,
       };
 
-      if (modeledMethod.type === "none") {
-        request.candidates.push(method);
+      // Candidates are methods that are not currently modeled in this model file or in any other model file.
+      if (modeledMethod.type === "none" && !externalApiUsage.supported) {
+        candidates.push(method);
       } else {
-        request.samples.push(method);
+        samples.push(method);
       }
     }
+    // If there is room for at least one candidate, add all candidates.
+    // This ensures that we send all arguments for a method together.
+    // NOTE: this might go above the candidate limit, but that's okay.
+    if (request.candidates.length < candidateLimit) {
+      request.candidates.push(...candidates);
+    }
+    // Same for samples
+    if (request.samples.length < sampleLimit) {
+      request.samples.push(...samples);
+    }
   }
-
-  request.candidates = request.candidates.slice(0, 20);
-  request.samples = request.samples.slice(0, 100);
 
   return request;
 }
