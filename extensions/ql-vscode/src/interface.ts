@@ -53,14 +53,13 @@ import {
   parseSarifLocation,
   parseSarifPlainTextMessage,
 } from "./pure/sarif-utils";
+import { WebviewReveal, fileUriToWebviewUri } from "./interface-utils";
 import {
-  WebviewReveal,
-  fileUriToWebviewUri,
   tryResolveLocation,
   shownLocationDecoration,
   shownLocationLineDecoration,
   jumpToLocation,
-} from "./interface-utils";
+} from "./databases/local-databases/locations";
 import {
   RawResultSet,
   transformBqrsResultSet,

@@ -8,7 +8,7 @@ import {
 import { Logger } from "../common";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
-import { jumpToLocation } from "../interface-utils";
+import { jumpToLocation } from "../databases/local-databases/locations";
 import {
   transformBqrsResultSet,
   RawResultSet,
