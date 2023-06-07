@@ -39,7 +39,7 @@ describe("createAutoModelRequest", () => {
       typeName: "Connection",
       methodName: "createQuery",
       methodParameters: "(String)",
-      supported: true,
+      supported: false,
       usages: [
         {
           label: "createQuery(...)",
@@ -69,7 +69,7 @@ describe("createAutoModelRequest", () => {
       typeName: "Query",
       methodName: "executeScalar",
       methodParameters: "(Class)",
-      supported: true,
+      supported: false,
       usages: [
         {
           label: "executeScalar(...)",
@@ -99,7 +99,7 @@ describe("createAutoModelRequest", () => {
       typeName: "Sql2o",
       methodName: "open",
       methodParameters: "()",
-      supported: true,
+      supported: false,
       usages: [
         {
           label: "open(...)",
@@ -129,7 +129,7 @@ describe("createAutoModelRequest", () => {
       typeName: "PrintStream",
       methodName: "println",
       methodParameters: "(String)",
-      supported: true,
+      supported: false,
       usages: [
         {
           label: "println(...)",
@@ -149,7 +149,7 @@ describe("createAutoModelRequest", () => {
       typeName: "Sql2o",
       methodName: "Sql2o",
       methodParameters: "(String,String,String)",
-      supported: true,
+      supported: false,
       usages: [
         {
           label: "new Sql2o(...)",
@@ -169,12 +169,32 @@ describe("createAutoModelRequest", () => {
       typeName: "Sql2o",
       methodName: "Sql2o",
       methodParameters: "(String)",
-      supported: true,
+      supported: false,
       usages: [
         {
           label: "new Sql2o(...)",
           url: {
             uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+            startLine: 23,
+            startColumn: 23,
+            endLine: 23,
+            endColumn: 36,
+          },
+        },
+      ],
+    },
+    {
+      signature: "org.test.MyClass#test()",
+      packageName: "org.test",
+      typeName: "MyClass",
+      methodName: "test",
+      methodParameters: "()",
+      supported: true,
+      usages: [
+        {
+          label: "abc.test(...)",
+          url: {
+            uri: "file:/home/runner/work/test/Test.java",
             startLine: 23,
             startColumn: 23,
             endLine: 23,
@@ -238,6 +258,32 @@ describe("createAutoModelRequest", () => {
         {
           package: "org.sql2o",
           type: "Sql2o",
+          name: "open",
+          signature: "()",
+          classification: {
+            type: "CLASSIFICATION_TYPE_NEUTRAL",
+            kind: "",
+            explanation: "",
+          },
+          usages: usages["org.sql2o.Sql2o#open()"],
+          input: "Argument[this]",
+        },
+        {
+          package: "org.sql2o",
+          type: "Sql2o",
+          name: "Sql2o",
+          signature: "(String)",
+          classification: {
+            type: "CLASSIFICATION_TYPE_SINK",
+            kind: "jndi-injection",
+            explanation: "",
+          },
+          usages: usages["org.sql2o.Sql2o#Sql2o(String)"],
+          input: "Argument[this]",
+        },
+        {
+          package: "org.sql2o",
+          type: "Sql2o",
           name: "Sql2o",
           signature: "(String)",
           classification: {
@@ -256,6 +302,15 @@ describe("createAutoModelRequest", () => {
           name: "createQuery",
           signature: "(String)",
           usages: usages["org.sql2o.Connection#createQuery(String)"],
+          input: "Argument[this]",
+          classification: undefined,
+        },
+        {
+          package: "org.sql2o",
+          type: "Connection",
+          name: "createQuery",
+          signature: "(String)",
+          usages: usages["org.sql2o.Connection#createQuery(String)"],
           input: "Argument[0]",
           classification: undefined,
         },
@@ -265,7 +320,28 @@ describe("createAutoModelRequest", () => {
           name: "executeScalar",
           signature: "(Class)",
           usages: usages["org.sql2o.Query#executeScalar(Class)"],
+          input: "Argument[this]",
+          classification: undefined,
+        },
+        {
+          package: "org.sql2o",
+          type: "Query",
+          name: "executeScalar",
+          signature: "(Class)",
+          usages: usages["org.sql2o.Query#executeScalar(Class)"],
           input: "Argument[0]",
+          classification: undefined,
+        },
+        {
+          package: "org.springframework.boot",
+          type: "SpringApplication",
+          name: "run",
+          signature: "(Class,String[])",
+          usages:
+            usages[
+              "org.springframework.boot.SpringApplication#run(Class,String[])"
+            ],
+          input: "Argument[this]",
           classification: undefined,
         },
         {
@@ -298,7 +374,25 @@ describe("createAutoModelRequest", () => {
           name: "println",
           signature: "(String)",
           usages: usages["java.io.PrintStream#println(String)"],
+          input: "Argument[this]",
+          classification: undefined,
+        },
+        {
+          package: "java.io",
+          type: "PrintStream",
+          name: "println",
+          signature: "(String)",
+          usages: usages["java.io.PrintStream#println(String)"],
           input: "Argument[0]",
+          classification: undefined,
+        },
+        {
+          package: "org.sql2o",
+          type: "Sql2o",
+          name: "Sql2o",
+          signature: "(String,String,String)",
+          usages: usages["org.sql2o.Sql2o#Sql2o(String,String,String)"],
+          input: "Argument[this]",
           classification: undefined,
         },
         {
