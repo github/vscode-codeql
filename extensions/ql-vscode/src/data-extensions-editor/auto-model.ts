@@ -66,8 +66,14 @@ export function createAutoModelRequest(
         input: `Argument[${argumentIndex}]`,
       };
 
-      // Candidates are methods that are not currently modeled in this model file or in any other model file.
-      if (modeledMethod.type === "none" && !externalApiUsage.supported) {
+      // A method that is supported is modeled outside of the model file, so it is not a candidate.
+      // We also do not want it as a sample because we do not know the classification.
+      if (modeledMethod.type === "none" && externalApiUsage.supported) {
+        continue;
+      }
+
+      // Candidates are methods that are not currently modeled
+      if (modeledMethod.type === "none") {
         candidates.push(method);
       } else {
         samples.push(method);
