@@ -53,6 +53,8 @@ export function createAutoModelRequest(
       argumentIndex < numberOfArguments;
       argumentIndex++
     ) {
+      const argumentInput: string =
+        argumentIndex === -1 ? "Argument[this]" : `Argument[${argumentIndex}]`;
       const method: Method = {
         package: externalApiUsage.packageName,
         type: externalApiUsage.typeName,
@@ -63,7 +65,7 @@ export function createAutoModelRequest(
             ? undefined
             : toMethodClassification(modeledMethod),
         usages: usagesForMethod.slice(0, 6), // At most 6 usages per argument
-        input: `Argument[${argumentIndex}]`,
+        input: argumentInput,
       };
 
       // A method that is supported is modeled outside of the model file, so it is not a candidate.

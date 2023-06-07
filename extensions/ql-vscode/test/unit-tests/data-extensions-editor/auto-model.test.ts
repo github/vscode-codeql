@@ -266,7 +266,7 @@ describe("createAutoModelRequest", () => {
             explanation: "",
           },
           usages: usages["org.sql2o.Sql2o#open()"],
-          input: "Argument[-1]",
+          input: "Argument[this]",
         },
         {
           package: "org.sql2o",
@@ -279,7 +279,7 @@ describe("createAutoModelRequest", () => {
             explanation: "",
           },
           usages: usages["org.sql2o.Sql2o#Sql2o(String)"],
-          input: "Argument[-1]",
+          input: "Argument[this]",
         },
         {
           package: "org.sql2o",
@@ -302,7 +302,7 @@ describe("createAutoModelRequest", () => {
           name: "createQuery",
           signature: "(String)",
           usages: usages["org.sql2o.Connection#createQuery(String)"],
-          input: "Argument[-1]",
+          input: "Argument[this]",
           classification: undefined,
         },
         {
@@ -320,7 +320,7 @@ describe("createAutoModelRequest", () => {
           name: "executeScalar",
           signature: "(Class)",
           usages: usages["org.sql2o.Query#executeScalar(Class)"],
-          input: "Argument[-1]",
+          input: "Argument[this]",
           classification: undefined,
         },
         {
@@ -341,7 +341,7 @@ describe("createAutoModelRequest", () => {
             usages[
               "org.springframework.boot.SpringApplication#run(Class,String[])"
             ],
-          input: "Argument[-1]",
+          input: "Argument[this]",
           classification: undefined,
         },
         {
@@ -374,7 +374,7 @@ describe("createAutoModelRequest", () => {
           name: "println",
           signature: "(String)",
           usages: usages["java.io.PrintStream#println(String)"],
-          input: "Argument[-1]",
+          input: "Argument[this]",
           classification: undefined,
         },
         {
@@ -392,7 +392,7 @@ describe("createAutoModelRequest", () => {
           name: "Sql2o",
           signature: "(String,String,String)",
           usages: usages["org.sql2o.Sql2o#Sql2o(String,String,String)"],
-          input: "Argument[-1]",
+          input: "Argument[this]",
           classification: undefined,
         },
         {
