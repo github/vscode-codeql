@@ -183,6 +183,26 @@ describe("createAutoModelRequest", () => {
         },
       ],
     },
+    {
+      signature: "org.test.MyClass#test()",
+      packageName: "org.test",
+      typeName: "MyClass",
+      methodName: "test",
+      methodParameters: "()",
+      supported: true,
+      usages: [
+        {
+          label: "abc.test(...)",
+          url: {
+            uri: "file:/home/runner/work/test/Test.java",
+            startLine: 23,
+            startColumn: 23,
+            endLine: 23,
+            endColumn: 36,
+          },
+        },
+      ],
+    },
   ];
 
   const modeledMethods: Record<string, ModeledMethod> = {
