@@ -46,8 +46,8 @@ export function createAutoModelRequest(
         ? 0
         : externalApiUsage.methodParameters.split(",").length;
 
-    const candidates = [];
-    const samples = [];
+    const candidates: Method[] = [];
+    const samples: Method[] = [];
     for (
       let argumentIndex = -1; // Start at -1 which means `this` as in `this.method()`
       argumentIndex < numberOfArguments;
