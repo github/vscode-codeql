@@ -1756,28 +1756,25 @@ async function logStream(stream: Readable, logger: BaseLogger): Promise<void> {
   }
 }
 
-export function shouldDebugIdeServer() {
+function isEnvTrue(name: string): boolean {
   return (
-    "IDE_SERVER_JAVA_DEBUG" in process.env &&
-    process.env.IDE_SERVER_JAVA_DEBUG !== "0" &&
-    process.env.IDE_SERVER_JAVA_DEBUG?.toLocaleLowerCase() !== "false"
+    name in process.env &&
+    process.env[name] !== "0" &&
+    // Use en-US since we expect the value to be either "false" or "FALSE", not a localized version.
+    process.env[name]?.toLocaleLowerCase("en-US") !== "false"
   );
+}
+
+export function shouldDebugIdeServer() {
+  return isEnvTrue("IDE_SERVER_JAVA_DEBUG");
 }
 
 export function shouldDebugQueryServer() {
-  return (
-    "QUERY_SERVER_JAVA_DEBUG" in process.env &&
-    process.env.QUERY_SERVER_JAVA_DEBUG !== "0" &&
-    process.env.QUERY_SERVER_JAVA_DEBUG?.toLocaleLowerCase() !== "false"
-  );
+  return isEnvTrue("QUERY_SERVER_JAVA_DEBUG");
 }
 
 export function shouldDebugCliServer() {
-  return (
-    "CLI_SERVER_JAVA_DEBUG" in process.env &&
-    process.env.CLI_SERVER_JAVA_DEBUG !== "0" &&
-    process.env.CLI_SERVER_JAVA_DEBUG?.toLocaleLowerCase() !== "false"
-  );
+  return isEnvTrue("CLI_SERVER_JAVA_DEBUG");
 }
 
 export class CliVersionConstraint {
