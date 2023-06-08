@@ -4,7 +4,7 @@ import {
   RepositoryWithMetadata,
 } from "../../../../src/variant-analysis/gh-api/repository";
 
-export function createMockRepository(name = faker.random.word()): Repository {
+export function createMockRepository(name = faker.word.sample()): Repository {
   return {
     id: faker.number.int(),
     name,

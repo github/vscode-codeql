@@ -6,7 +6,7 @@ import {
 import { createMockRepositoryWithMetadata } from "./repository";
 
 export function createMockScannedRepo(
-  name: string = faker.random.word(),
+  name: string = faker.word.sample(),
   isPrivate: boolean = faker.datatype.boolean(),
   analysisStatus: VariantAnalysisRepoStatus = VariantAnalysisRepoStatus.Pending,
 ): VariantAnalysisScannedRepository {

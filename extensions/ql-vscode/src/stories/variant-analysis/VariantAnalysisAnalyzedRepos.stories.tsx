@@ -142,7 +142,7 @@ const manyScannedRepos = Array.from({ length: 1000 }, (_, i) => {
       id: faker.helpers.unique(faker.number.int, [], {
         store: uniqueStore,
       }),
-      fullName: `octodemo/${faker.helpers.unique(faker.random.word, [], {
+      fullName: `octodemo/${faker.helpers.unique(faker.word.sample, [], {
         store: uniqueStore,
       })}`,
     },
