@@ -24,10 +24,17 @@ const Dropdown = styled(VSCodeDropdown)`
 
 type SupportedUnsupportedSpanProps = {
   supported: boolean;
+  modeled: ModeledMethod | undefined;
 };
 
 const SupportSpan = styled.span<SupportedUnsupportedSpanProps>`
-  color: ${(props) => (props.supported ? "green" : "red")};
+  color: ${(props) => {
+    if (!props.supported && props.modeled && props.modeled?.type !== "none") {
+      return "orange";
+    } else {
+      return props.supported ? "green" : "red";
+    }
+  }};
 `;
 
 const UsagesButton = styled.button`
@@ -142,12 +149,18 @@ export const MethodRow = ({
   return (
     <VSCodeDataGridRow>
       <VSCodeDataGridCell gridColumn={1}>
-        <SupportSpan supported={externalApiUsage.supported}>
+        <SupportSpan
+          supported={externalApiUsage.supported}
+          modeled={modeledMethod}
+        >
           {externalApiUsage.packageName}.{externalApiUsage.typeName}
         </SupportSpan>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={2}>
-        <SupportSpan supported={externalApiUsage.supported}>
+        <SupportSpan
+          supported={externalApiUsage.supported}
+          modeled={modeledMethod}
+        >
           {externalApiUsage.methodName}
           {externalApiUsage.methodParameters}
         </SupportSpan>
