@@ -9,7 +9,7 @@
 - Fix bug where the `CodeQL: Compare Query` command did not work for comparing quick-eval queries. [#2422](https://github.com/github/vscode-codeql/pull/2422)
 - Update text of copy and export buttons in variant analysis results view to clarify that they only copy/export the selected/filtered results. [#2427](https://github.com/github/vscode-codeql/pull/2427)
 - Add warning when using unsupported CodeQL CLI version. [#2428](https://github.com/github/vscode-codeql/pull/2428)
-- Retry MRVA results download if connection times out. [#2440](https://github.com/github/vscode-codeql/pull/2440)
+- Retry variant analysis results download if connection times out. [#2440](https://github.com/github/vscode-codeql/pull/2440)
 
 ## 1.8.4 - 3 May 2023
 
