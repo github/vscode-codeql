@@ -1753,7 +1753,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-etc": "^2.0.2",
     "eslint-plugin-github": "^4.4.1",
-    "eslint-plugin-jest-dom": "^4.0.2",
+    "eslint-plugin-jest-dom": "^5.0.1",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-react": "^7.31.8",
     "eslint-plugin-react-hooks": "^4.6.0",
