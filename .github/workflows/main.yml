@@ -209,6 +209,7 @@ jobs:
     name: CLI Test
     runs-on: ${{ matrix.os }}
     needs: [find-nightly, set-matrix]
+    timeout-minutes: 30
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
