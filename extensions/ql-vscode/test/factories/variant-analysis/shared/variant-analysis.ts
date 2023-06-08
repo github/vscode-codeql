@@ -25,7 +25,7 @@ export function createMockVariantAnalysis({
     id: faker.number.int(),
     controllerRepo: {
       ...createMockRepository(),
-      fullName: `github/${faker.datatype.hexadecimal({
+      fullName: `github/${faker.string.hexadecimal({
         prefix: "",
       })}`,
     },
