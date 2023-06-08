@@ -135,11 +135,11 @@ const manyScannedRepos = Array.from({ length: 1000 }, (_, i) => {
   return {
     ...mockedScannedRepo,
     analysisStatus: VariantAnalysisRepoStatus.Succeeded,
-    resultCount: faker.datatype.number({ min: 0, max: 1000 }),
+    resultCount: faker.number.int({ min: 0, max: 1000 }),
     repository: {
       ...mockedScannedRepo.repository,
       // We need to ensure the ID is unique for React keys
-      id: faker.helpers.unique(faker.datatype.number, [], {
+      id: faker.helpers.unique(faker.number.int, [], {
         store: uniqueStore,
       }),
       fullName: `octodemo/${faker.helpers.unique(faker.random.word, [], {

@@ -6,7 +6,7 @@ import {
 
 export function createMockRepository(name = faker.random.word()): Repository {
   return {
-    id: faker.datatype.number(),
+    id: faker.number.int(),
     name,
     full_name: `github/${name}`,
     private: faker.datatype.boolean(),
@@ -16,7 +16,7 @@ export function createMockRepository(name = faker.random.word()): Repository {
 export function createMockRepositoryWithMetadata(): RepositoryWithMetadata {
   return {
     ...createMockRepository(),
-    stargazers_count: faker.datatype.number(),
+    stargazers_count: faker.number.int(),
     updated_at: faker.date.past().toISOString(),
   };
 }

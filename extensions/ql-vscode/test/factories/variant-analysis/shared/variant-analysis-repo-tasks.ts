@@ -11,8 +11,8 @@ export function createMockVariantAnalysisRepositoryTask(
   return {
     repository: createMockRepositoryWithMetadata(),
     analysisStatus: VariantAnalysisRepoStatus.Pending,
-    resultCount: faker.datatype.number(),
-    artifactSizeInBytes: faker.datatype.number(),
+    resultCount: faker.number.int(),
+    artifactSizeInBytes: faker.number.int(),
     databaseCommitSha: faker.git.commitSha(),
     sourceLocationPrefix: faker.system.filePath(),
     artifactUrl: faker.internet.url(),

@@ -17,8 +17,8 @@ export function createMockScannedRepo(
       private: isPrivate,
     },
     analysisStatus,
-    resultCount: faker.datatype.number(),
-    artifactSizeInBytes: faker.datatype.number(),
+    resultCount: faker.number.int(),
+    artifactSizeInBytes: faker.number.int(),
   };
 }
 

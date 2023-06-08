@@ -4,8 +4,8 @@ import { QueryLanguage } from "../../../../src/common/query-language";
 
 export function createMockSubmission(): VariantAnalysisSubmission {
   return {
-    startTime: faker.datatype.number(),
-    controllerRepoId: faker.datatype.number(),
+    startTime: faker.number.int(),
+    controllerRepoId: faker.number.int(),
     actionRepoRef: "repo-ref",
     query: {
       name: "query-name",

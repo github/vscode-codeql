@@ -42,7 +42,7 @@ export function createMockLocalQueryInfo({
       name: dbName,
     },
     start: startTime,
-    id: faker.datatype.number().toString(),
+    id: faker.number.int().toString(),
     userSpecifiedLabel,
   } as InitialQueryInfo;
 

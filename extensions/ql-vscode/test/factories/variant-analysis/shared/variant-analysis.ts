@@ -14,7 +14,7 @@ export function createMockVariantAnalysis({
   status = VariantAnalysisStatus.InProgress,
   scannedRepos = createMockScannedRepos(),
   skippedRepos = createMockSkippedRepos(),
-  executionStartTime = faker.datatype.number(),
+  executionStartTime = faker.number.int(),
 }: {
   status?: VariantAnalysisStatus;
   scannedRepos?: VariantAnalysisScannedRepository[];
@@ -22,7 +22,7 @@ export function createMockVariantAnalysis({
   executionStartTime?: number | undefined;
 }): VariantAnalysis {
   return {
-    id: faker.datatype.number(),
+    id: faker.number.int(),
     controllerRepo: {
       ...createMockRepository(),
       fullName: `github/${faker.datatype.hexadecimal({
@@ -42,7 +42,7 @@ export function createMockVariantAnalysis({
     createdAt: faker.date.recent().toISOString(),
     updatedAt: faker.date.recent().toISOString(),
     status,
-    actionsWorkflowRunId: faker.datatype.number(),
+    actionsWorkflowRunId: faker.number.int(),
     scannedRepos,
     skippedRepos,
   };

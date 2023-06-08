@@ -29,7 +29,7 @@ export function createRootRemoteDbItem({
 }
 
 export function createRemoteOwnerDbItem({
-  ownerName = `owner${faker.datatype.number()}`,
+  ownerName = `owner${faker.number.int()}`,
   selected = false,
 }: {
   ownerName?: string;
@@ -43,7 +43,7 @@ export function createRemoteOwnerDbItem({
 }
 
 export function createRemoteRepoDbItem({
-  repoFullName = `owner${faker.datatype.number()}/repo${faker.datatype.number}`,
+  repoFullName = `owner${faker.number.int()}/repo${faker.number.int()}`,
   selected = false,
   parentListName = undefined,
 }: {
@@ -60,7 +60,7 @@ export function createRemoteRepoDbItem({
 }
 
 export function createRemoteSystemDefinedListDbItem({
-  listName = `top_${faker.datatype.number()}`,
+  listName = `top_${faker.number.int()}`,
   listDisplayName = `Display Name`,
   listDescription = `Description`,
   selected = false,
@@ -82,7 +82,7 @@ export function createRemoteSystemDefinedListDbItem({
 export function createRemoteUserDefinedListDbItem({
   expanded = false,
   selected = false,
-  listName = `list${faker.datatype.number()}`,
+  listName = `list${faker.number.int()}`,
   repos = [
     createRemoteRepoDbItem({
       parentListName: listName,
@@ -119,10 +119,10 @@ export function createRootLocalDbItem({
 }
 
 export function createLocalDatabaseDbItem({
-  databaseName = `database${faker.datatype.number()}`,
+  databaseName = `database${faker.number.int()}`,
   dateAdded = faker.date.past().getTime(),
-  language = `language${faker.datatype.number()}`,
-  storagePath = `storagePath${faker.datatype.number()}`,
+  language = `language${faker.number.int()}`,
+  storagePath = `storagePath${faker.number.int()}`,
   selected = false,
 }: {
   databaseName?: string;
@@ -142,7 +142,7 @@ export function createLocalDatabaseDbItem({
 }
 
 export function createLocalListDbItem({
-  listName = `top_${faker.datatype.number()}`,
+  listName = `top_${faker.number.int()}`,
   selected = false,
   expanded = false,
   databases = [],

@@ -41,10 +41,10 @@ export function createDbConfig({
 }
 
 export function createLocalDbConfigItem({
-  name = `database${faker.datatype.number()}`,
+  name = `database${faker.number.int()}`,
   dateAdded = faker.date.past().getTime(),
-  language = `language${faker.datatype.number()}`,
-  storagePath = `storagePath${faker.datatype.number()}`,
+  language = `language${faker.number.int()}`,
+  storagePath = `storagePath${faker.number.int()}`,
 }: {
   name?: string;
   dateAdded?: number;
