@@ -16,7 +16,7 @@ export function createMockApiResponse(
   skippedRepos: VariantAnalysisSkippedRepositories = createMockSkippedRepos(),
 ): VariantAnalysisApiResponse {
   const variantAnalysis: VariantAnalysisApiResponse = {
-    id: faker.datatype.number(),
+    id: faker.number.int(),
     controller_repo: {
       ...createMockRepository(),
       name: "pickles",
@@ -28,7 +28,7 @@ export function createMockApiResponse(
     created_at: faker.date.recent().toISOString(),
     updated_at: faker.date.recent().toISOString(),
     status,
-    actions_workflow_run_id: faker.datatype.number(),
+    actions_workflow_run_id: faker.number.int(),
     scanned_repositories: scannedRepos,
     skipped_repositories: skippedRepos,
   };

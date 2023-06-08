@@ -197,7 +197,7 @@ describe(processVariantAnalysisRepositoryTask.name, () => {
 
 describe(processScannedRepository.name, () => {
   const mockApiResponse = createMockScannedRepo(
-    faker.random.word(),
+    faker.word.sample(),
     faker.datatype.boolean(),
     VariantAnalysisRepoStatus.Pending,
   );

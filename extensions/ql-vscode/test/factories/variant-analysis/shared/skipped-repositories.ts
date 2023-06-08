@@ -29,10 +29,10 @@ export function createMockNotFoundRepoGroup(): VariantAnalysisSkippedRepositoryG
     repositoryCount: 2,
     repositories: [
       {
-        fullName: `github/${faker.random.word()}`,
+        fullName: `github/${faker.word.sample()}`,
       },
       {
-        fullName: `github/${faker.random.word()}`,
+        fullName: `github/${faker.word.sample()}`,
       },
     ],
   };

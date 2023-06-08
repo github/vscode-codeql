@@ -23,7 +23,7 @@ describe(VariantAnalysisResultsManager.name, () => {
   let variantAnalysisResultsManager: VariantAnalysisResultsManager;
 
   beforeEach(async () => {
-    variantAnalysisId = faker.datatype.number();
+    variantAnalysisId = faker.number.int();
 
     const cli = mockedObject<CodeQLCliServer>({});
     variantAnalysisResultsManager = new VariantAnalysisResultsManager(

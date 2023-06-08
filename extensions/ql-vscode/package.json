@@ -1694,7 +1694,7 @@
   "devDependencies": {
     "@babel/core": "^7.18.13",
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
-    "@faker-js/faker": "^7.5.0",
+    "@faker-js/faker": "^8.0.2",
     "@github/markdownlint-github": "^0.3.0",
     "@octokit/plugin-throttling": "^5.0.1",
     "@storybook/addon-actions": "^6.5.17-alpha.0",

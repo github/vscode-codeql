@@ -26,8 +26,8 @@ export function createMockSkippedRepoGroup(): VariantAnalysisSkippedRepositoryGr
 }
 
 export function createMockNotFoundSkippedRepoGroup(): VariantAnalysisNotFoundRepositoryGroup {
-  const repoName1 = `github/${faker.random.word()}`;
-  const repoName2 = `github/${faker.random.word()}`;
+  const repoName1 = `github/${faker.word.sample()}`;
+  const repoName2 = `github/${faker.word.sample()}`;
 
   return {
     repository_count: 2,
