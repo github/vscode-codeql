@@ -414,7 +414,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     });
 
     const predictedModeledMethods = parsePredictedClassifications(
-      response.predicted,
+      response.predicted || [],
     );
 
     await this.showProgress({
