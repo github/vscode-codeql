@@ -1738,7 +1738,6 @@
     "@types/vscode": "^1.67.0",
     "@types/webpack": "^5.28.0",
     "@types/webpack-env": "^1.18.0",
-    "@types/xml2js": "~0.4.4",
     "@typescript-eslint/eslint-plugin": "^5.38.0",
     "@typescript-eslint/parser": "^5.38.0",
     "@vscode/test-electron": "^2.2.0",
