@@ -283,6 +283,41 @@ describe("db config store", () => {
       configStore.dispose();
     });
 
+    it("should sort remote repositories by name when adding multiple to a list", async () => {
+      // Initial set up
+      const dbConfig = createDbConfig({
+        remoteLists: [
+          {
+            name: "list1",
+            repositories: ["owner/c", "owner/b"],
+          },
+        ],
+      });
+
+      const configStore = await initializeConfig(dbConfig, configPath, app);
+
+      // Add
+      const response = await configStore.addRemoteReposToList(
+        ["owner/a"],
+        "list1",
+      );
+
+      // Read the config file
+      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
+
+      // Check that the config file has been updated
+      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
+      expect(updatedRemoteDbs.repositories).toHaveLength(0);
+      expect(updatedRemoteDbs.repositoryLists).toHaveLength(1);
+      expect(updatedRemoteDbs.repositoryLists[0]).toEqual({
+        name: "list1",
+        repositories: ["owner/a", "owner/b", "owner/c"],
+      });
+      expect(response).toEqual([]);
+
+      configStore.dispose();
+    });
+
     it("should add no more than 1000 repositories to a remote list when adding multiple repos", async () => {
       // Initial set up
       const dbConfig = createDbConfig({
