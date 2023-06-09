@@ -28,7 +28,7 @@ import { displayQuickQuery } from "./quick-query";
 import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
 import { DatabaseUI } from "../databases/local-databases-ui";
-import { ResultsView } from "../interface";
+import { ResultsView } from "./results-view";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import {
   createInitialQueryInfo,
