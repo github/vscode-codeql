@@ -53,7 +53,7 @@ import {
   parseSarifLocation,
   parseSarifPlainTextMessage,
 } from "./pure/sarif-utils";
-import { WebviewReveal, fileUriToWebviewUri } from "./interface-utils";
+import { WebviewReveal, fileUriToWebviewUri } from "./local-queries/webview";
 import {
   tryResolveLocation,
   shownLocationDecoration,

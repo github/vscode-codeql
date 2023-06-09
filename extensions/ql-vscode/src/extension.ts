@@ -73,7 +73,11 @@ import {
   getErrorStack,
 } from "./pure/helpers-pure";
 import { ResultsView } from "./interface";
-import { WebviewReveal } from "./interface-utils";
+import {
+  WebviewReveal,
+  LocalQueries,
+  QuickEvalCodeLensProvider,
+} from "./local-queries";
 import {
   extLogger,
   ideServerLogger,
@@ -115,7 +119,6 @@ import {
   PreActivationCommands,
   QueryServerCommands,
 } from "./common/commands";
-import { LocalQueries, QuickEvalCodeLensProvider } from "./local-queries";
 import { getAstCfgCommands } from "./language-support/ast-viewer/ast-cfg-commands";
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";

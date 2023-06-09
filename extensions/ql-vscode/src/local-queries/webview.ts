@@ -1,9 +1,4 @@
-import { Uri, WebviewPanel } from "vscode";
-
-/**
- * This module contains functions and types that are sharedd between
- * interface.ts and compare-interface.ts.
- */
+import type { Uri, WebviewPanel } from "vscode";
 
 /**
  * Whether to force webview to reveal

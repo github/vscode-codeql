@@ -22,7 +22,7 @@ import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-h
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-status";
 import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
-import { WebviewReveal } from "../../../../src/interface-utils";
+import { WebviewReveal } from "../../../../src/local-queries";
 import * as helpers from "../../../../src/helpers";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
