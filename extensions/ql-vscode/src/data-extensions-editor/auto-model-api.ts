@@ -34,7 +34,7 @@ export interface ModelRequest {
 
 export interface ModelResponse {
   language: string;
-  predicted: Method[];
+  predicted?: Method[];
 }
 
 export async function autoModel(
