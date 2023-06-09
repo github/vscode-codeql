@@ -153,12 +153,7 @@ describe("QueryDiscovery", () => {
           .mockResolvedValue([join(workspaceRoot, "query1.ql")]),
       });
 
-      const discovery = new QueryDiscovery(
-        createMockApp({
-          createEventEmitter: () => new EventEmitter(),
-        }),
-        cli,
-      );
+      const discovery = new QueryDiscovery(createMockApp({}), cli);
 
       const onDidChangeQueriesSpy = jest.fn();
       discovery.onDidChangeQueries(onDidChangeQueriesSpy);
@@ -185,9 +180,7 @@ describe("QueryDiscovery", () => {
         .mockImplementation(onDidChangeWorkspaceFoldersEvent.event);
 
       const discovery = new QueryDiscovery(
-        createMockApp({
-          createEventEmitter: () => new EventEmitter(),
-        }),
+        createMockApp({}),
         mockedObject<CodeQLCliServer>({
           resolveQueries: jest.fn().mockResolvedValue([]),
         }),

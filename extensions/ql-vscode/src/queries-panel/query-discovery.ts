@@ -3,6 +3,7 @@ import { Discovery } from "../common/discovery";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import {
   Event,
+  EventEmitter,
   RelativePattern,
   Uri,
   WorkspaceFolder,
@@ -53,7 +54,7 @@ export class QueryDiscovery
   ) {
     super("Query Discovery", extLogger);
 
-    this.onDidChangeQueriesEmitter = this.push(app.createEventEmitter<void>());
+    this.onDidChangeQueriesEmitter = this.push(new EventEmitter<void>());
     this.push(workspace.onDidChangeWorkspaceFolders(this.refresh.bind(this)));
     this.push(this.watcher.onDidChange(this.refresh.bind(this)));
   }
