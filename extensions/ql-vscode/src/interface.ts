@@ -53,14 +53,13 @@ import {
   parseSarifLocation,
   parseSarifPlainTextMessage,
 } from "./pure/sarif-utils";
+import { WebviewReveal, fileUriToWebviewUri } from "./interface-utils";
 import {
-  WebviewReveal,
-  fileUriToWebviewUri,
   tryResolveLocation,
   shownLocationDecoration,
   shownLocationLineDecoration,
   jumpToLocation,
-} from "./interface-utils";
+} from "./databases/local-databases/locations";
 import {
   RawResultSet,
   transformBqrsResultSet,
@@ -259,7 +258,12 @@ export class ResultsView extends AbstractWebview<
           this.onWebViewLoaded();
           break;
         case "viewSourceFile": {
-          await jumpToLocation(msg, this.databaseManager, this.logger);
+          await jumpToLocation(
+            msg.databaseUri,
+            msg.loc,
+            this.databaseManager,
+            this.logger,
+          );
           break;
         }
         case "toggleDiagnostics": {

@@ -31,7 +31,7 @@ import { generateFlowModel } from "./generate-flow-model";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
 import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
-import { showResolvableLocation } from "../interface-utils";
+import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../pure/errors";
 import { readQueryResults, runQuery } from "./external-api-usage-query";

@@ -8,7 +8,7 @@ import {
 import { Logger } from "../common";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
-import { jumpToLocation } from "../interface-utils";
+import { jumpToLocation } from "../databases/local-databases/locations";
 import {
   transformBqrsResultSet,
   RawResultSet,
@@ -130,7 +130,12 @@ export class CompareView extends AbstractWebview<
         break;
 
       case "viewSourceFile":
-        await jumpToLocation(msg, this.databaseManager, this.logger);
+        await jumpToLocation(
+          msg.databaseUri,
+          msg.loc,
+          this.databaseManager,
+          this.logger,
+        );
         break;
 
       case "openQuery":
