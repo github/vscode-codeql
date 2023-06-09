@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 
-import { ComponentMeta } from "@storybook/react";
+import { Meta } from "@storybook/react";
 
 import { RepositoriesSearchSortRow as RepositoriesSearchSortRowComponent } from "../../view/variant-analysis/RepositoriesSearchSortRow";
 import { defaultFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
@@ -16,7 +16,7 @@ export default {
       },
     },
   },
-} as ComponentMeta<typeof RepositoriesSearchSortRowComponent>;
+} as Meta<typeof RepositoriesSearchSortRowComponent>;
 
 export const RepositoriesSearchSortRow = () => {
   const [value, setValue] = useState(defaultFilterSortState);

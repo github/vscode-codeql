@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { Codicon as CodiconComponent } from "../../../view/common";
 
@@ -17,9 +17,9 @@ export default {
       options: icons,
     },
   },
-} as ComponentMeta<typeof CodiconComponent>;
+} as Meta<typeof CodiconComponent>;
 
-const Template: ComponentStory<typeof CodiconComponent> = (args) => (
+const Template: StoryFn<typeof CodiconComponent> = (args) => (
   <CodiconComponent {...args} />
 );
 

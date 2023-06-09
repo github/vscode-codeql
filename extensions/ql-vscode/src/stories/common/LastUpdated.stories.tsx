@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { LastUpdated as LastUpdatedComponent } from "../../view/common/LastUpdated";
 
 export default {
   title: "Last Updated",
   component: LastUpdatedComponent,
-} as ComponentMeta<typeof LastUpdatedComponent>;
+} as Meta<typeof LastUpdatedComponent>;
 
-const Template: ComponentStory<typeof LastUpdatedComponent> = (args) => (
+const Template: StoryFn<typeof LastUpdatedComponent> = (args) => (
   <LastUpdatedComponent {...args} />
 );
 

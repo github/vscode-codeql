@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
 import {
@@ -27,9 +27,9 @@ export default {
       </VariantAnalysisContainer>
     ),
   ],
-} as ComponentMeta<typeof RepoRow>;
+} as Meta<typeof RepoRow>;
 
-const Template: ComponentStory<typeof RepoRow> = (args: RepoRowProps) => (
+const Template: StoryFn<typeof RepoRow> = (args: RepoRowProps) => (
   <RepoRow {...args} />
 );
 

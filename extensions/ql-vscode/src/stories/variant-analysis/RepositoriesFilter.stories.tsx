@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 
-import { ComponentMeta } from "@storybook/react";
+import { Meta } from "@storybook/react";
 
 import { RepositoriesFilter as RepositoriesFilterComponent } from "../../view/variant-analysis/RepositoriesFilter";
 import { FilterKey } from "../../variant-analysis/shared/variant-analysis-filter-sort";
@@ -16,7 +16,7 @@ export default {
       },
     },
   },
-} as ComponentMeta<typeof RepositoriesFilterComponent>;
+} as Meta<typeof RepositoriesFilterComponent>;
 
 export const RepositoriesFilter = () => {
   const [value, setValue] = useState(FilterKey.All);

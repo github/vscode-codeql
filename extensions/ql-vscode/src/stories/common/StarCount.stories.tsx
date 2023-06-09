@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import StarCountComponent from "../../view/common/StarCount";
 
 export default {
   title: "Star Count",
   component: StarCountComponent,
-} as ComponentMeta<typeof StarCountComponent>;
+} as Meta<typeof StarCountComponent>;
 
-const Template: ComponentStory<typeof StarCountComponent> = (args) => (
+const Template: StoryFn<typeof StarCountComponent> = (args) => (
   <StarCountComponent {...args} />
 );
 

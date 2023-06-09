@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { DataExtensionsEditor as DataExtensionsEditorComponent } from "../../view/data-extensions-editor/DataExtensionsEditor";
@@ -9,11 +9,11 @@ import { CallClassification } from "../../data-extensions-editor/external-api-us
 export default {
   title: "Data Extensions Editor/Data Extensions Editor",
   component: DataExtensionsEditorComponent,
-} as ComponentMeta<typeof DataExtensionsEditorComponent>;
+} as Meta<typeof DataExtensionsEditorComponent>;
 
-const Template: ComponentStory<typeof DataExtensionsEditorComponent> = (
-  args,
-) => <DataExtensionsEditorComponent {...args} />;
+const Template: StoryFn<typeof DataExtensionsEditorComponent> = (args) => (
+  <DataExtensionsEditorComponent {...args} />
+);
 
 export const DataExtensionsEditor = Template.bind({});
 DataExtensionsEditor.args = {

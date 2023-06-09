@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 
-import { ComponentMeta } from "@storybook/react";
+import { Meta } from "@storybook/react";
 
 import { RepositoriesSearch as RepositoriesSearchComponent } from "../../view/variant-analysis/RepositoriesSearch";
 
@@ -15,7 +15,7 @@ export default {
       },
     },
   },
-} as ComponentMeta<typeof RepositoriesSearchComponent>;
+} as Meta<typeof RepositoriesSearchComponent>;
 
 export const RepositoriesSearch = () => {
   const [value, setValue] = useState("");
