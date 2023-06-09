@@ -385,7 +385,7 @@ export class DbPanel extends DisposableObject {
     const codeSearchQuery = await window.showInputBox({
       title: "GitHub Code Search",
       prompt:
-        "Use [GitHub's Code Search syntax](https://docs.github.com/en/search-github/github-code-search/understanding-github-code-search-syntax), including code qualifiers, regular expressions, and boolean operations, to search for repositories.",
+        "Use [GitHub's Code Search syntax](https://docs.github.com/en/search-github/searching-on-github/searching-code), to search for repositories.",
       placeHolder: "org:github",
     });
     if (codeSearchQuery === undefined || codeSearchQuery === "") {
