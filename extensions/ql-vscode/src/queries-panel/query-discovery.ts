@@ -10,7 +10,7 @@ import {
   workspace,
 } from "vscode";
 import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
-import { App } from "../common/app";
+import { EnvironmentContext } from "../common/app";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
 import { getOnDiskWorkspaceFoldersObjects } from "../helpers";
 import { AppEventEmitter } from "../common/events";
@@ -49,7 +49,7 @@ export class QueryDiscovery
   );
 
   constructor(
-    private readonly app: App,
+    private readonly env: EnvironmentContext,
     private readonly cliServer: CodeQLCliServer,
   ) {
     super("Query Discovery", extLogger);
@@ -137,7 +137,7 @@ export class QueryDiscovery
     const rootDirectory = new FileTreeDirectory<string>(
       fullPath,
       name,
-      this.app.environment,
+      this.env,
     );
     for (const queryPath of resolvedQueries) {
       const relativePath = normalize(relative(fullPath, queryPath));

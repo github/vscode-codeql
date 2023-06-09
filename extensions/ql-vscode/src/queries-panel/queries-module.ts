@@ -19,7 +19,7 @@ export class QueriesModule extends DisposableObject {
     }
     void extLogger.log("Initializing queries panel.");
 
-    const queryDiscovery = new QueryDiscovery(app, cliServer);
+    const queryDiscovery = new QueryDiscovery(app.environment, cliServer);
     this.push(queryDiscovery);
     void queryDiscovery.refresh();
 

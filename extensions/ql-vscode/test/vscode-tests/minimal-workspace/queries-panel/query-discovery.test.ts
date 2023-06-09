@@ -7,7 +7,7 @@ import {
 } from "vscode";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { QueryDiscovery } from "../../../../src/queries-panel/query-discovery";
-import { createMockApp } from "../../../__mocks__/appMock";
+import { createMockEnvironmentContext } from "../../../__mocks__/appMock";
 import { mockedObject } from "../../utils/mocking.helpers";
 import { basename, join, sep } from "path";
 
@@ -23,7 +23,7 @@ describe("QueryDiscovery", () => {
         resolveQueries,
       });
 
-      const discovery = new QueryDiscovery(createMockApp({}), cli);
+      const discovery = new QueryDiscovery(createMockEnvironmentContext(), cli);
       await discovery.refresh();
       const queries = discovery.queries;
 
@@ -43,7 +43,7 @@ describe("QueryDiscovery", () => {
           ]),
       });
 
-      const discovery = new QueryDiscovery(createMockApp({}), cli);
+      const discovery = new QueryDiscovery(createMockEnvironmentContext(), cli);
       await discovery.refresh();
       const queries = discovery.queries;
       expect(queries).toBeDefined();
@@ -69,7 +69,7 @@ describe("QueryDiscovery", () => {
           ]),
       });
 
-      const discovery = new QueryDiscovery(createMockApp({}), cli);
+      const discovery = new QueryDiscovery(createMockEnvironmentContext(), cli);
       await discovery.refresh();
       const queries = discovery.queries;
       expect(queries).toBeDefined();
@@ -114,7 +114,7 @@ describe("QueryDiscovery", () => {
         resolveQueries,
       });
 
-      const discovery = new QueryDiscovery(createMockApp({}), cli);
+      const discovery = new QueryDiscovery(createMockEnvironmentContext(), cli);
       await discovery.refresh();
       const queries = discovery.queries;
       expect(queries).toBeDefined();
@@ -153,7 +153,7 @@ describe("QueryDiscovery", () => {
           .mockResolvedValue([join(workspaceRoot, "query1.ql")]),
       });
 
-      const discovery = new QueryDiscovery(createMockApp({}), cli);
+      const discovery = new QueryDiscovery(createMockEnvironmentContext(), cli);
 
       const onDidChangeQueriesSpy = jest.fn();
       discovery.onDidChangeQueries(onDidChangeQueriesSpy);
@@ -180,7 +180,7 @@ describe("QueryDiscovery", () => {
         .mockImplementation(onDidChangeWorkspaceFoldersEvent.event);
 
       const discovery = new QueryDiscovery(
-        createMockApp({}),
+        createMockEnvironmentContext(),
         mockedObject<CodeQLCliServer>({
           resolveQueries: jest.fn().mockResolvedValue([]),
         }),
