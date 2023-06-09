@@ -7,7 +7,7 @@ import { LocalQueryInfo } from "../../../../src/query-results";
 import { DatabaseManager } from "../../../../src/databases/local-databases";
 import { tmpDir } from "../../../../src/helpers";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
-import { ResultsView } from "../../../../src/interface";
+import { ResultsView } from "../../../../src/local-queries";
 import { EvalLogViewer } from "../../../../src/query-evaluation-logging";
 import { QueryRunner } from "../../../../src/query-server/query-runner";
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";

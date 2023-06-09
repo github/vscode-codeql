@@ -72,8 +72,8 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "./pure/helpers-pure";
-import { ResultsView } from "./interface";
 import {
+  ResultsView,
   WebviewReveal,
   LocalQueries,
   QuickEvalCodeLensProvider,

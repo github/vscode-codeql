@@ -10,20 +10,20 @@ import {
   env,
   WebviewPanel,
 } from "vscode";
-import * as cli from "./codeql-cli/cli";
-import { CodeQLCliServer } from "./codeql-cli/cli";
+import * as cli from "../codeql-cli/cli";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 import {
   DatabaseEventKind,
   DatabaseItem,
   DatabaseManager,
-} from "./databases/local-databases";
-import { showAndLogExceptionWithTelemetry } from "./helpers";
+} from "../databases/local-databases";
+import { showAndLogExceptionWithTelemetry } from "../helpers";
 import {
   asError,
   assertNever,
   getErrorMessage,
   getErrorStack,
-} from "./pure/helpers-pure";
+} from "../pure/helpers-pure";
 import {
   FromResultsViewMsg,
   Interpretation,
@@ -40,43 +40,43 @@ import {
   NavigationDirection,
   getDefaultResultSetName,
   ParsedResultSets,
-} from "./pure/interface-types";
-import { Logger } from "./common";
+} from "../pure/interface-types";
+import { Logger } from "../common";
 import {
   CompletedQueryInfo,
   interpretResultsSarif,
   interpretGraphResults,
   CompletedLocalQueryInfo,
-} from "./query-results";
-import { QueryEvaluationInfo } from "./run-queries-shared";
+} from "../query-results";
+import { QueryEvaluationInfo } from "../run-queries-shared";
 import {
   parseSarifLocation,
   parseSarifPlainTextMessage,
-} from "./pure/sarif-utils";
-import { WebviewReveal, fileUriToWebviewUri } from "./local-queries/webview";
+} from "../pure/sarif-utils";
+import { WebviewReveal, fileUriToWebviewUri } from "./webview";
 import {
   tryResolveLocation,
   shownLocationDecoration,
   shownLocationLineDecoration,
   jumpToLocation,
-} from "./databases/local-databases/locations";
+} from "../databases/local-databases/locations";
 import {
   RawResultSet,
   transformBqrsResultSet,
   ResultSetSchema,
-} from "./pure/bqrs-cli-types";
+} from "../pure/bqrs-cli-types";
 import {
   AbstractWebview,
   WebviewPanelConfig,
-} from "./common/vscode/abstract-webview";
-import { isCanary, PAGE_SIZE } from "./config";
-import { HistoryItemLabelProvider } from "./query-history/history-item-label-provider";
-import { telemetryListener } from "./telemetry";
-import { redactableError } from "./pure/errors";
-import { ResultsViewCommands } from "./common/commands";
+} from "../common/vscode/abstract-webview";
+import { isCanary, PAGE_SIZE } from "../config";
+import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
+import { telemetryListener } from "../telemetry";
+import { redactableError } from "../pure/errors";
+import { ResultsViewCommands } from "../common/commands";
 
 /**
- * interface.ts
+ * results-view.ts
  * ------------
  *
  * Displaying query results and linking back to source files when the
