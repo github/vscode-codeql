@@ -180,11 +180,13 @@ describe("QueryDiscovery", () => {
     it("should refresh when workspace folders change", async () => {
       const onDidChangeWorkspaceFoldersEvent =
         new EventEmitter<WorkspaceFoldersChangeEvent>();
+      jest
+        .spyOn(workspace, "onDidChangeWorkspaceFolders")
+        .mockImplementation(onDidChangeWorkspaceFoldersEvent.event);
 
       const discovery = new QueryDiscovery(
         createMockApp({
           createEventEmitter: () => new EventEmitter(),
-          onDidChangeWorkspaceFolders: onDidChangeWorkspaceFoldersEvent.event,
         }),
         mockedObject<CodeQLCliServer>({
           resolveQueries: jest.fn().mockResolvedValue([]),

@@ -1,7 +1,13 @@
 import { dirname, basename, normalize, relative } from "path";
 import { Discovery } from "../common/discovery";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { Event, RelativePattern, Uri, WorkspaceFolder } from "vscode";
+import {
+  Event,
+  RelativePattern,
+  Uri,
+  WorkspaceFolder,
+  workspace,
+} from "vscode";
 import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
 import { App } from "../common/app";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
@@ -48,7 +54,7 @@ export class QueryDiscovery
     super("Query Discovery", extLogger);
 
     this.onDidChangeQueriesEmitter = this.push(app.createEventEmitter<void>());
-    this.push(app.onDidChangeWorkspaceFolders(this.refresh.bind(this)));
+    this.push(workspace.onDidChangeWorkspaceFolders(this.refresh.bind(this)));
     this.push(this.watcher.onDidChange(this.refresh.bind(this)));
   }
 

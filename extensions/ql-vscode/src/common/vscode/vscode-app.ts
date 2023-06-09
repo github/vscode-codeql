@@ -40,10 +40,6 @@ export class ExtensionApp implements App {
     return this.extensionContext.workspaceState;
   }
 
-  public get onDidChangeWorkspaceFolders(): vscode.Event<vscode.WorkspaceFoldersChangeEvent> {
-    return vscode.workspace.onDidChangeWorkspaceFolders;
-  }
-
   public get subscriptions(): Disposable[] {
     return this.extensionContext.subscriptions;
   }
