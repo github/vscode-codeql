@@ -40,10 +40,6 @@ export class ExtensionApp implements App {
     return this.extensionContext.workspaceState;
   }
 
-  public get workspaceFolders(): readonly vscode.WorkspaceFolder[] | undefined {
-    return vscode.workspace.workspaceFolders;
-  }
-
   public get onDidChangeWorkspaceFolders(): vscode.Event<vscode.WorkspaceFoldersChangeEvent> {
     return vscode.workspace.onDidChangeWorkspaceFolders;
   }

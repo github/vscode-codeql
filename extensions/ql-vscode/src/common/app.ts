@@ -4,11 +4,7 @@ import { AppEventEmitter } from "./events";
 import { Logger } from "./logging";
 import { Memento } from "./memento";
 import { AppCommandManager } from "./commands";
-import type {
-  WorkspaceFolder,
-  Event,
-  WorkspaceFoldersChangeEvent,
-} from "vscode";
+import type { Event, WorkspaceFoldersChangeEvent } from "vscode";
 
 export interface App {
   createEventEmitter<T>(): AppEventEmitter<T>;
@@ -19,7 +15,6 @@ export interface App {
   readonly globalStoragePath: string;
   readonly workspaceStoragePath?: string;
   readonly workspaceState: Memento;
-  readonly workspaceFolders: readonly WorkspaceFolder[] | undefined;
   readonly onDidChangeWorkspaceFolders: Event<WorkspaceFoldersChangeEvent>;
   readonly credentials: Credentials;
   readonly commands: AppCommandManager;
