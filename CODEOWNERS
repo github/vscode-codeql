@@ -2,3 +2,4 @@
 **/variant-analysis/ @github/code-scanning-secexp-reviewers
 **/databases/ @github/code-scanning-secexp-reviewers
 **/data-extensions-editor/ @github/code-scanning-secexp-reviewers
+**/queries-panel/ @github/code-scanning-secexp-reviewers
