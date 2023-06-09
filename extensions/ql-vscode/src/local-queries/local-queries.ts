@@ -39,7 +39,7 @@ import {
   validateQueryUri,
 } from "../run-queries-shared";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
-import { WebviewReveal } from "../interface-utils";
+import { WebviewReveal } from "./webview";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";

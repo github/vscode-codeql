@@ -43,7 +43,7 @@ import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../codeql-cli/cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
 import { ResultsView } from "../interface";
-import { WebviewReveal } from "../interface-utils";
+import { WebviewReveal } from "../local-queries";
 import { EvalLogTreeBuilder, EvalLogViewer } from "../query-evaluation-logging";
 import { EvalLogData, parseViewerData } from "../pure/log-summary-parser";
 import { QueryWithResults } from "../run-queries-shared";

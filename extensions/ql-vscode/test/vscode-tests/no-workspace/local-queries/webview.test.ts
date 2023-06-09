@@ -1,8 +1,8 @@
 import { Uri, ViewColumn, WebviewPanel, window } from "vscode";
 import { basename } from "path";
 import { FileResult, fileSync } from "tmp";
-import { fileUriToWebviewUri } from "../../../src/interface-utils";
-import { getDefaultResultSetName } from "../../../src/pure/interface-types";
+import { fileUriToWebviewUri } from "../../../../src/local-queries/webview";
+import { getDefaultResultSetName } from "../../../../src/pure/interface-types";
 
 describe("interface-utils", () => {
   describe("webview uri conversion", () => {
