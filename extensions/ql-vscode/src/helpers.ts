@@ -5,7 +5,7 @@ import {
   writeFile,
   opendir,
 } from "fs-extra";
-import { join, basename, dirname } from "path";
+import { join, dirname } from "path";
 import { dirSync } from "tmp-promise";
 import { Uri, window as Window, workspace, env, WorkspaceFolder } from "vscode";
 import { CodeQLCliServer } from "./codeql-cli/cli";
@@ -14,7 +14,7 @@ import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
-import { dbSchemeToLanguage, QueryLanguage } from "./common/query-language";
+import { QueryLanguage } from "./common/query-language";
 import { isCodespacesTemplate } from "./config";
 import { AppCommandManager } from "./common/commands";
 
@@ -350,27 +350,6 @@ export async function prepareCodeTour(
       await commandManager.execute("vscode.openFolder", tutorialWorkspaceUri);
     }
   }
-}
-
-/**
- * Returns the initial contents for an empty query, based on the language of the selected
- * databse.
- *
- * First try to use the given language name. If that doesn't exist, try to infer it based on
- * dbscheme. Otherwise return no import statement.
- *
- * @param language the database language or empty string if unknown
- * @param dbscheme path to the dbscheme file
- *
- * @returns an import and empty select statement appropriate for the selected language
- */
-export function getInitialQueryContents(language: string, dbscheme: string) {
-  if (!language) {
-    const dbschemeBase = basename(dbscheme) as keyof typeof dbSchemeToLanguage;
-    language = dbSchemeToLanguage[dbschemeBase];
-  }
-
-  return language ? `import ${language}\n\nselect ""` : 'select ""';
 }
 
 export function isQueryLanguage(language: string): language is QueryLanguage {

@@ -1,5 +1,4 @@
 import { Uri, window, workspace, WorkspaceFolder } from "vscode";
-import { dump } from "js-yaml";
 import * as tmp from "tmp";
 import { join } from "path";
 import {
@@ -13,7 +12,6 @@ import { DirResult } from "tmp";
 
 import {
   getFirstWorkspaceFolder,
-  getInitialQueryContents,
   isFolderAlreadyInWorkspace,
   prepareCodeTour,
   showBinaryChoiceDialog,
@@ -23,46 +21,10 @@ import {
   walkDirectory,
 } from "../../../src/helpers";
 import { reportStreamProgress } from "../../../src/common/vscode/progress";
-import { QueryLanguage } from "../../../src/common/query-language";
 import { Setting } from "../../../src/config";
 import { createMockCommandManager } from "../../__mocks__/commandsMock";
 
 describe("helpers", () => {
-  describe("codeql-database.yml tests", () => {
-    let dir: tmp.DirResult;
-    let language: QueryLanguage;
-
-    beforeEach(() => {
-      dir = tmp.dirSync();
-      language = QueryLanguage.Cpp;
-
-      const contents = dump({
-        primaryLanguage: language,
-      });
-      writeFileSync(join(dir.name, "codeql-database.yml"), contents, "utf8");
-    });
-
-    afterEach(() => {
-      dir.removeCallback();
-    });
-
-    it("should get initial query contents when language is known", () => {
-      expect(getInitialQueryContents(language, "hucairz")).toBe(
-        'import cpp\n\nselect ""',
-      );
-    });
-
-    it("should get initial query contents when dbscheme is known", () => {
-      expect(getInitialQueryContents("", "semmlecode.cpp.dbscheme")).toBe(
-        'import cpp\n\nselect ""',
-      );
-    });
-
-    it("should get initial query contents when nothing is known", () => {
-      expect(getInitialQueryContents("", "hucairz")).toBe('select ""');
-    });
-  });
-
   it("should report stream progress", () => {
     const progressSpy = jest.fn();
     const mockReadable = {

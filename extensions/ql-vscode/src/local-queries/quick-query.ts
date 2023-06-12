@@ -5,7 +5,8 @@ import { CancellationToken, window as Window, workspace, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseUI } from "../databases/local-databases-ui";
-import { getInitialQueryContents, showBinaryChoiceDialog } from "../helpers";
+import { showBinaryChoiceDialog } from "../helpers";
+import { getInitialQueryContents } from "./query-contents";
 import { getPrimaryDbscheme, getQlPackForDbscheme } from "../databases/qlpack";
 import {
   ProgressCallback,
