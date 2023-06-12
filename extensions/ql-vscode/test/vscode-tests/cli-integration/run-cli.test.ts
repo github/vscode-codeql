@@ -7,15 +7,13 @@ import {
   QueryInfoByLanguage,
 } from "../../../src/codeql-cli/cli";
 import { itWithCodeQL } from "../cli";
-import {
-  getOnDiskWorkspaceFolders,
-  languageToDbScheme,
-} from "../../../src/helpers";
+import { getOnDiskWorkspaceFolders } from "../../../src/helpers";
 import { KeyType, resolveQueries } from "../../../src/language-support";
 import { faker } from "@faker-js/faker";
 import { getActivatedExtension } from "../global.helper";
 import { BaseLogger } from "../../../src/common";
 import { getQlPackForDbscheme } from "../../../src/databases/qlpack";
+import { dbSchemeToLanguage } from "../../../src/common/query-language";
 
 /**
  * Perform proper integration tests by running the CLI
@@ -25,6 +23,14 @@ describe("Use cli", () => {
   let supportedLanguages: string[];
 
   let logSpy: jest.SpiedFunction<BaseLogger["log"]>;
+
+  const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce(
+    (acc, [k, v]) => {
+      acc[v] = k;
+      return acc;
+    },
+    {} as { [k: string]: string },
+  );
 
   beforeEach(async () => {
     const extension = await getActivatedExtension();

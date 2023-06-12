@@ -358,24 +358,6 @@ export async function prepareCodeTour(
  */
 
 /**
- * Note that this heuristic is only being used for backwards compatibility with
- * CLI versions before the langauge name was introduced to dbInfo. Features
- * that do not require backwards compatibility should call
- * `cli.CodeQLCliServer.resolveDatabase` and use the first entry in the
- * `languages` property.
- *
- * @see cli.CodeQLCliServer.resolveDatabase
- */
-
-export const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce(
-  (acc, [k, v]) => {
-    acc[v] = k;
-    return acc;
-  },
-  {} as { [k: string]: string },
-);
-
-/**
  * Returns the initial contents for an empty query, based on the language of the selected
  * databse.
  *
