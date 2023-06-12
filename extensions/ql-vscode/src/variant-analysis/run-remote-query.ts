@@ -3,7 +3,7 @@ import { relative, join, sep, dirname, parse, basename } from "path";
 import { dump, load } from "js-yaml";
 import { copy, writeFile, readFile, mkdirp } from "fs-extra";
 import { dir, tmpName } from "tmp-promise";
-import { tmpDir } from "../helpers";
+import { tmpDir } from "../tmp-dir";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { Credentials } from "../common/authentication";
 import * as cli from "../codeql-cli/cli";

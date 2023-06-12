@@ -9,7 +9,7 @@ import {
   deregisterDatabases,
 } from "../../../src/pure/legacy-messages";
 import * as config from "../../../src/config";
-import { tmpDir } from "../../../src/helpers";
+import { tmpDir } from "../../../src/tmp-dir";
 import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { SELECT_QUERY_NAME } from "../../../src/language-support";
 import {

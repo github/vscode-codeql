@@ -17,7 +17,7 @@ import * as Octokit from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 
 import { DatabaseManager, DatabaseItem } from "./local-databases";
-import { tmpDir } from "../helpers";
+import { tmpDir } from "../tmp-dir";
 import {
   reportStreamProgress,
   ProgressCallback,

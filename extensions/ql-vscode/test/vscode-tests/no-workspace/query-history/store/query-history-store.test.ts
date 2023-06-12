@@ -11,7 +11,7 @@ import {
 import { QueryWithResults } from "../../../../../src/run-queries-shared";
 import { DatabaseInfo } from "../../../../../src/pure/interface-types";
 import { CancellationTokenSource, Uri } from "vscode";
-import { tmpDir } from "../../../../../src/helpers";
+import { tmpDir } from "../../../../../src/tmp-dir";
 import { QueryResultType } from "../../../../../src/pure/legacy-messages";
 import { QueryInProgress } from "../../../../../src/query-server/legacy";
 import { VariantAnalysisHistoryItem } from "../../../../../src/query-history/variant-analysis-history-item";
