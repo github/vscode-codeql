@@ -20,7 +20,7 @@ import {
 } from "../../../src/common/vscode/archive-filesystem-provider";
 import { testDisposeHandler } from "../test-dispose-handler";
 import { QueryRunner } from "../../../src/query-server/query-runner";
-import * as helpers from "../../../src/helpers";
+import * as dialog from "../../../src/common/vscode/dialog";
 import { Setting } from "../../../src/config";
 import { QlPackGenerator } from "../../../src/qlpack-generator";
 import { mockedObject } from "../utils/mocking.helpers";
@@ -45,7 +45,7 @@ describe("local databases", () => {
   let logSpy: jest.Mock<any, []>;
 
   let showNeverAskAgainDialogSpy: jest.SpiedFunction<
-    typeof helpers.showNeverAskAgainDialog
+    typeof dialog.showNeverAskAgainDialog
   >;
 
   let dir: tmp.DirResult;
@@ -64,7 +64,7 @@ describe("local databases", () => {
     });
 
     showNeverAskAgainDialogSpy = jest
-      .spyOn(helpers, "showNeverAskAgainDialog")
+      .spyOn(dialog, "showNeverAskAgainDialog")
       .mockResolvedValue("Yes");
 
     extensionContextStoragePath = dir.name;
@@ -652,7 +652,7 @@ describe("local databases", () => {
 
       it("should return early if the user refuses help", async () => {
         showNeverAskAgainDialogSpy = jest
-          .spyOn(helpers, "showNeverAskAgainDialog")
+          .spyOn(dialog, "showNeverAskAgainDialog")
           .mockResolvedValue("No");
 
         await (databaseManager as any).createSkeletonPacks(mockDbItem);
@@ -662,7 +662,7 @@ describe("local databases", () => {
 
       it("should return early and write choice to settings if user wants to never be asked again", async () => {
         showNeverAskAgainDialogSpy = jest
-          .spyOn(helpers, "showNeverAskAgainDialog")
+          .spyOn(dialog, "showNeverAskAgainDialog")
           .mockResolvedValue("No, and never ask me again");
         const updateValueSpy = jest.spyOn(Setting.prototype, "updateValue");
 
@@ -705,7 +705,7 @@ describe("local databases", () => {
 
       it("should exit early", async () => {
         showNeverAskAgainDialogSpy = jest
-          .spyOn(helpers, "showNeverAskAgainDialog")
+          .spyOn(dialog, "showNeverAskAgainDialog")
           .mockResolvedValue("No");
 
         await (databaseManager as any).createSkeletonPacks(mockDbItem);

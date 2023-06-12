@@ -17,7 +17,7 @@ import {
 import * as appInsights from "applicationinsights";
 import { extLogger } from "./common";
 import { UserCancellationException } from "./common/vscode/progress";
-import { showBinaryChoiceWithUrlDialog } from "./helpers";
+import { showBinaryChoiceWithUrlDialog } from "./common/vscode/dialog";
 import { RedactableError } from "./pure/errors";
 import { SemVer } from "semver";
 

@@ -22,7 +22,7 @@ import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-h
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
 import { QueryStatus } from "../../../../src/query-status";
 import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
-import * as helpers from "../../../../src/helpers";
+import * as dialog from "../../../../src/common/vscode/dialog";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { createMockQueryHistoryDirs } from "../../../factories/query-history/query-history-dirs";
 import { createMockApp } from "../../../__mocks__/appMock";
@@ -318,20 +318,20 @@ describe("QueryHistoryManager", () => {
 
     describe("when the item is a variant analysis", () => {
       let showBinaryChoiceDialogSpy: jest.SpiedFunction<
-        typeof helpers.showBinaryChoiceDialog
+        typeof dialog.showBinaryChoiceDialog
       >;
       let showInformationMessageWithActionSpy: jest.SpiedFunction<
-        typeof helpers.showInformationMessageWithAction
+        typeof dialog.showInformationMessageWithAction
       >;
 
       beforeEach(() => {
         // Choose 'Yes' when asked "Are you sure?"
         showBinaryChoiceDialogSpy = jest
-          .spyOn(helpers, "showBinaryChoiceDialog")
+          .spyOn(dialog, "showBinaryChoiceDialog")
           .mockResolvedValue(true);
 
         showInformationMessageWithActionSpy = jest.spyOn(
-          helpers,
+          dialog,
           "showInformationMessageWithAction",
         );
       });

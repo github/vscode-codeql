@@ -1,9 +1,7 @@
 import { Uri, window } from "vscode";
 import { AppCommandManager } from "../commands";
-import {
-  showAndLogExceptionWithTelemetry,
-  showBinaryChoiceDialog,
-} from "../../helpers";
+import { showAndLogExceptionWithTelemetry } from "../../helpers";
+import { showBinaryChoiceDialog } from "./dialog";
 import { redactableError } from "../../pure/errors";
 import {
   asError,

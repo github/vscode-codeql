@@ -7,7 +7,7 @@ import {
   UserCancellationException,
   withProgress,
 } from "../common/vscode/progress";
-import { showInformationMessageWithAction } from "../helpers";
+import { showInformationMessageWithAction } from "../common/vscode/dialog";
 import { extLogger } from "../common";
 import { createGist } from "./gh-api/gh-api-client";
 import {

@@ -13,10 +13,8 @@ import {
 import { join } from "path";
 import { FullDatabaseOptions } from "./database-options";
 import { DatabaseItemImpl } from "./database-item-impl";
-import {
-  showAndLogExceptionWithTelemetry,
-  showNeverAskAgainDialog,
-} from "../../helpers";
+import { showAndLogExceptionWithTelemetry } from "../../helpers";
+import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
 import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,

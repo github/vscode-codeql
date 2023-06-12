@@ -21,8 +21,8 @@ import {
   findLanguage,
   showAndLogErrorMessage,
   showAndLogWarningMessage,
-  showBinaryChoiceDialog,
 } from "../helpers";
+import { showBinaryChoiceDialog } from "../common/vscode/dialog";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { displayQuickQuery } from "./quick-query";
 import { CoreCompletedQuery, QueryRunner } from "../query-server";
