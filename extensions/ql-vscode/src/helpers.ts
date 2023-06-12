@@ -1,10 +1,4 @@
-import {
-  ensureDirSync,
-  pathExists,
-  ensureDir,
-  writeFile,
-  opendir,
-} from "fs-extra";
+import { ensureDirSync, pathExists, ensureDir, writeFile } from "fs-extra";
 import { join, dirname } from "path";
 import { dirSync } from "tmp-promise";
 import { Uri, window as Window, workspace, env, WorkspaceFolder } from "vscode";
@@ -453,29 +447,6 @@ export async function createTimestampFile(storagePath: string) {
   const timestampPath = join(storagePath, "timestamp");
   await ensureDir(storagePath);
   await writeFile(timestampPath, Date.now().toString(), "utf8");
-}
-
-/**
- * Recursively walk a directory and return the full path to all files found.
- * Symbolic links are ignored.
- *
- * @param dir the directory to walk
- *
- * @return An iterator of the full path to all files recursively found in the directory.
- */
-export async function* walkDirectory(
-  dir: string,
-): AsyncIterableIterator<string> {
-  const seenFiles = new Set<string>();
-  for await (const d of await opendir(dir)) {
-    const entry = join(dir, d.name);
-    seenFiles.add(entry);
-    if (d.isDirectory()) {
-      yield* walkDirectory(entry);
-    } else if (d.isFile()) {
-      yield entry;
-    }
-  }
 }
 
 /**
