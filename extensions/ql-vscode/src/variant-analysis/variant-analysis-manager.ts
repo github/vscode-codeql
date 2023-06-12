@@ -43,7 +43,7 @@ import {
   processVariantAnalysisRepositoryTask,
 } from "./variant-analysis-processor";
 import PQueue from "p-queue";
-import { createTimestampFile } from "../helpers";
+import { createTimestampFile } from "../run-queries-shared";
 import { readFile, remove, pathExists } from "fs-extra";
 import { EOL } from "os";
 import { cancelVariantAnalysis } from "./gh-api/gh-actions-api-client";

@@ -1,4 +1,4 @@
-import { ensureDir, ensureDirSync, writeFile } from "fs-extra";
+import { ensureDirSync } from "fs-extra";
 import { join } from "path";
 import { dirSync } from "tmp-promise";
 import { extLogger } from "./common";
@@ -23,16 +23,3 @@ export const tmpDirDisposal = {
     }
   },
 };
-
-/**
- * Creates a file in the query directory that indicates when this query was created.
- * This is important for keeping track of when queries should be removed.
- *
- * @param queryPath The directory that will contain all files relevant to a query result.
- * It does not need to exist.
- */
-export async function createTimestampFile(storagePath: string) {
-  const timestampPath = join(storagePath, "timestamp");
-  await ensureDir(storagePath);
-  await writeFile(timestampPath, Date.now().toString(), "utf8");
-}

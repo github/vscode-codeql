@@ -2,7 +2,6 @@ import * as messages from "./pure/messages-shared";
 import * as legacyMessages from "./pure/legacy-messages";
 import { DatabaseInfo, QueryMetadata } from "./pure/interface-types";
 import { join, parse, dirname, basename } from "path";
-import { createTimestampFile } from "./helpers";
 import {
   ConfigurationTarget,
   Range,
@@ -19,6 +18,8 @@ import {
   createWriteStream,
   remove,
   readdir,
+  ensureDir,
+  writeFile,
 } from "fs-extra";
 import { ensureMetadataIsComplete, InitialQueryInfo } from "./query-results";
 import { isQuickQueryPath } from "./local-queries";
@@ -158,14 +159,6 @@ export class QueryEvaluationInfo extends QueryOutputDir {
   }
   getSortedResultSetPath(resultSetName: string) {
     return join(this.querySaveDir, `sortedResults-${resultSetName}.bqrs`);
-  }
-
-  /**
-   * Creates a file in the query directory that indicates when this query was created.
-   * This is important for keeping track of when queries should be removed.
-   */
-  async createTimestampFile() {
-    await createTimestampFile(this.querySaveDir);
   }
 
   /**
@@ -692,4 +685,17 @@ export async function logEndSummary(
       `Could not read structured evaluator log end of summary file at ${endSummary}.`,
     );
   }
+}
+
+/**
+ * Creates a file in the query directory that indicates when this query was created.
+ * This is important for keeping track of when queries should be removed.
+ *
+ * @param storagePath The directory that will contain all files relevant to a query result.
+ * It does not need to exist.
+ */
+export async function createTimestampFile(storagePath: string) {
+  const timestampPath = join(storagePath, "timestamp");
+  await ensureDir(storagePath);
+  await writeFile(timestampPath, Date.now().toString(), "utf8");
 }
