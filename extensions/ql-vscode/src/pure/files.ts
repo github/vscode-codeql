@@ -76,7 +76,7 @@ export function containsPath(parent: string, child: string): boolean {
     !relativePath.startsWith("..") &&
     // On windows, if the two paths are in different drives, then the
     // relative path will be an absolute path to the other drive.
-    !(process.platform === "win32" && isAbsolute(relativePath))
+    !isAbsolute(relativePath)
   );
 }
 
