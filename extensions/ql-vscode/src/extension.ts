@@ -62,8 +62,8 @@ import {
   showAndLogWarningMessage,
   tmpDir,
   tmpDirDisposal,
-  prepareCodeTour,
 } from "./helpers";
+import { prepareCodeTour } from "./code-tour";
 import {
   showBinaryChoiceDialog,
   showInformationMessageWithAction,

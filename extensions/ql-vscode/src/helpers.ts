@@ -1,7 +1,7 @@
-import { ensureDirSync, pathExists, ensureDir, writeFile } from "fs-extra";
+import { ensureDirSync, ensureDir, writeFile } from "fs-extra";
 import { join } from "path";
 import { dirSync } from "tmp-promise";
-import { Uri, window as Window, workspace } from "vscode";
+import { Uri, window as Window } from "vscode";
 import { CodeQLCliServer } from "./codeql-cli/cli";
 import { UserCancellationException } from "./common/vscode/progress";
 import { extLogger, OutputChannelLogger } from "./common";
@@ -9,10 +9,7 @@ import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
 import { isQueryLanguage, QueryLanguage } from "./common/query-language";
-import { isCodespacesTemplate } from "./config";
-import { AppCommandManager } from "./common/commands";
 import { getOnDiskWorkspaceFolders } from "./common/vscode/workspace-folders";
-import { showBinaryChoiceDialog } from "./common/vscode/dialog";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -138,53 +135,6 @@ async function internalShowAndLog(
     outputLogger.show();
   }
   return result;
-}
-
-/** Check if the current workspace is the CodeTour and open the workspace folder.
- * Without this, we can't run the code tour correctly.
- **/
-export async function prepareCodeTour(
-  commandManager: AppCommandManager,
-): Promise<void> {
-  if (workspace.workspaceFolders?.length) {
-    const currentFolder = workspace.workspaceFolders[0].uri.fsPath;
-
-    const tutorialWorkspacePath = join(
-      currentFolder,
-      "tutorial.code-workspace",
-    );
-    const toursFolderPath = join(currentFolder, ".tours");
-
-    /** We're opening the tutorial workspace, if we detect it.
-     * This will only happen if the following three conditions are met:
-     * - the .tours folder exists
-     * - the tutorial.code-workspace file exists
-     * - the CODESPACES_TEMPLATE setting doesn't exist (it's only set if the user has already opened
-     * the tutorial workspace so it's a good indicator that the user is in the folder but has ignored
-     * the prompt to open the workspace)
-     */
-    if (
-      (await pathExists(tutorialWorkspacePath)) &&
-      (await pathExists(toursFolderPath)) &&
-      !isCodespacesTemplate()
-    ) {
-      const answer = await showBinaryChoiceDialog(
-        "We've detected you're in the CodeQL Tour repo. We will need to open the workspace file to continue. Reload?",
-      );
-
-      if (!answer) {
-        return;
-      }
-
-      const tutorialWorkspaceUri = Uri.file(tutorialWorkspacePath);
-
-      void extLogger.log(
-        `In prepareCodeTour() method, going to open the tutorial workspace file: ${tutorialWorkspacePath}`,
-      );
-
-      await commandManager.execute("vscode.openFolder", tutorialWorkspaceUri);
-    }
-  }
 }
 
 /**
