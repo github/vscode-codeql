@@ -2,7 +2,7 @@
 import * as cli from "../../codeql-cli/cli";
 import vscode from "vscode";
 import { FullDatabaseOptions } from "./database-options";
-import { basename, dirname, extname, join, relative } from "path";
+import { basename, dirname, extname, join } from "path";
 import {
   decodeSourceArchiveUri,
   encodeArchiveBasePath,
@@ -12,7 +12,7 @@ import {
 import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
 import { isLikelyDatabaseRoot } from "./db-contents-heuristics";
 import { stat } from "fs-extra";
-import { pathsEqual } from "../../pure/files";
+import { containsPath, pathsEqual } from "../../pure/files";
 import { DatabaseContents } from "./database-contents";
 
 export class DatabaseItemImpl implements DatabaseItem {
@@ -199,7 +199,7 @@ export class DatabaseItemImpl implements DatabaseItem {
     try {
       const stats = await stat(testPath);
       if (stats.isDirectory()) {
-        return !relative(testPath, databasePath).startsWith("..");
+        return containsPath(testPath, databasePath);
       } else {
         // database for /one/two/three/test.ql is at /one/two/three/three.testproj
         const testdir = dirname(testPath);
