@@ -1,5 +1,5 @@
 import { pathExists, stat, readdir } from "fs-extra";
-import { join, resolve } from "path";
+import { isAbsolute, join, relative, resolve } from "path";
 
 /**
  * Recursively finds all .ql files in this set of Uris.
@@ -71,7 +71,13 @@ export function pathsEqual(path1: string, path2: string): boolean {
  * Returns true if `parent` contains `child`, or if they are equal.
  */
 export function containsPath(parent: string, child: string): boolean {
-  return normalizePath(child).startsWith(normalizePath(parent));
+  const relativePath = relative(parent, child);
+  return (
+    !relativePath.startsWith("..") &&
+    // On windows, if the two paths are in different drives, then the
+    // relative path will be an absolute path to the other drive.
+    !(process.platform === "win32" && isAbsolute(relativePath))
+  );
 }
 
 export async function readDirFullPaths(path: string): Promise<string[]> {
