@@ -9,13 +9,13 @@ import {
 import { itWithCodeQL } from "../cli";
 import {
   getOnDiskWorkspaceFolders,
-  getQlPackForDbscheme,
   languageToDbScheme,
 } from "../../../src/helpers";
 import { KeyType, resolveQueries } from "../../../src/language-support";
 import { faker } from "@faker-js/faker";
 import { getActivatedExtension } from "../global.helper";
 import { BaseLogger } from "../../../src/common";
+import { getQlPackForDbscheme } from "../../../src/databases/qlpack";
 
 /**
  * Perform proper integration tests by running the CLI

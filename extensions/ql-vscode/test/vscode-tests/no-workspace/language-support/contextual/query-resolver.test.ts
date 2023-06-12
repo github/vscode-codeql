@@ -4,6 +4,7 @@ import * as fs from "fs-extra";
 import { getErrorMessage } from "../../../../../src/pure/helpers-pure";
 
 import * as helpers from "../../../../../src/helpers";
+import * as qlpack from "../../../../../src/databases/qlpack";
 import {
   KeyType,
   qlpackOfDatabase,
@@ -14,10 +15,10 @@ import { mockDatabaseItem, mockedObject } from "../../../utils/mocking.helpers";
 
 describe("queryResolver", () => {
   let getQlPackForDbschemeSpy: jest.SpiedFunction<
-    typeof helpers.getQlPackForDbscheme
+    typeof qlpack.getQlPackForDbscheme
   >;
   let getPrimaryDbschemeSpy: jest.SpiedFunction<
-    typeof helpers.getPrimaryDbscheme
+    typeof qlpack.getPrimaryDbscheme
   >;
 
   const resolveQueriesInSuite = jest.fn();
@@ -28,13 +29,13 @@ describe("queryResolver", () => {
 
   beforeEach(() => {
     getQlPackForDbschemeSpy = jest
-      .spyOn(helpers, "getQlPackForDbscheme")
+      .spyOn(qlpack, "getQlPackForDbscheme")
       .mockResolvedValue({
         dbschemePack: "dbschemePack",
         dbschemePackIsLibraryPack: false,
       });
     getPrimaryDbschemeSpy = jest
-      .spyOn(helpers, "getPrimaryDbscheme")
+      .spyOn(qlpack, "getPrimaryDbscheme")
       .mockResolvedValue("primaryDbscheme");
 
     jest.spyOn(helpers, "getOnDiskWorkspaceFolders").mockReturnValue([]);
