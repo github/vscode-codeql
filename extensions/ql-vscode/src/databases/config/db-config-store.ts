@@ -147,14 +147,10 @@ export class DbConfigStore extends DisposableObject {
     await this.writeConfig(config);
   }
 
-  /**
-   * Adds a list of remote repositories to an existing repository list and removes duplicates.
-   * @returns a list of repositories that were not added because the list reached 1000 entries.
-   */
   public async addRemoteReposToList(
     repoNwoList: string[],
     parentList: string,
-  ): Promise<string[]> {
+  ): Promise<void> {
     if (!this.config) {
       throw Error("Cannot add variant analysis repos if config is not loaded");
     }
@@ -172,21 +168,15 @@ export class DbConfigStore extends DisposableObject {
       ...new Set([...parent.repositories, ...repoNwoList]),
     ];
 
-    parent.repositories = newRepositoriesList.slice(0, 1000);
-    const truncatedRepositories = newRepositoriesList.slice(1000);
+    parent.repositories = newRepositoriesList;
 
     await this.writeConfig(config);
-    return truncatedRepositories;
   }
 
-  /**
-   * Adds one remote repository
-   * @returns either nothing, or, if a parentList is given AND the number of repos on that list reaches 1000 returns the repo that was not added.
-   */
   public async addRemoteRepo(
     repoNwo: string,
     parentList?: string,
-  ): Promise<string[]> {
+  ): Promise<void> {
     if (!this.config) {
       throw Error("Cannot add variant analysis repo if config is not loaded");
     }
@@ -201,7 +191,6 @@ export class DbConfigStore extends DisposableObject {
       );
     }
 
-    const truncatedRepositories = [];
     const config = cloneDbConfig(this.config);
     if (parentList) {
       const parent = config.databases.variantAnalysis.repositoryLists.find(
@@ -210,15 +199,12 @@ export class DbConfigStore extends DisposableObject {
       if (!parent) {
         throw Error(`Cannot find parent list '${parentList}'`);
       } else {
-        const newRepositories = [...parent.repositories, repoNwo];
-        parent.repositories = newRepositories.slice(0, 1000);
-        truncatedRepositories.push(...newRepositories.slice(1000));
+        parent.repositories = [...parent.repositories, repoNwo];
       }
     } else {
       config.databases.variantAnalysis.repositories.push(repoNwo);
     }
     await this.writeConfig(config);
-    return truncatedRepositories;
   }
 
   public async addRemoteOwner(owner: string): Promise<void> {
