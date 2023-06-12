@@ -16,7 +16,7 @@ import { extLogger, TeeLogger } from "../common";
 import { isCanary, MAX_QUERIES } from "../config";
 import { gatherQlFiles } from "../pure/files";
 import { basename } from "path";
-import { createTimestampFile, findLanguage } from "../helpers";
+import { createTimestampFile } from "../helpers";
 import { showBinaryChoiceDialog } from "../common/vscode/dialog";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { displayQuickQuery } from "./quick-query";
@@ -47,6 +47,7 @@ import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
 } from "../common/vscode/log";
+import { findLanguage } from "../codeql-cli/query-language";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;

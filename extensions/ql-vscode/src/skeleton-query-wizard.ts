@@ -4,7 +4,6 @@ import { CodeQLCliServer } from "./codeql-cli/cli";
 import { OutputChannelLogger } from "./common";
 import { Credentials } from "./common/authentication";
 import { QueryLanguage } from "./common/query-language";
-import { askForLanguage } from "./helpers";
 import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
@@ -26,6 +25,7 @@ import {
   setQlPackLocation,
 } from "./config";
 import { existsSync } from "fs-extra";
+import { askForLanguage } from "./codeql-cli/query-language";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 

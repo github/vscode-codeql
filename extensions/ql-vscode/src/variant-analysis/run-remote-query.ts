@@ -3,7 +3,7 @@ import { relative, join, sep, dirname, parse, basename } from "path";
 import { dump, load } from "js-yaml";
 import { copy, writeFile, readFile, mkdirp } from "fs-extra";
 import { dir, tmpName } from "tmp-promise";
-import { askForLanguage, findLanguage, tmpDir } from "../helpers";
+import { tmpDir } from "../helpers";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { Credentials } from "../common/authentication";
 import * as cli from "../codeql-cli/cli";
@@ -36,6 +36,7 @@ import {
 } from "../pure/ql";
 import { QueryLanguage } from "../common/query-language";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
+import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
 
 export interface QlPack {
   name: string;
