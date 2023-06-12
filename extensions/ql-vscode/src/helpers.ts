@@ -1,5 +1,3 @@
-import { ensureDirSync } from "fs-extra";
-import { join } from "path";
 import { dirSync } from "tmp-promise";
 import { extLogger } from "./common";
 
@@ -9,8 +7,6 @@ export const tmpDir = dirSync({
   keep: false,
   unsafeCleanup: true,
 });
-export const upgradesTmpDir = join(tmpDir.name, "upgrades");
-ensureDirSync(upgradesTmpDir);
 
 export const tmpDirDisposal = {
   dispose: () => {
