@@ -72,7 +72,7 @@ export function pathsEqual(
 }
 
 /**
- * Returns true if `parent` contains `child`.
+ * Returns true if `parent` contains `child`, or if they are equal.
  */
 export function containsPath(
   parent: string,
