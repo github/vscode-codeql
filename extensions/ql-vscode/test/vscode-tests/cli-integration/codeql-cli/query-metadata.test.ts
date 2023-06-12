@@ -1,11 +1,11 @@
-import { join } from "path";
+import { join, resolve } from "path";
 
-import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
-import { tryGetQueryMetadata } from "../../../src/helpers";
-import { getActivatedExtension } from "../global.helper";
+import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import { getActivatedExtension } from "../../global.helper";
+import { tryGetQueryMetadata } from "../../../../src/codeql-cli/query-metadata";
 
-describe("helpers (with CLI)", () => {
-  const baseDir = __dirname;
+describe("tryGetQueryMetadata", () => {
+  const baseDir = resolve(__dirname, "..");
 
   let cli: CodeQLCliServer;
 

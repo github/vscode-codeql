@@ -5,7 +5,6 @@ import { Uri, window as Window } from "vscode";
 import { CodeQLCliServer } from "./codeql-cli/cli";
 import { UserCancellationException } from "./common/vscode/progress";
 import { extLogger } from "./common";
-import { QueryMetadata } from "./pure/interface-types";
 import { isQueryLanguage, QueryLanguage } from "./common/query-language";
 import { getOnDiskWorkspaceFolders } from "./common/vscode/workspace-folders";
 import { showAndLogErrorMessage } from "./common/vscode/log";
@@ -100,25 +99,6 @@ export async function askForLanguage(
   }
 
   return language;
-}
-
-/**
- * Gets metadata for a query, if it exists.
- * @param cliServer The CLI server.
- * @param queryPath The path to the query.
- * @returns A promise that resolves to the query metadata, if available.
- */
-export async function tryGetQueryMetadata(
-  cliServer: CodeQLCliServer,
-  queryPath: string,
-): Promise<QueryMetadata | undefined> {
-  try {
-    return await cliServer.resolveMetadata(queryPath);
-  } catch (e) {
-    // Ignore errors and provide no metadata.
-    void extLogger.log(`Couldn't resolve metadata for ${queryPath}: ${e}`);
-    return;
-  }
 }
 
 /**
