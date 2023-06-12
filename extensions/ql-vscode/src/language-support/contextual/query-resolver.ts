@@ -4,12 +4,14 @@ import { file } from "tmp-promise";
 import { basename, dirname, resolve } from "path";
 
 import {
-  getPrimaryDbscheme,
-  getQlPackForDbscheme,
   getOnDiskWorkspaceFolders,
-  QlPacksForLanguage,
   showAndLogExceptionWithTelemetry,
 } from "../../helpers";
+import {
+  getPrimaryDbscheme,
+  getQlPackForDbscheme,
+  QlPacksForLanguage,
+} from "../../databases/qlpack";
 import {
   KeyType,
   kindOfKeyType,

@@ -10,7 +10,8 @@ import { join } from "path";
 
 import { ExtensionContext, Uri } from "vscode";
 import { DatabaseManager } from "../../../../src/databases/local-databases";
-import { tmpDir, walkDirectory } from "../../../../src/helpers";
+import { tmpDir } from "../../../../src/helpers";
+import { walkDirectory } from "../../../../src/pure/files";
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";

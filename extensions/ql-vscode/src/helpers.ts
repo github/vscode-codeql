@@ -1,24 +1,14 @@
-import {
-  ensureDirSync,
-  readFile,
-  pathExists,
-  ensureDir,
-  writeFile,
-  opendir,
-} from "fs-extra";
-import { glob } from "glob";
-import { load } from "js-yaml";
-import { join, basename, dirname } from "path";
+import { ensureDirSync, pathExists, ensureDir, writeFile } from "fs-extra";
+import { join, dirname } from "path";
 import { dirSync } from "tmp-promise";
 import { Uri, window as Window, workspace, env, WorkspaceFolder } from "vscode";
-import { CodeQLCliServer, QlpacksInfo } from "./codeql-cli/cli";
+import { CodeQLCliServer } from "./codeql-cli/cli";
 import { UserCancellationException } from "./common/vscode/progress";
 import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
-import { getQlPackPath } from "./pure/ql";
-import { dbSchemeToLanguage, QueryLanguage } from "./common/query-language";
+import { isQueryLanguage, QueryLanguage } from "./common/query-language";
 import { isCodespacesTemplate } from "./config";
 import { AppCommandManager } from "./common/commands";
 
@@ -356,202 +346,6 @@ export async function prepareCodeTour(
   }
 }
 
-export interface QlPacksForLanguage {
-  /** The name of the pack containing the dbscheme. */
-  dbschemePack: string;
-  /** `true` if `dbschemePack` is a library pack. */
-  dbschemePackIsLibraryPack: boolean;
-  /**
-   * The name of the corresponding standard query pack.
-   * Only defined if `dbschemePack` is a library pack.
-   */
-  queryPack?: string;
-}
-
-interface QlPackWithPath {
-  packName: string;
-  packDir: string | undefined;
-}
-
-async function findDbschemePack(
-  packs: QlPackWithPath[],
-  dbschemePath: string,
-): Promise<{ name: string; isLibraryPack: boolean }> {
-  for (const { packDir, packName } of packs) {
-    if (packDir !== undefined) {
-      const qlpackPath = await getQlPackPath(packDir);
-
-      if (qlpackPath !== undefined) {
-        const qlpack = load(await readFile(qlpackPath, "utf8")) as {
-          dbscheme?: string;
-          library?: boolean;
-        };
-        if (
-          qlpack.dbscheme !== undefined &&
-          basename(qlpack.dbscheme) === basename(dbschemePath)
-        ) {
-          return {
-            name: packName,
-            isLibraryPack: qlpack.library === true,
-          };
-        }
-      }
-    }
-  }
-  throw new Error(`Could not find qlpack file for dbscheme ${dbschemePath}`);
-}
-
-function findStandardQueryPack(
-  qlpacks: QlpacksInfo,
-  dbschemePackName: string,
-): string | undefined {
-  const matches = dbschemePackName.match(/^codeql\/(?<language>[a-z]+)-all$/);
-  if (matches) {
-    const queryPackName = `codeql/${matches.groups!.language}-queries`;
-    if (qlpacks[queryPackName] !== undefined) {
-      return queryPackName;
-    }
-  }
-
-  // Either the dbscheme pack didn't look like one where the queries might be in the query pack, or
-  // no query pack was found in the search path. Either is OK.
-  return undefined;
-}
-
-export async function getQlPackForDbscheme(
-  cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
-  dbschemePath: string,
-): Promise<QlPacksForLanguage> {
-  const qlpacks = await cliServer.resolveQlpacks(getOnDiskWorkspaceFolders());
-  const packs: QlPackWithPath[] = Object.entries(qlpacks).map(
-    ([packName, dirs]) => {
-      if (dirs.length < 1) {
-        void extLogger.log(
-          `In getQlPackFor ${dbschemePath}, qlpack ${packName} has no directories`,
-        );
-        return { packName, packDir: undefined };
-      }
-      if (dirs.length > 1) {
-        void extLogger.log(
-          `In getQlPackFor ${dbschemePath}, qlpack ${packName} has more than one directory; arbitrarily choosing the first`,
-        );
-      }
-      return {
-        packName,
-        packDir: dirs[0],
-      };
-    },
-  );
-  const dbschemePack = await findDbschemePack(packs, dbschemePath);
-  const queryPack = dbschemePack.isLibraryPack
-    ? findStandardQueryPack(qlpacks, dbschemePack.name)
-    : undefined;
-  return {
-    dbschemePack: dbschemePack.name,
-    dbschemePackIsLibraryPack: dbschemePack.isLibraryPack,
-    queryPack,
-  };
-}
-
-export async function getPrimaryDbscheme(
-  datasetFolder: string,
-): Promise<string> {
-  const dbschemes = await glob("*.dbscheme", {
-    cwd: datasetFolder,
-  });
-
-  if (dbschemes.length < 1) {
-    throw new Error(
-      `Can't find dbscheme for current database in ${datasetFolder}`,
-    );
-  }
-
-  dbschemes.sort();
-  const dbscheme = dbschemes[0];
-
-  if (dbschemes.length > 1) {
-    void Window.showErrorMessage(
-      `Found multiple dbschemes in ${datasetFolder} during quick query; arbitrarily choosing the first, ${dbscheme}, to decide what library to use.`,
-    );
-  }
-  return dbscheme;
-}
-
-/**
- * The following functions al heuristically determine metadata about databases.
- */
-
-/**
- * Note that this heuristic is only being used for backwards compatibility with
- * CLI versions before the langauge name was introduced to dbInfo. Features
- * that do not require backwards compatibility should call
- * `cli.CodeQLCliServer.resolveDatabase` and use the first entry in the
- * `languages` property.
- *
- * @see cli.CodeQLCliServer.resolveDatabase
- */
-
-export const languageToDbScheme = Object.entries(dbSchemeToLanguage).reduce(
-  (acc, [k, v]) => {
-    acc[v] = k;
-    return acc;
-  },
-  {} as { [k: string]: string },
-);
-
-/**
- * Returns the initial contents for an empty query, based on the language of the selected
- * databse.
- *
- * First try to use the given language name. If that doesn't exist, try to infer it based on
- * dbscheme. Otherwise return no import statement.
- *
- * @param language the database language or empty string if unknown
- * @param dbscheme path to the dbscheme file
- *
- * @returns an import and empty select statement appropriate for the selected language
- */
-export function getInitialQueryContents(language: string, dbscheme: string) {
-  if (!language) {
-    const dbschemeBase = basename(dbscheme) as keyof typeof dbSchemeToLanguage;
-    language = dbSchemeToLanguage[dbschemeBase];
-  }
-
-  return language ? `import ${language}\n\nselect ""` : 'select ""';
-}
-
-/**
- * Heuristically determines if the directory passed in corresponds
- * to a database root. A database root is a directory that contains
- * a codeql-database.yml or (historically) a .dbinfo file. It also
- * contains a folder starting with `db-`.
- */
-export async function isLikelyDatabaseRoot(maybeRoot: string) {
-  const [a, b, c] = await Promise.all([
-    // databases can have either .dbinfo or codeql-database.yml.
-    pathExists(join(maybeRoot, ".dbinfo")),
-    pathExists(join(maybeRoot, "codeql-database.yml")),
-
-    // they *must* have a db-{language} folder
-    glob("db-*/", { cwd: maybeRoot }),
-  ]);
-
-  return (a || b) && c.length > 0;
-}
-
-/**
- * A language folder is any folder starting with `db-` that is itself not a database root.
- */
-export async function isLikelyDbLanguageFolder(dbPath: string) {
-  return (
-    basename(dbPath).startsWith("db-") && !(await isLikelyDatabaseRoot(dbPath))
-  );
-}
-
-export function isQueryLanguage(language: string): language is QueryLanguage {
-  return Object.values(QueryLanguage).includes(language as QueryLanguage);
-}
-
 /**
  * Finds the language that a query targets.
  * If it can't be autodetected, prompt the user to specify the language manually.
@@ -653,29 +447,6 @@ export async function createTimestampFile(storagePath: string) {
   const timestampPath = join(storagePath, "timestamp");
   await ensureDir(storagePath);
   await writeFile(timestampPath, Date.now().toString(), "utf8");
-}
-
-/**
- * Recursively walk a directory and return the full path to all files found.
- * Symbolic links are ignored.
- *
- * @param dir the directory to walk
- *
- * @return An iterator of the full path to all files recursively found in the directory.
- */
-export async function* walkDirectory(
-  dir: string,
-): AsyncIterableIterator<string> {
-  const seenFiles = new Set<string>();
-  for await (const d of await opendir(dir)) {
-    const entry = join(dir, d.name);
-    seenFiles.add(entry);
-    if (d.isDirectory()) {
-      yield* walkDirectory(entry);
-    } else if (d.isFile()) {
-      yield entry;
-    }
-  }
 }
 
 /**
