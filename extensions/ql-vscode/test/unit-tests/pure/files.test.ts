@@ -272,6 +272,14 @@ describe("containsPath", () => {
       parent:
         "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
       child:
+        "C:/USERS/GITHUB/PROJECTS/VSCODE-CODEQL-STARTER/CODEQL-CUSTOM-QUERIES-JAVASCRIPT/EXAMPLE.QL",
+      platform: "win32",
+      expected: true,
+    },
+    {
+      parent:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      child:
         "D:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript/example.ql",
       platform: "win32",
       expected: false,
