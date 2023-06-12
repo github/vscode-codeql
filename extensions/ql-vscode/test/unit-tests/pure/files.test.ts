@@ -238,6 +238,22 @@ describe("containsPath", () => {
     },
     {
       parent:
+        "/home/github/projects/vscode-codeql-starter/codeql-custom-queries-java",
+      child:
+        "/home/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      platform: "linux",
+      expected: false,
+    },
+    {
+      parent:
+        "/home/github/projects/vscode-codeql-starter/codeql-custom-queries-java",
+      child:
+        "/home/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript/example.ql",
+      platform: "linux",
+      expected: false,
+    },
+    {
+      parent:
         "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
       child:
         "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript/example.ql",
@@ -281,6 +297,22 @@ describe("containsPath", () => {
         "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
       child:
         "D:\\Users\\github\\projects\\vscode-codeql-starter\\codeql-custom-queries-javascript\\example.ql",
+      platform: "win32",
+      expected: false,
+    },
+    {
+      parent:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-java",
+      child:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript",
+      platform: "win32",
+      expected: false,
+    },
+    {
+      parent:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-java",
+      child:
+        "C:/Users/github/projects/vscode-codeql-starter/codeql-custom-queries-javascript/example.ql",
       platform: "win32",
       expected: false,
     },
