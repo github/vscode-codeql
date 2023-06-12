@@ -207,7 +207,6 @@ export class DatabaseItemImpl implements DatabaseItem {
         return pathsEqual(
           databasePath,
           join(testdir, `${testdirbase}.testproj`),
-          process.platform,
         );
       }
     } catch {

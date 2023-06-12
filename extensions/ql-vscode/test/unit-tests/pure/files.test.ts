@@ -200,7 +200,7 @@ describe("pathsEqual", () => {
         return;
       }
 
-      expect(pathsEqual(path1, path2, platform)).toEqual(expected);
+      expect(pathsEqual(path1, path2)).toEqual(expected);
     },
   );
 });
@@ -295,7 +295,7 @@ describe("containsPath", () => {
         return;
       }
 
-      expect(containsPath(parent, child, platform)).toEqual(expected);
+      expect(containsPath(parent, child)).toEqual(expected);
     },
   );
 });
