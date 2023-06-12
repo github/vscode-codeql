@@ -652,7 +652,7 @@ export class DatabaseManager extends DisposableObject {
   private isExtensionControlledLocation(uri: vscode.Uri) {
     const storageUri = this.ctx.storageUri || this.ctx.globalStorageUri;
     if (storageUri) {
-      return containsPath(storageUri.fsPath, uri.fsPath, process.platform);
+      return containsPath(storageUri.fsPath, uri.fsPath);
     }
     return false;
   }
