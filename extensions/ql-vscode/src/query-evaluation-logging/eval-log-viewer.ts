@@ -9,10 +9,10 @@ import {
   TreeItemCollapsibleState,
 } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
-import { showAndLogExceptionWithTelemetry } from "../helpers";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
 import { EvalLogViewerCommands } from "../common/commands";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 
 export interface EvalLogTreeItem {
   label?: string;

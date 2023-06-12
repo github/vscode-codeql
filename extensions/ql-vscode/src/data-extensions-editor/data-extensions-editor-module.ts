@@ -7,9 +7,9 @@ import { DatabaseManager } from "../databases/local-databases";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { App } from "../common/app";
-import { showAndLogErrorMessage } from "../helpers";
 import { withProgress } from "../common/vscode/progress";
 import { pickExtensionPackModelFile } from "./extension-pack-picker";
+import { showAndLogErrorMessage } from "../common/vscode/log";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 

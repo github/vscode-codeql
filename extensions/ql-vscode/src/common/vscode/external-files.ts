@@ -1,6 +1,5 @@
 import { Uri, window } from "vscode";
 import { AppCommandManager } from "../commands";
-import { showAndLogExceptionWithTelemetry } from "../../helpers";
 import { showBinaryChoiceDialog } from "./dialog";
 import { redactableError } from "../../pure/errors";
 import {
@@ -8,6 +7,7 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "../../pure/helpers-pure";
+import { showAndLogExceptionWithTelemetry } from "./log";
 
 export async function tryOpenExternalFile(
   commandManager: AppCommandManager,

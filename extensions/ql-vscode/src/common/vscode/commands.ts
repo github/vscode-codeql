@@ -8,11 +8,11 @@ import {
 } from "../../pure/helpers-pure";
 import { redactableError } from "../../pure/errors";
 import { UserCancellationException } from "./progress";
+import { telemetryListener } from "../../telemetry";
 import {
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
-} from "../../helpers";
-import { telemetryListener } from "../../telemetry";
+} from "./log";
 
 /**
  * Create a command manager for VSCode, wrapping registerCommandWithErrorHandling

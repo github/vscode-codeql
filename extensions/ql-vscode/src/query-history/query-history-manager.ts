@@ -14,11 +14,6 @@ import {
 } from "vscode";
 import { QueryHistoryConfig } from "../config";
 import {
-  showAndLogErrorMessage,
-  showAndLogInformationMessage,
-  showAndLogWarningMessage,
-} from "../helpers";
-import {
   showBinaryChoiceDialog,
   showInformationMessageWithAction,
 } from "../common/vscode/dialog";
@@ -61,6 +56,11 @@ import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
 } from "../common/vscode/selection-commands";
+import {
+  showAndLogErrorMessage,
+  showAndLogInformationMessage,
+  showAndLogWarningMessage,
+} from "../common/vscode/log";
 
 /**
  * query-history-manager.ts

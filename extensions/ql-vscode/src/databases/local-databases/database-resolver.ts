@@ -7,11 +7,11 @@ import {
   DatabaseKind,
 } from "./database-contents";
 import { glob } from "glob";
+import { encodeArchiveBasePath } from "../../common/vscode/archive-filesystem-provider";
 import {
   showAndLogInformationMessage,
   showAndLogWarningMessage,
-} from "../../helpers";
-import { encodeArchiveBasePath } from "../../common/vscode/archive-filesystem-provider";
+} from "../../common/vscode/log";
 
 export class DatabaseResolver {
   public static async resolveDatabaseContents(

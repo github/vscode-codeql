@@ -4,13 +4,17 @@ import { join } from "path";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getErrorMessage } from "../../../../src/pure/helpers-pure";
 
-import * as helpers from "../../../../src/helpers";
+import * as log from "../../../../src/common/vscode/log";
 import {
   handleDownloadPacks,
   handleInstallPackDependencies,
 } from "../../../../src/packaging";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { getActivatedExtension } from "../../global.helper";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogInformationMessage,
+} from "../../../../src/common/vscode/log";
 
 describe("Packaging commands", () => {
   let cli: CodeQLCliServer;
@@ -18,10 +22,10 @@ describe("Packaging commands", () => {
   let quickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let inputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
   let showAndLogExceptionWithTelemetrySpy: jest.SpiedFunction<
-    typeof helpers.showAndLogExceptionWithTelemetry
+    typeof showAndLogExceptionWithTelemetry
   >;
   let showAndLogInformationMessageSpy: jest.SpiedFunction<
-    typeof helpers.showAndLogInformationMessage
+    typeof showAndLogInformationMessage
   >;
 
   beforeEach(async () => {
@@ -32,10 +36,10 @@ describe("Packaging commands", () => {
       .spyOn(window, "showInputBox")
       .mockResolvedValue(undefined);
     showAndLogExceptionWithTelemetrySpy = jest
-      .spyOn(helpers, "showAndLogExceptionWithTelemetry")
+      .spyOn(log, "showAndLogExceptionWithTelemetry")
       .mockResolvedValue(undefined);
     showAndLogInformationMessageSpy = jest
-      .spyOn(helpers, "showAndLogInformationMessage")
+      .spyOn(log, "showAndLogInformationMessage")
       .mockResolvedValue(undefined);
 
     const extension = await getActivatedExtension();

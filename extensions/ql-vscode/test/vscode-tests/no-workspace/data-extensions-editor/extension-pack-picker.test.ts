@@ -7,10 +7,11 @@ import {
   QlpacksInfo,
   ResolveExtensionsResult,
 } from "../../../../src/codeql-cli/cli";
-import * as helpers from "../../../../src/helpers";
+import * as log from "../../../../src/common/vscode/log";
 
 import { pickExtensionPackModelFile } from "../../../../src/data-extensions-editor/extension-pack-picker";
 import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
+import { showAndLogErrorMessage } from "../../../../src/common/vscode/log";
 
 describe("pickExtensionPackModelFile", () => {
   let tmpDir: string;
@@ -33,7 +34,7 @@ describe("pickExtensionPackModelFile", () => {
   let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let showInputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
   let showAndLogErrorMessageSpy: jest.SpiedFunction<
-    typeof helpers.showAndLogErrorMessage
+    typeof showAndLogErrorMessage
   >;
 
   beforeEach(async () => {
@@ -79,7 +80,7 @@ describe("pickExtensionPackModelFile", () => {
       .spyOn(window, "showInputBox")
       .mockRejectedValue(new Error("Unexpected call to showInputBox"));
     showAndLogErrorMessageSpy = jest
-      .spyOn(helpers, "showAndLogErrorMessage")
+      .spyOn(log, "showAndLogErrorMessage")
       .mockImplementation((msg) => {
         throw new Error(`Unexpected call to showAndLogErrorMessage: ${msg}`);
       });

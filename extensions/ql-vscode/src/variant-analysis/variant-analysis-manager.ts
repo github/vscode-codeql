@@ -43,12 +43,7 @@ import {
   processVariantAnalysisRepositoryTask,
 } from "./variant-analysis-processor";
 import PQueue from "p-queue";
-import {
-  createTimestampFile,
-  showAndLogExceptionWithTelemetry,
-  showAndLogInformationMessage,
-  showAndLogWarningMessage,
-} from "../helpers";
+import { createTimestampFile } from "../helpers";
 import { readFile, remove, pathExists } from "fs-extra";
 import { EOL } from "os";
 import { cancelVariantAnalysis } from "./gh-api/gh-actions-api-client";
@@ -77,6 +72,11 @@ import {
 import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
 import { FetchError } from "node-fetch";
 import { extLogger } from "../common";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogInformationMessage,
+  showAndLogWarningMessage,
+} from "../common/vscode/log";
 
 const maxRetryCount = 3;
 

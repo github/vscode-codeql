@@ -13,7 +13,6 @@ import {
 import { join } from "path";
 import { FullDatabaseOptions } from "./database-options";
 import { DatabaseItemImpl } from "./database-item-impl";
-import { showAndLogExceptionWithTelemetry } from "../../helpers";
 import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
 import {
   getFirstWorkspaceFolder,
@@ -29,6 +28,7 @@ import { remove } from "fs-extra";
 import { containsPath } from "../../pure/files";
 import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
 import { DatabaseResolver } from "./database-resolver";
+import { showAndLogExceptionWithTelemetry } from "../../common/vscode/log";
 
 /**
  * The name of the key in the workspaceState dictionary in which we

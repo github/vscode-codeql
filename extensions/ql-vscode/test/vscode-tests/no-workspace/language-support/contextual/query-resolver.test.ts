@@ -3,7 +3,7 @@ import * as fs from "fs-extra";
 
 import { getErrorMessage } from "../../../../../src/pure/helpers-pure";
 
-import * as helpers from "../../../../../src/helpers";
+import * as log from "../../../../../src/common/vscode/log";
 import * as workspaceFolders from "../../../../../src/common/vscode/workspace-folders";
 import * as qlpack from "../../../../../src/databases/qlpack";
 import {
@@ -42,7 +42,7 @@ describe("queryResolver", () => {
     jest
       .spyOn(workspaceFolders, "getOnDiskWorkspaceFolders")
       .mockReturnValue([]);
-    jest.spyOn(helpers, "showAndLogErrorMessage").mockResolvedValue(undefined);
+    jest.spyOn(log, "showAndLogErrorMessage").mockResolvedValue(undefined);
   });
 
   describe("resolveQueries", () => {

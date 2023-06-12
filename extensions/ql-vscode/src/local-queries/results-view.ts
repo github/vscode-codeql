@@ -17,7 +17,6 @@ import {
   DatabaseItem,
   DatabaseManager,
 } from "../databases/local-databases";
-import { showAndLogExceptionWithTelemetry } from "../helpers";
 import {
   asError,
   assertNever,
@@ -74,6 +73,7 @@ import { HistoryItemLabelProvider } from "../query-history/history-item-label-pr
 import { telemetryListener } from "../telemetry";
 import { redactableError } from "../pure/errors";
 import { ResultsViewCommands } from "../common/commands";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 
 /**
  * results-view.ts

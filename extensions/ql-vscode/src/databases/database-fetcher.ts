@@ -17,7 +17,7 @@ import * as Octokit from "@octokit/rest";
 import { retry } from "@octokit/plugin-retry";
 
 import { DatabaseManager, DatabaseItem } from "./local-databases";
-import { showAndLogInformationMessage, tmpDir } from "../helpers";
+import { tmpDir } from "../helpers";
 import {
   reportStreamProgress,
   ProgressCallback,
@@ -31,6 +31,7 @@ import {
 import { Credentials } from "../common/authentication";
 import { AppCommandManager } from "../common/commands";
 import { ALLOW_HTTP_SETTING } from "../config";
+import { showAndLogInformationMessage } from "../common/vscode/log";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.

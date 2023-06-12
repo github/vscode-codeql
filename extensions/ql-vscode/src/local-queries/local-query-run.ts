@@ -1,9 +1,5 @@
 import { BaseLogger, Logger } from "../common";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogWarningMessage,
-  tryGetQueryMetadata,
-} from "../helpers";
+import { tryGetQueryMetadata } from "../helpers";
 import { CoreQueryResults } from "../query-server";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
 import { DatabaseItem } from "../databases/local-databases";
@@ -21,6 +17,10 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryResultType } from "../pure/new-messages";
 import { redactableError } from "../pure/errors";
 import { LocalQueries } from "./local-queries";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../common/vscode/log";
 
 function formatResultMessage(result: CoreQueryResults): string {
   switch (result.resultType) {

@@ -6,7 +6,6 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { TeeLogger } from "../common";
 import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../common/vscode/progress";
-import { showAndLogExceptionWithTelemetry } from "../helpers";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import {
   ModeledMethodType,
@@ -18,6 +17,7 @@ import { file } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { qlpackOfDatabase } from "../language-support";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 
 type FlowModelOptions = {
   cliServer: CodeQLCliServer;

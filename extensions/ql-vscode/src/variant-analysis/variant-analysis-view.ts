@@ -18,10 +18,6 @@ import {
   VariantAnalysisViewInterface,
   VariantAnalysisViewManager,
 } from "./variant-analysis-view-manager";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogWarningMessage,
-} from "../helpers";
 import { telemetryListener } from "../telemetry";
 import { redactableError } from "../pure/errors";
 import { DataFlowPathsView } from "./data-flow-paths-view";
@@ -31,6 +27,10 @@ import {
   getVariantAnalysisDefaultResultsFilter,
   getVariantAnalysisDefaultResultsSort,
 } from "../config";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../common/vscode/log";
 
 export class VariantAnalysisView
   extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage>

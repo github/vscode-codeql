@@ -13,9 +13,9 @@ import { processUpdatedVariantAnalysis } from "./variant-analysis-processor";
 import { DisposableObject } from "../pure/disposable-object";
 import { sleep } from "../pure/time";
 import { getErrorMessage } from "../pure/helpers-pure";
-import { showAndLogWarningMessage } from "../helpers";
 import { App } from "../common/app";
 import { extLogger } from "../common";
+import { showAndLogWarningMessage } from "../common/vscode/log";
 
 export class VariantAnalysisMonitor extends DisposableObject {
   // With a sleep of 5 seconds, the maximum number of attempts takes

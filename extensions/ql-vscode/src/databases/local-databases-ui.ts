@@ -29,10 +29,6 @@ import {
   withProgress,
 } from "../common/vscode/progress";
 import {
-  showAndLogErrorMessage,
-  showAndLogExceptionWithTelemetry,
-} from "../helpers";
-import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
 } from "./local-databases/db-contents-heuristics";
@@ -52,6 +48,10 @@ import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
 } from "../common/vscode/selection-commands";
+import {
+  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
+} from "../common/vscode/log";
 
 enum SortOrder {
   NameAsc = "NameAsc",

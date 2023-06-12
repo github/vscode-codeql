@@ -1,20 +1,24 @@
 import * as fetch from "node-fetch";
 import { Range } from "semver";
 
-import * as helpers from "../../../../src/helpers";
+import * as log from "../../../../src/common/vscode/log";
 import { extLogger } from "../../../../src/common";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
 import * as tmp from "tmp-promise";
+import { DirectoryResult } from "tmp-promise";
 import {
+  DistributionManager,
+  getExecutableFromDirectory,
   GithubRelease,
   GithubReleaseAsset,
   ReleasesApiConsumer,
-  getExecutableFromDirectory,
-  DistributionManager,
 } from "../../../../src/codeql-cli/distribution";
-import { DirectoryResult } from "tmp-promise";
+import {
+  showAndLogErrorMessage,
+  showAndLogWarningMessage,
+} from "../../../../src/common/vscode/log";
 
 jest.mock("os", () => {
   const original = jest.requireActual("os");
@@ -204,8 +208,8 @@ describe("Releases API consumer", () => {
 });
 
 describe("Launcher path", () => {
-  let warnSpy: jest.SpiedFunction<typeof helpers.showAndLogWarningMessage>;
-  let errorSpy: jest.SpiedFunction<typeof helpers.showAndLogErrorMessage>;
+  let warnSpy: jest.SpiedFunction<typeof showAndLogWarningMessage>;
+  let errorSpy: jest.SpiedFunction<typeof showAndLogErrorMessage>;
   let logSpy: jest.SpiedFunction<typeof extLogger.log>;
 
   let directory: DirectoryResult;
@@ -215,10 +219,10 @@ describe("Launcher path", () => {
 
   beforeEach(async () => {
     warnSpy = jest
-      .spyOn(helpers, "showAndLogWarningMessage")
+      .spyOn(log, "showAndLogWarningMessage")
       .mockResolvedValue(undefined);
     errorSpy = jest
-      .spyOn(helpers, "showAndLogErrorMessage")
+      .spyOn(log, "showAndLogErrorMessage")
       .mockResolvedValue(undefined);
     logSpy = jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
