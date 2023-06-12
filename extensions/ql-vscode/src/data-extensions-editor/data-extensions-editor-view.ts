@@ -208,6 +208,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
       if (!existingModeledMethods) {
         void showAndLogErrorMessage(
+          extLogger,
           `Failed to parse data extension YAML ${this.modelFile.filename}.`,
         );
         return;
@@ -219,6 +220,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       });
     } catch (e: unknown) {
       void showAndLogErrorMessage(
+        extLogger,
         `Unable to read data extension YAML ${
           this.modelFile.filename
         }: ${getErrorMessage(e)}`,
@@ -276,6 +278,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       await this.clearProgress();
     } catch (err) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError(
           asError(err),
         )`Failed to load external API usages: ${getErrorMessage(err)}`,
@@ -341,6 +344,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       });
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError(
           asError(e),
         )`Failed to generate flow model: ${getErrorMessage(e)}`,
@@ -474,6 +478,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(
+          extLogger,
           redactableError(e)`Rate limit hit, please try again soon.`,
         );
         return null;

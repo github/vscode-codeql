@@ -4,6 +4,7 @@ import { Octokit } from "@octokit/rest";
 import { Progress, CancellationToken } from "vscode";
 import { Credentials } from "../common/authentication";
 import { showAndLogWarningMessage } from "../common/vscode/log";
+import { extLogger } from "../common";
 
 export async function getCodeSearchRepositories(
   query: string,
@@ -53,6 +54,7 @@ async function provideOctokitWithThrottling(
     throttle: {
       onRateLimit: (retryAfter: number, options: any): boolean => {
         void showAndLogWarningMessage(
+          extLogger,
           `Rate Limit detected for request ${options.method} ${options.url}. Retrying after ${retryAfter} seconds!`,
         );
 
@@ -60,6 +62,7 @@ async function provideOctokitWithThrottling(
       },
       onSecondaryRateLimit: (_retryAfter: number, options: any): void => {
         void showAndLogWarningMessage(
+          extLogger,
           `Secondary Rate Limit detected for request ${options.method} ${options.url}`,
         );
       },

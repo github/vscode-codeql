@@ -87,9 +87,13 @@ export async function handleDownloadPacks(
     });
     try {
       await cliServer.packDownload(packsToDownload);
-      void showAndLogInformationMessage("Finished downloading packs.");
+      void showAndLogInformationMessage(
+        extLogger,
+        "Finished downloading packs.",
+      );
     } catch (error) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError(
           asError(error),
         )`Unable to download all packs. See log for more details.`,
@@ -165,6 +169,7 @@ export async function handleInstallPackDependencies(
       );
     } else {
       void showAndLogInformationMessage(
+        extLogger,
         "Finished installing pack dependencies.",
       );
     }

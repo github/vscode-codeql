@@ -1,7 +1,6 @@
-import { window } from "vscode";
 import { RedactableError } from "../../pure/errors";
 import { telemetryListener } from "../../telemetry";
-import { extLogger, OutputChannelLogger } from "../logging";
+import { NotificationLogger } from "../logging";
 
 interface ShowAndLogExceptionOptions extends ShowAndLogOptions {
   /** Custom properties to include in the telemetry report. */
@@ -9,10 +8,6 @@ interface ShowAndLogExceptionOptions extends ShowAndLogOptions {
 }
 
 interface ShowAndLogOptions {
-  /** The output logger that will receive the message. */
-  outputLogger?: OutputChannelLogger;
-  /** A set of items that will be rendered as actions in the message. */
-  items?: string[];
   /**
    * An alternate message that is added to the log, but not displayed in the popup.
    * This is useful for adding extra detail to the logs that would be too noisy for the popup.
@@ -23,34 +18,39 @@ interface ShowAndLogOptions {
 /**
  * Show an error message, log it to the console, and emit redacted information as telemetry
  *
+ * @param logger The logger that will receive the message.
  * @param error The error to show. Only redacted information will be included in the telemetry.
  * @param options See individual fields on `ShowAndLogExceptionOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
 export async function showAndLogExceptionWithTelemetry(
+  logger: NotificationLogger,
   error: RedactableError,
   options: ShowAndLogExceptionOptions = {},
-): Promise<string | undefined> {
+): Promise<void> {
   telemetryListener?.sendError(error, options.extraTelemetryProperties);
-  return showAndLogErrorMessage(error.fullMessage, options);
+  return showAndLogErrorMessage(logger, error.fullMessage, options);
 }
 
 /**
  * Show an error message and log it to the console
  *
+ * @param logger The logger that will receive the message.
  * @param message The message to show.
- * @param options See individual fields on `ShowAndLogOptions` type.
+ * @param options? See individual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
 export async function showAndLogErrorMessage(
+  logger: NotificationLogger,
   message: string,
   options?: ShowAndLogOptions,
-): Promise<string | undefined> {
+): Promise<void> {
   return internalShowAndLog(
+    logger,
     dropLinesExceptInitial(message),
-    window.showErrorMessage,
+    logger.showErrorMessage,
     { fullMessage: message, ...options },
   );
 }
@@ -62,48 +62,53 @@ function dropLinesExceptInitial(message: string, n = 2) {
 /**
  * Show a warning message and log it to the console
  *
+ * @param logger The logger that will receive the message.
  * @param message The message to show.
- * @param options See individual fields on `ShowAndLogOptions` type.
+ * @param options? See individual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
 export async function showAndLogWarningMessage(
+  logger: NotificationLogger,
   message: string,
   options?: ShowAndLogOptions,
-): Promise<string | undefined> {
-  return internalShowAndLog(message, window.showWarningMessage, options);
+): Promise<void> {
+  return internalShowAndLog(
+    logger,
+    message,
+    logger.showWarningMessage,
+    options,
+  );
 }
 
 /**
  * Show an information message and log it to the console
  *
+ * @param logger The logger that will receive the message.
  * @param message The message to show.
- * @param options See individual fields on `ShowAndLogOptions` type.
+ * @param options? See individual fields on `ShowAndLogOptions` type.
  *
  * @return A promise that resolves to the selected item or undefined when being dismissed.
  */
 export async function showAndLogInformationMessage(
+  logger: NotificationLogger,
   message: string,
   options?: ShowAndLogOptions,
-): Promise<string | undefined> {
-  return internalShowAndLog(message, window.showInformationMessage, options);
+): Promise<void> {
+  return internalShowAndLog(
+    logger,
+    message,
+    logger.showInformationMessage,
+    options,
+  );
 }
 
-type ShowMessageFn = (
-  message: string,
-  ...items: string[]
-) => Thenable<string | undefined>;
-
 async function internalShowAndLog(
+  logger: NotificationLogger,
   message: string,
-  fn: ShowMessageFn,
-  { items = [], outputLogger = extLogger, fullMessage }: ShowAndLogOptions = {},
-): Promise<string | undefined> {
-  const label = "Show Log";
-  void outputLogger.log(fullMessage || message);
-  const result = await fn(message, label, ...items);
-  if (result === label) {
-    outputLogger.show();
-  }
-  return result;
+  fn: (message: string) => Promise<void>,
+  { fullMessage }: ShowAndLogOptions = {},
+): Promise<void> {
+  void logger.log(fullMessage || message);
+  await fn.bind(logger)(message);
 }

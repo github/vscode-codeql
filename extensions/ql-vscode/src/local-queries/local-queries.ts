@@ -323,6 +323,7 @@ export class LocalQueries extends DisposableObject {
 
     if (this.queryRunner.customLogDirectory) {
       void showAndLogWarningMessage(
+        extLogger,
         `Custom log directories are no longer supported. The "codeQL.runningQueries.customLogDirectory" setting is deprecated. Unset the setting to stop seeing this message. Query logs saved to ${outputDir.logPath}`,
       );
     }
@@ -469,6 +470,7 @@ export class LocalQueries extends DisposableObject {
     let filteredDBs = this.databaseManager.databaseItems;
     if (filteredDBs.length === 0) {
       void showAndLogErrorMessage(
+        extLogger,
         "No databases found. Please add a suitable database to your workspace.",
       );
       return;
@@ -481,6 +483,7 @@ export class LocalQueries extends DisposableObject {
       );
       if (filteredDBs.length === 0) {
         void showAndLogErrorMessage(
+          extLogger,
           `No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`,
         );
         return;
@@ -519,13 +522,14 @@ export class LocalQueries extends DisposableObject {
       if (skippedDatabases.length > 0) {
         void extLogger.log(`Errors:\n${errors.join("\n")}`);
         void showAndLogWarningMessage(
+          extLogger,
           `The following databases were skipped:\n${skippedDatabases.join(
             "\n",
           )}.\nFor details about the errors, see the logs.`,
         );
       }
     } else {
-      void showAndLogErrorMessage("No databases selected.");
+      void showAndLogErrorMessage(extLogger, "No databases selected.");
     }
   }
 

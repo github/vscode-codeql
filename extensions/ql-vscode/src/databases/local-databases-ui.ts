@@ -281,6 +281,7 @@ export class DatabaseUI extends DisposableObject {
       await this.chooseAndSetDatabase(true, { progress, token });
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError(
           asError(e),
         )`Failed to choose and set database: ${getErrorMessage(e)}`,
@@ -418,6 +419,7 @@ export class DatabaseUI extends DisposableObject {
           await remove(dbDir);
         } catch (e) {
           void showAndLogExceptionWithTelemetry(
+            extLogger,
             redactableError(
               asError(e),
             )`Failed to delete orphaned database: ${getErrorMessage(e)}`,
@@ -430,6 +432,7 @@ export class DatabaseUI extends DisposableObject {
     if (failures.length) {
       const dirname = path_dirname(failures[0]);
       void showAndLogErrorMessage(
+        extLogger,
         `Failed to delete unused databases (${failures.join(
           ", ",
         )}).\nTo delete unused databases, please remove them manually from the storage folder ${dirname}.`,
@@ -445,6 +448,7 @@ export class DatabaseUI extends DisposableObject {
       await this.chooseAndSetDatabase(false, { progress, token });
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError(
           asError(e),
         )`Failed to choose and set database: ${getErrorMessage(e)}`,

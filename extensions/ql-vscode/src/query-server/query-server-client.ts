@@ -5,7 +5,7 @@ import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
 import * as cli from "../codeql-cli/cli";
 import { QueryServerConfig } from "../config";
-import { Logger, ProgressReporter } from "../common";
+import { extLogger, Logger, ProgressReporter } from "../common";
 import {
   progress,
   ProgressMessage,
@@ -131,6 +131,7 @@ export class QueryServerClient extends DisposableObject {
       );
     } else {
       void showAndLogErrorMessage(
+        extLogger,
         "The CodeQL query server has unexpectedly terminated too many times. Please check the logs for errors. You can manually restart the query server using the command 'CodeQL: Restart query server'.",
       );
       // Make sure we dispose anyway to reject all pending requests.

@@ -4,6 +4,7 @@ import {
   TreeViewContextSingleSelectionCommandFunction,
 } from "../commands";
 import { showAndLogErrorMessage } from "./log";
+import { extLogger } from "../logging";
 
 // A hack to match types that are not an array, which is useful to help avoid
 // misusing createSingleSelectionCommand, e.g. where T accidentally gets instantiated
@@ -32,7 +33,10 @@ export function createSingleSelectionCommand<T extends NotArray>(
     if (multiSelect === undefined || multiSelect.length === 1) {
       return f(singleItem);
     } else {
-      void showAndLogErrorMessage(`Please select a single ${itemName}.`);
+      void showAndLogErrorMessage(
+        extLogger,
+        `Please select a single ${itemName}.`,
+      );
       return;
     }
   };

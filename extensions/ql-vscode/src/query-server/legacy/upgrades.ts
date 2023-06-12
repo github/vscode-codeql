@@ -206,6 +206,7 @@ export async function upgradeDatabaseExplicit(
       );
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError(
           asError(e),
         )`Compilation of database upgrades failed: ${getErrorMessage(e)}`,
@@ -220,6 +221,7 @@ export async function upgradeDatabaseExplicit(
         ? redactableError`${compileUpgradeResult.error}`
         : redactableError`[no error message available]`;
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError`Compilation of database upgrades failed: ${error}`,
       );
       return;
@@ -253,6 +255,7 @@ export async function upgradeDatabaseExplicit(
       return result;
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError(asError(e))`Database upgrade failed: ${getErrorMessage(
           e,
         )}`,

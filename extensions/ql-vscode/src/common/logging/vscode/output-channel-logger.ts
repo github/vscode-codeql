@@ -1,11 +1,15 @@
 import { window as Window, OutputChannel, Progress } from "vscode";
 import { Logger, LogOptions } from "../logger";
 import { DisposableObject } from "../../../pure/disposable-object";
+import { NotificationLogger } from "../notification-logger";
 
 /**
  * A logger that writes messages to an output channel in the VS Code Output tab.
  */
-export class OutputChannelLogger extends DisposableObject implements Logger {
+export class OutputChannelLogger
+  extends DisposableObject
+  implements Logger, NotificationLogger
+{
   public readonly outputChannel: OutputChannel;
   isCustomLogDirectory: boolean;
 
@@ -41,6 +45,30 @@ export class OutputChannelLogger extends DisposableObject implements Logger {
 
   show(preserveFocus?: boolean): void {
     this.outputChannel.show(preserveFocus);
+  }
+
+  async showErrorMessage(message: string): Promise<void> {
+    await this.showMessage(message, Window.showErrorMessage);
+  }
+
+  async showInformationMessage(message: string): Promise<void> {
+    await this.showMessage(message, Window.showInformationMessage);
+  }
+
+  async showWarningMessage(message: string): Promise<void> {
+    await this.showMessage(message, Window.showWarningMessage);
+  }
+
+  private async showMessage(
+    message: string,
+    show: (message: string, ...items: string[]) => Thenable<string | undefined>,
+  ): Promise<void> {
+    const label = "Show Log";
+    const result = await show(message, label);
+
+    if (result === label) {
+      this.show();
+    }
   }
 }
 

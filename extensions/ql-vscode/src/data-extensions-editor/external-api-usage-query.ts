@@ -3,7 +3,7 @@ import { dir } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { TeeLogger } from "../common";
+import { extLogger, TeeLogger } from "../common";
 import { isQueryLanguage } from "../common/query-language";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
@@ -41,6 +41,7 @@ export async function runQuery({
 
   if (!isQueryLanguage(databaseItem.language)) {
     void showAndLogExceptionWithTelemetry(
+      extLogger,
       redactableError`Unsupported database language ${databaseItem.language}`,
     );
     return;
@@ -49,6 +50,7 @@ export async function runQuery({
   const query = fetchExternalApiQueries[databaseItem.language];
   if (!query) {
     void showAndLogExceptionWithTelemetry(
+      extLogger,
       redactableError`No external API usage query found for language ${databaseItem.language}`,
     );
     return;
@@ -104,6 +106,7 @@ export async function runQuery({
 
   if (completedQuery.resultType !== QueryResultType.SUCCESS) {
     void showAndLogExceptionWithTelemetry(
+      extLogger,
       redactableError`External API usage query failed: ${
         completedQuery.message ?? "No message"
       }`,
@@ -126,6 +129,7 @@ export async function readQueryResults({
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
     void showAndLogExceptionWithTelemetry(
+      extLogger,
       redactableError`Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
     );
     return undefined;

@@ -5,7 +5,7 @@ import {
   ToCompareViewMessage,
   QueryCompareResult,
 } from "../pure/interface-types";
-import { Logger } from "../common";
+import { extLogger, Logger } from "../common";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";
@@ -152,6 +152,7 @@ export class CompareView extends AbstractWebview<
 
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
+          extLogger,
           redactableError(
             msg.error,
           )`Unhandled error in result comparison view: ${msg.error.message}`,

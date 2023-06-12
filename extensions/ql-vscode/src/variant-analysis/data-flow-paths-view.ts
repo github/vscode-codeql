@@ -12,6 +12,7 @@ import {
 import { DataFlowPaths } from "./shared/data-flow-paths";
 import { redactableError } from "../pure/errors";
 import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
+import { extLogger } from "../common";
 
 export class DataFlowPathsView extends AbstractWebview<
   ToDataFlowPathsMessage,
@@ -59,6 +60,7 @@ export class DataFlowPathsView extends AbstractWebview<
         break;
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
+          extLogger,
           redactableError(
             msg.error,
           )`Unhandled error in data flow paths view: ${msg.error.message}`,

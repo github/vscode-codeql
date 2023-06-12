@@ -3,7 +3,7 @@ import { DatabaseItem } from "../databases/local-databases";
 import { basename } from "path";
 import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { TeeLogger } from "../common";
+import { extLogger, TeeLogger } from "../common";
 import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
@@ -81,6 +81,7 @@ async function getModeledMethodsFromFlow(
 ): Promise<ModeledMethodWithSignature[]> {
   if (queryPath === undefined) {
     void showAndLogExceptionWithTelemetry(
+      extLogger,
       redactableError`Failed to find ${type} query`,
     );
     return [];
@@ -115,6 +116,7 @@ async function getModeledMethodsFromFlow(
   );
   if (queryResult.resultType !== QueryResultType.SUCCESS) {
     void showAndLogExceptionWithTelemetry(
+      extLogger,
       redactableError`Failed to run ${basename(queryPath)} query: ${
         queryResult.message ?? "No message"
       }`,
@@ -127,6 +129,7 @@ async function getModeledMethodsFromFlow(
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
     void showAndLogExceptionWithTelemetry(
+      extLogger,
       redactableError`Expected exactly one result set, got ${
         bqrsInfo["result-sets"].length
       } for ${basename(queryPath)}`,

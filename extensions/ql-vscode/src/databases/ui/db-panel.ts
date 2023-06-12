@@ -38,6 +38,7 @@ import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
 } from "../../common/vscode/log";
+import { extLogger } from "../../common";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   remoteDatabaseKind: string;
@@ -174,12 +175,18 @@ export class DbPanel extends DisposableObject {
 
     const nwo = getNwoFromGitHubUrl(repoName) || repoName;
     if (!isValidGitHubNwo(nwo)) {
-      void showAndLogErrorMessage(`Invalid GitHub repository: ${repoName}`);
+      void showAndLogErrorMessage(
+        extLogger,
+        `Invalid GitHub repository: ${repoName}`,
+      );
       return;
     }
 
     if (this.dbManager.doesRemoteRepoExist(nwo, parentList)) {
-      void showAndLogErrorMessage(`The repository '${nwo}' already exists`);
+      void showAndLogErrorMessage(
+        extLogger,
+        `The repository '${nwo}' already exists`,
+      );
       return;
     }
 
@@ -199,12 +206,18 @@ export class DbPanel extends DisposableObject {
 
     const owner = getOwnerFromGitHubUrl(ownerName) || ownerName;
     if (!isValidGitHubOwner(owner)) {
-      void showAndLogErrorMessage(`Invalid user or organization: ${owner}`);
+      void showAndLogErrorMessage(
+        extLogger,
+        `Invalid user or organization: ${owner}`,
+      );
       return;
     }
 
     if (this.dbManager.doesRemoteOwnerExist(owner)) {
-      void showAndLogErrorMessage(`The owner '${owner}' already exists`);
+      void showAndLogErrorMessage(
+        extLogger,
+        `The owner '${owner}' already exists`,
+      );
       return;
     }
 
@@ -223,7 +236,10 @@ export class DbPanel extends DisposableObject {
     }
 
     if (this.dbManager.doesListExist(listKind, listName)) {
-      void showAndLogErrorMessage(`The list '${listName}' already exists`);
+      void showAndLogErrorMessage(
+        extLogger,
+        `The list '${listName}' already exists`,
+      );
       return;
     }
 
@@ -287,7 +303,10 @@ export class DbPanel extends DisposableObject {
     }
 
     if (this.dbManager.doesListExist(DbListKind.Local, newName)) {
-      void showAndLogErrorMessage(`The list '${newName}' already exists`);
+      void showAndLogErrorMessage(
+        extLogger,
+        `The list '${newName}' already exists`,
+      );
       return;
     }
 
@@ -303,7 +322,10 @@ export class DbPanel extends DisposableObject {
     }
 
     if (this.dbManager.doesLocalDbExist(newName, dbItem.parentListName)) {
-      void showAndLogErrorMessage(`The database '${newName}' already exists`);
+      void showAndLogErrorMessage(
+        extLogger,
+        `The database '${newName}' already exists`,
+      );
       return;
     }
 
@@ -319,7 +341,10 @@ export class DbPanel extends DisposableObject {
     }
 
     if (this.dbManager.doesListExist(DbListKind.Remote, newName)) {
-      void showAndLogErrorMessage(`The list '${newName}' already exists`);
+      void showAndLogErrorMessage(
+        extLogger,
+        `The list '${newName}' already exists`,
+      );
       return;
     }
 
@@ -402,7 +427,7 @@ export class DbPanel extends DisposableObject {
         );
 
         token.onCancellationRequested(() => {
-          void showAndLogInformationMessage("Code search cancelled");
+          void showAndLogInformationMessage(extLogger, "Code search cancelled");
           return;
         });
 
@@ -471,6 +496,7 @@ export class DbPanel extends DisposableObject {
       }
 
       void showAndLogErrorMessage(
+        extLogger,
         `An error occurred while setting up the controller repository: ${getErrorMessage(
           e,
         )}`,

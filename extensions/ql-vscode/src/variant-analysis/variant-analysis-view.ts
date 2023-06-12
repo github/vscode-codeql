@@ -166,6 +166,7 @@ export class VariantAnalysisView
         break;
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
+          extLogger,
           redactableError(
             msg.error,
           )`Unhandled error in variant analysis results view: ${msg.error.message}`,
@@ -186,7 +187,10 @@ export class VariantAnalysisView
     );
 
     if (!variantAnalysis) {
-      void showAndLogWarningMessage("Unable to load variant analysis");
+      void showAndLogWarningMessage(
+        extLogger,
+        "Unable to load variant analysis",
+      );
       return;
     }
 

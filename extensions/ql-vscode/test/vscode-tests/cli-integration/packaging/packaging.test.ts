@@ -81,7 +81,7 @@ describe("Packaging commands", () => {
 
     expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalled();
     expect(
-      showAndLogExceptionWithTelemetrySpy.mock.calls[0][0].fullMessage,
+      showAndLogExceptionWithTelemetrySpy.mock.calls[0][1].fullMessage,
     ).toEqual("Unable to download all packs. See log for more details.");
   });
 

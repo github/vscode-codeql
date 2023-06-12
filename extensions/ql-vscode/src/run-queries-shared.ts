@@ -261,7 +261,7 @@ export class QueryEvaluationInfo extends QueryOutputDir {
   ): Promise<boolean> {
     const resultSet = await this.chooseResultSet(cliServer);
     if (!resultSet) {
-      void showAndLogWarningMessage("Query has no result set.");
+      void showAndLogWarningMessage(extLogger, "Query has no result set.");
       return false;
     }
     let stopDecoding = false;
@@ -659,6 +659,7 @@ async function generateHumanReadableLogSummary(
     return true;
   } catch (e) {
     void showAndLogWarningMessage(
+      extLogger,
       `Failed to generate human-readable structured evaluator log summary. Reason: ${getErrorMessage(
         e,
       )}`,
@@ -682,6 +683,7 @@ export async function logEndSummary(
     void logger.log(endSummaryContent);
   } catch (e) {
     void showAndLogWarningMessage(
+      extLogger,
       `Could not read structured evaluator log end of summary file at ${endSummary}.`,
     );
   }

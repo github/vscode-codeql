@@ -15,6 +15,7 @@ import { getErrorMessage } from "../pure/helpers-pure";
 import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
 import { showAndLogErrorMessage } from "../common/vscode/log";
 import { containsPath } from "../pure/files";
+import { extLogger } from "../common";
 
 const maxStep = 3;
 
@@ -85,6 +86,7 @@ async function pickExtensionPack(
       Object.entries(extensionPacksInfo).map(async ([name, paths]) => {
         if (paths.length !== 1) {
           void showAndLogErrorMessage(
+            extLogger,
             `Extension pack ${name} resolves to multiple paths`,
             {
               fullMessage: `Extension pack ${name} resolves to multiple paths: ${paths.join(
@@ -102,11 +104,15 @@ async function pickExtensionPack(
         try {
           extensionPack = await readExtensionPack(path);
         } catch (e: unknown) {
-          void showAndLogErrorMessage(`Could not read extension pack ${name}`, {
-            fullMessage: `Could not read extension pack ${name} at ${path}: ${getErrorMessage(
-              e,
-            )}`,
-          });
+          void showAndLogErrorMessage(
+            extLogger,
+            `Could not read extension pack ${name}`,
+            {
+              fullMessage: `Could not read extension pack ${name} at ${path}: ${getErrorMessage(
+                e,
+              )}`,
+            },
+          );
 
           return undefined;
         }

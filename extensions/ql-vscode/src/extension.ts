@@ -74,6 +74,7 @@ import {
   QuickEvalCodeLensProvider,
 } from "./local-queries";
 import {
+  BaseLogger,
   extLogger,
   ideServerLogger,
   ProgressReporter,
@@ -193,9 +194,10 @@ function getCommands(
             }
           },
         ]);
-        void showAndLogInformationMessage("CodeQL Query Server restarted.", {
-          outputLogger: queryServerLogger,
-        });
+        void showAndLogInformationMessage(
+          queryServerLogger,
+          "CodeQL Query Server restarted.",
+        );
       },
       {
         title: "Restarting Query Server",
@@ -215,7 +217,7 @@ function getCommands(
         extension?.packageJSON.version
       } \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${platform()} ${arch()}`;
       await env.clipboard.writeText(text);
-      void showAndLogInformationMessage(text);
+      void showAndLogInformationMessage(extLogger, text);
     },
     "codeQL.authenticateToGitHub": async () => {
       /**
@@ -225,6 +227,7 @@ function getCommands(
       const octokit = await app.credentials.getOctokit();
       const userInfo = await octokit.users.getAuthenticated();
       void showAndLogInformationMessage(
+        extLogger,
         `Authenticated to GitHub as user: ${userInfo.data.login}`,
       );
     },
@@ -341,6 +344,7 @@ export async function activate(
 
   registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
     void showAndLogErrorMessage(
+      extLogger,
       `Can't execute ${command}: waiting to finish loading CodeQL CLI.`,
     );
   });
@@ -428,6 +432,7 @@ export async function activate(
       }
 
       void showAndLogWarningMessage(
+        extLogger,
         `You are using an unsupported version of the CodeQL CLI (${ver}). ` +
           `The minimum supported version is ${CliVersionConstraint.OLDEST_SUPPORTED_CLI_VERSION}. ` +
           `Please upgrade to a newer version of the CodeQL CLI.`,
@@ -449,7 +454,7 @@ async function installOrUpdateDistributionWithProgressTitle(
   const minSecondsSinceLastUpdateCheck = config.isUserInitiated ? 0 : 86400;
   const noUpdatesLoggingFunc = config.shouldDisplayMessageWhenNoUpdates
     ? showAndLogInformationMessage
-    : async (message: string) => void extLogger.log(message);
+    : async (logger: BaseLogger, message: string) => void logger.log(message);
   const result =
     await distributionManager.checkForUpdatesToExtensionManagedDistribution(
       minSecondsSinceLastUpdateCheck,
@@ -467,10 +472,11 @@ async function installOrUpdateDistributionWithProgressTitle(
       );
       break;
     case DistributionUpdateCheckResultKind.AlreadyUpToDate:
-      await noUpdatesLoggingFunc("CodeQL CLI already up to date.");
+      await noUpdatesLoggingFunc(extLogger, "CodeQL CLI already up to date.");
       break;
     case DistributionUpdateCheckResultKind.InvalidLocation:
       await noUpdatesLoggingFunc(
+        extLogger,
         "CodeQL CLI is installed externally so could not be updated.",
       );
       break;
@@ -502,6 +508,7 @@ async function installOrUpdateDistributionWithProgressTitle(
 
         await ctx.globalState.update(shouldUpdateOnNextActivationKey, false);
         void showAndLogInformationMessage(
+          extLogger,
           `CodeQL CLI updated to version "${result.updatedRelease.name}".`,
         );
       }
@@ -556,6 +563,7 @@ async function installOrUpdateDistribution(
 
     if (e instanceof GithubRateLimitedError) {
       void alertFunction(
+        extLogger,
         `Rate limited while trying to ${taskDescription}. Please try again after ` +
           `your rate limit window resets at ${e.rateLimitResetDate.toLocaleString(
             env.language,
@@ -563,10 +571,11 @@ async function installOrUpdateDistribution(
       );
     } else if (e instanceof GithubApiError) {
       void alertFunction(
+        extLogger,
         `Encountered GitHub API error while trying to ${taskDescription}. ${e}`,
       );
     }
-    void alertFunction(`Unable to ${taskDescription}. ${e}`);
+    void alertFunction(extLogger, `Unable to ${taskDescription}. ${e}`);
   } finally {
     isInstallingOrUpdatingDistribution = false;
   }
@@ -598,6 +607,7 @@ async function getDistributionDisplayingDistributionWarnings(
       })();
 
       void showAndLogWarningMessage(
+        extLogger,
         `The current version of the CodeQL CLI (${result.version.raw}) ` +
           `is incompatible with this extension. ${fixGuidanceMessage}`,
       );
@@ -605,12 +615,16 @@ async function getDistributionDisplayingDistributionWarnings(
     }
     case FindDistributionResultKind.UnknownCompatibilityDistribution:
       void showAndLogWarningMessage(
+        extLogger,
         "Compatibility with the configured CodeQL CLI could not be determined. " +
           "You may experience problems using the extension.",
       );
       break;
     case FindDistributionResultKind.NoDistribution:
-      void showAndLogErrorMessage("The CodeQL CLI could not be found.");
+      void showAndLogErrorMessage(
+        extLogger,
+        "The CodeQL CLI could not be found.",
+      );
       break;
     default:
       assertNever(result);
@@ -652,14 +666,17 @@ async function installOrUpdateThenTryActivate(
 
   if (distributionResult.kind === FindDistributionResultKind.NoDistribution) {
     registerErrorStubs([checkForUpdatesCommand], (command) => async () => {
+      void extLogger.log(`Can't execute ${command}: missing CodeQL CLI.`);
+      const showLogName = "Show Log";
       const installActionName = "Install CodeQL CLI";
-      const chosenAction = await showAndLogErrorMessage(
+      const chosenAction = await Window.showErrorMessage(
         `Can't execute ${command}: missing CodeQL CLI.`,
-        {
-          items: [installActionName],
-        },
+        showLogName,
+        installActionName,
       );
-      if (chosenAction === installActionName) {
+      if (chosenAction === showLogName) {
+        extLogger.show();
+      } else if (chosenAction === installActionName) {
         await installOrUpdateThenTryActivate(
           ctx,
           app,
@@ -1116,6 +1133,7 @@ async function showResultsForComparison(
     await compareView.showResults(from, to);
   } catch (e) {
     void showAndLogExceptionWithTelemetry(
+      extLogger,
       redactableError(asError(e))`Failed to show results: ${getErrorMessage(
         e,
       )}`,
@@ -1141,7 +1159,7 @@ function addUnhandledRejectionListener() {
       )`Unhandled error: ${getErrorMessage(error)}`;
       // Add a catch so that showAndLogExceptionWithTelemetry fails, we avoid
       // triggering "unhandledRejection" and avoid an infinite loop
-      showAndLogExceptionWithTelemetry(message).catch(
+      showAndLogExceptionWithTelemetry(extLogger, message).catch(
         (telemetryError: unknown) => {
           void extLogger.log(
             `Failed to send error telemetry: ${getErrorMessage(
@@ -1250,6 +1268,7 @@ async function assertVSCodeVersionGreaterThan(
     const parsedMinVersion = parse(minVersion);
     if (!parsedVersion || !parsedMinVersion) {
       void showAndLogWarningMessage(
+        extLogger,
         `Could not do a version check of vscode because could not parse version number: actual vscode version ${vscodeVersion} or minimum supported vscode version ${minVersion}.`,
       );
       return;
@@ -1269,6 +1288,7 @@ async function assertVSCodeVersionGreaterThan(
     }
   } catch (e) {
     void showAndLogWarningMessage(
+      extLogger,
       `Could not do a version check because of an error: ${getErrorMessage(e)}`,
     );
   }

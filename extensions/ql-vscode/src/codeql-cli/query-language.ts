@@ -59,6 +59,7 @@ export async function askForLanguage(
       throw new UserCancellationException("Cancelled.");
     } else {
       void showAndLogErrorMessage(
+        extLogger,
         "Language not found. Language must be specified manually.",
       );
     }
@@ -67,6 +68,7 @@ export async function askForLanguage(
 
   if (!isQueryLanguage(language)) {
     void showAndLogErrorMessage(
+      extLogger,
       `Language '${language}' is not supported. Only languages ${Object.values(
         QueryLanguage,
       ).join(", ")} are supported.`,

@@ -8,6 +8,7 @@ import {
   getErrorStack,
 } from "../../pure/helpers-pure";
 import { showAndLogExceptionWithTelemetry } from "./log";
+import { extLogger } from "../logging";
 
 export async function tryOpenExternalFile(
   commandManager: AppCommandManager,
@@ -34,6 +35,7 @@ the file in the file explorer and dragging it into the workspace.`,
           await commandManager.execute("revealFileInOS", uri);
         } catch (e) {
           void showAndLogExceptionWithTelemetry(
+            extLogger,
             redactableError(
               asError(e),
             )`Failed to reveal file in OS: ${getErrorMessage(e)}`,
@@ -42,6 +44,7 @@ the file in the file explorer and dragging it into the workspace.`,
       }
     } else {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError(asError(e))`Could not open file ${fileLocation}`,
         {
           fullMessage: `${getErrorMessage(e)}\n${getErrorStack(e)}`,

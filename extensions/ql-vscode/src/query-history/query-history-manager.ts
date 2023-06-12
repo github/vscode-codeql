@@ -628,6 +628,7 @@ export class QueryHistoryManager extends DisposableObject {
       toItem = await this.findOtherQueryToCompare(fromItem, multiSelect);
     } catch (e) {
       void showAndLogErrorMessage(
+        extLogger,
         `Failed to compare queries: ${getErrorMessage(e)}`,
       );
     }
@@ -672,7 +673,7 @@ export class QueryHistoryManager extends DisposableObject {
         item.completedQuery.logFileLocation,
       );
     } else {
-      void showAndLogWarningMessage("No log file available");
+      void showAndLogWarningMessage(extLogger, "No log file available");
     }
   }
 
@@ -740,18 +741,21 @@ export class QueryHistoryManager extends DisposableObject {
 
   private warnNoEvalLogs() {
     void showAndLogWarningMessage(
+      extLogger,
       `Evaluator log, summary, and viewer are not available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`,
     );
   }
 
   private warnInProgressEvalLogSummary() {
     void showAndLogWarningMessage(
+      extLogger,
       'The evaluator log summary is still being generated for this run. Please try again later. The summary generation process is tracked in the "CodeQL Extension Log" view.',
     );
   }
 
   private warnInProgressEvalLogViewer() {
     void showAndLogWarningMessage(
+      extLogger,
       "The viewer's data is still being generated for this run. Please try again or re-run the query.",
     );
   }
@@ -868,6 +872,7 @@ export class QueryHistoryManager extends DisposableObject {
     } else {
       const label = this.labelProvider.getLabel(item);
       void showAndLogInformationMessage(
+        extLogger,
         `Query ${label} has no interpreted results.`,
       );
     }

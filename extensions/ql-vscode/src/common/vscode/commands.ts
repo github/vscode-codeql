@@ -54,9 +54,7 @@ export function registerCommandWithErrorHandling(
         if (e.silent) {
           void outputLogger.log(errorMessage.fullMessage);
         } else {
-          void showAndLogWarningMessage(errorMessage.fullMessage, {
-            outputLogger,
-          });
+          void showAndLogWarningMessage(outputLogger, errorMessage.fullMessage);
         }
       } else {
         // Include the full stack in the error log only.
@@ -64,8 +62,7 @@ export function registerCommandWithErrorHandling(
         const fullMessage = errorStack
           ? `${errorMessage.fullMessage}\n${errorStack}`
           : errorMessage.fullMessage;
-        void showAndLogExceptionWithTelemetry(errorMessage, {
-          outputLogger,
+        void showAndLogExceptionWithTelemetry(outputLogger, errorMessage, {
           fullMessage,
           extraTelemetryProperties: {
             command: commandId,

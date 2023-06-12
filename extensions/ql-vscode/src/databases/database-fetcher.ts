@@ -70,6 +70,7 @@ export async function promptImportInternetDatabase(
   if (item) {
     await commandManager.execute("codeQLDatabases.focus");
     void showAndLogInformationMessage(
+      extLogger,
       "Database downloaded and imported successfully.",
     );
   }
@@ -115,6 +116,7 @@ export async function promptImportGithubDatabase(
   if (databaseItem) {
     await commandManager.execute("codeQLDatabases.focus");
     void showAndLogInformationMessage(
+      extLogger,
       "Database downloaded and imported successfully.",
     );
     return databaseItem;
@@ -246,6 +248,7 @@ export async function importArchiveDatabase(
     if (item) {
       await commandManager.execute("codeQLDatabases.focus");
       void showAndLogInformationMessage(
+        extLogger,
         "Database unzipped and imported successfully.",
       );
     }

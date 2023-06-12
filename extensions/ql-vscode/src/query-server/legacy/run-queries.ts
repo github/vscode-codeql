@@ -321,6 +321,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
 ): Promise<CoreQueryResults> {
   if (extensionPacks !== undefined && extensionPacks.length > 0) {
     void showAndLogWarningMessage(
+      extLogger,
       "Legacy query server does not support extension packs.",
     );
   }
@@ -386,6 +387,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
     }
   } catch (e) {
     void showAndLogExceptionWithTelemetry(
+      extLogger,
       redactableError(
         asError(e),
       )`Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the query without any ML models: ${e}.`,
@@ -444,7 +446,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
           ? redactableError`${result.message}`
           : redactableError`Failed to run query`;
         void extLogger.log(error.fullMessage);
-        void showAndLogExceptionWithTelemetry(error);
+        void showAndLogExceptionWithTelemetry(extLogger, error);
       }
 
       return translateLegacyResult(result);

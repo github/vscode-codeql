@@ -256,6 +256,7 @@ export class VariantAnalysisManager
     await this.onVariantAnalysisSubmitted(processedVariantAnalysis);
 
     void showAndLogInformationMessage(
+      extLogger,
       `Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`,
     );
 
@@ -328,6 +329,7 @@ export class VariantAnalysisManager
   public async showView(variantAnalysisId: number): Promise<void> {
     if (!this.variantAnalyses.get(variantAnalysisId)) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError`No variant analysis found with id: ${variantAnalysisId}.`,
       );
     }
@@ -347,6 +349,7 @@ export class VariantAnalysisManager
     const variantAnalysis = await this.getVariantAnalysis(variantAnalysisId);
     if (!variantAnalysis) {
       void showAndLogWarningMessage(
+        extLogger,
         "Could not open variant analysis query text. Variant analysis not found.",
       );
       return;
@@ -367,6 +370,7 @@ export class VariantAnalysisManager
       await Window.showTextDocument(doc, { preview: false });
     } catch (error) {
       void showAndLogWarningMessage(
+        extLogger,
         "Could not open variant analysis query text. Failed to open text document.",
       );
     }
@@ -377,6 +381,7 @@ export class VariantAnalysisManager
 
     if (!variantAnalysis) {
       void showAndLogWarningMessage(
+        extLogger,
         "Could not open variant analysis query file",
       );
       return;
@@ -389,6 +394,7 @@ export class VariantAnalysisManager
       await Window.showTextDocument(textDocument, ViewColumn.One);
     } catch (error) {
       void showAndLogWarningMessage(
+        extLogger,
         `Could not open file: ${variantAnalysis.query.filePath}`,
       );
     }
@@ -701,6 +707,7 @@ export class VariantAnalysisManager
     }
 
     void showAndLogInformationMessage(
+      extLogger,
       "Cancelling variant analysis. This may take a while.",
     );
     await cancelVariantAnalysis(this.app.credentials, variantAnalysis);

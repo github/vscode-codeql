@@ -102,7 +102,7 @@ current library path (tried searching the following packs: ${joinedPacksToSearch
 Try upgrading the CodeQL libraries. If that doesn't work, then ${keyTypeName} queries are not yet available \
 for this language.`;
 
-  void showAndLogExceptionWithTelemetry(error);
+  void showAndLogExceptionWithTelemetry(extLogger, error);
   throw error;
 }
 

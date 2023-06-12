@@ -412,6 +412,7 @@ export class DatabaseManager extends DisposableObject {
       } catch (e) {
         // database list had an unexpected type - nothing to be done?
         void showAndLogExceptionWithTelemetry(
+          extLogger,
           redactableError(
             asError(e),
           )`Database list loading failed: ${getErrorMessage(e)}`,

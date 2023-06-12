@@ -98,7 +98,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
         if (lastErrorShown === errorMessage) {
           void extLogger.log(message);
         } else {
-          void showAndLogWarningMessage(message);
+          void showAndLogWarningMessage(extLogger, message);
           lastErrorShown = errorMessage;
         }
 
