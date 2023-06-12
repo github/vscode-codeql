@@ -72,15 +72,15 @@ export function pathsEqual(
 }
 
 /**
- * Returns true if path1 contains path2.
+ * Returns true if `parent` contains `child`.
  */
 export function containsPath(
-  path1: string,
-  path2: string,
+  parent: string,
+  child: string,
   platform: NodeJS.Platform,
 ): boolean {
-  return normalizePath(path2, platform).startsWith(
-    normalizePath(path1, platform),
+  return normalizePath(child, platform).startsWith(
+    normalizePath(parent, platform),
   );
 }
 
