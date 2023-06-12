@@ -10,7 +10,7 @@ import {
   zipArchiveScheme,
 } from "../../common/vscode/archive-filesystem-provider";
 import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
-import { isLikelyDatabaseRoot } from "../../helpers";
+import { isLikelyDatabaseRoot } from "./db-contents-heuristics";
 import { stat } from "fs-extra";
 import { pathsEqual } from "../../pure/files";
 import { DatabaseContents } from "./database-contents";

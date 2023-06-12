@@ -1,4 +1,4 @@
-import { pathExists, stat, readdir } from "fs-extra";
+import { pathExists, stat, readdir, opendir } from "fs-extra";
 import { isAbsolute, join, relative, resolve } from "path";
 
 /**
@@ -83,4 +83,27 @@ export function containsPath(parent: string, child: string): boolean {
 export async function readDirFullPaths(path: string): Promise<string[]> {
   const baseNames = await readdir(path);
   return baseNames.map((baseName) => join(path, baseName));
+}
+
+/**
+ * Recursively walk a directory and return the full path to all files found.
+ * Symbolic links are ignored.
+ *
+ * @param dir the directory to walk
+ *
+ * @return An iterator of the full path to all files recursively found in the directory.
+ */
+export async function* walkDirectory(
+  dir: string,
+): AsyncIterableIterator<string> {
+  const seenFiles = new Set<string>();
+  for await (const d of await opendir(dir)) {
+    const entry = join(dir, d.name);
+    seenFiles.add(entry);
+    if (d.isDirectory()) {
+      yield* walkDirectory(entry);
+    } else if (d.isFile()) {
+      yield entry;
+    }
+  }
 }

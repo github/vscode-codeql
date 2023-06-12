@@ -29,11 +29,13 @@ import {
   withProgress,
 } from "../common/vscode/progress";
 import {
-  isLikelyDatabaseRoot,
-  isLikelyDbLanguageFolder,
   showAndLogErrorMessage,
   showAndLogExceptionWithTelemetry,
 } from "../helpers";
+import {
+  isLikelyDatabaseRoot,
+  isLikelyDbLanguageFolder,
+} from "./local-databases/db-contents-heuristics";
 import { extLogger } from "../common";
 import {
   importArchiveDatabase,
