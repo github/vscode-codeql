@@ -16,10 +16,10 @@ import { DatabaseItemImpl } from "./database-item-impl";
 import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
-  isQueryLanguage,
   showAndLogExceptionWithTelemetry,
   showNeverAskAgainDialog,
 } from "../../helpers";
+import { isQueryLanguage } from "../../common/query-language";
 import { existsSync } from "fs";
 import { QlPackGenerator } from "../../qlpack-generator";
 import { asError, getErrorMessage } from "../../pure/helpers-pure";

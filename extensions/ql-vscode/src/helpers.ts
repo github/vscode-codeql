@@ -14,7 +14,7 @@ import { extLogger, OutputChannelLogger } from "./common";
 import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
-import { QueryLanguage } from "./common/query-language";
+import { isQueryLanguage, QueryLanguage } from "./common/query-language";
 import { isCodespacesTemplate } from "./config";
 import { AppCommandManager } from "./common/commands";
 
@@ -350,10 +350,6 @@ export async function prepareCodeTour(
       await commandManager.execute("vscode.openFolder", tutorialWorkspaceUri);
     }
   }
-}
-
-export function isQueryLanguage(language: string): language is QueryLanguage {
-  return Object.values(QueryLanguage).includes(language as QueryLanguage);
 }
 
 /**

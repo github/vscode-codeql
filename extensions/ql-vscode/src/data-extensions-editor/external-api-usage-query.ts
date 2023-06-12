@@ -4,10 +4,10 @@ import { writeFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
 import {
   getOnDiskWorkspaceFolders,
-  isQueryLanguage,
   showAndLogExceptionWithTelemetry,
 } from "../helpers";
 import { TeeLogger } from "../common";
+import { isQueryLanguage } from "../common/query-language";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseItem } from "../databases/local-databases";

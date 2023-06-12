@@ -35,3 +35,7 @@ export const dbSchemeToLanguage = {
   "ruby.dbscheme": "ruby",
   "swift.dbscheme": "swift",
 };
+
+export function isQueryLanguage(language: string): language is QueryLanguage {
+  return Object.values(QueryLanguage).includes(language as QueryLanguage);
+}
