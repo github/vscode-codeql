@@ -2,10 +2,10 @@ import { CancellationToken, Uri } from "vscode";
 import { CodeQLCliServer, TestCompleted } from "../codeql-cli/cli";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import {
-  getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../helpers";
+import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
 import { access } from "fs-extra";

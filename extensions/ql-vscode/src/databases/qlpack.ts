@@ -6,7 +6,7 @@ import { readFile } from "fs-extra";
 import { getQlPackPath } from "../pure/ql";
 import { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
 import { extLogger } from "../common";
-import { getOnDiskWorkspaceFolders } from "../helpers";
+import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 
 export interface QlPacksForLanguage {
   /** The name of the pack containing the dbscheme. */

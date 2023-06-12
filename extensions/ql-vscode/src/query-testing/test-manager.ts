@@ -23,7 +23,7 @@ import { BaseLogger, LogOptions } from "../common";
 import { TestRunner } from "./test-runner";
 import { TestManagerBase } from "./test-manager-base";
 import { App } from "../common/app";
-import { isWorkspaceFolderOnDisk } from "../helpers";
+import { isWorkspaceFolderOnDisk } from "../common/vscode/workspace-folders";
 import {
   FileTreeDirectory,
   FileTreeLeaf,

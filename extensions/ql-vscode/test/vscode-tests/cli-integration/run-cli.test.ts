@@ -7,7 +7,7 @@ import {
   QueryInfoByLanguage,
 } from "../../../src/codeql-cli/cli";
 import { itWithCodeQL } from "../cli";
-import { getOnDiskWorkspaceFolders } from "../../../src/helpers";
+import { getOnDiskWorkspaceFolders } from "../../../src/common/vscode/workspace-folders";
 import { KeyType, resolveQueries } from "../../../src/language-support";
 import { faker } from "@faker-js/faker";
 import { getActivatedExtension } from "../global.helper";

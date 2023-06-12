@@ -14,11 +14,13 @@ import { join } from "path";
 import { FullDatabaseOptions } from "./database-options";
 import { DatabaseItemImpl } from "./database-item-impl";
 import {
-  getFirstWorkspaceFolder,
-  isFolderAlreadyInWorkspace,
   showAndLogExceptionWithTelemetry,
   showNeverAskAgainDialog,
 } from "../../helpers";
+import {
+  getFirstWorkspaceFolder,
+  isFolderAlreadyInWorkspace,
+} from "../../common/vscode/workspace-folders";
 import { isQueryLanguage } from "../../common/query-language";
 import { existsSync } from "fs";
 import { QlPackGenerator } from "../../qlpack-generator";

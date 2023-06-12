@@ -4,6 +4,7 @@ import * as fs from "fs-extra";
 import { getErrorMessage } from "../../../../../src/pure/helpers-pure";
 
 import * as helpers from "../../../../../src/helpers";
+import * as workspaceFolders from "../../../../../src/common/vscode/workspace-folders";
 import * as qlpack from "../../../../../src/databases/qlpack";
 import {
   KeyType,
@@ -38,7 +39,9 @@ describe("queryResolver", () => {
       .spyOn(qlpack, "getPrimaryDbscheme")
       .mockResolvedValue("primaryDbscheme");
 
-    jest.spyOn(helpers, "getOnDiskWorkspaceFolders").mockReturnValue([]);
+    jest
+      .spyOn(workspaceFolders, "getOnDiskWorkspaceFolders")
+      .mockReturnValue([]);
     jest.spyOn(helpers, "showAndLogErrorMessage").mockResolvedValue(undefined);
   });
 
