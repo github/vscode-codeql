@@ -1,8 +1,11 @@
-import { Logger } from "../../src/common";
+import { NotificationLogger } from "../../src/common";
 
-export function createMockLogger(): Logger {
+export function createMockLogger(): NotificationLogger {
   return {
     log: jest.fn(() => Promise.resolve()),
     show: jest.fn(),
+    showErrorMessage: jest.fn(),
+    showWarningMessage: jest.fn(),
+    showInformationMessage: jest.fn(),
   };
 }
