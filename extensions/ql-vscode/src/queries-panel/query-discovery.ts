@@ -37,11 +37,8 @@ export interface QueryDiscoveryResults {
 /**
  * Discovers all query files contained in the QL packs in a given workspace folder.
  */
-export class QueryDiscovery
-  extends Discovery<QueryDiscoveryResults>
-  implements QueryDiscoverer
-{
-  private results: QueryDiscoveryResults | undefined;
+export class QueryDiscovery extends Discovery implements QueryDiscoverer {
+  private results: Array<FileTreeDirectory<string>> | undefined;
 
   private readonly onDidChangeQueriesEmitter: AppEventEmitter<void>;
   private readonly watcher: MultiFileSystemWatcher = this.push(
@@ -60,7 +57,7 @@ export class QueryDiscovery
   }
 
   public get queries(): Array<FileTreeDirectory<string>> | undefined {
-    return this.results?.queries;
+    return this.results;
   }
 
   /**
@@ -70,28 +67,13 @@ export class QueryDiscovery
     return this.onDidChangeQueriesEmitter.event;
   }
 
-  protected async discover(): Promise<QueryDiscoveryResults> {
+  protected async discover() {
     const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
-    if (workspaceFolders.length === 0) {
-      return {
-        queries: [],
-        watchPaths: [],
-      };
-    }
 
-    const queries = await this.discoverQueries(workspaceFolders);
-
-    return {
-      queries,
-      watchPaths: workspaceFolders.map((f) => f.uri),
-    };
-  }
-
-  protected update(results: QueryDiscoveryResults): void {
-    this.results = results;
+    this.results = await this.discoverQueries(workspaceFolders);
 
     this.watcher.clear();
-    for (const watchPath of results.watchPaths) {
+    for (const watchPath of workspaceFolders.map((f) => f.uri)) {
       // Watch for changes to any `.ql` file
       this.watcher.addWatch(new RelativePattern(watchPath, "**/*.{ql}"));
       // need to explicitly watch for changes to directories themselves.
