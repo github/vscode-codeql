@@ -183,14 +183,7 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    const truncatedRepositories = await this.dbManager.addNewRemoteRepo(
-      nwo,
-      parentList,
-    );
-
-    if (parentList) {
-      this.reportAnyTruncatedRepos(truncatedRepositories, parentList);
-    }
+    await this.dbManager.addNewRemoteRepo(nwo, parentList);
   }
 
   private async addNewRemoteOwner(): Promise<void> {
@@ -415,24 +408,9 @@ export class DbPanel extends DisposableObject {
 
         progress.report({ increment: 10, message: "Processing results..." });
 
-        const truncatedRepositories =
-          await this.dbManager.addNewRemoteReposToList(repositories, listName);
-        this.reportAnyTruncatedRepos(truncatedRepositories, listName);
+        await this.dbManager.addNewRemoteReposToList(repositories, listName);
       },
     );
-  }
-
-  private reportAnyTruncatedRepos(
-    truncatedRepositories: string[],
-    listName: string,
-  ) {
-    if (truncatedRepositories.length > 0) {
-      void showAndLogErrorMessage(
-        `Some repositories were not added to '${listName}' because a list can only have 1000 entries. Excluded repositories: ${truncatedRepositories.join(
-          ", ",
-        )}`,
-      );
-    }
   }
 
   private async onDidCollapseElement(
