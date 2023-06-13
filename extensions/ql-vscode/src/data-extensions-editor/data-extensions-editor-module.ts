@@ -9,7 +9,7 @@ import { join } from "path";
 import { App } from "../common/app";
 import { withProgress } from "../common/vscode/progress";
 import { pickExtensionPackModelFile } from "./extension-pack-picker";
-import { showAndLogErrorMessage } from "../common/vscode/log";
+import { showAndLogErrorMessage } from "../common/logging";
 import { extLogger } from "../common";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];

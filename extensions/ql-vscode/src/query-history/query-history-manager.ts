@@ -60,7 +60,7 @@ import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
-} from "../common/vscode/log";
+} from "../common/logging";
 
 /**
  * query-history-manager.ts

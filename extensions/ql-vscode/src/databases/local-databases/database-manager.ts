@@ -1,5 +1,6 @@
 import vscode, { ExtensionContext } from "vscode";
 import { extLogger, Logger } from "../../common";
+import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
 import { DisposableObject } from "../../pure/disposable-object";
 import { App } from "../../common/app";
 import { QueryRunner } from "../../query-server";
@@ -28,7 +29,6 @@ import { remove } from "fs-extra";
 import { containsPath } from "../../pure/files";
 import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
 import { DatabaseResolver } from "./database-resolver";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/log";
 
 /**
  * The name of the key in the workspaceState dictionary in which we

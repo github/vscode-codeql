@@ -1,6 +1,10 @@
 import { commands, Disposable } from "vscode";
 import { CommandFunction, CommandManager } from "../../packages/commands";
-import { extLogger, OutputChannelLogger } from "../logging";
+import {
+  extLogger,
+  OutputChannelLogger,
+  showAndLogWarningMessage,
+} from "../logging";
 import {
   asError,
   getErrorMessage,
@@ -9,10 +13,7 @@ import {
 import { redactableError } from "../../pure/errors";
 import { UserCancellationException } from "./progress";
 import { telemetryListener } from "../../telemetry";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogWarningMessage,
-} from "./log";
+import { showAndLogExceptionWithTelemetry } from "./logging";
 
 /**
  * Create a command manager for VSCode, wrapping registerCommandWithErrorHandling

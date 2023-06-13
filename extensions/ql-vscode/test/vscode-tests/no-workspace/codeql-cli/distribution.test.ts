@@ -1,7 +1,7 @@
 import * as fetch from "node-fetch";
 import { Range } from "semver";
 
-import * as log from "../../../../src/common/vscode/log";
+import * as log from "../../../../src/common/logging";
 import { extLogger } from "../../../../src/common";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -18,7 +18,7 @@ import {
 import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
-} from "../../../../src/common/vscode/log";
+} from "../../../../src/common/logging";
 
 jest.mock("os", () => {
   const original = jest.requireActual("os");

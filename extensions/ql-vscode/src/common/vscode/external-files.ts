@@ -7,8 +7,8 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "../../pure/helpers-pure";
-import { showAndLogExceptionWithTelemetry } from "./log";
 import { extLogger } from "../logging";
+import { showAndLogExceptionWithTelemetry } from "./logging";
 
 export async function tryOpenExternalFile(
   commandManager: AppCommandManager,

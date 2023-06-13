@@ -72,11 +72,11 @@ import {
 import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
 import { FetchError } from "node-fetch";
 import { extLogger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import {
-  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
-} from "../common/vscode/log";
+} from "../common/logging";
 
 const maxRetryCount = 3;
 

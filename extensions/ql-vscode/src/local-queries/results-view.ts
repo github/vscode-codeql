@@ -41,6 +41,7 @@ import {
   ParsedResultSets,
 } from "../pure/interface-types";
 import { extLogger, Logger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import {
   CompletedQueryInfo,
   interpretResultsSarif,
@@ -73,7 +74,6 @@ import { HistoryItemLabelProvider } from "../query-history/history-item-label-pr
 import { telemetryListener } from "../telemetry";
 import { redactableError } from "../pure/errors";
 import { ResultsViewCommands } from "../common/commands";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 
 /**
  * results-view.ts

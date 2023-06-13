@@ -1,36 +1,11 @@
-import { RedactableError } from "../../pure/errors";
-import { telemetryListener } from "../../telemetry";
-import { NotificationLogger } from "../logging";
+import { NotificationLogger } from "./notification-logger";
 
-interface ShowAndLogExceptionOptions extends ShowAndLogOptions {
-  /** Custom properties to include in the telemetry report. */
-  extraTelemetryProperties?: { [key: string]: string };
-}
-
-interface ShowAndLogOptions {
+export interface ShowAndLogOptions {
   /**
    * An alternate message that is added to the log, but not displayed in the popup.
    * This is useful for adding extra detail to the logs that would be too noisy for the popup.
    */
   fullMessage?: string;
-}
-
-/**
- * Show an error message, log it to the console, and emit redacted information as telemetry
- *
- * @param logger The logger that will receive the message.
- * @param error The error to show. Only redacted information will be included in the telemetry.
- * @param options See individual fields on `ShowAndLogExceptionOptions` type.
- *
- * @return A promise that resolves to the selected item or undefined when being dismissed.
- */
-export async function showAndLogExceptionWithTelemetry(
-  logger: NotificationLogger,
-  error: RedactableError,
-  options: ShowAndLogExceptionOptions = {},
-): Promise<void> {
-  telemetryListener?.sendError(error, options.extraTelemetryProperties);
-  return showAndLogErrorMessage(logger, error.fullMessage, options);
 }
 
 /**

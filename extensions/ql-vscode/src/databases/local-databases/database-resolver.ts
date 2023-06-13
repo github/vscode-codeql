@@ -11,7 +11,7 @@ import { encodeArchiveBasePath } from "../../common/vscode/archive-filesystem-pr
 import {
   showAndLogInformationMessage,
   showAndLogWarningMessage,
-} from "../../common/vscode/log";
+} from "../../common/logging";
 import { extLogger } from "../../common";
 
 export class DatabaseResolver {

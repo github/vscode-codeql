@@ -18,12 +18,12 @@ import {
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseItem } from "../../databases/local-databases";
 import { extLogger, TeeLogger } from "../../common";
+import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
 import { CancellationToken } from "vscode";
 import { ProgressCallback } from "../../common/vscode/progress";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { redactableError } from "../../pure/errors";
 import { QLPACK_FILENAMES } from "../../pure/ql";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/log";
 
 export async function qlpackOfDatabase(
   cli: Pick<CodeQLCliServer, "resolveQlpacks">,

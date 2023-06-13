@@ -37,7 +37,7 @@ import { getCodeSearchRepositories } from "../code-search-api";
 import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
-} from "../../common/vscode/log";
+} from "../../common/logging";
 import { extLogger } from "../../common";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {

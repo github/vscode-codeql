@@ -23,8 +23,8 @@ import {
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
-import * as log from "../../../../src/common/vscode/log";
-import { showAndLogWarningMessage } from "../../../../src/common/vscode/log";
+import * as log from "../../../../src/common/logging";
+import { showAndLogWarningMessage } from "../../../../src/common/logging";
 
 jest.setTimeout(60_000);
 

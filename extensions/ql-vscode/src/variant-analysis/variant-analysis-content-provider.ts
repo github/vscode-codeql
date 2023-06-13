@@ -2,7 +2,7 @@ import { TextDocumentContentProvider, Uri } from "vscode";
 import { URLSearchParams } from "url";
 import { SHOW_QUERY_TEXT_MSG } from "../query-history/query-history-manager";
 import { VariantAnalysisManager } from "./variant-analysis-manager";
-import { showAndLogWarningMessage } from "../common/vscode/log";
+import { showAndLogWarningMessage } from "../common/logging";
 import { extLogger } from "../common";
 
 export const createVariantAnalysisContentProvider = (

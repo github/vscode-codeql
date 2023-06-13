@@ -4,7 +4,7 @@ import { isQueryLanguage, QueryLanguage } from "../common/query-language";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { extLogger } from "../common";
 import { UserCancellationException } from "../common/vscode/progress";
-import { showAndLogErrorMessage } from "../common/vscode/log";
+import { showAndLogErrorMessage } from "../common/logging";
 
 /**
  * Finds the language that a query targets.

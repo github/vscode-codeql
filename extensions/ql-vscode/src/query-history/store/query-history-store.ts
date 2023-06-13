@@ -12,8 +12,8 @@ import { redactableError } from "../../pure/errors";
 import { QueryHistoryDto, QueryHistoryItemDto } from "./query-history-dto";
 import { mapQueryHistoryToDomainModel } from "./query-history-dto-mapper";
 import { mapQueryHistoryToDto } from "./query-history-domain-mapper";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/log";
 import { extLogger } from "../../common";
+import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
 
 const ALLOWED_QUERY_HISTORY_VERSIONS = [1, 2];
 

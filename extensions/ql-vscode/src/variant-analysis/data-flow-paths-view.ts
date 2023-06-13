@@ -11,8 +11,8 @@ import {
 } from "../pure/interface-types";
 import { DataFlowPaths } from "./shared/data-flow-paths";
 import { redactableError } from "../pure/errors";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 import { extLogger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 
 export class DataFlowPathsView extends AbstractWebview<
   ToDataFlowPathsMessage,

@@ -46,7 +46,7 @@ import { createMultiSelectionCommand } from "../common/vscode/selection-commands
 import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
-} from "../common/vscode/log";
+} from "../common/logging";
 import { findLanguage } from "../codeql-cli/query-language";
 
 interface DatabaseQuickPickItem extends QuickPickItem {

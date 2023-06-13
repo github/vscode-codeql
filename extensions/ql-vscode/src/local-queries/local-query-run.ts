@@ -1,4 +1,5 @@
 import { BaseLogger, extLogger, Logger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import { CoreQueryResults } from "../query-server";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
 import { DatabaseItem } from "../databases/local-databases";
@@ -16,10 +17,7 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryResultType } from "../pure/new-messages";
 import { redactableError } from "../pure/errors";
 import { LocalQueries } from "./local-queries";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogWarningMessage,
-} from "../common/vscode/log";
+import { showAndLogWarningMessage } from "../common/logging";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 
 function formatResultMessage(result: CoreQueryResults): string {

@@ -7,11 +7,11 @@ import {
   QlpacksInfo,
   ResolveExtensionsResult,
 } from "../../../../src/codeql-cli/cli";
-import * as log from "../../../../src/common/vscode/log";
+import * as log from "../../../../src/common/logging";
 
 import { pickExtensionPackModelFile } from "../../../../src/data-extensions-editor/extension-pack-picker";
 import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
-import { showAndLogErrorMessage } from "../../../../src/common/vscode/log";
+import { showAndLogErrorMessage } from "../../../../src/common/logging";
 
 describe("pickExtensionPackModelFile", () => {
   let tmpDir: string;

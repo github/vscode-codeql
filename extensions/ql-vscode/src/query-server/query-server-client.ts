@@ -19,7 +19,7 @@ import {
 import { ServerProcess } from "./server-process";
 import { App } from "../common/app";
 
-import { showAndLogErrorMessage } from "../common/vscode/log";
+import { showAndLogErrorMessage } from "../common/logging";
 
 type ServerOpts = {
   logger: Logger;

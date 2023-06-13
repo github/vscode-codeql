@@ -13,9 +13,8 @@ import { DatabaseItem } from "../databases/local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
-import { showAndLogErrorMessage } from "../common/vscode/log";
+import { showAndLogErrorMessage, extLogger } from "../common/logging";
 import { containsPath } from "../pure/files";
-import { extLogger } from "../common";
 
 const maxStep = 3;
 

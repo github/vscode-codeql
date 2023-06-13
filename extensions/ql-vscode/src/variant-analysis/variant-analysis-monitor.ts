@@ -15,7 +15,7 @@ import { sleep } from "../pure/time";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { App } from "../common/app";
 import { extLogger } from "../common";
-import { showAndLogWarningMessage } from "../common/vscode/log";
+import { showAndLogWarningMessage } from "../common/logging";
 
 export class VariantAnalysisMonitor extends DisposableObject {
   // With a sleep of 5 seconds, the maximum number of attempts takes

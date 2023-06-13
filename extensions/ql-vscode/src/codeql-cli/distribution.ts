@@ -25,7 +25,7 @@ import {
 import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
-} from "../common/vscode/log";
+} from "../common/logging";
 
 /**
  * distribution.ts

@@ -7,14 +7,12 @@ import {
   withProgress,
 } from "../common/vscode/progress";
 import { extLogger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import { asError, getErrorStack } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
 import { PACKS_BY_QUERY_LANGUAGE } from "../common/query-language";
 import { PackagingCommands } from "../common/commands";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogInformationMessage,
-} from "../common/vscode/log";
+import { showAndLogInformationMessage } from "../common/logging";
 
 type PackagingOptions = {
   cliServer: CodeQLCliServer;

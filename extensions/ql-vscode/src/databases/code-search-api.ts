@@ -3,7 +3,7 @@ import { throttling } from "@octokit/plugin-throttling";
 import { Octokit } from "@octokit/rest";
 import { Progress, CancellationToken } from "vscode";
 import { Credentials } from "../common/authentication";
-import { showAndLogWarningMessage } from "../common/vscode/log";
+import { showAndLogWarningMessage } from "../common/logging";
 import { extLogger } from "../common";
 
 export async function getCodeSearchRepositories(

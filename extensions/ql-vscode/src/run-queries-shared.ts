@@ -31,7 +31,7 @@ import { DecodedBqrsChunk, EntityValue } from "./pure/bqrs-cli-types";
 import { BaseLogger, extLogger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { getErrorMessage } from "./pure/helpers-pure";
-import { showAndLogWarningMessage } from "./common/vscode/log";
+import { showAndLogWarningMessage } from "./common/logging";
 
 /**
  * run-queries.ts

@@ -4,6 +4,7 @@ import { basename } from "path";
 import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { extLogger, TeeLogger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
@@ -17,7 +18,6 @@ import { file } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { qlpackOfDatabase } from "../language-support";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 
 type FlowModelOptions = {
   cliServer: CodeQLCliServer;

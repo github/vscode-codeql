@@ -3,8 +3,7 @@ import {
   TreeViewContextMultiSelectionCommandFunction,
   TreeViewContextSingleSelectionCommandFunction,
 } from "../commands";
-import { showAndLogErrorMessage } from "./log";
-import { extLogger } from "../logging";
+import { showAndLogErrorMessage, extLogger } from "../logging";
 
 // A hack to match types that are not an array, which is useful to help avoid
 // misusing createSingleSelectionCommand, e.g. where T accidentally gets instantiated

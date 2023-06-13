@@ -5,8 +5,8 @@ import { basename, join } from "path";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
 import { AppCommandManager, QueryEditorCommands } from "../common/commands";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 import { extLogger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 
 type QueryEditorOptions = {
   commandManager: AppCommandManager;
