@@ -14,7 +14,6 @@ import { DisposableObject } from "../pure/disposable-object";
 import { sleep } from "../pure/time";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { App } from "../common/app";
-import { extLogger } from "../common";
 import { showAndLogWarningMessage } from "../common/logging";
 
 export class VariantAnalysisMonitor extends DisposableObject {
@@ -47,7 +46,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
     variantAnalysis: VariantAnalysis,
   ): Promise<void> {
     if (this.monitoringVariantAnalyses.has(variantAnalysis.id)) {
-      void extLogger.log(
+      void this.app.logger.log(
         `Already monitoring variant analysis ${variantAnalysis.id}`,
       );
       return;
@@ -96,9 +95,9 @@ export class VariantAnalysisMonitor extends DisposableObject {
 
         // If we have already shown this error to the user, don't show it again.
         if (lastErrorShown === errorMessage) {
-          void extLogger.log(message);
+          void this.app.logger.log(message);
         } else {
-          void showAndLogWarningMessage(extLogger, message);
+          void showAndLogWarningMessage(this.app.logger, message);
           lastErrorShown = errorMessage;
         }
 
@@ -107,7 +106,7 @@ export class VariantAnalysisMonitor extends DisposableObject {
           // keep polling for the variant analysis if it no longer exists.
           // Therefore, this block is down here rather than at the top of the
           // catch block.
-          void extLogger.log(
+          void this.app.logger.log(
             `Variant analysis ${variantAnalysisLabel} no longer exists or is no longer accessible, stopping monitoring.`,
           );
           // Cancel monitoring on 404, as this probably means the user does not have access to it anymore

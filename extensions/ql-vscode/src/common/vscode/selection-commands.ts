@@ -3,7 +3,7 @@ import {
   TreeViewContextMultiSelectionCommandFunction,
   TreeViewContextSingleSelectionCommandFunction,
 } from "../commands";
-import { showAndLogErrorMessage, extLogger } from "../logging";
+import { showAndLogErrorMessage, NotificationLogger } from "../logging";
 
 // A hack to match types that are not an array, which is useful to help avoid
 // misusing createSingleSelectionCommand, e.g. where T accidentally gets instantiated
@@ -25,6 +25,7 @@ type SelectionCommand<T extends NotArray> = CreateSupertypeOf<
 >;
 
 export function createSingleSelectionCommand<T extends NotArray>(
+  logger: NotificationLogger,
   f: (argument: T) => Promise<void>,
   itemName: string,
 ): SelectionCommand<T> {
@@ -33,7 +34,7 @@ export function createSingleSelectionCommand<T extends NotArray>(
       return f(singleItem);
     } else {
       void showAndLogErrorMessage(
-        extLogger,
+        logger,
         `Please select a single ${itemName}.`,
       );
       return;

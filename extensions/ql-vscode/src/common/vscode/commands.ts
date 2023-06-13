@@ -2,7 +2,7 @@ import { commands, Disposable } from "vscode";
 import { CommandFunction, CommandManager } from "../../packages/commands";
 import {
   extLogger,
-  OutputChannelLogger,
+  NotificationLogger,
   showAndLogWarningMessage,
 } from "../logging";
 import {
@@ -21,9 +21,9 @@ import { showAndLogExceptionWithTelemetry } from "./logging";
  */
 export function createVSCodeCommandManager<
   Commands extends Record<string, CommandFunction>,
->(outputLogger?: OutputChannelLogger): CommandManager<Commands> {
+>(logger?: NotificationLogger): CommandManager<Commands> {
   return new CommandManager((commandId, task) => {
-    return registerCommandWithErrorHandling(commandId, task, outputLogger);
+    return registerCommandWithErrorHandling(commandId, task, logger);
   }, wrapExecuteCommand);
 }
 
@@ -33,11 +33,12 @@ export function createVSCodeCommandManager<
  * @param commandId The ID of the command to register.
  * @param task The task to run. It is passed directly to `commands.registerCommand`. Any
  * arguments to the command handler are passed on to the task.
+ * @param logger The logger to use for error reporting.
  */
 export function registerCommandWithErrorHandling(
   commandId: string,
   task: (...args: any[]) => Promise<any>,
-  outputLogger = extLogger,
+  logger: NotificationLogger = extLogger,
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
     const startTime = Date.now();
@@ -53,9 +54,9 @@ export function registerCommandWithErrorHandling(
       if (e instanceof UserCancellationException) {
         // User has cancelled this action manually
         if (e.silent) {
-          void outputLogger.log(errorMessage.fullMessage);
+          void logger.log(errorMessage.fullMessage);
         } else {
-          void showAndLogWarningMessage(outputLogger, errorMessage.fullMessage);
+          void showAndLogWarningMessage(logger, errorMessage.fullMessage);
         }
       } else {
         // Include the full stack in the error log only.
@@ -63,7 +64,7 @@ export function registerCommandWithErrorHandling(
         const fullMessage = errorStack
           ? `${errorMessage.fullMessage}\n${errorStack}`
           : errorMessage.fullMessage;
-        void showAndLogExceptionWithTelemetry(outputLogger, errorMessage, {
+        void showAndLogExceptionWithTelemetry(logger, errorMessage, {
           fullMessage,
           extraTelemetryProperties: {
             command: commandId,

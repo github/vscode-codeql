@@ -38,7 +38,6 @@ import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
 } from "../../common/logging";
-import { extLogger } from "../../common";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   remoteDatabaseKind: string;
@@ -176,7 +175,7 @@ export class DbPanel extends DisposableObject {
     const nwo = getNwoFromGitHubUrl(repoName) || repoName;
     if (!isValidGitHubNwo(nwo)) {
       void showAndLogErrorMessage(
-        extLogger,
+        this.app.logger,
         `Invalid GitHub repository: ${repoName}`,
       );
       return;
@@ -184,7 +183,7 @@ export class DbPanel extends DisposableObject {
 
     if (this.dbManager.doesRemoteRepoExist(nwo, parentList)) {
       void showAndLogErrorMessage(
-        extLogger,
+        this.app.logger,
         `The repository '${nwo}' already exists`,
       );
       return;
@@ -207,7 +206,7 @@ export class DbPanel extends DisposableObject {
     const owner = getOwnerFromGitHubUrl(ownerName) || ownerName;
     if (!isValidGitHubOwner(owner)) {
       void showAndLogErrorMessage(
-        extLogger,
+        this.app.logger,
         `Invalid user or organization: ${owner}`,
       );
       return;
@@ -215,7 +214,7 @@ export class DbPanel extends DisposableObject {
 
     if (this.dbManager.doesRemoteOwnerExist(owner)) {
       void showAndLogErrorMessage(
-        extLogger,
+        this.app.logger,
         `The owner '${owner}' already exists`,
       );
       return;
@@ -237,7 +236,7 @@ export class DbPanel extends DisposableObject {
 
     if (this.dbManager.doesListExist(listKind, listName)) {
       void showAndLogErrorMessage(
-        extLogger,
+        this.app.logger,
         `The list '${listName}' already exists`,
       );
       return;
@@ -304,7 +303,7 @@ export class DbPanel extends DisposableObject {
 
     if (this.dbManager.doesListExist(DbListKind.Local, newName)) {
       void showAndLogErrorMessage(
-        extLogger,
+        this.app.logger,
         `The list '${newName}' already exists`,
       );
       return;
@@ -323,7 +322,7 @@ export class DbPanel extends DisposableObject {
 
     if (this.dbManager.doesLocalDbExist(newName, dbItem.parentListName)) {
       void showAndLogErrorMessage(
-        extLogger,
+        this.app.logger,
         `The database '${newName}' already exists`,
       );
       return;
@@ -342,7 +341,7 @@ export class DbPanel extends DisposableObject {
 
     if (this.dbManager.doesListExist(DbListKind.Remote, newName)) {
       void showAndLogErrorMessage(
-        extLogger,
+        this.app.logger,
         `The list '${newName}' already exists`,
       );
       return;
@@ -424,10 +423,14 @@ export class DbPanel extends DisposableObject {
           progress,
           token,
           this.app.credentials,
+          this.app.logger,
         );
 
         token.onCancellationRequested(() => {
-          void showAndLogInformationMessage(extLogger, "Code search cancelled");
+          void showAndLogInformationMessage(
+            this.app.logger,
+            "Code search cancelled",
+          );
           return;
         });
 
@@ -496,7 +499,7 @@ export class DbPanel extends DisposableObject {
       }
 
       void showAndLogErrorMessage(
-        extLogger,
+        this.app.logger,
         `An error occurred while setting up the controller repository: ${getErrorMessage(
           e,
         )}`,

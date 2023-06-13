@@ -17,7 +17,6 @@ import {
   showBinaryChoiceDialog,
   showInformationMessageWithAction,
 } from "../common/vscode/dialog";
-import { extLogger } from "../common";
 import { URLSearchParams } from "url";
 import { DisposableObject } from "../pure/disposable-object";
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../pure/time";
@@ -238,6 +237,7 @@ export class QueryHistoryManager extends DisposableObject {
       "codeQLQueryHistory.sortByCount": this.handleSortByCount.bind(this),
 
       "codeQLQueryHistory.openQueryContextMenu": createSingleSelectionCommand(
+        this.app.logger,
         this.handleOpenQuery.bind(this),
         "query",
       ),
@@ -246,31 +246,38 @@ export class QueryHistoryManager extends DisposableObject {
       "codeQLQueryHistory.removeHistoryItemContextInline":
         createMultiSelectionCommand(this.handleRemoveHistoryItem.bind(this)),
       "codeQLQueryHistory.renameItem": createSingleSelectionCommand(
+        this.app.logger,
         this.handleRenameItem.bind(this),
         "query",
       ),
       "codeQLQueryHistory.compareWith": this.handleCompareWith.bind(this),
       "codeQLQueryHistory.showEvalLog": createSingleSelectionCommand(
+        this.app.logger,
         this.handleShowEvalLog.bind(this),
         "query",
       ),
       "codeQLQueryHistory.showEvalLogSummary": createSingleSelectionCommand(
+        this.app.logger,
         this.handleShowEvalLogSummary.bind(this),
         "query",
       ),
       "codeQLQueryHistory.showEvalLogViewer": createSingleSelectionCommand(
+        this.app.logger,
         this.handleShowEvalLogViewer.bind(this),
         "query",
       ),
       "codeQLQueryHistory.showQueryLog": createSingleSelectionCommand(
+        this.app.logger,
         this.handleShowQueryLog.bind(this),
         "query",
       ),
       "codeQLQueryHistory.showQueryText": createSingleSelectionCommand(
+        this.app.logger,
         this.handleShowQueryText.bind(this),
         "query",
       ),
       "codeQLQueryHistory.openQueryDirectory": createSingleSelectionCommand(
+        this.app.logger,
         this.handleOpenQueryDirectory.bind(this),
         "query",
       ),
@@ -278,34 +285,42 @@ export class QueryHistoryManager extends DisposableObject {
         this.handleCancel.bind(this),
       ),
       "codeQLQueryHistory.exportResults": createSingleSelectionCommand(
+        this.app.logger,
         this.handleExportResults.bind(this),
         "query",
       ),
       "codeQLQueryHistory.viewCsvResults": createSingleSelectionCommand(
+        this.app.logger,
         this.handleViewCsvResults.bind(this),
         "query",
       ),
       "codeQLQueryHistory.viewCsvAlerts": createSingleSelectionCommand(
+        this.app.logger,
         this.handleViewCsvAlerts.bind(this),
         "query",
       ),
       "codeQLQueryHistory.viewSarifAlerts": createSingleSelectionCommand(
+        this.app.logger,
         this.handleViewSarifAlerts.bind(this),
         "query",
       ),
       "codeQLQueryHistory.viewDil": createSingleSelectionCommand(
+        this.app.logger,
         this.handleViewDil.bind(this),
         "query",
       ),
       "codeQLQueryHistory.itemClicked": createSingleSelectionCommand(
+        this.app.logger,
         this.handleItemClicked.bind(this),
         "query",
       ),
       "codeQLQueryHistory.openOnGithub": createSingleSelectionCommand(
+        this.app.logger,
         this.handleOpenOnGithub.bind(this),
         "query",
       ),
       "codeQLQueryHistory.copyRepoList": createSingleSelectionCommand(
+        this.app.logger,
         this.handleCopyRepoList.bind(this),
         "query",
       ),
@@ -386,7 +401,7 @@ export class QueryHistoryManager extends DisposableObject {
             });
             await this.refreshTreeView();
           } else {
-            void extLogger.log(
+            void this.app.logger.log(
               "Variant analysis status update event received for unknown variant analysis",
             );
           }
@@ -417,7 +432,7 @@ export class QueryHistoryManager extends DisposableObject {
   }
 
   async readQueryHistory(): Promise<void> {
-    void extLogger.log(
+    void this.app.logger.log(
       `Reading cached query history from '${this.queryMetadataStorageLocation}'.`,
     );
     const history = await readQueryHistoryFromFile(
@@ -535,7 +550,7 @@ export class QueryHistoryManager extends DisposableObject {
     }
 
     this.treeDataProvider.remove(item);
-    void extLogger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
+    void this.app.logger.log(`Deleted ${this.labelProvider.getLabel(item)}.`);
 
     if (item.status === QueryStatus.InProgress) {
       await this.showToastWithWorkflowRunLink(item);
@@ -628,7 +643,7 @@ export class QueryHistoryManager extends DisposableObject {
       toItem = await this.findOtherQueryToCompare(fromItem, multiSelect);
     } catch (e) {
       void showAndLogErrorMessage(
-        extLogger,
+        this.app.logger,
         `Failed to compare queries: ${getErrorMessage(e)}`,
       );
     }
@@ -673,7 +688,7 @@ export class QueryHistoryManager extends DisposableObject {
         item.completedQuery.logFileLocation,
       );
     } else {
-      void showAndLogWarningMessage(extLogger, "No log file available");
+      void showAndLogWarningMessage(this.app.logger, "No log file available");
     }
   }
 
@@ -741,21 +756,21 @@ export class QueryHistoryManager extends DisposableObject {
 
   private warnNoEvalLogs() {
     void showAndLogWarningMessage(
-      extLogger,
+      this.app.logger,
       `Evaluator log, summary, and viewer are not available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`,
     );
   }
 
   private warnInProgressEvalLogSummary() {
     void showAndLogWarningMessage(
-      extLogger,
+      this.app.logger,
       'The evaluator log summary is still being generated for this run. Please try again later. The summary generation process is tracked in the "CodeQL Extension Log" view.',
     );
   }
 
   private warnInProgressEvalLogViewer() {
     void showAndLogWarningMessage(
-      extLogger,
+      this.app.logger,
       "The viewer's data is still being generated for this run. Please try again or re-run the query.",
     );
   }
@@ -872,7 +887,7 @@ export class QueryHistoryManager extends DisposableObject {
     } else {
       const label = this.labelProvider.getLabel(item);
       void showAndLogInformationMessage(
-        extLogger,
+        this.app.logger,
         `Query ${label} has no interpreted results.`,
       );
     }

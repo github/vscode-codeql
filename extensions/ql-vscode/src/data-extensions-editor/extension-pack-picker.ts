@@ -13,7 +13,7 @@ import { DatabaseItem } from "../databases/local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
-import { showAndLogErrorMessage, extLogger } from "../common/logging";
+import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
 import { containsPath } from "../pure/files";
 
 const maxStep = 3;
@@ -27,12 +27,14 @@ const packNameLength = 128;
 export async function pickExtensionPackModelFile(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveExtensions">,
   databaseItem: Pick<DatabaseItem, "name" | "language">,
+  logger: NotificationLogger,
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<ExtensionPackModelFile | undefined> {
   const extensionPack = await pickExtensionPack(
     cliServer,
     databaseItem,
+    logger,
     progress,
     token,
   );
@@ -60,6 +62,7 @@ export async function pickExtensionPackModelFile(
 async function pickExtensionPack(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
   databaseItem: Pick<DatabaseItem, "name" | "language">,
+  logger: NotificationLogger,
   progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<ExtensionPack | undefined> {
@@ -85,7 +88,7 @@ async function pickExtensionPack(
       Object.entries(extensionPacksInfo).map(async ([name, paths]) => {
         if (paths.length !== 1) {
           void showAndLogErrorMessage(
-            extLogger,
+            logger,
             `Extension pack ${name} resolves to multiple paths`,
             {
               fullMessage: `Extension pack ${name} resolves to multiple paths: ${paths.join(
@@ -104,7 +107,7 @@ async function pickExtensionPack(
           extensionPack = await readExtensionPack(path);
         } catch (e: unknown) {
           void showAndLogErrorMessage(
-            extLogger,
+            logger,
             `Could not read extension pack ${name}`,
             {
               fullMessage: `Could not read extension pack ${name} at ${path}: ${getErrorMessage(

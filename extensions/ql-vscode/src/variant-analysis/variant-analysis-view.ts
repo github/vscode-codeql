@@ -3,7 +3,6 @@ import {
   AbstractWebview,
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
-import { extLogger } from "../common";
 import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import {
   FromVariantAnalysisMessage,
@@ -164,7 +163,7 @@ export class VariantAnalysisView
         break;
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
-          extLogger,
+          this.app.logger,
           redactableError(
             msg.error,
           )`Unhandled error in variant analysis results view: ${msg.error.message}`,
@@ -178,7 +177,7 @@ export class VariantAnalysisView
   protected async onWebViewLoaded() {
     super.onWebViewLoaded();
 
-    void extLogger.log("Variant analysis view loaded");
+    void this.app.logger.log("Variant analysis view loaded");
 
     const variantAnalysis = await this.manager.getVariantAnalysis(
       this.variantAnalysisId,
@@ -186,7 +185,7 @@ export class VariantAnalysisView
 
     if (!variantAnalysis) {
       void showAndLogWarningMessage(
-        extLogger,
+        this.app.logger,
         "Unable to load variant analysis",
       );
       return;

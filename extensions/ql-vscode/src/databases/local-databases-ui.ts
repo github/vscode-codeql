@@ -32,7 +32,6 @@ import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
 } from "./local-databases/db-contents-heuristics";
-import { extLogger } from "../common";
 import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import {
   importArchiveDatabase,
@@ -251,6 +250,7 @@ export class DatabaseUI extends DisposableObject {
         this.handleUpgradeDatabase.bind(this),
       ),
       "codeQLDatabases.renameDatabase": createSingleSelectionCommand(
+        this.app.logger,
         this.handleRenameDatabase.bind(this),
         "database",
       ),
@@ -279,7 +279,7 @@ export class DatabaseUI extends DisposableObject {
       await this.chooseAndSetDatabase(true, { progress, token });
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
-        extLogger,
+        this.app.logger,
         redactableError(
           asError(e),
         )`Failed to choose and set database: ${getErrorMessage(e)}`,
@@ -372,14 +372,16 @@ export class DatabaseUI extends DisposableObject {
 
   // Public because it's used in tests
   public async handleRemoveOrphanedDatabases(): Promise<void> {
-    void extLogger.log("Removing orphaned databases from workspace storage.");
+    void this.app.logger.log(
+      "Removing orphaned databases from workspace storage.",
+    );
     let dbDirs = undefined;
 
     if (
       !(await pathExists(this.storagePath)) ||
       !(await stat(this.storagePath)).isDirectory()
     ) {
-      void extLogger.log(
+      void this.app.logger.log(
         "Missing or invalid storage directory. Not trying to remove orphaned databases.",
       );
       return;
@@ -404,7 +406,7 @@ export class DatabaseUI extends DisposableObject {
     dbDirs = await asyncFilter(dbDirs, isLikelyDatabaseRoot);
 
     if (!dbDirs.length) {
-      void extLogger.log("No orphaned databases found.");
+      void this.app.logger.log("No orphaned databases found.");
       return;
     }
 
@@ -413,11 +415,11 @@ export class DatabaseUI extends DisposableObject {
     await Promise.all(
       dbDirs.map(async (dbDir) => {
         try {
-          void extLogger.log(`Deleting orphaned database '${dbDir}'.`);
+          void this.app.logger.log(`Deleting orphaned database '${dbDir}'.`);
           await remove(dbDir);
         } catch (e) {
           void showAndLogExceptionWithTelemetry(
-            extLogger,
+            this.app.logger,
             redactableError(
               asError(e),
             )`Failed to delete orphaned database: ${getErrorMessage(e)}`,
@@ -430,7 +432,7 @@ export class DatabaseUI extends DisposableObject {
     if (failures.length) {
       const dirname = path_dirname(failures[0]);
       void showAndLogErrorMessage(
-        extLogger,
+        this.app.logger,
         `Failed to delete unused databases (${failures.join(
           ", ",
         )}).\nTo delete unused databases, please remove them manually from the storage folder ${dirname}.`,
@@ -446,7 +448,7 @@ export class DatabaseUI extends DisposableObject {
       await this.chooseAndSetDatabase(false, { progress, token });
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
-        extLogger,
+        this.app.logger,
         redactableError(
           asError(e),
         )`Failed to choose and set database: ${getErrorMessage(e)}`,

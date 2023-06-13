@@ -12,6 +12,7 @@ import * as log from "../../../../src/common/logging";
 import { pickExtensionPackModelFile } from "../../../../src/data-extensions-editor/extension-pack-picker";
 import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
 import { showAndLogErrorMessage } from "../../../../src/common/logging";
+import { createMockLogger } from "../../../__mocks__/loggerMock";
 
 describe("pickExtensionPackModelFile", () => {
   let tmpDir: string;
@@ -36,6 +37,8 @@ describe("pickExtensionPackModelFile", () => {
   let showAndLogErrorMessageSpy: jest.SpiedFunction<
     typeof showAndLogErrorMessage
   >;
+
+  const logger = createMockLogger();
 
   beforeEach(async () => {
     tmpDir = (
@@ -104,6 +107,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -178,6 +182,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -212,6 +217,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -240,6 +246,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -314,6 +321,7 @@ describe("pickExtensionPackModelFile", () => {
           ...databaseItem,
           language: "csharp",
         },
+        logger,
         progress,
         token,
       ),
@@ -374,6 +382,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -397,6 +406,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -426,6 +436,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -465,6 +476,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -501,6 +513,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -540,6 +553,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -588,6 +602,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -646,6 +661,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -707,6 +723,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -765,6 +782,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -788,6 +806,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -862,6 +881,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -946,6 +966,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -989,6 +1010,7 @@ describe("pickExtensionPackModelFile", () => {
           ...databaseItem,
           language: "csharp",
         },
+        logger,
         progress,
         token,
       ),

@@ -1,7 +1,7 @@
 import { join } from "path";
 import { CancellationToken, Uri, workspace, window as Window } from "vscode";
 import { CodeQLCliServer } from "./codeql-cli/cli";
-import { OutputChannelLogger } from "./common";
+import { BaseLogger } from "./common";
 import { Credentials } from "./common/authentication";
 import { QueryLanguage } from "./common/query-language";
 import {
@@ -49,7 +49,7 @@ export class SkeletonQueryWizard {
     private readonly cliServer: CodeQLCliServer,
     private readonly progress: ProgressCallback,
     private readonly credentials: Credentials | undefined,
-    private readonly extLogger: OutputChannelLogger,
+    private readonly logger: BaseLogger,
     private readonly databaseManager: DatabaseManager,
     private readonly token: CancellationToken,
     private readonly databaseStoragePath: string | undefined,
@@ -88,7 +88,7 @@ export class SkeletonQueryWizard {
     try {
       await this.openExampleFile();
     } catch (e: unknown) {
-      void this.extLogger.log(
+      void this.logger.log(
         `Could not open example query file: ${getErrorMessage(e)}`,
       );
     }
@@ -174,7 +174,7 @@ export class SkeletonQueryWizard {
 
       await qlPackGenerator.generate();
     } catch (e: unknown) {
-      void this.extLogger.log(
+      void this.logger.log(
         `Could not create skeleton QL pack: ${getErrorMessage(e)}`,
       );
     }
@@ -206,7 +206,7 @@ export class SkeletonQueryWizard {
       this.fileName = await this.determineNextFileName(this.folderName);
       await qlPackGenerator.createExampleQlFile(this.fileName);
     } catch (e: unknown) {
-      void this.extLogger.log(
+      void this.logger.log(
         `Could not create skeleton QL pack: ${getErrorMessage(e)}`,
       );
     }
