@@ -23,8 +23,8 @@ import {
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
-import * as log from "../../../../src/common/logging";
-import { showAndLogWarningMessage } from "../../../../src/common/logging";
+import { NotificationLogger } from "../../../../src/common/logging";
+import { createMockLogger } from "../../../__mocks__/loggerMock";
 
 jest.setTimeout(60_000);
 
@@ -39,16 +39,21 @@ describe("Variant Analysis Monitor", () => {
   const onVariantAnalysisChangeSpy = jest.fn();
   const mockEecuteCommand = jest.fn();
 
+  let logger: NotificationLogger;
+
   beforeEach(async () => {
     variantAnalysis = createMockVariantAnalysis({});
 
     shouldCancelMonitor = jest.fn();
+
+    logger = createMockLogger();
 
     variantAnalysisMonitor = new VariantAnalysisMonitor(
       createMockApp({
         commands: createMockCommandManager({
           executeCommand: mockEecuteCommand,
         }),
+        logger,
       }),
       shouldCancelMonitor,
     );
@@ -200,17 +205,9 @@ describe("Variant Analysis Monitor", () => {
     });
 
     describe("when some responses fail", () => {
-      let showAndLogWarningMessageSpy: jest.SpiedFunction<
-        typeof showAndLogWarningMessage
-      >;
-
       let scannedRepos: ApiVariantAnalysisScannedRepository[];
 
       beforeEach(async () => {
-        showAndLogWarningMessageSpy = jest
-          .spyOn(log, "showAndLogWarningMessage")
-          .mockResolvedValue(undefined);
-
         scannedRepos = createMockScannedRepos([
           "pending",
           "in_progress",
@@ -266,20 +263,20 @@ describe("Variant Analysis Monitor", () => {
       it("should only trigger the warning once per error", async () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
-        expect(showAndLogWarningMessageSpy).toBeCalledTimes(4);
-        expect(showAndLogWarningMessageSpy).toHaveBeenNthCalledWith(
+        expect(logger.showWarningMessage).toBeCalledTimes(4);
+        expect(logger.showWarningMessage).toHaveBeenNthCalledWith(
           1,
           expect.stringMatching(/No internet connection/),
         );
-        expect(showAndLogWarningMessageSpy).toHaveBeenNthCalledWith(
+        expect(logger.showWarningMessage).toHaveBeenNthCalledWith(
           2,
           expect.stringMatching(/My different error/),
         );
-        expect(showAndLogWarningMessageSpy).toHaveBeenNthCalledWith(
+        expect(logger.showWarningMessage).toHaveBeenNthCalledWith(
           3,
           expect.stringMatching(/My different error/),
         );
-        expect(showAndLogWarningMessageSpy).toHaveBeenNthCalledWith(
+        expect(logger.showWarningMessage).toHaveBeenNthCalledWith(
           4,
           expect.stringMatching(/Another different error/),
         );
@@ -301,15 +298,7 @@ describe("Variant Analysis Monitor", () => {
     });
 
     describe("when a 404 is returned", () => {
-      let showAndLogWarningMessageSpy: jest.SpiedFunction<
-        typeof showAndLogWarningMessage
-      >;
-
       beforeEach(async () => {
-        showAndLogWarningMessageSpy = jest
-          .spyOn(log, "showAndLogWarningMessage")
-          .mockResolvedValue(undefined);
-
         const scannedRepos = createMockScannedRepos([
           "pending",
           "in_progress",
@@ -342,8 +331,8 @@ describe("Variant Analysis Monitor", () => {
         await variantAnalysisMonitor.monitorVariantAnalysis(variantAnalysis);
 
         expect(mockGetVariantAnalysis).toHaveBeenCalledTimes(2);
-        expect(showAndLogWarningMessageSpy).toHaveBeenCalledTimes(1);
-        expect(showAndLogWarningMessageSpy).toHaveBeenCalledWith(
+        expect(logger.showWarningMessage).toHaveBeenCalledTimes(1);
+        expect(logger.showWarningMessage).toHaveBeenCalledWith(
           expect.stringMatching(/not found/i),
         );
       });

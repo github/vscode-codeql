@@ -4,7 +4,7 @@ import { join } from "path";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getErrorMessage } from "../../../../src/pure/helpers-pure";
 
-import * as log from "../../../../src/common/logging";
+import * as log from "../../../../src/common/logging/notifications";
 import * as vscodeLog from "../../../../src/common/vscode/logging";
 import {
   handleDownloadPacks,
@@ -53,6 +53,7 @@ describe("Packaging commands", () => {
     await handleDownloadPacks(cli, progress);
     expect(showAndLogExceptionWithTelemetrySpy).not.toHaveBeenCalled();
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
+      expect.anything(),
       expect.stringContaining("Finished downloading packs."),
     );
   });
@@ -66,6 +67,7 @@ describe("Packaging commands", () => {
     await handleDownloadPacks(cli, progress);
     expect(showAndLogExceptionWithTelemetrySpy).not.toHaveBeenCalled();
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
+      expect.anything(),
       expect.stringContaining("Finished downloading packs."),
     );
   });
@@ -97,6 +99,7 @@ describe("Packaging commands", () => {
 
     await handleInstallPackDependencies(cli, progress);
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
+      expect.anything(),
       expect.stringContaining("Finished installing pack dependencies."),
     );
   });

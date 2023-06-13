@@ -8,6 +8,7 @@ import { testCredentialsWithStub } from "../factories/authentication";
 import { Credentials } from "../../src/common/authentication";
 import { AppCommandManager } from "../../src/common/commands";
 import { createMockCommandManager } from "./commandsMock";
+import { NotificationLogger } from "../../src/common";
 
 export function createMockApp({
   extensionPath = "/mock/extension/path",
@@ -18,6 +19,7 @@ export function createMockApp({
   credentials = testCredentialsWithStub(),
   commands = createMockCommandManager(),
   environment = createMockEnvironmentContext(),
+  logger = createMockLogger(),
 }: {
   extensionPath?: string;
   workspaceStoragePath?: string;
@@ -27,10 +29,11 @@ export function createMockApp({
   credentials?: Credentials;
   commands?: AppCommandManager;
   environment?: EnvironmentContext;
+  logger?: NotificationLogger;
 }): App {
   return {
     mode: AppMode.Test,
-    logger: createMockLogger(),
+    logger,
     subscriptions: [],
     extensionPath,
     workspaceStoragePath,
