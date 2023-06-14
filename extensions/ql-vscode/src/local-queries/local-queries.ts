@@ -19,11 +19,11 @@ import { basename } from "path";
 import {
   createTimestampFile,
   findLanguage,
-  getOnDiskWorkspaceFolders,
   showAndLogErrorMessage,
   showAndLogWarningMessage,
-  showBinaryChoiceDialog,
 } from "../helpers";
+import { showBinaryChoiceDialog } from "../common/vscode/dialog";
+import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { displayQuickQuery } from "./quick-query";
 import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { QueryHistoryManager } from "../query-history/query-history-manager";

@@ -1,7 +1,7 @@
-import { ensureDirSync, pathExists, ensureDir, writeFile } from "fs-extra";
-import { join, dirname } from "path";
+import { ensureDirSync, ensureDir, writeFile } from "fs-extra";
+import { join } from "path";
 import { dirSync } from "tmp-promise";
-import { Uri, window as Window, workspace, env, WorkspaceFolder } from "vscode";
+import { Uri, window as Window } from "vscode";
 import { CodeQLCliServer } from "./codeql-cli/cli";
 import { UserCancellationException } from "./common/vscode/progress";
 import { extLogger, OutputChannelLogger } from "./common";
@@ -9,8 +9,7 @@ import { QueryMetadata } from "./pure/interface-types";
 import { telemetryListener } from "./telemetry";
 import { RedactableError } from "./pure/errors";
 import { isQueryLanguage, QueryLanguage } from "./common/query-language";
-import { isCodespacesTemplate } from "./config";
-import { AppCommandManager } from "./common/commands";
+import { getOnDiskWorkspaceFolders } from "./common/vscode/workspace-folders";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({
@@ -139,214 +138,6 @@ async function internalShowAndLog(
 }
 
 /**
- * Opens a modal dialog for the user to make a yes/no choice.
- *
- * @param message The message to show.
- * @param modal If true (the default), show a modal dialog box, otherwise dialog is non-modal and can
- *        be closed even if the user does not make a choice.
- * @param yesTitle The text in the box indicating the affirmative choice.
- * @param noTitle The text in the box indicating the negative choice.
- *
- * @return
- *  `true` if the user clicks 'Yes',
- *  `false` if the user clicks 'No' or cancels the dialog,
- *  `undefined` if the dialog is closed without the user making a choice.
- */
-export async function showBinaryChoiceDialog(
-  message: string,
-  modal = true,
-  yesTitle = "Yes",
-  noTitle = "No",
-): Promise<boolean | undefined> {
-  const yesItem = { title: yesTitle, isCloseAffordance: false };
-  const noItem = { title: noTitle, isCloseAffordance: true };
-  const chosenItem = await Window.showInformationMessage(
-    message,
-    { modal },
-    yesItem,
-    noItem,
-  );
-  if (!chosenItem) {
-    return undefined;
-  }
-  return chosenItem?.title === yesItem.title;
-}
-
-/**
- * Opens a modal dialog for the user to make a yes/no choice.
- *
- * @param message The message to show.
- * @param modal If true (the default), show a modal dialog box, otherwise dialog is non-modal and can
- *        be closed even if the user does not make a choice.
- *
- * @return
- *  `true` if the user clicks 'Yes',
- *  `false` if the user clicks 'No' or cancels the dialog,
- *  `undefined` if the dialog is closed without the user making a choice.
- */
-export async function showBinaryChoiceWithUrlDialog(
-  message: string,
-  url: string,
-): Promise<boolean | undefined> {
-  const urlItem = { title: "More Information", isCloseAffordance: false };
-  const yesItem = { title: "Yes", isCloseAffordance: false };
-  const noItem = { title: "No", isCloseAffordance: true };
-  let chosenItem;
-
-  // Keep the dialog open as long as the user is clicking the 'more information' option.
-  // To prevent an infinite loop, if the user clicks 'more information' 5 times, close the dialog and return cancelled
-  let count = 0;
-  do {
-    chosenItem = await Window.showInformationMessage(
-      message,
-      { modal: true },
-      urlItem,
-      yesItem,
-      noItem,
-    );
-    if (chosenItem === urlItem) {
-      await env.openExternal(Uri.parse(url, true));
-    }
-    count++;
-  } while (chosenItem === urlItem && count < 5);
-
-  if (!chosenItem || chosenItem.title === urlItem.title) {
-    return undefined;
-  }
-  return chosenItem.title === yesItem.title;
-}
-
-/**
- * Show an information message with a customisable action.
- * @param message The message to show.
- * @param actionMessage The call to action message.
- *
- * @return `true` if the user clicks the action, `false` if the user cancels the dialog.
- */
-export async function showInformationMessageWithAction(
-  message: string,
-  actionMessage: string,
-): Promise<boolean> {
-  const actionItem = { title: actionMessage, isCloseAffordance: false };
-  const chosenItem = await Window.showInformationMessage(message, actionItem);
-  return chosenItem === actionItem;
-}
-
-/** Returns true if the specified workspace folder is on the file system. */
-export function isWorkspaceFolderOnDisk(
-  workspaceFolder: WorkspaceFolder,
-): boolean {
-  return workspaceFolder.uri.scheme === "file";
-}
-
-/**
- * Opens a modal dialog for the user to make a choice between yes/no/never be asked again.
- *
- * @param message The message to show.
- * @param modal If true (the default), show a modal dialog box, otherwise dialog is non-modal and can
- *        be closed even if the user does not make a choice.
- * @param yesTitle The text in the box indicating the affirmative choice.
- * @param noTitle The text in the box indicating the negative choice.
- * @param neverTitle The text in the box indicating the opt out choice.
- *
- * @return
- *  `Yes` if the user clicks 'Yes',
- *  `No` if the user clicks 'No' or cancels the dialog,
- *  `No, and never ask me again` if the user clicks 'No, and never ask me again',
- *  `undefined` if the dialog is closed without the user making a choice.
- */
-export async function showNeverAskAgainDialog(
-  message: string,
-  modal = true,
-  yesTitle = "Yes",
-  noTitle = "No",
-  neverAskAgainTitle = "No, and never ask me again",
-): Promise<string | undefined> {
-  const yesItem = { title: yesTitle, isCloseAffordance: true };
-  const noItem = { title: noTitle, isCloseAffordance: false };
-  const neverAskAgainItem = {
-    title: neverAskAgainTitle,
-    isCloseAffordance: false,
-  };
-  const chosenItem = await Window.showInformationMessage(
-    message,
-    { modal },
-    yesItem,
-    noItem,
-    neverAskAgainItem,
-  );
-
-  return chosenItem?.title;
-}
-
-/** Gets all active workspace folders that are on the filesystem. */
-export function getOnDiskWorkspaceFoldersObjects() {
-  const workspaceFolders = workspace.workspaceFolders ?? [];
-  return workspaceFolders.filter(isWorkspaceFolderOnDisk);
-}
-
-/** Gets all active workspace folders that are on the filesystem. */
-export function getOnDiskWorkspaceFolders() {
-  return getOnDiskWorkspaceFoldersObjects().map((folder) => folder.uri.fsPath);
-}
-
-/** Check if folder is already present in workspace */
-export function isFolderAlreadyInWorkspace(folderName: string) {
-  const workspaceFolders = workspace.workspaceFolders || [];
-
-  return !!workspaceFolders.find(
-    (workspaceFolder) => workspaceFolder.name === folderName,
-  );
-}
-
-/** Check if the current workspace is the CodeTour and open the workspace folder.
- * Without this, we can't run the code tour correctly.
- **/
-export async function prepareCodeTour(
-  commandManager: AppCommandManager,
-): Promise<void> {
-  if (workspace.workspaceFolders?.length) {
-    const currentFolder = workspace.workspaceFolders[0].uri.fsPath;
-
-    const tutorialWorkspacePath = join(
-      currentFolder,
-      "tutorial.code-workspace",
-    );
-    const toursFolderPath = join(currentFolder, ".tours");
-
-    /** We're opening the tutorial workspace, if we detect it.
-     * This will only happen if the following three conditions are met:
-     * - the .tours folder exists
-     * - the tutorial.code-workspace file exists
-     * - the CODESPACES_TEMPLATE setting doesn't exist (it's only set if the user has already opened
-     * the tutorial workspace so it's a good indicator that the user is in the folder but has ignored
-     * the prompt to open the workspace)
-     */
-    if (
-      (await pathExists(tutorialWorkspacePath)) &&
-      (await pathExists(toursFolderPath)) &&
-      !isCodespacesTemplate()
-    ) {
-      const answer = await showBinaryChoiceDialog(
-        "We've detected you're in the CodeQL Tour repo. We will need to open the workspace file to continue. Reload?",
-      );
-
-      if (!answer) {
-        return;
-      }
-
-      const tutorialWorkspaceUri = Uri.file(tutorialWorkspacePath);
-
-      void extLogger.log(
-        `In prepareCodeTour() method, going to open the tutorial workspace file: ${tutorialWorkspacePath}`,
-      );
-
-      await commandManager.execute("vscode.openFolder", tutorialWorkspaceUri);
-    }
-  }
-}
-
-/**
  * Finds the language that a query targets.
  * If it can't be autodetected, prompt the user to specify the language manually.
  */
@@ -447,40 +238,4 @@ export async function createTimestampFile(storagePath: string) {
   const timestampPath = join(storagePath, "timestamp");
   await ensureDir(storagePath);
   await writeFile(timestampPath, Date.now().toString(), "utf8");
-}
-
-/**
- * Returns the path of the first folder in the workspace.
- * This is used to decide where to create skeleton QL packs.
- *
- * If the first folder is a QL pack, then the parent folder is returned.
- * This is because the vscode-codeql-starter repo contains a ql pack in
- * the first folder.
- *
- * This is a temporary workaround until we can retire the
- * vscode-codeql-starter repo.
- */
-
-export function getFirstWorkspaceFolder() {
-  const workspaceFolders = getOnDiskWorkspaceFolders();
-
-  if (!workspaceFolders || workspaceFolders.length === 0) {
-    throw new Error("No workspace folders found");
-  }
-
-  const firstFolderFsPath = workspaceFolders[0];
-
-  // For the vscode-codeql-starter repo, the first folder will be a ql pack
-  // so we need to get the parent folder
-  if (
-    firstFolderFsPath.includes(
-      join("vscode-codeql-starter", "codeql-custom-queries"),
-    )
-  ) {
-    // return the parent folder
-    return dirname(firstFolderFsPath);
-  } else {
-    // if the first folder is not a ql pack, then we are in a normal workspace
-    return firstFolderFsPath;
-  }
 }

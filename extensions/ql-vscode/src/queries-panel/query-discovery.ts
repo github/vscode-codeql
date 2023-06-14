@@ -12,7 +12,7 @@ import {
 import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
 import { EnvironmentContext } from "../common/app";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
-import { getOnDiskWorkspaceFoldersObjects } from "../helpers";
+import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
 import { AppEventEmitter } from "../common/events";
 import { QueryDiscoverer } from "./query-tree-data-provider";
 import { extLogger } from "../common";

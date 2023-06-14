@@ -4,11 +4,11 @@ import { CodeQLCliServer } from "./codeql-cli/cli";
 import { OutputChannelLogger } from "./common";
 import { Credentials } from "./common/authentication";
 import { QueryLanguage } from "./common/query-language";
+import { askForLanguage } from "./helpers";
 import {
-  askForLanguage,
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
-} from "./helpers";
+} from "./common/vscode/workspace-folders";
 import { getErrorMessage } from "./pure/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "./databases/local-databases";

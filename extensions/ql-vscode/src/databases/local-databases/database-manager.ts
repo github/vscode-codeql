@@ -13,12 +13,12 @@ import {
 import { join } from "path";
 import { FullDatabaseOptions } from "./database-options";
 import { DatabaseItemImpl } from "./database-item-impl";
+import { showAndLogExceptionWithTelemetry } from "../../helpers";
+import { showNeverAskAgainDialog } from "../../common/vscode/dialog";
 import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
-  showAndLogExceptionWithTelemetry,
-  showNeverAskAgainDialog,
-} from "../../helpers";
+} from "../../common/vscode/workspace-folders";
 import { isQueryLanguage } from "../../common/query-language";
 import { existsSync } from "fs";
 import { QlPackGenerator } from "../../qlpack-generator";

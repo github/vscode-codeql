@@ -2,10 +2,8 @@ import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { dir } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
-import {
-  getOnDiskWorkspaceFolders,
-  showAndLogExceptionWithTelemetry,
-} from "../helpers";
+import { showAndLogExceptionWithTelemetry } from "../helpers";
+import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { TeeLogger } from "../common";
 import { isQueryLanguage } from "../common/query-language";
 import { CancellationToken } from "vscode";

@@ -20,7 +20,7 @@ import { join } from "path";
 import { writeFile } from "fs-extra";
 import { expect } from "@jest/globals";
 import { AppCommandManager } from "../../../../src/common/commands";
-import { getOnDiskWorkspaceFolders } from "../../../../src/helpers";
+import { getOnDiskWorkspaceFolders } from "../../../../src/common/vscode/workspace-folders";
 
 type Resolver<T> = (value: T) => void;
 

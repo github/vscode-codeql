@@ -1,9 +1,9 @@
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import {
-  getOnDiskWorkspaceFolders,
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
 } from "../helpers";
+import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { QuickPickItem, window } from "vscode";
 import {
   ProgressCallback,

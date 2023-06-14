@@ -4,11 +4,11 @@ import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { minimatch } from "minimatch";
 import { CancellationToken, window } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
+import { showAndLogErrorMessage } from "../helpers";
 import {
   getOnDiskWorkspaceFolders,
   getOnDiskWorkspaceFoldersObjects,
-  showAndLogErrorMessage,
-} from "../helpers";
+} from "../common/vscode/workspace-folders";
 import { ProgressCallback } from "../common/vscode/progress";
 import { DatabaseItem } from "../databases/local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";

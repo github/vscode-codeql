@@ -17,9 +17,11 @@ import {
   showAndLogErrorMessage,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
+} from "../helpers";
+import {
   showBinaryChoiceDialog,
   showInformationMessageWithAction,
-} from "../helpers";
+} from "../common/vscode/dialog";
 import { extLogger } from "../common";
 import { URLSearchParams } from "url";
 import { DisposableObject } from "../pure/disposable-object";

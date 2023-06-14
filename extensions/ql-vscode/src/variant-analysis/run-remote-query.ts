@@ -6,10 +6,10 @@ import { dir, tmpName } from "tmp-promise";
 import {
   askForLanguage,
   findLanguage,
-  getOnDiskWorkspaceFolders,
   tryGetQueryMetadata,
   tmpDir,
 } from "../helpers";
+import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { Credentials } from "../common/authentication";
 import * as cli from "../codeql-cli/cli";
 import { extLogger } from "../common";

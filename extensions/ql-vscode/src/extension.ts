@@ -60,12 +60,14 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
-  showBinaryChoiceDialog,
-  showInformationMessageWithAction,
   tmpDir,
   tmpDirDisposal,
-  prepareCodeTour,
 } from "./helpers";
+import { prepareCodeTour } from "./code-tour";
+import {
+  showBinaryChoiceDialog,
+  showInformationMessageWithAction,
+} from "./common/vscode/dialog";
 import {
   asError,
   assertNever,

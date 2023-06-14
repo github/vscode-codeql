@@ -1,9 +1,6 @@
 import * as vscode from "vscode";
-import {
-  getOnDiskWorkspaceFolders,
-  showAndLogExceptionWithTelemetry,
-  tmpDir,
-} from "../../helpers";
+import { showAndLogExceptionWithTelemetry, tmpDir } from "../../helpers";
+import { getOnDiskWorkspaceFolders } from "../../common/vscode/workspace-folders";
 import {
   ProgressCallback,
   UserCancellationException,

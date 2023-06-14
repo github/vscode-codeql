@@ -3,10 +3,8 @@ import { dump } from "js-yaml";
 import { file } from "tmp-promise";
 import { basename, dirname, resolve } from "path";
 
-import {
-  getOnDiskWorkspaceFolders,
-  showAndLogExceptionWithTelemetry,
-} from "../../helpers";
+import { showAndLogExceptionWithTelemetry } from "../../helpers";
+import { getOnDiskWorkspaceFolders } from "../../common/vscode/workspace-folders";
 import {
   getPrimaryDbscheme,
   getQlPackForDbscheme,
