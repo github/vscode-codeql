@@ -1,6 +1,6 @@
 import { Selection, window, workspace } from "vscode";
 import { join, basename } from "path";
-import { tmpDir } from "../../../src/helpers";
+import { tmpDir } from "../../../src/tmp-dir";
 import { readFile, writeFile, ensureDir, copy } from "fs-extra";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
 import { AllCommands } from "../../../src/common/commands";

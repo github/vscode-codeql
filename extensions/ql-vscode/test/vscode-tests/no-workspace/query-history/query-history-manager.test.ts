@@ -6,7 +6,7 @@ import { QueryHistoryManager } from "../../../../src/query-history/query-history
 import { QueryHistoryConfigListener } from "../../../../src/config";
 import { LocalQueryInfo } from "../../../../src/query-results";
 import { DatabaseManager } from "../../../../src/databases/local-databases";
-import { tmpDir } from "../../../../src/helpers";
+import { tmpDir } from "../../../../src/tmp-dir";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { ResultsView, WebviewReveal } from "../../../../src/local-queries";
 import { EvalLogViewer } from "../../../../src/query-evaluation-logging";

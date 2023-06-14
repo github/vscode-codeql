@@ -33,7 +33,7 @@ import {
   createMockScannedRepo,
   createMockScannedRepos,
 } from "../../../factories/variant-analysis/shared/scanned-repositories";
-import { createTimestampFile } from "../../../../src/helpers";
+import { createTimestampFile } from "../../../../src/run-queries-shared";
 import { createMockVariantAnalysisRepoTask } from "../../../factories/variant-analysis/gh-api/variant-analysis-repo-task";
 import { VariantAnalysisRepoTask } from "../../../../src/variant-analysis/gh-api/variant-analysis";
 import { SortKey } from "../../../../src/pure/variant-analysis-filter-sort";

@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { tmpDir } from "../../helpers";
+import { tmpDir } from "../../tmp-dir";
 import { getOnDiskWorkspaceFolders } from "../../common/vscode/workspace-folders";
 import {
   ProgressCallback,

@@ -1,5 +1,5 @@
 import * as tmp from "tmp-promise";
-import { basename } from "path";
+import { basename, join } from "path";
 import { CancellationToken, Uri } from "vscode";
 import { LSPErrorCodes, ResponseError } from "vscode-languageclient";
 
@@ -9,7 +9,7 @@ import {
   DatabaseItem,
   DatabaseResolver,
 } from "../../databases/local-databases";
-import { upgradesTmpDir } from "../../helpers";
+import { tmpDir } from "../../tmp-dir";
 import { ProgressCallback } from "../../common/vscode/progress";
 import { QueryMetadata } from "../../pure/interface-types";
 import { extLogger, Logger } from "../../common";
@@ -26,6 +26,10 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../../common/vscode/log";
+import { ensureDirSync } from "fs-extra";
+
+const upgradesTmpDir = join(tmpDir.name, "upgrades");
+ensureDirSync(upgradesTmpDir);
 
 export async function compileQuery(
   qs: qsClient.QueryServerClient,

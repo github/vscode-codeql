@@ -10,7 +10,7 @@ import {
 import { join } from "path";
 
 import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
-import { tmpDir } from "../../helpers";
+import { tmpDir } from "../../tmp-dir";
 import { getHtmlForWebview, WebviewMessage, WebviewView } from "./webview-html";
 
 export type WebviewPanelConfig = {

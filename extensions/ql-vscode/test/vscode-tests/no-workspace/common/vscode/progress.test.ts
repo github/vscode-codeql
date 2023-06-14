@@ -1,4 +1,4 @@
-import { reportStreamProgress } from "../../../src/common/vscode/progress";
+import { reportStreamProgress } from "../../../../../src/common/vscode/progress";
 
 describe("helpers", () => {
   it("should report stream progress", () => {
