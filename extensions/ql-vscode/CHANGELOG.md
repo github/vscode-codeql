@@ -1,6 +1,6 @@
 # CodeQL for Visual Studio Code: Changelog
 
-## [UNRELEASED]
+## 1.8.6 - 14 June 2023
 
 - Add repositories to a variant analysis list with GitHub Code Search. [#2439](https://github.com/github/vscode-codeql/pull/2439) and [#2476](https://github.com/github/vscode-codeql/pull/2476)
 
