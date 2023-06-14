@@ -2,7 +2,6 @@ import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { dir } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
-import { showAndLogExceptionWithTelemetry } from "../helpers";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { TeeLogger } from "../common";
 import { isQueryLanguage } from "../common/query-language";
@@ -14,6 +13,7 @@ import { fetchExternalApiQueries } from "./queries";
 import { QueryResultType } from "../pure/new-messages";
 import { join } from "path";
 import { redactableError } from "../pure/errors";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 
 export type RunQueryOptions = {
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">;

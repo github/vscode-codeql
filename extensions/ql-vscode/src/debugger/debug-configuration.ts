@@ -4,12 +4,12 @@ import {
   DebugConfigurationProvider,
   WorkspaceFolder,
 } from "vscode";
-import { showAndLogErrorMessage } from "../helpers";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { LocalQueries } from "../local-queries";
 import { getQuickEvalContext, validateQueryPath } from "../run-queries-shared";
 import * as CodeQLProtocol from "./debug-protocol";
 import { getErrorMessage } from "../pure/helpers-pure";
+import { showAndLogErrorMessage } from "../common/vscode/log";
 
 /**
  * The CodeQL launch arguments, as specified in "launch.json".

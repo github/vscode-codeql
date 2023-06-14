@@ -11,8 +11,9 @@ import { readdir, readFile } from "fs-extra";
 import { load } from "js-yaml";
 import { dirname, join } from "path";
 import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries";
-import * as helpers from "../../../../src/helpers";
+import * as log from "../../../../src/common/vscode/log";
 import { RedactableError } from "../../../../src/pure/errors";
+import { showAndLogExceptionWithTelemetry } from "../../../../src/common/vscode/log";
 
 function createMockUri(path = "/a/b/c/foo"): Uri {
   return {
@@ -134,12 +135,12 @@ describe("readQueryResults", () => {
   };
 
   let showAndLogExceptionWithTelemetrySpy: jest.SpiedFunction<
-    typeof helpers.showAndLogExceptionWithTelemetry
+    typeof showAndLogExceptionWithTelemetry
   >;
 
   beforeEach(() => {
     showAndLogExceptionWithTelemetrySpy = jest.spyOn(
-      helpers,
+      log,
       "showAndLogExceptionWithTelemetry",
     );
   });

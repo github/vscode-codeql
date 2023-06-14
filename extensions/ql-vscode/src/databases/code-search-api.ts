@@ -2,8 +2,8 @@ import { retry } from "@octokit/plugin-retry";
 import { throttling } from "@octokit/plugin-throttling";
 import { Octokit } from "@octokit/rest";
 import { Progress, CancellationToken } from "vscode";
-import { showAndLogWarningMessage } from "../helpers";
 import { Credentials } from "../common/authentication";
+import { showAndLogWarningMessage } from "../common/vscode/log";
 
 export async function getCodeSearchRepositories(
   query: string,

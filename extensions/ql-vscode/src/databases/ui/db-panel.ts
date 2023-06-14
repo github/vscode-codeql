@@ -14,10 +14,6 @@ import {
   getOwnerFromGitHubUrl,
   isValidGitHubOwner,
 } from "../../common/github-url-identifier-helper";
-import {
-  showAndLogErrorMessage,
-  showAndLogInformationMessage,
-} from "../../helpers";
 import { DisposableObject } from "../../pure/disposable-object";
 import {
   DbItem,
@@ -38,6 +34,10 @@ import { DatabasePanelCommands } from "../../common/commands";
 import { App } from "../../common/app";
 import { QueryLanguage } from "../../common/query-language";
 import { getCodeSearchRepositories } from "../code-search-api";
+import {
+  showAndLogErrorMessage,
+  showAndLogInformationMessage,
+} from "../../common/vscode/log";
 
 export interface RemoteDatabaseQuickPickItem extends QuickPickItem {
   remoteDatabaseKind: string;

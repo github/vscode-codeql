@@ -4,7 +4,6 @@ import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { minimatch } from "minimatch";
 import { CancellationToken, window } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { showAndLogErrorMessage } from "../helpers";
 import {
   getOnDiskWorkspaceFolders,
   getOnDiskWorkspaceFoldersObjects,
@@ -14,6 +13,7 @@ import { DatabaseItem } from "../databases/local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
+import { showAndLogErrorMessage } from "../common/vscode/log";
 import { containsPath } from "../pure/files";
 
 const maxStep = 3;

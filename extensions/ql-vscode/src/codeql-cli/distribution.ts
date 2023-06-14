@@ -6,7 +6,6 @@ import * as semver from "semver";
 import { URL } from "url";
 import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "../config";
-import { showAndLogErrorMessage, showAndLogWarningMessage } from "../helpers";
 import { extLogger } from "../common";
 import { getCodeQlCliVersion } from "./cli-version";
 import {
@@ -23,6 +22,10 @@ import {
   InvocationRateLimiter,
   InvocationRateLimiterResultKind,
 } from "../common/invocation-rate-limiter";
+import {
+  showAndLogErrorMessage,
+  showAndLogWarningMessage,
+} from "../common/vscode/log";
 
 /**
  * distribution.ts

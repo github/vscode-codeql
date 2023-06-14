@@ -2,7 +2,7 @@ import * as messages from "./pure/messages-shared";
 import * as legacyMessages from "./pure/legacy-messages";
 import { DatabaseInfo, QueryMetadata } from "./pure/interface-types";
 import { join, parse, dirname, basename } from "path";
-import { createTimestampFile, showAndLogWarningMessage } from "./helpers";
+import { createTimestampFile } from "./helpers";
 import {
   ConfigurationTarget,
   Range,
@@ -30,6 +30,7 @@ import { DecodedBqrsChunk, EntityValue } from "./pure/bqrs-cli-types";
 import { BaseLogger, extLogger } from "./common";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { getErrorMessage } from "./pure/helpers-pure";
+import { showAndLogWarningMessage } from "./common/vscode/log";
 
 /**
  * run-queries.ts

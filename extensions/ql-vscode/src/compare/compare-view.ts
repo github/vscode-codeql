@@ -24,7 +24,8 @@ import {
 } from "../common/vscode/abstract-webview";
 import { telemetryListener } from "../telemetry";
 import { redactableError } from "../pure/errors";
-import { showAndLogExceptionWithTelemetry } from "../helpers";
+
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;

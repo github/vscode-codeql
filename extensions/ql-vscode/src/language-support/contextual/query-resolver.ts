@@ -3,7 +3,6 @@ import { dump } from "js-yaml";
 import { file } from "tmp-promise";
 import { basename, dirname, resolve } from "path";
 
-import { showAndLogExceptionWithTelemetry } from "../../helpers";
 import { getOnDiskWorkspaceFolders } from "../../common/vscode/workspace-folders";
 import {
   getPrimaryDbscheme,
@@ -24,6 +23,7 @@ import { ProgressCallback } from "../../common/vscode/progress";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { redactableError } from "../../pure/errors";
 import { QLPACK_FILENAMES } from "../../pure/ql";
+import { showAndLogExceptionWithTelemetry } from "../../common/vscode/log";
 
 export async function qlpackOfDatabase(
   cli: Pick<CodeQLCliServer, "resolveQlpacks">,

@@ -55,14 +55,7 @@ import {
   GithubApiError,
   GithubRateLimitedError,
 } from "./codeql-cli/distribution";
-import {
-  showAndLogErrorMessage,
-  showAndLogExceptionWithTelemetry,
-  showAndLogInformationMessage,
-  showAndLogWarningMessage,
-  tmpDir,
-  tmpDirDisposal,
-} from "./helpers";
+import { tmpDir, tmpDirDisposal } from "./helpers";
 import { prepareCodeTour } from "./code-tour";
 import {
   showBinaryChoiceDialog,
@@ -131,6 +124,12 @@ import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
+import {
+  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
+  showAndLogInformationMessage,
+  showAndLogWarningMessage,
+} from "./common/vscode/log";
 
 /**
  * extension.ts

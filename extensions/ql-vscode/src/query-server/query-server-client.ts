@@ -18,7 +18,8 @@ import {
 } from "../common/vscode/progress";
 import { ServerProcess } from "./server-process";
 import { App } from "../common/app";
-import { showAndLogErrorMessage } from "../helpers";
+
+import { showAndLogErrorMessage } from "../common/vscode/log";
 
 type ServerOpts = {
   logger: Logger;

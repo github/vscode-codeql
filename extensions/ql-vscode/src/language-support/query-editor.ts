@@ -4,8 +4,8 @@ import { QueryRunner } from "../query-server";
 import { basename, join } from "path";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
-import { showAndLogExceptionWithTelemetry } from "../helpers";
 import { AppCommandManager, QueryEditorCommands } from "../common/commands";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 
 type QueryEditorOptions = {
   commandManager: AppCommandManager;

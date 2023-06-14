@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { showAndLogExceptionWithTelemetry, tmpDir } from "../../helpers";
+import { tmpDir } from "../../helpers";
 import { getOnDiskWorkspaceFolders } from "../../common/vscode/workspace-folders";
 import {
   ProgressCallback,
@@ -13,6 +13,7 @@ import { dirname } from "path";
 import { DatabaseItem } from "../../databases/local-databases";
 import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { redactableError } from "../../pure/errors";
+import { showAndLogExceptionWithTelemetry } from "../../common/vscode/log";
 
 /**
  * Maximum number of lines to include from database upgrade message,

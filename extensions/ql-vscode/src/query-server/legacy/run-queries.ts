@@ -9,11 +9,7 @@ import {
   DatabaseItem,
   DatabaseResolver,
 } from "../../databases/local-databases";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogWarningMessage,
-  upgradesTmpDir,
-} from "../../helpers";
+import { upgradesTmpDir } from "../../helpers";
 import { ProgressCallback } from "../../common/vscode/progress";
 import { QueryMetadata } from "../../pure/interface-types";
 import { extLogger, Logger } from "../../common";
@@ -26,6 +22,10 @@ import { QueryEvaluationInfo, QueryOutputDir } from "../../run-queries-shared";
 import { redactableError } from "../../pure/errors";
 import { CoreQueryResults, CoreQueryTarget } from "../query-runner";
 import { Position } from "../../pure/messages-shared";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../../common/vscode/log";
 
 export async function compileQuery(
   qs: qsClient.QueryServerClient,

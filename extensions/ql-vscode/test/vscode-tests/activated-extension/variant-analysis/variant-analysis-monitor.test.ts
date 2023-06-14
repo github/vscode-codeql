@@ -23,7 +23,8 @@ import {
 import { createMockVariantAnalysis } from "../../../factories/variant-analysis/shared/variant-analysis";
 import { createMockApp } from "../../../__mocks__/appMock";
 import { createMockCommandManager } from "../../../__mocks__/commandsMock";
-import * as helpers from "../../../../src/helpers";
+import * as log from "../../../../src/common/vscode/log";
+import { showAndLogWarningMessage } from "../../../../src/common/vscode/log";
 
 jest.setTimeout(60_000);
 
@@ -200,14 +201,14 @@ describe("Variant Analysis Monitor", () => {
 
     describe("when some responses fail", () => {
       let showAndLogWarningMessageSpy: jest.SpiedFunction<
-        typeof helpers.showAndLogWarningMessage
+        typeof showAndLogWarningMessage
       >;
 
       let scannedRepos: ApiVariantAnalysisScannedRepository[];
 
       beforeEach(async () => {
         showAndLogWarningMessageSpy = jest
-          .spyOn(helpers, "showAndLogWarningMessage")
+          .spyOn(log, "showAndLogWarningMessage")
           .mockResolvedValue(undefined);
 
         scannedRepos = createMockScannedRepos([
@@ -301,12 +302,12 @@ describe("Variant Analysis Monitor", () => {
 
     describe("when a 404 is returned", () => {
       let showAndLogWarningMessageSpy: jest.SpiedFunction<
-        typeof helpers.showAndLogWarningMessage
+        typeof showAndLogWarningMessage
       >;
 
       beforeEach(async () => {
         showAndLogWarningMessageSpy = jest
-          .spyOn(helpers, "showAndLogWarningMessage")
+          .spyOn(log, "showAndLogWarningMessage")
           .mockResolvedValue(undefined);
 
         const scannedRepos = createMockScannedRepos([

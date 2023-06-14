@@ -16,12 +16,7 @@ import { extLogger, TeeLogger } from "../common";
 import { isCanary, MAX_QUERIES } from "../config";
 import { gatherQlFiles } from "../pure/files";
 import { basename } from "path";
-import {
-  createTimestampFile,
-  findLanguage,
-  showAndLogErrorMessage,
-  showAndLogWarningMessage,
-} from "../helpers";
+import { createTimestampFile, findLanguage } from "../helpers";
 import { showBinaryChoiceDialog } from "../common/vscode/dialog";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { displayQuickQuery } from "./quick-query";
@@ -48,6 +43,10 @@ import { DisposableObject } from "../pure/disposable-object";
 import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
+import {
+  showAndLogErrorMessage,
+  showAndLogWarningMessage,
+} from "../common/vscode/log";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;

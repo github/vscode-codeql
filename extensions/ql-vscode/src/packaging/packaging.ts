@@ -1,8 +1,4 @@
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogInformationMessage,
-} from "../helpers";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { QuickPickItem, window } from "vscode";
 import {
@@ -15,6 +11,10 @@ import { asError, getErrorStack } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
 import { PACKS_BY_QUERY_LANGUAGE } from "../common/query-language";
 import { PackagingCommands } from "../common/commands";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogInformationMessage,
+} from "../common/vscode/log";
 
 type PackagingOptions = {
   cliServer: CodeQLCliServer;

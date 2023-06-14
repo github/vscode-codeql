@@ -1,8 +1,8 @@
 import { TextDocumentContentProvider, Uri } from "vscode";
 import { URLSearchParams } from "url";
-import { showAndLogWarningMessage } from "../helpers";
 import { SHOW_QUERY_TEXT_MSG } from "../query-history/query-history-manager";
 import { VariantAnalysisManager } from "./variant-analysis-manager";
+import { showAndLogWarningMessage } from "../common/vscode/log";
 
 export const createVariantAnalysisContentProvider = (
   variantAnalysisManager: VariantAnalysisManager,
