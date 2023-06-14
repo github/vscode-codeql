@@ -25,7 +25,7 @@ export const PACKS_BY_QUERY_LANGUAGE = {
   [QueryLanguage.Ruby]: ["codeql/ruby-queries"],
 };
 
-export const dbSchemeToLanguage = {
+export const dbSchemeToLanguage: Record<string, string> = {
   "semmlecode.javascript.dbscheme": "javascript",
   "semmlecode.cpp.dbscheme": "cpp",
   "semmlecode.dbscheme": "java",
