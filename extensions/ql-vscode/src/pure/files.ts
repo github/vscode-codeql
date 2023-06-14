@@ -1,5 +1,5 @@
 import { pathExists, stat, readdir, opendir } from "fs-extra";
-import { join, resolve } from "path";
+import { isAbsolute, join, relative, resolve } from "path";
 
 /**
  * Recursively finds all .ql files in this set of Uris.
@@ -51,36 +51,32 @@ export async function getDirectoryNamesInsidePath(
   return dirNames;
 }
 
-function normalizePath(path: string, platform: NodeJS.Platform): string {
+function normalizePath(path: string): string {
   // On Windows, "C:/", "C:\", and "c:/" are all equivalent. We need
   // to normalize the paths to ensure they all get resolved to the
   // same format. On Windows, we also need to do the comparison
   // case-insensitively.
   path = resolve(path);
-  if (platform === "win32") {
+  if (process.platform === "win32") {
     path = path.toLowerCase();
   }
   return path;
 }
 
-export function pathsEqual(
-  path1: string,
-  path2: string,
-  platform: NodeJS.Platform,
-): boolean {
-  return normalizePath(path1, platform) === normalizePath(path2, platform);
+export function pathsEqual(path1: string, path2: string): boolean {
+  return normalizePath(path1) === normalizePath(path2);
 }
 
 /**
- * Returns true if path1 contains path2.
+ * Returns true if `parent` contains `child`, or if they are equal.
  */
-export function containsPath(
-  path1: string,
-  path2: string,
-  platform: NodeJS.Platform,
-): boolean {
-  return normalizePath(path2, platform).startsWith(
-    normalizePath(path1, platform),
+export function containsPath(parent: string, child: string): boolean {
+  const relativePath = relative(parent, child);
+  return (
+    !relativePath.startsWith("..") &&
+    // On windows, if the two paths are in different drives, then the
+    // relative path will be an absolute path to the other drive.
+    !isAbsolute(relativePath)
   );
 }
 

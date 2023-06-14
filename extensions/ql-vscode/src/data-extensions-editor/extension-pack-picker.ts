@@ -14,6 +14,7 @@ import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
 import { showAndLogErrorMessage } from "../common/vscode/log";
+import { containsPath } from "../pure/files";
 
 const maxStep = 3;
 
@@ -347,11 +348,7 @@ async function pickNewModelFile(
           return "File already exists";
         }
 
-        const notInExtensionPack = relative(
-          extensionPack.path,
-          path,
-        ).startsWith("..");
-        if (notInExtensionPack) {
+        if (!containsPath(extensionPack.path, path)) {
           return "File must be in the extension pack";
         }
 

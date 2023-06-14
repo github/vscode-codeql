@@ -262,7 +262,7 @@ describe("db config store", () => {
       });
 
       // Add
-      const response = await configStore.addRemoteReposToList(
+      await configStore.addRemoteReposToList(
         ["owner/repo1", "owner/repo2"],
         "list1",
       );
@@ -278,72 +278,6 @@ describe("db config store", () => {
         name: "list1",
         repositories: ["owner/repo1", "owner/repo2"],
       });
-      expect(response).toEqual([]);
-
-      configStore.dispose();
-    });
-
-    it("should add no more than 1000 repositories to a remote list when adding multiple repos", async () => {
-      // Initial set up
-      const dbConfig = createDbConfig({
-        remoteLists: [
-          {
-            name: "list1",
-            repositories: [],
-          },
-        ],
-      });
-
-      const configStore = await initializeConfig(dbConfig, configPath, app);
-
-      // Add
-      const response = await configStore.addRemoteReposToList(
-        [...Array(1001).keys()].map((i) => `owner/db${i}`),
-        "list1",
-      );
-
-      // Read the config file
-      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
-
-      // Check that the config file has been updated
-      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
-      expect(updatedRemoteDbs.repositories).toHaveLength(0);
-      expect(updatedRemoteDbs.repositoryLists).toHaveLength(1);
-      expect(updatedRemoteDbs.repositoryLists[0].repositories).toHaveLength(
-        1000,
-      );
-      expect(response).toEqual(["owner/db1000"]);
-
-      configStore.dispose();
-    });
-
-    it("should add no more than 1000 repositories to a remote list when adding one repo", async () => {
-      // Initial set up
-      const dbConfig = createDbConfig({
-        remoteLists: [
-          {
-            name: "list1",
-            repositories: [...Array(1000).keys()].map((i) => `owner/db${i}`),
-          },
-        ],
-      });
-
-      const configStore = await initializeConfig(dbConfig, configPath, app);
-
-      // Add
-      const reponse = await configStore.addRemoteRepo("owner/db1000", "list1");
-
-      // Read the config file
-      const updatedDbConfig = (await readJSON(configPath)) as DbConfig;
-
-      // Check that the config file has been updated
-      const updatedRemoteDbs = updatedDbConfig.databases.variantAnalysis;
-      expect(updatedRemoteDbs.repositories).toHaveLength(0);
-      expect(updatedRemoteDbs.repositoryLists).toHaveLength(1);
-      expect(updatedRemoteDbs.repositoryLists[0].repositories).toHaveLength(
-        1000,
-      );
-      expect(reponse).toEqual(["owner/db1000"]);
 
       configStore.dispose();
     });

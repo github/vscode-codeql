@@ -10,7 +10,7 @@ const toEqualPath: MatcherFunction<[expectedPath: unknown]> = function (
     throw new Error("These must be of type string!");
   }
 
-  const pass = pathsEqual(actual, expectedPath, process.platform);
+  const pass = pathsEqual(actual, expectedPath);
   if (pass) {
     return {
       message: () =>
