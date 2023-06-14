@@ -6,7 +6,7 @@ import {
   window,
 } from "vscode";
 import {
-  TelemetryListener,
+  ExtensionTelemetryListener,
   telemetryListener as globalTelemetryListener,
 } from "../../../src/common/vscode/telemetry";
 import { UserCancellationException } from "../../../src/common/vscode/progress";
@@ -25,7 +25,7 @@ describe("telemetry reporting", () => {
   let originalTelemetryGlobal: boolean | undefined;
   let isCanary: string;
   let ctx: ExtensionContext;
-  let telemetryListener: TelemetryListener;
+  let telemetryListener: ExtensionTelemetryListener;
 
   let sendTelemetryEventSpy: jest.SpiedFunction<
     typeof TelemetryReporter.prototype.sendTelemetryEvent
@@ -81,7 +81,7 @@ describe("telemetry reporting", () => {
       await enableTelemetry("telemetry", true);
       await enableTelemetry("codeQL.telemetry", true);
 
-      telemetryListener = new TelemetryListener(
+      telemetryListener = new ExtensionTelemetryListener(
         "my-id",
         "1.2.3",
         "fake-key",

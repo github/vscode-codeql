@@ -20,6 +20,7 @@ import { UserCancellationException } from "./progress";
 import { showBinaryChoiceWithUrlDialog } from "./dialog";
 import { RedactableError } from "../../pure/errors";
 import { SemVer } from "semver";
+import { AppTelemetry } from "../telemetry";
 
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
 const key = "REPLACE-APP-INSIGHTS-KEY";
@@ -54,7 +55,10 @@ const baseDataPropertiesToRemove = [
 
 const NOT_SET_CLI_VERSION = "not-set";
 
-export class TelemetryListener extends ConfigListener {
+export class ExtensionTelemetryListener
+  extends ConfigListener
+  implements AppTelemetry
+{
   static relevantSettings = [ENABLE_TELEMETRY, CANARY_FEATURES];
 
   private reporter?: TelemetryReporter;
@@ -152,7 +156,7 @@ export class TelemetryListener extends ConfigListener {
     void this.reporter?.dispose();
   }
 
-  sendCommandUsage(name: string, executionTime: number, error?: Error) {
+  sendCommandUsage(name: string, executionTime: number, error?: Error): void {
     if (!this.reporter) {
       return;
     }
@@ -174,7 +178,7 @@ export class TelemetryListener extends ConfigListener {
     );
   }
 
-  sendUIInteraction(name: string) {
+  sendUIInteraction(name: string): void {
     if (!this.reporter) {
       return;
     }
@@ -193,7 +197,7 @@ export class TelemetryListener extends ConfigListener {
   sendError(
     error: RedactableError,
     extraProperties?: { [key: string]: string },
-  ) {
+  ): void {
     if (!this.reporter) {
       return;
     }
@@ -272,16 +276,16 @@ export class TelemetryListener extends ConfigListener {
 /**
  * The global Telemetry instance
  */
-export let telemetryListener: TelemetryListener | undefined;
+export let telemetryListener: ExtensionTelemetryListener | undefined;
 
 export async function initializeTelemetry(
   extension: Extension<any>,
   ctx: ExtensionContext,
-): Promise<TelemetryListener> {
+): Promise<ExtensionTelemetryListener> {
   if (telemetryListener !== undefined) {
     throw new Error("Telemetry is already initialized");
   }
-  telemetryListener = new TelemetryListener(
+  telemetryListener = new ExtensionTelemetryListener(
     extension.id,
     extension.packageJSON.version,
     key,
