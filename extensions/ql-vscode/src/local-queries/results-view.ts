@@ -320,6 +320,7 @@ export class ResultsView extends AbstractWebview<
         case "unhandledError":
           void showAndLogExceptionWithTelemetry(
             extLogger,
+            telemetryListener,
             redactableError(
               msg.error,
             )`Unhandled error in results view: ${msg.error.message}`,
@@ -331,6 +332,7 @@ export class ResultsView extends AbstractWebview<
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         extLogger,
+        telemetryListener,
         redactableError(
           asError(e),
         )`Error handling message from results view: ${getErrorMessage(e)}`,
@@ -381,6 +383,7 @@ export class ResultsView extends AbstractWebview<
     if (this._displayedQuery === undefined) {
       void showAndLogExceptionWithTelemetry(
         extLogger,
+        telemetryListener,
         redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
@@ -400,6 +403,7 @@ export class ResultsView extends AbstractWebview<
     if (this._displayedQuery === undefined) {
       void showAndLogExceptionWithTelemetry(
         extLogger,
+        telemetryListener,
         redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
@@ -811,6 +815,7 @@ export class ResultsView extends AbstractWebview<
         // trying to render uninterpreted results anyway.
         void showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(
             asError(e),
           )`Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(

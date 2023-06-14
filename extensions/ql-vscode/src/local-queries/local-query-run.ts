@@ -19,6 +19,7 @@ import { redactableError } from "../pure/errors";
 import { LocalQueries } from "./local-queries";
 import { showAndLogWarningMessage } from "../common/logging";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
+import { telemetryListener } from "../common/vscode/telemetry";
 
 function formatResultMessage(result: CoreQueryResults): string {
   switch (result.resultType) {
@@ -154,7 +155,11 @@ export class LocalQueryRun {
       const message = results.message
         ? redactableError`Failed to run query: ${results.message}`
         : redactableError`Failed to run query`;
-      void showAndLogExceptionWithTelemetry(extLogger, message);
+      void showAndLogExceptionWithTelemetry(
+        extLogger,
+        telemetryListener,
+        message,
+      );
     }
     const message = formatResultMessage(results);
     const successful = results.resultType === QueryResultType.SUCCESS;

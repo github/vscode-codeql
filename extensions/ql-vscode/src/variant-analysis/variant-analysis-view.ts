@@ -164,6 +164,7 @@ export class VariantAnalysisView
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
           this.app.logger,
+          this.app.telemetry,
           redactableError(
             msg.error,
           )`Unhandled error in variant analysis results view: ${msg.error.message}`,

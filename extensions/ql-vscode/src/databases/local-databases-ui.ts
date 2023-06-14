@@ -280,6 +280,7 @@ export class DatabaseUI extends DisposableObject {
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
+        this.app.telemetry,
         redactableError(
           asError(e),
         )`Failed to choose and set database: ${getErrorMessage(e)}`,
@@ -420,6 +421,7 @@ export class DatabaseUI extends DisposableObject {
         } catch (e) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
+            this.app.telemetry,
             redactableError(
               asError(e),
             )`Failed to delete orphaned database: ${getErrorMessage(e)}`,
@@ -449,6 +451,7 @@ export class DatabaseUI extends DisposableObject {
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
+        this.app.telemetry,
         redactableError(
           asError(e),
         )`Failed to choose and set database: ${getErrorMessage(e)}`,

@@ -14,6 +14,7 @@ import { redactableError } from "../pure/errors";
 import { EvalLogViewerCommands } from "../common/commands";
 import { extLogger } from "../common";
 import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import { telemetryListener } from "../common/vscode/telemetry";
 
 export interface EvalLogTreeItem {
   label?: string;
@@ -111,6 +112,7 @@ export class EvalLogViewer extends DisposableObject {
       (err: unknown) =>
         showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(
             asError(err),
           )`Failed to reveal tree view: ${getErrorMessage(err)}`,

@@ -24,6 +24,7 @@ import { ProgressCallback } from "../../common/vscode/progress";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { redactableError } from "../../pure/errors";
 import { QLPACK_FILENAMES } from "../../pure/ql";
+import { telemetryListener } from "../../common/vscode/telemetry";
 
 export async function qlpackOfDatabase(
   cli: Pick<CodeQLCliServer, "resolveQlpacks">,
@@ -102,7 +103,7 @@ current library path (tried searching the following packs: ${joinedPacksToSearch
 Try upgrading the CodeQL libraries. If that doesn't work, then ${keyTypeName} queries are not yet available \
 for this language.`;
 
-  void showAndLogExceptionWithTelemetry(extLogger, error);
+  void showAndLogExceptionWithTelemetry(extLogger, telemetryListener, error);
   throw error;
 }
 

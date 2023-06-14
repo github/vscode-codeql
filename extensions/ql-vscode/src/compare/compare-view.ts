@@ -152,6 +152,7 @@ export class CompareView extends AbstractWebview<
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(
             msg.error,
           )`Unhandled error in result comparison view: ${msg.error.message}`,

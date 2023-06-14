@@ -276,6 +276,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     } catch (err) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
+        this.app.telemetry,
         redactableError(
           asError(err),
         )`Failed to load external API usages: ${getErrorMessage(err)}`,
@@ -342,6 +343,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
+        this.app.telemetry,
         redactableError(
           asError(e),
         )`Failed to generate flow model: ${getErrorMessage(e)}`,
@@ -476,6 +478,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(
           this.app.logger,
+          this.app.telemetry,
           redactableError(e)`Rate limit hit, please try again soon.`,
         );
         return null;

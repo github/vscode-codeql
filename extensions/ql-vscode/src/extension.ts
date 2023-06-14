@@ -90,7 +90,10 @@ import {
 import { QLTestAdapterFactory } from "./query-testing/test-adapter";
 import { TestUIService } from "./query-testing/test-ui";
 import { CompareView } from "./compare/compare-view";
-import { initializeTelemetry } from "./common/vscode/telemetry";
+import {
+  initializeTelemetry,
+  telemetryListener,
+} from "./common/vscode/telemetry";
 import { ProgressCallback, withProgress } from "./common/vscode/progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";
@@ -1134,6 +1137,7 @@ async function showResultsForComparison(
   } catch (e) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
+      telemetryListener,
       redactableError(asError(e))`Failed to show results: ${getErrorMessage(
         e,
       )}`,
@@ -1159,16 +1163,16 @@ function addUnhandledRejectionListener() {
       )`Unhandled error: ${getErrorMessage(error)}`;
       // Add a catch so that showAndLogExceptionWithTelemetry fails, we avoid
       // triggering "unhandledRejection" and avoid an infinite loop
-      showAndLogExceptionWithTelemetry(extLogger, message).catch(
-        (telemetryError: unknown) => {
-          void extLogger.log(
-            `Failed to send error telemetry: ${getErrorMessage(
-              telemetryError,
-            )}`,
-          );
-          void extLogger.log(message.fullMessage);
-        },
-      );
+      showAndLogExceptionWithTelemetry(
+        extLogger,
+        telemetryListener,
+        message,
+      ).catch((telemetryError: unknown) => {
+        void extLogger.log(
+          `Failed to send error telemetry: ${getErrorMessage(telemetryError)}`,
+        );
+        void extLogger.log(message.fullMessage);
+      });
     }
   };
 

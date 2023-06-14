@@ -61,6 +61,7 @@ export class DataFlowPathsView extends AbstractWebview<
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(
             msg.error,
           )`Unhandled error in data flow paths view: ${msg.error.message}`,

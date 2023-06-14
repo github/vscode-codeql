@@ -4,7 +4,7 @@ import {
   ShowAndLogOptions,
 } from "../logging";
 import { RedactableError } from "../../pure/errors";
-import { telemetryListener } from "./telemetry";
+import { AppTelemetry } from "../telemetry";
 
 interface ShowAndLogExceptionOptions extends ShowAndLogOptions {
   /** Custom properties to include in the telemetry report. */
@@ -15,6 +15,7 @@ interface ShowAndLogExceptionOptions extends ShowAndLogOptions {
  * Show an error message, log it to the console, and emit redacted information as telemetry
  *
  * @param logger The logger that will receive the message.
+ * @param telemetry The telemetry instance to use for reporting.
  * @param error The error to show. Only redacted information will be included in the telemetry.
  * @param options See individual fields on `ShowAndLogExceptionOptions` type.
  *
@@ -22,9 +23,10 @@ interface ShowAndLogExceptionOptions extends ShowAndLogOptions {
  */
 export async function showAndLogExceptionWithTelemetry(
   logger: NotificationLogger,
+  telemetry: AppTelemetry | undefined,
   error: RedactableError,
   options: ShowAndLogExceptionOptions = {},
 ): Promise<void> {
-  telemetryListener?.sendError(error, options.extraTelemetryProperties);
+  telemetry?.sendError(error, options.extraTelemetryProperties);
   return showAndLogErrorMessage(logger, error.fullMessage, options);
 }

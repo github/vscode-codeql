@@ -14,6 +14,7 @@ import { mapQueryHistoryToDomainModel } from "./query-history-dto-mapper";
 import { mapQueryHistoryToDto } from "./query-history-domain-mapper";
 import { extLogger } from "../../common";
 import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
+import { telemetryListener } from "../../common/vscode/telemetry";
 
 const ALLOWED_QUERY_HISTORY_VERSIONS = [1, 2];
 
@@ -32,6 +33,7 @@ export async function readQueryHistoryFromFile(
     if (!ALLOWED_QUERY_HISTORY_VERSIONS.includes(obj.version)) {
       void showAndLogExceptionWithTelemetry(
         extLogger,
+        telemetryListener,
         redactableError`Can't parse query history. Unsupported query history format: v${obj.version}.`,
       );
       return [];
@@ -68,6 +70,7 @@ export async function readQueryHistoryFromFile(
   } catch (e) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
+      telemetryListener,
       redactableError(asError(e))`Error loading query history.`,
       {
         fullMessage: `Error loading query history.\n${getErrorStack(e)}`,

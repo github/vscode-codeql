@@ -153,6 +153,7 @@ describe("readQueryResults", () => {
     expect(await readQueryResults(options)).toBeUndefined();
     expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
       expect.anything(),
+      expect.anything(),
       expect.any(RedactableError),
     );
   });
@@ -185,6 +186,7 @@ describe("readQueryResults", () => {
 
     expect(await readQueryResults(options)).toBeUndefined();
     expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
+      expect.anything(),
       expect.anything(),
       expect.any(RedactableError),
     );
