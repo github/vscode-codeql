@@ -13,12 +13,12 @@ import {
   LOG_TELEMETRY,
   isIntegrationTestMode,
   isCanary,
-} from "./config";
+} from "../../config";
 import * as appInsights from "applicationinsights";
-import { extLogger } from "./common";
-import { UserCancellationException } from "./common/vscode/progress";
-import { showBinaryChoiceWithUrlDialog } from "./common/vscode/dialog";
-import { RedactableError } from "./pure/errors";
+import { extLogger } from "../index";
+import { UserCancellationException } from "./progress";
+import { showBinaryChoiceWithUrlDialog } from "./dialog";
+import { RedactableError } from "../../pure/errors";
 import { SemVer } from "semver";
 
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.

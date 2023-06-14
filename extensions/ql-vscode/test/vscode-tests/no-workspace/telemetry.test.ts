@@ -8,7 +8,7 @@ import {
 import {
   TelemetryListener,
   telemetryListener as globalTelemetryListener,
-} from "../../../src/telemetry";
+} from "../../../src/common/vscode/telemetry";
 import { UserCancellationException } from "../../../src/common/vscode/progress";
 import { ENABLE_TELEMETRY } from "../../../src/config";
 import { createMockExtensionContext } from "./index";

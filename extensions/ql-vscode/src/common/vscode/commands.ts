@@ -12,7 +12,7 @@ import {
 } from "../../pure/helpers-pure";
 import { redactableError } from "../../pure/errors";
 import { UserCancellationException } from "./progress";
-import { telemetryListener } from "../../telemetry";
+import { telemetryListener } from "./telemetry";
 import { showAndLogExceptionWithTelemetry } from "./logging";
 
 /**

@@ -18,7 +18,7 @@ import {
   VariantAnalysisViewInterface,
   VariantAnalysisViewManager,
 } from "./variant-analysis-view-manager";
-import { telemetryListener } from "../telemetry";
+import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../pure/errors";
 import { DataFlowPathsView } from "./data-flow-paths-view";
 import { DataFlowPaths } from "./shared/data-flow-paths";

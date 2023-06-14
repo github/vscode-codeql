@@ -71,7 +71,7 @@ import {
 } from "../common/vscode/abstract-webview";
 import { isCanary, PAGE_SIZE } from "../config";
 import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
-import { telemetryListener } from "../telemetry";
+import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../pure/errors";
 import { ResultsViewCommands } from "../common/commands";
 

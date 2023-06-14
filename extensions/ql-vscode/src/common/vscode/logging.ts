@@ -4,7 +4,7 @@ import {
   ShowAndLogOptions,
 } from "../logging";
 import { RedactableError } from "../../pure/errors";
-import { telemetryListener } from "../../telemetry";
+import { telemetryListener } from "./telemetry";
 
 interface ShowAndLogExceptionOptions extends ShowAndLogOptions {
   /** Custom properties to include in the telemetry report. */

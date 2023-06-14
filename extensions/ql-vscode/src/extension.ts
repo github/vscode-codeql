@@ -90,7 +90,7 @@ import {
 import { QLTestAdapterFactory } from "./query-testing/test-adapter";
 import { TestUIService } from "./query-testing/test-ui";
 import { CompareView } from "./compare/compare-view";
-import { initializeTelemetry } from "./telemetry";
+import { initializeTelemetry } from "./common/vscode/telemetry";
 import { ProgressCallback, withProgress } from "./common/vscode/progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";

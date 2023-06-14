@@ -4,7 +4,7 @@ import {
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
 import { assertNever } from "../pure/helpers-pure";
-import { telemetryListener } from "../telemetry";
+import { telemetryListener } from "../common/vscode/telemetry";
 import {
   FromDataFlowPathsMessage,
   ToDataFlowPathsMessage,
