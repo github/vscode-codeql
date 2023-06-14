@@ -9,6 +9,8 @@ import { Credentials } from "../../src/common/authentication";
 import { AppCommandManager } from "../../src/common/commands";
 import { createMockCommandManager } from "./commandsMock";
 import { NotificationLogger } from "../../src/common";
+import { AppTelemetry } from "../../src/common/telemetry";
+import { createMockTelemetryReporter } from "./telemetryMock";
 
 export function createMockApp({
   extensionPath = "/mock/extension/path",
@@ -20,6 +22,7 @@ export function createMockApp({
   commands = createMockCommandManager(),
   environment = createMockEnvironmentContext(),
   logger = createMockLogger(),
+  telemetry = createMockTelemetryReporter(),
 }: {
   extensionPath?: string;
   workspaceStoragePath?: string;
@@ -30,10 +33,12 @@ export function createMockApp({
   commands?: AppCommandManager;
   environment?: EnvironmentContext;
   logger?: NotificationLogger;
+  telemetry?: AppTelemetry;
 }): App {
   return {
     mode: AppMode.Test,
     logger,
+    telemetry,
     subscriptions: [],
     extensionPath,
     workspaceStoragePath,

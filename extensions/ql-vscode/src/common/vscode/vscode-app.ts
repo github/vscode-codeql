@@ -9,6 +9,8 @@ import { VSCodeAppEventEmitter } from "./events";
 import { AppCommandManager, QueryServerCommandManager } from "../commands";
 import { createVSCodeCommandManager } from "./commands";
 import { AppEnvironmentContext } from "./environment-context";
+import { AppTelemetry } from "../telemetry";
+import { telemetryListener } from "./telemetry";
 
 export class ExtensionApp implements App {
   public readonly credentials: VSCodeCredentials;
@@ -57,6 +59,10 @@ export class ExtensionApp implements App {
 
   public get logger(): NotificationLogger {
     return extLogger;
+  }
+
+  public get telemetry(): AppTelemetry | undefined {
+    return telemetryListener;
   }
 
   public createEventEmitter<T>(): AppEventEmitter<T> {
