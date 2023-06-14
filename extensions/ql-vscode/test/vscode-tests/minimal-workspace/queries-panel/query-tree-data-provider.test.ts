@@ -3,25 +3,13 @@ import {
   FileTreeDirectory,
   FileTreeLeaf,
 } from "../../../../src/common/file-tree-nodes";
-import {
-  QueryDiscoverer,
-  QueryTreeDataProvider,
-} from "../../../../src/queries-panel/query-tree-data-provider";
+import { QueryTreeDataProvider } from "../../../../src/queries-panel/query-tree-data-provider";
 
 describe("QueryTreeDataProvider", () => {
   describe("getChildren", () => {
-    it("returns no children when queries is undefined", async () => {
-      const dataProvider = new QueryTreeDataProvider({
-        queries: undefined,
-        onDidChangeQueries: jest.fn(),
-      });
-
-      expect(dataProvider.getChildren()).toEqual([]);
-    });
-
     it("returns no children when there are no queries", async () => {
       const dataProvider = new QueryTreeDataProvider({
-        queries: [],
+        buildQueryTree: () => [],
         onDidChangeQueries: jest.fn(),
       });
 
@@ -30,7 +18,7 @@ describe("QueryTreeDataProvider", () => {
 
     it("converts FileTreeNode to QueryTreeViewItem", async () => {
       const dataProvider = new QueryTreeDataProvider({
-        queries: [
+        buildQueryTree: () => [
           new FileTreeDirectory<string>("dir1", "dir1", env, [
             new FileTreeDirectory<string>("dir1/dir2", "dir2", env, [
               new FileTreeLeaf<string>(
@@ -75,20 +63,21 @@ describe("QueryTreeDataProvider", () => {
 
   describe("onDidChangeQueries", () => {
     it("should update tree when the queries change", async () => {
+      const queryTree = [
+        new FileTreeDirectory<string>("dir1", "dir1", env, [
+          new FileTreeLeaf<string>("dir1/file1", "file1", "javascript"),
+        ]),
+      ];
       const onDidChangeQueriesEmitter = new EventEmitter<void>();
-      const queryDiscoverer: QueryDiscoverer = {
-        queries: [
-          new FileTreeDirectory<string>("dir1", "dir1", env, [
-            new FileTreeLeaf<string>("dir1/file1", "file1", "javascript"),
-          ]),
-        ],
+      const queryDiscoverer = {
+        buildQueryTree: () => queryTree,
         onDidChangeQueries: onDidChangeQueriesEmitter.event,
       };
 
       const dataProvider = new QueryTreeDataProvider(queryDiscoverer);
       expect(dataProvider.getChildren().length).toEqual(1);
 
-      queryDiscoverer.queries?.push(
+      queryTree.push(
         new FileTreeDirectory<string>("dir2", "dir2", env, [
           new FileTreeLeaf<string>("dir2/file2", "file2", "javascript"),
         ]),

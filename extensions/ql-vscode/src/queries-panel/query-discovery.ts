@@ -1,136 +1,116 @@
 import { dirname, basename, normalize, relative } from "path";
-import { Discovery } from "../common/discovery";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import {
-  Event,
-  EventEmitter,
-  RelativePattern,
-  Uri,
-  WorkspaceFolder,
-  workspace,
-} from "vscode";
-import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watcher";
+import { Event } from "vscode";
 import { EnvironmentContext } from "../common/app";
-import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
-import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
-import { AppEventEmitter } from "../common/events";
+import {
+  FileTreeDirectory,
+  FileTreeLeaf,
+  FileTreeNode,
+} from "../common/file-tree-nodes";
 import { QueryDiscoverer } from "./query-tree-data-provider";
-import { extLogger } from "../common";
+import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
+import { containsPath } from "../pure/files";
+import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
 
-/**
- * The results of discovering queries.
- */
-export interface QueryDiscoveryResults {
-  /**
-   * A tree of directories and query files.
-   * May have multiple roots because of multiple workspaces.
-   */
-  queries: Array<FileTreeDirectory<string>>;
+const QUERY_FILE_EXTENSION = ".ql";
 
-  /**
-   * File system paths to watch. If any ql file changes in these directories
-   * or any subdirectories, then this could signify a change in queries.
-   */
-  watchPaths: Uri[];
+export interface QueryPackDiscoverer {
+  getLanguageForQueryFile(queryPath: string): string | undefined;
+  onDidChangeQueryPacks: Event<void>;
+}
+
+interface Query {
+  path: string;
+  language: string | undefined;
 }
 
 /**
- * Discovers all query files contained in the QL packs in a given workspace folder.
+ * Discovers all query files in the workspace.
  */
-export class QueryDiscovery extends Discovery implements QueryDiscoverer {
-  private results: Array<FileTreeDirectory<string>> | undefined;
-
-  private readonly onDidChangeQueriesEmitter: AppEventEmitter<void>;
-  private readonly watcher: MultiFileSystemWatcher = this.push(
-    new MultiFileSystemWatcher(),
-  );
-
+export class QueryDiscovery
+  extends FilePathDiscovery<Query>
+  implements QueryDiscoverer
+{
   constructor(
     private readonly env: EnvironmentContext,
-    private readonly cliServer: CodeQLCliServer,
+    private readonly queryPackDiscovery: QueryPackDiscoverer,
   ) {
-    super("Query Discovery", extLogger);
+    super("Query Discovery", `**/*${QUERY_FILE_EXTENSION}`);
 
-    this.onDidChangeQueriesEmitter = this.push(new EventEmitter<void>());
-    this.push(workspace.onDidChangeWorkspaceFolders(this.refresh.bind(this)));
-    this.push(this.watcher.onDidChange(this.refresh.bind(this)));
-  }
-
-  public get queries(): Array<FileTreeDirectory<string>> | undefined {
-    return this.results;
+    this.push(
+      this.queryPackDiscovery.onDidChangeQueryPacks(
+        this.recomputeAllQueryLanguages.bind(this),
+      ),
+    );
   }
 
   /**
-   * Event to be fired when the set of discovered queries may have changed.
+   * Event that fires when the set of queries in the workspace changes.
    */
   public get onDidChangeQueries(): Event<void> {
-    return this.onDidChangeQueriesEmitter.event;
-  }
-
-  protected async discover() {
-    const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
-
-    this.results = await this.discoverQueries(workspaceFolders);
-
-    this.watcher.clear();
-    for (const watchPath of workspaceFolders.map((f) => f.uri)) {
-      // Watch for changes to any `.ql` file
-      this.watcher.addWatch(new RelativePattern(watchPath, "**/*.{ql}"));
-      // need to explicitly watch for changes to directories themselves.
-      this.watcher.addWatch(new RelativePattern(watchPath, "**/"));
-    }
-    this.onDidChangeQueriesEmitter.fire();
+    return this.onDidChangePathsEmitter.event;
   }
 
   /**
-   * Discover all queries in the specified directory and its subdirectories.
-   * @returns A `QueryDirectory` object describing the contents of the directory, or `undefined` if
-   *   no queries were found.
+   * Return all known queries, represented as a tree.
+   *
+   * Trivial directories where there is only one child will be collapsed into a single node.
    */
-  private async discoverQueries(
-    workspaceFolders: readonly WorkspaceFolder[],
-  ): Promise<Array<FileTreeDirectory<string>>> {
-    const rootDirectories = [];
-    for (const workspaceFolder of workspaceFolders) {
-      const root = await this.discoverQueriesInWorkspace(workspaceFolder);
-      if (root !== undefined) {
-        rootDirectories.push(root);
+  public buildQueryTree(): Array<FileTreeNode<string>> {
+    const roots = [];
+    for (const workspaceFolder of getOnDiskWorkspaceFoldersObjects()) {
+      const queriesInRoot = this.paths.filter((query) =>
+        containsPath(workspaceFolder.uri.fsPath, query.path),
+      );
+      if (queriesInRoot.length > 0) {
+        const root = new FileTreeDirectory<string>(
+          workspaceFolder.uri.fsPath,
+          workspaceFolder.name,
+          this.env,
+        );
+        for (const query of queriesInRoot) {
+          const dirName = dirname(normalize(relative(root.path, query.path)));
+          const parentDirectory = root.createDirectory(dirName);
+          parentDirectory.addChild(
+            new FileTreeLeaf<string>(
+              query.path,
+              basename(query.path),
+              query.language,
+            ),
+          );
+        }
+        root.finish();
+        roots.push(root);
       }
     }
-    return rootDirectories;
+    return roots;
   }
 
-  private async discoverQueriesInWorkspace(
-    workspaceFolder: WorkspaceFolder,
-  ): Promise<FileTreeDirectory<string> | undefined> {
-    const fullPath = workspaceFolder.uri.fsPath;
-    const name = workspaceFolder.name;
+  protected async getDataForPath(path: string): Promise<Query> {
+    const language = this.determineQueryLanguage(path);
+    return { path, language };
+  }
 
-    // We don't want to log each invocation of resolveQueries, since it clutters up the log.
-    const silent = true;
-    const resolvedQueries = await this.cliServer.resolveQueries(
-      fullPath,
-      silent,
-    );
-    if (resolvedQueries.length === 0) {
-      return undefined;
+  protected pathIsRelevant(path: string): boolean {
+    return path.endsWith(QUERY_FILE_EXTENSION);
+  }
+
+  protected shouldOverwriteExistingData(
+    newData: Query,
+    existingData: Query,
+  ): boolean {
+    return newData.language !== existingData.language;
+  }
+
+  private recomputeAllQueryLanguages() {
+    // All we know is that something has changed in the set of known query packs.
+    // We have no choice but to recompute the language for all queries.
+    for (const query of this.paths) {
+      query.language = this.determineQueryLanguage(query.path);
     }
+    this.onDidChangePathsEmitter.fire();
+  }
 
-    const rootDirectory = new FileTreeDirectory<string>(
-      fullPath,
-      name,
-      this.env,
-    );
-    for (const queryPath of resolvedQueries) {
-      const relativePath = normalize(relative(fullPath, queryPath));
-      const dirName = dirname(relativePath);
-      const parentDirectory = rootDirectory.createDirectory(dirName);
-      parentDirectory.addChild(
-        new FileTreeLeaf<string>(queryPath, basename(queryPath), "language"),
-      );
-    }
-
-    rootDirectory.finish();
-    return rootDirectory;
+  private determineQueryLanguage(path: string): string | undefined {
+    return this.queryPackDiscovery.getLanguageForQueryFile(path);
   }
 }

@@ -5,6 +5,7 @@ import { isCanary, showQueriesPanel } from "../config";
 import { DisposableObject } from "../pure/disposable-object";
 import { QueriesPanel } from "./queries-panel";
 import { QueryDiscovery } from "./query-discovery";
+import { QueryPackDiscovery } from "./query-pack-discovery";
 
 export class QueriesModule extends DisposableObject {
   private constructor(readonly app: App) {
@@ -19,9 +20,16 @@ export class QueriesModule extends DisposableObject {
     }
     void extLogger.log("Initializing queries panel.");
 
-    const queryDiscovery = new QueryDiscovery(app.environment, cliServer);
+    const queryPackDiscovery = new QueryPackDiscovery(cliServer);
+    this.push(queryPackDiscovery);
+    void queryPackDiscovery.initialRefresh();
+
+    const queryDiscovery = new QueryDiscovery(
+      app.environment,
+      queryPackDiscovery,
+    );
     this.push(queryDiscovery);
-    void queryDiscovery.refresh();
+    void queryDiscovery.initialRefresh();
 
     const queriesPanel = new QueriesPanel(queryDiscovery);
     this.push(queriesPanel);
