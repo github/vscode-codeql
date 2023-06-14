@@ -4,7 +4,7 @@ import { writeFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { extLogger, TeeLogger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { isQueryLanguage } from "../common/query-language";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";

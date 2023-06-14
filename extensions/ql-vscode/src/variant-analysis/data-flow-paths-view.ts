@@ -12,7 +12,7 @@ import {
 import { DataFlowPaths } from "./shared/data-flow-paths";
 import { redactableError } from "../pure/errors";
 import { extLogger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 
 export class DataFlowPathsView extends AbstractWebview<
   ToDataFlowPathsMessage,

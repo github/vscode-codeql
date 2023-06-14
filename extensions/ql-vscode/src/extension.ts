@@ -80,7 +80,12 @@ import {
   ProgressReporter,
   queryServerLogger,
 } from "./common";
-import { showAndLogExceptionWithTelemetry } from "./common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogErrorMessage,
+  showAndLogInformationMessage,
+  showAndLogWarningMessage,
+} from "./common/logging";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { CompletedLocalQueryInfo } from "./query-results";
 import {
@@ -129,11 +134,6 @@ import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
-import {
-  showAndLogErrorMessage,
-  showAndLogInformationMessage,
-  showAndLogWarningMessage,
-} from "./common/logging";
 
 /**
  * extension.ts

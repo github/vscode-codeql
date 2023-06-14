@@ -41,7 +41,7 @@ import {
   ParsedResultSets,
 } from "../pure/interface-types";
 import { extLogger, Logger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import {
   CompletedQueryInfo,
   interpretResultsSarif,

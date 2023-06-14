@@ -17,7 +17,10 @@ import {
 } from "../pure/interface-types";
 import { ProgressUpdate } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogErrorMessage,
+} from "../common/logging";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
@@ -42,7 +45,6 @@ import {
 } from "./auto-model";
 import { showLlmGeneration } from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
-import { showAndLogErrorMessage } from "../common/logging";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,

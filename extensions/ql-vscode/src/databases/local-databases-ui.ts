@@ -32,7 +32,10 @@ import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
 } from "./local-databases/db-contents-heuristics";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogErrorMessage,
+} from "../common/logging";
 import {
   importArchiveDatabase,
   promptImportGithubDatabase,
@@ -48,7 +51,6 @@ import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
 } from "../common/vscode/selection-commands";
-import { showAndLogErrorMessage } from "../common/logging";
 
 enum SortOrder {
   NameAsc = "NameAsc",

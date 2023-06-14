@@ -18,7 +18,7 @@ import {
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseItem } from "../../databases/local-databases";
 import { extLogger, TeeLogger } from "../../common";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import { CancellationToken } from "vscode";
 import { ProgressCallback } from "../../common/vscode/progress";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";

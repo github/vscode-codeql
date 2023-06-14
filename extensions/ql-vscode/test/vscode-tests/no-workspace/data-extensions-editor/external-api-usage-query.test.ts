@@ -11,9 +11,9 @@ import { readdir, readFile } from "fs-extra";
 import { load } from "js-yaml";
 import { dirname, join } from "path";
 import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries";
-import * as vscodeLog from "../../../../src/common/vscode/logging";
+import * as log from "../../../../src/common/logging/notifications";
 import { RedactableError } from "../../../../src/pure/errors";
-import { showAndLogExceptionWithTelemetry } from "../../../../src/common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../../../../src/common/logging";
 
 function createMockUri(path = "/a/b/c/foo"): Uri {
   return {
@@ -140,7 +140,7 @@ describe("readQueryResults", () => {
 
   beforeEach(() => {
     showAndLogExceptionWithTelemetrySpy = jest.spyOn(
-      vscodeLog,
+      log,
       "showAndLogExceptionWithTelemetry",
     );
   });
@@ -153,7 +153,7 @@ describe("readQueryResults", () => {
     expect(await readQueryResults(options)).toBeUndefined();
     expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
       expect.anything(),
-      expect.anything(),
+      undefined,
       expect.any(RedactableError),
     );
   });
@@ -187,7 +187,7 @@ describe("readQueryResults", () => {
     expect(await readQueryResults(options)).toBeUndefined();
     expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
       expect.anything(),
-      expect.anything(),
+      undefined,
       expect.any(RedactableError),
     );
   });

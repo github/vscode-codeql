@@ -13,7 +13,10 @@ import { tmpDir } from "../../tmp-dir";
 import { ProgressCallback } from "../../common/vscode/progress";
 import { QueryMetadata } from "../../pure/interface-types";
 import { extLogger, Logger } from "../../common";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../../common/logging";
 import * as messages from "../../pure/legacy-messages";
 import * as newMessages from "../../pure/new-messages";
 import * as qsClient from "./query-server-client";
@@ -23,7 +26,6 @@ import { QueryEvaluationInfo, QueryOutputDir } from "../../run-queries-shared";
 import { redactableError } from "../../pure/errors";
 import { CoreQueryResults, CoreQueryTarget } from "../query-runner";
 import { Position } from "../../pure/messages-shared";
-import { showAndLogWarningMessage } from "../../common/logging";
 import { ensureDirSync } from "fs-extra";
 import { telemetryListener } from "../../common/vscode/telemetry";
 

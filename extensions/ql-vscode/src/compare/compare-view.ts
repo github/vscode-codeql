@@ -6,7 +6,7 @@ import {
   QueryCompareResult,
 } from "../pure/interface-types";
 import { extLogger, Logger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";

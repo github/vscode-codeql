@@ -1,6 +1,6 @@
 import vscode, { ExtensionContext } from "vscode";
 import { extLogger, Logger } from "../../common";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import { DisposableObject } from "../../pure/disposable-object";
 import { App } from "../../common/app";
 import { QueryRunner } from "../../query-server";

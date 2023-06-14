@@ -4,7 +4,7 @@ import { basename } from "path";
 import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { extLogger, TeeLogger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";

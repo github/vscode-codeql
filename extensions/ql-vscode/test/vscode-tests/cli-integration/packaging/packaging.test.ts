@@ -5,15 +5,16 @@ import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getErrorMessage } from "../../../../src/pure/helpers-pure";
 
 import * as log from "../../../../src/common/logging/notifications";
-import * as vscodeLog from "../../../../src/common/vscode/logging";
 import {
   handleDownloadPacks,
   handleInstallPackDependencies,
 } from "../../../../src/packaging";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { getActivatedExtension } from "../../global.helper";
-import { showAndLogInformationMessage } from "../../../../src/common/logging";
-import { showAndLogExceptionWithTelemetry } from "../../../../src/common/vscode/logging";
+import {
+  showAndLogInformationMessage,
+  showAndLogExceptionWithTelemetry,
+} from "../../../../src/common/logging";
 
 describe("Packaging commands", () => {
   let cli: CodeQLCliServer;
@@ -35,7 +36,7 @@ describe("Packaging commands", () => {
       .spyOn(window, "showInputBox")
       .mockResolvedValue(undefined);
     showAndLogExceptionWithTelemetrySpy = jest
-      .spyOn(vscodeLog, "showAndLogExceptionWithTelemetry")
+      .spyOn(log, "showAndLogExceptionWithTelemetry")
       .mockResolvedValue(undefined);
     showAndLogInformationMessageSpy = jest
       .spyOn(log, "showAndLogInformationMessage")

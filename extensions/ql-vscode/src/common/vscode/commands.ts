@@ -4,6 +4,7 @@ import {
   extLogger,
   NotificationLogger,
   showAndLogWarningMessage,
+  showAndLogExceptionWithTelemetry,
 } from "../logging";
 import {
   asError,
@@ -13,7 +14,6 @@ import {
 import { redactableError } from "../../pure/errors";
 import { UserCancellationException } from "./progress";
 import { telemetryListener } from "./telemetry";
-import { showAndLogExceptionWithTelemetry } from "./logging";
 import { AppTelemetry } from "../telemetry";
 
 /**

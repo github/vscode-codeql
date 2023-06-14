@@ -3,7 +3,10 @@ import {
   AbstractWebview,
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../common/logging";
 import {
   FromVariantAnalysisMessage,
   ToVariantAnalysisMessage,
@@ -27,7 +30,6 @@ import {
   getVariantAnalysisDefaultResultsFilter,
   getVariantAnalysisDefaultResultsSort,
 } from "../config";
-import { showAndLogWarningMessage } from "../common/logging";
 
 export class VariantAnalysisView
   extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage>

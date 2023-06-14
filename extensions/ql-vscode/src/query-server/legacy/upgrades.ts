@@ -6,7 +6,7 @@ import {
   UserCancellationException,
 } from "../../common/vscode/progress";
 import { extLogger } from "../../common";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import * as messages from "../../pure/legacy-messages";
 import * as qsClient from "./query-server-client";
 import * as tmp from "tmp-promise";

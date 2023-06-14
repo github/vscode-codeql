@@ -71,8 +71,8 @@ import {
 } from "./repo-states-store";
 import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
 import { FetchError } from "node-fetch";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import {
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "../common/logging";

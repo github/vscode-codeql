@@ -6,9 +6,11 @@ import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
 import { access } from "fs-extra";
 import { BaseLogger, extLogger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../common/logging";
 import { DisposableObject } from "../pure/disposable-object";
-import { showAndLogWarningMessage } from "../common/logging";
 import { telemetryListener } from "../common/vscode/telemetry";
 
 async function isFileAccessible(uri: Uri): Promise<boolean> {
