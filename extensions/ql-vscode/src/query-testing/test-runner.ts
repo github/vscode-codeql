@@ -5,12 +5,10 @@ import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
 import { access } from "fs-extra";
-import { BaseLogger } from "../common";
+import { BaseLogger, extLogger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import { DisposableObject } from "../pure/disposable-object";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogWarningMessage,
-} from "../common/vscode/log";
+import { showAndLogWarningMessage } from "../common/logging";
 
 async function isFileAccessible(uri: Uri): Promise<boolean> {
   try {
@@ -88,6 +86,7 @@ export class TestRunner extends DisposableObject {
         // Explorer UI swallows any thrown exception without reporting it to the user.
         // So we need to display the error message ourselves and then rethrow.
         void showAndLogExceptionWithTelemetry(
+          extLogger,
           redactableError(asError(e))`Cannot remove database ${
             database.name
           }: ${getErrorMessage(e)}`,
@@ -128,7 +127,10 @@ export class TestRunner extends DisposableObject {
           // This method is invoked from Test Explorer UI, and testing indicates that Test
           // Explorer UI swallows any thrown exception without reporting it to the user.
           // So we need to display the error message ourselves and then rethrow.
-          void showAndLogWarningMessage(`Cannot reopen database ${uri}: ${e}`);
+          void showAndLogWarningMessage(
+            extLogger,
+            `Cannot reopen database ${uri}: ${e}`,
+          );
           throw e;
         }
       }

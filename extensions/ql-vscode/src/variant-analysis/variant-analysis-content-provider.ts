@@ -2,7 +2,8 @@ import { TextDocumentContentProvider, Uri } from "vscode";
 import { URLSearchParams } from "url";
 import { SHOW_QUERY_TEXT_MSG } from "../query-history/query-history-manager";
 import { VariantAnalysisManager } from "./variant-analysis-manager";
-import { showAndLogWarningMessage } from "../common/vscode/log";
+import { showAndLogWarningMessage } from "../common/logging";
+import { extLogger } from "../common";
 
 export const createVariantAnalysisContentProvider = (
   variantAnalysisManager: VariantAnalysisManager,
@@ -13,6 +14,7 @@ export const createVariantAnalysisContentProvider = (
     const variantAnalysisIdString = params.get("variantAnalysisId");
     if (!variantAnalysisIdString) {
       void showAndLogWarningMessage(
+        extLogger,
         "Unable to show query text. No variant analysis ID provided.",
       );
       return undefined;
@@ -24,6 +26,7 @@ export const createVariantAnalysisContentProvider = (
     );
     if (!variantAnalysis) {
       void showAndLogWarningMessage(
+        extLogger,
         "Unable to show query text. No variant analysis found.",
       );
       return undefined;

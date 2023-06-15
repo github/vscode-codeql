@@ -31,7 +31,7 @@ import {
 import { Credentials } from "../common/authentication";
 import { AppCommandManager } from "../common/commands";
 import { ALLOW_HTTP_SETTING } from "../config";
-import { showAndLogInformationMessage } from "../common/vscode/log";
+import { showAndLogInformationMessage } from "../common/logging";
 
 /**
  * Prompts a user to fetch a database from a remote location. Database is assumed to be an archive file.
@@ -70,6 +70,7 @@ export async function promptImportInternetDatabase(
   if (item) {
     await commandManager.execute("codeQLDatabases.focus");
     void showAndLogInformationMessage(
+      extLogger,
       "Database downloaded and imported successfully.",
     );
   }
@@ -115,6 +116,7 @@ export async function promptImportGithubDatabase(
   if (databaseItem) {
     await commandManager.execute("codeQLDatabases.focus");
     void showAndLogInformationMessage(
+      extLogger,
       "Database downloaded and imported successfully.",
     );
     return databaseItem;
@@ -246,6 +248,7 @@ export async function importArchiveDatabase(
     if (item) {
       await commandManager.execute("codeQLDatabases.focus");
       void showAndLogInformationMessage(
+        extLogger,
         "Database unzipped and imported successfully.",
       );
     }

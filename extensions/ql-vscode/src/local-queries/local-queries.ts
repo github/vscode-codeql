@@ -12,7 +12,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { extLogger, TeeLogger } from "../common";
+import { TeeLogger } from "../common";
 import { isCanary, MAX_QUERIES } from "../config";
 import { gatherQlFiles } from "../pure/files";
 import { basename } from "path";
@@ -46,7 +46,7 @@ import { createMultiSelectionCommand } from "../common/vscode/selection-commands
 import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
-} from "../common/vscode/log";
+} from "../common/logging";
 import { findLanguage } from "../codeql-cli/query-language";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
@@ -292,7 +292,7 @@ export class LocalQueries extends DisposableObject {
           this.cliServer,
           progress,
           credentials,
-          extLogger,
+          this.app.logger,
           this.databaseManager,
           token,
           contextStoragePath,
@@ -323,6 +323,7 @@ export class LocalQueries extends DisposableObject {
 
     if (this.queryRunner.customLogDirectory) {
       void showAndLogWarningMessage(
+        this.app.logger,
         `Custom log directories are no longer supported. The "codeQL.runningQueries.customLogDirectory" setting is deprecated. Unset the setting to stop seeing this message. Query logs saved to ${outputDir.logPath}`,
       );
     }
@@ -469,6 +470,7 @@ export class LocalQueries extends DisposableObject {
     let filteredDBs = this.databaseManager.databaseItems;
     if (filteredDBs.length === 0) {
       void showAndLogErrorMessage(
+        this.app.logger,
         "No databases found. Please add a suitable database to your workspace.",
       );
       return;
@@ -481,6 +483,7 @@ export class LocalQueries extends DisposableObject {
       );
       if (filteredDBs.length === 0) {
         void showAndLogErrorMessage(
+          this.app.logger,
           `No databases found for language ${queryLanguage}. Please add a suitable database to your workspace.`,
         );
         return;
@@ -517,15 +520,16 @@ export class LocalQueries extends DisposableObject {
         }
       }
       if (skippedDatabases.length > 0) {
-        void extLogger.log(`Errors:\n${errors.join("\n")}`);
+        void this.app.logger.log(`Errors:\n${errors.join("\n")}`);
         void showAndLogWarningMessage(
+          this.app.logger,
           `The following databases were skipped:\n${skippedDatabases.join(
             "\n",
           )}.\nFor details about the errors, see the logs.`,
         );
       }
     } else {
-      void showAndLogErrorMessage("No databases selected.");
+      void showAndLogErrorMessage(this.app.logger, "No databases selected.");
     }
   }
 

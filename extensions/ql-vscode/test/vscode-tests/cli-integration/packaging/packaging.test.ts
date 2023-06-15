@@ -4,17 +4,16 @@ import { join } from "path";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getErrorMessage } from "../../../../src/pure/helpers-pure";
 
-import * as log from "../../../../src/common/vscode/log";
+import * as log from "../../../../src/common/logging/notifications";
+import * as vscodeLog from "../../../../src/common/vscode/logging";
 import {
   handleDownloadPacks,
   handleInstallPackDependencies,
 } from "../../../../src/packaging";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { getActivatedExtension } from "../../global.helper";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogInformationMessage,
-} from "../../../../src/common/vscode/log";
+import { showAndLogInformationMessage } from "../../../../src/common/logging";
+import { showAndLogExceptionWithTelemetry } from "../../../../src/common/vscode/logging";
 
 describe("Packaging commands", () => {
   let cli: CodeQLCliServer;
@@ -36,7 +35,7 @@ describe("Packaging commands", () => {
       .spyOn(window, "showInputBox")
       .mockResolvedValue(undefined);
     showAndLogExceptionWithTelemetrySpy = jest
-      .spyOn(log, "showAndLogExceptionWithTelemetry")
+      .spyOn(vscodeLog, "showAndLogExceptionWithTelemetry")
       .mockResolvedValue(undefined);
     showAndLogInformationMessageSpy = jest
       .spyOn(log, "showAndLogInformationMessage")
@@ -54,6 +53,7 @@ describe("Packaging commands", () => {
     await handleDownloadPacks(cli, progress);
     expect(showAndLogExceptionWithTelemetrySpy).not.toHaveBeenCalled();
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
+      expect.anything(),
       expect.stringContaining("Finished downloading packs."),
     );
   });
@@ -67,6 +67,7 @@ describe("Packaging commands", () => {
     await handleDownloadPacks(cli, progress);
     expect(showAndLogExceptionWithTelemetrySpy).not.toHaveBeenCalled();
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
+      expect.anything(),
       expect.stringContaining("Finished downloading packs."),
     );
   });
@@ -81,7 +82,7 @@ describe("Packaging commands", () => {
 
     expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalled();
     expect(
-      showAndLogExceptionWithTelemetrySpy.mock.calls[0][0].fullMessage,
+      showAndLogExceptionWithTelemetrySpy.mock.calls[0][1].fullMessage,
     ).toEqual("Unable to download all packs. See log for more details.");
   });
 
@@ -98,6 +99,7 @@ describe("Packaging commands", () => {
 
     await handleInstallPackDependencies(cli, progress);
     expect(showAndLogInformationMessageSpy).toHaveBeenCalledWith(
+      expect.anything(),
       expect.stringContaining("Finished installing pack dependencies."),
     );
   });

@@ -17,7 +17,7 @@ import {
 } from "../pure/interface-types";
 import { ProgressUpdate } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
-import { extLogger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
@@ -42,10 +42,7 @@ import {
 } from "./auto-model";
 import { showLlmGeneration } from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
-import {
-  showAndLogErrorMessage,
-  showAndLogExceptionWithTelemetry,
-} from "../common/vscode/log";
+import { showAndLogErrorMessage } from "../common/logging";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -167,10 +164,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
             "Original file of this result is not in the database's source archive.",
           );
         } else {
-          void extLogger.log(`Unable to handleMsgFromView: ${e.message}`);
+          void this.app.logger.log(`Unable to handleMsgFromView: ${e.message}`);
         }
       } else {
-        void extLogger.log(`Unable to handleMsgFromView: ${e}`);
+        void this.app.logger.log(`Unable to handleMsgFromView: ${e}`);
       }
     }
   }
@@ -187,7 +184,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
     await outputFile(this.modelFile.filename, yaml);
 
-    void extLogger.log(
+    void this.app.logger.log(
       `Saved data extension YAML to ${this.modelFile.filename}`,
     );
   }
@@ -208,6 +205,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
       if (!existingModeledMethods) {
         void showAndLogErrorMessage(
+          this.app.logger,
           `Failed to parse data extension YAML ${this.modelFile.filename}.`,
         );
         return;
@@ -219,6 +217,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       });
     } catch (e: unknown) {
       void showAndLogErrorMessage(
+        this.app.logger,
         `Unable to read data extension YAML ${
           this.modelFile.filename
         }: ${getErrorMessage(e)}`,
@@ -276,6 +275,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       await this.clearProgress();
     } catch (err) {
       void showAndLogExceptionWithTelemetry(
+        this.app.logger,
         redactableError(
           asError(err),
         )`Failed to load external API usages: ${getErrorMessage(err)}`,
@@ -302,7 +302,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     );
     if (!database) {
       await this.clearProgress();
-      void extLogger.log("No database chosen");
+      void this.app.logger.log("No database chosen");
 
       return;
     }
@@ -341,6 +341,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       });
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
+        this.app.logger,
         redactableError(
           asError(e),
         )`Failed to generate flow model: ${getErrorMessage(e)}`,
@@ -474,6 +475,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(
+          this.app.logger,
           redactableError(e)`Rate limit hit, please try again soon.`,
         );
         return null;

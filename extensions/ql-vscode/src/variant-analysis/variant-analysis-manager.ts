@@ -71,12 +71,11 @@ import {
 } from "./repo-states-store";
 import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
 import { FetchError } from "node-fetch";
-import { extLogger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import {
-  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
-} from "../common/vscode/log";
+} from "../common/logging";
 
 const maxRetryCount = 3;
 
@@ -256,6 +255,7 @@ export class VariantAnalysisManager
     await this.onVariantAnalysisSubmitted(processedVariantAnalysis);
 
     void showAndLogInformationMessage(
+      this.app.logger,
       `Variant analysis ${processedVariantAnalysis.query.name} submitted for processing`,
     );
 
@@ -328,6 +328,7 @@ export class VariantAnalysisManager
   public async showView(variantAnalysisId: number): Promise<void> {
     if (!this.variantAnalyses.get(variantAnalysisId)) {
       void showAndLogExceptionWithTelemetry(
+        this.app.logger,
         redactableError`No variant analysis found with id: ${variantAnalysisId}.`,
       );
     }
@@ -347,6 +348,7 @@ export class VariantAnalysisManager
     const variantAnalysis = await this.getVariantAnalysis(variantAnalysisId);
     if (!variantAnalysis) {
       void showAndLogWarningMessage(
+        this.app.logger,
         "Could not open variant analysis query text. Variant analysis not found.",
       );
       return;
@@ -367,6 +369,7 @@ export class VariantAnalysisManager
       await Window.showTextDocument(doc, { preview: false });
     } catch (error) {
       void showAndLogWarningMessage(
+        this.app.logger,
         "Could not open variant analysis query text. Failed to open text document.",
       );
     }
@@ -377,6 +380,7 @@ export class VariantAnalysisManager
 
     if (!variantAnalysis) {
       void showAndLogWarningMessage(
+        this.app.logger,
         "Could not open variant analysis query file",
       );
       return;
@@ -389,6 +393,7 @@ export class VariantAnalysisManager
       await Window.showTextDocument(textDocument, ViewColumn.One);
     } catch (error) {
       void showAndLogWarningMessage(
+        this.app.logger,
         `Could not open file: ${variantAnalysis.query.filePath}`,
       );
     }
@@ -633,14 +638,14 @@ export class VariantAnalysisManager
               e instanceof FetchError &&
               (e.code === "ETIMEDOUT" || e.code === "ECONNRESET")
             ) {
-              void extLogger.log(
+              void this.app.logger.log(
                 `Timeout while trying to download variant analysis with id: ${
                   variantAnalysis.id
                 }. Error: ${getErrorMessage(e)}. Retrying...`,
               );
               continue;
             }
-            void extLogger.log(
+            void this.app.logger.log(
               `Failed to download variant analysis after ${retry} attempts.`,
             );
             throw e;
@@ -701,6 +706,7 @@ export class VariantAnalysisManager
     }
 
     void showAndLogInformationMessage(
+      this.app.logger,
       "Cancelling variant analysis. This may take a while.",
     );
     await cancelVariantAnalysis(this.app.credentials, variantAnalysis);

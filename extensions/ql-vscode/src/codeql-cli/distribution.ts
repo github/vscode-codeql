@@ -25,7 +25,7 @@ import {
 import {
   showAndLogErrorMessage,
   showAndLogWarningMessage,
-} from "../common/vscode/log";
+} from "../common/logging";
 
 /**
  * distribution.ts
@@ -160,6 +160,7 @@ export class DistributionManager implements DistributionProvider {
     if (this.config.customCodeQlPath) {
       if (!(await pathExists(this.config.customCodeQlPath))) {
         void showAndLogErrorMessage(
+          extLogger,
           `The CodeQL executable path is specified as "${this.config.customCodeQlPath}" ` +
             "by a configuration setting, but a CodeQL executable could not be found at that path. Please check " +
             "that a CodeQL executable exists at the specified path or remove the setting.",
@@ -852,6 +853,7 @@ export async function getExecutableFromDirectory(
 
 function warnDeprecatedLauncher() {
   void showAndLogWarningMessage(
+    extLogger,
     `The "${deprecatedCodeQlLauncherName()!}" launcher has been deprecated and will be removed in a future version. ` +
       `Please use "${codeQlLauncherName()}" instead. It is recommended to update to the latest CodeQL binaries.`,
   );

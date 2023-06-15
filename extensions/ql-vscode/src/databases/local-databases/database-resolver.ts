@@ -11,7 +11,8 @@ import { encodeArchiveBasePath } from "../../common/vscode/archive-filesystem-pr
 import {
   showAndLogInformationMessage,
   showAndLogWarningMessage,
-} from "../../common/vscode/log";
+} from "../../common/logging";
+import { extLogger } from "../../common";
 
 export class DatabaseResolver {
   public static async resolveDatabaseContents(
@@ -107,6 +108,7 @@ async function findDataset(parentDirectory: string): Promise<vscode.Uri> {
   const dbAbsolutePath = join(parentDirectory, dbRelativePaths[0]);
   if (dbRelativePaths.length > 1) {
     void showAndLogWarningMessage(
+      extLogger,
       `Found multiple dataset directories in database, using '${dbAbsolutePath}'.`,
     );
   }
@@ -138,6 +140,7 @@ export async function findSourceArchive(
   }
 
   void showAndLogInformationMessage(
+    extLogger,
     `Could not find source archive for database '${databasePath}'. Assuming paths are absolute.`,
   );
   return undefined;

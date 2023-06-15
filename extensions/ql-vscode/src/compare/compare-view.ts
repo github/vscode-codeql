@@ -5,7 +5,8 @@ import {
   ToCompareViewMessage,
   QueryCompareResult,
 } from "../pure/interface-types";
-import { Logger } from "../common";
+import { extLogger, Logger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";
@@ -24,8 +25,6 @@ import {
 } from "../common/vscode/abstract-webview";
 import { telemetryListener } from "../telemetry";
 import { redactableError } from "../pure/errors";
-
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -152,6 +151,7 @@ export class CompareView extends AbstractWebview<
 
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
+          extLogger,
           redactableError(
             msg.error,
           )`Unhandled error in result comparison view: ${msg.error.message}`,

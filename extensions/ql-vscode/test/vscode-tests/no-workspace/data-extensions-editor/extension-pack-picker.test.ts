@@ -7,11 +7,10 @@ import {
   QlpacksInfo,
   ResolveExtensionsResult,
 } from "../../../../src/codeql-cli/cli";
-import * as log from "../../../../src/common/vscode/log";
 
 import { pickExtensionPackModelFile } from "../../../../src/data-extensions-editor/extension-pack-picker";
 import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
-import { showAndLogErrorMessage } from "../../../../src/common/vscode/log";
+import { createMockLogger } from "../../../__mocks__/loggerMock";
 
 describe("pickExtensionPackModelFile", () => {
   let tmpDir: string;
@@ -33,9 +32,8 @@ describe("pickExtensionPackModelFile", () => {
   const progress = jest.fn();
   let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let showInputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
-  let showAndLogErrorMessageSpy: jest.SpiedFunction<
-    typeof showAndLogErrorMessage
-  >;
+
+  const logger = createMockLogger();
 
   beforeEach(async () => {
     tmpDir = (
@@ -79,11 +77,6 @@ describe("pickExtensionPackModelFile", () => {
     showInputBoxSpy = jest
       .spyOn(window, "showInputBox")
       .mockRejectedValue(new Error("Unexpected call to showInputBox"));
-    showAndLogErrorMessageSpy = jest
-      .spyOn(log, "showAndLogErrorMessage")
-      .mockImplementation((msg) => {
-        throw new Error(`Unexpected call to showAndLogErrorMessage: ${msg}`);
-      });
   });
 
   it("allows choosing an existing extension pack and model file", async () => {
@@ -104,6 +97,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -178,6 +172,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -212,6 +207,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -240,6 +236,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -314,6 +311,7 @@ describe("pickExtensionPackModelFile", () => {
           ...databaseItem,
           language: "csharp",
         },
+        logger,
         progress,
         token,
       ),
@@ -374,6 +372,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -397,6 +396,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -408,8 +408,6 @@ describe("pickExtensionPackModelFile", () => {
   });
 
   it("shows an error when an extension pack resolves to more than 1 location", async () => {
-    showAndLogErrorMessageSpy.mockResolvedValue(undefined);
-
     const cliServer = mockCliServer(
       {
         "my-extension-pack": [
@@ -426,14 +424,14 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
     ).toEqual(undefined);
-    expect(showAndLogErrorMessageSpy).toHaveBeenCalledTimes(1);
-    expect(showAndLogErrorMessageSpy).toHaveBeenCalledWith(
+    expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
+    expect(logger.showErrorMessage).toHaveBeenCalledWith(
       expect.stringMatching(/resolves to multiple paths/),
-      expect.anything(),
     );
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
     expect(showQuickPickSpy).toHaveBeenCalledWith(
@@ -465,6 +463,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -501,6 +500,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -534,12 +534,12 @@ describe("pickExtensionPackModelFile", () => {
     );
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
-    showAndLogErrorMessageSpy.mockResolvedValue(undefined);
 
     expect(
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -558,10 +558,9 @@ describe("pickExtensionPackModelFile", () => {
       token,
     );
     expect(showInputBoxSpy).not.toHaveBeenCalled();
-    expect(showAndLogErrorMessageSpy).toHaveBeenCalledTimes(1);
-    expect(showAndLogErrorMessageSpy).toHaveBeenCalledWith(
+    expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
+    expect(logger.showErrorMessage).toHaveBeenCalledWith(
       expect.stringMatching(/my-extension-pack/),
-      expect.anything(),
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
@@ -582,12 +581,12 @@ describe("pickExtensionPackModelFile", () => {
     await outputFile(join(tmpDir.path, "codeql-pack.yml"), dumpYaml("java"));
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
-    showAndLogErrorMessageSpy.mockResolvedValue(undefined);
 
     expect(
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -606,10 +605,9 @@ describe("pickExtensionPackModelFile", () => {
       token,
     );
     expect(showInputBoxSpy).not.toHaveBeenCalled();
-    expect(showAndLogErrorMessageSpy).toHaveBeenCalledTimes(1);
-    expect(showAndLogErrorMessageSpy).toHaveBeenCalledWith(
+    expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
+    expect(logger.showErrorMessage).toHaveBeenCalledWith(
       expect.stringMatching(/my-extension-pack/),
-      expect.anything(),
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
@@ -640,12 +638,12 @@ describe("pickExtensionPackModelFile", () => {
     );
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
-    showAndLogErrorMessageSpy.mockResolvedValue(undefined);
 
     expect(
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -664,10 +662,9 @@ describe("pickExtensionPackModelFile", () => {
       token,
     );
     expect(showInputBoxSpy).not.toHaveBeenCalled();
-    expect(showAndLogErrorMessageSpy).toHaveBeenCalledTimes(1);
-    expect(showAndLogErrorMessageSpy).toHaveBeenCalledWith(
+    expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
+    expect(logger.showErrorMessage).toHaveBeenCalledWith(
       expect.stringMatching(/my-extension-pack/),
-      expect.anything(),
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
@@ -701,12 +698,12 @@ describe("pickExtensionPackModelFile", () => {
     );
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
-    showAndLogErrorMessageSpy.mockResolvedValue(undefined);
 
     expect(
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -725,10 +722,9 @@ describe("pickExtensionPackModelFile", () => {
       token,
     );
     expect(showInputBoxSpy).not.toHaveBeenCalled();
-    expect(showAndLogErrorMessageSpy).toHaveBeenCalledTimes(1);
-    expect(showAndLogErrorMessageSpy).toHaveBeenCalledWith(
+    expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
+    expect(logger.showErrorMessage).toHaveBeenCalledWith(
       expect.stringMatching(/my-extension-pack/),
-      expect.anything(),
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
     expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
@@ -765,6 +761,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -788,6 +785,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -862,6 +860,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -946,6 +945,7 @@ describe("pickExtensionPackModelFile", () => {
       await pickExtensionPackModelFile(
         cliServer,
         databaseItem,
+        logger,
         progress,
         token,
       ),
@@ -989,6 +989,7 @@ describe("pickExtensionPackModelFile", () => {
           ...databaseItem,
           language: "csharp",
         },
+        logger,
         progress,
         token,
       ),

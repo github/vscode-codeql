@@ -3,7 +3,7 @@ import { VSCodeCredentials } from "./authentication";
 import { Disposable } from "../../pure/disposable-object";
 import { App, AppMode, EnvironmentContext } from "../app";
 import { AppEventEmitter } from "../events";
-import { extLogger, Logger, queryServerLogger } from "../logging";
+import { extLogger, NotificationLogger, queryServerLogger } from "../logging";
 import { Memento } from "../memento";
 import { VSCodeAppEventEmitter } from "./events";
 import { AppCommandManager, QueryServerCommandManager } from "../commands";
@@ -55,7 +55,7 @@ export class ExtensionApp implements App {
     }
   }
 
-  public get logger(): Logger {
+  public get logger(): NotificationLogger {
     return extLogger;
   }
 

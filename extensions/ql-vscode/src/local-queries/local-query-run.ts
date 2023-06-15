@@ -1,4 +1,5 @@
-import { BaseLogger, Logger } from "../common";
+import { BaseLogger, extLogger, Logger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import { CoreQueryResults } from "../query-server";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
 import { DatabaseItem } from "../databases/local-databases";
@@ -16,10 +17,7 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryResultType } from "../pure/new-messages";
 import { redactableError } from "../pure/errors";
 import { LocalQueries } from "./local-queries";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogWarningMessage,
-} from "../common/vscode/log";
+import { showAndLogWarningMessage } from "../common/logging";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 
 function formatResultMessage(result: CoreQueryResults): string {
@@ -119,6 +117,7 @@ export class LocalQueryRun {
       // Raw evaluator log was not found. Notify the user, unless we know why it wasn't found.
       if (resultType === QueryResultType.SUCCESS) {
         void showAndLogWarningMessage(
+          extLogger,
           `Failed to write structured evaluator log to ${outputDir.evalLogPath}.`,
         );
       } else {
@@ -155,7 +154,7 @@ export class LocalQueryRun {
       const message = results.message
         ? redactableError`Failed to run query: ${results.message}`
         : redactableError`Failed to run query`;
-      void showAndLogExceptionWithTelemetry(message);
+      void showAndLogExceptionWithTelemetry(extLogger, message);
     }
     const message = formatResultMessage(results);
     const successful = results.resultType === QueryResultType.SUCCESS;

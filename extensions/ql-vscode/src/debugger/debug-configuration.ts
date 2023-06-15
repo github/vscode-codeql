@@ -9,7 +9,8 @@ import { LocalQueries } from "../local-queries";
 import { getQuickEvalContext, validateQueryPath } from "../run-queries-shared";
 import * as CodeQLProtocol from "./debug-protocol";
 import { getErrorMessage } from "../pure/helpers-pure";
-import { showAndLogErrorMessage } from "../common/vscode/log";
+import { showAndLogErrorMessage } from "../common/logging";
+import { extLogger } from "../common";
 
 /**
  * The CodeQL launch arguments, as specified in "launch.json".
@@ -126,7 +127,7 @@ export class QLDebugConfigurationProvider
       // Any unhandled exception will result in an OS-native error message box, which seems ugly.
       // We'll just show a real VS Code error message, then return null to prevent the debug session
       // from starting.
-      void showAndLogErrorMessage(getErrorMessage(e));
+      void showAndLogErrorMessage(extLogger, getErrorMessage(e));
       return null;
     }
   }

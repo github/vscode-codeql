@@ -9,7 +9,7 @@ import { join } from "path";
 import { App } from "../common/app";
 import { withProgress } from "../common/vscode/progress";
 import { pickExtensionPackModelFile } from "./extension-pack-picker";
-import { showAndLogErrorMessage } from "../common/vscode/log";
+import { showAndLogErrorMessage } from "../common/logging";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
@@ -56,12 +56,13 @@ export class DataExtensionsEditorModule {
       "codeQL.openDataExtensionsEditor": async () => {
         const db = this.databaseManager.currentDatabaseItem;
         if (!db) {
-          void showAndLogErrorMessage("No database selected");
+          void showAndLogErrorMessage(this.app.logger, "No database selected");
           return;
         }
 
         if (!SUPPORTED_LANGUAGES.includes(db.language)) {
           void showAndLogErrorMessage(
+            this.app.logger,
             `The data extensions editor is not supported for ${db.language} databases.`,
           );
           return;
@@ -71,6 +72,7 @@ export class DataExtensionsEditorModule {
           async (progress, token) => {
             if (!(await this.cliServer.cliConstraints.supportsQlpacksKind())) {
               void showAndLogErrorMessage(
+                this.app.logger,
                 `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND.format()} or later.`,
               );
               return;
@@ -79,6 +81,7 @@ export class DataExtensionsEditorModule {
             const modelFile = await pickExtensionPackModelFile(
               this.cliServer,
               db,
+              this.app.logger,
               progress,
               token,
             );

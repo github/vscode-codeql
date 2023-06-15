@@ -4,7 +4,7 @@ import { isQueryLanguage, QueryLanguage } from "../common/query-language";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { extLogger } from "../common";
 import { UserCancellationException } from "../common/vscode/progress";
-import { showAndLogErrorMessage } from "../common/vscode/log";
+import { showAndLogErrorMessage } from "../common/logging";
 
 /**
  * Finds the language that a query targets.
@@ -59,6 +59,7 @@ export async function askForLanguage(
       throw new UserCancellationException("Cancelled.");
     } else {
       void showAndLogErrorMessage(
+        extLogger,
         "Language not found. Language must be specified manually.",
       );
     }
@@ -67,6 +68,7 @@ export async function askForLanguage(
 
   if (!isQueryLanguage(language)) {
     void showAndLogErrorMessage(
+      extLogger,
       `Language '${language}' is not supported. Only languages ${Object.values(
         QueryLanguage,
       ).join(", ")} are supported.`,

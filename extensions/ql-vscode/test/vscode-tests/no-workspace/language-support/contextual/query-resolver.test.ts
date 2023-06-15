@@ -3,7 +3,7 @@ import * as fs from "fs-extra";
 
 import { getErrorMessage } from "../../../../../src/pure/helpers-pure";
 
-import * as log from "../../../../../src/common/vscode/log";
+import * as log from "../../../../../src/common/logging/notifications";
 import * as workspaceFolders from "../../../../../src/common/vscode/workspace-folders";
 import * as qlpack from "../../../../../src/databases/qlpack";
 import {

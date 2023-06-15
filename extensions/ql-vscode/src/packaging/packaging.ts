@@ -7,14 +7,12 @@ import {
   withProgress,
 } from "../common/vscode/progress";
 import { extLogger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import { asError, getErrorStack } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
 import { PACKS_BY_QUERY_LANGUAGE } from "../common/query-language";
 import { PackagingCommands } from "../common/commands";
-import {
-  showAndLogExceptionWithTelemetry,
-  showAndLogInformationMessage,
-} from "../common/vscode/log";
+import { showAndLogInformationMessage } from "../common/logging";
 
 type PackagingOptions = {
   cliServer: CodeQLCliServer;
@@ -87,9 +85,13 @@ export async function handleDownloadPacks(
     });
     try {
       await cliServer.packDownload(packsToDownload);
-      void showAndLogInformationMessage("Finished downloading packs.");
+      void showAndLogInformationMessage(
+        extLogger,
+        "Finished downloading packs.",
+      );
     } catch (error) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError(
           asError(error),
         )`Unable to download all packs. See log for more details.`,
@@ -165,6 +167,7 @@ export async function handleInstallPackDependencies(
       );
     } else {
       void showAndLogInformationMessage(
+        extLogger,
         "Finished installing pack dependencies.",
       );
     }

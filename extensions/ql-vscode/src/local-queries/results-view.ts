@@ -40,7 +40,8 @@ import {
   getDefaultResultSetName,
   ParsedResultSets,
 } from "../pure/interface-types";
-import { Logger } from "../common";
+import { extLogger, Logger } from "../common";
+import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import {
   CompletedQueryInfo,
   interpretResultsSarif,
@@ -73,7 +74,6 @@ import { HistoryItemLabelProvider } from "../query-history/history-item-label-pr
 import { telemetryListener } from "../telemetry";
 import { redactableError } from "../pure/errors";
 import { ResultsViewCommands } from "../common/commands";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/log";
 
 /**
  * results-view.ts
@@ -319,6 +319,7 @@ export class ResultsView extends AbstractWebview<
           break;
         case "unhandledError":
           void showAndLogExceptionWithTelemetry(
+            extLogger,
             redactableError(
               msg.error,
             )`Unhandled error in results view: ${msg.error.message}`,
@@ -329,6 +330,7 @@ export class ResultsView extends AbstractWebview<
       }
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError(
           asError(e),
         )`Error handling message from results view: ${getErrorMessage(e)}`,
@@ -378,6 +380,7 @@ export class ResultsView extends AbstractWebview<
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
@@ -396,6 +399,7 @@ export class ResultsView extends AbstractWebview<
   ): Promise<void> {
     if (this._displayedQuery === undefined) {
       void showAndLogExceptionWithTelemetry(
+        extLogger,
         redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
@@ -806,6 +810,7 @@ export class ResultsView extends AbstractWebview<
         // If interpretation fails, accept the error and continue
         // trying to render uninterpreted results anyway.
         void showAndLogExceptionWithTelemetry(
+          extLogger,
           redactableError(
             asError(e),
           )`Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(
