@@ -1,3 +1,4 @@
 name: vscode-codeql-custom-queries-javascript
 version: 0.0.0
-libraryPathDependencies: codeql-javascript
+dependencies:
+  codeql/javascript-queries: "*"
