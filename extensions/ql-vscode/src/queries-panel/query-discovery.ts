@@ -62,26 +62,27 @@ export class QueryDiscovery
       const queriesInRoot = this.paths.filter((query) =>
         containsPath(workspaceFolder.uri.fsPath, query.path),
       );
-      if (queriesInRoot.length > 0) {
-        const root = new FileTreeDirectory<string>(
-          workspaceFolder.uri.fsPath,
-          workspaceFolder.name,
-          this.env,
-        );
-        for (const query of queriesInRoot) {
-          const dirName = dirname(normalize(relative(root.path, query.path)));
-          const parentDirectory = root.createDirectory(dirName);
-          parentDirectory.addChild(
-            new FileTreeLeaf<string>(
-              query.path,
-              basename(query.path),
-              query.language,
-            ),
-          );
-        }
-        root.finish();
-        roots.push(root);
+      if (queriesInRoot.length === 0) {
+        continue;
       }
+      const root = new FileTreeDirectory<string>(
+        workspaceFolder.uri.fsPath,
+        workspaceFolder.name,
+        this.env,
+      );
+      for (const query of queriesInRoot) {
+        const dirName = dirname(normalize(relative(root.path, query.path)));
+        const parentDirectory = root.createDirectory(dirName);
+        parentDirectory.addChild(
+          new FileTreeLeaf<string>(
+            query.path,
+            basename(query.path),
+            query.language,
+          ),
+        );
+      }
+      root.finish();
+      roots.push(root);
     }
     return roots;
   }
