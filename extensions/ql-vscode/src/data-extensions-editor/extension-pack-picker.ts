@@ -2,8 +2,8 @@ import { join, relative, resolve, sep } from "path";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { minimatch } from "minimatch";
-import { CancellationToken, window } from "vscode";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import { CancellationToken, window, WorkspaceFolder } from "vscode";
+import { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
 import {
   getOnDiskWorkspaceFolders,
   getOnDiskWorkspaceFoldersObjects,
@@ -15,6 +15,7 @@ import { getErrorMessage } from "../pure/helpers-pure";
 import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
 import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
 import { containsPath } from "../pure/files";
+import { disableAutoNameExtensionPack } from "../config";
 
 const maxStep = 3;
 
@@ -78,6 +79,21 @@ async function pickExtensionPack(
     additionalPacks,
     true,
   );
+
+  if (!disableAutoNameExtensionPack()) {
+    progress({
+      message: "Creating extension pack...",
+      step: 2,
+      maxStep,
+    });
+
+    return autoCreateExtensionPack(
+      databaseItem.name,
+      databaseItem.language,
+      extensionPacksInfo,
+      logger,
+    );
+  }
 
   if (Object.keys(extensionPacksInfo).length === 0) {
     return pickNewExtensionPack(databaseItem, token);
@@ -239,26 +255,15 @@ async function pickNewExtensionPack(
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   token: CancellationToken,
 ): Promise<ExtensionPack | undefined> {
-  const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
-  const workspaceFolderOptions = workspaceFolders.map((folder) => ({
-    label: folder.name,
-    detail: folder.uri.fsPath,
-    path: folder.uri.fsPath,
-  }));
-
-  // We're not using window.showWorkspaceFolderPick because that also includes the database source folders while
-  // we only want to include on-disk workspace folders.
-  const workspaceFolder = await window.showQuickPick(workspaceFolderOptions, {
-    title: "Select workspace folder to create extension pack in",
-  });
+  const workspaceFolder = await askForWorkspaceFolder();
   if (!workspaceFolder) {
     return undefined;
   }
 
-  let examplePackName = `${databaseItem.name}-extensions`;
-  if (!examplePackName.includes("/")) {
-    examplePackName = `pack/${examplePackName}`;
-  }
+  const examplePackName = autoNameExtensionPack(
+    databaseItem.name,
+    databaseItem.language,
+  );
 
   const packName = await window.showInputBox(
     {
@@ -283,7 +288,7 @@ async function pickNewExtensionPack(
           return "Invalid package name: a pack name must contain only lowercase ASCII letters, ASCII digits, and hyphens";
         }
 
-        const packPath = join(workspaceFolder.path, matches.groups.name);
+        const packPath = join(workspaceFolder.uri.fsPath, matches.groups.name);
         if (await pathExists(packPath)) {
           return `A pack already exists at ${packPath}`;
         }
@@ -303,12 +308,145 @@ async function pickNewExtensionPack(
   }
 
   const name = matches.groups.name;
-  const packPath = join(workspaceFolder.path, name);
+  const packPath = join(workspaceFolder.uri.fsPath, name);
 
   if (await pathExists(packPath)) {
     return undefined;
   }
 
+  return writeExtensionPack(packPath, packName, databaseItem.language);
+}
+
+async function autoCreateExtensionPack(
+  name: string,
+  language: string,
+  extensionPacksInfo: QlpacksInfo,
+  logger: NotificationLogger,
+): Promise<ExtensionPack | undefined> {
+  const workspaceFolder = await autoPickWorkspaceFolder(language);
+  if (!workspaceFolder) {
+    return undefined;
+  }
+
+  const packName = autoNameExtensionPack(name, language);
+  if (!packName) {
+    void showAndLogErrorMessage(
+      logger,
+      `Could not automatically name extension pack for database ${name}`,
+    );
+
+    return undefined;
+  }
+
+  const existingExtensionPackPaths = extensionPacksInfo[packName];
+  if (existingExtensionPackPaths?.length === 1) {
+    let extensionPack: ExtensionPack;
+    try {
+      extensionPack = await readExtensionPack(existingExtensionPackPaths[0]);
+    } catch (e: unknown) {
+      void showAndLogErrorMessage(
+        logger,
+        `Could not read extension pack ${packName}`,
+        {
+          fullMessage: `Could not read extension pack ${packName} at ${
+            existingExtensionPackPaths[0]
+          }: ${getErrorMessage(e)}`,
+        },
+      );
+
+      return undefined;
+    }
+
+    return extensionPack;
+  } else if (existingExtensionPackPaths?.length > 1) {
+    void showAndLogErrorMessage(
+      logger,
+      `Extension pack ${packName} resolves to multiple paths`,
+      {
+        fullMessage: `Extension pack ${packName} resolves to multiple paths: ${existingExtensionPackPaths.join(
+          ", ",
+        )}`,
+      },
+    );
+
+    return undefined;
+  }
+
+  const matches = packNameRegex.exec(packName);
+  if (!matches?.groups) {
+    void showAndLogErrorMessage(
+      logger,
+      `Extension pack ${packName} does not have a valid name`,
+    );
+
+    return undefined;
+  }
+
+  const unscopedName = matches.groups.name;
+  const packPath = join(workspaceFolder.uri.fsPath, unscopedName);
+
+  if (await pathExists(packPath)) {
+    void showAndLogErrorMessage(
+      logger,
+      `Directory ${packPath} already exists for extension pack ${packName}`,
+    );
+
+    return undefined;
+  }
+
+  return writeExtensionPack(packPath, packName, language);
+}
+
+async function autoPickWorkspaceFolder(
+  language: string,
+): Promise<WorkspaceFolder | undefined> {
+  const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
+
+  if (workspaceFolders.length === 1) {
+    return workspaceFolders[0];
+  }
+  const starterWorkspaceFolderForLanguage = workspaceFolders.find(
+    (folder) => folder.name === `codeql-custom-queries-${language}`,
+  );
+  if (starterWorkspaceFolderForLanguage) {
+    return starterWorkspaceFolderForLanguage;
+  }
+
+  const workspaceFolderForLanguage = workspaceFolders.find((folder) =>
+    folder.name.endsWith(`-${language}`),
+  );
+  if (workspaceFolderForLanguage) {
+    return workspaceFolderForLanguage;
+  }
+
+  return askForWorkspaceFolder();
+}
+
+async function askForWorkspaceFolder(): Promise<WorkspaceFolder | undefined> {
+  const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
+  const workspaceFolderOptions = workspaceFolders.map((folder) => ({
+    label: folder.name,
+    detail: folder.uri.fsPath,
+    folder,
+  }));
+
+  // We're not using window.showWorkspaceFolderPick because that also includes the database source folders while
+  // we only want to include on-disk workspace folders.
+  const workspaceFolder = await window.showQuickPick(workspaceFolderOptions, {
+    title: "Select workspace folder to create extension pack in",
+  });
+  if (!workspaceFolder) {
+    return undefined;
+  }
+
+  return workspaceFolder.folder;
+}
+
+async function writeExtensionPack(
+  packPath: string,
+  packName: string,
+  language: string,
+): Promise<ExtensionPack> {
   const packYamlPath = join(packPath, "codeql-pack.yml");
 
   const extensionPack: ExtensionPack = {
@@ -317,7 +455,7 @@ async function pickNewExtensionPack(
     name: packName,
     version: "0.0.0",
     extensionTargets: {
-      [`codeql/${databaseItem.language}-all`]: "*",
+      [`codeql/${language}-all`]: "*",
     },
     dataExtensions: ["models/**/*.yml"],
   };
@@ -419,4 +557,41 @@ async function readExtensionPack(path: string): Promise<ExtensionPack> {
     extensionTargets: qlpack.extensionTargets,
     dataExtensions,
   };
+}
+
+function autoNameExtensionPack(
+  name: string,
+  language: string,
+): string | undefined {
+  let packName = `${name}-${language}`;
+  if (!packName.includes("/")) {
+    packName = `pack/${packName}`;
+  }
+
+  const parts = packName.split("/");
+  const sanitizedParts = parts.map((part) => sanitizeExtensionPackName(part));
+
+  // This will ensure there's only 1 slash
+  packName = `${sanitizedParts[0]}/${sanitizedParts.slice(1).join("-")}`;
+
+  return packName;
+}
+
+function sanitizeExtensionPackName(name: string) {
+  // Lowercase everything
+  name = name.toLowerCase();
+
+  // Replace all spaces, dots, and underscores with hyphens
+  name = name.replaceAll(/[\s._]+/g, "-");
+
+  // Replace all characters which are not allowed by empty strings
+  name = name.replaceAll(/[^a-z0-9-]/g, "");
+
+  // Remove any leading or trailing hyphens
+  name = name.replaceAll(/^-|-$/g, "");
+
+  // Remove any duplicate hyphens
+  name = name.replaceAll(/-{2,}/g, "-");
+
+  return name;
 }

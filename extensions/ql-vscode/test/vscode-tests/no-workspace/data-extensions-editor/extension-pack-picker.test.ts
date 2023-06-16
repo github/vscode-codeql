@@ -1,4 +1,11 @@
-import { CancellationTokenSource, QuickPickItem, window } from "vscode";
+import {
+  CancellationTokenSource,
+  QuickPickItem,
+  Uri,
+  window,
+  workspace,
+  WorkspaceFolder,
+} from "vscode";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { outputFile, readFile } from "fs-extra";
 import { join } from "path";
@@ -8,6 +15,8 @@ import {
   ResolveExtensionsResult,
 } from "../../../../src/codeql-cli/cli";
 
+import * as config from "../../../../src/config";
+
 import { pickExtensionPackModelFile } from "../../../../src/data-extensions-editor/extension-pack-picker";
 import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
@@ -16,8 +25,10 @@ describe("pickExtensionPackModelFile", () => {
   let tmpDir: string;
   let extensionPackPath: string;
   let anotherExtensionPackPath: string;
+  let autoExtensionPackPath: string;
   let extensionPack: ExtensionPack;
   let anotherExtensionPack: ExtensionPack;
+  let autoExtensionPack: ExtensionPack;
 
   let qlPacks: QlpacksInfo;
   let extensions: ResolveExtensionsResult;
@@ -32,6 +43,12 @@ describe("pickExtensionPackModelFile", () => {
   const progress = jest.fn();
   let showQuickPickSpy: jest.SpiedFunction<typeof window.showQuickPick>;
   let showInputBoxSpy: jest.SpiedFunction<typeof window.showInputBox>;
+  let disableAutoNameExtensionPackSpy: jest.SpiedFunction<
+    typeof config.disableAutoNameExtensionPack
+  >;
+  let workspaceFoldersSpy: jest.SpyInstance;
+  let additionalPacks: string[];
+  let workspaceFolder: WorkspaceFolder;
 
   const logger = createMockLogger();
 
@@ -44,10 +61,12 @@ describe("pickExtensionPackModelFile", () => {
 
     extensionPackPath = join(tmpDir, "my-extension-pack");
     anotherExtensionPackPath = join(tmpDir, "another-extension-pack");
+    autoExtensionPackPath = join(tmpDir, "vscode-codeql-java");
 
     qlPacks = {
       "my-extension-pack": [extensionPackPath],
       "another-extension-pack": [anotherExtensionPackPath],
+      "github/vscode-codeql-java": [autoExtensionPackPath],
     };
     extensions = {
       models: [],
@@ -55,6 +74,13 @@ describe("pickExtensionPackModelFile", () => {
         [extensionPackPath]: [
           {
             file: join(extensionPackPath, "models", "model.yml"),
+            index: 0,
+            predicate: "sinkModel",
+          },
+        ],
+        [autoExtensionPackPath]: [
+          {
+            file: join(autoExtensionPackPath, "models", "model.yml"),
             index: 0,
             predicate: "sinkModel",
           },
@@ -70,6 +96,10 @@ describe("pickExtensionPackModelFile", () => {
       anotherExtensionPackPath,
       "another-extension-pack",
     );
+    autoExtensionPack = await createMockExtensionPack(
+      autoExtensionPackPath,
+      "github/vscode-codeql-java",
+    );
 
     showQuickPickSpy = jest
       .spyOn(window, "showQuickPick")
@@ -77,6 +107,19 @@ describe("pickExtensionPackModelFile", () => {
     showInputBoxSpy = jest
       .spyOn(window, "showInputBox")
       .mockRejectedValue(new Error("Unexpected call to showInputBox"));
+    disableAutoNameExtensionPackSpy = jest
+      .spyOn(config, "disableAutoNameExtensionPack")
+      .mockReturnValue(true);
+
+    workspaceFolder = {
+      uri: Uri.file(tmpDir),
+      name: "codeql-custom-queries-java",
+      index: 0,
+    };
+    additionalPacks = [tmpDir];
+    workspaceFoldersSpy = jest
+      .spyOn(workspace, "workspaceFolders", "get")
+      .mockReturnValue([workspaceFolder]);
   });
 
   it("allows choosing an existing extension pack and model file", async () => {
@@ -121,6 +164,12 @@ describe("pickExtensionPackModelFile", () => {
           extensionPack: anotherExtensionPack,
         },
         {
+          label: "github/vscode-codeql-java",
+          description: "0.0.0",
+          detail: autoExtensionPackPath,
+          extensionPack: autoExtensionPack,
+        },
+        {
           label: expect.stringMatching(/create/i),
           extensionPack: null,
         },
@@ -147,11 +196,14 @@ describe("pickExtensionPackModelFile", () => {
       token,
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
-    expect(cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
+    expect(cliServer.resolveQlpacks).toHaveBeenCalledWith(
+      additionalPacks,
+      true,
+    );
     expect(cliServer.resolveExtensions).toHaveBeenCalledTimes(1);
     expect(cliServer.resolveExtensions).toHaveBeenCalledWith(
       extensionPackPath,
-      [],
+      additionalPacks,
     );
   });
 
@@ -190,12 +242,146 @@ describe("pickExtensionPackModelFile", () => {
       token,
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
-    expect(cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
+    expect(cliServer.resolveQlpacks).toHaveBeenCalledWith(
+      additionalPacks,
+      true,
+    );
     expect(cliServer.resolveExtensions).toHaveBeenCalledTimes(1);
     expect(cliServer.resolveExtensions).toHaveBeenCalledWith(
       extensionPackPath,
-      [],
+      additionalPacks,
     );
+  });
+
+  it("automatically selects an extension pack and allows selecting an existing model file", async () => {
+    disableAutoNameExtensionPackSpy.mockReturnValue(false);
+
+    const modelPath = join(autoExtensionPackPath, "models", "model.yml");
+
+    const cliServer = mockCliServer(qlPacks, extensions);
+
+    showQuickPickSpy.mockResolvedValueOnce({
+      label: "models/model.yml",
+      file: modelPath,
+    } as QuickPickItem);
+
+    expect(
+      await pickExtensionPackModelFile(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        token,
+      ),
+    ).toEqual({
+      filename: modelPath,
+      extensionPack: autoExtensionPack,
+    });
+    expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
+    expect(showQuickPickSpy).toHaveBeenCalledWith(
+      [
+        {
+          label: "models/model.yml",
+          file: modelPath,
+        },
+        {
+          label: expect.stringMatching(/create/i),
+          file: null,
+        },
+      ],
+      {
+        title: expect.any(String),
+      },
+      token,
+    );
+    expect(cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
+    expect(cliServer.resolveQlpacks).toHaveBeenCalledWith(
+      additionalPacks,
+      true,
+    );
+    expect(cliServer.resolveExtensions).toHaveBeenCalledTimes(1);
+    expect(cliServer.resolveExtensions).toHaveBeenCalledWith(
+      autoExtensionPackPath,
+      additionalPacks,
+    );
+  });
+
+  it("automatically creates an extension pack and allows creating a new model file", async () => {
+    disableAutoNameExtensionPackSpy.mockReturnValue(false);
+
+    const tmpDir = await dir({
+      unsafeCleanup: true,
+    });
+
+    workspaceFoldersSpy.mockReturnValue([
+      {
+        uri: Uri.file("/b/a/c"),
+        name: "my-workspace",
+        index: 0,
+      },
+      {
+        uri: Uri.file("/a/b/c"),
+        name: "codeql-custom-queries-csharp",
+        index: 1,
+      },
+      {
+        uri: Uri.file(tmpDir.path),
+        name: "codeql-custom-queries-java",
+        index: 2,
+      },
+    ]);
+
+    const newPackDir = join(tmpDir.path, "vscode-codeql-java");
+
+    const cliServer = mockCliServer({}, { models: [], data: {} });
+
+    showInputBoxSpy.mockResolvedValue("models/my-model.yml");
+
+    expect(
+      await pickExtensionPackModelFile(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        token,
+      ),
+    ).toEqual({
+      filename: join(newPackDir, "models", "my-model.yml"),
+      extensionPack: {
+        path: newPackDir,
+        yamlPath: join(newPackDir, "codeql-pack.yml"),
+        name: "github/vscode-codeql-java",
+        version: "0.0.0",
+        extensionTargets: {
+          "codeql/java-all": "*",
+        },
+        dataExtensions: ["models/**/*.yml"],
+      },
+    });
+    expect(showQuickPickSpy).not.toHaveBeenCalled();
+    expect(showInputBoxSpy).toHaveBeenCalledTimes(1);
+    expect(showInputBoxSpy).toHaveBeenCalledWith(
+      {
+        title: expect.stringMatching(/model file/),
+        value: "models/github.vscode-codeql.model.yml",
+        validateInput: expect.any(Function),
+      },
+      token,
+    );
+    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
+    expect(cliServer.resolveExtensions).toHaveBeenCalled();
+
+    expect(
+      loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
+    ).toEqual({
+      name: "github/vscode-codeql-java",
+      version: "0.0.0",
+      library: true,
+      extensionTargets: {
+        "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    });
   });
 
   it("allows cancelling the extension pack prompt", async () => {
@@ -227,7 +413,11 @@ describe("pickExtensionPackModelFile", () => {
 
     showQuickPickSpy.mockResolvedValueOnce({
       label: "codeql-custom-queries-java",
-      path: tmpDir.path,
+      folder: {
+        uri: Uri.file(tmpDir.path),
+        name: "codeql-custom-queries-java",
+        index: 0,
+      },
     } as QuickPickItem);
     showInputBoxSpy.mockResolvedValueOnce("pack/new-extension-pack");
     showInputBoxSpy.mockResolvedValue("models/my-model.yml");
@@ -259,7 +449,7 @@ describe("pickExtensionPackModelFile", () => {
       {
         title: expect.stringMatching(/extension pack/i),
         prompt: expect.stringMatching(/extension pack/i),
-        placeHolder: expect.stringMatching(/github\/vscode-codeql-extensions/),
+        placeHolder: expect.stringMatching(/github\/vscode-codeql-java/),
         validateInput: expect.any(Function),
       },
       token,
@@ -299,7 +489,11 @@ describe("pickExtensionPackModelFile", () => {
 
     showQuickPickSpy.mockResolvedValueOnce({
       label: "codeql-custom-queries-java",
-      path: tmpDir.path,
+      folder: {
+        uri: Uri.file(tmpDir.path),
+        name: "codeql-custom-queries-java",
+        index: 0,
+      },
     } as QuickPickItem);
     showInputBoxSpy.mockResolvedValueOnce("pack/new-extension-pack");
     showInputBoxSpy.mockResolvedValue("models/my-model.yml");
@@ -334,7 +528,7 @@ describe("pickExtensionPackModelFile", () => {
       {
         title: expect.stringMatching(/extension pack/i),
         prompt: expect.stringMatching(/extension pack/i),
-        placeHolder: expect.stringMatching(/github\/vscode-codeql-extensions/),
+        placeHolder: expect.stringMatching(/github\/vscode-codeql-csharp/),
         validateInput: expect.any(Function),
       },
       token,
@@ -388,7 +582,11 @@ describe("pickExtensionPackModelFile", () => {
 
     showQuickPickSpy.mockResolvedValueOnce({
       label: "codeql-custom-queries-java",
-      path: "/a/b/c",
+      folder: {
+        uri: Uri.file("/a/b/c"),
+        name: "codeql-custom-queries-java",
+        index: 0,
+      },
     } as QuickPickItem);
     showInputBoxSpy.mockResolvedValueOnce(undefined);
 
@@ -777,7 +975,11 @@ describe("pickExtensionPackModelFile", () => {
 
     showQuickPickSpy.mockResolvedValueOnce({
       label: "a",
-      path: "/a/b/c",
+      folder: {
+        uri: Uri.file("/a/b/c"),
+        name: "a",
+        index: 0,
+      },
     } as QuickPickItem);
     showInputBoxSpy.mockResolvedValue(undefined);
 
@@ -1014,7 +1216,10 @@ describe("pickExtensionPackModelFile", () => {
       token,
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
-    expect(cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
+    expect(cliServer.resolveQlpacks).toHaveBeenCalledWith(
+      additionalPacks,
+      true,
+    );
     expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
 });
