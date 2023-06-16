@@ -10,7 +10,6 @@ import { FilePathDiscovery } from "../../../../../src/common/vscode/file-path-di
 import { basename, dirname, join } from "path";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import * as tmp from "tmp";
-import { expectArraysEqual } from "../../../utils/expect-arrays-equal";
 
 interface TestData {
   path: string;
@@ -127,11 +126,13 @@ describe("FilePathDiscovery", () => {
 
       await discovery.initialRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "123.test"), contents: "123" },
-        { path: join(workspacePath, "456.test"), contents: "456" },
-        { path: join(workspacePath, "bar", "789.test"), contents: "789" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([
+          { path: join(workspacePath, "123.test"), contents: "123" },
+          { path: join(workspacePath, "456.test"), contents: "456" },
+          { path: join(workspacePath, "bar", "789.test"), contents: "789" },
+        ]),
+      );
     });
 
     it("should ignore non-test files", async () => {
@@ -141,9 +142,9 @@ describe("FilePathDiscovery", () => {
 
       await discovery.initialRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "1.test"), contents: "1" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "1.test"), contents: "1" }]),
+      );
     });
   });
 
@@ -161,9 +162,9 @@ describe("FilePathDiscovery", () => {
       onDidCreateFile.fire(Uri.file(newFile));
       await discovery.waitForCurrentRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "1.test"), contents: "1" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "1.test"), contents: "1" }]),
+      );
       expect(didChangePathsListener).toHaveBeenCalled();
     });
 
@@ -178,7 +179,7 @@ describe("FilePathDiscovery", () => {
       onDidCreateFile.fire(Uri.file(join(workspacePath, "1.test")));
       await discovery.waitForCurrentRefresh();
 
-      expectArraysEqual(discovery.getPaths(), []);
+      expect(discovery.getPaths()).toEqual([]);
       expect(didChangePathsListener).not.toHaveBeenCalled();
     });
 
@@ -197,11 +198,13 @@ describe("FilePathDiscovery", () => {
       onDidCreateFile.fire(Uri.file(newDir));
       await discovery.waitForCurrentRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(newDir, "1.test"), contents: "1" },
-        { path: join(newDir, "bar", "2.test"), contents: "2" },
-        { path: join(newDir, "bar", "3.test"), contents: "3" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([
+          { path: join(newDir, "1.test"), contents: "1" },
+          { path: join(newDir, "bar", "2.test"), contents: "2" },
+          { path: join(newDir, "bar", "3.test"), contents: "3" },
+        ]),
+      );
       expect(didChangePathsListener).toHaveBeenCalled();
     });
 
@@ -214,16 +217,16 @@ describe("FilePathDiscovery", () => {
       const didChangePathsListener = jest.fn();
       discovery.onDidChangePaths(didChangePathsListener);
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "1.test"), contents: "1" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "1.test"), contents: "1" }]),
+      );
 
       onDidCreateFile.fire(Uri.file(testFile));
       await discovery.waitForCurrentRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "1.test"), contents: "1" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "1.test"), contents: "1" }]),
+      );
       expect(didChangePathsListener).not.toHaveBeenCalled();
     });
   });
@@ -238,16 +241,16 @@ describe("FilePathDiscovery", () => {
       const didChangePathsListener = jest.fn();
       discovery.onDidChangePaths(didChangePathsListener);
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "123.test"), contents: "123" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "123.test"), contents: "123" }]),
+      );
 
       onDidChangeFile.fire(Uri.file(testFile));
       await discovery.waitForCurrentRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "123.test"), contents: "123" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "123.test"), contents: "123" }]),
+      );
       expect(didChangePathsListener).not.toHaveBeenCalled();
     });
 
@@ -260,17 +263,17 @@ describe("FilePathDiscovery", () => {
       const didChangePathsListener = jest.fn();
       discovery.onDidChangePaths(didChangePathsListener);
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "1.test"), contents: "foo" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "1.test"), contents: "foo" }]),
+      );
 
       writeFileSync(testFile, "bar");
       onDidChangeFile.fire(Uri.file(testFile));
       await discovery.waitForCurrentRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "1.test"), contents: "bar" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "1.test"), contents: "bar" }]),
+      );
       expect(didChangePathsListener).toHaveBeenCalled();
     });
   });
@@ -285,15 +288,15 @@ describe("FilePathDiscovery", () => {
       const didChangePathsListener = jest.fn();
       discovery.onDidChangePaths(didChangePathsListener);
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "1.test"), contents: "1" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "1.test"), contents: "1" }]),
+      );
 
       rmSync(testFile);
       onDidDeleteFile.fire(Uri.file(testFile));
       await discovery.waitForCurrentRefresh();
 
-      expectArraysEqual(discovery.getPaths(), []);
+      expect(discovery.getPaths()).toEqual([]);
       expect(didChangePathsListener).toHaveBeenCalled();
     });
 
@@ -306,16 +309,16 @@ describe("FilePathDiscovery", () => {
       const didChangePathsListener = jest.fn();
       discovery.onDidChangePaths(didChangePathsListener);
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "1.test"), contents: "1" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "1.test"), contents: "1" }]),
+      );
 
       onDidDeleteFile.fire(Uri.file(testFile));
       await discovery.waitForCurrentRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "1.test"), contents: "1" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "1.test"), contents: "1" }]),
+      );
       expect(didChangePathsListener).not.toHaveBeenCalled();
     });
 
@@ -329,20 +332,22 @@ describe("FilePathDiscovery", () => {
       const didChangePathsListener = jest.fn();
       discovery.onDidChangePaths(didChangePathsListener);
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "123.test"), contents: "123" },
-        { path: join(workspacePath, "bar", "456.test"), contents: "456" },
-        { path: join(workspacePath, "bar", "789.test"), contents: "789" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([
+          { path: join(workspacePath, "123.test"), contents: "123" },
+          { path: join(workspacePath, "bar", "456.test"), contents: "456" },
+          { path: join(workspacePath, "bar", "789.test"), contents: "789" },
+        ]),
+      );
 
       rmSync(join(workspacePath, "bar"), { recursive: true });
 
       onDidDeleteFile.fire(Uri.file(join(workspacePath, "bar")));
       await discovery.waitForCurrentRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "123.test"), contents: "123" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "123.test"), contents: "123" }]),
+      );
       expect(didChangePathsListener).toHaveBeenCalled();
     });
   });
@@ -390,9 +395,9 @@ describe("FilePathDiscovery", () => {
 
       await discovery.initialRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "123.test"), contents: "123" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([{ path: join(workspacePath, "123.test"), contents: "123" }]),
+      );
 
       const previousWorkspaceFolders = workspace.workspaceFolders || [];
       const newWorkspaceFolders: WorkspaceFolder[] = [
@@ -413,10 +418,12 @@ describe("FilePathDiscovery", () => {
       });
       await discovery.waitForCurrentRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(workspacePath, "123.test"), contents: "123" },
-        { path: join(tmpDir, "workspace2", "456.test"), contents: "456" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([
+          { path: join(workspacePath, "123.test"), contents: "123" },
+          { path: join(tmpDir, "workspace2", "456.test"), contents: "456" },
+        ]),
+      );
     });
 
     it("should forgot files in old workspaces, even if the files on disk still exist", async () => {
@@ -439,10 +446,12 @@ describe("FilePathDiscovery", () => {
 
       await discovery.initialRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(tmpDir, "workspace1", "123.test"), contents: "123" },
-        { path: join(tmpDir, "workspace2", "456.test"), contents: "456" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([
+          { path: join(tmpDir, "workspace1", "123.test"), contents: "123" },
+          { path: join(tmpDir, "workspace2", "456.test"), contents: "456" },
+        ]),
+      );
 
       workspaceFoldersSpy.mockReturnValue([workspaceFolders[0]]);
       onDidChangeWorkspaceFolders.fire({
@@ -451,9 +460,11 @@ describe("FilePathDiscovery", () => {
       });
       await discovery.waitForCurrentRefresh();
 
-      expectArraysEqual(discovery.getPaths(), [
-        { path: join(tmpDir, "workspace1", "123.test"), contents: "123" },
-      ]);
+      expect(new Set(discovery.getPaths())).toEqual(
+        new Set([
+          { path: join(tmpDir, "workspace1", "123.test"), contents: "123" },
+        ]),
+      );
     });
   });
 });
