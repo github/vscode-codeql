@@ -1,6 +1,6 @@
-import { basename } from "../path";
+import { basename, extname } from "../../../src/common/path";
 
-describe(basename.name, () => {
+describe("basename", () => {
   const testCases = [
     { path: "test.ql", expected: "test.ql" },
     { path: "PLACEHOLDER/q0.ql", expected: "q0.ql" },
@@ -38,6 +38,28 @@ describe(basename.name, () => {
     "basename of $path is $expected",
     ({ path, expected }) => {
       expect(basename(path)).toEqual(expected);
+    },
+  );
+});
+
+describe("extname", () => {
+  const testCases = [
+    { path: "test.ql", expected: ".ql" },
+    { path: "PLACEHOLDER/q0.ql", expected: ".ql" },
+    {
+      path: "/etc/hosts/",
+      expected: "",
+    },
+    {
+      path: "/etc/hosts",
+      expected: "",
+    },
+  ];
+
+  test.each(testCases)(
+    "extname of $path is $expected",
+    ({ path, expected }) => {
+      expect(extname(path)).toEqual(expected);
     },
   );
 });

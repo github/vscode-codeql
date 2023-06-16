@@ -1,7 +1,6 @@
-import { join, relative, resolve, sep } from "path";
+import { join } from "path";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
-import { minimatch } from "minimatch";
 import { CancellationToken, window } from "vscode";
 import { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
@@ -9,9 +8,8 @@ import { ProgressCallback } from "../common/vscode/progress";
 import { DatabaseItem } from "../databases/local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../common/ql";
 import { getErrorMessage } from "../common/helpers-pure";
-import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
+import { ExtensionPack } from "./shared/extension-pack";
 import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
-import { containsPath } from "../common/files";
 import { disableAutoNameExtensionPack } from "../config";
 import {
   autoNameExtensionPack,
@@ -27,42 +25,7 @@ import {
 
 const maxStep = 3;
 
-export async function pickExtensionPackModelFile(
-  cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveExtensions">,
-  databaseItem: Pick<DatabaseItem, "name" | "language">,
-  logger: NotificationLogger,
-  progress: ProgressCallback,
-  token: CancellationToken,
-): Promise<ExtensionPackModelFile | undefined> {
-  const extensionPack = await pickExtensionPack(
-    cliServer,
-    databaseItem,
-    logger,
-    progress,
-    token,
-  );
-  if (!extensionPack) {
-    return undefined;
-  }
-
-  const modelFile = await pickModelFile(
-    cliServer,
-    databaseItem,
-    extensionPack,
-    progress,
-    token,
-  );
-  if (!modelFile) {
-    return;
-  }
-
-  return {
-    filename: modelFile,
-    extensionPack,
-  };
-}
-
-async function pickExtensionPack(
+export async function pickExtensionPack(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   logger: NotificationLogger,
@@ -188,69 +151,6 @@ async function pickExtensionPack(
   }
 
   return extensionPackOption.extensionPack;
-}
-
-async function pickModelFile(
-  cliServer: Pick<CodeQLCliServer, "resolveExtensions">,
-  databaseItem: Pick<DatabaseItem, "name">,
-  extensionPack: ExtensionPack,
-  progress: ProgressCallback,
-  token: CancellationToken,
-): Promise<string | undefined> {
-  // Find the existing model files in the extension pack
-  const additionalPacks = getOnDiskWorkspaceFolders();
-  const extensions = await cliServer.resolveExtensions(
-    extensionPack.path,
-    additionalPacks,
-  );
-
-  const modelFiles = new Set<string>();
-
-  if (extensionPack.path in extensions.data) {
-    for (const extension of extensions.data[extensionPack.path]) {
-      modelFiles.add(extension.file);
-    }
-  }
-
-  if (modelFiles.size === 0) {
-    return pickNewModelFile(databaseItem, extensionPack, token);
-  }
-
-  const fileOptions: Array<{ label: string; file: string | null }> = [];
-  for (const file of modelFiles) {
-    fileOptions.push({
-      label: relative(extensionPack.path, file).replaceAll(sep, "/"),
-      file,
-    });
-  }
-  fileOptions.push({
-    label: "Create new model file",
-    file: null,
-  });
-
-  progress({
-    message: "Choosing model file...",
-    step: 3,
-    maxStep,
-  });
-
-  const fileOption = await window.showQuickPick(
-    fileOptions,
-    {
-      title: "Select model file to use",
-    },
-    token,
-  );
-
-  if (!fileOption) {
-    return undefined;
-  }
-
-  if (fileOption.file) {
-    return fileOption.file;
-  }
-
-  return pickNewModelFile(databaseItem, extensionPack, token);
 }
 
 async function pickNewExtensionPack(
@@ -426,49 +326,6 @@ async function writeExtensionPack(
   );
 
   return extensionPack;
-}
-
-async function pickNewModelFile(
-  databaseItem: Pick<DatabaseItem, "name">,
-  extensionPack: ExtensionPack,
-  token: CancellationToken,
-) {
-  const filename = await window.showInputBox(
-    {
-      title: "Enter the name of the new model file",
-      value: `models/${databaseItem.name.replaceAll("/", ".")}.model.yml`,
-      validateInput: async (value: string): Promise<string | undefined> => {
-        if (value === "") {
-          return "File name must not be empty";
-        }
-
-        const path = resolve(extensionPack.path, value);
-
-        if (await pathExists(path)) {
-          return "File already exists";
-        }
-
-        if (!containsPath(extensionPack.path, path)) {
-          return "File must be in the extension pack";
-        }
-
-        const matchesPattern = extensionPack.dataExtensions.some((pattern) =>
-          minimatch(value, pattern, { matchBase: true }),
-        );
-        if (!matchesPattern) {
-          return `File must match one of the patterns in 'dataExtensions' in ${extensionPack.yamlPath}`;
-        }
-
-        return undefined;
-      },
-    },
-    token,
-  );
-  if (!filename) {
-    return undefined;
-  }
-
-  return resolve(extensionPack.path, filename);
 }
 
 async function readExtensionPack(path: string): Promise<ExtensionPack> {

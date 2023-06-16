@@ -1,38 +1,38 @@
 import Ajv from "ajv";
 
+import { basename, extname } from "../common/path";
 import { ExternalApiUsage } from "./external-api-usage";
+import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import {
-  ModeledMethod,
-  ModeledMethodType,
-  ModeledMethodWithSignature,
-} from "./modeled-method";
-import { extensiblePredicateDefinitions } from "./predicates";
+  ExtensiblePredicateDefinition,
+  extensiblePredicateDefinitions,
+  ExternalApiUsageByType,
+} from "./predicates";
 
 import * as dataSchemaJson from "./data-schema.json";
 
 const ajv = new Ajv({ allErrors: true });
 const dataSchemaValidate = ajv.compile(dataSchemaJson);
 
-type ExternalApiUsageByType = {
+type ModeledExternalApiUsage = {
   externalApiUsage: ExternalApiUsage;
-  modeledMethod: ModeledMethod;
-};
-
-type ExtensiblePredicateDefinition = {
-  extensiblePredicate: string;
-  generateMethodDefinition: (method: ExternalApiUsageByType) => any[];
-  readModeledMethod: (row: any[]) => ModeledMethodWithSignature;
+  modeledMethod?: ModeledMethod;
 };
 
 function createDataProperty(
-  methods: ExternalApiUsageByType[],
+  methods: ModeledExternalApiUsage[],
   definition: ExtensiblePredicateDefinition,
 ) {
   if (methods.length === 0) {
     return " []";
   }
 
-  return `\n${methods
+  const modeledMethods = methods.filter(
+    (method): method is ExternalApiUsageByType =>
+      method.modeledMethod !== undefined,
+  );
+
+  return `\n${modeledMethods
     .map(
       (method) =>
         `      - ${JSON.stringify(
@@ -44,12 +44,11 @@ function createDataProperty(
 
 export function createDataExtensionYaml(
   language: string,
-  externalApiUsages: ExternalApiUsage[],
-  modeledMethods: Record<string, ModeledMethod>,
+  modeledUsages: ModeledExternalApiUsage[],
 ) {
   const methodsByType: Record<
     Exclude<ModeledMethodType, "none">,
-    ExternalApiUsageByType[]
+    ModeledExternalApiUsage[]
   > = {
     source: [],
     sink: [],
@@ -57,14 +56,11 @@ export function createDataExtensionYaml(
     neutral: [],
   };
 
-  for (const externalApiUsage of externalApiUsages) {
-    const modeledMethod = modeledMethods[externalApiUsage.signature];
+  for (const modeledUsage of modeledUsages) {
+    const { modeledMethod } = modeledUsage;
 
     if (modeledMethod?.type && modeledMethod.type !== "none") {
-      methodsByType[modeledMethod.type].push({
-        externalApiUsage,
-        modeledMethod,
-      });
+      methodsByType[modeledMethod.type].push(modeledUsage);
     }
   }
 
@@ -81,6 +77,83 @@ export function createDataExtensionYaml(
 
   return `extensions:
 ${extensions.join("\n")}`;
+}
+
+export function createDataExtensionYamlsPerLibrary(
+  language: string,
+  externalApiUsages: ExternalApiUsage[],
+  modeledMethods: Record<string, ModeledMethod>,
+): Record<string, string> {
+  const methodsByLibraryFilename: Record<string, ModeledExternalApiUsage[]> =
+    {};
+
+  for (const externalApiUsage of externalApiUsages) {
+    const modeledMethod = modeledMethods[externalApiUsage.signature];
+
+    const filename = createFilenameForLibrary(externalApiUsage.library);
+
+    methodsByLibraryFilename[filename] =
+      methodsByLibraryFilename[filename] || [];
+    methodsByLibraryFilename[filename].push({
+      externalApiUsage,
+      modeledMethod,
+    });
+  }
+
+  const result: Record<string, string> = {};
+
+  for (const [filename, methods] of Object.entries(methodsByLibraryFilename)) {
+    const hasModeledMethods = methods.some(
+      (method) => method.modeledMethod !== undefined,
+    );
+    if (!hasModeledMethods) {
+      continue;
+    }
+
+    result[filename] = createDataExtensionYaml(language, methods);
+  }
+
+  return result;
+}
+
+// From the semver package using
+// const { re, t } = require("semver/internal/re");
+// console.log(re[t.LOOSE]);
+// Modified to remove the ^ and $ anchors
+// This will match any semver string at the end of a larger string
+const semverRegex =
+  /[v=\s]*([0-9]+)\.([0-9]+)\.([0-9]+)(?:-?((?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\.(?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?/;
+
+export function createFilenameForLibrary(library: string, prefix = "models/") {
+  let libraryName = basename(library);
+  const extension = extname(libraryName);
+  libraryName = libraryName.slice(0, -extension.length);
+
+  const match = semverRegex.exec(libraryName);
+
+  if (match !== null) {
+    // Remove everything after the start of the match
+    libraryName = libraryName.slice(0, match.index);
+  }
+
+  // Lowercase everything
+  libraryName = libraryName.toLowerCase();
+
+  // Replace all spaces and underscores with hyphens
+  libraryName = libraryName.replaceAll(/[\s_]+/g, "-");
+
+  // Replace all characters which are not allowed by empty strings
+  libraryName = libraryName.replaceAll(/[^a-z0-9.-]/g, "");
+
+  // Remove any leading or trailing hyphens or dots
+  libraryName = libraryName.replaceAll(/^[.-]+|[.-]+$/g, "");
+
+  // Remove any duplicate hyphens
+  libraryName = libraryName.replaceAll(/-{2,}/g, "-");
+  // Remove any duplicate dots
+  libraryName = libraryName.replaceAll(/\.{2,}/g, ".");
+
+  return `${prefix}${libraryName}.yml`;
 }
 
 export function loadDataExtensionYaml(

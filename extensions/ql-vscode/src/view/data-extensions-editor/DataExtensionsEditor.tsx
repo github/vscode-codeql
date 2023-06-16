@@ -12,7 +12,6 @@ import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { calculateModeledPercentage } from "./modeled";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
-import { basename } from "../common/path";
 import { ViewTitle } from "../common";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
@@ -25,12 +24,6 @@ const DataExtensionsEditorContainer = styled.div`
 const DetailsContainer = styled.div`
   display: flex;
   gap: 1em;
-  align-items: center;
-`;
-
-const NonExistingModelFileContainer = styled.div`
-  display: flex;
-  gap: 0.2em;
   align-items: center;
 `;
 
@@ -173,12 +166,6 @@ export function DataExtensionsEditor({
     });
   }, []);
 
-  const onOpenModelFileClick = useCallback(() => {
-    vscode.postMessage({
-      t: "openModelFile",
-    });
-  }, []);
-
   return (
     <DataExtensionsEditorContainer>
       {progress.maxStep > 0 && (
@@ -192,26 +179,12 @@ export function DataExtensionsEditor({
         <>
           <ViewTitle>Data extensions editor</ViewTitle>
           <DetailsContainer>
-            {viewState?.extensionPackModelFile && (
+            {viewState?.extensionPack && (
               <>
                 <LinkIconButton onClick={onOpenExtensionPackClick}>
                   <span slot="start" className="codicon codicon-package"></span>
-                  {viewState.extensionPackModelFile.extensionPack.name}
+                  {viewState.extensionPack.name}
                 </LinkIconButton>
-                {viewState.modelFileExists ? (
-                  <LinkIconButton onClick={onOpenModelFileClick}>
-                    <span
-                      slot="start"
-                      className="codicon codicon-file-code"
-                    ></span>
-                    {basename(viewState.extensionPackModelFile.filename)}
-                  </LinkIconButton>
-                ) : (
-                  <NonExistingModelFileContainer>
-                    <span className="codicon codicon-file-code"></span>
-                    {basename(viewState.extensionPackModelFile.filename)}
-                  </NonExistingModelFileContainer>
-                )}
               </>
             )}
             <div>
