@@ -59,9 +59,12 @@ describe("pickExtensionPackModelFile", () => {
       })
     ).path;
 
-    extensionPackPath = join(tmpDir, "my-extension-pack");
-    anotherExtensionPackPath = join(tmpDir, "another-extension-pack");
-    autoExtensionPackPath = join(tmpDir, "vscode-codeql-java");
+    // Uri.file(...).fsPath normalizes the filenames so we can properly compare them on Windows
+    extensionPackPath = Uri.file(join(tmpDir, "my-extension-pack")).fsPath;
+    anotherExtensionPackPath = Uri.file(
+      join(tmpDir, "another-extension-pack"),
+    ).fsPath;
+    autoExtensionPackPath = Uri.file(join(tmpDir, "vscode-codeql-java")).fsPath;
 
     qlPacks = {
       "my-extension-pack": [extensionPackPath],
@@ -116,7 +119,7 @@ describe("pickExtensionPackModelFile", () => {
       name: "codeql-custom-queries-java",
       index: 0,
     };
-    additionalPacks = [tmpDir];
+    additionalPacks = [Uri.file(tmpDir).fsPath];
     workspaceFoldersSpy = jest
       .spyOn(workspace, "workspaceFolders", "get")
       .mockReturnValue([workspaceFolder]);
@@ -331,7 +334,7 @@ describe("pickExtensionPackModelFile", () => {
       },
     ]);
 
-    const newPackDir = join(tmpDir.path, "vscode-codeql-java");
+    const newPackDir = join(Uri.file(tmpDir.path).fsPath, "vscode-codeql-java");
 
     const cliServer = mockCliServer({}, { models: [], data: {} });
 
@@ -409,7 +412,7 @@ describe("pickExtensionPackModelFile", () => {
       unsafeCleanup: true,
     });
 
-    const newPackDir = join(tmpDir.path, "new-extension-pack");
+    const newPackDir = join(Uri.file(tmpDir.path).fsPath, "new-extension-pack");
 
     showQuickPickSpy.mockResolvedValueOnce({
       label: "codeql-custom-queries-java",
@@ -485,7 +488,7 @@ describe("pickExtensionPackModelFile", () => {
       unsafeCleanup: true,
     });
 
-    const newPackDir = join(tmpDir.path, "new-extension-pack");
+    const newPackDir = join(Uri.file(tmpDir.path).fsPath, "new-extension-pack");
 
     showQuickPickSpy.mockResolvedValueOnce({
       label: "codeql-custom-queries-java",
