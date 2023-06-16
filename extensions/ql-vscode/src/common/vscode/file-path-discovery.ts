@@ -128,7 +128,7 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
 
   private async handledChangedPath(path: string): Promise<boolean> {
     if (!(await exists(path)) || !this.pathIsInWorkspace(path)) {
-      return this.handledRemovedPath(path);
+      return this.handleRemovedPath(path);
     }
     if ((await lstat(path)).isDirectory()) {
       return await this.handleChangedDirectory(path);
@@ -142,7 +142,7 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
     );
   }
 
-  private handledRemovedPath(path: string): boolean {
+  private handleRemovedPath(path: string): boolean {
     const oldLength = this.paths.length;
     this.paths = this.paths.filter((q) => !containsPath(path, q.path));
     return this.paths.length !== oldLength;

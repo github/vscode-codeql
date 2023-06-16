@@ -35,7 +35,7 @@ export class FilePathSet {
     }
   }
 
-  /** Removes and returns a path from the set, if the set of non-empty. */
+  /** Removes and returns a path from the set, if the set is non-empty. */
   public popPath(): string | undefined {
     return this.paths.shift();
   }
