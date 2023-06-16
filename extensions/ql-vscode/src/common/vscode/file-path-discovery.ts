@@ -9,7 +9,6 @@ import {
 import { MultiFileSystemWatcher } from "./multi-file-system-watcher";
 import { AppEventEmitter } from "../events";
 import { extLogger } from "..";
-import { FilePathSet } from "../file-path-set";
 import { exists, lstat } from "fs-extra";
 import { containsPath } from "../../pure/files";
 import { getOnDiskWorkspaceFoldersObjects } from "./workspace-folders";
@@ -30,9 +29,23 @@ interface PathData {
 export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   /** The set of known paths we are tracking */
   protected paths: T[] = [];
+
+  /** Event that fires whenever the set of known paths changes */
   protected readonly onDidChangePathsEmitter: AppEventEmitter<void>;
 
-  private readonly changedFilePaths = new FilePathSet();
+  /**
+   * The set of file paths that may have changed on disk since the last time
+   * refresh was run. Whenever a watcher reports some change to a file we add
+   * it to this set, and then during the next refresh we will process all
+   * file paths from this set and update our internal state to match whatever
+   * we find on disk (i.e. the file exists, doesn't exist, computed data has
+   * changed).
+   */
+  private readonly changedFilePaths = new Set<string>();
+
+  /**
+   * Watches for changes to files and directories in all workspace folders.
+   */
   private readonly watcher: MultiFileSystemWatcher = this.push(
     new MultiFileSystemWatcher(),
   );
@@ -76,7 +89,7 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
    */
   public async initialRefresh() {
     getOnDiskWorkspaceFoldersObjects().forEach((workspaceFolder) => {
-      this.changedFilePaths.addPath(workspaceFolder.uri.fsPath);
+      this.changedFilePaths.add(workspaceFolder.uri.fsPath);
     });
 
     this.updateWatchers();
@@ -85,10 +98,10 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
 
   private workspaceFoldersChanged(event: WorkspaceFoldersChangeEvent) {
     event.added.forEach((workspaceFolder) => {
-      this.changedFilePaths.addPath(workspaceFolder.uri.fsPath);
+      this.changedFilePaths.add(workspaceFolder.uri.fsPath);
     });
     event.removed.forEach((workspaceFolder) => {
-      this.changedFilePaths.addPath(workspaceFolder.uri.fsPath);
+      this.changedFilePaths.add(workspaceFolder.uri.fsPath);
     });
 
     this.updateWatchers();
@@ -108,14 +121,14 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   }
 
   private fileChanged(uri: Uri) {
-    this.changedFilePaths.addPath(uri.fsPath);
+    this.changedFilePaths.add(uri.fsPath);
     void this.refresh();
   }
 
   protected async discover() {
     let pathsUpdated = false;
-    let path: string | undefined;
-    while ((path = this.changedFilePaths.popPath()) !== undefined) {
+    for (const path of this.changedFilePaths) {
+      this.changedFilePaths.delete(path);
       if (await this.handledChangedPath(path)) {
         pathsUpdated = true;
       }
