@@ -58,12 +58,16 @@ describe("FilePathDiscovery", () => {
 
   let workspaceFolder: WorkspaceFolder;
   let workspacePath: string;
-  let workspaceFoldersSpy: jest.SpyInstance;
+  let workspaceFoldersSpy: jest.SpiedFunction<
+    () => typeof workspace.workspaceFolders
+  >;
 
   const onDidCreateFile = new EventEmitter<Uri>();
   const onDidChangeFile = new EventEmitter<Uri>();
   const onDidDeleteFile = new EventEmitter<Uri>();
-  let createFileSystemWatcherSpy: jest.SpyInstance;
+  let createFileSystemWatcherSpy: jest.SpiedFunction<
+    typeof workspace.createFileSystemWatcher
+  >;
 
   const onDidChangeWorkspaceFolders =
     new EventEmitter<WorkspaceFoldersChangeEvent>();
