@@ -39,7 +39,7 @@ export class QueryDiscovery
 
     this.push(
       this.queryPackDiscovery.onDidChangeQueryPacks(
-        this.recomputeAllQueryLanguages.bind(this),
+        this.recomputeAllData.bind(this),
       ),
     );
   }
@@ -101,15 +101,6 @@ export class QueryDiscovery
     existingData: Query,
   ): boolean {
     return newData.language !== existingData.language;
-  }
-
-  private recomputeAllQueryLanguages() {
-    // All we know is that something has changed in the set of known query packs.
-    // We have no choice but to recompute the language for all queries.
-    for (const query of this.pathData) {
-      query.language = this.determineQueryLanguage(query.path);
-    }
-    this.onDidChangePathDataEmitter.fire();
   }
 
   private determineQueryLanguage(path: string): QueryLanguage | undefined {

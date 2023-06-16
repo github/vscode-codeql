@@ -90,6 +90,16 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   ): boolean;
 
   /**
+   * Update the data for every path by calling `getDataForPath`.
+   */
+  protected async recomputeAllData() {
+    this.pathData = await Promise.all(
+      this.pathData.map((p) => this.getDataForPath(p.path)),
+    );
+    this.onDidChangePathDataEmitter.fire();
+  }
+
+  /**
    * Do the initial scan of the entire workspace and set up watchers for future changes.
    */
   public async initialRefresh() {
