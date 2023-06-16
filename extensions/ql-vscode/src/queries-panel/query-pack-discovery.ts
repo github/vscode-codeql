@@ -48,18 +48,20 @@ export class QueryPackDiscovery extends FilePathDiscovery<QueryPack> {
       return undefined;
     }
 
-    // If the first two packs are from the same directory then look at the filenames
-    if (
-      packs.length >= 2 &&
-      dirname(packs[0].path) === dirname(packs[1].path)
-    ) {
-      if (basename(packs[0].path) === FALLBACK_QLPACK_FILENAME) {
-        return packs[0].language;
-      } else {
-        return packs[1].language;
-      }
-    } else {
+    if (packs.length === 1) {
       return packs[0].language;
+    }
+
+    // If the first two packs are from a different directory, then the first one is the nearest
+    if (dirname(packs[0].path) !== dirname(packs[1].path)) {
+      return packs[0].language;
+    }
+
+    // If the first two packs are from the same directory then look at the filenames
+    if (basename(packs[0].path) === FALLBACK_QLPACK_FILENAME) {
+      return packs[0].language;
+    } else {
+      return packs[1].language;
     }
   }
 
