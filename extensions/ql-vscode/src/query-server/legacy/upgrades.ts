@@ -6,7 +6,7 @@ import {
   UserCancellationException,
 } from "../../common/vscode/progress";
 import { extLogger } from "../../common";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import * as messages from "../../pure/legacy-messages";
 import * as qsClient from "./query-server-client";
 import * as tmp from "tmp-promise";
@@ -14,6 +14,7 @@ import { dirname } from "path";
 import { DatabaseItem } from "../../databases/local-databases";
 import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { redactableError } from "../../pure/errors";
+import { telemetryListener } from "../../common/vscode/telemetry";
 
 /**
  * Maximum number of lines to include from database upgrade message,
@@ -207,6 +208,7 @@ export async function upgradeDatabaseExplicit(
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         extLogger,
+        telemetryListener,
         redactableError(
           asError(e),
         )`Compilation of database upgrades failed: ${getErrorMessage(e)}`,
@@ -222,6 +224,7 @@ export async function upgradeDatabaseExplicit(
         : redactableError`[no error message available]`;
       void showAndLogExceptionWithTelemetry(
         extLogger,
+        telemetryListener,
         redactableError`Compilation of database upgrades failed: ${error}`,
       );
       return;
@@ -256,6 +259,7 @@ export async function upgradeDatabaseExplicit(
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         extLogger,
+        telemetryListener,
         redactableError(asError(e))`Database upgrade failed: ${getErrorMessage(
           e,
         )}`,

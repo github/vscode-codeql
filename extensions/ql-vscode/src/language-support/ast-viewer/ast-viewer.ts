@@ -28,7 +28,8 @@ import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { redactableError } from "../../pure/errors";
 import { AstViewerCommands } from "../../common/commands";
 import { extLogger } from "../../common";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../../common/logging";
+import { telemetryListener } from "../../common/vscode/telemetry";
 
 export interface AstItem {
   id: BqrsId;
@@ -147,6 +148,7 @@ export class AstViewer extends DisposableObject {
       (error: unknown) =>
         showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(
             asError(error),
           )`Failed to reveal AST: ${getErrorMessage(error)}`,
@@ -211,6 +213,7 @@ export class AstViewer extends DisposableObject {
           (error: unknown) =>
             showAndLogExceptionWithTelemetry(
               extLogger,
+              telemetryListener,
               redactableError(
                 asError(error),
               )`Failed to reveal AST: ${getErrorMessage(error)}`,

@@ -3,7 +3,10 @@ import {
   AbstractWebview,
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../common/logging";
 import {
   FromVariantAnalysisMessage,
   ToVariantAnalysisMessage,
@@ -18,7 +21,7 @@ import {
   VariantAnalysisViewInterface,
   VariantAnalysisViewManager,
 } from "./variant-analysis-view-manager";
-import { telemetryListener } from "../telemetry";
+import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../pure/errors";
 import { DataFlowPathsView } from "./data-flow-paths-view";
 import { DataFlowPaths } from "./shared/data-flow-paths";
@@ -27,7 +30,6 @@ import {
   getVariantAnalysisDefaultResultsFilter,
   getVariantAnalysisDefaultResultsSort,
 } from "../config";
-import { showAndLogWarningMessage } from "../common/logging";
 
 export class VariantAnalysisView
   extends AbstractWebview<ToVariantAnalysisMessage, FromVariantAnalysisMessage>
@@ -164,6 +166,7 @@ export class VariantAnalysisView
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
           this.app.logger,
+          this.app.telemetry,
           redactableError(
             msg.error,
           )`Unhandled error in variant analysis results view: ${msg.error.message}`,

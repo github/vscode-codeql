@@ -32,7 +32,10 @@ import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
 } from "./local-databases/db-contents-heuristics";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogErrorMessage,
+} from "../common/logging";
 import {
   importArchiveDatabase,
   promptImportGithubDatabase,
@@ -48,7 +51,6 @@ import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
 } from "../common/vscode/selection-commands";
-import { showAndLogErrorMessage } from "../common/logging";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -280,6 +282,7 @@ export class DatabaseUI extends DisposableObject {
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
+        this.app.telemetry,
         redactableError(
           asError(e),
         )`Failed to choose and set database: ${getErrorMessage(e)}`,
@@ -420,6 +423,7 @@ export class DatabaseUI extends DisposableObject {
         } catch (e) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
+            this.app.telemetry,
             redactableError(
               asError(e),
             )`Failed to delete orphaned database: ${getErrorMessage(e)}`,
@@ -449,6 +453,7 @@ export class DatabaseUI extends DisposableObject {
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
+        this.app.telemetry,
         redactableError(
           asError(e),
         )`Failed to choose and set database: ${getErrorMessage(e)}`,

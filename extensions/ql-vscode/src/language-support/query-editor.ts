@@ -6,7 +6,8 @@ import { getErrorMessage } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
 import { AppCommandManager, QueryEditorCommands } from "../common/commands";
 import { extLogger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
+import { telemetryListener } from "../common/vscode/telemetry";
 
 type QueryEditorOptions = {
   commandManager: AppCommandManager;
@@ -80,9 +81,14 @@ async function previewQueryHelp(
       )
         ? redactableError`Could not generate markdown from ${pathToQhelp}: Bad formatting in .qhelp file.`
         : redactableError`Could not open a preview of the generated file (${absolutePathToMd}).`;
-      void showAndLogExceptionWithTelemetry(extLogger, errorMessage, {
-        fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
-      });
+      void showAndLogExceptionWithTelemetry(
+        extLogger,
+        telemetryListener,
+        errorMessage,
+        {
+          fullMessage: `${errorMessage}\n${getErrorMessage(e)}`,
+        },
+      );
     }
   }
 }

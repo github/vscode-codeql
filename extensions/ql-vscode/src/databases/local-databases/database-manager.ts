@@ -1,6 +1,6 @@
 import vscode, { ExtensionContext } from "vscode";
 import { extLogger, Logger } from "../../common";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import { DisposableObject } from "../../pure/disposable-object";
 import { App } from "../../common/app";
 import { QueryRunner } from "../../query-server";
@@ -29,6 +29,7 @@ import { remove } from "fs-extra";
 import { containsPath } from "../../pure/files";
 import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
 import { DatabaseResolver } from "./database-resolver";
+import { telemetryListener } from "../../common/vscode/telemetry";
 
 /**
  * The name of the key in the workspaceState dictionary in which we
@@ -413,6 +414,7 @@ export class DatabaseManager extends DisposableObject {
         // database list had an unexpected type - nothing to be done?
         void showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(
             asError(e),
           )`Database list loading failed: ${getErrorMessage(e)}`,

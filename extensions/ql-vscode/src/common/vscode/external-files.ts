@@ -7,8 +7,8 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "../../pure/helpers-pure";
-import { extLogger } from "../logging";
-import { showAndLogExceptionWithTelemetry } from "./logging";
+import { extLogger, showAndLogExceptionWithTelemetry } from "../logging";
+import { telemetryListener } from "./telemetry";
 
 export async function tryOpenExternalFile(
   commandManager: AppCommandManager,
@@ -36,6 +36,7 @@ the file in the file explorer and dragging it into the workspace.`,
         } catch (e) {
           void showAndLogExceptionWithTelemetry(
             extLogger,
+            telemetryListener,
             redactableError(
               asError(e),
             )`Failed to reveal file in OS: ${getErrorMessage(e)}`,
@@ -45,6 +46,7 @@ the file in the file explorer and dragging it into the workspace.`,
     } else {
       void showAndLogExceptionWithTelemetry(
         extLogger,
+        telemetryListener,
         redactableError(asError(e))`Could not open file ${fileLocation}`,
         {
           fullMessage: `${getErrorMessage(e)}\n${getErrorStack(e)}`,

@@ -6,9 +6,12 @@ import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
 import { access } from "fs-extra";
 import { BaseLogger, extLogger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../common/logging";
 import { DisposableObject } from "../pure/disposable-object";
-import { showAndLogWarningMessage } from "../common/logging";
+import { telemetryListener } from "../common/vscode/telemetry";
 
 async function isFileAccessible(uri: Uri): Promise<boolean> {
   try {
@@ -87,6 +90,7 @@ export class TestRunner extends DisposableObject {
         // So we need to display the error message ourselves and then rethrow.
         void showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(asError(e))`Cannot remove database ${
             database.name
           }: ${getErrorMessage(e)}`,

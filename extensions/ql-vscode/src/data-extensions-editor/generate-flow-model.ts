@@ -4,7 +4,7 @@ import { basename } from "path";
 import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { extLogger, TeeLogger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
@@ -18,6 +18,7 @@ import { file } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { qlpackOfDatabase } from "../language-support";
+import { telemetryListener } from "../common/vscode/telemetry";
 
 type FlowModelOptions = {
   cliServer: CodeQLCliServer;
@@ -82,6 +83,7 @@ async function getModeledMethodsFromFlow(
   if (queryPath === undefined) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
+      telemetryListener,
       redactableError`Failed to find ${type} query`,
     );
     return [];
@@ -117,6 +119,7 @@ async function getModeledMethodsFromFlow(
   if (queryResult.resultType !== QueryResultType.SUCCESS) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
+      telemetryListener,
       redactableError`Failed to run ${basename(queryPath)} query: ${
         queryResult.message ?? "No message"
       }`,
@@ -130,6 +133,7 @@ async function getModeledMethodsFromFlow(
   if (bqrsInfo["result-sets"].length !== 1) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
+      telemetryListener,
       redactableError`Expected exactly one result set, got ${
         bqrsInfo["result-sets"].length
       } for ${basename(queryPath)}`,

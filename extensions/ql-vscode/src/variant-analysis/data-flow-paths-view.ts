@@ -4,7 +4,7 @@ import {
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
 import { assertNever } from "../pure/helpers-pure";
-import { telemetryListener } from "../telemetry";
+import { telemetryListener } from "../common/vscode/telemetry";
 import {
   FromDataFlowPathsMessage,
   ToDataFlowPathsMessage,
@@ -12,7 +12,7 @@ import {
 import { DataFlowPaths } from "./shared/data-flow-paths";
 import { redactableError } from "../pure/errors";
 import { extLogger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 
 export class DataFlowPathsView extends AbstractWebview<
   ToDataFlowPathsMessage,
@@ -61,6 +61,7 @@ export class DataFlowPathsView extends AbstractWebview<
       case "unhandledError":
         void showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(
             msg.error,
           )`Unhandled error in data flow paths view: ${msg.error.message}`,

@@ -1,5 +1,8 @@
 import { BaseLogger, extLogger, Logger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../common/logging";
 import { CoreQueryResults } from "../query-server";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
 import { DatabaseItem } from "../databases/local-databases";
@@ -17,8 +20,8 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryResultType } from "../pure/new-messages";
 import { redactableError } from "../pure/errors";
 import { LocalQueries } from "./local-queries";
-import { showAndLogWarningMessage } from "../common/logging";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
+import { telemetryListener } from "../common/vscode/telemetry";
 
 function formatResultMessage(result: CoreQueryResults): string {
   switch (result.resultType) {
@@ -154,7 +157,11 @@ export class LocalQueryRun {
       const message = results.message
         ? redactableError`Failed to run query: ${results.message}`
         : redactableError`Failed to run query`;
-      void showAndLogExceptionWithTelemetry(extLogger, message);
+      void showAndLogExceptionWithTelemetry(
+        extLogger,
+        telemetryListener,
+        message,
+      );
     }
     const message = formatResultMessage(results);
     const successful = results.resultType === QueryResultType.SUCCESS;

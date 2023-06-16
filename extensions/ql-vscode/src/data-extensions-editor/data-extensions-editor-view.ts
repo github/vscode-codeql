@@ -17,7 +17,10 @@ import {
 } from "../pure/interface-types";
 import { ProgressUpdate } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogErrorMessage,
+} from "../common/logging";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
@@ -42,7 +45,6 @@ import {
 } from "./auto-model";
 import { showLlmGeneration } from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
-import { showAndLogErrorMessage } from "../common/logging";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -276,6 +278,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     } catch (err) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
+        this.app.telemetry,
         redactableError(
           asError(err),
         )`Failed to load external API usages: ${getErrorMessage(err)}`,
@@ -342,6 +345,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
+        this.app.telemetry,
         redactableError(
           asError(e),
         )`Failed to generate flow model: ${getErrorMessage(e)}`,
@@ -476,6 +480,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(
           this.app.logger,
+          this.app.telemetry,
           redactableError(e)`Rate limit hit, please try again soon.`,
         );
         return null;

@@ -4,6 +4,7 @@ import {
   extLogger,
   NotificationLogger,
   showAndLogWarningMessage,
+  showAndLogExceptionWithTelemetry,
 } from "../logging";
 import {
   asError,
@@ -12,8 +13,8 @@ import {
 } from "../../pure/helpers-pure";
 import { redactableError } from "../../pure/errors";
 import { UserCancellationException } from "./progress";
-import { telemetryListener } from "../../telemetry";
-import { showAndLogExceptionWithTelemetry } from "./logging";
+import { telemetryListener } from "./telemetry";
+import { AppTelemetry } from "../telemetry";
 
 /**
  * Create a command manager for VSCode, wrapping registerCommandWithErrorHandling
@@ -21,9 +22,12 @@ import { showAndLogExceptionWithTelemetry } from "./logging";
  */
 export function createVSCodeCommandManager<
   Commands extends Record<string, CommandFunction>,
->(logger?: NotificationLogger): CommandManager<Commands> {
+>(
+  logger?: NotificationLogger,
+  telemetry?: AppTelemetry,
+): CommandManager<Commands> {
   return new CommandManager((commandId, task) => {
-    return registerCommandWithErrorHandling(commandId, task, logger);
+    return registerCommandWithErrorHandling(commandId, task, logger, telemetry);
   }, wrapExecuteCommand);
 }
 
@@ -34,11 +38,13 @@ export function createVSCodeCommandManager<
  * @param task The task to run. It is passed directly to `commands.registerCommand`. Any
  * arguments to the command handler are passed on to the task.
  * @param logger The logger to use for error reporting.
+ * @param telemetry The telemetry listener to use for error reporting.
  */
 export function registerCommandWithErrorHandling(
   commandId: string,
   task: (...args: any[]) => Promise<any>,
   logger: NotificationLogger = extLogger,
+  telemetry: AppTelemetry | undefined = telemetryListener,
 ): Disposable {
   return commands.registerCommand(commandId, async (...args: any[]) => {
     const startTime = Date.now();
@@ -64,7 +70,7 @@ export function registerCommandWithErrorHandling(
         const fullMessage = errorStack
           ? `${errorMessage.fullMessage}\n${errorStack}`
           : errorMessage.fullMessage;
-        void showAndLogExceptionWithTelemetry(logger, errorMessage, {
+        void showAndLogExceptionWithTelemetry(logger, telemetry, errorMessage, {
           fullMessage,
           extraTelemetryProperties: {
             command: commandId,
