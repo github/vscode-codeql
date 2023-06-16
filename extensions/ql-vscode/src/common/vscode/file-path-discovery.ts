@@ -33,7 +33,7 @@ interface PathData {
  */
 export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   /** The set of known paths and associated data that we are tracking */
-  protected pathData: T[] = [];
+  private pathData: T[] = [];
 
   /** Event that fires whenever the contents of `pathData` changes */
   protected readonly onDidChangePathDataEmitter: AppEventEmitter<void>;
@@ -69,6 +69,10 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
       ),
     );
     this.push(this.watcher.onDidChange(this.fileChanged.bind(this)));
+  }
+
+  protected getPathData(): readonly T[] {
+    return this.pathData;
   }
 
   /**

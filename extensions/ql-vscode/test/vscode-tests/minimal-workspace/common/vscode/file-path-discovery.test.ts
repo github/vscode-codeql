@@ -28,8 +28,8 @@ class TestFilePathDiscovery extends FilePathDiscovery<TestData> {
     return this.onDidChangePathDataEmitter.event;
   }
 
-  public getPathData(): TestData[] {
-    return this.pathData;
+  public getPathData(): readonly TestData[] {
+    return super.getPathData();
   }
 
   protected async getDataForPath(path: string): Promise<TestData> {

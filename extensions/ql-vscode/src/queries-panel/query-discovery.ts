@@ -59,7 +59,7 @@ export class QueryDiscovery
   public buildQueryTree(): Array<FileTreeNode<string>> {
     const roots = [];
     for (const workspaceFolder of getOnDiskWorkspaceFoldersObjects()) {
-      const queriesInRoot = this.pathData.filter((query) =>
+      const queriesInRoot = this.getPathData().filter((query) =>
         containsPath(workspaceFolder.uri.fsPath, query.path),
       );
       if (queriesInRoot.length === 0) {
