@@ -11,7 +11,10 @@ import { AppEventEmitter } from "../events";
 import { extLogger } from "..";
 import { lstat } from "fs-extra";
 import { containsPath, isIOError } from "../../pure/files";
-import { getOnDiskWorkspaceFoldersObjects } from "./workspace-folders";
+import {
+  getOnDiskWorkspaceFolders,
+  getOnDiskWorkspaceFoldersObjects,
+} from "./workspace-folders";
 
 interface PathData {
   path: string;
@@ -88,8 +91,8 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
    * Do the initial scan of the entire workspace and set up watchers for future changes.
    */
   public async initialRefresh() {
-    getOnDiskWorkspaceFoldersObjects().forEach((workspaceFolder) => {
-      this.changedFilePaths.add(workspaceFolder.uri.fsPath);
+    getOnDiskWorkspaceFolders().forEach((workspaceFolder) => {
+      this.changedFilePaths.add(workspaceFolder);
     });
 
     this.updateWatchers();
@@ -161,8 +164,8 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   }
 
   private pathIsInWorkspace(path: string): boolean {
-    return getOnDiskWorkspaceFoldersObjects().some((workspaceFolder) =>
-      containsPath(workspaceFolder.uri.fsPath, path),
+    return getOnDiskWorkspaceFolders().some((workspaceFolder) =>
+      containsPath(workspaceFolder, path),
     );
   }
 
