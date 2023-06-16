@@ -10,6 +10,7 @@ export function decodeBqrsToExternalApiUsages(
     const usage = tuple[0] as Call;
     const signature = tuple[1] as string;
     const supported = (tuple[2] as string) === "true";
+    const library = tuple[4] as string;
 
     const [packageWithType, methodDeclaration] = signature.split("#");
 
@@ -31,6 +32,7 @@ export function decodeBqrsToExternalApiUsages(
 
     if (!methodsByApiName.has(signature)) {
       methodsByApiName.set(signature, {
+        library,
         signature,
         packageName,
         typeName,
