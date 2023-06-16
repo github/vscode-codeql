@@ -27,7 +27,7 @@ export class QueryPackDiscovery extends FilePathDiscovery<QueryPack> {
    * Event that fires when the set of query packs in the workspace changes.
    */
   public get onDidChangeQueryPacks(): Event<void> {
-    return this.onDidChangePathsEmitter.event;
+    return this.onDidChangePathDataEmitter.event;
   }
 
   /**
@@ -37,7 +37,7 @@ export class QueryPackDiscovery extends FilePathDiscovery<QueryPack> {
    */
   public getLanguageForQueryFile(queryPath: string): QueryLanguage | undefined {
     // Find all packs in a higher directory than the query
-    const packs = this.paths.filter((queryPack) =>
+    const packs = this.pathData.filter((queryPack) =>
       containsPath(dirname(queryPack.path), queryPath),
     );
 

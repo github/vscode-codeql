@@ -21,7 +21,9 @@ interface PathData {
 }
 
 /**
- * Discovers all files matching a given filter contained in the workspace.
+ * Discovers and watches for changes to all files matching a given filter
+ * contained in the workspace. Also allows computing extra data about each
+ * file path, and only recomputing the data when the file changes.
  *
  * Scans the whole workspace on startup, and then watches for changes to files
  * to do the minimum work to keep up with changes.
@@ -30,11 +32,11 @@ interface PathData {
  * relevant, and what extra data to compute for each file.
  */
 export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
-  /** The set of known paths we are tracking */
-  protected paths: T[] = [];
+  /** The set of known paths and associated data that we are tracking */
+  protected pathData: T[] = [];
 
-  /** Event that fires whenever the set of known paths changes */
-  protected readonly onDidChangePathsEmitter: AppEventEmitter<void>;
+  /** Event that fires whenever the contents of `pathData` changes */
+  protected readonly onDidChangePathDataEmitter: AppEventEmitter<void>;
 
   /**
    * The set of file paths that may have changed on disk since the last time
@@ -60,7 +62,7 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   constructor(name: string, private readonly fileWatchPattern: string) {
     super(name, extLogger);
 
-    this.onDidChangePathsEmitter = this.push(new EventEmitter<void>());
+    this.onDidChangePathDataEmitter = this.push(new EventEmitter<void>());
     this.push(
       workspace.onDidChangeWorkspaceFolders(
         this.workspaceFoldersChanged.bind(this),
@@ -138,7 +140,7 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
     }
 
     if (pathsUpdated) {
-      this.onDidChangePathsEmitter.fire();
+      this.onDidChangePathDataEmitter.fire();
     }
   }
 
@@ -170,9 +172,11 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   }
 
   private handleRemovedPath(path: string): boolean {
-    const oldLength = this.paths.length;
-    this.paths = this.paths.filter((q) => !containsPath(path, q.path));
-    return this.paths.length !== oldLength;
+    const oldLength = this.pathData.length;
+    this.pathData = this.pathData.filter(
+      (existingPathData) => !containsPath(path, existingPathData.path),
+    );
+    return this.pathData.length !== oldLength;
   }
 
   private async handleChangedDirectory(path: string): Promise<boolean> {
@@ -199,18 +203,23 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
 
   private async addOrUpdatePath(path: string): Promise<boolean> {
     const data = await this.getDataForPath(path);
-    const existingDataIndex = this.paths.findIndex((x) => x.path === path);
-    if (existingDataIndex !== -1) {
+    const existingPathDataIndex = this.pathData.findIndex(
+      (existingPathData) => existingPathData.path === path,
+    );
+    if (existingPathDataIndex !== -1) {
       if (
-        this.shouldOverwriteExistingData(data, this.paths[existingDataIndex])
+        this.shouldOverwriteExistingData(
+          data,
+          this.pathData[existingPathDataIndex],
+        )
       ) {
-        this.paths.splice(existingDataIndex, 1, data);
+        this.pathData.splice(existingPathDataIndex, 1, data);
         return true;
       } else {
         return false;
       }
     } else {
-      this.paths.push(data);
+      this.pathData.push(data);
       return true;
     }
   }

@@ -48,7 +48,7 @@ export class QueryDiscovery
    * Event that fires when the set of queries in the workspace changes.
    */
   public get onDidChangeQueries(): Event<void> {
-    return this.onDidChangePathsEmitter.event;
+    return this.onDidChangePathDataEmitter.event;
   }
 
   /**
@@ -59,7 +59,7 @@ export class QueryDiscovery
   public buildQueryTree(): Array<FileTreeNode<string>> {
     const roots = [];
     for (const workspaceFolder of getOnDiskWorkspaceFoldersObjects()) {
-      const queriesInRoot = this.paths.filter((query) =>
+      const queriesInRoot = this.pathData.filter((query) =>
         containsPath(workspaceFolder.uri.fsPath, query.path),
       );
       if (queriesInRoot.length === 0) {
@@ -106,10 +106,10 @@ export class QueryDiscovery
   private recomputeAllQueryLanguages() {
     // All we know is that something has changed in the set of known query packs.
     // We have no choice but to recompute the language for all queries.
-    for (const query of this.paths) {
+    for (const query of this.pathData) {
       query.language = this.determineQueryLanguage(query.path);
     }
-    this.onDidChangePathsEmitter.fire();
+    this.onDidChangePathDataEmitter.fire();
   }
 
   private determineQueryLanguage(path: string): QueryLanguage | undefined {
