@@ -107,3 +107,14 @@ export async function* walkDirectory(
     }
   }
 }
+
+/**
+ * Error thrown from methods from the 'fs' module.
+ */
+export interface IOError {
+  readonly code: string;
+}
+
+export function isIOError(e: any): e is IOError {
+  return e.code !== undefined && typeof e.code === "string";
+}

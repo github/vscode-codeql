@@ -9,8 +9,8 @@ import {
 import { MultiFileSystemWatcher } from "./multi-file-system-watcher";
 import { AppEventEmitter } from "../events";
 import { extLogger } from "..";
-import { lstat, pathExists } from "fs-extra";
-import { containsPath } from "../../pure/files";
+import { lstat } from "fs-extra";
+import { containsPath, isIOError } from "../../pure/files";
 import { getOnDiskWorkspaceFoldersObjects } from "./workspace-folders";
 
 interface PathData {
@@ -140,13 +140,24 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   }
 
   private async handledChangedPath(path: string): Promise<boolean> {
-    if (!(await pathExists(path)) || !this.pathIsInWorkspace(path)) {
-      return this.handleRemovedPath(path);
+    try {
+      // If the path is not in the workspace then we don't want to be
+      // tracking or displaying it, so treat it as if it doesn't exist.
+      if (!this.pathIsInWorkspace(path)) {
+        return this.handleRemovedPath(path);
+      }
+
+      if ((await lstat(path)).isDirectory()) {
+        return await this.handleChangedDirectory(path);
+      } else {
+        return this.handleChangedFile(path);
+      }
+    } catch (e) {
+      if (isIOError(e) && e.code === "ENOENT") {
+        return this.handleRemovedPath(path);
+      }
+      throw e;
     }
-    if ((await lstat(path)).isDirectory()) {
-      return await this.handleChangedDirectory(path);
-    }
-    return this.handleChangedFile(path);
   }
 
   private pathIsInWorkspace(path: string): boolean {
