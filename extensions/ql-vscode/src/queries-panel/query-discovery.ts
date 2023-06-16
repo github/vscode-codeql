@@ -10,17 +10,18 @@ import { QueryDiscoverer } from "./query-tree-data-provider";
 import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
 import { containsPath } from "../pure/files";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
+import { QueryLanguage } from "../common/query-language";
 
 const QUERY_FILE_EXTENSION = ".ql";
 
 export interface QueryPackDiscoverer {
-  getLanguageForQueryFile(queryPath: string): string | undefined;
+  getLanguageForQueryFile(queryPath: string): QueryLanguage | undefined;
   onDidChangeQueryPacks: Event<void>;
 }
 
 interface Query {
   path: string;
-  language: string | undefined;
+  language: QueryLanguage | undefined;
 }
 
 /**
@@ -110,7 +111,7 @@ export class QueryDiscovery
     this.onDidChangePathsEmitter.fire();
   }
 
-  private determineQueryLanguage(path: string): string | undefined {
+  private determineQueryLanguage(path: string): QueryLanguage | undefined {
     return this.queryPackDiscovery.getLanguageForQueryFile(path);
   }
 }

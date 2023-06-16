@@ -25,15 +25,15 @@ export const PACKS_BY_QUERY_LANGUAGE = {
   [QueryLanguage.Ruby]: ["codeql/ruby-queries"],
 };
 
-export const dbSchemeToLanguage: Record<string, string> = {
-  "semmlecode.javascript.dbscheme": "javascript",
-  "semmlecode.cpp.dbscheme": "cpp",
-  "semmlecode.dbscheme": "java",
-  "semmlecode.python.dbscheme": "python",
-  "semmlecode.csharp.dbscheme": "csharp",
-  "go.dbscheme": "go",
-  "ruby.dbscheme": "ruby",
-  "swift.dbscheme": "swift",
+export const dbSchemeToLanguage: Record<string, QueryLanguage> = {
+  "semmlecode.javascript.dbscheme": QueryLanguage.Javascript,
+  "semmlecode.cpp.dbscheme": QueryLanguage.Cpp,
+  "semmlecode.dbscheme": QueryLanguage.Java,
+  "semmlecode.python.dbscheme": QueryLanguage.Python,
+  "semmlecode.csharp.dbscheme": QueryLanguage.CSharp,
+  "go.dbscheme": QueryLanguage.Go,
+  "ruby.dbscheme": QueryLanguage.Ruby,
+  "swift.dbscheme": QueryLanguage.Swift,
 };
 
 export function isQueryLanguage(language: string): language is QueryLanguage {

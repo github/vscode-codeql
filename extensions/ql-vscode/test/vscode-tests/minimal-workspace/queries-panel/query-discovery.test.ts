@@ -11,6 +11,7 @@ import {
   FileTreeLeaf,
 } from "../../../../src/common/file-tree-nodes";
 import { mkdirSync, writeFileSync } from "fs";
+import { QueryLanguage } from "../../../../src/common/query-language";
 
 describe("Query pack discovery", () => {
   let tmpDir: string;
@@ -40,7 +41,7 @@ describe("Query pack discovery", () => {
       .mockReturnValue([workspaceFolder]);
 
     queryPackDiscoverer = {
-      getLanguageForQueryFile: () => "java",
+      getLanguageForQueryFile: () => QueryLanguage.Java,
       onDidChangeQueryPacks: onDidChangeQueryPacks.event,
     };
     discovery = new QueryDiscovery(env, queryPackDiscoverer);
@@ -168,7 +169,7 @@ describe("Query pack discovery", () => {
         ]),
       ]);
 
-      queryPackDiscoverer.getLanguageForQueryFile = () => "python";
+      queryPackDiscoverer.getLanguageForQueryFile = () => QueryLanguage.Python;
       onDidChangeQueryPacks.fire();
 
       expect(discovery.buildQueryTree()).toEqual([

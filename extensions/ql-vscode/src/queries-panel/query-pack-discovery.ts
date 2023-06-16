@@ -1,7 +1,7 @@
 import { basename, dirname } from "path";
 import { CodeQLCliServer, QuerySetup } from "../codeql-cli/cli";
 import { Event } from "vscode";
-import { dbSchemeToLanguage } from "../common/query-language";
+import { QueryLanguage, dbSchemeToLanguage } from "../common/query-language";
 import { FALLBACK_QLPACK_FILENAME, QLPACK_FILENAMES } from "../pure/ql";
 import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
 import { getErrorMessage } from "../pure/helpers-pure";
@@ -12,7 +12,7 @@ import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 
 export interface QueryPack {
   path: string;
-  language: string | undefined;
+  language: QueryLanguage | undefined;
 }
 
 /**
@@ -35,7 +35,7 @@ export class QueryPackDiscovery extends FilePathDiscovery<QueryPack> {
    * return the language of that pack. Returns undefined if no pack is found
    * or the pack's language is unknown.
    */
-  public getLanguageForQueryFile(queryPath: string): string | undefined {
+  public getLanguageForQueryFile(queryPath: string): QueryLanguage | undefined {
     // Find all packs in a higher directory than the query
     const packs = this.paths.filter((queryPack) =>
       containsPath(dirname(queryPack.path), queryPath),
@@ -70,7 +70,7 @@ export class QueryPackDiscovery extends FilePathDiscovery<QueryPack> {
 
   private async determinePackLanguage(
     path: string,
-  ): Promise<string | undefined> {
+  ): Promise<QueryLanguage | undefined> {
     let packInfo: QuerySetup | undefined = undefined;
     try {
       packInfo = await this.cliServer.resolveLibraryPath(
