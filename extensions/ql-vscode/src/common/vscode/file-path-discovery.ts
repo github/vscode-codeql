@@ -9,7 +9,7 @@ import {
 import { MultiFileSystemWatcher } from "./multi-file-system-watcher";
 import { AppEventEmitter } from "../events";
 import { extLogger } from "..";
-import { exists, lstat } from "fs-extra";
+import { lstat, pathExists } from "fs-extra";
 import { containsPath } from "../../pure/files";
 import { getOnDiskWorkspaceFoldersObjects } from "./workspace-folders";
 
@@ -140,7 +140,7 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   }
 
   private async handledChangedPath(path: string): Promise<boolean> {
-    if (!(await exists(path)) || !this.pathIsInWorkspace(path)) {
+    if (!(await pathExists(path)) || !this.pathIsInWorkspace(path)) {
       return this.handleRemovedPath(path);
     }
     if ((await lstat(path)).isDirectory()) {
