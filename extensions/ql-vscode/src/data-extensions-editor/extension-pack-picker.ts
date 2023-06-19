@@ -16,14 +16,15 @@ import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
 import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
 import { containsPath } from "../pure/files";
 import { disableAutoNameExtensionPack } from "../config";
+import {
+  autoNameExtensionPack,
+  ExtensionPackName,
+  formatPackName,
+  parsePackName,
+  validatePackName,
+} from "./extension-pack-name";
 
 const maxStep = 3;
-
-const packNamePartRegex = /[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-const packNameRegex = new RegExp(
-  `^(?<scope>${packNamePartRegex.source})/(?<name>${packNamePartRegex.source})$`,
-);
-const packNameLength = 128;
 
 export async function pickExtensionPackModelFile(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveExtensions">,
@@ -265,30 +266,25 @@ async function pickNewExtensionPack(
     databaseItem.language,
   );
 
-  const packName = await window.showInputBox(
+  const name = await window.showInputBox(
     {
       title: "Create new extension pack",
       prompt: "Enter name of extension pack",
-      placeHolder: `e.g. ${examplePackName}`,
+      placeHolder: examplePackName
+        ? `e.g. ${formatPackName(examplePackName)}`
+        : "",
       validateInput: async (value: string): Promise<string | undefined> => {
-        if (!value) {
-          return "Pack name must not be empty";
+        const message = validatePackName(value);
+        if (message) {
+          return message;
         }
 
-        if (value.length > packNameLength) {
-          return `Pack name must be no longer than ${packNameLength} characters`;
+        const packName = parsePackName(value);
+        if (!packName) {
+          return "Invalid pack name";
         }
 
-        const matches = packNameRegex.exec(value);
-        if (!matches?.groups) {
-          if (!value.includes("/")) {
-            return "Invalid package name: a pack name must contain a slash to separate the scope from the pack name";
-          }
-
-          return "Invalid package name: a pack name must contain only lowercase ASCII letters, ASCII digits, and hyphens";
-        }
-
-        const packPath = join(workspaceFolder.uri.fsPath, matches.groups.name);
+        const packPath = join(workspaceFolder.uri.fsPath, packName.name);
         if (await pathExists(packPath)) {
           return `A pack already exists at ${packPath}`;
         }
@@ -298,17 +294,16 @@ async function pickNewExtensionPack(
     },
     token,
   );
+  if (!name) {
+    return undefined;
+  }
+
+  const packName = parsePackName(name);
   if (!packName) {
     return undefined;
   }
 
-  const matches = packNameRegex.exec(packName);
-  if (!matches?.groups) {
-    return;
-  }
-
-  const name = matches.groups.name;
-  const packPath = join(workspaceFolder.uri.fsPath, name);
+  const packPath = join(workspaceFolder.uri.fsPath, packName.name);
 
   if (await pathExists(packPath)) {
     return undefined;
@@ -338,7 +333,8 @@ async function autoCreateExtensionPack(
     return undefined;
   }
 
-  const existingExtensionPackPaths = extensionPacksInfo[packName];
+  const existingExtensionPackPaths =
+    extensionPacksInfo[formatPackName(packName)];
   // If there is already an extension pack with this name, use it if it is valid
   if (existingExtensionPackPaths?.length === 1) {
     let extensionPack: ExtensionPack;
@@ -347,11 +343,11 @@ async function autoCreateExtensionPack(
     } catch (e: unknown) {
       void showAndLogErrorMessage(
         logger,
-        `Could not read extension pack ${packName}`,
+        `Could not read extension pack ${formatPackName(packName)}`,
         {
-          fullMessage: `Could not read extension pack ${packName} at ${
-            existingExtensionPackPaths[0]
-          }: ${getErrorMessage(e)}`,
+          fullMessage: `Could not read extension pack ${formatPackName(
+            packName,
+          )} at ${existingExtensionPackPaths[0]}: ${getErrorMessage(e)}`,
         },
       );
 
@@ -366,9 +362,11 @@ async function autoCreateExtensionPack(
   if (existingExtensionPackPaths?.length > 1) {
     void showAndLogErrorMessage(
       logger,
-      `Extension pack ${packName} resolves to multiple paths`,
+      `Extension pack ${formatPackName(packName)} resolves to multiple paths`,
       {
-        fullMessage: `Extension pack ${packName} resolves to multiple paths: ${existingExtensionPackPaths.join(
+        fullMessage: `Extension pack ${formatPackName(
+          packName,
+        )} resolves to multiple paths: ${existingExtensionPackPaths.join(
           ", ",
         )}`,
       },
@@ -377,23 +375,14 @@ async function autoCreateExtensionPack(
     return undefined;
   }
 
-  const matches = packNameRegex.exec(packName);
-  if (!matches?.groups) {
-    void showAndLogErrorMessage(
-      logger,
-      `Extension pack ${packName} does not have a valid name`,
-    );
-
-    return undefined;
-  }
-
-  const unscopedName = matches.groups.name;
-  const packPath = join(workspaceFolder.uri.fsPath, unscopedName);
+  const packPath = join(workspaceFolder.uri.fsPath, packName.name);
 
   if (await pathExists(packPath)) {
     void showAndLogErrorMessage(
       logger,
-      `Directory ${packPath} already exists for extension pack ${packName}`,
+      `Directory ${packPath} already exists for extension pack ${formatPackName(
+        packName,
+      )}`,
     );
 
     return undefined;
@@ -449,7 +438,7 @@ async function askForWorkspaceFolder(): Promise<WorkspaceFolder | undefined> {
 
 async function writeExtensionPack(
   packPath: string,
-  packName: string,
+  packName: ExtensionPackName,
   language: string,
 ): Promise<ExtensionPack> {
   const packYamlPath = join(packPath, "codeql-pack.yml");
@@ -457,7 +446,7 @@ async function writeExtensionPack(
   const extensionPack: ExtensionPack = {
     path: packPath,
     yamlPath: packYamlPath,
-    name: packName,
+    name: formatPackName(packName),
     version: "0.0.0",
     extensionTargets: {
       [`codeql/${language}-all`]: "*",
@@ -562,41 +551,4 @@ async function readExtensionPack(path: string): Promise<ExtensionPack> {
     extensionTargets: qlpack.extensionTargets,
     dataExtensions,
   };
-}
-
-function autoNameExtensionPack(
-  name: string,
-  language: string,
-): string | undefined {
-  let packName = `${name}-${language}`;
-  if (!packName.includes("/")) {
-    packName = `pack/${packName}`;
-  }
-
-  const parts = packName.split("/");
-  const sanitizedParts = parts.map((part) => sanitizeExtensionPackName(part));
-
-  // This will ensure there's only 1 slash
-  packName = `${sanitizedParts[0]}/${sanitizedParts.slice(1).join("-")}`;
-
-  return packName;
-}
-
-function sanitizeExtensionPackName(name: string) {
-  // Lowercase everything
-  name = name.toLowerCase();
-
-  // Replace all spaces, dots, and underscores with hyphens
-  name = name.replaceAll(/[\s._]+/g, "-");
-
-  // Replace all characters which are not allowed by empty strings
-  name = name.replaceAll(/[^a-z0-9-]/g, "");
-
-  // Remove any leading or trailing hyphens
-  name = name.replaceAll(/^-|-$/g, "");
-
-  // Remove any duplicate hyphens
-  name = name.replaceAll(/-{2,}/g, "-");
-
-  return name;
 }
