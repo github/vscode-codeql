@@ -51,7 +51,7 @@ export async function getDirectoryNamesInsidePath(
   return dirNames;
 }
 
-function normalizePath(path: string): string {
+export function normalizePath(path: string): string {
   // On Windows, "C:/", "C:\", and "c:/" are all equivalent. We need
   // to normalize the paths to ensure they all get resolved to the
   // same format. On Windows, we also need to do the comparison
