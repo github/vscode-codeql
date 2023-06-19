@@ -7,6 +7,7 @@ import { pluralize } from "../../pure/word";
 import { ModeledMethodDataGrid } from "./ModeledMethodDataGrid";
 import { calculateModeledPercentage } from "./modeled";
 import { decimalFormatter, percentFormatter } from "./formatters";
+import { Codicon } from "../common";
 
 const LibraryContainer = styled.div`
   margin-bottom: 1rem;
@@ -69,6 +70,11 @@ export const LibraryRow = ({
   return (
     <LibraryContainer>
       <TitleContainer onClick={toggleExpanded} aria-expanded={isExpanded}>
+        {isExpanded ? (
+          <Codicon name="chevron-down" label="Collapse" />
+        ) : (
+          <Codicon name="chevron-right" label="Expand" />
+        )}
         {libraryName}
         {isExpanded ? null : (
           <>
