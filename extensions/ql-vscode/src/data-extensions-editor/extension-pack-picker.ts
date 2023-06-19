@@ -318,11 +318,13 @@ async function autoCreateExtensionPack(
   extensionPacksInfo: QlpacksInfo,
   logger: NotificationLogger,
 ): Promise<ExtensionPack | undefined> {
+  // Choose a workspace folder to create the extension pack in
   const workspaceFolder = await autoPickWorkspaceFolder(language);
   if (!workspaceFolder) {
     return undefined;
   }
 
+  // Generate the name of the extension pack
   const packName = autoNameExtensionPack(name, language);
   if (!packName) {
     void showAndLogErrorMessage(
@@ -333,8 +335,10 @@ async function autoCreateExtensionPack(
     return undefined;
   }
 
+  // Find any existing locations of this extension pack
   const existingExtensionPackPaths =
     extensionPacksInfo[formatPackName(packName)];
+
   // If there is already an extension pack with this name, use it if it is valid
   if (existingExtensionPackPaths?.length === 1) {
     let extensionPack: ExtensionPack;
@@ -396,9 +400,13 @@ async function autoPickWorkspaceFolder(
 ): Promise<WorkspaceFolder | undefined> {
   const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
 
+  // If there's only 1 workspace folder, use that
   if (workspaceFolders.length === 1) {
     return workspaceFolders[0];
   }
+
+  // In the vscode-codeql-starter repository, all workspace folders are named "codeql-custom-queries-<language>",
+  // so we can use that to find the workspace folder for the language
   const starterWorkspaceFolderForLanguage = workspaceFolders.find(
     (folder) => folder.name === `codeql-custom-queries-${language}`,
   );
@@ -406,6 +414,7 @@ async function autoPickWorkspaceFolder(
     return starterWorkspaceFolderForLanguage;
   }
 
+  // Otherwise, try to find one that ends with "-<language>"
   const workspaceFolderForLanguage = workspaceFolders.find((folder) =>
     folder.name.endsWith(`-${language}`),
   );
@@ -413,6 +422,7 @@ async function autoPickWorkspaceFolder(
     return workspaceFolderForLanguage;
   }
 
+  // If we can't find one, just ask the user
   return askForWorkspaceFolder();
 }
 
