@@ -153,7 +153,7 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
     let pathsUpdated = false;
     for (const path of this.changedFilePaths) {
       this.changedFilePaths.delete(path);
-      if (await this.handledChangedPath(path)) {
+      if (await this.handleChangedPath(path)) {
         pathsUpdated = true;
       }
     }
@@ -163,7 +163,7 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
     }
   }
 
-  private async handledChangedPath(path: string): Promise<boolean> {
+  private async handleChangedPath(path: string): Promise<boolean> {
     try {
       // If the path is not in the workspace then we don't want to be
       // tracking or displaying it, so treat it as if it doesn't exist.
