@@ -72,7 +72,7 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
     this.push(this.watcher.onDidChange(this.fileChanged.bind(this)));
   }
 
-  protected getPathData(): readonly T[] {
+  protected getPathData(): ReadonlyArray<Readonly<T>> {
     return this.pathData;
   }
 
