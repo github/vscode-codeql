@@ -292,7 +292,7 @@ describe("createDataExtensionYamlsPerLibrary", () => {
     );
 
     expect(yaml).toEqual({
-      "models/sql2o.yml": `extensions:
+      "models/sql2o.model.yml": `extensions:
   - addsTo:
       pack: codeql/java-all
       extensible: sourceModel
@@ -315,7 +315,7 @@ describe("createDataExtensionYamlsPerLibrary", () => {
       extensible: neutralModel
     data: []
 `,
-      "models/spring-boot.yml": `extensions:
+      "models/spring-boot.model.yml": `extensions:
   - addsTo:
       pack: codeql/java-all
       extensible: sourceModel
@@ -402,38 +402,38 @@ describe("loadDataExtensionYaml", () => {
 
 describe("createFilenameForLibrary", () => {
   const testCases = [
-    { library: "sql2o.jar", filename: "models/sql2o.yml" },
+    { library: "sql2o.jar", filename: "models/sql2o.model.yml" },
     {
       library: "sql2o-1.6.0.jar",
-      filename: "models/sql2o.yml",
+      filename: "models/sql2o.model.yml",
     },
     {
       library: "spring-boot-3.0.2.jar",
-      filename: "models/spring-boot.yml",
+      filename: "models/spring-boot.model.yml",
     },
     {
       library: "spring-boot-v3.0.2.jar",
-      filename: "models/spring-boot.yml",
+      filename: "models/spring-boot.model.yml",
     },
     {
       library: "spring-boot-3.0.2-alpha1.jar",
-      filename: "models/spring-boot.yml",
+      filename: "models/spring-boot.model.yml",
     },
     {
       library: "spring-boot-3.0.2beta2.jar",
-      filename: "models/spring-boot.yml",
+      filename: "models/spring-boot.model.yml",
     },
     {
       library: "rt.jar",
-      filename: "models/rt.yml",
+      filename: "models/rt.model.yml",
     },
     {
       library: "System.Runtime.dll",
-      filename: "models/system.runtime.yml",
+      filename: "models/system.runtime.model.yml",
     },
     {
       library: "System.Runtime.1.5.0.dll",
-      filename: "models/system.runtime.yml",
+      filename: "models/system.runtime.model.yml",
     },
   ];
 

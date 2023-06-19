@@ -124,7 +124,11 @@ export function createDataExtensionYamlsPerLibrary(
 const semverRegex =
   /[v=\s]*([0-9]+)\.([0-9]+)\.([0-9]+)(?:-?((?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\.(?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?/;
 
-export function createFilenameForLibrary(library: string, prefix = "models/") {
+export function createFilenameForLibrary(
+  library: string,
+  prefix = "models/",
+  suffix = ".model",
+) {
   let libraryName = basename(library);
   const extension = extname(libraryName);
   libraryName = libraryName.slice(0, -extension.length);
@@ -153,7 +157,7 @@ export function createFilenameForLibrary(library: string, prefix = "models/") {
   // Remove any duplicate dots
   libraryName = libraryName.replaceAll(/\.{2,}/g, ".");
 
-  return `${prefix}${libraryName}.yml`;
+  return `${prefix}${libraryName}${suffix}.yml`;
 }
 
 export function loadDataExtensionYaml(
