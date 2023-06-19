@@ -109,7 +109,10 @@ export async function* walkDirectory(
 }
 
 /**
- * Error thrown from methods from the 'fs' module.
+ * Error thrown from methods from the `fs` module.
+ *
+ * In practice, any error matching this is likely an instance of `NodeJS.ErrnoException`.
+ * If desired in the future, we could model more fields or use `NodeJS.ErrnoException` directly.
  */
 export interface IOError {
   readonly code: string;
