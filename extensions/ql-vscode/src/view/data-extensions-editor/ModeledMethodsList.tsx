@@ -1,14 +1,9 @@
 import * as React from "react";
 import { useMemo } from "react";
-import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
-import { ModeledMethodDataGrid } from "./ModeledMethodDataGrid";
 import { calculateModeledPercentage } from "./modeled";
-
-const LibraryContainer = styled.div`
-  margin-bottom: 1rem;
-`;
+import { LibraryRow } from "./LibraryRow";
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
@@ -69,14 +64,13 @@ export const ModeledMethodsList = ({
   return (
     <>
       {sortedLibraryNames.map((libraryName) => (
-        <LibraryContainer key={libraryName}>
-          <h3>{libraryName}</h3>
-          <ModeledMethodDataGrid
-            externalApiUsages={groupedByLibrary[libraryName]}
-            modeledMethods={modeledMethods}
-            onChange={onChange}
-          />
-        </LibraryContainer>
+        <LibraryRow
+          key={libraryName}
+          libraryName={libraryName}
+          externalApiUsages={groupedByLibrary[libraryName]}
+          modeledMethods={modeledMethods}
+          onChange={onChange}
+        />
       ))}
     </>
   );
