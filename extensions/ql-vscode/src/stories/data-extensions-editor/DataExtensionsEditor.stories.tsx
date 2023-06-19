@@ -34,6 +34,7 @@ DataExtensionsEditor.args = {
   },
   initialExternalApiUsages: [
     {
+      library: "sql2o-1.6.0.jar",
       signature: "org.sql2o.Connection#createQuery(String)",
       packageName: "org.sql2o",
       typeName: "Connection",
@@ -64,6 +65,7 @@ DataExtensionsEditor.args = {
       ],
     },
     {
+      library: "sql2o-1.6.0.jar",
       signature: "org.sql2o.Query#executeScalar(Class)",
       packageName: "org.sql2o",
       typeName: "Query",
@@ -94,6 +96,7 @@ DataExtensionsEditor.args = {
       ],
     },
     {
+      library: "sql2o-1.6.0.jar",
       signature: "org.sql2o.Sql2o#open()",
       packageName: "org.sql2o",
       typeName: "Sql2o",
@@ -124,6 +127,7 @@ DataExtensionsEditor.args = {
       ],
     },
     {
+      library: "rt.jar",
       signature: "java.io.PrintStream#println(String)",
       packageName: "java.io",
       typeName: "PrintStream",
@@ -144,6 +148,7 @@ DataExtensionsEditor.args = {
       ],
     },
     {
+      library: "spring-boot-3.0.2.jar",
       signature:
         "org.springframework.boot.SpringApplication#run(Class,String[])",
       packageName: "org.springframework.boot",
@@ -165,6 +170,7 @@ DataExtensionsEditor.args = {
       ],
     },
     {
+      library: "sql2o-1.6.0.jar",
       signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
       packageName: "org.sql2o",
       typeName: "Sql2o",
@@ -185,6 +191,7 @@ DataExtensionsEditor.args = {
       ],
     },
     {
+      library: "sql2o-1.6.0.jar",
       signature: "org.sql2o.Sql2o#Sql2o(String)",
       packageName: "org.sql2o",
       typeName: "Sql2o",

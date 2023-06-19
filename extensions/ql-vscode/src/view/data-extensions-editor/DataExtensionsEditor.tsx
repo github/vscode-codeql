@@ -235,24 +235,27 @@ export function DataExtensionsEditor({
             <VSCodeDataGrid>
               <VSCodeDataGridRow rowType="header">
                 <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
-                  Type
+                  Library
                 </VSCodeDataGridCell>
                 <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
-                  Method
+                  Type
                 </VSCodeDataGridCell>
                 <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
-                  Usages
+                  Method
                 </VSCodeDataGridCell>
                 <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
-                  Model type
+                  Usages
                 </VSCodeDataGridCell>
                 <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
-                  Input
+                  Model type
                 </VSCodeDataGridCell>
                 <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
-                  Output
+                  Input
                 </VSCodeDataGridCell>
                 <VSCodeDataGridCell cellType="columnheader" gridColumn={7}>
+                  Output
+                </VSCodeDataGridCell>
+                <VSCodeDataGridCell cellType="columnheader" gridColumn={8}>
                   Kind
                 </VSCodeDataGridCell>
               </VSCodeDataGridRow>

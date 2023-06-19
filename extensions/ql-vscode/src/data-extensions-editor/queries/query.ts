@@ -7,6 +7,8 @@ export type Query = {
    * - apiName: the name of the external API. This is a string.
    * - supported: whether the external API is supported by the extension. This should be a string representation of a boolean to satify the result pattern for a problem query.
    * - "supported": a string literal. This is required to make the query a valid problem query.
+   * - libraryName: the name of the library that contains the external API. This is a string and usually the basename of a file.
+   * - "library": a string literal. This is required to make the query a valid problem query.
    */
   mainQuery: string;
   dependencies?: {
