@@ -149,9 +149,6 @@ export const MethodRow = ({
   return (
     <VSCodeDataGridRow>
       <VSCodeDataGridCell gridColumn={1}>
-        {externalApiUsage.library}
-      </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={2}>
         <SupportSpan
           supported={externalApiUsage.supported}
           modeled={modeledMethod}
@@ -159,7 +156,7 @@ export const MethodRow = ({
           {externalApiUsage.packageName}.{externalApiUsage.typeName}
         </SupportSpan>
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={3}>
+      <VSCodeDataGridCell gridColumn={2}>
         <SupportSpan
           supported={externalApiUsage.supported}
           modeled={modeledMethod}
@@ -168,12 +165,12 @@ export const MethodRow = ({
           {externalApiUsage.methodParameters}
         </SupportSpan>
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={4}>
+      <VSCodeDataGridCell gridColumn={3}>
         <UsagesButton onClick={jumpToUsage}>
           {externalApiUsage.usages.length}
         </UsagesButton>
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={5}>
+      <VSCodeDataGridCell gridColumn={4}>
         {(!externalApiUsage.supported ||
           (modeledMethod && modeledMethod?.type !== "none")) && (
           <Dropdown
@@ -188,7 +185,7 @@ export const MethodRow = ({
           </Dropdown>
         )}
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={6}>
+      <VSCodeDataGridCell gridColumn={5}>
         {modeledMethod?.type &&
           ["sink", "summary"].includes(modeledMethod?.type) && (
             <Dropdown value={modeledMethod?.input} onInput={handleInputInput}>
@@ -201,7 +198,7 @@ export const MethodRow = ({
             </Dropdown>
           )}
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={7}>
+      <VSCodeDataGridCell gridColumn={6}>
         {modeledMethod?.type &&
           ["source", "summary"].includes(modeledMethod?.type) && (
             <Dropdown value={modeledMethod?.output} onInput={handleOutputInput}>
@@ -215,7 +212,7 @@ export const MethodRow = ({
             </Dropdown>
           )}
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={8}>
+      <VSCodeDataGridCell gridColumn={7}>
         {predicate?.supportedKinds && (
           <KindInput
             kinds={predicate.supportedKinds}

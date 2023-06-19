@@ -26,27 +26,24 @@ export const ModeledMethodDataGrid = ({
     <VSCodeDataGrid>
       <VSCodeDataGridRow rowType="header">
         <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
-          Library
-        </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
           Type
         </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
+        <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
           Method
         </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
+        <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
           Usages
         </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
+        <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
           Model type
         </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
+        <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
           Input
         </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={7}>
+        <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
           Output
         </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={8}>
+        <VSCodeDataGridCell cellType="columnheader" gridColumn={7}>
           Kind
         </VSCodeDataGridCell>
       </VSCodeDataGridRow>
