@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
+import { pluralize } from "../../pure/word";
 import { ModeledMethodDataGrid } from "./ModeledMethodDataGrid";
 import { calculateModeledPercentage } from "./modeled";
 import { decimalFormatter, percentFormatter } from "./formatters";
@@ -72,9 +73,14 @@ export const LibraryRow = ({
         {isExpanded ? null : (
           <>
             {" "}
-            ({decimalFormatter.format(externalApiUsages.length)} method
-            {externalApiUsages.length !== 1 ? "s" : ""},{" "}
-            {percentFormatter.format(modeledPercentage / 100)} modeled)
+            (
+            {pluralize(
+              externalApiUsages.length,
+              "method",
+              "methods",
+              decimalFormatter.format.bind(decimalFormatter),
+            )}
+            , {percentFormatter.format(modeledPercentage / 100)} modeled)
           </>
         )}
       </TitleContainer>
@@ -82,12 +88,20 @@ export const LibraryRow = ({
         <>
           <StatusContainer>
             <div>
-              {decimalFormatter.format(externalApiUsages.length)} method
-              {externalApiUsages.length !== 1 ? "s" : ""}
+              {pluralize(
+                externalApiUsages.length,
+                "method",
+                "methods",
+                decimalFormatter.format.bind(decimalFormatter),
+              )}
             </div>
             <div>
-              {decimalFormatter.format(usagesCount)} usage
-              {usagesCount !== 1 ? "s" : ""}
+              {pluralize(
+                usagesCount,
+                "usage",
+                "usages",
+                decimalFormatter.format.bind(decimalFormatter),
+              )}
             </div>
             <div>
               {percentFormatter.format(modeledPercentage / 100)} modeled
