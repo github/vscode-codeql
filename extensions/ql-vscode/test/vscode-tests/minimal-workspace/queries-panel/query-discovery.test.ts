@@ -12,6 +12,7 @@ import {
 } from "../../../../src/common/file-tree-nodes";
 import { mkdirSync, writeFileSync } from "fs";
 import { QueryLanguage } from "../../../../src/common/query-language";
+import { sleep } from "../../../../src/pure/time";
 
 describe("Query pack discovery", () => {
   let tmpDir: string;
@@ -171,6 +172,10 @@ describe("Query pack discovery", () => {
 
       queryPackDiscoverer.getLanguageForQueryFile = () => QueryLanguage.Python;
       onDidChangeQueryPacks.fire();
+
+      // Wait for the query discovery to recompute the query languages.
+      // This is async but should complete instantly since it's all in-memory.
+      await sleep(100);
 
       expect(discovery.buildQueryTree()).toEqual([
         new FileTreeDirectory(workspacePath, "workspace", env, [
