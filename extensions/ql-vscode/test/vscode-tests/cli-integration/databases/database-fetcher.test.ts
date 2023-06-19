@@ -1,5 +1,5 @@
 import { join } from "path";
-import { CancellationToken, Uri, window } from "vscode";
+import { Uri, window } from "vscode";
 
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { DatabaseManager } from "../../../../src/databases/local-databases";
@@ -52,7 +52,6 @@ describe("database-fetcher", () => {
         databaseManager,
         storagePath,
         progressCallback,
-        {} as CancellationToken,
         cli,
       );
       expect(dbItem).toBe(databaseManager.currentDatabaseItem);
@@ -74,7 +73,6 @@ describe("database-fetcher", () => {
         databaseManager,
         storagePath,
         progressCallback,
-        {} as CancellationToken,
         cli,
       );
       expect(dbItem).toBeDefined();

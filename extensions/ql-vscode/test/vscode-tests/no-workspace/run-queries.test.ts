@@ -242,11 +242,7 @@ describe("run-queries", () => {
         },
       } as any;
 
-      await runner.registerDatabase(
-        mockProgress as any,
-        mockCancel as any,
-        dbItem,
-      );
+      await runner.registerDatabase(dbItem);
 
       expect(qs.sendRequest).toHaveBeenCalledTimes(1);
       expect(qs.sendRequest).toHaveBeenCalledWith(
@@ -277,11 +273,7 @@ describe("run-queries", () => {
         },
       } as any;
 
-      await runner.deregisterDatabase(
-        mockProgress as any,
-        mockCancel as any,
-        dbItem,
-      );
+      await runner.deregisterDatabase(dbItem);
 
       expect(qs.sendRequest).toHaveBeenCalledTimes(1);
       expect(qs.sendRequest).toHaveBeenCalledWith(

@@ -200,7 +200,6 @@ export class QueryInProgress {
 export async function clearCacheInDatabase(
   qs: qsClient.QueryServerClient,
   dbItem: DatabaseItem,
-  progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
@@ -217,7 +216,7 @@ export async function clearCacheInDatabase(
     db,
   };
 
-  return qs.sendRequest(messages.clearCache, params, token, progress);
+  return qs.sendRequest(messages.clearCache, params, token);
 }
 
 function reportNoUpgradePath(

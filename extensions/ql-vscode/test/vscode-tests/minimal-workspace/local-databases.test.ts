@@ -141,11 +141,7 @@ describe("local databases", () => {
     onDidChangeDatabaseItem.mockClear();
 
     // now remove the item
-    await databaseManager.removeDatabaseItem(
-      {} as ProgressCallback,
-      {} as CancellationToken,
-      mockDbItem,
-    );
+    await databaseManager.removeDatabaseItem(mockDbItem);
     expect((databaseManager as any)._databaseItems).toEqual([]);
     expect(updateSpy).toBeCalledWith("databaseList", []);
     expect(onDidChangeDatabaseItem).toBeCalledWith({
@@ -243,11 +239,7 @@ describe("local databases", () => {
 
       updateSpy.mockClear();
 
-      await databaseManager.removeDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem,
-      );
+      await databaseManager.removeDatabaseItem(mockDbItem);
 
       expect(databaseManager.databaseItems).toEqual([]);
       expect(updateSpy).toBeCalledWith("databaseList", []);
@@ -279,11 +271,7 @@ describe("local databases", () => {
       (databaseManager as any).ctx.storageUri = Uri.file("hucairz");
       extensionContextStoragePath = "hucairz";
 
-      await databaseManager.removeDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem,
-      );
+      await databaseManager.removeDatabaseItem(mockDbItem);
 
       expect(databaseManager.databaseItems).toEqual([]);
       expect(updateSpy).toBeCalledWith("databaseList", []);
@@ -309,11 +297,7 @@ describe("local databases", () => {
       // Should have registered this database
       expect(registerSpy).toBeCalledWith({}, {}, mockDbItem);
 
-      await databaseManager.removeDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem,
-      );
+      await databaseManager.removeDatabaseItem(mockDbItem);
 
       // Should have deregistered this database
       expect(deregisterSpy).toBeCalledWith({}, {}, mockDbItem);
@@ -753,31 +737,19 @@ describe("local databases", () => {
     });
 
     it("should resolve the database contents", async () => {
-      await databaseManager.openDatabase(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem.databaseUri,
-      );
+      await databaseManager.openDatabase(mockDbItem.databaseUri);
 
       expect(resolveDatabaseContentsSpy).toBeCalledTimes(2);
     });
 
     it("should set the database as the currently selected one", async () => {
-      await databaseManager.openDatabase(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem.databaseUri,
-      );
+      await databaseManager.openDatabase(mockDbItem.databaseUri);
 
       expect(setCurrentDatabaseItemSpy).toBeCalledTimes(1);
     });
 
     it("should add database source archive folder", async () => {
-      await databaseManager.openDatabase(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem.databaseUri,
-      );
+      await databaseManager.openDatabase(mockDbItem.databaseUri);
 
       expect(addDatabaseSourceArchiveFolderSpy).toBeCalledTimes(1);
     });
@@ -792,8 +764,6 @@ describe("local databases", () => {
           const nameOverride = "CodeQL Tutorial Database";
 
           await databaseManager.openDatabase(
-            {} as ProgressCallback,
-            {} as CancellationToken,
             mockDbItem.databaseUri,
             makeSelected,
             nameOverride,
@@ -808,11 +778,7 @@ describe("local databases", () => {
         it("should create a skeleton QL pack", async () => {
           jest.spyOn(Setting.prototype, "getValue").mockReturnValue(true);
 
-          await databaseManager.openDatabase(
-            {} as ProgressCallback,
-            {} as CancellationToken,
-            mockDbItem.databaseUri,
-          );
+          await databaseManager.openDatabase(mockDbItem.databaseUri);
 
           expect(createSkeletonPacksSpy).toBeCalledTimes(1);
         });
@@ -823,11 +789,7 @@ describe("local databases", () => {
       it("should not create a skeleton QL pack", async () => {
         jest.spyOn(Setting.prototype, "getValue").mockReturnValue(false);
 
-        await databaseManager.openDatabase(
-          {} as ProgressCallback,
-          {} as CancellationToken,
-          mockDbItem.databaseUri,
-        );
+        await databaseManager.openDatabase(mockDbItem.databaseUri);
         expect(createSkeletonPacksSpy).toBeCalledTimes(0);
       });
     });
@@ -836,11 +798,7 @@ describe("local databases", () => {
       it("should not create a skeleton QL pack", async () => {
         jest.spyOn(Setting.prototype, "getValue").mockReturnValue(undefined);
 
-        await databaseManager.openDatabase(
-          {} as ProgressCallback,
-          {} as CancellationToken,
-          mockDbItem.databaseUri,
-        );
+        await databaseManager.openDatabase(mockDbItem.databaseUri);
         expect(createSkeletonPacksSpy).toBeCalledTimes(0);
       });
     });

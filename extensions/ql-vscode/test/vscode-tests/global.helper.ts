@@ -1,12 +1,7 @@
 import { join } from "path";
 import { load, dump } from "js-yaml";
 import { realpathSync, readFileSync, writeFileSync } from "fs-extra";
-import {
-  CancellationToken,
-  CancellationTokenSource,
-  Uri,
-  extensions,
-} from "vscode";
+import { Uri, extensions } from "vscode";
 import {
   DatabaseItem,
   DatabaseManager,
@@ -14,7 +9,6 @@ import {
 import { CodeQLCliServer } from "../../src/codeql-cli/cli";
 import { removeWorkspaceRefs } from "../../src/variant-analysis/run-remote-query";
 import { CodeQLExtensionInterface } from "../../src/extension";
-import { ProgressCallback } from "../../src/common/vscode/progress";
 import { importArchiveDatabase } from "../../src/databases/database-fetcher";
 import { createMockCommandManager } from "../__mocks__/commandsMock";
 
@@ -49,7 +43,6 @@ export async function ensureTestDatabase(
     (_p) => {
       /**/
     },
-    new CancellationTokenSource().token,
     cli,
   );
 
@@ -77,10 +70,7 @@ export async function getActivatedExtension(): Promise<CodeQLExtensionInterface>
 }
 
 export async function cleanDatabases(databaseManager: DatabaseManager) {
-  await databaseManager.removeAllDatabases(
-    {} as ProgressCallback,
-    {} as CancellationToken,
-  );
+  await databaseManager.removeAllDatabases();
 }
 
 /**

@@ -1,5 +1,5 @@
 import { join } from "path";
-import { CancellationToken, Uri, workspace, window as Window } from "vscode";
+import { Uri, workspace, window as Window } from "vscode";
 import { CodeQLCliServer } from "./codeql-cli/cli";
 import { BaseLogger } from "./common";
 import { Credentials } from "./common/authentication";
@@ -51,7 +51,6 @@ export class SkeletonQueryWizard {
     private readonly credentials: Credentials | undefined,
     private readonly logger: BaseLogger,
     private readonly databaseManager: DatabaseManager,
-    private readonly token: CancellationToken,
     private readonly databaseStoragePath: string | undefined,
   ) {}
 
@@ -258,7 +257,6 @@ export class SkeletonQueryWizard {
       this.databaseStoragePath,
       this.credentials,
       this.progress,
-      this.token,
       this.cliServer,
       this.language,
     );
