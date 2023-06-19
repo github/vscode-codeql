@@ -34,6 +34,12 @@ interface PathData {
  * relevant, and what extra data to compute for each file.
  */
 export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
+  /**
+   * Has `discover` been called. This allows distinguishing between
+   * "no paths found" and not having scanned yet.
+   */
+  private discoverHasCompletedOnce = false;
+
   /** The set of known paths and associated data that we are tracking */
   private pathData: T[] = [];
 
@@ -73,7 +79,10 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
     this.push(this.watcher.onDidChange(this.fileChanged.bind(this)));
   }
 
-  protected getPathData(): ReadonlyArray<Readonly<T>> {
+  protected getPathData(): ReadonlyArray<Readonly<T>> | undefined {
+    if (!this.discoverHasCompletedOnce) {
+      return undefined;
+    }
     return this.pathData;
   }
 
@@ -171,6 +180,7 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
       }
     }
 
+    this.discoverHasCompletedOnce = true;
     if (pathsUpdated) {
       this.onDidChangePathDataEmitter.fire();
     }

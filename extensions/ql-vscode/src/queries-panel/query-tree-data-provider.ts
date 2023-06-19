@@ -4,7 +4,7 @@ import { DisposableObject } from "../common/disposable-object";
 import { FileTreeNode } from "../common/file-tree-nodes";
 
 export interface QueryDiscoverer {
-  readonly buildQueryTree: () => Array<FileTreeNode<string>>;
+  readonly buildQueryTree: () => Array<FileTreeNode<string>> | undefined;
   readonly onDidChangeQueries: Event<void>;
 }
 
@@ -34,9 +34,11 @@ export class QueryTreeDataProvider
   }
 
   private createTree(): QueryTreeViewItem[] {
-    return this.queryDiscoverer
-      .buildQueryTree()
-      .map(this.convertFileTreeNode.bind(this));
+    const queryTree = this.queryDiscoverer.buildQueryTree();
+    if (queryTree === undefined) {
+      return [];
+    }
+    return queryTree.map(this.convertFileTreeNode.bind(this));
   }
 
   private convertFileTreeNode(

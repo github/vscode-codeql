@@ -34,7 +34,7 @@ class TestFilePathDiscovery extends FilePathDiscovery<TestData> {
     return this.onDidChangePathData;
   }
 
-  public getPathData(): readonly TestData[] {
+  public getPathData(): readonly TestData[] | undefined {
     return super.getPathData();
   }
 
@@ -123,6 +123,10 @@ describe("FilePathDiscovery", () => {
   });
 
   describe("initialRefresh", () => {
+    it("should return undefined until initialRefresh is called", async () => {
+      expect(discovery.getPathData()).toEqual(undefined);
+    });
+
     it("should handle no files being present", async () => {
       await discovery.initialRefresh();
       expect(discovery.getPathData()).toEqual([]);
