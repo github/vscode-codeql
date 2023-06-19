@@ -47,17 +47,5 @@ export function decodeBqrsToExternalApiUsages(
     method.usages.push(usage);
   });
 
-  const externalApiUsages = Array.from(methodsByApiName.values());
-  externalApiUsages.sort((a, b) => {
-    // Sort first by supported, putting unmodeled methods first.
-    if (a.supported && !b.supported) {
-      return 1;
-    }
-    if (!a.supported && b.supported) {
-      return -1;
-    }
-    // Then sort by number of usages descending
-    return b.usages.length - a.usages.length;
-  });
-  return externalApiUsages;
+  return Array.from(methodsByApiName.values());
 }
