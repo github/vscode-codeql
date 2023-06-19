@@ -36,6 +36,41 @@ describe("autoNameExtensionPack", () => {
       language: "csharp",
       expected: "pack/b-csharp",
     },
+    {
+      name: "a/b/c/d",
+      language: "csharp",
+      expected: "a/b-c-d-csharp",
+    },
+    {
+      name: "JAVA/CodeQL",
+      language: "csharp",
+      expected: "java/codeql-csharp",
+    },
+    {
+      name: "my new pack",
+      language: "swift",
+      expected: "pack/my-new-pack-swift",
+    },
+    {
+      name: "gïthub/vscode-codeql",
+      language: "javascript",
+      expected: "gthub/vscode-codeql-javascript",
+    },
+    {
+      name: "a/b-",
+      language: "csharp",
+      expected: "a/b-csharp",
+    },
+    {
+      name: "-a-/b",
+      language: "ruby",
+      expected: "a/b-ruby",
+    },
+    {
+      name: "a/b--d--e-d-",
+      language: "csharp",
+      expected: "a/b-d-e-d-csharp",
+    },
   ];
 
   test.each(testCases)(

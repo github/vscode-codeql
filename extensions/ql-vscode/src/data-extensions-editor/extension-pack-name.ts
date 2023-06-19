@@ -25,6 +25,11 @@ export function autoNameExtensionPack(
   const parts = packName.split("/");
   const sanitizedParts = parts.map((part) => sanitizeExtensionPackName(part));
 
+  // If the scope is empty (e.g. if the given name is "-/b"), then we need to still set a scope
+  if (sanitizedParts[0].length === 0) {
+    sanitizedParts[0] = "pack";
+  }
+
   return {
     scope: sanitizedParts[0],
     // This will ensure there's only 1 slash
