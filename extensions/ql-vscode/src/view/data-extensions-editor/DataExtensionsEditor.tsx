@@ -15,7 +15,7 @@ import { LinkIconButton } from "../variant-analysis/LinkIconButton";
 import { basename } from "../common/path";
 import { ViewTitle } from "../common";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
-import { ModeledMethodDataGrid } from "./ModeledMethodDataGrid";
+import { ModeledMethodsList } from "./ModeledMethodsList";
 
 const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -231,7 +231,7 @@ export function DataExtensionsEditor({
                 </>
               )}
             </ButtonsContainer>
-            <ModeledMethodDataGrid
+            <ModeledMethodsList
               externalApiUsages={externalApiUsages}
               modeledMethods={modeledMethods}
               onChange={onChange}
