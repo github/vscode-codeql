@@ -1,203 +1,196 @@
+import { EventEmitter, Uri, workspace } from "vscode";
 import {
-  EventEmitter,
-  FileSystemWatcher,
-  Uri,
-  WorkspaceFoldersChangeEvent,
-  workspace,
-} from "vscode";
-import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { QueryDiscovery } from "../../../../src/queries-panel/query-discovery";
+  QueryDiscovery,
+  QueryPackDiscoverer,
+} from "../../../../src/queries-panel/query-discovery";
 import { createMockEnvironmentContext } from "../../../__mocks__/appMock";
-import { mockedObject } from "../../utils/mocking.helpers";
-import { basename, join, sep } from "path";
+import { dirname, join } from "path";
+import * as tmp from "tmp";
+import {
+  FileTreeDirectory,
+  FileTreeLeaf,
+} from "../../../../src/common/file-tree-nodes";
+import { mkdirSync, writeFileSync } from "fs";
+import { QueryLanguage } from "../../../../src/common/query-language";
+import { sleep } from "../../../../src/pure/time";
 
-describe("QueryDiscovery", () => {
+describe("Query pack discovery", () => {
+  let tmpDir: string;
+  let tmpDirRemoveCallback: (() => void) | undefined;
+
+  let workspacePath: string;
+
+  const env = createMockEnvironmentContext();
+
+  const onDidChangeQueryPacks = new EventEmitter<void>();
+  let queryPackDiscoverer: QueryPackDiscoverer;
+  let discovery: QueryDiscovery;
+
   beforeEach(() => {
-    expect(workspace.workspaceFolders?.length).toEqual(1);
+    const t = tmp.dirSync();
+    tmpDir = t.name;
+    tmpDirRemoveCallback = t.removeCallback;
+
+    const workspaceFolder = {
+      uri: Uri.file(join(tmpDir, "workspace")),
+      name: "workspace",
+      index: 0,
+    };
+    workspacePath = workspaceFolder.uri.fsPath;
+    jest
+      .spyOn(workspace, "workspaceFolders", "get")
+      .mockReturnValue([workspaceFolder]);
+
+    queryPackDiscoverer = {
+      getLanguageForQueryFile: () => QueryLanguage.Java,
+      onDidChangeQueryPacks: onDidChangeQueryPacks.event,
+    };
+    discovery = new QueryDiscovery(env, queryPackDiscoverer);
   });
 
-  describe("queries", () => {
-    it("should return empty list when no QL files are present", async () => {
-      const resolveQueries = jest.fn().mockResolvedValue([]);
-      const cli = mockedObject<CodeQLCliServer>({
-        resolveQueries,
-      });
+  afterEach(() => {
+    tmpDirRemoveCallback?.();
+    discovery.dispose();
+  });
 
-      const discovery = new QueryDiscovery(createMockEnvironmentContext(), cli);
-      await discovery.refresh();
-      const queries = discovery.queries;
+  describe("buildQueryTree", () => {
+    it("returns an empty tree when there are no query files", async () => {
+      await discovery.initialRefresh();
 
-      expect(queries).toEqual([]);
-      expect(resolveQueries).toHaveBeenCalledTimes(1);
+      expect(discovery.buildQueryTree()).toEqual([]);
+    });
+
+    it("handles when query pack data is available", async () => {
+      makeTestFile(join(workspacePath, "query.ql"));
+
+      await discovery.initialRefresh();
+
+      expect(discovery.buildQueryTree()).toEqual([
+        new FileTreeDirectory(workspacePath, "workspace", env, [
+          new FileTreeLeaf(join(workspacePath, "query.ql"), "query.ql", "java"),
+        ]),
+      ]);
+    });
+
+    it("handles when query pack data is not available", async () => {
+      makeTestFile(join(workspacePath, "query.ql"));
+
+      queryPackDiscoverer.getLanguageForQueryFile = () => undefined;
+
+      await discovery.initialRefresh();
+
+      expect(discovery.buildQueryTree()).toEqual([
+        new FileTreeDirectory(workspacePath, "workspace", env, [
+          new FileTreeLeaf(
+            join(workspacePath, "query.ql"),
+            "query.ql",
+            undefined,
+          ),
+        ]),
+      ]);
     });
 
     it("should organise query files into directories", async () => {
-      const workspaceRoot = workspace.workspaceFolders![0].uri.fsPath;
-      const cli = mockedObject<CodeQLCliServer>({
-        resolveQueries: jest
-          .fn()
-          .mockResolvedValue([
-            join(workspaceRoot, "dir1/query1.ql"),
-            join(workspaceRoot, "dir2/query2.ql"),
-            join(workspaceRoot, "query3.ql"),
+      makeTestFile(join(workspacePath, "dir1", "query1.ql"));
+      makeTestFile(join(workspacePath, "dir1", "query2.ql"));
+      makeTestFile(join(workspacePath, "dir2", "query3.ql"));
+      makeTestFile(join(workspacePath, "query4.ql"));
+
+      await discovery.initialRefresh();
+
+      expect(discovery.buildQueryTree()).toEqual([
+        new FileTreeDirectory(workspacePath, "workspace", env, [
+          new FileTreeDirectory(join(workspacePath, "dir1"), "dir1", env, [
+            new FileTreeLeaf(
+              join(workspacePath, "dir1", "query1.ql"),
+              "query1.ql",
+              "java",
+            ),
+            new FileTreeLeaf(
+              join(workspacePath, "dir1", "query2.ql"),
+              "query2.ql",
+              "java",
+            ),
           ]),
-      });
-
-      const discovery = new QueryDiscovery(createMockEnvironmentContext(), cli);
-      await discovery.refresh();
-      const queries = discovery.queries;
-      expect(queries).toBeDefined();
-
-      expect(queries![0].children.length).toEqual(3);
-      expect(queries![0].children[0].name).toEqual("dir1");
-      expect(queries![0].children[0].children.length).toEqual(1);
-      expect(queries![0].children[0].children[0].name).toEqual("query1.ql");
-      expect(queries![0].children[1].name).toEqual("dir2");
-      expect(queries![0].children[1].children.length).toEqual(1);
-      expect(queries![0].children[1].children[0].name).toEqual("query2.ql");
-      expect(queries![0].children[2].name).toEqual("query3.ql");
+          new FileTreeDirectory(join(workspacePath, "dir2"), "dir2", env, [
+            new FileTreeLeaf(
+              join(workspacePath, "dir2", "query3.ql"),
+              "query3.ql",
+              "java",
+            ),
+          ]),
+          new FileTreeLeaf(
+            join(workspacePath, "query4.ql"),
+            "query4.ql",
+            "java",
+          ),
+        ]),
+      ]);
     });
 
     it("should collapse directories containing only a single element", async () => {
-      const workspaceRoot = workspace.workspaceFolders![0].uri.fsPath;
-      const cli = mockedObject<CodeQLCliServer>({
-        resolveQueries: jest
-          .fn()
-          .mockResolvedValue([
-            join(workspaceRoot, "dir1/query1.ql"),
-            join(workspaceRoot, "dir1/dir2/dir3/dir3/query2.ql"),
-          ]),
-      });
+      makeTestFile(join(workspacePath, "query1.ql"));
+      makeTestFile(join(workspacePath, "foo", "bar", "baz", "query2.ql"));
 
-      const discovery = new QueryDiscovery(createMockEnvironmentContext(), cli);
-      await discovery.refresh();
-      const queries = discovery.queries;
-      expect(queries).toBeDefined();
+      await discovery.initialRefresh();
 
-      expect(queries![0].children.length).toEqual(1);
-      expect(queries![0].children[0].name).toEqual("dir1");
-      expect(queries![0].children[0].children.length).toEqual(2);
-      expect(queries![0].children[0].children[0].name).toEqual(
-        "dir2 / dir3 / dir3",
-      );
-      expect(queries![0].children[0].children[0].children.length).toEqual(1);
-      expect(queries![0].children[0].children[0].children[0].name).toEqual(
-        "query2.ql",
-      );
-      expect(queries![0].children[0].children[1].name).toEqual("query1.ql");
-    });
-
-    it("calls resolveQueries once for each workspace folder", async () => {
-      const workspaceRoots = [
-        `${sep}workspace1`,
-        `${sep}workspace2`,
-        `${sep}workspace3`,
-      ];
-      jest.spyOn(workspace, "workspaceFolders", "get").mockReturnValueOnce(
-        workspaceRoots.map((root, index) => ({
-          uri: Uri.file(root),
-          name: basename(root),
-          index,
-        })),
-      );
-
-      const resolveQueries = jest.fn().mockImplementation((queryDir) => {
-        const workspaceIndex = workspaceRoots.indexOf(queryDir);
-        if (workspaceIndex === -1) {
-          throw new Error("Unexpected workspace");
-        }
-        return Promise.resolve([
-          join(queryDir, `query${workspaceIndex + 1}.ql`),
-        ]);
-      });
-      const cli = mockedObject<CodeQLCliServer>({
-        resolveQueries,
-      });
-
-      const discovery = new QueryDiscovery(createMockEnvironmentContext(), cli);
-      await discovery.refresh();
-      const queries = discovery.queries;
-      expect(queries).toBeDefined();
-
-      expect(queries!.length).toEqual(3);
-      expect(queries![0].children[0].name).toEqual("query1.ql");
-      expect(queries![1].children[0].name).toEqual("query2.ql");
-      expect(queries![2].children[0].name).toEqual("query3.ql");
-
-      expect(resolveQueries).toHaveBeenCalledTimes(3);
+      expect(discovery.buildQueryTree()).toEqual([
+        new FileTreeDirectory(workspacePath, "workspace", env, [
+          new FileTreeDirectory(
+            join(workspacePath, "foo", "bar", "baz"),
+            "foo / bar / baz",
+            env,
+            [
+              new FileTreeLeaf(
+                join(workspacePath, "foo", "bar", "baz", "query2.ql"),
+                "query2.ql",
+                "java",
+              ),
+            ],
+          ),
+          new FileTreeLeaf(
+            join(workspacePath, "query1.ql"),
+            "query1.ql",
+            "java",
+          ),
+        ]),
+      ]);
     });
   });
 
-  describe("onDidChangeQueries", () => {
-    it("should fire onDidChangeQueries when a watcher fires", async () => {
-      const onWatcherDidChangeEvent = new EventEmitter<Uri>();
-      const watcher: FileSystemWatcher = {
-        ignoreCreateEvents: false,
-        ignoreChangeEvents: false,
-        ignoreDeleteEvents: false,
-        onDidCreate: onWatcherDidChangeEvent.event,
-        onDidChange: onWatcherDidChangeEvent.event,
-        onDidDelete: onWatcherDidChangeEvent.event,
-        dispose: () => undefined,
-      };
-      const createFileSystemWatcherSpy = jest.spyOn(
-        workspace,
-        "createFileSystemWatcher",
-      );
-      createFileSystemWatcherSpy.mockReturnValue(watcher);
+  describe("recomputeAllQueryLanguages", () => {
+    it("should recompute the language of all query files", async () => {
+      makeTestFile(join(workspacePath, "query.ql"));
 
-      const workspaceRoot = workspace.workspaceFolders![0].uri.fsPath;
-      const cli = mockedObject<CodeQLCliServer>({
-        resolveQueries: jest
-          .fn()
-          .mockResolvedValue([join(workspaceRoot, "query1.ql")]),
-      });
+      await discovery.initialRefresh();
 
-      const discovery = new QueryDiscovery(createMockEnvironmentContext(), cli);
+      expect(discovery.buildQueryTree()).toEqual([
+        new FileTreeDirectory(workspacePath, "workspace", env, [
+          new FileTreeLeaf(join(workspacePath, "query.ql"), "query.ql", "java"),
+        ]),
+      ]);
 
-      const onDidChangeQueriesSpy = jest.fn();
-      discovery.onDidChangeQueries(onDidChangeQueriesSpy);
+      queryPackDiscoverer.getLanguageForQueryFile = () => QueryLanguage.Python;
+      onDidChangeQueryPacks.fire();
 
-      await discovery.refresh();
+      // Wait for the query discovery to recompute the query languages.
+      // This is async but should complete instantly since it's all in-memory.
+      await sleep(100);
 
-      expect(createFileSystemWatcherSpy).toHaveBeenCalledTimes(2);
-      expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(1);
-
-      onWatcherDidChangeEvent.fire(workspace.workspaceFolders![0].uri);
-
-      await discovery.waitForCurrentRefresh();
-
-      expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe("onDidChangeWorkspaceFolders", () => {
-    it("should refresh when workspace folders change", async () => {
-      const onDidChangeWorkspaceFoldersEvent =
-        new EventEmitter<WorkspaceFoldersChangeEvent>();
-      jest
-        .spyOn(workspace, "onDidChangeWorkspaceFolders")
-        .mockImplementation(onDidChangeWorkspaceFoldersEvent.event);
-
-      const discovery = new QueryDiscovery(
-        createMockEnvironmentContext(),
-        mockedObject<CodeQLCliServer>({
-          resolveQueries: jest.fn().mockResolvedValue([]),
-        }),
-      );
-
-      const onDidChangeQueriesSpy = jest.fn();
-      discovery.onDidChangeQueries(onDidChangeQueriesSpy);
-
-      await discovery.refresh();
-
-      expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(1);
-
-      onDidChangeWorkspaceFoldersEvent.fire({ added: [], removed: [] });
-
-      await discovery.waitForCurrentRefresh();
-
-      expect(onDidChangeQueriesSpy).toHaveBeenCalledTimes(2);
+      expect(discovery.buildQueryTree()).toEqual([
+        new FileTreeDirectory(workspacePath, "workspace", env, [
+          new FileTreeLeaf(
+            join(workspacePath, "query.ql"),
+            "query.ql",
+            "python",
+          ),
+        ]),
+      ]);
     });
   });
 });
+
+function makeTestFile(path: string) {
+  mkdirSync(dirname(path), { recursive: true });
+  writeFileSync(path, "");
+}
