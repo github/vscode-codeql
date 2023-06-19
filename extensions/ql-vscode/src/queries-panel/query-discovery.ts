@@ -48,7 +48,7 @@ export class QueryDiscovery
    * Event that fires when the set of queries in the workspace changes.
    */
   public get onDidChangeQueries(): Event<void> {
-    return this.onDidChangePathDataEmitter.event;
+    return this.onDidChangePathData;
   }
 
   /**

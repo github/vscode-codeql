@@ -27,7 +27,7 @@ export class QueryPackDiscovery extends FilePathDiscovery<QueryPack> {
    * Event that fires when the set of query packs in the workspace changes.
    */
   public get onDidChangeQueryPacks(): Event<void> {
-    return this.onDidChangePathDataEmitter.event;
+    return this.onDidChangePathData;
   }
 
   /**

@@ -1,5 +1,6 @@
 import { Discovery } from "../discovery";
 import {
+  Event,
   EventEmitter,
   RelativePattern,
   Uri,
@@ -36,7 +37,7 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   private pathData: T[] = [];
 
   /** Event that fires whenever the contents of `pathData` changes */
-  protected readonly onDidChangePathDataEmitter: AppEventEmitter<void>;
+  private readonly onDidChangePathDataEmitter: AppEventEmitter<void>;
 
   /**
    * The set of file paths that may have changed on disk since the last time
@@ -73,6 +74,10 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
 
   protected getPathData(): readonly T[] {
     return this.pathData;
+  }
+
+  protected get onDidChangePathData(): Event<void> {
+    return this.onDidChangePathDataEmitter.event;
   }
 
   /**

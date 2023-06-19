@@ -25,7 +25,7 @@ class TestFilePathDiscovery extends FilePathDiscovery<TestData> {
   }
 
   public get onDidChangePaths() {
-    return this.onDidChangePathDataEmitter.event;
+    return this.onDidChangePathData;
   }
 
   public getPathData(): readonly TestData[] {
