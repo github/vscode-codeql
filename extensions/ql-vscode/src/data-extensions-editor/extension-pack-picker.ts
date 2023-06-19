@@ -339,6 +339,7 @@ async function autoCreateExtensionPack(
   }
 
   const existingExtensionPackPaths = extensionPacksInfo[packName];
+  // If there is already an extension pack with this name, use it if it is valid
   if (existingExtensionPackPaths?.length === 1) {
     let extensionPack: ExtensionPack;
     try {
@@ -358,7 +359,11 @@ async function autoCreateExtensionPack(
     }
 
     return extensionPack;
-  } else if (existingExtensionPackPaths?.length > 1) {
+  }
+
+  // If there is already an existing extension pack with this name, but it resolves
+  // to multiple paths, then we can't use it
+  if (existingExtensionPackPaths?.length > 1) {
     void showAndLogErrorMessage(
       logger,
       `Extension pack ${packName} resolves to multiple paths`,
