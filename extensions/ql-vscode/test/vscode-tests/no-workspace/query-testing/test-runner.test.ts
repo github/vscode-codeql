@@ -155,16 +155,10 @@ describe("test-runner", () => {
     ).toBeGreaterThan(openDatabaseSpy.mock.invocationCallOrder[0]);
 
     expect(removeDatabaseItemSpy).toBeCalledTimes(1);
-    expect(removeDatabaseItemSpy).toBeCalledWith(
-      expect.anything(),
-      expect.anything(),
-      preTestDatabaseItem,
-    );
+    expect(removeDatabaseItemSpy).toBeCalledWith(preTestDatabaseItem);
 
     expect(openDatabaseSpy).toBeCalledTimes(1);
     expect(openDatabaseSpy).toBeCalledWith(
-      expect.anything(),
-      expect.anything(),
       preTestDatabaseItem.databaseUri,
       false,
     );

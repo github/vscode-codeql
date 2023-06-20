@@ -152,14 +152,7 @@ describeWithCodeQL()("using the new query server", () => {
         return;
       }
 
-      await qs.sendRequest(
-        messages.registerDatabases,
-        { databases: [db] },
-        token,
-        (() => {
-          /**/
-        }) as any,
-      );
+      await qs.sendRequest(messages.registerDatabases, { databases: [db] });
     });
 
     it(`should be able to run query ${queryName}`, async () => {

@@ -1,7 +1,7 @@
 import * as tmp from "tmp";
 import * as fs from "fs-extra";
 import { join } from "path";
-import { CancellationToken, ExtensionContext, Uri, workspace } from "vscode";
+import { ExtensionContext, Uri, workspace } from "vscode";
 
 import {
   DatabaseContentsWithDbScheme,
@@ -12,7 +12,6 @@ import {
   FullDatabaseOptions,
 } from "../../../src/databases/local-databases";
 import { Logger } from "../../../src/common";
-import { ProgressCallback } from "../../../src/common/vscode/progress";
 import { CodeQLCliServer, DbInfo } from "../../../src/codeql-cli/cli";
 import {
   encodeArchiveBasePath,
@@ -119,11 +118,7 @@ describe("local databases", () => {
     const mockDbItem = createMockDB(dir);
     const onDidChangeDatabaseItem = jest.fn();
     databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
-    await (databaseManager as any).addDatabaseItem(
-      {} as ProgressCallback,
-      {} as CancellationToken,
-      mockDbItem,
-    );
+    await (databaseManager as any).addDatabaseItem(mockDbItem);
 
     expect((databaseManager as any)._databaseItems).toEqual([mockDbItem]);
     expect(updateSpy).toBeCalledWith("databaseList", [
@@ -155,11 +150,7 @@ describe("local databases", () => {
       const mockDbItem = createMockDB(dir);
       const onDidChangeDatabaseItem = jest.fn();
       databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
-      await (databaseManager as any).addDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem,
-      );
+      await (databaseManager as any).addDatabaseItem(mockDbItem);
 
       await databaseManager.renameDatabaseItem(mockDbItem, "new name");
 
@@ -184,11 +175,7 @@ describe("local databases", () => {
       databaseManager.onDidChangeDatabaseItem(onDidChangeDatabaseItem);
       const mockDbItem = createMockDB(dir);
 
-      await (databaseManager as any).addDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem,
-      );
+      await (databaseManager as any).addDatabaseItem(mockDbItem);
 
       expect(databaseManager.databaseItems).toEqual([mockDbItem]);
       expect(updateSpy).toBeCalledWith("databaseList", [
@@ -231,11 +218,7 @@ describe("local databases", () => {
         .spyOn(mockDbItem, "belongsToSourceArchiveExplorerUri")
         .mockReturnValue(true);
 
-      await (databaseManager as any).addDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem,
-      );
+      await (databaseManager as any).addDatabaseItem(mockDbItem);
 
       updateSpy.mockClear();
 
@@ -260,11 +243,7 @@ describe("local databases", () => {
       jest
         .spyOn(mockDbItem, "belongsToSourceArchiveExplorerUri")
         .mockReturnValue(true);
-      await (databaseManager as any).addDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem,
-      );
+      await (databaseManager as any).addDatabaseItem(mockDbItem);
       updateSpy.mockClear();
 
       // pretend that the database location is not controlled by the extension
@@ -289,18 +268,14 @@ describe("local databases", () => {
       // registration messages.
       const mockDbItem = createMockDB(dir);
 
-      await (databaseManager as any).addDatabaseItem(
-        {} as ProgressCallback,
-        {} as CancellationToken,
-        mockDbItem,
-      );
+      await (databaseManager as any).addDatabaseItem(mockDbItem);
       // Should have registered this database
-      expect(registerSpy).toBeCalledWith({}, {}, mockDbItem);
+      expect(registerSpy).toBeCalledWith(mockDbItem);
 
       await databaseManager.removeDatabaseItem(mockDbItem);
 
       // Should have deregistered this database
-      expect(deregisterSpy).toBeCalledWith({}, {}, mockDbItem);
+      expect(deregisterSpy).toBeCalledWith(mockDbItem);
     });
   });
 
