@@ -22,7 +22,7 @@ import {
 } from "./extension-pack-name";
 import {
   askForWorkspaceFolder,
-  autoPickWorkspaceFolder,
+  autoPickExtensionsDirectory,
 } from "./extensions-workspace-folder";
 
 const maxStep = 3;
@@ -319,9 +319,9 @@ async function autoCreateExtensionPack(
   extensionPacksInfo: QlpacksInfo,
   logger: NotificationLogger,
 ): Promise<ExtensionPack | undefined> {
-  // Choose a workspace folder to create the extension pack in
-  const workspaceFolder = await autoPickWorkspaceFolder(language);
-  if (!workspaceFolder) {
+  // Get the extensions directory to create the extension pack in
+  const extensionsDirectory = await autoPickExtensionsDirectory();
+  if (!extensionsDirectory) {
     return undefined;
   }
 
@@ -380,7 +380,7 @@ async function autoCreateExtensionPack(
     return undefined;
   }
 
-  const packPath = join(workspaceFolder.uri.fsPath, packName.name);
+  const packPath = join(extensionsDirectory.fsPath, packName.name);
 
   if (await pathExists(packPath)) {
     void showAndLogErrorMessage(

@@ -328,13 +328,25 @@ describe("pickExtensionPackModelFile", () => {
         index: 1,
       },
       {
-        uri: Uri.file(tmpDir.path),
+        uri: Uri.joinPath(Uri.file(tmpDir.path), "codeql-custom-queries-java"),
         name: "codeql-custom-queries-java",
         index: 2,
       },
     ]);
+    jest
+      .spyOn(workspace, "workspaceFile", "get")
+      .mockReturnValue(
+        Uri.joinPath(Uri.file(tmpDir.path), "workspace.code-workspace"),
+      );
+    jest.spyOn(workspace, "updateWorkspaceFolders").mockReturnValue(true);
 
-    const newPackDir = join(Uri.file(tmpDir.path).fsPath, "vscode-codeql-java");
+    const newPackDir = join(
+      Uri.file(tmpDir.path).fsPath,
+      ".github",
+      "codeql",
+      "extensions",
+      "vscode-codeql-java",
+    );
 
     const cliServer = mockCliServer({}, { models: [], data: {} });
 
