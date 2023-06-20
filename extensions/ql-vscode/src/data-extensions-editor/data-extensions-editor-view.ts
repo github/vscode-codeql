@@ -353,6 +353,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
     // After the flow model has been generated, we can remove the temporary database
     // which we used for generating the flow model.
+    await this.showProgress({
+      step: 3900,
+      maxStep: 4000,
+      message: "Removing temporary database",
+    });
     await this.databaseManager.removeDatabaseItem(database);
 
     await this.clearProgress();
