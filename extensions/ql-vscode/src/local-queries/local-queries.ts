@@ -40,7 +40,7 @@ import {
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "./webview";
 import { asError, getErrorMessage } from "../common/helpers-pure";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
@@ -246,7 +246,7 @@ export class LocalQueries extends DisposableObject {
       async (progress, token) => {
         if (!(await this.cliServer.cliConstraints.supportsQuickEvalCount())) {
           throw new Error(
-            "Quick evaluation counts is not supported by this version of CodeQL CLI.",
+            `Quick evaluation count is only supported by CodeQL CLI v${CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT} or later.`,
           );
         }
         await this.compileAndRunQuery(
