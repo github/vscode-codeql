@@ -150,10 +150,10 @@ describe("Use cli", () => {
         const getSession = jest
           .spyOn(authentication, "getSession")
           .mockResolvedValue({
-            id: faker.datatype.uuid(),
+            id: faker.string.uuid(),
             accessToken: "gho_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
             account: {
-              id: faker.datatype.uuid(),
+              id: faker.string.uuid(),
               label: "Account",
             },
             scopes: ["read:packages"],
