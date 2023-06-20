@@ -28,7 +28,7 @@ where
   apiName = api.getApiName() and
   supported = isSupported(api) and
   usage = aUsage(api)
-select usage, apiName, supported.toString(), "supported"
+select usage, apiName, supported.toString(), "supported", api.jarContainer(), "library"
 `,
   dependencies: {
     "ExternalApi.qll": `/** Provides classes and predicates related to handling APIs from external libraries. */

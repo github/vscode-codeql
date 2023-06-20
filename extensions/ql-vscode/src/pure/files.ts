@@ -51,7 +51,7 @@ export async function getDirectoryNamesInsidePath(
   return dirNames;
 }
 
-function normalizePath(path: string): string {
+export function normalizePath(path: string): string {
   // On Windows, "C:/", "C:\", and "c:/" are all equivalent. We need
   // to normalize the paths to ensure they all get resolved to the
   // same format. On Windows, we also need to do the comparison
@@ -106,4 +106,18 @@ export async function* walkDirectory(
       yield entry;
     }
   }
+}
+
+/**
+ * Error thrown from methods from the `fs` module.
+ *
+ * In practice, any error matching this is likely an instance of `NodeJS.ErrnoException`.
+ * If desired in the future, we could model more fields or use `NodeJS.ErrnoException` directly.
+ */
+export interface IOError {
+  readonly code: string;
+}
+
+export function isIOError(e: any): e is IOError {
+  return e.code !== undefined && typeof e.code === "string";
 }

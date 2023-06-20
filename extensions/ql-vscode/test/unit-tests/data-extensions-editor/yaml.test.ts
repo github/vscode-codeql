@@ -9,6 +9,7 @@ describe("createDataExtensionYaml", () => {
       "java",
       [
         {
+          library: "sql2o-1.6.0.jar",
           signature: "org.sql2o.Connection#createQuery(String)",
           packageName: "org.sql2o",
           typeName: "Connection",
@@ -39,6 +40,7 @@ describe("createDataExtensionYaml", () => {
           ],
         },
         {
+          library: "sql2o-1.6.0.jar",
           signature: "org.sql2o.Query#executeScalar(Class)",
           packageName: "org.sql2o",
           typeName: "Query",

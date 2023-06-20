@@ -718,6 +718,7 @@ export class CodeQLCliServer implements Disposable {
   async resolveLibraryPath(
     workspaces: string[],
     queryPath: string,
+    silent = false,
   ): Promise<QuerySetup> {
     const subcommandArgs = [
       "--query",
@@ -728,6 +729,7 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "library-path"],
       subcommandArgs,
       "Resolving library paths",
+      { silent },
     );
   }
 

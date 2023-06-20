@@ -4,16 +4,10 @@ import {
   ShowProgressMessage,
   ToDataExtensionsEditorMessage,
 } from "../../pure/interface-types";
-import {
-  VSCodeButton,
-  VSCodeDataGrid,
-  VSCodeDataGridCell,
-  VSCodeDataGridRow,
-} from "@vscode/webview-ui-toolkit/react";
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
-import { MethodRow } from "./MethodRow";
 import { assertNever } from "../../pure/helpers-pure";
 import { vscode } from "../vscode-api";
 import { calculateModeledPercentage } from "./modeled";
@@ -21,6 +15,7 @@ import { LinkIconButton } from "../variant-analysis/LinkIconButton";
 import { basename } from "../common/path";
 import { ViewTitle } from "../common";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
+import { ModeledMethodsList } from "./ModeledMethodsList";
 
 const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -40,6 +35,12 @@ const NonExistingModelFileContainer = styled.div`
 
 const EditorContainer = styled.div`
   margin-top: 1rem;
+`;
+
+const ButtonsContainer = styled.div`
+  display: flex;
+  gap: 0.4em;
+  margin-bottom: 1rem;
 `;
 
 type ProgressBarProps = {
@@ -217,54 +218,24 @@ export function DataExtensionsEditor({
           </DetailsContainer>
 
           <EditorContainer>
-            <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
-            &nbsp;
-            <VSCodeButton onClick={onGenerateClick}>
-              Download and generate
-            </VSCodeButton>
-            {viewState?.showLlmButton && (
-              <>
-                &nbsp;
-                <VSCodeButton onClick={onGenerateFromLlmClick}>
-                  Generate using LLM
-                </VSCodeButton>
-              </>
-            )}
-            <br />
-            <br />
-            <VSCodeDataGrid>
-              <VSCodeDataGridRow rowType="header">
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
-                  Type
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
-                  Method
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
-                  Usages
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
-                  Model type
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
-                  Input
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
-                  Output
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={7}>
-                  Kind
-                </VSCodeDataGridCell>
-              </VSCodeDataGridRow>
-              {externalApiUsages.map((externalApiUsage) => (
-                <MethodRow
-                  key={externalApiUsage.signature}
-                  externalApiUsage={externalApiUsage}
-                  modeledMethod={modeledMethods[externalApiUsage.signature]}
-                  onChange={onChange}
-                />
-              ))}
-            </VSCodeDataGrid>
+            <ButtonsContainer>
+              <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+              <VSCodeButton onClick={onGenerateClick}>
+                Download and generate
+              </VSCodeButton>
+              {viewState?.showLlmButton && (
+                <>
+                  <VSCodeButton onClick={onGenerateFromLlmClick}>
+                    Generate using LLM
+                  </VSCodeButton>
+                </>
+              )}
+            </ButtonsContainer>
+            <ModeledMethodsList
+              externalApiUsages={externalApiUsages}
+              modeledMethods={modeledMethods}
+              onChange={onChange}
+            />
           </EditorContainer>
         </>
       )}
