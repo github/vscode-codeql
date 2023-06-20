@@ -1,7 +1,7 @@
 import fetch, { Response } from "node-fetch";
 import { zip } from "zip-a-folder";
 import { Open } from "unzipper";
-import { Uri, CancellationToken, window, InputBoxOptions } from "vscode";
+import { Uri, window, InputBoxOptions } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import {
   ensureDir,
@@ -44,7 +44,6 @@ export async function promptImportInternetDatabase(
   databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
-  token: CancellationToken,
   cli?: CodeQLCliServer,
 ): Promise<DatabaseItem | undefined> {
   const databaseUrl = await window.showInputBox({
@@ -63,7 +62,6 @@ export async function promptImportInternetDatabase(
     storagePath,
     undefined,
     progress,
-    token,
     cli,
   );
 
@@ -86,7 +84,6 @@ export async function promptImportInternetDatabase(
  * @param storagePath where to store the unzipped database.
  * @param credentials the credentials to use to authenticate with GitHub
  * @param progress the progress callback
- * @param token the cancellation token
  * @param cli the CodeQL CLI server
  */
 export async function promptImportGithubDatabase(
@@ -95,7 +92,6 @@ export async function promptImportGithubDatabase(
   storagePath: string,
   credentials: Credentials | undefined,
   progress: ProgressCallback,
-  token: CancellationToken,
   cli?: CodeQLCliServer,
 ): Promise<DatabaseItem | undefined> {
   const githubRepo = await askForGitHubRepo(progress);
@@ -109,7 +105,6 @@ export async function promptImportGithubDatabase(
     storagePath,
     credentials,
     progress,
-    token,
     cli,
   );
 
@@ -157,7 +152,6 @@ export async function askForGitHubRepo(
  * @param storagePath where to store the unzipped database.
  * @param credentials the credentials to use to authenticate with GitHub
  * @param progress the progress callback
- * @param token the cancellation token
  * @param cli the CodeQL CLI server
  * @param language the language to download. If undefined, the user will be prompted to choose a language.
  **/
@@ -167,7 +161,6 @@ export async function downloadGitHubDatabase(
   storagePath: string,
   credentials: Credentials | undefined,
   progress: ProgressCallback,
-  token: CancellationToken,
   cli?: CodeQLCliServer,
   language?: string,
 ): Promise<DatabaseItem | undefined> {
@@ -213,7 +206,6 @@ export async function downloadGitHubDatabase(
     storagePath,
     `${owner}/${name}`,
     progress,
-    token,
     cli,
   );
 }
@@ -231,7 +223,6 @@ export async function importArchiveDatabase(
   databaseManager: DatabaseManager,
   storagePath: string,
   progress: ProgressCallback,
-  token: CancellationToken,
   cli?: CodeQLCliServer,
 ): Promise<DatabaseItem | undefined> {
   try {
@@ -242,7 +233,6 @@ export async function importArchiveDatabase(
       storagePath,
       undefined,
       progress,
-      token,
       cli,
     );
     if (item) {
@@ -275,7 +265,6 @@ export async function importArchiveDatabase(
  * @param storagePath where to store the unzipped database.
  * @param nameOverride a name for the database that overrides the default
  * @param progress callback to send progress messages to
- * @param token cancellation token
  */
 async function databaseArchiveFetcher(
   databaseUrl: string,
@@ -284,7 +273,6 @@ async function databaseArchiveFetcher(
   storagePath: string,
   nameOverride: string | undefined,
   progress: ProgressCallback,
-  token: CancellationToken,
   cli?: CodeQLCliServer,
 ): Promise<DatabaseItem> {
   progress({
@@ -327,8 +315,6 @@ async function databaseArchiveFetcher(
     const makeSelected = true;
 
     const item = await databaseManager.openDatabase(
-      progress,
-      token,
       Uri.file(dbPath),
       makeSelected,
       nameOverride,
