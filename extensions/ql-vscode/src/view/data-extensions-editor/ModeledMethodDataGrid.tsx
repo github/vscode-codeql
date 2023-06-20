@@ -7,6 +7,7 @@ import {
 import { MethodRow } from "./MethodRow";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
+import { useMemo } from "react";
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
@@ -22,6 +23,22 @@ export const ModeledMethodDataGrid = ({
   modeledMethods,
   onChange,
 }: Props) => {
+  const sortedExternalApiUsages = useMemo(() => {
+    const sortedExternalApiUsages = [...externalApiUsages];
+    sortedExternalApiUsages.sort((a, b) => {
+      // Sort first by supported, putting unmodeled methods first.
+      if (a.supported && !b.supported) {
+        return 1;
+      }
+      if (!a.supported && b.supported) {
+        return -1;
+      }
+      // Then sort by number of usages descending
+      return b.usages.length - a.usages.length;
+    });
+    return sortedExternalApiUsages;
+  }, [externalApiUsages]);
+
   return (
     <VSCodeDataGrid>
       <VSCodeDataGridRow rowType="header">
@@ -47,7 +64,7 @@ export const ModeledMethodDataGrid = ({
           Kind
         </VSCodeDataGridCell>
       </VSCodeDataGridRow>
-      {externalApiUsages.map((externalApiUsage) => (
+      {sortedExternalApiUsages.map((externalApiUsage) => (
         <MethodRow
           key={externalApiUsage.signature}
           externalApiUsage={externalApiUsage}

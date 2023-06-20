@@ -16,6 +16,7 @@ import { basename } from "../common/path";
 import { ViewTitle } from "../common";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
+import { percentFormatter } from "./formatters";
 
 const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -213,8 +214,12 @@ export function DataExtensionsEditor({
                 )}
               </>
             )}
-            <div>{modeledPercentage.toFixed(2)}% modeled</div>
-            <div>{unModeledPercentage.toFixed(2)}% unmodeled</div>
+            <div>
+              {percentFormatter.format(modeledPercentage / 100)} modeled
+            </div>
+            <div>
+              {percentFormatter.format(unModeledPercentage / 100)} unmodeled
+            </div>
           </DetailsContainer>
 
           <EditorContainer>
