@@ -152,9 +152,19 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
   protected async discover() {
     let pathsUpdated = false;
     for (const path of this.changedFilePaths) {
-      this.changedFilePaths.delete(path);
-      if (await this.handleChangedPath(path)) {
-        pathsUpdated = true;
+      try {
+        this.changedFilePaths.delete(path);
+        if (await this.handleChangedPath(path)) {
+          pathsUpdated = true;
+        }
+      } catch (e) {
+        // If we get an error while processing a path, just log it and continue.
+        // There aren't any network operations happening here or anything else
+        // that's likely to succeed on a retry, so don't bother adding it back
+        // to the changedFilePaths set.
+        void extLogger.log(
+          `${this.name} failed while processing path: ${path}`,
+        );
       }
     }
 
