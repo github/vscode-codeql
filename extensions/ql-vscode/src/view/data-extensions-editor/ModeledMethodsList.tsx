@@ -56,6 +56,19 @@ export const ModeledMethodsList = ({
         0,
       );
 
+      // If the number of usages is equal, sort by number of methods descending
+      if (numberOfUsagesA === numberOfUsagesB) {
+        const numberOfMethodsA = groupedByLibrary[a].length;
+        const numberOfMethodsB = groupedByLibrary[b].length;
+
+        // If the number of methods is equal, sort by library name ascending
+        if (numberOfMethodsA === numberOfMethodsB) {
+          return a.localeCompare(b);
+        }
+
+        return numberOfMethodsB - numberOfMethodsA;
+      }
+
       // Then sort by number of usages descending
       return numberOfUsagesB - numberOfUsagesA;
     });
