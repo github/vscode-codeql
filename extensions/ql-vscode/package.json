@@ -502,6 +502,11 @@
         "title": "CodeQL: Copy Version Information"
       },
       {
+        "command": "codeQLQueries.runLocalQueryContextInline",
+        "title": "Run local query",
+        "icon": "$(run)"
+      },
+      {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
         "title": "Open database configuration file",
         "icon": "$(json)"
@@ -1096,6 +1101,11 @@
           "when": "viewItem == remoteResultsItem"
         },
         {
+          "command": "codeQLQueries.runLocalQueryContextInline",
+          "group": "inline",
+          "when": "view == codeQLQueries && viewItem == queryFile"
+        },
+        {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
           "when": "viewItem == testWithSource"
@@ -1273,6 +1283,10 @@
         {
           "command": "codeQL.openDataExtensionsEditor",
           "when": "config.codeQL.canary && config.codeQL.dataExtensions.editor"
+        },
+        {
+          "command": "codeQLQueries.runLocalQueryContextInline",
+          "when": "false"
         },
         {
           "command": "codeQLVariantAnalysisRepositories.openConfigFile",
