@@ -232,8 +232,6 @@ describe("run-queries", () => {
     it("should register", async () => {
       const qs = createMockQueryServerClient();
       const runner = new LegacyQueryRunner(qs);
-      const mockProgress = "progress-monitor";
-      const mockCancel = "cancel-token";
       const datasetUri = Uri.file("dataset-uri");
 
       const dbItem: DatabaseItem = {
@@ -242,33 +240,22 @@ describe("run-queries", () => {
         },
       } as any;
 
-      await runner.registerDatabase(
-        mockProgress as any,
-        mockCancel as any,
-        dbItem,
-      );
+      await runner.registerDatabase(dbItem);
 
       expect(qs.sendRequest).toHaveBeenCalledTimes(1);
-      expect(qs.sendRequest).toHaveBeenCalledWith(
-        registerDatabases,
-        {
-          databases: [
-            {
-              dbDir: datasetUri.fsPath,
-              workingSet: "default",
-            },
-          ],
-        },
-        mockCancel,
-        mockProgress,
-      );
+      expect(qs.sendRequest).toHaveBeenCalledWith(registerDatabases, {
+        databases: [
+          {
+            dbDir: datasetUri.fsPath,
+            workingSet: "default",
+          },
+        ],
+      });
     });
 
     it("should deregister", async () => {
       const qs = createMockQueryServerClient();
       const runner = new LegacyQueryRunner(qs);
-      const mockProgress = "progress-monitor";
-      const mockCancel = "cancel-token";
       const datasetUri = Uri.file("dataset-uri");
 
       const dbItem: DatabaseItem = {
@@ -277,26 +264,17 @@ describe("run-queries", () => {
         },
       } as any;
 
-      await runner.deregisterDatabase(
-        mockProgress as any,
-        mockCancel as any,
-        dbItem,
-      );
+      await runner.deregisterDatabase(dbItem);
 
       expect(qs.sendRequest).toHaveBeenCalledTimes(1);
-      expect(qs.sendRequest).toHaveBeenCalledWith(
-        deregisterDatabases,
-        {
-          databases: [
-            {
-              dbDir: datasetUri.fsPath,
-              workingSet: "default",
-            },
-          ],
-        },
-        mockCancel,
-        mockProgress,
-      );
+      expect(qs.sendRequest).toHaveBeenCalledWith(deregisterDatabases, {
+        databases: [
+          {
+            dbDir: datasetUri.fsPath,
+            workingSet: "default",
+          },
+        ],
+      });
     });
   });
 

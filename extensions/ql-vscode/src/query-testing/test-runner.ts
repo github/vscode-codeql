@@ -48,7 +48,7 @@ export class TestRunner extends DisposableObject {
       }
     }
 
-    await this.removeDatabasesBeforeTests(databasesUnderTest, token);
+    await this.removeDatabasesBeforeTests(databasesUnderTest);
     try {
       const workspacePaths = getOnDiskWorkspaceFolders();
       for await (const event of this.cliServer.runTests(tests, workspacePaths, {
@@ -66,24 +66,16 @@ export class TestRunner extends DisposableObject {
       await this.reopenDatabasesAfterTests(
         databasesUnderTest,
         currentDatabaseUri,
-        token,
       );
     }
   }
 
   private async removeDatabasesBeforeTests(
     databasesUnderTest: DatabaseItem[],
-    token: CancellationToken,
   ): Promise<void> {
     for (const database of databasesUnderTest) {
       try {
-        await this.databaseManager.removeDatabaseItem(
-          (_) => {
-            /* no progress reporting */
-          },
-          token,
-          database,
-        );
+        await this.databaseManager.removeDatabaseItem(database);
       } catch (e) {
         // This method is invoked from Test Explorer UI, and testing indicates that Test
         // Explorer UI swallows any thrown exception without reporting it to the user.
@@ -103,17 +95,12 @@ export class TestRunner extends DisposableObject {
   private async reopenDatabasesAfterTests(
     databasesUnderTest: DatabaseItem[],
     currentDatabaseUri: Uri | undefined,
-    token: CancellationToken,
   ): Promise<void> {
     for (const closedDatabase of databasesUnderTest) {
       const uri = closedDatabase.databaseUri;
       if (await isFileAccessible(uri)) {
         try {
           const reopenedDatabase = await this.databaseManager.openDatabase(
-            (_) => {
-              /* no progress reporting */
-            },
-            token,
             uri,
             false,
           );

@@ -142,14 +142,7 @@ describeWithCodeQL()("using the legacy query server", () => {
     const parsedResults = new Checkpoint<void>();
 
     it("should register the database if necessary", async () => {
-      await qs.sendRequest(
-        messages.registerDatabases,
-        { databases: [db] },
-        token,
-        (() => {
-          /**/
-        }) as any,
-      );
+      await qs.sendRequest(messages.registerDatabases, { databases: [db] });
     });
 
     it(`should be able to compile query ${queryName}`, async () => {

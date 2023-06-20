@@ -7,8 +7,9 @@ export function pluralize(
   numItems: number | undefined,
   singular: string,
   plural: string,
+  numberFormatter: (value: number) => string = (value) => value.toString(),
 ): string {
   return numItems !== undefined
-    ? `${numItems} ${numItems === 1 ? singular : plural}`
+    ? `${numberFormatter(numItems)} ${numItems === 1 ? singular : plural}`
     : "";
 }

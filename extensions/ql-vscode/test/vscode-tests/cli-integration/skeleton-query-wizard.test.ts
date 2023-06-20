@@ -11,7 +11,6 @@ import { QlPackGenerator } from "../../../src/qlpack-generator";
 import * as workspaceFolders from "../../../src/common/vscode/workspace-folders";
 import { createFileSync, ensureDirSync, removeSync } from "fs-extra";
 import { join } from "path";
-import { CancellationTokenSource } from "vscode-jsonrpc";
 import { testCredentialsWithStub } from "../../factories/authentication";
 import {
   DatabaseItem,
@@ -47,7 +46,6 @@ describe("SkeletonQueryWizard", () => {
     typeof workspace.openTextDocument
   >;
 
-  const token = new CancellationTokenSource().token;
   const credentials = testCredentialsWithStub();
   const chosenLanguage = "ruby";
 
@@ -117,7 +115,6 @@ describe("SkeletonQueryWizard", () => {
       credentials,
       extLogger,
       mockDatabaseManager,
-      token,
       storagePath,
     );
 
@@ -252,7 +249,6 @@ describe("SkeletonQueryWizard", () => {
           credentials,
           extLogger,
           mockDatabaseManagerWithItems,
-          token,
           storagePath,
         );
       });

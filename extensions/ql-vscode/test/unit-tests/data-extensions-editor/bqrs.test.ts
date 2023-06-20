@@ -169,6 +169,26 @@ describe("decodeBqrsToExternalApiUsages", () => {
     // - Sorting the array of usages is guaranteed to be a stable sort
     expect(decodeBqrsToExternalApiUsages(chunk)).toEqual([
       {
+        signature: "java.io.PrintStream#println(String)",
+        packageName: "java.io",
+        typeName: "PrintStream",
+        methodName: "println",
+        methodParameters: "(String)",
+        supported: true,
+        usages: [
+          {
+            label: "println(...)",
+            url: {
+              uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+              startLine: 29,
+              startColumn: 9,
+              endLine: 29,
+              endColumn: 49,
+            },
+          },
+        ],
+      },
+      {
         signature:
           "org.springframework.boot.SpringApplication#run(Class,String[])",
         packageName: "org.springframework.boot",
@@ -275,26 +295,6 @@ describe("decodeBqrsToExternalApiUsages", () => {
               startColumn: 24,
               endLine: 25,
               endColumn: 35,
-            },
-          },
-        ],
-      },
-      {
-        signature: "java.io.PrintStream#println(String)",
-        packageName: "java.io",
-        typeName: "PrintStream",
-        methodName: "println",
-        methodParameters: "(String)",
-        supported: true,
-        usages: [
-          {
-            label: "println(...)",
-            url: {
-              uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-              startLine: 29,
-              startColumn: 9,
-              endLine: 29,
-              endColumn: 49,
             },
           },
         ],

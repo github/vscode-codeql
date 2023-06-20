@@ -14,5 +14,22 @@ describe("word helpers", () => {
     it("should return the empty string if the number is undefined", () => {
       expect(pluralize(undefined, "thing", "things")).toBe("");
     });
+    it("should return an unformatted number when no formatter is specified", () => {
+      expect(pluralize(1_000_000, "thing", "things")).toBe("1000000 things");
+    });
+    it("should return a formatted number when a formatter is specified", () => {
+      const formatter = new Intl.NumberFormat("en-US", {
+        style: "decimal",
+      });
+
+      expect(
+        pluralize(
+          1_000_000,
+          "thing",
+          "things",
+          formatter.format.bind(formatter),
+        ),
+      ).toBe("1,000,000 things");
+    });
   });
 });
