@@ -11,7 +11,7 @@ import tk from "tree-kill";
 import { promisify } from "util";
 import { CancellationToken, Disposable, Uri } from "vscode";
 
-import { BQRSInfo, DecodedBqrsChunk } from "../pure/bqrs-cli-types";
+import { BQRSInfo, DecodedBqrsChunk } from "../common/bqrs-cli-types";
 import { allowCanaryQueryServer, CliConfig } from "../config";
 import {
   DistributionProvider,

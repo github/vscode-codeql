@@ -14,7 +14,7 @@ import {
   transformBqrsResultSet,
   RawResultSet,
   BQRSInfo,
-} from "../pure/bqrs-cli-types";
+} from "../common/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
 import { CompletedLocalQueryInfo } from "../query-results";
 import { assertNever, getErrorMessage } from "../pure/helpers-pure";

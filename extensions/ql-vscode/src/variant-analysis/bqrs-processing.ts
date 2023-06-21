@@ -1,6 +1,6 @@
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { Logger } from "../common";
-import { transformBqrsResultSet } from "../pure/bqrs-cli-types";
+import { transformBqrsResultSet } from "../common/bqrs-cli-types";
 import { AnalysisRawResults } from "./shared/analysis-result";
 import { MAX_RAW_RESULTS } from "./shared/result-limits";
 import { SELECT_TABLE_NAME } from "../pure/interface-types";

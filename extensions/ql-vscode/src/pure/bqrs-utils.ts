@@ -3,7 +3,7 @@ import {
   ResolvableLocationValue,
   LineColumnLocation,
   WholeFileLocation,
-} from "./bqrs-cli-types";
+} from "../common/bqrs-cli-types";
 import { createRemoteFileRef } from "./location-link-utils";
 
 /**

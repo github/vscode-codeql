@@ -1,4 +1,4 @@
-import { RawResultSet } from "../pure/bqrs-cli-types";
+import { RawResultSet } from "../common/bqrs-cli-types";
 import { QueryCompareResult } from "../pure/interface-types";
 
 /**

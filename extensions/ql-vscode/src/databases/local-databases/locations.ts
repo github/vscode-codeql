@@ -14,7 +14,7 @@ import {
   ResolvableLocationValue,
   UrlValue,
   WholeFileLocation,
-} from "../../pure/bqrs-cli-types";
+} from "../../common/bqrs-cli-types";
 import {
   isLineColumnLoc,
   tryGetResolvableLocation,

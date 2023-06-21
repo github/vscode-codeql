@@ -64,7 +64,7 @@ import {
   RawResultSet,
   transformBqrsResultSet,
   ResultSetSchema,
-} from "../pure/bqrs-cli-types";
+} from "../common/bqrs-cli-types";
 import {
   AbstractWebview,
   WebviewPanelConfig,

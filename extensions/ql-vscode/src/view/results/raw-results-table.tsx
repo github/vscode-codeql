@@ -14,7 +14,7 @@ import {
 } from "../../pure/interface-types";
 import RawTableHeader from "./RawTableHeader";
 import RawTableRow from "./RawTableRow";
-import { ResultRow } from "../../pure/bqrs-cli-types";
+import { ResultRow } from "../../common/bqrs-cli-types";
 import { onNavigation } from "./results";
 import { tryGetResolvableLocation } from "../../pure/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";

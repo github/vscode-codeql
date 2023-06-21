@@ -16,7 +16,7 @@ import {
 import { basename } from "path";
 
 import { DatabaseItem } from "../../databases/local-databases";
-import { UrlValue, BqrsId } from "../../pure/bqrs-cli-types";
+import { UrlValue, BqrsId } from "../../common/bqrs-cli-types";
 import { showLocation } from "../../databases/local-databases/locations";
 import {
   isStringLoc,

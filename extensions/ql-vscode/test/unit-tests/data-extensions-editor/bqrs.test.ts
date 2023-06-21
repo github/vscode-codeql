@@ -1,5 +1,5 @@
 import { decodeBqrsToExternalApiUsages } from "../../../src/data-extensions-editor/bqrs";
-import { DecodedBqrsChunk } from "../../../src/pure/bqrs-cli-types";
+import { DecodedBqrsChunk } from "../../../src/common/bqrs-cli-types";
 
 describe("decodeBqrsToExternalApiUsages", () => {
   const chunk: DecodedBqrsChunk = {

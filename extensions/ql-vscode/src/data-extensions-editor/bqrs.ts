@@ -1,4 +1,4 @@
-import { DecodedBqrsChunk } from "../pure/bqrs-cli-types";
+import { DecodedBqrsChunk } from "../common/bqrs-cli-types";
 import { Call, ExternalApiUsage } from "./external-api-usage";
 
 export function decodeBqrsToExternalApiUsages(

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { UrlValue, ResolvableLocationValue } from "../../pure/bqrs-cli-types";
+import { UrlValue, ResolvableLocationValue } from "../../common/bqrs-cli-types";
 import { isStringLoc, tryGetResolvableLocation } from "../../pure/bqrs-utils";
 import {
   RawResultsSortState,

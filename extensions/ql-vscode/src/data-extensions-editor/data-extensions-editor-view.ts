@@ -29,7 +29,7 @@ import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { generateFlowModel } from "./generate-flow-model";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
-import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
+import { ResolvableLocationValue } from "../common/bqrs-cli-types";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../pure/errors";

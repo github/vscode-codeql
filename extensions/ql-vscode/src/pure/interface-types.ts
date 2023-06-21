@@ -5,7 +5,7 @@ import {
   ResultSetSchema,
   Column,
   ResolvableLocationValue,
-} from "./bqrs-cli-types";
+} from "../common/bqrs-cli-types";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,

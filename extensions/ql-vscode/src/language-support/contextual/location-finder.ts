@@ -7,7 +7,7 @@ import {
   EntityValue,
   getResultSetSchema,
   ResultSetSchema,
-} from "../../pure/bqrs-cli-types";
+} from "../../common/bqrs-cli-types";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseManager, DatabaseItem } from "../../databases/local-databases";
 import { ProgressCallback } from "../../common/vscode/progress";
