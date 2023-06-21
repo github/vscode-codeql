@@ -23,7 +23,7 @@ import {
   isWholeFileLoc,
   isLineColumnLoc,
 } from "../../common/bqrs-utils";
-import { DisposableObject } from "../../pure/disposable-object";
+import { DisposableObject } from "../../common/disposable-object";
 import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { redactableError } from "../../pure/errors";
 import { AstViewerCommands } from "../../common/commands";

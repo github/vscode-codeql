@@ -1,5 +1,5 @@
 import { join, basename, dirname as path_dirname } from "path";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import {
   Event,
   EventEmitter,

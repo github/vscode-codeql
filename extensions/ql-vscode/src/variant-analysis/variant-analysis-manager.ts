@@ -16,7 +16,7 @@ import {
   window as Window,
   workspace,
 } from "vscode";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
 import {
   getActionsWorkflowRunUrl,

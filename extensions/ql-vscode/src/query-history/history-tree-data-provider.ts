@@ -8,7 +8,7 @@ import {
   TreeDataProvider,
   TreeItem,
 } from "vscode";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { assertNever } from "../pure/helpers-pure";
 import { QueryHistoryInfo } from "./query-history-info";
 import { QueryStatus } from "../query-status";

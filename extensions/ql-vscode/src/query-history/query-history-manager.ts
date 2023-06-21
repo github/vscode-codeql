@@ -18,7 +18,7 @@ import {
   showInformationMessageWithAction,
 } from "../common/vscode/dialog";
 import { URLSearchParams } from "url";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../pure/time";
 import { assertNever, getErrorMessage } from "../pure/helpers-pure";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";

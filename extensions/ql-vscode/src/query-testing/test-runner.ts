@@ -10,7 +10,7 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../common/logging";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { telemetryListener } from "../common/vscode/telemetry";
 
 async function isFileAccessible(uri: Uri): Promise<boolean> {

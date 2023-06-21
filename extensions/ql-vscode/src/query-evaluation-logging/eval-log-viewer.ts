@@ -8,7 +8,7 @@ import {
   EventEmitter,
   TreeItemCollapsibleState,
 } from "vscode";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
 import { redactableError } from "../pure/errors";
 import { EvalLogViewerCommands } from "../common/commands";

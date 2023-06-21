@@ -14,7 +14,7 @@ import {
   getOwnerFromGitHubUrl,
   isValidGitHubOwner,
 } from "../../common/github-url-identifier-helper";
-import { DisposableObject } from "../../pure/disposable-object";
+import { DisposableObject } from "../../common/disposable-object";
 import {
   DbItem,
   DbItemKind,

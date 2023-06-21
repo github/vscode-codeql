@@ -1,7 +1,7 @@
 import { App, AppMode, EnvironmentContext } from "../../src/common/app";
 import { AppEvent, AppEventEmitter } from "../../src/common/events";
 import { Memento } from "../../src/common/memento";
-import { Disposable } from "../../src/pure/disposable-object";
+import { Disposable } from "../../src/common/disposable-object";
 import { createMockLogger } from "./loggerMock";
 import { createMockMemento } from "../mock-memento";
 import { testCredentialsWithStub } from "../factories/authentication";

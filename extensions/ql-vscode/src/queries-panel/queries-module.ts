@@ -2,7 +2,7 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { extLogger } from "../common";
 import { App } from "../common/app";
 import { isCanary, showQueriesPanel } from "../config";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { QueriesPanel } from "./queries-panel";
 import { QueryDiscovery } from "./query-discovery";
 import { QueryPackDiscovery } from "./query-pack-discovery";

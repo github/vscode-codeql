@@ -1,7 +1,7 @@
 import vscode, { ExtensionContext } from "vscode";
 import { extLogger, Logger } from "../../common";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging";
-import { DisposableObject } from "../../pure/disposable-object";
+import { DisposableObject } from "../../common/disposable-object";
 import { App } from "../../common/app";
 import { QueryRunner } from "../../query-server";
 import * as cli from "../../codeql-cli/cli";
