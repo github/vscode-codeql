@@ -3,6 +3,7 @@ import { dir, DirectoryResult } from "tmp-promise";
 import { join } from "path";
 import { autoPickExtensionsDirectory } from "../../../../src/data-extensions-editor/extensions-workspace-folder";
 import * as files from "../../../../src/pure/files";
+import { mkdirp } from "fs-extra";
 
 describe("autoPickExtensionsDirectory", () => {
   let tmpDir: DirectoryResult;
@@ -186,5 +187,28 @@ describe("autoPickExtensionsDirectory", () => {
 
     expect(await autoPickExtensionsDirectory()).toEqual(undefined);
     expect(updateWorkspaceFoldersSpy).not.toHaveBeenCalled();
+  });
+
+  it("when a workspace file does not exist and there is a .git folder", async () => {
+    await mkdirp(join(rootDirectory.fsPath, ".git"));
+
+    workspaceFoldersSpy.mockReturnValue([
+      {
+        uri: Uri.joinPath(rootDirectory, "codeql-custom-queries-java"),
+        name: "codeql-custom-queries-java",
+        index: 0,
+      },
+      {
+        uri: Uri.file("/a/b/c"),
+        name: "codeql-custom-queries-python",
+        index: 1,
+      },
+    ]);
+
+    expect(await autoPickExtensionsDirectory()).toEqual(extensionsDirectory);
+    expect(updateWorkspaceFoldersSpy).toHaveBeenCalledWith(2, 0, {
+      name: "CodeQL Extension Packs",
+      uri: extensionsDirectory,
+    });
   });
 });

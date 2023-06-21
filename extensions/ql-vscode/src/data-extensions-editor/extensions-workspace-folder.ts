@@ -1,4 +1,4 @@
-import { Uri, window, workspace, WorkspaceFolder } from "vscode";
+import { FileType, Uri, window, workspace, WorkspaceFolder } from "vscode";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
 import { extLogger } from "../common";
 import { tmpdir } from "../pure/files";
@@ -20,7 +20,7 @@ function getAncestors(uri: Uri): Uri[] {
   return ancestors;
 }
 
-function getRootWorkspaceDirectory(): Uri | undefined {
+async function getRootWorkspaceDirectory(): Promise<Uri | undefined> {
   // If there is a valid workspace file, just use its directory as the directory for the extensions
   const workspaceFile = workspace.workspaceFile;
   if (workspaceFile?.scheme === "file") {
@@ -56,7 +56,7 @@ function getRootWorkspaceDirectory(): Uri | undefined {
   }, getAncestors(workspaceFolders[0].uri));
 
   if (commonRoot.length === 0) {
-    return undefined;
+    return await findGitFolder(workspaceFolders);
   }
 
   // The path closest to the workspace folders is the last element of the common root
@@ -65,10 +65,63 @@ function getRootWorkspaceDirectory(): Uri | undefined {
   // If we are at the root of the filesystem, we can't go up any further and there's something
   // wrong, so just return undefined
   if (commonRootUri.fsPath === Uri.joinPath(commonRootUri, "..").fsPath) {
-    return undefined;
+    return await findGitFolder(workspaceFolders);
   }
 
   return commonRootUri;
+}
+
+async function findGitFolder(
+  workspaceFolders: WorkspaceFolder[],
+): Promise<Uri | undefined> {
+  // Go through all workspace folders one-by-one and try to find the closest .git folder for each one
+  const folders = await Promise.all(
+    workspaceFolders.map(async (folder) => {
+      const ancestors = getAncestors(folder.uri);
+
+      // Reverse the ancestors so we're going from closest to furthest
+      ancestors.reverse();
+
+      const gitFoldersExists = await Promise.all(
+        ancestors.map(async (uri) => {
+          const gitFolder = Uri.joinPath(uri, ".git");
+          try {
+            const stat = await workspace.fs.stat(gitFolder);
+            // Check whether it's a directory
+            return (stat.type & FileType.Directory) !== 0;
+          } catch (e) {
+            return false;
+          }
+        }),
+      );
+
+      // Find the first ancestor that has a .git folder
+      const ancestorIndex = gitFoldersExists.findIndex((exists) => exists);
+
+      if (ancestorIndex === -1) {
+        return undefined;
+      }
+
+      return [ancestorIndex, ancestors[ancestorIndex]];
+    }),
+  );
+
+  const validFolders = folders.filter(
+    (folder): folder is [number, Uri] => folder !== undefined,
+  );
+  if (validFolders.length === 0) {
+    return undefined;
+  }
+
+  // Find the .git folder which is closest to a workspace folder
+  const closestFolder = validFolders.reduce((closestFolder, folder) => {
+    if (folder[0] < closestFolder[0]) {
+      return folder;
+    }
+    return closestFolder;
+  }, validFolders[0]);
+
+  return closestFolder?.[1];
 }
 
 export async function autoPickExtensionsDirectory(): Promise<Uri | undefined> {
@@ -94,7 +147,7 @@ export async function autoPickExtensionsDirectory(): Promise<Uri | undefined> {
   }
 
   // Get the root workspace directory, i.e. the common root directory of all workspace folders
-  const rootDirectory = getRootWorkspaceDirectory();
+  const rootDirectory = await getRootWorkspaceDirectory();
   if (!rootDirectory) {
     void extLogger.log("Unable to determine root workspace directory");
 
