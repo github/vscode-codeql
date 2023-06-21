@@ -4,7 +4,7 @@ import {
   FromCompareViewMessage,
   ToCompareViewMessage,
   QueryCompareResult,
-} from "../pure/interface-types";
+} from "../common/interface-types";
 import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";

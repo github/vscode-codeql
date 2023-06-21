@@ -1,6 +1,6 @@
 import * as messages from "./pure/messages-shared";
 import * as legacyMessages from "./pure/legacy-messages";
-import { DatabaseInfo, QueryMetadata } from "./pure/interface-types";
+import { DatabaseInfo, QueryMetadata } from "./common/interface-types";
 import { join, parse, dirname, basename } from "path";
 import {
   ConfigurationTarget,

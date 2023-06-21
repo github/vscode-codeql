@@ -10,7 +10,7 @@ import {
 import { VariantAnalysisHeader } from "./VariantAnalysisHeader";
 import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
 import { VariantAnalysisLoading } from "./VariantAnalysisLoading";
-import { ToVariantAnalysisMessage } from "../../pure/interface-types";
+import { ToVariantAnalysisMessage } from "../../common/interface-types";
 import { vscode } from "../vscode-api";
 import { defaultFilterSortState } from "../../pure/variant-analysis-filter-sort";
 import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";

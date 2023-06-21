@@ -4,7 +4,7 @@ import { ResultTableProps, jumpToLocation } from "./result-table-utils";
 import {
   InterpretedResultSet,
   GraphInterpretationData,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import { graphviz, GraphvizOptions } from "d3-graphviz";
 import { tryGetLocationFromString } from "../../common/bqrs-utils";
 export type GraphProps = ResultTableProps & {

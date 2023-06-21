@@ -8,7 +8,7 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import {
   FromDataFlowPathsMessage,
   ToDataFlowPathsMessage,
-} from "../pure/interface-types";
+} from "../common/interface-types";
 import { DataFlowPaths } from "./shared/data-flow-paths";
 import { redactableError } from "../common/errors";
 import { extLogger } from "../common/logging/vscode";

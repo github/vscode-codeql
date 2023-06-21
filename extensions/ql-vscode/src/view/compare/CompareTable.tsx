@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { SetComparisonsMessage } from "../../pure/interface-types";
+import { SetComparisonsMessage } from "../../common/interface-types";
 import RawTableHeader from "../results/RawTableHeader";
 import { className } from "../results/result-table-utils";
 import { ResultRow } from "../../common/bqrs-cli-types";

@@ -14,7 +14,7 @@ import {
   SarifInterpretationData,
   GraphInterpretationData,
   DatabaseInfo,
-} from "./pure/interface-types";
+} from "./common/interface-types";
 import { QueryStatus } from "./query-status";
 import {
   EvaluatorLogPaths,

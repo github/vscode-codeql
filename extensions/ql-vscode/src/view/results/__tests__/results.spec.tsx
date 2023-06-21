@@ -5,7 +5,7 @@ import {
   Interpretation,
   IntoResultsViewMsg,
   SortDirection,
-} from "../../../pure/interface-types";
+} from "../../../common/interface-types";
 import * as fs from "fs-extra";
 import { resolve } from "path";
 import { ColumnKindCode } from "../../../common/bqrs-cli-types";

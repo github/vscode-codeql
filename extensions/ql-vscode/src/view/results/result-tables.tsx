@@ -13,7 +13,7 @@ import {
   getDefaultResultSetName,
   ParsedResultSets,
   IntoResultsViewMsg,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import { PathTable } from "./alert-table";
 import { Graph } from "./graph";
 import { RawTable } from "./raw-results-table";

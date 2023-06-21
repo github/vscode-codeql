@@ -21,7 +21,7 @@ import {
   InterpretedResultsSortColumn,
   SortDirection,
   InterpretedResultsSortState,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,

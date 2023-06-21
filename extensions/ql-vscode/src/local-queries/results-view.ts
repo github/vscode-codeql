@@ -39,7 +39,7 @@ import {
   NavigationDirection,
   getDefaultResultSetName,
   ParsedResultSets,
-} from "../pure/interface-types";
+} from "../common/interface-types";
 import { extLogger } from "../common/logging/vscode";
 import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
 import {

@@ -6,7 +6,7 @@ import {
   QueryMetadata,
   SortDirection,
   ResultSet,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { convertNonPrintableChars } from "../../pure/text-utils";

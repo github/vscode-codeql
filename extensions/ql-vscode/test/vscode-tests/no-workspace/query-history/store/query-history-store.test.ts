@@ -9,7 +9,7 @@ import {
   InitialQueryInfo,
 } from "../../../../../src/query-results";
 import { QueryWithResults } from "../../../../../src/run-queries-shared";
-import { DatabaseInfo } from "../../../../../src/pure/interface-types";
+import { DatabaseInfo } from "../../../../../src/common/interface-types";
 import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../../../src/tmp-dir";
 import { QueryResultType } from "../../../../../src/pure/legacy-messages";

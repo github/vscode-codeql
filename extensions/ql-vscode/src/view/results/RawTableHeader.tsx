@@ -1,7 +1,10 @@
 import * as React from "react";
 
 import { vscode } from "../vscode-api";
-import { RawResultsSortState, SortDirection } from "../../pure/interface-types";
+import {
+  RawResultsSortState,
+  SortDirection,
+} from "../../common/interface-types";
 import { nextSortDirection } from "./result-table-utils";
 import { Column } from "../../common/bqrs-cli-types";
 

@@ -14,7 +14,7 @@ import {
 import {
   RepositoriesFilterSortState,
   RepositoriesFilterSortStateWithIds,
-} from "./variant-analysis-filter-sort";
+} from "../pure/variant-analysis-filter-sort";
 import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 import { ExternalApiUsage } from "../data-extensions-editor/external-api-usage";
