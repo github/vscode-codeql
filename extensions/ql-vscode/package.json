@@ -406,8 +406,8 @@
         "title": "CodeQL: Run Query on Selected Database"
       },
       {
-        "command": "codeQL.runLocalQueryFromQueriesPanel",
-        "title": "CodeQL: Run Query on Selected Database"
+        "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
+        "title": "Run Query on Selected Database"
       },
       {
         "command": "codeQL.debugQuery",
@@ -1169,7 +1169,7 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQL.runLocalQueryFromQueriesPanel",
+          "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
           "when": "false"
         },
         {

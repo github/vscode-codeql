@@ -41,6 +41,7 @@ describe("commands declared in package.json", () => {
       command.match(/^codeQLDatabases\./) ||
       command.match(/^codeQLVariantAnalysisRepositories\./) ||
       command.match(/^codeQLQueryHistory\./) ||
+      command.match(/^codeQLQueries\./) ||
       command.match(/^codeQLAstViewer\./) ||
       command.match(/^codeQLEvalLogViewer\./) ||
       command.match(/^codeQLTests\./)
