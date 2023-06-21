@@ -2,7 +2,7 @@ import {
   Repository,
   RepositoryWithMetadata,
 } from "../variant-analysis/shared/repository";
-import { parseDate } from "./date";
+import { parseDate } from "../common/date";
 import { assertNever } from "./helpers-pure";
 
 export enum FilterKey {

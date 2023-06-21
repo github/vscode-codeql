@@ -13,7 +13,7 @@ import {
 import { QueryDetails } from "./QueryDetails";
 import { VariantAnalysisActions } from "./VariantAnalysisActions";
 import { VariantAnalysisStats } from "./VariantAnalysisStats";
-import { parseDate } from "../../pure/date";
+import { parseDate } from "../../common/date";
 import { basename } from "../common/path";
 import {
   defaultFilterSortState,
