@@ -3,7 +3,7 @@ import { Disposable } from "./disposable-object";
 import { AppEventEmitter } from "./events";
 import { NotificationLogger } from "./logging";
 import { Memento } from "./memento";
-import { AppCommandManager } from "./commands";
+import { AppCommandManager, QueryServerCommandManager } from "./commands";
 import { AppTelemetry } from "./telemetry";
 
 export interface App {
@@ -18,6 +18,7 @@ export interface App {
   readonly workspaceState: Memento;
   readonly credentials: Credentials;
   readonly commands: AppCommandManager;
+  readonly queryServerCommands: QueryServerCommandManager;
   readonly environment: EnvironmentContext;
 }
 

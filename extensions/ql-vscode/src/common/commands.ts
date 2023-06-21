@@ -353,8 +353,7 @@ export type AllExtensionCommands = BaseCommands &
 
 export type AllCommands = AllExtensionCommands &
   PreActivationCommands &
-  BuiltInVsCodeCommands &
-  QueryServerCommands;
+  BuiltInVsCodeCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 

@@ -30,7 +30,7 @@ export class QueriesPanel extends DisposableObject {
   private async runLocalQuery(
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
-    await this.app.commands.execute(
+    await this.app.queryServerCommands.execute(
       "codeQL.runLocalQueryFromQueriesPanel",
       vscode.Uri.parse(queryTreeViewItem.path),
     );
