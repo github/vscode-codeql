@@ -6,7 +6,7 @@ import {
   FilterKey,
   matchesFilter,
   SortKey,
-} from "../../src/pure/variant-analysis-filter-sort";
+} from "../../src/variant-analysis/variant-analysis-filter-sort";
 
 /** A filterSortState that matches everything */
 export const permissiveFilterSortState = {

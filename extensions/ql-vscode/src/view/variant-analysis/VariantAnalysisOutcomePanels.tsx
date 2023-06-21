@@ -17,7 +17,7 @@ import {
 import { VariantAnalysisAnalyzedRepos } from "./VariantAnalysisAnalyzedRepos";
 import { Alert } from "../common";
 import { VariantAnalysisSkippedRepositoriesTab } from "./VariantAnalysisSkippedRepositoriesTab";
-import { RepositoriesFilterSortState } from "../../pure/variant-analysis-filter-sort";
+import { RepositoriesFilterSortState } from "../../variant-analysis/variant-analysis-filter-sort";
 import { RepositoriesSearchSortRow } from "./RepositoriesSearchSortRow";
 import { FailureReasonAlert } from "./FailureReasonAlert";
 

@@ -8,7 +8,7 @@ import {
   compareRepository,
   matchesFilter,
   RepositoriesFilterSortState,
-} from "../../pure/variant-analysis-filter-sort";
+} from "../../variant-analysis/variant-analysis-filter-sort";
 
 export type VariantAnalysisSkippedRepositoriesTabProps = {
   alertTitle: string;

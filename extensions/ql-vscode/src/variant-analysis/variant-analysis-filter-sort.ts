@@ -1,7 +1,4 @@
-import {
-  Repository,
-  RepositoryWithMetadata,
-} from "../variant-analysis/shared/repository";
+import { Repository, RepositoryWithMetadata } from "./shared/repository";
 import { parseDate } from "../common/date";
 import { assertNever } from "../common/helpers-pure";
 

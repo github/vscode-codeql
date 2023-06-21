@@ -7,7 +7,10 @@ import {
 import { VariantAnalysis, VariantAnalysisProps } from "../VariantAnalysis";
 import { createMockVariantAnalysis } from "../../../../test/factories/variant-analysis/shared/variant-analysis";
 import { ToVariantAnalysisMessage } from "../../../common/interface-types";
-import { FilterKey, SortKey } from "../../../pure/variant-analysis-filter-sort";
+import {
+  FilterKey,
+  SortKey,
+} from "../../../variant-analysis/variant-analysis-filter-sort";
 import { postMessage } from "../../common/post-message";
 
 describe(VariantAnalysis.name, () => {

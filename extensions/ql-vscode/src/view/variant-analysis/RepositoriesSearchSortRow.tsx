@@ -5,7 +5,7 @@ import {
   FilterKey,
   RepositoriesFilterSortState,
   SortKey,
-} from "../../pure/variant-analysis-filter-sort";
+} from "../../variant-analysis/variant-analysis-filter-sort";
 import { RepositoriesSearch } from "./RepositoriesSearch";
 import { RepositoriesSort } from "./RepositoriesSort";
 import { RepositoriesFilter } from "./RepositoriesFilter";

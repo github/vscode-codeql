@@ -3,7 +3,7 @@ import {
   VariantAnalysisScannedRepositoryState,
 } from "./shared/variant-analysis";
 import { AppCommandManager } from "../common/commands";
-import { RepositoriesFilterSortStateWithIds } from "../pure/variant-analysis-filter-sort";
+import { RepositoriesFilterSortStateWithIds } from "./variant-analysis-filter-sort";
 
 export interface VariantAnalysisViewInterface {
   variantAnalysisId: number;
