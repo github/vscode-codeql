@@ -13,7 +13,7 @@ import {
 } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import { extLogger } from "../common";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { getErrorMessage } from "../common/helpers-pure";
 import { SummaryLanguageSupportCommands } from "../common/commands";
 import { App } from "../common/app";
 

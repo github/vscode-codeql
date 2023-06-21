@@ -1,4 +1,4 @@
-import { assertNever } from "../../pure/helpers-pure";
+import { assertNever } from "../../common/helpers-pure";
 import { QueryHistoryInfo } from "../query-history-info";
 import { mapLocalQueryInfoToDto } from "./query-history-local-query-domain-mapper";
 import { QueryHistoryItemDto } from "./query-history-dto";

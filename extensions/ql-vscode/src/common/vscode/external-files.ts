@@ -2,11 +2,7 @@ import { Uri, window } from "vscode";
 import { AppCommandManager } from "../commands";
 import { showBinaryChoiceDialog } from "./dialog";
 import { redactableError } from "../errors";
-import {
-  asError,
-  getErrorMessage,
-  getErrorStack,
-} from "../../pure/helpers-pure";
+import { asError, getErrorMessage, getErrorStack } from "../helpers-pure";
 import { extLogger, showAndLogExceptionWithTelemetry } from "../logging";
 import { telemetryListener } from "./telemetry";
 

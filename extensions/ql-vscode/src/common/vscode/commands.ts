@@ -6,11 +6,7 @@ import {
   showAndLogWarningMessage,
   showAndLogExceptionWithTelemetry,
 } from "../logging";
-import {
-  asError,
-  getErrorMessage,
-  getErrorStack,
-} from "../../pure/helpers-pure";
+import { asError, getErrorMessage, getErrorStack } from "../helpers-pure";
 import { redactableError } from "../errors";
 import { UserCancellationException } from "./progress";
 import { telemetryListener } from "./telemetry";

@@ -6,7 +6,7 @@ import {
   asyncFilter,
   getErrorMessage,
   getErrorStack,
-} from "../../pure/helpers-pure";
+} from "../../common/helpers-pure";
 import { QueryHistoryInfo } from "../query-history-info";
 import { redactableError } from "../../common/errors";
 import { QueryHistoryDto, QueryHistoryItemDto } from "./query-history-dto";

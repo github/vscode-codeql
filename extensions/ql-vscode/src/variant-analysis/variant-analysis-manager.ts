@@ -30,7 +30,7 @@ import {
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisSubmission,
 } from "./shared/variant-analysis";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { getErrorMessage } from "../common/helpers-pure";
 import { VariantAnalysisView } from "./variant-analysis-view";
 import { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
 import {

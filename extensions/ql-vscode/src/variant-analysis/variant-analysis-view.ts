@@ -11,7 +11,7 @@ import {
   FromVariantAnalysisMessage,
   ToVariantAnalysisMessage,
 } from "../pure/interface-types";
-import { assertNever } from "../pure/helpers-pure";
+import { assertNever } from "../common/helpers-pure";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,

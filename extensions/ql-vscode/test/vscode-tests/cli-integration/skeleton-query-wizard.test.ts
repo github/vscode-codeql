@@ -19,7 +19,7 @@ import {
 } from "../../../src/databases/local-databases";
 import * as databaseFetcher from "../../../src/databases/database-fetcher";
 import { createMockDB } from "../../factories/databases/databases";
-import { asError } from "../../../src/pure/helpers-pure";
+import { asError } from "../../../src/common/helpers-pure";
 import { Setting } from "../../../src/config";
 
 describe("SkeletonQueryWizard", () => {

@@ -22,7 +22,7 @@ import {
 import { isQueryLanguage } from "../../common/query-language";
 import { existsSync } from "fs";
 import { QlPackGenerator } from "../../qlpack-generator";
-import { asError, getErrorMessage } from "../../pure/helpers-pure";
+import { asError, getErrorMessage } from "../../common/helpers-pure";
 import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
 import { redactableError } from "../../common/errors";
 import { remove } from "fs-extra";

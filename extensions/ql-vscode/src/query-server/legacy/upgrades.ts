@@ -12,7 +12,7 @@ import * as qsClient from "./query-server-client";
 import * as tmp from "tmp-promise";
 import { dirname } from "path";
 import { DatabaseItem } from "../../databases/local-databases";
-import { asError, getErrorMessage } from "../../pure/helpers-pure";
+import { asError, getErrorMessage } from "../../common/helpers-pure";
 import { redactableError } from "../../common/errors";
 import { telemetryListener } from "../../common/vscode/telemetry";
 

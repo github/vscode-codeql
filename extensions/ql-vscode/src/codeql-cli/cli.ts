@@ -21,7 +21,7 @@ import {
   assertNever,
   getErrorMessage,
   getErrorStack,
-} from "../pure/helpers-pure";
+} from "../common/helpers-pure";
 import { walkDirectory } from "../common/files";
 import { QueryMetadata, SortDirection } from "../pure/interface-types";
 import { BaseLogger, Logger, ProgressReporter } from "../common";

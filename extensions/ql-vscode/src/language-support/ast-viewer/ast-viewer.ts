@@ -24,7 +24,7 @@ import {
   isLineColumnLoc,
 } from "../../common/bqrs-utils";
 import { DisposableObject } from "../../common/disposable-object";
-import { asError, getErrorMessage } from "../../pure/helpers-pure";
+import { asError, getErrorMessage } from "../../common/helpers-pure";
 import { redactableError } from "../../common/errors";
 import { AstViewerCommands } from "../../common/commands";
 import { extLogger } from "../../common";

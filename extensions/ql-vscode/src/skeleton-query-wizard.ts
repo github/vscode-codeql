@@ -8,7 +8,7 @@ import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
 } from "./common/vscode/workspace-folders";
-import { getErrorMessage } from "./pure/helpers-pure";
+import { getErrorMessage } from "./common/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "./databases/local-databases";
 import {

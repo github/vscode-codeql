@@ -1,4 +1,4 @@
-import { assertNever } from "./pure/helpers-pure";
+import { assertNever } from "./common/helpers-pure";
 import { VariantAnalysisStatus } from "./variant-analysis/shared/variant-analysis";
 
 export enum QueryStatus {

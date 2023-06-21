@@ -7,7 +7,7 @@ import {
   SortDirection,
   ResultSet,
 } from "../../pure/interface-types";
-import { assertNever } from "../../pure/helpers-pure";
+import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { convertNonPrintableChars } from "../../pure/text-utils";
 import { sendTelemetry } from "../common/telemetry";

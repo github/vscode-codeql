@@ -8,7 +8,7 @@ import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
-import { assertNever } from "../../pure/helpers-pure";
+import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { calculateModeledPercentage } from "./modeled";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";

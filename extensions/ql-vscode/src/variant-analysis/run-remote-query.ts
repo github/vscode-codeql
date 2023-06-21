@@ -19,7 +19,7 @@ import {
 } from "../common/vscode/progress";
 import { RequestError } from "@octokit/types/dist-types";
 import { QueryMetadata } from "../pure/interface-types";
-import { getErrorMessage, REPO_REGEX } from "../pure/helpers-pure";
+import { getErrorMessage, REPO_REGEX } from "../common/helpers-pure";
 import { getRepositoryFromNwo } from "./gh-api/gh-api-client";
 import {
   getRepositorySelection,

@@ -17,7 +17,7 @@ import {
 } from "../common/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
 import { CompletedLocalQueryInfo } from "../query-results";
-import { assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../common/helpers-pure";
 import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
 import {
   AbstractWebview,

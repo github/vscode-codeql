@@ -2,7 +2,7 @@ import { Uri, window } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
 import { basename, join } from "path";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { getErrorMessage } from "../common/helpers-pure";
 import { redactableError } from "../common/errors";
 import { AppCommandManager, QueryEditorCommands } from "../common/commands";
 import { extLogger } from "../common";

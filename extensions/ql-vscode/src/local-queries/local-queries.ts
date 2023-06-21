@@ -35,7 +35,7 @@ import {
 } from "../run-queries-shared";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "./webview";
-import { asError, getErrorMessage } from "../pure/helpers-pure";
+import { asError, getErrorMessage } from "../common/helpers-pure";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";
 import { App } from "../common/app";

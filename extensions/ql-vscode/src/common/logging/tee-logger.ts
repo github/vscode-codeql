@@ -1,6 +1,6 @@
 import { appendFile, ensureFile } from "fs-extra";
 import { isAbsolute } from "path";
-import { getErrorMessage } from "../../pure/helpers-pure";
+import { getErrorMessage } from "../helpers-pure";
 import { Logger, LogOptions } from "./logger";
 
 /**

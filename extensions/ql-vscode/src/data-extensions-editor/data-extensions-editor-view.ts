@@ -25,7 +25,7 @@ import { outputFile, pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
 import { generateFlowModel } from "./generate-flow-model";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";

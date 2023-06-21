@@ -41,7 +41,7 @@ import {
   promptImportGithubDatabase,
   promptImportInternetDatabase,
 } from "./database-fetcher";
-import { asError, asyncFilter, getErrorMessage } from "../pure/helpers-pure";
+import { asError, asyncFilter, getErrorMessage } from "../common/helpers-pure";
 import { QueryRunner } from "../query-server";
 import { isCanary } from "../config";
 import { App } from "../common/app";

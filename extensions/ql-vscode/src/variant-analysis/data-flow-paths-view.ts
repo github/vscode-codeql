@@ -3,7 +3,7 @@ import {
   AbstractWebview,
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
-import { assertNever } from "../pure/helpers-pure";
+import { assertNever } from "../common/helpers-pure";
 import { telemetryListener } from "../common/vscode/telemetry";
 import {
   FromDataFlowPathsMessage,

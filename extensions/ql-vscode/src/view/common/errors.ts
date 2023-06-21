@@ -1,4 +1,4 @@
-import { getErrorMessage, getErrorStack } from "../../pure/helpers-pure";
+import { getErrorMessage, getErrorStack } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 
 // Keep track of previous errors that have happened.

@@ -66,7 +66,7 @@ import {
   assertNever,
   getErrorMessage,
   getErrorStack,
-} from "./pure/helpers-pure";
+} from "./common/helpers-pure";
 import {
   ResultsView,
   WebviewReveal,

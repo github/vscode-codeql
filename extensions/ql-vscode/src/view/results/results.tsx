@@ -1,5 +1,5 @@
 import * as React from "react";
-import { assertNever, getErrorMessage } from "../../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../../common/helpers-pure";
 import {
   DatabaseInfo,
   Interpretation,
