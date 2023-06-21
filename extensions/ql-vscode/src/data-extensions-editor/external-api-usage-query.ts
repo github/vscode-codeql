@@ -61,7 +61,7 @@ export async function runQuery({
 
   const queryDir = (await dir({ unsafeCleanup: true })).path;
   const queryFile = join(queryDir, "FetchExternalApis.ql");
-  await writeFile(queryFile, query.mainQuery, "utf8");
+  await writeFile(queryFile, query.applicationModeQuery, "utf8");
 
   if (query.dependencies) {
     for (const [filename, contents] of Object.entries(query.dependencies)) {

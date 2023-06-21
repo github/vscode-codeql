@@ -112,7 +112,7 @@ describe("runQuery", () => {
 
       expect(
         await readFile(join(queryDirectory, "FetchExternalApis.ql"), "utf8"),
-      ).toEqual(query.mainQuery);
+      ).toEqual(query.applicationModeQuery);
 
       for (const [filename, contents] of Object.entries(
         query.dependencies ?? {},

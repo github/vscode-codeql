@@ -1,7 +1,7 @@
 import { Query } from "./query";
 
 export const fetchExternalApisQuery: Query = {
-  mainQuery: `/**
+  applicationModeQuery: `/**
  * @name Usage of APIs coming from external libraries
  * @description A list of 3rd party APIs used in the codebase. Excludes test and generated code.
  * @tags telemetry
@@ -29,6 +29,100 @@ where
   supported = isSupported(api) and
   usage = aUsage(api)
 select usage, apiName, supported.toString(), "supported", api.jarContainer(), "library"
+`,
+  frameworkModeQuery: `/**
+ * @name Public methods
+ * @description A list of APIs callable by consumers. Excludes test and generated code.
+ * @tags telemetry
+ * @kind problem
+ * @id java/telemetry/fetch-public-methods
+ */
+
+import java
+private import semmle.code.java.dataflow.DataFlow
+private import semmle.code.java.dataflow.ExternalFlow
+private import semmle.code.java.dataflow.FlowSources
+private import semmle.code.java.dataflow.FlowSummary
+private import semmle.code.java.dataflow.internal.DataFlowPrivate
+private import semmle.code.java.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
+private import semmle.code.java.dataflow.internal.ModelExclusions
+
+/** Holds if the given callable is not worth supporting. */
+private predicate isUninteresting(Callable c) {
+  c.getDeclaringType() instanceof TestLibrary or
+  c.(Constructor).isParameterless()
+}
+
+class PublicMethod extends Callable {
+  PublicMethod() { this.isPublic() and not isUninteresting(this) }
+
+  /**
+   * Gets information about the external API in the form expected by the MaD modeling framework.
+   */
+  string getApiName() {
+    result =
+      this.getDeclaringType().getPackage() + "." + this.getDeclaringType().getSourceDeclaration() +
+        "#" + this.getName() + paramsString(this)
+  }
+
+  /** Gets a node that is an input to a call to this API. */
+  private DataFlow::Node getAnInput() {
+    exists(Call call | call.getCallee().getSourceDeclaration() = this |
+      result.asExpr().(Argument).getCall() = call or
+      result.(ArgumentNode).getCall().asCall() = call
+    )
+  }
+
+  /** Gets a node that is an output from a call to this API. */
+  private DataFlow::Node getAnOutput() {
+    exists(Call call | call.getCallee().getSourceDeclaration() = this |
+      result.asExpr() = call or
+      result.(DataFlow::PostUpdateNode).getPreUpdateNode().(ArgumentNode).getCall().asCall() = call
+    )
+  }
+
+  /** Holds if this API has a supported summary. */
+  pragma[nomagic]
+  predicate hasSummary() {
+    this = any(SummarizedCallable sc).asCallable() or
+    TaintTracking::localAdditionalTaintStep(this.getAnInput(), _)
+  }
+
+  pragma[nomagic]
+  predicate isSource() {
+    this.getAnOutput() instanceof RemoteFlowSource or sourceNode(this.getAnOutput(), _)
+  }
+
+  /** Holds if this API is a known sink. */
+  pragma[nomagic]
+  predicate isSink() { sinkNode(this.getAnInput(), _) }
+
+  /** Holds if this API is a known neutral. */
+  pragma[nomagic]
+  predicate isNeutral() { this = any(FlowSummaryImpl::Public::NeutralCallable nsc).asCallable() }
+
+  /**
+   * Holds if this API is supported by existing CodeQL libraries, that is, it is either a
+   * recognized source, sink or neutral or it has a flow summary.
+   */
+  predicate isSupported() {
+    this.hasSummary() or this.isSource() or this.isSink() or this.isNeutral()
+  }
+}
+
+private boolean isSupported(PublicMethod publicMethod) {
+  publicMethod.isSupported() and result = true
+  or
+  not publicMethod.isSupported() and result = false
+}
+
+from PublicMethod publicMethod, string apiName, boolean supported
+where
+  apiName = publicMethod.getApiName() and
+  publicMethod.getCompilationUnit().isSourceFile() and
+  supported = isSupported(publicMethod)
+select publicMethod, apiName, supported.toString(), "supported",
+  publicMethod.getCompilationUnit().getParentContainer().getBaseName(), "library"
 `,
   dependencies: {
     "ExternalApi.qll": `/** Provides classes and predicates related to handling APIs from external libraries. */
