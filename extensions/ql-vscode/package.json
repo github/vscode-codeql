@@ -70,10 +70,6 @@
   ],
   "contributes": {
     "configurationDefaults": {
-      "[ql]": {
-        "editor.wordBasedSuggestions": false,
-        "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup"
-      },
       "[dbscheme]": {
         "editor.wordBasedSuggestions": false
       }
