@@ -15,6 +15,7 @@ import { QueryResultType } from "../query-server/new-messages";
 import { join } from "path";
 import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
+import { Query } from "./queries/query";
 
 export type RunQueryOptions = {
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">;
@@ -26,14 +27,17 @@ export type RunQueryOptions = {
   token: CancellationToken;
 };
 
-export async function runQuery({
-  cliServer,
-  queryRunner,
-  databaseItem,
-  queryStorageDir,
-  progress,
-  token,
-}: RunQueryOptions): Promise<CoreCompletedQuery | undefined> {
+export async function runQuery(
+  queryName: keyof Omit<Query, "dependencies">,
+  {
+    cliServer,
+    queryRunner,
+    databaseItem,
+    queryStorageDir,
+    progress,
+    token,
+  }: RunQueryOptions,
+): Promise<CoreCompletedQuery | undefined> {
   // The below code is temporary to allow for rapid prototyping of the queries. Once the queries are stabilized, we will
   // move these queries into the `github/codeql` repository and use them like any other contextual (e.g. AST) queries.
   // This is intentionally not pretty code, as it will be removed soon.
@@ -61,7 +65,7 @@ export async function runQuery({
 
   const queryDir = (await dir({ unsafeCleanup: true })).path;
   const queryFile = join(queryDir, "FetchExternalApis.ql");
-  await writeFile(queryFile, query.applicationModeQuery, "utf8");
+  await writeFile(queryFile, query[queryName], "utf8");
 
   if (query.dependencies) {
     for (const [filename, contents] of Object.entries(query.dependencies)) {

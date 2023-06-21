@@ -16,6 +16,7 @@ import { ViewTitle } from "../common";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
+import { Mode } from "../../data-extensions-editor/shared/mode";
 
 const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -166,6 +167,16 @@ export function DataExtensionsEditor({
     });
   }, []);
 
+  const onSwitchModeClick = useCallback(() => {
+    const newMode =
+      viewState?.mode === Mode.Framework ? Mode.Application : Mode.Framework;
+
+    vscode.postMessage({
+      t: "switchMode",
+      mode: newMode,
+    });
+  }, [viewState?.mode]);
+
   return (
     <DataExtensionsEditorContainer>
       {progress.maxStep > 0 && (
@@ -192,6 +203,16 @@ export function DataExtensionsEditor({
             </div>
             <div>
               {percentFormatter.format(unModeledPercentage / 100)} unmodeled
+            </div>
+            <div>
+              Mode:{" "}
+              {viewState?.mode === Mode.Framework ? "Framework" : "Application"}
+            </div>
+            <div>
+              <LinkIconButton onClick={onSwitchModeClick}>
+                <span slot="start" className="codicon codicon-library"></span>
+                Switch mode
+              </LinkIconButton>
             </div>
           </DetailsContainer>
 

@@ -67,7 +67,7 @@ describe("runQuery", () => {
           onCancellationRequested: jest.fn(),
         },
       };
-      const result = await runQuery(options);
+      const result = await runQuery("applicationModeQuery", options);
 
       expect(result?.resultType).toEqual(QueryResultType.SUCCESS);
 

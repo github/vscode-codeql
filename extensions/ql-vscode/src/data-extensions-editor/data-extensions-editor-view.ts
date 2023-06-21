@@ -51,6 +51,7 @@ import {
 import { showLlmGeneration } from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
+import { Mode } from "./shared/mode";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -65,6 +66,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
+    private mode: Mode = Mode.Application,
   ) {
     super(ctx);
   }
@@ -139,6 +141,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
         );
 
         break;
+      case "switchMode":
+        this.mode = msg.mode;
+
+        await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
+
+        break;
       default:
         assertNever(msg);
     }
@@ -160,6 +168,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       viewState: {
         extensionPack: this.extensionPack,
         showLlmButton: showLlmGeneration(),
+        mode: this.mode,
       },
     });
   }
@@ -255,16 +264,21 @@ export class DataExtensionsEditorView extends AbstractWebview<
     const cancellationTokenSource = new CancellationTokenSource();
 
     try {
-      const queryResult = await runQuery({
-        cliServer: this.cliServer,
-        queryRunner: this.queryRunner,
-        databaseItem: this.databaseItem,
-        queryStorageDir: this.queryStorageDir,
-        progress: (progressUpdate: ProgressUpdate) => {
-          void this.showProgress(progressUpdate, 1500);
+      const queryResult = await runQuery(
+        this.mode === Mode.Framework
+          ? "frameworkModeQuery"
+          : "applicationModeQuery",
+        {
+          cliServer: this.cliServer,
+          queryRunner: this.queryRunner,
+          databaseItem: this.databaseItem,
+          queryStorageDir: this.queryStorageDir,
+          progress: (progressUpdate: ProgressUpdate) => {
+            void this.showProgress(progressUpdate, 1500);
+          },
+          token: cancellationTokenSource.token,
         },
-        token: cancellationTokenSource.token,
-      });
+      );
       if (!queryResult) {
         await this.clearProgress();
         return;

@@ -32,7 +32,7 @@ export async function getAutoModelUsages({
   // This will re-run the query that was already run when opening the data extensions editor. This
   // might be unnecessary, but this makes it really easy to get the path to the BQRS file which we
   // need to interpret the results.
-  const queryResult = await runQuery({
+  const queryResult = await runQuery("applicationModeQuery", {
     cliServer,
     queryRunner,
     queryStorageDir,

@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 
+import { Mode } from "../../data-extensions-editor/shared/mode";
 import { DataExtensionsEditor as DataExtensionsEditorComponent } from "../../view/data-extensions-editor/DataExtensionsEditor";
 
 export default {
@@ -26,6 +27,7 @@ DataExtensionsEditor.args = {
       dataExtensions: [],
     },
     showLlmButton: true,
+    mode: Mode.Application,
   },
   initialExternalApiUsages: [
     {
