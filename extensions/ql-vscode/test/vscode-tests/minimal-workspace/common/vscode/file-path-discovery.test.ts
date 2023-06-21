@@ -11,6 +11,8 @@ import { basename, dirname, join } from "path";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import * as tmp from "tmp";
 import { normalizePath } from "../../../../../src/common/files";
+import { extLogger } from "../../../../../src/common/logging/vscode/loggers";
+import { getErrorMessage } from "../../../../../src/common/helpers-pure";
 
 interface TestData {
   path: string;
@@ -21,6 +23,9 @@ interface TestData {
  * A test FilePathDiscovery that operates on files with the ".test" extension.
  */
 class TestFilePathDiscovery extends FilePathDiscovery<TestData> {
+  public getDataForPathFunc: ((path: string) => Promise<TestData>) | undefined =
+    undefined;
+
   constructor() {
     super("TestFilePathDiscovery", "**/*.test");
   }
@@ -34,6 +39,9 @@ class TestFilePathDiscovery extends FilePathDiscovery<TestData> {
   }
 
   protected async getDataForPath(path: string): Promise<TestData> {
+    if (this.getDataForPathFunc !== undefined) {
+      return this.getDataForPathFunc(path);
+    }
     return {
       path,
       contents: readFileSync(path, "utf8"),
@@ -350,6 +358,39 @@ describe("FilePathDiscovery", () => {
         new Set([{ path: join(workspacePath, "123.test"), contents: "123" }]),
       );
       expect(didChangePathsListener).toHaveBeenCalled();
+    });
+  });
+
+  describe("error handling", () => {
+    it("should handle errors and still process other files", async () => {
+      await discovery.initialRefresh();
+
+      discovery.getDataForPathFunc = async (path: string) => {
+        if (basename(path) === "123.test") {
+          throw new Error("error");
+        } else {
+          return { path, contents: readFileSync(path, "utf8") };
+        }
+      };
+      const logSpy = jest.spyOn(extLogger, "log");
+
+      makeTestFile(join(workspacePath, "123.test"));
+      makeTestFile(join(workspacePath, "456.test"));
+
+      onDidCreateFile.fire(Uri.file(join(workspacePath, "123.test")));
+      onDidCreateFile.fire(Uri.file(join(workspacePath, "456.test")));
+      await discovery.waitForCurrentRefresh();
+
+      expect(new Set(discovery.getPathData())).toEqual(
+        new Set([{ path: join(workspacePath, "456.test"), contents: "456" }]),
+      );
+
+      expect(logSpy).toHaveBeenCalledWith(
+        `TestFilePathDiscovery failed while processing path "${join(
+          workspacePath,
+          "123.test",
+        )}": ${getErrorMessage(new Error("error"))}`,
+      );
     });
   });
 
