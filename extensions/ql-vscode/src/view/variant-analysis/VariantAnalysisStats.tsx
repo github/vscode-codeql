@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import styled from "styled-components";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 import { StatItem } from "./StatItem";
-import { formatDecimal } from "../../pure/number";
+import { formatDecimal } from "../../common/number";
 import { humanizeUnit } from "../../pure/time";
 import { VariantAnalysisRepositoriesStats } from "./VariantAnalysisRepositoriesStats";
 import { VariantAnalysisStatusStats } from "./VariantAnalysisStatusStats";
