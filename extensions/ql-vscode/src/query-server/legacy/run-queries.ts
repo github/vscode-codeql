@@ -11,7 +11,7 @@ import {
 } from "../../databases/local-databases";
 import { tmpDir } from "../../tmp-dir";
 import { ProgressCallback } from "../../common/vscode/progress";
-import { QueryMetadata } from "../../pure/interface-types";
+import { QueryMetadata } from "../../common/interface-types";
 import { extLogger } from "../../common/logging/vscode";
 import {
   Logger,

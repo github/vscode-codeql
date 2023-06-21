@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ShowProgressMessage,
   ToDataExtensionsEditorMessage,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";

@@ -18,7 +18,7 @@ import {
   UserCancellationException,
 } from "../common/vscode/progress";
 import { RequestError } from "@octokit/types/dist-types";
-import { QueryMetadata } from "../pure/interface-types";
+import { QueryMetadata } from "../common/interface-types";
 import { getErrorMessage, REPO_REGEX } from "../common/helpers-pure";
 import { getRepositoryFromNwo } from "./gh-api/gh-api-client";
 import {
@@ -33,7 +33,7 @@ import {
   FALLBACK_QLPACK_FILENAME,
   QLPACK_FILENAMES,
   QLPACK_LOCK_FILENAMES,
-} from "../pure/ql";
+} from "../common/ql";
 import { QueryLanguage } from "../common/query-language";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { askForLanguage, findLanguage } from "../codeql-cli/query-language";

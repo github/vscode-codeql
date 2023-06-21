@@ -1,5 +1,5 @@
 import { CodeQLCliServer } from "./cli";
-import { QueryMetadata } from "../pure/interface-types";
+import { QueryMetadata } from "../common/interface-types";
 import { extLogger } from "../common/logging/vscode";
 
 /**

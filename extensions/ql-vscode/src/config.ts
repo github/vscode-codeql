@@ -8,7 +8,7 @@ import {
 } from "vscode";
 import { DistributionManager } from "./codeql-cli/distribution";
 import { extLogger } from "./common/logging/vscode";
-import { ONE_DAY_IN_MS } from "./pure/time";
+import { ONE_DAY_IN_MS } from "./common/time";
 import {
   FilterKey,
   SortKey,

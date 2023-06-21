@@ -14,7 +14,7 @@ import {
 import {
   FromDataExtensionsEditorMessage,
   ToDataExtensionsEditorMessage,
-} from "../pure/interface-types";
+} from "../common/interface-types";
 import { ProgressUpdate } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
 import {

@@ -11,7 +11,7 @@ import {
   NavigateMsg,
   NavigationDirection,
   RawTableResultSet,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import RawTableHeader from "./RawTableHeader";
 import RawTableRow from "./RawTableRow";
 import { ResultRow } from "../../common/bqrs-cli-types";

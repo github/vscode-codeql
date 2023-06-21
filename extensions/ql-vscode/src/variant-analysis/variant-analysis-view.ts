@@ -10,7 +10,7 @@ import {
 import {
   FromVariantAnalysisMessage,
   ToVariantAnalysisMessage,
-} from "../pure/interface-types";
+} from "../common/interface-types";
 import { assertNever } from "../common/helpers-pure";
 import {
   VariantAnalysis,

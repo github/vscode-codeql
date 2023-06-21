@@ -23,7 +23,7 @@ import {
   getErrorStack,
 } from "../common/helpers-pure";
 import { walkDirectory } from "../common/files";
-import { QueryMetadata, SortDirection } from "../pure/interface-types";
+import { QueryMetadata, SortDirection } from "../common/interface-types";
 import { BaseLogger, Logger } from "../common/logging";
 import { ProgressReporter } from "../common/logging/vscode";
 import { CompilationMessage } from "../pure/legacy-messages";

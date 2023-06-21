@@ -13,7 +13,7 @@ import {
   ParsedResultSets,
   NavigateMsg,
   ResultSet,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import { EventHandlers as EventHandlerList } from "./event-handler-list";
 import { ResultTables } from "./result-tables";
 

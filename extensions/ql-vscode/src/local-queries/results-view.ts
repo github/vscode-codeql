@@ -39,7 +39,7 @@ import {
   NavigationDirection,
   getDefaultResultSetName,
   ParsedResultSets,
-} from "../pure/interface-types";
+} from "../common/interface-types";
 import { extLogger } from "../common/logging/vscode";
 import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
 import {
@@ -52,7 +52,7 @@ import { QueryEvaluationInfo } from "../run-queries-shared";
 import {
   parseSarifLocation,
   parseSarifPlainTextMessage,
-} from "../pure/sarif-utils";
+} from "../common/sarif-utils";
 import { WebviewReveal, fileUriToWebviewUri } from "./webview";
 import {
   tryResolveLocation,

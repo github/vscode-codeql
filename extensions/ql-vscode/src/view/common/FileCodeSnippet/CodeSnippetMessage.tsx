@@ -6,7 +6,7 @@ import {
   AnalysisMessage,
   ResultSeverity,
 } from "../../../variant-analysis/shared/analysis-result";
-import { createRemoteFileRef } from "../../../pure/location-link-utils";
+import { createRemoteFileRef } from "../../../common/location-link-utils";
 import { VerticalSpace } from "../VerticalSpace";
 import { sendTelemetry } from "../telemetry";
 

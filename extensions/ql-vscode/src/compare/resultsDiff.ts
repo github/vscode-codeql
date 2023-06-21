@@ -1,5 +1,5 @@
 import { RawResultSet } from "../common/bqrs-cli-types";
-import { QueryCompareResult } from "../pure/interface-types";
+import { QueryCompareResult } from "../common/interface-types";
 
 /**
  * Compare the rows of two queries. Use deep equality to determine if
