@@ -10,9 +10,9 @@ import { FilePathDiscovery } from "../../../../../src/common/vscode/file-path-di
 import { basename, dirname, join } from "path";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import * as tmp from "tmp";
-import { normalizePath } from "../../../../../src/pure/files";
+import { normalizePath } from "../../../../../src/common/files";
 import { extLogger } from "../../../../../src/common/logging/vscode/loggers";
-import { getErrorMessage } from "../../../../../src/pure/helpers-pure";
+import { getErrorMessage } from "../../../../../src/common/helpers-pure";
 
 interface TestData {
   path: string;

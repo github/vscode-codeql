@@ -1,6 +1,6 @@
 import * as Sarif from "sarif";
 import type { HighlightedRegion } from "../variant-analysis/shared/analysis-result";
-import { ResolvableLocationValue } from "./bqrs-cli-types";
+import { ResolvableLocationValue } from "../common/bqrs-cli-types";
 
 export interface SarifLink {
   dest: number;

@@ -23,7 +23,7 @@ import {
   ProgressCallback,
 } from "../common/vscode/progress";
 import { extLogger } from "../common/logging/vscode";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { getErrorMessage } from "../common/helpers-pure";
 import {
   getNwoFromGitHubUrl,
   isValidGitHubNwo,

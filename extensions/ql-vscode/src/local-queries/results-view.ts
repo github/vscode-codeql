@@ -22,7 +22,7 @@ import {
   assertNever,
   getErrorMessage,
   getErrorStack,
-} from "../pure/helpers-pure";
+} from "../common/helpers-pure";
 import {
   FromResultsViewMsg,
   Interpretation,
@@ -64,7 +64,7 @@ import {
   RawResultSet,
   transformBqrsResultSet,
   ResultSetSchema,
-} from "../pure/bqrs-cli-types";
+} from "../common/bqrs-cli-types";
 import {
   AbstractWebview,
   WebviewPanelConfig,
@@ -72,7 +72,7 @@ import {
 import { isCanary, PAGE_SIZE } from "../config";
 import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
 import { telemetryListener } from "../common/vscode/telemetry";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { ResultsViewCommands } from "../common/commands";
 
 /**

@@ -1,6 +1,6 @@
 import { ensureFile } from "fs-extra";
 
-import { DisposableObject, DisposeHandler } from "../pure/disposable-object";
+import { DisposableObject, DisposeHandler } from "../common/disposable-object";
 import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
 import * as cli from "../codeql-cli/cli";

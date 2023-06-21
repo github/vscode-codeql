@@ -4,7 +4,7 @@ import {
   getRequiredAssetName,
   extractZipArchive,
   codeQlLauncherName,
-} from "../../src/pure/distribution";
+} from "../../src/common/distribution";
 import fetch from "node-fetch";
 import supportedCliVersions from "../../supported_cli_versions.json";
 

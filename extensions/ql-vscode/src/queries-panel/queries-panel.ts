@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { QueryTreeDataProvider } from "./query-tree-data-provider";
 import { QueryDiscovery } from "./query-discovery";
 

@@ -11,7 +11,7 @@ import {
   CUSTOM_CODEQL_PATH_SETTING,
   DistributionConfigListener,
 } from "./config";
-import { DisposableObject } from "./pure/disposable-object";
+import { DisposableObject } from "./common/disposable-object";
 
 /**
  * Creates and manages a status bar item for codeql. THis item contains

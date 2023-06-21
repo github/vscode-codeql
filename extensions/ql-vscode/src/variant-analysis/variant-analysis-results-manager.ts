@@ -14,7 +14,7 @@ import {
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
-import { DisposableObject, DisposeHandler } from "../pure/disposable-object";
+import { DisposableObject, DisposeHandler } from "../common/disposable-object";
 import { EventEmitter } from "vscode";
 import { unzipFile } from "../pure/zip";
 import { readRepoTask, writeRepoTask } from "./repo-tasks-store";

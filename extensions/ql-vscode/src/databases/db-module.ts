@@ -1,7 +1,7 @@
 import { window } from "vscode";
 import { App } from "../common/app";
 import { extLogger } from "../common/logging/vscode";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbManager } from "./db-manager";
 import { DbPanel } from "./ui/db-panel";

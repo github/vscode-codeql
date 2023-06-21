@@ -11,12 +11,12 @@ import { MultiFileSystemWatcher } from "./multi-file-system-watcher";
 import { AppEventEmitter } from "../events";
 import { extLogger } from "../logging/vscode";
 import { lstat } from "fs-extra";
-import { containsPath, isIOError } from "../../pure/files";
+import { containsPath, isIOError } from "../files";
 import {
   getOnDiskWorkspaceFolders,
   getOnDiskWorkspaceFoldersObjects,
 } from "./workspace-folders";
-import { getErrorMessage } from "../../pure/helpers-pure";
+import { getErrorMessage } from "../../common/helpers-pure";
 
 interface PathData {
   path: string;

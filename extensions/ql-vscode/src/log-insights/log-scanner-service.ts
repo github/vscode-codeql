@@ -1,5 +1,5 @@
 import { Diagnostic, DiagnosticSeverity, languages, Range, Uri } from "vscode";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { QueryHistoryInfo } from "../query-history/query-history-info";
 import {
   EvaluationLogProblemReporter,

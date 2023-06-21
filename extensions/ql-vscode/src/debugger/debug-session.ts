@@ -18,8 +18,8 @@ import { QueryResultType } from "../pure/new-messages";
 import { CoreQueryResults, CoreQueryRun, QueryRunner } from "../query-server";
 import * as CodeQLProtocol from "./debug-protocol";
 import { QuickEvalContext } from "../run-queries-shared";
-import { getErrorMessage } from "../pure/helpers-pure";
-import { DisposableObject } from "../pure/disposable-object";
+import { getErrorMessage } from "../common/helpers-pure";
+import { DisposableObject } from "../common/disposable-object";
 
 // More complete implementations of `Event` for certain events, because the classes from
 // `@vscode/debugadapter` make it more difficult to provide some of the message values.

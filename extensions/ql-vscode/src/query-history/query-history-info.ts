@@ -1,6 +1,6 @@
 import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { LocalQueryInfo } from "../query-results";
-import { assertNever } from "../pure/helpers-pure";
+import { assertNever } from "../common/helpers-pure";
 import { pluralize } from "../pure/word";
 import {
   hasRepoScanCompleted,

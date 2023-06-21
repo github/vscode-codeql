@@ -12,7 +12,7 @@ import { load } from "js-yaml";
 import { dirname, join } from "path";
 import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries";
 import * as log from "../../../../src/common/logging/notifications";
-import { RedactableError } from "../../../../src/pure/errors";
+import { RedactableError } from "../../../../src/common/errors";
 import { showAndLogExceptionWithTelemetry } from "../../../../src/common/logging";
 
 function createMockUri(path = "/a/b/c/foo"): Uri {

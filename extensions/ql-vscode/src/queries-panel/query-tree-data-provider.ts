@@ -1,6 +1,6 @@
 import { Event, EventEmitter, TreeDataProvider, TreeItem } from "vscode";
 import { QueryTreeViewItem } from "./query-tree-view-item";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { FileTreeNode } from "../common/file-tree-nodes";
 
 export interface QueryDiscoverer {

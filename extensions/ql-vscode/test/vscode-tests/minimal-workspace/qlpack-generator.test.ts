@@ -4,7 +4,7 @@ import { QlPackGenerator } from "../../../src/qlpack-generator";
 import { QueryLanguage } from "../../../src/common/query-language";
 import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
 import { Uri, workspace } from "vscode";
-import { getErrorMessage } from "../../../src/pure/helpers-pure";
+import { getErrorMessage } from "../../../src/common/helpers-pure";
 import * as tmp from "tmp";
 import { mockedObject } from "../utils/mocking.helpers";
 

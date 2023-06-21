@@ -1,4 +1,4 @@
-import { DisposableObject } from "./pure/disposable-object";
+import { DisposableObject } from "./common/disposable-object";
 import {
   workspace,
   Event,

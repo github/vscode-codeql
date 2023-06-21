@@ -25,7 +25,7 @@ import {
 import { CancellationToken } from "vscode";
 import { ProgressCallback } from "../../common/vscode/progress";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
-import { redactableError } from "../../pure/errors";
+import { redactableError } from "../../common/errors";
 import { QLPACK_FILENAMES } from "../../pure/ql";
 import { telemetryListener } from "../../common/vscode/telemetry";
 

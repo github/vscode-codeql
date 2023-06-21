@@ -3,14 +3,14 @@ import {
   AbstractWebview,
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
-import { assertNever } from "../pure/helpers-pure";
+import { assertNever } from "../common/helpers-pure";
 import { telemetryListener } from "../common/vscode/telemetry";
 import {
   FromDataFlowPathsMessage,
   ToDataFlowPathsMessage,
 } from "../pure/interface-types";
 import { DataFlowPaths } from "./shared/data-flow-paths";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { extLogger } from "../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 

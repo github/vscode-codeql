@@ -2,8 +2,8 @@ import { CancellationToken, Uri } from "vscode";
 import { CodeQLCliServer, TestCompleted } from "../codeql-cli/cli";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { asError, getErrorMessage } from "../pure/helpers-pure";
-import { redactableError } from "../pure/errors";
+import { asError, getErrorMessage } from "../common/helpers-pure";
+import { redactableError } from "../common/errors";
 import { access } from "fs-extra";
 import { extLogger } from "../common/logging/vscode";
 import {
@@ -11,7 +11,7 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../common/logging";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { telemetryListener } from "../common/vscode/telemetry";
 
 async function isFileAccessible(uri: Uri): Promise<boolean> {

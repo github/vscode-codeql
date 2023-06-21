@@ -8,9 +8,9 @@ import {
   EventEmitter,
   TreeItemCollapsibleState,
 } from "vscode";
-import { DisposableObject } from "../pure/disposable-object";
-import { asError, getErrorMessage } from "../pure/helpers-pure";
-import { redactableError } from "../pure/errors";
+import { DisposableObject } from "../common/disposable-object";
+import { asError, getErrorMessage } from "../common/helpers-pure";
+import { redactableError } from "../common/errors";
 import { EvalLogViewerCommands } from "../common/commands";
 import { extLogger } from "../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";

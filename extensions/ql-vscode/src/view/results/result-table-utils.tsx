@@ -1,13 +1,13 @@
 import * as React from "react";
-import { UrlValue, ResolvableLocationValue } from "../../pure/bqrs-cli-types";
-import { isStringLoc, tryGetResolvableLocation } from "../../pure/bqrs-utils";
+import { UrlValue, ResolvableLocationValue } from "../../common/bqrs-cli-types";
+import { isStringLoc, tryGetResolvableLocation } from "../../common/bqrs-utils";
 import {
   RawResultsSortState,
   QueryMetadata,
   SortDirection,
   ResultSet,
 } from "../../pure/interface-types";
-import { assertNever } from "../../pure/helpers-pure";
+import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { convertNonPrintableChars } from "../../pure/text-utils";
 import { sendTelemetry } from "../common/telemetry";

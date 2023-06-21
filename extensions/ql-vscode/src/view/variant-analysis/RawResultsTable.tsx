@@ -6,8 +6,8 @@ import {
   CellValue,
   RawResultSet,
   ResultSetSchema,
-} from "../../pure/bqrs-cli-types";
-import { tryGetRemoteLocation } from "../../pure/bqrs-utils";
+} from "../../common/bqrs-cli-types";
+import { tryGetRemoteLocation } from "../../common/bqrs-utils";
 import TextButton from "../common/TextButton";
 import { convertNonPrintableChars } from "../../pure/text-utils";
 import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";

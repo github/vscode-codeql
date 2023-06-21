@@ -14,17 +14,17 @@ import {
   transformBqrsResultSet,
   RawResultSet,
   BQRSInfo,
-} from "../pure/bqrs-cli-types";
+} from "../common/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
 import { CompletedLocalQueryInfo } from "../query-results";
-import { assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../common/helpers-pure";
 import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
 import {
   AbstractWebview,
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
 import { telemetryListener } from "../common/vscode/telemetry";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;

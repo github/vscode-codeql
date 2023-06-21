@@ -66,7 +66,7 @@ import {
   assertNever,
   getErrorMessage,
   getErrorStack,
-} from "./pure/helpers-pure";
+} from "./common/helpers-pure";
 import {
   ResultsView,
   WebviewReveal,
@@ -115,7 +115,7 @@ import { VSCodeMockGitHubApiServer } from "./variant-analysis/gh-api/mocks/vscod
 import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { DbModule } from "./databases/db-module";
-import { redactableError } from "./pure/errors";
+import { redactableError } from "./common/errors";
 import { QLDebugAdapterDescriptorFactory } from "./debugger/debugger-factory";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 import {

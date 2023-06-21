@@ -1,5 +1,5 @@
-import { DisposableObject } from "../pure/disposable-object";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { DisposableObject } from "./disposable-object";
+import { getErrorMessage } from "./helpers-pure";
 import { Logger } from "./logging";
 
 /**

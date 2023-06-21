@@ -10,8 +10,8 @@ import {
   asError,
   getErrorMessage,
   getErrorStack,
-} from "../../pure/helpers-pure";
-import { redactableError } from "../../pure/errors";
+} from "../../common/helpers-pure";
+import { redactableError } from "../../common/errors";
 import { UserCancellationException } from "./progress";
 import { telemetryListener } from "./telemetry";
 import { AppTelemetry } from "../telemetry";

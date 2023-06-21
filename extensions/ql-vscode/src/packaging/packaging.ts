@@ -11,8 +11,8 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
 } from "../common/logging";
-import { asError, getErrorStack } from "../pure/helpers-pure";
-import { redactableError } from "../pure/errors";
+import { asError, getErrorStack } from "../common/helpers-pure";
+import { redactableError } from "../common/errors";
 import { PACKS_BY_QUERY_LANGUAGE } from "../common/query-language";
 import { PackagingCommands } from "../common/commands";
 import { telemetryListener } from "../common/vscode/telemetry";

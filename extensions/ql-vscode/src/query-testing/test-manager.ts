@@ -15,10 +15,10 @@ import {
   tests,
   workspace,
 } from "vscode";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { QLTestDiscovery } from "./qltest-discovery";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { getErrorMessage } from "../common/helpers-pure";
 import { BaseLogger, LogOptions } from "../common/logging";
 import { TestRunner } from "./test-runner";
 import { TestManagerBase } from "./test-manager-base";

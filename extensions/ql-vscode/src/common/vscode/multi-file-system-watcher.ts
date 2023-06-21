@@ -1,4 +1,4 @@
-import { DisposableObject } from "../../pure/disposable-object";
+import { DisposableObject } from "../disposable-object";
 import { EventEmitter, Event, Uri, GlobPattern, workspace } from "vscode";
 
 /**
