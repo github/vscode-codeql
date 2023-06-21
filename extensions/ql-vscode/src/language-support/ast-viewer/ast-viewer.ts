@@ -22,7 +22,7 @@ import {
   isStringLoc,
   isWholeFileLoc,
   isLineColumnLoc,
-} from "../../pure/bqrs-utils";
+} from "../../common/bqrs-utils";
 import { DisposableObject } from "../../pure/disposable-object";
 import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { redactableError } from "../../pure/errors";

@@ -1,5 +1,5 @@
 import { CellValue } from "../common/bqrs-cli-types";
-import { tryGetRemoteLocation } from "../pure/bqrs-utils";
+import { tryGetRemoteLocation } from "../common/bqrs-utils";
 import { createRemoteFileRef } from "../pure/location-link-utils";
 import { parseHighlightedLine, shouldHighlightLine } from "../pure/sarif-utils";
 import { convertNonPrintableChars } from "../pure/text-utils";

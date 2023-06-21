@@ -28,7 +28,7 @@ import {
   isNoLocation,
 } from "../../pure/sarif-utils";
 import { vscode } from "../vscode-api";
-import { isWholeFileLoc, isLineColumnLoc } from "../../pure/bqrs-utils";
+import { isWholeFileLoc, isLineColumnLoc } from "../../common/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { UrlValue, ResolvableLocationValue } from "../../common/bqrs-cli-types";
-import { isStringLoc, tryGetResolvableLocation } from "../../pure/bqrs-utils";
+import { isStringLoc, tryGetResolvableLocation } from "../../common/bqrs-utils";
 import {
   RawResultsSortState,
   QueryMetadata,

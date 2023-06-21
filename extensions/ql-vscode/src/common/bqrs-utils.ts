@@ -3,8 +3,8 @@ import {
   ResolvableLocationValue,
   LineColumnLocation,
   WholeFileLocation,
-} from "../common/bqrs-cli-types";
-import { createRemoteFileRef } from "./location-link-utils";
+} from "./bqrs-cli-types";
+import { createRemoteFileRef } from "../pure/location-link-utils";
 
 /**
  * The CodeQL filesystem libraries use this pattern in `getURL()` predicates

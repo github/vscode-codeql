@@ -18,7 +18,7 @@ import {
 import {
   isLineColumnLoc,
   tryGetResolvableLocation,
-} from "../../pure/bqrs-utils";
+} from "../../common/bqrs-utils";
 import { getErrorMessage } from "../../pure/helpers-pure";
 import { Logger } from "../../common";
 import { DatabaseItem } from "./database-item";
