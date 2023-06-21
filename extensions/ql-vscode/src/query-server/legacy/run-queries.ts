@@ -26,7 +26,7 @@ import { compileDatabaseUpgradeSequence } from "./upgrades";
 import { QueryEvaluationInfo, QueryOutputDir } from "../../run-queries-shared";
 import { redactableError } from "../../common/errors";
 import { CoreQueryResults, CoreQueryTarget } from "../query-runner";
-import { Position } from "../../pure/messages-shared";
+import { Position } from "../messages-shared";
 import { ensureDirSync } from "fs-extra";
 import { telemetryListener } from "../../common/vscode/telemetry";
 

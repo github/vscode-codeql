@@ -1,6 +1,6 @@
 import { CancellationTokenSource, env } from "vscode";
 
-import * as messages from "./pure/messages-shared";
+import * as messages from "./query-server/messages-shared";
 import * as legacyMessages from "./query-server/legacy-messages";
 import * as cli from "./codeql-cli/cli";
 import { pathExists } from "fs-extra";

@@ -1,4 +1,4 @@
-import * as messages from "./pure/messages-shared";
+import * as messages from "./query-server/messages-shared";
 import * as legacyMessages from "./query-server/legacy-messages";
 import { DatabaseInfo, QueryMetadata } from "./common/interface-types";
 import { join, parse, dirname, basename } from "path";

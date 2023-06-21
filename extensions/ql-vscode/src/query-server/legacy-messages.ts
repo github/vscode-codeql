@@ -15,7 +15,7 @@
  */
 
 import { RequestType } from "vscode-jsonrpc";
-import * as shared from "../pure/messages-shared";
+import * as shared from "./messages-shared";
 
 /**
  * A query that should be checked for any errors or warnings

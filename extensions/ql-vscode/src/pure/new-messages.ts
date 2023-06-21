@@ -15,7 +15,7 @@
  */
 
 import { RequestType } from "vscode-jsonrpc";
-import * as shared from "./messages-shared";
+import * as shared from "../query-server/messages-shared";
 
 /**
  * Parameters to clear the cache
