@@ -11,7 +11,7 @@ import {
   ONE_HOUR_IN_MS,
   THREE_HOURS_IN_MS,
   TWO_HOURS_IN_MS,
-} from "../../../../src/pure/time";
+} from "../../../../src/common/time";
 import { mockedObject } from "../../utils/mocking.helpers";
 
 describe("query history scrubber", () => {

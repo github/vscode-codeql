@@ -29,7 +29,7 @@ import {
   EvaluationResult,
   QueryResultType,
 } from "../../../src/pure/legacy-messages";
-import { sleep } from "../../../src/pure/time";
+import { sleep } from "../../../src/common/time";
 import { mockedObject } from "../utils/mocking.helpers";
 
 describe("query-results", () => {

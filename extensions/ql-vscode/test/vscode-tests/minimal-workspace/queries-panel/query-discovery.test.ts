@@ -12,7 +12,7 @@ import {
 } from "../../../../src/common/file-tree-nodes";
 import { mkdirSync, writeFileSync } from "fs";
 import { QueryLanguage } from "../../../../src/common/query-language";
-import { sleep } from "../../../../src/pure/time";
+import { sleep } from "../../../../src/common/time";
 
 describe("Query pack discovery", () => {
   let tmpDir: string;
