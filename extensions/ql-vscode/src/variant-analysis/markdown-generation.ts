@@ -5,7 +5,7 @@ import {
   parseHighlightedLine,
   shouldHighlightLine,
 } from "../common/sarif-utils";
-import { convertNonPrintableChars } from "../pure/text-utils";
+import { convertNonPrintableChars } from "../common/text-utils";
 import type {
   AnalysisAlert,
   AnalysisRawResults,

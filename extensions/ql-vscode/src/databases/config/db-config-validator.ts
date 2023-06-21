@@ -2,7 +2,7 @@ import { readJsonSync } from "fs-extra";
 import { resolve } from "path";
 import Ajv, { ValidateFunction } from "ajv";
 import { clearLocalDbConfig, DbConfig } from "./db-config";
-import { findDuplicateStrings } from "../../pure/text-utils";
+import { findDuplicateStrings } from "../../common/text-utils";
 import {
   DbConfigValidationError,
   DbConfigValidationErrorKind,
