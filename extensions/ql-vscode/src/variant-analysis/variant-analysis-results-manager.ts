@@ -16,7 +16,7 @@ import {
 } from "./shared/variant-analysis";
 import { DisposableObject, DisposeHandler } from "../common/disposable-object";
 import { EventEmitter } from "vscode";
-import { unzipFile } from "../pure/zip";
+import { unzipFile } from "../common/zip";
 import { readRepoTask, writeRepoTask } from "./repo-tasks-store";
 
 type CacheKey = `${number}/${string}`;
