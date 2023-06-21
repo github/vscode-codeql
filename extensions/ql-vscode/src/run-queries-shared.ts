@@ -536,10 +536,7 @@ export async function saveAllInGroup(includeUntitled: boolean): Promise<void> {
     }
   }
   if (dirtyDocumentUris.size > 0) {
-    console.warn(`${window.tabGroups.all.length} tab groups open`);
-    console.warn(`${workspace.textDocuments.length} documents open`);
     const tabGroup = window.tabGroups.activeTabGroup;
-    console.warn(`${tabGroup.tabs.length} tabs open in active group`);
     for (const tab of tabGroup.tabs) {
       const input = tab.input;
       // The `input` property can be of an arbitrary type, depending on the underlying tab type. For
@@ -550,13 +547,10 @@ export async function saveAllInGroup(includeUntitled: boolean): Promise<void> {
         if (uri instanceof Uri) {
           const document = dirtyDocumentUris.get(uri.toString());
           if (document !== undefined) {
-            console.warn(`Saving ${uri.toString()}`);
             await document.save();
             // Remove the URI from the dirty list so we don't wind up saving the same file twice
             // if it's open in multiple editors.
             dirtyDocumentUris.delete(uri.toString());
-          } else {
-            console.warn(`Can't find ${uri.toString()}`);
           }
         }
       }
