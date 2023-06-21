@@ -220,7 +220,9 @@ export function DataExtensionsEditor({
             <ButtonsContainer>
               <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
               <VSCodeButton onClick={onGenerateClick}>
-                Download and generate
+                {viewState?.mode === Mode.Framework
+                  ? "Generate"
+                  : "Download and generate"}
               </VSCodeButton>
               {viewState?.showLlmButton && (
                 <>
