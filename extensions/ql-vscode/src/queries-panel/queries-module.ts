@@ -1,5 +1,5 @@
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { App } from "../common/app";
 import { isCanary, showQueriesPanel } from "../config";
 import { DisposableObject } from "../common/disposable-object";

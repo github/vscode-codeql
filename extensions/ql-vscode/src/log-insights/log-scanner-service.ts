@@ -7,7 +7,7 @@ import {
 } from "./log-scanner";
 import { PipelineInfo, SummarySymbols } from "./summary-parser";
 import { readFile } from "fs-extra";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
 
 /**

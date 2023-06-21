@@ -2,7 +2,7 @@ import * as fetch from "node-fetch";
 import { Range } from "semver";
 
 import * as log from "../../../../src/common/logging/notifications";
-import { extLogger } from "../../../../src/common";
+import { extLogger } from "../../../../src/common/logging/vscode";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";

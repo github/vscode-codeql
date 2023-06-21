@@ -11,7 +11,7 @@ import { getOnDiskWorkspaceFolders } from "../../../src/common/vscode/workspace-
 import { KeyType, resolveQueries } from "../../../src/language-support";
 import { faker } from "@faker-js/faker";
 import { getActivatedExtension } from "../global.helper";
-import { BaseLogger } from "../../../src/common";
+import { BaseLogger } from "../../../src/common/logging";
 import { getQlPackForDbscheme } from "../../../src/databases/qlpack";
 import { dbSchemeToLanguage } from "../../../src/common/query-language";
 

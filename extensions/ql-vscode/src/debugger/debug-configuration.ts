@@ -10,7 +10,7 @@ import { getQuickEvalContext, validateQueryPath } from "../run-queries-shared";
 import * as CodeQLProtocol from "./debug-protocol";
 import { getErrorMessage } from "../common/helpers-pure";
 import { showAndLogErrorMessage } from "../common/logging";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 
 /**
  * The CodeQL launch arguments, as specified in "launch.json".

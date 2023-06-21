@@ -12,7 +12,11 @@ import {
   window,
   workspace,
 } from "vscode";
-import { TeeLogger } from "../common";
+import {
+  TeeLogger,
+  showAndLogErrorMessage,
+  showAndLogWarningMessage,
+} from "../common/logging";
 import { isCanary, MAX_QUERIES } from "../config";
 import { gatherQlFiles } from "../common/files";
 import { basename } from "path";
@@ -43,10 +47,6 @@ import { DisposableObject } from "../common/disposable-object";
 import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
-import {
-  showAndLogErrorMessage,
-  showAndLogWarningMessage,
-} from "../common/logging";
 import { findLanguage } from "../codeql-cli/query-language";
 
 interface DatabaseQuickPickItem extends QuickPickItem {

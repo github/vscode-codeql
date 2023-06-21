@@ -5,7 +5,8 @@ import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
 import * as cli from "../../codeql-cli/cli";
 import { QueryServerConfig } from "../../config";
-import { Logger, ProgressReporter } from "../../common";
+import { Logger } from "../../common/logging";
+import { ProgressReporter } from "../../common/logging/vscode";
 import {
   completeQuery,
   EvaluationResult,

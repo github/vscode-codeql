@@ -1,5 +1,5 @@
 import { CancellationTokenSource, commands, Uri, window } from "vscode";
-import { extLogger } from "../../../../src/common";
+import { extLogger } from "../../../../src/common/logging/vscode";
 import { setRemoteControllerRepo } from "../../../../src/config";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import { join } from "path";

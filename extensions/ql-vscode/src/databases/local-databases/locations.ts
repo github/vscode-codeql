@@ -20,7 +20,7 @@ import {
   tryGetResolvableLocation,
 } from "../../common/bqrs-utils";
 import { getErrorMessage } from "../../common/helpers-pure";
-import { Logger } from "../../common";
+import { Logger } from "../../common/logging";
 import { DatabaseItem } from "./database-item";
 import { DatabaseManager } from "./database-manager";
 

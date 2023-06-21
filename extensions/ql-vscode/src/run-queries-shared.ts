@@ -28,10 +28,10 @@ import { CodeQLCliServer } from "./codeql-cli/cli";
 import { SELECT_QUERY_NAME } from "./language-support";
 import { DatabaseManager } from "./databases/local-databases";
 import { DecodedBqrsChunk, EntityValue } from "./common/bqrs-cli-types";
-import { BaseLogger, extLogger } from "./common";
+import { BaseLogger, showAndLogWarningMessage } from "./common/logging";
+import { extLogger } from "./common/logging/vscode";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
 import { getErrorMessage } from "./common/helpers-pure";
-import { showAndLogWarningMessage } from "./common/logging";
 
 /**
  * run-queries.ts

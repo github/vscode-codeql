@@ -1,7 +1,7 @@
 import { join } from "path";
 import { Uri, workspace, window as Window } from "vscode";
 import { CodeQLCliServer } from "./codeql-cli/cli";
-import { BaseLogger } from "./common";
+import { BaseLogger } from "./common/logging";
 import { Credentials } from "./common/authentication";
 import { QueryLanguage } from "./common/query-language";
 import {

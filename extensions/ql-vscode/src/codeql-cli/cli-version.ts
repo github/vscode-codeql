@@ -1,6 +1,6 @@
 import * as semver from "semver";
 import { runCodeQlCliCommand } from "./cli";
-import { Logger } from "../common";
+import { Logger } from "../common/logging";
 import { getErrorMessage } from "../common/helpers-pure";
 
 /**

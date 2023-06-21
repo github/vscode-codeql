@@ -2,7 +2,7 @@ import { pathExists, stat, remove, readFile } from "fs-extra";
 import { EOL } from "os";
 import { join } from "path";
 import { Disposable, ExtensionContext } from "vscode";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { readDirFullPaths } from "../common/files";
 import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryManager } from "./query-history-manager";

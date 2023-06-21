@@ -5,7 +5,8 @@ import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
 import * as cli from "../codeql-cli/cli";
 import { QueryServerConfig } from "../config";
-import { extLogger, Logger, ProgressReporter } from "../common";
+import { Logger, showAndLogErrorMessage } from "../common/logging";
+import { extLogger, ProgressReporter } from "../common/logging/vscode";
 import {
   progress,
   ProgressMessage,
@@ -18,8 +19,6 @@ import {
 } from "../common/vscode/progress";
 import { ServerProcess } from "./server-process";
 import { App } from "../common/app";
-
-import { showAndLogErrorMessage } from "../common/logging";
 
 type ServerOpts = {
   logger: Logger;

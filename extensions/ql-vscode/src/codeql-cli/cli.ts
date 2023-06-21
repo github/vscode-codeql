@@ -24,7 +24,8 @@ import {
 } from "../common/helpers-pure";
 import { walkDirectory } from "../common/files";
 import { QueryMetadata, SortDirection } from "../pure/interface-types";
-import { BaseLogger, Logger, ProgressReporter } from "../common";
+import { BaseLogger, Logger } from "../common/logging";
+import { ProgressReporter } from "../common/logging/vscode";
 import { CompilationMessage } from "../pure/legacy-messages";
 import { sarifParser } from "../common/sarif-parser";
 import { App } from "../common/app";

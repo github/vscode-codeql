@@ -7,7 +7,7 @@ import { tmpDir } from "../tmp-dir";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { Credentials } from "../common/authentication";
 import * as cli from "../codeql-cli/cli";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import {
   getActionBranch,
   getRemoteControllerRepo,

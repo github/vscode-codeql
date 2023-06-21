@@ -8,7 +8,7 @@ import { testCredentialsWithStub } from "../factories/authentication";
 import { Credentials } from "../../src/common/authentication";
 import { AppCommandManager } from "../../src/common/commands";
 import { createMockCommandManager } from "./commandsMock";
-import { NotificationLogger } from "../../src/common";
+import { NotificationLogger } from "../../src/common/logging";
 import { AppTelemetry } from "../../src/common/telemetry";
 import { createMockTelemetryReporter } from "./telemetryMock";
 

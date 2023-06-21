@@ -40,8 +40,8 @@ import {
   getDefaultResultSetName,
   ParsedResultSets,
 } from "../pure/interface-types";
-import { extLogger, Logger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/logging";
+import { extLogger } from "../common/logging/vscode";
+import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
 import {
   CompletedQueryInfo,
   interpretResultsSarif,

@@ -1,5 +1,7 @@
-import { BaseLogger, extLogger, Logger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import {
+  BaseLogger,
+  Logger,
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../common/logging";

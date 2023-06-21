@@ -2,7 +2,7 @@ import { readdirSync, mkdirSync, writeFileSync } from "fs-extra";
 import { join } from "path";
 import * as vscode from "vscode";
 
-import { extLogger } from "../../../../src/common";
+import { extLogger } from "../../../../src/common/logging/vscode";
 import { registerQueryHistoryScrubber } from "../../../../src/query-history/query-history-scrubber";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { dirSync } from "tmp-promise";

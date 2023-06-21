@@ -6,7 +6,7 @@ import * as semver from "semver";
 import { URL } from "url";
 import { ExtensionContext, Event } from "vscode";
 import { DistributionConfig } from "../config";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { getCodeQlCliVersion } from "./cli-version";
 import {
   ProgressCallback,

@@ -5,8 +5,8 @@ import {
   ToCompareViewMessage,
   QueryCompareResult,
 } from "../pure/interface-types";
-import { extLogger, Logger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/logging";
+import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
+import { extLogger } from "../common/logging/vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";

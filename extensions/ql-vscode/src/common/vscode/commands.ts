@@ -1,13 +1,17 @@
 import { commands, Disposable } from "vscode";
 import { CommandFunction, CommandManager } from "../../packages/commands";
 import {
-  extLogger,
   NotificationLogger,
   showAndLogWarningMessage,
   showAndLogExceptionWithTelemetry,
 } from "../logging";
-import { asError, getErrorMessage, getErrorStack } from "../helpers-pure";
-import { redactableError } from "../errors";
+import { extLogger } from "../logging/vscode";
+import {
+  asError,
+  getErrorMessage,
+  getErrorStack,
+} from "../../common/helpers-pure";
+import { redactableError } from "../../common/errors";
 import { UserCancellationException } from "./progress";
 import { telemetryListener } from "./telemetry";
 import { AppTelemetry } from "../telemetry";

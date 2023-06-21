@@ -5,8 +5,9 @@ import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { asError, getErrorMessage } from "../common/helpers-pure";
 import { redactableError } from "../common/errors";
 import { access } from "fs-extra";
-import { BaseLogger, extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import {
+  BaseLogger,
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../common/logging";
