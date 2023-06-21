@@ -4,7 +4,7 @@ import {
   LineColumnLocation,
   WholeFileLocation,
 } from "./bqrs-cli-types";
-import { createRemoteFileRef } from "../pure/location-link-utils";
+import { createRemoteFileRef } from "../common/location-link-utils";
 
 /**
  * The CodeQL filesystem libraries use this pattern in `getURL()` predicates
