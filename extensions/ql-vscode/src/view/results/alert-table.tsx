@@ -26,7 +26,7 @@ import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
   isNoLocation,
-} from "../../pure/sarif-utils";
+} from "../../common/sarif-utils";
 import { vscode } from "../vscode-api";
 import { isWholeFileLoc, isLineColumnLoc } from "../../common/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";

@@ -52,7 +52,7 @@ import { QueryEvaluationInfo } from "../run-queries-shared";
 import {
   parseSarifLocation,
   parseSarifPlainTextMessage,
-} from "../pure/sarif-utils";
+} from "../common/sarif-utils";
 import { WebviewReveal, fileUriToWebviewUri } from "./webview";
 import {
   tryResolveLocation,

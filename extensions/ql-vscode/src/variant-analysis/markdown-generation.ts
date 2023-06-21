@@ -1,7 +1,10 @@
 import { CellValue } from "../common/bqrs-cli-types";
 import { tryGetRemoteLocation } from "../common/bqrs-utils";
 import { createRemoteFileRef } from "../common/location-link-utils";
-import { parseHighlightedLine, shouldHighlightLine } from "../pure/sarif-utils";
+import {
+  parseHighlightedLine,
+  shouldHighlightLine,
+} from "../common/sarif-utils";
 import { convertNonPrintableChars } from "../pure/text-utils";
 import type {
   AnalysisAlert,
