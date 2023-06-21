@@ -71,7 +71,8 @@
   "contributes": {
     "configurationDefaults": {
       "[ql]": {
-        "editor.wordBasedSuggestions": false
+        "editor.wordBasedSuggestions": false,
+        "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup"
       },
       "[dbscheme]": {
         "editor.wordBasedSuggestions": false
@@ -246,8 +247,8 @@
         },
         "codeQL.runningQueries.autoSave": {
           "type": "boolean",
-          "default": false,
-          "description": "Enable automatically saving a modified query file when running a query."
+          "description": "Enable automatically saving a modified query file when running a query.",
+          "markdownDeprecationMessage": "This property is deprecated and no longer has any effect. To control automatic saving of documents before running queries, use the `debug.saveBeforeStart` setting."
         },
         "codeQL.runningQueries.maxQueries": {
           "type": "integer",

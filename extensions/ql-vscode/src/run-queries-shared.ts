@@ -3,15 +3,14 @@ import * as legacyMessages from "./pure/legacy-messages";
 import { DatabaseInfo, QueryMetadata } from "./common/interface-types";
 import { join, parse, dirname, basename } from "path";
 import {
-  ConfigurationTarget,
   Range,
   TextDocument,
   TextEditor,
   Uri,
   window,
+  workspace,
 } from "vscode";
-import { isCanary, AUTOSAVE_SETTING } from "./config";
-import { UserCancellationException } from "./common/vscode/progress";
+import { isCanary, VSCODE_SAVE_BEFORE_START_SETTING } from "./config";
 import {
   pathExists,
   readFile,
@@ -491,55 +490,78 @@ async function getSelectedPosition(
   };
 }
 
+type SaveBeforeStartMode =
+  | "nonUntitledEditorsInActiveGroup"
+  | "allEditorsInActiveGroup"
+  | "none";
+
 /**
- * Prompts the user to save `document` if it has unsaved changes.
- *
- * @param document The document to save.
- *
- * @returns true if we should save changes and false if we should continue without saving changes.
- * @throws UserCancellationException if we should abort whatever operation triggered this prompt
+ * Saves dirty files before running queries, based on the user's settings.
  */
-export async function promptUserToSaveChanges(
-  document: TextDocument,
-): Promise<boolean> {
-  if (document.isDirty) {
-    if (AUTOSAVE_SETTING.getValue()) {
-      return true;
-    } else {
-      const yesItem = { title: "Yes", isCloseAffordance: false };
-      const alwaysItem = { title: "Always Save", isCloseAffordance: false };
-      const noItem = {
-        title: "No (run version on disk)",
-        isCloseAffordance: false,
-      };
-      const cancelItem = { title: "Cancel", isCloseAffordance: true };
-      const message = `Query file '${basename(
-        document.uri.fsPath,
-      )}' has unsaved changes. Save now?`;
-      const chosenItem = await window.showInformationMessage(
-        message,
-        { modal: true },
-        yesItem,
-        alwaysItem,
-        noItem,
-        cancelItem,
-      );
+export async function saveBeforeStart(): Promise<void> {
+  const mode: SaveBeforeStartMode =
+    (VSCODE_SAVE_BEFORE_START_SETTING.getValue<string>() as SaveBeforeStartMode) ??
+    "nonUntitledEditorsInActiveGroup";
 
-      if (chosenItem === alwaysItem) {
-        await AUTOSAVE_SETTING.updateValue(true, ConfigurationTarget.Workspace);
-        return true;
-      }
+  switch (mode) {
+    case "nonUntitledEditorsInActiveGroup":
+      await saveAllInGroup(false);
+      break;
 
-      if (chosenItem === yesItem) {
-        return true;
-      }
+    case "allEditorsInActiveGroup":
+      await saveAllInGroup(true);
+      break;
 
-      if (chosenItem === cancelItem) {
-        throw new UserCancellationException("Query run cancelled.", true);
+    case "none":
+      break;
+
+    default:
+      // Unexpected value. Fall back to the default behavior.
+      await saveAllInGroup(false);
+      break;
+  }
+}
+
+// Used in tests
+export async function saveAllInGroup(includeUntitled: boolean): Promise<void> {
+  // There's no good way to get from a `Tab` to a `TextDocument`, so we'll collect all of the dirty
+  // documents indexed by their URI, and then compare those URIs against the URIs of the tabs.
+  const dirtyDocumentUris = new Map<string, TextDocument>();
+  for (const openDocument of workspace.textDocuments) {
+    if (openDocument.isDirty) {
+      console.warn(`${openDocument.uri.toString()} is dirty.`);
+      if (!openDocument.isUntitled || includeUntitled) {
+        dirtyDocumentUris.set(openDocument.uri.toString(), openDocument);
       }
     }
   }
-  return false;
+  if (dirtyDocumentUris.size > 0) {
+    console.warn(`${window.tabGroups.all.length} tab groups open`);
+    console.warn(`${workspace.textDocuments.length} documents open`);
+    const tabGroup = window.tabGroups.activeTabGroup;
+    console.warn(`${tabGroup.tabs.length} tabs open in active group`);
+    for (const tab of tabGroup.tabs) {
+      const input = tab.input;
+      // The `input` property can be of an arbitrary type, depending on the underlying tab type. For
+      // text editors (and potentially others), it's an object with a `uri` property. That's all we
+      // need to know to match it up with a dirty document.
+      if (typeof input === "object") {
+        const uri = (input as any).uri;
+        if (uri instanceof Uri) {
+          const document = dirtyDocumentUris.get(uri.toString());
+          if (document !== undefined) {
+            console.warn(`Saving ${uri.toString()}`);
+            await document.save();
+            // Remove the URI from the dirty list so we don't wind up saving the same file twice
+            // if it's open in multiple editors.
+            dirtyDocumentUris.delete(uri.toString());
+          } else {
+            console.warn(`Can't find ${uri.toString()}`);
+          }
+        }
+      }
+    }
+  }
 }
 
 /**
