@@ -17,6 +17,7 @@ import {
 } from "../../data-extensions-editor/modeled-method";
 import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../data-extensions-editor/predicates";
+import { Mode } from "../../data-extensions-editor/shared/mode";
 
 const Dropdown = styled(VSCodeDropdown)`
   width: 100%;
@@ -47,6 +48,7 @@ const UsagesButton = styled.button`
 type Props = {
   externalApiUsage: ExternalApiUsage;
   modeledMethod: ModeledMethod | undefined;
+  mode: Mode;
   onChange: (
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
@@ -56,6 +58,7 @@ type Props = {
 export const MethodRow = ({
   externalApiUsage,
   modeledMethod,
+  mode,
   onChange,
 }: Props) => {
   const argumentsList = useMemo(() => {
@@ -165,11 +168,13 @@ export const MethodRow = ({
           {externalApiUsage.methodParameters}
         </SupportSpan>
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={3}>
-        <UsagesButton onClick={jumpToUsage}>
-          {externalApiUsage.usages.length}
-        </UsagesButton>
-      </VSCodeDataGridCell>
+      {mode === Mode.Application && (
+        <VSCodeDataGridCell gridColumn={3}>
+          <UsagesButton onClick={jumpToUsage}>
+            {externalApiUsage.usages.length}
+          </UsagesButton>
+        </VSCodeDataGridCell>
+      )}
       <VSCodeDataGridCell gridColumn={4}>
         {(!externalApiUsage.supported ||
           (modeledMethod && modeledMethod?.type !== "none")) && (

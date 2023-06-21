@@ -8,6 +8,7 @@ import { ModeledMethodDataGrid } from "./ModeledMethodDataGrid";
 import { calculateModeledPercentage } from "./modeled";
 import { decimalFormatter, percentFormatter } from "./formatters";
 import { Codicon } from "../common";
+import { Mode } from "../../data-extensions-editor/shared/mode";
 
 const LibraryContainer = styled.div`
   margin-bottom: 1rem;
@@ -38,9 +39,10 @@ const StatusContainer = styled.div`
 `;
 
 type Props = {
-  libraryName: string;
+  title: string;
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
+  mode: Mode;
   onChange: (
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
@@ -48,9 +50,10 @@ type Props = {
 };
 
 export const LibraryRow = ({
-  libraryName,
+  title,
   externalApiUsages,
   modeledMethods,
+  mode,
   onChange,
 }: Props) => {
   const modeledPercentage = useMemo(() => {
@@ -75,7 +78,7 @@ export const LibraryRow = ({
         ) : (
           <Codicon name="chevron-right" label="Expand" />
         )}
-        {libraryName}
+        {title}
         {isExpanded ? null : (
           <>
             {" "}
@@ -116,6 +119,7 @@ export const LibraryRow = ({
           <ModeledMethodDataGrid
             externalApiUsages={externalApiUsages}
             modeledMethods={modeledMethods}
+            mode={mode}
             onChange={onChange}
           />
         </>

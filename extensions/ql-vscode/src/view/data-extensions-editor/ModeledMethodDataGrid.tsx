@@ -8,10 +8,12 @@ import { MethodRow } from "./MethodRow";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { useMemo } from "react";
+import { Mode } from "../../data-extensions-editor/shared/mode";
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
+  mode: Mode;
   onChange: (
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
@@ -21,6 +23,7 @@ type Props = {
 export const ModeledMethodDataGrid = ({
   externalApiUsages,
   modeledMethods,
+  mode,
   onChange,
 }: Props) => {
   const sortedExternalApiUsages = useMemo(() => {
@@ -48,9 +51,11 @@ export const ModeledMethodDataGrid = ({
         <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
           Method
         </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
-          Usages
-        </VSCodeDataGridCell>
+        {mode === Mode.Application && (
+          <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
+            Usages
+          </VSCodeDataGridCell>
+        )}
         <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
           Model type
         </VSCodeDataGridCell>
@@ -69,6 +74,7 @@ export const ModeledMethodDataGrid = ({
           key={externalApiUsage.signature}
           externalApiUsage={externalApiUsage}
           modeledMethod={modeledMethods[externalApiUsage.signature]}
+          mode={mode}
           onChange={onChange}
         />
       ))}

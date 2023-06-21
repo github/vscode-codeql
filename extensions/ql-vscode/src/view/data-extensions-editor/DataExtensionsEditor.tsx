@@ -233,6 +233,7 @@ export function DataExtensionsEditor({
             <ModeledMethodsList
               externalApiUsages={externalApiUsages}
               modeledMethods={modeledMethods}
+              mode={viewState?.mode ?? Mode.Application}
               onChange={onChange}
             />
           </EditorContainer>
