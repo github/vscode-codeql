@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
-import { pluralize } from "../../pure/word";
+import { pluralize } from "../../common/word";
 import { ModeledMethodDataGrid } from "./ModeledMethodDataGrid";
 import { calculateModeledPercentage } from "./modeled";
 import { decimalFormatter, percentFormatter } from "./formatters";

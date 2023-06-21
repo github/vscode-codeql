@@ -15,7 +15,7 @@ import {
   MarkdownFile,
   RepositorySummary,
 } from "./markdown-generation";
-import { pluralize } from "../pure/word";
+import { pluralize } from "../common/word";
 import { VariantAnalysisManager } from "./variant-analysis-manager";
 import {
   VariantAnalysis,

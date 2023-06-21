@@ -1,4 +1,4 @@
-import { pluralize } from "../../../src/pure/word";
+import { pluralize } from "../../../src/common/word";
 
 describe("word helpers", () => {
   describe("pluralize", () => {
