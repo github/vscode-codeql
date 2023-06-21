@@ -779,7 +779,7 @@ async function activateWithInstalledDistribution(
   );
   ctx.subscriptions.push(databaseUI);
 
-  QueriesModule.initialize(app, cliServer);
+  const queriesModule = QueriesModule.initialize(app, cliServer);
 
   void extLogger.log("Initializing evaluator log viewer.");
   const evalLogViewer = new EvalLogViewer();
@@ -1011,6 +1011,7 @@ async function activateWithInstalledDistribution(
     }),
     ...localQueryResultsView.getCommands(),
     ...qhm.getCommands(),
+    ...queriesModule.getCommands(),
     ...variantAnalysisManager.getCommands(),
     ...databaseUI.getCommands(),
     ...dbModule.getCommands(),

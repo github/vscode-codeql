@@ -6,10 +6,34 @@ import { DisposableObject } from "../common/disposable-object";
 import { QueriesPanel } from "./queries-panel";
 import { QueryDiscovery } from "./query-discovery";
 import { QueryPackDiscovery } from "./query-pack-discovery";
+import { QueriesPanelCommands } from "../common/commands";
 
 export class QueriesModule extends DisposableObject {
+  private queriesPanel: QueriesPanel | undefined;
+
   private constructor(readonly app: App) {
     super();
+  }
+
+  public static initialize(
+    app: App,
+    cliServer: CodeQLCliServer,
+  ): QueriesModule {
+    const queriesModule = new QueriesModule(app);
+    app.subscriptions.push(queriesModule);
+
+    queriesModule.initialize(app, cliServer);
+    return queriesModule;
+  }
+
+  public getCommands(): QueriesPanelCommands {
+    if (!this.queriesPanel) {
+      throw new Error("Queries panel not initialized");
+    }
+
+    return {
+      ...this.queriesPanel.getCommands(),
+    };
   }
 
   private initialize(app: App, cliServer: CodeQLCliServer): void {
@@ -31,18 +55,7 @@ export class QueriesModule extends DisposableObject {
     this.push(queryDiscovery);
     void queryDiscovery.initialRefresh();
 
-    const queriesPanel = new QueriesPanel(queryDiscovery);
+    const queriesPanel = new QueriesPanel(app, queryDiscovery);
     this.push(queriesPanel);
-  }
-
-  public static initialize(
-    app: App,
-    cliServer: CodeQLCliServer,
-  ): QueriesModule {
-    const queriesModule = new QueriesModule(app);
-    app.subscriptions.push(queriesModule);
-
-    queriesModule.initialize(app, cliServer);
-    return queriesModule;
   }
 }

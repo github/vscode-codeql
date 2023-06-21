@@ -12,6 +12,7 @@ import type {
   VariantAnalysisScannedRepositoryResult,
 } from "../variant-analysis/shared/variant-analysis";
 import type { QLDebugConfiguration } from "../debugger/debug-configuration";
+import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from a context menu on a TreeView with
@@ -264,6 +265,10 @@ export type VariantAnalysisCommands = {
   "codeQL.runVariantAnalysisContextEditor": (uri?: Uri) => Promise<void>;
 };
 
+export type QueriesPanelCommands = {
+  "codeQLQueries.runLocalQueryContextInline": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
+};
+
 export type DatabasePanelCommands = {
   "codeQLVariantAnalysisRepositories.openConfigFile": () => Promise<void>;
   "codeQLVariantAnalysisRepositories.addNewDatabase": () => Promise<void>;
@@ -333,6 +338,7 @@ export type AllExtensionCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   DebuggerCommands &
+  QueriesPanelCommands &
   VariantAnalysisCommands &
   DatabasePanelCommands &
   AstCfgCommands &
@@ -346,7 +352,8 @@ export type AllExtensionCommands = BaseCommands &
 
 export type AllCommands = AllExtensionCommands &
   PreActivationCommands &
-  BuiltInVsCodeCommands;
+  BuiltInVsCodeCommands &
+  QueryServerCommands;
 
 export type AppCommandManager = CommandManager<AllCommands>;
 
