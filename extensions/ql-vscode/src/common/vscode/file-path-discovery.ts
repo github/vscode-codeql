@@ -11,7 +11,7 @@ import { MultiFileSystemWatcher } from "./multi-file-system-watcher";
 import { AppEventEmitter } from "../events";
 import { extLogger } from "..";
 import { lstat } from "fs-extra";
-import { containsPath, isIOError } from "../../pure/files";
+import { containsPath, isIOError } from "../files";
 import {
   getOnDiskWorkspaceFolders,
   getOnDiskWorkspaceFoldersObjects,

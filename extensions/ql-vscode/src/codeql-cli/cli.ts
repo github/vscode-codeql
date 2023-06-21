@@ -22,7 +22,7 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "../pure/helpers-pure";
-import { walkDirectory } from "../pure/files";
+import { walkDirectory } from "../common/files";
 import { QueryMetadata, SortDirection } from "../pure/interface-types";
 import { BaseLogger, Logger, ProgressReporter } from "../common";
 import { CompilationMessage } from "../pure/legacy-messages";

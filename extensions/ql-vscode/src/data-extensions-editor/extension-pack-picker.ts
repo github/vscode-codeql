@@ -14,7 +14,7 @@ import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
 import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
-import { containsPath } from "../pure/files";
+import { containsPath } from "../common/files";
 
 const maxStep = 3;
 

@@ -10,7 +10,7 @@ import { FilePathDiscovery } from "../../../../../src/common/vscode/file-path-di
 import { basename, dirname, join } from "path";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import * as tmp from "tmp";
-import { normalizePath } from "../../../../../src/pure/files";
+import { normalizePath } from "../../../../../src/common/files";
 
 interface TestData {
   path: string;

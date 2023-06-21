@@ -7,7 +7,7 @@ import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { extLogger } from "../common";
 import { EOL } from "os";
-import { containsPath } from "../pure/files";
+import { containsPath } from "../common/files";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 
 export interface QueryPack {

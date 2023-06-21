@@ -14,7 +14,7 @@ import {
 } from "vscode";
 import { TeeLogger } from "../common";
 import { isCanary, MAX_QUERIES } from "../config";
-import { gatherQlFiles } from "../pure/files";
+import { gatherQlFiles } from "../common/files";
 import { basename } from "path";
 import { showBinaryChoiceDialog } from "../common/vscode/dialog";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";

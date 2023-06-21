@@ -12,7 +12,7 @@ import {
 import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
 import { isLikelyDatabaseRoot } from "./db-contents-heuristics";
 import { stat } from "fs-extra";
-import { containsPath, pathsEqual } from "../../pure/files";
+import { containsPath, pathsEqual } from "../../common/files";
 import { DatabaseContents } from "./database-contents";
 
 export class DatabaseItemImpl implements DatabaseItem {

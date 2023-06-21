@@ -26,7 +26,7 @@ import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
 import { redactableError } from "../../common/errors";
 import { remove } from "fs-extra";
-import { containsPath } from "../../pure/files";
+import { containsPath } from "../../common/files";
 import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
 import { DatabaseResolver } from "./database-resolver";
 import { telemetryListener } from "../../common/vscode/telemetry";
