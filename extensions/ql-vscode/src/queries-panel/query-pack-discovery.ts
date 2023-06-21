@@ -2,7 +2,7 @@ import { basename, dirname } from "path";
 import { CodeQLCliServer, QuerySetup } from "../codeql-cli/cli";
 import { Event } from "vscode";
 import { QueryLanguage, dbSchemeToLanguage } from "../common/query-language";
-import { FALLBACK_QLPACK_FILENAME, QLPACK_FILENAMES } from "../pure/ql";
+import { FALLBACK_QLPACK_FILENAME, QLPACK_FILENAMES } from "../common/ql";
 import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
 import { getErrorMessage } from "../common/helpers-pure";
 import { extLogger } from "../common/logging/vscode";
