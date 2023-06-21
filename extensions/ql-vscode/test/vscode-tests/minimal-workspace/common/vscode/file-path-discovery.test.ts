@@ -12,6 +12,7 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "fs";
 import * as tmp from "tmp";
 import { normalizePath } from "../../../../../src/pure/files";
 import { extLogger } from "../../../../../src/common/logging/vscode/loggers";
+import { getErrorMessage } from "../../../../../src/pure/helpers-pure";
 
 interface TestData {
   path: string;
@@ -385,10 +386,10 @@ describe("FilePathDiscovery", () => {
       );
 
       expect(logSpy).toHaveBeenCalledWith(
-        `TestFilePathDiscovery failed while processing path: ${join(
+        `TestFilePathDiscovery failed while processing path "${join(
           workspacePath,
           "123.test",
-        )}`,
+        )}": ${getErrorMessage(new Error("error"))}`,
       );
     });
   });

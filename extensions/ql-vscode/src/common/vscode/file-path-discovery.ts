@@ -16,6 +16,7 @@ import {
   getOnDiskWorkspaceFolders,
   getOnDiskWorkspaceFoldersObjects,
 } from "./workspace-folders";
+import { getErrorMessage } from "../../pure/helpers-pure";
 
 interface PathData {
   path: string;
@@ -163,7 +164,9 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
         // that's likely to succeed on a retry, so don't bother adding it back
         // to the changedFilePaths set.
         void extLogger.log(
-          `${this.name} failed while processing path: ${path}`,
+          `${
+            this.name
+          } failed while processing path "${path}": ${getErrorMessage(e)}`,
         );
       }
     }
