@@ -32,7 +32,7 @@ import { App } from "../common/app";
 import { ResolvableLocationValue } from "../common/bqrs-cli-types";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { readQueryResults, runQuery } from "./external-api-usage-query";
 import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";

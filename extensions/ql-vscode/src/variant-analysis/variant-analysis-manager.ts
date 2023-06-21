@@ -61,7 +61,7 @@ import {
 import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { App } from "../common/app";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { AppCommandManager, VariantAnalysisCommands } from "../common/commands";
 import { exportVariantAnalysisResults } from "./export-results";
 import {

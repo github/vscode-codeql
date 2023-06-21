@@ -11,7 +11,7 @@ import {
   getErrorMessage,
   getErrorStack,
 } from "../../pure/helpers-pure";
-import { redactableError } from "../../pure/errors";
+import { redactableError } from "../errors";
 import { UserCancellationException } from "./progress";
 import { telemetryListener } from "./telemetry";
 import { AppTelemetry } from "../telemetry";

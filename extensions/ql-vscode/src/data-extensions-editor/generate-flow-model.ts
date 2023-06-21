@@ -12,7 +12,7 @@ import {
   ModeledMethodType,
   ModeledMethodWithSignature,
 } from "./modeled-method";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { QueryResultType } from "../pure/new-messages";
 import { file } from "tmp-promise";
 import { writeFile } from "fs-extra";

@@ -8,7 +8,7 @@ import {
   getErrorStack,
 } from "../../pure/helpers-pure";
 import { QueryHistoryInfo } from "../query-history-info";
-import { redactableError } from "../../pure/errors";
+import { redactableError } from "../../common/errors";
 import { QueryHistoryDto, QueryHistoryItemDto } from "./query-history-dto";
 import { mapQueryHistoryToDomainModel } from "./query-history-dto-mapper";
 import { mapQueryHistoryToDto } from "./query-history-domain-mapper";

@@ -3,7 +3,7 @@ import { CodeQLCliServer, TestCompleted } from "../codeql-cli/cli";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { access } from "fs-extra";
 import { BaseLogger, extLogger } from "../common";
 import {

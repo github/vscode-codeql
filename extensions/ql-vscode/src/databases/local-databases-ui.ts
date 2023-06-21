@@ -45,7 +45,7 @@ import { asError, asyncFilter, getErrorMessage } from "../pure/helpers-pure";
 import { QueryRunner } from "../query-server";
 import { isCanary } from "../config";
 import { App } from "../common/app";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { LocalDatabasesCommands } from "../common/commands";
 import {
   createMultiSelectionCommand,

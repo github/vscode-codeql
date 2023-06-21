@@ -24,7 +24,7 @@ import { existsSync } from "fs";
 import { QlPackGenerator } from "../../qlpack-generator";
 import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
-import { redactableError } from "../../pure/errors";
+import { redactableError } from "../../common/errors";
 import { remove } from "fs-extra";
 import { containsPath } from "../../pure/files";
 import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";

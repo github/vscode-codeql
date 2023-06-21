@@ -10,7 +10,7 @@ import {
 } from "vscode";
 import { DisposableObject } from "../common/disposable-object";
 import { asError, getErrorMessage } from "../pure/helpers-pure";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { EvalLogViewerCommands } from "../common/commands";
 import { extLogger } from "../common";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";

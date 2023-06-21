@@ -22,7 +22,7 @@ import {
   VariantAnalysisViewManager,
 } from "./variant-analysis-view-manager";
 import { telemetryListener } from "../common/vscode/telemetry";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { DataFlowPathsView } from "./data-flow-paths-view";
 import { DataFlowPaths } from "./shared/data-flow-paths";
 import { App } from "../common/app";

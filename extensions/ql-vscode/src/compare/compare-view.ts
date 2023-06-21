@@ -24,7 +24,7 @@ import {
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
 import { telemetryListener } from "../common/vscode/telemetry";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;

@@ -13,7 +13,7 @@ import { UserCancellationException } from "../../../src/common/vscode/progress";
 import { ENABLE_TELEMETRY } from "../../../src/config";
 import { createMockExtensionContext } from "./index";
 import { vscodeGetConfigurationMock } from "../test-config";
-import { redactableError } from "../../../src/pure/errors";
+import { redactableError } from "../../../src/common/errors";
 import { SemVer } from "semver";
 
 // setting preferences can trigger lots of background activity

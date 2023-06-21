@@ -1,4 +1,4 @@
-import { redactableError, RedactableError } from "../../../src/pure/errors";
+import { redactableError, RedactableError } from "../../../src/common/errors";
 
 describe("errorMessage", () => {
   it("creates a RedactableError", () => {

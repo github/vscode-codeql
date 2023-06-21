@@ -5,7 +5,7 @@
  * Helper functions that don't depend on vscode or the CLI and therefore can be used by the front-end and pure unit tests.
  */
 
-import { RedactableError } from "./errors";
+import { RedactableError } from "../common/errors";
 
 /**
  * This error is used to indicate a runtime failure of an exhaustivity check enforced at compile time.

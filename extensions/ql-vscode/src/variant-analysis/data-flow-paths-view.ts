@@ -10,7 +10,7 @@ import {
   ToDataFlowPathsMessage,
 } from "../pure/interface-types";
 import { DataFlowPaths } from "./shared/data-flow-paths";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { extLogger } from "../common";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 

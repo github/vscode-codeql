@@ -13,7 +13,7 @@ import * as tmp from "tmp-promise";
 import { dirname } from "path";
 import { DatabaseItem } from "../../databases/local-databases";
 import { asError, getErrorMessage } from "../../pure/helpers-pure";
-import { redactableError } from "../../pure/errors";
+import { redactableError } from "../../common/errors";
 import { telemetryListener } from "../../common/vscode/telemetry";
 
 /**

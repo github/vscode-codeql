@@ -3,7 +3,7 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
 import { basename, join } from "path";
 import { getErrorMessage } from "../pure/helpers-pure";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { AppCommandManager, QueryEditorCommands } from "../common/commands";
 import { extLogger } from "../common";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";

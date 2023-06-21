@@ -1,7 +1,7 @@
 import { Uri, window } from "vscode";
 import { AppCommandManager } from "../commands";
 import { showBinaryChoiceDialog } from "./dialog";
-import { redactableError } from "../../pure/errors";
+import { redactableError } from "../errors";
 import {
   asError,
   getErrorMessage,
