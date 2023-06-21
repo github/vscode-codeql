@@ -17,7 +17,7 @@ import {
   deprecatedCodeQlLauncherName,
   extractZipArchive,
   getRequiredAssetName,
-} from "../pure/distribution";
+} from "../common/distribution";
 import {
   InvocationRateLimiter,
   InvocationRateLimiterResultKind,
