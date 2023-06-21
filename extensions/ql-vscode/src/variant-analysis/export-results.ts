@@ -8,7 +8,7 @@ import {
   withProgress,
 } from "../common/vscode/progress";
 import { showInformationMessageWithAction } from "../common/vscode/dialog";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { createGist } from "./gh-api/gh-api-client";
 import {
   generateVariantAnalysisMarkdown,

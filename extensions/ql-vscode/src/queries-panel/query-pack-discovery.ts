@@ -5,7 +5,7 @@ import { QueryLanguage, dbSchemeToLanguage } from "../common/query-language";
 import { FALLBACK_QLPACK_FILENAME, QLPACK_FILENAMES } from "../pure/ql";
 import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
 import { getErrorMessage } from "../pure/helpers-pure";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { EOL } from "os";
 import { containsPath } from "../pure/files";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";

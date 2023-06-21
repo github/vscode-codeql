@@ -12,7 +12,7 @@ import {
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "../../common/logging";
-import { extLogger } from "../../common";
+import { extLogger } from "../../common/logging/vscode";
 
 export class DatabaseResolver {
   public static async resolveDatabaseContents(

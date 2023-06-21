@@ -75,17 +75,17 @@ import {
 } from "./local-queries";
 import {
   BaseLogger,
-  extLogger,
-  ideServerLogger,
-  ProgressReporter,
-  queryServerLogger,
-} from "./common";
-import {
   showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "./common/logging";
+import {
+  extLogger,
+  ideServerLogger,
+  ProgressReporter,
+  queryServerLogger,
+} from "./common/logging/vscode";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { CompletedLocalQueryInfo } from "./query-results";
 import {

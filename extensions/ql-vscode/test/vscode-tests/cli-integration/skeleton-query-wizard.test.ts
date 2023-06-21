@@ -6,7 +6,7 @@ import {
 import { mockedObject, mockedQuickPickItem } from "../utils/mocking.helpers";
 import * as tmp from "tmp";
 import { TextDocument, window, workspace, WorkspaceFolder } from "vscode";
-import { extLogger } from "../../../src/common";
+import { extLogger } from "../../../src/common/logging/vscode";
 import { QlPackGenerator } from "../../../src/qlpack-generator";
 import * as workspaceFolders from "../../../src/common/vscode/workspace-folders";
 import { createFileSync, ensureDirSync, removeSync } from "fs-extra";

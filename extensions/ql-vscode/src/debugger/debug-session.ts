@@ -12,7 +12,8 @@ import {
 import { DebugProtocol as Protocol } from "@vscode/debugprotocol";
 import { Disposable } from "vscode";
 import { CancellationTokenSource } from "vscode-jsonrpc";
-import { BaseLogger, LogOptions, queryServerLogger } from "../common";
+import { BaseLogger, LogOptions } from "../common/logging";
+import { queryServerLogger } from "../common/logging/vscode";
 import { QueryResultType } from "../pure/new-messages";
 import { CoreQueryResults, CoreQueryRun, QueryRunner } from "../query-server";
 import * as CodeQLProtocol from "./debug-protocol";

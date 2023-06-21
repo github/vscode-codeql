@@ -15,7 +15,7 @@ import {
   isCanary,
 } from "../../config";
 import * as appInsights from "applicationinsights";
-import { extLogger } from "../index";
+import { extLogger } from "../logging/vscode";
 import { UserCancellationException } from "./progress";
 import { showBinaryChoiceWithUrlDialog } from "./dialog";
 import { RedactableError } from "../../pure/errors";

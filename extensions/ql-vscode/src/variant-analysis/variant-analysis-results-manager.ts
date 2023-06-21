@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 import { EOL } from "os";
 import { join } from "path";
 
-import { Logger } from "../common";
+import { Logger } from "../common/logging";
 import { AnalysisAlert, AnalysisRawResults } from "./shared/analysis-result";
 import { sarifParser } from "../common/sarif-parser";
 import { extractAnalysisAlerts } from "./sarif-processing";

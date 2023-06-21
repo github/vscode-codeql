@@ -1,11 +1,11 @@
 import { commands, Disposable } from "vscode";
 import { CommandFunction, CommandManager } from "../../packages/commands";
 import {
-  extLogger,
   NotificationLogger,
   showAndLogWarningMessage,
   showAndLogExceptionWithTelemetry,
 } from "../logging";
+import { extLogger } from "../logging/vscode";
 import {
   asError,
   getErrorMessage,

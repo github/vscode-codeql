@@ -19,7 +19,7 @@ import { DisposableObject } from "../pure/disposable-object";
 import { QLTestDiscovery } from "./qltest-discovery";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { getErrorMessage } from "../pure/helpers-pure";
-import { BaseLogger, LogOptions } from "../common";
+import { BaseLogger, LogOptions } from "../common/logging";
 import { TestRunner } from "./test-runner";
 import { TestManagerBase } from "./test-manager-base";
 import { App } from "../common/app";
