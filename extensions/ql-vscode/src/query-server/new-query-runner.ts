@@ -18,7 +18,7 @@ import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";
 import * as vscode from "vscode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { Logger } from "../common";
+import { Logger } from "../common/logging";
 import { QueryOutputDir } from "../run-queries-shared";
 
 export class NewQueryRunner extends QueryRunner {

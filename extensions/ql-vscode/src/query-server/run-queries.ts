@@ -4,7 +4,7 @@ import * as messages from "../pure/new-messages";
 import { QueryOutputDir } from "../run-queries-shared";
 import * as qsClient from "./query-server-client";
 import { CoreQueryResults, CoreQueryTarget } from "./query-runner";
-import { Logger } from "../common";
+import { Logger } from "../common/logging";
 
 /**
  * run-queries.ts

@@ -12,7 +12,7 @@ import {
   workspace,
 } from "vscode";
 import { DisposableObject } from "../pure/disposable-object";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { getErrorMessage } from "../pure/helpers-pure";
 import { SummaryLanguageSupportCommands } from "../common/commands";
 import { App } from "../common/app";

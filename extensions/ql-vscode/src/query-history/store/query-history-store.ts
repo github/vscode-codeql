@@ -12,7 +12,7 @@ import { redactableError } from "../../pure/errors";
 import { QueryHistoryDto, QueryHistoryItemDto } from "./query-history-dto";
 import { mapQueryHistoryToDomainModel } from "./query-history-dto-mapper";
 import { mapQueryHistoryToDto } from "./query-history-domain-mapper";
-import { extLogger } from "../../common";
+import { extLogger } from "../../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import { telemetryListener } from "../../common/vscode/telemetry";
 

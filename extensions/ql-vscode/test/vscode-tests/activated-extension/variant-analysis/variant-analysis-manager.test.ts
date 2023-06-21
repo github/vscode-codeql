@@ -7,7 +7,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { extLogger } from "../../../../src/common";
+import { extLogger } from "../../../../src/common/logging/vscode";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import * as ghActionsApiClient from "../../../../src/variant-analysis/gh-api/gh-actions-api-client";
 import * as fs from "fs-extra";

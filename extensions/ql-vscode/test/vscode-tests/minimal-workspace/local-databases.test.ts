@@ -11,7 +11,7 @@ import {
   DatabaseResolver,
   FullDatabaseOptions,
 } from "../../../src/databases/local-databases";
-import { Logger } from "../../../src/common";
+import { Logger } from "../../../src/common/logging";
 import { CodeQLCliServer, DbInfo } from "../../../src/codeql-cli/cli";
 import {
   encodeArchiveBasePath,

@@ -12,8 +12,9 @@ import {
 import { tmpDir } from "../../tmp-dir";
 import { ProgressCallback } from "../../common/vscode/progress";
 import { QueryMetadata } from "../../pure/interface-types";
-import { extLogger, Logger } from "../../common";
+import { extLogger } from "../../common/logging/vscode";
 import {
+  Logger,
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../../common/logging";

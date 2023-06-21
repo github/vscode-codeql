@@ -7,7 +7,10 @@ import * as cli from "../../../src/codeql-cli/cli";
 import { CellValue } from "../../../src/pure/bqrs-cli-types";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../../src/query-server/query-server-client";
-import { extLogger, ProgressReporter } from "../../../src/common";
+import {
+  extLogger,
+  ProgressReporter,
+} from "../../../src/common/logging/vscode";
 import { QueryResultType } from "../../../src/pure/new-messages";
 import { ensureTestDatabase, getActivatedExtension } from "../global.helper";
 import { createMockApp } from "../../__mocks__/appMock";

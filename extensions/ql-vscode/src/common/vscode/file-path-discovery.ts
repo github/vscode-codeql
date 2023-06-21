@@ -9,7 +9,7 @@ import {
 } from "vscode";
 import { MultiFileSystemWatcher } from "./multi-file-system-watcher";
 import { AppEventEmitter } from "../events";
-import { extLogger } from "..";
+import { extLogger } from "../logging/vscode";
 import { lstat } from "fs-extra";
 import { containsPath, isIOError } from "../../pure/files";
 import {

@@ -5,7 +5,7 @@ import { load } from "js-yaml";
 import { readFile } from "fs-extra";
 import { getQlPackPath } from "../pure/ql";
 import { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 
 export interface QlPacksForLanguage {

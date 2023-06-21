@@ -27,7 +27,7 @@ import { DisposableObject } from "../../pure/disposable-object";
 import { asError, getErrorMessage } from "../../pure/helpers-pure";
 import { redactableError } from "../../pure/errors";
 import { AstViewerCommands } from "../../common/commands";
-import { extLogger } from "../../common";
+import { extLogger } from "../../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import { telemetryListener } from "../../common/vscode/telemetry";
 

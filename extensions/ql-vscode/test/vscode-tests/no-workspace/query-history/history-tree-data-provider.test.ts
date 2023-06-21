@@ -1,7 +1,7 @@
 import { join } from "path";
 import * as vscode from "vscode";
 
-import { extLogger } from "../../../../src/common";
+import { extLogger } from "../../../../src/common/logging/vscode";
 import { QueryHistoryConfigListener } from "../../../../src/config";
 import { LocalQueryInfo } from "../../../../src/query-results";
 import { DatabaseManager } from "../../../../src/databases/local-databases";

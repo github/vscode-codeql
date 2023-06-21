@@ -12,7 +12,7 @@ import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watch
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathExists } from "fs-extra";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 
 /**
  * Discovers all QL tests contained in the QL packs in a given workspace folder.

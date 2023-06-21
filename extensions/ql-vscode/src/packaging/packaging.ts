@@ -6,7 +6,7 @@ import {
   UserCancellationException,
   withProgress,
 } from "../common/vscode/progress";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import {
   showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,

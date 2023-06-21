@@ -1,6 +1,6 @@
 import { window } from "vscode";
 import { App } from "../common/app";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { DisposableObject } from "../pure/disposable-object";
 import { DbConfigStore } from "./config/db-config-store";
 import { DbManager } from "./db-manager";
