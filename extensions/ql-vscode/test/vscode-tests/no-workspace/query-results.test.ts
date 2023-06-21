@@ -28,7 +28,7 @@ import {
 import {
   EvaluationResult,
   QueryResultType,
-} from "../../../src/pure/legacy-messages";
+} from "../../../src/query-server/legacy-messages";
 import { sleep } from "../../../src/common/time";
 import { mockedObject } from "../utils/mocking.helpers";
 

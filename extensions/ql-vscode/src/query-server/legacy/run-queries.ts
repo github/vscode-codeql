@@ -18,7 +18,7 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../../common/logging";
-import * as messages from "../../pure/legacy-messages";
+import * as messages from "../legacy-messages";
 import * as newMessages from "../../pure/new-messages";
 import * as qsClient from "./query-server-client";
 import { asError, getErrorMessage } from "../../common/helpers-pure";

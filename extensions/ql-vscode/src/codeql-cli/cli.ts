@@ -26,7 +26,7 @@ import { walkDirectory } from "../common/files";
 import { QueryMetadata, SortDirection } from "../common/interface-types";
 import { BaseLogger, Logger } from "../common/logging";
 import { ProgressReporter } from "../common/logging/vscode";
-import { CompilationMessage } from "../pure/legacy-messages";
+import { CompilationMessage } from "../query-server/legacy-messages";
 import { sarifParser } from "../common/sarif-parser";
 import { App } from "../common/app";
 import { QueryLanguage } from "../common/query-language";

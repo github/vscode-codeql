@@ -9,7 +9,7 @@ import {
 } from "vscode";
 import * as CodeQLProtocol from "../../../../src/debugger/debug-protocol";
 import { DisposableObject } from "../../../../src/common/disposable-object";
-import { QueryResultType } from "../../../../src/pure/legacy-messages";
+import { QueryResultType } from "../../../../src/query-server/legacy-messages";
 import { CoreCompletedQuery } from "../../../../src/query-server/query-runner";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
 import {

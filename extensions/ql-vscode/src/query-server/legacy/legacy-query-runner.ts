@@ -7,7 +7,7 @@ import {
   Dataset,
   deregisterDatabases,
   registerDatabases,
-} from "../../pure/legacy-messages";
+} from "../legacy-messages";
 import {
   CoreQueryResults,
   CoreQueryTarget,

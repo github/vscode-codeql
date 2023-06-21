@@ -1,7 +1,7 @@
 import { CancellationTokenSource, env } from "vscode";
 
 import * as messages from "./pure/messages-shared";
-import * as legacyMessages from "./pure/legacy-messages";
+import * as legacyMessages from "./query-server/legacy-messages";
 import * as cli from "./codeql-cli/cli";
 import { pathExists } from "fs-extra";
 import { basename } from "path";

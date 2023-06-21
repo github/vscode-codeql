@@ -7,7 +7,7 @@ import {
 } from "../../common/vscode/progress";
 import { extLogger } from "../../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging";
-import * as messages from "../../pure/legacy-messages";
+import * as messages from "../legacy-messages";
 import * as qsClient from "./query-server-client";
 import * as tmp from "tmp-promise";
 import { dirname } from "path";
