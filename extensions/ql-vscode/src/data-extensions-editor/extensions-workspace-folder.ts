@@ -1,6 +1,7 @@
 import { Uri, window, workspace, WorkspaceFolder } from "vscode";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
 import { extLogger } from "../common";
+import { tmpdir } from "../pure/files";
 
 /**
  * Returns the ancestors of this path in order from furthest to closest (i.e. root of filesystem to parent directory)
@@ -26,7 +27,15 @@ function getRootWorkspaceDirectory(): Uri | undefined {
     return Uri.joinPath(workspaceFile, "..");
   }
 
-  const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
+  const allWorkspaceFolders = getOnDiskWorkspaceFoldersObjects();
+
+  // Get the system temp directory and convert it to a URI so it's normalized
+  const systemTmpdir = Uri.file(tmpdir());
+
+  const workspaceFolders = allWorkspaceFolders.filter((folder) => {
+    // Never use a workspace folder that is in the system temp directory
+    return !folder.uri.fsPath.startsWith(systemTmpdir.fsPath);
+  });
 
   // Find the common root directory of all workspace folders by finding the longest common prefix
   const commonRoot = workspaceFolders.reduce((commonRoot, folder) => {
