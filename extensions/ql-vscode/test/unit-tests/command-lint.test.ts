@@ -49,7 +49,7 @@ describe("commands declared in package.json", () => {
       expect(title).toBeDefined();
       commandTitles[command] = title!;
     } else {
-      fail(`Unexpected command name ${command}`);
+      throw new Error(`Unexpected command name ${command}`);
     }
   });
 

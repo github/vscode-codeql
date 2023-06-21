@@ -310,11 +310,7 @@ export class DebugController
    */
   private async nextEvent(): Promise<AnyDebugEvent> {
     if (this.resolver !== undefined) {
-      const error = new Error(
-        "Attempt to wait for multiple debugger events at once.",
-      );
-      fail(error);
-      throw error;
+      throw new Error("Attempt to wait for multiple debugger events at once.");
     } else {
       if (this.nextEventIndex < this.eventQueue.length) {
         // No need to wait.
