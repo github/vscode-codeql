@@ -59,9 +59,14 @@ describe("files", () => {
       const file1 = join(dataDir, "compute-default-strings.ql");
       const file2 = join(dataDir, "multiple-result-sets.ql");
       const file3 = join(dataDir, "query.ql");
+      const file4 = join(dataDir, "debugger", "simple-query.ql");
+      const file5 = join(dataDir, "debugger", "QuickEvalQuery.ql");
 
       const result = await gatherQlFiles([dataDir]);
-      expect(result.sort()).toEqual([[file1, file2, file3], true]);
+      expect(result.sort()).toEqual([
+        [file1, file2, file3, file4, file5],
+        true,
+      ]);
     });
 
     it("should scan a directory and some files", async () => {
