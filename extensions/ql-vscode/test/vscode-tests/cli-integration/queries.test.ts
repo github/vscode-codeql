@@ -29,7 +29,7 @@ import {
 } from "../../../src/query-server/query-runner";
 import { SELECT_QUERY_NAME } from "../../../src/language-support";
 import { LocalQueries, QuickEvalType } from "../../../src/local-queries";
-import { QueryResultType } from "../../../src/pure/new-messages";
+import { QueryResultType } from "../../../src/query-server/new-messages";
 import { createVSCodeCommandManager } from "../../../src/common/vscode/commands";
 import {
   AllCommands,

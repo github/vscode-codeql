@@ -76,6 +76,16 @@ class ExternalApi extends DotNet::Callable {
   }
 
   /**
+   * Gets the unbound type, name and parameter types of this API.
+   */
+  bindingset[this]
+  private string getSignature() {
+    result =
+      this.getDeclaringType().getUnboundDeclaration() + "." + this.getName() + "(" +
+        parameterQualifiedTypeNamesToString(this) + ")"
+  }
+
+  /**
    * Gets the namespace of this API.
    */
   bindingset[this]
@@ -85,8 +95,7 @@ class ExternalApi extends DotNet::Callable {
    * Gets the namespace and signature of this API.
    */
   bindingset[this]
-  string getApiName() { result = this.getNamespace() + "." + this.getDeclaringType().getUnboundDeclaration() + "#" + this.getName() + "(" +
-  parameterQualifiedTypeNamesToString(this) + ")" }
+  string getApiName() { result = this.getNamespace() + "#" + this.getSignature() }
 
   /** Gets a node that is an input to a call to this API. */
   private ArgumentNode getAnInput() {
@@ -146,7 +155,7 @@ class ExternalApi extends DotNet::Callable {
 int resultLimit() { result = 1000 }
 
 /**
- * Holds if it is relevant to count usages of "api".
+ * Holds if it is relevant to count usages of \`api\`.
  */
 signature predicate relevantApi(ExternalApi api);
 
@@ -174,7 +183,7 @@ module Results<relevantApi/1 getRelevantUsages> {
   }
 
   /**
-   * Holds if there exists an API with "apiName" that is being used "usages" times
+   * Holds if there exists an API with \`apiName\` that is being used \`usages\` times
    * and if it is in the top results (guarded by resultLimit).
    */
   predicate restrict(string apiName, int usages) {

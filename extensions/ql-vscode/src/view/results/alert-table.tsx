@@ -1,7 +1,7 @@
 import { basename } from "path";
 import * as React from "react";
 import * as Sarif from "sarif";
-import * as Keys from "../../pure/result-keys";
+import * as Keys from "./result-keys";
 import { chevronDown, chevronRight, info, listUnordered } from "./octicons";
 import {
   className,

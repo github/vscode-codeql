@@ -6,7 +6,7 @@ import { createMockLogger } from "../../../__mocks__/loggerMock";
 import type { Uri } from "vscode";
 import { DatabaseKind } from "../../../../src/databases/local-databases";
 import { file } from "tmp-promise";
-import { QueryResultType } from "../../../../src/pure/new-messages";
+import { QueryResultType } from "../../../../src/query-server/new-messages";
 import { readdir, readFile } from "fs-extra";
 import { load } from "js-yaml";
 import { dirname, join } from "path";

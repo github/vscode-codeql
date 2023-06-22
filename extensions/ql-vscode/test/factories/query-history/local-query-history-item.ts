@@ -5,7 +5,7 @@ import {
   QueryWithResults,
 } from "../../../src/run-queries-shared";
 import { CancellationTokenSource } from "vscode";
-import { QueryResultType } from "../../../src/pure/legacy-messages";
+import { QueryResultType } from "../../../src/query-server/legacy-messages";
 import { QueryMetadata } from "../../../src/common/interface-types";
 
 export function createMockLocalQueryInfo({

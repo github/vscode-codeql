@@ -11,7 +11,7 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseItem } from "../databases/local-databases";
 import { ProgressCallback } from "../common/vscode/progress";
 import { fetchExternalApiQueries } from "./queries";
-import { QueryResultType } from "../pure/new-messages";
+import { QueryResultType } from "../query-server/new-messages";
 import { join } from "path";
 import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";

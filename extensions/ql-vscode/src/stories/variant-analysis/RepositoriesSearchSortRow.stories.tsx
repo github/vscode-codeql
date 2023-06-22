@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ComponentMeta } from "@storybook/react";
 
 import { RepositoriesSearchSortRow as RepositoriesSearchSortRowComponent } from "../../view/variant-analysis/RepositoriesSearchSortRow";
-import { defaultFilterSortState } from "../../pure/variant-analysis-filter-sort";
+import { defaultFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
 export default {
   title: "Variant Analysis/Repositories Search and Sort Row",

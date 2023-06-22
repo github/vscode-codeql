@@ -15,7 +15,7 @@ import { createMockRepositoryWithMetadata } from "../../../test/factories/varian
 import {
   defaultFilterSortState,
   RepositoriesFilterSortState,
-} from "../../pure/variant-analysis-filter-sort";
+} from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
 export default {
   title: "Variant Analysis/Variant Analysis Outcome Panels",

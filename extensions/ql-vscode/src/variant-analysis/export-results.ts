@@ -26,7 +26,7 @@ import {
 import {
   filterAndSortRepositoriesWithResults,
   RepositoriesFilterSortStateWithIds,
-} from "../pure/variant-analysis-filter-sort";
+} from "./shared/variant-analysis-filter-sort";
 import { Credentials } from "../common/authentication";
 import { AppCommandManager } from "../common/commands";
 

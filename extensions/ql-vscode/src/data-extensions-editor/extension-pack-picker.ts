@@ -3,11 +3,8 @@ import { outputFile, pathExists, readFile } from "fs-extra";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { minimatch } from "minimatch";
 import { CancellationToken, window } from "vscode";
-import { CodeQLCliServer } from "../codeql-cli/cli";
-import {
-  getOnDiskWorkspaceFolders,
-  getOnDiskWorkspaceFoldersObjects,
-} from "../common/vscode/workspace-folders";
+import { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
+import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { ProgressCallback } from "../common/vscode/progress";
 import { DatabaseItem } from "../databases/local-databases";
 import { getQlPackPath, QLPACK_FILENAMES } from "../common/ql";
@@ -15,14 +12,20 @@ import { getErrorMessage } from "../common/helpers-pure";
 import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
 import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
 import { containsPath } from "../common/files";
+import { disableAutoNameExtensionPack } from "../config";
+import {
+  autoNameExtensionPack,
+  ExtensionPackName,
+  formatPackName,
+  parsePackName,
+  validatePackName,
+} from "./extension-pack-name";
+import {
+  askForWorkspaceFolder,
+  autoPickExtensionsDirectory,
+} from "./extensions-workspace-folder";
 
 const maxStep = 3;
-
-const packNamePartRegex = /[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/;
-const packNameRegex = new RegExp(
-  `^(?<scope>${packNamePartRegex.source})/(?<name>${packNamePartRegex.source})$`,
-);
-const packNameLength = 128;
 
 export async function pickExtensionPackModelFile(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks" | "resolveExtensions">,
@@ -78,6 +81,21 @@ async function pickExtensionPack(
     additionalPacks,
     true,
   );
+
+  if (!disableAutoNameExtensionPack()) {
+    progress({
+      message: "Creating extension pack...",
+      step: 2,
+      maxStep,
+    });
+
+    return autoCreateExtensionPack(
+      databaseItem.name,
+      databaseItem.language,
+      extensionPacksInfo,
+      logger,
+    );
+  }
 
   if (Object.keys(extensionPacksInfo).length === 0) {
     return pickNewExtensionPack(databaseItem, token);
@@ -239,51 +257,35 @@ async function pickNewExtensionPack(
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   token: CancellationToken,
 ): Promise<ExtensionPack | undefined> {
-  const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
-  const workspaceFolderOptions = workspaceFolders.map((folder) => ({
-    label: folder.name,
-    detail: folder.uri.fsPath,
-    path: folder.uri.fsPath,
-  }));
-
-  // We're not using window.showWorkspaceFolderPick because that also includes the database source folders while
-  // we only want to include on-disk workspace folders.
-  const workspaceFolder = await window.showQuickPick(workspaceFolderOptions, {
-    title: "Select workspace folder to create extension pack in",
-  });
+  const workspaceFolder = await askForWorkspaceFolder();
   if (!workspaceFolder) {
     return undefined;
   }
 
-  let examplePackName = `${databaseItem.name}-extensions`;
-  if (!examplePackName.includes("/")) {
-    examplePackName = `pack/${examplePackName}`;
-  }
+  const examplePackName = autoNameExtensionPack(
+    databaseItem.name,
+    databaseItem.language,
+  );
 
-  const packName = await window.showInputBox(
+  const name = await window.showInputBox(
     {
       title: "Create new extension pack",
       prompt: "Enter name of extension pack",
-      placeHolder: `e.g. ${examplePackName}`,
+      placeHolder: examplePackName
+        ? `e.g. ${formatPackName(examplePackName)}`
+        : "",
       validateInput: async (value: string): Promise<string | undefined> => {
-        if (!value) {
-          return "Pack name must not be empty";
+        const message = validatePackName(value);
+        if (message) {
+          return message;
         }
 
-        if (value.length > packNameLength) {
-          return `Pack name must be no longer than ${packNameLength} characters`;
+        const packName = parsePackName(value);
+        if (!packName) {
+          return "Invalid pack name";
         }
 
-        const matches = packNameRegex.exec(value);
-        if (!matches?.groups) {
-          if (!value.includes("/")) {
-            return "Invalid package name: a pack name must contain a slash to separate the scope from the pack name";
-          }
-
-          return "Invalid package name: a pack name must contain only lowercase ASCII letters, ASCII digits, and hyphens";
-        }
-
-        const packPath = join(workspaceFolder.path, matches.groups.name);
+        const packPath = join(workspaceFolder.uri.fsPath, packName.name);
         if (await pathExists(packPath)) {
           return `A pack already exists at ${packPath}`;
         }
@@ -293,31 +295,121 @@ async function pickNewExtensionPack(
     },
     token,
   );
+  if (!name) {
+    return undefined;
+  }
+
+  const packName = parsePackName(name);
   if (!packName) {
     return undefined;
   }
 
-  const matches = packNameRegex.exec(packName);
-  if (!matches?.groups) {
-    return;
-  }
-
-  const name = matches.groups.name;
-  const packPath = join(workspaceFolder.path, name);
+  const packPath = join(workspaceFolder.uri.fsPath, packName.name);
 
   if (await pathExists(packPath)) {
     return undefined;
   }
 
+  return writeExtensionPack(packPath, packName, databaseItem.language);
+}
+
+async function autoCreateExtensionPack(
+  name: string,
+  language: string,
+  extensionPacksInfo: QlpacksInfo,
+  logger: NotificationLogger,
+): Promise<ExtensionPack | undefined> {
+  // Get the extensions directory to create the extension pack in
+  const extensionsDirectory = await autoPickExtensionsDirectory();
+  if (!extensionsDirectory) {
+    return undefined;
+  }
+
+  // Generate the name of the extension pack
+  const packName = autoNameExtensionPack(name, language);
+  if (!packName) {
+    void showAndLogErrorMessage(
+      logger,
+      `Could not automatically name extension pack for database ${name}`,
+    );
+
+    return undefined;
+  }
+
+  // Find any existing locations of this extension pack
+  const existingExtensionPackPaths =
+    extensionPacksInfo[formatPackName(packName)];
+
+  // If there is already an extension pack with this name, use it if it is valid
+  if (existingExtensionPackPaths?.length === 1) {
+    let extensionPack: ExtensionPack;
+    try {
+      extensionPack = await readExtensionPack(existingExtensionPackPaths[0]);
+    } catch (e: unknown) {
+      void showAndLogErrorMessage(
+        logger,
+        `Could not read extension pack ${formatPackName(packName)}`,
+        {
+          fullMessage: `Could not read extension pack ${formatPackName(
+            packName,
+          )} at ${existingExtensionPackPaths[0]}: ${getErrorMessage(e)}`,
+        },
+      );
+
+      return undefined;
+    }
+
+    return extensionPack;
+  }
+
+  // If there is already an existing extension pack with this name, but it resolves
+  // to multiple paths, then we can't use it
+  if (existingExtensionPackPaths?.length > 1) {
+    void showAndLogErrorMessage(
+      logger,
+      `Extension pack ${formatPackName(packName)} resolves to multiple paths`,
+      {
+        fullMessage: `Extension pack ${formatPackName(
+          packName,
+        )} resolves to multiple paths: ${existingExtensionPackPaths.join(
+          ", ",
+        )}`,
+      },
+    );
+
+    return undefined;
+  }
+
+  const packPath = join(extensionsDirectory.fsPath, packName.name);
+
+  if (await pathExists(packPath)) {
+    void showAndLogErrorMessage(
+      logger,
+      `Directory ${packPath} already exists for extension pack ${formatPackName(
+        packName,
+      )}`,
+    );
+
+    return undefined;
+  }
+
+  return writeExtensionPack(packPath, packName, language);
+}
+
+async function writeExtensionPack(
+  packPath: string,
+  packName: ExtensionPackName,
+  language: string,
+): Promise<ExtensionPack> {
   const packYamlPath = join(packPath, "codeql-pack.yml");
 
   const extensionPack: ExtensionPack = {
     path: packPath,
     yamlPath: packYamlPath,
-    name: packName,
+    name: formatPackName(packName),
     version: "0.0.0",
     extensionTargets: {
-      [`codeql/${databaseItem.language}-all`]: "*",
+      [`codeql/${language}-all`]: "*",
     },
     dataExtensions: ["models/**/*.yml"],
   };

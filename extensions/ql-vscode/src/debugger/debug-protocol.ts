@@ -1,5 +1,5 @@
 import { DebugProtocol } from "@vscode/debugprotocol";
-import { QueryResultType } from "../pure/new-messages";
+import { QueryResultType } from "../query-server/new-messages";
 import { QuickEvalContext } from "../run-queries-shared";
 
 // Events

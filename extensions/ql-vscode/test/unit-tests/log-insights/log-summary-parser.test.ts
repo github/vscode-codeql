@@ -1,6 +1,6 @@
 import { join } from "path";
 
-import { parseViewerData } from "../../../src/pure/log-summary-parser";
+import { parseViewerData } from "../../../src/log-insights/log-summary-parser";
 
 describe("Evaluator log summary tests", () => {
   describe("for a valid summary text", () => {
