@@ -1,5 +1,6 @@
 import { pathExists, stat, readdir, opendir } from "fs-extra";
 import { isAbsolute, join, relative, resolve } from "path";
+import { tmpdir as osTmpdir } from "os";
 
 /**
  * Recursively finds all .ql files in this set of Uris.
@@ -120,4 +121,9 @@ export interface IOError {
 
 export function isIOError(e: any): e is IOError {
   return e.code !== undefined && typeof e.code === "string";
+}
+
+// This function is a wrapper around `os.tmpdir()` to make it easier to mock in tests.
+export function tmpdir(): string {
+  return osTmpdir();
 }
