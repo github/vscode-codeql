@@ -1,6 +1,9 @@
 import { ExtensionContext } from "vscode";
 import { DataExtensionsEditorView } from "./data-extensions-editor-view";
-import { DataExtensionsEditorCommands } from "../common/commands";
+import {
+  DataExtensionsEditorCommands,
+  ModelingCommands,
+} from "../common/commands";
 import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
 import { DatabaseManager } from "../databases/local-databases";
@@ -10,11 +13,13 @@ import { App } from "../common/app";
 import { withProgress } from "../common/vscode/progress";
 import { pickExtensionPackModelFile } from "./extension-pack-picker";
 import { showAndLogErrorMessage } from "../common/logging";
+import { ModelingPanel } from "./panel/modeling-panel";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
 export class DataExtensionsEditorModule {
   private readonly queryStorageDir: string;
+  private readonly modelingPanel: ModelingPanel;
 
   private constructor(
     private readonly ctx: ExtensionContext,
@@ -28,6 +33,15 @@ export class DataExtensionsEditorModule {
       baseQueryStorageDir,
       "data-extensions-editor-results",
     );
+
+    this.modelingPanel = new ModelingPanel(
+      app,
+      databaseManager,
+      cliServer,
+      queryRunner,
+      this.queryStorageDir,
+    );
+    ctx.subscriptions.push(this.modelingPanel);
   }
 
   public static async initialize(
@@ -51,8 +65,9 @@ export class DataExtensionsEditorModule {
     return dataExtensionsEditorModule;
   }
 
-  public getCommands(): DataExtensionsEditorCommands {
+  public getCommands(): DataExtensionsEditorCommands & ModelingCommands {
     return {
+      ...this.modelingPanel.getCommands(),
       "codeQL.openDataExtensionsEditor": async () => {
         const db = this.databaseManager.currentDatabaseItem;
         if (!db) {

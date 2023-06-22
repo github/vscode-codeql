@@ -301,6 +301,10 @@ export type DataExtensionsEditorCommands = {
   "codeQL.openDataExtensionsEditor": () => Promise<void>;
 };
 
+export type ModelingCommands = {
+  "codeQLModeling.itemClicked": TreeViewContextSingleSelectionCommandFunction<Uri>;
+};
+
 export type EvalLogViewerCommands = {
   "codeQLEvalLogViewer.clear": () => Promise<void>;
 };

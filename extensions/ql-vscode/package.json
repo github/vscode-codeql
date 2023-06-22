@@ -1565,6 +1565,13 @@
           "title": "CodeQL",
           "icon": "media/logo.svg"
         }
+      ],
+      "panel": [
+        {
+          "id": "codeql-panel",
+          "title": "CodeQL",
+          "icon": "media/logo.svg"
+        }
       ]
     },
     "views": {
@@ -1594,6 +1601,12 @@
           "id": "codeQLEvalLogViewer",
           "name": "Evaluator Log Viewer",
           "when": "config.codeQL.canary"
+        }
+      ],
+      "codeql-panel": [
+        {
+          "id": "codeQLModeling",
+          "name": "Modeling"
         }
       ]
     },
