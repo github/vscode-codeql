@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   className,
   emptyQueryResultsMessage,
@@ -38,22 +39,17 @@ export function RawTable({
   sortState,
   offset,
 }: RawTableProps) {
-  const [selectedItem, setSelectedItem] = React.useState<
-    TableItem | undefined
-  >();
+  const [selectedItem, setSelectedItem] = useState<TableItem | undefined>();
 
-  const scroller = React.useRef(new ScrollIntoViewHelper());
-  React.useEffect(() => scroller.current.update());
+  const scroller = useRef(new ScrollIntoViewHelper());
+  useEffect(() => scroller.current.update());
 
-  const setSelection = React.useCallback(
-    (row: number, column: number): void => {
-      setSelectedItem({ row, column });
-      sendTelemetry("local-results-raw-results-table-selected");
-    },
-    [],
-  );
+  const setSelection = useCallback((row: number, column: number): void => {
+    setSelectedItem({ row, column });
+    sendTelemetry("local-results-raw-results-table-selected");
+  }, []);
 
-  const navigateWithDelta = React.useCallback(
+  const navigateWithDelta = useCallback(
     (rowDelta: number, columnDelta: number): void => {
       setSelectedItem((prevSelectedItem) => {
         const numberOfAlerts = resultSet.rows.length;
@@ -87,7 +83,7 @@ export function RawTable({
     [databaseUri, resultSet, scroller],
   );
 
-  const handleNavigationEvent = React.useCallback(
+  const handleNavigationEvent = useCallback(
     (event: NavigateMsg) => {
       switch (event.direction) {
         case NavigationDirection.up: {
@@ -113,7 +109,7 @@ export function RawTable({
     [navigateWithDelta],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     onNavigation.addListener(handleNavigationEvent);
     return () => {
       onNavigation.removeListener(handleNavigationEvent);
