@@ -10,7 +10,7 @@ import { ToVariantAnalysisMessage } from "../../../common/interface-types";
 import {
   FilterKey,
   SortKey,
-} from "../../../variant-analysis/variant-analysis-filter-sort";
+} from "../../../variant-analysis/shared/variant-analysis-filter-sort";
 import { postMessage } from "../../common/post-message";
 
 describe(VariantAnalysis.name, () => {

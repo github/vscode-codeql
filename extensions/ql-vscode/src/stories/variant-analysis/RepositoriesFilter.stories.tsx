@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ComponentMeta } from "@storybook/react";
 
 import { RepositoriesFilter as RepositoriesFilterComponent } from "../../view/variant-analysis/RepositoriesFilter";
-import { FilterKey } from "../../variant-analysis/variant-analysis-filter-sort";
+import { FilterKey } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
 export default {
   title: "Variant Analysis/Repositories Filter",

@@ -10,7 +10,7 @@ import {
 import {
   filterAndSortRepositoriesWithResultsByName,
   RepositoriesFilterSortState,
-} from "../../variant-analysis/variant-analysis-filter-sort";
+} from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
 const Container = styled.div`
   display: flex;

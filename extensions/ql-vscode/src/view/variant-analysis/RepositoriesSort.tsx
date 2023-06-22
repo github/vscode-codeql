@@ -2,7 +2,7 @@ import * as React from "react";
 import { useCallback } from "react";
 import styled from "styled-components";
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
-import { SortKey } from "../../variant-analysis/variant-analysis-filter-sort";
+import { SortKey } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { Codicon } from "../common";
 
 const Dropdown = styled(VSCodeDropdown)`

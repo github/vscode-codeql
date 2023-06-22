@@ -19,7 +19,7 @@ import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,
   RepositoriesFilterSortState,
-} from "../../variant-analysis/variant-analysis-filter-sort";
+} from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
 export type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;

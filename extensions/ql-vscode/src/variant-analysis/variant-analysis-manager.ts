@@ -57,7 +57,7 @@ import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,
   RepositoriesFilterSortStateWithIds,
-} from "./variant-analysis-filter-sort";
+} from "./shared/variant-analysis-filter-sort";
 import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { App } from "../common/app";

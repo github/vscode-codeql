@@ -13,7 +13,7 @@ import {
 import { createMockVariantAnalysis } from "../../../../test/factories/variant-analysis/shared/variant-analysis";
 import { createMockRepositoryWithMetadata } from "../../../../test/factories/variant-analysis/shared/repository";
 import { createMockScannedRepo } from "../../../../test/factories/variant-analysis/shared/scanned-repositories";
-import { SortKey } from "../../../variant-analysis/variant-analysis-filter-sort";
+import { SortKey } from "../../../variant-analysis/shared/variant-analysis-filter-sort";
 import { permissiveFilterSortState } from "../../../../test/unit-tests/variant-analysis-filter-sort.test";
 
 describe(VariantAnalysisAnalyzedRepos.name, () => {

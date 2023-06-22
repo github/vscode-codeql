@@ -4,7 +4,7 @@ import {
   VariantAnalysisSkippedRepositoriesTab,
   VariantAnalysisSkippedRepositoriesTabProps,
 } from "../VariantAnalysisSkippedRepositoriesTab";
-import { SortKey } from "../../../variant-analysis/variant-analysis-filter-sort";
+import { SortKey } from "../../../variant-analysis/shared/variant-analysis-filter-sort";
 import { permissiveFilterSortState } from "../../../../test/unit-tests/variant-analysis-filter-sort.test";
 
 describe(VariantAnalysisSkippedRepositoriesTab.name, () => {
