@@ -27,6 +27,12 @@ export class QueriesModule extends DisposableObject {
   }
 
   public getCommands(): QueriesPanelCommands {
+    if (!isCanary() || !showQueriesPanel()) {
+      // Currently, we only want to expose the new panel when we are in development and canary mode
+      // and the developer has enabled the "Show queries panel" flag.
+      return {} as any as QueriesPanelCommands;
+    }
+
     if (!this.queriesPanel) {
       throw new Error("Queries panel not initialized");
     }
