@@ -1,5 +1,5 @@
 import { EvalLogTreeBuilder } from "../../../../src/query-evaluation-logging";
-import { EvalLogData } from "../../../../src/pure/log-summary-parser";
+import { EvalLogData } from "../../../../src/log-insights/log-summary-parser";
 
 describe("EvalLogTreeBuilder", () => {
   it("should build the log tree roots", async () => {

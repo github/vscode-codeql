@@ -19,7 +19,7 @@ import {
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "./webview";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { QueryResultType } from "../pure/new-messages";
+import { QueryResultType } from "../query-server/new-messages";
 import { redactableError } from "../common/errors";
 import { LocalQueries } from "./local-queries";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";

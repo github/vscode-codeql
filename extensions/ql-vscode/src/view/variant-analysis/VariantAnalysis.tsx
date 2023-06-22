@@ -12,7 +12,7 @@ import { VariantAnalysisOutcomePanels } from "./VariantAnalysisOutcomePanels";
 import { VariantAnalysisLoading } from "./VariantAnalysisLoading";
 import { ToVariantAnalysisMessage } from "../../common/interface-types";
 import { vscode } from "../vscode-api";
-import { defaultFilterSortState } from "../../pure/variant-analysis-filter-sort";
+import { defaultFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { sendTelemetry, useTelemetryOnChange } from "../common/telemetry";
 
 export type VariantAnalysisProps = {

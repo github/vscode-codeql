@@ -40,7 +40,10 @@ import { CliVersionConstraint } from "../codeql-cli/cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
 import { ResultsView, WebviewReveal } from "../local-queries";
 import { EvalLogTreeBuilder, EvalLogViewer } from "../query-evaluation-logging";
-import { EvalLogData, parseViewerData } from "../pure/log-summary-parser";
+import {
+  EvalLogData,
+  parseViewerData,
+} from "../log-insights/log-summary-parser";
 import { QueryWithResults } from "../run-queries-shared";
 import { QueryRunner } from "../query-server";
 import { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";

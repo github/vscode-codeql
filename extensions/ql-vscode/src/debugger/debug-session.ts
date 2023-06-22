@@ -14,7 +14,7 @@ import { Disposable } from "vscode";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import { BaseLogger, LogOptions } from "../common/logging";
 import { queryServerLogger } from "../common/logging/vscode";
-import { QueryResultType } from "../pure/new-messages";
+import { QueryResultType } from "../query-server/new-messages";
 import { CoreQueryResults, CoreQueryRun, QueryRunner } from "../query-server";
 import * as CodeQLProtocol from "./debug-protocol";
 import { QuickEvalContext } from "../run-queries-shared";

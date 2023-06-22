@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import styled from "styled-components";
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
 import { Codicon } from "../common";
-import { FilterKey } from "../../pure/variant-analysis-filter-sort";
+import { FilterKey } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
 const Dropdown = styled(VSCodeDropdown)`
   width: 100%;

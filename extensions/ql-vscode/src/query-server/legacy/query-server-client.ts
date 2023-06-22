@@ -13,7 +13,7 @@ import {
   progress,
   ProgressMessage,
   WithProgressId,
-} from "../../pure/legacy-messages";
+} from "../legacy-messages";
 import { ProgressCallback, ProgressTask } from "../../common/vscode/progress";
 import { ServerProcess } from "../server-process";
 import { App } from "../../common/app";

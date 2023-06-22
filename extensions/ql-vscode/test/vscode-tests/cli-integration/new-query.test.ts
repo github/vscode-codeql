@@ -1,7 +1,7 @@
 import { join, basename } from "path";
 import { dirSync } from "tmp";
 import { CancellationTokenSource } from "vscode-jsonrpc";
-import * as messages from "../../../src/pure/new-messages";
+import * as messages from "../../../src/query-server/new-messages";
 import * as qsClient from "../../../src/query-server/query-server-client";
 import * as cli from "../../../src/codeql-cli/cli";
 import { CellValue } from "../../../src/common/bqrs-cli-types";
@@ -11,7 +11,7 @@ import {
   extLogger,
   ProgressReporter,
 } from "../../../src/common/logging/vscode";
-import { QueryResultType } from "../../../src/pure/new-messages";
+import { QueryResultType } from "../../../src/query-server/new-messages";
 import { ensureTestDatabase, getActivatedExtension } from "../global.helper";
 import { createMockApp } from "../../__mocks__/appMock";
 

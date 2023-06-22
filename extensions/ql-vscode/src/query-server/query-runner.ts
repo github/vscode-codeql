@@ -3,7 +3,7 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { ProgressCallback } from "../common/vscode/progress";
 import { DatabaseItem } from "../databases/local-databases";
 import { QueryOutputDir } from "../run-queries-shared";
-import { Position, QueryResultType } from "../pure/new-messages";
+import { Position, QueryResultType } from "./new-messages";
 import { BaseLogger, Logger } from "../common/logging";
 import { basename, join } from "path";
 import { nanoid } from "nanoid";

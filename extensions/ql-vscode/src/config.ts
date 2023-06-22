@@ -13,7 +13,7 @@ import {
   FilterKey,
   SortKey,
   defaultFilterSortState,
-} from "./pure/variant-analysis-filter-sort";
+} from "./variant-analysis/shared/variant-analysis-filter-sort";
 
 export const ALL_SETTINGS: Setting[] = [];
 

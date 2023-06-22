@@ -7,7 +7,7 @@ import {
   compileQuery,
   registerDatabases,
   deregisterDatabases,
-} from "../../../src/pure/legacy-messages";
+} from "../../../src/query-server/legacy-messages";
 import * as config from "../../../src/config";
 import { tmpDir } from "../../../src/tmp-dir";
 import { CodeQLCliServer } from "../../../src/codeql-cli/cli";

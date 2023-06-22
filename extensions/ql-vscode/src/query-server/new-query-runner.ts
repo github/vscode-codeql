@@ -11,7 +11,7 @@ import {
   deregisterDatabases,
   registerDatabases,
   upgradeDatabase,
-} from "../pure/new-messages";
+} from "./new-messages";
 import { CoreQueryResults, CoreQueryTarget, QueryRunner } from "./query-runner";
 import { QueryServerClient } from "./query-server-client";
 import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";

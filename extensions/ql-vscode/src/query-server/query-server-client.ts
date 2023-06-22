@@ -7,11 +7,7 @@ import * as cli from "../codeql-cli/cli";
 import { QueryServerConfig } from "../config";
 import { Logger, showAndLogErrorMessage } from "../common/logging";
 import { extLogger, ProgressReporter } from "../common/logging/vscode";
-import {
-  progress,
-  ProgressMessage,
-  WithProgressId,
-} from "../pure/new-messages";
+import { progress, ProgressMessage, WithProgressId } from "./new-messages";
 import {
   ProgressCallback,
   ProgressTask,
