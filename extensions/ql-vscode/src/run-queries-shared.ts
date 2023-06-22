@@ -2,14 +2,7 @@ import * as messages from "./pure/messages-shared";
 import * as legacyMessages from "./pure/legacy-messages";
 import { DatabaseInfo, QueryMetadata } from "./common/interface-types";
 import { join, parse, dirname, basename } from "path";
-import {
-  Range,
-  TextDocument,
-  TextEditor,
-  Uri,
-  window,
-  workspace,
-} from "vscode";
+import { Range, TextEditor, Uri, window, workspace } from "vscode";
 import { isCanary, VSCODE_SAVE_BEFORE_START_SETTING } from "./config";
 import {
   pathExists,
@@ -503,13 +496,17 @@ export async function saveBeforeStart(): Promise<void> {
     (VSCODE_SAVE_BEFORE_START_SETTING.getValue<string>() as SaveBeforeStartMode) ??
     "nonUntitledEditorsInActiveGroup";
 
+  // Despite the names of the modes, the VS Code implementation doesn't restrict itself to the
+  // current tab group. It saves all dirty files in all groups. We'll do the same.
   switch (mode) {
     case "nonUntitledEditorsInActiveGroup":
-      await saveAllInGroup(false);
+      await workspace.saveAll(false);
       break;
 
     case "allEditorsInActiveGroup":
-      await saveAllInGroup(true);
+      // The VS Code implementation of this mode only saves an untitled file if it is the document
+      // in the active editor. That's too much work for us, so we'll just live with the inconsistency.
+      await workspace.saveAll(true);
       break;
 
     case "none":
@@ -517,44 +514,8 @@ export async function saveBeforeStart(): Promise<void> {
 
     default:
       // Unexpected value. Fall back to the default behavior.
-      await saveAllInGroup(false);
+      await workspace.saveAll(false);
       break;
-  }
-}
-
-// Used in tests
-export async function saveAllInGroup(includeUntitled: boolean): Promise<void> {
-  // There's no good way to get from a `Tab` to a `TextDocument`, so we'll collect all of the dirty
-  // documents indexed by their URI, and then compare those URIs against the URIs of the tabs.
-  const dirtyDocumentUris = new Map<string, TextDocument>();
-  for (const openDocument of workspace.textDocuments) {
-    if (openDocument.isDirty) {
-      console.warn(`${openDocument.uri.toString()} is dirty.`);
-      if (!openDocument.isUntitled || includeUntitled) {
-        dirtyDocumentUris.set(openDocument.uri.toString(), openDocument);
-      }
-    }
-  }
-  if (dirtyDocumentUris.size > 0) {
-    const tabGroup = window.tabGroups.activeTabGroup;
-    for (const tab of tabGroup.tabs) {
-      const input = tab.input;
-      // The `input` property can be of an arbitrary type, depending on the underlying tab type. For
-      // text editors (and potentially others), it's an object with a `uri` property. That's all we
-      // need to know to match it up with a dirty document.
-      if (typeof input === "object") {
-        const uri = (input as any).uri;
-        if (uri instanceof Uri) {
-          const document = dirtyDocumentUris.get(uri.toString());
-          if (document !== undefined) {
-            await document.save();
-            // Remove the URI from the dirty list so we don't wind up saving the same file twice
-            // if it's open in multiple editors.
-            dirtyDocumentUris.delete(uri.toString());
-          }
-        }
-      }
-    }
   }
 }
 

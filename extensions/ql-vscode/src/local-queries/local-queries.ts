@@ -358,6 +358,8 @@ export class LocalQueries extends DisposableObject {
     range?: Range,
     templates?: Record<string, string>,
   ): Promise<CoreCompletedQuery> {
+    await saveBeforeStart();
+
     let queryPath: string;
     if (queryUri !== undefined) {
       // The query URI is provided by the command, most likely because the command was run from an
@@ -387,8 +389,6 @@ export class LocalQueries extends DisposableObject {
 
     const additionalPacks = getOnDiskWorkspaceFolders();
     const extensionPacks = await this.getDefaultExtensionPacks(additionalPacks);
-
-    await saveBeforeStart();
 
     const coreQueryRun = this.queryRunner.createQueryRun(
       databaseItem.databaseUri.fsPath,

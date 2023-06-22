@@ -38,6 +38,9 @@ import {
 } from "../../../src/common/commands";
 import { ProgressCallback } from "../../../src/common/vscode/progress";
 import { withDebugController } from "./debugger/debug-controller";
+import { getDataFolderFilePath } from "./utils";
+
+const simpleQueryPath = getDataFolderFilePath("debugger/simple-query.ql");
 
 type DebugMode = "localQueries" | "debug";
 
@@ -213,13 +216,12 @@ describeWithCodeQL()("Queries", () => {
 
   describe.each(MODES)("running queries (%s)", (mode) => {
     it("should run a query", async () => {
-      const queryPath = join(__dirname, "data", "simple-query.ql");
       const result = await compileAndRunQuery(
         mode,
         appCommandManager,
         localQueries,
         QuickEvalType.None,
-        Uri.file(queryPath),
+        Uri.file(simpleQueryPath),
         progress,
         token,
         dbItem,
@@ -233,13 +235,12 @@ describeWithCodeQL()("Queries", () => {
     // Asserts a fix for bug https://github.com/github/vscode-codeql/issues/733
     it("should restart the database and run a query", async () => {
       await appCommandManager.execute("codeQL.restartQueryServer");
-      const queryPath = join(__dirname, "data", "simple-query.ql");
       const result = await compileAndRunQuery(
         mode,
         appCommandManager,
         localQueries,
         QuickEvalType.None,
-        Uri.file(queryPath),
+        Uri.file(simpleQueryPath),
         progress,
         token,
         dbItem,
