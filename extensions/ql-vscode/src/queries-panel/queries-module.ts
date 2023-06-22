@@ -27,9 +27,7 @@ export class QueriesModule extends DisposableObject {
   }
 
   public getCommands(): QueriesPanelCommands {
-    if (!isCanary() || !showQueriesPanel()) {
-      // Currently, we only want to expose the new panel when we are in development and canary mode
-      // and the developer has enabled the "Show queries panel" flag.
+    if (!this.shouldInitializeQueriesPanel) {
       return {} as any as QueriesPanelCommands;
     }
 
@@ -43,9 +41,7 @@ export class QueriesModule extends DisposableObject {
   }
 
   private initialize(app: App, cliServer: CodeQLCliServer): void {
-    if (!isCanary() || !showQueriesPanel()) {
-      // Currently, we only want to expose the new panel when we are in canary mode
-      // and the user has enabled the "Show queries panel" flag.
+    if (!this.shouldInitializeQueriesPanel) {
       return;
     }
     void extLogger.log("Initializing queries panel.");
@@ -63,5 +59,11 @@ export class QueriesModule extends DisposableObject {
 
     this.queriesPanel = new QueriesPanel(app, queryDiscovery);
     this.push(this.queriesPanel);
+  }
+
+  private shouldInitializeQueriesPanel(): boolean {
+    // Currently, we only want to expose the new panel when we are in canary mode
+    // and the user has enabled the "Show queries panel" flag.
+    return isCanary() && showQueriesPanel();
   }
 }
