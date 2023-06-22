@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   className,
   emptyQueryResultsMessage,
@@ -116,15 +116,18 @@ export function RawTable({
     };
   }, [handleNavigationEvent]);
 
-  let dataRows = resultSet.rows;
+  const [dataRows, numTruncatedResults] = useMemo(() => {
+    if (resultSet.rows.length <= RAW_RESULTS_LIMIT) {
+      return [resultSet.rows, 0];
+    }
+    return [
+      resultSet.rows.slice(0, RAW_RESULTS_LIMIT),
+      resultSet.rows.length - RAW_RESULTS_LIMIT,
+    ];
+  }, [resultSet]);
+
   if (dataRows.length === 0) {
     return emptyQueryResultsMessage();
-  }
-
-  let numTruncatedResults = 0;
-  if (dataRows.length > RAW_RESULTS_LIMIT) {
-    numTruncatedResults = dataRows.length - RAW_RESULTS_LIMIT;
-    dataRows = dataRows.slice(0, RAW_RESULTS_LIMIT);
   }
 
   const tableRows = dataRows.map((row: ResultRow, rowIndex: number) => (
