@@ -8,8 +8,8 @@ import {
   QueryHistoryInfo,
 } from "./query-history-info";
 import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
-import { assertNever } from "../pure/helpers-pure";
-import { pluralize } from "../pure/word";
+import { assertNever } from "../common/helpers-pure";
+import { pluralize } from "../common/word";
 import { humanizeQueryStatus } from "../query-status";
 
 interface InterpolateReplacements {

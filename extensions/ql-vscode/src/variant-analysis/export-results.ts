@@ -8,14 +8,14 @@ import {
   withProgress,
 } from "../common/vscode/progress";
 import { showInformationMessageWithAction } from "../common/vscode/dialog";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { createGist } from "./gh-api/gh-api-client";
 import {
   generateVariantAnalysisMarkdown,
   MarkdownFile,
   RepositorySummary,
 } from "./markdown-generation";
-import { pluralize } from "../pure/word";
+import { pluralize } from "../common/word";
 import { VariantAnalysisManager } from "./variant-analysis-manager";
 import {
   VariantAnalysis,

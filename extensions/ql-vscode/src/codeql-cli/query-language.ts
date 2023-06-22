@@ -2,7 +2,7 @@ import { CodeQLCliServer } from "./cli";
 import { Uri, window } from "vscode";
 import { isQueryLanguage, QueryLanguage } from "../common/query-language";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { UserCancellationException } from "../common/vscode/progress";
 import { showAndLogErrorMessage } from "../common/logging";
 

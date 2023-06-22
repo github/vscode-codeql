@@ -18,7 +18,7 @@ import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";
 import * as vscode from "vscode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { Logger } from "../common";
+import { Logger } from "../common/logging";
 import { QueryOutputDir } from "../run-queries-shared";
 
 export class NewQueryRunner extends QueryRunner {
@@ -56,7 +56,6 @@ export class NewQueryRunner extends QueryRunner {
 
   async clearCacheInDatabase(
     dbItem: DatabaseItem,
-    progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
     if (dbItem.contents === undefined) {
@@ -68,7 +67,7 @@ export class NewQueryRunner extends QueryRunner {
       dryRun: false,
       db,
     };
-    await this.qs.sendRequest(clearCache, params, token, progress);
+    await this.qs.sendRequest(clearCache, params, token);
   }
 
   public async compileAndRunQueryAgainstDatabaseCore(
@@ -98,34 +97,16 @@ export class NewQueryRunner extends QueryRunner {
     );
   }
 
-  async deregisterDatabase(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    dbItem: DatabaseItem,
-  ): Promise<void> {
+  async deregisterDatabase(dbItem: DatabaseItem): Promise<void> {
     if (dbItem.contents) {
       const databases: string[] = [dbItem.databaseUri.fsPath];
-      await this.qs.sendRequest(
-        deregisterDatabases,
-        { databases },
-        token,
-        progress,
-      );
+      await this.qs.sendRequest(deregisterDatabases, { databases });
     }
   }
-  async registerDatabase(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    dbItem: DatabaseItem,
-  ): Promise<void> {
+  async registerDatabase(dbItem: DatabaseItem): Promise<void> {
     if (dbItem.contents) {
       const databases: string[] = [dbItem.databaseUri.fsPath];
-      await this.qs.sendRequest(
-        registerDatabases,
-        { databases },
-        token,
-        progress,
-      );
+      await this.qs.sendRequest(registerDatabases, { databases });
     }
   }
 

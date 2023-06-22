@@ -11,7 +11,7 @@ import tk from "tree-kill";
 import { promisify } from "util";
 import { CancellationToken, Disposable, Uri } from "vscode";
 
-import { BQRSInfo, DecodedBqrsChunk } from "../pure/bqrs-cli-types";
+import { BQRSInfo, DecodedBqrsChunk } from "../common/bqrs-cli-types";
 import { allowCanaryQueryServer, CliConfig } from "../config";
 import {
   DistributionProvider,
@@ -21,10 +21,11 @@ import {
   assertNever,
   getErrorMessage,
   getErrorStack,
-} from "../pure/helpers-pure";
-import { walkDirectory } from "../pure/files";
-import { QueryMetadata, SortDirection } from "../pure/interface-types";
-import { BaseLogger, Logger, ProgressReporter } from "../common";
+} from "../common/helpers-pure";
+import { walkDirectory } from "../common/files";
+import { QueryMetadata, SortDirection } from "../common/interface-types";
+import { BaseLogger, Logger } from "../common/logging";
+import { ProgressReporter } from "../common/logging/vscode";
 import { CompilationMessage } from "../pure/legacy-messages";
 import { sarifParser } from "../common/sarif-parser";
 import { App } from "../common/app";

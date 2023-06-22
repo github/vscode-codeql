@@ -1,4 +1,4 @@
-import { humanizeRelativeTime, humanizeUnit } from "../../../src/pure/time";
+import { humanizeRelativeTime, humanizeUnit } from "../../../src/common/time";
 
 describe("Time", () => {
   it("should return a humanized unit", () => {

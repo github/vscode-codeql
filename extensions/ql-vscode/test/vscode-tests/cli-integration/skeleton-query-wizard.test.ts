@@ -6,12 +6,11 @@ import {
 import { mockedObject, mockedQuickPickItem } from "../utils/mocking.helpers";
 import * as tmp from "tmp";
 import { TextDocument, window, workspace, WorkspaceFolder } from "vscode";
-import { extLogger } from "../../../src/common";
+import { extLogger } from "../../../src/common/logging/vscode";
 import { QlPackGenerator } from "../../../src/qlpack-generator";
 import * as workspaceFolders from "../../../src/common/vscode/workspace-folders";
 import { createFileSync, ensureDirSync, removeSync } from "fs-extra";
 import { join } from "path";
-import { CancellationTokenSource } from "vscode-jsonrpc";
 import { testCredentialsWithStub } from "../../factories/authentication";
 import {
   DatabaseItem,
@@ -20,7 +19,7 @@ import {
 } from "../../../src/databases/local-databases";
 import * as databaseFetcher from "../../../src/databases/database-fetcher";
 import { createMockDB } from "../../factories/databases/databases";
-import { asError } from "../../../src/pure/helpers-pure";
+import { asError } from "../../../src/common/helpers-pure";
 import { Setting } from "../../../src/config";
 
 describe("SkeletonQueryWizard", () => {
@@ -47,7 +46,6 @@ describe("SkeletonQueryWizard", () => {
     typeof workspace.openTextDocument
   >;
 
-  const token = new CancellationTokenSource().token;
   const credentials = testCredentialsWithStub();
   const chosenLanguage = "ruby";
 
@@ -117,7 +115,6 @@ describe("SkeletonQueryWizard", () => {
       credentials,
       extLogger,
       mockDatabaseManager,
-      token,
       storagePath,
     );
 
@@ -252,7 +249,6 @@ describe("SkeletonQueryWizard", () => {
           credentials,
           extLogger,
           mockDatabaseManagerWithItems,
-          token,
           storagePath,
         );
       });

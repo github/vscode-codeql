@@ -11,9 +11,9 @@ import {
   window,
   workspace,
 } from "vscode";
-import { DisposableObject } from "../pure/disposable-object";
-import { extLogger } from "../common";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { DisposableObject } from "../common/disposable-object";
+import { extLogger } from "../common/logging/vscode";
+import { getErrorMessage } from "../common/helpers-pure";
 import { SummaryLanguageSupportCommands } from "../common/commands";
 import { App } from "../common/app";
 

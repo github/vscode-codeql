@@ -2,7 +2,7 @@ import { window } from "vscode";
 import { join } from "path";
 
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
-import { getErrorMessage } from "../../../../src/pure/helpers-pure";
+import { getErrorMessage } from "../../../../src/common/helpers-pure";
 
 import * as log from "../../../../src/common/logging/notifications";
 import {

@@ -1,4 +1,4 @@
-import { OWNER_REGEX, REPO_REGEX } from "../pure/helpers-pure";
+import { OWNER_REGEX, REPO_REGEX } from "./helpers-pure";
 
 /**
  * Checks if a string is a valid GitHub NWO.

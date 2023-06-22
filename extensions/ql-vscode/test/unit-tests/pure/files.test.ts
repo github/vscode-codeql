@@ -7,7 +7,7 @@ import {
   pathsEqual,
   readDirFullPaths,
   walkDirectory,
-} from "../../../src/pure/files";
+} from "../../../src/common/files";
 import { DirResult } from "tmp";
 import * as tmp from "tmp";
 import { ensureDirSync, symlinkSync, writeFileSync } from "fs-extra";

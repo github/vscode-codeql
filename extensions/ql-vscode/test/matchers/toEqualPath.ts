@@ -1,6 +1,6 @@
 import { expect } from "@jest/globals";
 import type { MatcherFunction } from "expect";
-import { pathsEqual } from "../../src/pure/files";
+import { pathsEqual } from "../../src/common/files";
 
 const toEqualPath: MatcherFunction<[expectedPath: unknown]> = function (
   actual,

@@ -11,12 +11,12 @@ import {
   NavigateMsg,
   NavigationDirection,
   RawTableResultSet,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import RawTableHeader from "./RawTableHeader";
 import RawTableRow from "./RawTableRow";
-import { ResultRow } from "../../pure/bqrs-cli-types";
+import { ResultRow } from "../../common/bqrs-cli-types";
 import { onNavigation } from "./results";
-import { tryGetResolvableLocation } from "../../pure/bqrs-utils";
+import { tryGetResolvableLocation } from "../../common/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 

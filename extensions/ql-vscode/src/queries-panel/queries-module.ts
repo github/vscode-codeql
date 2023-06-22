@@ -1,8 +1,8 @@
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { extLogger } from "../common";
-import { App, AppMode } from "../common/app";
+import { extLogger } from "../common/logging/vscode";
+import { App } from "../common/app";
 import { isCanary, showQueriesPanel } from "../config";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { QueriesPanel } from "./queries-panel";
 import { QueryDiscovery } from "./query-discovery";
 import { QueryPackDiscovery } from "./query-pack-discovery";
@@ -13,9 +13,9 @@ export class QueriesModule extends DisposableObject {
   }
 
   private initialize(app: App, cliServer: CodeQLCliServer): void {
-    if (app.mode === AppMode.Production || !isCanary() || !showQueriesPanel()) {
-      // Currently, we only want to expose the new panel when we are in development and canary mode
-      // and the developer has enabled the "Show queries panel" flag.
+    if (!isCanary() || !showQueriesPanel()) {
+      // Currently, we only want to expose the new panel when we are in canary mode
+      // and the user has enabled the "Show queries panel" flag.
       return;
     }
     void extLogger.log("Initializing queries panel.");

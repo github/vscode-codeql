@@ -4,9 +4,9 @@ import {
   FromCompareViewMessage,
   ToCompareViewMessage,
   QueryCompareResult,
-} from "../pure/interface-types";
-import { extLogger, Logger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/logging";
+} from "../common/interface-types";
+import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
+import { extLogger } from "../common/logging/vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseManager } from "../databases/local-databases";
 import { jumpToLocation } from "../databases/local-databases/locations";
@@ -14,17 +14,17 @@ import {
   transformBqrsResultSet,
   RawResultSet,
   BQRSInfo,
-} from "../pure/bqrs-cli-types";
+} from "../common/bqrs-cli-types";
 import resultsDiff from "./resultsDiff";
 import { CompletedLocalQueryInfo } from "../query-results";
-import { assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../common/helpers-pure";
 import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
 import {
   AbstractWebview,
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
 import { telemetryListener } from "../common/vscode/telemetry";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;

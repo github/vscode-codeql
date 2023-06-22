@@ -1,7 +1,7 @@
 import { load } from "js-yaml";
 import * as fs from "fs-extra";
 
-import { getErrorMessage } from "../../../../../src/pure/helpers-pure";
+import { getErrorMessage } from "../../../../../src/common/helpers-pure";
 
 import * as log from "../../../../../src/common/logging/notifications";
 import * as workspaceFolders from "../../../../../src/common/vscode/workspace-folders";

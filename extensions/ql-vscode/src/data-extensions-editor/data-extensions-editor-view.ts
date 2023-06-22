@@ -14,7 +14,7 @@ import {
 import {
   FromDataExtensionsEditorMessage,
   ToDataExtensionsEditorMessage,
-} from "../pure/interface-types";
+} from "../common/interface-types";
 import { ProgressUpdate } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
 import {
@@ -25,14 +25,14 @@ import { outputFile, pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { asError, assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
 import { generateFlowModel } from "./generate-flow-model";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
-import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
+import { ResolvableLocationValue } from "../common/bqrs-cli-types";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { readQueryResults, runQuery } from "./external-api-usage-query";
 import { createDataExtensionYaml, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
@@ -300,7 +300,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
       this.app.workspaceStoragePath ?? this.app.globalStoragePath,
       this.app.credentials,
       (update) => this.showProgress(update),
-      tokenSource.token,
       this.cliServer,
     );
     if (!database) {
@@ -354,16 +353,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
     // After the flow model has been generated, we can remove the temporary database
     // which we used for generating the flow model.
-    await this.databaseManager.removeDatabaseItem(
-      () =>
-        this.showProgress({
-          step: 3900,
-          maxStep: 4000,
-          message: "Removing temporary database",
-        }),
-      tokenSource.token,
-      database,
-    );
+    await this.showProgress({
+      step: 3900,
+      maxStep: 4000,
+      message: "Removing temporary database",
+    });
+    await this.databaseManager.removeDatabaseItem(database);
 
     await this.clearProgress();
   }

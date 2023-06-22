@@ -7,11 +7,11 @@ import { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { ProgressCallback } from "../common/vscode/progress";
 import { DatabaseItem } from "../databases/local-databases";
-import { getQlPackPath, QLPACK_FILENAMES } from "../pure/ql";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { getQlPackPath, QLPACK_FILENAMES } from "../common/ql";
+import { getErrorMessage } from "../common/helpers-pure";
 import { ExtensionPack, ExtensionPackModelFile } from "./shared/extension-pack";
 import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
-import { containsPath } from "../pure/files";
+import { containsPath } from "../common/files";
 import { disableAutoNameExtensionPack } from "../config";
 import {
   autoNameExtensionPack,

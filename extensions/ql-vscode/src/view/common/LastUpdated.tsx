@@ -2,8 +2,8 @@ import * as React from "react";
 import { useMemo } from "react";
 import styled from "styled-components";
 
-import { parseDate } from "../../pure/date";
-import { humanizeRelativeTime } from "../../pure/time";
+import { parseDate } from "../../common/date";
+import { humanizeRelativeTime } from "../../common/time";
 
 import { Codicon } from "./icon";
 

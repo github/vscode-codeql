@@ -17,7 +17,7 @@ import {
   DatabaseInfo,
   SortDirection,
   SortedResultSetInfo,
-} from "../../../src/pure/interface-types";
+} from "../../../src/common/interface-types";
 import { CodeQLCliServer, SourceInfo } from "../../../src/codeql-cli/cli";
 import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../src/tmp-dir";
@@ -29,7 +29,7 @@ import {
   EvaluationResult,
   QueryResultType,
 } from "../../../src/pure/legacy-messages";
-import { sleep } from "../../../src/pure/time";
+import { sleep } from "../../../src/common/time";
 import { mockedObject } from "../utils/mocking.helpers";
 
 describe("query-results", () => {

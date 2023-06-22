@@ -4,7 +4,7 @@ import { ProgressCallback } from "../common/vscode/progress";
 import { DatabaseItem } from "../databases/local-databases";
 import { QueryOutputDir } from "../run-queries-shared";
 import { Position, QueryResultType } from "../pure/new-messages";
-import { BaseLogger, Logger } from "../common";
+import { BaseLogger, Logger } from "../common/logging";
 import { basename, join } from "path";
 import { nanoid } from "nanoid";
 
@@ -61,9 +61,9 @@ export abstract class QueryRunner {
       token: CancellationToken,
     ) => Promise<void>,
   ): void;
+
   abstract clearCacheInDatabase(
     dbItem: DatabaseItem,
-    progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void>;
 
@@ -83,17 +83,9 @@ export abstract class QueryRunner {
     logger: BaseLogger,
   ): Promise<CoreQueryResults>;
 
-  abstract deregisterDatabase(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    dbItem: DatabaseItem,
-  ): Promise<void>;
+  abstract deregisterDatabase(dbItem: DatabaseItem): Promise<void>;
 
-  abstract registerDatabase(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    dbItem: DatabaseItem,
-  ): Promise<void>;
+  abstract registerDatabase(dbItem: DatabaseItem): Promise<void>;
 
   abstract upgradeDatabaseExplicit(
     dbItem: DatabaseItem,

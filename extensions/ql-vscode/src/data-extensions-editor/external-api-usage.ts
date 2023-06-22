@@ -1,4 +1,4 @@
-import { ResolvableLocationValue } from "../pure/bqrs-cli-types";
+import { ResolvableLocationValue } from "../common/bqrs-cli-types";
 
 export type Call = {
   label: string;

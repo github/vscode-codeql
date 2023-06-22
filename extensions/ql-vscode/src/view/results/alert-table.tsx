@@ -21,14 +21,14 @@ import {
   InterpretedResultsSortColumn,
   SortDirection,
   InterpretedResultsSortState,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
   isNoLocation,
-} from "../../pure/sarif-utils";
+} from "../../common/sarif-utils";
 import { vscode } from "../vscode-api";
-import { isWholeFileLoc, isLineColumnLoc } from "../../pure/bqrs-utils";
+import { isWholeFileLoc, isLineColumnLoc } from "../../common/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 

@@ -1,7 +1,7 @@
 import { FileType, Uri, window, workspace, WorkspaceFolder } from "vscode";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
-import { extLogger } from "../common";
-import { tmpdir } from "../pure/files";
+import { extLogger } from "../common/logging/vscode";
+import { tmpdir } from "../common/files";
 
 /**
  * Returns the ancestors of this path in order from furthest to closest (i.e. root of filesystem to parent directory)

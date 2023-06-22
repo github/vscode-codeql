@@ -10,8 +10,8 @@ import {
 import {
   FromVariantAnalysisMessage,
   ToVariantAnalysisMessage,
-} from "../pure/interface-types";
-import { assertNever } from "../pure/helpers-pure";
+} from "../common/interface-types";
+import { assertNever } from "../common/helpers-pure";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
@@ -22,7 +22,7 @@ import {
   VariantAnalysisViewManager,
 } from "./variant-analysis-view-manager";
 import { telemetryListener } from "../common/vscode/telemetry";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { DataFlowPathsView } from "./data-flow-paths-view";
 import { DataFlowPaths } from "./shared/data-flow-paths";
 import { App } from "../common/app";

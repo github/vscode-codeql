@@ -9,7 +9,7 @@ import {
   HighlightedRegion,
   ResultSeverity,
 } from "../../../variant-analysis/shared/analysis-result";
-import { createRemoteFileRef } from "../../../pure/location-link-utils";
+import { createRemoteFileRef } from "../../../common/location-link-utils";
 import { CodeSnippetMessage } from "./CodeSnippetMessage";
 import { CodeSnippetLine } from "./CodeSnippetLine";
 import { sendTelemetry } from "../telemetry";

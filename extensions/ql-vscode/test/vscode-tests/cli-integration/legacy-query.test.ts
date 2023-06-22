@@ -6,10 +6,13 @@ import { CancellationTokenSource } from "vscode-jsonrpc";
 import * as messages from "../../../src/pure/legacy-messages";
 import * as qsClient from "../../../src/query-server/legacy/query-server-client";
 import * as cli from "../../../src/codeql-cli/cli";
-import { CellValue } from "../../../src/pure/bqrs-cli-types";
+import { CellValue } from "../../../src/common/bqrs-cli-types";
 import { describeWithCodeQL } from "../cli";
 import { QueryServerClient } from "../../../src/query-server/legacy/query-server-client";
-import { extLogger, ProgressReporter } from "../../../src/common";
+import {
+  extLogger,
+  ProgressReporter,
+} from "../../../src/common/logging/vscode";
 import { createMockApp } from "../../__mocks__/appMock";
 import { getActivatedExtension } from "../global.helper";
 
@@ -142,14 +145,7 @@ describeWithCodeQL()("using the legacy query server", () => {
     const parsedResults = new Checkpoint<void>();
 
     it("should register the database if necessary", async () => {
-      await qs.sendRequest(
-        messages.registerDatabases,
-        { databases: [db] },
-        token,
-        (() => {
-          /**/
-        }) as any,
-      );
+      await qs.sendRequest(messages.registerDatabases, { databases: [db] });
     });
 
     it(`should be able to compile query ${queryName}`, async () => {

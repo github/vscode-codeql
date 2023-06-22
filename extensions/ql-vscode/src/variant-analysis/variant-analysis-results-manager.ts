@@ -3,7 +3,7 @@ import fetch from "node-fetch";
 import { EOL } from "os";
 import { join } from "path";
 
-import { Logger } from "../common";
+import { Logger } from "../common/logging";
 import { AnalysisAlert, AnalysisRawResults } from "./shared/analysis-result";
 import { sarifParser } from "../common/sarif-parser";
 import { extractAnalysisAlerts } from "./sarif-processing";
@@ -14,9 +14,9 @@ import {
   VariantAnalysisRepositoryTask,
   VariantAnalysisScannedRepositoryResult,
 } from "./shared/variant-analysis";
-import { DisposableObject, DisposeHandler } from "../pure/disposable-object";
+import { DisposableObject, DisposeHandler } from "../common/disposable-object";
 import { EventEmitter } from "vscode";
-import { unzipFile } from "../pure/zip";
+import { unzipFile } from "../common/zip";
 import { readRepoTask, writeRepoTask } from "./repo-tasks-store";
 
 type CacheKey = `${number}/${string}`;

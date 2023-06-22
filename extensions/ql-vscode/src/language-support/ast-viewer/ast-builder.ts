@@ -3,7 +3,7 @@ import {
   DecodedBqrsChunk,
   BqrsId,
   EntityValue,
-} from "../../pure/bqrs-cli-types";
+} from "../../common/bqrs-cli-types";
 import { DatabaseItem } from "../../databases/local-databases";
 import { ChildAstItem, AstItem } from "./ast-viewer";
 import { Uri } from "vscode";

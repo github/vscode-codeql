@@ -1,11 +1,12 @@
 import { ensureFile } from "fs-extra";
 
-import { DisposableObject } from "../../pure/disposable-object";
+import { DisposableObject } from "../../common/disposable-object";
 import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
 import * as cli from "../../codeql-cli/cli";
 import { QueryServerConfig } from "../../config";
-import { Logger, ProgressReporter } from "../../common";
+import { Logger } from "../../common/logging";
+import { ProgressReporter } from "../../common/logging/vscode";
 import {
   completeQuery,
   EvaluationResult,

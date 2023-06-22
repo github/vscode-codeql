@@ -7,7 +7,7 @@ import {
   VSCodePanelTab,
   VSCodePanelView,
 } from "@vscode/webview-ui-toolkit/react";
-import { formatDecimal } from "../../pure/number";
+import { formatDecimal } from "../../common/number";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,

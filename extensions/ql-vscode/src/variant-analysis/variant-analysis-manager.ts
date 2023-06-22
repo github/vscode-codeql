@@ -16,7 +16,7 @@ import {
   window as Window,
   workspace,
 } from "vscode";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
 import {
   getActionsWorkflowRunUrl,
@@ -30,7 +30,7 @@ import {
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisSubmission,
 } from "./shared/variant-analysis";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { getErrorMessage } from "../common/helpers-pure";
 import { VariantAnalysisView } from "./variant-analysis-view";
 import { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
 import {
@@ -61,7 +61,7 @@ import {
 import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { App } from "../common/app";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { AppCommandManager, VariantAnalysisCommands } from "../common/commands";
 import { exportVariantAnalysisResults } from "./export-results";
 import {

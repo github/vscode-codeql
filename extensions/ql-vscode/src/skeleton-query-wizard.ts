@@ -1,14 +1,14 @@
 import { join } from "path";
-import { CancellationToken, Uri, workspace, window as Window } from "vscode";
+import { Uri, workspace, window as Window } from "vscode";
 import { CodeQLCliServer } from "./codeql-cli/cli";
-import { BaseLogger } from "./common";
+import { BaseLogger } from "./common/logging";
 import { Credentials } from "./common/authentication";
 import { QueryLanguage } from "./common/query-language";
 import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
 } from "./common/vscode/workspace-folders";
-import { getErrorMessage } from "./pure/helpers-pure";
+import { getErrorMessage } from "./common/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "./databases/local-databases";
 import {
@@ -51,7 +51,6 @@ export class SkeletonQueryWizard {
     private readonly credentials: Credentials | undefined,
     private readonly logger: BaseLogger,
     private readonly databaseManager: DatabaseManager,
-    private readonly token: CancellationToken,
     private readonly databaseStoragePath: string | undefined,
   ) {}
 
@@ -258,7 +257,6 @@ export class SkeletonQueryWizard {
       this.databaseStoragePath,
       this.credentials,
       this.progress,
-      this.token,
       this.cliServer,
       this.language,
     );

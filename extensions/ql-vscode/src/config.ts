@@ -1,4 +1,4 @@
-import { DisposableObject } from "./pure/disposable-object";
+import { DisposableObject } from "./common/disposable-object";
 import {
   workspace,
   Event,
@@ -7,8 +7,8 @@ import {
   ConfigurationTarget,
 } from "vscode";
 import { DistributionManager } from "./codeql-cli/distribution";
-import { extLogger } from "./common";
-import { ONE_DAY_IN_MS } from "./pure/time";
+import { extLogger } from "./common/logging/vscode";
+import { ONE_DAY_IN_MS } from "./common/time";
 import {
   FilterKey,
   SortKey,

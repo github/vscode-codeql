@@ -21,7 +21,7 @@ import {
   VariantAnalysisSkippedRepositoryGroup,
   VariantAnalysisStatus,
 } from "../../variant-analysis/shared/variant-analysis";
-import { assertNever } from "../../pure/helpers-pure";
+import { assertNever } from "../../common/helpers-pure";
 import { QueryLanguage } from "../../common/query-language";
 import { QueryStatus } from "../../query-status";
 import { VariantAnalysisHistoryItem } from "../variant-analysis-history-item";

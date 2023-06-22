@@ -6,7 +6,7 @@ import {
 } from "../../../variant-analysis/shared/variant-analysis";
 import { VariantAnalysis, VariantAnalysisProps } from "../VariantAnalysis";
 import { createMockVariantAnalysis } from "../../../../test/factories/variant-analysis/shared/variant-analysis";
-import { ToVariantAnalysisMessage } from "../../../pure/interface-types";
+import { ToVariantAnalysisMessage } from "../../../common/interface-types";
 import { FilterKey, SortKey } from "../../../pure/variant-analysis-filter-sort";
 import { postMessage } from "../../common/post-message";
 

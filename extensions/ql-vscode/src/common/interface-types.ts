@@ -5,7 +5,7 @@ import {
   ResultSetSchema,
   Column,
   ResolvableLocationValue,
-} from "./bqrs-cli-types";
+} from "../common/bqrs-cli-types";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
@@ -14,8 +14,8 @@ import {
 import {
   RepositoriesFilterSortState,
   RepositoriesFilterSortStateWithIds,
-} from "./variant-analysis-filter-sort";
-import { ErrorLike } from "./errors";
+} from "../pure/variant-analysis-filter-sort";
+import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 import { ExternalApiUsage } from "../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../data-extensions-editor/modeled-method";

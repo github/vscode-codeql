@@ -12,9 +12,13 @@ import {
   window,
   workspace,
 } from "vscode";
-import { TeeLogger } from "../common";
+import {
+  TeeLogger,
+  showAndLogErrorMessage,
+  showAndLogWarningMessage,
+} from "../common/logging";
 import { isCanary, MAX_QUERIES } from "../config";
-import { gatherQlFiles } from "../pure/files";
+import { gatherQlFiles } from "../common/files";
 import { basename } from "path";
 import { showBinaryChoiceDialog } from "../common/vscode/dialog";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
@@ -35,18 +39,14 @@ import {
 } from "../run-queries-shared";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "./webview";
-import { asError, getErrorMessage } from "../pure/helpers-pure";
+import { asError, getErrorMessage } from "../common/helpers-pure";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";
 import { App } from "../common/app";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
-import {
-  showAndLogErrorMessage,
-  showAndLogWarningMessage,
-} from "../common/logging";
 import { findLanguage } from "../codeql-cli/query-language";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
@@ -284,7 +284,7 @@ export class LocalQueries extends DisposableObject {
 
   private async createSkeletonQuery(): Promise<void> {
     await withProgress(
-      async (progress: ProgressCallback, token: CancellationToken) => {
+      async (progress: ProgressCallback) => {
         const credentials = isCanary() ? this.app.credentials : undefined;
         const contextStoragePath =
           this.app.workspaceStoragePath || this.app.globalStoragePath;
@@ -294,7 +294,6 @@ export class LocalQueries extends DisposableObject {
           credentials,
           this.app.logger,
           this.databaseManager,
-          token,
           contextStoragePath,
         );
         await skeletonQueryWizard.execute();

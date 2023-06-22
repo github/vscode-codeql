@@ -6,13 +6,13 @@ import {
   asyncFilter,
   getErrorMessage,
   getErrorStack,
-} from "../../pure/helpers-pure";
+} from "../../common/helpers-pure";
 import { QueryHistoryInfo } from "../query-history-info";
-import { redactableError } from "../../pure/errors";
+import { redactableError } from "../../common/errors";
 import { QueryHistoryDto, QueryHistoryItemDto } from "./query-history-dto";
 import { mapQueryHistoryToDomainModel } from "./query-history-dto-mapper";
 import { mapQueryHistoryToDto } from "./query-history-domain-mapper";
-import { extLogger } from "../../common";
+import { extLogger } from "../../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging";
 import { telemetryListener } from "../../common/vscode/telemetry";
 

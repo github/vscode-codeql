@@ -5,7 +5,7 @@ import {
   parseSarifLocation,
   parseSarifPlainTextMessage,
   unescapeSarifText,
-} from "../../../src/pure/sarif-utils";
+} from "../../../src/common/sarif-utils";
 
 describe("parsing sarif", () => {
   it("should be able to parse a simple message from the spec", async () => {

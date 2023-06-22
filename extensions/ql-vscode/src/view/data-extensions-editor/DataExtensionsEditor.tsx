@@ -3,12 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ShowProgressMessage,
   ToDataExtensionsEditorMessage,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
-import { assertNever } from "../../pure/helpers-pure";
+import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { calculateModeledPercentage } from "./modeled";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
@@ -16,6 +16,7 @@ import { basename } from "../common/path";
 import { ViewTitle } from "../common";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
+import { percentFormatter } from "./formatters";
 
 const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -213,8 +214,12 @@ export function DataExtensionsEditor({
                 )}
               </>
             )}
-            <div>{modeledPercentage.toFixed(2)}% modeled</div>
-            <div>{unModeledPercentage.toFixed(2)}% unmodeled</div>
+            <div>
+              {percentFormatter.format(modeledPercentage / 100)} modeled
+            </div>
+            <div>
+              {percentFormatter.format(unModeledPercentage / 100)} unmodeled
+            </div>
           </DetailsContainer>
 
           <EditorContainer>
