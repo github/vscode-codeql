@@ -124,6 +124,25 @@ async function findGitFolder(
   return closestFolder?.[1];
 }
 
+/**
+ * Finds a suitable directory for extension packs to be created in. This will
+ * always be a path ending in `.github/codeql/extensions`. The parent directory
+ * will be determined heuristically based on the on-disk workspace folders.
+ *
+ * The heuristic is as follows (`.github/codeql/extensions` is added automatically unless
+ * otherwise specified):
+ * 1. If there is only 1 workspace folder, use that folder
+ * 2. If there is a workspace folder for which the path ends in `.github/codeql/extensions`, use that folder
+ *   - If there are multiple such folders, use the first one
+ *   - Does not append `.github/codeql/extensions` to the path
+ * 3. If there is a workspace file (`<basename>.code-workspace`), use the directory containing that file
+ * 4. If there is a common root directory for all workspace folders, use that directory
+ *   - Workspace folders in the system temp directory are ignored
+ *   - If the common root directory is the root of the filesystem, then it's not used
+ * 5. If there is a .git directory in any workspace folder, use the directory containing that .git directory
+ *    for which the .git directory is closest to a workspace folder
+ * 6. If none of the above apply, return `undefined`
+ */
 export async function autoPickExtensionsDirectory(): Promise<Uri | undefined> {
   const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
 
