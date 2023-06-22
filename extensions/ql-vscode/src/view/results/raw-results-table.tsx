@@ -43,7 +43,7 @@ export function RawTable({
   >();
 
   const scroller = React.useMemo(() => new ScrollIntoViewHelper(), []);
-  scroller.update();
+  React.useEffect(() => scroller.update());
 
   const setSelection = React.useCallback(
     (row: number, column: number): void => {
