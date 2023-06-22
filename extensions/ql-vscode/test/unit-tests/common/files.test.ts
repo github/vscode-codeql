@@ -57,8 +57,8 @@ describe("files", () => {
 
     it("should scan a directory", async () => {
       const file1 = join(dataDir, "compute-default-strings.ql");
-      const file3 = join(dataDir, "debugger", "QuickEvalQuery.ql");
-      const file2 = join(dataDir, "debugger", "simple-query.ql");
+      const file2 = join(dataDir, "debugger", "QuickEvalQuery.ql");
+      const file3 = join(dataDir, "debugger", "simple-query.ql");
       const file4 = join(dataDir, "multiple-result-sets.ql");
       const file5 = join(dataDir, "query.ql");
 
@@ -83,8 +83,8 @@ describe("files", () => {
 
     it("should avoid duplicates", async () => {
       const file1 = join(dataDir, "compute-default-strings.ql");
-      const file3 = join(dataDir, "debugger", "QuickEvalQuery.ql");
-      const file2 = join(dataDir, "debugger", "simple-query.ql");
+      const file2 = join(dataDir, "debugger", "QuickEvalQuery.ql");
+      const file3 = join(dataDir, "debugger", "simple-query.ql");
       const file4 = join(dataDir, "multiple-result-sets.ql");
       const file5 = join(dataDir, "query.ql");
 
