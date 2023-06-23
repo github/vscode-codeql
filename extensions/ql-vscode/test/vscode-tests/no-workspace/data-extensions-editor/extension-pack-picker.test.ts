@@ -1,9 +1,11 @@
 import {
   CancellationTokenSource,
+  ConfigurationScope,
   QuickPickItem,
   Uri,
   window,
   workspace,
+  WorkspaceConfiguration as VSCodeWorkspaceConfiguration,
   WorkspaceFolder,
 } from "vscode";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
@@ -17,6 +19,7 @@ import * as config from "../../../../src/config";
 import { pickExtensionPack } from "../../../../src/data-extensions-editor/extension-pack-picker";
 import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
+import { vscodeGetConfigurationMock } from "../../test-config";
 
 describe("pickExtensionPack", () => {
   let tmpDir: string;
@@ -153,6 +156,31 @@ describe("pickExtensionPack", () => {
 
   it("automatically selects an extension pack", async () => {
     disableAutoNameExtensionPackSpy.mockReturnValue(false);
+    vscodeGetConfigurationMock.mockImplementation(
+      (
+        section?: string,
+        scope?: ConfigurationScope | null,
+      ): VSCodeWorkspaceConfiguration => {
+        expect(section).toEqual("codeQL.dataExtensions");
+        expect((scope as any)?.languageId).toEqual("java");
+
+        return {
+          get: (key: string) => {
+            expect(key).toEqual("extensionsDirectory");
+            return undefined;
+          },
+          has: (key: string) => {
+            return key === "extensionsDirectory";
+          },
+          inspect: () => {
+            throw new Error("inspect not implemented");
+          },
+          update: () => {
+            throw new Error("update not implemented");
+          },
+        };
+      },
+    );
 
     const cliServer = mockCliServer(qlPacks);
 
@@ -167,8 +195,33 @@ describe("pickExtensionPack", () => {
     );
   });
 
-  it("automatically creates an extension pack", async () => {
+  it("automatically creates an extension pack and selects an extensions directory", async () => {
     disableAutoNameExtensionPackSpy.mockReturnValue(false);
+    vscodeGetConfigurationMock.mockImplementation(
+      (
+        section?: string,
+        scope?: ConfigurationScope | null,
+      ): VSCodeWorkspaceConfiguration => {
+        expect(section).toEqual("codeQL.dataExtensions");
+        expect((scope as any)?.languageId).toEqual("java");
+
+        return {
+          get: (key: string) => {
+            expect(key).toEqual("extensionsDirectory");
+            return undefined;
+          },
+          has: (key: string) => {
+            return key === "extensionsDirectory";
+          },
+          inspect: () => {
+            throw new Error("inspect not implemented");
+          },
+          update: () => {
+            throw new Error("update not implemented");
+          },
+        };
+      },
+    );
 
     const tmpDir = await dir({
       unsafeCleanup: true,
@@ -205,6 +258,77 @@ describe("pickExtensionPack", () => {
       "extensions",
       "vscode-codeql-java",
     );
+
+    const cliServer = mockCliServer({});
+
+    expect(
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
+    ).toEqual({
+      path: newPackDir,
+      yamlPath: join(newPackDir, "codeql-pack.yml"),
+      name: "github/vscode-codeql-java",
+      version: "0.0.0",
+      extensionTargets: {
+        "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    });
+    expect(showQuickPickSpy).not.toHaveBeenCalled();
+    expect(showInputBoxSpy).not.toHaveBeenCalled();
+    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
+
+    expect(
+      loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
+    ).toEqual({
+      name: "github/vscode-codeql-java",
+      version: "0.0.0",
+      library: true,
+      extensionTargets: {
+        "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    });
+  });
+
+  it("automatically creates an extension pack when extensions directory is set in config", async () => {
+    disableAutoNameExtensionPackSpy.mockReturnValue(false);
+
+    const tmpDir = await dir({
+      unsafeCleanup: true,
+    });
+
+    const configExtensionsDir = join(
+      Uri.file(tmpDir.path).fsPath,
+      "my-custom-extensions-directory",
+    );
+
+    vscodeGetConfigurationMock.mockImplementation(
+      (
+        section?: string,
+        scope?: ConfigurationScope | null,
+      ): VSCodeWorkspaceConfiguration => {
+        expect(section).toEqual("codeQL.dataExtensions");
+        expect((scope as any)?.languageId).toEqual("java");
+
+        return {
+          get: (key: string) => {
+            expect(key).toEqual("extensionsDirectory");
+            return configExtensionsDir;
+          },
+          has: (key: string) => {
+            return key === "extensionsDirectory";
+          },
+          inspect: () => {
+            throw new Error("inspect not implemented");
+          },
+          update: () => {
+            throw new Error("update not implemented");
+          },
+        };
+      },
+    );
+
+    const newPackDir = join(configExtensionsDir, "vscode-codeql-java");
 
     const cliServer = mockCliServer({});
 

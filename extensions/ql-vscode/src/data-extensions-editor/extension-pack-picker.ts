@@ -1,7 +1,7 @@
 import { join } from "path";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
-import { CancellationToken, window } from "vscode";
+import { CancellationToken, Uri, window } from "vscode";
 import { CodeQLCliServer, QlpacksInfo } from "../codeql-cli/cli";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { ProgressCallback } from "../common/vscode/progress";
@@ -10,7 +10,10 @@ import { getQlPackPath, QLPACK_FILENAMES } from "../common/ql";
 import { getErrorMessage } from "../common/helpers-pure";
 import { ExtensionPack } from "./shared/extension-pack";
 import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
-import { disableAutoNameExtensionPack } from "../config";
+import {
+  disableAutoNameExtensionPack,
+  getExtensionsDirectory,
+} from "../config";
 import {
   autoNameExtensionPack,
   ExtensionPackName,
@@ -219,8 +222,14 @@ async function autoCreateExtensionPack(
   extensionPacksInfo: QlpacksInfo,
   logger: NotificationLogger,
 ): Promise<ExtensionPack | undefined> {
-  // Get the extensions directory to create the extension pack in
-  const extensionsDirectory = await autoPickExtensionsDirectory();
+  // Get the `codeQL.dataExtensions.extensionsDirectory` setting for the language
+  const userExtensionsDirectory = getExtensionsDirectory(language);
+
+  // If the setting is not set, automatically pick a suitable directory
+  const extensionsDirectory = userExtensionsDirectory
+    ? Uri.file(userExtensionsDirectory)
+    : await autoPickExtensionsDirectory();
+
   if (!extensionsDirectory) {
     return undefined;
   }
