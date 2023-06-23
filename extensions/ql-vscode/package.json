@@ -507,6 +507,10 @@
         "icon": "$(run)"
       },
       {
+        "command": "codeQLQueries.runLocalQueryContextMenu",
+        "title": "Run against local database"
+      },
+      {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
         "title": "Open database configuration file",
         "icon": "$(json)"
@@ -1106,6 +1110,11 @@
           "when": "view == codeQLQueries && viewItem == queryFile && codeQL.currentDatabaseItem"
         },
         {
+          "command": "codeQLQueries.runLocalQueryContextMenu",
+          "group": "queriesPanel@1",
+          "when": "view == codeQLQueries && viewItem == queryFile && codeQL.currentDatabaseItem"
+        },
+        {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
           "when": "viewItem == testWithSource"
@@ -1287,6 +1296,10 @@
         {
           "command": "codeQL.openDataExtensionsEditor",
           "when": "config.codeQL.canary && config.codeQL.dataExtensions.editor"
+        },
+        {
+          "command": "codeQLQueries.runLocalQueryContextMenu",
+          "when": "false"
         },
         {
           "command": "codeQLVariantAnalysisRepositories.openConfigFile",

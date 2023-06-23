@@ -48,7 +48,7 @@ import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { findLanguage } from "../codeql-cli/query-language";
-import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -102,6 +102,8 @@ export class LocalQueries extends DisposableObject {
       "codeQL.runQueryOnMultipleDatabasesContextEditor":
         this.runQueryOnMultipleDatabases.bind(this),
       "codeQLQueries.runLocalQueryFromQueriesPanel":
+        this.runQueryFromQueriesPanel.bind(this),
+      "codeQLQueries.runLocalQueryContextMenu":
         this.runQueryFromQueriesPanel.bind(this),
       "codeQL.runQueries": createMultiSelectionCommand(
         this.runQueries.bind(this),
@@ -278,7 +280,7 @@ export class LocalQueries extends DisposableObject {
    * Gets the current active query.
    *
    * For now, the "active query" is just whatever query is in the active text editor. Once we have a
-   * propery "queries" panel, we can provide a way to select the current query there.
+   * proper "queries" panel, we can provide a way to select the current query there.
    */
   public async getCurrentQuery(allowLibraryFiles: boolean): Promise<string> {
     const editor = window.activeTextEditor;
