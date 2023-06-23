@@ -265,6 +265,7 @@ export type VariantAnalysisCommands = {
   ) => Promise<void>;
   "codeQL.runVariantAnalysis": (uri?: Uri) => Promise<void>;
   "codeQL.runVariantAnalysisContextEditor": (uri?: Uri) => Promise<void>;
+  "codeQLQueries.runVariantAnalysisContextMenu": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
 };
 
 export type DatabasePanelCommands = {

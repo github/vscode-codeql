@@ -511,6 +511,10 @@
         "title": "Run against local database"
       },
       {
+        "command": "codeQLQueries.runVariantAnalysisContextMenu",
+        "title": "Run against variant analysis repositories"
+      },
+      {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
         "title": "Open database configuration file",
         "icon": "$(json)"
@@ -1115,6 +1119,11 @@
           "when": "view == codeQLQueries && viewItem == queryFile && codeQL.currentDatabaseItem"
         },
         {
+          "command": "codeQLQueries.runVariantAnalysisContextMenu",
+          "group": "queriesPanel@1",
+          "when": "view == codeQLQueries && viewItem == queryFile"
+        },
+        {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
           "when": "viewItem == testWithSource"
@@ -1299,6 +1308,10 @@
         },
         {
           "command": "codeQLQueries.runLocalQueryContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueries.runVariantAnalysisContextMenu",
           "when": "false"
         },
         {

@@ -76,6 +76,7 @@ import {
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "../common/logging";
+import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 const maxRetryCount = 3;
 
@@ -163,6 +164,8 @@ export class VariantAnalysisManager
       // Since we are tracking extension usage through commands, this command mirrors the "codeQL.runVariantAnalysis" command
       "codeQL.runVariantAnalysisContextEditor":
         this.runVariantAnalysisFromCommand.bind(this),
+      "codeQLQueries.runVariantAnalysisContextMenu":
+        this.runVariantAnalysisFromQueriesPanel.bind(this),
     };
   }
 
@@ -183,6 +186,12 @@ export class VariantAnalysisManager
         cancellable: true,
       },
     );
+  }
+
+  private async runVariantAnalysisFromQueriesPanel(
+    queryTreeViewItem: QueryTreeViewItem,
+  ): Promise<void> {
+    await this.runVariantAnalysisFromCommand(Uri.file(queryTreeViewItem.path));
   }
 
   public async runVariantAnalysis(
