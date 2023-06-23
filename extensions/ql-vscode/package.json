@@ -503,7 +503,11 @@
       },
       {
         "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
-        "title": "Run local query",
+        "title": "Run local query"
+      },
+      {
+        "command": "codeQL.runLocalQueryFromFileTab",
+        "title": "CodeQL: Run local query",
         "icon": "$(run)"
       },
       {
@@ -877,6 +881,13 @@
       }
     ],
     "menus": {
+      "editor/title": [
+        {
+          "command": "codeQL.runLocalQueryFromFileTab",
+          "group": "navigation",
+          "when": "config.codeQL.queriesPanel && resourceExtname == .ql && codeQL.currentDatabaseItem"
+        }
+      ],
       "view/title": [
         {
           "command": "codeQLDatabases.sortByName",
@@ -1166,6 +1177,10 @@
         },
         {
           "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.runLocalQueryFromFileTab",
           "when": "false"
         },
         {
