@@ -57,7 +57,7 @@ class PublicMethod extends Callable {
   PublicMethod() { this.isPublic() and not isUninteresting(this) }
 
   /**
-   * Gets information about the external API in the form expected by the MaD modeling framework.
+   * Gets information about the method in the form expected by the MaD modeling framework.
    */
   string getApiName() {
     result =
