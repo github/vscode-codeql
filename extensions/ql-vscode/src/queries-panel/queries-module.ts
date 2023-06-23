@@ -6,7 +6,6 @@ import { DisposableObject } from "../common/disposable-object";
 import { QueriesPanel } from "./queries-panel";
 import { QueryDiscovery } from "./query-discovery";
 import { QueryPackDiscovery } from "./query-pack-discovery";
-import { QueriesPanelCommands } from "../common/commands";
 
 export class QueriesModule extends DisposableObject {
   private queriesPanel: QueriesPanel | undefined;
@@ -26,24 +25,10 @@ export class QueriesModule extends DisposableObject {
     return queriesModule;
   }
 
-  public getCommands(): QueriesPanelCommands {
-    if (!this.shouldInitializeQueriesPanel()) {
-      return {
-        "codeQLQueries.runLocalQueryContextInline": () => Promise.resolve(),
-      };
-    }
-
-    if (!this.queriesPanel) {
-      throw new Error("Queries panel not initialized");
-    }
-
-    return {
-      ...this.queriesPanel.getCommands(),
-    };
-  }
-
   private initialize(app: App, cliServer: CodeQLCliServer): void {
-    if (!this.shouldInitializeQueriesPanel) {
+    // Currently, we only want to expose the new panel when we are in canary mode
+    // and the user has enabled the "Show queries panel" flag.
+    if (!isCanary() || !showQueriesPanel()) {
       return;
     }
     void extLogger.log("Initializing queries panel.");
@@ -59,13 +44,7 @@ export class QueriesModule extends DisposableObject {
     this.push(queryDiscovery);
     void queryDiscovery.initialRefresh();
 
-    this.queriesPanel = new QueriesPanel(app, queryDiscovery);
+    this.queriesPanel = new QueriesPanel(queryDiscovery);
     this.push(this.queriesPanel);
-  }
-
-  private shouldInitializeQueriesPanel(): boolean {
-    // Currently, we only want to expose the new panel when we are in canary mode
-    // and the user has enabled the "Show queries panel" flag.
-    return isCanary() && showQueriesPanel();
   }
 }

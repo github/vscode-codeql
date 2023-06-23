@@ -406,10 +406,6 @@
         "title": "CodeQL: Run Query on Selected Database"
       },
       {
-        "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
-        "title": "Run Query on Selected Database"
-      },
-      {
         "command": "codeQL.debugQuery",
         "title": "CodeQL: Debug Query"
       },
@@ -506,7 +502,7 @@
         "title": "CodeQL: Copy Version Information"
       },
       {
-        "command": "codeQLQueries.runLocalQueryContextInline",
+        "command": "codeQL.runLocalQueryFromQueriesPanel",
         "title": "Run local query",
         "icon": "$(run)"
       },
@@ -1105,7 +1101,7 @@
           "when": "viewItem == remoteResultsItem"
         },
         {
-          "command": "codeQLQueries.runLocalQueryContextInline",
+          "command": "codeQL.runLocalQueryFromQueriesPanel",
           "group": "inline",
           "when": "view == codeQLQueries && viewItem == queryFile && codeQL.currentDatabaseItem"
         },
@@ -1169,7 +1165,7 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
-          "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
+          "command": "codeQL.runLocalQueryFromQueriesPanel",
           "when": "false"
         },
         {
@@ -1291,10 +1287,6 @@
         {
           "command": "codeQL.openDataExtensionsEditor",
           "when": "config.codeQL.canary && config.codeQL.dataExtensions.editor"
-        },
-        {
-          "command": "codeQLQueries.runLocalQueryContextInline",
-          "when": "false"
         },
         {
           "command": "codeQLVariantAnalysisRepositories.openConfigFile",

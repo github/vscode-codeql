@@ -130,7 +130,7 @@ export type LocalQueryCommands = {
   "codeQL.runQueryOnMultipleDatabasesContextEditor": (
     uri?: Uri,
   ) => Promise<void>;
-  "codeQLQueries.runLocalQueryFromQueriesPanel": (uri?: Uri) => Promise<void>;
+  "codeQL.runLocalQueryFromQueriesPanel": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
   "codeQL.runQueries": ExplorerSelectionCommandFunction<Uri>;
   "codeQL.quickEval": (uri: Uri) => Promise<void>;
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
@@ -266,10 +266,6 @@ export type VariantAnalysisCommands = {
   "codeQL.runVariantAnalysisContextEditor": (uri?: Uri) => Promise<void>;
 };
 
-export type QueriesPanelCommands = {
-  "codeQLQueries.runLocalQueryContextInline": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
-};
-
 export type DatabasePanelCommands = {
   "codeQLVariantAnalysisRepositories.openConfigFile": () => Promise<void>;
   "codeQLVariantAnalysisRepositories.addNewDatabase": () => Promise<void>;
@@ -339,7 +335,6 @@ export type AllExtensionCommands = BaseCommands &
   QueryHistoryCommands &
   LocalDatabasesCommands &
   DebuggerCommands &
-  QueriesPanelCommands &
   VariantAnalysisCommands &
   DatabasePanelCommands &
   AstCfgCommands &

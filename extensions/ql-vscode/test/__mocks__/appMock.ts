@@ -6,10 +6,7 @@ import { createMockLogger } from "./loggerMock";
 import { createMockMemento } from "../mock-memento";
 import { testCredentialsWithStub } from "../factories/authentication";
 import { Credentials } from "../../src/common/authentication";
-import {
-  AppCommandManager,
-  QueryServerCommandManager,
-} from "../../src/common/commands";
+import { AppCommandManager } from "../../src/common/commands";
 import { createMockCommandManager } from "./commandsMock";
 import { NotificationLogger } from "../../src/common/logging";
 import { AppTelemetry } from "../../src/common/telemetry";
@@ -23,7 +20,6 @@ export function createMockApp({
   workspaceState = createMockMemento(),
   credentials = testCredentialsWithStub(),
   commands = createMockCommandManager(),
-  queryServerCommands = createMockCommandManager(),
   environment = createMockEnvironmentContext(),
   logger = createMockLogger(),
   telemetry = createMockTelemetryReporter(),
@@ -35,7 +31,6 @@ export function createMockApp({
   workspaceState?: Memento;
   credentials?: Credentials;
   commands?: AppCommandManager;
-  queryServerCommands?: QueryServerCommandManager;
   environment?: EnvironmentContext;
   logger?: NotificationLogger;
   telemetry?: AppTelemetry;
@@ -52,7 +47,6 @@ export function createMockApp({
     createEventEmitter,
     credentials,
     commands,
-    queryServerCommands,
     environment,
   };
 }
