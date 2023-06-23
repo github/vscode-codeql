@@ -1103,7 +1103,7 @@
         {
           "command": "codeQL.runLocalQueryFromQueriesPanel",
           "group": "inline",
-          "when": "view == codeQLQueries && viewItem == queryFile && codeQL.currentDatabaseItem"
+          "when": "view == codeQLQueries && viewItem == queryFile"
         },
         {
           "command": "codeQLTests.showOutputDifferences",
