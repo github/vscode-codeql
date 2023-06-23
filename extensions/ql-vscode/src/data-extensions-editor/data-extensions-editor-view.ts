@@ -36,7 +36,8 @@ import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../common/errors";
 import { readQueryResults, runQuery } from "./external-api-usage-query";
 import {
-  createDataExtensionYamlsPerLibrary,
+  createDataExtensionYamlsForApplicationMode,
+  createDataExtensionYamlsForFrameworkMode,
   createFilenameForLibrary,
   loadDataExtensionYaml,
 } from "./yaml";
@@ -197,11 +198,26 @@ export class DataExtensionsEditorView extends AbstractWebview<
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
-    const yamls = createDataExtensionYamlsPerLibrary(
-      this.databaseItem.language,
-      externalApiUsages,
-      modeledMethods,
-    );
+    let yamls: Record<string, string>;
+    switch (this.mode) {
+      case Mode.Application:
+        yamls = createDataExtensionYamlsForApplicationMode(
+          this.databaseItem.language,
+          externalApiUsages,
+          modeledMethods,
+        );
+        break;
+      case Mode.Framework:
+        yamls = createDataExtensionYamlsForFrameworkMode(
+          this.databaseItem.name,
+          this.databaseItem.language,
+          externalApiUsages,
+          modeledMethods,
+        );
+        break;
+      default:
+        assertNever(this.mode);
+    }
 
     for (const [filename, yaml] of Object.entries(yamls)) {
       await outputFile(join(this.extensionPack.path, filename), yaml);
