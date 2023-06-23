@@ -49,7 +49,7 @@ import {
   createAutoModelRequest,
   parsePredictedClassifications,
 } from "./auto-model";
-import { showLlmGeneration } from "../config";
+import { enableFrameworkMode, showLlmGeneration } from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { Mode } from "./shared/mode";
@@ -168,6 +168,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       t: "setDataExtensionEditorViewState",
       viewState: {
         extensionPack: this.extensionPack,
+        enableFrameworkMode: enableFrameworkMode(),
         showLlmButton: showLlmGeneration(),
         mode: this.mode,
       },

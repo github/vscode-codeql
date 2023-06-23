@@ -204,16 +204,25 @@ export function DataExtensionsEditor({
             <div>
               {percentFormatter.format(unModeledPercentage / 100)} unmodeled
             </div>
-            <div>
-              Mode:{" "}
-              {viewState?.mode === Mode.Framework ? "Framework" : "Application"}
-            </div>
-            <div>
-              <LinkIconButton onClick={onSwitchModeClick}>
-                <span slot="start" className="codicon codicon-library"></span>
-                Switch mode
-              </LinkIconButton>
-            </div>
+            {viewState?.enableFrameworkMode && (
+              <>
+                <div>
+                  Mode:{" "}
+                  {viewState?.mode === Mode.Framework
+                    ? "Framework"
+                    : "Application"}
+                </div>
+                <div>
+                  <LinkIconButton onClick={onSwitchModeClick}>
+                    <span
+                      slot="start"
+                      className="codicon codicon-library"
+                    ></span>
+                    Switch mode
+                  </LinkIconButton>
+                </div>
+              </>
+            )}
           </DetailsContainer>
 
           <EditorContainer>
