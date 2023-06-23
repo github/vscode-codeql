@@ -37,6 +37,7 @@ select usage, apiName, supported.toString(), "supported", api.getFile().getBaseN
  */
 
 private import csharp
+private import cil
 private import dotnet
 private import semmle.code.csharp.dispatch.Dispatch
 private import semmle.code.csharp.dataflow.ExternalFlow
@@ -66,11 +67,12 @@ class TestLibrary extends RefType {
 /** Holds if the given callable is not worth supporting. */
 private predicate isUninteresting(DotNet::Callable c) {
   c.getDeclaringType() instanceof TestLibrary or
-  c.(Constructor).isParameterless()
+  c.(Constructor).isParameterless() or
+  c.getDeclaringType() instanceof AnonymousClass
 }
 
 class PublicMethod extends DotNet::Member {
-  PublicMethod() { this.isPublic() and not isUninteresting(this) and exists(this.(DotNet::Member)) }
+  PublicMethod() { this.isPublic() and not isUninteresting(this) }
 
   /**
    * Gets the unbound type, name and parameter types of this API.

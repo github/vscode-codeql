@@ -50,10 +50,11 @@ private import semmle.code.java.dataflow.internal.ModelExclusions
 /** Holds if the given callable is not worth supporting. */
 private predicate isUninteresting(Callable c) {
   c.getDeclaringType() instanceof TestLibrary or
-  c.(Constructor).isParameterless()
+  c.(Constructor).isParameterless() or
+  c.getDeclaringType() instanceof AnonymousClass
 }
 
-class PublicMethod extends Callable {
+class PublicMethod extends Method {
   PublicMethod() { this.isPublic() and not isUninteresting(this) }
 
   /**
