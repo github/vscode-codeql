@@ -27,8 +27,10 @@ export class QueriesModule extends DisposableObject {
   }
 
   public getCommands(): QueriesPanelCommands {
-    if (!this.shouldInitializeQueriesPanel) {
-      return {} as any as QueriesPanelCommands;
+    if (!this.shouldInitializeQueriesPanel()) {
+      return {
+        "codeQLQueries.runLocalQueryContextInline": () => Promise.resolve(),
+      };
     }
 
     if (!this.queriesPanel) {

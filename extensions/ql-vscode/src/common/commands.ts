@@ -12,7 +12,7 @@ import type {
   VariantAnalysisScannedRepositoryResult,
 } from "../variant-analysis/shared/variant-analysis";
 import type { QLDebugConfiguration } from "../debugger/debug-configuration";
-import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from a context menu on a TreeView with
