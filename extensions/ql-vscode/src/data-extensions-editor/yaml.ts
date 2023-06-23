@@ -10,6 +10,7 @@ import {
 } from "./predicates";
 
 import * as dataSchemaJson from "./data-schema.json";
+import { sanitizeExtensionPackName } from "./extension-pack-name";
 
 const ajv = new Ajv({ allErrors: true });
 const dataSchemaValidate = ajv.compile(dataSchemaJson);
@@ -79,7 +80,7 @@ export function createDataExtensionYaml(
 ${extensions.join("\n")}`;
 }
 
-export function createDataExtensionYamlsPerLibrary(
+export function createDataExtensionYamlsForApplicationMode(
   language: string,
   externalApiUsages: ExternalApiUsage[],
   modeledMethods: Record<string, ModeledMethod>,
@@ -114,6 +115,33 @@ export function createDataExtensionYamlsPerLibrary(
   }
 
   return result;
+}
+
+export function createDataExtensionYamlsForFrameworkMode(
+  databaseName: string,
+  language: string,
+  externalApiUsages: ExternalApiUsage[],
+  modeledMethods: Record<string, ModeledMethod>,
+  prefix = "models/",
+  suffix = ".model",
+): Record<string, string> {
+  const parts = databaseName.split("/");
+  const libraryName = parts
+    .slice(1)
+    .map((part) => sanitizeExtensionPackName(part))
+    .join("-");
+
+  const methods = externalApiUsages.map((externalApiUsage) => ({
+    externalApiUsage,
+    modeledMethod: modeledMethods[externalApiUsage.signature],
+  }));
+
+  return {
+    [`${prefix}${libraryName}${suffix}.yml`]: createDataExtensionYaml(
+      language,
+      methods,
+    ),
+  };
 }
 
 // From the semver package using

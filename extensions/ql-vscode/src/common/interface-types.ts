@@ -20,6 +20,7 @@ import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 import { ExternalApiUsage } from "../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../data-extensions-editor/modeled-method";
 import { DataExtensionEditorViewState } from "../data-extensions-editor/shared/view-state";
+import { Mode } from "../data-extensions-editor/shared/mode";
 
 /**
  * This module contains types and code that are shared between
@@ -521,6 +522,11 @@ export interface AddModeledMethodsMessage {
   overrideNone?: boolean;
 }
 
+export interface SwitchModeMessage {
+  t: "switchMode";
+  mode: Mode;
+}
+
 export interface JumpToUsageMessage {
   t: "jumpToUsage";
   location: ResolvableLocationValue;
@@ -559,6 +565,7 @@ export type ToDataExtensionsEditorMessage =
 
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
+  | SwitchModeMessage
   | OpenModelFileMessage
   | OpenExtensionPackMessage
   | JumpToUsageMessage

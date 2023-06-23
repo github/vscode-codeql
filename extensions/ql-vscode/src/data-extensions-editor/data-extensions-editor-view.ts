@@ -36,7 +36,8 @@ import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../common/errors";
 import { readQueryResults, runQuery } from "./external-api-usage-query";
 import {
-  createDataExtensionYamlsPerLibrary,
+  createDataExtensionYamlsForApplicationMode,
+  createDataExtensionYamlsForFrameworkMode,
   createFilenameForLibrary,
   loadDataExtensionYaml,
 } from "./yaml";
@@ -48,9 +49,10 @@ import {
   createAutoModelRequest,
   parsePredictedClassifications,
 } from "./auto-model";
-import { showLlmGeneration } from "../config";
+import { enableFrameworkMode, showLlmGeneration } from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
+import { Mode } from "./shared/mode";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -65,6 +67,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
+    private mode: Mode = Mode.Application,
   ) {
     super(ctx);
   }
@@ -139,6 +142,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
         );
 
         break;
+      case "switchMode":
+        this.mode = msg.mode;
+
+        await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
+
+        break;
       default:
         assertNever(msg);
     }
@@ -159,7 +168,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
       t: "setDataExtensionEditorViewState",
       viewState: {
         extensionPack: this.extensionPack,
+        enableFrameworkMode: enableFrameworkMode(),
         showLlmButton: showLlmGeneration(),
+        mode: this.mode,
       },
     });
   }
@@ -188,11 +199,26 @@ export class DataExtensionsEditorView extends AbstractWebview<
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
-    const yamls = createDataExtensionYamlsPerLibrary(
-      this.databaseItem.language,
-      externalApiUsages,
-      modeledMethods,
-    );
+    let yamls: Record<string, string>;
+    switch (this.mode) {
+      case Mode.Application:
+        yamls = createDataExtensionYamlsForApplicationMode(
+          this.databaseItem.language,
+          externalApiUsages,
+          modeledMethods,
+        );
+        break;
+      case Mode.Framework:
+        yamls = createDataExtensionYamlsForFrameworkMode(
+          this.databaseItem.name,
+          this.databaseItem.language,
+          externalApiUsages,
+          modeledMethods,
+        );
+        break;
+      default:
+        assertNever(this.mode);
+    }
 
     for (const [filename, yaml] of Object.entries(yamls)) {
       await outputFile(join(this.extensionPack.path, filename), yaml);
@@ -255,16 +281,21 @@ export class DataExtensionsEditorView extends AbstractWebview<
     const cancellationTokenSource = new CancellationTokenSource();
 
     try {
-      const queryResult = await runQuery({
-        cliServer: this.cliServer,
-        queryRunner: this.queryRunner,
-        databaseItem: this.databaseItem,
-        queryStorageDir: this.queryStorageDir,
-        progress: (progressUpdate: ProgressUpdate) => {
-          void this.showProgress(progressUpdate, 1500);
+      const queryResult = await runQuery(
+        this.mode === Mode.Framework
+          ? "frameworkModeQuery"
+          : "applicationModeQuery",
+        {
+          cliServer: this.cliServer,
+          queryRunner: this.queryRunner,
+          databaseItem: this.databaseItem,
+          queryStorageDir: this.queryStorageDir,
+          progress: (progressUpdate: ProgressUpdate) => {
+            void this.showProgress(progressUpdate, 1500);
+          },
+          token: cancellationTokenSource.token,
         },
-        token: cancellationTokenSource.token,
-      });
+      );
       if (!queryResult) {
         await this.clearProgress();
         return;
@@ -313,29 +344,35 @@ export class DataExtensionsEditorView extends AbstractWebview<
   protected async generateModeledMethods(): Promise<void> {
     const tokenSource = new CancellationTokenSource();
 
-    const selectedDatabase = this.databaseManager.currentDatabaseItem;
+    let addedDatabase: DatabaseItem | undefined;
 
-    // The external API methods are in the library source code, so we need to ask
-    // the user to import the library database. We need to have the database
-    // imported to the query server, so we need to register it to our workspace.
-    const database = await promptImportGithubDatabase(
-      this.app.commands,
-      this.databaseManager,
-      this.app.workspaceStoragePath ?? this.app.globalStoragePath,
-      this.app.credentials,
-      (update) => this.showProgress(update),
-      this.cliServer,
-    );
-    if (!database) {
-      await this.clearProgress();
-      void this.app.logger.log("No database chosen");
+    // In application mode, we need the database of a specific library to generate
+    // the modeled methods. In framework mode, we'll use the current database.
+    if (this.mode === Mode.Application) {
+      const selectedDatabase = this.databaseManager.currentDatabaseItem;
 
-      return;
+      // The external API methods are in the library source code, so we need to ask
+      // the user to import the library database. We need to have the database
+      // imported to the query server, so we need to register it to our workspace.
+      addedDatabase = await promptImportGithubDatabase(
+        this.app.commands,
+        this.databaseManager,
+        this.app.workspaceStoragePath ?? this.app.globalStoragePath,
+        this.app.credentials,
+        (update) => this.showProgress(update),
+        this.cliServer,
+      );
+      if (!addedDatabase) {
+        await this.clearProgress();
+        void this.app.logger.log("No database chosen");
+
+        return;
+      }
+
+      // The library database was set as the current database by importing it,
+      // but we need to set it back to the originally selected database.
+      await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
     }
-
-    // The library database was set as the current database by importing it,
-    // but we need to set it back to the originally selected database.
-    await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
 
     await this.showProgress({
       step: 0,
@@ -348,7 +385,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
         queryStorageDir: this.queryStorageDir,
-        databaseItem: database,
+        databaseItem: addedDatabase ?? this.databaseItem,
         onResults: async (results) => {
           const modeledMethodsByName: Record<string, ModeledMethod> = {};
 
@@ -375,14 +412,16 @@ export class DataExtensionsEditorView extends AbstractWebview<
       );
     }
 
-    // After the flow model has been generated, we can remove the temporary database
-    // which we used for generating the flow model.
-    await this.showProgress({
-      step: 3900,
-      maxStep: 4000,
-      message: "Removing temporary database",
-    });
-    await this.databaseManager.removeDatabaseItem(database);
+    if (addedDatabase) {
+      // After the flow model has been generated, we can remove the temporary database
+      // which we used for generating the flow model.
+      await this.showProgress({
+        step: 3900,
+        maxStep: 4000,
+        message: "Removing temporary database",
+      });
+      await this.databaseManager.removeDatabaseItem(addedDatabase);
+    }
 
     await this.clearProgress();
   }
