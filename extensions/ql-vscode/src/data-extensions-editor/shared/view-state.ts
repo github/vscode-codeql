@@ -1,7 +1,6 @@
-import { ExtensionPackModelFile } from "./extension-pack";
+import { ExtensionPack } from "./extension-pack";
 
 export interface DataExtensionEditorViewState {
-  extensionPackModelFile: ExtensionPackModelFile;
-  modelFileExists: boolean;
+  extensionPack: ExtensionPack;
   showLlmButton: boolean;
 }

@@ -16,20 +16,15 @@ const Template: ComponentStory<typeof DataExtensionsEditorComponent> = (
 export const DataExtensionsEditor = Template.bind({});
 DataExtensionsEditor.args = {
   initialViewState: {
-    extensionPackModelFile: {
-      extensionPack: {
-        path: "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o",
-        yamlPath:
-          "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/codeql-pack.yml",
-        name: "codeql/sql2o-models",
-        version: "0.0.0",
-        extensionTargets: {},
-        dataExtensions: [],
-      },
-      filename:
-        "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/models/sql2o.yml",
+    extensionPack: {
+      path: "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o",
+      yamlPath:
+        "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/codeql-pack.yml",
+      name: "codeql/sql2o-models",
+      version: "0.0.0",
+      extensionTargets: {},
+      dataExtensions: [],
     },
-    modelFileExists: true,
     showLlmButton: true,
   },
   initialExternalApiUsages: [

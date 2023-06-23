@@ -532,6 +532,7 @@ export interface OpenExtensionPackMessage {
 
 export interface OpenModelFileMessage {
   t: "openModelFile";
+  library: string;
 }
 
 export interface SaveModeledMethods {
