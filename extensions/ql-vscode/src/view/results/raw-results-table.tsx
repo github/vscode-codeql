@@ -41,8 +41,11 @@ export function RawTable({
 }: RawTableProps) {
   const [selectedItem, setSelectedItem] = useState<TableItem | undefined>();
 
-  const scroller = useRef(new ScrollIntoViewHelper());
-  useEffect(() => scroller.current.update());
+  const scroller = useRef<ScrollIntoViewHelper | undefined>(undefined);
+  if (scroller.current === undefined) {
+    scroller.current = new ScrollIntoViewHelper();
+  }
+  useEffect(() => scroller.current?.update());
 
   const setSelection = useCallback((row: number, column: number): void => {
     setSelectedItem({ row, column });
@@ -76,7 +79,7 @@ export function RawTable({
             jumpToLocation(location, databaseUri);
           }
         }
-        scroller.current.scrollIntoViewOnNextUpdate();
+        scroller.current?.scrollIntoViewOnNextUpdate();
         return { row: nextRow, column: nextColumn };
       });
     },
