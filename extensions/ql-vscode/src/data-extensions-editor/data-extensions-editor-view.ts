@@ -457,6 +457,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       externalApiUsages,
       modeledMethods,
       usages,
+      this.mode,
     );
 
     await this.showProgress({

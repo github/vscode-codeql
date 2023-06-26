@@ -66,6 +66,12 @@ describe("commands declared in package.json", () => {
     contribContextMenuCmds.add(command);
   });
 
+  menus["editor/title"].forEach((commandDecl: CmdDecl) => {
+    const { command } = commandDecl;
+    paletteCmds.delete(command);
+    contribContextMenuCmds.add(command);
+  });
+
   debuggers.forEach((debuggerDecl: DebuggerDecl) => {
     if (debuggerDecl.variables !== undefined) {
       for (const command of Object.values(debuggerDecl.variables)) {

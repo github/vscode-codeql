@@ -1,4 +1,4 @@
-import { calculateModeledPercentage } from "../modeled";
+import { calculateModeledPercentage } from "../../../../src/data-extensions-editor/shared/modeled-percentage";
 
 describe("calculateModeledPercentage", () => {
   it("when there are no external API usages", () => {

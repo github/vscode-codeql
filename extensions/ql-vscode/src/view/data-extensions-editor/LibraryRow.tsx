@@ -5,7 +5,7 @@ import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usag
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { pluralize } from "../../common/word";
 import { ModeledMethodDataGrid } from "./ModeledMethodDataGrid";
-import { calculateModeledPercentage } from "./modeled";
+import { calculateModeledPercentage } from "../../data-extensions-editor/shared/modeled-percentage";
 import { decimalFormatter, percentFormatter } from "./formatters";
 import { Codicon } from "../common";
 import { Mode } from "../../data-extensions-editor/shared/mode";
