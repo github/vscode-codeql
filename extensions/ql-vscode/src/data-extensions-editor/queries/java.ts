@@ -10,25 +10,24 @@ export const fetchExternalApisQuery: Query = {
  */
 
 import java
-import ExternalApi
+import AutomodelVsCode
+
+class ExternalApi extends CallableMethod {
+  ExternalApi() { not this.fromSource() }
+}
 
 private Call aUsage(ExternalApi api) {
   result.getCallee().getSourceDeclaration() = api and
   not result.getFile() instanceof GeneratedFile
 }
 
-private boolean isSupported(ExternalApi api) {
-  api.isSupported() and result = true
-  or
-  not api.isSupported() and result = false
-}
-
-from ExternalApi api, string apiName, boolean supported, Call usage
+from ExternalApi externalApi, string apiName, boolean supported, Call usage
 where
-  apiName = api.getApiName() and
-  supported = isSupported(api) and
-  usage = aUsage(api)
-select usage, apiName, supported.toString(), "supported", api.jarContainer(), "library"
+  apiName = externalApi.getApiName() and
+  supported = isSupported(externalApi) and
+  usage = aUsage(externalApi)
+select usage, apiName, supported.toString(), "supported",
+  externalApi.getCompilationUnit().getParentContainer().getBaseName(), "library"
 `,
   frameworkModeQuery: `/**
  * @name Public methods
@@ -39,94 +38,21 @@ select usage, apiName, supported.toString(), "supported", api.jarContainer(), "l
  */
 
 import java
-private import semmle.code.java.dataflow.DataFlow
-private import semmle.code.java.dataflow.ExternalFlow
-private import semmle.code.java.dataflow.FlowSources
-private import semmle.code.java.dataflow.FlowSummary
-private import semmle.code.java.dataflow.internal.DataFlowPrivate
-private import semmle.code.java.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
-private import semmle.code.java.dataflow.internal.ModelExclusions
+import AutomodelVsCode
 
-/** Holds if the given callable is not worth supporting. */
-private predicate isUninteresting(Callable c) {
-  c.getDeclaringType() instanceof TestLibrary or
-  c.(Constructor).isParameterless() or
-  c.getDeclaringType() instanceof AnonymousClass
+class PublicMethodFromSource extends CallableMethod {
+  PublicMethodFromSource() { this.isPublic() and this.fromSource() }
 }
 
-class PublicMethod extends Method {
-  PublicMethod() { this.isPublic() and not isUninteresting(this) }
-
-  /**
-   * Gets information about the method in the form expected by the MaD modeling framework.
-   */
-  string getApiName() {
-    result =
-      this.getDeclaringType().getPackage() + "." + this.getDeclaringType().getSourceDeclaration() +
-        "#" + this.getName() + paramsString(this)
-  }
-
-  /** Gets a node that is an input to a call to this API. */
-  private DataFlow::Node getAnInput() {
-    exists(Call call | call.getCallee().getSourceDeclaration() = this |
-      result.asExpr().(Argument).getCall() = call or
-      result.(ArgumentNode).getCall().asCall() = call
-    )
-  }
-
-  /** Gets a node that is an output from a call to this API. */
-  private DataFlow::Node getAnOutput() {
-    exists(Call call | call.getCallee().getSourceDeclaration() = this |
-      result.asExpr() = call or
-      result.(DataFlow::PostUpdateNode).getPreUpdateNode().(ArgumentNode).getCall().asCall() = call
-    )
-  }
-
-  /** Holds if this API has a supported summary. */
-  pragma[nomagic]
-  predicate hasSummary() {
-    this = any(SummarizedCallable sc).asCallable() or
-    TaintTracking::localAdditionalTaintStep(this.getAnInput(), _)
-  }
-
-  pragma[nomagic]
-  predicate isSource() {
-    this.getAnOutput() instanceof RemoteFlowSource or sourceNode(this.getAnOutput(), _)
-  }
-
-  /** Holds if this API is a known sink. */
-  pragma[nomagic]
-  predicate isSink() { sinkNode(this.getAnInput(), _) }
-
-  /** Holds if this API is a known neutral. */
-  pragma[nomagic]
-  predicate isNeutral() { this = any(FlowSummaryImpl::Public::NeutralCallable nsc).asCallable() }
-
-  /**
-   * Holds if this API is supported by existing CodeQL libraries, that is, it is either a
-   * recognized source, sink or neutral or it has a flow summary.
-   */
-  predicate isSupported() {
-    this.hasSummary() or this.isSource() or this.isSink() or this.isNeutral()
-  }
-}
-
-private boolean isSupported(PublicMethod publicMethod) {
-  publicMethod.isSupported() and result = true
-  or
-  not publicMethod.isSupported() and result = false
-}
-
-from PublicMethod publicMethod, string apiName, boolean supported
+from PublicMethodFromSource publicMethod, string apiName, boolean supported
 where
   apiName = publicMethod.getApiName() and
-  publicMethod.getCompilationUnit().isSourceFile() and
   supported = isSupported(publicMethod)
 select publicMethod, apiName, supported.toString(), "supported",
   publicMethod.getCompilationUnit().getParentContainer().getBaseName(), "library"
 `,
   dependencies: {
-    "ExternalApi.qll": `/** Provides classes and predicates related to handling APIs from external libraries. */
+    "AutomodelVsCode.qll": `/** Provides classes and predicates related to handling APIs for the VS Code extension. */
 
 private import java
 private import semmle.code.java.dataflow.DataFlow
@@ -138,17 +64,18 @@ private import semmle.code.java.dataflow.internal.FlowSummaryImpl as FlowSummary
 private import semmle.code.java.dataflow.TaintTracking
 private import semmle.code.java.dataflow.internal.ModelExclusions
 
-/** Holds if the given callable is not worth supporting. */
+/** Holds if the given callable/method is not worth supporting. */
 private predicate isUninteresting(Callable c) {
   c.getDeclaringType() instanceof TestLibrary or
-  c.(Constructor).isParameterless()
+  c.(Constructor).isParameterless() or
+  c.getDeclaringType() instanceof AnonymousClass
 }
 
 /**
- * An external API from either the Standard Library or a 3rd party library.
+ * A callable method from either the Standard Library, a 3rd party library or from the source.
  */
-class ExternalApi extends Callable {
-  ExternalApi() { not this.fromSource() and not isUninteresting(this) }
+class CallableMethod extends Method {
+  CallableMethod() { not isUninteresting(this) }
 
   /**
    * Gets information about the external API in the form expected by the MaD modeling framework.
@@ -217,51 +144,10 @@ class ExternalApi extends Callable {
   }
 }
 
-/** DEPRECATED: Alias for ExternalApi */
-deprecated class ExternalAPI = ExternalApi;
-
-/**
- * Gets the limit for the number of results produced by a telemetry query.
- */
-int resultLimit() { result = 1000 }
-
-/**
- * Holds if it is relevant to count usages of \`api\`.
- */
-signature predicate relevantApi(ExternalApi api);
-
-/**
- * Given a predicate to count relevant API usages, this module provides a predicate
- * for restricting the number or returned results based on a certain limit.
- */
-module Results<relevantApi/1 getRelevantUsages> {
-  private int getUsages(string apiName) {
-    result =
-      strictcount(Call c, ExternalApi api |
-        c.getCallee().getSourceDeclaration() = api and
-        not c.getFile() instanceof GeneratedFile and
-        apiName = api.getApiName() and
-        getRelevantUsages(api)
-      )
-  }
-
-  private int getOrder(string apiInfo) {
-    apiInfo =
-      rank[result](string info, int usages |
-        usages = getUsages(info)
-      |
-        info order by usages desc, info
-      )
-  }
-
-  /**
-   * Holds if there exists an API with \`apiName\` that is being used \`usages\` times
-   * and if it is in the top results (guarded by resultLimit).
-   */
-  predicate restrict(string apiName, int usages) {
-    usages = getUsages(apiName) and
-    getOrder(apiName) <= resultLimit()
-  }
+boolean isSupported(CallableMethod method) {
+  method.isSupported() and result = true
+  or
+  not method.isSupported() and result = false
 }
 `,
   },
