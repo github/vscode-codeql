@@ -101,7 +101,7 @@ export class LocalQueries extends DisposableObject {
         this.runQueryOnMultipleDatabases.bind(this),
       "codeQL.runQueryOnMultipleDatabasesContextEditor":
         this.runQueryOnMultipleDatabases.bind(this),
-      "codeQL.runLocalQueryFromQueriesPanel":
+      "codeQLQueries.runLocalQueryFromQueriesPanel":
         this.runQueryFromQueriesPanel.bind(this),
       "codeQL.runQueries": createMultiSelectionCommand(
         this.runQueries.bind(this),

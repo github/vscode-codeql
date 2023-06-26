@@ -130,7 +130,7 @@ export type LocalQueryCommands = {
   "codeQL.runQueryOnMultipleDatabasesContextEditor": (
     uri?: Uri,
   ) => Promise<void>;
-  "codeQL.runLocalQueryFromQueriesPanel": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
+  "codeQLQueries.runLocalQueryFromQueriesPanel": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
   "codeQL.runQueries": ExplorerSelectionCommandFunction<Uri>;
   "codeQL.quickEval": (uri: Uri) => Promise<void>;
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
