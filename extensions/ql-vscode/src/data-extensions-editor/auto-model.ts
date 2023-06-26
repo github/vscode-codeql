@@ -7,6 +7,8 @@ import {
   ModelRequest,
 } from "./auto-model-api";
 import type { UsageSnippetsBySignature } from "./auto-model-usages-query";
+import { groupMethods, sortGroupNames, sortMethods } from "./shared/sorting";
+import { Mode } from "./shared/mode";
 
 // Soft limit on the number of candidates to send to the model.
 // Note that the model may return fewer than this number of candidates.
@@ -19,6 +21,7 @@ export function createAutoModelRequest(
   externalApiUsages: ExternalApiUsage[],
   modeledMethods: Record<string, ModeledMethod>,
   usages: UsageSnippetsBySignature,
+  mode: Mode,
 ): ModelRequest {
   const request: ModelRequest = {
     language,
@@ -26,11 +29,14 @@ export function createAutoModelRequest(
     candidates: [],
   };
 
-  // Sort by number of usages so we always send the most used methods first
-  externalApiUsages = [...externalApiUsages];
-  externalApiUsages.sort((a, b) => b.usages.length - a.usages.length);
+  // Sort the same way as the UI so we send the first ones listed in the UI first
+  const grouped = groupMethods(externalApiUsages, mode);
+  const sortedGroupNames = sortGroupNames(grouped);
+  const sortedExternalApiUsages = sortedGroupNames.flatMap((name) =>
+    sortMethods(grouped[name]),
+  );
 
-  for (const externalApiUsage of externalApiUsages) {
+  for (const externalApiUsage of sortedExternalApiUsages) {
     const modeledMethod: ModeledMethod = modeledMethods[
       externalApiUsage.signature
     ] ?? {
