@@ -1,4 +1,4 @@
-import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
+import { ExternalApiUsage } from "../external-api-usage";
 
 export function calculateModeledPercentage(
   externalApiUsages: Array<Pick<ExternalApiUsage, "supported">>,

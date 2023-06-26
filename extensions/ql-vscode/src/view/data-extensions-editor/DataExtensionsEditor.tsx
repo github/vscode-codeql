@@ -10,7 +10,7 @@ import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usag
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
-import { calculateModeledPercentage } from "./modeled";
+import { calculateModeledPercentage } from "../../data-extensions-editor/shared/modeled-percentage";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
 import { ViewTitle } from "../common";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
