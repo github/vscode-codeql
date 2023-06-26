@@ -8,14 +8,27 @@ import { QueryDiscovery } from "./query-discovery";
 import { QueryPackDiscovery } from "./query-pack-discovery";
 
 export class QueriesModule extends DisposableObject {
+  private queriesPanel: QueriesPanel | undefined;
+
   private constructor(readonly app: App) {
     super();
   }
 
+  public static initialize(
+    app: App,
+    cliServer: CodeQLCliServer,
+  ): QueriesModule {
+    const queriesModule = new QueriesModule(app);
+    app.subscriptions.push(queriesModule);
+
+    queriesModule.initialize(app, cliServer);
+    return queriesModule;
+  }
+
   private initialize(app: App, cliServer: CodeQLCliServer): void {
+    // Currently, we only want to expose the new panel when we are in canary mode
+    // and the user has enabled the "Show queries panel" flag.
     if (!isCanary() || !showQueriesPanel()) {
-      // Currently, we only want to expose the new panel when we are in canary mode
-      // and the user has enabled the "Show queries panel" flag.
       return;
     }
     void extLogger.log("Initializing queries panel.");
@@ -31,18 +44,7 @@ export class QueriesModule extends DisposableObject {
     this.push(queryDiscovery);
     void queryDiscovery.initialRefresh();
 
-    const queriesPanel = new QueriesPanel(queryDiscovery);
-    this.push(queriesPanel);
-  }
-
-  public static initialize(
-    app: App,
-    cliServer: CodeQLCliServer,
-  ): QueriesModule {
-    const queriesModule = new QueriesModule(app);
-    app.subscriptions.push(queriesModule);
-
-    queriesModule.initialize(app, cliServer);
-    return queriesModule;
+    this.queriesPanel = new QueriesPanel(queryDiscovery);
+    this.push(this.queriesPanel);
   }
 }

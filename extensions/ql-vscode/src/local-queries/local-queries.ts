@@ -48,6 +48,7 @@ import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { findLanguage } from "../codeql-cli/query-language";
+import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -100,6 +101,8 @@ export class LocalQueries extends DisposableObject {
         this.runQueryOnMultipleDatabases.bind(this),
       "codeQL.runQueryOnMultipleDatabasesContextEditor":
         this.runQueryOnMultipleDatabases.bind(this),
+      "codeQLQueries.runLocalQueryFromQueriesPanel":
+        this.runQueryFromQueriesPanel.bind(this),
       "codeQL.runQueries": createMultiSelectionCommand(
         this.runQueries.bind(this),
       ),
@@ -116,6 +119,12 @@ export class LocalQueries extends DisposableObject {
       },
       "codeQL.createQuery": this.createSkeletonQuery.bind(this),
     };
+  }
+
+  private async runQueryFromQueriesPanel(
+    queryTreeViewItem: QueryTreeViewItem,
+  ): Promise<void> {
+    await this.runQuery(Uri.file(queryTreeViewItem.path));
   }
 
   private async runQuery(uri: Uri | undefined): Promise<void> {

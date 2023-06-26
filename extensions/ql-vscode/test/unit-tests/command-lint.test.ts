@@ -39,6 +39,7 @@ describe("commands declared in package.json", () => {
       commandTitles[command] = title!;
     } else if (
       command.match(/^codeQLDatabases\./) ||
+      command.match(/^codeQLQueries\./) ||
       command.match(/^codeQLVariantAnalysisRepositories\./) ||
       command.match(/^codeQLQueryHistory\./) ||
       command.match(/^codeQLAstViewer\./) ||

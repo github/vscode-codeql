@@ -502,6 +502,11 @@
         "title": "CodeQL: Copy Version Information"
       },
       {
+        "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
+        "title": "Run local query",
+        "icon": "$(run)"
+      },
+      {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
         "title": "Open database configuration file",
         "icon": "$(json)"
@@ -1096,6 +1101,11 @@
           "when": "viewItem == remoteResultsItem"
         },
         {
+          "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
+          "group": "inline",
+          "when": "view == codeQLQueries && viewItem == queryFile && codeQL.currentDatabaseItem"
+        },
+        {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
           "when": "viewItem == testWithSource"
@@ -1153,6 +1163,10 @@
         {
           "command": "codeQL.runQuery",
           "when": "resourceLangId == ql && resourceExtname == .ql"
+        },
+        {
+          "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
+          "when": "false"
         },
         {
           "command": "codeQL.runQueryContextEditor",

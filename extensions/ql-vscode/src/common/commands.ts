@@ -12,6 +12,7 @@ import type {
   VariantAnalysisScannedRepositoryResult,
 } from "../variant-analysis/shared/variant-analysis";
 import type { QLDebugConfiguration } from "../debugger/debug-configuration";
+import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from a context menu on a TreeView with
@@ -129,6 +130,7 @@ export type LocalQueryCommands = {
   "codeQL.runQueryOnMultipleDatabasesContextEditor": (
     uri?: Uri,
   ) => Promise<void>;
+  "codeQLQueries.runLocalQueryFromQueriesPanel": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
   "codeQL.runQueries": ExplorerSelectionCommandFunction<Uri>;
   "codeQL.quickEval": (uri: Uri) => Promise<void>;
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
