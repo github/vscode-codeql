@@ -20,6 +20,7 @@ export class QueryTreeViewItem extends vscode.TreeItem {
       };
     } else {
       this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+      this.contextValue = "queryFolder";
     }
   }
 }

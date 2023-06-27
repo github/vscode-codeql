@@ -511,6 +511,11 @@
         "icon": "$(run)"
       },
       {
+        "command": "codeQLQueries.runLocalQueriesFromPanel",
+        "title": "Run local queries",
+        "icon": "$(run-all)"
+      },
+      {
         "command": "codeQL.runLocalQueryFromFileTab",
         "title": "CodeQL: Run local query",
         "icon": "$(run)"
@@ -1140,6 +1145,11 @@
           "when": "view == codeQLQueries && viewItem == queryFile"
         },
         {
+          "command": "codeQLQueries.runLocalQueriesFromPanel",
+          "group": "inline",
+          "when": "view == codeQLQueries && viewItem == queryFolder && codeQL.currentDatabaseItem"
+        },
+        {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
           "when": "viewItem == testWithSource"
@@ -1200,6 +1210,10 @@
         },
         {
           "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueries.runLocalQueriesFromPanel",
           "when": "false"
         },
         {

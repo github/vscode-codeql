@@ -105,6 +105,8 @@ export class LocalQueries extends DisposableObject {
         this.runQueryFromQueriesPanel.bind(this),
       "codeQLQueries.runLocalQueryContextMenu":
         this.runQueryFromQueriesPanel.bind(this),
+      "codeQLQueries.runLocalQueriesFromPanel":
+        this.runQueriesFromQueriesPanel.bind(this),
       "codeQL.runLocalQueryFromFileTab": this.runQuery.bind(this),
       "codeQL.runQueries": createMultiSelectionCommand(
         this.runQueries.bind(this),
@@ -129,6 +131,15 @@ export class LocalQueries extends DisposableObject {
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
     await this.runQuery(Uri.file(queryTreeViewItem.path));
+  }
+
+  private async runQueriesFromQueriesPanel(
+    queryTreeViewItem: QueryTreeViewItem,
+  ): Promise<void> {
+    const uris = queryTreeViewItem.children.map((child) =>
+      Uri.file(child.path),
+    );
+    await this.runQueries(uris);
   }
 
   private async runQuery(uri: Uri | undefined): Promise<void> {
