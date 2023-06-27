@@ -40,7 +40,7 @@ import {
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "./webview";
 import { asError, getErrorMessage } from "../common/helpers-pure";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
@@ -110,6 +110,7 @@ export class LocalQueries extends DisposableObject {
         this.runQueries.bind(this),
       ),
       "codeQL.quickEval": this.quickEval.bind(this),
+      "codeQL.quickEvalCount": this.quickEvalCount.bind(this),
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
       "codeQL.codeLensQuickEval": this.codeLensQuickEval.bind(this),
       "codeQL.quickQuery": this.quickQuery.bind(this),
@@ -230,6 +231,29 @@ export class LocalQueries extends DisposableObject {
       async (progress, token) => {
         await this.compileAndRunQuery(
           QuickEvalType.QuickEval,
+          uri,
+          progress,
+          token,
+          undefined,
+        );
+      },
+      {
+        title: "Running query",
+        cancellable: true,
+      },
+    );
+  }
+
+  private async quickEvalCount(uri: Uri): Promise<void> {
+    await withProgress(
+      async (progress, token) => {
+        if (!(await this.cliServer.cliConstraints.supportsQuickEvalCount())) {
+          throw new Error(
+            `Quick evaluation count is only supported by CodeQL CLI v${CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT} or later.`,
+          );
+        }
+        await this.compileAndRunQuery(
+          QuickEvalType.QuickEvalCount,
           uri,
           progress,
           token,

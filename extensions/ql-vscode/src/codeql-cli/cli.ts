@@ -1483,6 +1483,13 @@ export class CodeQLCliServer implements Disposable {
             CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG,
           ) >= 0,
         );
+        await this.app.commands.execute(
+          "setContext",
+          "codeql.supportsQuickEvalCount",
+          newVersion.compare(
+            CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
+          ) >= 0,
+        );
       } catch (e) {
         this._versionChangedListeners.forEach((listener) =>
           listener(undefined),
@@ -1845,6 +1852,11 @@ export class CliVersionConstraint {
 
   public static CLI_VERSION_GLOBAL_CACHE = new SemVer("2.12.4");
 
+  /**
+   * CLI version where the query server supports quick-eval count mode.
+   */
+  public static CLI_VERSION_WITH_QUICK_EVAL_COUNT = new SemVer("2.13.3");
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1917,5 +1929,11 @@ export class CliVersionConstraint {
 
   async usesGlobalCompilationCache() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_GLOBAL_CACHE);
+  }
+
+  async supportsQuickEvalCount() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
+    );
   }
 }
