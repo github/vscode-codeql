@@ -117,7 +117,11 @@ describe("runQuery", () => {
 
       const queryFiles = await readdir(queryDirectory);
       expect(queryFiles.sort()).toEqual(
-        ["codeql-pack.yml", "FetchExternalApis.ql", "ExternalApi.qll"].sort(),
+        [
+          "codeql-pack.yml",
+          "FetchExternalApis.ql",
+          "AutomodelVsCode.qll",
+        ].sort(),
       );
 
       const suiteFileContents = await readFile(
