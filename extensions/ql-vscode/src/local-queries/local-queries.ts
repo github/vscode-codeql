@@ -48,7 +48,10 @@ import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { findLanguage } from "../codeql-cli/query-language";
-import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import {
+  QueryTreeQueryItem,
+  QueryTreeViewItem,
+} from "../queries-panel/query-tree-view-item";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -130,16 +133,20 @@ export class LocalQueries extends DisposableObject {
   private async runQueryFromQueriesPanel(
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
-    await this.runQuery(Uri.file(queryTreeViewItem.path));
+    if (queryTreeViewItem instanceof QueryTreeQueryItem) {
+      await this.runQuery(Uri.file(queryTreeViewItem.path));
+    }
   }
 
   private async runQueriesFromQueriesPanel(
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
-    const uris = queryTreeViewItem.children.map((child) =>
-      Uri.file(child.path),
-    );
-    await this.runQueries(uris);
+    if (queryTreeViewItem instanceof QueryTreeQueryItem) {
+      const uris = queryTreeViewItem.children.map((child) =>
+        Uri.file(child.path),
+      );
+      await this.runQueries(uris);
+    }
   }
 
   private async runQuery(uri: Uri | undefined): Promise<void> {

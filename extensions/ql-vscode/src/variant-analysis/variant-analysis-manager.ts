@@ -76,7 +76,10 @@ import {
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "../common/logging";
-import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import {
+  QueryTreeQueryItem,
+  QueryTreeViewItem,
+} from "../queries-panel/query-tree-view-item";
 
 const maxRetryCount = 3;
 
@@ -191,7 +194,11 @@ export class VariantAnalysisManager
   private async runVariantAnalysisFromQueriesPanel(
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
-    await this.runVariantAnalysisFromCommand(Uri.file(queryTreeViewItem.path));
+    if (queryTreeViewItem instanceof QueryTreeQueryItem) {
+      await this.runVariantAnalysisFromCommand(
+        Uri.file(queryTreeViewItem.path),
+      );
+    }
   }
 
   public async runVariantAnalysis(

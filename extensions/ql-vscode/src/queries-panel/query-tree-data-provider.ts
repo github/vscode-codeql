@@ -1,5 +1,9 @@
 import { Event, EventEmitter, TreeDataProvider, TreeItem } from "vscode";
-import { QueryTreeViewItem } from "./query-tree-view-item";
+import {
+  QueryTreeQueryItem,
+  QueryTreeTextItem,
+  QueryTreeViewItem,
+} from "./query-tree-view-item";
 import { DisposableObject } from "../common/disposable-object";
 import { FileTreeNode } from "../common/file-tree-nodes";
 
@@ -37,18 +41,27 @@ export class QueryTreeDataProvider
     const queryTree = this.queryDiscoverer.buildQueryTree();
     if (queryTree === undefined) {
       return [];
+    } else if (queryTree.length === 0) {
+      return [this.noQueriesTreeViewItem()];
+    } else {
+      return queryTree.map(this.convertFileTreeNode.bind(this));
     }
-    return queryTree.map(this.convertFileTreeNode.bind(this));
   }
 
   private convertFileTreeNode(
     fileTreeDirectory: FileTreeNode<string>,
-  ): QueryTreeViewItem {
-    return new QueryTreeViewItem(
+  ): QueryTreeQueryItem {
+    return new QueryTreeQueryItem(
       fileTreeDirectory.name,
       fileTreeDirectory.path,
       fileTreeDirectory.data,
       fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),
+    );
+  }
+
+  private noQueriesTreeViewItem(): QueryTreeViewItem {
+    return new QueryTreeTextItem(
+      "This workspace doesn't contain any CodeQL queries at the moment.",
     );
   }
 
@@ -70,8 +83,10 @@ export class QueryTreeDataProvider
     if (!item) {
       // We're at the root.
       return this.queryTreeItems;
-    } else {
+    } else if (item instanceof QueryTreeQueryItem) {
       return item.children;
+    } else {
+      return [];
     }
   }
 }
