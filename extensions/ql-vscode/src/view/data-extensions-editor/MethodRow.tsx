@@ -38,6 +38,25 @@ const SupportSpan = styled.span<SupportedUnsupportedSpanProps>`
   }};
 `;
 
+type SupportedUnsupportedLinkProps = {
+  supported: boolean;
+  modeled: ModeledMethod | undefined;
+};
+
+const SupportLink = styled.button<SupportedUnsupportedLinkProps>`
+  color: ${(props) => {
+    if (!props.supported && props.modeled && props.modeled?.type !== "none") {
+      return "orange";
+    } else {
+      return props.supported ? "green" : "red";
+    }
+  }};
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+`;
+
 const UsagesButton = styled.button`
   color: var(--vscode-editor-foreground);
   background-color: transparent;
@@ -140,6 +159,7 @@ export const MethodRow = ({
   const jumpToUsage = useCallback(() => {
     vscode.postMessage({
       t: "jumpToUsage",
+      // In framework mode, the first and only usage is the definition of the method
       location: externalApiUsage.usages[0].url,
     });
   }, [externalApiUsage]);
@@ -160,13 +180,25 @@ export const MethodRow = ({
         </SupportSpan>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={2}>
-        <SupportSpan
-          supported={externalApiUsage.supported}
-          modeled={modeledMethod}
-        >
-          {externalApiUsage.methodName}
-          {externalApiUsage.methodParameters}
-        </SupportSpan>
+        {mode === Mode.Application && (
+          <SupportSpan
+            supported={externalApiUsage.supported}
+            modeled={modeledMethod}
+          >
+            {externalApiUsage.methodName}
+            {externalApiUsage.methodParameters}
+          </SupportSpan>
+        )}
+        {mode === Mode.Framework && (
+          <SupportLink
+            supported={externalApiUsage.supported}
+            modeled={modeledMethod}
+            onClick={jumpToUsage}
+          >
+            {externalApiUsage.methodName}
+            {externalApiUsage.methodParameters}
+          </SupportLink>
+        )}
       </VSCodeDataGridCell>
       {mode === Mode.Application && (
         <VSCodeDataGridCell gridColumn={3}>
