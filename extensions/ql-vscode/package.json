@@ -1737,7 +1737,7 @@
     "path-browserify": "^1.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "semver": "~7.3.2",
+    "semver": "~7.5.2",
     "source-map": "^0.7.4",
     "source-map-support": "^0.5.21",
     "stream": "^0.0.2",
