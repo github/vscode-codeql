@@ -1686,7 +1686,7 @@
       },
       {
         "view": "codeQLQueries",
-        "contents": "This workspace doesn't contain any CodeQL queries at the moment."
+        "contents": "Looking for queries..."
       },
       {
         "view": "codeQLDatabases",
