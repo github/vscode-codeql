@@ -127,7 +127,8 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
     });
 
     this.updateWatchers();
-    return this.refresh();
+    await this.refresh();
+    this.onDidChangePathDataEmitter.fire();
   }
 
   private workspaceFoldersChanged(event: WorkspaceFoldersChangeEvent) {

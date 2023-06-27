@@ -159,6 +159,26 @@ describe("FilePathDiscovery", () => {
         new Set([{ path: join(workspacePath, "1.test"), contents: "1" }]),
       );
     });
+
+    it("should trigger listener when paths are found", async () => {
+      makeTestFile(join(workspacePath, "123.test"));
+
+      const didChangePathsListener = jest.fn();
+      discovery.onDidChangePaths(didChangePathsListener);
+
+      await discovery.initialRefresh();
+
+      expect(didChangePathsListener).toHaveBeenCalled();
+    });
+
+    it("should trigger listener when no paths are found", async () => {
+      const didChangePathsListener = jest.fn();
+      discovery.onDidChangePaths(didChangePathsListener);
+
+      await discovery.initialRefresh();
+
+      expect(didChangePathsListener).toHaveBeenCalled();
+    });
   });
 
   describe("file added", () => {
