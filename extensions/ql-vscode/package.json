@@ -903,7 +903,7 @@
         {
           "command": "codeQL.runLocalQueryFromFileTab",
           "group": "navigation",
-          "when": "config.codeQL.queriesPanel && resourceExtname == .ql && codeQL.currentDatabaseItem"
+          "when": "resourceExtname == .ql && codeQL.currentDatabaseItem"
         }
       ],
       "view/title": [
