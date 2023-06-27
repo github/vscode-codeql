@@ -132,6 +132,7 @@ export type LocalQueryCommands = {
   ) => Promise<void>;
   "codeQLQueries.runLocalQueryFromQueriesPanel": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
   "codeQLQueries.runLocalQueryContextMenu": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
+  "codeQLQueries.runLocalQueriesContextMenu": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
   "codeQLQueries.runLocalQueriesFromPanel": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
   "codeQL.runLocalQueryFromFileTab": (uri: Uri) => Promise<void>;
   "codeQL.runQueries": ExplorerSelectionCommandFunction<Uri>;

@@ -105,6 +105,8 @@ export class LocalQueries extends DisposableObject {
         this.runQueryFromQueriesPanel.bind(this),
       "codeQLQueries.runLocalQueryContextMenu":
         this.runQueryFromQueriesPanel.bind(this),
+      "codeQLQueries.runLocalQueriesContextMenu":
+        this.runQueriesFromQueriesPanel.bind(this),
       "codeQLQueries.runLocalQueriesFromPanel":
         this.runQueriesFromQueriesPanel.bind(this),
       "codeQL.runLocalQueryFromFileTab": this.runQuery.bind(this),
