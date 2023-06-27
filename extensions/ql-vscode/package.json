@@ -503,7 +503,8 @@
       },
       {
         "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
-        "title": "Run local query"
+        "title": "Run local query",
+        "icon": "$(run)"
       },
       {
         "command": "codeQL.runLocalQueryFromFileTab",
