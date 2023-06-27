@@ -525,6 +525,10 @@
         "title": "Run against local database"
       },
       {
+        "command": "codeQLQueries.runLocalQueriesContextMenu",
+        "title": "Run against local database"
+      },
+      {
         "command": "codeQLQueries.runVariantAnalysisContextMenu",
         "title": "Run against variant analysis repositories"
       },
@@ -1140,6 +1144,11 @@
           "when": "view == codeQLQueries && viewItem == queryFile && codeQL.currentDatabaseItem"
         },
         {
+          "command": "codeQLQueries.runLocalQueriesContextMenu",
+          "group": "queriesPanel@1",
+          "when": "view == codeQLQueries && viewItem == queryFolder && codeQL.currentDatabaseItem"
+        },
+        {
           "command": "codeQLQueries.runVariantAnalysisContextMenu",
           "group": "queriesPanel@1",
           "when": "view == codeQLQueries && viewItem == queryFile"
@@ -1346,6 +1355,10 @@
         },
         {
           "command": "codeQLQueries.runLocalQueryContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueries.runLocalQueriesContextMenu",
           "when": "false"
         },
         {
