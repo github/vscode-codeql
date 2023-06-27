@@ -104,7 +104,7 @@ class CallableMethod extends DotNet::Declaration {
   bindingset[this]
   private string getSignature() {
     result =
-      this.getDeclaringType().getUnboundDeclaration() + "." + this.getName() + "(" +
+      nestedName(this.getDeclaringType().getUnboundDeclaration()) + "." + this.getName() + "(" +
         parameterQualifiedTypeNamesToString(this) + ")"
   }
 
@@ -177,6 +177,21 @@ boolean isSupported(CallableMethod callableMethod) {
   or
   not callableMethod.isSupported() and
   result = false
+}
+
+/**
+ * Gets the nested name of the declaration.
+ *
+ * If the declaration is not a nested type, the result is the same as \`getName()\`.
+ * Otherwise the name of the nested type is prefixed with a \`+\` and appended to
+ * the name of the enclosing type, which might be a nested type as well.
+ */
+private string nestedName(Declaration declaration) {
+  not exists(declaration.getDeclaringType().getUnboundDeclaration()) and
+  result = declaration.getName()
+  or
+  nestedName(declaration.getDeclaringType().getUnboundDeclaration()) + "+" + declaration.getName() =
+    result
 }
 `,
   },
