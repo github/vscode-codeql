@@ -81,7 +81,7 @@ class CallableMethod extends Method {
    */
   string getApiName() {
     result =
-      this.getDeclaringType().getPackage() + "." + this.getDeclaringType().getSourceDeclaration() +
+      this.getDeclaringType().getPackage() + "." + this.getDeclaringType().nestedName() +
         "#" + this.getName() + paramsString(this)
   }
 
