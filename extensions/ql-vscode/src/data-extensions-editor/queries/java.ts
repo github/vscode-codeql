@@ -26,8 +26,7 @@ where
   apiName = externalApi.getApiName() and
   supported = isSupported(externalApi) and
   usage = aUsage(externalApi)
-select usage, apiName, supported.toString(), "supported",
-  externalApi.getCompilationUnit().getParentContainer().getBaseName(), "library"
+select usage, apiName, supported.toString(), "supported", externalApi.jarContainer(), "library"
 `,
   frameworkModeQuery: `/**
  * @name Public methods
