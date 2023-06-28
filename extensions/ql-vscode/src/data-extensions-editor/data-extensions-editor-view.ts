@@ -4,7 +4,6 @@ import {
   Uri,
   ViewColumn,
   window,
-  workspace,
 } from "vscode";
 import { join } from "path";
 import { RequestError } from "@octokit/request-error";
@@ -38,7 +37,6 @@ import { readQueryResults, runQuery } from "./external-api-usage-query";
 import {
   createDataExtensionYamlsForApplicationMode,
   createDataExtensionYamlsForFrameworkMode,
-  createFilenameForLibrary,
   loadDataExtensionYaml,
 } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
@@ -108,15 +106,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
         );
 
         break;
-      case "openModelFile":
-        await window.showTextDocument(
-          await workspace.openTextDocument(
-            join(
-              this.extensionPack.path,
-              createFilenameForLibrary(msg.library),
-            ),
-          ),
-        );
+      case "refreshExternalApiUsages":
+        await this.loadExternalApiUsages();
 
         break;
       case "jumpToUsage":
