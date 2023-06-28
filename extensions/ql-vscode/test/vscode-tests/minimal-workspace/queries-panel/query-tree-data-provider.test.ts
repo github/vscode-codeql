@@ -20,7 +20,7 @@ describe("QueryTreeDataProvider", () => {
       expect(dataProvider.getChildren()).toEqual([]);
     });
 
-    it("returns a explanatory message when there are no queries", async () => {
+    it("returns an explanatory message when there are no queries", async () => {
       const dataProvider = new QueryTreeDataProvider({
         buildQueryTree: () => [],
         onDidChangeQueries: jest.fn(),
