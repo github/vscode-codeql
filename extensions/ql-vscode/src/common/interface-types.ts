@@ -536,9 +536,8 @@ export interface OpenExtensionPackMessage {
   t: "openExtensionPack";
 }
 
-export interface OpenModelFileMessage {
-  t: "openModelFile";
-  library: string;
+export interface RefreshExternalApiUsages {
+  t: "refreshExternalApiUsages";
 }
 
 export interface SaveModeledMethods {
@@ -566,7 +565,7 @@ export type ToDataExtensionsEditorMessage =
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
   | SwitchModeMessage
-  | OpenModelFileMessage
+  | RefreshExternalApiUsages
   | OpenExtensionPackMessage
   | JumpToUsageMessage
   | SaveModeledMethods

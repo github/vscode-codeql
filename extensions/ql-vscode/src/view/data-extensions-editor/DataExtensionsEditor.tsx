@@ -139,6 +139,12 @@ export function DataExtensionsEditor({
     [],
   );
 
+  const onRefreshClick = useCallback(() => {
+    vscode.postMessage({
+      t: "refreshExternalApiUsages",
+    });
+  }, []);
+
   const onApplyClick = useCallback(() => {
     vscode.postMessage({
       t: "saveModeledMethods",
@@ -228,6 +234,11 @@ export function DataExtensionsEditor({
           <EditorContainer>
             <ButtonsContainer>
               <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+              {viewState?.enableFrameworkMode && (
+                <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
+                  Refresh
+                </VSCodeButton>
+              )}
               <VSCodeButton onClick={onGenerateClick}>
                 {viewState?.mode === Mode.Framework
                   ? "Generate"
