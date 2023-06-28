@@ -5,6 +5,7 @@ import {
   createFilenameForLibrary,
   loadDataExtensionYaml,
 } from "../../../src/data-extensions-editor/yaml";
+import { CallClassification } from "../../../src/data-extensions-editor/external-api-usage";
 
 describe("createDataExtensionYaml", () => {
   it("creates the correct YAML file", () => {
@@ -18,6 +19,7 @@ describe("createDataExtensionYaml", () => {
           methodName: "createQuery",
           methodParameters: "(String)",
           supported: true,
+          supportedType: "sink",
           usages: [
             {
               label: "createQuery(...)",
@@ -28,6 +30,7 @@ describe("createDataExtensionYaml", () => {
                 endLine: 15,
                 endColumn: 56,
               },
+              classification: CallClassification.Source,
             },
             {
               label: "createQuery(...)",
@@ -38,6 +41,7 @@ describe("createDataExtensionYaml", () => {
                 endLine: 26,
                 endColumn: 39,
               },
+              classification: CallClassification.Source,
             },
           ],
         },
@@ -58,6 +62,7 @@ describe("createDataExtensionYaml", () => {
           methodName: "executeScalar",
           methodParameters: "(Class)",
           supported: true,
+          supportedType: "neutral",
           usages: [
             {
               label: "executeScalar(...)",
@@ -68,6 +73,7 @@ describe("createDataExtensionYaml", () => {
                 endLine: 15,
                 endColumn: 85,
               },
+              classification: CallClassification.Source,
             },
             {
               label: "executeScalar(...)",
@@ -78,6 +84,7 @@ describe("createDataExtensionYaml", () => {
                 endLine: 26,
                 endColumn: 68,
               },
+              classification: CallClassification.Source,
             },
           ],
         },
@@ -148,6 +155,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           methodName: "createQuery",
           methodParameters: "(String)",
           supported: true,
+          supportedType: "sink",
           usages: [
             {
               label: "createQuery(...)",
@@ -158,6 +166,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
                 endLine: 15,
                 endColumn: 56,
               },
+              classification: CallClassification.Source,
             },
             {
               label: "createQuery(...)",
@@ -168,6 +177,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
                 endLine: 26,
                 endColumn: 39,
               },
+              classification: CallClassification.Source,
             },
           ],
         },
@@ -179,6 +189,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           methodName: "executeScalar",
           methodParameters: "(Class)",
           supported: true,
+          supportedType: "neutral",
           usages: [
             {
               label: "executeScalar(...)",
@@ -189,6 +200,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
                 endLine: 15,
                 endColumn: 85,
               },
+              classification: CallClassification.Source,
             },
             {
               label: "executeScalar(...)",
@@ -199,6 +211,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
                 endLine: 26,
                 endColumn: 68,
               },
+              classification: CallClassification.Source,
             },
           ],
         },
@@ -210,6 +223,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           methodName: "Sql2o",
           methodParameters: "(String,String,String)",
           supported: false,
+          supportedType: "none",
           usages: [
             {
               label: "new Sql2o(...)",
@@ -220,6 +234,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
                 endLine: 10,
                 endColumn: 88,
               },
+              classification: CallClassification.Source,
             },
           ],
         },
@@ -232,6 +247,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           methodName: "run",
           methodParameters: "(Class,String[])",
           supported: false,
+          supportedType: "none",
           usages: [
             {
               label: "run(...)",
@@ -242,6 +258,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
                 endLine: 9,
                 endColumn: 66,
               },
+              classification: CallClassification.Source,
             },
           ],
         },
@@ -253,6 +270,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           methodName: "println",
           methodParameters: "(String)",
           supported: true,
+          supportedType: "summary",
           usages: [
             {
               label: "println(...)",
@@ -263,6 +281,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
                 endLine: 29,
                 endColumn: 49,
               },
+              classification: CallClassification.Source,
             },
           ],
         },
@@ -356,6 +375,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
           methodName: "createQuery",
           methodParameters: "(String)",
           supported: true,
+          supportedType: "sink",
           usages: [
             {
               label: "createQuery(...)",
@@ -366,6 +386,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
                 endLine: 15,
                 endColumn: 56,
               },
+              classification: CallClassification.Source,
             },
             {
               label: "createQuery(...)",
@@ -376,6 +397,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
                 endLine: 26,
                 endColumn: 39,
               },
+              classification: CallClassification.Source,
             },
           ],
         },
@@ -387,6 +409,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
           methodName: "executeScalar",
           methodParameters: "(Class)",
           supported: true,
+          supportedType: "neutral",
           usages: [
             {
               label: "executeScalar(...)",
@@ -397,6 +420,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
                 endLine: 15,
                 endColumn: 85,
               },
+              classification: CallClassification.Source,
             },
             {
               label: "executeScalar(...)",
@@ -407,6 +431,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
                 endLine: 26,
                 endColumn: 68,
               },
+              classification: CallClassification.Source,
             },
           ],
         },
@@ -418,6 +443,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
           methodName: "Sql2o",
           methodParameters: "(String,String,String)",
           supported: false,
+          supportedType: "none",
           usages: [
             {
               label: "new Sql2o(...)",
@@ -428,6 +454,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
                 endLine: 10,
                 endColumn: 88,
               },
+              classification: CallClassification.Source,
             },
           ],
         },
