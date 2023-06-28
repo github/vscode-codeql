@@ -16,17 +16,19 @@ class ExternalApi extends CallableMethod {
   ExternalApi() { not this.fromSource() }
 }
 
-private Call aUsage(ExternalApi api) {
-  result.getCallee().getSourceDeclaration() = api and
-  not result.getFile() instanceof GeneratedFile
-}
+private Call aUsage(ExternalApi api) { result.getCallee().getSourceDeclaration() = api }
 
-from ExternalApi externalApi, string apiName, boolean supported, Call usage
+from
+  ExternalApi externalApi, string apiName, boolean supported, Call usage, string type,
+  string classification
 where
   apiName = externalApi.getApiName() and
   supported = isSupported(externalApi) and
-  usage = aUsage(externalApi)
-select usage, apiName, supported.toString(), "supported", externalApi.jarContainer(), "library"
+  usage = aUsage(externalApi) and
+  type = supportedType(externalApi) and
+  classification = methodClassification(usage)
+select usage, apiName, supported.toString(), "supported", externalApi.jarContainer(), "library",
+  type, "type", classification, "classification"
 `,
   frameworkModeQuery: `/**
  * @name Public methods
@@ -41,12 +43,14 @@ import AutomodelVsCode
 
 class PublicMethodFromSource extends CallableMethod, ModelApi { }
 
-from PublicMethodFromSource publicMethod, string apiName, boolean supported
+from PublicMethodFromSource publicMethod, string apiName, boolean supported, string type
 where
   apiName = publicMethod.getApiName() and
-  supported = isSupported(publicMethod)
+  supported = isSupported(publicMethod) and
+  type = supportedType(publicMethod)
 select publicMethod, apiName, supported.toString(), "supported",
-  publicMethod.getCompilationUnit().getParentContainer().getBaseName(), "library"
+  publicMethod.getCompilationUnit().getParentContainer().getBaseName(), "library", type, "type",
+  "unknown", "classification"
 `,
   dependencies: {
     "AutomodelVsCode.qll": `/** Provides classes and predicates related to handling APIs for the VS Code extension. */
@@ -145,6 +149,28 @@ boolean isSupported(CallableMethod method) {
   method.isSupported() and result = true
   or
   not method.isSupported() and result = false
+}
+
+string supportedType(CallableMethod method) {
+  method.isSink() and result = "sink"
+  or
+  method.isSource() and result = "source"
+  or
+  method.hasSummary() and result = "summary"
+  or
+  method.isNeutral() and result = "neutral"
+  or
+  not method.isSupported() and result = "none"
+}
+
+string methodClassification(Call method) {
+  isInTestFile(method.getLocation().getFile()) and result = "test"
+  or
+  method.getFile() instanceof GeneratedFile and result = "generated"
+  or
+  not isInTestFile(method.getLocation().getFile()) and
+  not method.getFile() instanceof GeneratedFile and
+  result = "source"
 }
 
 // The below is a copy of https://github.com/github/codeql/blob/249f9f863db1e94e3c46ca85b49fb0ec32f8ca92/java/ql/lib/semmle/code/java/dataflow/internal/ModelExclusions.qll
