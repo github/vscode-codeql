@@ -8,7 +8,7 @@ import {
 } from "../common/file-tree-nodes";
 import { QueryDiscoverer } from "./query-tree-data-provider";
 import { FilePathDiscovery } from "../common/vscode/file-path-discovery";
-import { containsPath } from "../pure/files";
+import { containsPath } from "../common/files";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
 import { QueryLanguage } from "../common/query-language";
 

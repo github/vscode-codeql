@@ -3,22 +3,24 @@ import * as vscode from "vscode";
 export class QueryTreeViewItem extends vscode.TreeItem {
   constructor(
     name: string,
-    path: string,
+    public readonly path: string,
     language: string | undefined,
     public readonly children: QueryTreeViewItem[],
   ) {
     super(name);
     this.tooltip = path;
-    this.description = language;
-    this.collapsibleState = this.children.length
-      ? vscode.TreeItemCollapsibleState.Collapsed
-      : vscode.TreeItemCollapsibleState.None;
     if (this.children.length === 0) {
+      this.description = language;
+      this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+      this.contextValue = "queryFile";
       this.command = {
         title: "Open",
         command: "vscode.open",
         arguments: [vscode.Uri.file(path)],
       };
+    } else {
+      this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+      this.contextValue = "queryFolder";
     }
   }
 }

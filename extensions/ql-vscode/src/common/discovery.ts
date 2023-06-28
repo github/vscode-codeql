@@ -1,5 +1,5 @@
-import { DisposableObject } from "../pure/disposable-object";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { DisposableObject } from "./disposable-object";
+import { getErrorMessage } from "./helpers-pure";
 import { Logger } from "./logging";
 
 /**
@@ -11,7 +11,10 @@ export abstract class Discovery extends DisposableObject {
   private restartWhenFinished = false;
   private currentDiscoveryPromise: Promise<void> | undefined;
 
-  constructor(private readonly name: string, private readonly logger: Logger) {
+  constructor(
+    protected readonly name: string,
+    private readonly logger: Logger,
+  ) {
     super();
   }
 

@@ -1,4 +1,4 @@
-import { asyncFilter, getErrorMessage } from "../../../src/pure/helpers-pure";
+import { asyncFilter, getErrorMessage } from "../../../src/common/helpers-pure";
 
 describe("helpers-pure", () => {
   it("should filter asynchronously", async () => {
@@ -13,7 +13,7 @@ describe("helpers-pure", () => {
 
     try {
       await asyncFilter([1, 2, 3], rejects);
-      fail("Should have thrown");
+      throw new Error("Should have thrown");
     } catch (e) {
       expect(getErrorMessage(e)).toBe("opps");
     }

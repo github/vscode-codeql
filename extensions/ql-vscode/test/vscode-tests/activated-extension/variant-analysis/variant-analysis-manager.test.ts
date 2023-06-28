@@ -7,7 +7,7 @@ import {
   window,
   workspace,
 } from "vscode";
-import { extLogger } from "../../../../src/common";
+import { extLogger } from "../../../../src/common/logging/vscode";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
 import * as ghActionsApiClient from "../../../../src/variant-analysis/gh-api/gh-actions-api-client";
 import * as fs from "fs-extra";
@@ -36,7 +36,7 @@ import {
 import { createTimestampFile } from "../../../../src/run-queries-shared";
 import { createMockVariantAnalysisRepoTask } from "../../../factories/variant-analysis/gh-api/variant-analysis-repo-task";
 import { VariantAnalysisRepoTask } from "../../../../src/variant-analysis/gh-api/variant-analysis";
-import { SortKey } from "../../../../src/pure/variant-analysis-filter-sort";
+import { SortKey } from "../../../../src/variant-analysis/shared/variant-analysis-filter-sort";
 import { DbManager } from "../../../../src/databases/db-manager";
 import { App } from "../../../../src/common/app";
 import { ExtensionApp } from "../../../../src/common/vscode/vscode-app";

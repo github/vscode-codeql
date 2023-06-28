@@ -7,7 +7,7 @@ import {
   VSCodePanelTab,
   VSCodePanelView,
 } from "@vscode/webview-ui-toolkit/react";
-import { formatDecimal } from "../../pure/number";
+import { formatDecimal } from "../../common/number";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
@@ -17,7 +17,7 @@ import {
 import { VariantAnalysisAnalyzedRepos } from "./VariantAnalysisAnalyzedRepos";
 import { Alert } from "../common";
 import { VariantAnalysisSkippedRepositoriesTab } from "./VariantAnalysisSkippedRepositoriesTab";
-import { RepositoriesFilterSortState } from "../../pure/variant-analysis-filter-sort";
+import { RepositoriesFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { RepositoriesSearchSortRow } from "./RepositoriesSearchSortRow";
 import { FailureReasonAlert } from "./FailureReasonAlert";
 

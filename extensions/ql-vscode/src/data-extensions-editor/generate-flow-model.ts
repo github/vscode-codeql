@@ -3,8 +3,8 @@ import { DatabaseItem } from "../databases/local-databases";
 import { basename } from "path";
 import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { extLogger, TeeLogger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/logging";
+import { showAndLogExceptionWithTelemetry, TeeLogger } from "../common/logging";
+import { extLogger } from "../common/logging/vscode";
 import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
@@ -12,8 +12,8 @@ import {
   ModeledMethodType,
   ModeledMethodWithSignature,
 } from "./modeled-method";
-import { redactableError } from "../pure/errors";
-import { QueryResultType } from "../pure/new-messages";
+import { redactableError } from "../common/errors";
+import { QueryResultType } from "../query-server/new-messages";
 import { file } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";

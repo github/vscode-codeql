@@ -14,13 +14,13 @@ import {
   ResolvableLocationValue,
   UrlValue,
   WholeFileLocation,
-} from "../../pure/bqrs-cli-types";
+} from "../../common/bqrs-cli-types";
 import {
   isLineColumnLoc,
   tryGetResolvableLocation,
-} from "../../pure/bqrs-utils";
-import { getErrorMessage } from "../../pure/helpers-pure";
-import { Logger } from "../../common";
+} from "../../common/bqrs-utils";
+import { getErrorMessage } from "../../common/helpers-pure";
+import { Logger } from "../../common/logging";
 import { DatabaseItem } from "./database-item";
 import { DatabaseManager } from "./database-manager";
 

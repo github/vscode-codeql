@@ -11,21 +11,22 @@ import {
 } from "../../databases/local-databases";
 import { tmpDir } from "../../tmp-dir";
 import { ProgressCallback } from "../../common/vscode/progress";
-import { QueryMetadata } from "../../pure/interface-types";
-import { extLogger, Logger } from "../../common";
+import { QueryMetadata } from "../../common/interface-types";
+import { extLogger } from "../../common/logging/vscode";
 import {
+  Logger,
   showAndLogExceptionWithTelemetry,
   showAndLogWarningMessage,
 } from "../../common/logging";
-import * as messages from "../../pure/legacy-messages";
-import * as newMessages from "../../pure/new-messages";
+import * as messages from "../legacy-messages";
+import * as newMessages from "../new-messages";
 import * as qsClient from "./query-server-client";
-import { asError, getErrorMessage } from "../../pure/helpers-pure";
+import { asError, getErrorMessage } from "../../common/helpers-pure";
 import { compileDatabaseUpgradeSequence } from "./upgrades";
 import { QueryEvaluationInfo, QueryOutputDir } from "../../run-queries-shared";
-import { redactableError } from "../../pure/errors";
+import { redactableError } from "../../common/errors";
 import { CoreQueryResults, CoreQueryTarget } from "../query-runner";
-import { Position } from "../../pure/messages-shared";
+import { Position } from "../messages-shared";
 import { ensureDirSync } from "fs-extra";
 import { telemetryListener } from "../../common/vscode/telemetry";
 

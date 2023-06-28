@@ -1,7 +1,7 @@
 import vscode, { ExtensionContext } from "vscode";
-import { extLogger, Logger } from "../../common";
-import { showAndLogExceptionWithTelemetry } from "../../common/logging";
-import { DisposableObject } from "../../pure/disposable-object";
+import { Logger, showAndLogExceptionWithTelemetry } from "../../common/logging";
+import { extLogger } from "../../common/logging/vscode";
+import { DisposableObject } from "../../common/disposable-object";
 import { App } from "../../common/app";
 import { QueryRunner } from "../../query-server";
 import * as cli from "../../codeql-cli/cli";
@@ -22,11 +22,11 @@ import {
 import { isQueryLanguage } from "../../common/query-language";
 import { existsSync } from "fs";
 import { QlPackGenerator } from "../../qlpack-generator";
-import { asError, getErrorMessage } from "../../pure/helpers-pure";
+import { asError, getErrorMessage } from "../../common/helpers-pure";
 import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
-import { redactableError } from "../../pure/errors";
+import { redactableError } from "../../common/errors";
 import { remove } from "fs-extra";
-import { containsPath } from "../../pure/files";
+import { containsPath } from "../../common/files";
 import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
 import { DatabaseResolver } from "./database-resolver";
 import { telemetryListener } from "../../common/vscode/telemetry";

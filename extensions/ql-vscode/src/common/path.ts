@@ -19,3 +19,11 @@ export const basename = (path: string): string => {
   const index = path.lastIndexOf("\\");
   return index === -1 ? path : path.slice(index + 1);
 };
+
+// Returns the extension of a path, including the leading dot.
+export const extname = (path: string): string => {
+  const name = basename(path);
+
+  const index = name.lastIndexOf(".");
+  return index === -1 ? "" : name.slice(index);
+};

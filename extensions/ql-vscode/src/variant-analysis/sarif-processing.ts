@@ -3,7 +3,7 @@ import {
   parseHighlightedLine,
   parseSarifPlainTextMessage,
   parseSarifRegion,
-} from "../pure/sarif-utils";
+} from "../common/sarif-utils";
 
 import {
   AnalysisAlert,

@@ -1,9 +1,9 @@
 import * as React from "react";
 
-import { SetComparisonsMessage } from "../../pure/interface-types";
+import { SetComparisonsMessage } from "../../common/interface-types";
 import RawTableHeader from "../results/RawTableHeader";
 import { className } from "../results/result-table-utils";
-import { ResultRow } from "../../pure/bqrs-cli-types";
+import { ResultRow } from "../../common/bqrs-cli-types";
 import RawTableRow from "../results/RawTableRow";
 import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
@@ -46,6 +46,12 @@ export default function CompareTable(props: Props) {
       <thead>
         <tr>
           <td>
+            {/*
+              eslint-disable-next-line
+              jsx-a11y/anchor-is-valid,
+              jsx-a11y/click-events-have-key-events,
+              jsx-a11y/no-static-element-interactions
+            */}
             <a
               onClick={() => openQuery("from")}
               className="vscode-codeql__compare-open"
@@ -54,6 +60,12 @@ export default function CompareTable(props: Props) {
             </a>
           </td>
           <td>
+            {/*
+              eslint-disable-next-line
+              jsx-a11y/anchor-is-valid,
+              jsx-a11y/click-events-have-key-events,
+              jsx-a11y/no-static-element-interactions
+            */}
             <a
               onClick={() => openQuery("to")}
               className="vscode-codeql__compare-open"

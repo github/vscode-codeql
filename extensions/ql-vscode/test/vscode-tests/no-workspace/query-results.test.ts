@@ -17,7 +17,7 @@ import {
   DatabaseInfo,
   SortDirection,
   SortedResultSetInfo,
-} from "../../../src/pure/interface-types";
+} from "../../../src/common/interface-types";
 import { CodeQLCliServer, SourceInfo } from "../../../src/codeql-cli/cli";
 import { CancellationTokenSource, Uri } from "vscode";
 import { tmpDir } from "../../../src/tmp-dir";
@@ -28,8 +28,8 @@ import {
 import {
   EvaluationResult,
   QueryResultType,
-} from "../../../src/pure/legacy-messages";
-import { sleep } from "../../../src/pure/time";
+} from "../../../src/query-server/legacy-messages";
+import { sleep } from "../../../src/common/time";
 import { mockedObject } from "../utils/mocking.helpers";
 
 describe("query-results", () => {
@@ -58,6 +58,7 @@ describe("query-results", () => {
         endLine: 2,
         fileName: "/home/users/yz",
       };
+      (fqi.initialInfo as any).isQuickEval = true;
       expect(fqi.getQueryName()).toBe("Quick evaluation of yz:1-2");
       (fqi.initialInfo as any).quickEvalPosition.endLine = 1;
       expect(fqi.getQueryName()).toBe("Quick evaluation of yz:1");

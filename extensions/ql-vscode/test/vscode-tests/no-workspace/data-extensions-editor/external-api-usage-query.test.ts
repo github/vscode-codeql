@@ -6,14 +6,16 @@ import { createMockLogger } from "../../../__mocks__/loggerMock";
 import type { Uri } from "vscode";
 import { DatabaseKind } from "../../../../src/databases/local-databases";
 import { file } from "tmp-promise";
-import { QueryResultType } from "../../../../src/pure/new-messages";
+import { QueryResultType } from "../../../../src/query-server/new-messages";
 import { readdir, readFile } from "fs-extra";
 import { load } from "js-yaml";
 import { dirname, join } from "path";
 import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries";
 import * as log from "../../../../src/common/logging/notifications";
-import { RedactableError } from "../../../../src/pure/errors";
+import { RedactableError } from "../../../../src/common/errors";
 import { showAndLogExceptionWithTelemetry } from "../../../../src/common/logging";
+import { QueryLanguage } from "../../../../src/common/query-language";
+import { Query } from "../../../../src/data-extensions-editor/queries/query";
 
 function createMockUri(path = "/a/b/c/foo"): Uri {
   return {
@@ -29,11 +31,31 @@ function createMockUri(path = "/a/b/c/foo"): Uri {
 }
 
 describe("runQuery", () => {
-  it("runs all queries", async () => {
-    const logPath = (await file()).path;
+  const cases = Object.keys(fetchExternalApiQueries).flatMap((lang) => {
+    const query = fetchExternalApiQueries[lang as QueryLanguage];
+    if (!query) {
+      return [];
+    }
 
-    // Test all queries
-    for (const [lang, query] of Object.entries(fetchExternalApiQueries)) {
+    const keys = new Set(Object.keys(query));
+    keys.delete("dependencies");
+
+    return Array.from(keys).map((name) => ({
+      language: lang as QueryLanguage,
+      queryName: name as keyof Omit<Query, "dependencies">,
+    }));
+  });
+
+  test.each(cases)(
+    "should run $queryName for $language",
+    async ({ language, queryName }) => {
+      const logPath = (await file()).path;
+
+      const query = fetchExternalApiQueries[language];
+      if (!query) {
+        throw new Error(`No query found for language ${language}`);
+      }
+
       const options = {
         cliServer: {
           resolveQlpacks: jest.fn().mockResolvedValue({
@@ -58,7 +80,7 @@ describe("runQuery", () => {
             name: "foo",
             datasetUri: createMockUri(),
           },
-          language: lang,
+          language,
         },
         queryStorageDir: "/tmp/queries",
         progress: jest.fn(),
@@ -67,7 +89,8 @@ describe("runQuery", () => {
           onCancellationRequested: jest.fn(),
         },
       };
-      const result = await runQuery(options);
+
+      const result = await runQuery(queryName, options);
 
       expect(result?.resultType).toEqual(QueryResultType.SUCCESS);
 
@@ -94,7 +117,11 @@ describe("runQuery", () => {
 
       const queryFiles = await readdir(queryDirectory);
       expect(queryFiles.sort()).toEqual(
-        ["codeql-pack.yml", "FetchExternalApis.ql", "ExternalApi.qll"].sort(),
+        [
+          "codeql-pack.yml",
+          "FetchExternalApis.ql",
+          "AutomodelVsCode.qll",
+        ].sort(),
       );
 
       const suiteFileContents = await readFile(
@@ -106,13 +133,13 @@ describe("runQuery", () => {
         name: "codeql/external-api-usage",
         version: "0.0.0",
         dependencies: {
-          [`codeql/${lang}-all`]: "*",
+          [`codeql/${language}-all`]: "*",
         },
       });
 
       expect(
         await readFile(join(queryDirectory, "FetchExternalApis.ql"), "utf8"),
-      ).toEqual(query.mainQuery);
+      ).toEqual(query[queryName]);
 
       for (const [filename, contents] of Object.entries(
         query.dependencies ?? {},
@@ -121,8 +148,8 @@ describe("runQuery", () => {
           contents,
         );
       }
-    }
-  });
+    },
+  );
 });
 
 describe("readQueryResults", () => {

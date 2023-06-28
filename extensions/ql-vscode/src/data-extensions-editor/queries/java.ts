@@ -1,7 +1,7 @@
 import { Query } from "./query";
 
 export const fetchExternalApisQuery: Query = {
-  mainQuery: `/**
+  applicationModeQuery: `/**
  * @name Usage of APIs coming from external libraries
  * @description A list of 3rd party APIs used in the codebase. Excludes test and generated code.
  * @tags telemetry
@@ -10,28 +10,46 @@ export const fetchExternalApisQuery: Query = {
  */
 
 import java
-import ExternalApi
+import AutomodelVsCode
+
+class ExternalApi extends CallableMethod {
+  ExternalApi() { not this.fromSource() }
+}
 
 private Call aUsage(ExternalApi api) {
   result.getCallee().getSourceDeclaration() = api and
   not result.getFile() instanceof GeneratedFile
 }
 
-private boolean isSupported(ExternalApi api) {
-  api.isSupported() and result = true
-  or
-  not api.isSupported() and result = false
-}
-
-from ExternalApi api, string apiName, boolean supported, Call usage
+from ExternalApi externalApi, string apiName, boolean supported, Call usage
 where
-  apiName = api.getApiName() and
-  supported = isSupported(api) and
-  usage = aUsage(api)
-select usage, apiName, supported.toString(), "supported", api.jarContainer(), "library"
+  apiName = externalApi.getApiName() and
+  supported = isSupported(externalApi) and
+  usage = aUsage(externalApi)
+select usage, apiName, supported.toString(), "supported", externalApi.jarContainer(), "library"
+`,
+  frameworkModeQuery: `/**
+ * @name Public methods
+ * @description A list of APIs callable by consumers. Excludes test and generated code.
+ * @tags telemetry
+ * @kind problem
+ * @id java/telemetry/fetch-public-methods
+ */
+
+import java
+import AutomodelVsCode
+
+class PublicMethodFromSource extends CallableMethod, ModelApi { }
+
+from PublicMethodFromSource publicMethod, string apiName, boolean supported
+where
+  apiName = publicMethod.getApiName() and
+  supported = isSupported(publicMethod)
+select publicMethod, apiName, supported.toString(), "supported",
+  publicMethod.getCompilationUnit().getParentContainer().getBaseName(), "library"
 `,
   dependencies: {
-    "ExternalApi.qll": `/** Provides classes and predicates related to handling APIs from external libraries. */
+    "AutomodelVsCode.qll": `/** Provides classes and predicates related to handling APIs for the VS Code extension. */
 
 private import java
 private import semmle.code.java.dataflow.DataFlow
@@ -41,57 +59,42 @@ private import semmle.code.java.dataflow.FlowSummary
 private import semmle.code.java.dataflow.internal.DataFlowPrivate
 private import semmle.code.java.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
 private import semmle.code.java.dataflow.TaintTracking
+private import semmle.code.java.dataflow.internal.ModelExclusions
 
-pragma[nomagic]
-private predicate isTestPackage(Package p) {
-  p.getName()
-      .matches([
-          "org.junit%", "junit.%", "org.mockito%", "org.assertj%",
-          "com.github.tomakehurst.wiremock%", "org.hamcrest%", "org.springframework.test.%",
-          "org.springframework.mock.%", "org.springframework.boot.test.%", "reactor.test%",
-          "org.xmlunit%", "org.testcontainers.%", "org.opentest4j%", "org.mockserver%",
-          "org.powermock%", "org.skyscreamer.jsonassert%", "org.rnorth.visibleassertions",
-          "org.openqa.selenium%", "com.gargoylesoftware.htmlunit%", "org.jboss.arquillian.testng%",
-          "org.testng%"
-        ])
-}
-
-/**
- * A test library.
- */
-private class TestLibrary extends RefType {
-  TestLibrary() { isTestPackage(this.getPackage()) }
-}
-
-private string containerAsJar(Container container) {
-  if container instanceof JarFile then result = container.getBaseName() else result = "rt.jar"
-}
-
-/** Holds if the given callable is not worth supporting. */
+/** Holds if the given callable/method is not worth supporting. */
 private predicate isUninteresting(Callable c) {
   c.getDeclaringType() instanceof TestLibrary or
-  c.(Constructor).isParameterless()
+  c.(Constructor).isParameterless() or
+  c.getDeclaringType() instanceof AnonymousClass
 }
 
 /**
- * An external API from either the Standard Library or a 3rd party library.
+ * A callable method from either the Standard Library, a 3rd party library or from the source.
  */
-class ExternalApi extends Callable {
-  ExternalApi() { not this.fromSource() and not isUninteresting(this) }
+class CallableMethod extends Method {
+  CallableMethod() { not isUninteresting(this) }
 
   /**
    * Gets information about the external API in the form expected by the MaD modeling framework.
    */
   string getApiName() {
     result =
-      this.getDeclaringType().getPackage() + "." + this.getDeclaringType().getSourceDeclaration() +
-        "#" + this.getName() + paramsString(this)
+      this.getDeclaringType().getPackage() + "." + this.getDeclaringType().nestedName() + "#" +
+        this.getName() + paramsString(this)
+  }
+
+  private string getJarName() {
+    result = this.getCompilationUnit().getParentContainer*().(JarFile).getBaseName()
   }
 
   /**
    * Gets the jar file containing this API. Normalizes the Java Runtime to "rt.jar" despite the presence of modules.
    */
-  string jarContainer() { result = containerAsJar(this.getCompilationUnit().getParentContainer*()) }
+  string jarContainer() {
+    result = this.getJarName()
+    or
+    not exists(this.getJarName()) and result = "rt.jar"
+  }
 
   /** Gets a node that is an input to a call to this API. */
   private DataFlow::Node getAnInput() {
@@ -138,50 +141,85 @@ class ExternalApi extends Callable {
   }
 }
 
-/** DEPRECATED: Alias for ExternalApi */
-deprecated class ExternalAPI = ExternalApi;
+boolean isSupported(CallableMethod method) {
+  method.isSupported() and result = true
+  or
+  not method.isSupported() and result = false
+}
+
+// The below is a copy of https://github.com/github/codeql/blob/249f9f863db1e94e3c46ca85b49fb0ec32f8ca92/java/ql/lib/semmle/code/java/dataflow/internal/ModelExclusions.qll
+// to avoid the use of internal modules.
+/** Holds if the given package \`p\` is a test package. */
+pragma[nomagic]
+private predicate isTestPackage(Package p) {
+  p.getName()
+      .matches([
+          "org.junit%", "junit.%", "org.mockito%", "org.assertj%",
+          "com.github.tomakehurst.wiremock%", "org.hamcrest%", "org.springframework.test.%",
+          "org.springframework.mock.%", "org.springframework.boot.test.%", "reactor.test%",
+          "org.xmlunit%", "org.testcontainers.%", "org.opentest4j%", "org.mockserver%",
+          "org.powermock%", "org.skyscreamer.jsonassert%", "org.rnorth.visibleassertions",
+          "org.openqa.selenium%", "com.gargoylesoftware.htmlunit%", "org.jboss.arquillian.testng%",
+          "org.testng%"
+        ])
+}
 
 /**
- * Gets the limit for the number of results produced by a telemetry query.
+ * A test library.
  */
-int resultLimit() { result = 1000 }
+class TestLibrary extends RefType {
+  TestLibrary() { isTestPackage(this.getPackage()) }
+}
+
+/** Holds if the given file is a test file. */
+private predicate isInTestFile(File file) {
+  file.getAbsolutePath().matches(["%/test/%", "%/guava-tests/%", "%/guava-testlib/%"]) and
+  not file.getAbsolutePath().matches("%/ql/test/%") // allows our test cases to work
+}
+
+/** Holds if the given compilation unit's package is a JDK internal. */
+private predicate isJdkInternal(CompilationUnit cu) {
+  cu.getPackage().getName().matches("org.graalvm%") or
+  cu.getPackage().getName().matches("com.sun%") or
+  cu.getPackage().getName().matches("sun%") or
+  cu.getPackage().getName().matches("jdk%") or
+  cu.getPackage().getName().matches("java2d%") or
+  cu.getPackage().getName().matches("build.tools%") or
+  cu.getPackage().getName().matches("propertiesparser%") or
+  cu.getPackage().getName().matches("org.jcp%") or
+  cu.getPackage().getName().matches("org.w3c%") or
+  cu.getPackage().getName().matches("org.ietf.jgss%") or
+  cu.getPackage().getName().matches("org.xml.sax%") or
+  cu.getPackage().getName().matches("com.oracle%") or
+  cu.getPackage().getName().matches("org.omg%") or
+  cu.getPackage().getName().matches("org.relaxng%") or
+  cu.getPackage().getName() = "compileproperties" or
+  cu.getPackage().getName() = "transparentruler" or
+  cu.getPackage().getName() = "genstubs" or
+  cu.getPackage().getName() = "netscape.javascript" or
+  cu.getPackage().getName() = ""
+}
+
+/** Holds if the given callable is not worth modeling. */
+predicate isUninterestingForModels(Callable c) {
+  isInTestFile(c.getCompilationUnit().getFile()) or
+  isJdkInternal(c.getCompilationUnit()) or
+  c instanceof MainMethod or
+  c instanceof StaticInitializer or
+  exists(FunctionalExpr funcExpr | c = funcExpr.asMethod()) or
+  c.getDeclaringType() instanceof TestLibrary or
+  c.(Constructor).isParameterless()
+}
 
 /**
- * Holds if it is relevant to count usages of \`api\`.
+ * A class that represents all callables for which we might be
+ * interested in having a MaD model.
  */
-signature predicate relevantApi(ExternalApi api);
-
-/**
- * Given a predicate to count relevant API usages, this module provides a predicate
- * for restricting the number or returned results based on a certain limit.
- */
-module Results<relevantApi/1 getRelevantUsages> {
-  private int getUsages(string apiName) {
-    result =
-      strictcount(Call c, ExternalApi api |
-        c.getCallee().getSourceDeclaration() = api and
-        not c.getFile() instanceof GeneratedFile and
-        apiName = api.getApiName() and
-        getRelevantUsages(api)
-      )
-  }
-
-  private int getOrder(string apiInfo) {
-    apiInfo =
-      rank[result](string info, int usages |
-        usages = getUsages(info)
-      |
-        info order by usages desc, info
-      )
-  }
-
-  /**
-   * Holds if there exists an API with \`apiName\` that is being used \`usages\` times
-   * and if it is in the top results (guarded by resultLimit).
-   */
-  predicate restrict(string apiName, int usages) {
-    usages = getUsages(apiName) and
-    getOrder(apiName) <= resultLimit()
+class ModelApi extends SrcCallable {
+  ModelApi() {
+    this.fromSource() and
+    this.isEffectivelyPublic() and
+    not isUninterestingForModels(this)
   }
 }
 `,

@@ -7,7 +7,7 @@ import {
   compileQuery,
   registerDatabases,
   deregisterDatabases,
-} from "../../../src/pure/legacy-messages";
+} from "../../../src/query-server/legacy-messages";
 import * as config from "../../../src/config";
 import { tmpDir } from "../../../src/tmp-dir";
 import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
@@ -22,7 +22,7 @@ import {
 } from "../../../src/query-server/legacy";
 import { DatabaseItem } from "../../../src/databases/local-databases";
 import { DeepPartial, mockedObject } from "../utils/mocking.helpers";
-import { BqrsKind } from "../../../src/pure/bqrs-cli-types";
+import { BqrsKind } from "../../../src/common/bqrs-cli-types";
 
 describe("run-queries", () => {
   let isCanarySpy: jest.SpiedFunction<typeof config.isCanary>;

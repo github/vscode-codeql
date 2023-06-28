@@ -13,7 +13,7 @@ import {
   getDefaultResultSetName,
   ParsedResultSets,
   IntoResultsViewMsg,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import { PathTable } from "./alert-table";
 import { Graph } from "./graph";
 import { RawTable } from "./raw-results-table";
@@ -327,6 +327,10 @@ export class ResultTables extends React.Component<
         </button>
         <div className={tableHeaderItemClassName}>{this.props.queryName}</div>
         <div className={tableHeaderItemClassName}>
+          {/*
+              eslint-disable-next-line
+              jsx-a11y/anchor-is-valid
+            */}
           <a
             href="#"
             onClick={openQuery}

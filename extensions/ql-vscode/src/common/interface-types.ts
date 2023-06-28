@@ -5,7 +5,7 @@ import {
   ResultSetSchema,
   Column,
   ResolvableLocationValue,
-} from "./bqrs-cli-types";
+} from "../common/bqrs-cli-types";
 import {
   VariantAnalysis,
   VariantAnalysisScannedRepositoryResult,
@@ -14,12 +14,13 @@ import {
 import {
   RepositoriesFilterSortState,
   RepositoriesFilterSortStateWithIds,
-} from "./variant-analysis-filter-sort";
-import { ErrorLike } from "./errors";
+} from "../variant-analysis/shared/variant-analysis-filter-sort";
+import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 import { ExternalApiUsage } from "../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../data-extensions-editor/modeled-method";
 import { DataExtensionEditorViewState } from "../data-extensions-editor/shared/view-state";
+import { Mode } from "../data-extensions-editor/shared/mode";
 
 /**
  * This module contains types and code that are shared between
@@ -521,6 +522,11 @@ export interface AddModeledMethodsMessage {
   overrideNone?: boolean;
 }
 
+export interface SwitchModeMessage {
+  t: "switchMode";
+  mode: Mode;
+}
+
 export interface JumpToUsageMessage {
   t: "jumpToUsage";
   location: ResolvableLocationValue;
@@ -530,8 +536,8 @@ export interface OpenExtensionPackMessage {
   t: "openExtensionPack";
 }
 
-export interface OpenModelFileMessage {
-  t: "openModelFile";
+export interface RefreshExternalApiUsages {
+  t: "refreshExternalApiUsages";
 }
 
 export interface SaveModeledMethods {
@@ -558,7 +564,8 @@ export type ToDataExtensionsEditorMessage =
 
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
-  | OpenModelFileMessage
+  | SwitchModeMessage
+  | RefreshExternalApiUsages
   | OpenExtensionPackMessage
   | JumpToUsageMessage
   | SaveModeledMethods

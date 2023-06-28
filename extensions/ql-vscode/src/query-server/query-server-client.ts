@@ -1,16 +1,13 @@
 import { ensureFile } from "fs-extra";
 
-import { DisposableObject, DisposeHandler } from "../pure/disposable-object";
+import { DisposableObject, DisposeHandler } from "../common/disposable-object";
 import { CancellationToken } from "vscode";
 import { createMessageConnection, RequestType } from "vscode-jsonrpc/node";
 import * as cli from "../codeql-cli/cli";
 import { QueryServerConfig } from "../config";
-import { extLogger, Logger, ProgressReporter } from "../common";
-import {
-  progress,
-  ProgressMessage,
-  WithProgressId,
-} from "../pure/new-messages";
+import { Logger, showAndLogErrorMessage } from "../common/logging";
+import { extLogger, ProgressReporter } from "../common/logging/vscode";
+import { progress, ProgressMessage, WithProgressId } from "./new-messages";
 import {
   ProgressCallback,
   ProgressTask,
@@ -18,8 +15,6 @@ import {
 } from "../common/vscode/progress";
 import { ServerProcess } from "./server-process";
 import { App } from "../common/app";
-
-import { showAndLogErrorMessage } from "../common/logging";
 
 type ServerOpts = {
   logger: Logger;

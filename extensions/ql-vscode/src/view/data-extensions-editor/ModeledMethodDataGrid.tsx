@@ -8,10 +8,13 @@ import { MethodRow } from "./MethodRow";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { useMemo } from "react";
+import { Mode } from "../../data-extensions-editor/shared/mode";
+import { sortMethods } from "../../data-extensions-editor/shared/sorting";
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
+  mode: Mode;
   onChange: (
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
@@ -21,23 +24,13 @@ type Props = {
 export const ModeledMethodDataGrid = ({
   externalApiUsages,
   modeledMethods,
+  mode,
   onChange,
 }: Props) => {
-  const sortedExternalApiUsages = useMemo(() => {
-    const sortedExternalApiUsages = [...externalApiUsages];
-    sortedExternalApiUsages.sort((a, b) => {
-      // Sort first by supported, putting unmodeled methods first.
-      if (a.supported && !b.supported) {
-        return 1;
-      }
-      if (!a.supported && b.supported) {
-        return -1;
-      }
-      // Then sort by number of usages descending
-      return b.usages.length - a.usages.length;
-    });
-    return sortedExternalApiUsages;
-  }, [externalApiUsages]);
+  const sortedExternalApiUsages = useMemo(
+    () => sortMethods(externalApiUsages),
+    [externalApiUsages],
+  );
 
   return (
     <VSCodeDataGrid>
@@ -48,9 +41,11 @@ export const ModeledMethodDataGrid = ({
         <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
           Method
         </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
-          Usages
-        </VSCodeDataGridCell>
+        {mode === Mode.Application && (
+          <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
+            Usages
+          </VSCodeDataGridCell>
+        )}
         <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
           Model type
         </VSCodeDataGridCell>
@@ -69,6 +64,7 @@ export const ModeledMethodDataGrid = ({
           key={externalApiUsage.signature}
           externalApiUsage={externalApiUsage}
           modeledMethod={modeledMethods[externalApiUsage.signature]}
+          mode={mode}
           onChange={onChange}
         />
       ))}

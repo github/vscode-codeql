@@ -1,5 +1,5 @@
 import { Credentials } from "./authentication";
-import { Disposable } from "../pure/disposable-object";
+import { Disposable } from "./disposable-object";
 import { AppEventEmitter } from "./events";
 import { NotificationLogger } from "./logging";
 import { Memento } from "./memento";

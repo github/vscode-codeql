@@ -9,7 +9,7 @@ import {
 } from "vscode";
 import { DebuggerCommands } from "../common/commands";
 import { DatabaseManager } from "../databases/local-databases";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { CoreQueryResults } from "../query-server";
 import {
   getQuickEvalContext,

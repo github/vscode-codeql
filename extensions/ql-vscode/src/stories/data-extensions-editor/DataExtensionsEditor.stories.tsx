@@ -2,6 +2,7 @@ import * as React from "react";
 
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 
+import { Mode } from "../../data-extensions-editor/shared/mode";
 import { DataExtensionsEditor as DataExtensionsEditorComponent } from "../../view/data-extensions-editor/DataExtensionsEditor";
 
 export default {
@@ -16,21 +17,18 @@ const Template: ComponentStory<typeof DataExtensionsEditorComponent> = (
 export const DataExtensionsEditor = Template.bind({});
 DataExtensionsEditor.args = {
   initialViewState: {
-    extensionPackModelFile: {
-      extensionPack: {
-        path: "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o",
-        yamlPath:
-          "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/codeql-pack.yml",
-        name: "codeql/sql2o-models",
-        version: "0.0.0",
-        extensionTargets: {},
-        dataExtensions: [],
-      },
-      filename:
-        "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/models/sql2o.yml",
+    extensionPack: {
+      path: "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o",
+      yamlPath:
+        "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/codeql-pack.yml",
+      name: "codeql/sql2o-models",
+      version: "0.0.0",
+      extensionTargets: {},
+      dataExtensions: [],
     },
-    modelFileExists: true,
+    enableFrameworkMode: true,
     showLlmButton: true,
+    mode: Mode.Application,
   },
   initialExternalApiUsages: [
     {

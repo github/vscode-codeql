@@ -1,7 +1,7 @@
 import { CancellationTokenSource, env } from "vscode";
 
-import * as messages from "./pure/messages-shared";
-import * as legacyMessages from "./pure/legacy-messages";
+import * as messages from "./query-server/messages-shared";
+import * as legacyMessages from "./query-server/legacy-messages";
 import * as cli from "./codeql-cli/cli";
 import { pathExists } from "fs-extra";
 import { basename } from "path";
@@ -14,7 +14,7 @@ import {
   SarifInterpretationData,
   GraphInterpretationData,
   DatabaseInfo,
-} from "./pure/interface-types";
+} from "./common/interface-types";
 import { QueryStatus } from "./query-status";
 import {
   EvaluatorLogPaths,
@@ -41,6 +41,7 @@ export interface InitialQueryInfo {
   readonly queryText: string; // text of the selected file, or the selected text when doing quick eval
   readonly isQuickQuery: boolean;
   readonly isQuickEval: boolean;
+  readonly isQuickEvalCount?: boolean; // Missing is false for backwards compatibility
   readonly quickEvalPosition?: messages.Position;
   readonly queryPath: string;
   readonly databaseInfo: DatabaseInfo;
@@ -270,7 +271,9 @@ export class LocalQueryInfo {
    * - Otherwise, return the query file name.
    */
   getQueryName() {
-    if (this.initialInfo.quickEvalPosition) {
+    if (this.initialInfo.isQuickEvalCount) {
+      return `Quick evaluation counts of ${this.getQueryFileName()}`;
+    } else if (this.initialInfo.isQuickEval) {
       return `Quick evaluation of ${this.getQueryFileName()}`;
     } else if (this.completedQuery?.query.metadata?.name) {
       return this.completedQuery?.query.metadata?.name;

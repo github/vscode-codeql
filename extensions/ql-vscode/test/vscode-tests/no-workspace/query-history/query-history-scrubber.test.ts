@@ -2,7 +2,7 @@ import { readdirSync, mkdirSync, writeFileSync } from "fs-extra";
 import { join } from "path";
 import * as vscode from "vscode";
 
-import { extLogger } from "../../../../src/common";
+import { extLogger } from "../../../../src/common/logging/vscode";
 import { registerQueryHistoryScrubber } from "../../../../src/query-history/query-history-scrubber";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { dirSync } from "tmp-promise";
@@ -11,7 +11,7 @@ import {
   ONE_HOUR_IN_MS,
   THREE_HOURS_IN_MS,
   TWO_HOURS_IN_MS,
-} from "../../../../src/pure/time";
+} from "../../../../src/common/time";
 import { mockedObject } from "../../utils/mocking.helpers";
 
 describe("query history scrubber", () => {

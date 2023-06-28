@@ -1,5 +1,5 @@
 import { Diagnostic, DiagnosticSeverity, languages, Range, Uri } from "vscode";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { QueryHistoryInfo } from "../query-history/query-history-info";
 import {
   EvaluationLogProblemReporter,
@@ -7,7 +7,7 @@ import {
 } from "./log-scanner";
 import { PipelineInfo, SummarySymbols } from "./summary-parser";
 import { readFile } from "fs-extra";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import { QueryHistoryManager } from "../query-history/query-history-manager";
 
 /**

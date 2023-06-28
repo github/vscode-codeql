@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import { renderLocation } from "./result-table-utils";
-import { CellValue } from "../../pure/bqrs-cli-types";
+import { CellValue } from "../../common/bqrs-cli-types";
 
 interface Props {
   value: CellValue;

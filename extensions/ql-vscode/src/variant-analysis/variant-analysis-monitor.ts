@@ -10,9 +10,9 @@ import {
 } from "./shared/variant-analysis";
 import { VariantAnalysis as ApiVariantAnalysis } from "./gh-api/variant-analysis";
 import { processUpdatedVariantAnalysis } from "./variant-analysis-processor";
-import { DisposableObject } from "../pure/disposable-object";
-import { sleep } from "../pure/time";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { DisposableObject } from "../common/disposable-object";
+import { sleep } from "../common/time";
+import { getErrorMessage } from "../common/helpers-pure";
 import { App } from "../common/app";
 import { showAndLogWarningMessage } from "../common/logging";
 

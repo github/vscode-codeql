@@ -6,7 +6,7 @@ import {
 } from "vscode-languageclient/node";
 import { shouldDebugIdeServer, spawnServer } from "../codeql-cli/cli";
 import { QueryServerConfig } from "../config";
-import { ideServerLogger } from "../common";
+import { ideServerLogger } from "../common/logging/vscode";
 
 /**
  * Managing the language server for CodeQL.

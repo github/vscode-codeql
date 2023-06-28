@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
 import { VSCodeCredentials } from "./authentication";
-import { Disposable } from "../../pure/disposable-object";
+import { Disposable } from "../disposable-object";
 import { App, AppMode, EnvironmentContext } from "../app";
 import { AppEventEmitter } from "../events";
-import { extLogger, NotificationLogger, queryServerLogger } from "../logging";
+import { NotificationLogger } from "../logging";
+import { extLogger, queryServerLogger } from "../logging/vscode";
 import { Memento } from "../memento";
 import { VSCodeAppEventEmitter } from "./events";
 import { AppCommandManager, QueryServerCommandManager } from "../commands";

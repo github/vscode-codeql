@@ -11,14 +11,14 @@ import {
   deregisterDatabases,
   registerDatabases,
   upgradeDatabase,
-} from "../pure/new-messages";
+} from "./new-messages";
 import { CoreQueryResults, CoreQueryTarget, QueryRunner } from "./query-runner";
 import { QueryServerClient } from "./query-server-client";
 import { compileAndRunQueryAgainstDatabaseCore } from "./run-queries";
 import * as vscode from "vscode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { Logger } from "../common";
+import { Logger } from "../common/logging";
 import { QueryOutputDir } from "../run-queries-shared";
 
 export class NewQueryRunner extends QueryRunner {

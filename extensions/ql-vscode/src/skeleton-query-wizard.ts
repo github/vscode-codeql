@@ -1,14 +1,14 @@
 import { join } from "path";
 import { Uri, workspace, window as Window } from "vscode";
 import { CodeQLCliServer } from "./codeql-cli/cli";
-import { BaseLogger } from "./common";
+import { BaseLogger } from "./common/logging";
 import { Credentials } from "./common/authentication";
 import { QueryLanguage } from "./common/query-language";
 import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
 } from "./common/vscode/workspace-folders";
-import { getErrorMessage } from "./pure/helpers-pure";
+import { getErrorMessage } from "./common/helpers-pure";
 import { QlPackGenerator } from "./qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "./databases/local-databases";
 import {

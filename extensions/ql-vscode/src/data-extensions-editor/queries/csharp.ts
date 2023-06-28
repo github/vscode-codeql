@@ -1,7 +1,7 @@
 import { Query } from "./query";
 
 export const fetchExternalApisQuery: Query = {
-  mainQuery: `/**
+  applicationModeQuery: `/**
  * @name Usage of APIs coming from external libraries
  * @description A list of 3rd party APIs used in the codebase.
  * @tags telemetry
@@ -9,17 +9,18 @@ export const fetchExternalApisQuery: Query = {
  * @id cs/telemetry/fetch-external-apis
  */
 
-import csharp
-import ExternalApi
+private import csharp
+private import AutomodelVsCode
+
+class ExternalApi extends CallableMethod {
+  ExternalApi() {
+    this.isUnboundDeclaration() and
+    this.fromLibrary() and
+    this.(Modifiable).isEffectivelyPublic()
+  }
+}
 
 private Call aUsage(ExternalApi api) { result.getTarget().getUnboundDeclaration() = api }
-
-private boolean isSupported(ExternalApi api) {
-  api.isSupported() and result = true
-  or
-  not api.isSupported() and
-  result = false
-}
 
 from ExternalApi api, string apiName, boolean supported, Call usage
 where
@@ -28,8 +29,32 @@ where
   usage = aUsage(api)
 select usage, apiName, supported.toString(), "supported", api.getFile().getBaseName(), "library"
 `,
+  frameworkModeQuery: `/**
+ * @name Public methods
+ * @description A list of APIs callable by consumers. Excludes test and generated code.
+ * @tags telemetry
+ * @kind problem
+ * @id cs/telemetry/fetch-public-methods
+ */
+
+private import csharp
+private import dotnet
+private import semmle.code.csharp.frameworks.Test
+private import AutomodelVsCode
+
+class PublicMethod extends CallableMethod {
+  PublicMethod() { this.fromSource() and not this.getFile() instanceof TestFile }
+}
+
+from PublicMethod publicMethod, string apiName, boolean supported
+where
+  apiName = publicMethod.getApiName() and
+  supported = isSupported(publicMethod)
+select publicMethod, apiName, supported.toString(), "supported",
+  publicMethod.getFile().getBaseName(), "library"
+`,
   dependencies: {
-    "ExternalApi.qll": `/** Provides classes and predicates related to handling APIs from external libraries. */
+    "AutomodelVsCode.qll": `/** Provides classes and predicates related to handling APIs for the VS Code extension. */
 
 private import csharp
 private import dotnet
@@ -59,20 +84,29 @@ class TestLibrary extends RefType {
 }
 
 /** Holds if the given callable is not worth supporting. */
-private predicate isUninteresting(DotNet::Callable c) {
+private predicate isUninteresting(DotNet::Declaration c) {
   c.getDeclaringType() instanceof TestLibrary or
-  c.(Constructor).isParameterless()
+  c.(Constructor).isParameterless() or
+  c.getDeclaringType() instanceof AnonymousClass
 }
 
 /**
- * An external API from either the C# Standard Library or a 3rd party library.
+ * An callable method from either the C# Standard Library, a 3rd party library, or from the source.
  */
-class ExternalApi extends DotNet::Callable {
-  ExternalApi() {
-    this.isUnboundDeclaration() and
-    this.fromLibrary() and
+class CallableMethod extends DotNet::Declaration {
+  CallableMethod() {
     this.(Modifiable).isEffectivelyPublic() and
     not isUninteresting(this)
+  }
+
+  /**
+   * Gets the unbound type, name and parameter types of this API.
+   */
+  bindingset[this]
+  private string getSignature() {
+    result =
+      nestedName(this.getDeclaringType().getUnboundDeclaration()) + "." + this.getName() + "(" +
+        parameterQualifiedTypeNamesToString(this) + ")"
   }
 
   /**
@@ -85,8 +119,7 @@ class ExternalApi extends DotNet::Callable {
    * Gets the namespace and signature of this API.
    */
   bindingset[this]
-  string getApiName() { result = this.getNamespace() + "." + this.getDeclaringType().getUnboundDeclaration() + "#" + this.getName() + "(" +
-  parameterQualifiedTypeNamesToString(this) + ")" }
+  string getApiName() { result = this.getNamespace() + "#" + this.getSignature() }
 
   /** Gets a node that is an input to a call to this API. */
   private ArgumentNode getAnInput() {
@@ -140,47 +173,26 @@ class ExternalApi extends DotNet::Callable {
   }
 }
 
-/**
- * Gets the limit for the number of results produced by a telemetry query.
- */
-int resultLimit() { result = 1000 }
+boolean isSupported(CallableMethod callableMethod) {
+  callableMethod.isSupported() and result = true
+  or
+  not callableMethod.isSupported() and
+  result = false
+}
 
 /**
- * Holds if it is relevant to count usages of "api".
+ * Gets the nested name of the declaration.
+ *
+ * If the declaration is not a nested type, the result is the same as \`getName()\`.
+ * Otherwise the name of the nested type is prefixed with a \`+\` and appended to
+ * the name of the enclosing type, which might be a nested type as well.
  */
-signature predicate relevantApi(ExternalApi api);
-
-/**
- * Given a predicate to count relevant API usages, this module provides a predicate
- * for restricting the number or returned results based on a certain limit.
- */
-module Results<relevantApi/1 getRelevantUsages> {
-  private int getUsages(string apiName) {
-    result =
-      strictcount(Call c, ExternalApi api |
-        c.getTarget().getUnboundDeclaration() = api and
-        apiName = api.getApiName() and
-        getRelevantUsages(api)
-      )
-  }
-
-  private int getOrder(string apiName) {
-    apiName =
-      rank[result](string name, int usages |
-        usages = getUsages(name)
-      |
-        name order by usages desc, name
-      )
-  }
-
-  /**
-   * Holds if there exists an API with "apiName" that is being used "usages" times
-   * and if it is in the top results (guarded by resultLimit).
-   */
-  predicate restrict(string apiName, int usages) {
-    usages = getUsages(apiName) and
-    getOrder(apiName) <= resultLimit()
-  }
+private string nestedName(Declaration declaration) {
+  not exists(declaration.getDeclaringType().getUnboundDeclaration()) and
+  result = declaration.getName()
+  or
+  nestedName(declaration.getDeclaringType().getUnboundDeclaration()) + "+" + declaration.getName() =
+    result
 }
 `,
   },

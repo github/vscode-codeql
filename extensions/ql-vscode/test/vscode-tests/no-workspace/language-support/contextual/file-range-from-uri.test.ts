@@ -4,7 +4,7 @@ import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import {
   WholeFileLocation,
   LineColumnLocation,
-} from "../../../../../src/pure/bqrs-cli-types";
+} from "../../../../../src/common/bqrs-cli-types";
 import { mockDatabaseItem } from "../../../utils/mocking.helpers";
 import { fileRangeFromURI } from "../../../../../src/language-support";
 

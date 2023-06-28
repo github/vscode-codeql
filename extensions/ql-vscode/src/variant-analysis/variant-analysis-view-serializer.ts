@@ -1,6 +1,6 @@
 import { ExtensionContext, WebviewPanel, WebviewPanelSerializer } from "vscode";
 import { VariantAnalysisView } from "./variant-analysis-view";
-import { VariantAnalysisState } from "../pure/interface-types";
+import { VariantAnalysisState } from "../common/interface-types";
 import { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
 import { App } from "../common/app";
 

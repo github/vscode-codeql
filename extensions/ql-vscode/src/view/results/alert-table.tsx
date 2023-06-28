@@ -1,7 +1,7 @@
 import { basename } from "path";
 import * as React from "react";
 import * as Sarif from "sarif";
-import * as Keys from "../../pure/result-keys";
+import * as Keys from "./result-keys";
 import { chevronDown, chevronRight, info, listUnordered } from "./octicons";
 import {
   className,
@@ -21,14 +21,14 @@ import {
   InterpretedResultsSortColumn,
   SortDirection,
   InterpretedResultsSortState,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
   isNoLocation,
-} from "../../pure/sarif-utils";
+} from "../../common/sarif-utils";
 import { vscode } from "../vscode-api";
-import { isWholeFileLoc, isLineColumnLoc } from "../../pure/bqrs-utils";
+import { isWholeFileLoc, isLineColumnLoc } from "../../common/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 
@@ -111,6 +111,10 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return (
         <span>
           No Alerts. See{" "}
+          {/*
+              eslint-disable-next-line
+              jsx-a11y/anchor-is-valid,
+            */}
           <a href="#" onClick={this.props.showRawResults}>
             raw results
           </a>
@@ -316,6 +320,10 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
               {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
               key={resultIndex}
             >
+              {/*
+                  eslint-disable-next-line
+                  jsx-a11y/no-noninteractive-element-interactions
+                */}
               <td
                 className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell"
                 onMouseDown={toggler(indices)}
@@ -353,6 +361,10 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
                   <td className="vscode-codeql__icon-cell">
                     <span className="vscode-codeql__vertical-rule"></span>
                   </td>
+                  {/*
+                      eslint-disable-next-line
+                      jsx-a11y/no-noninteractive-element-interactions
+                    */}
                   <td
                     className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell"
                     onMouseDown={toggler([pathKey])}

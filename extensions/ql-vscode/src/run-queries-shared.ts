@@ -1,6 +1,6 @@
-import * as messages from "./pure/messages-shared";
-import * as legacyMessages from "./pure/legacy-messages";
-import { DatabaseInfo, QueryMetadata } from "./pure/interface-types";
+import * as messages from "./query-server/messages-shared";
+import * as legacyMessages from "./query-server/legacy-messages";
+import { DatabaseInfo, QueryMetadata } from "./common/interface-types";
 import { join, parse, dirname, basename } from "path";
 import {
   ConfigurationTarget,
@@ -27,11 +27,11 @@ import { nanoid } from "nanoid";
 import { CodeQLCliServer } from "./codeql-cli/cli";
 import { SELECT_QUERY_NAME } from "./language-support";
 import { DatabaseManager } from "./databases/local-databases";
-import { DecodedBqrsChunk, EntityValue } from "./pure/bqrs-cli-types";
-import { BaseLogger, extLogger } from "./common";
+import { DecodedBqrsChunk, EntityValue } from "./common/bqrs-cli-types";
+import { BaseLogger, showAndLogWarningMessage } from "./common/logging";
+import { extLogger } from "./common/logging/vscode";
 import { generateSummarySymbolsFile } from "./log-insights/summary-parser";
-import { getErrorMessage } from "./pure/helpers-pure";
-import { showAndLogWarningMessage } from "./common/logging";
+import { getErrorMessage } from "./common/helpers-pure";
 
 /**
  * run-queries.ts
@@ -585,9 +585,12 @@ export async function createInitialQueryInfo(
   databaseInfo: DatabaseInfo,
 ): Promise<InitialQueryInfo> {
   const isQuickEval = selectedQuery.quickEval !== undefined;
+  const isQuickEvalCount =
+    selectedQuery.quickEval?.quickEvalCount !== undefined;
   return {
     queryPath: selectedQuery.queryPath,
     isQuickEval,
+    isQuickEvalCount,
     isQuickQuery: isQuickQueryPath(selectedQuery.queryPath),
     databaseInfo,
     id: `${basename(selectedQuery.queryPath)}-${nanoid()}`,

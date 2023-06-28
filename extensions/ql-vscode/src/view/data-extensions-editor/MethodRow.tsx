@@ -17,6 +17,7 @@ import {
 } from "../../data-extensions-editor/modeled-method";
 import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../data-extensions-editor/predicates";
+import { Mode } from "../../data-extensions-editor/shared/mode";
 
 const Dropdown = styled(VSCodeDropdown)`
   width: 100%;
@@ -37,6 +38,25 @@ const SupportSpan = styled.span<SupportedUnsupportedSpanProps>`
   }};
 `;
 
+type SupportedUnsupportedLinkProps = {
+  supported: boolean;
+  modeled: ModeledMethod | undefined;
+};
+
+const SupportLink = styled.button<SupportedUnsupportedLinkProps>`
+  color: ${(props) => {
+    if (!props.supported && props.modeled && props.modeled?.type !== "none") {
+      return "orange";
+    } else {
+      return props.supported ? "green" : "red";
+    }
+  }};
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+`;
+
 const UsagesButton = styled.button`
   color: var(--vscode-editor-foreground);
   background-color: transparent;
@@ -47,6 +67,7 @@ const UsagesButton = styled.button`
 type Props = {
   externalApiUsage: ExternalApiUsage;
   modeledMethod: ModeledMethod | undefined;
+  mode: Mode;
   onChange: (
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
@@ -56,6 +77,7 @@ type Props = {
 export const MethodRow = ({
   externalApiUsage,
   modeledMethod,
+  mode,
   onChange,
 }: Props) => {
   const argumentsList = useMemo(() => {
@@ -137,6 +159,7 @@ export const MethodRow = ({
   const jumpToUsage = useCallback(() => {
     vscode.postMessage({
       t: "jumpToUsage",
+      // In framework mode, the first and only usage is the definition of the method
       location: externalApiUsage.usages[0].url,
     });
   }, [externalApiUsage]);
@@ -157,19 +180,33 @@ export const MethodRow = ({
         </SupportSpan>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={2}>
-        <SupportSpan
-          supported={externalApiUsage.supported}
-          modeled={modeledMethod}
-        >
-          {externalApiUsage.methodName}
-          {externalApiUsage.methodParameters}
-        </SupportSpan>
+        {mode === Mode.Application && (
+          <SupportSpan
+            supported={externalApiUsage.supported}
+            modeled={modeledMethod}
+          >
+            {externalApiUsage.methodName}
+            {externalApiUsage.methodParameters}
+          </SupportSpan>
+        )}
+        {mode === Mode.Framework && (
+          <SupportLink
+            supported={externalApiUsage.supported}
+            modeled={modeledMethod}
+            onClick={jumpToUsage}
+          >
+            {externalApiUsage.methodName}
+            {externalApiUsage.methodParameters}
+          </SupportLink>
+        )}
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={3}>
-        <UsagesButton onClick={jumpToUsage}>
-          {externalApiUsage.usages.length}
-        </UsagesButton>
-      </VSCodeDataGridCell>
+      {mode === Mode.Application && (
+        <VSCodeDataGridCell gridColumn={3}>
+          <UsagesButton onClick={jumpToUsage}>
+            {externalApiUsage.usages.length}
+          </UsagesButton>
+        </VSCodeDataGridCell>
+      )}
       <VSCodeDataGridCell gridColumn={4}>
         {(!externalApiUsage.supported ||
           (modeledMethod && modeledMethod?.type !== "none")) && (
