@@ -46,6 +46,12 @@ export default function CompareTable(props: Props) {
       <thead>
         <tr>
           <td>
+            {/*
+              eslint-disable-next-line
+              jsx-a11y/anchor-is-valid,
+              jsx-a11y/click-events-have-key-events,
+              jsx-a11y/no-static-element-interactions
+            */}
             <a
               onClick={() => openQuery("from")}
               className="vscode-codeql__compare-open"
@@ -54,6 +60,12 @@ export default function CompareTable(props: Props) {
             </a>
           </td>
           <td>
+            {/*
+              eslint-disable-next-line
+              jsx-a11y/anchor-is-valid,
+              jsx-a11y/click-events-have-key-events,
+              jsx-a11y/no-static-element-interactions
+            */}
             <a
               onClick={() => openQuery("to")}
               className="vscode-codeql__compare-open"
