@@ -157,7 +157,7 @@ DataExtensionsEditor.args = {
           startColumn: 33,
           endLine: 10,
           endColumn: 88,
-          classification: CallClassification.Source,
+          classification: CallClassification.Test,
         },
       }),
     },

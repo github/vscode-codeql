@@ -39,13 +39,21 @@ const ViewLink = styled(VSCodeLink)`
   white-space: nowrap;
 `;
 
-const modelTypeOptions = [
+const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
   { value: "none", label: "Unmodeled" },
   { value: "source", label: "Source" },
   { value: "sink", label: "Sink" },
   { value: "summary", label: "Flow summary" },
   { value: "neutral", label: "Neutral" },
 ];
+
+const typeNames = modelTypeOptions.reduce(
+  (acc, { value, label }) => {
+    acc[value] = label;
+    return acc;
+  },
+  {} as Record<ModeledMethodType, string>,
+);
 
 type Props = {
   externalApiUsage: ExternalApiUsage;
@@ -233,11 +241,8 @@ function ModelableMethodRow(props: Props) {
   );
 }
 
-function UnmodelableMethodRow(props: {
-  externalApiUsage: ExternalApiUsage;
-  mode: Mode;
-}) {
-  const { externalApiUsage, mode } = props;
+function UnmodelableMethodRow(props: Props) {
+  const { externalApiUsage, modeledMethod, mode } = props;
 
   const jumpToUsage = useCallback(
     () => sendJumpToUsageMessage(externalApiUsage),
@@ -256,8 +261,15 @@ function UnmodelableMethodRow(props: {
         )}
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
       </ApiOrMethodCell>
-      <VSCodeDataGridCell gridColumn="span 4">
-        Method already modeled by CodeQL or a different extension pack
+      <VSCodeDataGridCell gridColumn={2}>
+        {externalApiUsage.supported &&
+          !modeledMethod &&
+          externalApiUsage.supportedType !== "none" && (
+            <>{typeNames[externalApiUsage.supportedType]}</>
+          )}
+      </VSCodeDataGridCell>
+      <VSCodeDataGridCell gridColumn="span 3">
+        Method modeled by CodeQL or a different extension pack
       </VSCodeDataGridCell>
     </VSCodeDataGridRow>
   );
