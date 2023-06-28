@@ -1,8 +1,9 @@
 import { Event, EventEmitter, TreeDataProvider, TreeItem } from "vscode";
 import {
-  QueryTreeQueryItem,
-  QueryTreeTextItem,
   QueryTreeViewItem,
+  createQueryTreeLeafItem,
+  createQueryTreeNodeItem,
+  createQueryTreeTextItem,
 } from "./query-tree-view-item";
 import { DisposableObject } from "../common/disposable-object";
 import { FileTreeNode } from "../common/file-tree-nodes";
@@ -50,17 +51,24 @@ export class QueryTreeDataProvider
 
   private convertFileTreeNode(
     fileTreeDirectory: FileTreeNode<string>,
-  ): QueryTreeQueryItem {
-    return new QueryTreeQueryItem(
-      fileTreeDirectory.name,
-      fileTreeDirectory.path,
-      fileTreeDirectory.data,
-      fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),
-    );
+  ): QueryTreeViewItem {
+    if (fileTreeDirectory.children.length === 0) {
+      return createQueryTreeLeafItem(
+        fileTreeDirectory.name,
+        fileTreeDirectory.path,
+        fileTreeDirectory.data,
+      );
+    } else {
+      return createQueryTreeNodeItem(
+        fileTreeDirectory.name,
+        fileTreeDirectory.path,
+        fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),
+      );
+    }
   }
 
   private noQueriesTreeViewItem(): QueryTreeViewItem {
-    return new QueryTreeTextItem(
+    return createQueryTreeTextItem(
       "This workspace doesn't contain any CodeQL queries at the moment.",
     );
   }
@@ -83,10 +91,8 @@ export class QueryTreeDataProvider
     if (!item) {
       // We're at the root.
       return this.queryTreeItems;
-    } else if (item instanceof QueryTreeQueryItem) {
-      return item.children;
     } else {
-      return [];
+      return item.children;
     }
   }
 }

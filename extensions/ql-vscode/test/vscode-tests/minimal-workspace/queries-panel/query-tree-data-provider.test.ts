@@ -5,8 +5,9 @@ import {
 } from "../../../../src/common/file-tree-nodes";
 import { QueryTreeDataProvider } from "../../../../src/queries-panel/query-tree-data-provider";
 import {
-  QueryTreeQueryItem,
-  QueryTreeTextItem,
+  createQueryTreeLeafItem,
+  createQueryTreeNodeItem,
+  createQueryTreeTextItem,
 } from "../../../../src/queries-panel/query-tree-view-item";
 
 describe("QueryTreeDataProvider", () => {
@@ -27,7 +28,7 @@ describe("QueryTreeDataProvider", () => {
       });
 
       expect(dataProvider.getChildren()).toEqual([
-        new QueryTreeTextItem(
+        createQueryTreeTextItem(
           "This workspace doesn't contain any CodeQL queries at the moment.",
         ),
       ]);
@@ -58,24 +59,14 @@ describe("QueryTreeDataProvider", () => {
       });
 
       expect(dataProvider.getChildren()).toEqual([
-        new QueryTreeQueryItem("dir1", "dir1", undefined, [
-          new QueryTreeQueryItem("dir2", "dir1/dir2", undefined, [
-            new QueryTreeQueryItem(
-              "file1",
-              "dir1/dir2/file1",
-              "javascript",
-              [],
-            ),
-            new QueryTreeQueryItem(
-              "file2",
-              "dir1/dir2/file2",
-              "javascript",
-              [],
-            ),
+        createQueryTreeNodeItem("dir1", "dir1", [
+          createQueryTreeNodeItem("dir2", "dir1/dir2", [
+            createQueryTreeLeafItem("file1", "dir1/dir2/file1", "javascript"),
+            createQueryTreeLeafItem("file2", "dir1/dir2/file2", "javascript"),
           ]),
         ]),
-        new QueryTreeQueryItem("dir3", "dir3", undefined, [
-          new QueryTreeQueryItem("file3", "dir3/file3", "javascript", []),
+        createQueryTreeNodeItem("dir3", "dir3", [
+          createQueryTreeLeafItem("file3", "dir3/file3", "javascript"),
         ]),
       ]);
     });

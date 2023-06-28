@@ -1,38 +1,45 @@
 import * as vscode from "vscode";
 
-export abstract class QueryTreeViewItem extends vscode.TreeItem {
-  protected constructor(name: string) {
-    super(name);
-  }
-}
-
-export class QueryTreeQueryItem extends QueryTreeViewItem {
+export class QueryTreeViewItem extends vscode.TreeItem {
   constructor(
     name: string,
-    public readonly path: string,
-    language: string | undefined,
-    public readonly children: QueryTreeQueryItem[],
+    public readonly path: string | undefined,
+    public readonly children: QueryTreeViewItem[],
   ) {
     super(name);
-    this.tooltip = path;
-    if (this.children.length === 0) {
-      this.description = language;
-      this.collapsibleState = vscode.TreeItemCollapsibleState.None;
-      this.contextValue = "queryFile";
-      this.command = {
-        title: "Open",
-        command: "vscode.open",
-        arguments: [vscode.Uri.file(path)],
-      };
-    } else {
-      this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-      this.contextValue = "queryFolder";
-    }
   }
 }
 
-export class QueryTreeTextItem extends QueryTreeViewItem {
-  constructor(text: string) {
-    super(text);
-  }
+export function createQueryTreeNodeItem(
+  name: string,
+  path: string,
+  children: QueryTreeViewItem[],
+): QueryTreeViewItem {
+  const item = new QueryTreeViewItem(name, path, children);
+  item.tooltip = path;
+  item.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+  item.contextValue = "queryFolder";
+  return item;
+}
+
+export function createQueryTreeLeafItem(
+  name: string,
+  path: string,
+  language: string | undefined,
+): QueryTreeViewItem {
+  const item = new QueryTreeViewItem(name, path, []);
+  item.tooltip = path;
+  item.description = language;
+  item.collapsibleState = vscode.TreeItemCollapsibleState.None;
+  item.contextValue = "queryFile";
+  item.command = {
+    title: "Open",
+    command: "vscode.open",
+    arguments: [vscode.Uri.file(path)],
+  };
+  return item;
+}
+
+export function createQueryTreeTextItem(text: string): QueryTreeViewItem {
+  return new QueryTreeViewItem(text, undefined, []);
 }
