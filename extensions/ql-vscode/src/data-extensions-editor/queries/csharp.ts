@@ -39,10 +39,11 @@ select usage, apiName, supported.toString(), "supported", api.getFile().getBaseN
 
 private import csharp
 private import dotnet
+private import semmle.code.csharp.frameworks.Test
 private import AutomodelVsCode
 
 class PublicMethod extends CallableMethod {
-  PublicMethod() { this.fromSource() }
+  PublicMethod() { this.fromSource() and not this.getFile() instanceof TestFile }
 }
 
 from PublicMethod publicMethod, string apiName, boolean supported
