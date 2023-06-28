@@ -1,58 +1,26 @@
 import * as React from "react";
 import { select } from "d3";
-import { ResultTableProps, jumpToLocation } from "./result-table-utils";
+import { jumpToLocation } from "./result-table-utils";
 import {
   InterpretedResultSet,
   GraphInterpretationData,
 } from "../../common/interface-types";
 import { graphviz, GraphvizOptions } from "d3-graphviz";
 import { tryGetLocationFromString } from "../../common/bqrs-utils";
-export type GraphProps = ResultTableProps & {
+import { useCallback, useEffect } from "react";
+export type GraphProps = {
   resultSet: InterpretedResultSet<GraphInterpretationData>;
+  offset: number;
+  databaseUri: string;
 };
 
 const graphClassName = "vscode-codeql__result-tables-graph";
 const graphId = "graph-results";
-export class Graph extends React.Component<GraphProps> {
-  constructor(props: GraphProps) {
-    super(props);
-  }
 
-  public render = (): JSX.Element => {
-    const { resultSet, offset } = this.props;
-    const graphData = resultSet.interpretation?.data?.dot[offset];
+export function Graph({ resultSet, offset, databaseUri }: GraphProps) {
+  const graphData = resultSet.interpretation?.data?.dot[offset];
 
-    if (!graphData) {
-      return (
-        <>
-          <div className={graphClassName}>Graph is not available.</div>
-        </>
-      );
-    }
-
-    return (
-      <>
-        <div className={graphClassName}>
-          <strong>Warning:</strong> The Graph Viewer is not a publicly released
-          feature and will crash on large graphs.
-        </div>
-        <div id={graphId} className={graphClassName}>
-          <span>Rendering graph...</span>
-        </div>
-      </>
-    );
-  };
-
-  public componentDidMount = () => {
-    this.renderGraph();
-  };
-
-  public componentDidUpdate = () => {
-    this.renderGraph();
-  };
-
-  private renderGraph = () => {
-    const { databaseUri, resultSet, offset } = this.props;
+  const renderGraph = useCallback(() => {
     const graphData = resultSet.interpretation?.data?.dot[offset];
 
     if (!graphData) {
@@ -108,5 +76,29 @@ export class Graph extends React.Component<GraphProps> {
         }
       })
       .renderDot(graphData);
-  };
+  }, [resultSet, offset, databaseUri]);
+
+  useEffect(() => {
+    renderGraph();
+  }, [renderGraph]);
+
+  if (!graphData) {
+    return (
+      <>
+        <div className={graphClassName}>Graph is not available.</div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className={graphClassName}>
+        <strong>Warning:</strong> The Graph Viewer is not a publicly released
+        feature and will crash on large graphs.
+      </div>
+      <div id={graphId} className={graphClassName}>
+        <span>Rendering graph...</span>
+      </div>
+    </>
+  );
 }
