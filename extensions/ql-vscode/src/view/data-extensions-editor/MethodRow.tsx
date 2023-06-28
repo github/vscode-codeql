@@ -3,13 +3,17 @@ import {
   VSCodeDataGridCell,
   VSCodeDataGridRow,
   VSCodeLink,
+  VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
 import { ChangeEvent, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import { vscode } from "../vscode-api";
 
-import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
+import {
+  CallClassification,
+  ExternalApiUsage,
+} from "../../data-extensions-editor/external-api-usage";
 import {
   ModeledMethod,
   ModeledMethodType,
@@ -37,6 +41,12 @@ const UsagesButton = styled.button`
 
 const ViewLink = styled(VSCodeLink)`
   white-space: nowrap;
+`;
+
+const ClassificationsContainer = styled.div`
+  display: inline-flex;
+  flex-direction: row;
+  gap: 0.5rem;
 `;
 
 const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
@@ -194,6 +204,20 @@ function ModelableMethodRow(props: Props) {
       : undefined;
   const showKindCell = predicate?.supportedKinds;
 
+  const allUsageClassifications = useMemo(
+    () =>
+      new Set(
+        externalApiUsage.usages.map((usage) => {
+          return usage.classification;
+        }),
+      ),
+    [externalApiUsage.usages],
+  );
+
+  const inSource = allUsageClassifications.has(CallClassification.Source);
+  const inTest = allUsageClassifications.has(CallClassification.Test);
+  const inGenerated = allUsageClassifications.has(CallClassification.Generated);
+
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
@@ -205,6 +229,12 @@ function ModelableMethodRow(props: Props) {
           </UsagesButton>
         )}
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
+        {!inSource && (
+          <ClassificationsContainer>
+            {inTest && <VSCodeTag>Test</VSCodeTag>}
+            {inGenerated && <VSCodeTag>Generated</VSCodeTag>}
+          </ClassificationsContainer>
+        )}
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn={2}>
         <Dropdown

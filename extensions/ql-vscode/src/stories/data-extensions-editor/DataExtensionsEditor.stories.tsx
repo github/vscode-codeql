@@ -116,6 +116,17 @@ DataExtensionsEditor.args = {
           },
           classification: CallClassification.Source,
         },
+        {
+          label: "println(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/test/java/org/example/HelloControllerTest.java",
+            startLine: 29,
+            startColumn: 9,
+            endLine: 29,
+            endColumn: 49,
+          },
+          classification: CallClassification.Test,
+        },
       ],
     },
     {
@@ -170,17 +181,30 @@ DataExtensionsEditor.args = {
       methodParameters: "(String)",
       supported: false,
       supportedType: "none",
-      usages: Array(4).fill({
-        label: "new Sql2o(...)",
-        url: {
-          uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-          startLine: 23,
-          startColumn: 23,
-          endLine: 23,
-          endColumn: 36,
+      usages: [
+        ...Array(4).fill({
+          label: "new Sql2o(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+            startLine: 23,
+            startColumn: 23,
+            endLine: 23,
+            endColumn: 36,
+          },
+          classification: CallClassification.Test,
+        }),
+        {
+          label: "new Sql2o(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/build/generated/java/org/example/HelloControllerGenerated.java",
+            startLine: 23,
+            startColumn: 23,
+            endLine: 23,
+            endColumn: 36,
+          },
+          classification: CallClassification.Generated,
         },
-        classification: CallClassification.Source,
-      }),
+      ],
     },
   ],
   initialModeledMethods: {
