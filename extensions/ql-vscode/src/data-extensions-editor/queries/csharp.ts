@@ -30,8 +30,8 @@ where
   usage = aUsage(api) and
   type = supportedType(api) and
   classification = methodClassification(usage)
-select usage, apiName, supported.toString(), "supported", api.getFile().getBaseName(), "library",
-  type, "type", classification, "classification"
+select usage, apiName, supported.toString(), "supported", api.dllName(), api.dllVersion(), type,
+  "type", classification, "classification"
 `,
   frameworkModeQuery: `/**
  * @name Public methods
@@ -111,7 +111,7 @@ class CallableMethod extends DotNet::Declaration {
   bindingset[this]
   private string getSignature() {
     result =
-      nestedName(this.getDeclaringType().getUnboundDeclaration()) + "." + this.getName() + "(" +
+      nestedName(this.getDeclaringType().getUnboundDeclaration()) + "#" + this.getName() + "(" +
         parameterQualifiedTypeNamesToString(this) + ")"
   }
 
@@ -125,7 +125,23 @@ class CallableMethod extends DotNet::Declaration {
    * Gets the namespace and signature of this API.
    */
   bindingset[this]
-  string getApiName() { result = this.getNamespace() + "#" + this.getSignature() }
+  string getApiName() { result = this.getNamespace() + "." + this.getSignature() }
+
+  private string getDllName() { result = this.getLocation().(Assembly).getName() }
+
+  private string getDllVersion() { result = this.getLocation().(Assembly).getVersion().toString() }
+
+  string dllName() {
+    result = this.getDllName()
+    or
+    not exists(this.getDllName()) and result = this.getFile().getBaseName()
+  }
+
+  string dllVersion() {
+    result = this.getDllVersion()
+    or
+    not exists(this.getDllVersion()) and result = ""
+  }
 
   /** Gets a node that is an input to a call to this API. */
   private ArgumentNode getAnInput() {
@@ -195,7 +211,7 @@ string supportedType(CallableMethod method) {
   or
   method.isNeutral() and result = "neutral"
   or
-  not method.isSupported() and result = "none"
+  not method.isSupported() and result = ""
 }
 
 string methodClassification(Call method) {

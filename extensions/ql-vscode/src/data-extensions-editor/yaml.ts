@@ -1,6 +1,5 @@
 import Ajv from "ajv";
 
-import { basename, extname } from "../common/path";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import {
@@ -144,29 +143,12 @@ export function createDataExtensionYamlsForFrameworkMode(
   };
 }
 
-// From the semver package using
-// const { re, t } = require("semver/internal/re");
-// console.log(re[t.LOOSE]);
-// Modified to remove the ^ and $ anchors
-// This will match any semver string at the end of a larger string
-const semverRegex =
-  /[v=\s]*([0-9]+)\.([0-9]+)\.([0-9]+)(?:-?((?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\.(?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?/;
-
 export function createFilenameForLibrary(
   library: string,
   prefix = "models/",
   suffix = ".model",
 ) {
-  let libraryName = basename(library);
-  const extension = extname(libraryName);
-  libraryName = libraryName.slice(0, -extension.length);
-
-  const match = semverRegex.exec(libraryName);
-
-  if (match !== null) {
-    // Remove everything after the start of the match
-    libraryName = libraryName.slice(0, match.index);
-  }
+  let libraryName = library;
 
   // Lowercase everything
   libraryName = libraryName.toLowerCase();

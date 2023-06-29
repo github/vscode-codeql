@@ -27,8 +27,8 @@ where
   usage = aUsage(externalApi) and
   type = supportedType(externalApi) and
   classification = methodClassification(usage)
-select usage, apiName, supported.toString(), "supported", externalApi.jarContainer(), "library",
-  type, "type", classification, "classification"
+select usage, apiName, supported.toString(), "supported", externalApi.jarContainer(),
+  externalApi.jarVersion(), type, "type", classification, "classification"
 `,
   frameworkModeQuery: `/**
  * @name Public methods
@@ -75,7 +75,7 @@ private predicate isUninteresting(Callable c) {
 /**
  * A callable method from either the Standard Library, a 3rd party library or from the source.
  */
-class CallableMethod extends Method {
+class CallableMethod extends Callable {
   CallableMethod() { not isUninteresting(this) }
 
   /**
@@ -91,6 +91,10 @@ class CallableMethod extends Method {
     result = this.getCompilationUnit().getParentContainer*().(JarFile).getBaseName()
   }
 
+  private string getJarVersion() {
+    result = this.getCompilationUnit().getParentContainer*().(JarFile).getSpecificationVersion()
+  }
+
   /**
    * Gets the jar file containing this API. Normalizes the Java Runtime to "rt.jar" despite the presence of modules.
    */
@@ -98,6 +102,15 @@ class CallableMethod extends Method {
     result = this.getJarName()
     or
     not exists(this.getJarName()) and result = "rt.jar"
+  }
+
+  /**
+   * Gets the version of the JAR file containing this API. Empty if no version is found in the JAR.
+   */
+  string jarVersion() {
+    result = this.getJarVersion()
+    or
+    not exists(this.getJarVersion()) and result = ""
   }
 
   /** Gets a node that is an input to a call to this API. */
@@ -160,7 +173,7 @@ string supportedType(CallableMethod method) {
   or
   method.isNeutral() and result = "neutral"
   or
-  not method.isSupported() and result = "none"
+  not method.isSupported() and result = ""
 }
 
 string methodClassification(Call method) {

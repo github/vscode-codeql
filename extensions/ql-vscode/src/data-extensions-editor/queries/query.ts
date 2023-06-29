@@ -8,7 +8,7 @@ export type Query = {
    * - supported: whether the external API is modeled. This should be a string representation of a boolean to satify the result pattern for a problem query.
    * - "supported": a string literal. This is required to make the query a valid problem query.
    * - libraryName: the name of the library that contains the external API. This is a string and usually the basename of a file.
-   * - "library": a string literal. This is required to make the query a valid problem query.
+   * - libraryVersion: the version of the library that contains the external API. This is a string and can be empty if the version cannot be determined.
    * - type: the modeled kind of the method, either "sink", "source", "summary", or "neutral"
    * - "type": a string literal. This is required to make the query a valid problem query.
    * - classification: the classification of the use of the method, either "source", "test", "generated", or "unknown"
@@ -25,7 +25,7 @@ export type Query = {
    * - supported: whether this method is modeled. This should be a string representation of a boolean to satify the result pattern for a problem query.
    * - "supported": a string literal. This is required to make the query a valid problem query.
    * - libraryName: an arbitrary string. This is required to make it match the structure of the application query.
-   * - "library": a string literal. This is required to make the query a valid problem query.
+   * - libraryVersion: an arbitrary string. This is required to make it match the structure of the application query.
    * - type: the modeled kind of the method, either "sink", "source", "summary", or "neutral"
    * - "type": a string literal. This is required to make the query a valid problem query.
    * - "unknown": a string literal. This is required to make it match the structure of the application query.

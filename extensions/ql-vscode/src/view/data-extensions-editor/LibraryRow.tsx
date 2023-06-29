@@ -68,6 +68,7 @@ const ButtonsContainer = styled.div`
 
 type Props = {
   title: string;
+  libraryVersion?: string;
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
   viewState: DataExtensionEditorViewState;
@@ -91,6 +92,7 @@ type Props = {
 
 export const LibraryRow = ({
   title,
+  libraryVersion,
   externalApiUsages,
   modeledMethods,
   viewState,
@@ -158,7 +160,10 @@ export const LibraryRow = ({
           <Codicon name="chevron-right" label="Expand" />
         )}
         <NameContainer>
-          <DependencyName>{title}</DependencyName>
+          <DependencyName>
+            {title}
+            {libraryVersion && <>@{libraryVersion}</>}
+          </DependencyName>
           <ModeledPercentage>
             {percentFormatter.format(modeledPercentage / 100)} modeled
           </ModeledPercentage>

@@ -266,8 +266,10 @@ function UnmodelableMethodRow(props: Props) {
 function ExternalApiUsageName(props: { externalApiUsage: ExternalApiUsage }) {
   return (
     <span>
-      {props.externalApiUsage.packageName}.{props.externalApiUsage.typeName}.
-      {props.externalApiUsage.methodName}
+      {props.externalApiUsage.packageName && (
+        <>{props.externalApiUsage.packageName}.</>
+      )}
+      {props.externalApiUsage.typeName}.{props.externalApiUsage.methodName}
       {props.externalApiUsage.methodParameters}
     </span>
   );
