@@ -157,6 +157,7 @@ describeWithCodeQL()("Queries", () => {
         return;
       }
 
+      console.log(`Starting 'no extensions' ${mode}`);
       console.log("Setting useExtensionPacks to false");
       await cli.setUseExtensionPacks(false);
       const parsedResults = await runQueryWithExtensions();
@@ -169,8 +170,11 @@ describeWithCodeQL()("Queries", () => {
         return;
       }
 
+      console.log(`Starting 'extensions' ${mode}`);
+      console.log("Setting useExtensionPacks to true");
       await cli.setUseExtensionPacks(true);
       const parsedResults = await runQueryWithExtensions();
+      console.log("Returned from runQueryWithExtensions");
       expect(parsedResults).toEqual([1, 2, 3, 4]);
     });
 
