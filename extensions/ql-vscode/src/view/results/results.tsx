@@ -18,6 +18,7 @@ import { EventHandlers as EventHandlerList } from "./event-handler-list";
 import { ResultTables } from "./result-tables";
 
 import "./resultsView.css";
+import { useCallback, useEffect } from "react";
 
 /**
  * results.tsx
@@ -70,212 +71,209 @@ export const onNavigation = new EventHandlerList<NavigateMsg>();
 /**
  * A minimal state container for displaying results.
  */
-export class ResultsApp extends React.Component<
-  Record<string, never>,
-  ResultsViewState
-> {
-  constructor(props: any) {
-    super(props);
-    this.state = {
-      displayedResults: {
-        resultsInfo: null,
-        results: null,
-        errorMessage: "",
-      },
-      nextResultsInfo: null,
-      isExpectingResultsUpdate: true,
-    };
-  }
+export function ResultsApp() {
+  const [state, setState] = React.useState<ResultsViewState>({
+    displayedResults: {
+      resultsInfo: null,
+      results: null,
+      errorMessage: "",
+    },
+    nextResultsInfo: null,
+    isExpectingResultsUpdate: true,
+  });
 
-  private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
-    this.setState((prevState) => {
-      if (resultsInfo === null && prevState.isExpectingResultsUpdate) {
-        // Display loading message
-        return {
-          displayedResults: {
-            resultsInfo: null,
-            results: null,
-            errorMessage: "Loading results…",
-          },
-          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-          nextResultsInfo: resultsInfo,
-        };
-      } else if (resultsInfo === null) {
-        // No results to display
-        return {
-          displayedResults: {
-            resultsInfo: null,
-            results: null,
-            errorMessage: "No results to display",
-          },
-          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-          nextResultsInfo: resultsInfo,
-        };
-      }
-
-      let results: Results | null = null;
-      let statusText = "";
-      try {
-        const resultSets = getResultSets(resultsInfo);
-        results = {
-          resultSets,
-          database: resultsInfo.database,
-          sortStates: getSortStates(resultsInfo),
-        };
-      } catch (e) {
-        const errorMessage = getErrorMessage(e);
-
-        statusText = `Error loading results: ${errorMessage}`;
-      }
-
-      return {
-        displayedResults: {
-          resultsInfo,
-          results,
-          errorMessage: statusText,
-        },
-        nextResultsInfo: null,
-        isExpectingResultsUpdate: false,
-      };
-    });
-  }
-
-  handleMessage(msg: IntoResultsViewMsg): void {
-    switch (msg.t) {
-      case "setState":
-        this.updateStateWithNewResultsInfo({
-          resultsPath: msg.resultsPath,
-          parsedResultSets: msg.parsedResultSets,
-          origResultsPaths: msg.origResultsPaths,
-          sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
-          database: msg.database,
-          interpretation: msg.interpretation,
-          shouldKeepOldResultsWhileRendering:
-            msg.shouldKeepOldResultsWhileRendering,
-          metadata: msg.metadata,
-          queryName: msg.queryName,
-          queryPath: msg.queryPath,
-        });
-
-        break;
-      case "showInterpretedPage": {
-        const tableName =
-          msg.interpretation.data.t === "GraphInterpretationData"
-            ? GRAPH_TABLE_NAME
-            : ALERTS_TABLE_NAME;
-
-        this.updateStateWithNewResultsInfo({
-          resultsPath: "", // FIXME: Not used for interpreted, refactor so this is not needed
-          parsedResultSets: {
-            numPages: msg.numPages,
-            pageSize: msg.pageSize,
-            numInterpretedPages: msg.numPages,
-            resultSetNames: msg.resultSetNames,
-            pageNumber: msg.pageNumber,
-            resultSet: {
-              t: "InterpretedResultSet",
-              name: tableName,
-              schema: {
-                name: tableName,
-                rows: 1,
-                columns: [],
-              },
-              interpretation: msg.interpretation,
+  const updateStateWithNewResultsInfo = useCallback(
+    (resultsInfo: ResultsInfo): void => {
+      setState((prevState) => {
+        if (resultsInfo === null && prevState.isExpectingResultsUpdate) {
+          // Display loading message
+          return {
+            ...prevState,
+            displayedResults: {
+              resultsInfo: null,
+              results: null,
+              errorMessage: "Loading results…",
             },
-            selectedTable: tableName,
+            nextResultsInfo: resultsInfo,
+          };
+        } else if (resultsInfo === null) {
+          // No results to display
+          return {
+            ...prevState,
+            displayedResults: {
+              resultsInfo: null,
+              results: null,
+              errorMessage: "No results to display",
+            },
+            nextResultsInfo: resultsInfo,
+          };
+        }
+
+        let results: Results | null = null;
+        let statusText = "";
+        try {
+          const resultSets = getResultSets(resultsInfo);
+          results = {
+            resultSets,
+            database: resultsInfo.database,
+            sortStates: getSortStates(resultsInfo),
+          };
+        } catch (e) {
+          const errorMessage = getErrorMessage(e);
+
+          statusText = `Error loading results: ${errorMessage}`;
+        }
+
+        return {
+          displayedResults: {
+            resultsInfo,
+            results,
+            errorMessage: statusText,
           },
-          origResultsPaths: undefined as any, // FIXME: Not used for interpreted, refactor so this is not needed
-          sortedResultsMap: new Map(), // FIXME: Not used for interpreted, refactor so this is not needed
-          database: msg.database,
-          interpretation: msg.interpretation,
-          shouldKeepOldResultsWhileRendering: true,
-          metadata: msg.metadata,
-          queryName: msg.queryName,
-          queryPath: msg.queryPath,
-        });
-        break;
+          nextResultsInfo: null,
+          isExpectingResultsUpdate: false,
+        };
+      });
+    },
+    [],
+  );
+
+  const handleMessage = useCallback(
+    (msg: IntoResultsViewMsg): void => {
+      switch (msg.t) {
+        case "setState":
+          updateStateWithNewResultsInfo({
+            resultsPath: msg.resultsPath,
+            parsedResultSets: msg.parsedResultSets,
+            origResultsPaths: msg.origResultsPaths,
+            sortedResultsMap: new Map(Object.entries(msg.sortedResultsMap)),
+            database: msg.database,
+            interpretation: msg.interpretation,
+            shouldKeepOldResultsWhileRendering:
+              msg.shouldKeepOldResultsWhileRendering,
+            metadata: msg.metadata,
+            queryName: msg.queryName,
+            queryPath: msg.queryPath,
+          });
+
+          break;
+        case "showInterpretedPage": {
+          const tableName =
+            msg.interpretation.data.t === "GraphInterpretationData"
+              ? GRAPH_TABLE_NAME
+              : ALERTS_TABLE_NAME;
+
+          updateStateWithNewResultsInfo({
+            resultsPath: "", // FIXME: Not used for interpreted, refactor so this is not needed
+            parsedResultSets: {
+              numPages: msg.numPages,
+              pageSize: msg.pageSize,
+              numInterpretedPages: msg.numPages,
+              resultSetNames: msg.resultSetNames,
+              pageNumber: msg.pageNumber,
+              resultSet: {
+                t: "InterpretedResultSet",
+                name: tableName,
+                schema: {
+                  name: tableName,
+                  rows: 1,
+                  columns: [],
+                },
+                interpretation: msg.interpretation,
+              },
+              selectedTable: tableName,
+            },
+            origResultsPaths: undefined as any, // FIXME: Not used for interpreted, refactor so this is not needed
+            sortedResultsMap: new Map(), // FIXME: Not used for interpreted, refactor so this is not needed
+            database: msg.database,
+            interpretation: msg.interpretation,
+            shouldKeepOldResultsWhileRendering: true,
+            metadata: msg.metadata,
+            queryName: msg.queryName,
+            queryPath: msg.queryPath,
+          });
+          break;
+        }
+        case "resultsUpdating":
+          setState((prevState) => ({
+            ...prevState,
+            isExpectingResultsUpdate: true,
+          }));
+          break;
+        case "navigate":
+          onNavigation.fire(msg);
+          break;
+
+        case "untoggleShowProblems":
+          // noop
+          break;
+
+        default:
+          assertNever(msg);
       }
-      case "resultsUpdating":
-        this.setState({
-          isExpectingResultsUpdate: true,
-        });
-        break;
-      case "navigate":
-        onNavigation.fire(msg);
-        break;
+    },
+    [updateStateWithNewResultsInfo],
+  );
 
-      case "untoggleShowProblems":
-        // noop
-        break;
+  const vscodeMessageHandler = useCallback(
+    (evt: MessageEvent) => {
+      // sanitize origin
+      const origin = evt.origin.replace(/\n|\r/g, "");
+      evt.origin === window.origin
+        ? handleMessage(evt.data as IntoResultsViewMsg)
+        : console.error(`Invalid event origin ${origin}`);
+    },
+    [handleMessage],
+  );
 
-      default:
-        assertNever(msg);
-    }
-  }
+  useEffect(() => {
+    window.addEventListener("message", vscodeMessageHandler);
+    return () => {
+      window.removeEventListener("message", vscodeMessageHandler);
+    };
+  }, [vscodeMessageHandler]);
 
-  private vscodeMessageHandler(evt: MessageEvent) {
-    // sanitize origin
-    const origin = evt.origin.replace(/\n|\r/g, "");
-    evt.origin === window.origin
-      ? this.handleMessage(evt.data as IntoResultsViewMsg)
-      : console.error(`Invalid event origin ${origin}`);
-  }
+  const { displayedResults, nextResultsInfo, isExpectingResultsUpdate } = state;
+  if (
+    displayedResults.results !== null &&
+    displayedResults.resultsInfo !== null
+  ) {
+    const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
+    const key =
+      (parsedResultSets.selectedTable || "") + parsedResultSets.pageNumber;
+    const data = displayedResults.resultsInfo.interpretation?.data;
 
-  componentDidMount(): void {
-    this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
-    window.addEventListener("message", this.vscodeMessageHandler);
-  }
-
-  componentWillUnmount(): void {
-    if (this.vscodeMessageHandler) {
-      window.removeEventListener("message", this.vscodeMessageHandler);
-    }
-  }
-
-  render(): JSX.Element {
-    const displayedResults = this.state.displayedResults;
-    if (
-      displayedResults.results !== null &&
-      displayedResults.resultsInfo !== null
-    ) {
-      const parsedResultSets = displayedResults.resultsInfo.parsedResultSets;
-      const key =
-        (parsedResultSets.selectedTable || "") + parsedResultSets.pageNumber;
-      const data = displayedResults.resultsInfo.interpretation?.data;
-
-      return (
-        <ResultTables
-          key={key}
-          parsedResultSets={parsedResultSets}
-          rawResultSets={displayedResults.results.resultSets}
-          interpretation={
-            displayedResults.resultsInfo
-              ? displayedResults.resultsInfo.interpretation
-              : undefined
-          }
-          database={displayedResults.results.database}
-          origResultsPaths={displayedResults.resultsInfo.origResultsPaths}
-          resultsPath={displayedResults.resultsInfo.resultsPath}
-          metadata={
-            displayedResults.resultsInfo
-              ? displayedResults.resultsInfo.metadata
-              : undefined
-          }
-          sortStates={displayedResults.results.sortStates}
-          interpretedSortState={
-            data?.t === "SarifInterpretationData" ? data.sortState : undefined
-          }
-          isLoadingNewResults={
-            this.state.isExpectingResultsUpdate ||
-            this.state.nextResultsInfo !== null
-          }
-          queryName={displayedResults.resultsInfo.queryName}
-          queryPath={displayedResults.resultsInfo.queryPath}
-        />
-      );
-    } else {
-      return <span>{displayedResults.errorMessage}</span>;
-    }
+    return (
+      <ResultTables
+        key={key}
+        parsedResultSets={parsedResultSets}
+        rawResultSets={displayedResults.results.resultSets}
+        interpretation={
+          displayedResults.resultsInfo
+            ? displayedResults.resultsInfo.interpretation
+            : undefined
+        }
+        database={displayedResults.results.database}
+        origResultsPaths={displayedResults.resultsInfo.origResultsPaths}
+        resultsPath={displayedResults.resultsInfo.resultsPath}
+        metadata={
+          displayedResults.resultsInfo
+            ? displayedResults.resultsInfo.metadata
+            : undefined
+        }
+        sortStates={displayedResults.results.sortStates}
+        interpretedSortState={
+          data?.t === "SarifInterpretationData" ? data.sortState : undefined
+        }
+        isLoadingNewResults={
+          isExpectingResultsUpdate || nextResultsInfo !== null
+        }
+        queryName={displayedResults.resultsInfo.queryName}
+        queryPath={displayedResults.resultsInfo.queryPath}
+      />
+    );
+  } else {
+    return <span>{displayedResults.errorMessage}</span>;
   }
 }
 
