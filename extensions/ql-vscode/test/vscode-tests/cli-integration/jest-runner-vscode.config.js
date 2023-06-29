@@ -24,7 +24,7 @@ const config = {
     "github.codespaces",
     "--disable-extension",
     "github.copilot",
-    "--disable-workspace-trust",  // Disable trust because we copy our workspace to a temp directory
+    "--disable-workspace-trust", // Disable trust because we copy our workspace to a temp directory
     tmpDataDir,
     path.resolve(rootDir, "test/data-extensions"), // folder containing the extension packs and packs that are targeted by the extension pack
     // CLI integration tests requires a multi-root workspace so that the data and the QL sources are accessible.
