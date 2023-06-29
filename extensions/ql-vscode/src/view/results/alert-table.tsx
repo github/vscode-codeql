@@ -111,6 +111,10 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
       return (
         <span>
           No Alerts. See{" "}
+          {/*
+              eslint-disable-next-line
+              jsx-a11y/anchor-is-valid,
+            */}
           <a href="#" onClick={this.props.showRawResults}>
             raw results
           </a>
@@ -316,6 +320,10 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
               {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
               key={resultIndex}
             >
+              {/*
+                  eslint-disable-next-line
+                  jsx-a11y/no-noninteractive-element-interactions
+                */}
               <td
                 className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell"
                 onMouseDown={toggler(indices)}
@@ -353,6 +361,10 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
                   <td className="vscode-codeql__icon-cell">
                     <span className="vscode-codeql__vertical-rule"></span>
                   </td>
+                  {/*
+                      eslint-disable-next-line
+                      jsx-a11y/no-noninteractive-element-interactions
+                    */}
                   <td
                     className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell"
                     onMouseDown={toggler([pathKey])}

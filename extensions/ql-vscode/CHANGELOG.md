@@ -2,6 +2,9 @@
 
 ## [UNRELEASED]
 
+- Add `CodeQL: Quick Evaluation Count` command to generate the count summary statistics of the results set
+  without speding the time to compute locations and strings.
+
 ## 1.8.6 - 14 June 2023
 
 - Add repositories to a variant analysis list with GitHub Code Search. [#2439](https://github.com/github/vscode-codeql/pull/2439) and [#2476](https://github.com/github/vscode-codeql/pull/2476)

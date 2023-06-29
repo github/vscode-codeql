@@ -24,11 +24,7 @@ export class Setting {
   parent?: Setting;
   private _hasChildren = false;
 
-  constructor(
-    name: string,
-    parent?: Setting,
-    private readonly languageId?: string,
-  ) {
+  constructor(name: string, parent?: Setting) {
     this.name = name;
     this.parent = parent;
     if (parent !== undefined) {
@@ -49,22 +45,12 @@ export class Setting {
     }
   }
 
-  get scope(): ConfigurationScope | undefined {
-    if (this.languageId !== undefined) {
-      return {
-        languageId: this.languageId,
-      };
-    } else {
-      return this.parent?.scope;
-    }
-  }
-
-  getValue<T>(): T {
+  getValue<T>(scope?: ConfigurationScope | null): T {
     if (this.parent === undefined) {
       throw new Error("Cannot get the value of a root setting.");
     }
     return workspace
-      .getConfiguration(this.parent.qualifiedName, this.parent.scope)
+      .getConfiguration(this.parent.qualifiedName, scope)
       .get<T>(this.name)!;
   }
 
@@ -73,7 +59,7 @@ export class Setting {
       throw new Error("Cannot update the value of a root setting.");
     }
     return workspace
-      .getConfiguration(this.parent.qualifiedName, this.parent.scope)
+      .getConfiguration(this.parent.qualifiedName)
       .update(this.name, value, target);
   }
 }
@@ -84,7 +70,7 @@ export interface InspectionResult<T> {
   workspaceFolderValue?: T;
 }
 
-const VSCODE_DEBUG_SETTING = new Setting("debug", undefined, "ql");
+const VSCODE_DEBUG_SETTING = new Setting("debug", undefined);
 export const VSCODE_SAVE_BEFORE_START_SETTING = new Setting(
   "saveBeforeStart",
   VSCODE_DEBUG_SETTING,
@@ -731,8 +717,13 @@ export function showQueriesPanel(): boolean {
 
 const DATA_EXTENSIONS = new Setting("dataExtensions", ROOT_SETTING);
 const LLM_GENERATION = new Setting("llmGeneration", DATA_EXTENSIONS);
+const FRAMEWORK_MODE = new Setting("frameworkMode", DATA_EXTENSIONS);
 const DISABLE_AUTO_NAME_EXTENSION_PACK = new Setting(
   "disableAutoNameExtensionPack",
+  DATA_EXTENSIONS,
+);
+const EXTENSIONS_DIRECTORY = new Setting(
+  "extensionsDirectory",
   DATA_EXTENSIONS,
 );
 
@@ -740,6 +731,16 @@ export function showLlmGeneration(): boolean {
   return !!LLM_GENERATION.getValue<boolean>();
 }
 
+export function enableFrameworkMode(): boolean {
+  return !!FRAMEWORK_MODE.getValue<boolean>();
+}
+
 export function disableAutoNameExtensionPack(): boolean {
   return !!DISABLE_AUTO_NAME_EXTENSION_PACK.getValue<boolean>();
+}
+
+export function getExtensionsDirectory(languageId: string): string | undefined {
+  return EXTENSIONS_DIRECTORY.getValue<string>({
+    languageId,
+  });
 }

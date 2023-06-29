@@ -1,27 +1,27 @@
 import {
   CancellationTokenSource,
+  ConfigurationScope,
   QuickPickItem,
   Uri,
   window,
   workspace,
+  WorkspaceConfiguration as VSCodeWorkspaceConfiguration,
   WorkspaceFolder,
 } from "vscode";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { outputFile, readFile } from "fs-extra";
 import { join } from "path";
 import { dir } from "tmp-promise";
-import {
-  QlpacksInfo,
-  ResolveExtensionsResult,
-} from "../../../../src/codeql-cli/cli";
+import { QlpacksInfo } from "../../../../src/codeql-cli/cli";
 
 import * as config from "../../../../src/config";
 
-import { pickExtensionPackModelFile } from "../../../../src/data-extensions-editor/extension-pack-picker";
+import { pickExtensionPack } from "../../../../src/data-extensions-editor/extension-pack-picker";
 import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
+import { vscodeGetConfigurationMock } from "../../test-config";
 
-describe("pickExtensionPackModelFile", () => {
+describe("pickExtensionPack", () => {
   let tmpDir: string;
   let extensionPackPath: string;
   let anotherExtensionPackPath: string;
@@ -31,7 +31,6 @@ describe("pickExtensionPackModelFile", () => {
   let autoExtensionPack: ExtensionPack;
 
   let qlPacks: QlpacksInfo;
-  let extensions: ResolveExtensionsResult;
   const databaseItem = {
     name: "github/vscode-codeql",
     language: "java",
@@ -71,25 +70,6 @@ describe("pickExtensionPackModelFile", () => {
       "another-extension-pack": [anotherExtensionPackPath],
       "github/vscode-codeql-java": [autoExtensionPackPath],
     };
-    extensions = {
-      models: [],
-      data: {
-        [extensionPackPath]: [
-          {
-            file: join(extensionPackPath, "models", "model.yml"),
-            index: 0,
-            predicate: "sinkModel",
-          },
-        ],
-        [autoExtensionPackPath]: [
-          {
-            file: join(autoExtensionPackPath, "models", "model.yml"),
-            index: 0,
-            predicate: "sinkModel",
-          },
-        ],
-      },
-    };
 
     extensionPack = await createMockExtensionPack(
       extensionPackPath,
@@ -125,33 +105,18 @@ describe("pickExtensionPackModelFile", () => {
       .mockReturnValue([workspaceFolder]);
   });
 
-  it("allows choosing an existing extension pack and model file", async () => {
-    const modelPath = join(extensionPackPath, "models", "model.yml");
-
-    const cliServer = mockCliServer(qlPacks, extensions);
+  it("allows choosing an existing extension pack", async () => {
+    const cliServer = mockCliServer(qlPacks);
 
     showQuickPickSpy.mockResolvedValueOnce({
       label: "my-extension-pack",
       extensionPack,
     } as QuickPickItem);
-    showQuickPickSpy.mockResolvedValueOnce({
-      label: "models/model.yml",
-      file: modelPath,
-    } as QuickPickItem);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
-    ).toEqual({
-      filename: modelPath,
-      extensionPack,
-    });
-    expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
+    ).toEqual(extensionPack);
+    expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
     expect(showQuickPickSpy).toHaveBeenCalledWith(
       [
         {
@@ -182,135 +147,81 @@ describe("pickExtensionPackModelFile", () => {
       },
       token,
     );
-    expect(showQuickPickSpy).toHaveBeenCalledWith(
-      [
-        {
-          label: "models/model.yml",
-          file: modelPath,
-        },
-        {
-          label: expect.stringMatching(/create/i),
-          file: null,
-        },
-      ],
-      {
-        title: expect.any(String),
-      },
-      token,
-    );
     expect(cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
     expect(cliServer.resolveQlpacks).toHaveBeenCalledWith(
       additionalPacks,
       true,
     );
-    expect(cliServer.resolveExtensions).toHaveBeenCalledTimes(1);
-    expect(cliServer.resolveExtensions).toHaveBeenCalledWith(
-      extensionPackPath,
-      additionalPacks,
-    );
   });
 
-  it("allows choosing an existing extension pack and creating a new model file", async () => {
-    const cliServer = mockCliServer(qlPacks, extensions);
+  it("automatically selects an extension pack", async () => {
+    disableAutoNameExtensionPackSpy.mockReturnValue(false);
+    vscodeGetConfigurationMock.mockImplementation(
+      (
+        section?: string,
+        scope?: ConfigurationScope | null,
+      ): VSCodeWorkspaceConfiguration => {
+        expect(section).toEqual("codeQL.dataExtensions");
+        expect((scope as any)?.languageId).toEqual("java");
 
-    showQuickPickSpy.mockResolvedValueOnce({
-      label: "my-extension-pack",
-      extensionPack,
-    } as QuickPickItem);
-    showQuickPickSpy.mockResolvedValueOnce({
-      label: "create",
-      file: null,
-    } as QuickPickItem);
-    showInputBoxSpy.mockResolvedValue("models/my-model.yml");
+        return {
+          get: (key: string) => {
+            expect(key).toEqual("extensionsDirectory");
+            return undefined;
+          },
+          has: (key: string) => {
+            return key === "extensionsDirectory";
+          },
+          inspect: () => {
+            throw new Error("inspect not implemented");
+          },
+          update: () => {
+            throw new Error("update not implemented");
+          },
+        };
+      },
+    );
+
+    const cliServer = mockCliServer(qlPacks);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
-    ).toEqual({
-      filename: join(extensionPackPath, "models", "my-model.yml"),
-      extensionPack,
-    });
-    expect(showQuickPickSpy).toHaveBeenCalledTimes(2);
-    expect(showInputBoxSpy).toHaveBeenCalledWith(
-      {
-        title: expect.any(String),
-        value: "models/github.vscode-codeql.model.yml",
-        validateInput: expect.any(Function),
-      },
-      token,
-    );
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
+    ).toEqual(autoExtensionPack);
+    expect(showQuickPickSpy).not.toHaveBeenCalled();
     expect(cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
     expect(cliServer.resolveQlpacks).toHaveBeenCalledWith(
       additionalPacks,
       true,
     );
-    expect(cliServer.resolveExtensions).toHaveBeenCalledTimes(1);
-    expect(cliServer.resolveExtensions).toHaveBeenCalledWith(
-      extensionPackPath,
-      additionalPacks,
-    );
   });
 
-  it("automatically selects an extension pack and allows selecting an existing model file", async () => {
+  it("automatically creates an extension pack and selects an extensions directory", async () => {
     disableAutoNameExtensionPackSpy.mockReturnValue(false);
+    vscodeGetConfigurationMock.mockImplementation(
+      (
+        section?: string,
+        scope?: ConfigurationScope | null,
+      ): VSCodeWorkspaceConfiguration => {
+        expect(section).toEqual("codeQL.dataExtensions");
+        expect((scope as any)?.languageId).toEqual("java");
 
-    const modelPath = join(autoExtensionPackPath, "models", "model.yml");
-
-    const cliServer = mockCliServer(qlPacks, extensions);
-
-    showQuickPickSpy.mockResolvedValueOnce({
-      label: "models/model.yml",
-      file: modelPath,
-    } as QuickPickItem);
-
-    expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
-    ).toEqual({
-      filename: modelPath,
-      extensionPack: autoExtensionPack,
-    });
-    expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
-    expect(showQuickPickSpy).toHaveBeenCalledWith(
-      [
-        {
-          label: "models/model.yml",
-          file: modelPath,
-        },
-        {
-          label: expect.stringMatching(/create/i),
-          file: null,
-        },
-      ],
-      {
-        title: expect.any(String),
+        return {
+          get: (key: string) => {
+            expect(key).toEqual("extensionsDirectory");
+            return undefined;
+          },
+          has: (key: string) => {
+            return key === "extensionsDirectory";
+          },
+          inspect: () => {
+            throw new Error("inspect not implemented");
+          },
+          update: () => {
+            throw new Error("update not implemented");
+          },
+        };
       },
-      token,
     );
-    expect(cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
-    expect(cliServer.resolveQlpacks).toHaveBeenCalledWith(
-      additionalPacks,
-      true,
-    );
-    expect(cliServer.resolveExtensions).toHaveBeenCalledTimes(1);
-    expect(cliServer.resolveExtensions).toHaveBeenCalledWith(
-      autoExtensionPackPath,
-      additionalPacks,
-    );
-  });
-
-  it("automatically creates an extension pack and allows creating a new model file", async () => {
-    disableAutoNameExtensionPackSpy.mockReturnValue(false);
 
     const tmpDir = await dir({
       unsafeCleanup: true,
@@ -348,43 +259,23 @@ describe("pickExtensionPackModelFile", () => {
       "vscode-codeql-java",
     );
 
-    const cliServer = mockCliServer({}, { models: [], data: {} });
-
-    showInputBoxSpy.mockResolvedValue("models/my-model.yml");
+    const cliServer = mockCliServer({});
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
     ).toEqual({
-      filename: join(newPackDir, "models", "my-model.yml"),
-      extensionPack: {
-        path: newPackDir,
-        yamlPath: join(newPackDir, "codeql-pack.yml"),
-        name: "github/vscode-codeql-java",
-        version: "0.0.0",
-        extensionTargets: {
-          "codeql/java-all": "*",
-        },
-        dataExtensions: ["models/**/*.yml"],
+      path: newPackDir,
+      yamlPath: join(newPackDir, "codeql-pack.yml"),
+      name: "github/vscode-codeql-java",
+      version: "0.0.0",
+      extensionTargets: {
+        "codeql/java-all": "*",
       },
+      dataExtensions: ["models/**/*.yml"],
     });
     expect(showQuickPickSpy).not.toHaveBeenCalled();
-    expect(showInputBoxSpy).toHaveBeenCalledTimes(1);
-    expect(showInputBoxSpy).toHaveBeenCalledWith(
-      {
-        title: expect.stringMatching(/model file/),
-        value: "models/github.vscode-codeql.model.yml",
-        validateInput: expect.any(Function),
-      },
-      token,
-    );
+    expect(showInputBoxSpy).not.toHaveBeenCalled();
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).toHaveBeenCalled();
 
     expect(
       loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
@@ -399,26 +290,90 @@ describe("pickExtensionPackModelFile", () => {
     });
   });
 
-  it("allows cancelling the extension pack prompt", async () => {
-    const cliServer = mockCliServer(qlPacks, extensions);
+  it("automatically creates an extension pack when extensions directory is set in config", async () => {
+    disableAutoNameExtensionPackSpy.mockReturnValue(false);
+
+    const tmpDir = await dir({
+      unsafeCleanup: true,
+    });
+
+    const configExtensionsDir = join(
+      Uri.file(tmpDir.path).fsPath,
+      "my-custom-extensions-directory",
+    );
+
+    vscodeGetConfigurationMock.mockImplementation(
+      (
+        section?: string,
+        scope?: ConfigurationScope | null,
+      ): VSCodeWorkspaceConfiguration => {
+        expect(section).toEqual("codeQL.dataExtensions");
+        expect((scope as any)?.languageId).toEqual("java");
+
+        return {
+          get: (key: string) => {
+            expect(key).toEqual("extensionsDirectory");
+            return configExtensionsDir;
+          },
+          has: (key: string) => {
+            return key === "extensionsDirectory";
+          },
+          inspect: () => {
+            throw new Error("inspect not implemented");
+          },
+          update: () => {
+            throw new Error("update not implemented");
+          },
+        };
+      },
+    );
+
+    const newPackDir = join(configExtensionsDir, "vscode-codeql-java");
+
+    const cliServer = mockCliServer({});
+
+    expect(
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
+    ).toEqual({
+      path: newPackDir,
+      yamlPath: join(newPackDir, "codeql-pack.yml"),
+      name: "github/vscode-codeql-java",
+      version: "0.0.0",
+      extensionTargets: {
+        "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    });
+    expect(showQuickPickSpy).not.toHaveBeenCalled();
+    expect(showInputBoxSpy).not.toHaveBeenCalled();
+    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
+
+    expect(
+      loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
+    ).toEqual({
+      name: "github/vscode-codeql-java",
+      version: "0.0.0",
+      library: true,
+      extensionTargets: {
+        "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    });
+  });
+
+  it("allows cancelling the prompt", async () => {
+    const cliServer = mockCliServer(qlPacks);
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
     ).toEqual(undefined);
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
 
   it("allows user to create an extension pack when there are no extension packs", async () => {
-    const cliServer = mockCliServer({}, { models: [], data: {} });
+    const cliServer = mockCliServer({});
 
     const tmpDir = await dir({
       unsafeCleanup: true,
@@ -438,28 +393,19 @@ describe("pickExtensionPackModelFile", () => {
     showInputBoxSpy.mockResolvedValue("models/my-model.yml");
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
     ).toEqual({
-      filename: join(newPackDir, "models", "my-model.yml"),
-      extensionPack: {
-        path: newPackDir,
-        yamlPath: join(newPackDir, "codeql-pack.yml"),
-        name: "pack/new-extension-pack",
-        version: "0.0.0",
-        extensionTargets: {
-          "codeql/java-all": "*",
-        },
-        dataExtensions: ["models/**/*.yml"],
+      path: newPackDir,
+      yamlPath: join(newPackDir, "codeql-pack.yml"),
+      name: "pack/new-extension-pack",
+      version: "0.0.0",
+      extensionTargets: {
+        "codeql/java-all": "*",
       },
+      dataExtensions: ["models/**/*.yml"],
     });
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
-    expect(showInputBoxSpy).toHaveBeenCalledTimes(2);
+    expect(showInputBoxSpy).toHaveBeenCalledTimes(1);
     expect(showInputBoxSpy).toHaveBeenCalledWith(
       {
         title: expect.stringMatching(/extension pack/i),
@@ -469,16 +415,7 @@ describe("pickExtensionPackModelFile", () => {
       },
       token,
     );
-    expect(showInputBoxSpy).toHaveBeenCalledWith(
-      {
-        title: expect.stringMatching(/model file/),
-        value: "models/github.vscode-codeql.model.yml",
-        validateInput: expect.any(Function),
-      },
-      token,
-    );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).toHaveBeenCalled();
 
     expect(
       loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
@@ -494,7 +431,7 @@ describe("pickExtensionPackModelFile", () => {
   });
 
   it("allows user to create an extension pack when there are no extension packs with a different language", async () => {
-    const cliServer = mockCliServer({}, { models: [], data: {} });
+    const cliServer = mockCliServer({});
 
     const tmpDir = await dir({
       unsafeCleanup: true,
@@ -514,7 +451,7 @@ describe("pickExtensionPackModelFile", () => {
     showInputBoxSpy.mockResolvedValue("models/my-model.yml");
 
     expect(
-      await pickExtensionPackModelFile(
+      await pickExtensionPack(
         cliServer,
         {
           ...databaseItem,
@@ -525,20 +462,17 @@ describe("pickExtensionPackModelFile", () => {
         token,
       ),
     ).toEqual({
-      filename: join(newPackDir, "models", "my-model.yml"),
-      extensionPack: {
-        path: newPackDir,
-        yamlPath: join(newPackDir, "codeql-pack.yml"),
-        name: "pack/new-extension-pack",
-        version: "0.0.0",
-        extensionTargets: {
-          "codeql/csharp-all": "*",
-        },
-        dataExtensions: ["models/**/*.yml"],
+      path: newPackDir,
+      yamlPath: join(newPackDir, "codeql-pack.yml"),
+      name: "pack/new-extension-pack",
+      version: "0.0.0",
+      extensionTargets: {
+        "codeql/csharp-all": "*",
       },
+      dataExtensions: ["models/**/*.yml"],
     });
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
-    expect(showInputBoxSpy).toHaveBeenCalledTimes(2);
+    expect(showInputBoxSpy).toHaveBeenCalledTimes(1);
     expect(showInputBoxSpy).toHaveBeenCalledWith(
       {
         title: expect.stringMatching(/extension pack/i),
@@ -548,16 +482,7 @@ describe("pickExtensionPackModelFile", () => {
       },
       token,
     );
-    expect(showInputBoxSpy).toHaveBeenCalledWith(
-      {
-        title: expect.stringMatching(/model file/),
-        value: "models/github.vscode-codeql.model.yml",
-        validateInput: expect.any(Function),
-      },
-      token,
-    );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).toHaveBeenCalled();
 
     expect(
       loadYaml(await readFile(join(newPackDir, "codeql-pack.yml"), "utf8")),
@@ -573,27 +498,20 @@ describe("pickExtensionPackModelFile", () => {
   });
 
   it("allows cancelling the workspace folder selection", async () => {
-    const cliServer = mockCliServer({}, { models: [], data: {} });
+    const cliServer = mockCliServer({});
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
     ).toEqual(undefined);
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
     expect(showInputBoxSpy).toHaveBeenCalledTimes(0);
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
 
   it("allows cancelling the extension pack name input", async () => {
-    const cliServer = mockCliServer({}, { models: [], data: {} });
+    const cliServer = mockCliServer({});
 
     showQuickPickSpy.mockResolvedValueOnce({
       label: "codeql-custom-queries-java",
@@ -606,41 +524,25 @@ describe("pickExtensionPackModelFile", () => {
     showInputBoxSpy.mockResolvedValueOnce(undefined);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
     ).toEqual(undefined);
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
     expect(showInputBoxSpy).toHaveBeenCalledTimes(1);
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
 
   it("shows an error when an extension pack resolves to more than 1 location", async () => {
-    const cliServer = mockCliServer(
-      {
-        "my-extension-pack": [
-          "/a/b/c/my-extension-pack",
-          "/a/b/c/my-extension-pack2",
-        ],
-      },
-      { models: [], data: {} },
-    );
+    const cliServer = mockCliServer({
+      "my-extension-pack": [
+        "/a/b/c/my-extension-pack",
+        "/a/b/c/my-extension-pack2",
+      ],
+    });
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
     ).toEqual(undefined);
     expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
     expect(logger.showErrorMessage).toHaveBeenCalledWith(
@@ -660,78 +562,6 @@ describe("pickExtensionPackModelFile", () => {
       token,
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
-  });
-
-  it("allows cancelling the model file prompt", async () => {
-    const cliServer = mockCliServer(qlPacks, extensions);
-
-    showQuickPickSpy.mockResolvedValueOnce({
-      label: "my-extension-pack",
-      extensionPack,
-    } as QuickPickItem);
-    showQuickPickSpy.mockResolvedValueOnce(undefined);
-
-    expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
-    ).toEqual(undefined);
-    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).toHaveBeenCalled();
-  });
-
-  it("shows create input box when there are no model files", async () => {
-    const tmpDir = await dir({
-      unsafeCleanup: true,
-    });
-
-    const extensionPack = await createMockExtensionPack(
-      tmpDir.path,
-      "no-extension-pack",
-    );
-
-    const cliServer = mockCliServer(
-      {
-        "no-extension-pack": [tmpDir.path],
-      },
-      { models: [], data: {} },
-    );
-
-    showQuickPickSpy.mockResolvedValueOnce({
-      label: "no-extension-pack",
-      extensionPack,
-    } as QuickPickItem);
-    showQuickPickSpy.mockResolvedValueOnce(undefined);
-    showInputBoxSpy.mockResolvedValue("models/my-model.yml");
-
-    expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
-    ).toEqual({
-      filename: join(tmpDir.path, "models", "my-model.yml"),
-      extensionPack,
-    });
-    expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
-    expect(showInputBoxSpy).toHaveBeenCalledWith(
-      {
-        title: expect.any(String),
-        value: "models/github.vscode-codeql.model.yml",
-        validateInput: expect.any(Function),
-      },
-      token,
-    );
-    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).toHaveBeenCalled();
   });
 
   it("shows an error when there is no pack YAML file", async () => {
@@ -739,23 +569,14 @@ describe("pickExtensionPackModelFile", () => {
       unsafeCleanup: true,
     });
 
-    const cliServer = mockCliServer(
-      {
-        "my-extension-pack": [tmpDir.path],
-      },
-      { models: [], data: {} },
-    );
+    const cliServer = mockCliServer({
+      "my-extension-pack": [tmpDir.path],
+    });
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
     ).toEqual(undefined);
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
     expect(showQuickPickSpy).toHaveBeenCalledWith(
@@ -776,7 +597,6 @@ describe("pickExtensionPackModelFile", () => {
       expect.stringMatching(/my-extension-pack/),
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
 
   it("shows an error when the pack YAML file is invalid", async () => {
@@ -784,25 +604,16 @@ describe("pickExtensionPackModelFile", () => {
       unsafeCleanup: true,
     });
 
-    const cliServer = mockCliServer(
-      {
-        "my-extension-pack": [tmpDir.path],
-      },
-      { models: [], data: {} },
-    );
+    const cliServer = mockCliServer({
+      "my-extension-pack": [tmpDir.path],
+    });
 
     await outputFile(join(tmpDir.path, "codeql-pack.yml"), dumpYaml("java"));
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
     ).toEqual(undefined);
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
     expect(showQuickPickSpy).toHaveBeenCalledWith(
@@ -823,7 +634,6 @@ describe("pickExtensionPackModelFile", () => {
       expect.stringMatching(/my-extension-pack/),
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
 
   it("shows an error when the pack YAML does not contain dataExtensions", async () => {
@@ -831,12 +641,9 @@ describe("pickExtensionPackModelFile", () => {
       unsafeCleanup: true,
     });
 
-    const cliServer = mockCliServer(
-      {
-        "my-extension-pack": [tmpDir.path],
-      },
-      { models: [], data: {} },
-    );
+    const cliServer = mockCliServer({
+      "my-extension-pack": [tmpDir.path],
+    });
 
     await outputFile(
       join(tmpDir.path, "codeql-pack.yml"),
@@ -853,13 +660,7 @@ describe("pickExtensionPackModelFile", () => {
     showQuickPickSpy.mockResolvedValueOnce(undefined);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
     ).toEqual(undefined);
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
     expect(showQuickPickSpy).toHaveBeenCalledWith(
@@ -880,7 +681,6 @@ describe("pickExtensionPackModelFile", () => {
       expect.stringMatching(/my-extension-pack/),
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
 
   it("shows an error when the pack YAML dataExtensions is invalid", async () => {
@@ -888,12 +688,9 @@ describe("pickExtensionPackModelFile", () => {
       unsafeCleanup: true,
     });
 
-    const cliServer = mockCliServer(
-      {
-        "my-extension-pack": [tmpDir.path],
-      },
-      { models: [], data: {} },
-    );
+    const cliServer = mockCliServer({
+      "my-extension-pack": [tmpDir.path],
+    });
 
     await outputFile(
       join(tmpDir.path, "codeql-pack.yml"),
@@ -913,13 +710,7 @@ describe("pickExtensionPackModelFile", () => {
     showQuickPickSpy.mockResolvedValueOnce(undefined);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
     ).toEqual(undefined);
     expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
     expect(showQuickPickSpy).toHaveBeenCalledWith(
@@ -940,53 +731,10 @@ describe("pickExtensionPackModelFile", () => {
       expect.stringMatching(/my-extension-pack/),
     );
     expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
-  });
-
-  it("allows cancelling the new file input box", async () => {
-    const tmpDir = await dir({
-      unsafeCleanup: true,
-    });
-
-    const newExtensionPack = await createMockExtensionPack(
-      tmpDir.path,
-      "new-extension-pack",
-    );
-
-    const cliServer = mockCliServer(
-      {
-        "my-extension-pack": [tmpDir.path],
-      },
-      {
-        models: [],
-        data: {},
-      },
-    );
-
-    showQuickPickSpy.mockResolvedValueOnce({
-      label: "new-extension-pack",
-      extensionPack: newExtensionPack,
-    } as QuickPickItem);
-    showQuickPickSpy.mockResolvedValueOnce(undefined);
-    showInputBoxSpy.mockResolvedValue(undefined);
-
-    expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
-    ).toEqual(undefined);
-    expect(showQuickPickSpy).toHaveBeenCalledTimes(1);
-    expect(showInputBoxSpy).toHaveBeenCalledTimes(1);
-    expect(cliServer.resolveQlpacks).toHaveBeenCalled();
-    expect(cliServer.resolveExtensions).toHaveBeenCalled();
   });
 
   it("validates the pack name input", async () => {
-    const cliServer = mockCliServer({}, { models: [], data: {} });
+    const cliServer = mockCliServer({});
 
     showQuickPickSpy.mockResolvedValueOnce({
       label: "a",
@@ -999,13 +747,7 @@ describe("pickExtensionPackModelFile", () => {
     showInputBoxSpy.mockResolvedValue(undefined);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
     ).toEqual(undefined);
 
     const validateFile = showInputBoxSpy.mock.calls[0][0]?.validateInput;
@@ -1039,88 +781,14 @@ describe("pickExtensionPackModelFile", () => {
     expect(await validateFile("pack/vscode-codeql-extensions")).toBeUndefined();
   });
 
-  it("validates the file input", async () => {
-    const tmpDir = await dir({
-      unsafeCleanup: true,
-    });
-
-    const extensionPack = await createMockExtensionPack(
-      tmpDir.path,
-      "new-extension-pack",
-      {
-        dataExtensions: ["models/**/*.yml", "data/**/*.yml"],
-      },
-    );
-
-    const cliServer = mockCliServer(
-      {
-        "new-extension-pack": [extensionPack.path],
-      },
-      { models: [], data: {} },
-    );
-
-    await outputFile(
-      join(extensionPack.path, "models", "model.yml"),
-      dumpYaml({
-        extensions: [],
-      }),
-    );
-
-    showQuickPickSpy.mockResolvedValueOnce({
-      label: "new-extension-pack",
-      extensionPack,
-    } as QuickPickItem);
-    showQuickPickSpy.mockResolvedValueOnce(undefined);
-    showInputBoxSpy.mockResolvedValue(undefined);
-
-    expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
-    ).toEqual(undefined);
-
-    const validateFile = showInputBoxSpy.mock.calls[0][0]?.validateInput;
-    expect(validateFile).toBeDefined();
-    if (!validateFile) {
-      return;
-    }
-
-    expect(await validateFile("")).toEqual("File name must not be empty");
-    expect(await validateFile("models/model.yml")).toEqual(
-      "File already exists",
-    );
-    expect(await validateFile("../model.yml")).toEqual(
-      "File must be in the extension pack",
-    );
-    expect(await validateFile("/home/user/model.yml")).toEqual(
-      "File must be in the extension pack",
-    );
-    expect(await validateFile("model.yml")).toEqual(
-      `File must match one of the patterns in 'dataExtensions' in ${extensionPack.yamlPath}`,
-    );
-    expect(await validateFile("models/model.yaml")).toEqual(
-      `File must match one of the patterns in 'dataExtensions' in ${extensionPack.yamlPath}`,
-    );
-    expect(await validateFile("models/my-model.yml")).toBeUndefined();
-    expect(await validateFile("models/nested/model.yml")).toBeUndefined();
-    expect(await validateFile("data/model.yml")).toBeUndefined();
-  });
-
   it("allows the dataExtensions to be a string", async () => {
     const tmpDir = await dir({
       unsafeCleanup: true,
     });
 
-    const cliServer = mockCliServer(
-      {
-        "new-extension-pack": [tmpDir.path],
-      },
-      { models: [], data: {} },
-    );
+    const cliServer = mockCliServer({
+      "new-extension-pack": [tmpDir.path],
+    });
 
     const qlpackPath = join(tmpDir.path, "codeql-pack.yml");
     await outputFile(
@@ -1142,39 +810,26 @@ describe("pickExtensionPackModelFile", () => {
       }),
     );
 
+    const extensionPack = {
+      path: tmpDir.path,
+      yamlPath: qlpackPath,
+      name: "new-extension-pack",
+      version: "0.0.0",
+      extensionTargets: {
+        "codeql/java-all": "*",
+      },
+      dataExtensions: ["models/**/*.yml"],
+    };
     showQuickPickSpy.mockResolvedValueOnce({
       label: "new-extension-pack",
-      extensionPack: {
-        path: tmpDir.path,
-        yamlPath: qlpackPath,
-        name: "new-extension-pack",
-        version: "0.0.0",
-        extensionTargets: {
-          "codeql/java-all": "*",
-        },
-        dataExtensions: ["models/**/*.yml"],
-      },
+      extensionPack,
     } as QuickPickItem);
     showQuickPickSpy.mockResolvedValueOnce(undefined);
     showInputBoxSpy.mockResolvedValue(undefined);
 
     expect(
-      await pickExtensionPackModelFile(
-        cliServer,
-        databaseItem,
-        logger,
-        progress,
-        token,
-      ),
-    ).toEqual(undefined);
-
-    const validateFile = showInputBoxSpy.mock.calls[0][0]?.validateInput;
-    expect(validateFile).toBeDefined();
-    if (!validateFile) {
-      return;
-    }
-
-    expect(await validateFile("models/my-model.yml")).toBeUndefined();
+      await pickExtensionPack(cliServer, databaseItem, logger, progress, token),
+    ).toEqual(extensionPack);
   });
 
   it("only shows extension packs for the database language", async () => {
@@ -1189,18 +844,15 @@ describe("pickExtensionPackModelFile", () => {
       },
     );
 
-    const cliServer = mockCliServer(
-      {
-        ...qlPacks,
-        "csharp-extension-pack": [csharpPack.path],
-      },
-      extensions,
-    );
+    const cliServer = mockCliServer({
+      ...qlPacks,
+      "csharp-extension-pack": [csharpPack.path],
+    });
 
     showQuickPickSpy.mockResolvedValueOnce(undefined);
 
     expect(
-      await pickExtensionPackModelFile(
+      await pickExtensionPack(
         cliServer,
         {
           ...databaseItem,
@@ -1235,17 +887,12 @@ describe("pickExtensionPackModelFile", () => {
       additionalPacks,
       true,
     );
-    expect(cliServer.resolveExtensions).not.toHaveBeenCalled();
   });
 });
 
-function mockCliServer(
-  qlpacks: QlpacksInfo,
-  extensions: ResolveExtensionsResult,
-) {
+function mockCliServer(qlpacks: QlpacksInfo) {
   return {
     resolveQlpacks: jest.fn().mockResolvedValue(qlpacks),
-    resolveExtensions: jest.fn().mockResolvedValue(extensions),
   };
 }
 

@@ -39,6 +39,7 @@ describe("commands declared in package.json", () => {
       commandTitles[command] = title!;
     } else if (
       command.match(/^codeQLDatabases\./) ||
+      command.match(/^codeQLQueries\./) ||
       command.match(/^codeQLVariantAnalysisRepositories\./) ||
       command.match(/^codeQLQueryHistory\./) ||
       command.match(/^codeQLAstViewer\./) ||
@@ -60,6 +61,12 @@ describe("commands declared in package.json", () => {
   });
 
   menus["editor/context"].forEach((commandDecl: CmdDecl) => {
+    const { command } = commandDecl;
+    paletteCmds.delete(command);
+    contribContextMenuCmds.add(command);
+  });
+
+  menus["editor/title"].forEach((commandDecl: CmdDecl) => {
     const { command } = commandDecl;
     paletteCmds.delete(command);
     contribContextMenuCmds.add(command);

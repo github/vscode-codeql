@@ -10,13 +10,13 @@ import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usag
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
-import { calculateModeledPercentage } from "./modeled";
+import { calculateModeledPercentage } from "../../data-extensions-editor/shared/modeled-percentage";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
-import { basename } from "../common/path";
 import { ViewTitle } from "../common";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
+import { Mode } from "../../data-extensions-editor/shared/mode";
 
 const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -25,12 +25,6 @@ const DataExtensionsEditorContainer = styled.div`
 const DetailsContainer = styled.div`
   display: flex;
   gap: 1em;
-  align-items: center;
-`;
-
-const NonExistingModelFileContainer = styled.div`
-  display: flex;
-  gap: 0.2em;
   align-items: center;
 `;
 
@@ -145,6 +139,12 @@ export function DataExtensionsEditor({
     [],
   );
 
+  const onRefreshClick = useCallback(() => {
+    vscode.postMessage({
+      t: "refreshExternalApiUsages",
+    });
+  }, []);
+
   const onApplyClick = useCallback(() => {
     vscode.postMessage({
       t: "saveModeledMethods",
@@ -173,11 +173,15 @@ export function DataExtensionsEditor({
     });
   }, []);
 
-  const onOpenModelFileClick = useCallback(() => {
+  const onSwitchModeClick = useCallback(() => {
+    const newMode =
+      viewState?.mode === Mode.Framework ? Mode.Application : Mode.Framework;
+
     vscode.postMessage({
-      t: "openModelFile",
+      t: "switchMode",
+      mode: newMode,
     });
-  }, []);
+  }, [viewState?.mode]);
 
   return (
     <DataExtensionsEditorContainer>
@@ -192,26 +196,12 @@ export function DataExtensionsEditor({
         <>
           <ViewTitle>Data extensions editor</ViewTitle>
           <DetailsContainer>
-            {viewState?.extensionPackModelFile && (
+            {viewState?.extensionPack && (
               <>
                 <LinkIconButton onClick={onOpenExtensionPackClick}>
                   <span slot="start" className="codicon codicon-package"></span>
-                  {viewState.extensionPackModelFile.extensionPack.name}
+                  {viewState.extensionPack.name}
                 </LinkIconButton>
-                {viewState.modelFileExists ? (
-                  <LinkIconButton onClick={onOpenModelFileClick}>
-                    <span
-                      slot="start"
-                      className="codicon codicon-file-code"
-                    ></span>
-                    {basename(viewState.extensionPackModelFile.filename)}
-                  </LinkIconButton>
-                ) : (
-                  <NonExistingModelFileContainer>
-                    <span className="codicon codicon-file-code"></span>
-                    {basename(viewState.extensionPackModelFile.filename)}
-                  </NonExistingModelFileContainer>
-                )}
               </>
             )}
             <div>
@@ -220,13 +210,39 @@ export function DataExtensionsEditor({
             <div>
               {percentFormatter.format(unModeledPercentage / 100)} unmodeled
             </div>
+            {viewState?.enableFrameworkMode && (
+              <>
+                <div>
+                  Mode:{" "}
+                  {viewState?.mode === Mode.Framework
+                    ? "Framework"
+                    : "Application"}
+                </div>
+                <div>
+                  <LinkIconButton onClick={onSwitchModeClick}>
+                    <span
+                      slot="start"
+                      className="codicon codicon-library"
+                    ></span>
+                    Switch mode
+                  </LinkIconButton>
+                </div>
+              </>
+            )}
           </DetailsContainer>
 
           <EditorContainer>
             <ButtonsContainer>
               <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+              {viewState?.enableFrameworkMode && (
+                <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
+                  Refresh
+                </VSCodeButton>
+              )}
               <VSCodeButton onClick={onGenerateClick}>
-                Download and generate
+                {viewState?.mode === Mode.Framework
+                  ? "Generate"
+                  : "Download and generate"}
               </VSCodeButton>
               {viewState?.showLlmButton && (
                 <>
@@ -239,6 +255,7 @@ export function DataExtensionsEditor({
             <ModeledMethodsList
               externalApiUsages={externalApiUsages}
               modeledMethods={modeledMethods}
+              mode={viewState?.mode ?? Mode.Application}
               onChange={onChange}
             />
           </EditorContainer>

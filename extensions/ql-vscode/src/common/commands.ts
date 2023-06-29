@@ -12,6 +12,7 @@ import type {
   VariantAnalysisScannedRepositoryResult,
 } from "../variant-analysis/shared/variant-analysis";
 import type { QLDebugConfiguration } from "../debugger/debug-configuration";
+import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from a context menu on a TreeView with
@@ -129,8 +130,14 @@ export type LocalQueryCommands = {
   "codeQL.runQueryOnMultipleDatabasesContextEditor": (
     uri?: Uri,
   ) => Promise<void>;
+  "codeQLQueries.runLocalQueryFromQueriesPanel": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
+  "codeQLQueries.runLocalQueryContextMenu": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
+  "codeQLQueries.runLocalQueriesContextMenu": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
+  "codeQLQueries.runLocalQueriesFromPanel": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
+  "codeQL.runLocalQueryFromFileTab": (uri: Uri) => Promise<void>;
   "codeQL.runQueries": ExplorerSelectionCommandFunction<Uri>;
   "codeQL.quickEval": (uri: Uri) => Promise<void>;
+  "codeQL.quickEvalCount": (uri: Uri) => Promise<void>;
   "codeQL.quickEvalContextEditor": (uri: Uri) => Promise<void>;
   "codeQL.codeLensQuickEval": (uri: Uri, range: Range) => Promise<void>;
   "codeQL.quickQuery": () => Promise<void>;
@@ -262,6 +269,7 @@ export type VariantAnalysisCommands = {
   ) => Promise<void>;
   "codeQL.runVariantAnalysis": (uri?: Uri) => Promise<void>;
   "codeQL.runVariantAnalysisContextEditor": (uri?: Uri) => Promise<void>;
+  "codeQLQueries.runVariantAnalysisContextMenu": TreeViewContextSingleSelectionCommandFunction<QueryTreeViewItem>;
 };
 
 export type DatabasePanelCommands = {

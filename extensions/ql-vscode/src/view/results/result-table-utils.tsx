@@ -98,14 +98,20 @@ export function renderLocation(
   const resolvableLoc = tryGetResolvableLocation(loc);
   if (databaseUri !== undefined && resolvableLoc !== undefined) {
     return (
-      <a
-        href="#"
-        className="vscode-codeql__result-table-location-link"
-        title={title}
-        onClick={jumpToLocationHandler(resolvableLoc, databaseUri, callback)}
-      >
-        {displayLabel}
-      </a>
+      <>
+        {/*
+            eslint-disable-next-line
+            jsx-a11y/anchor-is-valid,
+          */}
+        <a
+          href="#"
+          className="vscode-codeql__result-table-location-link"
+          title={title}
+          onClick={jumpToLocationHandler(resolvableLoc, databaseUri, callback)}
+        >
+          {displayLabel}
+        </a>
+      </>
     );
   } else {
     return <span title={title}>{displayLabel}</span>;

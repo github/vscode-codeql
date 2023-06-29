@@ -327,6 +327,10 @@ export class ResultTables extends React.Component<
         </button>
         <div className={tableHeaderItemClassName}>{this.props.queryName}</div>
         <div className={tableHeaderItemClassName}>
+          {/*
+              eslint-disable-next-line
+              jsx-a11y/anchor-is-valid
+            */}
           <a
             href="#"
             onClick={openQuery}

@@ -8,8 +8,3 @@ export interface ExtensionPack {
   extensionTargets: Record<string, string>;
   dataExtensions: string[];
 }
-
-export interface ExtensionPackModelFile {
-  filename: string;
-  extensionPack: ExtensionPack;
-}

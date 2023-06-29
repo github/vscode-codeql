@@ -39,7 +39,7 @@ import {
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import { WebviewReveal } from "./webview";
 import { asError, getErrorMessage } from "../common/helpers-pure";
-import { CodeQLCliServer } from "../codeql-cli/cli";
+import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
@@ -47,6 +47,7 @@ import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { findLanguage } from "../codeql-cli/query-language";
+import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
@@ -80,10 +81,20 @@ export class LocalQueries extends DisposableObject {
         this.runQueryOnMultipleDatabases.bind(this),
       "codeQL.runQueryOnMultipleDatabasesContextEditor":
         this.runQueryOnMultipleDatabases.bind(this),
+      "codeQLQueries.runLocalQueryFromQueriesPanel":
+        this.runQueryFromQueriesPanel.bind(this),
+      "codeQLQueries.runLocalQueryContextMenu":
+        this.runQueryFromQueriesPanel.bind(this),
+      "codeQLQueries.runLocalQueriesContextMenu":
+        this.runQueriesFromQueriesPanel.bind(this),
+      "codeQLQueries.runLocalQueriesFromPanel":
+        this.runQueriesFromQueriesPanel.bind(this),
+      "codeQL.runLocalQueryFromFileTab": this.runQuery.bind(this),
       "codeQL.runQueries": createMultiSelectionCommand(
         this.runQueries.bind(this),
       ),
       "codeQL.quickEval": this.quickEval.bind(this),
+      "codeQL.quickEvalCount": this.quickEvalCount.bind(this),
       "codeQL.quickEvalContextEditor": this.quickEval.bind(this),
       "codeQL.codeLensQuickEval": this.codeLensQuickEval.bind(this),
       "codeQL.quickQuery": this.quickQuery.bind(this),
@@ -96,6 +107,21 @@ export class LocalQueries extends DisposableObject {
       },
       "codeQL.createQuery": this.createSkeletonQuery.bind(this),
     };
+  }
+
+  private async runQueryFromQueriesPanel(
+    queryTreeViewItem: QueryTreeViewItem,
+  ): Promise<void> {
+    await this.runQuery(Uri.file(queryTreeViewItem.path));
+  }
+
+  private async runQueriesFromQueriesPanel(
+    queryTreeViewItem: QueryTreeViewItem,
+  ): Promise<void> {
+    const uris = queryTreeViewItem.children.map((child) =>
+      Uri.file(child.path),
+    );
+    await this.runQueries(uris);
   }
 
   private async runQuery(uri: Uri | undefined): Promise<void> {
@@ -211,6 +237,29 @@ export class LocalQueries extends DisposableObject {
     );
   }
 
+  private async quickEvalCount(uri: Uri): Promise<void> {
+    await withProgress(
+      async (progress, token) => {
+        if (!(await this.cliServer.cliConstraints.supportsQuickEvalCount())) {
+          throw new Error(
+            `Quick evaluation count is only supported by CodeQL CLI v${CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT} or later.`,
+          );
+        }
+        await this.compileAndRunQuery(
+          QuickEvalType.QuickEvalCount,
+          uri,
+          progress,
+          token,
+          undefined,
+        );
+      },
+      {
+        title: "Running query",
+        cancellable: true,
+      },
+    );
+  }
+
   private async codeLensQuickEval(uri: Uri, range: Range): Promise<void> {
     await withProgress(
       async (progress, token) =>
@@ -249,7 +298,7 @@ export class LocalQueries extends DisposableObject {
    * Gets the current active query.
    *
    * For now, the "active query" is just whatever query is in the active text editor. Once we have a
-   * propery "queries" panel, we can provide a way to select the current query there.
+   * proper "queries" panel, we can provide a way to select the current query there.
    */
   public async getCurrentQuery(allowLibraryFiles: boolean): Promise<string> {
     const editor = window.activeTextEditor;

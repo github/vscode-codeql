@@ -58,6 +58,7 @@ describe("query-results", () => {
         endLine: 2,
         fileName: "/home/users/yz",
       };
+      (fqi.initialInfo as any).isQuickEval = true;
       expect(fqi.getQueryName()).toBe("Quick evaluation of yz:1-2");
       (fqi.initialInfo as any).quickEvalPosition.endLine = 1;
       expect(fqi.getQueryName()).toBe("Quick evaluation of yz:1");

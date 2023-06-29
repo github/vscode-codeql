@@ -493,8 +493,9 @@ type SaveBeforeStartMode =
  */
 export async function saveBeforeStart(): Promise<void> {
   const mode: SaveBeforeStartMode =
-    (VSCODE_SAVE_BEFORE_START_SETTING.getValue<string>() as SaveBeforeStartMode) ??
-    "nonUntitledEditorsInActiveGroup";
+    (VSCODE_SAVE_BEFORE_START_SETTING.getValue<string>({
+      languageId: "ql",
+    }) as SaveBeforeStartMode) ?? "nonUntitledEditorsInActiveGroup";
 
   // Despite the names of the modes, the VS Code implementation doesn't restrict itself to the
   // current tab group. It saves all dirty files in all groups. We'll do the same.
@@ -562,9 +563,12 @@ export async function createInitialQueryInfo(
   databaseInfo: DatabaseInfo,
 ): Promise<InitialQueryInfo> {
   const isQuickEval = selectedQuery.quickEval !== undefined;
+  const isQuickEvalCount =
+    selectedQuery.quickEval?.quickEvalCount !== undefined;
   return {
     queryPath: selectedQuery.queryPath,
     isQuickEval,
+    isQuickEvalCount,
     isQuickQuery: isQuickQueryPath(selectedQuery.queryPath),
     databaseInfo,
     id: `${basename(selectedQuery.queryPath)}-${nanoid()}`,

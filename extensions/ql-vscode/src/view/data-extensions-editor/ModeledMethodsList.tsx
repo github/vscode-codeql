@@ -2,12 +2,17 @@ import * as React from "react";
 import { useMemo } from "react";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
-import { calculateModeledPercentage } from "./modeled";
 import { LibraryRow } from "./LibraryRow";
+import { Mode } from "../../data-extensions-editor/shared/mode";
+import {
+  groupMethods,
+  sortGroupNames,
+} from "../../data-extensions-editor/shared/sorting";
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
+  mode: Mode;
   onChange: (
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
@@ -17,71 +22,25 @@ type Props = {
 export const ModeledMethodsList = ({
   externalApiUsages,
   modeledMethods,
+  mode,
   onChange,
 }: Props) => {
-  const groupedByLibrary = useMemo(() => {
-    const groupedByLibrary: Record<string, ExternalApiUsage[]> = {};
+  const grouped = useMemo(
+    () => groupMethods(externalApiUsages, mode),
+    [externalApiUsages, mode],
+  );
 
-    for (const externalApiUsage of externalApiUsages) {
-      groupedByLibrary[externalApiUsage.library] ??= [];
-      groupedByLibrary[externalApiUsage.library].push(externalApiUsage);
-    }
-
-    return groupedByLibrary;
-  }, [externalApiUsages]);
-
-  const sortedLibraryNames = useMemo(() => {
-    return Object.keys(groupedByLibrary).sort((a, b) => {
-      const supportedPercentageA = calculateModeledPercentage(
-        groupedByLibrary[a],
-      );
-      const supportedPercentageB = calculateModeledPercentage(
-        groupedByLibrary[b],
-      );
-
-      // Sort first by supported percentage ascending
-      if (supportedPercentageA > supportedPercentageB) {
-        return 1;
-      }
-      if (supportedPercentageA < supportedPercentageB) {
-        return -1;
-      }
-
-      const numberOfUsagesA = groupedByLibrary[a].reduce(
-        (acc, curr) => acc + curr.usages.length,
-        0,
-      );
-      const numberOfUsagesB = groupedByLibrary[b].reduce(
-        (acc, curr) => acc + curr.usages.length,
-        0,
-      );
-
-      // If the number of usages is equal, sort by number of methods descending
-      if (numberOfUsagesA === numberOfUsagesB) {
-        const numberOfMethodsA = groupedByLibrary[a].length;
-        const numberOfMethodsB = groupedByLibrary[b].length;
-
-        // If the number of methods is equal, sort by library name ascending
-        if (numberOfMethodsA === numberOfMethodsB) {
-          return a.localeCompare(b);
-        }
-
-        return numberOfMethodsB - numberOfMethodsA;
-      }
-
-      // Then sort by number of usages descending
-      return numberOfUsagesB - numberOfUsagesA;
-    });
-  }, [groupedByLibrary]);
+  const sortedGroupNames = useMemo(() => sortGroupNames(grouped), [grouped]);
 
   return (
     <>
-      {sortedLibraryNames.map((libraryName) => (
+      {sortedGroupNames.map((libraryName) => (
         <LibraryRow
           key={libraryName}
-          libraryName={libraryName}
-          externalApiUsages={groupedByLibrary[libraryName]}
+          title={libraryName}
+          externalApiUsages={grouped[libraryName]}
           modeledMethods={modeledMethods}
+          mode={mode}
           onChange={onChange}
         />
       ))}
