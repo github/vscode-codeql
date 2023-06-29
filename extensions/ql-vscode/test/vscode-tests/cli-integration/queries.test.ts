@@ -157,8 +157,10 @@ describeWithCodeQL()("Queries", () => {
         return;
       }
 
+      console.log("Setting useExtensionPacks to false");
       await cli.setUseExtensionPacks(false);
       const parsedResults = await runQueryWithExtensions();
+      console.log("Returned from runQueryWithExtensions");
       expect(parsedResults).toEqual([1]);
     });
 
@@ -183,6 +185,7 @@ describeWithCodeQL()("Queries", () => {
     }
 
     async function runQueryWithExtensions() {
+      console.log("Calling compileAndRunQuery");
       const result = await compileAndRunQuery(
         mode,
         appCommandManager,
@@ -194,10 +197,12 @@ describeWithCodeQL()("Queries", () => {
         dbItem,
         undefined,
       );
+      console.log("Completed compileAndRunQuery");
 
       // Check that query was successful
       expect(result.resultType).toBe(QueryResultType.SUCCESS);
 
+      console.log("Loading query results");
       // Load query results
       const chunk = await qs.cliServer.bqrsDecode(
         result.outputDir.bqrsPath,
@@ -208,6 +213,7 @@ describeWithCodeQL()("Queries", () => {
           pageSize: 10,
         },
       );
+      console.log("Loaded query results");
 
       // Extract the results as an array.
       return chunk.tuples.map((t) => t[0]);
