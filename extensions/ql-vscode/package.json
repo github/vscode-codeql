@@ -1770,7 +1770,7 @@
     "stream": "^0.0.2",
     "stream-chain": "~2.2.4",
     "stream-json": "~1.7.3",
-    "styled-components": "^5.3.3",
+    "styled-components": "^6.0.1",
     "tmp": "^0.1.0",
     "tmp-promise": "~3.0.2",
     "tree-kill": "~1.2.2",
