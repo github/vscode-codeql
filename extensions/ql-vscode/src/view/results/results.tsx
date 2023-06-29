@@ -87,6 +87,59 @@ export class ResultsApp extends React.Component<
     };
   }
 
+  private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
+    this.setState((prevState) => {
+      if (resultsInfo === null && prevState.isExpectingResultsUpdate) {
+        // Display loading message
+        return {
+          displayedResults: {
+            resultsInfo: null,
+            results: null,
+            errorMessage: "Loading results…",
+          },
+          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+          nextResultsInfo: resultsInfo,
+        };
+      } else if (resultsInfo === null) {
+        // No results to display
+        return {
+          displayedResults: {
+            resultsInfo: null,
+            results: null,
+            errorMessage: "No results to display",
+          },
+          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
+          nextResultsInfo: resultsInfo,
+        };
+      }
+
+      let results: Results | null = null;
+      let statusText = "";
+      try {
+        const resultSets = getResultSets(resultsInfo);
+        results = {
+          resultSets,
+          database: resultsInfo.database,
+          sortStates: getSortStates(resultsInfo),
+        };
+      } catch (e) {
+        const errorMessage = getErrorMessage(e);
+
+        statusText = `Error loading results: ${errorMessage}`;
+      }
+
+      return {
+        displayedResults: {
+          resultsInfo,
+          results,
+          errorMessage: statusText,
+        },
+        nextResultsInfo: null,
+        isExpectingResultsUpdate: false,
+      };
+    });
+  }
+
   handleMessage(msg: IntoResultsViewMsg): void {
     switch (msg.t) {
       case "setState":
@@ -160,85 +213,23 @@ export class ResultsApp extends React.Component<
     }
   }
 
-  private updateStateWithNewResultsInfo(resultsInfo: ResultsInfo): void {
-    this.setState((prevState) => {
-      if (resultsInfo === null && prevState.isExpectingResultsUpdate) {
-        // Display loading message
-        return {
-          displayedResults: {
-            resultsInfo: null,
-            results: null,
-            errorMessage: "Loading results…",
-          },
-          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-          nextResultsInfo: resultsInfo,
-        };
-      } else if (resultsInfo === null) {
-        // No results to display
-        return {
-          displayedResults: {
-            resultsInfo: null,
-            results: null,
-            errorMessage: "No results to display",
-          },
-          isExpectingResultsUpdate: prevState.isExpectingResultsUpdate,
-          nextResultsInfo: resultsInfo,
-        };
-      }
-
-      let results: Results | null = null;
-      let statusText = "";
-      try {
-        const resultSets = this.getResultSets(resultsInfo);
-        results = {
-          resultSets,
-          database: resultsInfo.database,
-          sortStates: this.getSortStates(resultsInfo),
-        };
-      } catch (e) {
-        const errorMessage = getErrorMessage(e);
-
-        statusText = `Error loading results: ${errorMessage}`;
-      }
-
-      return {
-        displayedResults: {
-          resultsInfo,
-          results,
-          errorMessage: statusText,
-        },
-        nextResultsInfo: null,
-        isExpectingResultsUpdate: false,
-      };
-    });
+  private vscodeMessageHandler(evt: MessageEvent) {
+    // sanitize origin
+    const origin = evt.origin.replace(/\n|\r/g, "");
+    evt.origin === window.origin
+      ? this.handleMessage(evt.data as IntoResultsViewMsg)
+      : console.error(`Invalid event origin ${origin}`);
   }
 
-  private getResultSets(resultsInfo: ResultsInfo): readonly ResultSet[] {
-    const parsedResultSets = resultsInfo.parsedResultSets;
-    const resultSet = parsedResultSets.resultSet;
-    if (
-      resultSet.t !== "InterpretedResultSet" &&
-      resultSet.t !== "RawResultSet"
-    ) {
-      throw new Error(
-        `Invalid result set type. Should be either "InterpretedResultSet" or "RawResultSet", but got "${
-          (resultSet as { t: string }).t
-        }".`,
-      );
+  componentDidMount(): void {
+    this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
+    window.addEventListener("message", this.vscodeMessageHandler);
+  }
+
+  componentWillUnmount(): void {
+    if (this.vscodeMessageHandler) {
+      window.removeEventListener("message", this.vscodeMessageHandler);
     }
-    return [resultSet];
-  }
-
-  private getSortStates(
-    resultsInfo: ResultsInfo,
-  ): Map<string, RawResultsSortState> {
-    const entries = Array.from(resultsInfo.sortedResultsMap.entries());
-    return new Map(
-      entries.map(([key, sortedResultSetInfo]) => [
-        key,
-        sortedResultSetInfo.sortState,
-      ]),
-    );
   }
 
   render(): JSX.Element {
@@ -286,23 +277,32 @@ export class ResultsApp extends React.Component<
       return <span>{displayedResults.errorMessage}</span>;
     }
   }
+}
 
-  componentDidMount(): void {
-    this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
-    window.addEventListener("message", this.vscodeMessageHandler);
-  }
+function getSortStates(
+  resultsInfo: ResultsInfo,
+): Map<string, RawResultsSortState> {
+  const entries = Array.from(resultsInfo.sortedResultsMap.entries());
+  return new Map(
+    entries.map(([key, sortedResultSetInfo]) => [
+      key,
+      sortedResultSetInfo.sortState,
+    ]),
+  );
+}
 
-  componentWillUnmount(): void {
-    if (this.vscodeMessageHandler) {
-      window.removeEventListener("message", this.vscodeMessageHandler);
-    }
+function getResultSets(resultsInfo: ResultsInfo): readonly ResultSet[] {
+  const parsedResultSets = resultsInfo.parsedResultSets;
+  const resultSet = parsedResultSets.resultSet;
+  if (
+    resultSet.t !== "InterpretedResultSet" &&
+    resultSet.t !== "RawResultSet"
+  ) {
+    throw new Error(
+      `Invalid result set type. Should be either "InterpretedResultSet" or "RawResultSet", but got "${
+        (resultSet as { t: string }).t
+      }".`,
+    );
   }
-
-  private vscodeMessageHandler(evt: MessageEvent) {
-    // sanitize origin
-    const origin = evt.origin.replace(/\n|\r/g, "");
-    evt.origin === window.origin
-      ? this.handleMessage(evt.data as IntoResultsViewMsg)
-      : console.error(`Invalid event origin ${origin}`);
-  }
+  return [resultSet];
 }
