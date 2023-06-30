@@ -67,18 +67,25 @@ async function compileAndRunQuery(
       );
 
     case "debug":
+      console.log("Running query in debug mode");
       return await withDebugController(appCommands, async (controller) => {
+        console.log("Starting debugging");
         await controller.startDebugging(
           {
             query: queryUri.fsPath,
           },
           true,
         );
+        console.log("Waiting for launch");
         await controller.expectLaunched();
+        console.log("Checking success");
         const succeeded = await controller.expectSucceeded();
         await controller.expectExited();
+        console.log("Terminating");
         await controller.expectTerminated();
+        console.log("Closing session");
         await controller.expectSessionClosed();
+        console.log("Done");
 
         return succeeded.results;
       });
