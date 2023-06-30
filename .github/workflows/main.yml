@@ -275,7 +275,7 @@ jobs:
           npm run test:cli-integration
       
       - name: Upload screenshots (Windows)
-        if: true
+        if: always()
         uses: actions/upload-artifact@v2
         with:
           name: screenshots

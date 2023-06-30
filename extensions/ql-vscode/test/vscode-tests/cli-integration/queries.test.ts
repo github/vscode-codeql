@@ -117,7 +117,9 @@ async function compileAndRunQuery(
         await Promise.race([start, timeout]);
         if (timedOut) {
           const screenshotPath = `screenshot-${screenshotCount++}.png`;
-          console.log("Timed out waiting for debug session to start");
+          console.log(
+            `Timed out waiting for debug session to start: ${screenshotPath}`,
+          );
           await spawn(".\\screenshot.bat", [screenshotPath], {
             shell: true,
           });
