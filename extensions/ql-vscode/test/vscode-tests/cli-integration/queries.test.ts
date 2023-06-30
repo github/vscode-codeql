@@ -45,10 +45,13 @@ import {
 import { ProgressCallback } from "../../../src/common/vscode/progress";
 import { withDebugController } from "./debugger/debug-controller";
 import { getDataFolderFilePath } from "./utils";
+import { spawn } from "child-process-promise";
 
 const simpleQueryPath = getDataFolderFilePath("debugger/simple-query.ql");
 
 type DebugMode = "localQueries" | "debug";
+
+let screenshotCount = 0;
 
 async function compileAndRunQuery(
   mode: DebugMode,
@@ -98,12 +101,28 @@ async function compileAndRunQuery(
         console.log(`QL config: ${qlConfig}`);
         console.log(`CodeQL config: ${codeqlConfig}`);
         console.log("Starting debugging");
-        await controller.startDebugging(
+        const start = controller.startDebugging(
           {
             query: queryUri.fsPath,
           },
           true,
         );
+        let timedOut = false;
+        const timeout = new Promise<void>((resolve) =>
+          setTimeout(() => {
+            timedOut = true;
+            resolve();
+          }, 10000),
+        );
+        await Promise.race([start, timeout]);
+        if (timedOut) {
+          const screenshotPath = `screenshot-${screenshotCount++}.png`;
+          console.log("Timed out waiting for debug session to start");
+          await spawn(".\\screenshot.bat", [screenshotPath], {
+            shell: true,
+          });
+        }
+
         console.log("Waiting for launch");
         await controller.expectLaunched();
         console.log("Checking success");

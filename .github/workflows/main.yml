@@ -273,3 +273,10 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           npm run test:cli-integration
+      
+      - name: Upload screenshots (Windows)
+        if: true
+        uses: actions/upload-artifact@v2
+        with:
+          name: screenshots
+          path: extensions/ql-vscode/*.png
