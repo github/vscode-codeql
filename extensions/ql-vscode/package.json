@@ -70,7 +70,12 @@
   ],
   "contributes": {
     "configurationDefaults": {
+      "[codeql]": {
+        "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
+        "editor.wordBasedSuggestions": false
+      },
       "[ql]": {
+        "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
         "editor.wordBasedSuggestions": false
       },
       "[dbscheme]": {
