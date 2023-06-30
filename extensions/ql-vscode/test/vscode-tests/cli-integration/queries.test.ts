@@ -80,6 +80,9 @@ async function compileAndRunQuery(
           console.log(
             `${doc.isDirty ? "dirty" : "clean"}: ${doc.uri.toString()}`,
           );
+          if (doc.isUntitled) {
+            console.log(`Content: ${doc.getText()}`);
+          }
         }
         console.log("Starting debugging");
         await controller.startDebugging(
