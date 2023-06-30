@@ -3,6 +3,7 @@ import {
   ExtensionContext,
   Range,
   Uri,
+  window,
   workspace,
 } from "vscode";
 import { join, dirname } from "path";
@@ -100,6 +101,9 @@ async function compileAndRunQuery(
         console.log(`Scopeless config: ${scopelessConfig}`);
         console.log(`QL config: ${qlConfig}`);
         console.log(`CodeQL config: ${codeqlConfig}`);
+        console.log(
+          `Active language ID: ${window.activeTextEditor?.document.languageId}`,
+        );
         console.log("Starting debugging");
         const start = controller.startDebugging(
           {
