@@ -1,11 +1,9 @@
-import { basename } from "path";
 import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
 import { chevronDown, chevronRight, info, listUnordered } from "./octicons";
 import {
   className,
-  renderLocation,
   ResultTableProps,
   selectableZebraStripe,
   jumpToLocation,
@@ -18,15 +16,11 @@ import {
   NavigationDirection,
   SarifInterpretationData,
 } from "../../common/interface-types";
-import {
-  parseSarifPlainTextMessage,
-  parseSarifLocation,
-  isNoLocation,
-} from "../../common/sarif-utils";
-import { isWholeFileLoc, isLineColumnLoc } from "../../common/bqrs-utils";
+import { parseSarifLocation, isNoLocation } from "../../common/sarif-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 import { AlertTableHeader } from "./alert-table-header";
+import { SarifLocation, SarifMessageWithLocations } from "./locations";
 
 export type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -100,41 +94,6 @@ export class AlertTable extends React.Component<
     const { numTruncatedResults, sourceLocationPrefix } =
       resultSet.interpretation;
 
-    function renderRelatedLocations(
-      msg: string,
-      relatedLocations: Sarif.Location[],
-      resultKey: Keys.PathNode | Keys.Result | undefined,
-    ): JSX.Element[] {
-      const relatedLocationsById: { [k: string]: Sarif.Location } = {};
-      for (const loc of relatedLocations) {
-        relatedLocationsById[loc.id!] = loc;
-      }
-
-      // match things like `[link-text](related-location-id)`
-      const parts = parseSarifPlainTextMessage(msg);
-
-      return parts.map((part, i) => {
-        if (typeof part === "string") {
-          return <span key={i}>{part}</span>;
-        } else {
-          const renderedLocation = renderSarifLocationWithText(
-            part.text,
-            relatedLocationsById[part.dest],
-            resultKey,
-          );
-          return <span key={i}>{renderedLocation}</span>;
-        }
-      });
-    }
-
-    function renderNonLocation(
-      msg: string | undefined,
-      locationHint: string,
-    ): JSX.Element | undefined {
-      if (msg === undefined) return undefined;
-      return <span title={locationHint}>{msg}</span>;
-    }
-
     const updateSelectionCallback = (
       resultKey: Keys.PathNode | Keys.Result | undefined,
     ) => {
@@ -146,65 +105,6 @@ export class AlertTable extends React.Component<
         sendTelemetry("local-results-alert-table-path-selected");
       };
     };
-
-    function renderSarifLocationWithText(
-      text: string | undefined,
-      loc: Sarif.Location,
-      resultKey: Keys.PathNode | Keys.Result | undefined,
-    ): JSX.Element | undefined {
-      const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
-      if ("hint" in parsedLoc) {
-        return renderNonLocation(text, parsedLoc.hint);
-      } else if (isWholeFileLoc(parsedLoc) || isLineColumnLoc(parsedLoc)) {
-        return renderLocation(
-          parsedLoc,
-          text,
-          databaseUri,
-          undefined,
-          updateSelectionCallback(resultKey),
-        );
-      } else {
-        return undefined;
-      }
-    }
-
-    /**
-     * Render sarif location as a link with the text being simply a
-     * human-readable form of the location itself.
-     */
-    function renderSarifLocation(
-      loc: Sarif.Location,
-      pathNodeKey: Keys.PathNode | Keys.Result | undefined,
-    ): JSX.Element | undefined {
-      const parsedLoc = parseSarifLocation(loc, sourceLocationPrefix);
-      if ("hint" in parsedLoc) {
-        return renderNonLocation("[no location]", parsedLoc.hint);
-      } else if (isWholeFileLoc(parsedLoc)) {
-        const shortLocation = `${basename(parsedLoc.userVisibleFile)}`;
-        const longLocation = `${parsedLoc.userVisibleFile}`;
-        return renderLocation(
-          parsedLoc,
-          shortLocation,
-          databaseUri,
-          longLocation,
-          updateSelectionCallback(pathNodeKey),
-        );
-      } else if (isLineColumnLoc(parsedLoc)) {
-        const shortLocation = `${basename(parsedLoc.userVisibleFile)}:${
-          parsedLoc.startLine
-        }:${parsedLoc.startColumn}`;
-        const longLocation = `${parsedLoc.userVisibleFile}`;
-        return renderLocation(
-          parsedLoc,
-          shortLocation,
-          databaseUri,
-          longLocation,
-          updateSelectionCallback(pathNodeKey),
-        );
-      } else {
-        return undefined;
-      }
-    }
 
     const toggler: (keys: Keys.ResultKey[]) => (e: React.MouseEvent) => void = (
       indices,
@@ -220,19 +120,32 @@ export class AlertTable extends React.Component<
       (result, resultIndex) => {
         const resultKey: Keys.Result = { resultIndex };
         const text = result.message.text || "[no text]";
-        const msg: JSX.Element[] =
-          result.relatedLocations === undefined
-            ? [<span key="0">{text}</span>]
-            : renderRelatedLocations(text, result.relatedLocations, resultKey);
+        const msg =
+          result.relatedLocations === undefined ? (
+            <span key="0">{text}</span>
+          ) : (
+            <SarifMessageWithLocations
+              msg={text}
+              relatedLocations={result.relatedLocations}
+              sourceLocationPrefix={sourceLocationPrefix}
+              databaseUri={databaseUri}
+              jumpToLocationCallback={updateSelectionCallback(resultKey)}
+            />
+          );
 
         const currentResultExpanded = this.state.expanded.has(
           Keys.keyToString(resultKey),
         );
         const indicator = currentResultExpanded ? chevronDown : chevronRight;
-        const location =
-          result.locations !== undefined &&
-          result.locations.length > 0 &&
-          renderSarifLocation(result.locations[0], resultKey);
+        const location = result.locations !== undefined &&
+          result.locations.length > 0 && (
+            <SarifLocation
+              loc={result.locations[0]}
+              sourceLocationPrefix={sourceLocationPrefix}
+              databaseUri={databaseUri}
+              jumpToLocationCallback={updateSelectionCallback(resultKey)}
+            />
+          );
         const locationCells = (
           <td className="vscode-codeql__location-cell">{location}</td>
         );
@@ -342,17 +255,32 @@ export class AlertTable extends React.Component<
                 const step = pathNodes[pathNodeIndex];
                 const msg =
                   step.location !== undefined &&
-                  step.location.message !== undefined
-                    ? renderSarifLocationWithText(
-                        step.location.message.text,
-                        step.location,
+                  step.location.message !== undefined ? (
+                    <SarifLocation
+                      text={step.location.message.text}
+                      loc={step.location}
+                      sourceLocationPrefix={sourceLocationPrefix}
+                      databaseUri={databaseUri}
+                      jumpToLocationCallback={updateSelectionCallback(
                         pathNodeKey,
-                      )
-                    : "[no location]";
+                      )}
+                    />
+                  ) : (
+                    "[no location]"
+                  );
                 const additionalMsg =
-                  step.location !== undefined
-                    ? renderSarifLocation(step.location, pathNodeKey)
-                    : "";
+                  step.location !== undefined ? (
+                    <SarifLocation
+                      loc={step.location}
+                      sourceLocationPrefix={sourceLocationPrefix}
+                      databaseUri={databaseUri}
+                      jumpToLocationCallback={updateSelectionCallback(
+                        pathNodeKey,
+                      )}
+                    />
+                  ) : (
+                    ""
+                  );
                 const isSelected = Keys.equalsNotUndefined(
                   this.state.selectedItem,
                   pathNodeKey,

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { renderLocation } from "./result-table-utils";
+import { Location } from "./locations";
 import { CellValue } from "../../common/bqrs-cli-types";
 
 interface Props {
@@ -16,14 +16,15 @@ export default function RawTableValue(props: Props): JSX.Element {
     typeof rawValue === "number" ||
     typeof rawValue === "boolean"
   ) {
-    return <span>{renderLocation(undefined, rawValue.toString())}</span>;
+    return <Location label={rawValue.toString()} />;
   }
 
-  return renderLocation(
-    rawValue.url,
-    rawValue.label,
-    props.databaseUri,
-    undefined,
-    props.onSelected,
+  return (
+    <Location
+      loc={rawValue.url}
+      label={rawValue.label}
+      databaseUri={props.databaseUri}
+      jumpToLocationCallback={props.onSelected}
+    />
   );
 }
