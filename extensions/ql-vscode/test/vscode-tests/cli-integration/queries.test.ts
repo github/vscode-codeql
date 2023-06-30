@@ -54,6 +54,14 @@ type DebugMode = "localQueries" | "debug";
 
 let screenshotCount = 0;
 
+async function writeScreenshot(description: string): Promise<void> {
+  const screenshotPath = `screenshot-${screenshotCount++}.png`;
+  console.log(`${description}: ${screenshotPath}`);
+  await spawn(".\\screenshot.bat", [screenshotPath], {
+    shell: true,
+  });
+}
+
 async function compileAndRunQuery(
   mode: DebugMode,
   appCommands: AppCommandManager,
@@ -105,6 +113,7 @@ async function compileAndRunQuery(
           `Active language ID: ${window.activeTextEditor?.document.languageId}`,
         );
         console.log("Starting debugging");
+        await writeScreenshot("Before starting debug session");
         const start = controller.startDebugging(
           {
             query: queryUri.fsPath,
@@ -120,13 +129,7 @@ async function compileAndRunQuery(
         );
         await Promise.race([start, timeout]);
         if (timedOut) {
-          const screenshotPath = `screenshot-${screenshotCount++}.png`;
-          console.log(
-            `Timed out waiting for debug session to start: ${screenshotPath}`,
-          );
-          await spawn(".\\screenshot.bat", [screenshotPath], {
-            shell: true,
-          });
+          await writeScreenshot("Timed out waiting for debug session to start");
         }
 
         console.log("Waiting for launch");
