@@ -21,8 +21,7 @@
     "Programming Languages"
   ],
   "extensionDependencies": [
-    "hbenl.vscode-test-explorer",
-    "ms-vscode.vscode-js-profile-flame"
+    "hbenl.vscode-test-explorer"
   ],
   "capabilities": {
     "untrustedWorkspaces": {
