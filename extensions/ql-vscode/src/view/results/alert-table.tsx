@@ -9,7 +9,6 @@ import {
   ResultTableProps,
   selectableZebraStripe,
   jumpToLocation,
-  nextSortDirection,
   emptyQueryResultsMessage,
 } from "./result-table-utils";
 import { onNavigation } from "./results";
@@ -18,19 +17,16 @@ import {
   NavigateMsg,
   NavigationDirection,
   SarifInterpretationData,
-  InterpretedResultsSortColumn,
-  SortDirection,
-  InterpretedResultsSortState,
 } from "../../common/interface-types";
 import {
   parseSarifPlainTextMessage,
   parseSarifLocation,
   isNoLocation,
 } from "../../common/sarif-utils";
-import { vscode } from "../vscode-api";
 import { isWholeFileLoc, isLineColumnLoc } from "../../common/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
+import { AlertTableHeader } from "./alert-table-header";
 
 export type PathTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -74,38 +70,6 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
     e.preventDefault();
   }
 
-  sortClass(column: InterpretedResultsSortColumn): string {
-    const sortState = this.props.resultSet.interpretation.data.sortState;
-    if (sortState !== undefined && sortState.sortBy === column) {
-      return sortState.sortDirection === SortDirection.asc
-        ? "sort-asc"
-        : "sort-desc";
-    } else {
-      return "sort-none";
-    }
-  }
-
-  getNextSortState(
-    column: InterpretedResultsSortColumn,
-  ): InterpretedResultsSortState | undefined {
-    const oldSortState = this.props.resultSet.interpretation.data.sortState;
-    const prevDirection =
-      oldSortState && oldSortState.sortBy === column
-        ? oldSortState.sortDirection
-        : undefined;
-    const nextDirection = nextSortDirection(prevDirection, true);
-    return nextDirection === undefined
-      ? undefined
-      : { sortBy: column, sortDirection: nextDirection };
-  }
-
-  toggleSortStateForColumn(column: InterpretedResultsSortColumn): void {
-    vscode.postMessage({
-      t: "changeInterpretedSort",
-      sortState: this.getNextSortState(column),
-    });
-  }
-
   renderNoResults(): JSX.Element {
     if (this.props.nonemptyRawResults) {
       return (
@@ -128,23 +92,6 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
   render(): JSX.Element {
     const { databaseUri, resultSet } = this.props;
-
-    const header = (
-      <thead>
-        <tr>
-          <th colSpan={2}></th>
-          <th
-            className={`${this.sortClass(
-              "alert-message",
-            )} vscode-codeql__alert-message-cell`}
-            colSpan={3}
-            onClick={() => this.toggleSortStateForColumn("alert-message")}
-          >
-            Message
-          </th>
-        </tr>
-      </thead>
-    );
 
     const rows: JSX.Element[] = [];
     const { numTruncatedResults, sourceLocationPrefix } =
@@ -468,7 +415,7 @@ export class PathTable extends React.Component<PathTableProps, PathTableState> {
 
     return (
       <table className={className}>
-        {header}
+        <AlertTableHeader sortState={resultSet.interpretation.data.sortState} />
         <tbody>{rows}</tbody>
       </table>
     );
