@@ -84,6 +84,19 @@ async function compileAndRunQuery(
             console.log(`Content: ${doc.getText()}`);
           }
         }
+        const scopelessConfig = workspace
+          .getConfiguration("debug")
+          .get<string>("saveBeforeStart", "default");
+        const qlConfig = workspace
+          .getConfiguration("debug", { languageId: "ql" })
+          .get<string>("saveBeforeStart", "default");
+        const codeqlConfig = workspace
+          .getConfiguration("debug", { languageId: "codeql" })
+          .get<string>("saveBeforeStart", "default");
+
+        console.log(`Scopeless config: ${scopelessConfig}`);
+        console.log(`QL config: ${qlConfig}`);
+        console.log(`CodeQL config: ${codeqlConfig}`);
         console.log("Starting debugging");
         await controller.startDebugging(
           {
