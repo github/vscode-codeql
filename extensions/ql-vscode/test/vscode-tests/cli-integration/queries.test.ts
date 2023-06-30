@@ -1,4 +1,10 @@
-import { CancellationToken, ExtensionContext, Range, Uri } from "vscode";
+import {
+  CancellationToken,
+  ExtensionContext,
+  Range,
+  Uri,
+  workspace,
+} from "vscode";
 import { join, dirname } from "path";
 import {
   pathExistsSync,
@@ -69,6 +75,12 @@ async function compileAndRunQuery(
     case "debug":
       console.log("Running query in debug mode");
       return await withDebugController(appCommands, async (controller) => {
+        console.log("Dumping dirty documents");
+        for (const doc of workspace.textDocuments) {
+          console.log(
+            `${doc.isDirty ? "dirty" : "clean"}: ${doc.uri.toString()}`,
+          );
+        }
         console.log("Starting debugging");
         await controller.startDebugging(
           {
