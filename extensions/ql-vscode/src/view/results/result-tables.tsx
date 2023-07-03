@@ -14,7 +14,7 @@ import {
   ParsedResultSets,
   IntoResultsViewMsg,
 } from "../../common/interface-types";
-import { PathTable } from "./alert-table";
+import { AlertTable } from "./alert-table";
 import { Graph } from "./graph";
 import { RawTable } from "./raw-results-table";
 import {
@@ -461,7 +461,7 @@ class ResultTable extends React.Component<
               ...resultSet,
               interpretation: { ...resultSet.interpretation, data },
             };
-            return <PathTable {...this.props} resultSet={sarifResultSet} />;
+            return <AlertTable {...this.props} resultSet={sarifResultSet} />;
           }
           case "GraphInterpretationData": {
             const grapResultSet = {

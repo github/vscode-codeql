@@ -32,18 +32,21 @@ import { isWholeFileLoc, isLineColumnLoc } from "../../common/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 
-export type PathTableProps = ResultTableProps & {
+export type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
 };
-export interface PathTableState {
+export interface AlertTableState {
   expanded: Set<string>;
   selectedItem: undefined | Keys.ResultKey;
 }
 
-export class PathTable extends React.Component<PathTableProps, PathTableState> {
+export class AlertTable extends React.Component<
+  AlertTableProps,
+  AlertTableState
+> {
   private scroller = new ScrollIntoViewHelper();
 
-  constructor(props: PathTableProps) {
+  constructor(props: AlertTableProps) {
     super(props);
     this.state = { expanded: new Set<string>(), selectedItem: undefined };
     this.handleNavigationEvent = this.handleNavigationEvent.bind(this);
