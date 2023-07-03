@@ -48,7 +48,7 @@ import { SkeletonQueryWizard } from "../skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { findLanguage } from "../codeql-cli/query-language";
-import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
