@@ -5,8 +5,8 @@ import {
 } from "../../../../src/common/file-tree-nodes";
 import { QueryTreeDataProvider } from "../../../../src/queries-panel/query-tree-data-provider";
 import {
-  createQueryTreeLeafItem,
-  createQueryTreeNodeItem,
+  createQueryTreeFileItem,
+  createQueryTreeFolderItem,
   createQueryTreeTextItem,
 } from "../../../../src/queries-panel/query-tree-view-item";
 
@@ -59,14 +59,14 @@ describe("QueryTreeDataProvider", () => {
       });
 
       expect(dataProvider.getChildren()).toEqual([
-        createQueryTreeNodeItem("dir1", "dir1", [
-          createQueryTreeNodeItem("dir2", "dir1/dir2", [
-            createQueryTreeLeafItem("file1", "dir1/dir2/file1", "javascript"),
-            createQueryTreeLeafItem("file2", "dir1/dir2/file2", "javascript"),
+        createQueryTreeFolderItem("dir1", "dir1", [
+          createQueryTreeFolderItem("dir2", "dir1/dir2", [
+            createQueryTreeFileItem("file1", "dir1/dir2/file1", "javascript"),
+            createQueryTreeFileItem("file2", "dir1/dir2/file2", "javascript"),
           ]),
         ]),
-        createQueryTreeNodeItem("dir3", "dir3", [
-          createQueryTreeLeafItem("file3", "dir3/file3", "javascript"),
+        createQueryTreeFolderItem("dir3", "dir3", [
+          createQueryTreeFileItem("file3", "dir3/file3", "javascript"),
         ]),
       ]);
     });

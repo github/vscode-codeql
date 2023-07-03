@@ -1,8 +1,8 @@
 import { Event, EventEmitter, TreeDataProvider, TreeItem } from "vscode";
 import {
   QueryTreeViewItem,
-  createQueryTreeLeafItem,
-  createQueryTreeNodeItem,
+  createQueryTreeFileItem,
+  createQueryTreeFolderItem,
   createQueryTreeTextItem,
 } from "./query-tree-view-item";
 import { DisposableObject } from "../common/disposable-object";
@@ -53,13 +53,13 @@ export class QueryTreeDataProvider
     fileTreeDirectory: FileTreeNode<string>,
   ): QueryTreeViewItem {
     if (fileTreeDirectory.children.length === 0) {
-      return createQueryTreeLeafItem(
+      return createQueryTreeFileItem(
         fileTreeDirectory.name,
         fileTreeDirectory.path,
         fileTreeDirectory.data,
       );
     } else {
-      return createQueryTreeNodeItem(
+      return createQueryTreeFolderItem(
         fileTreeDirectory.name,
         fileTreeDirectory.path,
         fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),

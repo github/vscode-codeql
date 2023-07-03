@@ -10,7 +10,7 @@ export class QueryTreeViewItem extends vscode.TreeItem {
   }
 }
 
-export function createQueryTreeNodeItem(
+export function createQueryTreeFolderItem(
   name: string,
   path: string,
   children: QueryTreeViewItem[],
@@ -22,7 +22,7 @@ export function createQueryTreeNodeItem(
   return item;
 }
 
-export function createQueryTreeLeafItem(
+export function createQueryTreeFileItem(
   name: string,
   path: string,
   language: string | undefined,
