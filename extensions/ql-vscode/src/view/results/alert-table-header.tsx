@@ -13,7 +13,7 @@ export function AlertTableHeader({
   sortState?: InterpretedResultsSortState;
 }) {
   const sortClass = useCallback((): string => {
-    if (sortState !== undefined && sortState.sortBy === "alert-message") {
+    if (sortState?.sortBy === "alert-message") {
       return sortState.sortDirection === SortDirection.asc
         ? "sort-asc"
         : "sort-desc";
@@ -26,7 +26,7 @@ export function AlertTableHeader({
     | InterpretedResultsSortState
     | undefined => {
     const prevDirection =
-      sortState && sortState.sortBy === "alert-message"
+      sortState?.sortBy === "alert-message"
         ? sortState.sortDirection
         : undefined;
     const nextDirection = nextSortDirection(prevDirection, true);
