@@ -132,15 +132,20 @@ export class LocalQueries extends DisposableObject {
   private async runQueryFromQueriesPanel(
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
-    await this.runQuery(Uri.file(queryTreeViewItem.path));
+    if (queryTreeViewItem.path !== undefined) {
+      await this.runQuery(Uri.file(queryTreeViewItem.path));
+    }
   }
 
   private async runQueriesFromQueriesPanel(
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
-    const uris = queryTreeViewItem.children.map((child) =>
-      Uri.file(child.path),
-    );
+    const uris = [];
+    for (const child of queryTreeViewItem.children) {
+      if (child.path !== undefined) {
+        uris.push(Uri.file(child.path));
+      }
+    }
     await this.runQueries(uris);
   }
 

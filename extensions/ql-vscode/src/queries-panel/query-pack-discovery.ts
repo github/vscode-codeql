@@ -36,8 +36,13 @@ export class QueryPackDiscovery extends FilePathDiscovery<QueryPack> {
    * or the pack's language is unknown.
    */
   public getLanguageForQueryFile(queryPath: string): QueryLanguage | undefined {
+    const pathData = this.getPathData();
+    if (pathData === undefined) {
+      return undefined;
+    }
+
     // Find all packs in a higher directory than the query
-    const packs = this.getPathData().filter((queryPack) =>
+    const packs = pathData.filter((queryPack) =>
       containsPath(dirname(queryPack.path), queryPath),
     );
 

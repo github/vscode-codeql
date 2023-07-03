@@ -4,16 +4,34 @@ import {
   FileTreeLeaf,
 } from "../../../../src/common/file-tree-nodes";
 import { QueryTreeDataProvider } from "../../../../src/queries-panel/query-tree-data-provider";
+import {
+  createQueryTreeFileItem,
+  createQueryTreeFolderItem,
+  createQueryTreeTextItem,
+} from "../../../../src/queries-panel/query-tree-view-item";
 
 describe("QueryTreeDataProvider", () => {
   describe("getChildren", () => {
-    it("returns no children when there are no queries", async () => {
+    it("returns empty array when discovery has not yet happened", async () => {
+      const dataProvider = new QueryTreeDataProvider({
+        buildQueryTree: () => undefined,
+        onDidChangeQueries: jest.fn(),
+      });
+
+      expect(dataProvider.getChildren()).toEqual([]);
+    });
+
+    it("returns an explanatory message when there are no queries", async () => {
       const dataProvider = new QueryTreeDataProvider({
         buildQueryTree: () => [],
         onDidChangeQueries: jest.fn(),
       });
 
-      expect(dataProvider.getChildren()).toEqual([]);
+      expect(dataProvider.getChildren()).toEqual([
+        createQueryTreeTextItem(
+          "This workspace doesn't contain any CodeQL queries at the moment.",
+        ),
+      ]);
     });
 
     it("converts FileTreeNode to QueryTreeViewItem", async () => {
@@ -27,7 +45,7 @@ describe("QueryTreeDataProvider", () => {
                 "javascript",
               ),
               new FileTreeLeaf<string>(
-                "dir1/dir2/file1",
+                "dir1/dir2/file2",
                 "file2",
                 "javascript",
               ),
@@ -40,24 +58,17 @@ describe("QueryTreeDataProvider", () => {
         onDidChangeQueries: jest.fn(),
       });
 
-      expect(dataProvider.getChildren().length).toEqual(2);
-
-      expect(dataProvider.getChildren()[0].label).toEqual("dir1");
-      expect(dataProvider.getChildren()[0].children.length).toEqual(1);
-      expect(dataProvider.getChildren()[0].children[0].label).toEqual("dir2");
-      expect(dataProvider.getChildren()[0].children[0].children.length).toEqual(
-        2,
-      );
-      expect(
-        dataProvider.getChildren()[0].children[0].children[0].label,
-      ).toEqual("file1");
-      expect(
-        dataProvider.getChildren()[0].children[0].children[1].label,
-      ).toEqual("file2");
-
-      expect(dataProvider.getChildren()[1].label).toEqual("dir3");
-      expect(dataProvider.getChildren()[1].children.length).toEqual(1);
-      expect(dataProvider.getChildren()[1].children[0].label).toEqual("file3");
+      expect(dataProvider.getChildren()).toEqual([
+        createQueryTreeFolderItem("dir1", "dir1", [
+          createQueryTreeFolderItem("dir2", "dir1/dir2", [
+            createQueryTreeFileItem("file1", "dir1/dir2/file1", "javascript"),
+            createQueryTreeFileItem("file2", "dir1/dir2/file2", "javascript"),
+          ]),
+        ]),
+        createQueryTreeFolderItem("dir3", "dir3", [
+          createQueryTreeFileItem("file3", "dir3/file3", "javascript"),
+        ]),
+      ]);
     });
   });
 
