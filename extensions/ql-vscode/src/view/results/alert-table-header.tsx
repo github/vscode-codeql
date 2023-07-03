@@ -42,11 +42,6 @@ export function AlertTableHeader({
     });
   }, [getNextSortState]);
 
-  const clickCallback = useCallback(
-    () => toggleSortStateForColumn(),
-    [toggleSortStateForColumn],
-  );
-
   return (
     <thead>
       <tr>
@@ -54,7 +49,7 @@ export function AlertTableHeader({
         <th
           className={`${sortClass()} vscode-codeql__alert-message-cell`}
           colSpan={3}
-          onClick={clickCallback}
+          onClick={toggleSortStateForColumn}
         >
           Message
         </th>
