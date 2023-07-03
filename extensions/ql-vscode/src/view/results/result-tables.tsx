@@ -460,11 +460,12 @@ class ResultTable extends React.Component<
             return <PathTable {...this.props} resultSet={sarifResultSet} />;
           }
           case "GraphInterpretationData": {
-            const grapResultSet = {
-              ...resultSet,
-              interpretation: { ...resultSet.interpretation, data },
-            };
-            return <Graph {...this.props} resultSet={grapResultSet} />;
+            return (
+              <Graph
+                graphData={data?.dot[this.props.offset]}
+                databaseUri={this.props.databaseUri}
+              />
+            );
           }
         }
       }

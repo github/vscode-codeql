@@ -1,28 +1,20 @@
 import * as React from "react";
 import { select } from "d3";
 import { jumpToLocation } from "./result-table-utils";
-import {
-  InterpretedResultSet,
-  GraphInterpretationData,
-} from "../../common/interface-types";
 import { graphviz, GraphvizOptions } from "d3-graphviz";
 import { tryGetLocationFromString } from "../../common/bqrs-utils";
 import { useCallback, useEffect } from "react";
-export type GraphProps = {
-  resultSet: InterpretedResultSet<GraphInterpretationData>;
-  offset: number;
+
+type GraphProps = {
+  graphData: string;
   databaseUri: string;
 };
 
 const graphClassName = "vscode-codeql__result-tables-graph";
 const graphId = "graph-results";
 
-export function Graph({ resultSet, offset, databaseUri }: GraphProps) {
-  const graphData = resultSet.interpretation?.data?.dot[offset];
-
+export function Graph({ graphData, databaseUri }: GraphProps) {
   const renderGraph = useCallback(() => {
-    const graphData = resultSet.interpretation?.data?.dot[offset];
-
     if (!graphData) {
       return;
     }
@@ -76,7 +68,7 @@ export function Graph({ resultSet, offset, databaseUri }: GraphProps) {
         }
       })
       .renderDot(graphData);
-  }, [resultSet, offset, databaseUri]);
+  }, [graphData, databaseUri]);
 
   useEffect(() => {
     renderGraph();
