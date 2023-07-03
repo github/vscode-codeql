@@ -3,10 +3,9 @@ import { useCallback, useMemo, useState } from "react";
 import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
-import { pluralize } from "../../common/word";
 import { ModeledMethodDataGrid } from "./ModeledMethodDataGrid";
 import { calculateModeledPercentage } from "../../data-extensions-editor/shared/modeled-percentage";
-import { decimalFormatter, percentFormatter } from "./formatters";
+import { percentFormatter } from "./formatters";
 import { Codicon } from "../common";
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
@@ -60,16 +59,6 @@ const TitleButton = styled(VSCodeButton)`
   }
 `;
 
-const StatusContainer = styled.div`
-  display: flex;
-  gap: 1em;
-  align-items: center;
-
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
-  margin-left: 1em;
-`;
-
 type Props = {
   title: string;
   externalApiUsages: ExternalApiUsage[];
@@ -99,10 +88,6 @@ export const LibraryRow = ({
   const toggleExpanded = useCallback(async () => {
     setExpanded((oldIsExpanded) => !oldIsExpanded);
   }, []);
-
-  const usagesCount = useMemo(() => {
-    return externalApiUsages.reduce((acc, curr) => acc + curr.usages.length, 0);
-  }, [externalApiUsages]);
 
   const handleModelWithAI = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -139,35 +124,12 @@ export const LibraryRow = ({
         </TitleButton>
       </TitleContainer>
       {isExpanded && (
-        <>
-          <StatusContainer>
-            <div>
-              {pluralize(
-                externalApiUsages.length,
-                "method",
-                "methods",
-                decimalFormatter.format.bind(decimalFormatter),
-              )}
-            </div>
-            <div>
-              {pluralize(
-                usagesCount,
-                "usage",
-                "usages",
-                decimalFormatter.format.bind(decimalFormatter),
-              )}
-            </div>
-            <div>
-              {percentFormatter.format(modeledPercentage / 100)} modeled
-            </div>
-          </StatusContainer>
-          <ModeledMethodDataGrid
-            externalApiUsages={externalApiUsages}
-            modeledMethods={modeledMethods}
-            mode={mode}
-            onChange={onChange}
-          />
-        </>
+        <ModeledMethodDataGrid
+          externalApiUsages={externalApiUsages}
+          modeledMethods={modeledMethods}
+          mode={mode}
+          onChange={onChange}
+        />
       )}
     </LibraryContainer>
   );
