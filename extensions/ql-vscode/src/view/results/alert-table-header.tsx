@@ -2,7 +2,6 @@ import * as React from "react";
 import { useCallback } from "react";
 import { vscode } from "../vscode-api";
 import {
-  InterpretedResultsSortColumn,
   InterpretedResultsSortState,
   SortDirection,
 } from "../../common/interface-types";
@@ -13,47 +12,38 @@ export function AlertTableHeader({
 }: {
   sortState?: InterpretedResultsSortState;
 }) {
-  const sortClass = useCallback(
-    (column: InterpretedResultsSortColumn): string => {
-      if (sortState !== undefined && sortState.sortBy === column) {
-        return sortState.sortDirection === SortDirection.asc
-          ? "sort-asc"
-          : "sort-desc";
-      } else {
-        return "sort-none";
-      }
-    },
-    [sortState],
-  );
+  const sortClass = useCallback((): string => {
+    if (sortState !== undefined && sortState.sortBy === "alert-message") {
+      return sortState.sortDirection === SortDirection.asc
+        ? "sort-asc"
+        : "sort-desc";
+    } else {
+      return "sort-none";
+    }
+  }, [sortState]);
 
-  const getNextSortState = useCallback(
-    (
-      column: InterpretedResultsSortColumn,
-    ): InterpretedResultsSortState | undefined => {
-      const prevDirection =
-        sortState && sortState.sortBy === column
-          ? sortState.sortDirection
-          : undefined;
-      const nextDirection = nextSortDirection(prevDirection, true);
-      return nextDirection === undefined
-        ? undefined
-        : { sortBy: column, sortDirection: nextDirection };
-    },
-    [sortState],
-  );
+  const getNextSortState = useCallback(():
+    | InterpretedResultsSortState
+    | undefined => {
+    const prevDirection =
+      sortState && sortState.sortBy === "alert-message"
+        ? sortState.sortDirection
+        : undefined;
+    const nextDirection = nextSortDirection(prevDirection, true);
+    return nextDirection === undefined
+      ? undefined
+      : { sortBy: "alert-message", sortDirection: nextDirection };
+  }, [sortState]);
 
-  const toggleSortStateForColumn = useCallback(
-    (column: InterpretedResultsSortColumn): void => {
-      vscode.postMessage({
-        t: "changeInterpretedSort",
-        sortState: getNextSortState(column),
-      });
-    },
-    [getNextSortState],
-  );
+  const toggleSortStateForColumn = useCallback((): void => {
+    vscode.postMessage({
+      t: "changeInterpretedSort",
+      sortState: getNextSortState(),
+    });
+  }, [getNextSortState]);
 
   const clickCallback = useCallback(
-    () => toggleSortStateForColumn("alert-message"),
+    () => toggleSortStateForColumn(),
     [toggleSortStateForColumn],
   );
 
@@ -62,9 +52,7 @@ export function AlertTableHeader({
       <tr>
         <th colSpan={2}></th>
         <th
-          className={`${sortClass(
-            "alert-message",
-          )} vscode-codeql__alert-message-cell`}
+          className={`${sortClass()} vscode-codeql__alert-message-cell`}
           colSpan={3}
           onClick={clickCallback}
         >
