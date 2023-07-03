@@ -41,6 +41,7 @@ export const ModeledMethodsList = ({
           externalApiUsages={grouped[libraryName]}
           modeledMethods={modeledMethods}
           mode={mode}
+          hasUnsavedChanges={false}
           onChange={onChange}
         />
       ))}
