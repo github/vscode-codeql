@@ -8,7 +8,7 @@ import { calculateModeledPercentage } from "../../data-extensions-editor/shared/
 import { percentFormatter } from "./formatters";
 import { Codicon } from "../common";
 import { Mode } from "../../data-extensions-editor/shared/mode";
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
+import { VSCodeButton, VSCodeDivider } from "@vscode/webview-ui-toolkit/react";
 
 const LibraryContainer = styled.div`
   margin-bottom: 1rem;
@@ -24,6 +24,11 @@ const TitleContainer = styled.button`
   background-color: transparent;
   border: none;
   cursor: pointer;
+`;
+
+const TitleDivider = styled(VSCodeDivider)`
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
 `;
 
 const NameContainer = styled.div`
@@ -124,12 +129,15 @@ export const LibraryRow = ({
         </TitleButton>
       </TitleContainer>
       {isExpanded && (
-        <ModeledMethodDataGrid
-          externalApiUsages={externalApiUsages}
-          modeledMethods={modeledMethods}
-          mode={mode}
-          onChange={onChange}
-        />
+        <>
+          <TitleDivider />
+          <ModeledMethodDataGrid
+            externalApiUsages={externalApiUsages}
+            modeledMethods={modeledMethods}
+            mode={mode}
+            onChange={onChange}
+          />
+        </>
       )}
     </LibraryContainer>
   );
