@@ -378,6 +378,7 @@ This requires running a MRVA query and seeing the results view.
 1. Make changes via config file (ensure JSON schema is helping out)
 1. Close and re-open VS Code (ensure lists are there)
 1. Collapse/expand tree nodes
+1. Right click on a list and select "Add repositories with GitHub Code Search". Enter the query "org:dotnet project". This should show some rate limiting notifications but should eventually populate a list.
 
 Error cases that trigger an error notification:
 
