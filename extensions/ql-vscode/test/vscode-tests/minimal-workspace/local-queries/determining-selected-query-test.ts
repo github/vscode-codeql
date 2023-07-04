@@ -4,7 +4,7 @@ import { Uri } from "vscode";
 import {
   getQuickEvalContext,
   validateQueryUri,
-} from "../../../src/run-queries-shared";
+} from "../../../../src/run-queries-shared";
 
 async function showQlDocument(name: string): Promise<vscode.TextDocument> {
   const folderPath = vscode.workspace.workspaceFolders![0].uri.fsPath;

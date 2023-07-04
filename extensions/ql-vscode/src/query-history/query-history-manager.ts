@@ -33,7 +33,7 @@ import { registerQueryHistoryScrubber } from "./query-history-scrubber";
 import {
   QueryStatus,
   variantAnalysisStatusToQueryStatus,
-} from "../query-status";
+} from "./query-status";
 import { readQueryHistoryFromFile, writeQueryHistoryToFile } from "./store";
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../codeql-cli/cli";

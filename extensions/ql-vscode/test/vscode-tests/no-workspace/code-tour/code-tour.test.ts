@@ -3,9 +3,9 @@ import * as tmp from "tmp";
 import { join } from "path";
 import { mkdir, writeFile } from "fs-extra";
 
-import { prepareCodeTour } from "../../../src/code-tour";
-import { Setting } from "../../../src/config";
-import { createMockCommandManager } from "../../__mocks__/commandsMock";
+import { prepareCodeTour } from "../../../../src/code-tour/code-tour";
+import { Setting } from "../../../../src/config";
+import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 
 describe("prepareCodeTour", () => {
   let dir: tmp.DirResult;

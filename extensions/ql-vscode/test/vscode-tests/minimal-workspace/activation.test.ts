@@ -1,6 +1,6 @@
 import { resolve } from "path";
 import { extensions, workspace } from "vscode";
-import { run } from "./determining-selected-query-test";
+import { run } from "./local-queries/determining-selected-query-test";
 
 describe("launching with a minimal workspace", () => {
   const ext = extensions.getExtension("GitHub.vscode-codeql");
