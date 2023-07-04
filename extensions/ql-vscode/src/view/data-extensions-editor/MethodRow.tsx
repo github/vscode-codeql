@@ -145,6 +145,15 @@ export const MethodRow = ({
       ? extensiblePredicateDefinitions[modeledMethod.type]
       : undefined;
 
+  const showModelTypeCell =
+    !externalApiUsage.supported ||
+    (modeledMethod && modeledMethod?.type !== "none");
+  const showInputCell =
+    modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type);
+  const showOutputCell =
+    modeledMethod?.type && ["source", "summary"].includes(modeledMethod?.type);
+  const showKindCell = predicate?.supportedKinds;
+
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
@@ -162,8 +171,7 @@ export const MethodRow = ({
         <VSCodeLink onClick={jumpToUsage}>View</VSCodeLink>
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn={2}>
-        {(!externalApiUsage.supported ||
-          (modeledMethod && modeledMethod?.type !== "none")) && (
+        {showModelTypeCell && (
           <Dropdown
             value={modeledMethod?.type ?? "none"}
             onInput={handleTypeInput}
@@ -177,36 +185,34 @@ export const MethodRow = ({
         )}
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={3}>
-        {modeledMethod?.type &&
-          ["sink", "summary"].includes(modeledMethod?.type) && (
-            <Dropdown value={modeledMethod?.input} onInput={handleInputInput}>
-              <VSCodeOption value="Argument[this]">Argument[this]</VSCodeOption>
-              {argumentsList.map((argument, index) => (
-                <VSCodeOption key={argument} value={`Argument[${index}]`}>
-                  Argument[{index}]: {argument}
-                </VSCodeOption>
-              ))}
-            </Dropdown>
-          )}
+        {showInputCell && (
+          <Dropdown value={modeledMethod?.input} onInput={handleInputInput}>
+            <VSCodeOption value="Argument[this]">Argument[this]</VSCodeOption>
+            {argumentsList.map((argument, index) => (
+              <VSCodeOption key={argument} value={`Argument[${index}]`}>
+                Argument[{index}]: {argument}
+              </VSCodeOption>
+            ))}
+          </Dropdown>
+        )}
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={4}>
-        {modeledMethod?.type &&
-          ["source", "summary"].includes(modeledMethod?.type) && (
-            <Dropdown value={modeledMethod?.output} onInput={handleOutputInput}>
-              <VSCodeOption value="ReturnValue">ReturnValue</VSCodeOption>
-              <VSCodeOption value="Argument[this]">Argument[this]</VSCodeOption>
-              {argumentsList.map((argument, index) => (
-                <VSCodeOption key={argument} value={`Argument[${index}]`}>
-                  Argument[{index}]: {argument}
-                </VSCodeOption>
-              ))}
-            </Dropdown>
-          )}
+        {showOutputCell && (
+          <Dropdown value={modeledMethod?.output} onInput={handleOutputInput}>
+            <VSCodeOption value="ReturnValue">ReturnValue</VSCodeOption>
+            <VSCodeOption value="Argument[this]">Argument[this]</VSCodeOption>
+            {argumentsList.map((argument, index) => (
+              <VSCodeOption key={argument} value={`Argument[${index}]`}>
+                Argument[{index}]: {argument}
+              </VSCodeOption>
+            ))}
+          </Dropdown>
+        )}
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={5}>
-        {predicate?.supportedKinds && (
+        {showKindCell && (
           <KindInput
-            kinds={predicate.supportedKinds}
+            kinds={predicate?.supportedKinds || []}
             value={modeledMethod?.kind}
             onChange={handleKindChange}
           />
