@@ -1,7 +1,9 @@
 import {
+  VSCodeCheckbox,
   VSCodeDataGridCell,
   VSCodeDataGridRow,
   VSCodeDropdown,
+  VSCodeLink,
   VSCodeOption,
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
@@ -38,29 +40,18 @@ const SupportSpan = styled.span<SupportedUnsupportedSpanProps>`
   }};
 `;
 
-type SupportedUnsupportedLinkProps = {
-  supported: boolean;
-  modeled: ModeledMethod | undefined;
-};
-
-const SupportLink = styled.button<SupportedUnsupportedLinkProps>`
-  color: ${(props) => {
-    if (!props.supported && props.modeled && props.modeled?.type !== "none") {
-      return "orange";
-    } else {
-      return props.supported ? "green" : "red";
-    }
-  }};
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
+const ApiOrMethodCell = styled(VSCodeDataGridCell)`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5em;
 `;
 
 const UsagesButton = styled.button`
   color: var(--vscode-editor-foreground);
-  background-color: transparent;
+  background-color: var(--vscode-input-background);
   border: none;
+  border-radius: 40%;
   cursor: pointer;
 `;
 
@@ -171,43 +162,24 @@ export const MethodRow = ({
 
   return (
     <VSCodeDataGridRow>
-      <VSCodeDataGridCell gridColumn={1}>
+      <ApiOrMethodCell gridColumn={1}>
+        <VSCodeCheckbox />
         <SupportSpan
           supported={externalApiUsage.supported}
           modeled={modeledMethod}
         >
-          {externalApiUsage.packageName}.{externalApiUsage.typeName}
+          {externalApiUsage.packageName}.{externalApiUsage.typeName}.
+          {externalApiUsage.methodName}
+          {externalApiUsage.methodParameters}
         </SupportSpan>
-      </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={2}>
         {mode === Mode.Application && (
-          <SupportSpan
-            supported={externalApiUsage.supported}
-            modeled={modeledMethod}
-          >
-            {externalApiUsage.methodName}
-            {externalApiUsage.methodParameters}
-          </SupportSpan>
-        )}
-        {mode === Mode.Framework && (
-          <SupportLink
-            supported={externalApiUsage.supported}
-            modeled={modeledMethod}
-            onClick={jumpToUsage}
-          >
-            {externalApiUsage.methodName}
-            {externalApiUsage.methodParameters}
-          </SupportLink>
-        )}
-      </VSCodeDataGridCell>
-      {mode === Mode.Application && (
-        <VSCodeDataGridCell gridColumn={3}>
           <UsagesButton onClick={jumpToUsage}>
             {externalApiUsage.usages.length}
           </UsagesButton>
-        </VSCodeDataGridCell>
-      )}
-      <VSCodeDataGridCell gridColumn={4}>
+        )}
+        <VSCodeLink onClick={jumpToUsage}>View</VSCodeLink>
+      </ApiOrMethodCell>
+      <VSCodeDataGridCell gridColumn={2}>
         {(!externalApiUsage.supported ||
           (modeledMethod && modeledMethod?.type !== "none")) && (
           <Dropdown
@@ -222,7 +194,7 @@ export const MethodRow = ({
           </Dropdown>
         )}
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={5}>
+      <VSCodeDataGridCell gridColumn={3}>
         {modeledMethod?.type &&
           ["sink", "summary"].includes(modeledMethod?.type) && (
             <Dropdown value={modeledMethod?.input} onInput={handleInputInput}>
@@ -235,7 +207,7 @@ export const MethodRow = ({
             </Dropdown>
           )}
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={6}>
+      <VSCodeDataGridCell gridColumn={4}>
         {modeledMethod?.type &&
           ["source", "summary"].includes(modeledMethod?.type) && (
             <Dropdown value={modeledMethod?.output} onInput={handleOutputInput}>
@@ -249,7 +221,7 @@ export const MethodRow = ({
             </Dropdown>
           )}
       </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={7}>
+      <VSCodeDataGridCell gridColumn={5}>
         {predicate?.supportedKinds && (
           <KindInput
             kinds={predicate.supportedKinds}
