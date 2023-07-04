@@ -15,7 +15,7 @@ import {
   GraphInterpretationData,
   DatabaseInfo,
 } from "./common/interface-types";
-import { QueryStatus } from "./query-status";
+import { QueryStatus } from "./query-history/query-status";
 import {
   EvaluatorLogPaths,
   QueryEvaluationInfo,

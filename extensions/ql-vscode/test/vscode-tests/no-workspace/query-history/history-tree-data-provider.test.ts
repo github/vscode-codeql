@@ -19,7 +19,7 @@ import {
 import { shuffleHistoryItems } from "../../utils/query-history-helpers";
 import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
-import { QueryStatus } from "../../../../src/query-status";
+import { QueryStatus } from "../../../../src/query-history/query-status";
 import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import {
   HistoryTreeDataProvider,

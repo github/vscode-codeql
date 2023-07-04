@@ -1,4 +1,4 @@
-import { QueryStatus } from "../query-status";
+import { QueryStatus } from "./query-status";
 import { VariantAnalysis } from "../variant-analysis/shared/variant-analysis";
 
 /**

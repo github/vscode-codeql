@@ -1,5 +1,5 @@
 import { VariantAnalysisHistoryItem } from "../../../src/query-history/variant-analysis-history-item";
-import { QueryStatus } from "../../../src/query-status";
+import { QueryStatus } from "../../../src/query-history/query-status";
 import {
   VariantAnalysis,
   VariantAnalysisStatus,
