@@ -3,6 +3,7 @@ import { readdir, readJson, readFile } from "fs-extra";
 import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
 import {
   GitHubApiRequest,
+  isCodeSearchRequest,
   isGetRepoRequest,
   isGetVariantAnalysisRepoRequest,
   isGetVariantAnalysisRepoResultRequest,
@@ -25,6 +26,7 @@ export async function createRequestHandlers(
     createGetVariantAnalysisRequestHandler(requests),
     createGetVariantAnalysisRepoRequestHandler(requests),
     createGetVariantAnalysisRepoResultRequestHandler(requests),
+    createCodeSearchRequestHandler(requests),
   ];
 
   return handlers;
@@ -192,4 +194,28 @@ function createGetVariantAnalysisRepoResultRequestHandler(
       }
     },
   );
+}
+
+function createCodeSearchRequestHandler(
+  requests: GitHubApiRequest[],
+): RequestHandler {
+  const codeSearchRequests = requests.filter(isCodeSearchRequest);
+  let requestIndex = 0;
+
+  // During a code search, there are multiple request to get pages of results. We
+  // need to return different responses for each request, so keep an index of the
+  // request and return the appropriate response.
+  return rest.get(`${baseUrl}/search/code?q=*`, (_req, res, ctx) => {
+    const request = codeSearchRequests[requestIndex];
+
+    if (requestIndex < codeSearchRequests.length - 1) {
+      // If there are more requests to come, increment the index.
+      requestIndex++;
+    }
+
+    return res(
+      ctx.status(request.response.status),
+      ctx.json(request.response.body),
+    );
+  });
 }
