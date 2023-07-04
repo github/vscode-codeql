@@ -13,10 +13,11 @@ type Props = {
   kinds: Array<ModeledMethod["kind"]>;
 
   value: ModeledMethod["kind"] | undefined;
+  disabled?: boolean;
   onChange: (value: ModeledMethod["kind"]) => void;
 };
 
-export const KindInput = ({ kinds, value, onChange }: Props) => {
+export const KindInput = ({ kinds, value, disabled, onChange }: Props) => {
   const handleInput = useCallback(
     (e: InputEvent) => {
       const target = e.target as HTMLSelectElement;
@@ -37,7 +38,7 @@ export const KindInput = ({ kinds, value, onChange }: Props) => {
   }, [value, kinds, onChange]);
 
   return (
-    <Dropdown value={value} onInput={handleInput}>
+    <Dropdown value={value} disabled={disabled} onInput={handleInput}>
       {kinds.map((kind) => (
         <VSCodeOption key={kind} value={kind}>
           {kind}
