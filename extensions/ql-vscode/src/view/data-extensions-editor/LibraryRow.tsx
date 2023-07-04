@@ -26,7 +26,7 @@ const TitleContainer = styled.button`
   cursor: pointer;
 `;
 
-const TitleDivider = styled(VSCodeDivider)`
+const SectionDivider = styled(VSCodeDivider)`
   padding-top: 0.3rem;
   padding-bottom: 0.3rem;
 `;
@@ -62,6 +62,13 @@ const TitleButton = styled(VSCodeButton)`
     pointer: cursor;
     background-color: var(--vscode-button-secondaryBackground);
   }
+`;
+
+const ButtonsContainer = styled.div`
+  display: flex;
+  gap: 0.4em;
+  justify-content: right;
+  margin-bottom: 1rem;
 `;
 
 type Props = {
@@ -104,6 +111,11 @@ export const LibraryRow = ({
     e.preventDefault();
   }, []);
 
+  const handleSave = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+  }, []);
+
   return (
     <LibraryContainer>
       <TitleContainer onClick={toggleExpanded} aria-expanded={isExpanded}>
@@ -130,13 +142,17 @@ export const LibraryRow = ({
       </TitleContainer>
       {isExpanded && (
         <>
-          <TitleDivider />
+          <SectionDivider />
           <ModeledMethodDataGrid
             externalApiUsages={externalApiUsages}
             modeledMethods={modeledMethods}
             mode={mode}
             onChange={onChange}
           />
+          <SectionDivider />
+          <ButtonsContainer>
+            <VSCodeButton onClick={handleSave}>Save</VSCodeButton>
+          </ButtonsContainer>
         </>
       )}
     </LibraryContainer>
