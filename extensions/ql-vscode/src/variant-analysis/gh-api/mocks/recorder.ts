@@ -245,6 +245,20 @@ async function createGitHubApiRequest(
     };
   }
 
+  const codeSearchMatch = url.match(/\/search\/code\?q=(?<query>.*)$/);
+  if (codeSearchMatch?.groups?.query) {
+    return {
+      request: {
+        kind: RequestKind.CodeSearch,
+        query: codeSearchMatch?.groups?.query,
+      },
+      response: {
+        status,
+        body: JSON.parse(body),
+      },
+    };
+  }
+
   return undefined;
 }
 

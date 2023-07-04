@@ -1,0 +1,13 @@
+{
+  "request": {
+    "kind": "codeSearch",
+    "query": "org%3Adotnet+project+language%3Acsharp&per_page=100&page=10"
+  },
+  "response": {
+    "status": 403,
+    "body": {
+      "message": "API rate limit exceeded for user ID 311693.",
+      "documentation_url": "https://docs.github.com/rest/overview/resources-in-the-rest-api#rate-limiting"
+    }
+  }
+}
