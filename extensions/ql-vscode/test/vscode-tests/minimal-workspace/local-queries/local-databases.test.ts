@@ -10,27 +10,27 @@ import {
   DatabaseManager,
   DatabaseResolver,
   FullDatabaseOptions,
-} from "../../../src/databases/local-databases";
-import { Logger } from "../../../src/common/logging";
-import { CodeQLCliServer, DbInfo } from "../../../src/codeql-cli/cli";
+} from "../../../../src/databases/local-databases";
+import { Logger } from "../../../../src/common/logging";
+import { CodeQLCliServer, DbInfo } from "../../../../src/codeql-cli/cli";
 import {
   encodeArchiveBasePath,
   encodeSourceArchiveUri,
-} from "../../../src/common/vscode/archive-filesystem-provider";
-import { testDisposeHandler } from "../test-dispose-handler";
-import { QueryRunner } from "../../../src/query-server/query-runner";
-import * as dialog from "../../../src/common/vscode/dialog";
-import { Setting } from "../../../src/config";
-import { QlPackGenerator } from "../../../src/qlpack-generator";
-import { mockedObject } from "../utils/mocking.helpers";
-import { createMockApp } from "../../__mocks__/appMock";
+} from "../../../../src/common/vscode/archive-filesystem-provider";
+import { testDisposeHandler } from "../../test-dispose-handler";
+import { QueryRunner } from "../../../../src/query-server/query-runner";
+import * as dialog from "../../../../src/common/vscode/dialog";
+import { Setting } from "../../../../src/config";
+import { QlPackGenerator } from "../../../../src/local-queries/qlpack-generator";
+import { mockedObject } from "../../utils/mocking.helpers";
+import { createMockApp } from "../../../__mocks__/appMock";
 import {
   createMockDB,
   dbLocationUri,
   mockDbOptions,
   sourceLocationUri,
-} from "../../factories/databases/databases";
-import { findSourceArchive } from "../../../src/databases/local-databases/database-resolver";
+} from "../../../factories/databases/databases";
+import { findSourceArchive } from "../../../../src/databases/local-databases/database-resolver";
 
 describe("local databases", () => {
   let databaseManager: DatabaseManager;

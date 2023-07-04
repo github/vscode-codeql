@@ -21,7 +21,7 @@ import {
 } from "../../common/vscode/workspace-folders";
 import { isQueryLanguage } from "../../common/query-language";
 import { existsSync } from "fs";
-import { QlPackGenerator } from "../../qlpack-generator";
+import { QlPackGenerator } from "../../local-queries/qlpack-generator";
 import { asError, getErrorMessage } from "../../common/helpers-pure";
 import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
 import { redactableError } from "../../common/errors";

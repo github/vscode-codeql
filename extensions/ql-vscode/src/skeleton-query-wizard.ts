@@ -9,7 +9,7 @@ import {
   isFolderAlreadyInWorkspace,
 } from "./common/vscode/workspace-folders";
 import { getErrorMessage } from "./common/helpers-pure";
-import { QlPackGenerator } from "./qlpack-generator";
+import { QlPackGenerator } from "./local-queries/qlpack-generator";
 import { DatabaseItem, DatabaseManager } from "./databases/local-databases";
 import {
   ProgressCallback,
