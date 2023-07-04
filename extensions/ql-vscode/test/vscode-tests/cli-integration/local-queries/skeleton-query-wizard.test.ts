@@ -1,26 +1,26 @@
-import { CodeQLCliServer } from "../../../src/codeql-cli/cli";
+import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import {
   QUERY_LANGUAGE_TO_DATABASE_REPO,
   SkeletonQueryWizard,
-} from "../../../src/skeleton-query-wizard";
-import { mockedObject, mockedQuickPickItem } from "../utils/mocking.helpers";
+} from "../../../../src/local-queries/skeleton-query-wizard";
+import { mockedObject, mockedQuickPickItem } from "../../utils/mocking.helpers";
 import * as tmp from "tmp";
 import { TextDocument, window, workspace, WorkspaceFolder } from "vscode";
-import { extLogger } from "../../../src/common/logging/vscode";
-import { QlPackGenerator } from "../../../src/local-queries/qlpack-generator";
-import * as workspaceFolders from "../../../src/common/vscode/workspace-folders";
+import { extLogger } from "../../../../src/common/logging/vscode";
+import { QlPackGenerator } from "../../../../src/local-queries/qlpack-generator";
+import * as workspaceFolders from "../../../../src/common/vscode/workspace-folders";
 import { createFileSync, ensureDirSync, removeSync } from "fs-extra";
 import { join } from "path";
-import { testCredentialsWithStub } from "../../factories/authentication";
+import { testCredentialsWithStub } from "../../../factories/authentication";
 import {
   DatabaseItem,
   DatabaseManager,
   FullDatabaseOptions,
-} from "../../../src/databases/local-databases";
-import * as databaseFetcher from "../../../src/databases/database-fetcher";
-import { createMockDB } from "../../factories/databases/databases";
-import { asError } from "../../../src/common/helpers-pure";
-import { Setting } from "../../../src/config";
+} from "../../../../src/databases/local-databases";
+import * as databaseFetcher from "../../../../src/databases/database-fetcher";
+import { createMockDB } from "../../../factories/databases/databases";
+import { asError } from "../../../../src/common/helpers-pure";
+import { Setting } from "../../../../src/config";
 
 describe("SkeletonQueryWizard", () => {
   let mockCli: CodeQLCliServer;

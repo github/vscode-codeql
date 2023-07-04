@@ -1,31 +1,31 @@
 import { join } from "path";
 import { Uri, workspace, window as Window } from "vscode";
-import { CodeQLCliServer } from "./codeql-cli/cli";
-import { BaseLogger } from "./common/logging";
-import { Credentials } from "./common/authentication";
-import { QueryLanguage } from "./common/query-language";
+import { CodeQLCliServer } from "../codeql-cli/cli";
+import { BaseLogger } from "../common/logging";
+import { Credentials } from "../common/authentication";
+import { QueryLanguage } from "../common/query-language";
 import {
   getFirstWorkspaceFolder,
   isFolderAlreadyInWorkspace,
-} from "./common/vscode/workspace-folders";
-import { getErrorMessage } from "./common/helpers-pure";
-import { QlPackGenerator } from "./local-queries/qlpack-generator";
-import { DatabaseItem, DatabaseManager } from "./databases/local-databases";
+} from "../common/vscode/workspace-folders";
+import { getErrorMessage } from "../common/helpers-pure";
+import { QlPackGenerator } from "./qlpack-generator";
+import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import {
   ProgressCallback,
   UserCancellationException,
-} from "./common/vscode/progress";
+} from "../common/vscode/progress";
 import {
   askForGitHubRepo,
   downloadGitHubDatabase,
-} from "./databases/database-fetcher";
+} from "../databases/database-fetcher";
 import {
   getQlPackLocation,
   isCodespacesTemplate,
   setQlPackLocation,
-} from "./config";
+} from "../config";
 import { existsSync } from "fs-extra";
-import { askForLanguage } from "./codeql-cli/query-language";
+import { askForLanguage } from "../codeql-cli/query-language";
 
 type QueryLanguagesToDatabaseMap = Record<string, string>;
 
