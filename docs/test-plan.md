@@ -378,7 +378,7 @@ This requires running a MRVA query and seeing the results view.
 1. Make changes via config file (ensure JSON schema is helping out)
 1. Close and re-open VS Code (ensure lists are there)
 1. Collapse/expand tree nodes
-1. Right click on a list and select "Add repositories with GitHub Code Search". Enter the query "org:dotnet project". This should show some rate limiting notifications but should eventually populate a list.
+1. Create a new list, right click and select "Add repositories with GitHub Code Search". Enter the language 'python' and the query "UserMixin". This should show a rate limiting notification after a while but eventually populate the list with roughly 770 items.
 
 Error cases that trigger an error notification:
 
