@@ -67,6 +67,8 @@ export function DataExtensionsEditor({
   const [externalApiUsages, setExternalApiUsages] = useState<
     ExternalApiUsage[]
   >(initialExternalApiUsages);
+  const [unsavedModels, setUnsavedModels] = useState<Set<string>>(new Set());
+
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
   >(initialModeledMethods);
@@ -86,6 +88,7 @@ export function DataExtensionsEditor({
             break;
           case "setExternalApiUsages":
             setExternalApiUsages(msg.externalApiUsages);
+            setUnsavedModels(new Set());
             break;
           case "showProgress":
             setProgress(msg);
@@ -130,11 +133,14 @@ export function DataExtensionsEditor({
   const unModeledPercentage = 100 - modeledPercentage;
 
   const onChange = useCallback(
-    (method: ExternalApiUsage, model: ModeledMethod) => {
+    (modelName: string, method: ExternalApiUsage, model: ModeledMethod) => {
       setModeledMethods((oldModeledMethods) => ({
         ...oldModeledMethods,
         [method.signature]: model,
       }));
+      setUnsavedModels(
+        (oldUnsavedModels) => new Set([...oldUnsavedModels, modelName]),
+      );
     },
     [],
   );
@@ -254,6 +260,7 @@ export function DataExtensionsEditor({
             </ButtonsContainer>
             <ModeledMethodsList
               externalApiUsages={externalApiUsages}
+              unsavedModels={unsavedModels}
               modeledMethods={modeledMethods}
               mode={viewState?.mode ?? Mode.Application}
               onChange={onChange}

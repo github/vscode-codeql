@@ -78,6 +78,7 @@ type Props = {
   mode: Mode;
   hasUnsavedChanges: boolean;
   onChange: (
+    modelName: string,
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
   ) => void;
@@ -116,6 +117,13 @@ export const LibraryRow = ({
     e.preventDefault();
   }, []);
 
+  const onChangeWithModelName = useCallback(
+    (externalApiUsage: ExternalApiUsage, modeledMethod: ModeledMethod) => {
+      onChange(title, externalApiUsage, modeledMethod);
+    },
+    [onChange, title],
+  );
+
   return (
     <LibraryContainer>
       <TitleContainer onClick={toggleExpanded} aria-expanded={isExpanded}>
@@ -147,11 +155,13 @@ export const LibraryRow = ({
             externalApiUsages={externalApiUsages}
             modeledMethods={modeledMethods}
             mode={mode}
-            onChange={onChange}
+            onChange={onChangeWithModelName}
           />
           <SectionDivider />
           <ButtonsContainer>
-            <VSCodeButton onClick={handleSave}>Save</VSCodeButton>
+            <VSCodeButton onClick={handleSave} disabled={!hasUnsavedChanges}>
+              Save
+            </VSCodeButton>
           </ButtonsContainer>
         </>
       )}
