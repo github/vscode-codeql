@@ -10,7 +10,7 @@ import {
 import { VariantAnalysisHistoryItem } from "./variant-analysis-history-item";
 import { assertNever } from "../common/helpers-pure";
 import { pluralize } from "../common/word";
-import { humanizeQueryStatus } from "../query-status";
+import { humanizeQueryStatus } from "./query-status";
 
 interface InterpolateReplacements {
   t: string; // Start time

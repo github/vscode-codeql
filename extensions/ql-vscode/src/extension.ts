@@ -56,7 +56,7 @@ import {
   GithubRateLimitedError,
 } from "./codeql-cli/distribution";
 import { tmpDir, tmpDirDisposal } from "./tmp-dir";
-import { prepareCodeTour } from "./code-tour";
+import { prepareCodeTour } from "./code-tour/code-tour";
 import {
   showBinaryChoiceDialog,
   showInformationMessageWithAction,

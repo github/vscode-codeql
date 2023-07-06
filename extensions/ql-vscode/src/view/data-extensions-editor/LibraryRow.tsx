@@ -11,7 +11,10 @@ import { Mode } from "../../data-extensions-editor/shared/mode";
 import { VSCodeButton, VSCodeDivider } from "@vscode/webview-ui-toolkit/react";
 
 const LibraryContainer = styled.div`
+  background-color: var(--vscode-peekViewResult-background);
+  padding: 0.3rem;
   margin-bottom: 1rem;
+  border-radius: 0.3rem;
 `;
 
 const TitleContainer = styled.button`
@@ -19,6 +22,8 @@ const TitleContainer = styled.button`
   gap: 0.5em;
   align-items: center;
   width: 100%;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
 
   color: var(--vscode-editor-foreground);
   background-color: transparent;
