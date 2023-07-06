@@ -87,6 +87,11 @@ type Props = {
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
   ) => void;
+  onSaveModelClick: (
+    modelName: string,
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ) => void;
 };
 
 export const LibraryRow = ({
@@ -96,6 +101,7 @@ export const LibraryRow = ({
   mode,
   hasUnsavedChanges,
   onChange,
+  onSaveModelClick,
 }: Props) => {
   const modeledPercentage = useMemo(() => {
     return calculateModeledPercentage(externalApiUsages);
@@ -117,10 +123,14 @@ export const LibraryRow = ({
     e.preventDefault();
   }, []);
 
-  const handleSave = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-  }, []);
+  const handleSave = useCallback(
+    async (e: React.MouseEvent) => {
+      onSaveModelClick(title, externalApiUsages, modeledMethods);
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    [title, externalApiUsages, modeledMethods, onSaveModelClick],
+  );
 
   const onChangeWithModelName = useCallback(
     (externalApiUsage: ExternalApiUsage, modeledMethod: ModeledMethod) => {

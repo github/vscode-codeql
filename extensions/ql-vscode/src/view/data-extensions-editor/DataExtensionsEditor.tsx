@@ -88,7 +88,6 @@ export function DataExtensionsEditor({
             break;
           case "setExternalApiUsages":
             setExternalApiUsages(msg.externalApiUsages);
-            setUnsavedModels(new Set());
             break;
           case "showProgress":
             setProgress(msg);
@@ -151,13 +150,34 @@ export function DataExtensionsEditor({
     });
   }, []);
 
-  const onApplyClick = useCallback(() => {
+  const onSaveAllClick = useCallback(() => {
     vscode.postMessage({
       t: "saveModeledMethods",
       externalApiUsages,
       modeledMethods,
     });
+    setUnsavedModels(new Set());
   }, [externalApiUsages, modeledMethods]);
+
+  const onSaveModelClick = useCallback(
+    (
+      modelName: string,
+      externalApiUsages: ExternalApiUsage[],
+      modeledMethods: Record<string, ModeledMethod>,
+    ) => {
+      vscode.postMessage({
+        t: "saveModeledMethods",
+        externalApiUsages,
+        modeledMethods,
+      });
+      setUnsavedModels((oldUnsavedModels) => {
+        const newUnsavedModels = new Set(oldUnsavedModels);
+        newUnsavedModels.delete(modelName);
+        return newUnsavedModels;
+      });
+    },
+    [],
+  );
 
   const onGenerateClick = useCallback(() => {
     vscode.postMessage({
@@ -239,7 +259,7 @@ export function DataExtensionsEditor({
 
           <EditorContainer>
             <ButtonsContainer>
-              <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+              <VSCodeButton onClick={onSaveAllClick}>Apply</VSCodeButton>
               {viewState?.enableFrameworkMode && (
                 <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
                   Refresh
@@ -264,6 +284,7 @@ export function DataExtensionsEditor({
               modeledMethods={modeledMethods}
               mode={viewState?.mode ?? Mode.Application}
               onChange={onChange}
+              onSaveModelClick={onSaveModelClick}
             />
           </EditorContainer>
         </>
