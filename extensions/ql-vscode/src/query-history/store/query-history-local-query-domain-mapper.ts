@@ -16,7 +16,7 @@ import {
   RawResultsSortState,
   SortDirection,
   SortedResultSetInfo,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 
 export function mapLocalQueryInfoToDto(
   query: LocalQueryInfo,

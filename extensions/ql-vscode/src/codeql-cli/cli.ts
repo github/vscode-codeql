@@ -11,7 +11,7 @@ import tk from "tree-kill";
 import { promisify } from "util";
 import { CancellationToken, Disposable, Uri } from "vscode";
 
-import { BQRSInfo, DecodedBqrsChunk } from "../pure/bqrs-cli-types";
+import { BQRSInfo, DecodedBqrsChunk } from "../common/bqrs-cli-types";
 import { allowCanaryQueryServer, CliConfig } from "../config";
 import {
   DistributionProvider,
@@ -21,11 +21,12 @@ import {
   assertNever,
   getErrorMessage,
   getErrorStack,
-} from "../pure/helpers-pure";
-import { walkDirectory } from "../pure/files";
-import { QueryMetadata, SortDirection } from "../pure/interface-types";
-import { BaseLogger, Logger, ProgressReporter } from "../common";
-import { CompilationMessage } from "../pure/legacy-messages";
+} from "../common/helpers-pure";
+import { walkDirectory } from "../common/files";
+import { QueryMetadata, SortDirection } from "../common/interface-types";
+import { BaseLogger, Logger } from "../common/logging";
+import { ProgressReporter } from "../common/logging/vscode";
+import { CompilationMessage } from "../query-server/legacy-messages";
 import { sarifParser } from "../common/sarif-parser";
 import { App } from "../common/app";
 import { QueryLanguage } from "../common/query-language";
@@ -718,6 +719,7 @@ export class CodeQLCliServer implements Disposable {
   async resolveLibraryPath(
     workspaces: string[],
     queryPath: string,
+    silent = false,
   ): Promise<QuerySetup> {
     const subcommandArgs = [
       "--query",
@@ -728,6 +730,7 @@ export class CodeQLCliServer implements Disposable {
       ["resolve", "library-path"],
       subcommandArgs,
       "Resolving library paths",
+      { silent },
     );
   }
 
@@ -1480,6 +1483,13 @@ export class CodeQLCliServer implements Disposable {
             CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG,
           ) >= 0,
         );
+        await this.app.commands.execute(
+          "setContext",
+          "codeql.supportsQuickEvalCount",
+          newVersion.compare(
+            CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
+          ) >= 0,
+        );
       } catch (e) {
         this._versionChangedListeners.forEach((listener) =>
           listener(undefined),
@@ -1842,6 +1852,18 @@ export class CliVersionConstraint {
 
   public static CLI_VERSION_GLOBAL_CACHE = new SemVer("2.12.4");
 
+  /**
+   * CLI version where the query server supports quick-eval count mode.
+   */
+  public static CLI_VERSION_WITH_QUICK_EVAL_COUNT = new SemVer("2.13.3");
+
+  /**
+   * CLI version where the langauge server supports visisbility change notifications.
+   */
+  public static CLI_VERSION_WITH_VISIBILITY_NOTIFICATIONS = new SemVer(
+    "2.14.0",
+  );
+
   constructor(private readonly cli: CodeQLCliServer) {
     /**/
   }
@@ -1914,5 +1936,17 @@ export class CliVersionConstraint {
 
   async usesGlobalCompilationCache() {
     return this.isVersionAtLeast(CliVersionConstraint.CLI_VERSION_GLOBAL_CACHE);
+  }
+
+  async supportsVisibilityNotifications() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_VISIBILITY_NOTIFICATIONS,
+    );
+  }
+
+  async supportsQuickEvalCount() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
+    );
   }
 }

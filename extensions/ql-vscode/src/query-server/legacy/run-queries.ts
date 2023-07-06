@@ -11,20 +11,24 @@ import {
 } from "../../databases/local-databases";
 import { tmpDir } from "../../tmp-dir";
 import { ProgressCallback } from "../../common/vscode/progress";
-import { QueryMetadata } from "../../pure/interface-types";
-import { extLogger, Logger } from "../../common";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
-import * as messages from "../../pure/legacy-messages";
-import * as newMessages from "../../pure/new-messages";
+import { QueryMetadata } from "../../common/interface-types";
+import { extLogger } from "../../common/logging/vscode";
+import {
+  Logger,
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../../common/logging";
+import * as messages from "../legacy-messages";
+import * as newMessages from "../new-messages";
 import * as qsClient from "./query-server-client";
-import { asError, getErrorMessage } from "../../pure/helpers-pure";
+import { asError, getErrorMessage } from "../../common/helpers-pure";
 import { compileDatabaseUpgradeSequence } from "./upgrades";
 import { QueryEvaluationInfo, QueryOutputDir } from "../../run-queries-shared";
-import { redactableError } from "../../pure/errors";
+import { redactableError } from "../../common/errors";
 import { CoreQueryResults, CoreQueryTarget } from "../query-runner";
-import { Position } from "../../pure/messages-shared";
-import { showAndLogWarningMessage } from "../../common/logging";
+import { Position } from "../messages-shared";
 import { ensureDirSync } from "fs-extra";
+import { telemetryListener } from "../../common/vscode/telemetry";
 
 const upgradesTmpDir = join(tmpDir.name, "upgrades");
 ensureDirSync(upgradesTmpDir);
@@ -197,7 +201,6 @@ export class QueryInProgress {
 export async function clearCacheInDatabase(
   qs: qsClient.QueryServerClient,
   dbItem: DatabaseItem,
-  progress: ProgressCallback,
   token: CancellationToken,
 ): Promise<messages.ClearCacheResult> {
   if (dbItem.contents === undefined) {
@@ -214,7 +217,7 @@ export async function clearCacheInDatabase(
     db,
   };
 
-  return qs.sendRequest(messages.clearCache, params, token, progress);
+  return qs.sendRequest(messages.clearCache, params, token);
 }
 
 function reportNoUpgradePath(
@@ -386,6 +389,7 @@ export async function compileAndRunQueryAgainstDatabaseCore(
   } catch (e) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
+      telemetryListener,
       redactableError(
         asError(e),
       )`Couldn't resolve available ML models for ${qlProgram.queryPath}. Running the query without any ML models: ${e}.`,
@@ -444,7 +448,11 @@ export async function compileAndRunQueryAgainstDatabaseCore(
           ? redactableError`${result.message}`
           : redactableError`Failed to run query`;
         void extLogger.log(error.fullMessage);
-        void showAndLogExceptionWithTelemetry(extLogger, error);
+        void showAndLogExceptionWithTelemetry(
+          extLogger,
+          telemetryListener,
+          error,
+        );
       }
 
       return translateLegacyResult(result);

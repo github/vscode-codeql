@@ -16,6 +16,7 @@ const Template: ComponentStory<typeof MethodRowComponent> = (args) => (
 export const MethodRow = Template.bind({});
 MethodRow.args = {
   externalApiUsage: {
+    library: "sql2o-1.6.0.jar",
     signature: "org.sql2o.Sql2o#open()",
     packageName: "org.sql2o",
     typeName: "Sql2o",

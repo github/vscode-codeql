@@ -11,7 +11,7 @@ import { join } from "path";
 import { ExtensionContext, Uri } from "vscode";
 import { DatabaseManager } from "../../../../src/databases/local-databases";
 import { tmpDir } from "../../../../src/tmp-dir";
-import { walkDirectory } from "../../../../src/pure/files";
+import { walkDirectory } from "../../../../src/common/files";
 import { DisposableBucket } from "../../disposable-bucket";
 import { testDisposeHandler } from "../../test-dispose-handler";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";

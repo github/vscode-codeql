@@ -3,7 +3,7 @@ import { URLSearchParams } from "url";
 import { SHOW_QUERY_TEXT_MSG } from "../query-history/query-history-manager";
 import { VariantAnalysisManager } from "./variant-analysis-manager";
 import { showAndLogWarningMessage } from "../common/logging";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 
 export const createVariantAnalysisContentProvider = (
   variantAnalysisManager: VariantAnalysisManager,

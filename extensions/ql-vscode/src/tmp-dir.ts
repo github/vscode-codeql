@@ -1,5 +1,5 @@
 import { dirSync } from "tmp-promise";
-import { extLogger } from "./common";
+import { extLogger } from "./common/logging/vscode";
 
 // Shared temporary folder for the extension.
 export const tmpDir = dirSync({

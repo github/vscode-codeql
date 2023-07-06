@@ -1,7 +1,7 @@
 import { App } from "../common/app";
 import { AppEvent, AppEventEmitter } from "../common/events";
 import { ValueResult } from "../common/value-result";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { DbConfigStore } from "./config/db-config-store";
 import {
   DbItem,

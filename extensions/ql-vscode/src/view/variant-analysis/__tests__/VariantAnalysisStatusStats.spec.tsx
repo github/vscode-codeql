@@ -5,7 +5,7 @@ import {
   VariantAnalysisStatusStats,
   VariantAnalysisStatusStatsProps,
 } from "../VariantAnalysisStatusStats";
-import { formatDate } from "../../../pure/date";
+import { formatDate } from "../../../common/date";
 
 describe(VariantAnalysisStatusStats.name, () => {
   const render = (props: Partial<VariantAnalysisStatusStatsProps> = {}) =>

@@ -1,5 +1,5 @@
 import { join, basename, dirname as path_dirname } from "path";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import {
   Event,
   EventEmitter,
@@ -32,23 +32,25 @@ import {
   isLikelyDatabaseRoot,
   isLikelyDbLanguageFolder,
 } from "./local-databases/db-contents-heuristics";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import {
+  showAndLogExceptionWithTelemetry,
+  showAndLogErrorMessage,
+} from "../common/logging";
 import {
   importArchiveDatabase,
   promptImportGithubDatabase,
   promptImportInternetDatabase,
 } from "./database-fetcher";
-import { asError, asyncFilter, getErrorMessage } from "../pure/helpers-pure";
+import { asError, asyncFilter, getErrorMessage } from "../common/helpers-pure";
 import { QueryRunner } from "../query-server";
 import { isCanary } from "../config";
 import { App } from "../common/app";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { LocalDatabasesCommands } from "../common/commands";
 import {
   createMultiSelectionCommand,
   createSingleSelectionCommand,
 } from "../common/vscode/selection-commands";
-import { showAndLogErrorMessage } from "../common/logging";
 
 enum SortOrder {
   NameAsc = "NameAsc",
@@ -280,6 +282,7 @@ export class DatabaseUI extends DisposableObject {
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
+        this.app.telemetry,
         redactableError(
           asError(e),
         )`Failed to choose and set database: ${getErrorMessage(e)}`,
@@ -311,7 +314,7 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleSetDefaultTourDatabase(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
+      async () => {
         try {
           if (!workspace.workspaceFolders?.length) {
             throw new Error("No workspace folder is open.");
@@ -329,8 +332,6 @@ export class DatabaseUI extends DisposableObject {
               const isTutorialDatabase = true;
 
               await this.databaseManager.openDatabase(
-                progress,
-                token,
                 uri,
                 makeSelected,
                 nameOverride,
@@ -420,6 +421,7 @@ export class DatabaseUI extends DisposableObject {
         } catch (e) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
+            this.app.telemetry,
             redactableError(
               asError(e),
             )`Failed to delete orphaned database: ${getErrorMessage(e)}`,
@@ -449,6 +451,7 @@ export class DatabaseUI extends DisposableObject {
     } catch (e: unknown) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
+        this.app.telemetry,
         redactableError(
           asError(e),
         )`Failed to choose and set database: ${getErrorMessage(e)}`,
@@ -480,13 +483,12 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleChooseDatabaseInternet(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
+      async (progress) => {
         await promptImportInternetDatabase(
           this.app.commands,
           this.databaseManager,
           this.storagePath,
           progress,
-          token,
           this.queryServer?.cliServer,
         );
       },
@@ -498,7 +500,7 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleChooseDatabaseGithub(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
+      async (progress) => {
         const credentials = isCanary() ? this.app.credentials : undefined;
 
         await promptImportGithubDatabase(
@@ -507,7 +509,6 @@ export class DatabaseUI extends DisposableObject {
           this.storagePath,
           credentials,
           progress,
-          token,
           this.queryServer?.cliServer,
         );
       },
@@ -603,14 +604,13 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleClearCache(): Promise<void> {
     return withProgress(
-      async (progress, token) => {
+      async (_progress, token) => {
         if (
           this.queryServer !== undefined &&
           this.databaseManager.currentDatabaseItem !== undefined
         ) {
           await this.queryServer.clearCacheInDatabase(
             this.databaseManager.currentDatabaseItem,
-            progress,
             token,
           );
         }
@@ -628,7 +628,7 @@ export class DatabaseUI extends DisposableObject {
 
   private async handleSetCurrentDatabase(uri: Uri): Promise<void> {
     return withProgress(
-      async (progress, token) => {
+      async (progress) => {
         try {
           // Assume user has selected an archive if the file has a .zip extension
           if (uri.path.endsWith(".zip")) {
@@ -638,11 +638,10 @@ export class DatabaseUI extends DisposableObject {
               this.databaseManager,
               this.storagePath,
               progress,
-              token,
               this.queryServer?.cliServer,
             );
           } else {
-            await this.databaseManager.openDatabase(progress, token, uri);
+            await this.databaseManager.openDatabase(uri);
           }
         } catch (e) {
           // rethrow and let this be handled by default error handling.
@@ -663,10 +662,10 @@ export class DatabaseUI extends DisposableObject {
     databaseItems: DatabaseItem[],
   ): Promise<void> {
     return withProgress(
-      async (progress, token) => {
+      async () => {
         await Promise.all(
           databaseItems.map((dbItem) =>
-            this.databaseManager.removeDatabaseItem(progress, token, dbItem),
+            this.databaseManager.removeDatabaseItem(dbItem),
           ),
         );
       },
@@ -753,15 +752,11 @@ export class DatabaseUI extends DisposableObject {
 
     return await withInheritedProgress(
       progress,
-      async (progress, token) => {
+      async (progress) => {
         if (byFolder) {
           const fixedUri = await this.fixDbUri(uri);
           // we are selecting a database folder
-          return await this.databaseManager.openDatabase(
-            progress,
-            token,
-            fixedUri,
-          );
+          return await this.databaseManager.openDatabase(fixedUri);
         } else {
           // we are selecting a database archive. Must unzip into a workspace-controlled area
           // before importing.
@@ -771,7 +766,6 @@ export class DatabaseUI extends DisposableObject {
             this.databaseManager,
             this.storagePath,
             progress,
-            token,
             this.queryServer?.cliServer,
           );
         }

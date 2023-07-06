@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ResultRow } from "../../pure/bqrs-cli-types";
+import { ResultRow } from "../../common/bqrs-cli-types";
 import { selectedRowClassName, zebraStripe } from "./result-table-utils";
 import RawTableValue from "./RawTableValue";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";

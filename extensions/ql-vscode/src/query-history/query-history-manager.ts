@@ -18,9 +18,9 @@ import {
   showInformationMessageWithAction,
 } from "../common/vscode/dialog";
 import { URLSearchParams } from "url";
-import { DisposableObject } from "../pure/disposable-object";
-import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../pure/time";
-import { assertNever, getErrorMessage } from "../pure/helpers-pure";
+import { DisposableObject } from "../common/disposable-object";
+import { ONE_HOUR_IN_MS, TWO_HOURS_IN_MS } from "../common/time";
+import { assertNever, getErrorMessage } from "../common/helpers-pure";
 import { CompletedLocalQueryInfo, LocalQueryInfo } from "../query-results";
 import {
   getActionsWorkflowRunUrl,
@@ -33,14 +33,17 @@ import { registerQueryHistoryScrubber } from "./query-history-scrubber";
 import {
   QueryStatus,
   variantAnalysisStatusToQueryStatus,
-} from "../query-status";
+} from "./query-status";
 import { readQueryHistoryFromFile, writeQueryHistoryToFile } from "./store";
 import { pathExists } from "fs-extra";
 import { CliVersionConstraint } from "../codeql-cli/cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
 import { ResultsView, WebviewReveal } from "../local-queries";
 import { EvalLogTreeBuilder, EvalLogViewer } from "../query-evaluation-logging";
-import { EvalLogData, parseViewerData } from "../pure/log-summary-parser";
+import {
+  EvalLogData,
+  parseViewerData,
+} from "../log-insights/log-summary-parser";
 import { QueryWithResults } from "../run-queries-shared";
 import { QueryRunner } from "../query-server";
 import { VariantAnalysisManager } from "../variant-analysis/variant-analysis-manager";

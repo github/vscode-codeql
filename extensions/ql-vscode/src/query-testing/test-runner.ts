@@ -2,13 +2,17 @@ import { CancellationToken, Uri } from "vscode";
 import { CodeQLCliServer, TestCompleted } from "../codeql-cli/cli";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { asError, getErrorMessage } from "../pure/helpers-pure";
-import { redactableError } from "../pure/errors";
+import { asError, getErrorMessage } from "../common/helpers-pure";
+import { redactableError } from "../common/errors";
 import { access } from "fs-extra";
-import { BaseLogger, extLogger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
-import { DisposableObject } from "../pure/disposable-object";
-import { showAndLogWarningMessage } from "../common/logging";
+import { extLogger } from "../common/logging/vscode";
+import {
+  BaseLogger,
+  showAndLogExceptionWithTelemetry,
+  showAndLogWarningMessage,
+} from "../common/logging";
+import { DisposableObject } from "../common/disposable-object";
+import { telemetryListener } from "../common/vscode/telemetry";
 
 async function isFileAccessible(uri: Uri): Promise<boolean> {
   try {
@@ -45,7 +49,7 @@ export class TestRunner extends DisposableObject {
       }
     }
 
-    await this.removeDatabasesBeforeTests(databasesUnderTest, token);
+    await this.removeDatabasesBeforeTests(databasesUnderTest);
     try {
       const workspacePaths = getOnDiskWorkspaceFolders();
       for await (const event of this.cliServer.runTests(tests, workspacePaths, {
@@ -63,30 +67,23 @@ export class TestRunner extends DisposableObject {
       await this.reopenDatabasesAfterTests(
         databasesUnderTest,
         currentDatabaseUri,
-        token,
       );
     }
   }
 
   private async removeDatabasesBeforeTests(
     databasesUnderTest: DatabaseItem[],
-    token: CancellationToken,
   ): Promise<void> {
     for (const database of databasesUnderTest) {
       try {
-        await this.databaseManager.removeDatabaseItem(
-          (_) => {
-            /* no progress reporting */
-          },
-          token,
-          database,
-        );
+        await this.databaseManager.removeDatabaseItem(database);
       } catch (e) {
         // This method is invoked from Test Explorer UI, and testing indicates that Test
         // Explorer UI swallows any thrown exception without reporting it to the user.
         // So we need to display the error message ourselves and then rethrow.
         void showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(asError(e))`Cannot remove database ${
             database.name
           }: ${getErrorMessage(e)}`,
@@ -99,17 +96,12 @@ export class TestRunner extends DisposableObject {
   private async reopenDatabasesAfterTests(
     databasesUnderTest: DatabaseItem[],
     currentDatabaseUri: Uri | undefined,
-    token: CancellationToken,
   ): Promise<void> {
     for (const closedDatabase of databasesUnderTest) {
       const uri = closedDatabase.databaseUri;
       if (await isFileAccessible(uri)) {
         try {
           const reopenedDatabase = await this.databaseManager.openDatabase(
-            (_) => {
-              /* no progress reporting */
-            },
-            token,
             uri,
             false,
           );

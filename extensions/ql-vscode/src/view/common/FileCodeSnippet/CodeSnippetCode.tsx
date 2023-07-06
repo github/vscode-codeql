@@ -5,7 +5,7 @@ import { HighlightedRegion } from "../../../variant-analysis/shared/analysis-res
 import {
   parseHighlightedLine,
   shouldHighlightLine,
-} from "../../../pure/sarif-utils";
+} from "../../../common/sarif-utils";
 
 const replaceSpaceAndTabChar = (text: string) =>
   text.replaceAll(" ", "\u00a0").replaceAll("\t", "\u00a0\u00a0\u00a0\u00a0");

@@ -6,14 +6,14 @@ import {
   window,
 } from "vscode";
 import {
-  TelemetryListener,
+  ExtensionTelemetryListener,
   telemetryListener as globalTelemetryListener,
-} from "../../../src/telemetry";
+} from "../../../src/common/vscode/telemetry";
 import { UserCancellationException } from "../../../src/common/vscode/progress";
 import { ENABLE_TELEMETRY } from "../../../src/config";
 import { createMockExtensionContext } from "./index";
 import { vscodeGetConfigurationMock } from "../test-config";
-import { redactableError } from "../../../src/pure/errors";
+import { redactableError } from "../../../src/common/errors";
 import { SemVer } from "semver";
 
 // setting preferences can trigger lots of background activity
@@ -25,7 +25,7 @@ describe("telemetry reporting", () => {
   let originalTelemetryGlobal: boolean | undefined;
   let isCanary: string;
   let ctx: ExtensionContext;
-  let telemetryListener: TelemetryListener;
+  let telemetryListener: ExtensionTelemetryListener;
 
   let sendTelemetryEventSpy: jest.SpiedFunction<
     typeof TelemetryReporter.prototype.sendTelemetryEvent
@@ -81,7 +81,7 @@ describe("telemetry reporting", () => {
       await enableTelemetry("telemetry", true);
       await enableTelemetry("codeQL.telemetry", true);
 
-      telemetryListener = new TelemetryListener(
+      telemetryListener = new ExtensionTelemetryListener(
         "my-id",
         "1.2.3",
         "fake-key",

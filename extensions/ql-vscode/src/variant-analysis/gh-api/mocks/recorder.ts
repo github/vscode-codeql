@@ -8,7 +8,7 @@ import { IsomorphicResponse } from "@mswjs/interceptors";
 import { Headers } from "headers-polyfill";
 import fetch from "node-fetch";
 
-import { DisposableObject } from "../../../pure/disposable-object";
+import { DisposableObject } from "../../../common/disposable-object";
 
 import {
   GetVariantAnalysisRepoResultRequest,
@@ -241,6 +241,20 @@ async function createGitHubApiRequest(
         status,
         body: responseBuffer,
         contentType: headers.get("content-type") ?? "application/octet-stream",
+      },
+    };
+  }
+
+  const codeSearchMatch = url.match(/\/search\/code\?q=(?<query>.*)$/);
+  if (codeSearchMatch?.groups?.query) {
+    return {
+      request: {
+        kind: RequestKind.CodeSearch,
+        query: codeSearchMatch?.groups?.query,
+      },
+      response: {
+        status,
+        body: JSON.parse(body),
       },
     };
   }

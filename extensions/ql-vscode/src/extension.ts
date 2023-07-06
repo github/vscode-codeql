@@ -36,12 +36,12 @@ import {
 import {
   AstViewer,
   install,
-  spawnIdeServer,
   getQueryEditorCommands,
   TemplatePrintAstProvider,
   TemplatePrintCfgProvider,
   TemplateQueryDefinitionProvider,
   TemplateQueryReferenceProvider,
+  createIDEServer,
 } from "./language-support";
 import { DatabaseManager } from "./databases/local-databases";
 import { DatabaseUI } from "./databases/local-databases-ui";
@@ -56,7 +56,7 @@ import {
   GithubRateLimitedError,
 } from "./codeql-cli/distribution";
 import { tmpDir, tmpDirDisposal } from "./tmp-dir";
-import { prepareCodeTour } from "./code-tour";
+import { prepareCodeTour } from "./code-tour/code-tour";
 import {
   showBinaryChoiceDialog,
   showInformationMessageWithAction,
@@ -66,7 +66,7 @@ import {
   assertNever,
   getErrorMessage,
   getErrorStack,
-} from "./pure/helpers-pure";
+} from "./common/helpers-pure";
 import {
   ResultsView,
   WebviewReveal,
@@ -75,12 +75,17 @@ import {
 } from "./local-queries";
 import {
   BaseLogger,
+  showAndLogExceptionWithTelemetry,
+  showAndLogErrorMessage,
+  showAndLogInformationMessage,
+  showAndLogWarningMessage,
+} from "./common/logging";
+import {
   extLogger,
   ideServerLogger,
   ProgressReporter,
   queryServerLogger,
-} from "./common";
-import { showAndLogExceptionWithTelemetry } from "./common/vscode/logging";
+} from "./common/logging/vscode";
 import { QueryHistoryManager } from "./query-history/query-history-manager";
 import { CompletedLocalQueryInfo } from "./query-results";
 import {
@@ -90,7 +95,10 @@ import {
 import { QLTestAdapterFactory } from "./query-testing/test-adapter";
 import { TestUIService } from "./query-testing/test-ui";
 import { CompareView } from "./compare/compare-view";
-import { initializeTelemetry } from "./telemetry";
+import {
+  initializeTelemetry,
+  telemetryListener,
+} from "./common/vscode/telemetry";
 import { ProgressCallback, withProgress } from "./common/vscode/progress";
 import { CodeQlStatusBarHandler } from "./status-bar";
 import { getPackagingCommands } from "./packaging";
@@ -107,7 +115,7 @@ import { VSCodeMockGitHubApiServer } from "./variant-analysis/gh-api/mocks/vscod
 import { VariantAnalysisResultsManager } from "./variant-analysis/variant-analysis-results-manager";
 import { ExtensionApp } from "./common/vscode/vscode-app";
 import { DbModule } from "./databases/db-module";
-import { redactableError } from "./pure/errors";
+import { redactableError } from "./common/errors";
 import { QLDebugAdapterDescriptorFactory } from "./debugger/debugger-factory";
 import { QueryHistoryDirs } from "./query-history/query-history-dirs";
 import {
@@ -126,11 +134,6 @@ import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
-import {
-  showAndLogErrorMessage,
-  showAndLogInformationMessage,
-  showAndLogWarningMessage,
-} from "./common/logging";
 
 /**
  * extension.ts
@@ -900,24 +903,7 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(tmpDirDisposal);
 
   void extLogger.log("Initializing CodeQL language server.");
-  const client = new LanguageClient(
-    "codeQL.lsp",
-    "CodeQL Language Server",
-    () => spawnIdeServer(qlConfigurationListener),
-    {
-      documentSelector: [
-        { language: "ql", scheme: "file" },
-        { language: "yaml", scheme: "file", pattern: "**/qlpack.yml" },
-        { language: "yaml", scheme: "file", pattern: "**/codeql-pack.yml" },
-      ],
-      synchronize: {
-        configurationSection: "codeQL",
-      },
-      // Ensure that language server exceptions are logged to the same channel as its output.
-      outputChannel: ideServerLogger.outputChannel,
-    },
-    true,
-  );
+  const ideServer = createIDEServer(qlConfigurationListener);
 
   const localQueries = new LocalQueries(
     app,
@@ -999,7 +985,7 @@ async function activateWithInstalledDistribution(
   void extLogger.log("Registering top-level command palette commands.");
 
   const allCommands: AllExtensionCommands = {
-    ...getCommands(app, cliServer, qs, client),
+    ...getCommands(app, cliServer, qs, ideServer),
     ...getQueryEditorCommands({
       commandManager: app.commands,
       queryRunner: qs,
@@ -1045,12 +1031,23 @@ async function activateWithInstalledDistribution(
   }
 
   void extLogger.log("Starting language server.");
-  await client.start();
+  await ideServer.start();
   ctx.subscriptions.push({
     dispose: () => {
-      void client.stop();
+      void ideServer.stop();
     },
   });
+
+  // Handle visibility changes in the ideserver
+  if (await cliServer.cliConstraints.supportsVisibilityNotifications()) {
+    Window.onDidChangeVisibleTextEditors((editors) => {
+      ideServer.notifyVisibilityChange(editors);
+    });
+    // Send an inital notification to the language server
+    // to set the initial state of the visible editors.
+    ideServer.notifyVisibilityChange(Window.visibleTextEditors);
+  }
+
   // Jump-to-definition and find-references
   void extLogger.log("Registering jump-to-definition handlers.");
 
@@ -1134,6 +1131,7 @@ async function showResultsForComparison(
   } catch (e) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
+      telemetryListener,
       redactableError(asError(e))`Failed to show results: ${getErrorMessage(
         e,
       )}`,
@@ -1159,16 +1157,16 @@ function addUnhandledRejectionListener() {
       )`Unhandled error: ${getErrorMessage(error)}`;
       // Add a catch so that showAndLogExceptionWithTelemetry fails, we avoid
       // triggering "unhandledRejection" and avoid an infinite loop
-      showAndLogExceptionWithTelemetry(extLogger, message).catch(
-        (telemetryError: unknown) => {
-          void extLogger.log(
-            `Failed to send error telemetry: ${getErrorMessage(
-              telemetryError,
-            )}`,
-          );
-          void extLogger.log(message.fullMessage);
-        },
-      );
+      showAndLogExceptionWithTelemetry(
+        extLogger,
+        telemetryListener,
+        message,
+      ).catch((telemetryError: unknown) => {
+        void extLogger.log(
+          `Failed to send error telemetry: ${getErrorMessage(telemetryError)}`,
+        );
+        void extLogger.log(message.fullMessage);
+      });
     }
   };
 

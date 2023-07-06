@@ -3,24 +3,20 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ShowProgressMessage,
   ToDataExtensionsEditorMessage,
-} from "../../pure/interface-types";
-import {
-  VSCodeButton,
-  VSCodeDataGrid,
-  VSCodeDataGridCell,
-  VSCodeDataGridRow,
-} from "@vscode/webview-ui-toolkit/react";
+} from "../../common/interface-types";
+import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
-import { MethodRow } from "./MethodRow";
-import { assertNever } from "../../pure/helpers-pure";
+import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
-import { calculateModeledPercentage } from "./modeled";
+import { calculateModeledPercentage } from "../../data-extensions-editor/shared/modeled-percentage";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
-import { basename } from "../common/path";
 import { ViewTitle } from "../common";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
+import { ModeledMethodsList } from "./ModeledMethodsList";
+import { percentFormatter } from "./formatters";
+import { Mode } from "../../data-extensions-editor/shared/mode";
 
 const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -32,14 +28,14 @@ const DetailsContainer = styled.div`
   align-items: center;
 `;
 
-const NonExistingModelFileContainer = styled.div`
-  display: flex;
-  gap: 0.2em;
-  align-items: center;
-`;
-
 const EditorContainer = styled.div`
   margin-top: 1rem;
+`;
+
+const ButtonsContainer = styled.div`
+  display: flex;
+  gap: 0.4em;
+  margin-bottom: 1rem;
 `;
 
 type ProgressBarProps = {
@@ -71,6 +67,8 @@ export function DataExtensionsEditor({
   const [externalApiUsages, setExternalApiUsages] = useState<
     ExternalApiUsage[]
   >(initialExternalApiUsages);
+  const [unsavedModels, setUnsavedModels] = useState<Set<string>>(new Set());
+
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
   >(initialModeledMethods);
@@ -90,6 +88,7 @@ export function DataExtensionsEditor({
             break;
           case "setExternalApiUsages":
             setExternalApiUsages(msg.externalApiUsages);
+            setUnsavedModels(new Set());
             break;
           case "showProgress":
             setProgress(msg);
@@ -134,14 +133,23 @@ export function DataExtensionsEditor({
   const unModeledPercentage = 100 - modeledPercentage;
 
   const onChange = useCallback(
-    (method: ExternalApiUsage, model: ModeledMethod) => {
+    (modelName: string, method: ExternalApiUsage, model: ModeledMethod) => {
       setModeledMethods((oldModeledMethods) => ({
         ...oldModeledMethods,
         [method.signature]: model,
       }));
+      setUnsavedModels(
+        (oldUnsavedModels) => new Set([...oldUnsavedModels, modelName]),
+      );
     },
     [],
   );
+
+  const onRefreshClick = useCallback(() => {
+    vscode.postMessage({
+      t: "refreshExternalApiUsages",
+    });
+  }, []);
 
   const onApplyClick = useCallback(() => {
     vscode.postMessage({
@@ -171,11 +179,15 @@ export function DataExtensionsEditor({
     });
   }, []);
 
-  const onOpenModelFileClick = useCallback(() => {
+  const onSwitchModeClick = useCallback(() => {
+    const newMode =
+      viewState?.mode === Mode.Framework ? Mode.Application : Mode.Framework;
+
     vscode.postMessage({
-      t: "openModelFile",
+      t: "switchMode",
+      mode: newMode,
     });
-  }, []);
+  }, [viewState?.mode]);
 
   return (
     <DataExtensionsEditorContainer>
@@ -190,81 +202,69 @@ export function DataExtensionsEditor({
         <>
           <ViewTitle>Data extensions editor</ViewTitle>
           <DetailsContainer>
-            {viewState?.extensionPackModelFile && (
+            {viewState?.extensionPack && (
               <>
                 <LinkIconButton onClick={onOpenExtensionPackClick}>
                   <span slot="start" className="codicon codicon-package"></span>
-                  {viewState.extensionPackModelFile.extensionPack.name}
+                  {viewState.extensionPack.name}
                 </LinkIconButton>
-                {viewState.modelFileExists ? (
-                  <LinkIconButton onClick={onOpenModelFileClick}>
-                    <span
-                      slot="start"
-                      className="codicon codicon-file-code"
-                    ></span>
-                    {basename(viewState.extensionPackModelFile.filename)}
-                  </LinkIconButton>
-                ) : (
-                  <NonExistingModelFileContainer>
-                    <span className="codicon codicon-file-code"></span>
-                    {basename(viewState.extensionPackModelFile.filename)}
-                  </NonExistingModelFileContainer>
-                )}
               </>
             )}
-            <div>{modeledPercentage.toFixed(2)}% modeled</div>
-            <div>{unModeledPercentage.toFixed(2)}% unmodeled</div>
+            <div>
+              {percentFormatter.format(modeledPercentage / 100)} modeled
+            </div>
+            <div>
+              {percentFormatter.format(unModeledPercentage / 100)} unmodeled
+            </div>
+            {viewState?.enableFrameworkMode && (
+              <>
+                <div>
+                  Mode:{" "}
+                  {viewState?.mode === Mode.Framework
+                    ? "Framework"
+                    : "Application"}
+                </div>
+                <div>
+                  <LinkIconButton onClick={onSwitchModeClick}>
+                    <span
+                      slot="start"
+                      className="codicon codicon-library"
+                    ></span>
+                    Switch mode
+                  </LinkIconButton>
+                </div>
+              </>
+            )}
           </DetailsContainer>
 
           <EditorContainer>
-            <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
-            &nbsp;
-            <VSCodeButton onClick={onGenerateClick}>
-              Download and generate
-            </VSCodeButton>
-            {viewState?.showLlmButton && (
-              <>
-                &nbsp;
-                <VSCodeButton onClick={onGenerateFromLlmClick}>
-                  Generate using LLM
+            <ButtonsContainer>
+              <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+              {viewState?.enableFrameworkMode && (
+                <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
+                  Refresh
                 </VSCodeButton>
-              </>
-            )}
-            <br />
-            <br />
-            <VSCodeDataGrid>
-              <VSCodeDataGridRow rowType="header">
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
-                  Type
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
-                  Method
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
-                  Usages
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
-                  Model type
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
-                  Input
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
-                  Output
-                </VSCodeDataGridCell>
-                <VSCodeDataGridCell cellType="columnheader" gridColumn={7}>
-                  Kind
-                </VSCodeDataGridCell>
-              </VSCodeDataGridRow>
-              {externalApiUsages.map((externalApiUsage) => (
-                <MethodRow
-                  key={externalApiUsage.signature}
-                  externalApiUsage={externalApiUsage}
-                  modeledMethod={modeledMethods[externalApiUsage.signature]}
-                  onChange={onChange}
-                />
-              ))}
-            </VSCodeDataGrid>
+              )}
+              <VSCodeButton onClick={onGenerateClick}>
+                {viewState?.mode === Mode.Framework
+                  ? "Generate"
+                  : "Download and generate"}
+              </VSCodeButton>
+              {viewState?.showLlmButton && (
+                <>
+                  <VSCodeButton onClick={onGenerateFromLlmClick}>
+                    Generate using LLM
+                  </VSCodeButton>
+                </>
+              )}
+            </ButtonsContainer>
+            <ModeledMethodsList
+              externalApiUsages={externalApiUsages}
+              unsavedModels={unsavedModels}
+              modeledMethods={modeledMethods}
+              mode={viewState?.mode ?? Mode.Application}
+              onChange={onChange}
+            />
           </EditorContainer>
         </>
       )}

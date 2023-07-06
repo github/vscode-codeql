@@ -1,7 +1,7 @@
 import { join } from "path";
 import * as vscode from "vscode";
 
-import { extLogger } from "../../../../src/common";
+import { extLogger } from "../../../../src/common/logging/vscode";
 import { QueryHistoryManager } from "../../../../src/query-history/query-history-manager";
 import { QueryHistoryConfigListener } from "../../../../src/config";
 import { LocalQueryInfo } from "../../../../src/query-results";
@@ -20,7 +20,7 @@ import {
 import { shuffleHistoryItems } from "../../utils/query-history-helpers";
 import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
 import { VariantAnalysisHistoryItem } from "../../../../src/query-history/variant-analysis-history-item";
-import { QueryStatus } from "../../../../src/query-status";
+import { QueryStatus } from "../../../../src/query-history/query-status";
 import { VariantAnalysisStatus } from "../../../../src/variant-analysis/shared/variant-analysis";
 import * as dialog from "../../../../src/common/vscode/dialog";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";

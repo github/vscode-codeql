@@ -2,11 +2,11 @@ import { join, resolve } from "path";
 import { pathExists } from "fs-extra";
 import { setupServer, SetupServer } from "msw/node";
 
-import { DisposableObject } from "../../../pure/disposable-object";
+import { DisposableObject } from "../../../common/disposable-object";
 
 import { Recorder } from "./recorder";
 import { createRequestHandlers } from "./request-handlers";
-import { getDirectoryNamesInsidePath } from "../../../pure/files";
+import { getDirectoryNamesInsidePath } from "../../../common/files";
 
 /**
  * Enables mocking of the GitHub API server via HTTP interception, using msw.

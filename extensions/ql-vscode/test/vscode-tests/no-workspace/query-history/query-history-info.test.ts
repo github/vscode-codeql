@@ -1,4 +1,4 @@
-import { QueryStatus } from "../../../../src/query-status";
+import { QueryStatus } from "../../../../src/query-history/query-status";
 import {
   buildRepoLabel,
   getActionsWorkflowRunUrl,

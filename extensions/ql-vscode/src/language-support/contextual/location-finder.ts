@@ -7,7 +7,7 @@ import {
   EntityValue,
   getResultSetSchema,
   ResultSetSchema,
-} from "../../pure/bqrs-cli-types";
+} from "../../common/bqrs-cli-types";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseManager, DatabaseItem } from "../../databases/local-databases";
 import { ProgressCallback } from "../../common/vscode/progress";
@@ -20,7 +20,7 @@ import {
 import { CancellationToken, LocationLink, Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
 import { QueryRunner } from "../../query-server";
-import { QueryResultType } from "../../pure/new-messages";
+import { QueryResultType } from "../../query-server/new-messages";
 import { fileRangeFromURI } from "./file-range-from-uri";
 
 export const SELECT_QUERY_NAME = "#select";

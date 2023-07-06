@@ -1,4 +1,4 @@
-import { extLogger } from "../../../../src/common";
+import { extLogger } from "../../../../src/common/logging/vscode";
 import * as fs from "fs-extra";
 import { join, resolve } from "path";
 import { Readable } from "stream";

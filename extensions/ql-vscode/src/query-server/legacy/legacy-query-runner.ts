@@ -1,13 +1,13 @@
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { ProgressCallback } from "../../common/vscode/progress";
-import { Logger } from "../../common";
+import { Logger } from "../../common/logging";
 import { DatabaseItem } from "../../databases/local-databases";
 import {
   Dataset,
   deregisterDatabases,
   registerDatabases,
-} from "../../pure/legacy-messages";
+} from "../legacy-messages";
 import {
   CoreQueryResults,
   CoreQueryTarget,
@@ -55,10 +55,9 @@ export class LegacyQueryRunner extends QueryRunner {
   }
   async clearCacheInDatabase(
     dbItem: DatabaseItem,
-    progress: ProgressCallback,
     token: CancellationToken,
   ): Promise<void> {
-    await clearCacheInDatabase(this.qs, dbItem, progress, token);
+    await clearCacheInDatabase(this.qs, dbItem, token);
   }
 
   public async compileAndRunQueryAgainstDatabaseCore(
@@ -88,11 +87,7 @@ export class LegacyQueryRunner extends QueryRunner {
     );
   }
 
-  async deregisterDatabase(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    dbItem: DatabaseItem,
-  ): Promise<void> {
+  async deregisterDatabase(dbItem: DatabaseItem): Promise<void> {
     if (dbItem.contents) {
       const databases: Dataset[] = [
         {
@@ -100,19 +95,10 @@ export class LegacyQueryRunner extends QueryRunner {
           workingSet: "default",
         },
       ];
-      await this.qs.sendRequest(
-        deregisterDatabases,
-        { databases },
-        token,
-        progress,
-      );
+      await this.qs.sendRequest(deregisterDatabases, { databases });
     }
   }
-  async registerDatabase(
-    progress: ProgressCallback,
-    token: CancellationToken,
-    dbItem: DatabaseItem,
-  ): Promise<void> {
+  async registerDatabase(dbItem: DatabaseItem): Promise<void> {
     if (dbItem.contents) {
       const databases: Dataset[] = [
         {
@@ -120,12 +106,7 @@ export class LegacyQueryRunner extends QueryRunner {
           workingSet: "default",
         },
       ];
-      await this.qs.sendRequest(
-        registerDatabases,
-        { databases },
-        token,
-        progress,
-      );
+      await this.qs.sendRequest(registerDatabases, { databases });
     }
   }
 

@@ -18,7 +18,10 @@ import {
   SelectedDbItemKind,
 } from "./db-config";
 import * as chokidar from "chokidar";
-import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
+import {
+  DisposableObject,
+  DisposeHandler,
+} from "../../common/disposable-object";
 import { DbConfigValidator } from "./db-config-validator";
 import { App } from "../../common/app";
 import { AppEvent, AppEventEmitter } from "../../common/events";
