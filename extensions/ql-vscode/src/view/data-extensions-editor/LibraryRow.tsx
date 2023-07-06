@@ -71,6 +71,7 @@ const ButtonsContainer = styled.div`
   gap: 0.4em;
   justify-content: right;
   margin-bottom: 1rem;
+  margin-right: 1rem;
 `;
 
 type Props = {
