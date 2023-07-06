@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import {
   CellValue,

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useMemo } from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 
 import { parseDate } from "../../common/date";
 import { humanizeRelativeTime } from "../../common/time";

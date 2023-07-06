@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useCallback, useEffect } from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
 
 import type { ModeledMethod } from "../../data-extensions-editor/modeled-method";

@@ -5,7 +5,7 @@ import {
   ToDataExtensionsEditorMessage,
 } from "../../common/interface-types";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { assertNever } from "../../common/helpers-pure";
