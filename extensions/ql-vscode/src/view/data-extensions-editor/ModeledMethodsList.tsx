@@ -11,9 +11,11 @@ import {
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
+  unsavedModels: Set<string>;
   modeledMethods: Record<string, ModeledMethod>;
   mode: Mode;
   onChange: (
+    modelName: string,
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
   ) => void;
@@ -21,6 +23,7 @@ type Props = {
 
 export const ModeledMethodsList = ({
   externalApiUsages,
+  unsavedModels,
   modeledMethods,
   mode,
   onChange,
@@ -39,9 +42,9 @@ export const ModeledMethodsList = ({
           key={libraryName}
           title={libraryName}
           externalApiUsages={grouped[libraryName]}
+          hasUnsavedChanges={unsavedModels.has(libraryName)}
           modeledMethods={modeledMethods}
           mode={mode}
-          hasUnsavedChanges={false}
           onChange={onChange}
         />
       ))}
