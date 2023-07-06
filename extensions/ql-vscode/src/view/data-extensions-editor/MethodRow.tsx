@@ -2,12 +2,10 @@ import {
   VSCodeCheckbox,
   VSCodeDataGridCell,
   VSCodeDataGridRow,
-  VSCodeDropdown,
   VSCodeLink,
-  VSCodeOption,
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
-import { useCallback, useMemo } from "react";
+import { ChangeEvent, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import { vscode } from "../vscode-api";
 
@@ -20,10 +18,7 @@ import {
 import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../data-extensions-editor/predicates";
 import { Mode } from "../../data-extensions-editor/shared/mode";
-
-const Dropdown = styled(VSCodeDropdown)`
-  width: 100%;
-`;
+import { Dropdown } from "../common/Dropdown";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -66,9 +61,7 @@ export const MethodRow = ({
   }, [externalApiUsage.methodParameters]);
 
   const handleTypeInput = useCallback(
-    (e: InputEvent) => {
-      const target = e.target as HTMLSelectElement;
-
+    (e: ChangeEvent<HTMLSelectElement>) => {
       let newProvenance: Provenance = "manual";
       if (modeledMethod?.provenance === "df-generated") {
         newProvenance = "df-manual";
@@ -82,14 +75,14 @@ export const MethodRow = ({
         output: "ReturnType",
         kind: "value",
         ...modeledMethod,
-        type: target.value as ModeledMethodType,
+        type: e.target.value as ModeledMethodType,
         provenance: newProvenance,
       });
     },
     [onChange, externalApiUsage, modeledMethod, argumentsList],
   );
   const handleInputInput = useCallback(
-    (e: InputEvent) => {
+    (e: ChangeEvent<HTMLSelectElement>) => {
       if (!modeledMethod) {
         return;
       }
@@ -104,7 +97,7 @@ export const MethodRow = ({
     [onChange, externalApiUsage, modeledMethod],
   );
   const handleOutputInput = useCallback(
-    (e: InputEvent) => {
+    (e: ChangeEvent<HTMLSelectElement>) => {
       if (!modeledMethod) {
         return;
       }
@@ -172,44 +165,56 @@ export const MethodRow = ({
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn={2}>
         <Dropdown
-          value={showModelTypeCell && (modeledMethod?.type ?? "none")}
+          value={showModelTypeCell ? modeledMethod?.type ?? "none" : undefined}
           disabled={!showModelTypeCell}
-          onInput={handleTypeInput}
+          onChange={handleTypeInput}
         >
-          <VSCodeOption value="none">Unmodeled</VSCodeOption>
-          <VSCodeOption value="source">Source</VSCodeOption>
-          <VSCodeOption value="sink">Sink</VSCodeOption>
-          <VSCodeOption value="summary">Flow summary</VSCodeOption>
-          <VSCodeOption value="neutral">Neutral</VSCodeOption>
+          {showModelTypeCell && (
+            <>
+              <option value="none">Unmodeled</option>
+              <option value="source">Source</option>
+              <option value="sink">Sink</option>
+              <option value="summary">Flow summary</option>
+              <option value="neutral">Neutral</option>
+            </>
+          )}
         </Dropdown>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={3}>
         <Dropdown
-          value={showInputCell && modeledMethod?.input}
+          value={showInputCell ? modeledMethod?.input : undefined}
           disabled={!showInputCell}
-          onInput={handleInputInput}
+          onChange={handleInputInput}
         >
-          <VSCodeOption value="Argument[this]">Argument[this]</VSCodeOption>
-          {argumentsList.map((argument, index) => (
-            <VSCodeOption key={argument} value={`Argument[${index}]`}>
-              Argument[{index}]: {argument}
-            </VSCodeOption>
-          ))}
+          {showInputCell && (
+            <>
+              <option value="Argument[this]">Argument[this]</option>
+              {argumentsList.map((argument, index) => (
+                <option key={argument} value={`Argument[${index}]`}>
+                  Argument[{index}]: {argument}
+                </option>
+              ))}
+            </>
+          )}
         </Dropdown>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={4}>
         <Dropdown
-          value={showOutputCell && modeledMethod?.output}
+          value={showOutputCell ? modeledMethod?.output : undefined}
           disabled={!showOutputCell}
-          onInput={handleOutputInput}
+          onChange={handleOutputInput}
         >
-          <VSCodeOption value="ReturnValue">ReturnValue</VSCodeOption>
-          <VSCodeOption value="Argument[this]">Argument[this]</VSCodeOption>
-          {argumentsList.map((argument, index) => (
-            <VSCodeOption key={argument} value={`Argument[${index}]`}>
-              Argument[{index}]: {argument}
-            </VSCodeOption>
-          ))}
+          {showOutputCell && (
+            <>
+              <option value="ReturnValue">ReturnValue</option>
+              <option value="Argument[this]">Argument[this]</option>
+              {argumentsList.map((argument, index) => (
+                <option key={argument} value={`Argument[${index}]`}>
+                  Argument[{index}]: {argument}
+                </option>
+              ))}
+            </>
+          )}
         </Dropdown>
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={5}>

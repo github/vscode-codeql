@@ -1,13 +1,8 @@
 import * as React from "react";
-import { useCallback, useEffect } from "react";
-import styled from "styled-components";
-import { VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react";
+import { ChangeEvent, useCallback, useEffect } from "react";
 
 import type { ModeledMethod } from "../../data-extensions-editor/modeled-method";
-
-const Dropdown = styled(VSCodeDropdown)`
-  width: 100%;
-`;
+import { Dropdown } from "../common/Dropdown";
 
 type Props = {
   kinds: Array<ModeledMethod["kind"]>;
@@ -19,7 +14,7 @@ type Props = {
 
 export const KindInput = ({ kinds, value, disabled, onChange }: Props) => {
   const handleInput = useCallback(
-    (e: InputEvent) => {
+    (e: ChangeEvent<HTMLSelectElement>) => {
       const target = e.target as HTMLSelectElement;
 
       onChange(target.value as ModeledMethod["kind"]);
@@ -38,12 +33,16 @@ export const KindInput = ({ kinds, value, disabled, onChange }: Props) => {
   }, [value, kinds, onChange]);
 
   return (
-    <Dropdown value={value} disabled={disabled} onInput={handleInput}>
-      {kinds.map((kind) => (
-        <VSCodeOption key={kind} value={kind}>
-          {kind}
-        </VSCodeOption>
-      ))}
+    <Dropdown value={value} disabled={disabled} onChange={handleInput}>
+      {!disabled && (
+        <>
+          {kinds.map((kind) => (
+            <option key={kind} value={kind}>
+              {kind}
+            </option>
+          ))}
+        </>
+      )}
     </Dropdown>
   );
 };
