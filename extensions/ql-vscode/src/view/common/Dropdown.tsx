@@ -5,9 +5,8 @@ import styled from "styled-components";
 const StyledDropdown = styled.select`
   width: 100%;
   height: calc(var(--input-height) * 1px);
-  background: var(--dropdown-background);
-  color: var(--foreground);
-  font-family: var(--font-family);
+  background: var(--vscode-dropdown-background);
+  color: var(--vscode-foreground);
   border: none;
   padding: 2px 6px 2px 8px;
 `;
