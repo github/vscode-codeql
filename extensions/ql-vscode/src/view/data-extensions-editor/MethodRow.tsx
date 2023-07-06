@@ -141,10 +141,44 @@ export const MethodRow = ({
   const showModelTypeCell =
     !externalApiUsage.supported ||
     (modeledMethod && modeledMethod?.type !== "none");
+  const modelTypeOptions = useMemo(
+    () => [
+      { value: "none", label: "Unmodeled" },
+      { value: "source", label: "Source" },
+      { value: "sink", label: "Sink" },
+      { value: "summary", label: "Flow summary" },
+      { value: "neutral", label: "Neutral" },
+    ],
+    [],
+  );
+
   const showInputCell =
     modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type);
+  const inputOptions = useMemo(
+    () => [
+      { value: "Argument[this]", label: "Argument[this]" },
+      ...argumentsList.map((argument, index) => ({
+        value: `Argument[${index}]`,
+        label: `Argument[${index}]: ${argument}`,
+      })),
+    ],
+    [argumentsList],
+  );
+
   const showOutputCell =
     modeledMethod?.type && ["source", "summary"].includes(modeledMethod?.type);
+  const outputOptions = useMemo(
+    () => [
+      { value: "ReturnValue", label: "ReturnValue" },
+      { value: "Argument[this]", label: "Argument[this]" },
+      ...argumentsList.map((argument, index) => ({
+        value: `Argument[${index}]`,
+        label: `Argument[${index}]: ${argument}`,
+      })),
+    ],
+    [argumentsList],
+  );
+
   const showKindCell = predicate?.supportedKinds;
 
   return (
@@ -165,62 +199,32 @@ export const MethodRow = ({
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn={2}>
         <Dropdown
-          value={showModelTypeCell ? modeledMethod?.type ?? "none" : undefined}
+          value={modeledMethod?.type ?? "none"}
+          options={modelTypeOptions}
           disabled={!showModelTypeCell}
           onChange={handleTypeInput}
-        >
-          {showModelTypeCell && (
-            <>
-              <option value="none">Unmodeled</option>
-              <option value="source">Source</option>
-              <option value="sink">Sink</option>
-              <option value="summary">Flow summary</option>
-              <option value="neutral">Neutral</option>
-            </>
-          )}
-        </Dropdown>
+        />
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={3}>
         <Dropdown
-          value={showInputCell ? modeledMethod?.input : undefined}
+          value={modeledMethod?.input}
+          options={inputOptions}
           disabled={!showInputCell}
           onChange={handleInputInput}
-        >
-          {showInputCell && (
-            <>
-              <option value="Argument[this]">Argument[this]</option>
-              {argumentsList.map((argument, index) => (
-                <option key={argument} value={`Argument[${index}]`}>
-                  Argument[{index}]: {argument}
-                </option>
-              ))}
-            </>
-          )}
-        </Dropdown>
+        />
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={4}>
         <Dropdown
-          value={showOutputCell ? modeledMethod?.output : undefined}
+          value={modeledMethod?.output}
+          options={outputOptions}
           disabled={!showOutputCell}
           onChange={handleOutputInput}
-        >
-          {showOutputCell && (
-            <>
-              <option value="ReturnValue">ReturnValue</option>
-              <option value="Argument[this]">Argument[this]</option>
-              {argumentsList.map((argument, index) => (
-                <option key={argument} value={`Argument[${index}]`}>
-                  Argument[{index}]: {argument}
-                </option>
-              ))}
-            </>
-          )}
-        </Dropdown>
+        />
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={5}>
         <KindInput
           kinds={predicate?.supportedKinds || []}
-          value={showKindCell && modeledMethod?.kind}
+          value={modeledMethod?.kind}
           disabled={!showKindCell}
           onChange={handleKindChange}
         />

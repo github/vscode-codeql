@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChangeEvent, useCallback, useEffect } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo } from "react";
 
 import type { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { Dropdown } from "../common/Dropdown";
@@ -13,6 +13,11 @@ type Props = {
 };
 
 export const KindInput = ({ kinds, value, disabled, onChange }: Props) => {
+  const options = useMemo(
+    () => kinds.map((kind) => ({ value: kind, label: kind })),
+    [kinds],
+  );
+
   const handleInput = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       const target = e.target as HTMLSelectElement;
@@ -33,16 +38,11 @@ export const KindInput = ({ kinds, value, disabled, onChange }: Props) => {
   }, [value, kinds, onChange]);
 
   return (
-    <Dropdown value={value} disabled={disabled} onChange={handleInput}>
-      {!disabled && (
-        <>
-          {kinds.map((kind) => (
-            <option key={kind} value={kind}>
-              {kind}
-            </option>
-          ))}
-        </>
-      )}
-    </Dropdown>
+    <Dropdown
+      value={value}
+      options={options}
+      disabled={disabled}
+      onChange={handleInput}
+    />
   );
 };
