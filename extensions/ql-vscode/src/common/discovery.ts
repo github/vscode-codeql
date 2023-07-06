@@ -1,5 +1,5 @@
-import { DisposableObject } from "../pure/disposable-object";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { DisposableObject } from "./disposable-object";
+import { getErrorMessage } from "./helpers-pure";
 import { Logger } from "./logging";
 
 /**
@@ -7,11 +7,14 @@ import { Logger } from "./logging";
  * files. This class automatically prevents more than one discovery operation from running at the
  * same time.
  */
-export abstract class Discovery<T> extends DisposableObject {
+export abstract class Discovery extends DisposableObject {
   private restartWhenFinished = false;
   private currentDiscoveryPromise: Promise<void> | undefined;
 
-  constructor(private readonly name: string, private readonly logger: Logger) {
+  constructor(
+    protected readonly name: string,
+    private readonly logger: Logger,
+  ) {
     super();
   }
 
@@ -64,14 +67,12 @@ export abstract class Discovery<T> extends DisposableObject {
    * discovery.
    */
   private async launchDiscovery(): Promise<void> {
-    let results: T | undefined;
     try {
-      results = await this.discover();
+      await this.discover();
     } catch (err) {
       void this.logger.log(
         `${this.name} failed. Reason: ${getErrorMessage(err)}`,
       );
-      results = undefined;
     }
 
     if (this.restartWhenFinished) {
@@ -82,24 +83,11 @@ export abstract class Discovery<T> extends DisposableObject {
       // succeeded or failed.
       this.restartWhenFinished = false;
       await this.launchDiscovery();
-    } else {
-      // If the discovery was successful, then update any listeners with the results.
-      if (results !== undefined) {
-        this.update(results);
-      }
     }
   }
 
   /**
    * Overridden by the derived class to spawn the actual discovery operation, returning the results.
    */
-  protected abstract discover(): Promise<T>;
-
-  /**
-   * Overridden by the derived class to atomically update the `Discovery` object with the results of
-   * the discovery operation, and to notify any listeners that the discovery results may have
-   * changed.
-   * @param results The discovery results returned by the `discover` function.
-   */
-  protected abstract update(results: T): void;
+  protected abstract discover(): Promise<void>;
 }

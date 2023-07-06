@@ -16,7 +16,7 @@ import {
   createMockScannedRepo,
   createMockScannedRepos,
 } from "../../../../test/factories/variant-analysis/shared/scanned-repositories";
-import { defaultFilterSortState } from "../../../pure/variant-analysis-filter-sort";
+import { defaultFilterSortState } from "../../../variant-analysis/shared/variant-analysis-filter-sort";
 
 describe(VariantAnalysisOutcomePanels.name, () => {
   const defaultVariantAnalysis = {

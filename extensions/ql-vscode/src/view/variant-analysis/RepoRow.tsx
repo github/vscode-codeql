@@ -8,7 +8,7 @@ import {
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryState,
 } from "../../variant-analysis/shared/variant-analysis";
-import { formatDecimal } from "../../pure/number";
+import { formatDecimal } from "../../common/number";
 import {
   Codicon,
   ErrorIcon,

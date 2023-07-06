@@ -1,10 +1,15 @@
 import { Event, EventEmitter, TreeDataProvider, TreeItem } from "vscode";
-import { QueryTreeViewItem } from "./query-tree-view-item";
-import { DisposableObject } from "../pure/disposable-object";
+import {
+  QueryTreeViewItem,
+  createQueryTreeFileItem,
+  createQueryTreeFolderItem,
+  createQueryTreeTextItem,
+} from "./query-tree-view-item";
+import { DisposableObject } from "../common/disposable-object";
 import { FileTreeNode } from "../common/file-tree-nodes";
 
 export interface QueryDiscoverer {
-  readonly queries: Array<FileTreeNode<string>> | undefined;
+  readonly buildQueryTree: () => Array<FileTreeNode<string>> | undefined;
   readonly onDidChangeQueries: Event<void>;
 }
 
@@ -34,19 +39,37 @@ export class QueryTreeDataProvider
   }
 
   private createTree(): QueryTreeViewItem[] {
-    return (this.queryDiscoverer.queries || []).map(
-      this.convertFileTreeNode.bind(this),
-    );
+    const queryTree = this.queryDiscoverer.buildQueryTree();
+    if (queryTree === undefined) {
+      return [];
+    } else if (queryTree.length === 0) {
+      return [this.noQueriesTreeViewItem()];
+    } else {
+      return queryTree.map(this.convertFileTreeNode.bind(this));
+    }
   }
 
   private convertFileTreeNode(
     fileTreeDirectory: FileTreeNode<string>,
   ): QueryTreeViewItem {
-    return new QueryTreeViewItem(
-      fileTreeDirectory.name,
-      fileTreeDirectory.path,
-      fileTreeDirectory.data,
-      fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),
+    if (fileTreeDirectory.children.length === 0) {
+      return createQueryTreeFileItem(
+        fileTreeDirectory.name,
+        fileTreeDirectory.path,
+        fileTreeDirectory.data,
+      );
+    } else {
+      return createQueryTreeFolderItem(
+        fileTreeDirectory.name,
+        fileTreeDirectory.path,
+        fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),
+      );
+    }
+  }
+
+  private noQueriesTreeViewItem(): QueryTreeViewItem {
+    return createQueryTreeTextItem(
+      "This workspace doesn't contain any CodeQL queries at the moment.",
     );
   }
 

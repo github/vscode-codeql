@@ -1,6 +1,6 @@
 import { window as Window, OutputChannel, Progress } from "vscode";
 import { Logger, LogOptions } from "../logger";
-import { DisposableObject } from "../../../pure/disposable-object";
+import { DisposableObject } from "../../disposable-object";
 import { NotificationLogger } from "../notification-logger";
 
 /**

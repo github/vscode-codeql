@@ -4,7 +4,7 @@ import {
   FromResultsViewMsg,
   FromVariantAnalysisMessage,
   VariantAnalysisState,
-} from "../pure/interface-types";
+} from "../common/interface-types";
 
 export interface VsCodeApi {
   /**

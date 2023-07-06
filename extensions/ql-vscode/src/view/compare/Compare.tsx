@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import {
   ToCompareViewMessage,
   SetComparisonsMessage,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import CompareSelector from "./CompareSelector";
 import { vscode } from "../vscode-api";
 import CompareTable from "./CompareTable";

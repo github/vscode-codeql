@@ -22,7 +22,7 @@ import {
   assertNever,
   getErrorMessage,
   getErrorStack,
-} from "../pure/helpers-pure";
+} from "../common/helpers-pure";
 import {
   FromResultsViewMsg,
   Interpretation,
@@ -39,9 +39,9 @@ import {
   NavigationDirection,
   getDefaultResultSetName,
   ParsedResultSets,
-} from "../pure/interface-types";
-import { extLogger, Logger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+} from "../common/interface-types";
+import { extLogger } from "../common/logging/vscode";
+import { Logger, showAndLogExceptionWithTelemetry } from "../common/logging";
 import {
   CompletedQueryInfo,
   interpretResultsSarif,
@@ -52,7 +52,7 @@ import { QueryEvaluationInfo } from "../run-queries-shared";
 import {
   parseSarifLocation,
   parseSarifPlainTextMessage,
-} from "../pure/sarif-utils";
+} from "../common/sarif-utils";
 import { WebviewReveal, fileUriToWebviewUri } from "./webview";
 import {
   tryResolveLocation,
@@ -64,15 +64,15 @@ import {
   RawResultSet,
   transformBqrsResultSet,
   ResultSetSchema,
-} from "../pure/bqrs-cli-types";
+} from "../common/bqrs-cli-types";
 import {
   AbstractWebview,
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
 import { isCanary, PAGE_SIZE } from "../config";
 import { HistoryItemLabelProvider } from "../query-history/history-item-label-provider";
-import { telemetryListener } from "../telemetry";
-import { redactableError } from "../pure/errors";
+import { telemetryListener } from "../common/vscode/telemetry";
+import { redactableError } from "../common/errors";
 import { ResultsViewCommands } from "../common/commands";
 
 /**
@@ -320,6 +320,7 @@ export class ResultsView extends AbstractWebview<
         case "unhandledError":
           void showAndLogExceptionWithTelemetry(
             extLogger,
+            telemetryListener,
             redactableError(
               msg.error,
             )`Unhandled error in results view: ${msg.error.message}`,
@@ -331,6 +332,7 @@ export class ResultsView extends AbstractWebview<
     } catch (e) {
       void showAndLogExceptionWithTelemetry(
         extLogger,
+        telemetryListener,
         redactableError(
           asError(e),
         )`Error handling message from results view: ${getErrorMessage(e)}`,
@@ -381,6 +383,7 @@ export class ResultsView extends AbstractWebview<
     if (this._displayedQuery === undefined) {
       void showAndLogExceptionWithTelemetry(
         extLogger,
+        telemetryListener,
         redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
@@ -400,6 +403,7 @@ export class ResultsView extends AbstractWebview<
     if (this._displayedQuery === undefined) {
       void showAndLogExceptionWithTelemetry(
         extLogger,
+        telemetryListener,
         redactableError`Failed to sort results since evaluation info was unknown.`,
       );
       return;
@@ -811,6 +815,7 @@ export class ResultsView extends AbstractWebview<
         // trying to render uninterpreted results anyway.
         void showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(
             asError(e),
           )`Showing raw results instead of interpreted ones due to an error. ${getErrorMessage(

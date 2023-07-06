@@ -5,10 +5,10 @@ import {
   Interpretation,
   IntoResultsViewMsg,
   SortDirection,
-} from "../../../pure/interface-types";
+} from "../../../common/interface-types";
 import * as fs from "fs-extra";
 import { resolve } from "path";
-import { ColumnKindCode } from "../../../pure/bqrs-cli-types";
+import { ColumnKindCode } from "../../../common/bqrs-cli-types";
 import { postMessage } from "../../common/post-message";
 
 const exampleSarif = fs.readJSONSync(

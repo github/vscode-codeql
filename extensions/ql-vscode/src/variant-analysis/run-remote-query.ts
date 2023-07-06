@@ -7,7 +7,7 @@ import { tmpDir } from "../tmp-dir";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { Credentials } from "../common/authentication";
 import * as cli from "../codeql-cli/cli";
-import { extLogger } from "../common";
+import { extLogger } from "../common/logging/vscode";
 import {
   getActionBranch,
   getRemoteControllerRepo,
@@ -18,8 +18,8 @@ import {
   UserCancellationException,
 } from "../common/vscode/progress";
 import { RequestError } from "@octokit/types/dist-types";
-import { QueryMetadata } from "../pure/interface-types";
-import { getErrorMessage, REPO_REGEX } from "../pure/helpers-pure";
+import { QueryMetadata } from "../common/interface-types";
+import { getErrorMessage, REPO_REGEX } from "../common/helpers-pure";
 import { getRepositoryFromNwo } from "./gh-api/gh-api-client";
 import {
   getRepositorySelection,
@@ -33,7 +33,7 @@ import {
   FALLBACK_QLPACK_FILENAME,
   QLPACK_FILENAMES,
   QLPACK_LOCK_FILENAMES,
-} from "../pure/ql";
+} from "../common/ql";
 import { QueryLanguage } from "../common/query-language";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { askForLanguage, findLanguage } from "../codeql-cli/query-language";

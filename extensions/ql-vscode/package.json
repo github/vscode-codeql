@@ -4,7 +4,7 @@
   "description": "CodeQL for Visual Studio Code",
   "author": "GitHub",
   "private": true,
-  "version": "1.8.7",
+  "version": "1.8.8",
   "publisher": "GitHub",
   "license": "MIT",
   "icon": "media/VS-marketplace-CodeQL-icon.png",
@@ -458,6 +458,10 @@
         "title": "CodeQL: Quick Evaluation"
       },
       {
+        "command": "codeQL.quickEvalCount",
+        "title": "CodeQL: Quick Evaluation Count"
+      },
+      {
         "command": "codeQL.quickEvalContextEditor",
         "title": "CodeQL: Quick Evaluation"
       },
@@ -500,6 +504,33 @@
       {
         "command": "codeQL.copyVersion",
         "title": "CodeQL: Copy Version Information"
+      },
+      {
+        "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
+        "title": "Run local query",
+        "icon": "$(run)"
+      },
+      {
+        "command": "codeQLQueries.runLocalQueriesFromPanel",
+        "title": "Run local queries",
+        "icon": "$(run-all)"
+      },
+      {
+        "command": "codeQL.runLocalQueryFromFileTab",
+        "title": "CodeQL: Run local query",
+        "icon": "$(run)"
+      },
+      {
+        "command": "codeQLQueries.runLocalQueryContextMenu",
+        "title": "Run against local database"
+      },
+      {
+        "command": "codeQLQueries.runLocalQueriesContextMenu",
+        "title": "Run against local database"
+      },
+      {
+        "command": "codeQLQueries.runVariantAnalysisContextMenu",
+        "title": "Run against variant analysis repositories"
       },
       {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
@@ -872,6 +903,13 @@
       }
     ],
     "menus": {
+      "editor/title": [
+        {
+          "command": "codeQL.runLocalQueryFromFileTab",
+          "group": "navigation",
+          "when": "resourceExtname == .ql && codeQL.currentDatabaseItem"
+        }
+      ],
       "view/title": [
         {
           "command": "codeQLDatabases.sortByName",
@@ -1096,6 +1134,31 @@
           "when": "viewItem == remoteResultsItem"
         },
         {
+          "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
+          "group": "inline",
+          "when": "view == codeQLQueries && viewItem == queryFile && codeQL.currentDatabaseItem"
+        },
+        {
+          "command": "codeQLQueries.runLocalQueryContextMenu",
+          "group": "queriesPanel@1",
+          "when": "view == codeQLQueries && viewItem == queryFile && codeQL.currentDatabaseItem"
+        },
+        {
+          "command": "codeQLQueries.runLocalQueriesContextMenu",
+          "group": "queriesPanel@1",
+          "when": "view == codeQLQueries && viewItem == queryFolder && codeQL.currentDatabaseItem"
+        },
+        {
+          "command": "codeQLQueries.runVariantAnalysisContextMenu",
+          "group": "queriesPanel@1",
+          "when": "view == codeQLQueries && viewItem == queryFile"
+        },
+        {
+          "command": "codeQLQueries.runLocalQueriesFromPanel",
+          "group": "inline",
+          "when": "view == codeQLQueries && viewItem == queryFolder && codeQL.currentDatabaseItem"
+        },
+        {
           "command": "codeQLTests.showOutputDifferences",
           "group": "qltest@1",
           "when": "viewItem == testWithSource"
@@ -1155,6 +1218,18 @@
           "when": "resourceLangId == ql && resourceExtname == .ql"
         },
         {
+          "command": "codeQLQueries.runLocalQueryFromQueriesPanel",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueries.runLocalQueriesFromPanel",
+          "when": "false"
+        },
+        {
+          "command": "codeQL.runLocalQueryFromFileTab",
+          "when": "false"
+        },
+        {
           "command": "codeQL.runQueryContextEditor",
           "when": "false"
         },
@@ -1205,6 +1280,10 @@
         {
           "command": "codeQL.quickEval",
           "when": "editorLangId == ql"
+        },
+        {
+          "command": "codeQL.quickEvalCount",
+          "when": "editorLangId == ql && codeql.supportsQuickEvalCount"
         },
         {
           "command": "codeQL.quickEvalContextEditor",
@@ -1273,6 +1352,18 @@
         {
           "command": "codeQL.openDataExtensionsEditor",
           "when": "config.codeQL.canary && config.codeQL.dataExtensions.editor"
+        },
+        {
+          "command": "codeQLQueries.runLocalQueryContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueries.runLocalQueriesContextMenu",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueries.runVariantAnalysisContextMenu",
+          "when": "false"
         },
         {
           "command": "codeQLVariantAnalysisRepositories.openConfigFile",
@@ -1608,7 +1699,7 @@
       },
       {
         "view": "codeQLQueries",
-        "contents": "This workspace doesn't contain any CodeQL queries at the moment."
+        "contents": "Looking for queries..."
       },
       {
         "view": "codeQLDatabases",
@@ -1673,7 +1764,7 @@
     "path-browserify": "^1.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "semver": "~7.3.2",
+    "semver": "~7.5.2",
     "source-map": "^0.7.4",
     "source-map-support": "^0.5.21",
     "stream": "^0.0.2",

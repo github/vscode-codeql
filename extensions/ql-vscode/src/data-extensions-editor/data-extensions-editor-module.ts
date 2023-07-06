@@ -8,7 +8,7 @@ import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { App } from "../common/app";
 import { withProgress } from "../common/vscode/progress";
-import { pickExtensionPackModelFile } from "./extension-pack-picker";
+import { pickExtensionPack } from "./extension-pack-picker";
 import { showAndLogErrorMessage } from "../common/logging";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
@@ -78,7 +78,7 @@ export class DataExtensionsEditorModule {
               return;
             }
 
-            const modelFile = await pickExtensionPackModelFile(
+            const modelFile = await pickExtensionPack(
               this.cliServer,
               db,
               this.app.logger,

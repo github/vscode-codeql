@@ -9,7 +9,7 @@ import {
 } from "vscode";
 import { join } from "path";
 
-import { DisposableObject, DisposeHandler } from "../../pure/disposable-object";
+import { DisposableObject, DisposeHandler } from "../disposable-object";
 import { tmpDir } from "../../tmp-dir";
 import { getHtmlForWebview, WebviewMessage, WebviewView } from "./webview-html";
 

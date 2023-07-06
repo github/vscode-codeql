@@ -13,8 +13,8 @@ import {
   getDefaultResultSetName,
   ParsedResultSets,
   IntoResultsViewMsg,
-} from "../../pure/interface-types";
-import { PathTable } from "./alert-table";
+} from "../../common/interface-types";
+import { AlertTable } from "./alert-table";
 import { Graph } from "./graph";
 import { RawTable } from "./raw-results-table";
 import {
@@ -327,6 +327,10 @@ export class ResultTables extends React.Component<
         </button>
         <div className={tableHeaderItemClassName}>{this.props.queryName}</div>
         <div className={tableHeaderItemClassName}>
+          {/*
+              eslint-disable-next-line
+              jsx-a11y/anchor-is-valid
+            */}
           <a
             href="#"
             onClick={openQuery}
@@ -457,14 +461,15 @@ class ResultTable extends React.Component<
               ...resultSet,
               interpretation: { ...resultSet.interpretation, data },
             };
-            return <PathTable {...this.props} resultSet={sarifResultSet} />;
+            return <AlertTable {...this.props} resultSet={sarifResultSet} />;
           }
           case "GraphInterpretationData": {
-            const grapResultSet = {
-              ...resultSet,
-              interpretation: { ...resultSet.interpretation, data },
-            };
-            return <Graph {...this.props} resultSet={grapResultSet} />;
+            return (
+              <Graph
+                graphData={data?.dot[this.props.offset]}
+                databaseUri={this.props.databaseUri}
+              />
+            );
           }
         }
       }

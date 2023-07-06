@@ -1,6 +1,6 @@
 import { CodeQLCliServer } from "./cli";
-import { QueryMetadata } from "../pure/interface-types";
-import { extLogger } from "../common";
+import { QueryMetadata } from "../common/interface-types";
+import { extLogger } from "../common/logging/vscode";
 
 /**
  * Gets metadata for a query, if it exists.

@@ -8,7 +8,7 @@ import {
 import { createDbTreeViewItemError, DbTreeViewItem } from "./db-tree-view-item";
 import { DbManager } from "../db-manager";
 import { mapDbItemToTreeViewItem } from "./db-item-mapper";
-import { DisposableObject } from "../../pure/disposable-object";
+import { DisposableObject } from "../../common/disposable-object";
 import {
   DbConfigValidationError,
   DbConfigValidationErrorKind,

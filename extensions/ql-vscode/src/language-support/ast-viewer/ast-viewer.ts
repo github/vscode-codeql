@@ -16,19 +16,20 @@ import {
 import { basename } from "path";
 
 import { DatabaseItem } from "../../databases/local-databases";
-import { UrlValue, BqrsId } from "../../pure/bqrs-cli-types";
+import { UrlValue, BqrsId } from "../../common/bqrs-cli-types";
 import { showLocation } from "../../databases/local-databases/locations";
 import {
   isStringLoc,
   isWholeFileLoc,
   isLineColumnLoc,
-} from "../../pure/bqrs-utils";
-import { DisposableObject } from "../../pure/disposable-object";
-import { asError, getErrorMessage } from "../../pure/helpers-pure";
-import { redactableError } from "../../pure/errors";
+} from "../../common/bqrs-utils";
+import { DisposableObject } from "../../common/disposable-object";
+import { asError, getErrorMessage } from "../../common/helpers-pure";
+import { redactableError } from "../../common/errors";
 import { AstViewerCommands } from "../../common/commands";
-import { extLogger } from "../../common";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
+import { extLogger } from "../../common/logging/vscode";
+import { showAndLogExceptionWithTelemetry } from "../../common/logging";
+import { telemetryListener } from "../../common/vscode/telemetry";
 
 export interface AstItem {
   id: BqrsId;
@@ -147,6 +148,7 @@ export class AstViewer extends DisposableObject {
       (error: unknown) =>
         showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(
             asError(error),
           )`Failed to reveal AST: ${getErrorMessage(error)}`,
@@ -211,6 +213,7 @@ export class AstViewer extends DisposableObject {
           (error: unknown) =>
             showAndLogExceptionWithTelemetry(
               extLogger,
+              telemetryListener,
               redactableError(
                 asError(error),
               )`Failed to reveal AST: ${getErrorMessage(error)}`,

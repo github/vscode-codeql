@@ -5,7 +5,7 @@ import {
   getMockGitHubApiServerScenariosPath,
   MockGitHubApiConfigListener,
 } from "../../../config";
-import { DisposableObject } from "../../../pure/disposable-object";
+import { DisposableObject } from "../../../common/disposable-object";
 import { MockGitHubApiServer } from "./mock-gh-api-server";
 import { MockGitHubApiServerCommands } from "../../../common/commands";
 import { App, AppMode } from "../../../common/app";

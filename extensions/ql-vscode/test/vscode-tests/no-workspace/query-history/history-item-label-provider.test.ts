@@ -3,7 +3,7 @@ import { QueryHistoryConfig } from "../../../../src/config";
 import { HistoryItemLabelProvider } from "../../../../src/query-history/history-item-label-provider";
 import { createMockLocalQueryInfo } from "../../../factories/query-history/local-query-history-item";
 import { createMockVariantAnalysisHistoryItem } from "../../../factories/query-history/variant-analysis-history-item";
-import { QueryStatus } from "../../../../src/query-status";
+import { QueryStatus } from "../../../../src/query-history/query-status";
 import {
   VariantAnalysisRepoStatus,
   VariantAnalysisStatus,

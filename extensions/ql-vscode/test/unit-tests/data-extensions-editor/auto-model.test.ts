@@ -9,10 +9,12 @@ import {
   ClassificationType,
   Method,
 } from "../../../src/data-extensions-editor/auto-model-api";
+import { Mode } from "../../../src/data-extensions-editor/shared/mode";
 
 describe("createAutoModelRequest", () => {
   const externalApiUsages: ExternalApiUsage[] = [
     {
+      library: "spring-boot-3.0.2.jar",
       signature:
         "org.springframework.boot.SpringApplication#run(Class,String[])",
       packageName: "org.springframework.boot",
@@ -34,6 +36,7 @@ describe("createAutoModelRequest", () => {
       ],
     },
     {
+      library: "sql2o-1.6.0.jar",
       signature: "org.sql2o.Connection#createQuery(String)",
       packageName: "org.sql2o",
       typeName: "Connection",
@@ -64,6 +67,7 @@ describe("createAutoModelRequest", () => {
       ],
     },
     {
+      library: "sql2o-1.6.0.jar",
       signature: "org.sql2o.Query#executeScalar(Class)",
       packageName: "org.sql2o",
       typeName: "Query",
@@ -94,6 +98,7 @@ describe("createAutoModelRequest", () => {
       ],
     },
     {
+      library: "sql2o-1.6.0.jar",
       signature: "org.sql2o.Sql2o#open()",
       packageName: "org.sql2o",
       typeName: "Sql2o",
@@ -124,6 +129,7 @@ describe("createAutoModelRequest", () => {
       ],
     },
     {
+      library: "rt.jar",
       signature: "java.io.PrintStream#println(String)",
       packageName: "java.io",
       typeName: "PrintStream",
@@ -144,6 +150,7 @@ describe("createAutoModelRequest", () => {
       ],
     },
     {
+      library: "sql2o-1.6.0.jar",
       signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
       packageName: "org.sql2o",
       typeName: "Sql2o",
@@ -164,6 +171,7 @@ describe("createAutoModelRequest", () => {
       ],
     },
     {
+      library: "sql2o-1.6.0.jar",
       signature: "org.sql2o.Sql2o#Sql2o(String)",
       packageName: "org.sql2o",
       typeName: "Sql2o",
@@ -184,6 +192,7 @@ describe("createAutoModelRequest", () => {
       ],
     },
     {
+      library: "test.jar",
       signature: "org.test.MyClass#test()",
       packageName: "org.test",
       typeName: "MyClass",
@@ -251,7 +260,13 @@ describe("createAutoModelRequest", () => {
 
   it("creates a matching request", () => {
     expect(
-      createAutoModelRequest("java", externalApiUsages, modeledMethods, usages),
+      createAutoModelRequest(
+        "java",
+        externalApiUsages,
+        modeledMethods,
+        usages,
+        Mode.Application,
+      ),
     ).toEqual({
       language: "java",
       samples: [
@@ -333,60 +348,6 @@ describe("createAutoModelRequest", () => {
           classification: undefined,
         },
         {
-          package: "org.springframework.boot",
-          type: "SpringApplication",
-          name: "run",
-          signature: "(Class,String[])",
-          usages:
-            usages[
-              "org.springframework.boot.SpringApplication#run(Class,String[])"
-            ],
-          input: "Argument[this]",
-          classification: undefined,
-        },
-        {
-          package: "org.springframework.boot",
-          type: "SpringApplication",
-          name: "run",
-          signature: "(Class,String[])",
-          usages:
-            usages[
-              "org.springframework.boot.SpringApplication#run(Class,String[])"
-            ],
-          input: "Argument[0]",
-          classification: undefined,
-        },
-        {
-          package: "org.springframework.boot",
-          type: "SpringApplication",
-          name: "run",
-          signature: "(Class,String[])",
-          usages:
-            usages[
-              "org.springframework.boot.SpringApplication#run(Class,String[])"
-            ],
-          input: "Argument[1]",
-          classification: undefined,
-        },
-        {
-          package: "java.io",
-          type: "PrintStream",
-          name: "println",
-          signature: "(String)",
-          usages: usages["java.io.PrintStream#println(String)"],
-          input: "Argument[this]",
-          classification: undefined,
-        },
-        {
-          package: "java.io",
-          type: "PrintStream",
-          name: "println",
-          signature: "(String)",
-          usages: usages["java.io.PrintStream#println(String)"],
-          input: "Argument[0]",
-          classification: undefined,
-        },
-        {
           package: "org.sql2o",
           type: "Sql2o",
           name: "Sql2o",
@@ -420,6 +381,60 @@ describe("createAutoModelRequest", () => {
           signature: "(String,String,String)",
           usages: usages["org.sql2o.Sql2o#Sql2o(String,String,String)"],
           input: "Argument[2]",
+          classification: undefined,
+        },
+        {
+          package: "java.io",
+          type: "PrintStream",
+          name: "println",
+          signature: "(String)",
+          usages: usages["java.io.PrintStream#println(String)"],
+          input: "Argument[this]",
+          classification: undefined,
+        },
+        {
+          package: "java.io",
+          type: "PrintStream",
+          name: "println",
+          signature: "(String)",
+          usages: usages["java.io.PrintStream#println(String)"],
+          input: "Argument[0]",
+          classification: undefined,
+        },
+        {
+          package: "org.springframework.boot",
+          type: "SpringApplication",
+          name: "run",
+          signature: "(Class,String[])",
+          usages:
+            usages[
+              "org.springframework.boot.SpringApplication#run(Class,String[])"
+            ],
+          input: "Argument[this]",
+          classification: undefined,
+        },
+        {
+          package: "org.springframework.boot",
+          type: "SpringApplication",
+          name: "run",
+          signature: "(Class,String[])",
+          usages:
+            usages[
+              "org.springframework.boot.SpringApplication#run(Class,String[])"
+            ],
+          input: "Argument[0]",
+          classification: undefined,
+        },
+        {
+          package: "org.springframework.boot",
+          type: "SpringApplication",
+          name: "run",
+          signature: "(Class,String[])",
+          usages:
+            usages[
+              "org.springframework.boot.SpringApplication#run(Class,String[])"
+            ],
+          input: "Argument[1]",
           classification: undefined,
         },
       ],

@@ -1,19 +1,20 @@
-import { DisposableObject } from "./pure/disposable-object";
+import { DisposableObject } from "./common/disposable-object";
 import {
   workspace,
   Event,
   EventEmitter,
   ConfigurationChangeEvent,
   ConfigurationTarget,
+  ConfigurationScope,
 } from "vscode";
 import { DistributionManager } from "./codeql-cli/distribution";
-import { extLogger } from "./common";
-import { ONE_DAY_IN_MS } from "./pure/time";
+import { extLogger } from "./common/logging/vscode";
+import { ONE_DAY_IN_MS } from "./common/time";
 import {
   FilterKey,
   SortKey,
   defaultFilterSortState,
-} from "./pure/variant-analysis-filter-sort";
+} from "./variant-analysis/shared/variant-analysis-filter-sort";
 
 export const ALL_SETTINGS: Setting[] = [];
 
@@ -44,12 +45,12 @@ export class Setting {
     }
   }
 
-  getValue<T>(): T {
+  getValue<T>(scope?: ConfigurationScope | null): T {
     if (this.parent === undefined) {
       throw new Error("Cannot get the value of a root setting.");
     }
     return workspace
-      .getConfiguration(this.parent.qualifiedName)
+      .getConfiguration(this.parent.qualifiedName, scope)
       .get<T>(this.name)!;
   }
 
@@ -714,7 +715,30 @@ export function showQueriesPanel(): boolean {
 
 const DATA_EXTENSIONS = new Setting("dataExtensions", ROOT_SETTING);
 const LLM_GENERATION = new Setting("llmGeneration", DATA_EXTENSIONS);
+const FRAMEWORK_MODE = new Setting("frameworkMode", DATA_EXTENSIONS);
+const DISABLE_AUTO_NAME_EXTENSION_PACK = new Setting(
+  "disableAutoNameExtensionPack",
+  DATA_EXTENSIONS,
+);
+const EXTENSIONS_DIRECTORY = new Setting(
+  "extensionsDirectory",
+  DATA_EXTENSIONS,
+);
 
 export function showLlmGeneration(): boolean {
   return !!LLM_GENERATION.getValue<boolean>();
+}
+
+export function enableFrameworkMode(): boolean {
+  return !!FRAMEWORK_MODE.getValue<boolean>();
+}
+
+export function disableAutoNameExtensionPack(): boolean {
+  return !!DISABLE_AUTO_NAME_EXTENSION_PACK.getValue<boolean>();
+}
+
+export function getExtensionsDirectory(languageId: string): string | undefined {
+  return EXTENSIONS_DIRECTORY.getValue<string>({
+    languageId,
+  });
 }

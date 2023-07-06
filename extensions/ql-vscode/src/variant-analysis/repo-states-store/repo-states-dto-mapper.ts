@@ -1,4 +1,4 @@
-import { assertNever } from "../../pure/helpers-pure";
+import { assertNever } from "../../common/helpers-pure";
 import {
   VariantAnalysisScannedRepositoryDownloadStatus,
   VariantAnalysisScannedRepositoryState,

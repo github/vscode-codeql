@@ -3,17 +3,19 @@ import { dir } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { extLogger, TeeLogger } from "../common";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
+import { extLogger } from "../common/logging/vscode";
+import { showAndLogExceptionWithTelemetry, TeeLogger } from "../common/logging";
 import { isQueryLanguage } from "../common/query-language";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseItem } from "../databases/local-databases";
 import { ProgressCallback } from "../common/vscode/progress";
 import { fetchExternalApiQueries } from "./queries";
-import { QueryResultType } from "../pure/new-messages";
+import { QueryResultType } from "../query-server/new-messages";
 import { join } from "path";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
+import { telemetryListener } from "../common/vscode/telemetry";
+import { Query } from "./queries/query";
 
 export type RunQueryOptions = {
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">;
@@ -25,14 +27,17 @@ export type RunQueryOptions = {
   token: CancellationToken;
 };
 
-export async function runQuery({
-  cliServer,
-  queryRunner,
-  databaseItem,
-  queryStorageDir,
-  progress,
-  token,
-}: RunQueryOptions): Promise<CoreCompletedQuery | undefined> {
+export async function runQuery(
+  queryName: keyof Omit<Query, "dependencies">,
+  {
+    cliServer,
+    queryRunner,
+    databaseItem,
+    queryStorageDir,
+    progress,
+    token,
+  }: RunQueryOptions,
+): Promise<CoreCompletedQuery | undefined> {
   // The below code is temporary to allow for rapid prototyping of the queries. Once the queries are stabilized, we will
   // move these queries into the `github/codeql` repository and use them like any other contextual (e.g. AST) queries.
   // This is intentionally not pretty code, as it will be removed soon.
@@ -42,6 +47,7 @@ export async function runQuery({
   if (!isQueryLanguage(databaseItem.language)) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
+      telemetryListener,
       redactableError`Unsupported database language ${databaseItem.language}`,
     );
     return;
@@ -51,6 +57,7 @@ export async function runQuery({
   if (!query) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
+      telemetryListener,
       redactableError`No external API usage query found for language ${databaseItem.language}`,
     );
     return;
@@ -58,7 +65,7 @@ export async function runQuery({
 
   const queryDir = (await dir({ unsafeCleanup: true })).path;
   const queryFile = join(queryDir, "FetchExternalApis.ql");
-  await writeFile(queryFile, query.mainQuery, "utf8");
+  await writeFile(queryFile, query[queryName], "utf8");
 
   if (query.dependencies) {
     for (const [filename, contents] of Object.entries(query.dependencies)) {
@@ -107,6 +114,7 @@ export async function runQuery({
   if (completedQuery.resultType !== QueryResultType.SUCCESS) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
+      telemetryListener,
       redactableError`External API usage query failed: ${
         completedQuery.message ?? "No message"
       }`,
@@ -130,6 +138,7 @@ export async function readQueryResults({
   if (bqrsInfo["result-sets"].length !== 1) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
+      telemetryListener,
       redactableError`Expected exactly one result set, got ${bqrsInfo["result-sets"].length}`,
     );
     return undefined;

@@ -16,7 +16,7 @@ import {
   window as Window,
   workspace,
 } from "vscode";
-import { DisposableObject } from "../pure/disposable-object";
+import { DisposableObject } from "../common/disposable-object";
 import { VariantAnalysisMonitor } from "./variant-analysis-monitor";
 import {
   getActionsWorkflowRunUrl,
@@ -30,7 +30,7 @@ import {
   VariantAnalysisScannedRepositoryState,
   VariantAnalysisSubmission,
 } from "./shared/variant-analysis";
-import { getErrorMessage } from "../pure/helpers-pure";
+import { getErrorMessage } from "../common/helpers-pure";
 import { VariantAnalysisView } from "./variant-analysis-view";
 import { VariantAnalysisViewManager } from "./variant-analysis-view-manager";
 import {
@@ -57,11 +57,11 @@ import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,
   RepositoriesFilterSortStateWithIds,
-} from "../pure/variant-analysis-filter-sort";
+} from "./shared/variant-analysis-filter-sort";
 import { URLSearchParams } from "url";
 import { DbManager } from "../databases/db-manager";
 import { App } from "../common/app";
-import { redactableError } from "../pure/errors";
+import { redactableError } from "../common/errors";
 import { AppCommandManager, VariantAnalysisCommands } from "../common/commands";
 import { exportVariantAnalysisResults } from "./export-results";
 import {
@@ -71,11 +71,12 @@ import {
 } from "./repo-states-store";
 import { GITHUB_AUTH_PROVIDER_ID } from "../common/vscode/authentication";
 import { FetchError } from "node-fetch";
-import { showAndLogExceptionWithTelemetry } from "../common/vscode/logging";
 import {
+  showAndLogExceptionWithTelemetry,
   showAndLogInformationMessage,
   showAndLogWarningMessage,
 } from "../common/logging";
+import { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 const maxRetryCount = 3;
 
@@ -163,6 +164,8 @@ export class VariantAnalysisManager
       // Since we are tracking extension usage through commands, this command mirrors the "codeQL.runVariantAnalysis" command
       "codeQL.runVariantAnalysisContextEditor":
         this.runVariantAnalysisFromCommand.bind(this),
+      "codeQLQueries.runVariantAnalysisContextMenu":
+        this.runVariantAnalysisFromQueriesPanel.bind(this),
     };
   }
 
@@ -183,6 +186,16 @@ export class VariantAnalysisManager
         cancellable: true,
       },
     );
+  }
+
+  private async runVariantAnalysisFromQueriesPanel(
+    queryTreeViewItem: QueryTreeViewItem,
+  ): Promise<void> {
+    if (queryTreeViewItem.path !== undefined) {
+      await this.runVariantAnalysisFromCommand(
+        Uri.file(queryTreeViewItem.path),
+      );
+    }
   }
 
   public async runVariantAnalysis(
@@ -329,6 +342,7 @@ export class VariantAnalysisManager
     if (!this.variantAnalyses.get(variantAnalysisId)) {
       void showAndLogExceptionWithTelemetry(
         this.app.logger,
+        this.app.telemetry,
         redactableError`No variant analysis found with id: ${variantAnalysisId}.`,
       );
     }

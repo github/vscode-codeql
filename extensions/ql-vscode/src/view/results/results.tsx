@@ -1,5 +1,5 @@
 import * as React from "react";
-import { assertNever, getErrorMessage } from "../../pure/helpers-pure";
+import { assertNever, getErrorMessage } from "../../common/helpers-pure";
 import {
   DatabaseInfo,
   Interpretation,
@@ -13,7 +13,7 @@ import {
   ParsedResultSets,
   NavigateMsg,
   ResultSet,
-} from "../../pure/interface-types";
+} from "../../common/interface-types";
 import { EventHandlers as EventHandlerList } from "./event-handler-list";
 import { ResultTables } from "./result-tables";
 

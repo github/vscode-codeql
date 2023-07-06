@@ -13,13 +13,13 @@ import {
 import { QueryDetails } from "./QueryDetails";
 import { VariantAnalysisActions } from "./VariantAnalysisActions";
 import { VariantAnalysisStats } from "./VariantAnalysisStats";
-import { parseDate } from "../../pure/date";
-import { basename } from "../common/path";
+import { parseDate } from "../../common/date";
+import { basename } from "../../common/path";
 import {
   defaultFilterSortState,
   filterAndSortRepositoriesWithResults,
   RepositoriesFilterSortState,
-} from "../../pure/variant-analysis-filter-sort";
+} from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
 export type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;

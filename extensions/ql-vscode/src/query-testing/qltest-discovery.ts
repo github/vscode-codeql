@@ -12,28 +12,12 @@ import { MultiFileSystemWatcher } from "../common/vscode/multi-file-system-watch
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { pathExists } from "fs-extra";
 import { FileTreeDirectory, FileTreeLeaf } from "../common/file-tree-nodes";
-import { extLogger } from "../common";
-
-/**
- * The results of discovering QL tests.
- */
-interface QLTestDiscoveryResults {
-  /**
-   * A directory that contains one or more QL Tests, or other QLTestDirectories.
-   */
-  testDirectory: FileTreeDirectory | undefined;
-
-  /**
-   * The file system path to a directory to watch. If any ql or qlref file changes in
-   * this directory, then this signifies a change in tests.
-   */
-  watchPath: string;
-}
+import { extLogger } from "../common/logging/vscode";
 
 /**
  * Discovers all QL tests contained in the QL packs in a given workspace folder.
  */
-export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
+export class QLTestDiscovery extends Discovery {
   private readonly _onDidChangeTests = this.push(new EventEmitter<void>());
   private readonly watcher: MultiFileSystemWatcher = this.push(
     new MultiFileSystemWatcher(),
@@ -69,24 +53,18 @@ export class QLTestDiscovery extends Discovery<QLTestDiscoveryResults> {
       void this.refresh();
     }
   }
-  protected async discover(): Promise<QLTestDiscoveryResults> {
-    const testDirectory = await this.discoverTests();
-    return {
-      testDirectory,
-      watchPath: this.workspaceFolder.uri.fsPath,
-    };
-  }
-
-  protected update(results: QLTestDiscoveryResults): void {
-    this._testDirectory = results.testDirectory;
+  protected async discover() {
+    this._testDirectory = await this.discoverTests();
 
     this.watcher.clear();
     // Watch for changes to any `.ql` or `.qlref` file in any of the QL packs that contain tests.
     this.watcher.addWatch(
-      new RelativePattern(results.watchPath, "**/*.{ql,qlref}"),
+      new RelativePattern(this.workspaceFolder.uri.fsPath, "**/*.{ql,qlref}"),
     );
     // need to explicitly watch for changes to directories themselves.
-    this.watcher.addWatch(new RelativePattern(results.watchPath, "**/"));
+    this.watcher.addWatch(
+      new RelativePattern(this.workspaceFolder.uri.fsPath, "**/"),
+    );
     this._onDidChangeTests.fire(undefined);
   }
 

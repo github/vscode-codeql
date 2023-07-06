@@ -1,7 +1,7 @@
 import vscode, { ExtensionContext } from "vscode";
-import { extLogger, Logger } from "../../common";
-import { showAndLogExceptionWithTelemetry } from "../../common/vscode/logging";
-import { DisposableObject } from "../../pure/disposable-object";
+import { Logger, showAndLogExceptionWithTelemetry } from "../../common/logging";
+import { extLogger } from "../../common/logging/vscode";
+import { DisposableObject } from "../../common/disposable-object";
 import { App } from "../../common/app";
 import { QueryRunner } from "../../query-server";
 import * as cli from "../../codeql-cli/cli";
@@ -21,14 +21,15 @@ import {
 } from "../../common/vscode/workspace-folders";
 import { isQueryLanguage } from "../../common/query-language";
 import { existsSync } from "fs";
-import { QlPackGenerator } from "../../qlpack-generator";
-import { asError, getErrorMessage } from "../../pure/helpers-pure";
+import { QlPackGenerator } from "../../local-queries/qlpack-generator";
+import { asError, getErrorMessage } from "../../common/helpers-pure";
 import { DatabaseItem, PersistedDatabaseItem } from "./database-item";
-import { redactableError } from "../../pure/errors";
+import { redactableError } from "../../common/errors";
 import { remove } from "fs-extra";
-import { containsPath } from "../../pure/files";
+import { containsPath } from "../../common/files";
 import { DatabaseChangedEvent, DatabaseEventKind } from "./database-events";
 import { DatabaseResolver } from "./database-resolver";
+import { telemetryListener } from "../../common/vscode/telemetry";
 
 /**
  * The name of the key in the workspaceState dictionary in which we
@@ -103,8 +104,6 @@ export class DatabaseManager extends DisposableObject {
    * databases.
    */
   public async openDatabase(
-    progress: ProgressCallback,
-    token: vscode.CancellationToken,
     uri: vscode.Uri,
     makeSelected = true,
     displayName?: string,
@@ -114,9 +113,7 @@ export class DatabaseManager extends DisposableObject {
 
     return await this.addExistingDatabaseItem(
       databaseItem,
-      progress,
       makeSelected,
-      token,
       isTutorialDatabase,
     );
   }
@@ -129,9 +126,7 @@ export class DatabaseManager extends DisposableObject {
    */
   private async addExistingDatabaseItem(
     databaseItem: DatabaseItemImpl,
-    progress: ProgressCallback,
     makeSelected: boolean,
-    token: vscode.CancellationToken,
     isTutorialDatabase?: boolean,
   ): Promise<DatabaseItem> {
     const existingItem = this.findDatabaseItem(databaseItem.databaseUri);
@@ -142,7 +137,7 @@ export class DatabaseManager extends DisposableObject {
       return existingItem;
     }
 
-    await this.addDatabaseItem(progress, token, databaseItem);
+    await this.addDatabaseItem(databaseItem);
     if (makeSelected) {
       await this.setCurrentDatabaseItem(databaseItem);
     }
@@ -259,14 +254,11 @@ export class DatabaseManager extends DisposableObject {
     }
   }
 
-  private async reregisterDatabases(
-    progress: ProgressCallback,
-    token: vscode.CancellationToken,
-  ) {
+  private async reregisterDatabases(progress: ProgressCallback) {
     let completed = 0;
     await Promise.all(
       this._databaseItems.map(async (databaseItem) => {
-        await this.registerDatabase(progress, token, databaseItem);
+        await this.registerDatabase(databaseItem);
         completed++;
         progress({
           maxStep: this._databaseItems.length,
@@ -323,8 +315,6 @@ export class DatabaseManager extends DisposableObject {
   }
 
   private async createDatabaseItemFromPersistedState(
-    progress: ProgressCallback,
-    token: vscode.CancellationToken,
     state: PersistedDatabaseItem,
   ): Promise<DatabaseItemImpl> {
     let displayName: string | undefined = undefined;
@@ -355,12 +345,12 @@ export class DatabaseManager extends DisposableObject {
 
     // Avoid persisting the database state after adding since that should happen only after
     // all databases have been added.
-    await this.addDatabaseItem(progress, token, item, false);
+    await this.addDatabaseItem(item, false);
     return item;
   }
 
   public async loadPersistedState(): Promise<void> {
-    return withProgress(async (progress, token) => {
+    return withProgress(async (progress) => {
       const currentDatabaseUri =
         this.ctx.workspaceState.get<string>(CURRENT_DB);
       const databases = this.ctx.workspaceState.get<PersistedDatabaseItem[]>(
@@ -387,13 +377,11 @@ export class DatabaseManager extends DisposableObject {
           });
 
           const databaseItem = await this.createDatabaseItemFromPersistedState(
-            progress,
-            token,
             database,
           );
           try {
             await this.refreshDatabase(databaseItem);
-            await this.registerDatabase(progress, token, databaseItem);
+            await this.registerDatabase(databaseItem);
             if (currentDatabaseUri === database.uri) {
               await this.setCurrentDatabaseItem(databaseItem, true);
             }
@@ -413,6 +401,7 @@ export class DatabaseManager extends DisposableObject {
         // database list had an unexpected type - nothing to be done?
         void showAndLogExceptionWithTelemetry(
           extLogger,
+          telemetryListener,
           redactableError(
             asError(e),
           )`Database list loading failed: ${getErrorMessage(e)}`,
@@ -487,8 +476,6 @@ export class DatabaseManager extends DisposableObject {
   }
 
   private async addDatabaseItem(
-    progress: ProgressCallback,
-    token: vscode.CancellationToken,
     item: DatabaseItemImpl,
     updatePersistedState = true,
   ) {
@@ -502,7 +489,7 @@ export class DatabaseManager extends DisposableObject {
     // Database items reconstituted from persisted state
     // will not have their contents yet.
     if (item.contents?.datasetUri) {
-      await this.registerDatabase(progress, token, item);
+      await this.registerDatabase(item);
     }
     // note that we use undefined as the item in order to reset the entire tree
     this._onDidChangeDatabaseItem.fire({
@@ -521,11 +508,7 @@ export class DatabaseManager extends DisposableObject {
     });
   }
 
-  public async removeDatabaseItem(
-    progress: ProgressCallback,
-    token: vscode.CancellationToken,
-    item: DatabaseItem,
-  ) {
+  public async removeDatabaseItem(item: DatabaseItem) {
     if (this._currentDatabaseItem === item) {
       this._currentDatabaseItem = undefined;
     }
@@ -547,7 +530,7 @@ export class DatabaseManager extends DisposableObject {
     }
 
     // Remove this database item from the allow-list
-    await this.deregisterDatabase(progress, token, item);
+    await this.deregisterDatabase(item);
 
     // Delete folder from file system only if it is controlled by the extension
     if (this.isExtensionControlledLocation(item.databaseUri)) {
@@ -570,22 +553,15 @@ export class DatabaseManager extends DisposableObject {
     });
   }
 
-  public async removeAllDatabases(
-    progress: ProgressCallback,
-    token: vscode.CancellationToken,
-  ) {
+  public async removeAllDatabases() {
     for (const item of this.databaseItems) {
-      await this.removeDatabaseItem(progress, token, item);
+      await this.removeDatabaseItem(item);
     }
   }
 
-  private async deregisterDatabase(
-    progress: ProgressCallback,
-    token: vscode.CancellationToken,
-    dbItem: DatabaseItem,
-  ) {
+  private async deregisterDatabase(dbItem: DatabaseItem) {
     try {
-      await this.qs.deregisterDatabase(progress, token, dbItem);
+      await this.qs.deregisterDatabase(dbItem);
     } catch (e) {
       const message = getErrorMessage(e);
       if (message === "Connection is disposed.") {
@@ -598,12 +574,8 @@ export class DatabaseManager extends DisposableObject {
       throw e;
     }
   }
-  private async registerDatabase(
-    progress: ProgressCallback,
-    token: vscode.CancellationToken,
-    dbItem: DatabaseItem,
-  ) {
-    await this.qs.registerDatabase(progress, token, dbItem);
+  private async registerDatabase(dbItem: DatabaseItem) {
+    await this.qs.registerDatabase(dbItem);
   }
 
   /**

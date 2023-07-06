@@ -1,14 +1,16 @@
 import { Credentials } from "./authentication";
-import { Disposable } from "../pure/disposable-object";
+import { Disposable } from "./disposable-object";
 import { AppEventEmitter } from "./events";
 import { NotificationLogger } from "./logging";
 import { Memento } from "./memento";
 import { AppCommandManager } from "./commands";
+import { AppTelemetry } from "./telemetry";
 
 export interface App {
   createEventEmitter<T>(): AppEventEmitter<T>;
   readonly mode: AppMode;
   readonly logger: NotificationLogger;
+  readonly telemetry?: AppTelemetry;
   readonly subscriptions: Disposable[];
   readonly extensionPath: string;
   readonly globalStoragePath: string;
