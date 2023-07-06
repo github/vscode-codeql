@@ -1,11 +1,11 @@
 import {
+  VSCodeCheckbox,
   VSCodeDataGridCell,
   VSCodeDataGridRow,
-  VSCodeDropdown,
-  VSCodeOption,
+  VSCodeLink,
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
-import { useCallback, useMemo } from "react";
+import { ChangeEvent, useCallback, useMemo } from "react";
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 
@@ -18,50 +18,25 @@ import {
 import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../data-extensions-editor/predicates";
 import { Mode } from "../../data-extensions-editor/shared/mode";
+import { Dropdown } from "../common/Dropdown";
 
-const Dropdown = styled(VSCodeDropdown)`
-  width: 100%;
-`;
-
-type SupportedUnsupportedSpanProps = {
-  supported: boolean;
-  modeled: ModeledMethod | undefined;
-};
-
-const SupportSpan = styled.span<SupportedUnsupportedSpanProps>`
-  color: ${(props) => {
-    if (!props.supported && props.modeled && props.modeled?.type !== "none") {
-      return "orange";
-    } else {
-      return props.supported ? "green" : "red";
-    }
-  }};
-`;
-
-type SupportedUnsupportedLinkProps = {
-  supported: boolean;
-  modeled: ModeledMethod | undefined;
-};
-
-const SupportLink = styled.button<SupportedUnsupportedLinkProps>`
-  color: ${(props) => {
-    if (!props.supported && props.modeled && props.modeled?.type !== "none") {
-      return "orange";
-    } else {
-      return props.supported ? "green" : "red";
-    }
-  }};
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
+const ApiOrMethodCell = styled(VSCodeDataGridCell)`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5em;
 `;
 
 const UsagesButton = styled.button`
   color: var(--vscode-editor-foreground);
-  background-color: transparent;
+  background-color: var(--vscode-input-background);
   border: none;
+  border-radius: 40%;
   cursor: pointer;
+`;
+
+const ViewLink = styled(VSCodeLink)`
+  white-space: nowrap;
 `;
 
 type Props = {
@@ -90,9 +65,7 @@ export const MethodRow = ({
   }, [externalApiUsage.methodParameters]);
 
   const handleTypeInput = useCallback(
-    (e: InputEvent) => {
-      const target = e.target as HTMLSelectElement;
-
+    (e: ChangeEvent<HTMLSelectElement>) => {
       let newProvenance: Provenance = "manual";
       if (modeledMethod?.provenance === "df-generated") {
         newProvenance = "df-manual";
@@ -106,14 +79,14 @@ export const MethodRow = ({
         output: "ReturnType",
         kind: "value",
         ...modeledMethod,
-        type: target.value as ModeledMethodType,
+        type: e.target.value as ModeledMethodType,
         provenance: newProvenance,
       });
     },
     [onChange, externalApiUsage, modeledMethod, argumentsList],
   );
   const handleInputInput = useCallback(
-    (e: InputEvent) => {
+    (e: ChangeEvent<HTMLSelectElement>) => {
       if (!modeledMethod) {
         return;
       }
@@ -128,7 +101,7 @@ export const MethodRow = ({
     [onChange, externalApiUsage, modeledMethod],
   );
   const handleOutputInput = useCallback(
-    (e: InputEvent) => {
+    (e: ChangeEvent<HTMLSelectElement>) => {
       if (!modeledMethod) {
         return;
       }
@@ -169,94 +142,96 @@ export const MethodRow = ({
       ? extensiblePredicateDefinitions[modeledMethod.type]
       : undefined;
 
+  const showModelTypeCell =
+    !externalApiUsage.supported ||
+    (modeledMethod && modeledMethod?.type !== "none");
+  const modelTypeOptions = useMemo(
+    () => [
+      { value: "none", label: "Unmodeled" },
+      { value: "source", label: "Source" },
+      { value: "sink", label: "Sink" },
+      { value: "summary", label: "Flow summary" },
+      { value: "neutral", label: "Neutral" },
+    ],
+    [],
+  );
+
+  const showInputCell =
+    modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type);
+  const inputOptions = useMemo(
+    () => [
+      { value: "Argument[this]", label: "Argument[this]" },
+      ...argumentsList.map((argument, index) => ({
+        value: `Argument[${index}]`,
+        label: `Argument[${index}]: ${argument}`,
+      })),
+    ],
+    [argumentsList],
+  );
+
+  const showOutputCell =
+    modeledMethod?.type && ["source", "summary"].includes(modeledMethod?.type);
+  const outputOptions = useMemo(
+    () => [
+      { value: "ReturnValue", label: "ReturnValue" },
+      { value: "Argument[this]", label: "Argument[this]" },
+      ...argumentsList.map((argument, index) => ({
+        value: `Argument[${index}]`,
+        label: `Argument[${index}]: ${argument}`,
+      })),
+    ],
+    [argumentsList],
+  );
+
+  const showKindCell = predicate?.supportedKinds;
+
   return (
     <VSCodeDataGridRow>
-      <VSCodeDataGridCell gridColumn={1}>
-        <SupportSpan
-          supported={externalApiUsage.supported}
-          modeled={modeledMethod}
-        >
-          {externalApiUsage.packageName}.{externalApiUsage.typeName}
-        </SupportSpan>
-      </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={2}>
+      <ApiOrMethodCell gridColumn={1}>
+        <VSCodeCheckbox />
+        <span>
+          {externalApiUsage.packageName}.{externalApiUsage.typeName}.
+          {externalApiUsage.methodName}
+          {externalApiUsage.methodParameters}
+        </span>
         {mode === Mode.Application && (
-          <SupportSpan
-            supported={externalApiUsage.supported}
-            modeled={modeledMethod}
-          >
-            {externalApiUsage.methodName}
-            {externalApiUsage.methodParameters}
-          </SupportSpan>
-        )}
-        {mode === Mode.Framework && (
-          <SupportLink
-            supported={externalApiUsage.supported}
-            modeled={modeledMethod}
-            onClick={jumpToUsage}
-          >
-            {externalApiUsage.methodName}
-            {externalApiUsage.methodParameters}
-          </SupportLink>
-        )}
-      </VSCodeDataGridCell>
-      {mode === Mode.Application && (
-        <VSCodeDataGridCell gridColumn={3}>
           <UsagesButton onClick={jumpToUsage}>
             {externalApiUsage.usages.length}
           </UsagesButton>
-        </VSCodeDataGridCell>
-      )}
-      <VSCodeDataGridCell gridColumn={4}>
-        {(!externalApiUsage.supported ||
-          (modeledMethod && modeledMethod?.type !== "none")) && (
-          <Dropdown
-            value={modeledMethod?.type ?? "none"}
-            onInput={handleTypeInput}
-          >
-            <VSCodeOption value="none">Unmodeled</VSCodeOption>
-            <VSCodeOption value="source">Source</VSCodeOption>
-            <VSCodeOption value="sink">Sink</VSCodeOption>
-            <VSCodeOption value="summary">Flow summary</VSCodeOption>
-            <VSCodeOption value="neutral">Neutral</VSCodeOption>
-          </Dropdown>
         )}
+        <ViewLink onClick={jumpToUsage}>View</ViewLink>
+      </ApiOrMethodCell>
+      <VSCodeDataGridCell gridColumn={2}>
+        <Dropdown
+          value={modeledMethod?.type ?? "none"}
+          options={modelTypeOptions}
+          disabled={!showModelTypeCell}
+          onChange={handleTypeInput}
+        />
+      </VSCodeDataGridCell>
+      <VSCodeDataGridCell gridColumn={3}>
+        <Dropdown
+          value={modeledMethod?.input}
+          options={inputOptions}
+          disabled={!showInputCell}
+          onChange={handleInputInput}
+        />
+      </VSCodeDataGridCell>
+      <VSCodeDataGridCell gridColumn={4}>
+        <Dropdown
+          value={modeledMethod?.output}
+          options={outputOptions}
+          disabled={!showOutputCell}
+          onChange={handleOutputInput}
+        />
       </VSCodeDataGridCell>
       <VSCodeDataGridCell gridColumn={5}>
-        {modeledMethod?.type &&
-          ["sink", "summary"].includes(modeledMethod?.type) && (
-            <Dropdown value={modeledMethod?.input} onInput={handleInputInput}>
-              <VSCodeOption value="Argument[this]">Argument[this]</VSCodeOption>
-              {argumentsList.map((argument, index) => (
-                <VSCodeOption key={argument} value={`Argument[${index}]`}>
-                  Argument[{index}]: {argument}
-                </VSCodeOption>
-              ))}
-            </Dropdown>
-          )}
-      </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={6}>
-        {modeledMethod?.type &&
-          ["source", "summary"].includes(modeledMethod?.type) && (
-            <Dropdown value={modeledMethod?.output} onInput={handleOutputInput}>
-              <VSCodeOption value="ReturnValue">ReturnValue</VSCodeOption>
-              <VSCodeOption value="Argument[this]">Argument[this]</VSCodeOption>
-              {argumentsList.map((argument, index) => (
-                <VSCodeOption key={argument} value={`Argument[${index}]`}>
-                  Argument[{index}]: {argument}
-                </VSCodeOption>
-              ))}
-            </Dropdown>
-          )}
-      </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn={7}>
-        {predicate?.supportedKinds && (
-          <KindInput
-            kinds={predicate.supportedKinds}
-            value={modeledMethod?.kind}
-            onChange={handleKindChange}
-          />
-        )}
+        <KindInput
+          kinds={predicate?.supportedKinds || []}
+          value={modeledMethod?.kind}
+          disabled={!showKindCell}
+          onChange={handleKindChange}
+        />
       </VSCodeDataGridCell>
     </VSCodeDataGridRow>
   );
