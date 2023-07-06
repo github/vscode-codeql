@@ -35,6 +35,10 @@ const UsagesButton = styled.button`
   cursor: pointer;
 `;
 
+const ViewLink = styled(VSCodeLink)`
+  white-space: nowrap;
+`;
+
 type Props = {
   externalApiUsage: ExternalApiUsage;
   modeledMethod: ModeledMethod | undefined;
@@ -195,7 +199,7 @@ export const MethodRow = ({
             {externalApiUsage.usages.length}
           </UsagesButton>
         )}
-        <VSCodeLink onClick={jumpToUsage}>View</VSCodeLink>
+        <ViewLink onClick={jumpToUsage}>View</ViewLink>
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn={2}>
         <Dropdown
