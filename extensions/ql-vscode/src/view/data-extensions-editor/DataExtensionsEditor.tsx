@@ -185,13 +185,27 @@ export function DataExtensionsEditor({
     });
   }, []);
 
-  const onGenerateFromLlmClick = useCallback(() => {
+  const onGenerateAllFromLlmClick = useCallback(() => {
     vscode.postMessage({
       t: "generateExternalApiFromLlm",
       externalApiUsages,
       modeledMethods,
     });
   }, [externalApiUsages, modeledMethods]);
+
+  const onGenerateFromLlmClick = useCallback(
+    (
+      externalApiUsages: ExternalApiUsage[],
+      modeledMethods: Record<string, ModeledMethod>,
+    ) => {
+      vscode.postMessage({
+        t: "generateExternalApiFromLlm",
+        externalApiUsages,
+        modeledMethods,
+      });
+    },
+    [],
+  );
 
   const onOpenExtensionPackClick = useCallback(() => {
     vscode.postMessage({
@@ -272,7 +286,7 @@ export function DataExtensionsEditor({
               </VSCodeButton>
               {viewState?.showLlmButton && (
                 <>
-                  <VSCodeButton onClick={onGenerateFromLlmClick}>
+                  <VSCodeButton onClick={onGenerateAllFromLlmClick}>
                     Generate using LLM
                   </VSCodeButton>
                 </>
@@ -286,6 +300,7 @@ export function DataExtensionsEditor({
               mode={viewState?.mode ?? Mode.Application}
               onChange={onChange}
               onSaveModelClick={onSaveModelClick}
+              onGenerateFromLlmClick={onGenerateFromLlmClick}
             />
           </EditorContainer>
         </>
