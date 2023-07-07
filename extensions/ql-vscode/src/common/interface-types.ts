@@ -512,7 +512,11 @@ export interface ShowProgressMessage {
 export interface AddModeledMethodsMessage {
   t: "addModeledMethods";
   modeledMethods: Record<string, ModeledMethod>;
-
+  /**
+   * Are these modeled methods newly generated in some way and not yet
+   * saved in any model file, or are they loaded from an existing model file.
+   */
+  unsaved: boolean;
   /**
    * If true, then any existing modeled methods set to "none" will be
    * overwritten by the new modeled methods. Otherwise, the "none" modeled

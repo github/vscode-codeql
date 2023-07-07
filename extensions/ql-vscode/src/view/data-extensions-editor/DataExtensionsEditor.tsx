@@ -17,6 +17,7 @@ import { DataExtensionEditorViewState } from "../../data-extensions-editor/share
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../data-extensions-editor/shared/mode";
+import { groupMethods } from "../../data-extensions-editor/shared/sorting";
 
 const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -107,6 +108,23 @@ export function DataExtensionsEditor({
                 ...filteredOldModeledMethods,
               };
             });
+            if (msg.unsaved) {
+              const affectedExternalApiUsages =
+                externalApiUsagesForModeledMethods(
+                  msg.modeledMethods,
+                  externalApiUsages,
+                );
+              const affectedModelNames = Object.keys(
+                groupMethods(
+                  affectedExternalApiUsages,
+                  viewState?.mode ?? Mode.Application,
+                ),
+              );
+              setUnsavedModels(
+                (oldUnsavedModels) =>
+                  new Set([...oldUnsavedModels, ...affectedModelNames]),
+              );
+            }
             break;
           default:
             assertNever(msg);
@@ -122,7 +140,7 @@ export function DataExtensionsEditor({
     return () => {
       window.removeEventListener("message", listener);
     };
-  }, []);
+  }, [externalApiUsages, viewState?.mode]);
 
   const modeledPercentage = useMemo(
     () => calculateModeledPercentage(externalApiUsages),
@@ -306,5 +324,15 @@ export function DataExtensionsEditor({
         </>
       )}
     </DataExtensionsEditorContainer>
+  );
+}
+
+function externalApiUsagesForModeledMethods(
+  modeledMethods: Record<string, ModeledMethod>,
+  externalApiUsages: ExternalApiUsage[],
+): ExternalApiUsage[] {
+  const signatures = new Set(Object.keys(modeledMethods));
+  return externalApiUsages.filter((externalApiUsage) =>
+    signatures.has(externalApiUsage.signature),
   );
 }
