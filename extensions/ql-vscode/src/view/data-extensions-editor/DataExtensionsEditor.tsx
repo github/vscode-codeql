@@ -282,6 +282,7 @@ export function DataExtensionsEditor({
               externalApiUsages={externalApiUsages}
               unsavedModels={unsavedModels}
               modeledMethods={modeledMethods}
+              viewState={viewState}
               mode={viewState?.mode ?? Mode.Application}
               onChange={onChange}
               onSaveModelClick={onSaveModelClick}

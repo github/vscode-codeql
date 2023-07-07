@@ -8,11 +8,13 @@ import {
   groupMethods,
   sortGroupNames,
 } from "../../data-extensions-editor/shared/sorting";
+import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
   unsavedModels: Set<string>;
   modeledMethods: Record<string, ModeledMethod>;
+  viewState: DataExtensionEditorViewState | undefined;
   mode: Mode;
   onChange: (
     modelName: string,
@@ -30,6 +32,7 @@ export const ModeledMethodsList = ({
   externalApiUsages,
   unsavedModels,
   modeledMethods,
+  viewState,
   mode,
   onChange,
   onSaveModelClick,
@@ -50,6 +53,7 @@ export const ModeledMethodsList = ({
           externalApiUsages={grouped[libraryName]}
           hasUnsavedChanges={unsavedModels.has(libraryName)}
           modeledMethods={modeledMethods}
+          viewState={viewState}
           mode={mode}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
