@@ -19,6 +19,11 @@ type Props = {
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
   ) => void;
+  onSaveModelClick: (
+    modelName: string,
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ) => void;
 };
 
 export const ModeledMethodsList = ({
@@ -27,6 +32,7 @@ export const ModeledMethodsList = ({
   modeledMethods,
   mode,
   onChange,
+  onSaveModelClick,
 }: Props) => {
   const grouped = useMemo(
     () => groupMethods(externalApiUsages, mode),
@@ -46,6 +52,7 @@ export const ModeledMethodsList = ({
           modeledMethods={modeledMethods}
           mode={mode}
           onChange={onChange}
+          onSaveModelClick={onSaveModelClick}
         />
       ))}
     </>
