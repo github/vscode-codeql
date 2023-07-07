@@ -62,12 +62,6 @@ async function writeScreenshot(description: string): Promise<void> {
   });
 }
 
-async function capturePeriodicScreenshots(): Promise<void> {
-  void spawn(".\\screenlog.ps1");
-}
-
-void capturePeriodicScreenshots();
-
 async function compileAndRunQuery(
   mode: DebugMode,
   appCommands: AppCommandManager,
