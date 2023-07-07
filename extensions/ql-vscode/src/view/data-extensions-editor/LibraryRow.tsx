@@ -57,15 +57,6 @@ const ModeledPercentage = styled.span`
   color: var(--vscode-descriptionForeground);
 `;
 
-const TitleButton = styled(VSCodeButton)`
-  background-color: transparent;
-
-  &:hover {
-    pointer: cursor;
-    background-color: var(--vscode-button-secondaryBackground);
-  }
-`;
-
 const ButtonsContainer = styled.div`
   display: flex;
   gap: 0.4em;
@@ -142,14 +133,14 @@ export const LibraryRow = ({
           </ModeledPercentage>
           {hasUnsavedChanges ? <VSCodeTag>UNSAVED</VSCodeTag> : null}
         </NameContainer>
-        <TitleButton onClick={handleModelWithAI}>
+        <VSCodeButton appearance="icon" onClick={handleModelWithAI}>
           <Codicon name="lightbulb-autofix" label="Model with AI" />
           &nbsp;Model with AI
-        </TitleButton>
-        <TitleButton onClick={handleModelFromSource}>
+        </VSCodeButton>
+        <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
           <Codicon name="code" label="Model from source" />
           &nbsp;Model from source
-        </TitleButton>
+        </VSCodeButton>
       </TitleContainer>
       {isExpanded && (
         <>
