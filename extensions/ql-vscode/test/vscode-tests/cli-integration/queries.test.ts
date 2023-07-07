@@ -67,10 +67,7 @@ async function writeScreenshot(description: string): Promise<void> {
 }
 
 async function capturePeriodicScreenshots(): Promise<void> {
-  for (let elapsed = 0; elapsed < 60 * 15; elapsed += 30) {
-    await delay(30 * 1000);
-    await writeScreenshot(`elapsed ${elapsed}`);
-  }
+  void spawn(".\\screenlog.ps1");
 }
 
 void capturePeriodicScreenshots();
