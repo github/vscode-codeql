@@ -13,6 +13,7 @@ import {
   VSCodeDivider,
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
+import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -69,6 +70,7 @@ type Props = {
   title: string;
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
+  viewState: DataExtensionEditorViewState | undefined;
   mode: Mode;
   hasUnsavedChanges: boolean;
   onChange: (
@@ -87,6 +89,7 @@ export const LibraryRow = ({
   title,
   externalApiUsages,
   modeledMethods,
+  viewState,
   mode,
   hasUnsavedChanges,
   onChange,
@@ -143,10 +146,12 @@ export const LibraryRow = ({
           </ModeledPercentage>
           {hasUnsavedChanges ? <VSCodeTag>UNSAVED</VSCodeTag> : null}
         </NameContainer>
-        <VSCodeButton appearance="icon" onClick={handleModelWithAI}>
-          <Codicon name="lightbulb-autofix" label="Model with AI" />
-          &nbsp;Model with AI
-        </VSCodeButton>
+        {viewState?.showLlmButton && (
+          <VSCodeButton appearance="icon" onClick={handleModelWithAI}>
+            <Codicon name="lightbulb-autofix" label="Model with AI" />
+            &nbsp;Model with AI
+          </VSCodeButton>
+        )}
         <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
           <Codicon name="code" label="Model from source" />
           &nbsp;Model from source
