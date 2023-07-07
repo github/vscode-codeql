@@ -156,6 +156,13 @@ export const LibraryRow = ({
           <Codicon name="code" label="Model from source" />
           &nbsp;Model from source
         </VSCodeButton>
+        {viewState?.enableFrameworkMode &&
+          viewState?.mode === Mode.Application && (
+            <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
+              <Codicon name="references" label="Model dependency" />
+              &nbsp;Model dependency
+            </VSCodeButton>
+          )}
       </TitleContainer>
       {isExpanded && (
         <>
