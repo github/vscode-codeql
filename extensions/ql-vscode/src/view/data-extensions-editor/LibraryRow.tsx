@@ -8,7 +8,12 @@ import { calculateModeledPercentage } from "../../data-extensions-editor/shared/
 import { percentFormatter } from "./formatters";
 import { Codicon } from "../common";
 import { Mode } from "../../data-extensions-editor/shared/mode";
-import { VSCodeButton, VSCodeDivider } from "@vscode/webview-ui-toolkit/react";
+import {
+  VSCodeButton,
+  VSCodeDivider,
+  VSCodeTag,
+} from "@vscode/webview-ui-toolkit/react";
+import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -53,33 +58,19 @@ const ModeledPercentage = styled.span`
   color: var(--vscode-descriptionForeground);
 `;
 
-const UnsavedLabel = styled.span`
-  text-transform: uppercase;
-  background-color: var(--vscode-input-background);
-  padding: 0.2em 0.4em;
-  border-radius: 0.2em;
-`;
-
-const TitleButton = styled(VSCodeButton)`
-  background-color: transparent;
-
-  &:hover {
-    pointer: cursor;
-    background-color: var(--vscode-button-secondaryBackground);
-  }
-`;
-
 const ButtonsContainer = styled.div`
   display: flex;
   gap: 0.4em;
   justify-content: right;
   margin-bottom: 1rem;
+  margin-right: 1rem;
 `;
 
 type Props = {
   title: string;
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
+  viewState: DataExtensionEditorViewState | undefined;
   mode: Mode;
   hasUnsavedChanges: boolean;
   onChange: (
@@ -87,15 +78,27 @@ type Props = {
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
   ) => void;
+  onSaveModelClick: (
+    modelName: string,
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ) => void;
+  onGenerateFromLlmClick: (
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ) => void;
 };
 
 export const LibraryRow = ({
   title,
   externalApiUsages,
   modeledMethods,
+  viewState,
   mode,
   hasUnsavedChanges,
   onChange,
+  onSaveModelClick,
+  onGenerateFromLlmClick,
 }: Props) => {
   const modeledPercentage = useMemo(() => {
     return calculateModeledPercentage(externalApiUsages);
@@ -107,20 +110,33 @@ export const LibraryRow = ({
     setExpanded((oldIsExpanded) => !oldIsExpanded);
   }, []);
 
-  const handleModelWithAI = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-  }, []);
+  const handleModelWithAI = useCallback(
+    async (e: React.MouseEvent) => {
+      onGenerateFromLlmClick(externalApiUsages, modeledMethods);
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    [externalApiUsages, modeledMethods, onGenerateFromLlmClick],
+  );
 
   const handleModelFromSource = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
   }, []);
 
-  const handleSave = useCallback(async (e: React.MouseEvent) => {
+  const handleModelDependency = useCallback(async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
   }, []);
+
+  const handleSave = useCallback(
+    async (e: React.MouseEvent) => {
+      onSaveModelClick(title, externalApiUsages, modeledMethods);
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    [title, externalApiUsages, modeledMethods, onSaveModelClick],
+  );
 
   const onChangeWithModelName = useCallback(
     (externalApiUsage: ExternalApiUsage, modeledMethod: ModeledMethod) => {
@@ -142,16 +158,25 @@ export const LibraryRow = ({
           <ModeledPercentage>
             {percentFormatter.format(modeledPercentage / 100)} modeled
           </ModeledPercentage>
-          {hasUnsavedChanges ? <UnsavedLabel>UNSAVED</UnsavedLabel> : null}
+          {hasUnsavedChanges ? <VSCodeTag>UNSAVED</VSCodeTag> : null}
         </NameContainer>
-        <TitleButton onClick={handleModelWithAI}>
-          <Codicon name="lightbulb-autofix" label="Model with AI" />
-          &nbsp;Model with AI
-        </TitleButton>
-        <TitleButton onClick={handleModelFromSource}>
+        {viewState?.showLlmButton && (
+          <VSCodeButton appearance="icon" onClick={handleModelWithAI}>
+            <Codicon name="lightbulb-autofix" label="Model with AI" />
+            &nbsp;Model with AI
+          </VSCodeButton>
+        )}
+        <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
           <Codicon name="code" label="Model from source" />
           &nbsp;Model from source
-        </TitleButton>
+        </VSCodeButton>
+        {viewState?.enableFrameworkMode &&
+          viewState?.mode === Mode.Application && (
+            <VSCodeButton appearance="icon" onClick={handleModelDependency}>
+              <Codicon name="references" label="Model dependency" />
+              &nbsp;Model dependency
+            </VSCodeButton>
+          )}
       </TitleContainer>
       {isExpanded && (
         <>
