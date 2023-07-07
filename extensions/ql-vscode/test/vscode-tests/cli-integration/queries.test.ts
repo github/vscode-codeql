@@ -52,10 +52,6 @@ const simpleQueryPath = getDataFolderFilePath("debugger/simple-query.ql");
 
 type DebugMode = "localQueries" | "debug";
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 let screenshotCount = 0;
 
 async function writeScreenshot(description: string): Promise<void> {
