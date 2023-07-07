@@ -8,7 +8,11 @@ import { calculateModeledPercentage } from "../../data-extensions-editor/shared/
 import { percentFormatter } from "./formatters";
 import { Codicon } from "../common";
 import { Mode } from "../../data-extensions-editor/shared/mode";
-import { VSCodeButton, VSCodeDivider } from "@vscode/webview-ui-toolkit/react";
+import {
+  VSCodeButton,
+  VSCodeDivider,
+  VSCodeTag,
+} from "@vscode/webview-ui-toolkit/react";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -53,18 +57,12 @@ const ModeledPercentage = styled.span`
   color: var(--vscode-descriptionForeground);
 `;
 
-const UnsavedLabel = styled.span`
-  text-transform: uppercase;
-  background-color: var(--vscode-input-background);
-  padding: 0.2em 0.4em;
-  border-radius: 0.2em;
-`;
-
 const ButtonsContainer = styled.div`
   display: flex;
   gap: 0.4em;
   justify-content: right;
   margin-bottom: 1rem;
+  margin-right: 1rem;
 `;
 
 type Props = {
@@ -133,7 +131,7 @@ export const LibraryRow = ({
           <ModeledPercentage>
             {percentFormatter.format(modeledPercentage / 100)} modeled
           </ModeledPercentage>
-          {hasUnsavedChanges ? <UnsavedLabel>UNSAVED</UnsavedLabel> : null}
+          {hasUnsavedChanges ? <VSCodeTag>UNSAVED</VSCodeTag> : null}
         </NameContainer>
         <VSCodeButton appearance="icon" onClick={handleModelWithAI}>
           <Codicon name="lightbulb-autofix" label="Model with AI" />
