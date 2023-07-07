@@ -185,6 +185,13 @@ jobs:
           unset DBUS_SESSION_BUS_ADDRESS
           /usr/bin/xvfb-run npm run test:vscode-integration
 
+      - name: Capture periodic screenshots (Windows)
+        if: matrix.os == 'windows-latest'
+        working-directory: extensions/ql-vscode
+        shell: pwsh
+        run: |
+          Start-Process pwsh.exe .\screenlog.ps1
+
       - name: Run integration tests (Windows)
         if: matrix.os == 'windows-latest'
         working-directory: extensions/ql-vscode
