@@ -115,6 +115,11 @@ export const LibraryRow = ({
     e.preventDefault();
   }, []);
 
+  const handleModelDependency = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+  }, []);
+
   const handleSave = useCallback(
     async (e: React.MouseEvent) => {
       onSaveModelClick(title, externalApiUsages, modeledMethods);
@@ -158,7 +163,7 @@ export const LibraryRow = ({
         </VSCodeButton>
         {viewState?.enableFrameworkMode &&
           viewState?.mode === Mode.Application && (
-            <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
+            <VSCodeButton appearance="icon" onClick={handleModelDependency}>
               <Codicon name="references" label="Model dependency" />
               &nbsp;Model dependency
             </VSCodeButton>
