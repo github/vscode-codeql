@@ -2,8 +2,8 @@ import { mkdir, writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { join } from "path";
 import { Uri } from "vscode";
-import { CodeQLCliServer } from "./codeql-cli/cli";
-import { QueryLanguage } from "./common/query-language";
+import { CodeQLCliServer } from "../codeql-cli/cli";
+import { QueryLanguage } from "../common/query-language";
 
 export class QlPackGenerator {
   private readonly qlpackName: string;

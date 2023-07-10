@@ -33,29 +33,21 @@ export const ModeledMethodDataGrid = ({
   );
 
   return (
-    <VSCodeDataGrid>
+    <VSCodeDataGrid gridTemplateColumns="0.4fr 0.15fr 0.15fr 0.15fr 0.15fr">
       <VSCodeDataGridRow rowType="header">
         <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
-          Type
+          API or method
         </VSCodeDataGridCell>
         <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
-          Method
-        </VSCodeDataGridCell>
-        {mode === Mode.Application && (
-          <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
-            Usages
-          </VSCodeDataGridCell>
-        )}
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
           Model type
         </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
+        <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
           Input
         </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={6}>
+        <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
           Output
         </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={7}>
+        <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
           Kind
         </VSCodeDataGridCell>
       </VSCodeDataGridRow>

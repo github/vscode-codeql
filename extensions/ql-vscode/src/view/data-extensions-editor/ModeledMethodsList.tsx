@@ -8,22 +8,39 @@ import {
   groupMethods,
   sortGroupNames,
 } from "../../data-extensions-editor/shared/sorting";
+import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
+  unsavedModels: Set<string>;
   modeledMethods: Record<string, ModeledMethod>;
+  viewState: DataExtensionEditorViewState | undefined;
   mode: Mode;
   onChange: (
+    modelName: string,
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
+  ) => void;
+  onSaveModelClick: (
+    modelName: string,
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ) => void;
+  onGenerateFromLlmClick: (
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
   ) => void;
 };
 
 export const ModeledMethodsList = ({
   externalApiUsages,
+  unsavedModels,
   modeledMethods,
+  viewState,
   mode,
   onChange,
+  onSaveModelClick,
+  onGenerateFromLlmClick,
 }: Props) => {
   const grouped = useMemo(
     () => groupMethods(externalApiUsages, mode),
@@ -39,9 +56,13 @@ export const ModeledMethodsList = ({
           key={libraryName}
           title={libraryName}
           externalApiUsages={grouped[libraryName]}
+          hasUnsavedChanges={unsavedModels.has(libraryName)}
           modeledMethods={modeledMethods}
+          viewState={viewState}
           mode={mode}
           onChange={onChange}
+          onSaveModelClick={onSaveModelClick}
+          onGenerateFromLlmClick={onGenerateFromLlmClick}
         />
       ))}
     </>

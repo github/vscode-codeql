@@ -67,6 +67,8 @@ export function DataExtensionsEditor({
   const [externalApiUsages, setExternalApiUsages] = useState<
     ExternalApiUsage[]
   >(initialExternalApiUsages);
+  const [unsavedModels, setUnsavedModels] = useState<Set<string>>(new Set());
+
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
   >(initialModeledMethods);
@@ -130,11 +132,14 @@ export function DataExtensionsEditor({
   const unModeledPercentage = 100 - modeledPercentage;
 
   const onChange = useCallback(
-    (method: ExternalApiUsage, model: ModeledMethod) => {
+    (modelName: string, method: ExternalApiUsage, model: ModeledMethod) => {
       setModeledMethods((oldModeledMethods) => ({
         ...oldModeledMethods,
         [method.signature]: model,
       }));
+      setUnsavedModels(
+        (oldUnsavedModels) => new Set([...oldUnsavedModels, modelName]),
+      );
     },
     [],
   );
@@ -145,13 +150,34 @@ export function DataExtensionsEditor({
     });
   }, []);
 
-  const onApplyClick = useCallback(() => {
+  const onSaveAllClick = useCallback(() => {
     vscode.postMessage({
       t: "saveModeledMethods",
       externalApiUsages,
       modeledMethods,
     });
+    setUnsavedModels(new Set());
   }, [externalApiUsages, modeledMethods]);
+
+  const onSaveModelClick = useCallback(
+    (
+      modelName: string,
+      externalApiUsages: ExternalApiUsage[],
+      modeledMethods: Record<string, ModeledMethod>,
+    ) => {
+      vscode.postMessage({
+        t: "saveModeledMethods",
+        externalApiUsages,
+        modeledMethods,
+      });
+      setUnsavedModels((oldUnsavedModels) => {
+        const newUnsavedModels = new Set(oldUnsavedModels);
+        newUnsavedModels.delete(modelName);
+        return newUnsavedModels;
+      });
+    },
+    [],
+  );
 
   const onGenerateClick = useCallback(() => {
     vscode.postMessage({
@@ -159,13 +185,27 @@ export function DataExtensionsEditor({
     });
   }, []);
 
-  const onGenerateFromLlmClick = useCallback(() => {
+  const onGenerateAllFromLlmClick = useCallback(() => {
     vscode.postMessage({
       t: "generateExternalApiFromLlm",
       externalApiUsages,
       modeledMethods,
     });
   }, [externalApiUsages, modeledMethods]);
+
+  const onGenerateFromLlmClick = useCallback(
+    (
+      externalApiUsages: ExternalApiUsage[],
+      modeledMethods: Record<string, ModeledMethod>,
+    ) => {
+      vscode.postMessage({
+        t: "generateExternalApiFromLlm",
+        externalApiUsages,
+        modeledMethods,
+      });
+    },
+    [],
+  );
 
   const onOpenExtensionPackClick = useCallback(() => {
     vscode.postMessage({
@@ -233,7 +273,7 @@ export function DataExtensionsEditor({
 
           <EditorContainer>
             <ButtonsContainer>
-              <VSCodeButton onClick={onApplyClick}>Apply</VSCodeButton>
+              <VSCodeButton onClick={onSaveAllClick}>Apply</VSCodeButton>
               {viewState?.enableFrameworkMode && (
                 <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
                   Refresh
@@ -246,7 +286,7 @@ export function DataExtensionsEditor({
               </VSCodeButton>
               {viewState?.showLlmButton && (
                 <>
-                  <VSCodeButton onClick={onGenerateFromLlmClick}>
+                  <VSCodeButton onClick={onGenerateAllFromLlmClick}>
                     Generate using LLM
                   </VSCodeButton>
                 </>
@@ -254,9 +294,13 @@ export function DataExtensionsEditor({
             </ButtonsContainer>
             <ModeledMethodsList
               externalApiUsages={externalApiUsages}
+              unsavedModels={unsavedModels}
               modeledMethods={modeledMethods}
+              viewState={viewState}
               mode={viewState?.mode ?? Mode.Application}
               onChange={onChange}
+              onSaveModelClick={onSaveModelClick}
+              onGenerateFromLlmClick={onGenerateFromLlmClick}
             />
           </EditorContainer>
         </>

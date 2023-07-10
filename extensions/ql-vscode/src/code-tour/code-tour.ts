@@ -1,10 +1,10 @@
-import { AppCommandManager } from "./common/commands";
+import { AppCommandManager } from "../common/commands";
 import { Uri, workspace } from "vscode";
 import { join } from "path";
 import { pathExists } from "fs-extra";
-import { isCodespacesTemplate } from "./config";
-import { showBinaryChoiceDialog } from "./common/vscode/dialog";
-import { extLogger } from "./common/logging/vscode";
+import { isCodespacesTemplate } from "../config";
+import { showBinaryChoiceDialog } from "../common/vscode/dialog";
+import { extLogger } from "../common/logging/vscode";
 
 /**
  * Check if the current workspace is the CodeTour and open the workspace folder.

@@ -44,7 +44,7 @@ import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { LocalQueryCommands } from "../common/commands";
 import { App } from "../common/app";
 import { DisposableObject } from "../common/disposable-object";
-import { SkeletonQueryWizard } from "../skeleton-query-wizard";
+import { SkeletonQueryWizard } from "./skeleton-query-wizard";
 import { LocalQueryRun } from "./local-query-run";
 import { createMultiSelectionCommand } from "../common/vscode/selection-commands";
 import { findLanguage } from "../codeql-cli/query-language";
@@ -132,15 +132,20 @@ export class LocalQueries extends DisposableObject {
   private async runQueryFromQueriesPanel(
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
-    await this.runQuery(Uri.file(queryTreeViewItem.path));
+    if (queryTreeViewItem.path !== undefined) {
+      await this.runQuery(Uri.file(queryTreeViewItem.path));
+    }
   }
 
   private async runQueriesFromQueriesPanel(
     queryTreeViewItem: QueryTreeViewItem,
   ): Promise<void> {
-    const uris = queryTreeViewItem.children.map((child) =>
-      Uri.file(child.path),
-    );
+    const uris = [];
+    for (const child of queryTreeViewItem.children) {
+      if (child.path !== undefined) {
+        uris.push(Uri.file(child.path));
+      }
+    }
     await this.runQueries(uris);
   }
 

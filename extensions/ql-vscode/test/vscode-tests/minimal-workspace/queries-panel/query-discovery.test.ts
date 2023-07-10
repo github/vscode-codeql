@@ -54,6 +54,10 @@ describe("Query pack discovery", () => {
   });
 
   describe("buildQueryTree", () => {
+    it("returns undefined before initial refresh has been done", async () => {
+      expect(discovery.buildQueryTree()).toEqual(undefined);
+    });
+
     it("returns an empty tree when there are no query files", async () => {
       await discovery.initialRefresh();
 

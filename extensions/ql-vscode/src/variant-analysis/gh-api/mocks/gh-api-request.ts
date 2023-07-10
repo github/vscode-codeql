@@ -10,6 +10,7 @@ export enum RequestKind {
   GetVariantAnalysis = "getVariantAnalysis",
   GetVariantAnalysisRepo = "getVariantAnalysisRepo",
   GetVariantAnalysisRepoResult = "getVariantAnalysisRepoResult",
+  CodeSearch = "codeSearch",
 }
 
 export interface BasicErorResponse {
@@ -69,12 +70,30 @@ export interface GetVariantAnalysisRepoResultRequest {
   };
 }
 
+export interface CodeSearchRequest {
+  request: {
+    kind: RequestKind.CodeSearch;
+    query: string;
+  };
+  response: {
+    status: number;
+    body?: {
+      total_count?: number;
+      items?: Array<{
+        repository: Repository;
+      }>;
+    };
+    message?: string;
+  };
+}
+
 export type GitHubApiRequest =
   | GetRepoRequest
   | SubmitVariantAnalysisRequest
   | GetVariantAnalysisRequest
   | GetVariantAnalysisRepoRequest
-  | GetVariantAnalysisRepoResultRequest;
+  | GetVariantAnalysisRepoResultRequest
+  | CodeSearchRequest;
 
 export const isGetRepoRequest = (
   request: GitHubApiRequest,
@@ -99,3 +118,8 @@ export const isGetVariantAnalysisRepoResultRequest = (
   request: GitHubApiRequest,
 ): request is GetVariantAnalysisRepoResultRequest =>
   request.request.kind === RequestKind.GetVariantAnalysisRepoResult;
+
+export const isCodeSearchRequest = (
+  request: GitHubApiRequest,
+): request is CodeSearchRequest =>
+  request.request.kind === RequestKind.CodeSearch;
