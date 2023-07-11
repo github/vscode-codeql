@@ -17,6 +17,7 @@ import { DataExtensionEditorViewState } from "../../data-extensions-editor/share
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../data-extensions-editor/shared/mode";
+import { groupMethods } from "../../data-extensions-editor/shared/sorting";
 
 const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
@@ -92,21 +93,36 @@ export function DataExtensionsEditor({
           case "showProgress":
             setProgress(msg);
             break;
-          case "addModeledMethods":
+          case "loadModeledMethods":
             setModeledMethods((oldModeledMethods) => {
-              const filteredOldModeledMethods = msg.overrideNone
-                ? Object.fromEntries(
-                    Object.entries(oldModeledMethods).filter(
-                      ([, value]) => value.type !== "none",
-                    ),
-                  )
-                : oldModeledMethods;
-
               return {
                 ...msg.modeledMethods,
-                ...filteredOldModeledMethods,
+                ...oldModeledMethods,
               };
             });
+            break;
+          case "addModeledMethods":
+            setModeledMethods((oldModeledMethods) => {
+              return {
+                ...msg.modeledMethods,
+                ...Object.fromEntries(
+                  Object.entries(oldModeledMethods).filter(
+                    ([, value]) => value.type !== "none",
+                  ),
+                ),
+              };
+            });
+            setUnsavedModels(
+              (oldUnsavedModels) =>
+                new Set([
+                  ...oldUnsavedModels,
+                  ...modelsAffectedByNewModeledMethods(
+                    msg.modeledMethods,
+                    externalApiUsages,
+                    viewState?.mode ?? Mode.Application,
+                  ),
+                ]),
+            );
             break;
           default:
             assertNever(msg);
@@ -122,7 +138,7 @@ export function DataExtensionsEditor({
     return () => {
       window.removeEventListener("message", listener);
     };
-  }, []);
+  }, [externalApiUsages, viewState?.mode]);
 
   const modeledPercentage = useMemo(
     () => calculateModeledPercentage(externalApiUsages),
@@ -308,4 +324,16 @@ export function DataExtensionsEditor({
       )}
     </DataExtensionsEditorContainer>
   );
+}
+
+function modelsAffectedByNewModeledMethods(
+  modeledMethods: Record<string, ModeledMethod>,
+  externalApiUsages: ExternalApiUsage[],
+  mode: Mode,
+): string[] {
+  const signatures = new Set(Object.keys(modeledMethods));
+  const affectedExternalApiUsages = externalApiUsages.filter(
+    (externalApiUsage) => signatures.has(externalApiUsage.signature),
+  );
+  return Object.keys(groupMethods(affectedExternalApiUsages, mode));
 }
