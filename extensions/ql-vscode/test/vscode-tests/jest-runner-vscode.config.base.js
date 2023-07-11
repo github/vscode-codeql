@@ -2,8 +2,10 @@ const path = require("path");
 const os = require("os");
 const tmp = require("tmp-promise");
 
+// Use the Actions runner temp dir if available, otherwise use the system temp dir
+// On Actions runners, we can get into Windows "long path" territory if we use the
+// system temp dir.
 const overrideTmpDir = process.env.RUNNER_TEMP || os.tmpdir();
-console.log(`TmpDir: ${overrideTmpDir}`);
 const tmpDir = tmp.dirSync({ unsafeCleanup: true, tmpdir: overrideTmpDir });
 
 const rootDir = path.resolve(__dirname, "../..");
