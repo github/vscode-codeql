@@ -40,7 +40,10 @@ class QLTestListener extends DisposableObject {
 export class TestUIService extends TestManagerBase implements TestController {
   private readonly listeners: Map<TestAdapter, QLTestListener> = new Map();
 
-  public constructor(app: App, private readonly testHub: TestHub) {
+  public constructor(
+    app: App,
+    private readonly testHub: TestHub,
+  ) {
     super(app);
 
     testHub.registerTestController(this);

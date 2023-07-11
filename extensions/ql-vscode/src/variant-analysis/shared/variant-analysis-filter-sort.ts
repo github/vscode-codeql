@@ -158,8 +158,8 @@ export function filterAndSortRepositoriesWithResults<
     filterSortState.repositoryIds.length > 0
   ) {
     return repositories
-      .filter((repo) =>
-        filterSortState.repositoryIds?.includes(repo.repository.id),
+      .filter(
+        (repo) => filterSortState.repositoryIds?.includes(repo.repository.id),
       )
       .sort(compareWithResults(filterSortState));
   }
