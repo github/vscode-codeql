@@ -67,7 +67,10 @@ export abstract class FilePathDiscovery<T extends PathData> extends Discovery {
    * @param name Name of the discovery operation, for logging purposes.
    * @param fileWatchPattern Passed to `vscode.RelativePattern` to determine the files to watch for changes to.
    */
-  constructor(name: string, private readonly fileWatchPattern: string) {
+  constructor(
+    name: string,
+    private readonly fileWatchPattern: string,
+  ) {
     super(name, extLogger);
 
     this.onDidChangePathDataEmitter = this.push(new EventEmitter<void>());

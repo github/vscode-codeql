@@ -216,9 +216,8 @@ function getCommands(
     "codeQL.restartLegacyQueryServerOnConfigChange": restartQueryServer,
     "codeQL.restartQueryServerOnExternalConfigChange": restartQueryServer,
     "codeQL.copyVersion": async () => {
-      const text = `CodeQL extension version: ${
-        extension?.packageJSON.version
-      } \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${platform()} ${arch()}`;
+      const text = `CodeQL extension version: ${extension?.packageJSON
+        .version} \nCodeQL CLI version: ${await getCliVersion()} \nPlatform: ${platform()} ${arch()}`;
       await env.clipboard.writeText(text);
       void showAndLogInformationMessage(extLogger, text);
     },

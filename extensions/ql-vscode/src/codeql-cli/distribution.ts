@@ -954,7 +954,10 @@ export interface GithubReleaseAsset {
 }
 
 export class GithubApiError extends Error {
-  constructor(public status: number, public body: string) {
+  constructor(
+    public status: number,
+    public body: string,
+  ) {
     super(`API call failed with status code ${status}, body: ${body}`);
   }
 }
