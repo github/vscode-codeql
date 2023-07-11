@@ -304,7 +304,6 @@ export function DataExtensionsEditor({
               unsavedModels={unsavedModels}
               modeledMethods={modeledMethods}
               viewState={viewState}
-              mode={viewState.mode}
               onChange={onChange}
               onSaveModelClick={onSaveModelClick}
               onGenerateFromLlmClick={onGenerateFromLlmClick}

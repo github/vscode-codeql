@@ -71,7 +71,6 @@ type Props = {
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
   viewState: DataExtensionEditorViewState;
-  mode: Mode;
   hasUnsavedChanges: boolean;
   onChange: (
     modelName: string,
@@ -95,7 +94,6 @@ export const LibraryRow = ({
   externalApiUsages,
   modeledMethods,
   viewState,
-  mode,
   hasUnsavedChanges,
   onChange,
   onSaveModelClick,
@@ -190,7 +188,7 @@ export const LibraryRow = ({
           <ModeledMethodDataGrid
             externalApiUsages={externalApiUsages}
             modeledMethods={modeledMethods}
-            mode={mode}
+            mode={viewState.mode}
             onChange={onChangeWithModelName}
           />
           <SectionDivider />
