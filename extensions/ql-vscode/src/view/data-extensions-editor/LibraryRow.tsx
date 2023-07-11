@@ -170,10 +170,12 @@ export const LibraryRow = ({
             &nbsp;Model with AI
           </VSCodeButton>
         )}
-        <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
-          <Codicon name="code" label="Model from source" />
-          &nbsp;Model from source
-        </VSCodeButton>
+        {viewState.mode === Mode.Application && (
+          <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
+            <Codicon name="code" label="Model from source" />
+            &nbsp;Model from source
+          </VSCodeButton>
+        )}
         {viewState.enableFrameworkMode &&
           viewState.mode === Mode.Application && (
             <VSCodeButton appearance="icon" onClick={handleModelDependency}>
