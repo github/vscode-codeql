@@ -93,38 +93,36 @@ export function DataExtensionsEditor({
           case "showProgress":
             setProgress(msg);
             break;
-          case "addModeledMethods":
+          case "loadModeledMethods":
             setModeledMethods((oldModeledMethods) => {
-              const filteredOldModeledMethods = msg.overrideNone
-                ? Object.fromEntries(
-                    Object.entries(oldModeledMethods).filter(
-                      ([, value]) => value.type !== "none",
-                    ),
-                  )
-                : oldModeledMethods;
-
               return {
                 ...msg.modeledMethods,
-                ...filteredOldModeledMethods,
+                ...oldModeledMethods,
               };
             });
-            if (msg.unsaved) {
-              const affectedExternalApiUsages =
-                externalApiUsagesForModeledMethods(
-                  msg.modeledMethods,
-                  externalApiUsages,
-                );
-              const affectedModelNames = Object.keys(
-                groupMethods(
-                  affectedExternalApiUsages,
-                  viewState?.mode ?? Mode.Application,
+            break;
+          case "addModeledMethods":
+            setModeledMethods((oldModeledMethods) => {
+              return {
+                ...msg.modeledMethods,
+                ...Object.fromEntries(
+                  Object.entries(oldModeledMethods).filter(
+                    ([, value]) => value.type !== "none",
+                  ),
                 ),
-              );
-              setUnsavedModels(
-                (oldUnsavedModels) =>
-                  new Set([...oldUnsavedModels, ...affectedModelNames]),
-              );
-            }
+              };
+            });
+            setUnsavedModels(
+              (oldUnsavedModels) =>
+                new Set([
+                  ...oldUnsavedModels,
+                  ...modelsAffectedByNewModeledMethods(
+                    msg.modeledMethods,
+                    externalApiUsages,
+                    viewState?.mode ?? Mode.Application,
+                  ),
+                ]),
+            );
             break;
           default:
             assertNever(msg);
@@ -328,12 +326,14 @@ export function DataExtensionsEditor({
   );
 }
 
-function externalApiUsagesForModeledMethods(
+function modelsAffectedByNewModeledMethods(
   modeledMethods: Record<string, ModeledMethod>,
   externalApiUsages: ExternalApiUsage[],
-): ExternalApiUsage[] {
+  mode: Mode,
+): string[] {
   const signatures = new Set(Object.keys(modeledMethods));
-  return externalApiUsages.filter((externalApiUsage) =>
-    signatures.has(externalApiUsage.signature),
+  const affectedExternalApiUsages = externalApiUsages.filter(
+    (externalApiUsage) => signatures.has(externalApiUsage.signature),
   );
+  return Object.keys(groupMethods(affectedExternalApiUsages, mode));
 }

@@ -509,21 +509,14 @@ export interface ShowProgressMessage {
   message: string;
 }
 
+export interface LoadModeledMethodsMessage {
+  t: "loadModeledMethods";
+  modeledMethods: Record<string, ModeledMethod>;
+}
+
 export interface AddModeledMethodsMessage {
   t: "addModeledMethods";
   modeledMethods: Record<string, ModeledMethod>;
-  /**
-   * Are these modeled methods newly generated in some way and not yet
-   * saved in any model file, or are they loaded from an existing model file.
-   */
-  unsaved: boolean;
-  /**
-   * If true, then any existing modeled methods set to "none" will be
-   * overwritten by the new modeled methods. Otherwise, the "none" modeled
-   * methods will not be overwritten, even if the new modeled methods
-   * contain a better model.
-   */
-  overrideNone?: boolean;
 }
 
 export interface SwitchModeMessage {
@@ -564,6 +557,7 @@ export type ToDataExtensionsEditorMessage =
   | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
   | ShowProgressMessage
+  | LoadModeledMethodsMessage
   | AddModeledMethodsMessage;
 
 export type FromDataExtensionsEditorMessage =

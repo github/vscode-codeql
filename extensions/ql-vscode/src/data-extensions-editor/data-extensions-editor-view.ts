@@ -257,9 +257,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
       }
 
       await this.postMessage({
-        t: "addModeledMethods",
+        t: "loadModeledMethods",
         modeledMethods: existingModeledMethods,
-        unsaved: false,
       });
     } catch (e: unknown) {
       void showAndLogErrorMessage(
@@ -388,8 +387,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
           await this.postMessage({
             t: "addModeledMethods",
             modeledMethods: modeledMethodsByName,
-            unsaved: true,
-            overrideNone: true,
           });
         },
         progress: (update) => this.showProgress(update),
@@ -483,8 +480,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
     await this.postMessage({
       t: "addModeledMethods",
       modeledMethods: predictedModeledMethods,
-      unsaved: true,
-      overrideNone: true,
     });
 
     await this.clearProgress();
