@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ChangeEvent } from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 
 const StyledDropdown = styled.select`
   width: 100%;
