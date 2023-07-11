@@ -70,7 +70,7 @@ type Props = {
   title: string;
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
-  viewState: DataExtensionEditorViewState | undefined;
+  viewState: DataExtensionEditorViewState;
   mode: Mode;
   hasUnsavedChanges: boolean;
   onChange: (
@@ -166,7 +166,7 @@ export const LibraryRow = ({
           </ModeledPercentage>
           {hasUnsavedChanges ? <VSCodeTag>UNSAVED</VSCodeTag> : null}
         </NameContainer>
-        {viewState?.showLlmButton && (
+        {viewState.showLlmButton && (
           <VSCodeButton appearance="icon" onClick={handleModelWithAI}>
             <Codicon name="lightbulb-autofix" label="Model with AI" />
             &nbsp;Model with AI
@@ -176,8 +176,8 @@ export const LibraryRow = ({
           <Codicon name="code" label="Model from source" />
           &nbsp;Model from source
         </VSCodeButton>
-        {viewState?.enableFrameworkMode &&
-          viewState?.mode === Mode.Application && (
+        {viewState.enableFrameworkMode &&
+          viewState.mode === Mode.Application && (
             <VSCodeButton appearance="icon" onClick={handleModelDependency}>
               <Codicon name="references" label="Model dependency" />
               &nbsp;Model dependency

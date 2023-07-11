@@ -14,7 +14,7 @@ type Props = {
   externalApiUsages: ExternalApiUsage[];
   unsavedModels: Set<string>;
   modeledMethods: Record<string, ModeledMethod>;
-  viewState: DataExtensionEditorViewState | undefined;
+  viewState: DataExtensionEditorViewState;
   mode: Mode;
   onChange: (
     modelName: string,

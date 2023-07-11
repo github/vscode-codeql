@@ -18,6 +18,13 @@ import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../data-extensions-editor/shared/mode";
 
+const LoadingContainer = styled.div`
+  text-align: center;
+  padding: 1em;
+  font-size: x-large;
+  font-weight: 600;
+`;
+
 const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
 `;
@@ -223,6 +230,10 @@ export function DataExtensionsEditor({
     });
   }, [viewState?.mode]);
 
+  if (viewState === undefined) {
+    return <LoadingContainer>Loading...</LoadingContainer>;
+  }
+
   return (
     <DataExtensionsEditorContainer>
       {progress.maxStep > 0 && (
@@ -236,25 +247,21 @@ export function DataExtensionsEditor({
         <>
           <ViewTitle>Data extensions editor</ViewTitle>
           <DetailsContainer>
-            {viewState?.extensionPack && (
-              <>
-                <LinkIconButton onClick={onOpenExtensionPackClick}>
-                  <span slot="start" className="codicon codicon-package"></span>
-                  {viewState.extensionPack.name}
-                </LinkIconButton>
-              </>
-            )}
+            <LinkIconButton onClick={onOpenExtensionPackClick}>
+              <span slot="start" className="codicon codicon-package"></span>
+              {viewState.extensionPack.name}
+            </LinkIconButton>
             <div>
               {percentFormatter.format(modeledPercentage / 100)} modeled
             </div>
             <div>
               {percentFormatter.format(unModeledPercentage / 100)} unmodeled
             </div>
-            {viewState?.enableFrameworkMode && (
+            {viewState.enableFrameworkMode && (
               <>
                 <div>
                   Mode:{" "}
-                  {viewState?.mode === Mode.Framework
+                  {viewState.mode === Mode.Framework
                     ? "Framework"
                     : "Application"}
                 </div>
@@ -274,17 +281,17 @@ export function DataExtensionsEditor({
           <EditorContainer>
             <ButtonsContainer>
               <VSCodeButton onClick={onSaveAllClick}>Apply</VSCodeButton>
-              {viewState?.enableFrameworkMode && (
+              {viewState.enableFrameworkMode && (
                 <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
                   Refresh
                 </VSCodeButton>
               )}
               <VSCodeButton onClick={onGenerateFromSourceClick}>
-                {viewState?.mode === Mode.Framework
+                {viewState.mode === Mode.Framework
                   ? "Generate"
                   : "Download and generate"}
               </VSCodeButton>
-              {viewState?.showLlmButton && (
+              {viewState.showLlmButton && (
                 <>
                   <VSCodeButton onClick={onGenerateAllFromLlmClick}>
                     Generate using LLM
@@ -297,7 +304,7 @@ export function DataExtensionsEditor({
               unsavedModels={unsavedModels}
               modeledMethods={modeledMethods}
               viewState={viewState}
-              mode={viewState?.mode ?? Mode.Application}
+              mode={viewState.mode}
               onChange={onChange}
               onSaveModelClick={onSaveModelClick}
               onGenerateFromLlmClick={onGenerateFromLlmClick}
