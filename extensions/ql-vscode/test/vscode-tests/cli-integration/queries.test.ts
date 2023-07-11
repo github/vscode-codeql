@@ -3,7 +3,6 @@ import {
   ExtensionContext,
   Range,
   Uri,
-  window,
   workspace,
 } from "vscode";
 import { join, dirname } from "path";
@@ -46,8 +45,6 @@ import {
 import { ProgressCallback } from "../../../src/common/vscode/progress";
 import { withDebugController } from "./debugger/debug-controller";
 import { getDataFolderFilePath } from "./utils";
-import { spawn } from "child-process-promise";
-import os from "os";
 
 const simpleQueryPath = getDataFolderFilePath("debugger/simple-query.ql");
 
@@ -87,15 +84,6 @@ async function compileAndRunQuery(
             console.log(`Content: ${doc.getText()}`);
           }
         }
-        const scopelessConfig = workspace
-          .getConfiguration("debug")
-          .get<string>("saveBeforeStart", "default");
-        const qlConfig = workspace
-          .getConfiguration("debug", { languageId: "ql" })
-          .get<string>("saveBeforeStart", "default");
-        const codeqlConfig = workspace
-          .getConfiguration("debug", { languageId: "codeql" })
-          .get<string>("saveBeforeStart", "default");
 
         await controller.startDebugging(
           {
