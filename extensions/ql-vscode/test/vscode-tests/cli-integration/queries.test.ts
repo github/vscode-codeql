@@ -1,10 +1,4 @@
-import {
-  CancellationToken,
-  ExtensionContext,
-  Range,
-  Uri,
-  workspace,
-} from "vscode";
+import { CancellationToken, ExtensionContext, Range, Uri } from "vscode";
 import { join, dirname } from "path";
 import {
   pathExistsSync,
@@ -73,18 +67,7 @@ async function compileAndRunQuery(
       );
 
     case "debug":
-      console.log("Running query in debug mode");
       return await withDebugController(appCommands, async (controller) => {
-        console.log("Dumping dirty documents");
-        for (const doc of workspace.textDocuments) {
-          console.log(
-            `${doc.isDirty ? "dirty" : "clean"}: ${doc.uri.toString()}`,
-          );
-          if (doc.isUntitled) {
-            console.log(`Content: ${doc.getText()}`);
-          }
-        }
-
         await controller.startDebugging(
           {
             query: queryUri.fsPath,
@@ -175,11 +158,8 @@ describeWithCodeQL()("Queries", () => {
         return;
       }
 
-      console.log(`Starting 'no extensions' ${mode}`);
-      console.log("Setting useExtensionPacks to false");
       await cli.setUseExtensionPacks(false);
       const parsedResults = await runQueryWithExtensions();
-      console.log("Returned from runQueryWithExtensions");
       expect(parsedResults).toEqual([1]);
     });
 
