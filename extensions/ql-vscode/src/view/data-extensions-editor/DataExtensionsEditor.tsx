@@ -179,7 +179,7 @@ export function DataExtensionsEditor({
     [],
   );
 
-  const onGenerateClick = useCallback(() => {
+  const onGenerateFromSourceClick = useCallback(() => {
     vscode.postMessage({
       t: "generateExternalApi",
     });
@@ -279,7 +279,7 @@ export function DataExtensionsEditor({
                   Refresh
                 </VSCodeButton>
               )}
-              <VSCodeButton onClick={onGenerateClick}>
+              <VSCodeButton onClick={onGenerateFromSourceClick}>
                 {viewState?.mode === Mode.Framework
                   ? "Generate"
                   : "Download and generate"}
@@ -301,6 +301,7 @@ export function DataExtensionsEditor({
               onChange={onChange}
               onSaveModelClick={onSaveModelClick}
               onGenerateFromLlmClick={onGenerateFromLlmClick}
+              onGenerateFromSourceClick={onGenerateFromSourceClick}
             />
           </EditorContainer>
         </>
