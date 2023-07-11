@@ -693,7 +693,7 @@ const AUTOGENERATE_QL_PACKS = new Setting(
 );
 
 const AutogenerateQLPacksValues = ["ask", "never"] as const;
-type AutogenerateQLPacks = typeof AutogenerateQLPacksValues[number];
+type AutogenerateQLPacks = (typeof AutogenerateQLPacksValues)[number];
 
 export function getAutogenerateQlPacks(): AutogenerateQLPacks {
   const value = AUTOGENERATE_QL_PACKS.getValue<AutogenerateQLPacks>();

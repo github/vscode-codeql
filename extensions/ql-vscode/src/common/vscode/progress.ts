@@ -10,7 +10,10 @@ export class UserCancellationException extends Error {
    * @param message The error message
    * @param silent If silent is true, then this exception will avoid showing a warning message to the user.
    */
-  constructor(message?: string, public readonly silent = false) {
+  constructor(
+    message?: string,
+    public readonly silent = false,
+  ) {
     super(message);
   }
 }

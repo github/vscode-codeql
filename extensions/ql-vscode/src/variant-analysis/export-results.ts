@@ -289,10 +289,13 @@ export async function exportToGist(
   }
 
   // Convert markdownFiles to the appropriate format for uploading to gist
-  const gistFiles = markdownFiles.reduce((acc, cur) => {
-    acc[`${cur.fileName}.md`] = { content: cur.content.join("\n") };
-    return acc;
-  }, {} as { [key: string]: { content: string } });
+  const gistFiles = markdownFiles.reduce(
+    (acc, cur) => {
+      acc[`${cur.fileName}.md`] = { content: cur.content.join("\n") };
+      return acc;
+    },
+    {} as { [key: string]: { content: string } },
+  );
 
   const gistUrl = await createGist(credentials, description, gistFiles);
   if (gistUrl) {
