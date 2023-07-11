@@ -2,16 +2,8 @@ import * as messages from "./query-server/messages-shared";
 import * as legacyMessages from "./query-server/legacy-messages";
 import { DatabaseInfo, QueryMetadata } from "./common/interface-types";
 import { join, parse, dirname, basename } from "path";
-import {
-  ConfigurationTarget,
-  Range,
-  TextDocument,
-  TextEditor,
-  Uri,
-  window,
-} from "vscode";
-import { isCanary, AUTOSAVE_SETTING } from "./config";
-import { UserCancellationException } from "./common/vscode/progress";
+import { Range, TextEditor, Uri, window, workspace } from "vscode";
+import { isCanary, VSCODE_SAVE_BEFORE_START_SETTING } from "./config";
 import {
   pathExists,
   readFile,
@@ -491,55 +483,41 @@ async function getSelectedPosition(
   };
 }
 
+type SaveBeforeStartMode =
+  | "nonUntitledEditorsInActiveGroup"
+  | "allEditorsInActiveGroup"
+  | "none";
+
 /**
- * Prompts the user to save `document` if it has unsaved changes.
- *
- * @param document The document to save.
- *
- * @returns true if we should save changes and false if we should continue without saving changes.
- * @throws UserCancellationException if we should abort whatever operation triggered this prompt
+ * Saves dirty files before running queries, based on the user's settings.
  */
-export async function promptUserToSaveChanges(
-  document: TextDocument,
-): Promise<boolean> {
-  if (document.isDirty) {
-    if (AUTOSAVE_SETTING.getValue()) {
-      return true;
-    } else {
-      const yesItem = { title: "Yes", isCloseAffordance: false };
-      const alwaysItem = { title: "Always Save", isCloseAffordance: false };
-      const noItem = {
-        title: "No (run version on disk)",
-        isCloseAffordance: false,
-      };
-      const cancelItem = { title: "Cancel", isCloseAffordance: true };
-      const message = `Query file '${basename(
-        document.uri.fsPath,
-      )}' has unsaved changes. Save now?`;
-      const chosenItem = await window.showInformationMessage(
-        message,
-        { modal: true },
-        yesItem,
-        alwaysItem,
-        noItem,
-        cancelItem,
-      );
+export async function saveBeforeStart(): Promise<void> {
+  const mode: SaveBeforeStartMode =
+    (VSCODE_SAVE_BEFORE_START_SETTING.getValue<string>({
+      languageId: "ql",
+    }) as SaveBeforeStartMode) ?? "nonUntitledEditorsInActiveGroup";
 
-      if (chosenItem === alwaysItem) {
-        await AUTOSAVE_SETTING.updateValue(true, ConfigurationTarget.Workspace);
-        return true;
-      }
+  // Despite the names of the modes, the VS Code implementation doesn't restrict itself to the
+  // current tab group. It saves all dirty files in all groups. We'll do the same.
+  switch (mode) {
+    case "nonUntitledEditorsInActiveGroup":
+      await workspace.saveAll(false);
+      break;
 
-      if (chosenItem === yesItem) {
-        return true;
-      }
+    case "allEditorsInActiveGroup":
+      // The VS Code implementation of this mode only saves an untitled file if it is the document
+      // in the active editor. That's too much work for us, so we'll just live with the inconsistency.
+      await workspace.saveAll(true);
+      break;
 
-      if (chosenItem === cancelItem) {
-        throw new UserCancellationException("Query run cancelled.", true);
-      }
-    }
+    case "none":
+      break;
+
+    default:
+      // Unexpected value. Fall back to the default behavior.
+      await workspace.saveAll(false);
+      break;
   }
-  return false;
 }
 
 /**
@@ -566,7 +544,7 @@ async function convertToQlPath(filePath: string): Promise<string> {
         }
       }
     }
-    throw new Error(`Can't convert path to form suitable for QL:${filePath}`);
+    throw new Error(`Can't convert path to form suitable for QL: ${filePath}`);
   } else {
     return filePath;
   }

@@ -268,8 +268,22 @@ jobs:
           unset DBUS_SESSION_BUS_ADDRESS
           /usr/bin/xvfb-run npm run test:cli-integration
 
+      - name: Capture periodic screenshots (Windows)
+        if: matrix.os == 'windows-latest'
+        working-directory: extensions/ql-vscode
+        shell: pwsh
+        run: |
+          Start-Process pwsh.exe .\screenlog.ps1
+
       - name: Run CLI tests (Windows)
         working-directory: extensions/ql-vscode
         if: matrix.os == 'windows-latest'
         run: |
           npm run test:cli-integration
+      
+      - name: Upload screenshots (Windows)
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: screenshots
+          path: extensions/ql-vscode/*.png

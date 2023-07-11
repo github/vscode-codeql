@@ -10,7 +10,6 @@ import {
   Range,
   Uri,
   window,
-  workspace,
 } from "vscode";
 import {
   TeeLogger,
@@ -32,8 +31,8 @@ import {
   createInitialQueryInfo,
   createTimestampFile,
   getQuickEvalContext,
-  promptUserToSaveChanges,
   QueryOutputDir,
+  saveBeforeStart,
   SelectedQuery,
   validateQueryUri,
 } from "../run-queries-shared";
@@ -52,25 +51,6 @@ import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
 
 interface DatabaseQuickPickItem extends QuickPickItem {
   databaseItem: DatabaseItem;
-}
-
-/**
- * If either the query file or the quickeval file is dirty, give the user the chance to save them.
- */
-async function promptToSaveQueryIfNeeded(query: SelectedQuery): Promise<void> {
-  // There seems to be no way to ask VS Code to find an existing text document by name, without
-  // automatically opening the document if it is not found.
-  const queryUri = Uri.file(query.queryPath).toString();
-  const quickEvalUri =
-    query.quickEval !== undefined
-      ? Uri.file(query.quickEval.quickEvalPosition.fileName).toString()
-      : undefined;
-  for (const openDocument of workspace.textDocuments) {
-    const documentUri = openDocument.uri.toString();
-    if (documentUri === queryUri || documentUri === quickEvalUri) {
-      await promptUserToSaveChanges(openDocument);
-    }
-  }
 }
 
 export enum QuickEvalType {
@@ -432,6 +412,8 @@ export class LocalQueries extends DisposableObject {
     range?: Range,
     templates?: Record<string, string>,
   ): Promise<CoreCompletedQuery> {
+    await saveBeforeStart();
+
     let queryPath: string;
     if (queryUri !== undefined) {
       // The query URI is provided by the command, most likely because the command was run from an
@@ -461,8 +443,6 @@ export class LocalQueries extends DisposableObject {
 
     const additionalPacks = getOnDiskWorkspaceFolders();
     const extensionPacks = await this.getDefaultExtensionPacks(additionalPacks);
-
-    await promptToSaveQueryIfNeeded(selectedQuery);
 
     const coreQueryRun = this.queryRunner.createQueryRun(
       databaseItem.databaseUri.fsPath,

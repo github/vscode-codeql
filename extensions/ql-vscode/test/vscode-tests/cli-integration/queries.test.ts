@@ -1,4 +1,11 @@
-import { CancellationToken, ExtensionContext, Range, Uri } from "vscode";
+import {
+  CancellationToken,
+  ExtensionContext,
+  Range,
+  Uri,
+  window,
+  workspace,
+} from "vscode";
 import { join, dirname } from "path";
 import {
   pathExistsSync,
@@ -38,8 +45,25 @@ import {
 } from "../../../src/common/commands";
 import { ProgressCallback } from "../../../src/common/vscode/progress";
 import { withDebugController } from "./debugger/debug-controller";
+import { getDataFolderFilePath } from "./utils";
+import { spawn } from "child-process-promise";
+import os from "os";
+
+const simpleQueryPath = getDataFolderFilePath("debugger/simple-query.ql");
 
 type DebugMode = "localQueries" | "debug";
+
+let screenshotCount = 0;
+
+async function writeScreenshot(description: string): Promise<void> {
+  if (os.platform() === "win32") {
+    const screenshotPath = `screenshot-${screenshotCount++}.png`;
+    console.log(`${description}: ${screenshotPath}`);
+    await spawn(".\\screenshot.bat", [screenshotPath], {
+      shell: true,
+    });
+  }
+}
 
 async function compileAndRunQuery(
   mode: DebugMode,
@@ -64,18 +88,63 @@ async function compileAndRunQuery(
       );
 
     case "debug":
+      console.log("Running query in debug mode");
       return await withDebugController(appCommands, async (controller) => {
-        await controller.startDebugging(
+        console.log("Dumping dirty documents");
+        for (const doc of workspace.textDocuments) {
+          console.log(
+            `${doc.isDirty ? "dirty" : "clean"}: ${doc.uri.toString()}`,
+          );
+          if (doc.isUntitled) {
+            console.log(`Content: ${doc.getText()}`);
+          }
+        }
+        const scopelessConfig = workspace
+          .getConfiguration("debug")
+          .get<string>("saveBeforeStart", "default");
+        const qlConfig = workspace
+          .getConfiguration("debug", { languageId: "ql" })
+          .get<string>("saveBeforeStart", "default");
+        const codeqlConfig = workspace
+          .getConfiguration("debug", { languageId: "codeql" })
+          .get<string>("saveBeforeStart", "default");
+
+        console.log(`Scopeless config: ${scopelessConfig}`);
+        console.log(`QL config: ${qlConfig}`);
+        console.log(`CodeQL config: ${codeqlConfig}`);
+        console.log(
+          `Active language ID: ${window.activeTextEditor?.document.languageId}`,
+        );
+        console.log("Starting debugging");
+        await writeScreenshot("Before starting debug session");
+        const start = controller.startDebugging(
           {
             query: queryUri.fsPath,
           },
           true,
         );
+        let timedOut = false;
+        const timeout = new Promise<void>((resolve) =>
+          setTimeout(() => {
+            timedOut = true;
+            resolve();
+          }, 10000),
+        );
+        await Promise.race([start, timeout]);
+        if (timedOut) {
+          await writeScreenshot("Timed out waiting for debug session to start");
+        }
+
+        console.log("Waiting for launch");
         await controller.expectLaunched();
+        console.log("Checking success");
         const succeeded = await controller.expectSucceeded();
         await controller.expectExited();
+        console.log("Terminating");
         await controller.expectTerminated();
+        console.log("Closing session");
         await controller.expectSessionClosed();
+        console.log("Done");
 
         return succeeded.results;
       });
@@ -154,8 +223,11 @@ describeWithCodeQL()("Queries", () => {
         return;
       }
 
+      console.log(`Starting 'no extensions' ${mode}`);
+      console.log("Setting useExtensionPacks to false");
       await cli.setUseExtensionPacks(false);
       const parsedResults = await runQueryWithExtensions();
+      console.log("Returned from runQueryWithExtensions");
       expect(parsedResults).toEqual([1]);
     });
 
@@ -164,8 +236,11 @@ describeWithCodeQL()("Queries", () => {
         return;
       }
 
+      console.log(`Starting 'extensions' ${mode}`);
+      console.log("Setting useExtensionPacks to true");
       await cli.setUseExtensionPacks(true);
       const parsedResults = await runQueryWithExtensions();
+      console.log("Returned from runQueryWithExtensions");
       expect(parsedResults).toEqual([1, 2, 3, 4]);
     });
 
@@ -180,6 +255,7 @@ describeWithCodeQL()("Queries", () => {
     }
 
     async function runQueryWithExtensions() {
+      console.log("Calling compileAndRunQuery");
       const result = await compileAndRunQuery(
         mode,
         appCommandManager,
@@ -191,10 +267,12 @@ describeWithCodeQL()("Queries", () => {
         dbItem,
         undefined,
       );
+      console.log("Completed compileAndRunQuery");
 
       // Check that query was successful
       expect(result.resultType).toBe(QueryResultType.SUCCESS);
 
+      console.log("Loading query results");
       // Load query results
       const chunk = await qs.cliServer.bqrsDecode(
         result.outputDir.bqrsPath,
@@ -205,6 +283,7 @@ describeWithCodeQL()("Queries", () => {
           pageSize: 10,
         },
       );
+      console.log("Loaded query results");
 
       // Extract the results as an array.
       return chunk.tuples.map((t) => t[0]);
@@ -213,13 +292,12 @@ describeWithCodeQL()("Queries", () => {
 
   describe.each(MODES)("running queries (%s)", (mode) => {
     it("should run a query", async () => {
-      const queryPath = join(__dirname, "data", "simple-query.ql");
       const result = await compileAndRunQuery(
         mode,
         appCommandManager,
         localQueries,
         QuickEvalType.None,
-        Uri.file(queryPath),
+        Uri.file(simpleQueryPath),
         progress,
         token,
         dbItem,
@@ -233,13 +311,12 @@ describeWithCodeQL()("Queries", () => {
     // Asserts a fix for bug https://github.com/github/vscode-codeql/issues/733
     it("should restart the database and run a query", async () => {
       await appCommandManager.execute("codeQL.restartQueryServer");
-      const queryPath = join(__dirname, "data", "simple-query.ql");
       const result = await compileAndRunQuery(
         mode,
         appCommandManager,
         localQueries,
         QuickEvalType.None,
-        Uri.file(queryPath),
+        Uri.file(simpleQueryPath),
         progress,
         token,
         dbItem,
