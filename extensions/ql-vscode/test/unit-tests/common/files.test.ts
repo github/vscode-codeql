@@ -57,11 +57,16 @@ describe("files", () => {
 
     it("should scan a directory", async () => {
       const file1 = join(dataDir, "compute-default-strings.ql");
-      const file2 = join(dataDir, "multiple-result-sets.ql");
-      const file3 = join(dataDir, "query.ql");
+      const file2 = join(dataDir, "debugger", "QuickEvalQuery.ql");
+      const file3 = join(dataDir, "debugger", "simple-query.ql");
+      const file4 = join(dataDir, "multiple-result-sets.ql");
+      const file5 = join(dataDir, "query.ql");
 
       const result = await gatherQlFiles([dataDir]);
-      expect(result.sort()).toEqual([[file1, file2, file3], true]);
+      expect(result.sort()).toEqual([
+        [file1, file2, file3, file4, file5],
+        true,
+      ]);
     });
 
     it("should scan a directory and some files", async () => {
@@ -78,12 +83,17 @@ describe("files", () => {
 
     it("should avoid duplicates", async () => {
       const file1 = join(dataDir, "compute-default-strings.ql");
-      const file2 = join(dataDir, "multiple-result-sets.ql");
-      const file3 = join(dataDir, "query.ql");
+      const file2 = join(dataDir, "debugger", "QuickEvalQuery.ql");
+      const file3 = join(dataDir, "debugger", "simple-query.ql");
+      const file4 = join(dataDir, "multiple-result-sets.ql");
+      const file5 = join(dataDir, "query.ql");
 
-      const result = await gatherQlFiles([file1, dataDir, file3]);
+      const result = await gatherQlFiles([file1, dataDir, file3, file4, file5]);
       result[0].sort();
-      expect(result.sort()).toEqual([[file1, file2, file3], true]);
+      expect(result.sort()).toEqual([
+        [file1, file2, file3, file4, file5],
+        true,
+      ]);
     });
   });
 

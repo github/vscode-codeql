@@ -70,6 +70,12 @@ export interface InspectionResult<T> {
   workspaceFolderValue?: T;
 }
 
+const VSCODE_DEBUG_SETTING = new Setting("debug", undefined);
+export const VSCODE_SAVE_BEFORE_START_SETTING = new Setting(
+  "saveBeforeStart",
+  VSCODE_DEBUG_SETTING,
+);
+
 const ROOT_SETTING = new Setting("codeQL");
 
 // Global configuration
@@ -161,10 +167,6 @@ export const NUMBER_OF_TEST_THREADS_SETTING = new Setting(
   RUNNING_TESTS_SETTING,
 );
 export const MAX_QUERIES = new Setting("maxQueries", RUNNING_QUERIES_SETTING);
-export const AUTOSAVE_SETTING = new Setting(
-  "autoSave",
-  RUNNING_QUERIES_SETTING,
-);
 export const PAGE_SIZE = new Setting("pageSize", RESULTS_DISPLAY_SETTING);
 const CUSTOM_LOG_DIRECTORY_SETTING = new Setting(
   "customLogDirectory",

@@ -14,6 +14,7 @@ import { CoreQueryResults } from "../query-server";
 import {
   getQuickEvalContext,
   QueryOutputDir,
+  saveBeforeStart,
   validateQueryUri,
 } from "../run-queries-shared";
 import { QLResolvedDebugConfiguration } from "./debug-configuration";
@@ -73,6 +74,9 @@ class QLDebugAdapterTracker
   }
 
   public async quickEval(): Promise<void> {
+    // Since we're not going through VS Code's launch path, we need to save dirty files ourselves.
+    await saveBeforeStart();
+
     const args: CodeQLProtocol.QuickEvalRequest["arguments"] = {
       quickEvalContext: await getQuickEvalContext(undefined, false),
     };
