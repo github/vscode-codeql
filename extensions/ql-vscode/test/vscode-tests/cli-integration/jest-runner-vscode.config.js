@@ -7,6 +7,8 @@ const {
   rootDir,
 } = require("../jest-runner-vscode.config.base");
 
+// Copy the workspace content to a temporary directory, and open it there. Some of our tests write
+// to files in the workspace, so we don't want to do that in the source directory.
 const tmpDataDir = path.join(tmpDir.name, "data");
 fs.cpSync(path.resolve(rootDir, "test/data"), tmpDataDir, {
   recursive: true,
