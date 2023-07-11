@@ -544,7 +544,7 @@ async function convertToQlPath(filePath: string): Promise<string> {
         }
       }
     }
-    throw new Error(`Can't convert path to form suitable for QL:${filePath}`);
+    throw new Error(`Can't convert path to form suitable for QL: ${filePath}`);
   } else {
     return filePath;
   }

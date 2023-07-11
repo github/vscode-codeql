@@ -157,8 +157,7 @@ const packageConfiguration: Record<
     // `debug.saveBeforeStart` is a core VS Code setting, but we depend on its value in these tests.
     // We'll set it here to the value that we expect.
     "debug.saveBeforeStart": {
-      //      default: "nonUntitledEditorsInActiveGroup",
-      default: "none",
+      default: "nonUntitledEditorsInActiveGroup",
     },
   };
 })();

@@ -3,6 +3,7 @@ import {
   ExtensionContext,
   Range,
   Uri,
+  window,
   workspace,
 } from "vscode";
 import { join, dirname } from "path";
@@ -46,12 +47,11 @@ import { ProgressCallback } from "../../../src/common/vscode/progress";
 import { withDebugController } from "./debugger/debug-controller";
 import { getDataFolderFilePath } from "./utils";
 import { spawn } from "child-process-promise";
+import os from "os";
 
 const simpleQueryPath = getDataFolderFilePath("debugger/simple-query.ql");
 
 type DebugMode = "localQueries" | "debug";
-
-let screenshotCount = 0;
 
 async function compileAndRunQuery(
   mode: DebugMode,
@@ -97,42 +97,18 @@ async function compileAndRunQuery(
           .getConfiguration("debug", { languageId: "codeql" })
           .get<string>("saveBeforeStart", "default");
 
-        console.log(`Scopeless config: ${scopelessConfig}`);
-        console.log(`QL config: ${qlConfig}`);
-        console.log(`CodeQL config: ${codeqlConfig}`);
-        console.log("Starting debugging");
-        const start = controller.startDebugging(
+        await controller.startDebugging(
           {
             query: queryUri.fsPath,
           },
           true,
         );
-        let timedOut = false;
-        const timeout = new Promise<void>((resolve) =>
-          setTimeout(() => {
-            timedOut = true;
-            resolve();
-          }, 10000),
-        );
-        await Promise.race([start, timeout]);
-        if (timedOut) {
-          const screenshotPath = `screenshot-${screenshotCount++}.png`;
-          console.log("Timed out waiting for debug session to start");
-          await spawn(".\\screenshot.bat", [screenshotPath], {
-            shell: true,
-          });
-        }
 
-        console.log("Waiting for launch");
         await controller.expectLaunched();
-        console.log("Checking success");
         const succeeded = await controller.expectSucceeded();
         await controller.expectExited();
-        console.log("Terminating");
         await controller.expectTerminated();
-        console.log("Closing session");
         await controller.expectSessionClosed();
-        console.log("Done");
 
         return succeeded.results;
       });

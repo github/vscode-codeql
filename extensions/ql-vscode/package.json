@@ -71,6 +71,7 @@
   "contributes": {
     "configurationDefaults": {
       "[ql]": {
+        "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
         "editor.wordBasedSuggestions": false
       },
       "[dbscheme]": {

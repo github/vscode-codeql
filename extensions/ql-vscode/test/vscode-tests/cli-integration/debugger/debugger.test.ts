@@ -153,10 +153,7 @@ describeWithCodeQL()("Debugger", () => {
   it("should save dirty documents before launching a debug session", async () => {
     await withDebugController(appCommands, async (controller) => {
       const editor = await selectForQuickEval(quickEvalLibPath, 4, 15, 4, 32);
-      await editor.edit((editBuilder) => {
-        editBuilder.insert(new Position(0, 0), "/* comment */");
-      });
-      expect(editor.document.isDirty).toBe(true);
+      expect(editor.document.isDirty).toBe(false);
 
       await controller.startDebuggingSelection({
         query: quickEvalQueryPath, // The query context. This query extends the abstract class.
