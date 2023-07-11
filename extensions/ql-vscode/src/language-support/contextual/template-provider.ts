@@ -279,7 +279,10 @@ export class TemplatePrintAstProvider {
 export class TemplatePrintCfgProvider {
   private cache: CachedOperation<[Uri, Record<string, string>] | undefined>;
 
-  constructor(private cli: CodeQLCliServer, private dbm: DatabaseManager) {
+  constructor(
+    private cli: CodeQLCliServer,
+    private dbm: DatabaseManager,
+  ) {
     this.cache = new CachedOperation<[Uri, Record<string, string>] | undefined>(
       this.getCfgUri.bind(this),
     );

@@ -14,7 +14,10 @@ export class File implements vscode.FileStat {
   mtime: number;
   size: number;
 
-  constructor(public name: string, public data: Uint8Array) {
+  constructor(
+    public name: string,
+    public data: Uint8Array,
+  ) {
     this.type = vscode.FileType.File;
     this.ctime = Date.now();
     this.mtime = Date.now();
