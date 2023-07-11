@@ -1,7 +1,10 @@
 const path = require("path");
+const os = require("os");
 const tmp = require("tmp-promise");
 
-const tmpDir = tmp.dirSync({ unsafeCleanup: true });
+const overrideTmpDir = process.env.RUNNER_TEMP || os.tmpdir();
+console.log(`TmpDir: ${overrideTmpDir}`);
+const tmpDir = tmp.dirSync({ unsafeCleanup: true, tmpdir: overrideTmpDir });
 
 const rootDir = path.resolve(__dirname, "../..");
 
