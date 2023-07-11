@@ -47,6 +47,7 @@ import { ProgressCallback } from "../../../src/common/vscode/progress";
 import { withDebugController } from "./debugger/debug-controller";
 import { getDataFolderFilePath } from "./utils";
 import { spawn } from "child-process-promise";
+import os from "os";
 
 const simpleQueryPath = getDataFolderFilePath("debugger/simple-query.ql");
 
@@ -55,11 +56,13 @@ type DebugMode = "localQueries" | "debug";
 let screenshotCount = 0;
 
 async function writeScreenshot(description: string): Promise<void> {
-  const screenshotPath = `screenshot-${screenshotCount++}.png`;
-  console.log(`${description}: ${screenshotPath}`);
-  await spawn(".\\screenshot.bat", [screenshotPath], {
-    shell: true,
-  });
+  if (os.platform() === "win32") {
+    const screenshotPath = `screenshot-${screenshotCount++}.png`;
+    console.log(`${description}: ${screenshotPath}`);
+    await spawn(".\\screenshot.bat", [screenshotPath], {
+      shell: true,
+    });
+  }
 }
 
 async function compileAndRunQuery(
