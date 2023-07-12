@@ -60,28 +60,19 @@ type Props = {
 export const MethodRow = (props: Props) => {
   const { externalApiUsage, modeledMethod } = props;
 
-  const jumpToUsage = useCallback(() => {
-    vscode.postMessage({
-      t: "jumpToUsage",
-      // In framework mode, the first and only usage is the definition of the method
-      location: externalApiUsage.usages[0].url,
-    });
-  }, [externalApiUsage]);
-
   const methodCanBeModeled =
     !externalApiUsage.supported ||
     (modeledMethod && modeledMethod?.type !== "none");
 
   if (methodCanBeModeled) {
-    return <ModelableMethodRow {...props} jumpToUsage={jumpToUsage} />;
+    return <ModelableMethodRow {...props} />;
   } else {
-    return <UmmodelableMethodRow {...props} jumpToUsage={jumpToUsage} />;
+    return <UmmodelableMethodRow {...props} />;
   }
 };
 
-function ModelableMethodRow(props: Props & { jumpToUsage: () => void }) {
-  const { externalApiUsage, modeledMethod, mode, onChange, jumpToUsage } =
-    props;
+function ModelableMethodRow(props: Props) {
+  const { externalApiUsage, modeledMethod, mode, onChange } = props;
 
   const argumentsList = useMemo(() => {
     if (externalApiUsage.methodParameters === "()") {
@@ -155,6 +146,11 @@ function ModelableMethodRow(props: Props & { jumpToUsage: () => void }) {
       });
     },
     [onChange, externalApiUsage, modeledMethod],
+  );
+
+  const jumpToUsage = useCallback(
+    () => sendJumpToUsageMessage(externalApiUsage),
+    [externalApiUsage],
   );
 
   const inputOptions = useMemo(
@@ -240,9 +236,14 @@ function ModelableMethodRow(props: Props & { jumpToUsage: () => void }) {
 function UmmodelableMethodRow(props: {
   externalApiUsage: ExternalApiUsage;
   mode: Mode;
-  jumpToUsage: () => void;
 }) {
-  const { externalApiUsage, mode, jumpToUsage } = props;
+  const { externalApiUsage, mode } = props;
+
+  const jumpToUsage = useCallback(
+    () => sendJumpToUsageMessage(externalApiUsage),
+    [externalApiUsage],
+  );
+
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
@@ -271,4 +272,12 @@ function ExternalApiUsageName(props: { externalApiUsage: ExternalApiUsage }) {
       {props.externalApiUsage.methodParameters}
     </span>
   );
+}
+
+function sendJumpToUsageMessage(externalApiUsage: ExternalApiUsage) {
+  vscode.postMessage({
+    t: "jumpToUsage",
+    // In framework mode, the first and only usage is the definition of the method
+    location: externalApiUsage.usages[0].url,
+  });
 }
