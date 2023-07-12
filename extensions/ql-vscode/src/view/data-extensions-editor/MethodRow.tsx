@@ -174,6 +174,36 @@ export const MethodRow = ({
   const methodCanBeModeled =
     !externalApiUsage.supported ||
     (modeledMethod && modeledMethod?.type !== "none");
+
+  const externalApiUsageName = (
+    <span>
+      {externalApiUsage.packageName}.{externalApiUsage.typeName}.
+      {externalApiUsage.methodName}
+      {externalApiUsage.methodParameters}
+    </span>
+  );
+
+  if (!methodCanBeModeled) {
+    return (
+      <VSCodeDataGridRow>
+        <ApiOrMethodCell gridColumn={1}>
+          <VSCodeCheckbox />
+          {externalApiUsageName}
+          {mode === Mode.Application && (
+            <UsagesButton onClick={jumpToUsage}>
+              {externalApiUsage.usages.length}
+            </UsagesButton>
+          )}
+          <ViewLink onClick={jumpToUsage}>View</ViewLink>
+        </ApiOrMethodCell>
+        <VSCodeDataGridCell gridColumn={2} />
+        <VSCodeDataGridCell gridColumn={3} />
+        <VSCodeDataGridCell gridColumn={4} />
+        <VSCodeDataGridCell gridColumn={5} />
+      </VSCodeDataGridRow>
+    );
+  }
+
   const showInputCell =
     modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type);
   const showOutputCell =
@@ -188,11 +218,7 @@ export const MethodRow = ({
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
         <VSCodeCheckbox />
-        <span>
-          {externalApiUsage.packageName}.{externalApiUsage.typeName}.
-          {externalApiUsage.methodName}
-          {externalApiUsage.methodParameters}
-        </span>
+        {externalApiUsageName}
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
             {externalApiUsage.usages.length}
@@ -204,7 +230,6 @@ export const MethodRow = ({
         <Dropdown
           value={modeledMethod?.type ?? "none"}
           options={modelTypeOptions}
-          disabled={!methodCanBeModeled}
           onChange={handleTypeInput}
         />
       </VSCodeDataGridCell>
