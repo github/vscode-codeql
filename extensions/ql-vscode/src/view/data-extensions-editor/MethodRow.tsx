@@ -39,6 +39,14 @@ const ViewLink = styled(VSCodeLink)`
   white-space: nowrap;
 `;
 
+const modelTypeOptions = [
+  { value: "none", label: "Unmodeled" },
+  { value: "source", label: "Source" },
+  { value: "sink", label: "Sink" },
+  { value: "summary", label: "Flow summary" },
+  { value: "neutral", label: "Neutral" },
+];
+
 type Props = {
   externalApiUsage: ExternalApiUsage;
   modeledMethod: ModeledMethod | undefined;
@@ -136,17 +144,6 @@ export const MethodRow = ({
       location: externalApiUsage.usages[0].url,
     });
   }, [externalApiUsage]);
-
-  const modelTypeOptions = useMemo(
-    () => [
-      { value: "none", label: "Unmodeled" },
-      { value: "source", label: "Source" },
-      { value: "sink", label: "Sink" },
-      { value: "summary", label: "Flow summary" },
-      { value: "neutral", label: "Neutral" },
-    ],
-    [],
-  );
 
   const inputOptions = useMemo(
     () => [
