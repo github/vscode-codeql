@@ -71,6 +71,7 @@
   "contributes": {
     "configurationDefaults": {
       "[ql]": {
+        "debug.saveBeforeStart": "nonUntitledEditorsInActiveGroup",
         "editor.wordBasedSuggestions": false
       },
       "[dbscheme]": {
@@ -246,8 +247,8 @@
         },
         "codeQL.runningQueries.autoSave": {
           "type": "boolean",
-          "default": false,
-          "description": "Enable automatically saving a modified query file when running a query."
+          "description": "Enable automatically saving a modified query file when running a query.",
+          "markdownDeprecationMessage": "This property is deprecated and no longer has any effect. To control automatic saving of documents before running queries, use the `debug.saveBeforeStart` setting."
         },
         "codeQL.runningQueries.maxQueries": {
           "type": "integer",
@@ -1726,7 +1727,7 @@
     "test:vscode-integration:activated-extension": "jest --projects test/vscode-tests/activated-extension",
     "test:vscode-integration:no-workspace": "jest --projects test/vscode-tests/no-workspace",
     "test:vscode-integration:minimal-workspace": "jest --projects test/vscode-tests/minimal-workspace",
-    "test:cli-integration": "jest --projects test/vscode-tests/cli-integration",
+    "test:cli-integration": "jest --projects test/vscode-tests/cli-integration --verbose",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
     "lint": "eslint . --ext .js,.ts,.tsx --max-warnings=0",

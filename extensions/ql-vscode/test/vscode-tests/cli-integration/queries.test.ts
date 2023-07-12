@@ -38,6 +38,9 @@ import {
 } from "../../../src/common/commands";
 import { ProgressCallback } from "../../../src/common/vscode/progress";
 import { withDebugController } from "./debugger/debug-controller";
+import { getDataFolderFilePath } from "./utils";
+
+const simpleQueryPath = getDataFolderFilePath("debugger/simple-query.ql");
 
 type DebugMode = "localQueries" | "debug";
 
@@ -71,6 +74,7 @@ async function compileAndRunQuery(
           },
           true,
         );
+
         await controller.expectLaunched();
         const succeeded = await controller.expectSucceeded();
         await controller.expectExited();
@@ -164,8 +168,11 @@ describeWithCodeQL()("Queries", () => {
         return;
       }
 
+      console.log(`Starting 'extensions' ${mode}`);
+      console.log("Setting useExtensionPacks to true");
       await cli.setUseExtensionPacks(true);
       const parsedResults = await runQueryWithExtensions();
+      console.log("Returned from runQueryWithExtensions");
       expect(parsedResults).toEqual([1, 2, 3, 4]);
     });
 
@@ -180,6 +187,7 @@ describeWithCodeQL()("Queries", () => {
     }
 
     async function runQueryWithExtensions() {
+      console.log("Calling compileAndRunQuery");
       const result = await compileAndRunQuery(
         mode,
         appCommandManager,
@@ -191,10 +199,12 @@ describeWithCodeQL()("Queries", () => {
         dbItem,
         undefined,
       );
+      console.log("Completed compileAndRunQuery");
 
       // Check that query was successful
       expect(result.resultType).toBe(QueryResultType.SUCCESS);
 
+      console.log("Loading query results");
       // Load query results
       const chunk = await qs.cliServer.bqrsDecode(
         result.outputDir.bqrsPath,
@@ -205,6 +215,7 @@ describeWithCodeQL()("Queries", () => {
           pageSize: 10,
         },
       );
+      console.log("Loaded query results");
 
       // Extract the results as an array.
       return chunk.tuples.map((t) => t[0]);
@@ -213,13 +224,12 @@ describeWithCodeQL()("Queries", () => {
 
   describe.each(MODES)("running queries (%s)", (mode) => {
     it("should run a query", async () => {
-      const queryPath = join(__dirname, "data", "simple-query.ql");
       const result = await compileAndRunQuery(
         mode,
         appCommandManager,
         localQueries,
         QuickEvalType.None,
-        Uri.file(queryPath),
+        Uri.file(simpleQueryPath),
         progress,
         token,
         dbItem,
@@ -233,13 +243,12 @@ describeWithCodeQL()("Queries", () => {
     // Asserts a fix for bug https://github.com/github/vscode-codeql/issues/733
     it("should restart the database and run a query", async () => {
       await appCommandManager.execute("codeQL.restartQueryServer");
-      const queryPath = join(__dirname, "data", "simple-query.ql");
       const result = await compileAndRunQuery(
         mode,
         appCommandManager,
         localQueries,
         QuickEvalType.None,
-        Uri.file(queryPath),
+        Uri.file(simpleQueryPath),
         progress,
         token,
         dbItem,
