@@ -137,9 +137,6 @@ export const MethodRow = ({
     });
   }, [externalApiUsage]);
 
-  const methodCanBeModeled =
-    !externalApiUsage.supported ||
-    (modeledMethod && modeledMethod?.type !== "none");
   const modelTypeOptions = useMemo(
     () => [
       { value: "none", label: "Unmodeled" },
@@ -151,8 +148,6 @@ export const MethodRow = ({
     [],
   );
 
-  const showInputCell =
-    modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type);
   const inputOptions = useMemo(
     () => [
       { value: "Argument[this]", label: "Argument[this]" },
@@ -164,8 +159,6 @@ export const MethodRow = ({
     [argumentsList],
   );
 
-  const showOutputCell =
-    modeledMethod?.type && ["source", "summary"].includes(modeledMethod?.type);
   const outputOptions = useMemo(
     () => [
       { value: "ReturnValue", label: "ReturnValue" },
@@ -178,6 +171,13 @@ export const MethodRow = ({
     [argumentsList],
   );
 
+  const methodCanBeModeled =
+    !externalApiUsage.supported ||
+    (modeledMethod && modeledMethod?.type !== "none");
+  const showInputCell =
+    modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type);
+  const showOutputCell =
+    modeledMethod?.type && ["source", "summary"].includes(modeledMethod?.type);
   const predicate =
     modeledMethod?.type && modeledMethod.type !== "none"
       ? extensiblePredicateDefinitions[modeledMethod.type]
