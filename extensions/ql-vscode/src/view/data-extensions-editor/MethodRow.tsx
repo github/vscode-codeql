@@ -257,7 +257,7 @@ function UnmodelableMethodRow(props: {
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn="span 4">
-        Method modeled by CodeQL or another extension pack
+        Method already modeled by CodeQL or a different extension pack
       </VSCodeDataGridCell>
     </VSCodeDataGridRow>
   );
