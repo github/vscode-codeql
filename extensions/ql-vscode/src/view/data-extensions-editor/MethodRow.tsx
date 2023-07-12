@@ -67,7 +67,7 @@ export const MethodRow = (props: Props) => {
   if (methodCanBeModeled) {
     return <ModelableMethodRow {...props} />;
   } else {
-    return <UmmodelableMethodRow {...props} />;
+    return <UnmodelableMethodRow {...props} />;
   }
 };
 
@@ -233,7 +233,7 @@ function ModelableMethodRow(props: Props) {
   );
 }
 
-function UmmodelableMethodRow(props: {
+function UnmodelableMethodRow(props: {
   externalApiUsage: ExternalApiUsage;
   mode: Mode;
 }) {
