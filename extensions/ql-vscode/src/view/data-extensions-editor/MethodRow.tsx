@@ -58,7 +58,30 @@ type Props = {
 };
 
 export const MethodRow = (props: Props) => {
-  const { externalApiUsage, modeledMethod, mode, onChange } = props;
+  const { externalApiUsage, modeledMethod } = props;
+
+  const jumpToUsage = useCallback(() => {
+    vscode.postMessage({
+      t: "jumpToUsage",
+      // In framework mode, the first and only usage is the definition of the method
+      location: externalApiUsage.usages[0].url,
+    });
+  }, [externalApiUsage]);
+
+  const methodCanBeModeled =
+    !externalApiUsage.supported ||
+    (modeledMethod && modeledMethod?.type !== "none");
+
+  if (methodCanBeModeled) {
+    return <ModelableMethodRow {...props} jumpToUsage={jumpToUsage} />;
+  } else {
+    return <UmmodelableMethodRow {...props} jumpToUsage={jumpToUsage} />;
+  }
+};
+
+function ModelableMethodRow(props: Props & { jumpToUsage: () => void }) {
+  const { externalApiUsage, modeledMethod, mode, onChange, jumpToUsage } =
+    props;
 
   const argumentsList = useMemo(() => {
     if (externalApiUsage.methodParameters === "()") {
@@ -134,14 +157,6 @@ export const MethodRow = (props: Props) => {
     [onChange, externalApiUsage, modeledMethod],
   );
 
-  const jumpToUsage = useCallback(() => {
-    vscode.postMessage({
-      t: "jumpToUsage",
-      // In framework mode, the first and only usage is the definition of the method
-      location: externalApiUsage.usages[0].url,
-    });
-  }, [externalApiUsage]);
-
   const inputOptions = useMemo(
     () => [
       { value: "Argument[this]", label: "Argument[this]" },
@@ -164,14 +179,6 @@ export const MethodRow = (props: Props) => {
     ],
     [argumentsList],
   );
-
-  const methodCanBeModeled =
-    !externalApiUsage.supported ||
-    (modeledMethod && modeledMethod?.type !== "none");
-
-  if (!methodCanBeModeled) {
-    return <UmmodelableMethodRow {...props} jumpToUsage={jumpToUsage} />;
-  }
 
   const showInputCell =
     modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type);
@@ -228,7 +235,7 @@ export const MethodRow = (props: Props) => {
       </VSCodeDataGridCell>
     </VSCodeDataGridRow>
   );
-};
+}
 
 function UmmodelableMethodRow(props: {
   externalApiUsage: ExternalApiUsage;
