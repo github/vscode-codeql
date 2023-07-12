@@ -3,7 +3,6 @@ import { useMemo } from "react";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { LibraryRow } from "./LibraryRow";
-import { Mode } from "../../data-extensions-editor/shared/mode";
 import {
   groupMethods,
   sortGroupNames,
@@ -14,8 +13,7 @@ type Props = {
   externalApiUsages: ExternalApiUsage[];
   unsavedModels: Set<string>;
   modeledMethods: Record<string, ModeledMethod>;
-  viewState: DataExtensionEditorViewState | undefined;
-  mode: Mode;
+  viewState: DataExtensionEditorViewState;
   onChange: (
     modelName: string,
     externalApiUsage: ExternalApiUsage,
@@ -38,15 +36,14 @@ export const ModeledMethodsList = ({
   unsavedModels,
   modeledMethods,
   viewState,
-  mode,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
   onGenerateFromSourceClick,
 }: Props) => {
   const grouped = useMemo(
-    () => groupMethods(externalApiUsages, mode),
-    [externalApiUsages, mode],
+    () => groupMethods(externalApiUsages, viewState.mode),
+    [externalApiUsages, viewState.mode],
   );
 
   const sortedGroupNames = useMemo(() => sortGroupNames(grouped), [grouped]);
@@ -61,7 +58,6 @@ export const ModeledMethodsList = ({
           hasUnsavedChanges={unsavedModels.has(libraryName)}
           modeledMethods={modeledMethods}
           viewState={viewState}
-          mode={mode}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
