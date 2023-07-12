@@ -256,10 +256,9 @@ function UmmodelableMethodRow(props: {
         )}
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
       </ApiOrMethodCell>
-      <VSCodeDataGridCell gridColumn={2} />
-      <VSCodeDataGridCell gridColumn={3} />
-      <VSCodeDataGridCell gridColumn={4} />
-      <VSCodeDataGridCell gridColumn={5} />
+      <VSCodeDataGridCell gridColumn="span 4">
+        Method modeled by CodeQL or another extension pack
+      </VSCodeDataGridCell>
     </VSCodeDataGridRow>
   );
 }
