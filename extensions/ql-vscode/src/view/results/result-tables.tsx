@@ -440,37 +440,28 @@ export class ResultTables extends React.Component<
   }
 }
 
-class ResultTable extends React.Component<
-  ResultTableProps,
-  Record<string, never>
-> {
-  constructor(props: ResultTableProps) {
-    super(props);
-  }
-
-  render(): React.ReactNode {
-    const { resultSet } = this.props;
-    switch (resultSet.t) {
-      case "RawResultSet":
-        return <RawTable {...this.props} resultSet={resultSet} />;
-      case "InterpretedResultSet": {
-        const data = resultSet.interpretation.data;
-        switch (data.t) {
-          case "SarifInterpretationData": {
-            const sarifResultSet = {
-              ...resultSet,
-              interpretation: { ...resultSet.interpretation, data },
-            };
-            return <AlertTable {...this.props} resultSet={sarifResultSet} />;
-          }
-          case "GraphInterpretationData": {
-            return (
-              <Graph
-                graphData={data?.dot[this.props.offset]}
-                databaseUri={this.props.databaseUri}
-              />
-            );
-          }
+export function ResultTable(props: ResultTableProps) {
+  const { resultSet } = props;
+  switch (resultSet.t) {
+    case "RawResultSet":
+      return <RawTable {...props} resultSet={resultSet} />;
+    case "InterpretedResultSet": {
+      const data = resultSet.interpretation.data;
+      switch (data.t) {
+        case "SarifInterpretationData": {
+          const sarifResultSet = {
+            ...resultSet,
+            interpretation: { ...resultSet.interpretation, data },
+          };
+          return <AlertTable {...props} resultSet={sarifResultSet} />;
+        }
+        case "GraphInterpretationData": {
+          return (
+            <Graph
+              graphData={data?.dot[props.offset]}
+              databaseUri={props.databaseUri}
+            />
+          );
         }
       }
     }
