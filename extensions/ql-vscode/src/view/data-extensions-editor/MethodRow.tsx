@@ -137,11 +137,6 @@ export const MethodRow = ({
     });
   }, [externalApiUsage]);
 
-  const predicate =
-    modeledMethod?.type && modeledMethod.type !== "none"
-      ? extensiblePredicateDefinitions[modeledMethod.type]
-      : undefined;
-
   const showModelTypeCell =
     !externalApiUsage.supported ||
     (modeledMethod && modeledMethod?.type !== "none");
@@ -183,6 +178,10 @@ export const MethodRow = ({
     [argumentsList],
   );
 
+  const predicate =
+    modeledMethod?.type && modeledMethod.type !== "none"
+      ? extensiblePredicateDefinitions[modeledMethod.type]
+      : undefined;
   const showKindCell = predicate?.supportedKinds;
 
   return (
