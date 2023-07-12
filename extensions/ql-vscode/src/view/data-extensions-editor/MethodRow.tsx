@@ -137,7 +137,7 @@ export const MethodRow = ({
     });
   }, [externalApiUsage]);
 
-  const showModelTypeCell =
+  const methodCanBeModeled =
     !externalApiUsage.supported ||
     (modeledMethod && modeledMethod?.type !== "none");
   const modelTypeOptions = useMemo(
@@ -204,7 +204,7 @@ export const MethodRow = ({
         <Dropdown
           value={modeledMethod?.type ?? "none"}
           options={modelTypeOptions}
-          disabled={!showModelTypeCell}
+          disabled={!methodCanBeModeled}
           onChange={handleTypeInput}
         />
       </VSCodeDataGridCell>
