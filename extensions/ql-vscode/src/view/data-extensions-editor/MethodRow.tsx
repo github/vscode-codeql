@@ -57,12 +57,9 @@ type Props = {
   ) => void;
 };
 
-export const MethodRow = ({
-  externalApiUsage,
-  modeledMethod,
-  mode,
-  onChange,
-}: Props) => {
+export const MethodRow = (props: Props) => {
+  const { externalApiUsage, modeledMethod, mode, onChange } = props;
+
   const argumentsList = useMemo(() => {
     if (externalApiUsage.methodParameters === "()") {
       return [];
@@ -172,33 +169,8 @@ export const MethodRow = ({
     !externalApiUsage.supported ||
     (modeledMethod && modeledMethod?.type !== "none");
 
-  const externalApiUsageName = (
-    <span>
-      {externalApiUsage.packageName}.{externalApiUsage.typeName}.
-      {externalApiUsage.methodName}
-      {externalApiUsage.methodParameters}
-    </span>
-  );
-
   if (!methodCanBeModeled) {
-    return (
-      <VSCodeDataGridRow>
-        <ApiOrMethodCell gridColumn={1}>
-          <VSCodeCheckbox />
-          {externalApiUsageName}
-          {mode === Mode.Application && (
-            <UsagesButton onClick={jumpToUsage}>
-              {externalApiUsage.usages.length}
-            </UsagesButton>
-          )}
-          <ViewLink onClick={jumpToUsage}>View</ViewLink>
-        </ApiOrMethodCell>
-        <VSCodeDataGridCell gridColumn={2} />
-        <VSCodeDataGridCell gridColumn={3} />
-        <VSCodeDataGridCell gridColumn={4} />
-        <VSCodeDataGridCell gridColumn={5} />
-      </VSCodeDataGridRow>
-    );
+    return <UmmodelableMethodRow {...props} jumpToUsage={jumpToUsage} />;
   }
 
   const showInputCell =
@@ -215,7 +187,7 @@ export const MethodRow = ({
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
         <VSCodeCheckbox />
-        {externalApiUsageName}
+        <ExternalApiUsageName {...props} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
             {externalApiUsage.usages.length}
@@ -257,3 +229,39 @@ export const MethodRow = ({
     </VSCodeDataGridRow>
   );
 };
+
+function UmmodelableMethodRow(props: {
+  externalApiUsage: ExternalApiUsage;
+  mode: Mode;
+  jumpToUsage: () => void;
+}) {
+  const { externalApiUsage, mode, jumpToUsage } = props;
+  return (
+    <VSCodeDataGridRow>
+      <ApiOrMethodCell gridColumn={1}>
+        <VSCodeCheckbox />
+        <ExternalApiUsageName {...props} />
+        {mode === Mode.Application && (
+          <UsagesButton onClick={jumpToUsage}>
+            {externalApiUsage.usages.length}
+          </UsagesButton>
+        )}
+        <ViewLink onClick={jumpToUsage}>View</ViewLink>
+      </ApiOrMethodCell>
+      <VSCodeDataGridCell gridColumn={2} />
+      <VSCodeDataGridCell gridColumn={3} />
+      <VSCodeDataGridCell gridColumn={4} />
+      <VSCodeDataGridCell gridColumn={5} />
+    </VSCodeDataGridRow>
+  );
+}
+
+function ExternalApiUsageName(props: { externalApiUsage: ExternalApiUsage }) {
+  return (
+    <span>
+      {props.externalApiUsage.packageName}.{props.externalApiUsage.typeName}.
+      {props.externalApiUsage.methodName}
+      {props.externalApiUsage.methodParameters}
+    </span>
+  );
+}
