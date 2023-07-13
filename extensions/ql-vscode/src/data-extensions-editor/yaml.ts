@@ -11,6 +11,8 @@ import {
 
 import * as dataSchemaJson from "./data-schema.json";
 import { sanitizeExtensionPackName } from "./extension-pack-name";
+import { Mode } from "./shared/mode";
+import { assertNever } from "../common/helpers-pure";
 
 const ajv = new Ajv({ allErrors: true });
 const dataSchemaValidate = ajv.compile(dataSchemaJson);
@@ -78,6 +80,32 @@ export function createDataExtensionYaml(
 
   return `extensions:
 ${extensions.join("\n")}`;
+}
+
+export function createDataExtensionYamls(
+  databaseName: string,
+  language: string,
+  externalApiUsages: ExternalApiUsage[],
+  modeledMethods: Record<string, ModeledMethod>,
+  mode: Mode,
+) {
+  switch (mode) {
+    case Mode.Application:
+      return createDataExtensionYamlsForApplicationMode(
+        language,
+        externalApiUsages,
+        modeledMethods,
+      );
+    case Mode.Framework:
+      return createDataExtensionYamlsForFrameworkMode(
+        databaseName,
+        language,
+        externalApiUsages,
+        modeledMethods,
+      );
+    default:
+      assertNever(mode);
+  }
 }
 
 export function createDataExtensionYamlsForApplicationMode(

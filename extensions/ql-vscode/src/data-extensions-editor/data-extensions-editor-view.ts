@@ -34,11 +34,7 @@ import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../common/errors";
 import { readQueryResults, runQuery } from "./external-api-usage-query";
-import {
-  createDataExtensionYamlsForApplicationMode,
-  createDataExtensionYamlsForFrameworkMode,
-  loadDataExtensionYaml,
-} from "./yaml";
+import { createDataExtensionYamls, loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
@@ -190,26 +186,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
-    let yamls: Record<string, string>;
-    switch (this.mode) {
-      case Mode.Application:
-        yamls = createDataExtensionYamlsForApplicationMode(
-          this.databaseItem.language,
-          externalApiUsages,
-          modeledMethods,
-        );
-        break;
-      case Mode.Framework:
-        yamls = createDataExtensionYamlsForFrameworkMode(
-          this.databaseItem.name,
-          this.databaseItem.language,
-          externalApiUsages,
-          modeledMethods,
-        );
-        break;
-      default:
-        assertNever(this.mode);
-    }
+    const yamls = createDataExtensionYamls(
+      this.databaseItem.name,
+      this.databaseItem.language,
+      externalApiUsages,
+      modeledMethods,
+      this.mode,
+    );
 
     for (const [filename, yaml] of Object.entries(yamls)) {
       await outputFile(join(this.extensionPack.path, filename), yaml);
