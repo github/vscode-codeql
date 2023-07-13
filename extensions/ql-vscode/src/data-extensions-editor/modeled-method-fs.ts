@@ -1,11 +1,18 @@
-import { outputFile } from "fs-extra";
+import { outputFile, readFile } from "fs-extra";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { Mode } from "./shared/mode";
-import { createDataExtensionYamls } from "./yaml";
+import { createDataExtensionYamls, loadDataExtensionYaml } from "./yaml";
 import { join } from "path";
 import { ExtensionPack } from "./shared/extension-pack";
-import { Logger } from "../common/logging";
+import {
+  Logger,
+  NotificationLogger,
+  showAndLogErrorMessage,
+} from "../common/logging";
+import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
+import { load as loadYaml } from "js-yaml";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 
 export async function saveModeledMethods(
   extensionPack: ExtensionPack,
@@ -29,4 +36,48 @@ export async function saveModeledMethods(
   }
 
   void logger.log(`Saved data extension YAML`);
+}
+
+export async function loadModeledMethods(
+  extensionPack: ExtensionPack,
+  cliServer: CodeQLCliServer,
+  logger: NotificationLogger,
+): Promise<Record<string, ModeledMethod>> {
+  const extensions = await cliServer.resolveExtensions(
+    extensionPack.path,
+    getOnDiskWorkspaceFolders(),
+  );
+
+  const modelFiles = new Set<string>();
+
+  if (extensionPack.path in extensions.data) {
+    for (const extension of extensions.data[extensionPack.path]) {
+      modelFiles.add(extension.file);
+    }
+  }
+
+  const existingModeledMethods: Record<string, ModeledMethod> = {};
+
+  for (const modelFile of modelFiles) {
+    const yaml = await readFile(modelFile, "utf8");
+
+    const data = loadYaml(yaml, {
+      filename: modelFile,
+    });
+
+    const modeledMethods = loadDataExtensionYaml(data);
+    if (!modeledMethods) {
+      void showAndLogErrorMessage(
+        logger,
+        `Failed to parse data extension YAML ${modelFile}.`,
+      );
+      continue;
+    }
+
+    for (const [key, value] of Object.entries(modeledMethods)) {
+      existingModeledMethods[key] = value;
+    }
+  }
+
+  return existingModeledMethods;
 }
