@@ -43,18 +43,7 @@ export async function loadModeledMethods(
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,
 ): Promise<Record<string, ModeledMethod>> {
-  const extensions = await cliServer.resolveExtensions(
-    extensionPack.path,
-    getOnDiskWorkspaceFolders(),
-  );
-
-  const modelFiles = new Set<string>();
-
-  if (extensionPack.path in extensions.data) {
-    for (const extension of extensions.data[extensionPack.path]) {
-      modelFiles.add(extension.file);
-    }
-  }
+  const modelFiles = await listModelFiles(extensionPack.path, cliServer);
 
   const existingModeledMethods: Record<string, ModeledMethod> = {};
 
@@ -80,4 +69,22 @@ export async function loadModeledMethods(
   }
 
   return existingModeledMethods;
+}
+
+export async function listModelFiles(
+  extensionPackPath: string,
+  cliServer: CodeQLCliServer,
+): Promise<Set<string>> {
+  const extensions = await cliServer.resolveExtensions(
+    extensionPackPath,
+    getOnDiskWorkspaceFolders(),
+  );
+
+  const modelFiles = new Set<string>();
+  if (extensionPackPath in extensions.data) {
+    for (const extension of extensions.data[extensionPackPath]) {
+      modelFiles.add(extension.file);
+    }
+  }
+  return modelFiles;
 }
