@@ -57,14 +57,6 @@ const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
   { value: "neutral", label: "Neutral" },
 ];
 
-const typeNames = modelTypeOptions.reduce(
-  (acc, { value, label }) => {
-    acc[value] = label;
-    return acc;
-  },
-  {} as Record<ModeledMethodType, string>,
-);
-
 type Props = {
   externalApiUsage: ExternalApiUsage;
   modeledMethod: ModeledMethod | undefined;
@@ -272,7 +264,7 @@ function ModelableMethodRow(props: Props) {
 }
 
 function UnmodelableMethodRow(props: Props) {
-  const { externalApiUsage, modeledMethod, mode } = props;
+  const { externalApiUsage, mode } = props;
 
   const jumpToUsage = useCallback(
     () => sendJumpToUsageMessage(externalApiUsage),
@@ -291,14 +283,7 @@ function UnmodelableMethodRow(props: Props) {
         )}
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
       </ApiOrMethodCell>
-      <VSCodeDataGridCell gridColumn={2}>
-        {externalApiUsage.supported &&
-          !modeledMethod &&
-          externalApiUsage.supportedType !== "none" && (
-            <>{typeNames[externalApiUsage.supportedType]}</>
-          )}
-      </VSCodeDataGridCell>
-      <VSCodeDataGridCell gridColumn="span 3">
+      <VSCodeDataGridCell gridColumn="span 4">
         Method modeled by CodeQL or a different extension pack
       </VSCodeDataGridCell>
     </VSCodeDataGridRow>
