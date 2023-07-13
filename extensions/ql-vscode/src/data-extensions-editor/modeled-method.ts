@@ -26,8 +26,3 @@ export interface ModeledMethod extends MethodSignature {
   kind: string;
   provenance: Provenance;
 }
-
-export type ModeledMethodWithSignature = {
-  signature: string;
-  modeledMethod: ModeledMethod;
-};

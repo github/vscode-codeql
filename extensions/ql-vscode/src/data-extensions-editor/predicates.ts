@@ -1,14 +1,9 @@
-import {
-  ModeledMethod,
-  ModeledMethodType,
-  ModeledMethodWithSignature,
-  Provenance,
-} from "./modeled-method";
+import { ModeledMethod, ModeledMethodType, Provenance } from "./modeled-method";
 
 export type ExtensiblePredicateDefinition = {
   extensiblePredicate: string;
   generateMethodDefinition: (method: ModeledMethod) => Tuple[];
-  readModeledMethod: (row: Tuple[]) => ModeledMethodWithSignature;
+  readModeledMethod: (row: Tuple[]) => ModeledMethod;
 
   supportedKinds?: string[];
 };
@@ -40,24 +35,18 @@ export const extensiblePredicateDefinitions: Record<
       method.kind,
       method.provenance,
     ],
-    readModeledMethod: (row) => {
-      const signature = readRowToMethod(row);
-      return {
-        signature,
-        modeledMethod: {
-          type: "source",
-          input: "",
-          output: row[6] as string,
-          kind: row[7] as string,
-          provenance: row[8] as Provenance,
-          signature,
-          packageName: row[0] as string,
-          typeName: row[1] as string,
-          methodName: row[3] as string,
-          methodParameters: row[4] as string,
-        },
-      };
-    },
+    readModeledMethod: (row) => ({
+      type: "source",
+      input: "",
+      output: row[6] as string,
+      kind: row[7] as string,
+      provenance: row[8] as Provenance,
+      signature: readRowToMethod(row),
+      packageName: row[0] as string,
+      typeName: row[1] as string,
+      methodName: row[3] as string,
+      methodParameters: row[4] as string,
+    }),
     supportedKinds: ["remote"],
   },
   sink: {
@@ -77,24 +66,18 @@ export const extensiblePredicateDefinitions: Record<
       method.kind,
       method.provenance,
     ],
-    readModeledMethod: (row) => {
-      const signature = readRowToMethod(row);
-      return {
-        signature,
-        modeledMethod: {
-          type: "sink",
-          input: row[6] as string,
-          output: "",
-          kind: row[7] as string,
-          provenance: row[8] as Provenance,
-          signature,
-          packageName: row[0] as string,
-          typeName: row[1] as string,
-          methodName: row[3] as string,
-          methodParameters: row[4] as string,
-        },
-      };
-    },
+    readModeledMethod: (row) => ({
+      type: "sink",
+      input: row[6] as string,
+      output: "",
+      kind: row[7] as string,
+      provenance: row[8] as Provenance,
+      signature: readRowToMethod(row),
+      packageName: row[0] as string,
+      typeName: row[1] as string,
+      methodName: row[3] as string,
+      methodParameters: row[4] as string,
+    }),
     supportedKinds: ["sql", "xss", "logging"],
   },
   summary: {
@@ -115,24 +98,18 @@ export const extensiblePredicateDefinitions: Record<
       method.kind,
       method.provenance,
     ],
-    readModeledMethod: (row) => {
-      const signature = readRowToMethod(row);
-      return {
-        signature,
-        modeledMethod: {
-          type: "summary",
-          input: row[6] as string,
-          output: row[7] as string,
-          kind: row[8] as string,
-          provenance: row[9] as Provenance,
-          signature,
-          packageName: row[0] as string,
-          typeName: row[1] as string,
-          methodName: row[3] as string,
-          methodParameters: row[4] as string,
-        },
-      };
-    },
+    readModeledMethod: (row) => ({
+      type: "summary",
+      input: row[6] as string,
+      output: row[7] as string,
+      kind: row[8] as string,
+      provenance: row[9] as Provenance,
+      signature: readRowToMethod(row),
+      packageName: row[0] as string,
+      typeName: row[1] as string,
+      methodName: row[3] as string,
+      methodParameters: row[4] as string,
+    }),
     supportedKinds: ["taint", "value"],
   },
   neutral: {
@@ -148,24 +125,18 @@ export const extensiblePredicateDefinitions: Record<
       method.kind,
       method.provenance,
     ],
-    readModeledMethod: (row) => {
-      const signature = `${row[0]}.${row[1]}#${row[2]}${row[3]}`;
-      return {
-        signature,
-        modeledMethod: {
-          type: "neutral",
-          input: "",
-          output: "",
-          kind: row[4] as string,
-          provenance: row[5] as Provenance,
-          signature,
-          packageName: row[0] as string,
-          typeName: row[1] as string,
-          methodName: row[2] as string,
-          methodParameters: row[3] as string,
-        },
-      };
-    },
+    readModeledMethod: (row) => ({
+      type: "neutral",
+      input: "",
+      output: "",
+      kind: row[4] as string,
+      provenance: row[5] as Provenance,
+      signature: `${row[0]}.${row[1]}#${row[2]}${row[3]}`,
+      packageName: row[0] as string,
+      typeName: row[1] as string,
+      methodName: row[2] as string,
+      methodParameters: row[3] as string,
+    }),
     supportedKinds: ["summary", "source", "sink"],
   },
 };

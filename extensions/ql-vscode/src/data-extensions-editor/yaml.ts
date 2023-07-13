@@ -199,14 +199,11 @@ export function loadDataExtensionYaml(
     }
 
     for (const row of data) {
-      const result = definition.readModeledMethod(row);
-      if (!result) {
+      const modeledMethod = definition.readModeledMethod(row);
+      if (!modeledMethod) {
         continue;
       }
-
-      const { signature, modeledMethod } = result;
-
-      modeledMethods[signature] = modeledMethod;
+      modeledMethods[modeledMethod.signature] = modeledMethod;
     }
   }
 
