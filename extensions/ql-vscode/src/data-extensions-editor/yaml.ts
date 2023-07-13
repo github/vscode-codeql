@@ -6,7 +6,6 @@ import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import {
   ExtensiblePredicateDefinition,
   extensiblePredicateDefinitions,
-  ExternalApiUsageByType,
 } from "./predicates";
 
 import * as dataSchemaJson from "./data-schema.json";
@@ -29,15 +28,14 @@ function createDataProperty(
   }
 
   const modeledMethods = methods.filter(
-    (method): method is ExternalApiUsageByType =>
-      method.modeledMethod !== undefined,
+    (method) => method.modeledMethod !== undefined,
   );
 
   return `\n${modeledMethods
     .map(
       (method) =>
         `      - ${JSON.stringify(
-          definition.generateMethodDefinition(method),
+          definition.generateMethodDefinition(method.modeledMethod!),
         )}`,
     )
     .join("\n")}`;

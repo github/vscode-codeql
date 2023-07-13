@@ -1,4 +1,3 @@
-import { ExternalApiUsage } from "./external-api-usage";
 import {
   ModeledMethod,
   ModeledMethodType,
@@ -6,14 +5,9 @@ import {
   Provenance,
 } from "./modeled-method";
 
-export type ExternalApiUsageByType = {
-  externalApiUsage: ExternalApiUsage;
-  modeledMethod: ModeledMethod;
-};
-
 export type ExtensiblePredicateDefinition = {
   extensiblePredicate: string;
-  generateMethodDefinition: (method: ExternalApiUsageByType) => Tuple[];
+  generateMethodDefinition: (method: ModeledMethod) => Tuple[];
   readModeledMethod: (row: Tuple[]) => ModeledMethodWithSignature;
 
   supportedKinds?: string[];
@@ -36,15 +30,15 @@ export const extensiblePredicateDefinitions: Record<
     //   string output, string kind, string provenance
     // );
     generateMethodDefinition: (method) => [
-      method.externalApiUsage.packageName,
-      method.externalApiUsage.typeName,
+      method.packageName,
+      method.typeName,
       true,
-      method.externalApiUsage.methodName,
-      method.externalApiUsage.methodParameters,
+      method.methodName,
+      method.methodParameters,
       "",
-      method.modeledMethod.output,
-      method.modeledMethod.kind,
-      method.modeledMethod.provenance,
+      method.output,
+      method.kind,
+      method.provenance,
     ],
     readModeledMethod: (row) => {
       const signature = readRowToMethod(row);
@@ -73,15 +67,15 @@ export const extensiblePredicateDefinitions: Record<
     //   string input, string kind, string provenance
     // );
     generateMethodDefinition: (method) => [
-      method.externalApiUsage.packageName,
-      method.externalApiUsage.typeName,
+      method.packageName,
+      method.typeName,
       true,
-      method.externalApiUsage.methodName,
-      method.externalApiUsage.methodParameters,
+      method.methodName,
+      method.methodParameters,
       "",
-      method.modeledMethod.input,
-      method.modeledMethod.kind,
-      method.modeledMethod.provenance,
+      method.input,
+      method.kind,
+      method.provenance,
     ],
     readModeledMethod: (row) => {
       const signature = readRowToMethod(row);
@@ -110,16 +104,16 @@ export const extensiblePredicateDefinitions: Record<
     //   string input, string output, string kind, string provenance
     // );
     generateMethodDefinition: (method) => [
-      method.externalApiUsage.packageName,
-      method.externalApiUsage.typeName,
+      method.packageName,
+      method.typeName,
       true,
-      method.externalApiUsage.methodName,
-      method.externalApiUsage.methodParameters,
+      method.methodName,
+      method.methodParameters,
       "",
-      method.modeledMethod.input,
-      method.modeledMethod.output,
-      method.modeledMethod.kind,
-      method.modeledMethod.provenance,
+      method.input,
+      method.output,
+      method.kind,
+      method.provenance,
     ],
     readModeledMethod: (row) => {
       const signature = readRowToMethod(row);
@@ -147,12 +141,12 @@ export const extensiblePredicateDefinitions: Record<
     //   string package, string type, string name, string signature, string kind, string provenance
     // );
     generateMethodDefinition: (method) => [
-      method.externalApiUsage.packageName,
-      method.externalApiUsage.typeName,
-      method.externalApiUsage.methodName,
-      method.externalApiUsage.methodParameters,
-      method.modeledMethod.kind,
-      method.modeledMethod.provenance,
+      method.packageName,
+      method.typeName,
+      method.methodName,
+      method.methodParameters,
+      method.kind,
+      method.provenance,
     ],
     readModeledMethod: (row) => {
       const signature = `${row[0]}.${row[1]}#${row[2]}${row[3]}`;
