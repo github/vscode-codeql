@@ -100,6 +100,11 @@ function ModelableMethodRow(props: Props) {
         ...modeledMethod,
         type: e.target.value as ModeledMethodType,
         provenance: newProvenance,
+        signature: externalApiUsage.signature,
+        packageName: externalApiUsage.packageName,
+        typeName: externalApiUsage.typeName,
+        methodName: externalApiUsage.methodName,
+        methodParameters: externalApiUsage.methodParameters,
       });
     },
     [onChange, externalApiUsage, modeledMethod, argumentsList],

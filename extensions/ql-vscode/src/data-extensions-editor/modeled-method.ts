@@ -1,3 +1,5 @@
+import { MethodSignature } from "./external-api-usage";
+
 export type ModeledMethodType =
   | "none"
   | "source"
@@ -17,13 +19,13 @@ export type Provenance =
   // Entered by the user in the editor manually
   | "manual";
 
-export type ModeledMethod = {
+export interface ModeledMethod extends MethodSignature {
   type: ModeledMethodType;
   input: string;
   output: string;
   kind: string;
   provenance: Provenance;
-};
+}
 
 export type ModeledMethodWithSignature = {
   signature: string;

@@ -221,6 +221,11 @@ describe("createAutoModelRequest", () => {
       input: "",
       output: "",
       provenance: "manual",
+      signature: "org.sql2o.Sql2o#open()",
+      packageName: "org.sql2o",
+      typeName: "Sql2o",
+      methodName: "open",
+      methodParameters: "()",
     },
     "org.sql2o.Sql2o#Sql2o(String)": {
       type: "sink",
@@ -228,6 +233,11 @@ describe("createAutoModelRequest", () => {
       input: "Argument[0]",
       output: "",
       provenance: "manual",
+      signature: "org.sql2o.Sql2o#Sql2o(String)",
+      packageName: "org.sql2o",
+      typeName: "Sql2o",
+      methodName: "Sql2o",
+      methodParameters: "(String)",
     },
   };
 
