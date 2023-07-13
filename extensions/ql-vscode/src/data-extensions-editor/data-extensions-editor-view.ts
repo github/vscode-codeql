@@ -5,7 +5,6 @@ import {
   ViewColumn,
   window,
 } from "vscode";
-import { join } from "path";
 import { RequestError } from "@octokit/request-error";
 import {
   AbstractWebview,
@@ -21,7 +20,7 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
 } from "../common/logging";
-import { outputFile, readFile } from "fs-extra";
+import { readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
@@ -34,7 +33,7 @@ import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../common/errors";
 import { readQueryResults, runQuery } from "./external-api-usage-query";
-import { createDataExtensionYamls, loadDataExtensionYaml } from "./yaml";
+import { loadDataExtensionYaml } from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
@@ -47,6 +46,7 @@ import { enableFrameworkMode, showLlmGeneration } from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { Mode } from "./shared/mode";
+import { saveModeledMethods } from "./modeled-method-fs";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -111,9 +111,14 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "saveModeledMethods":
-        await this.saveModeledMethods(
+        await saveModeledMethods(
+          this.extensionPack,
+          this.databaseItem.name,
+          this.databaseItem.language,
           msg.externalApiUsages,
           msg.modeledMethods,
+          this.mode,
+          this.app.logger,
         );
         await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
 
@@ -180,25 +185,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
         void this.app.logger.log(`Unable to handleMsgFromView: ${e}`);
       }
     }
-  }
-
-  protected async saveModeledMethods(
-    externalApiUsages: ExternalApiUsage[],
-    modeledMethods: Record<string, ModeledMethod>,
-  ): Promise<void> {
-    const yamls = createDataExtensionYamls(
-      this.databaseItem.name,
-      this.databaseItem.language,
-      externalApiUsages,
-      modeledMethods,
-      this.mode,
-    );
-
-    for (const [filename, yaml] of Object.entries(yamls)) {
-      await outputFile(join(this.extensionPack.path, filename), yaml);
-    }
-
-    void this.app.logger.log(`Saved data extension YAML`);
   }
 
   protected async loadExistingModeledMethods(): Promise<void> {
