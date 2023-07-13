@@ -10,82 +10,16 @@ describe("createDataExtensionYaml", () => {
   it("creates the correct YAML file", () => {
     const yaml = createDataExtensionYaml("java", [
       {
-        externalApiUsage: {
-          library: "sql2o-1.6.0.jar",
-          signature: "org.sql2o.Connection#createQuery(String)",
-          packageName: "org.sql2o",
-          typeName: "Connection",
-          methodName: "createQuery",
-          methodParameters: "(String)",
-          supported: true,
-          usages: [
-            {
-              label: "createQuery(...)",
-              url: {
-                uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-                startLine: 15,
-                startColumn: 13,
-                endLine: 15,
-                endColumn: 56,
-              },
-            },
-            {
-              label: "createQuery(...)",
-              url: {
-                uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-                startLine: 26,
-                startColumn: 13,
-                endLine: 26,
-                endColumn: 39,
-              },
-            },
-          ],
-        },
-        modeledMethod: {
-          type: "sink",
-          input: "Argument[0]",
-          output: "",
-          kind: "sql",
-          provenance: "df-generated",
-          signature: "org.sql2o.Connection#createQuery(String)",
-          packageName: "org.sql2o",
-          typeName: "Connection",
-          methodName: "createQuery",
-          methodParameters: "(String)",
-        },
-      },
-      {
-        externalApiUsage: {
-          library: "sql2o-1.6.0.jar",
-          signature: "org.sql2o.Query#executeScalar(Class)",
-          packageName: "org.sql2o",
-          typeName: "Query",
-          methodName: "executeScalar",
-          methodParameters: "(Class)",
-          supported: true,
-          usages: [
-            {
-              label: "executeScalar(...)",
-              url: {
-                uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-                startLine: 15,
-                startColumn: 13,
-                endLine: 15,
-                endColumn: 85,
-              },
-            },
-            {
-              label: "executeScalar(...)",
-              url: {
-                uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-                startLine: 26,
-                startColumn: 13,
-                endLine: 26,
-                endColumn: 68,
-              },
-            },
-          ],
-        },
+        type: "sink",
+        input: "Argument[0]",
+        output: "",
+        kind: "sql",
+        provenance: "df-generated",
+        signature: "org.sql2o.Connection#createQuery(String)",
+        packageName: "org.sql2o",
+        typeName: "Connection",
+        methodName: "createQuery",
+        methodParameters: "(String)",
       },
     ]);
 
