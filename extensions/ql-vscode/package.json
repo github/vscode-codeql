@@ -1832,7 +1832,7 @@
     "@types/webpack": "^5.28.0",
     "@types/webpack-env": "^1.18.0",
     "@typescript-eslint/eslint-plugin": "^5.38.0",
-    "@typescript-eslint/parser": "^5.38.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "@vscode/test-electron": "^2.2.0",
     "@vscode/vsce": "^2.19.0",
     "ansi-colors": "^4.1.1",
