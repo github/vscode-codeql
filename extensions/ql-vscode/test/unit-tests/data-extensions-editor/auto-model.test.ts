@@ -529,6 +529,11 @@ describe("parsePredictedClassifications", () => {
         input: "Argument[0]",
         output: "",
         provenance: "ai-generated",
+        signature: "org.sql2o.Sql2o#createQuery(String)",
+        packageName: "org.sql2o",
+        typeName: "Sql2o",
+        methodName: "createQuery",
+        methodParameters: "(String)",
       },
       "org.sql2o.Sql2o#executeScalar(Class)": {
         type: "neutral",
@@ -536,6 +541,11 @@ describe("parsePredictedClassifications", () => {
         input: "",
         output: "",
         provenance: "ai-generated",
+        signature: "org.sql2o.Sql2o#executeScalar(Class)",
+        packageName: "org.sql2o",
+        typeName: "Sql2o",
+        methodName: "executeScalar",
+        methodParameters: "(Class)",
       },
       "org.sql2o.Sql2o#Sql2o(String,String,String)": {
         type: "sink",
@@ -543,6 +553,11 @@ describe("parsePredictedClassifications", () => {
         input: "Argument[1]",
         output: "",
         provenance: "ai-generated",
+        signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+        packageName: "org.sql2o",
+        typeName: "Sql2o",
+        methodName: "Sql2o",
+        methodParameters: "(String,String,String)",
       },
     });
   });

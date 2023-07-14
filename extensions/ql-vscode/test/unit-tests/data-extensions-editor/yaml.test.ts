@@ -485,6 +485,11 @@ describe("loadDataExtensionYaml", () => {
         output: "",
         type: "sink",
         provenance: "manual",
+        signature: "org.sql2o.Connection#createQuery(String)",
+        packageName: "org.sql2o",
+        typeName: "Connection",
+        methodName: "createQuery",
+        methodParameters: "(String)",
       },
     });
   });
