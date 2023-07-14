@@ -84,6 +84,14 @@ export class DataExtensionsEditorView extends AbstractWebview<
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
       view: "data-extensions-editor",
+      iconPath: {
+        dark: Uri.file(
+          join(this.ctx.extensionPath, "media/dark/symbol-misc.svg"),
+        ),
+        light: Uri.file(
+          join(this.ctx.extensionPath, "media/light/symbol-misc.svg"),
+        ),
+      },
     };
   }
 

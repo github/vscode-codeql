@@ -19,6 +19,7 @@ export type WebviewPanelConfig = {
   viewColumn: ViewColumn;
   view: WebviewView;
   preserveFocus?: boolean;
+  iconPath?: Uri | { dark: Uri; light: Uri };
   additionalOptions?: WebviewPanelOptions & WebviewOptions;
   allowWasmEval?: boolean;
 };
@@ -85,6 +86,8 @@ export abstract class AbstractWebview<
         },
       );
       this.panel = panel;
+
+      this.panel.iconPath = config.iconPath;
 
       this.setupPanel(panel, config);
 
