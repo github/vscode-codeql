@@ -1,5 +1,4 @@
 import {
-  VSCodeCheckbox,
   VSCodeDataGridCell,
   VSCodeDataGridRow,
   VSCodeLink,
@@ -20,6 +19,8 @@ import { extensiblePredicateDefinitions } from "../../data-extensions-editor/pre
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { Dropdown } from "../common/Dropdown";
 import { MethodClassifications } from "./MethodClassifications";
+import { Codicon } from "../common/icon";
+import { assertNever } from "../../common/helpers-pure";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -51,6 +52,7 @@ const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
 type Props = {
   externalApiUsage: ExternalApiUsage;
   modeledMethod: ModeledMethod | undefined;
+  modifiedSignatures: Set<string>;
   mode: Mode;
   onChange: (
     externalApiUsage: ExternalApiUsage,
@@ -59,11 +61,12 @@ type Props = {
 };
 
 export const MethodRow = (props: Props) => {
-  const { externalApiUsage, modeledMethod } = props;
+  const { externalApiUsage, modeledMethod, modifiedSignatures } = props;
 
   const methodCanBeModeled =
     !externalApiUsage.supported ||
-    (modeledMethod && modeledMethod?.type !== "none");
+    (modeledMethod && modeledMethod?.type !== "none") ||
+    modifiedSignatures.has(externalApiUsage.signature);
 
   if (methodCanBeModeled) {
     return <ModelableMethodRow {...props} />;
@@ -73,7 +76,13 @@ export const MethodRow = (props: Props) => {
 };
 
 function ModelableMethodRow(props: Props) {
-  const { externalApiUsage, modeledMethod, mode, onChange } = props;
+  const {
+    externalApiUsage,
+    modeledMethod,
+    modifiedSignatures,
+    mode,
+    onChange,
+  } = props;
 
   const argumentsList = useMemo(() => {
     if (externalApiUsage.methodParameters === "()") {
@@ -192,10 +201,21 @@ function ModelableMethodRow(props: Props) {
       : undefined;
   const showKindCell = predicate?.supportedKinds;
 
+  const modificationState = useMemo(() => {
+    if (modeledMethod) {
+      if (modifiedSignatures.has(modeledMethod.signature)) {
+        return "unsaved";
+      } else if (modeledMethod.type !== "none") {
+        return "saved";
+      }
+    }
+    return "unmodeled";
+  }, [modeledMethod, modifiedSignatures]);
+
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
-        <VSCodeCheckbox />
+        <ModificationIndicator state={modificationState} />
         <ExternalApiUsageName {...props} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
@@ -251,7 +271,7 @@ function UnmodelableMethodRow(props: Props) {
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
-        <VSCodeCheckbox />
+        <ModificationIndicator state="saved" />
         <ExternalApiUsageName {...props} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
@@ -286,4 +306,21 @@ function sendJumpToUsageMessage(externalApiUsage: ExternalApiUsage) {
     // In framework mode, the first and only usage is the definition of the method
     location: externalApiUsage.usages[0].url,
   });
+}
+
+function ModificationIndicator({
+  state,
+}: {
+  state: "unmodeled" | "unsaved" | "saved";
+}) {
+  switch (state) {
+    case "unmodeled":
+      return <Codicon name="circle-large-outline" label="Method not modeled" />;
+    case "unsaved":
+      return <Codicon name="pass" label="Changes have not been saved" />;
+    case "saved":
+      return <Codicon name="pass-filled" label="Method modeled" />;
+    default:
+      assertNever(state);
+  }
 }

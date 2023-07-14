@@ -200,6 +200,7 @@ export const LibraryRow = ({
           <ModeledMethodDataGrid
             externalApiUsages={externalApiUsages}
             modeledMethods={modeledMethods}
+            modifiedSignatures={modifiedSignatures}
             mode={viewState.mode}
             onChange={onChangeWithModelName}
           />
