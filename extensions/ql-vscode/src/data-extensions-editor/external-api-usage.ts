@@ -17,11 +17,7 @@ export type Usage = Call & {
   classification: CallClassification;
 };
 
-export type ExternalApiUsage = {
-  /**
-   * Contains the name of the library containing the method declaration, e.g. `sql2o-1.6.0.jar` or `System.Runtime.dll`
-   */
-  library: string;
+export interface MethodSignature {
   /**
    * A unique signature that can be used to identify this external API usage.
    *
@@ -37,6 +33,13 @@ export type ExternalApiUsage = {
    * The method parameters, including enclosing parentheses, e.g. `(String, String)`
    */
   methodParameters: string;
+}
+
+export interface ExternalApiUsage extends MethodSignature {
+  /**
+   * Contains the name of the library containing the method declaration, e.g. `sql2o-1.6.0.jar` or `System.Runtime.dll`
+   */
+  library: string;
   /**
    * Is this method already supported by CodeQL standard libraries.
    * If so, there is no need for the user to model it themselves.
@@ -44,4 +47,4 @@ export type ExternalApiUsage = {
   supported: boolean;
   supportedType: ModeledMethodType;
   usages: Usage[];
-};
+}

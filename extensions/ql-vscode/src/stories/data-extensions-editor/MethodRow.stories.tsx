@@ -56,5 +56,10 @@ MethodRow.args = {
     output: "ReturnValue",
     kind: "taint",
     provenance: "manual",
+    signature: "org.sql2o.Sql2o#open()",
+    packageName: "org.sql2o",
+    typeName: "Sql2o",
+    methodName: "open",
+    methodParameters: "()",
   },
 };

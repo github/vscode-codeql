@@ -11,83 +11,16 @@ describe("createDataExtensionYaml", () => {
   it("creates the correct YAML file", () => {
     const yaml = createDataExtensionYaml("java", [
       {
-        externalApiUsage: {
-          library: "sql2o-1.6.0.jar",
-          signature: "org.sql2o.Connection#createQuery(String)",
-          packageName: "org.sql2o",
-          typeName: "Connection",
-          methodName: "createQuery",
-          methodParameters: "(String)",
-          supported: true,
-          supportedType: "sink",
-          usages: [
-            {
-              label: "createQuery(...)",
-              url: {
-                uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-                startLine: 15,
-                startColumn: 13,
-                endLine: 15,
-                endColumn: 56,
-              },
-              classification: CallClassification.Source,
-            },
-            {
-              label: "createQuery(...)",
-              url: {
-                uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-                startLine: 26,
-                startColumn: 13,
-                endLine: 26,
-                endColumn: 39,
-              },
-              classification: CallClassification.Source,
-            },
-          ],
-        },
-        modeledMethod: {
-          type: "sink",
-          input: "Argument[0]",
-          output: "",
-          kind: "sql",
-          provenance: "df-generated",
-        },
-      },
-      {
-        externalApiUsage: {
-          library: "sql2o-1.6.0.jar",
-          signature: "org.sql2o.Query#executeScalar(Class)",
-          packageName: "org.sql2o",
-          typeName: "Query",
-          methodName: "executeScalar",
-          methodParameters: "(Class)",
-          supported: true,
-          supportedType: "neutral",
-          usages: [
-            {
-              label: "executeScalar(...)",
-              url: {
-                uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-                startLine: 15,
-                startColumn: 13,
-                endLine: 15,
-                endColumn: 85,
-              },
-              classification: CallClassification.Source,
-            },
-            {
-              label: "executeScalar(...)",
-              url: {
-                uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-                startLine: 26,
-                startColumn: 13,
-                endLine: 26,
-                endColumn: 68,
-              },
-              classification: CallClassification.Source,
-            },
-          ],
-        },
+        type: "sink",
+        input: "Argument[0]",
+        output: "",
+        kind: "sql",
+        provenance: "df-generated",
+        signature: "org.sql2o.Connection#createQuery(String)",
+        packageName: "org.sql2o",
+        typeName: "Connection",
+        methodName: "createQuery",
+        methodParameters: "(String)",
       },
     ]);
 
@@ -293,6 +226,11 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           output: "",
           kind: "sql",
           provenance: "df-generated",
+          signature: "org.sql2o.Connection#createQuery(String)",
+          packageName: "org.sql2o",
+          typeName: "Connection",
+          methodName: "createQuery",
+          methodParameters: "(String)",
         },
         "org.springframework.boot.SpringApplication#run(Class,String[])": {
           type: "neutral",
@@ -300,6 +238,12 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           output: "",
           kind: "summary",
           provenance: "manual",
+          signature:
+            "org.springframework.boot.SpringApplication#run(Class,String[])",
+          packageName: "org.springframework.boot",
+          typeName: "SpringApplication",
+          methodName: "run",
+          methodParameters: "(Class,String[])",
         },
         "org.sql2o.Sql2o#Sql2o(String,String,String)": {
           type: "sink",
@@ -307,6 +251,11 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           output: "",
           kind: "jndi",
           provenance: "manual",
+          signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+          packageName: "org.sql2o",
+          typeName: "Sql2o",
+          methodName: "Sql2o",
+          methodParameters: "(String,String,String)",
         },
       },
     );
@@ -466,6 +415,11 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
           output: "",
           kind: "sql",
           provenance: "df-generated",
+          signature: "org.sql2o.Connection#createQuery(String)",
+          packageName: "org.sql2o",
+          typeName: "Connection",
+          methodName: "createQuery",
+          methodParameters: "(String)",
         },
         "org.sql2o.Sql2o#Sql2o(String,String,String)": {
           type: "sink",
@@ -473,6 +427,11 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
           output: "",
           kind: "jndi",
           provenance: "manual",
+          signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+          packageName: "org.sql2o",
+          typeName: "Sql2o",
+          methodName: "Sql2o",
+          methodParameters: "(String,String,String)",
         },
       },
     );
@@ -547,6 +506,11 @@ describe("loadDataExtensionYaml", () => {
         output: "",
         type: "sink",
         provenance: "manual",
+        signature: "org.sql2o.Connection#createQuery(String)",
+        packageName: "org.sql2o",
+        typeName: "Connection",
+        methodName: "createQuery",
+        methodParameters: "(String)",
       },
     });
   });

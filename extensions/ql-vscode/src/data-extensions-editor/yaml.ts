@@ -6,7 +6,6 @@ import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import {
   ExtensiblePredicateDefinition,
   extensiblePredicateDefinitions,
-  ExternalApiUsageByType,
 } from "./predicates";
 
 import * as dataSchemaJson from "./data-schema.json";
@@ -15,25 +14,15 @@ import { sanitizeExtensionPackName } from "./extension-pack-name";
 const ajv = new Ajv({ allErrors: true });
 const dataSchemaValidate = ajv.compile(dataSchemaJson);
 
-type ModeledExternalApiUsage = {
-  externalApiUsage: ExternalApiUsage;
-  modeledMethod?: ModeledMethod;
-};
-
 function createDataProperty(
-  methods: ModeledExternalApiUsage[],
+  methods: ModeledMethod[],
   definition: ExtensiblePredicateDefinition,
 ) {
   if (methods.length === 0) {
     return " []";
   }
 
-  const modeledMethods = methods.filter(
-    (method): method is ExternalApiUsageByType =>
-      method.modeledMethod !== undefined,
-  );
-
-  return `\n${modeledMethods
+  return `\n${methods
     .map(
       (method) =>
         `      - ${JSON.stringify(
@@ -45,11 +34,11 @@ function createDataProperty(
 
 export function createDataExtensionYaml(
   language: string,
-  modeledUsages: ModeledExternalApiUsage[],
+  modeledMethods: ModeledMethod[],
 ) {
   const methodsByType: Record<
     Exclude<ModeledMethodType, "none">,
-    ModeledExternalApiUsage[]
+    ModeledMethod[]
   > = {
     source: [],
     sink: [],
@@ -57,11 +46,9 @@ export function createDataExtensionYaml(
     neutral: [],
   };
 
-  for (const modeledUsage of modeledUsages) {
-    const { modeledMethod } = modeledUsage;
-
+  for (const modeledMethod of modeledMethods) {
     if (modeledMethod?.type && modeledMethod.type !== "none") {
-      methodsByType[modeledMethod.type].push(modeledUsage);
+      methodsByType[modeledMethod.type].push(modeledMethod);
     }
   }
 
@@ -85,32 +72,24 @@ export function createDataExtensionYamlsForApplicationMode(
   externalApiUsages: ExternalApiUsage[],
   modeledMethods: Record<string, ModeledMethod>,
 ): Record<string, string> {
-  const methodsByLibraryFilename: Record<string, ModeledExternalApiUsage[]> =
-    {};
+  const methodsByLibraryFilename: Record<string, ModeledMethod[]> = {};
 
   for (const externalApiUsage of externalApiUsages) {
     const modeledMethod = modeledMethods[externalApiUsage.signature];
+    if (!modeledMethod) {
+      continue;
+    }
 
     const filename = createFilenameForLibrary(externalApiUsage.library);
 
     methodsByLibraryFilename[filename] =
       methodsByLibraryFilename[filename] || [];
-    methodsByLibraryFilename[filename].push({
-      externalApiUsage,
-      modeledMethod,
-    });
+    methodsByLibraryFilename[filename].push(modeledMethod);
   }
 
   const result: Record<string, string> = {};
 
   for (const [filename, methods] of Object.entries(methodsByLibraryFilename)) {
-    const hasModeledMethods = methods.some(
-      (method) => method.modeledMethod !== undefined,
-    );
-    if (!hasModeledMethods) {
-      continue;
-    }
-
     result[filename] = createDataExtensionYaml(language, methods);
   }
 
@@ -131,10 +110,9 @@ export function createDataExtensionYamlsForFrameworkMode(
     .map((part) => sanitizeExtensionPackName(part))
     .join("-");
 
-  const methods = externalApiUsages.map((externalApiUsage) => ({
-    externalApiUsage,
-    modeledMethod: modeledMethods[externalApiUsage.signature],
-  }));
+  const methods = externalApiUsages
+    .map((externalApiUsage) => modeledMethods[externalApiUsage.signature])
+    .filter((modeledMethod) => modeledMethod !== undefined);
 
   return {
     [`${prefix}${libraryName}${suffix}.yml`]: createDataExtensionYaml(
@@ -221,14 +199,11 @@ export function loadDataExtensionYaml(
     }
 
     for (const row of data) {
-      const result = definition.readModeledMethod(row);
-      if (!result) {
+      const modeledMethod = definition.readModeledMethod(row);
+      if (!modeledMethod) {
         continue;
       }
-
-      const { signature, modeledMethod } = result;
-
-      modeledMethods[signature] = modeledMethod;
+      modeledMethods[modeledMethod.signature] = modeledMethod;
     }
   }
 
