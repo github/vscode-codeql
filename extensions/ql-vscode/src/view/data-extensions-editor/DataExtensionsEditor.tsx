@@ -17,7 +17,6 @@ import { DataExtensionEditorViewState } from "../../data-extensions-editor/share
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../data-extensions-editor/shared/mode";
-import { groupMethods } from "../../data-extensions-editor/shared/sorting";
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -75,7 +74,9 @@ export function DataExtensionsEditor({
   const [externalApiUsages, setExternalApiUsages] = useState<
     ExternalApiUsage[]
   >(initialExternalApiUsages);
-  const [unsavedModels, setUnsavedModels] = useState<Set<string>>(new Set());
+  const [modifiedSignatures, setModifiedSignatures] = useState<Set<string>>(
+    new Set(),
+  );
 
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
@@ -119,15 +120,11 @@ export function DataExtensionsEditor({
                 ),
               };
             });
-            setUnsavedModels(
-              (oldUnsavedModels) =>
+            setModifiedSignatures(
+              (oldModifiedSignatures) =>
                 new Set([
-                  ...oldUnsavedModels,
-                  ...modelsAffectedByNewModeledMethods(
-                    msg.modeledMethods,
-                    externalApiUsages,
-                    viewState?.mode ?? Mode.Application,
-                  ),
+                  ...oldModifiedSignatures,
+                  ...Object.keys(msg.modeledMethods),
                 ]),
             );
             break;
@@ -145,7 +142,7 @@ export function DataExtensionsEditor({
     return () => {
       window.removeEventListener("message", listener);
     };
-  }, [externalApiUsages, viewState?.mode]);
+  }, []);
 
   const modeledPercentage = useMemo(
     () => calculateModeledPercentage(externalApiUsages),
@@ -160,8 +157,9 @@ export function DataExtensionsEditor({
         ...oldModeledMethods,
         [method.signature]: model,
       }));
-      setUnsavedModels(
-        (oldUnsavedModels) => new Set([...oldUnsavedModels, modelName]),
+      setModifiedSignatures(
+        (oldModifiedSignatures) =>
+          new Set([...oldModifiedSignatures, method.signature]),
       );
     },
     [],
@@ -179,12 +177,11 @@ export function DataExtensionsEditor({
       externalApiUsages,
       modeledMethods,
     });
-    setUnsavedModels(new Set());
+    setModifiedSignatures(new Set());
   }, [externalApiUsages, modeledMethods]);
 
   const onSaveModelClick = useCallback(
     (
-      modelName: string,
       externalApiUsages: ExternalApiUsage[],
       modeledMethods: Record<string, ModeledMethod>,
     ) => {
@@ -193,10 +190,12 @@ export function DataExtensionsEditor({
         externalApiUsages,
         modeledMethods,
       });
-      setUnsavedModels((oldUnsavedModels) => {
-        const newUnsavedModels = new Set(oldUnsavedModels);
-        newUnsavedModels.delete(modelName);
-        return newUnsavedModels;
+      setModifiedSignatures((oldModifiedSignatures) => {
+        const newModifiedSignatures = new Set([...oldModifiedSignatures]);
+        for (const externalApiUsage of externalApiUsages) {
+          newModifiedSignatures.delete(externalApiUsage.signature);
+        }
+        return newModifiedSignatures;
       });
     },
     [],
@@ -317,8 +316,8 @@ export function DataExtensionsEditor({
             </ButtonsContainer>
             <ModeledMethodsList
               externalApiUsages={externalApiUsages}
-              unsavedModels={unsavedModels}
               modeledMethods={modeledMethods}
+              modifiedSignatures={modifiedSignatures}
               viewState={viewState}
               onChange={onChange}
               onSaveModelClick={onSaveModelClick}
@@ -330,16 +329,4 @@ export function DataExtensionsEditor({
       )}
     </DataExtensionsEditorContainer>
   );
-}
-
-function modelsAffectedByNewModeledMethods(
-  modeledMethods: Record<string, ModeledMethod>,
-  externalApiUsages: ExternalApiUsage[],
-  mode: Mode,
-): string[] {
-  const signatures = new Set(Object.keys(modeledMethods));
-  const affectedExternalApiUsages = externalApiUsages.filter(
-    (externalApiUsage) => signatures.has(externalApiUsage.signature),
-  );
-  return Object.keys(groupMethods(affectedExternalApiUsages, mode));
 }

@@ -12,8 +12,8 @@ import { DataExtensionEditorViewState } from "../../data-extensions-editor/share
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
-  unsavedModels: Set<string>;
   modeledMethods: Record<string, ModeledMethod>;
+  modifiedSignatures: Set<string>;
   viewState: DataExtensionEditorViewState;
   onChange: (
     modelName: string,
@@ -21,7 +21,6 @@ type Props = {
     modeledMethod: ModeledMethod,
   ) => void;
   onSaveModelClick: (
-    modelName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
@@ -38,8 +37,8 @@ const libraryNameOverrides: Record<string, string> = {
 
 export const ModeledMethodsList = ({
   externalApiUsages,
-  unsavedModels,
   modeledMethods,
+  modifiedSignatures,
   viewState,
   onChange,
   onSaveModelClick,
@@ -79,8 +78,8 @@ export const ModeledMethodsList = ({
           title={libraryNameOverrides[libraryName] ?? libraryName}
           libraryVersion={libraryVersions[libraryName]}
           externalApiUsages={grouped[libraryName]}
-          hasUnsavedChanges={unsavedModels.has(libraryName)}
           modeledMethods={modeledMethods}
+          modifiedSignatures={modifiedSignatures}
           viewState={viewState}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}

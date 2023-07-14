@@ -71,15 +71,14 @@ type Props = {
   libraryVersion?: string;
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
+  modifiedSignatures: Set<string>;
   viewState: DataExtensionEditorViewState;
-  hasUnsavedChanges: boolean;
   onChange: (
     modelName: string,
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
   ) => void;
   onSaveModelClick: (
-    modelName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
@@ -95,8 +94,8 @@ export const LibraryRow = ({
   libraryVersion,
   externalApiUsages,
   modeledMethods,
+  modifiedSignatures,
   viewState,
-  hasUnsavedChanges,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
@@ -137,11 +136,11 @@ export const LibraryRow = ({
 
   const handleSave = useCallback(
     async (e: React.MouseEvent) => {
-      onSaveModelClick(title, externalApiUsages, modeledMethods);
+      onSaveModelClick(externalApiUsages, modeledMethods);
       e.stopPropagation();
       e.preventDefault();
     },
-    [title, externalApiUsages, modeledMethods, onSaveModelClick],
+    [externalApiUsages, modeledMethods, onSaveModelClick],
   );
 
   const onChangeWithModelName = useCallback(
@@ -150,6 +149,12 @@ export const LibraryRow = ({
     },
     [onChange, title],
   );
+
+  const hasUnsavedChanges = useMemo(() => {
+    return externalApiUsages.some((externalApiUsage) =>
+      modifiedSignatures.has(externalApiUsage.signature),
+    );
+  }, [externalApiUsages, modifiedSignatures]);
 
   return (
     <LibraryContainer>
