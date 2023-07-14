@@ -13,6 +13,10 @@ const ClassificationsContainer = styled.div`
   gap: 0.5rem;
 `;
 
+const ClassificationTag = styled(VSCodeTag)`
+  font-size: 0.75em;
+`;
+
 type Props = {
   externalApiUsage: ExternalApiUsage;
 };
@@ -38,8 +42,8 @@ export const MethodClassifications = ({ externalApiUsage }: Props) => {
 
   return (
     <ClassificationsContainer>
-      {inTest && <VSCodeTag>Test</VSCodeTag>}
-      {inGenerated && <VSCodeTag>Generated</VSCodeTag>}
+      {inTest && <ClassificationTag>Test</ClassificationTag>}
+      {inGenerated && <ClassificationTag>Generated</ClassificationTag>}
     </ClassificationsContainer>
   );
 };
