@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- Implement syntax highlighting for the `additional` and `default` keywords. [#2609](https://github.com/github/vscode-codeql/pull/2609)
+
 ## 1.8.7 - 29 June 2023
 
 - Show a run button on the file tab for query files, that will start a local query. This button will only show when a local database is selected in the extension. [#2544](https://github.com/github/vscode-codeql/pull/2544)
