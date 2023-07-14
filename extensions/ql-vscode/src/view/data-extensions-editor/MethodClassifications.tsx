@@ -36,12 +36,25 @@ export const MethodClassifications = ({ externalApiUsage }: Props) => {
   const inTest = allUsageClassifications.has(CallClassification.Test);
   const inGenerated = allUsageClassifications.has(CallClassification.Generated);
 
+  const tooltip = useMemo(() => {
+    if (inTest && inGenerated) {
+      return "This method is only used from test and generated code";
+    }
+    if (inTest) {
+      return "This method is only used from test code";
+    }
+    if (inGenerated) {
+      return "This method is only used from generated code";
+    }
+    return "";
+  }, [inTest, inGenerated]);
+
   if (inSource) {
     return null;
   }
 
   return (
-    <ClassificationsContainer>
+    <ClassificationsContainer title={tooltip}>
       {inTest && <ClassificationTag>Test</ClassificationTag>}
       {inGenerated && <ClassificationTag>Generated</ClassificationTag>}
     </ClassificationsContainer>
