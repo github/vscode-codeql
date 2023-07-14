@@ -1274,12 +1274,6 @@ export class CodeQLCliServer implements Disposable {
     suite: string,
     additionalPacks: string[],
   ): Promise<ResolveExtensionsResult> {
-    if (!(await this.cliConstraints.supportsResolveExtensions())) {
-      throw new Error(
-        "Resolving extensions is only supported for CodeQL CLI v2.10.2 or later",
-      );
-    }
-
     const args = this.getAdditionalPacksArg(additionalPacks);
     args.push(suite);
 
