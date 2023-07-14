@@ -54,6 +54,16 @@ export class DataExtensionsEditorModule {
   public getCommands(): DataExtensionsEditorCommands {
     return {
       "codeQL.openDataExtensionsEditor": async () => {
+        if (
+          !(await this.cliServer.cliConstraints.supportsResolveExtensions())
+        ) {
+          void showAndLogErrorMessage(
+            this.app.logger,
+            "CodeQL CLI version v2.10.2 or later is required to use the data extensions editor.",
+          );
+          return;
+        }
+
         const db = this.databaseManager.currentDatabaseItem;
         if (!db) {
           void showAndLogErrorMessage(this.app.logger, "No database selected");

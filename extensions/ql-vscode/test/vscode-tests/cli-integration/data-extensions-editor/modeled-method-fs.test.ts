@@ -93,6 +93,10 @@ describe("listModelFiles", () => {
   }
 
   it("should return the empty set when the extension pack is empty", async () => {
+    if (!(await cli.cliConstraints.supportsResolveExtensions())) {
+      return;
+    }
+
     const extensionPackPath = makeExtensionPack("extension-pack", []);
 
     const modelFiles = await listModelFiles(extensionPackPath, cli);
@@ -100,6 +104,10 @@ describe("listModelFiles", () => {
   });
 
   it("should find all model files", async () => {
+    if (!(await cli.cliConstraints.supportsResolveExtensions())) {
+      return;
+    }
+
     const extensionPackPath = makeExtensionPack("extension-pack", [
       "library1.model.yml",
       "library2.model.yml",
@@ -115,6 +123,10 @@ describe("listModelFiles", () => {
   });
 
   it("should ignore model files from other extension packs", async () => {
+    if (!(await cli.cliConstraints.supportsResolveExtensions())) {
+      return;
+    }
+
     const extensionPackPath = makeExtensionPack("extension-pack", [
       "library1.model.yml",
     ]);
