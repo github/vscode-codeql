@@ -54,16 +54,6 @@ export class DataExtensionsEditorModule {
   public getCommands(): DataExtensionsEditorCommands {
     return {
       "codeQL.openDataExtensionsEditor": async () => {
-        if (
-          !(await this.cliServer.cliConstraints.supportsResolveExtensions())
-        ) {
-          void showAndLogErrorMessage(
-            this.app.logger,
-            "CodeQL CLI version v2.10.2 or later is required to use the data extensions editor.",
-          );
-          return;
-        }
-
         const db = this.databaseManager.currentDatabaseItem;
         if (!db) {
           void showAndLogErrorMessage(this.app.logger, "No database selected");
@@ -84,6 +74,16 @@ export class DataExtensionsEditorModule {
               void showAndLogErrorMessage(
                 this.app.logger,
                 `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND.format()} or later.`,
+              );
+              return;
+            }
+
+            if (
+              !(await this.cliServer.cliConstraints.supportsResolveExtensions())
+            ) {
+              void showAndLogErrorMessage(
+                this.app.logger,
+                `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_EXTENSIONS.format()} or later.`,
               );
               return;
             }
