@@ -13,6 +13,7 @@ import {
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { load as loadYaml } from "js-yaml";
 import { CodeQLCliServer } from "../codeql-cli/cli";
+import { pathsEqual } from "../common/files";
 
 export async function saveModeledMethods(
   extensionPack: ExtensionPack,
@@ -75,15 +76,17 @@ export async function listModelFiles(
   extensionPackPath: string,
   cliServer: CodeQLCliServer,
 ): Promise<Set<string>> {
-  const extensions = await cliServer.resolveExtensions(
+  const result = await cliServer.resolveExtensions(
     extensionPackPath,
     getOnDiskWorkspaceFolders(),
   );
 
   const modelFiles = new Set<string>();
-  if (extensionPackPath in extensions.data) {
-    for (const extension of extensions.data[extensionPackPath]) {
-      modelFiles.add(extension.file);
+  for (const [path, extensions] of Object.entries(result.data)) {
+    if (pathsEqual(path, extensionPackPath)) {
+      for (const extension of extensions) {
+        modelFiles.add(extension.file);
+      }
     }
   }
   return modelFiles;
