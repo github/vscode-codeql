@@ -2,8 +2,7 @@
 
 ## [UNRELEASED]
 
-- Implement syntax highlighting for the `additional` keyword.
-- Implement syntax highlighting for the `default` keyword.
+- Implement syntax highlighting for the `additional` and `default` keywords. [#2609](https://github.com/github/vscode-codeql/pull/2609)
 
 ## 1.8.7 - 29 June 2023
 
