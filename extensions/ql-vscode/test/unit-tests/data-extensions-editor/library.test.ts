@@ -45,6 +45,46 @@ describe("parseLibraryFilename", () => {
       name: "spring-boot",
       version: "3.1.0-rc2",
     },
+    {
+      filename: "org.eclipse.sisu.plexus-0.9.0.M2.jar",
+      name: "org.eclipse.sisu.plexus",
+      version: "0.9.0.M2",
+    },
+    {
+      filename: "org.eclipse.sisu.inject-0.9.0.M2.jar",
+      name: "org.eclipse.sisu.inject",
+      version: "0.9.0.M2",
+    },
+    {
+      filename: "slf4j-api-1.7.36.jar",
+      name: "slf4j-api",
+      version: "1.7.36",
+    },
+    {
+      filename: "guava-30.1.1-jre.jar",
+      name: "guava",
+      version: "30.1.1-jre",
+    },
+    {
+      filename: "caliper-1.0-beta-3.jar",
+      name: "caliper",
+      version: "1.0-beta-3",
+    },
+    {
+      filename: "protobuf-java-4.0.0-rc-2.jar",
+      name: "protobuf-java",
+      version: "4.0.0-rc-2",
+    },
+    {
+      filename: "jetty-util-9.4.51.v20230217.jar",
+      name: "jetty-util",
+      version: "9.4.51.v20230217",
+    },
+    {
+      filename: "jetty-servlet-9.4.51.v20230217.jar",
+      name: "jetty-servlet",
+      version: "9.4.51.v20230217",
+    },
   ];
 
   test.each(testCases)(

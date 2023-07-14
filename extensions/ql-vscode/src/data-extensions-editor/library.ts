@@ -7,9 +7,12 @@ import { basename, extname } from "../common/path";
 // - Added version named group which does not capture the v prefix
 // - Removed the ^ and $ anchors
 // - Made the minor and patch versions optional
+// - Added a hyphen to the start of the version
+// - Added a dot as a valid separator between the version and the label
+// - Made the patch version optional even if a label is given
 // This will match any semver string at the end of a larger string
 const semverRegex =
-  /[v=\s]*(?<version>([0-9]+)(\.([0-9]+)(?:\.([0-9]+)(?:-?((?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\.(?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?)?)?)/g;
+  /-[v=\s]*(?<version>([0-9]+)(\.([0-9]+)(?:(\.([0-9]+))?(?:[-.]?((?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\.(?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?)?)?)/g;
 
 export interface Library {
   name: string;
