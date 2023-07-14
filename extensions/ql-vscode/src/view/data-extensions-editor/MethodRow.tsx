@@ -3,17 +3,13 @@ import {
   VSCodeDataGridCell,
   VSCodeDataGridRow,
   VSCodeLink,
-  VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
 import { ChangeEvent, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import { vscode } from "../vscode-api";
 
-import {
-  CallClassification,
-  ExternalApiUsage,
-} from "../../data-extensions-editor/external-api-usage";
+import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import {
   ModeledMethod,
   ModeledMethodType,
@@ -23,6 +19,7 @@ import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../data-extensions-editor/predicates";
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { Dropdown } from "../common/Dropdown";
+import { MethodClassifications } from "./MethodClassifications";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -41,12 +38,6 @@ const UsagesButton = styled.button`
 
 const ViewLink = styled(VSCodeLink)`
   white-space: nowrap;
-`;
-
-const ClassificationsContainer = styled.div`
-  display: inline-flex;
-  flex-direction: row;
-  gap: 0.5rem;
 `;
 
 const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
@@ -196,20 +187,6 @@ function ModelableMethodRow(props: Props) {
       : undefined;
   const showKindCell = predicate?.supportedKinds;
 
-  const allUsageClassifications = useMemo(
-    () =>
-      new Set(
-        externalApiUsage.usages.map((usage) => {
-          return usage.classification;
-        }),
-      ),
-    [externalApiUsage.usages],
-  );
-
-  const inSource = allUsageClassifications.has(CallClassification.Source);
-  const inTest = allUsageClassifications.has(CallClassification.Test);
-  const inGenerated = allUsageClassifications.has(CallClassification.Generated);
-
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
@@ -221,12 +198,7 @@ function ModelableMethodRow(props: Props) {
           </UsagesButton>
         )}
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
-        {!inSource && (
-          <ClassificationsContainer>
-            {inTest && <VSCodeTag>Test</VSCodeTag>}
-            {inGenerated && <VSCodeTag>Generated</VSCodeTag>}
-          </ClassificationsContainer>
-        )}
+        <MethodClassifications externalApiUsage={externalApiUsage} />
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn={2}>
         <Dropdown
@@ -282,6 +254,7 @@ function UnmodelableMethodRow(props: Props) {
           </UsagesButton>
         )}
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
+        <MethodClassifications externalApiUsage={externalApiUsage} />
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn="span 4">
         Method modeled by CodeQL or a different extension pack
