@@ -3,6 +3,7 @@
 ## [UNRELEASED]
 
 - Remove support for CodeQL CLI versions older than 2.9.4. [#2610](https://github.com/github/vscode-codeql/pull/2610)
+- Implement syntax highlighting for the `additional` and `default` keywords. [#2609](https://github.com/github/vscode-codeql/pull/2609)
 
 ## 1.8.7 - 29 June 2023
 
