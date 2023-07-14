@@ -19,6 +19,7 @@ import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../data-extensions-editor/predicates";
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { Dropdown } from "../common/Dropdown";
+import { MethodClassifications } from "./MethodClassifications";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -39,7 +40,7 @@ const ViewLink = styled(VSCodeLink)`
   white-space: nowrap;
 `;
 
-const modelTypeOptions = [
+const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
   { value: "none", label: "Unmodeled" },
   { value: "source", label: "Source" },
   { value: "sink", label: "Sink" },
@@ -197,6 +198,7 @@ function ModelableMethodRow(props: Props) {
           </UsagesButton>
         )}
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
+        <MethodClassifications externalApiUsage={externalApiUsage} />
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn={2}>
         <Dropdown
@@ -233,10 +235,7 @@ function ModelableMethodRow(props: Props) {
   );
 }
 
-function UnmodelableMethodRow(props: {
-  externalApiUsage: ExternalApiUsage;
-  mode: Mode;
-}) {
+function UnmodelableMethodRow(props: Props) {
   const { externalApiUsage, mode } = props;
 
   const jumpToUsage = useCallback(
@@ -255,9 +254,10 @@ function UnmodelableMethodRow(props: {
           </UsagesButton>
         )}
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
+        <MethodClassifications externalApiUsage={externalApiUsage} />
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn="span 4">
-        Method already modeled by CodeQL or a different extension pack
+        Method modeled by CodeQL or a different extension pack
       </VSCodeDataGridCell>
     </VSCodeDataGridRow>
   );

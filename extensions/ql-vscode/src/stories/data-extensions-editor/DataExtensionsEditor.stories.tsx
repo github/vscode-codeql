@@ -4,6 +4,7 @@ import { ComponentMeta, ComponentStory } from "@storybook/react";
 
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { DataExtensionsEditor as DataExtensionsEditorComponent } from "../../view/data-extensions-editor/DataExtensionsEditor";
+import { CallClassification } from "../../data-extensions-editor/external-api-usage";
 
 export default {
   title: "Data Extensions Editor/Data Extensions Editor",
@@ -39,6 +40,7 @@ DataExtensionsEditor.args = {
       methodName: "createQuery",
       methodParameters: "(String)",
       supported: true,
+      supportedType: "summary",
       usages: Array(10).fill({
         label: "createQuery(...)",
         url: {
@@ -48,6 +50,7 @@ DataExtensionsEditor.args = {
           endLine: 15,
           endColumn: 56,
         },
+        classification: CallClassification.Source,
       }),
     },
     {
@@ -58,6 +61,7 @@ DataExtensionsEditor.args = {
       methodName: "executeScalar",
       methodParameters: "(Class)",
       supported: true,
+      supportedType: "neutral",
       usages: Array(2).fill({
         label: "executeScalar(...)",
         url: {
@@ -67,6 +71,7 @@ DataExtensionsEditor.args = {
           endLine: 15,
           endColumn: 85,
         },
+        classification: CallClassification.Source,
       }),
     },
     {
@@ -77,6 +82,7 @@ DataExtensionsEditor.args = {
       methodName: "open",
       methodParameters: "()",
       supported: false,
+      supportedType: "none",
       usages: Array(28).fill({
         label: "open(...)",
         url: {
@@ -86,6 +92,7 @@ DataExtensionsEditor.args = {
           endLine: 14,
           endColumn: 35,
         },
+        classification: CallClassification.Source,
       }),
     },
     {
@@ -96,6 +103,7 @@ DataExtensionsEditor.args = {
       methodName: "println",
       methodParameters: "(String)",
       supported: true,
+      supportedType: "summary",
       usages: [
         {
           label: "println(...)",
@@ -106,6 +114,18 @@ DataExtensionsEditor.args = {
             endLine: 29,
             endColumn: 49,
           },
+          classification: CallClassification.Source,
+        },
+        {
+          label: "println(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/test/java/org/example/HelloControllerTest.java",
+            startLine: 29,
+            startColumn: 9,
+            endLine: 29,
+            endColumn: 49,
+          },
+          classification: CallClassification.Test,
         },
       ],
     },
@@ -118,6 +138,7 @@ DataExtensionsEditor.args = {
       methodName: "run",
       methodParameters: "(Class,String[])",
       supported: false,
+      supportedType: "none",
       usages: Array(7).fill({
         label: "run(...)",
         url: {
@@ -127,6 +148,7 @@ DataExtensionsEditor.args = {
           endLine: 9,
           endColumn: 66,
         },
+        classification: CallClassification.Source,
       }),
     },
     {
@@ -137,6 +159,7 @@ DataExtensionsEditor.args = {
       methodName: "Sql2o",
       methodParameters: "(String,String,String)",
       supported: false,
+      supportedType: "none",
       usages: Array(106).fill({
         label: "new Sql2o(...)",
         url: {
@@ -145,6 +168,7 @@ DataExtensionsEditor.args = {
           startColumn: 33,
           endLine: 10,
           endColumn: 88,
+          classification: CallClassification.Test,
         },
       }),
     },
@@ -156,16 +180,31 @@ DataExtensionsEditor.args = {
       methodName: "Sql2o",
       methodParameters: "(String)",
       supported: false,
-      usages: Array(4).fill({
-        label: "new Sql2o(...)",
-        url: {
-          uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-          startLine: 23,
-          startColumn: 23,
-          endLine: 23,
-          endColumn: 36,
+      supportedType: "none",
+      usages: [
+        ...Array(4).fill({
+          label: "new Sql2o(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+            startLine: 23,
+            startColumn: 23,
+            endLine: 23,
+            endColumn: 36,
+          },
+          classification: CallClassification.Test,
+        }),
+        {
+          label: "new Sql2o(...)",
+          url: {
+            uri: "file:/home/runner/work/sql2o-example/sql2o-example/build/generated/java/org/example/HelloControllerGenerated.java",
+            startLine: 23,
+            startColumn: 23,
+            endLine: 23,
+            endColumn: 36,
+          },
+          classification: CallClassification.Generated,
         },
-      }),
+      ],
     },
   ],
   initialModeledMethods: {

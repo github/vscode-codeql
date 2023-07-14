@@ -1,8 +1,20 @@
 import { ResolvableLocationValue } from "../common/bqrs-cli-types";
+import { ModeledMethodType } from "./modeled-method";
 
 export type Call = {
   label: string;
   url: ResolvableLocationValue;
+};
+
+export enum CallClassification {
+  Unknown = "unknown",
+  Source = "source",
+  Test = "test",
+  Generated = "generated",
+}
+
+export type Usage = Call & {
+  classification: CallClassification;
 };
 
 export type ExternalApiUsage = {
@@ -30,5 +42,6 @@ export type ExternalApiUsage = {
    * If so, there is no need for the user to model it themselves.
    */
   supported: boolean;
-  usages: Call[];
+  supportedType: ModeledMethodType;
+  usages: Usage[];
 };

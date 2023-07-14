@@ -1,5 +1,10 @@
 import { DecodedBqrsChunk } from "../common/bqrs-cli-types";
-import { Call, ExternalApiUsage } from "./external-api-usage";
+import {
+  Call,
+  CallClassification,
+  ExternalApiUsage,
+} from "./external-api-usage";
+import { ModeledMethodType } from "./modeled-method";
 
 export function decodeBqrsToExternalApiUsages(
   chunk: DecodedBqrsChunk,
@@ -11,6 +16,8 @@ export function decodeBqrsToExternalApiUsages(
     const signature = tuple[1] as string;
     const supported = (tuple[2] as string) === "true";
     const library = tuple[4] as string;
+    const type = tuple[6] as ModeledMethodType;
+    const classification = tuple[8] as CallClassification;
 
     const [packageWithType, methodDeclaration] = signature.split("#");
 
@@ -39,12 +46,16 @@ export function decodeBqrsToExternalApiUsages(
         methodName,
         methodParameters,
         supported,
+        supportedType: type,
         usages: [],
       });
     }
 
     const method = methodsByApiName.get(signature)!;
-    method.usages.push(usage);
+    method.usages.push({
+      ...usage,
+      classification,
+    });
   });
 
   return Array.from(methodsByApiName.values());
