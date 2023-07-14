@@ -2,11 +2,13 @@
 
 ## [UNRELEASED]
 
+- Remove support for CodeQL CLI versions older than 2.9.4. [#2610](https://github.com/github/vscode-codeql/pull/2610)
+
 ## 1.8.7 - 29 June 2023
 
 - Show a run button on the file tab for query files, that will start a local query. This button will only show when a local database is selected in the extension. [#2544](https://github.com/github/vscode-codeql/pull/2544)
 - Add `CodeQL: Quick Evaluation Count` command to generate the count summary statistics of the results set
-  without speding the time to compute locations and strings.
+  without spending the time to compute locations and strings.
 
 ## 1.8.6 - 14 June 2023
 
