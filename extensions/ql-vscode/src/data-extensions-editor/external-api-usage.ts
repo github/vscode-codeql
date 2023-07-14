@@ -19,6 +19,10 @@ export type Usage = Call & {
 
 export interface MethodSignature {
   /**
+   * Contains the version of the library if it can be determined by CodeQL, e.g. `4.2.2.2`
+   */
+  libraryVersion?: string;
+  /**
    * A unique signature that can be used to identify this external API usage.
    *
    * The signature contains the package name, type name, method name, and method parameters

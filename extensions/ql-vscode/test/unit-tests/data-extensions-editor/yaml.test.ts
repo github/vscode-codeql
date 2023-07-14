@@ -81,7 +81,8 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
       "java",
       [
         {
-          library: "sql2o-1.6.0.jar",
+          library: "sql2o",
+          libraryVersion: "1.6.0",
           signature: "org.sql2o.Connection#createQuery(String)",
           packageName: "org.sql2o",
           typeName: "Connection",
@@ -115,7 +116,8 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           ],
         },
         {
-          library: "sql2o-1.6.0.jar",
+          library: "sql2o",
+          libraryVersion: "1.6.0",
           signature: "org.sql2o.Query#executeScalar(Class)",
           packageName: "org.sql2o",
           typeName: "Query",
@@ -149,7 +151,8 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           ],
         },
         {
-          library: "sql2o-2.5.0-alpha1.jar",
+          library: "sql2o",
+          libraryVersion: "2.5.0-alpha1",
           signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
           packageName: "org.sql2o",
           typeName: "Sql2o",
@@ -172,7 +175,8 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           ],
         },
         {
-          library: "spring-boot-3.0.2.jar",
+          library: "spring-boot",
+          libraryVersion: "3.0.2",
           signature:
             "org.springframework.boot.SpringApplication#run(Class,String[])",
           packageName: "org.springframework.boot",
@@ -196,7 +200,7 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
           ],
         },
         {
-          library: "rt.jar",
+          library: "rt",
           signature: "java.io.PrintStream#println(String)",
           packageName: "java.io",
           typeName: "PrintStream",
@@ -530,37 +534,28 @@ describe("loadDataExtensionYaml", () => {
 
 describe("createFilenameForLibrary", () => {
   const testCases = [
-    { library: "sql2o.jar", filename: "models/sql2o.model.yml" },
     {
-      library: "sql2o-1.6.0.jar",
+      library: "sql2o",
       filename: "models/sql2o.model.yml",
     },
     {
-      library: "spring-boot-3.0.2.jar",
+      library: "spring-boot",
       filename: "models/spring-boot.model.yml",
     },
     {
-      library: "spring-boot-v3.0.2.jar",
+      library: "spring--boot",
       filename: "models/spring-boot.model.yml",
     },
     {
-      library: "spring-boot-3.0.2-alpha1.jar",
-      filename: "models/spring-boot.model.yml",
-    },
-    {
-      library: "spring-boot-3.0.2beta2.jar",
-      filename: "models/spring-boot.model.yml",
-    },
-    {
-      library: "rt.jar",
+      library: "rt",
       filename: "models/rt.model.yml",
     },
     {
-      library: "System.Runtime.dll",
+      library: "System.Runtime",
       filename: "models/system.runtime.model.yml",
     },
     {
-      library: "System.Runtime.1.5.0.dll",
+      library: "System..Runtime",
       filename: "models/system.runtime.model.yml",
     },
   ];
