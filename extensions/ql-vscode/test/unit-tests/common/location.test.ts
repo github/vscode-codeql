@@ -87,7 +87,7 @@ describe("getting links to remote (GitHub) locations", () => {
     );
 
     expect(link).toEqual(
-      "https://github.com/owner/repo/blob/sha1234/path/to/file.ext#L194-L237",
+      "https://github.com/owner/repo/blob/sha1234/path/to/file.ext#L194C18-L237C1",
     );
   });
 
@@ -129,7 +129,7 @@ describe("getting links to remote (GitHub) locations", () => {
     );
 
     expect(link).toEqual(
-      "https://github.com/owner/repo/blob/sha1234/path/to/file.ext#L194-L237",
+      "https://github.com/owner/repo/blob/sha1234/path/to/file.ext#L194C18-L237C1",
     );
   });
 });
