@@ -29,7 +29,7 @@ export function Location({
   handleClick,
 }: Props): JSX.Element {
   const resolvableLoc = useMemo(() => tryGetResolvableLocation(loc), [loc]);
-  const displayLabel = useMemo(() => convertNonPrintableChars(label!), [label]);
+  const displayLabel = useMemo(() => convertNonPrintableChars(label), [label]);
   if (loc === undefined) {
     return <NonClickableLocation msg={displayLabel} />;
   } else if (isStringLoc(loc)) {
