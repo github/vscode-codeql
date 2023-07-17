@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Location } from "./locations";
+import { Location } from "./locations/Location";
 import { CellValue } from "../../common/bqrs-cli-types";
 
 interface Props {
