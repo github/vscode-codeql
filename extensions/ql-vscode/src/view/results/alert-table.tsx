@@ -130,7 +130,7 @@ export class AlertTable extends React.Component<
               relatedLocations={result.relatedLocations}
               sourceLocationPrefix={sourceLocationPrefix}
               databaseUri={databaseUri}
-              jumpToLocationCallback={updateSelectionCallback(resultKey)}
+              handleClick={updateSelectionCallback(resultKey)}
             />
           );
 
@@ -144,7 +144,7 @@ export class AlertTable extends React.Component<
               loc={result.locations[0]}
               sourceLocationPrefix={sourceLocationPrefix}
               databaseUri={databaseUri}
-              jumpToLocationCallback={updateSelectionCallback(resultKey)}
+              handleClick={updateSelectionCallback(resultKey)}
             />
           );
         const locationCells = (
@@ -262,9 +262,7 @@ export class AlertTable extends React.Component<
                       loc={step.location}
                       sourceLocationPrefix={sourceLocationPrefix}
                       databaseUri={databaseUri}
-                      jumpToLocationCallback={updateSelectionCallback(
-                        pathNodeKey,
-                      )}
+                      handleClick={updateSelectionCallback(pathNodeKey)}
                     />
                   ) : (
                     "[no location]"
@@ -275,9 +273,7 @@ export class AlertTable extends React.Component<
                       loc={step.location}
                       sourceLocationPrefix={sourceLocationPrefix}
                       databaseUri={databaseUri}
-                      jumpToLocationCallback={updateSelectionCallback(
-                        pathNodeKey,
-                      )}
+                      handleClick={updateSelectionCallback(pathNodeKey)}
                     />
                   ) : (
                     ""

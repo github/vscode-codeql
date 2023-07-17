@@ -15,7 +15,7 @@ interface Props {
   label?: string;
   databaseUri?: string;
   title?: string;
-  jumpToLocationCallback?: () => void;
+  handleClick?: () => void;
 }
 
 /**
@@ -26,7 +26,7 @@ export function Location({
   label,
   databaseUri,
   title,
-  jumpToLocationCallback,
+  handleClick,
 }: Props): JSX.Element {
   const resolvableLoc = useMemo(() => tryGetResolvableLocation(loc), [loc]);
   const displayLabel = useMemo(() => convertNonPrintableChars(label!), [label]);
@@ -43,7 +43,7 @@ export function Location({
         label={displayLabel}
         databaseUri={databaseUri}
         title={title}
-        jumpToLocationCallback={jumpToLocationCallback}
+        handleClick={handleClick}
       />
     );
   }

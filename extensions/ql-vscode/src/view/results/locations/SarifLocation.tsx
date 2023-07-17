@@ -11,7 +11,7 @@ interface Props {
   loc?: Sarif.Location;
   sourceLocationPrefix: string;
   databaseUri: string;
-  jumpToLocationCallback: () => void;
+  handleClick: () => void;
 }
 
 /**
@@ -25,7 +25,7 @@ export function SarifLocation({
   loc,
   sourceLocationPrefix,
   databaseUri,
-  jumpToLocationCallback,
+  handleClick,
 }: Props) {
   const parsedLoc = useMemo(
     () => loc && parseSarifLocation(loc, sourceLocationPrefix),
@@ -40,7 +40,7 @@ export function SarifLocation({
         label={text || `${basename(parsedLoc.userVisibleFile)}`}
         databaseUri={databaseUri}
         title={text ? undefined : `${parsedLoc.userVisibleFile}`}
-        jumpToLocationCallback={jumpToLocationCallback}
+        handleClick={handleClick}
       />
     );
   } else if (isLineColumnLoc(parsedLoc)) {
@@ -55,7 +55,7 @@ export function SarifLocation({
         }
         databaseUri={databaseUri}
         title={text ? undefined : `${parsedLoc.userVisibleFile}`}
-        jumpToLocationCallback={jumpToLocationCallback}
+        handleClick={handleClick}
       />
     );
   } else {

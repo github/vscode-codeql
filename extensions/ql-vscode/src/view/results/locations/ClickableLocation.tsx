@@ -8,7 +8,7 @@ interface Props {
   label: string;
   databaseUri: string;
   title?: string;
-  jumpToLocationCallback?: () => void;
+  handleClick?: () => void;
 }
 
 /**
@@ -19,16 +19,16 @@ export function ClickableLocation({
   label,
   databaseUri,
   title,
-  jumpToLocationCallback,
+  handleClick,
 }: Props): JSX.Element {
   const jumpToLocationHandler = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
       jumpToLocation(loc, databaseUri);
-      jumpToLocationCallback?.();
+      handleClick?.();
     },
-    [loc, databaseUri, jumpToLocationCallback],
+    [loc, databaseUri, handleClick],
   );
 
   return (
