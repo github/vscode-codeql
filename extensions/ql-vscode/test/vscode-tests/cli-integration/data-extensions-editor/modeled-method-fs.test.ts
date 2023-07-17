@@ -3,8 +3,13 @@ import * as tmp from "tmp";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getActivatedExtension } from "../../global.helper";
 import { mkdirSync, writeFileSync } from "fs";
-import { listModelFiles } from "../../../../src/data-extensions-editor/modeled-method-fs";
+import {
+  listModelFiles,
+  loadModeledMethods,
+} from "../../../../src/data-extensions-editor/modeled-method-fs";
+import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
 import { join } from "path";
+import { extLogger } from "../../../../src/common/logging/vscode";
 
 const dummyExtensionPackContents = `
 name: dummy/pack
@@ -26,7 +31,8 @@ extensions:
   - addsTo:
       pack: codeql/java-all
       extensible: sinkModel
-    data: []
+    data:
+      - ["org.eclipse.jetty.server","Server",true,"getConnectors","()","","Argument[this]","sql","manual"]
 
   - addsTo:
       pack: codeql/java-all
@@ -39,7 +45,7 @@ extensions:
     data: []
 `;
 
-describe("listModelFiles", () => {
+describe("modeled-method-fs", () => {
   let tmpDir: string;
   let tmpDirRemoveCallback: (() => void) | undefined;
   let workspacePath: string;
@@ -69,7 +75,7 @@ describe("listModelFiles", () => {
     tmpDirRemoveCallback?.();
   });
 
-  function makeExtensionPack(
+  function writeExtensionPackFiles(
     extensionPackName: string,
     modelFileNames: string[],
   ): string {
@@ -92,49 +98,85 @@ describe("listModelFiles", () => {
     return extensionPackPath;
   }
 
-  it("should return the empty set when the extension pack is empty", async () => {
-    if (!(await cli.cliConstraints.supportsResolveExtensions())) {
-      return;
-    }
+  function makeExtensionPack(path: string): ExtensionPack {
+    return {
+      path,
+      yamlPath: path,
+      name: "dummy/pack",
+      version: "0.0.1",
+      extensionTargets: {},
+      dataExtensions: [],
+    };
+  }
 
-    const extensionPackPath = makeExtensionPack("extension-pack", []);
+  describe("listModelFiles", () => {
+    it("should return the empty set when the extension pack is empty", async () => {
+      if (!(await cli.cliConstraints.supportsResolveExtensions())) {
+        return;
+      }
 
-    const modelFiles = await listModelFiles(extensionPackPath, cli);
-    expect(modelFiles).toEqual(new Set());
+      const extensionPackPath = writeExtensionPackFiles("extension-pack", []);
+
+      const modelFiles = await listModelFiles(extensionPackPath, cli);
+      expect(modelFiles).toEqual(new Set());
+    });
+
+    it("should find all model files", async () => {
+      if (!(await cli.cliConstraints.supportsResolveExtensions())) {
+        return;
+      }
+
+      const extensionPackPath = writeExtensionPackFiles("extension-pack", [
+        "library1.model.yml",
+        "library2.model.yml",
+      ]);
+
+      const modelFiles = await listModelFiles(extensionPackPath, cli);
+      expect(modelFiles).toEqual(
+        new Set([
+          join(extensionPackPath, "models", "library1.model.yml"),
+          join(extensionPackPath, "models", "library2.model.yml"),
+        ]),
+      );
+    });
+
+    it("should ignore model files from other extension packs", async () => {
+      if (!(await cli.cliConstraints.supportsResolveExtensions())) {
+        return;
+      }
+
+      const extensionPackPath = writeExtensionPackFiles("extension-pack", [
+        "library1.model.yml",
+      ]);
+      writeExtensionPackFiles("another-extension-pack", ["library2.model.yml"]);
+
+      const modelFiles = await listModelFiles(extensionPackPath, cli);
+      expect(modelFiles).toEqual(
+        new Set([join(extensionPackPath, "models", "library1.model.yml")]),
+      );
+    });
   });
 
-  it("should find all model files", async () => {
-    if (!(await cli.cliConstraints.supportsResolveExtensions())) {
-      return;
-    }
+  describe("loadModeledMethods", () => {
+    it("should load modeled methods", async () => {
+      if (!(await cli.cliConstraints.supportsResolveExtensions())) {
+        return;
+      }
 
-    const extensionPackPath = makeExtensionPack("extension-pack", [
-      "library1.model.yml",
-      "library2.model.yml",
-    ]);
+      const extensionPackPath = writeExtensionPackFiles("extension-pack", [
+        "library.model.yml",
+      ]);
 
-    const modelFiles = await listModelFiles(extensionPackPath, cli);
-    expect(modelFiles).toEqual(
-      new Set([
-        join(extensionPackPath, "models", "library1.model.yml"),
-        join(extensionPackPath, "models", "library2.model.yml"),
-      ]),
-    );
-  });
+      const modeledMethods = await loadModeledMethods(
+        makeExtensionPack(extensionPackPath),
+        cli,
+        extLogger,
+      );
 
-  it("should ignore model files from other extension packs", async () => {
-    if (!(await cli.cliConstraints.supportsResolveExtensions())) {
-      return;
-    }
-
-    const extensionPackPath = makeExtensionPack("extension-pack", [
-      "library1.model.yml",
-    ]);
-    makeExtensionPack("another-extension-pack", ["library2.model.yml"]);
-
-    const modelFiles = await listModelFiles(extensionPackPath, cli);
-    expect(modelFiles).toEqual(
-      new Set([join(extensionPackPath, "models", "library1.model.yml")]),
-    );
+      expect(Object.keys(modeledMethods).length).toEqual(1);
+      expect(Object.keys(modeledMethods)[0]).toEqual(
+        "org.eclipse.jetty.server.Server#getConnectors()",
+      );
+    });
   });
 });
