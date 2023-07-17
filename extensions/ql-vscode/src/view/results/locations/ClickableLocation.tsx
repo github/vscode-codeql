@@ -26,9 +26,7 @@ export function ClickableLocation({
       jumpToLocation(loc, databaseUri);
       e.preventDefault();
       e.stopPropagation();
-      if (jumpToLocationCallback) {
-        jumpToLocationCallback();
-      }
+      jumpToLocationCallback?.();
     },
     [loc, databaseUri, jumpToLocationCallback],
   );
