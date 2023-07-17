@@ -23,9 +23,9 @@ export function ClickableLocation({
 }: Props): JSX.Element {
   const jumpToLocationHandler = useCallback(
     (e: React.MouseEvent) => {
-      jumpToLocation(loc, databaseUri);
       e.preventDefault();
       e.stopPropagation();
+      jumpToLocation(loc, databaseUri);
       jumpToLocationCallback?.();
     },
     [loc, databaseUri, jumpToLocationCallback],
