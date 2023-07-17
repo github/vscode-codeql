@@ -4,7 +4,6 @@ import { isLineColumnLoc, isWholeFileLoc } from "../../../common/bqrs-utils";
 import { parseSarifLocation } from "../../../common/sarif-utils";
 import { basename } from "path";
 import { useMemo } from "react";
-import { NonClickableLocation } from "./NonClickableLocation";
 import { Location } from "./Location";
 
 /**
@@ -31,12 +30,7 @@ export function SarifLocation({
     [loc, sourceLocationPrefix],
   );
   if (parsedLoc === undefined || "hint" in parsedLoc) {
-    return (
-      <NonClickableLocation
-        msg={text || "[no location]"}
-        locationHint={parsedLoc?.hint}
-      />
-    );
+    return <Location label={text || "[no location]"} title={parsedLoc?.hint} />;
   } else if (isWholeFileLoc(parsedLoc)) {
     return (
       <Location
