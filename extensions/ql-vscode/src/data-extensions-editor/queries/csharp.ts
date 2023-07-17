@@ -22,12 +22,16 @@ class ExternalApi extends CallableMethod {
 
 private Call aUsage(ExternalApi api) { result.getTarget().getUnboundDeclaration() = api }
 
-from ExternalApi api, string apiName, boolean supported, Call usage
+from
+  ExternalApi api, string apiName, boolean supported, Call usage, string type, string classification
 where
   apiName = api.getApiName() and
   supported = isSupported(api) and
-  usage = aUsage(api)
-select usage, apiName, supported.toString(), "supported", api.getFile().getBaseName(), "library"
+  usage = aUsage(api) and
+  type = supportedType(api) and
+  classification = methodClassification(usage)
+select usage, apiName, supported.toString(), "supported", api.dllName(), api.dllVersion(), type,
+  "type", classification, "classification"
 `,
   frameworkModeQuery: `/**
  * @name Public methods
@@ -46,12 +50,13 @@ class PublicMethod extends CallableMethod {
   PublicMethod() { this.fromSource() and not this.getFile() instanceof TestFile }
 }
 
-from PublicMethod publicMethod, string apiName, boolean supported
+from PublicMethod publicMethod, string apiName, boolean supported, string type
 where
   apiName = publicMethod.getApiName() and
-  supported = isSupported(publicMethod)
+  supported = isSupported(publicMethod) and
+  type = supportedType(publicMethod)
 select publicMethod, apiName, supported.toString(), "supported",
-  publicMethod.getFile().getBaseName(), "library"
+  publicMethod.getFile().getBaseName(), "library", type, "type", "unknown", "classification"
 `,
   dependencies: {
     "AutomodelVsCode.qll": `/** Provides classes and predicates related to handling APIs for the VS Code extension. */
@@ -66,6 +71,7 @@ private import semmle.code.csharp.dataflow.internal.DataFlowPrivate
 private import semmle.code.csharp.dataflow.internal.DataFlowDispatch as DataFlowDispatch
 private import semmle.code.csharp.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
 private import semmle.code.csharp.dataflow.internal.TaintTrackingPrivate
+private import semmle.code.csharp.frameworks.Test
 private import semmle.code.csharp.security.dataflow.flowsources.Remote
 
 pragma[nomagic]
@@ -105,7 +111,7 @@ class CallableMethod extends DotNet::Declaration {
   bindingset[this]
   private string getSignature() {
     result =
-      nestedName(this.getDeclaringType().getUnboundDeclaration()) + "." + this.getName() + "(" +
+      nestedName(this.getDeclaringType().getUnboundDeclaration()) + "#" + this.getName() + "(" +
         parameterQualifiedTypeNamesToString(this) + ")"
   }
 
@@ -119,7 +125,23 @@ class CallableMethod extends DotNet::Declaration {
    * Gets the namespace and signature of this API.
    */
   bindingset[this]
-  string getApiName() { result = this.getNamespace() + "#" + this.getSignature() }
+  string getApiName() { result = this.getNamespace() + "." + this.getSignature() }
+
+  private string getDllName() { result = this.getLocation().(Assembly).getName() }
+
+  private string getDllVersion() { result = this.getLocation().(Assembly).getVersion().toString() }
+
+  string dllName() {
+    result = this.getDllName()
+    or
+    not exists(this.getDllName()) and result = this.getFile().getBaseName()
+  }
+
+  string dllVersion() {
+    result = this.getDllVersion()
+    or
+    not exists(this.getDllVersion()) and result = ""
+  }
 
   /** Gets a node that is an input to a call to this API. */
   private ArgumentNode getAnInput() {
@@ -178,6 +200,25 @@ boolean isSupported(CallableMethod callableMethod) {
   or
   not callableMethod.isSupported() and
   result = false
+}
+
+string supportedType(CallableMethod method) {
+  method.isSink() and result = "sink"
+  or
+  method.isSource() and result = "source"
+  or
+  method.hasSummary() and result = "summary"
+  or
+  method.isNeutral() and result = "neutral"
+  or
+  not method.isSupported() and result = ""
+}
+
+string methodClassification(Call method) {
+  method.getFile() instanceof TestFile and result = "test"
+  or
+  not method.getFile() instanceof TestFile and
+  result = "source"
 }
 
 /**

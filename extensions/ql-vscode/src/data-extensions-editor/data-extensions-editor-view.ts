@@ -76,6 +76,14 @@ export class DataExtensionsEditorView extends AbstractWebview<
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
       view: "data-extensions-editor",
+      iconPath: {
+        dark: Uri.file(
+          join(this.ctx.extensionPath, "media/dark/symbol-misc.svg"),
+        ),
+        light: Uri.file(
+          join(this.ctx.extensionPath, "media/light/symbol-misc.svg"),
+        ),
+      },
     };
   }
 
@@ -311,11 +319,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
         queryRunner: this.queryRunner,
         queryStorageDir: this.queryStorageDir,
         databaseItem: addedDatabase ?? this.databaseItem,
-        onResults: async (results) => {
+        onResults: async (modeledMethods) => {
           const modeledMethodsByName: Record<string, ModeledMethod> = {};
 
-          for (const result of results) {
-            modeledMethodsByName[result.signature] = result.modeledMethod;
+          for (const modeledMethod of modeledMethods) {
+            modeledMethodsByName[modeledMethod.signature] = modeledMethod;
           }
 
           await this.postMessage({

@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { LibraryRow } from "./LibraryRow";
+import { Mode } from "../../data-extensions-editor/shared/mode";
 import {
   groupMethods,
   sortGroupNames,
@@ -31,6 +32,10 @@ type Props = {
   onGenerateFromSourceClick: () => void;
 };
 
+const libraryNameOverrides: Record<string, string> = {
+  rt: "Java Runtime",
+};
+
 export const ModeledMethodsList = ({
   externalApiUsages,
   unsavedModels,
@@ -46,6 +51,24 @@ export const ModeledMethodsList = ({
     [externalApiUsages, viewState.mode],
   );
 
+  const libraryVersions = useMemo(() => {
+    if (viewState.mode !== Mode.Application) {
+      return {};
+    }
+
+    const libraryVersions: Record<string, string> = {};
+
+    for (const externalApiUsage of externalApiUsages) {
+      const { library, libraryVersion } = externalApiUsage;
+
+      if (library && libraryVersion) {
+        libraryVersions[library] = libraryVersion;
+      }
+    }
+
+    return libraryVersions;
+  }, [externalApiUsages, viewState.mode]);
+
   const sortedGroupNames = useMemo(() => sortGroupNames(grouped), [grouped]);
 
   return (
@@ -53,7 +76,8 @@ export const ModeledMethodsList = ({
       {sortedGroupNames.map((libraryName) => (
         <LibraryRow
           key={libraryName}
-          title={libraryName}
+          title={libraryNameOverrides[libraryName] ?? libraryName}
+          libraryVersion={libraryVersions[libraryName]}
           externalApiUsages={grouped[libraryName]}
           hasUnsavedChanges={unsavedModels.has(libraryName)}
           modeledMethods={modeledMethods}

@@ -1,5 +1,6 @@
 import { decodeBqrsToExternalApiUsages } from "../../../src/data-extensions-editor/bqrs";
 import { DecodedBqrsChunk } from "../../../src/common/bqrs-cli-types";
+import { CallClassification } from "../../../src/data-extensions-editor/external-api-usage";
 
 describe("decodeBqrsToExternalApiUsages", () => {
   const chunk: DecodedBqrsChunk = {
@@ -7,6 +8,12 @@ describe("decodeBqrsToExternalApiUsages", () => {
       { name: "usage", kind: "Entity" },
       { name: "apiName", kind: "String" },
       { kind: "String" },
+      { kind: "String" },
+      { kind: "String" },
+      { kind: "String" },
+      { name: "type", kind: "String" },
+      { kind: "String" },
+      { name: "classification", kind: "String" },
       { kind: "String" },
     ],
     tuples: [
@@ -24,6 +31,12 @@ describe("decodeBqrsToExternalApiUsages", () => {
         "java.io.PrintStream#println(String)",
         "true",
         "supported",
+        "rt.jar",
+        "",
+        "sink",
+        "type",
+        "source",
+        "classification",
       ],
       [
         {
@@ -39,6 +52,12 @@ describe("decodeBqrsToExternalApiUsages", () => {
         "org.springframework.boot.SpringApplication#run(Class,String[])",
         "false",
         "supported",
+        "spring-boot-3.0.2.jar",
+        "",
+        "none",
+        "type",
+        "source",
+        "classification",
       ],
       [
         {
@@ -54,6 +73,12 @@ describe("decodeBqrsToExternalApiUsages", () => {
         "org.sql2o.Connection#createQuery(String)",
         "true",
         "supported",
+        "sql2o-1.6.0.jar",
+        "",
+        "sink",
+        "type",
+        "source",
+        "classification",
       ],
       [
         {
@@ -69,6 +94,12 @@ describe("decodeBqrsToExternalApiUsages", () => {
         "org.sql2o.Connection#createQuery(String)",
         "true",
         "supported",
+        "sql2o-1.6.0.jar",
+        "",
+        "sink",
+        "type",
+        "source",
+        "classification",
       ],
       [
         {
@@ -84,6 +115,12 @@ describe("decodeBqrsToExternalApiUsages", () => {
         "org.sql2o.Query#executeScalar(Class)",
         "true",
         "supported",
+        "sql2o-1.6.0.jar",
+        "",
+        "sink",
+        "type",
+        "source",
+        "classification",
       ],
       [
         {
@@ -99,6 +136,12 @@ describe("decodeBqrsToExternalApiUsages", () => {
         "org.sql2o.Query#executeScalar(Class)",
         "true",
         "supported",
+        "sql2o-1.6.0.jar",
+        "",
+        "sink",
+        "type",
+        "source",
+        "classification",
       ],
       [
         {
@@ -114,6 +157,12 @@ describe("decodeBqrsToExternalApiUsages", () => {
         "org.sql2o.Sql2o#open()",
         "true",
         "supported",
+        "sql2o-1.6.0.jar",
+        "",
+        "sink",
+        "type",
+        "source",
+        "classification",
       ],
       [
         {
@@ -129,6 +178,12 @@ describe("decodeBqrsToExternalApiUsages", () => {
         "org.sql2o.Sql2o#open()",
         "true",
         "supported",
+        "sql2o-1.6.0.jar",
+        "",
+        "sink",
+        "type",
+        "source",
+        "classification",
       ],
       [
         {
@@ -144,6 +199,12 @@ describe("decodeBqrsToExternalApiUsages", () => {
         "org.sql2o.Sql2o#Sql2o(String,String,String)",
         "true",
         "supported",
+        "sql2o-1.6.0.jar",
+        "",
+        "sink",
+        "type",
+        "source",
+        "classification",
       ],
       [
         {
@@ -159,6 +220,12 @@ describe("decodeBqrsToExternalApiUsages", () => {
         "org.sql2o.Sql2o#Sql2o(String)",
         "true",
         "supported",
+        "sql2o-1.6.0.jar",
+        "",
+        "sink",
+        "type",
+        "source",
+        "classification",
       ],
     ],
   };
@@ -169,12 +236,15 @@ describe("decodeBqrsToExternalApiUsages", () => {
     // - Sorting the array of usages is guaranteed to be a stable sort
     expect(decodeBqrsToExternalApiUsages(chunk)).toEqual([
       {
+        library: "rt",
+        libraryVersion: undefined,
         signature: "java.io.PrintStream#println(String)",
         packageName: "java.io",
         typeName: "PrintStream",
         methodName: "println",
         methodParameters: "(String)",
         supported: true,
+        supportedType: "sink",
         usages: [
           {
             label: "println(...)",
@@ -185,10 +255,13 @@ describe("decodeBqrsToExternalApiUsages", () => {
               endLine: 29,
               endColumn: 49,
             },
+            classification: CallClassification.Source,
           },
         ],
       },
       {
+        library: "spring-boot",
+        libraryVersion: "3.0.2",
         signature:
           "org.springframework.boot.SpringApplication#run(Class,String[])",
         packageName: "org.springframework.boot",
@@ -196,6 +269,7 @@ describe("decodeBqrsToExternalApiUsages", () => {
         methodName: "run",
         methodParameters: "(Class,String[])",
         supported: false,
+        supportedType: "none",
         usages: [
           {
             label: "run(...)",
@@ -206,16 +280,20 @@ describe("decodeBqrsToExternalApiUsages", () => {
               endLine: 9,
               endColumn: 66,
             },
+            classification: CallClassification.Source,
           },
         ],
       },
       {
+        library: "sql2o",
+        libraryVersion: "1.6.0",
         signature: "org.sql2o.Connection#createQuery(String)",
         packageName: "org.sql2o",
         typeName: "Connection",
         methodName: "createQuery",
         methodParameters: "(String)",
         supported: true,
+        supportedType: "sink",
         usages: [
           {
             label: "createQuery(...)",
@@ -226,6 +304,7 @@ describe("decodeBqrsToExternalApiUsages", () => {
               endLine: 15,
               endColumn: 56,
             },
+            classification: CallClassification.Source,
           },
           {
             label: "createQuery(...)",
@@ -236,16 +315,20 @@ describe("decodeBqrsToExternalApiUsages", () => {
               endLine: 26,
               endColumn: 39,
             },
+            classification: CallClassification.Source,
           },
         ],
       },
       {
+        library: "sql2o",
+        libraryVersion: "1.6.0",
         signature: "org.sql2o.Query#executeScalar(Class)",
         packageName: "org.sql2o",
         typeName: "Query",
         methodName: "executeScalar",
         methodParameters: "(Class)",
         supported: true,
+        supportedType: "sink",
         usages: [
           {
             label: "executeScalar(...)",
@@ -256,6 +339,7 @@ describe("decodeBqrsToExternalApiUsages", () => {
               endLine: 15,
               endColumn: 85,
             },
+            classification: CallClassification.Source,
           },
           {
             label: "executeScalar(...)",
@@ -266,16 +350,20 @@ describe("decodeBqrsToExternalApiUsages", () => {
               endLine: 26,
               endColumn: 68,
             },
+            classification: CallClassification.Source,
           },
         ],
       },
       {
+        library: "sql2o",
+        libraryVersion: "1.6.0",
         signature: "org.sql2o.Sql2o#open()",
         packageName: "org.sql2o",
         typeName: "Sql2o",
         methodName: "open",
         methodParameters: "()",
         supported: true,
+        supportedType: "sink",
         usages: [
           {
             label: "open(...)",
@@ -286,6 +374,7 @@ describe("decodeBqrsToExternalApiUsages", () => {
               endLine: 14,
               endColumn: 35,
             },
+            classification: CallClassification.Source,
           },
           {
             label: "open(...)",
@@ -296,16 +385,20 @@ describe("decodeBqrsToExternalApiUsages", () => {
               endLine: 25,
               endColumn: 35,
             },
+            classification: CallClassification.Source,
           },
         ],
       },
       {
+        library: "sql2o",
+        libraryVersion: "1.6.0",
         signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
         packageName: "org.sql2o",
         typeName: "Sql2o",
         methodName: "Sql2o",
         methodParameters: "(String,String,String)",
         supported: true,
+        supportedType: "sink",
         usages: [
           {
             label: "new Sql2o(...)",
@@ -316,16 +409,20 @@ describe("decodeBqrsToExternalApiUsages", () => {
               endLine: 10,
               endColumn: 88,
             },
+            classification: CallClassification.Source,
           },
         ],
       },
       {
+        library: "sql2o",
+        libraryVersion: "1.6.0",
         signature: "org.sql2o.Sql2o#Sql2o(String)",
         packageName: "org.sql2o",
         typeName: "Sql2o",
         methodName: "Sql2o",
         methodParameters: "(String)",
         supported: true,
+        supportedType: "sink",
         usages: [
           {
             label: "new Sql2o(...)",
@@ -336,6 +433,7 @@ describe("decodeBqrsToExternalApiUsages", () => {
               endLine: 23,
               endColumn: 36,
             },
+            classification: CallClassification.Source,
           },
         ],
       },

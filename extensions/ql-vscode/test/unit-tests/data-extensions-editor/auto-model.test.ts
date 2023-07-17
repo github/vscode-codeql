@@ -3,7 +3,10 @@ import {
   createAutoModelRequest,
   parsePredictedClassifications,
 } from "../../../src/data-extensions-editor/auto-model";
-import { ExternalApiUsage } from "../../../src/data-extensions-editor/external-api-usage";
+import {
+  CallClassification,
+  ExternalApiUsage,
+} from "../../../src/data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../../src/data-extensions-editor/modeled-method";
 import {
   ClassificationType,
@@ -22,6 +25,7 @@ describe("createAutoModelRequest", () => {
       methodName: "run",
       methodParameters: "(Class,String[])",
       supported: false,
+      supportedType: "none",
       usages: [
         {
           label: "run(...)",
@@ -32,6 +36,7 @@ describe("createAutoModelRequest", () => {
             endLine: 9,
             endColumn: 66,
           },
+          classification: CallClassification.Source,
         },
       ],
     },
@@ -43,6 +48,7 @@ describe("createAutoModelRequest", () => {
       methodName: "createQuery",
       methodParameters: "(String)",
       supported: false,
+      supportedType: "none",
       usages: [
         {
           label: "createQuery(...)",
@@ -53,6 +59,7 @@ describe("createAutoModelRequest", () => {
             endLine: 15,
             endColumn: 56,
           },
+          classification: CallClassification.Source,
         },
         {
           label: "createQuery(...)",
@@ -63,6 +70,7 @@ describe("createAutoModelRequest", () => {
             endLine: 26,
             endColumn: 39,
           },
+          classification: CallClassification.Source,
         },
       ],
     },
@@ -74,6 +82,7 @@ describe("createAutoModelRequest", () => {
       methodName: "executeScalar",
       methodParameters: "(Class)",
       supported: false,
+      supportedType: "none",
       usages: [
         {
           label: "executeScalar(...)",
@@ -84,6 +93,7 @@ describe("createAutoModelRequest", () => {
             endLine: 15,
             endColumn: 85,
           },
+          classification: CallClassification.Source,
         },
         {
           label: "executeScalar(...)",
@@ -94,6 +104,7 @@ describe("createAutoModelRequest", () => {
             endLine: 26,
             endColumn: 68,
           },
+          classification: CallClassification.Source,
         },
       ],
     },
@@ -105,6 +116,7 @@ describe("createAutoModelRequest", () => {
       methodName: "open",
       methodParameters: "()",
       supported: false,
+      supportedType: "none",
       usages: [
         {
           label: "open(...)",
@@ -115,6 +127,7 @@ describe("createAutoModelRequest", () => {
             endLine: 14,
             endColumn: 35,
           },
+          classification: CallClassification.Source,
         },
         {
           label: "open(...)",
@@ -125,6 +138,7 @@ describe("createAutoModelRequest", () => {
             endLine: 25,
             endColumn: 35,
           },
+          classification: CallClassification.Source,
         },
       ],
     },
@@ -136,6 +150,7 @@ describe("createAutoModelRequest", () => {
       methodName: "println",
       methodParameters: "(String)",
       supported: false,
+      supportedType: "none",
       usages: [
         {
           label: "println(...)",
@@ -146,6 +161,7 @@ describe("createAutoModelRequest", () => {
             endLine: 29,
             endColumn: 49,
           },
+          classification: CallClassification.Source,
         },
       ],
     },
@@ -157,6 +173,7 @@ describe("createAutoModelRequest", () => {
       methodName: "Sql2o",
       methodParameters: "(String,String,String)",
       supported: false,
+      supportedType: "none",
       usages: [
         {
           label: "new Sql2o(...)",
@@ -167,6 +184,7 @@ describe("createAutoModelRequest", () => {
             endLine: 10,
             endColumn: 88,
           },
+          classification: CallClassification.Source,
         },
       ],
     },
@@ -178,6 +196,7 @@ describe("createAutoModelRequest", () => {
       methodName: "Sql2o",
       methodParameters: "(String)",
       supported: false,
+      supportedType: "none",
       usages: [
         {
           label: "new Sql2o(...)",
@@ -188,6 +207,7 @@ describe("createAutoModelRequest", () => {
             endLine: 23,
             endColumn: 36,
           },
+          classification: CallClassification.Source,
         },
       ],
     },
@@ -199,6 +219,7 @@ describe("createAutoModelRequest", () => {
       methodName: "test",
       methodParameters: "()",
       supported: true,
+      supportedType: "neutral",
       usages: [
         {
           label: "abc.test(...)",
@@ -209,6 +230,7 @@ describe("createAutoModelRequest", () => {
             endLine: 23,
             endColumn: 36,
           },
+          classification: CallClassification.Source,
         },
       ],
     },
@@ -221,6 +243,11 @@ describe("createAutoModelRequest", () => {
       input: "",
       output: "",
       provenance: "manual",
+      signature: "org.sql2o.Sql2o#open()",
+      packageName: "org.sql2o",
+      typeName: "Sql2o",
+      methodName: "open",
+      methodParameters: "()",
     },
     "org.sql2o.Sql2o#Sql2o(String)": {
       type: "sink",
@@ -228,6 +255,11 @@ describe("createAutoModelRequest", () => {
       input: "Argument[0]",
       output: "",
       provenance: "manual",
+      signature: "org.sql2o.Sql2o#Sql2o(String)",
+      packageName: "org.sql2o",
+      typeName: "Sql2o",
+      methodName: "Sql2o",
+      methodParameters: "(String)",
     },
   };
 
@@ -519,6 +551,11 @@ describe("parsePredictedClassifications", () => {
         input: "Argument[0]",
         output: "",
         provenance: "ai-generated",
+        signature: "org.sql2o.Sql2o#createQuery(String)",
+        packageName: "org.sql2o",
+        typeName: "Sql2o",
+        methodName: "createQuery",
+        methodParameters: "(String)",
       },
       "org.sql2o.Sql2o#executeScalar(Class)": {
         type: "neutral",
@@ -526,6 +563,11 @@ describe("parsePredictedClassifications", () => {
         input: "",
         output: "",
         provenance: "ai-generated",
+        signature: "org.sql2o.Sql2o#executeScalar(Class)",
+        packageName: "org.sql2o",
+        typeName: "Sql2o",
+        methodName: "executeScalar",
+        methodParameters: "(Class)",
       },
       "org.sql2o.Sql2o#Sql2o(String,String,String)": {
         type: "sink",
@@ -533,6 +575,11 @@ describe("parsePredictedClassifications", () => {
         input: "Argument[1]",
         output: "",
         provenance: "ai-generated",
+        signature: "org.sql2o.Sql2o#Sql2o(String,String,String)",
+        packageName: "org.sql2o",
+        typeName: "Sql2o",
+        methodName: "Sql2o",
+        methodParameters: "(String,String,String)",
       },
     });
   });

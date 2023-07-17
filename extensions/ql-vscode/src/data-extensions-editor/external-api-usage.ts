@@ -1,15 +1,27 @@
 import { ResolvableLocationValue } from "../common/bqrs-cli-types";
+import { ModeledMethodType } from "./modeled-method";
 
 export type Call = {
   label: string;
   url: ResolvableLocationValue;
 };
 
-export type ExternalApiUsage = {
+export enum CallClassification {
+  Unknown = "unknown",
+  Source = "source",
+  Test = "test",
+  Generated = "generated",
+}
+
+export type Usage = Call & {
+  classification: CallClassification;
+};
+
+export interface MethodSignature {
   /**
-   * Contains the name of the library containing the method declaration, e.g. `sql2o-1.6.0.jar` or `System.Runtime.dll`
+   * Contains the version of the library if it can be determined by CodeQL, e.g. `4.2.2.2`
    */
-  library: string;
+  libraryVersion?: string;
   /**
    * A unique signature that can be used to identify this external API usage.
    *
@@ -25,10 +37,18 @@ export type ExternalApiUsage = {
    * The method parameters, including enclosing parentheses, e.g. `(String, String)`
    */
   methodParameters: string;
+}
+
+export interface ExternalApiUsage extends MethodSignature {
+  /**
+   * Contains the name of the library containing the method declaration, e.g. `sql2o-1.6.0.jar` or `System.Runtime.dll`
+   */
+  library: string;
   /**
    * Is this method already supported by CodeQL standard libraries.
    * If so, there is no need for the user to model it themselves.
    */
   supported: boolean;
-  usages: Call[];
-};
+  supportedType: ModeledMethodType;
+  usages: Usage[];
+}

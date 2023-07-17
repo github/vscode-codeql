@@ -1,5 +1,11 @@
 import { DecodedBqrsChunk } from "../common/bqrs-cli-types";
-import { Call, ExternalApiUsage } from "./external-api-usage";
+import {
+  Call,
+  CallClassification,
+  ExternalApiUsage,
+} from "./external-api-usage";
+import { ModeledMethodType } from "./modeled-method";
+import { parseLibraryFilename } from "./library";
 
 export function decodeBqrsToExternalApiUsages(
   chunk: DecodedBqrsChunk,
@@ -10,7 +16,10 @@ export function decodeBqrsToExternalApiUsages(
     const usage = tuple[0] as Call;
     const signature = tuple[1] as string;
     const supported = (tuple[2] as string) === "true";
-    const library = tuple[4] as string;
+    let library = tuple[4] as string;
+    let libraryVersion: string | undefined = tuple[5] as string;
+    const type = tuple[6] as ModeledMethodType;
+    const classification = tuple[8] as CallClassification;
 
     const [packageWithType, methodDeclaration] = signature.split("#");
 
@@ -30,21 +39,41 @@ export function decodeBqrsToExternalApiUsages(
       methodDeclaration.indexOf("("),
     );
 
+    // For Java, we'll always get back a .jar file, and the library version may be bad because not all library authors
+    // properly specify the version. Therefore, we'll always try to parse the name and version from the library filename
+    // for Java.
+    if (library.endsWith(".jar") || libraryVersion === "") {
+      const { name, version } = parseLibraryFilename(library);
+      library = name;
+      if (version) {
+        libraryVersion = version;
+      }
+    }
+
+    if (libraryVersion === "") {
+      libraryVersion = undefined;
+    }
+
     if (!methodsByApiName.has(signature)) {
       methodsByApiName.set(signature, {
         library,
+        libraryVersion,
         signature,
         packageName,
         typeName,
         methodName,
         methodParameters,
         supported,
+        supportedType: type,
         usages: [],
       });
     }
 
     const method = methodsByApiName.get(signature)!;
-    method.usages.push(usage);
+    method.usages.push({
+      ...usage,
+      classification,
+    });
   });
 
   return Array.from(methodsByApiName.values());
