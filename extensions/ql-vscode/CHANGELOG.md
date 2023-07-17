@@ -2,6 +2,8 @@
 
 ## [UNRELEASED]
 
+- No longer highlight trailing commas for jump to defition.  [#2615](https://github.com/github/vscode-codeql/pull/2615)
+
 ## 1.8.8 - 17 July 2023
 
 - Remove support for CodeQL CLI versions older than 2.9.4. [#2610](https://github.com/github/vscode-codeql/pull/2610)
