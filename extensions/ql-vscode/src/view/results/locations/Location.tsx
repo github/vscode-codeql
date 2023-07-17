@@ -30,21 +30,26 @@ export function Location({
 }: Props): JSX.Element {
   const resolvableLoc = useMemo(() => tryGetResolvableLocation(loc), [loc]);
   const displayLabel = useMemo(() => convertNonPrintableChars(label), [label]);
+
   if (loc === undefined) {
     return <NonClickableLocation msg={displayLabel} />;
-  } else if (isStringLoc(loc)) {
-    return <a href={loc}>{loc}</a>;
-  } else if (databaseUri === undefined || resolvableLoc === undefined) {
-    return <NonClickableLocation msg={displayLabel} locationHint={title} />;
-  } else {
-    return (
-      <ClickableLocation
-        loc={resolvableLoc}
-        label={displayLabel}
-        databaseUri={databaseUri}
-        title={title}
-        handleClick={handleClick}
-      />
-    );
   }
+
+  if (isStringLoc(loc)) {
+    return <a href={loc}>{loc}</a>;
+  }
+
+  if (databaseUri === undefined || resolvableLoc === undefined) {
+    return <NonClickableLocation msg={displayLabel} locationHint={title} />;
+  }
+
+  return (
+    <ClickableLocation
+      loc={resolvableLoc}
+      label={displayLabel}
+      databaseUri={databaseUri}
+      title={title}
+      handleClick={handleClick}
+    />
+  );
 }

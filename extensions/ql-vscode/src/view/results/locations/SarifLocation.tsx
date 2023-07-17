@@ -33,7 +33,9 @@ export function SarifLocation({
   );
   if (parsedLoc === undefined || "hint" in parsedLoc) {
     return <Location label={text || "[no location]"} title={parsedLoc?.hint} />;
-  } else if (isWholeFileLoc(parsedLoc)) {
+  }
+
+  if (isWholeFileLoc(parsedLoc)) {
     return (
       <Location
         loc={parsedLoc}
@@ -43,7 +45,9 @@ export function SarifLocation({
         handleClick={handleClick}
       />
     );
-  } else if (isLineColumnLoc(parsedLoc)) {
+  }
+
+  if (isLineColumnLoc(parsedLoc)) {
     return (
       <Location
         loc={parsedLoc}
@@ -58,7 +62,7 @@ export function SarifLocation({
         handleClick={handleClick}
       />
     );
-  } else {
-    return null;
   }
+
+  return null;
 }
