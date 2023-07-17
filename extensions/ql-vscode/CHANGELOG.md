@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- No longer highlight trailing commas for jump to defition.  [#2615](https://github.com/github/vscode-codeql/pull/2615)
+- No longer highlight trailing commas for jump to definition.  [#2615](https://github.com/github/vscode-codeql/pull/2615)
 
 ## 1.8.8 - 17 July 2023
 
