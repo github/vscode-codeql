@@ -6,6 +6,14 @@ import { basename } from "path";
 import { useMemo } from "react";
 import { Location } from "./Location";
 
+interface Props {
+  text?: string;
+  loc?: Sarif.Location;
+  sourceLocationPrefix: string;
+  databaseUri: string;
+  jumpToLocationCallback: () => void;
+}
+
 /**
  * A clickable SARIF location link.
  *
@@ -18,13 +26,7 @@ export function SarifLocation({
   sourceLocationPrefix,
   databaseUri,
   jumpToLocationCallback,
-}: {
-  text?: string;
-  loc?: Sarif.Location;
-  sourceLocationPrefix: string;
-  databaseUri: string;
-  jumpToLocationCallback: () => void;
-}) {
+}: Props) {
   const parsedLoc = useMemo(
     () => loc && parseSarifLocation(loc, sourceLocationPrefix),
     [loc, sourceLocationPrefix],

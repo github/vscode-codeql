@@ -3,6 +3,14 @@ import * as Sarif from "sarif";
 import { parseSarifPlainTextMessage } from "../../../common/sarif-utils";
 import { SarifLocation } from "./SarifLocation";
 
+interface Props {
+  msg: string;
+  relatedLocations: Sarif.Location[];
+  sourceLocationPrefix: string;
+  databaseUri: string;
+  jumpToLocationCallback: () => void;
+}
+
 /**
  * Parses a SARIF message and populates clickable locations.
  */
@@ -12,13 +20,7 @@ export function SarifMessageWithLocations({
   sourceLocationPrefix,
   databaseUri,
   jumpToLocationCallback,
-}: {
-  msg: string;
-  relatedLocations: Sarif.Location[];
-  sourceLocationPrefix: string;
-  databaseUri: string;
-  jumpToLocationCallback: () => void;
-}) {
+}: Props) {
   const relatedLocationsById: Map<number, Sarif.Location> = new Map();
   for (const loc of relatedLocations) {
     if (loc.id !== undefined) {

@@ -3,6 +3,14 @@ import { useCallback } from "react";
 import { ResolvableLocationValue } from "../../../common/bqrs-cli-types";
 import { jumpToLocation } from "../result-table-utils";
 
+interface Props {
+  loc: ResolvableLocationValue;
+  label: string;
+  databaseUri: string;
+  title?: string;
+  jumpToLocationCallback?: () => void;
+}
+
 /**
  * A clickable location link.
  */
@@ -12,13 +20,7 @@ export function ClickableLocation({
   databaseUri,
   title,
   jumpToLocationCallback,
-}: {
-  loc: ResolvableLocationValue;
-  label: string;
-  databaseUri: string;
-  title?: string;
-  jumpToLocationCallback?: () => void;
-}): JSX.Element {
+}: Props): JSX.Element {
   const jumpToLocationHandler = useCallback(
     (e: React.MouseEvent) => {
       jumpToLocation(loc, databaseUri);

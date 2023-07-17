@@ -10,6 +10,14 @@ import { convertNonPrintableChars } from "../../../common/text-utils";
 import { NonClickableLocation } from "./NonClickableLocation";
 import { ClickableLocation } from "./ClickableLocation";
 
+interface Props {
+  loc?: UrlValue;
+  label?: string;
+  databaseUri?: string;
+  title?: string;
+  jumpToLocationCallback?: () => void;
+}
+
 /**
  * A location link. Will be clickable if a location URL and database URI are provided.
  */
@@ -19,13 +27,7 @@ export function Location({
   databaseUri,
   title,
   jumpToLocationCallback,
-}: {
-  loc?: UrlValue;
-  label?: string;
-  databaseUri?: string;
-  title?: string;
-  jumpToLocationCallback?: () => void;
-}): JSX.Element {
+}: Props): JSX.Element {
   const resolvableLoc = useMemo(() => tryGetResolvableLocation(loc), [loc]);
   const displayLabel = useMemo(() => convertNonPrintableChars(label!), [label]);
   if (loc === undefined) {
