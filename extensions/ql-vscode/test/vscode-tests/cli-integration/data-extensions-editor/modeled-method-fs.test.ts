@@ -10,6 +10,7 @@ import {
 import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
 import { join } from "path";
 import { extLogger } from "../../../../src/common/logging/vscode";
+import { homedir } from "os";
 
 const dummyExtensionPackContents = `
 name: dummy/pack
@@ -52,7 +53,14 @@ describe("modeled-method-fs", () => {
   let cli: CodeQLCliServer;
 
   beforeEach(async () => {
-    const t = tmp.dirSync();
+    // On windows, make sure to use a temp directory that isn't an alias and therefore won't be canonicalised by CodeQL.
+    // See https://github.com/github/vscode-codeql/pull/2605 for more context.
+    const t = tmp.dirSync({
+      dir:
+        process.platform === "win32"
+          ? join(homedir(), "AppData", "Local", "Temp")
+          : undefined,
+    });
     tmpDir = t.name;
     tmpDirRemoveCallback = t.removeCallback;
 
