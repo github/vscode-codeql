@@ -14,6 +14,7 @@ import { sortMethods } from "../../data-extensions-editor/shared/sorting";
 type Props = {
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
+  modifiedSignatures: Set<string>;
   mode: Mode;
   onChange: (
     externalApiUsage: ExternalApiUsage,
@@ -24,6 +25,7 @@ type Props = {
 export const ModeledMethodDataGrid = ({
   externalApiUsages,
   modeledMethods,
+  modifiedSignatures,
   mode,
   onChange,
 }: Props) => {
@@ -56,6 +58,7 @@ export const ModeledMethodDataGrid = ({
           key={externalApiUsage.signature}
           externalApiUsage={externalApiUsage}
           modeledMethod={modeledMethods[externalApiUsage.signature]}
+          methodIsUnsaved={modifiedSignatures.has(externalApiUsage.signature)}
           mode={mode}
           onChange={onChange}
         />
