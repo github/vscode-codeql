@@ -15,7 +15,7 @@ interface Props {
   label?: string;
   databaseUri?: string;
   title?: string;
-  handleClick?: () => void;
+  onClick?: () => void;
 }
 
 /**
@@ -26,7 +26,7 @@ export function Location({
   label,
   databaseUri,
   title,
-  handleClick,
+  onClick,
 }: Props): JSX.Element {
   const resolvableLoc = useMemo(() => tryGetResolvableLocation(loc), [loc]);
   const displayLabel = useMemo(() => convertNonPrintableChars(label), [label]);
@@ -49,7 +49,7 @@ export function Location({
       label={displayLabel}
       databaseUri={databaseUri}
       title={title}
-      handleClick={handleClick}
+      onClick={onClick}
     />
   );
 }

@@ -8,7 +8,7 @@ interface Props {
   relatedLocations: Sarif.Location[];
   sourceLocationPrefix: string;
   databaseUri: string;
-  handleClick: () => void;
+  onClick: () => void;
 }
 
 /**
@@ -19,7 +19,7 @@ export function SarifMessageWithLocations({
   relatedLocations,
   sourceLocationPrefix,
   databaseUri,
-  handleClick,
+  onClick,
 }: Props) {
   const relatedLocationsById: Map<number, Sarif.Location> = new Map();
   for (const loc of relatedLocations) {
@@ -41,7 +41,7 @@ export function SarifMessageWithLocations({
               loc={relatedLocationsById.get(part.dest)}
               sourceLocationPrefix={sourceLocationPrefix}
               databaseUri={databaseUri}
-              handleClick={handleClick}
+              onClick={onClick}
             />
           );
         }

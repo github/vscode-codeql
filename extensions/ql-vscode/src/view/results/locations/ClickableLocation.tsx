@@ -8,7 +8,7 @@ interface Props {
   label: string;
   databaseUri: string;
   title?: string;
-  handleClick?: () => void;
+  onClick?: () => void;
 }
 
 /**
@@ -19,16 +19,16 @@ export function ClickableLocation({
   label,
   databaseUri,
   title,
-  handleClick,
+  onClick: onClick,
 }: Props): JSX.Element {
   const jumpToLocationHandler = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
       jumpToLocation(loc, databaseUri);
-      handleClick?.();
+      onClick?.();
     },
-    [loc, databaseUri, handleClick],
+    [loc, databaseUri, onClick],
   );
 
   return (

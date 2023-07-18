@@ -11,7 +11,7 @@ interface Props {
   loc?: Sarif.Location;
   sourceLocationPrefix: string;
   databaseUri: string;
-  handleClick: () => void;
+  onClick: () => void;
 }
 
 /**
@@ -25,7 +25,7 @@ export function SarifLocation({
   loc,
   sourceLocationPrefix,
   databaseUri,
-  handleClick,
+  onClick,
 }: Props) {
   const parsedLoc = useMemo(
     () => loc && parseSarifLocation(loc, sourceLocationPrefix),
@@ -42,7 +42,7 @@ export function SarifLocation({
         label={text || `${basename(parsedLoc.userVisibleFile)}`}
         databaseUri={databaseUri}
         title={text ? undefined : `${parsedLoc.userVisibleFile}`}
-        handleClick={handleClick}
+        onClick={onClick}
       />
     );
   }
@@ -59,7 +59,7 @@ export function SarifLocation({
         }
         databaseUri={databaseUri}
         title={text ? undefined : `${parsedLoc.userVisibleFile}`}
-        handleClick={handleClick}
+        onClick={onClick}
       />
     );
   }

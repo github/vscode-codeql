@@ -24,7 +24,7 @@ export default function RawTableValue(props: Props): JSX.Element {
       loc={rawValue.url}
       label={rawValue.label}
       databaseUri={props.databaseUri}
-      handleClick={props.onSelected}
+      onClick={props.onSelected}
     />
   );
 }
