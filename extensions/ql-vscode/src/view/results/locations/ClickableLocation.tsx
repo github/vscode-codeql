@@ -21,7 +21,7 @@ export function ClickableLocation({
   title,
   onClick: onClick,
 }: Props): JSX.Element {
-  const jumpToLocationHandler = useCallback(
+  const handleClick = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
@@ -41,7 +41,7 @@ export function ClickableLocation({
         href="#"
         className="vscode-codeql__result-table-location-link"
         title={title}
-        onClick={jumpToLocationHandler}
+        onClick={handleClick}
       >
         {label}
       </a>
