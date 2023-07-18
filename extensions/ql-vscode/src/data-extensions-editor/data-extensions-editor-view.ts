@@ -5,7 +5,6 @@ import {
   ViewColumn,
   window,
 } from "vscode";
-import { join } from "path";
 import { RequestError } from "@octokit/request-error";
 import {
   AbstractWebview,
@@ -21,8 +20,6 @@ import {
   showAndLogExceptionWithTelemetry,
   showAndLogErrorMessage,
 } from "../common/logging";
-import { outputFile, readFile } from "fs-extra";
-import { load as loadYaml } from "js-yaml";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
@@ -34,11 +31,6 @@ import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../common/errors";
 import { readQueryResults, runQuery } from "./external-api-usage-query";
-import {
-  createDataExtensionYamlsForApplicationMode,
-  createDataExtensionYamlsForFrameworkMode,
-  loadDataExtensionYaml,
-} from "./yaml";
 import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
@@ -49,8 +41,9 @@ import {
 } from "./auto-model";
 import { enableFrameworkMode, showLlmGeneration } from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
-import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { Mode } from "./shared/mode";
+import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
+import { join } from "path";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -123,9 +116,14 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "saveModeledMethods":
-        await this.saveModeledMethods(
+        await saveModeledMethods(
+          this.extensionPack,
+          this.databaseItem.name,
+          this.databaseItem.language,
           msg.externalApiUsages,
           msg.modeledMethods,
+          this.mode,
+          this.app.logger,
         );
         await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
 
@@ -194,79 +192,16 @@ export class DataExtensionsEditorView extends AbstractWebview<
     }
   }
 
-  protected async saveModeledMethods(
-    externalApiUsages: ExternalApiUsage[],
-    modeledMethods: Record<string, ModeledMethod>,
-  ): Promise<void> {
-    let yamls: Record<string, string>;
-    switch (this.mode) {
-      case Mode.Application:
-        yamls = createDataExtensionYamlsForApplicationMode(
-          this.databaseItem.language,
-          externalApiUsages,
-          modeledMethods,
-        );
-        break;
-      case Mode.Framework:
-        yamls = createDataExtensionYamlsForFrameworkMode(
-          this.databaseItem.name,
-          this.databaseItem.language,
-          externalApiUsages,
-          modeledMethods,
-        );
-        break;
-      default:
-        assertNever(this.mode);
-    }
-
-    for (const [filename, yaml] of Object.entries(yamls)) {
-      await outputFile(join(this.extensionPack.path, filename), yaml);
-    }
-
-    void this.app.logger.log(`Saved data extension YAML`);
-  }
-
   protected async loadExistingModeledMethods(): Promise<void> {
     try {
-      const extensions = await this.cliServer.resolveExtensions(
-        this.extensionPack.path,
-        getOnDiskWorkspaceFolders(),
+      const modeledMethods = await loadModeledMethods(
+        this.extensionPack,
+        this.cliServer,
+        this.app.logger,
       );
-
-      const modelFiles = new Set<string>();
-
-      if (this.extensionPack.path in extensions.data) {
-        for (const extension of extensions.data[this.extensionPack.path]) {
-          modelFiles.add(extension.file);
-        }
-      }
-
-      const existingModeledMethods: Record<string, ModeledMethod> = {};
-
-      for (const modelFile of modelFiles) {
-        const yaml = await readFile(modelFile, "utf8");
-
-        const data = loadYaml(yaml, {
-          filename: modelFile,
-        });
-
-        const modeledMethods = loadDataExtensionYaml(data);
-        if (!modeledMethods) {
-          void showAndLogErrorMessage(
-            this.app.logger,
-            `Failed to parse data extension YAML ${modelFile}.`,
-          );
-          continue;
-        }
-
-        for (const [key, value] of Object.entries(modeledMethods)) {
-          existingModeledMethods[key] = value;
-        }
-      }
-
       await this.postMessage({
         t: "loadModeledMethods",
-        modeledMethods: existingModeledMethods,
+        modeledMethods,
       });
     } catch (e: unknown) {
       void showAndLogErrorMessage(
