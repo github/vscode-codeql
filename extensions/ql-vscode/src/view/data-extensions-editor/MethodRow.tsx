@@ -19,7 +19,10 @@ import { extensiblePredicateDefinitions } from "../../data-extensions-editor/pre
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { Dropdown } from "../common/Dropdown";
 import { MethodClassifications } from "./MethodClassifications";
-import { ModelingStatusIndicator } from "./ModelingStatusIndicator";
+import {
+  ModelingStatus,
+  ModelingStatusIndicator,
+} from "./ModelingStatusIndicator";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -200,21 +203,12 @@ function ModelableMethodRow(props: Props) {
       : undefined;
   const showKindCell = predicate?.supportedKinds;
 
-  const modificationState = useMemo(() => {
-    if (modeledMethod) {
-      if (modifiedSignatures.has(modeledMethod.signature)) {
-        return "unsaved";
-      } else if (modeledMethod.type !== "none") {
-        return "saved";
-      }
-    }
-    return "unmodeled";
-  }, [modeledMethod, modifiedSignatures]);
+  const modelingStatus = getModelingStatus(modeledMethod, modifiedSignatures);
 
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
-        <ModelingStatusIndicator status={modificationState} />
+        <ModelingStatusIndicator status={modelingStatus} />
         <ExternalApiUsageName {...props} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
@@ -305,4 +299,18 @@ function sendJumpToUsageMessage(externalApiUsage: ExternalApiUsage) {
     // In framework mode, the first and only usage is the definition of the method
     location: externalApiUsage.usages[0].url,
   });
+}
+
+function getModelingStatus(
+  modeledMethod: ModeledMethod | undefined,
+  modifiedSignatures: Set<string>,
+): ModelingStatus {
+  if (modeledMethod) {
+    if (modifiedSignatures.has(modeledMethod.signature)) {
+      return "unsaved";
+    } else if (modeledMethod.type !== "none") {
+      return "saved";
+    }
+  }
+  return "unmodeled";
 }
