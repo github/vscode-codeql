@@ -5,11 +5,7 @@ import { Mode } from "./shared/mode";
 import { createDataExtensionYamls, loadDataExtensionYaml } from "./yaml";
 import { join, relative } from "path";
 import { ExtensionPack } from "./shared/extension-pack";
-import {
-  Logger,
-  NotificationLogger,
-  showAndLogErrorMessage,
-} from "../common/logging";
+import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { load as loadYaml } from "js-yaml";
 import { CodeQLCliServer } from "../codeql-cli/cli";
@@ -22,13 +18,21 @@ export async function saveModeledMethods(
   externalApiUsages: ExternalApiUsage[],
   modeledMethods: Record<string, ModeledMethod>,
   mode: Mode,
-  logger: Logger,
+  cliServer: CodeQLCliServer,
+  logger: NotificationLogger,
 ): Promise<void> {
+  const existingModeledMethods = await loadModeledMethodFiles(
+    extensionPack,
+    cliServer,
+    logger,
+  );
+
   const yamls = createDataExtensionYamls(
     databaseName,
     language,
     externalApiUsages,
     modeledMethods,
+    existingModeledMethods,
     mode,
   );
 

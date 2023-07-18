@@ -123,6 +123,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
           msg.externalApiUsages,
           msg.modeledMethods,
           this.mode,
+          this.cliServer,
           this.app.logger,
         );
         await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
