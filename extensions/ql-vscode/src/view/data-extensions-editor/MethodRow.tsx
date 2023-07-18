@@ -54,7 +54,7 @@ const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
 type Props = {
   externalApiUsage: ExternalApiUsage;
   modeledMethod: ModeledMethod | undefined;
-  modifiedSignatures: Set<string>;
+  methodIsUnsaved: boolean;
   mode: Mode;
   onChange: (
     externalApiUsage: ExternalApiUsage,
@@ -63,12 +63,12 @@ type Props = {
 };
 
 export const MethodRow = (props: Props) => {
-  const { externalApiUsage, modeledMethod, modifiedSignatures } = props;
+  const { externalApiUsage, modeledMethod, methodIsUnsaved } = props;
 
   const methodCanBeModeled =
     !externalApiUsage.supported ||
     (modeledMethod && modeledMethod?.type !== "none") ||
-    modifiedSignatures.has(externalApiUsage.signature);
+    methodIsUnsaved;
 
   if (methodCanBeModeled) {
     return <ModelableMethodRow {...props} />;
@@ -78,13 +78,8 @@ export const MethodRow = (props: Props) => {
 };
 
 function ModelableMethodRow(props: Props) {
-  const {
-    externalApiUsage,
-    modeledMethod,
-    modifiedSignatures,
-    mode,
-    onChange,
-  } = props;
+  const { externalApiUsage, modeledMethod, methodIsUnsaved, mode, onChange } =
+    props;
 
   const argumentsList = useMemo(() => {
     if (externalApiUsage.methodParameters === "()") {
@@ -203,7 +198,7 @@ function ModelableMethodRow(props: Props) {
       : undefined;
   const showKindCell = predicate?.supportedKinds;
 
-  const modelingStatus = getModelingStatus(modeledMethod, modifiedSignatures);
+  const modelingStatus = getModelingStatus(modeledMethod, methodIsUnsaved);
 
   return (
     <VSCodeDataGridRow>
@@ -303,10 +298,10 @@ function sendJumpToUsageMessage(externalApiUsage: ExternalApiUsage) {
 
 function getModelingStatus(
   modeledMethod: ModeledMethod | undefined,
-  modifiedSignatures: Set<string>,
+  methodIsUnsaved: boolean,
 ): ModelingStatus {
   if (modeledMethod) {
-    if (modifiedSignatures.has(modeledMethod.signature)) {
+    if (methodIsUnsaved) {
       return "unsaved";
     } else if (modeledMethod.type !== "none") {
       return "saved";

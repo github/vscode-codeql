@@ -58,7 +58,7 @@ export const ModeledMethodDataGrid = ({
           key={externalApiUsage.signature}
           externalApiUsage={externalApiUsage}
           modeledMethod={modeledMethods[externalApiUsage.signature]}
-          modifiedSignatures={modifiedSignatures}
+          methodIsUnsaved={modifiedSignatures.has(externalApiUsage.signature)}
           mode={mode}
           onChange={onChange}
         />
