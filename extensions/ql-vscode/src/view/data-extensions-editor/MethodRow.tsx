@@ -19,8 +19,7 @@ import { extensiblePredicateDefinitions } from "../../data-extensions-editor/pre
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { Dropdown } from "../common/Dropdown";
 import { MethodClassifications } from "./MethodClassifications";
-import { Codicon } from "../common/icon";
-import { assertNever } from "../../common/helpers-pure";
+import { ModelingStatusIndicator } from "./ModelingStatusIndicator";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -215,7 +214,7 @@ function ModelableMethodRow(props: Props) {
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
-        <ModificationIndicator state={modificationState} />
+        <ModelingStatusIndicator status={modificationState} />
         <ExternalApiUsageName {...props} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
@@ -271,7 +270,7 @@ function UnmodelableMethodRow(props: Props) {
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
-        <ModificationIndicator state="saved" />
+        <ModelingStatusIndicator status="saved" />
         <ExternalApiUsageName {...props} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
@@ -306,21 +305,4 @@ function sendJumpToUsageMessage(externalApiUsage: ExternalApiUsage) {
     // In framework mode, the first and only usage is the definition of the method
     location: externalApiUsage.usages[0].url,
   });
-}
-
-function ModificationIndicator({
-  state,
-}: {
-  state: "unmodeled" | "unsaved" | "saved";
-}) {
-  switch (state) {
-    case "unmodeled":
-      return <Codicon name="circle-large-outline" label="Method not modeled" />;
-    case "unsaved":
-      return <Codicon name="pass" label="Changes have not been saved" />;
-    case "saved":
-      return <Codicon name="pass-filled" label="Method modeled" />;
-    default:
-      assertNever(state);
-  }
 }
