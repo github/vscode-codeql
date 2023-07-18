@@ -1,5 +1,5 @@
 import * as React from "react";
-import { addons, types } from "@storybook/addons";
+import { addons, types } from "@storybook/manager-api";
 import { ThemeSelector } from "./ThemeSelector";
 
 const ADDON_ID = "vscode-theme-addon";

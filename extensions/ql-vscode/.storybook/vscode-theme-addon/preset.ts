@@ -1,4 +1,4 @@
-export function config(entry = []) {
+export function previewAnnotations(entry = []) {
   return [...entry, require.resolve("./preview.ts")];
 }
 
