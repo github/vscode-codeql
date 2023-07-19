@@ -99,6 +99,36 @@ export class DataExtensionsEditorModule {
               return;
             }
 
+            // TODO: Copy the files to a temporary directory and install pack dependencies
+
+            const queryDir = (await dir({ unsafeCleanup: true })).path;
+
+            // TODO: Write both the application mode and framework mode query
+            const queryFile = join(queryDir, "FetchExternalApis.ql");
+            await writeFile(queryFile, query[queryName], "utf8");
+
+            if (query.dependencies) {
+              for (const [filename, contents] of Object.entries(
+                query.dependencies,
+              )) {
+                const dependencyFile = join(queryDir, filename);
+                await writeFile(dependencyFile, contents, "utf8");
+              }
+            }
+
+            const syntheticQueryPack = {
+              name: "codeql/external-api-usage",
+              version: "0.0.0",
+              dependencies: {
+                [`codeql/${databaseItem.language}-all`]: "*",
+              },
+            };
+
+            const qlpackFile = join(queryDir, "codeql-pack.yml");
+            await writeFile(qlpackFile, dumpYaml(syntheticQueryPack), "utf8");
+
+            // TODO: install pack dependencies in temporary file (`codeql pack install`)
+
             const view = new DataExtensionsEditorView(
               this.ctx,
               this.app,
@@ -106,6 +136,7 @@ export class DataExtensionsEditorModule {
               this.cliServer,
               this.queryRunner,
               this.queryStorageDir,
+              queryDir,
               db,
               modelFile,
             );

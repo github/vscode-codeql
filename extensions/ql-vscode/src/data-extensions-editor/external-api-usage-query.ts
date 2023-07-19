@@ -35,6 +35,7 @@ export async function runQuery(
     databaseItem,
     queryStorageDir,
     progress,
+    queryDir,
     token,
   }: RunQueryOptions,
 ): Promise<CoreCompletedQuery | undefined> {
@@ -63,27 +64,7 @@ export async function runQuery(
     return;
   }
 
-  const queryDir = (await dir({ unsafeCleanup: true })).path;
-  const queryFile = join(queryDir, "FetchExternalApis.ql");
-  await writeFile(queryFile, query[queryName], "utf8");
-
-  if (query.dependencies) {
-    for (const [filename, contents] of Object.entries(query.dependencies)) {
-      const dependencyFile = join(queryDir, filename);
-      await writeFile(dependencyFile, contents, "utf8");
-    }
-  }
-
-  const syntheticQueryPack = {
-    name: "codeql/external-api-usage",
-    version: "0.0.0",
-    dependencies: {
-      [`codeql/${databaseItem.language}-all`]: "*",
-    },
-  };
-
-  const qlpackFile = join(queryDir, "codeql-pack.yml");
-  await writeFile(qlpackFile, dumpYaml(syntheticQueryPack), "utf8");
+  // TODO: install dependencies
 
   const additionalPacks = getOnDiskWorkspaceFolders();
   const extensionPacks = Object.keys(
@@ -93,6 +74,7 @@ export async function runQuery(
   const queryRun = queryRunner.createQueryRun(
     databaseItem.databaseUri.fsPath,
     {
+      // TODO: select correct query file based on the `queryName` and `queryDir`
       queryPath: queryFile,
       quickEvalPosition: undefined,
       quickEvalCountOnly: false,

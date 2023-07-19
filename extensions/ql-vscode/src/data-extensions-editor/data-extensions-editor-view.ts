@@ -71,6 +71,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
     private readonly queryStorageDir: string,
+    private readonly queryDir: string,
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
     private mode: Mode = Mode.Application,
