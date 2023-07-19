@@ -266,7 +266,7 @@ export function DataExtensionsEditor({
 
       {externalApiUsages.length > 0 && (
         <>
-          <ViewTitle>Data extensions editor</ViewTitle>
+          <ViewTitle>{viewState.extensionPack.language}</ViewTitle>
           <DetailsContainer>
             <LinkIconButton onClick={onOpenExtensionPackClick}>
               <span slot="start" className="codicon codicon-package"></span>

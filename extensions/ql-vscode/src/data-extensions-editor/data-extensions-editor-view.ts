@@ -78,7 +78,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
     return {
       viewId: "data-extensions-editor",
-      title: "Data Extensions Editor",
+      title: `Modeling ${this.extensionPack.language} (${this.extensionPack.name})`,
+      // Still TODO: fix capitalization of language name
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
       view: "data-extensions-editor",
