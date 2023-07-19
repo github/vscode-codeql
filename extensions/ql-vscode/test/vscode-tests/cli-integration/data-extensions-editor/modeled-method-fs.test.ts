@@ -142,8 +142,8 @@ describe("modeled-method-fs", () => {
       const modelFiles = await listModelFiles(extensionPackPath, cli);
       expect(modelFiles).toEqual(
         new Set([
-          join(extensionPackPath, "models", "library1.model.yml"),
-          join(extensionPackPath, "models", "library2.model.yml"),
+          join("models", "library1.model.yml"),
+          join("models", "library2.model.yml"),
         ]),
       );
     });
@@ -160,7 +160,7 @@ describe("modeled-method-fs", () => {
 
       const modelFiles = await listModelFiles(extensionPackPath, cli);
       expect(modelFiles).toEqual(
-        new Set([join(extensionPackPath, "models", "library1.model.yml")]),
+        new Set([join("models", "library1.model.yml")]),
       );
     });
   });

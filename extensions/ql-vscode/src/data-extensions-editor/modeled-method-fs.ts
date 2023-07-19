@@ -3,7 +3,7 @@ import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { Mode } from "./shared/mode";
 import { createDataExtensionYamls, loadDataExtensionYaml } from "./yaml";
-import { join } from "path";
+import { join, relative } from "path";
 import { ExtensionPack } from "./shared/extension-pack";
 import {
   Logger,
@@ -49,7 +49,7 @@ export async function loadModeledMethods(
   const existingModeledMethods: Record<string, ModeledMethod> = {};
 
   for (const modelFile of modelFiles) {
-    const yaml = await readFile(modelFile, "utf8");
+    const yaml = await readFile(join(extensionPack.path, modelFile), "utf8");
 
     const data = loadYaml(yaml, {
       filename: modelFile,
@@ -85,7 +85,7 @@ export async function listModelFiles(
   for (const [path, extensions] of Object.entries(result.data)) {
     if (pathsEqual(path, extensionPackPath)) {
       for (const extension of extensions) {
-        modelFiles.add(extension.file);
+        modelFiles.add(relative(extensionPackPath, extension.file));
       }
     }
   }
