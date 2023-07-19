@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
 import { VariantAnalysisOutcomePanels } from "../../view/variant-analysis/VariantAnalysisOutcomePanels";
@@ -27,11 +27,9 @@ export default {
       </VariantAnalysisContainer>
     ),
   ],
-} as ComponentMeta<typeof VariantAnalysisOutcomePanels>;
+} as Meta<typeof VariantAnalysisOutcomePanels>;
 
-const Template: ComponentStory<typeof VariantAnalysisOutcomePanels> = (
-  args,
-) => {
+const Template: StoryFn<typeof VariantAnalysisOutcomePanels> = (args) => {
   const [filterSortState, setFilterSortState] =
     useState<RepositoriesFilterSortState>(defaultFilterSortState);
 

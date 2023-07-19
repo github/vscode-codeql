@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { VariantAnalysis as VariantAnalysisComponent } from "../../view/variant-analysis/VariantAnalysis";
 import {
@@ -18,9 +18,9 @@ import { createMockRepositoryWithMetadata } from "../../../test/factories/varian
 export default {
   title: "Variant Analysis/Variant Analysis",
   component: VariantAnalysisComponent,
-} as ComponentMeta<typeof VariantAnalysisComponent>;
+} as Meta<typeof VariantAnalysisComponent>;
 
-const Template: ComponentStory<typeof VariantAnalysisComponent> = (args) => (
+const Template: StoryFn<typeof VariantAnalysisComponent> = (args) => (
   <VariantAnalysisComponent {...args} />
 );
 

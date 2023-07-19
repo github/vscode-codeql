@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import TextButtonComponent from "../../view/common/TextButton";
 
@@ -15,9 +15,9 @@ export default {
       },
     },
   },
-} as ComponentMeta<typeof TextButtonComponent>;
+} as Meta<typeof TextButtonComponent>;
 
-const Template: ComponentStory<typeof TextButtonComponent> = (args) => (
+const Template: StoryFn<typeof TextButtonComponent> = (args) => (
   <TextButtonComponent {...args} />
 );
 

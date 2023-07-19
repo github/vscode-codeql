@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 import { VariantAnalysisFailureReason } from "../../variant-analysis/shared/variant-analysis";
 import { FailureReasonAlert } from "../../view/variant-analysis/FailureReasonAlert";
 
 export default {
   title: "Variant Analysis/Failure reason alert",
   component: FailureReasonAlert,
-} as ComponentMeta<typeof FailureReasonAlert>;
+} as Meta<typeof FailureReasonAlert>;
 
-const Template: ComponentStory<typeof FailureReasonAlert> = (args) => (
+const Template: StoryFn<typeof FailureReasonAlert> = (args) => (
   <FailureReasonAlert {...args} />
 );
 
