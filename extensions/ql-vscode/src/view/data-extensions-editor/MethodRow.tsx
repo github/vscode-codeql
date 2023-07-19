@@ -1,5 +1,4 @@
 import {
-  VSCodeCheckbox,
   VSCodeDataGridCell,
   VSCodeDataGridRow,
   VSCodeLink,
@@ -20,6 +19,10 @@ import { extensiblePredicateDefinitions } from "../../data-extensions-editor/pre
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { Dropdown } from "../common/Dropdown";
 import { MethodClassifications } from "./MethodClassifications";
+import {
+  ModelingStatus,
+  ModelingStatusIndicator,
+} from "./ModelingStatusIndicator";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -51,6 +54,7 @@ const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
 type Props = {
   externalApiUsage: ExternalApiUsage;
   modeledMethod: ModeledMethod | undefined;
+  methodIsUnsaved: boolean;
   mode: Mode;
   onChange: (
     externalApiUsage: ExternalApiUsage,
@@ -59,11 +63,12 @@ type Props = {
 };
 
 export const MethodRow = (props: Props) => {
-  const { externalApiUsage, modeledMethod } = props;
+  const { externalApiUsage, modeledMethod, methodIsUnsaved } = props;
 
   const methodCanBeModeled =
     !externalApiUsage.supported ||
-    (modeledMethod && modeledMethod?.type !== "none");
+    (modeledMethod && modeledMethod?.type !== "none") ||
+    methodIsUnsaved;
 
   if (methodCanBeModeled) {
     return <ModelableMethodRow {...props} />;
@@ -73,7 +78,8 @@ export const MethodRow = (props: Props) => {
 };
 
 function ModelableMethodRow(props: Props) {
-  const { externalApiUsage, modeledMethod, mode, onChange } = props;
+  const { externalApiUsage, modeledMethod, methodIsUnsaved, mode, onChange } =
+    props;
 
   const argumentsList = useMemo(() => {
     if (externalApiUsage.methodParameters === "()") {
@@ -192,10 +198,12 @@ function ModelableMethodRow(props: Props) {
       : undefined;
   const showKindCell = predicate?.supportedKinds;
 
+  const modelingStatus = getModelingStatus(modeledMethod, methodIsUnsaved);
+
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
-        <VSCodeCheckbox />
+        <ModelingStatusIndicator status={modelingStatus} />
         <ExternalApiUsageName {...props} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
@@ -251,7 +259,7 @@ function UnmodelableMethodRow(props: Props) {
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
-        <VSCodeCheckbox />
+        <ModelingStatusIndicator status="saved" />
         <ExternalApiUsageName {...props} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
@@ -286,4 +294,18 @@ function sendJumpToUsageMessage(externalApiUsage: ExternalApiUsage) {
     // In framework mode, the first and only usage is the definition of the method
     location: externalApiUsage.usages[0].url,
   });
+}
+
+function getModelingStatus(
+  modeledMethod: ModeledMethod | undefined,
+  methodIsUnsaved: boolean,
+): ModelingStatus {
+  if (modeledMethod) {
+    if (methodIsUnsaved) {
+      return "unsaved";
+    } else if (modeledMethod.type !== "none") {
+      return "saved";
+    }
+  }
+  return "unmodeled";
 }

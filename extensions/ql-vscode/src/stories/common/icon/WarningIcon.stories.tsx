@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import {
   CodePaths,
@@ -10,9 +10,9 @@ import {
 export default {
   title: "Icon/Warning Icon",
   component: WarningIconComponent,
-} as ComponentMeta<typeof CodePaths>;
+} as Meta<typeof CodePaths>;
 
-const Template: ComponentStory<typeof WarningIconComponent> = (args) => (
+const Template: StoryFn<typeof WarningIconComponent> = (args) => (
   <WarningIconComponent {...args} />
 );
 

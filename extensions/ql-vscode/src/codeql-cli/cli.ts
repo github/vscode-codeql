@@ -1807,6 +1807,11 @@ export class CliVersionConstraint {
   );
 
   /**
+   * CLI version where the `resolve extensions` subcommand exists.
+   */
+  public static CLI_VERSION_WITH_RESOLVE_EXTENSIONS = new SemVer("2.10.2");
+
+  /**
    * CLI version where the `--evaluator-log` and related options to the query server were introduced,
    * on a per-query server basis.
    */
@@ -1879,6 +1884,12 @@ export class CliVersionConstraint {
   async supportsPreciseResolveMlModels() {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_PRECISE_RESOLVE_ML_MODELS,
+    );
+  }
+
+  async supportsResolveExtensions() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_EXTENSIONS,
     );
   }
 

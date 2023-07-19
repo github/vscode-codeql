@@ -5,7 +5,7 @@ import {
   VariantAnalysisStats,
   VariantAnalysisStatsProps,
 } from "../VariantAnalysisStats";
-import { userEvent } from "@storybook/testing-library";
+import userEvent from "@testing-library/user-event";
 
 describe(VariantAnalysisStats.name, () => {
   const onViewLogsClick = jest.fn();
@@ -141,13 +141,13 @@ describe(VariantAnalysisStats.name, () => {
     ).not.toBeInTheDocument();
   });
 
-  it("renders 'View logs' link when the variant analysis status is succeeded", () => {
+  it("renders 'View logs' link when the variant analysis status is succeeded", async () => {
     render({
       variantAnalysisStatus: VariantAnalysisStatus.Succeeded,
       completedAt: new Date(),
     });
 
-    userEvent.click(screen.getByText("View logs"));
+    await userEvent.click(screen.getByText("View logs"));
     expect(onViewLogsClick).toHaveBeenCalledTimes(1);
   });
 

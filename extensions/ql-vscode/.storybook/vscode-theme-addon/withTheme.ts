@@ -1,6 +1,5 @@
-import { useEffect, useGlobals } from "@storybook/addons";
+import { useEffect } from "react";
 import type {
-  AnyFramework,
   PartialStoryFn as StoryFunction,
   StoryContext,
 } from "@storybook/csf";
@@ -34,11 +33,8 @@ const themeFiles: { [key in VSCodeTheme]: string } = {
       .default,
 };
 
-export const withTheme = (
-  StoryFn: StoryFunction<AnyFramework>,
-  context: StoryContext<AnyFramework>,
-) => {
-  const [{ vscodeTheme }] = useGlobals();
+export const withTheme = (StoryFn: StoryFunction, context: StoryContext) => {
+  const { vscodeTheme } = context.globals;
 
   useEffect(() => {
     const styleSelectorId =

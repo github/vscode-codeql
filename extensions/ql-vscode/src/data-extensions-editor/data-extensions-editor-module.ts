@@ -78,6 +78,16 @@ export class DataExtensionsEditorModule {
               return;
             }
 
+            if (
+              !(await this.cliServer.cliConstraints.supportsResolveExtensions())
+            ) {
+              void showAndLogErrorMessage(
+                this.app.logger,
+                `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_EXTENSIONS.format()} or later.`,
+              );
+              return;
+            }
+
             const modelFile = await pickExtensionPack(
               this.cliServer,
               db,

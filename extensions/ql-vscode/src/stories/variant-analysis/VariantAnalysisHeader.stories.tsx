@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { VariantAnalysisContainer } from "../../view/variant-analysis/VariantAnalysisContainer";
 import { VariantAnalysisHeader } from "../../view/variant-analysis/VariantAnalysisHeader";
@@ -59,9 +59,9 @@ export default {
       },
     },
   },
-} as ComponentMeta<typeof VariantAnalysisHeader>;
+} as Meta<typeof VariantAnalysisHeader>;
 
-const Template: ComponentStory<typeof VariantAnalysisHeader> = (args) => (
+const Template: StoryFn<typeof VariantAnalysisHeader> = (args) => (
   <VariantAnalysisHeader {...args} />
 );
 

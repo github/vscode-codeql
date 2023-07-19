@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { MethodRow as MethodRowComponent } from "../../view/data-extensions-editor/MethodRow";
 import { CallClassification } from "../../data-extensions-editor/external-api-usage";
@@ -8,9 +8,9 @@ import { CallClassification } from "../../data-extensions-editor/external-api-us
 export default {
   title: "Data Extensions Editor/Method Row",
   component: MethodRowComponent,
-} as ComponentMeta<typeof MethodRowComponent>;
+} as Meta<typeof MethodRowComponent>;
 
-const Template: ComponentStory<typeof MethodRowComponent> = (args) => (
+const Template: StoryFn<typeof MethodRowComponent> = (args) => (
   <MethodRowComponent {...args} />
 );
 

@@ -44,21 +44,21 @@ choose to go through some of the Optional Test Cases.
 
 #### Test case 2: Running a problem query and viewing results
 
-1. Open the [javascript UnsafeJQueryPlugin query](https://github.com/github/codeql/blob/main/javascript/ql/src/Security/CWE-079/UnsafeJQueryPlugin.ql).
+1. Open the [javascript ReDoS query](https://github.com/github/codeql/blob/main/javascript/ql/src/Performance/ReDoS.ql).
 2. Select the `babel/babel` database (or download it if you don't have one already)
 3. Run a local query.
 4. Once the query completes:
    - Check that the result messages are rendered
    - Check that alert locations can be clicked on
 
-#### Test case 3: Running a non-probem query and viewing results
+#### Test case 3: Running a non-problem query and viewing results
 
 1. Open the [cpp FunLinesOfCode query](https://github.com/github/codeql/blob/main/cpp/ql/src/Metrics/Functions/FunLinesOfCode.ql).
 2. Select the `google/brotli` database (or download it if you don't have one already)
 3. Run a local query.
 4. Once the query completes:
    - Check that the results table is rendered
-   - Check that alert locations can be clicked on
+   - Check that result locations can be clicked on
 
 #### Test case 3: Can use AST viewer
 

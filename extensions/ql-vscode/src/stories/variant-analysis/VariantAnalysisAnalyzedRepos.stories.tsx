@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { faker } from "@faker-js/faker";
 
@@ -28,11 +28,11 @@ export default {
       </VariantAnalysisContainer>
     ),
   ],
-} as ComponentMeta<typeof VariantAnalysisAnalyzedRepos>;
+} as Meta<typeof VariantAnalysisAnalyzedRepos>;
 
-const Template: ComponentStory<typeof VariantAnalysisAnalyzedRepos> = (
-  args,
-) => <VariantAnalysisAnalyzedRepos {...args} />;
+const Template: StoryFn<typeof VariantAnalysisAnalyzedRepos> = (args) => (
+  <VariantAnalysisAnalyzedRepos {...args} />
+);
 
 const interpretedResultsForRepo = (
   nwo: string,
