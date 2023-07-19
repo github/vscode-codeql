@@ -1,6 +1,6 @@
 ### meteor/meteor
 
-[packages/deprecated/markdown/showdown.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/packages/deprecated/markdown/showdown.js#L415)
+[packages/deprecated/markdown/showdown.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/packages/deprecated/markdown/showdown.js#L415C41-L415C48)
 
 <pre><code class="javascript">		/g,hashElement);
 	*/
@@ -13,7 +13,7 @@
 
 ----------------------------------------
 
-[packages/deprecated/markdown/showdown.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/packages/deprecated/markdown/showdown.js#L523)
+[packages/deprecated/markdown/showdown.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/packages/deprecated/markdown/showdown.js#L523C58-L523C61)
 
 <pre><code class="javascript">	// Build a regex to find HTML tags and comments.  See Friedl's
 	// "Mastering Regular Expressions", 2nd Ed., pp. 200-201.
@@ -26,7 +26,7 @@
 
 ----------------------------------------
 
-[tools/tests/apps/modules/imports/links/acorn/src/parseutil.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/tools/tests/apps/modules/imports/links/acorn/src/parseutil.js#L9)
+[tools/tests/apps/modules/imports/links/acorn/src/parseutil.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/tools/tests/apps/modules/imports/links/acorn/src/parseutil.js#L9C24-L9C38)
 
 <pre><code class="javascript">// ## Parser utilities
 
@@ -39,7 +39,7 @@ pp.strictDirective = function(start) {
 
 ----------------------------------------
 
-[tools/tests/apps/modules/imports/links/acorn/src/parseutil.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/tools/tests/apps/modules/imports/links/acorn/src/parseutil.js#L9)
+[tools/tests/apps/modules/imports/links/acorn/src/parseutil.js](https://github.com/meteor/meteor/blob/53f3c4442d3542d3d2a012a854472a0d1bef9d12/tools/tests/apps/modules/imports/links/acorn/src/parseutil.js#L9C43-L9C57)
 
 <pre><code class="javascript">const literal = /^(?:'((?:\\.|[^'])*?)'|"(<strong>(?:\\.|[^"])*?</strong>)")/</code></pre>
 
@@ -47,7 +47,7 @@ pp.strictDirective = function(start) {
 
 ----------------------------------------
 
-[app/src/main/AndroidManifest.xml](https://github.com/AlexRogalskiy/android-nrf-toolbox/blob/034cf3aa7d2a3a4145177de32546ca518a462a66/app/src/main/AndroidManifest.xml#L239-L249)
+[app/src/main/AndroidManifest.xml](https://github.com/AlexRogalskiy/android-nrf-toolbox/blob/034cf3aa7d2a3a4145177de32546ca518a462a66/app/src/main/AndroidManifest.xml#L239C3-L249C15)
 
 <pre><code class="javascript">		&lt;/service&gt;
 

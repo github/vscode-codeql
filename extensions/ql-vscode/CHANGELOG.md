@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Links to code on GitHub now include column numbers as well as line numbers. [#2406](https://github.com/github/vscode-codeql/pull/2406)
 - No longer highlight trailing commas for jump to definition.  [#2615](https://github.com/github/vscode-codeql/pull/2615)
 
 ## 1.8.8 - 17 July 2023
