@@ -268,6 +268,7 @@ describe("pickExtensionPack", () => {
       yamlPath: join(newPackDir, "codeql-pack.yml"),
       name: "github/vscode-codeql-java",
       version: "0.0.0",
+      language: "java",
       extensionTargets: {
         "codeql/java-all": "*",
       },
@@ -339,6 +340,7 @@ describe("pickExtensionPack", () => {
       yamlPath: join(newPackDir, "codeql-pack.yml"),
       name: "github/vscode-codeql-java",
       version: "0.0.0",
+      language: "java",
       extensionTargets: {
         "codeql/java-all": "*",
       },
@@ -399,6 +401,7 @@ describe("pickExtensionPack", () => {
       yamlPath: join(newPackDir, "codeql-pack.yml"),
       name: "pack/new-extension-pack",
       version: "0.0.0",
+      language: "java",
       extensionTargets: {
         "codeql/java-all": "*",
       },
@@ -466,6 +469,7 @@ describe("pickExtensionPack", () => {
       yamlPath: join(newPackDir, "codeql-pack.yml"),
       name: "pack/new-extension-pack",
       version: "0.0.0",
+      language: "csharp",
       extensionTargets: {
         "codeql/csharp-all": "*",
       },
@@ -815,6 +819,7 @@ describe("pickExtensionPack", () => {
       yamlPath: qlpackPath,
       name: "new-extension-pack",
       version: "0.0.0",
+      language: "java",
       extensionTargets: {
         "codeql/java-all": "*",
       },
@@ -838,6 +843,7 @@ describe("pickExtensionPack", () => {
       "csharp-extension-pack",
       {
         version: "0.5.3",
+        language: "csharp",
         extensionTargets: {
           "codeql/csharp-all": "*",
         },
@@ -906,6 +912,7 @@ async function createMockExtensionPack(
     yamlPath: join(path, "codeql-pack.yml"),
     name,
     version: "0.0.0",
+    language: "java",
     extensionTargets: {
       "codeql/java-all": "*",
     },
