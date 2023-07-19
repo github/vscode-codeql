@@ -553,6 +553,10 @@ export interface GenerateExternalApiFromLlmMessage {
   modeledMethods: Record<string, ModeledMethod>;
 }
 
+export interface ModelDependencyMessage {
+  t: "modelDependency";
+}
+
 export type ToDataExtensionsEditorMessage =
   | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
@@ -568,4 +572,5 @@ export type FromDataExtensionsEditorMessage =
   | JumpToUsageMessage
   | SaveModeledMethods
   | GenerateExternalApiMessage
-  | GenerateExternalApiFromLlmMessage;
+  | GenerateExternalApiFromLlmMessage
+  | ModelDependencyMessage;

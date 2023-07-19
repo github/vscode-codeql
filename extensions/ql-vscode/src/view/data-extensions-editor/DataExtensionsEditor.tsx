@@ -215,6 +215,12 @@ export function DataExtensionsEditor({
     });
   }, [externalApiUsages, modeledMethods]);
 
+  const onModelDependencyClick = useCallback(() => {
+    vscode.postMessage({
+      t: "modelDependency",
+    });
+  }, []);
+
   const onGenerateFromLlmClick = useCallback(
     (
       externalApiUsages: ExternalApiUsage[],
@@ -323,6 +329,7 @@ export function DataExtensionsEditor({
               onSaveModelClick={onSaveModelClick}
               onGenerateFromLlmClick={onGenerateFromLlmClick}
               onGenerateFromSourceClick={onGenerateFromSourceClick}
+              onModelDependencyClick={onModelDependencyClick}
             />
           </EditorContainer>
         </>

@@ -139,6 +139,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
         );
 
         break;
+      case "modelDependency":
+        break;
       case "switchMode":
         this.mode = msg.mode;
 
