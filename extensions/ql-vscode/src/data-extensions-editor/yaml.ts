@@ -168,12 +168,15 @@ export function createDataExtensionYamlsForFrameworkMode(
 
   const methods: Record<string, ModeledMethod> = {};
 
+  // First populate methodsByLibraryFilename with any existing modeled methods.
   for (const [signature, method] of Object.entries(
     existingModeledMethods[filename] || {},
   )) {
     methods[signature] = method;
   }
 
+  // Add the new modeled methods, potentially overwriting existing modeled methods
+  // but not removing existing modeled methods that are not in the new set.
   for (const externalApiUsage of externalApiUsages) {
     const modeledMethod = newModeledMethods[externalApiUsage.signature];
     if (modeledMethod) {
