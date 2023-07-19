@@ -85,6 +85,7 @@ export async function promptImportInternetDatabase(
  * @param credentials the credentials to use to authenticate with GitHub
  * @param progress the progress callback
  * @param cli the CodeQL CLI server
+ * @param language the language to download. If undefined, the user will be prompted to choose a language.
  */
 export async function promptImportGithubDatabase(
   commandManager: AppCommandManager,
@@ -93,6 +94,7 @@ export async function promptImportGithubDatabase(
   credentials: Credentials | undefined,
   progress: ProgressCallback,
   cli?: CodeQLCliServer,
+  language?: string,
 ): Promise<DatabaseItem | undefined> {
   const githubRepo = await askForGitHubRepo(progress);
   if (!githubRepo) {
@@ -106,6 +108,7 @@ export async function promptImportGithubDatabase(
     credentials,
     progress,
     cli,
+    language,
   );
 
   if (databaseItem) {

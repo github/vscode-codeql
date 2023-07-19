@@ -14,7 +14,7 @@ import {
   FromDataExtensionsEditorMessage,
   ToDataExtensionsEditorMessage,
 } from "../common/interface-types";
-import { ProgressUpdate } from "../common/vscode/progress";
+import { ProgressUpdate, withProgress } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
 import {
   showAndLogExceptionWithTelemetry,
@@ -44,6 +44,7 @@ import { getAutoModelUsages } from "./auto-model-usages-query";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { join } from "path";
+import { pickExtensionPack } from "./extension-pack-picker";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -140,6 +141,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "modelDependency":
+        await this.modelDependency();
+
         break;
       case "switchMode":
         this.mode = msg.mode;
@@ -428,6 +431,61 @@ export class DataExtensionsEditorView extends AbstractWebview<
     });
 
     await this.clearProgress();
+  }
+
+  private async modelDependency(): Promise<void> {
+    return withProgress(async (progress, token) => {
+      const selectedDatabase = this.databaseManager.currentDatabaseItem;
+
+      // The external API methods are in the library source code, so we need to ask
+      // the user to import the library database. We need to have the database
+      // imported to the query server, so we need to register it to our workspace.
+      const addedDatabase = await promptImportGithubDatabase(
+        this.app.commands,
+        this.databaseManager,
+        this.app.workspaceStoragePath ?? this.app.globalStoragePath,
+        this.app.credentials,
+        progress,
+        this.cliServer,
+        this.databaseItem.language,
+      );
+      if (!addedDatabase) {
+        void this.app.logger.log("No database chosen");
+        return;
+      }
+
+      // The library database was set as the current database by importing it,
+      // but we need to set it back to the originally selected database.
+      await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
+
+      if (token.isCancellationRequested) {
+        return;
+      }
+
+      const modelFile = await pickExtensionPack(
+        this.cliServer,
+        addedDatabase,
+        this.app.logger,
+        progress,
+        token,
+      );
+      if (!modelFile) {
+        return;
+      }
+
+      const view = new DataExtensionsEditorView(
+        this.ctx,
+        this.app,
+        this.databaseManager,
+        this.cliServer,
+        this.queryRunner,
+        this.queryStorageDir,
+        addedDatabase,
+        modelFile,
+        Mode.Framework,
+      );
+      await view.openView();
+    });
   }
 
   /*
