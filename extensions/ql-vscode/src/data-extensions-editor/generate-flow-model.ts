@@ -14,7 +14,7 @@ import { QueryResultType } from "../query-server/new-messages";
 import { file } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
-import { qlpackOfDatabase } from "../language-support";
+import { qlpackOfDatabase } from "../local-queries";
 import { telemetryListener } from "../common/vscode/telemetry";
 
 type FlowModelOptions = {

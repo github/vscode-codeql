@@ -1,14 +1,8 @@
-import { writeFile, promises } from "fs-extra";
-import { dump } from "js-yaml";
-import { file } from "tmp-promise";
+import { promises } from "fs-extra";
 import { basename, dirname, resolve } from "path";
 
 import { getOnDiskWorkspaceFolders } from "../../common/vscode/workspace-folders";
-import {
-  getPrimaryDbscheme,
-  getQlPackForDbscheme,
-  QlPacksForLanguage,
-} from "../../databases/qlpack";
+import { QlPacksForLanguage } from "../../databases/qlpack";
 import {
   KeyType,
   kindOfKeyType,
@@ -17,97 +11,23 @@ import {
 } from "./key-type";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseItem } from "../../databases/local-databases";
+import { resolveQueries as resolveLocalQueries } from "../../local-queries/query-resolver";
 import { extLogger } from "../../common/logging/vscode";
-import {
-  showAndLogExceptionWithTelemetry,
-  TeeLogger,
-} from "../../common/logging";
+import { TeeLogger } from "../../common/logging";
 import { CancellationToken } from "vscode";
 import { ProgressCallback } from "../../common/vscode/progress";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
-import { redactableError } from "../../common/errors";
 import { QLPACK_FILENAMES } from "../../common/ql";
-import { telemetryListener } from "../../common/vscode/telemetry";
-
-export async function qlpackOfDatabase(
-  cli: Pick<CodeQLCliServer, "resolveQlpacks">,
-  db: Pick<DatabaseItem, "contents">,
-): Promise<QlPacksForLanguage> {
-  if (db.contents === undefined) {
-    throw new Error("Database is invalid and cannot infer QLPack.");
-  }
-  const datasetPath = db.contents.datasetUri.fsPath;
-  const dbscheme = await getPrimaryDbscheme(datasetPath);
-  return await getQlPackForDbscheme(cli, dbscheme);
-}
-
-/**
- * Finds the contextual queries with the specified key in a list of CodeQL packs.
- *
- * @param cli The CLI instance to use.
- * @param qlpacks The list of packs to search.
- * @param keyType The contextual query key of the query to search for.
- * @returns The found queries from the first pack in which any matching queries were found.
- */
-async function resolveQueriesFromPacks(
-  cli: CodeQLCliServer,
-  qlpacks: string[],
-  keyType: KeyType,
-): Promise<string[]> {
-  const suiteFile = (
-    await file({
-      postfix: ".qls",
-    })
-  ).path;
-  const suiteYaml = [];
-  for (const qlpack of qlpacks) {
-    suiteYaml.push({
-      from: qlpack,
-      queries: ".",
-      include: {
-        kind: kindOfKeyType(keyType),
-        "tags contain": tagOfKeyType(keyType),
-      },
-    });
-  }
-  await writeFile(suiteFile, dump(suiteYaml), "utf8");
-
-  const queries = await cli.resolveQueriesInSuite(
-    suiteFile,
-    getOnDiskWorkspaceFolders(),
-  );
-  return queries;
-}
 
 export async function resolveQueries(
   cli: CodeQLCliServer,
   qlpacks: QlPacksForLanguage,
   keyType: KeyType,
 ): Promise<string[]> {
-  const packsToSearch: string[] = [];
-
-  // The CLI can handle both library packs and query packs, so search both packs in order.
-  packsToSearch.push(qlpacks.dbschemePack);
-  if (qlpacks.queryPack !== undefined) {
-    packsToSearch.push(qlpacks.queryPack);
-  }
-
-  const queries = await resolveQueriesFromPacks(cli, packsToSearch, keyType);
-  if (queries.length > 0) {
-    return queries;
-  }
-
-  // No queries found. Determine the correct error message for the various scenarios.
-  const keyTypeName = nameOfKeyType(keyType);
-  const keyTypeTag = tagOfKeyType(keyType);
-  const joinedPacksToSearch = packsToSearch.join(", ");
-  const error = redactableError`No ${keyTypeName} queries (tagged "${keyTypeTag}") could be found in the \
-current library path (tried searching the following packs: ${joinedPacksToSearch}). \
-Try upgrading the CodeQL libraries. If that doesn't work, then ${keyTypeName} queries are not yet available \
-for this language.`;
-
-  void showAndLogExceptionWithTelemetry(extLogger, telemetryListener, error);
-  throw error;
+  return resolveLocalQueries(cli, qlpacks, nameOfKeyType(keyType), {
+    kind: kindOfKeyType(keyType),
+    "tags contain": [tagOfKeyType(keyType)],
+  });
 }
 
 async function resolveContextualQuery(
