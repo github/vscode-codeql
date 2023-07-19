@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Links to code on GitHub now include column numbers as well as line numbers. [#2406](https://github.com/github/vscode-codeql/pull/2406)
 - Remove support for CodeQL CLI versions older than 2.9.4. [#2610](https://github.com/github/vscode-codeql/pull/2610)
 - Implement syntax highlighting for the `additional` and `default` keywords. [#2609](https://github.com/github/vscode-codeql/pull/2609)
 
