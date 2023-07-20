@@ -1,41 +1,36 @@
 import { CoreCompletedQuery, QueryRunner } from "../query-server";
-import { dir } from "tmp-promise";
-import { writeFile } from "fs-extra";
-import { dump as dumpYaml } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { extLogger } from "../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry, TeeLogger } from "../common/logging";
-import { isQueryLanguage } from "../common/query-language";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseItem } from "../databases/local-databases";
 import { ProgressCallback } from "../common/vscode/progress";
-import { fetchExternalApiQueries } from "./queries";
 import { QueryResultType } from "../query-server/new-messages";
-import { join } from "path";
 import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
-import { Query } from "./queries/query";
+import { join } from "path";
 
 type RunQueryOptions = {
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">;
   queryRunner: Pick<QueryRunner, "createQueryRun" | "logger">;
   databaseItem: Pick<DatabaseItem, "contents" | "databaseUri" | "language">;
   queryStorageDir: string;
+  queryDir: string;
 
   progress: ProgressCallback;
   token: CancellationToken;
 };
 
 export async function runQuery(
-  queryName: keyof Omit<Query, "dependencies">,
+  mode: string,
   {
     cliServer,
     queryRunner,
     databaseItem,
     queryStorageDir,
-    progress,
     queryDir,
+    progress,
     token,
   }: RunQueryOptions,
 ): Promise<CoreCompletedQuery | undefined> {
@@ -45,25 +40,6 @@ export async function runQuery(
   // For a reference of what this should do in the future, see the previous implementation in
   // https://github.com/github/vscode-codeql/blob/089d3566ef0bc67d9b7cc66e8fd6740b31c1c0b0/extensions/ql-vscode/src/data-extensions-editor/external-api-usage-query.ts#L33-L72
 
-  if (!isQueryLanguage(databaseItem.language)) {
-    void showAndLogExceptionWithTelemetry(
-      extLogger,
-      telemetryListener,
-      redactableError`Unsupported database language ${databaseItem.language}`,
-    );
-    return;
-  }
-
-  const query = fetchExternalApiQueries[databaseItem.language];
-  if (!query) {
-    void showAndLogExceptionWithTelemetry(
-      extLogger,
-      telemetryListener,
-      redactableError`No external API usage query found for language ${databaseItem.language}`,
-    );
-    return;
-  }
-
   // TODO: install dependencies
 
   const additionalPacks = getOnDiskWorkspaceFolders();
@@ -71,10 +47,14 @@ export async function runQuery(
     await cliServer.resolveQlpacks(additionalPacks, true),
   );
 
+  const queryFile = join(
+    queryDir,
+    `FetchExternalApis${mode.charAt(0).toUpperCase() + mode.slice(1)}Mode.ql`,
+  );
+
   const queryRun = queryRunner.createQueryRun(
     databaseItem.databaseUri.fsPath,
     {
-      // TODO: select correct query file based on the `queryName` and `queryDir`
       queryPath: queryFile,
       quickEvalPosition: undefined,
       quickEvalCountOnly: false,

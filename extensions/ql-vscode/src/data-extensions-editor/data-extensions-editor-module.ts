@@ -4,12 +4,23 @@ import { DataExtensionsEditorCommands } from "../common/commands";
 import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
 import { DatabaseManager } from "../databases/local-databases";
-import { ensureDir } from "fs-extra";
+import { ensureDir, writeFile } from "fs-extra";
 import { join } from "path";
 import { App } from "../common/app";
 import { withProgress } from "../common/vscode/progress";
 import { pickExtensionPack } from "./extension-pack-picker";
-import { showAndLogErrorMessage } from "../common/logging";
+import {
+  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
+} from "../common/logging";
+import { dir } from "tmp-promise";
+import { dump as dumpYaml } from "js-yaml";
+import { fetchExternalApiQueries } from "./queries";
+import { telemetryListener } from "../common/vscode/telemetry";
+import { redactableError } from "../common/errors";
+import { extLogger } from "../common/logging/vscode";
+import { isQueryLanguage } from "../common/query-language";
+import { Mode } from "./shared/mode";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
@@ -99,13 +110,37 @@ export class DataExtensionsEditorModule {
               return;
             }
 
-            // TODO: Copy the files to a temporary directory and install pack dependencies
-
+            // Create new temporary directory for query files and pack dependencies
             const queryDir = (await dir({ unsafeCleanup: true })).path;
 
-            // TODO: Write both the application mode and framework mode query
-            const queryFile = join(queryDir, "FetchExternalApis.ql");
-            await writeFile(queryFile, query[queryName], "utf8");
+            if (!isQueryLanguage(db.language)) {
+              void showAndLogExceptionWithTelemetry(
+                extLogger,
+                telemetryListener,
+                redactableError`Unsupported database language ${db.language}`,
+              );
+              return;
+            }
+
+            const query = fetchExternalApiQueries[db.language];
+            if (!query) {
+              void showAndLogExceptionWithTelemetry(
+                extLogger,
+                telemetryListener,
+                redactableError`No external API usage query found for language ${db.language}`,
+              );
+              return;
+            }
+
+            Object.values(Mode).map(async (mode) => {
+              const queryFile = join(
+                queryDir,
+                `FetchExternalApis${
+                  mode.charAt(0).toUpperCase() + mode.slice(1)
+                }Mode.ql`,
+              );
+              await writeFile(queryFile, query[`${mode}ModeQuery`], "utf8");
+            });
 
             if (query.dependencies) {
               for (const [filename, contents] of Object.entries(
@@ -120,14 +155,15 @@ export class DataExtensionsEditorModule {
               name: "codeql/external-api-usage",
               version: "0.0.0",
               dependencies: {
-                [`codeql/${databaseItem.language}-all`]: "*",
+                [`codeql/${db.language}-all`]: "*",
               },
             };
 
             const qlpackFile = join(queryDir, "codeql-pack.yml");
             await writeFile(qlpackFile, dumpYaml(syntheticQueryPack), "utf8");
 
-            // TODO: install pack dependencies in temporary file (`codeql pack install`)
+            // TODO: test dependency installation
+            await this.cliServer.packInstall(queryDir);
 
             const view = new DataExtensionsEditorView(
               this.ctx,
