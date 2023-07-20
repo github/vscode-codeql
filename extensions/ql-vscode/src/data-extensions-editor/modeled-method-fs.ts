@@ -3,13 +3,9 @@ import { ExternalApiUsage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { Mode } from "./shared/mode";
 import { createDataExtensionYamls, loadDataExtensionYaml } from "./yaml";
-import { join } from "path";
+import { join, relative } from "path";
 import { ExtensionPack } from "./shared/extension-pack";
-import {
-  Logger,
-  NotificationLogger,
-  showAndLogErrorMessage,
-} from "../common/logging";
+import { NotificationLogger, showAndLogErrorMessage } from "../common/logging";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { load as loadYaml } from "js-yaml";
 import { CodeQLCliServer } from "../codeql-cli/cli";
@@ -22,13 +18,21 @@ export async function saveModeledMethods(
   externalApiUsages: ExternalApiUsage[],
   modeledMethods: Record<string, ModeledMethod>,
   mode: Mode,
-  logger: Logger,
+  cliServer: CodeQLCliServer,
+  logger: NotificationLogger,
 ): Promise<void> {
+  const existingModeledMethods = await loadModeledMethodFiles(
+    extensionPack,
+    cliServer,
+    logger,
+  );
+
   const yamls = createDataExtensionYamls(
     databaseName,
     language,
     externalApiUsages,
     modeledMethods,
+    existingModeledMethods,
     mode,
   );
 
@@ -39,17 +43,20 @@ export async function saveModeledMethods(
   void logger.log(`Saved data extension YAML`);
 }
 
-export async function loadModeledMethods(
+async function loadModeledMethodFiles(
   extensionPack: ExtensionPack,
   cliServer: CodeQLCliServer,
   logger: NotificationLogger,
-): Promise<Record<string, ModeledMethod>> {
+): Promise<Record<string, Record<string, ModeledMethod>>> {
   const modelFiles = await listModelFiles(extensionPack.path, cliServer);
 
-  const existingModeledMethods: Record<string, ModeledMethod> = {};
+  const modeledMethodsByFile: Record<
+    string,
+    Record<string, ModeledMethod>
+  > = {};
 
   for (const modelFile of modelFiles) {
-    const yaml = await readFile(modelFile, "utf8");
+    const yaml = await readFile(join(extensionPack.path, modelFile), "utf8");
 
     const data = loadYaml(yaml, {
       filename: modelFile,
@@ -63,7 +70,25 @@ export async function loadModeledMethods(
       );
       continue;
     }
+    modeledMethodsByFile[modelFile] = modeledMethods;
+  }
 
+  return modeledMethodsByFile;
+}
+
+export async function loadModeledMethods(
+  extensionPack: ExtensionPack,
+  cliServer: CodeQLCliServer,
+  logger: NotificationLogger,
+): Promise<Record<string, ModeledMethod>> {
+  const existingModeledMethods: Record<string, ModeledMethod> = {};
+
+  const modeledMethodsByFile = await loadModeledMethodFiles(
+    extensionPack,
+    cliServer,
+    logger,
+  );
+  for (const modeledMethods of Object.values(modeledMethodsByFile)) {
     for (const [key, value] of Object.entries(modeledMethods)) {
       existingModeledMethods[key] = value;
     }
@@ -85,7 +110,7 @@ export async function listModelFiles(
   for (const [path, extensions] of Object.entries(result.data)) {
     if (pathsEqual(path, extensionPackPath)) {
       for (const extension of extensions) {
-        modelFiles.add(extension.file);
+        modelFiles.add(relative(extensionPackPath, extension.file));
       }
     }
   }
