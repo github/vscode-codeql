@@ -24,6 +24,7 @@ DataExtensionsEditor.args = {
         "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o/codeql-pack.yml",
       name: "codeql/sql2o-models",
       version: "0.0.0",
+      language: "java",
       extensionTargets: {},
       dataExtensions: [],
     },

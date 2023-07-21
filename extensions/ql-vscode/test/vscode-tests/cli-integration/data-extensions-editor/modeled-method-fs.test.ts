@@ -112,6 +112,7 @@ describe("modeled-method-fs", () => {
       yamlPath: path,
       name: "dummy/pack",
       version: "0.0.1",
+      language: "java",
       extensionTargets: {},
       dataExtensions: [],
     };
