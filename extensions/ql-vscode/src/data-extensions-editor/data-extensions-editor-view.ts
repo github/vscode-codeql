@@ -296,7 +296,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     // In application mode, we need the database of a specific library to generate
     // the modeled methods. In framework mode, we'll use the current database.
     if (this.mode === Mode.Application) {
-      addedDatabase = await this.promptImportAndResetDatabase((update) =>
+      addedDatabase = await this.promptImportDatabase((update) =>
         this.showProgress(update),
       );
       if (!addedDatabase) {
@@ -426,7 +426,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
   private async modelDependency(): Promise<void> {
     return withProgress(async (progress, token) => {
-      const addedDatabase = await this.promptImportAndResetDatabase(progress);
+      const addedDatabase = await this.promptImportDatabase(progress);
       if (!addedDatabase || token.isCancellationRequested) {
         return;
       }
@@ -457,14 +457,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
     });
   }
 
-  private async promptImportAndResetDatabase(
+  private async promptImportDatabase(
     progress: ProgressCallback,
   ): Promise<DatabaseItem | undefined> {
-    const selectedDatabase = this.databaseManager.currentDatabaseItem;
-
     // The external API methods are in the library source code, so we need to ask
     // the user to import the library database. We need to have the database
     // imported to the query server, so we need to register it to our workspace.
+    const makeSelected = false;
     const addedDatabase = await promptImportGithubDatabase(
       this.app.commands,
       this.databaseManager,
@@ -473,15 +472,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
       progress,
       this.cliServer,
       this.databaseItem.language,
+      makeSelected,
     );
     if (!addedDatabase) {
       void this.app.logger.log("No database chosen");
-      return undefined;
+      return;
     }
-
-    // The library database was set as the current database by importing it,
-    // but we need to set it back to the originally selected database.
-    await this.databaseManager.setCurrentDatabaseItem(selectedDatabase);
 
     return addedDatabase;
   }
