@@ -49,6 +49,7 @@ import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { join } from "path";
 import { pickExtensionPack } from "./extension-pack-picker";
+import { getLanguageDisplayName } from "../common/query-language";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -78,7 +79,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
     return {
       viewId: "data-extensions-editor",
-      title: "Data Extensions Editor",
+      title: `Modeling ${getLanguageDisplayName(
+        this.extensionPack.language,
+      )} (${this.extensionPack.name})`,
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
       view: "data-extensions-editor",

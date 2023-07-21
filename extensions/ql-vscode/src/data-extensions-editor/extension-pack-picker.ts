@@ -88,7 +88,7 @@ export async function pickExtensionPack(
 
         let extensionPack: ExtensionPack;
         try {
-          extensionPack = await readExtensionPack(path);
+          extensionPack = await readExtensionPack(path, databaseItem.language);
         } catch (e: unknown) {
           void showAndLogErrorMessage(
             logger,
@@ -253,7 +253,10 @@ async function autoCreateExtensionPack(
   if (existingExtensionPackPaths?.length === 1) {
     let extensionPack: ExtensionPack;
     try {
-      extensionPack = await readExtensionPack(existingExtensionPackPaths[0]);
+      extensionPack = await readExtensionPack(
+        existingExtensionPackPaths[0],
+        language,
+      );
     } catch (e: unknown) {
       void showAndLogErrorMessage(
         logger,
@@ -317,6 +320,7 @@ async function writeExtensionPack(
     yamlPath: packYamlPath,
     name: formatPackName(packName),
     version: "0.0.0",
+    language,
     extensionTargets: {
       [`codeql/${language}-all`]: "*",
     },
@@ -337,7 +341,10 @@ async function writeExtensionPack(
   return extensionPack;
 }
 
-async function readExtensionPack(path: string): Promise<ExtensionPack> {
+async function readExtensionPack(
+  path: string,
+  language: string,
+): Promise<ExtensionPack> {
   const qlpackPath = await getQlPackPath(path);
   if (!qlpackPath) {
     throw new Error(
@@ -374,6 +381,7 @@ async function readExtensionPack(path: string): Promise<ExtensionPack> {
     yamlPath: qlpackPath,
     name: qlpack.name,
     version: qlpack.version,
+    language,
     extensionTargets: qlpack.extensionTargets,
     dataExtensions,
   };

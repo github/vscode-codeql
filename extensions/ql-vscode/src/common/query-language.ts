@@ -9,6 +9,29 @@ export enum QueryLanguage {
   Swift = "swift",
 }
 
+export function getLanguageDisplayName(language: string): string {
+  switch (language) {
+    case QueryLanguage.CSharp:
+      return "C#";
+    case QueryLanguage.Cpp:
+      return "C / C++";
+    case QueryLanguage.Go:
+      return "Go";
+    case QueryLanguage.Java:
+      return "Java";
+    case QueryLanguage.Javascript:
+      return "JavaScript";
+    case QueryLanguage.Python:
+      return "Python";
+    case QueryLanguage.Ruby:
+      return "Ruby";
+    case QueryLanguage.Swift:
+      return "Swift";
+    default:
+      return language;
+  }
+}
+
 export const PACKS_BY_QUERY_LANGUAGE = {
   [QueryLanguage.Cpp]: ["codeql/cpp-queries"],
   [QueryLanguage.CSharp]: [
