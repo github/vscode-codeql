@@ -1428,21 +1428,13 @@ export class CodeQLCliServer implements Disposable {
 
   async packPacklist(dir: string, includeQueries: boolean): Promise<string[]> {
     const args = includeQueries ? [dir] : ["--no-include-queries", dir];
-    // since 2.7.1, packlist returns an object with a "paths" property that is a list of packs.
-    // previous versions return a list of packs.
-    const results: { paths: string[] } | string[] =
-      await this.runJsonCodeQlCliCommand(
-        ["pack", "packlist"],
-        args,
-        "Generating the pack list",
-      );
+    const results: { paths: string[] } = await this.runJsonCodeQlCliCommand(
+      ["pack", "packlist"],
+      args,
+      "Generating the pack list",
+    );
 
-    // Once we no longer need to support 2.7.0 or earlier, we can remove this and assume all versions return an object.
-    if ("paths" in results) {
-      return results.paths;
-    } else {
-      return results;
-    }
+    return results.paths;
   }
 
   async packResolveDependencies(
