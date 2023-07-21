@@ -1,5 +1,3 @@
-export const PAGE_SIZE = 1000;
-
 /**
  * The single-character codes used in the bqrs format for the the kind
  * of a result column. This namespace is intentionally not an enum, see
