@@ -89,12 +89,6 @@ export interface RemoteRepoDbItem {
   parentListName?: string;
 }
 
-export function isRemoteSystemDefinedListDbItem(
-  dbItem: DbItem,
-): dbItem is RemoteSystemDefinedListDbItem {
-  return dbItem.kind === DbItemKind.RemoteSystemDefinedList;
-}
-
 export function isRemoteUserDefinedListDbItem(
   dbItem: DbItem,
 ): dbItem is RemoteUserDefinedListDbItem {
