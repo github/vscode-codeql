@@ -9,7 +9,7 @@ export interface DbConfig {
   selected?: SelectedDbItem;
 }
 
-export interface DbConfigDatabases {
+interface DbConfigDatabases {
   variantAnalysis: RemoteDbConfig;
   local: LocalDbConfig;
 }
@@ -31,39 +31,39 @@ export enum SelectedDbItemKind {
   VariantAnalysisRepository = "variantAnalysisRepository",
 }
 
-export interface SelectedLocalUserDefinedList {
+interface SelectedLocalUserDefinedList {
   kind: SelectedDbItemKind.LocalUserDefinedList;
   listName: string;
 }
 
-export interface SelectedLocalDatabase {
+interface SelectedLocalDatabase {
   kind: SelectedDbItemKind.LocalDatabase;
   databaseName: string;
   listName?: string;
 }
 
-export interface SelectedRemoteSystemDefinedList {
+interface SelectedRemoteSystemDefinedList {
   kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList;
   listName: string;
 }
 
-export interface SelectedVariantAnalysisUserDefinedList {
+interface SelectedVariantAnalysisUserDefinedList {
   kind: SelectedDbItemKind.VariantAnalysisUserDefinedList;
   listName: string;
 }
 
-export interface SelectedRemoteOwner {
+interface SelectedRemoteOwner {
   kind: SelectedDbItemKind.VariantAnalysisOwner;
   ownerName: string;
 }
 
-export interface SelectedRemoteRepository {
+interface SelectedRemoteRepository {
   kind: SelectedDbItemKind.VariantAnalysisRepository;
   repositoryName: string;
   listName?: string;
 }
 
-export interface RemoteDbConfig {
+interface RemoteDbConfig {
   repositoryLists: RemoteRepositoryList[];
   owners: string[];
   repositories: string[];
@@ -74,7 +74,7 @@ export interface RemoteRepositoryList {
   repositories: string[];
 }
 
-export interface LocalDbConfig {
+interface LocalDbConfig {
   lists: LocalList[];
   databases: LocalDatabase[];
 }

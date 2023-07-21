@@ -2,7 +2,7 @@ import { NotificationLogger } from "./notification-logger";
 import { AppTelemetry } from "../telemetry";
 import { RedactableError } from "../errors";
 
-export interface ShowAndLogOptions {
+interface ShowAndLogOptions {
   /**
    * An alternate message that is added to the log, but not displayed in the popup.
    * This is useful for adding extra detail to the logs that would be too noisy for the popup.

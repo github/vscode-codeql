@@ -26,7 +26,7 @@ const createCacheKey = (
   repositoryFullName: string,
 ): CacheKey => `${variantAnalysisId}/${repositoryFullName}`;
 
-export type ResultDownloadedEvent = {
+type ResultDownloadedEvent = {
   variantAnalysisId: number;
   repoTask: VariantAnalysisRepositoryTask;
 };

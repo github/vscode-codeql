@@ -20,7 +20,7 @@ import type {
 } from "./shared/variant-analysis";
 import type { RepositoryWithMetadata } from "./shared/repository";
 
-export type MarkdownLinkType = "local" | "gist";
+type MarkdownLinkType = "local" | "gist";
 
 export interface MarkdownFile {
   fileName: string;
@@ -33,7 +33,7 @@ export interface RepositorySummary {
   resultCount: number;
 }
 
-export interface VariantAnalysisMarkdown {
+interface VariantAnalysisMarkdown {
   markdownFiles: MarkdownFile[];
   summaries: RepositorySummary[];
 }
@@ -105,7 +105,7 @@ export async function generateVariantAnalysisMarkdown(
   };
 }
 
-export function generateVariantAnalysisMarkdownSummary(
+function generateVariantAnalysisMarkdownSummary(
   query: VariantAnalysis["query"],
   summaries: RepositorySummary[],
   linkType: MarkdownLinkType,
@@ -356,7 +356,7 @@ function generateMarkdownForRawTableCell(
  * Creates a markdown link to a remote file.
  * If the "link text" is not provided, we use the file path.
  */
-export function createMarkdownRemoteFileRef(
+function createMarkdownRemoteFileRef(
   fileLink: FileLink,
   region?: HighlightedRegion,
   linkText?: string,

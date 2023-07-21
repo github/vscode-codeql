@@ -94,7 +94,7 @@ const SHOW_QUERY_TEXT_QUICK_EVAL_MSG = `\
 
 `;
 
-export enum SortOrder {
+enum SortOrder {
   NameAsc = "NameAsc",
   NameDesc = "NameDesc",
   DateAsc = "DateAsc",

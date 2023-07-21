@@ -23,10 +23,10 @@ import { AlertTableHeader } from "./alert-table-header";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { SarifLocation } from "./locations/SarifLocation";
 
-export type AlertTableProps = ResultTableProps & {
+type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
 };
-export interface AlertTableState {
+interface AlertTableState {
   expanded: Set<string>;
   selectedItem: undefined | Keys.ResultKey;
 }

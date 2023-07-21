@@ -1,6 +1,6 @@
 import { DbItem, DbItemKind, isSelectableDbItem } from "../db-item";
 
-export type DbTreeViewItemAction =
+type DbTreeViewItemAction =
   | "canBeSelected"
   | "canBeRemoved"
   | "canBeRenamed"

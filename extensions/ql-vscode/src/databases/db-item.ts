@@ -115,7 +115,7 @@ export function isLocalDatabaseDbItem(
   return dbItem.kind === DbItemKind.LocalDatabase;
 }
 
-export type SelectableDbItem = RemoteDbItem | LocalDbItem;
+type SelectableDbItem = RemoteDbItem | LocalDbItem;
 
 export function isSelectableDbItem(dbItem: DbItem): dbItem is SelectableDbItem {
   return SelectableDbItemKinds.includes(dbItem.kind);

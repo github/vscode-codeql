@@ -33,7 +33,7 @@ const FILE_PATH_REGEX = /^(?:.+[\\/])*(.+)$/;
 /**
  * Properties for the `ResultTables` component.
  */
-export interface ResultTablesProps {
+interface ResultTablesProps {
   parsedResultSets: ParsedResultSets;
   rawResultSets: readonly ResultSet[];
   interpretation: Interpretation | undefined;
@@ -440,7 +440,7 @@ export class ResultTables extends React.Component<
   }
 }
 
-export function ResultTable(props: ResultTableProps) {
+function ResultTable(props: ResultTableProps) {
   const { resultSet } = props;
   switch (resultSet.t) {
     case "RawResultSet":

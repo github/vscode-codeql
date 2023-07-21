@@ -4,11 +4,11 @@ export interface PipelineRun {
   duplicationPercentages: number[];
 }
 
-export interface Ra {
+interface Ra {
   [key: string]: string[];
 }
 
-export type EvaluationStrategy =
+type EvaluationStrategy =
   | "COMPUTE_SIMPLE"
   | "COMPUTE_RECURSIVE"
   | "IN_LAYER"
@@ -58,30 +58,30 @@ export interface InLayer extends ResultEventBase {
   predicateIterationMillis: number[];
 }
 
-export interface ComputedExtensional extends ResultEventBase {
+interface ComputedExtensional extends ResultEventBase {
   evaluationStrategy: "COMPUTED_EXTENSIONAL";
   queryCausingWork?: string;
 }
 
-export interface NonComputedExtensional extends ResultEventBase {
+interface NonComputedExtensional extends ResultEventBase {
   evaluationStrategy: "EXTENSIONAL";
   queryCausingWork?: string;
 }
 
-export interface SentinelEmpty extends SummaryEventBase {
+interface SentinelEmpty extends SummaryEventBase {
   evaluationStrategy: "SENTINEL_EMPTY";
   sentinelRaHash: string;
 }
 
-export interface Cachaca extends ResultEventBase {
+interface Cachaca extends ResultEventBase {
   evaluationStrategy: "CACHACA";
 }
 
-export interface CacheHit extends ResultEventBase {
+interface CacheHit extends ResultEventBase {
   evaluationStrategy: "CACHE_HIT";
 }
 
-export type Extensional = ComputedExtensional | NonComputedExtensional;
+type Extensional = ComputedExtensional | NonComputedExtensional;
 
 export type SummaryEvent =
   | ComputeSimple

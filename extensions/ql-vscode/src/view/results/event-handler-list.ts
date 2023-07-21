@@ -1,4 +1,4 @@
-export type EventHandler<T> = (event: T) => void;
+type EventHandler<T> = (event: T) => void;
 
 /**
  * A set of listeners for events of type `T`.

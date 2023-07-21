@@ -118,7 +118,7 @@ class Tracker implements DebugAdapterTracker {
  * code consumes these events and asserts that they are in the correct order and have the correct
  * data.
  */
-export type DebugEventKind =
+type DebugEventKind =
   | "launched"
   | "evaluationCompleted"
   | "terminated"
@@ -126,39 +126,39 @@ export type DebugEventKind =
   | "exited"
   | "sessionClosed";
 
-export interface DebugEvent {
+interface DebugEvent {
   kind: DebugEventKind;
 }
 
-export interface LaunchedEvent extends DebugEvent {
+interface LaunchedEvent extends DebugEvent {
   kind: "launched";
   request: CodeQLProtocol.LaunchRequest;
 }
 
-export interface EvaluationCompletedEvent extends DebugEvent {
+interface EvaluationCompletedEvent extends DebugEvent {
   kind: "evaluationCompleted";
   started: CodeQLProtocol.EvaluationStartedEvent["body"];
   results: CoreCompletedQuery;
 }
 
-export interface TerminatedEvent extends DebugEvent {
+interface TerminatedEvent extends DebugEvent {
   kind: "terminated";
 }
 
-export interface StoppedEvent extends DebugEvent {
+interface StoppedEvent extends DebugEvent {
   kind: "stopped";
 }
 
-export interface ExitedEvent extends DebugEvent {
+interface ExitedEvent extends DebugEvent {
   kind: "exited";
   body: CodeQLProtocol.ExitedEvent["body"];
 }
 
-export interface SessionClosedEvent extends DebugEvent {
+interface SessionClosedEvent extends DebugEvent {
   kind: "sessionClosed";
 }
 
-export type AnyDebugEvent =
+type AnyDebugEvent =
   | LaunchedEvent
   | EvaluationCompletedEvent
   | StoppedEvent
@@ -171,7 +171,7 @@ export type AnyDebugEvent =
  * async functions, and consumes events reported by the session to ensure the correct sequence and
  * data.
  */
-export class DebugController
+class DebugController
   extends DisposableObject
   implements DebugAdapterTrackerFactory
 {

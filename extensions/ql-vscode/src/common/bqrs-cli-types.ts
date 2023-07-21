@@ -13,7 +13,7 @@ export namespace ColumnKindCode {
   export const ENTITY = "e";
 }
 
-export type ColumnKind =
+type ColumnKind =
   | typeof ColumnKindCode.FLOAT
   | typeof ColumnKindCode.INTEGER
   | typeof ColumnKindCode.STRING
@@ -44,7 +44,7 @@ export function getResultSetSchema(
   }
   return undefined;
 }
-export interface PaginationInfo {
+interface PaginationInfo {
   "step-size": number;
   offsets: number[];
 }
