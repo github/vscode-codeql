@@ -1732,6 +1732,7 @@
     "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
     "lint": "eslint . --ext .js,.ts,.tsx --max-warnings=0",
     "lint:markdown": "markdownlint-cli2 \"../../**/*.{md,mdx}\" \"!**/node_modules/**\" \"!**/.vscode-test/**\" \"!**/build/cli/v*/**\"",
+    "find-deadcode": "ts-unused-exports find-deadcode-tsconfig.json --showLineNumber --excludePathsFromReport=$(find src test -type f '(' -name jest.config.ts -or -name 'index.tsx' -or -name 'index.ts' ')' -print0 | tr '\\0' ';')'gulpfile.ts/;src/stories/;test/vscode-tests/jest-runner-installed-extensions.ts'",
     "format-staged": "lint-staged",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
