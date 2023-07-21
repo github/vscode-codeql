@@ -30,7 +30,7 @@ import {
 } from "../common/github-url-identifier-helper";
 import { Credentials } from "../common/authentication";
 import { AppCommandManager } from "../common/commands";
-import { ALLOW_HTTP_SETTING } from "../config";
+import { allowHttp } from "../config";
 import { showAndLogInformationMessage } from "../common/logging";
 
 /**
@@ -371,7 +371,7 @@ function validateUrl(databaseUrl: string) {
     throw new Error(`Invalid url: ${databaseUrl}`);
   }
 
-  if (!ALLOW_HTTP_SETTING.getValue() && uri.scheme !== "https") {
+  if (!allowHttp() && uri.scheme !== "https") {
     throw new Error("Must use https for downloading a database.");
   }
 }
