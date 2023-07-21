@@ -29,6 +29,7 @@ type Props = {
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
   onGenerateFromSourceClick: () => void;
+  onModelDependencyClick: () => void;
 };
 
 const libraryNameOverrides: Record<string, string> = {
@@ -44,6 +45,7 @@ export const ModeledMethodsList = ({
   onSaveModelClick,
   onGenerateFromLlmClick,
   onGenerateFromSourceClick,
+  onModelDependencyClick,
 }: Props) => {
   const grouped = useMemo(
     () => groupMethods(externalApiUsages, viewState.mode),
@@ -85,6 +87,7 @@ export const ModeledMethodsList = ({
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
           onGenerateFromSourceClick={onGenerateFromSourceClick}
+          onModelDependencyClick={onModelDependencyClick}
         />
       ))}
     </>

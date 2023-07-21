@@ -87,6 +87,7 @@ type Props = {
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
   onGenerateFromSourceClick: () => void;
+  onModelDependencyClick: () => void;
 };
 
 export const LibraryRow = ({
@@ -100,6 +101,7 @@ export const LibraryRow = ({
   onSaveModelClick,
   onGenerateFromLlmClick,
   onGenerateFromSourceClick,
+  onModelDependencyClick,
 }: Props) => {
   const modeledPercentage = useMemo(() => {
     return calculateModeledPercentage(externalApiUsages);
@@ -129,10 +131,14 @@ export const LibraryRow = ({
     [onGenerateFromSourceClick],
   );
 
-  const handleModelDependency = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-  }, []);
+  const handleModelDependency = useCallback(
+    async (e: React.MouseEvent) => {
+      onModelDependencyClick();
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    [onModelDependencyClick],
+  );
 
   const handleSave = useCallback(
     async (e: React.MouseEvent) => {
