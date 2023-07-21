@@ -592,10 +592,6 @@ export function isIntegrationTestMode() {
   return process.env.INTEGRATION_TEST_MODE === "true";
 }
 
-export function isVariantAnalysisLiveResultsEnabled(): boolean {
-  return true;
-}
-
 // Settings for mocking the GitHub API.
 const MOCK_GH_API_SERVER = new Setting("mockGitHubApiServer", ROOT_SETTING);
 
