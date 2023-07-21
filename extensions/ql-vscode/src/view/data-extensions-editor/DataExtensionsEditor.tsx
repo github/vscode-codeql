@@ -17,6 +17,7 @@ import { DataExtensionEditorViewState } from "../../data-extensions-editor/share
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../data-extensions-editor/shared/mode";
+import { getLanguageDisplayName } from "../../common/query-language";
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -266,7 +267,9 @@ export function DataExtensionsEditor({
 
       {externalApiUsages.length > 0 && (
         <>
-          <ViewTitle>{viewState.extensionPack.language}</ViewTitle>
+          <ViewTitle>
+            {getLanguageDisplayName(viewState.extensionPack.language)}
+          </ViewTitle>
           <DetailsContainer>
             <LinkIconButton onClick={onOpenExtensionPackClick}>
               <span slot="start" className="codicon codicon-package"></span>
