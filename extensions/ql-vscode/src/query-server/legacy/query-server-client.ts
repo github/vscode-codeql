@@ -150,13 +150,11 @@ export class QueryServerClient extends DisposableObject {
       args.push("--old-eval-stats");
     }
 
-    if (await this.cliServer.cliConstraints.supportsStructuredEvalLog()) {
-      const structuredLogFile = `${this.opts.contextStoragePath}/structured-evaluator-log.json`;
-      await ensureFile(structuredLogFile);
+    const structuredLogFile = `${this.opts.contextStoragePath}/structured-evaluator-log.json`;
+    await ensureFile(structuredLogFile);
 
-      args.push("--evaluator-log");
-      args.push(structuredLogFile);
-    }
+    args.push("--evaluator-log");
+    args.push(structuredLogFile);
 
     if (this.config.debug) {
       args.push("--debug", "--tuple-counting");

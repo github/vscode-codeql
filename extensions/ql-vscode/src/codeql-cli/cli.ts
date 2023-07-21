@@ -1804,12 +1804,6 @@ export class CliVersionConstraint {
   public static CLI_VERSION_WITH_RESOLVE_EXTENSIONS = new SemVer("2.10.2");
 
   /**
-   * CLI version where the `--evaluator-log` and related options to the query server were introduced,
-   * on a per-query server basis.
-   */
-  public static CLI_VERSION_WITH_STRUCTURED_EVAL_LOG = new SemVer("2.8.2");
-
-  /**
    * CLI version that supports rotating structured logs to produce one per query.
    *
    * Note that 2.8.4 supports generating the evaluation logs and summaries,
@@ -1882,12 +1876,6 @@ export class CliVersionConstraint {
   async supportsResolveExtensions() {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_EXTENSIONS,
-    );
-  }
-
-  async supportsStructuredEvalLog() {
-    return this.isVersionAtLeast(
-      CliVersionConstraint.CLI_VERSION_WITH_STRUCTURED_EVAL_LOG,
     );
   }
 
