@@ -64,12 +64,6 @@ export class Setting {
   }
 }
 
-export interface InspectionResult<T> {
-  globalValue?: T;
-  workspaceValue?: T;
-  workspaceFolderValue?: T;
-}
-
 const VSCODE_DEBUG_SETTING = new Setting("debug", undefined);
 export const VSCODE_SAVE_BEFORE_START_SETTING = new Setting(
   "saveBeforeStart",
