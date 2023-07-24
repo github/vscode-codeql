@@ -36,7 +36,6 @@ import {
 } from "./query-status";
 import { readQueryHistoryFromFile, writeQueryHistoryToFile } from "./store";
 import { pathExists } from "fs-extra";
-import { CliVersionConstraint } from "../codeql-cli/cli";
 import { HistoryItemLabelProvider } from "./history-item-label-provider";
 import { ResultsView, WebviewReveal } from "../local-queries";
 import { EvalLogTreeBuilder, EvalLogViewer } from "../query-evaluation-logging";
@@ -760,7 +759,7 @@ export class QueryHistoryManager extends DisposableObject {
   private warnNoEvalLogs() {
     void showAndLogWarningMessage(
       this.app.logger,
-      `Evaluator log, summary, and viewer are not available for this run. Perhaps it failed before evaluation, or you are running with a version of CodeQL before ' + ${CliVersionConstraint.CLI_VERSION_WITH_PER_QUERY_EVAL_LOG}?`,
+      `Evaluator log, summary, and viewer are not available for this run. Perhaps it failed before evaluation?`,
     );
   }
 

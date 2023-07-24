@@ -146,10 +146,6 @@ export class QueryServerClient extends DisposableObject {
 
     args.push("--require-db-registration");
 
-    if (!(await this.cliServer.cliConstraints.supportsPerQueryEvalLog())) {
-      args.push("--old-eval-stats");
-    }
-
     const structuredLogFile = `${this.opts.contextStoragePath}/structured-evaluator-log.json`;
     await ensureFile(structuredLogFile);
 
