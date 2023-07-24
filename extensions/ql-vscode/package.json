@@ -1077,17 +1077,17 @@
         {
           "command": "codeQLQueryHistory.showEvalLog",
           "group": "4_queryHistory@1",
-          "when": "codeql.supportsEvalLog && viewItem == rawResultsItem || codeql.supportsEvalLog && viewItem == interpretedResultsItem || codeql.supportsEvalLog && viewItem == cancelledResultsItem"
+          "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem || viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showEvalLogSummary",
           "group": "4_queryHistory@2",
-          "when": "codeql.supportsEvalLog && viewItem == rawResultsItem || codeql.supportsEvalLog && viewItem == interpretedResultsItem || codeql.supportsEvalLog && viewItem == cancelledResultsItem"
+          "when": "viewItem == rawResultsItem || viewItem == interpretedResultsItem || viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showEvalLogViewer",
           "group": "4_queryHistory@3",
-          "when": "config.codeQL.canary && codeql.supportsEvalLog && viewItem == rawResultsItem || config.codeQL.canary && codeql.supportsEvalLog && viewItem == interpretedResultsItem || config.codeQL.canary && codeql.supportsEvalLog && viewItem == cancelledResultsItem"
+          "when": "config.codeQL.canary && viewItem == rawResultsItem || config.codeQL.canary && viewItem == interpretedResultsItem || config.codeQL.canary && viewItem == cancelledResultsItem"
         },
         {
           "command": "codeQLQueryHistory.showQueryText",
