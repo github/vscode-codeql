@@ -108,6 +108,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.onWebViewLoaded();
 
         break;
+      case "openDatabase":
+        await this.app.commands.execute(
+          "revealInExplorer",
+          this.databaseItem.getSourceArchiveExplorerUri(),
+        );
+
+        break;
       case "openExtensionPack":
         await this.app.commands.execute(
           "revealInExplorer",
