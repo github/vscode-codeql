@@ -162,7 +162,6 @@ const packageConfiguration: Record<
   };
 })();
 
-export const vsCodeGetConfiguration = workspace.getConfiguration;
 export let vscodeGetConfigurationMock: jest.SpiedFunction<
   typeof workspace.getConfiguration
 >;

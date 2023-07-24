@@ -7,7 +7,7 @@ import { basename } from "path";
 import { App } from "../common/app";
 import { TestTreeNode } from "./test-tree-node";
 
-export type TestNode = TestTreeNode | TestItem;
+type TestNode = TestTreeNode | TestItem;
 
 /**
  * Base class for both the legacy and new test services. Implements commands that are common to

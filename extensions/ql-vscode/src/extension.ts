@@ -315,6 +315,7 @@ const MIN_VERSION = "1.67.0";
  *
  * @returns CodeQLExtensionInterface
  */
+// ts-unused-exports:disable-next-line
 export async function activate(
   ctx: ExtensionContext,
 ): Promise<CodeQLExtensionInterface | undefined> {

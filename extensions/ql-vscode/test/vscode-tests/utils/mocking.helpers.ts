@@ -7,7 +7,7 @@ export type DeepPartial<T> = T extends object
     }
   : T;
 
-export type DynamicProperties<T extends object> = {
+type DynamicProperties<T extends object> = {
   [P in keyof T]?: () => T[P];
 };
 

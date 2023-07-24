@@ -37,9 +37,8 @@ export const tableHeaderItemClassName =
   "vscode-codeql__table-selection-header-item";
 export const alertExtrasClassName = `${className}-alert-extras`;
 export const toggleDiagnosticsClassName = `${className}-toggle-diagnostics`;
-export const evenRowClassName = "vscode-codeql__result-table-row--even";
-export const oddRowClassName = "vscode-codeql__result-table-row--odd";
-export const pathRowClassName = "vscode-codeql__result-table-row--path";
+const evenRowClassName = "vscode-codeql__result-table-row--even";
+const oddRowClassName = "vscode-codeql__result-table-row--odd";
 export const selectedRowClassName = "vscode-codeql__result-table-row--selected";
 
 export function jumpToLocation(

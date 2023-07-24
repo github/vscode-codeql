@@ -21,7 +21,7 @@ import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 import { assertNever } from "../../common/helpers-pure";
 
-export type RawTableProps = {
+type RawTableProps = {
   databaseUri: string;
   resultSet: RawTableResultSet;
   sortState?: RawResultsSortState;

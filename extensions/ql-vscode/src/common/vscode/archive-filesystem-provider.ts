@@ -8,7 +8,7 @@ import { extLogger } from "../logging/vscode";
 import { posix } from "path";
 const path = posix;
 
-export class File implements vscode.FileStat {
+class File implements vscode.FileStat {
   type: vscode.FileType;
   ctime: number;
   mtime: number;
@@ -26,7 +26,7 @@ export class File implements vscode.FileStat {
   }
 }
 
-export class Directory implements vscode.FileStat {
+class Directory implements vscode.FileStat {
   type: vscode.FileType;
   ctime: number;
   mtime: number;
@@ -41,7 +41,7 @@ export class Directory implements vscode.FileStat {
   }
 }
 
-export type Entry = File | Directory;
+type Entry = File | Directory;
 
 /**
  * A map containing directory hierarchy information in a convenient form.
@@ -52,7 +52,7 @@ export type Entry = File | Directory;
  * dirMap['/foo'] = {'bar': vscode.FileType.Directory}
  * dirMap['/foo/bar'] = {'baz': vscode.FileType.File}
  */
-export type DirectoryHierarchyMap = Map<string, Map<string, vscode.FileType>>;
+type DirectoryHierarchyMap = Map<string, Map<string, vscode.FileType>>;
 
 export type ZipFileReference = {
   sourceArchiveZipPath: string;

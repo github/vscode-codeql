@@ -14,7 +14,7 @@ import { basename, extname } from "../common/path";
 const semverRegex =
   /-[v=\s]*(?<version>([0-9]+)(\.([0-9]+)(?:(\.([0-9]+))?(?:[-.]?((?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*)(?:\.(?:[0-9]+|\d*[a-zA-Z-][a-zA-Z0-9-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?)?)?)/g;
 
-export interface Library {
+interface Library {
   name: string;
   version?: string;
 }

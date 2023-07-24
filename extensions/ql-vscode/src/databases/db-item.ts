@@ -11,20 +11,6 @@ export enum DbItemKind {
   RemoteRepo = "RemoteRepo",
 }
 
-export const remoteDbKinds = [
-  DbItemKind.RootRemote,
-  DbItemKind.RemoteSystemDefinedList,
-  DbItemKind.RemoteUserDefinedList,
-  DbItemKind.RemoteOwner,
-  DbItemKind.RemoteRepo,
-];
-
-export const localDbKinds = [
-  DbItemKind.RootLocal,
-  DbItemKind.LocalList,
-  DbItemKind.LocalDatabase,
-];
-
 export enum DbListKind {
   Local = "Local",
   Remote = "Remote",
@@ -103,12 +89,6 @@ export interface RemoteRepoDbItem {
   parentListName?: string;
 }
 
-export function isRemoteSystemDefinedListDbItem(
-  dbItem: DbItem,
-): dbItem is RemoteSystemDefinedListDbItem {
-  return dbItem.kind === DbItemKind.RemoteSystemDefinedList;
-}
-
 export function isRemoteUserDefinedListDbItem(
   dbItem: DbItem,
 ): dbItem is RemoteUserDefinedListDbItem {
@@ -135,7 +115,7 @@ export function isLocalDatabaseDbItem(
   return dbItem.kind === DbItemKind.LocalDatabase;
 }
 
-export type SelectableDbItem = RemoteDbItem | LocalDbItem;
+type SelectableDbItem = RemoteDbItem | LocalDbItem;
 
 export function isSelectableDbItem(dbItem: DbItem): dbItem is SelectableDbItem {
   return SelectableDbItemKinds.includes(dbItem.kind);

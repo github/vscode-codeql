@@ -38,7 +38,7 @@ export type ProgressCallback = (p: ProgressUpdate) => void;
 // Make certain properties within a type optional
 type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
-export type ProgressOptions = Optional<VSCodeProgressOptions, "location">;
+type ProgressOptions = Optional<VSCodeProgressOptions, "location">;
 
 /**
  * A task that reports progress.
