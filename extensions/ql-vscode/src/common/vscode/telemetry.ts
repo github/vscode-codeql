@@ -25,7 +25,7 @@ import { AppTelemetry } from "../telemetry";
 // Key is injected at build time through the APP_INSIGHTS_KEY environment variable.
 const key = "REPLACE-APP-INSIGHTS-KEY";
 
-export enum CommandCompletion {
+enum CommandCompletion {
   Success = "Success",
   Failed = "Failed",
   Cancelled = "Cancelled",

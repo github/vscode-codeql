@@ -17,7 +17,7 @@ import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { Query } from "./queries/query";
 
-export type RunQueryOptions = {
+type RunQueryOptions = {
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">;
   queryRunner: Pick<QueryRunner, "createQueryRun" | "logger">;
   databaseItem: Pick<DatabaseItem, "contents" | "databaseUri" | "language">;
@@ -125,7 +125,7 @@ export async function runQuery(
   return completedQuery;
 }
 
-export type GetResultsOptions = {
+type GetResultsOptions = {
   cliServer: Pick<CodeQLCliServer, "bqrsInfo" | "bqrsDecode">;
   bqrsPath: string;
 };

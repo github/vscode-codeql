@@ -1,4 +1,4 @@
-import { dirname, extname } from "path";
+import { extname } from "path";
 import * as vscode from "vscode";
 import {
   TestAdapter,
@@ -39,14 +39,6 @@ export function getExpectedFile(testPath: string): string {
  */
 export function getActualFile(testPath: string): string {
   return getTestOutputFile(testPath, ".actual");
-}
-
-/**
- * Get the directory containing the specified QL test.
- * @param testPath The full path to the test file.
- */
-export function getTestDirectory(testPath: string): string {
-  return dirname(testPath);
 }
 
 /**

@@ -13,16 +13,16 @@ export enum ExpandedDbItemKind {
   RemoteUserDefinedList = "remoteUserDefinedList",
 }
 
-export interface RootLocalExpandedDbItem {
+interface RootLocalExpandedDbItem {
   kind: ExpandedDbItemKind.RootLocal;
 }
 
-export interface LocalUserDefinedListExpandedDbItem {
+interface LocalUserDefinedListExpandedDbItem {
   kind: ExpandedDbItemKind.LocalUserDefinedList;
   listName: string;
 }
 
-export interface RootRemoteExpandedDbItem {
+interface RootRemoteExpandedDbItem {
   kind: ExpandedDbItemKind.RootRemote;
 }
 

@@ -13,7 +13,7 @@ import {
 
 const baseUrl = "https://api.github.com";
 
-export type RequestHandler = RestHandler<MockedRequest<DefaultBodyType>>;
+type RequestHandler = RestHandler<MockedRequest<DefaultBodyType>>;
 
 export async function createRequestHandlers(
   scenarioDirPath: string,

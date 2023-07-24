@@ -64,12 +64,6 @@ export class Setting {
   }
 }
 
-export interface InspectionResult<T> {
-  globalValue?: T;
-  workspaceValue?: T;
-  workspaceFolderValue?: T;
-}
-
 const VSCODE_DEBUG_SETTING = new Setting("debug", undefined);
 export const VSCODE_SAVE_BEFORE_START_SETTING = new Setting(
   "saveBeforeStart",
@@ -592,10 +586,6 @@ export function isIntegrationTestMode() {
   return process.env.INTEGRATION_TEST_MODE === "true";
 }
 
-export function isVariantAnalysisLiveResultsEnabled(): boolean {
-  return true;
-}
-
 // Settings for mocking the GitHub API.
 const MOCK_GH_API_SERVER = new Setting("mockGitHubApiServer", ROOT_SETTING);
 
@@ -659,10 +649,7 @@ export function isCodespacesTemplate() {
 
 const DATABASE_DOWNLOAD_SETTING = new Setting("databaseDownload", ROOT_SETTING);
 
-export const ALLOW_HTTP_SETTING = new Setting(
-  "allowHttp",
-  DATABASE_DOWNLOAD_SETTING,
-);
+const ALLOW_HTTP_SETTING = new Setting("allowHttp", DATABASE_DOWNLOAD_SETTING);
 
 export function allowHttp(): boolean {
   return ALLOW_HTTP_SETTING.getValue<boolean>() || false;

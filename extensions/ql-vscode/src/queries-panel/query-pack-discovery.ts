@@ -10,7 +10,7 @@ import { EOL } from "os";
 import { containsPath } from "../common/files";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 
-export interface QueryPack {
+interface QueryPack {
   path: string;
   language: QueryLanguage | undefined;
 }
