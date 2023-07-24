@@ -20,6 +20,7 @@ export function install() {
     decreaseIndentPattern: /^((?!.*?\/\*).*\*\/)?\s*[\}\]].*$/,
     increaseIndentPattern: /^((?!\/\/).)*(\{[^}"'`]*|\([^)"'`]*|\[[^\]"'`]*)$/,
   };
+  delete langConfig.autoClosingPairs;
 
   languages.setLanguageConfiguration("ql", langConfig);
   languages.setLanguageConfiguration("qll", langConfig);
