@@ -1,5 +1,4 @@
 import { Repository, RepositoryWithMetadata } from "./repository";
-import { parseDate } from "../../common/date";
 import { assertNever } from "../../common/helpers-pure";
 
 export enum FilterKey {
@@ -10,7 +9,6 @@ export enum FilterKey {
 export enum SortKey {
   Alphabetically = "alphabetically",
   Popularity = "popularity",
-  MostRecentCommit = "mostRecentCommit",
   NumberOfResults = "numberOfResults",
 }
 
@@ -78,16 +76,6 @@ export function compareRepository(
         (right.stargazersCount ?? 0) - (left.stargazersCount ?? 0);
       if (stargazersCount !== 0) {
         return stargazersCount;
-      }
-    }
-
-    // Newest to oldest
-    if (filterSortState?.sortKey === SortKey.MostRecentCommit) {
-      const lastUpdated =
-        (parseDate(right.updatedAt)?.getTime() ?? 0) -
-        (parseDate(left.updatedAt)?.getTime() ?? 0);
-      if (lastUpdated !== 0) {
-        return lastUpdated;
       }
     }
 

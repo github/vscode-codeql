@@ -38,10 +38,7 @@ describe(RepoRow.name, () => {
     expect(
       screen.queryByRole("img", {
         // There should not be any icons, except for the icons which are always shown
-        name: (name) =>
-          !["expand", "stars count", "most recent commit"].includes(
-            name.toLowerCase(),
-          ),
+        name: (name) => !["expand", "stars count"].includes(name.toLowerCase()),
       }),
     ).not.toBeInTheDocument();
 
@@ -279,26 +276,7 @@ describe(RepoRow.name, () => {
     ).toBeInTheDocument();
   });
 
-  it("shows updated at", () => {
-    render({
-      repository: {
-        ...createMockRepositoryWithMetadata(),
-        // 1 month ago
-        updatedAt: new Date(
-          Date.now() - 1000 * 60 * 60 * 24 * 30,
-        ).toISOString(),
-      },
-    });
-
-    expect(screen.getByText("last month")).toBeInTheDocument();
-    expect(
-      screen.getByRole("img", {
-        name: "Most recent commit",
-      }),
-    ).toBeInTheDocument();
-  });
-
-  it("does not show star count and updated at when unknown", () => {
+  it("does not show star count when unknown", () => {
     render({
       repository: {
         id: undefined,
@@ -310,11 +288,6 @@ describe(RepoRow.name, () => {
     expect(
       screen.queryByRole("img", {
         name: "Stars count",
-      }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("img", {
-        name: "Most recent commit",
       }),
     ).not.toBeInTheDocument();
   });
