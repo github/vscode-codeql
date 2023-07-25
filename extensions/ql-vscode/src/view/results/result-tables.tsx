@@ -27,8 +27,7 @@ import {
 } from "./result-table-utils";
 import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
-
-const FILE_PATH_REGEX = /^(?:.+[\\/])*(.+)$/;
+import { basename } from "path";
 
 /**
  * Properties for the `ResultTables` component.
@@ -302,7 +301,7 @@ export class ResultTables extends React.Component<
       openFile(this.props.queryPath);
       sendTelemetry("local-results-open-query-file");
     };
-    const fileName = FILE_PATH_REGEX.exec(this.props.queryPath)?.[1] || "query";
+    const fileName = basename(this.props.queryPath);
 
     return (
       <span className="vscode-codeql__table-selection-pagination">
