@@ -208,14 +208,6 @@ export function DataExtensionsEditor({
     });
   }, []);
 
-  const onGenerateAllFromLlmClick = useCallback(() => {
-    vscode.postMessage({
-      t: "generateExternalApiFromLlm",
-      externalApiUsages,
-      modeledMethods,
-    });
-  }, [externalApiUsages, modeledMethods]);
-
   const onModelDependencyClick = useCallback(() => {
     vscode.postMessage({
       t: "modelDependency",
@@ -304,23 +296,21 @@ export function DataExtensionsEditor({
 
           <EditorContainer>
             <ButtonsContainer>
-              <VSCodeButton onClick={onSaveAllClick}>Apply</VSCodeButton>
+              <VSCodeButton
+                onClick={onSaveAllClick}
+                disabled={modifiedSignatures.size === 0}
+              >
+                Save all
+              </VSCodeButton>
               {viewState.enableFrameworkMode && (
                 <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
                   Refresh
                 </VSCodeButton>
               )}
-              <VSCodeButton onClick={onGenerateFromSourceClick}>
-                {viewState.mode === Mode.Framework
-                  ? "Generate"
-                  : "Download and generate"}
-              </VSCodeButton>
-              {viewState.showLlmButton && (
-                <>
-                  <VSCodeButton onClick={onGenerateAllFromLlmClick}>
-                    Generate using LLM
-                  </VSCodeButton>
-                </>
+              {viewState.mode === Mode.Framework && (
+                <VSCodeButton onClick={onGenerateFromSourceClick}>
+                  Generate
+                </VSCodeButton>
               )}
             </ButtonsContainer>
             <ModeledMethodsList
