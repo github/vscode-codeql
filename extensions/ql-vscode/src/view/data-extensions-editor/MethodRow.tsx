@@ -270,7 +270,7 @@ function UnmodelableMethodRow(props: Props) {
         <MethodClassifications externalApiUsage={externalApiUsage} />
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn="span 4">
-        Method modeled by CodeQL or a different extension pack
+        Method already modeled
       </VSCodeDataGridCell>
     </VSCodeDataGridRow>
   );
