@@ -40,6 +40,18 @@ export function mockedObject<T extends object>(
         return undefined;
       }
 
+      // The `asymmetricMatch` is accessed by jest to check if the object is a matcher.
+      // We don't want to throw an error when this happens.
+      if (prop === "asymmetricMatch") {
+        return undefined;
+      }
+
+      // The `Symbol.iterator` is accessed by jest to check if the object is iterable.
+      // We don't want to throw an error when this happens.
+      if (prop === Symbol.iterator) {
+        return undefined;
+      }
+
       throw new Error(`Method ${String(prop)} not mocked`);
     },
   });

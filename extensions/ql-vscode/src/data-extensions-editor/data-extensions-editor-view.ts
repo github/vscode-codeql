@@ -40,16 +40,29 @@ import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
 import { autoModel, ModelRequest, ModelResponse } from "./auto-model-api";
 import {
+  autoModelV2,
+  ModelRequest as ModelRequestV2,
+  ModelResponse as ModelResponseV2,
+} from "./auto-model-api-v2";
+import {
   createAutoModelRequest,
   parsePredictedClassifications,
 } from "./auto-model";
-import { enableFrameworkMode, showLlmGeneration } from "../config";
+import {
+  enableFrameworkMode,
+  showLlmGeneration,
+  useLlmGenerationV2,
+} from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { join } from "path";
 import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
+import { runAutoModelQueries } from "./auto-model-codeml-queries";
+import { createAutoModelV2Request } from "./auto-model-v2";
+import { load as loadYaml } from "js-yaml";
+import { loadDataExtensionYaml } from "./yaml";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -367,48 +380,99 @@ export class DataExtensionsEditorView extends AbstractWebview<
       message: "Retrieving usages",
     });
 
-    const usages = await getAutoModelUsages({
-      cliServer: this.cliServer,
-      queryRunner: this.queryRunner,
-      queryStorageDir: this.queryStorageDir,
-      databaseItem: this.databaseItem,
-      progress: (update) => this.showProgress(update, maxStep),
-    });
+    let predictedModeledMethods: Record<string, ModeledMethod>;
 
-    await this.showProgress({
-      step: 1800,
-      maxStep,
-      message: "Creating request",
-    });
+    if (useLlmGenerationV2()) {
+      const usages = await runAutoModelQueries(this.mode, {
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        queryStorageDir: this.queryStorageDir,
+        databaseItem: this.databaseItem,
+        progress: (update) => this.showProgress(update, maxStep),
+      });
+      if (!usages) {
+        return;
+      }
 
-    const request = createAutoModelRequest(
-      this.databaseItem.language,
-      externalApiUsages,
-      modeledMethods,
-      usages,
-      this.mode,
-    );
+      await this.showProgress({
+        step: 1800,
+        maxStep,
+        message: "Creating request",
+      });
 
-    await this.showProgress({
-      step: 2000,
-      maxStep,
-      message: "Sending request",
-    });
+      const request = await createAutoModelV2Request(this.mode, usages);
 
-    const response = await this.callAutoModelApi(request);
-    if (!response) {
-      return;
+      await this.showProgress({
+        step: 2000,
+        maxStep,
+        message: "Sending request",
+      });
+
+      const response = await this.callAutoModelApiV2(request);
+      if (!response) {
+        return;
+      }
+
+      await this.showProgress({
+        step: 2500,
+        maxStep,
+        message: "Parsing response",
+      });
+
+      const models = loadYaml(response.models, {
+        filename: "auto-model.yml",
+      });
+
+      const modeledMethods = loadDataExtensionYaml(models);
+      if (!modeledMethods) {
+        return;
+      }
+
+      predictedModeledMethods = modeledMethods;
+    } else {
+      const usages = await getAutoModelUsages({
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        queryStorageDir: this.queryStorageDir,
+        databaseItem: this.databaseItem,
+        progress: (update) => this.showProgress(update, maxStep),
+      });
+
+      await this.showProgress({
+        step: 1800,
+        maxStep,
+        message: "Creating request",
+      });
+
+      const request = createAutoModelRequest(
+        this.databaseItem.language,
+        externalApiUsages,
+        modeledMethods,
+        usages,
+        this.mode,
+      );
+
+      await this.showProgress({
+        step: 2000,
+        maxStep,
+        message: "Sending request",
+      });
+
+      const response = await this.callAutoModelApi(request);
+      if (!response) {
+        return;
+      }
+
+      await this.showProgress({
+        step: 2500,
+        maxStep,
+        message: "Parsing response",
+      });
+
+      predictedModeledMethods = parsePredictedClassifications(
+        response.predicted || [],
+      );
     }
-
-    await this.showProgress({
-      step: 2500,
-      maxStep,
-      message: "Parsing response",
-    });
-
-    const predictedModeledMethods = parsePredictedClassifications(
-      response.predicted || [],
-    );
 
     await this.showProgress({
       step: 2800,
@@ -519,6 +583,27 @@ export class DataExtensionsEditorView extends AbstractWebview<
   ): Promise<ModelResponse | null> {
     try {
       return await autoModel(this.app.credentials, request);
+    } catch (e) {
+      await this.clearProgress();
+
+      if (e instanceof RequestError && e.status === 429) {
+        void showAndLogExceptionWithTelemetry(
+          this.app.logger,
+          this.app.telemetry,
+          redactableError(e)`Rate limit hit, please try again soon.`,
+        );
+        return null;
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  private async callAutoModelApiV2(
+    request: ModelRequestV2,
+  ): Promise<ModelResponseV2 | null> {
+    try {
+      return await autoModelV2(this.app.credentials, request);
     } catch (e) {
       await this.clearProgress();
 
