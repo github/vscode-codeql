@@ -110,6 +110,11 @@ jobs:
         run: |
           npm run lint:scenarios
 
+      - name: Find deadcode
+        working-directory: extensions/ql-vscode
+        run: |
+          npm run find-deadcode
+
   unit-test:
     name: Unit Test
     runs-on: ${{ matrix.os }}
