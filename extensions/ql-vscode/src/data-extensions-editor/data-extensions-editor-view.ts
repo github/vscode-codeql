@@ -299,7 +299,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
         // In application mode, we need the database of a specific library to generate
         // the modeled methods. In framework mode, we'll use the current database.
         if (this.mode === Mode.Application) {
-          addedDatabase = await this.promptImportDatabase(progress);
+          addedDatabase = await this.promptChooseNewOrExistingDatabase(
+            progress,
+          );
           if (!addedDatabase) {
             return;
           }
@@ -342,6 +344,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
           );
         }
 
+        // To do: don't do this for local dbs!
         if (addedDatabase) {
           // After the flow model has been generated, we can remove the temporary database
           // which we used for generating the flow model.
@@ -431,7 +434,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
   private async modelDependency(): Promise<void> {
     return withProgress(async (progress, token) => {
-      const addedDatabase = await this.promptImportDatabase(progress);
+      const addedDatabase = await this.promptChooseNewOrExistingDatabase(
+        progress,
+      );
       if (!addedDatabase || token.isCancellationRequested) {
         return;
       }
@@ -460,6 +465,51 @@ export class DataExtensionsEditorView extends AbstractWebview<
       );
       await view.openView();
     });
+  }
+
+  private async promptChooseNewOrExistingDatabase(
+    progress: ProgressCallback,
+  ): Promise<DatabaseItem | undefined> {
+    // To do: should we filter these by language?
+    const databases = this.databaseManager.databaseItems;
+    if (databases.length === 0) {
+      return await this.promptImportDatabase(progress);
+    } else {
+      const local = {
+        label: "$(database) Use existing database",
+        detail: "Use database from the workspace",
+      };
+      const github = {
+        label: "$(repo) Import database",
+        detail: "Choose database from GitHub",
+      };
+      const newOrExistingDatabase = await window.showQuickPick([local, github]);
+
+      if (!newOrExistingDatabase) {
+        void this.app.logger.log("No database chosen");
+        return;
+      }
+
+      if (newOrExistingDatabase === local) {
+        const pickedDatabase = await window.showQuickPick(
+          databases.map((database) => ({
+            label: database.name,
+            description: database.language,
+            database,
+          })),
+          {
+            placeHolder: "Pick a database",
+          },
+        );
+        if (!pickedDatabase) {
+          void this.app.logger.log("No database chosen");
+          return;
+        }
+        return pickedDatabase.database;
+      } else {
+        return await this.promptImportDatabase(progress);
+      }
+    }
   }
 
   private async promptImportDatabase(
