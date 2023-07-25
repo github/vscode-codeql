@@ -350,13 +350,11 @@
           "enum": [
             "alphabetically",
             "popularity",
-            "mostRecentCommit",
             "numberOfResults"
           ],
           "enumDescriptions": [
             "Sort repositories alphabetically in the results view.",
             "Sort repositories by popularity in the results view.",
-            "Sort repositories by most recent commit in the results view.",
             "Sort repositories by number of results in the results view."
           ],
           "description": "The default sorting order for repositories in the variant analysis results view."
