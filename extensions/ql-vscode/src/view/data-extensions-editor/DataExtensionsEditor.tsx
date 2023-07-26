@@ -1,9 +1,6 @@
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  ShowProgressMessage,
-  ToDataExtensionsEditorMessage,
-} from "../../common/interface-types";
+import { ToDataExtensionsEditorMessage } from "../../common/interface-types";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
@@ -46,17 +43,6 @@ const ButtonsContainer = styled.div`
   margin-bottom: 1rem;
 `;
 
-type ProgressBarProps = {
-  completion: number;
-};
-
-const ProgressBar = styled.div<ProgressBarProps>`
-  height: 10px;
-  width: ${(props) => props.completion * 100}%;
-
-  background-color: var(--vscode-progressBar-background);
-`;
-
 type Props = {
   initialViewState?: DataExtensionEditorViewState;
   initialExternalApiUsages?: ExternalApiUsage[];
@@ -82,11 +68,6 @@ export function DataExtensionsEditor({
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
   >(initialModeledMethods);
-  const [progress, setProgress] = useState<Omit<ShowProgressMessage, "t">>({
-    step: 0,
-    maxStep: 0,
-    message: "",
-  });
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
@@ -98,9 +79,6 @@ export function DataExtensionsEditor({
             break;
           case "setExternalApiUsages":
             setExternalApiUsages(msg.externalApiUsages);
-            break;
-          case "showProgress":
-            setProgress(msg);
             break;
           case "loadModeledMethods":
             setModeledMethods((oldModeledMethods) => {
@@ -244,89 +222,71 @@ export function DataExtensionsEditor({
     });
   }, [viewState?.mode]);
 
-  if (viewState === undefined) {
+  if (viewState === undefined || externalApiUsages.length === 0) {
     return <LoadingContainer>Loading...</LoadingContainer>;
   }
 
   return (
     <DataExtensionsEditorContainer>
-      {progress.maxStep > 0 && (
-        <p>
-          <ProgressBar completion={progress.step / progress.maxStep} />{" "}
-          {progress.message}
-        </p>
-      )}
-
-      {externalApiUsages.length > 0 && (
-        <>
-          <ViewTitle>
-            {getLanguageDisplayName(viewState.extensionPack.language)}
-          </ViewTitle>
-          <DetailsContainer>
-            <LinkIconButton onClick={onOpenExtensionPackClick}>
-              <span slot="start" className="codicon codicon-package"></span>
-              {viewState.extensionPack.name}
-            </LinkIconButton>
+      <ViewTitle>
+        {getLanguageDisplayName(viewState.extensionPack.language)}
+      </ViewTitle>
+      <DetailsContainer>
+        <LinkIconButton onClick={onOpenExtensionPackClick}>
+          <span slot="start" className="codicon codicon-package"></span>
+          {viewState.extensionPack.name}
+        </LinkIconButton>
+        <div>{percentFormatter.format(modeledPercentage / 100)} modeled</div>
+        <div>
+          {percentFormatter.format(unModeledPercentage / 100)} unmodeled
+        </div>
+        {viewState.enableFrameworkMode && (
+          <>
             <div>
-              {percentFormatter.format(modeledPercentage / 100)} modeled
+              Mode:{" "}
+              {viewState.mode === Mode.Framework ? "Framework" : "Application"}
             </div>
             <div>
-              {percentFormatter.format(unModeledPercentage / 100)} unmodeled
+              <LinkIconButton onClick={onSwitchModeClick}>
+                <span slot="start" className="codicon codicon-library"></span>
+                Switch mode
+              </LinkIconButton>
             </div>
-            {viewState.enableFrameworkMode && (
-              <>
-                <div>
-                  Mode:{" "}
-                  {viewState.mode === Mode.Framework
-                    ? "Framework"
-                    : "Application"}
-                </div>
-                <div>
-                  <LinkIconButton onClick={onSwitchModeClick}>
-                    <span
-                      slot="start"
-                      className="codicon codicon-library"
-                    ></span>
-                    Switch mode
-                  </LinkIconButton>
-                </div>
-              </>
-            )}
-          </DetailsContainer>
+          </>
+        )}
+      </DetailsContainer>
 
-          <EditorContainer>
-            <ButtonsContainer>
-              <VSCodeButton
-                onClick={onSaveAllClick}
-                disabled={modifiedSignatures.size === 0}
-              >
-                Save all
-              </VSCodeButton>
-              {viewState.enableFrameworkMode && (
-                <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
-                  Refresh
-                </VSCodeButton>
-              )}
-              {viewState.mode === Mode.Framework && (
-                <VSCodeButton onClick={onGenerateFromSourceClick}>
-                  Generate
-                </VSCodeButton>
-              )}
-            </ButtonsContainer>
-            <ModeledMethodsList
-              externalApiUsages={externalApiUsages}
-              modeledMethods={modeledMethods}
-              modifiedSignatures={modifiedSignatures}
-              viewState={viewState}
-              onChange={onChange}
-              onSaveModelClick={onSaveModelClick}
-              onGenerateFromLlmClick={onGenerateFromLlmClick}
-              onGenerateFromSourceClick={onGenerateFromSourceClick}
-              onModelDependencyClick={onModelDependencyClick}
-            />
-          </EditorContainer>
-        </>
-      )}
+      <EditorContainer>
+        <ButtonsContainer>
+          <VSCodeButton
+            onClick={onSaveAllClick}
+            disabled={modifiedSignatures.size === 0}
+          >
+            Save all
+          </VSCodeButton>
+          {viewState.enableFrameworkMode && (
+            <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
+              Refresh
+            </VSCodeButton>
+          )}
+          {viewState.mode === Mode.Framework && (
+            <VSCodeButton onClick={onGenerateFromSourceClick}>
+              Generate
+            </VSCodeButton>
+          )}
+        </ButtonsContainer>
+        <ModeledMethodsList
+          externalApiUsages={externalApiUsages}
+          modeledMethods={modeledMethods}
+          modifiedSignatures={modifiedSignatures}
+          viewState={viewState}
+          onChange={onChange}
+          onSaveModelClick={onSaveModelClick}
+          onGenerateFromLlmClick={onGenerateFromLlmClick}
+          onGenerateFromSourceClick={onGenerateFromSourceClick}
+          onModelDependencyClick={onModelDependencyClick}
+        />
+      </EditorContainer>
     </DataExtensionsEditorContainer>
   );
 }

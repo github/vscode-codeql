@@ -12,16 +12,13 @@ import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseManager, DatabaseItem } from "../../databases/local-databases";
 import { ProgressCallback } from "../../common/vscode/progress";
 import { KeyType } from "./key-type";
-import {
-  qlpackOfDatabase,
-  resolveQueries,
-  runContextualQuery,
-} from "./query-resolver";
+import { resolveQueries, runContextualQuery } from "./query-resolver";
 import { CancellationToken, LocationLink, Uri } from "vscode";
 import { QueryOutputDir } from "../../run-queries-shared";
 import { QueryRunner } from "../../query-server";
 import { QueryResultType } from "../../query-server/new-messages";
 import { fileRangeFromURI } from "./file-range-from-uri";
+import { qlpackOfDatabase } from "../../local-queries";
 
 export const SELECT_QUERY_NAME = "#select";
 export const SELECTED_SOURCE_FILE = "selectedSourceFile";
