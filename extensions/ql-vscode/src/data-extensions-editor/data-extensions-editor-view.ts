@@ -470,8 +470,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
   private async promptChooseNewOrExistingDatabase(
     progress: ProgressCallback,
   ): Promise<DatabaseItem | undefined> {
-    // To do: should we filter these by language?
-    const databases = this.databaseManager.databaseItems;
+    const language = this.databaseItem.language;
+    const databases = this.databaseManager.databaseItems.filter(
+      (db) => db.language === language,
+    );
     if (databases.length === 0) {
       return await this.promptImportDatabase(progress);
     } else {
