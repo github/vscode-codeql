@@ -296,7 +296,7 @@ export function DataExtensionsEditor({
                   {getLanguageDisplayName(viewState.extensionPack.language)}
                 </ViewTitle>
                 <VSCodeTag>
-                  {percentFormatter.format(modeledPercentage / 100)} MODELED
+                  {percentFormatter.format(modeledPercentage / 100)} modeled
                 </VSCodeTag>
               </HeaderRow>
               <HeaderRow>
