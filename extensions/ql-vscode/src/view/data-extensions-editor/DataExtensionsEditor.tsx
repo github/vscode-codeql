@@ -1,7 +1,11 @@
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ToDataExtensionsEditorMessage } from "../../common/interface-types";
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
+import {
+  VSCodeButton,
+  VSCodeCheckbox,
+  VSCodeTag,
+} from "@vscode/webview-ui-toolkit/react";
 import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
@@ -9,7 +13,6 @@ import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { calculateModeledPercentage } from "../../data-extensions-editor/shared/modeled-percentage";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
-import { ViewTitle } from "../common";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
@@ -27,10 +30,33 @@ const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
 `;
 
-const DetailsContainer = styled.div`
+const HeaderContainer = styled.div`
   display: flex;
+  flex-direction: row;
+  align-items: end;
+`;
+
+const HeaderColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+`;
+
+const HeaderSpacer = styled.div`
+  flex-grow: 1;
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  flex-direction: row;
   gap: 1em;
   align-items: center;
+`;
+
+const ViewTitle = styled.h1`
+  font-size: 2em;
+  font-weight: 500;
+  margin: 0;
 `;
 
 const EditorContainer = styled.div`
@@ -128,8 +154,6 @@ export function DataExtensionsEditor({
     [externalApiUsages],
   );
 
-  const unModeledPercentage = 100 - modeledPercentage;
-
   const onChange = useCallback(
     (modelName: string, method: ExternalApiUsage, model: ModeledMethod) => {
       setModeledMethods((oldModeledMethods) => ({
@@ -206,6 +230,12 @@ export function DataExtensionsEditor({
     [],
   );
 
+  const onOpenDatabaseClick = useCallback(() => {
+    vscode.postMessage({
+      t: "openDatabase",
+    });
+  }, []);
+
   const onOpenExtensionPackClick = useCallback(() => {
     vscode.postMessage({
       t: "openExtensionPack",
@@ -228,33 +258,43 @@ export function DataExtensionsEditor({
 
   return (
     <DataExtensionsEditorContainer>
-      <ViewTitle>
-        {getLanguageDisplayName(viewState.extensionPack.language)}
-      </ViewTitle>
-      <DetailsContainer>
-        <LinkIconButton onClick={onOpenExtensionPackClick}>
-          <span slot="start" className="codicon codicon-package"></span>
-          {viewState.extensionPack.name}
-        </LinkIconButton>
-        <div>{percentFormatter.format(modeledPercentage / 100)} modeled</div>
-        <div>
-          {percentFormatter.format(unModeledPercentage / 100)} unmodeled
-        </div>
-        {viewState.enableFrameworkMode && (
-          <>
-            <div>
-              Mode:{" "}
-              {viewState.mode === Mode.Framework ? "Framework" : "Application"}
-            </div>
-            <div>
+      <HeaderContainer>
+        <HeaderColumn>
+          <HeaderRow>
+            <ViewTitle>
+              {getLanguageDisplayName(viewState.extensionPack.language)}
+            </ViewTitle>
+            <VSCodeTag>
+              {percentFormatter.format(modeledPercentage / 100)} modeled
+            </VSCodeTag>
+          </HeaderRow>
+          <HeaderRow>
+            <>{viewState.extensionPack.name}</>
+          </HeaderRow>
+          <HeaderRow>
+            <LinkIconButton onClick={onOpenDatabaseClick}>
+              <span slot="start" className="codicon codicon-package"></span>
+              Open database
+            </LinkIconButton>
+            <LinkIconButton onClick={onOpenExtensionPackClick}>
+              <span slot="start" className="codicon codicon-package"></span>
+              Open extension pack
+            </LinkIconButton>
+            {viewState.enableFrameworkMode && (
               <LinkIconButton onClick={onSwitchModeClick}>
                 <span slot="start" className="codicon codicon-library"></span>
-                Switch mode
+                {viewState.mode === Mode.Framework
+                  ? "Model as application"
+                  : "Model as dependency"}
               </LinkIconButton>
-            </div>
-          </>
-        )}
-      </DetailsContainer>
+            )}
+          </HeaderRow>
+        </HeaderColumn>
+        <HeaderSpacer />
+        <HeaderColumn>
+          <VSCodeCheckbox>Hide modeled APIs</VSCodeCheckbox>
+        </HeaderColumn>
+      </HeaderContainer>
 
       <EditorContainer>
         <ButtonsContainer>

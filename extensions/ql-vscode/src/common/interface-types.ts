@@ -520,6 +520,10 @@ interface JumpToUsageMessage {
   location: ResolvableLocationValue;
 }
 
+interface OpenDatabaseMessage {
+  t: "openDatabase";
+}
+
 interface OpenExtensionPackMessage {
   t: "openExtensionPack";
 }
@@ -558,6 +562,7 @@ export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
   | SwitchModeMessage
   | RefreshExternalApiUsages
+  | OpenDatabaseMessage
   | OpenExtensionPackMessage
   | JumpToUsageMessage
   | SaveModeledMethods
