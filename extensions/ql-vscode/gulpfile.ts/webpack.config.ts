@@ -15,9 +15,6 @@ export const config: webpack.Configuration = {
   devtool: isDevBuild ? "inline-source-map" : "source-map",
   resolve: {
     extensions: [".js", ".ts", ".tsx", ".json"],
-    fallback: {
-      path: require.resolve("path-browserify"),
-    },
   },
   module: {
     rules: [

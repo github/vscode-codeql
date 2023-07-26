@@ -2,7 +2,7 @@ import * as React from "react";
 import * as Sarif from "sarif";
 import { isLineColumnLoc, isWholeFileLoc } from "../../../common/bqrs-utils";
 import { parseSarifLocation } from "../../../common/sarif-utils";
-import { basename } from "path";
+import { basename } from "../../../common/path";
 import { useMemo } from "react";
 import { Location } from "./Location";
 
