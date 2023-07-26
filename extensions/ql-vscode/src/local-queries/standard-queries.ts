@@ -5,7 +5,7 @@ import { extLogger } from "../common/logging/vscode";
 import { promises } from "fs-extra";
 import { BaseLogger } from "../common/logging";
 
-export type LockFileForStandardQueryResult = {
+type LockFileForStandardQueryResult = {
   cleanup?: () => Promise<void>;
 };
 
