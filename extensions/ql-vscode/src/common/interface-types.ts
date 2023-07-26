@@ -500,13 +500,6 @@ interface SetExternalApiUsagesMessage {
   externalApiUsages: ExternalApiUsage[];
 }
 
-export interface ShowProgressMessage {
-  t: "showProgress";
-  step: number;
-  maxStep: number;
-  message: string;
-}
-
 interface LoadModeledMethodsMessage {
   t: "loadModeledMethods";
   modeledMethods: Record<string, ModeledMethod>;
@@ -562,7 +555,6 @@ interface ModelDependencyMessage {
 export type ToDataExtensionsEditorMessage =
   | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
-  | ShowProgressMessage
   | LoadModeledMethodsMessage
   | AddModeledMethodsMessage;
 

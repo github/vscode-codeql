@@ -1,9 +1,6 @@
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  ShowProgressMessage,
-  ToDataExtensionsEditorMessage,
-} from "../../common/interface-types";
+import { ToDataExtensionsEditorMessage } from "../../common/interface-types";
 import {
   VSCodeButton,
   VSCodeCheckbox,
@@ -72,17 +69,6 @@ const ButtonsContainer = styled.div`
   margin-bottom: 1rem;
 `;
 
-type ProgressBarProps = {
-  completion: number;
-};
-
-const ProgressBar = styled.div<ProgressBarProps>`
-  height: 10px;
-  width: ${(props) => props.completion * 100}%;
-
-  background-color: var(--vscode-progressBar-background);
-`;
-
 type Props = {
   initialViewState?: DataExtensionEditorViewState;
   initialExternalApiUsages?: ExternalApiUsage[];
@@ -108,11 +94,6 @@ export function DataExtensionsEditor({
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
   >(initialModeledMethods);
-  const [progress, setProgress] = useState<Omit<ShowProgressMessage, "t">>({
-    step: 0,
-    maxStep: 0,
-    message: "",
-  });
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
@@ -124,9 +105,6 @@ export function DataExtensionsEditor({
             break;
           case "setExternalApiUsages":
             setExternalApiUsages(msg.externalApiUsages);
-            break;
-          case "showProgress":
-            setProgress(msg);
             break;
           case "loadModeledMethods":
             setModeledMethods((oldModeledMethods) => {
@@ -274,95 +252,81 @@ export function DataExtensionsEditor({
     });
   }, [viewState?.mode]);
 
-  if (viewState === undefined) {
+  if (viewState === undefined || externalApiUsages.length === 0) {
     return <LoadingContainer>Loading...</LoadingContainer>;
   }
 
   return (
     <DataExtensionsEditorContainer>
-      {progress.maxStep > 0 && (
-        <p>
-          <ProgressBar completion={progress.step / progress.maxStep} />{" "}
-          {progress.message}
-        </p>
-      )}
+      <HeaderContainer>
+        <HeaderColumn>
+          <HeaderRow>
+            <ViewTitle>
+              {getLanguageDisplayName(viewState.extensionPack.language)}
+            </ViewTitle>
+            <VSCodeTag>
+              {percentFormatter.format(modeledPercentage / 100)} modeled
+            </VSCodeTag>
+          </HeaderRow>
+          <HeaderRow>
+            <>{viewState.extensionPack.name}</>
+          </HeaderRow>
+          <HeaderRow>
+            <LinkIconButton onClick={onOpenDatabaseClick}>
+              <span slot="start" className="codicon codicon-package"></span>
+              Open database
+            </LinkIconButton>
+            <LinkIconButton onClick={onOpenExtensionPackClick}>
+              <span slot="start" className="codicon codicon-package"></span>
+              Open extension pack
+            </LinkIconButton>
+            {viewState.enableFrameworkMode && (
+              <LinkIconButton onClick={onSwitchModeClick}>
+                <span slot="start" className="codicon codicon-library"></span>
+                {viewState.mode === Mode.Framework
+                  ? "Model as application"
+                  : "Model as dependency"}
+              </LinkIconButton>
+            )}
+          </HeaderRow>
+        </HeaderColumn>
+        <HeaderSpacer />
+        <HeaderColumn>
+          <VSCodeCheckbox>Hide modeled APIs</VSCodeCheckbox>
+        </HeaderColumn>
+      </HeaderContainer>
 
-      {externalApiUsages.length > 0 && (
-        <>
-          <HeaderContainer>
-            <HeaderColumn>
-              <HeaderRow>
-                <ViewTitle>
-                  {getLanguageDisplayName(viewState.extensionPack.language)}
-                </ViewTitle>
-                <VSCodeTag>
-                  {percentFormatter.format(modeledPercentage / 100)} modeled
-                </VSCodeTag>
-              </HeaderRow>
-              <HeaderRow>
-                <>{viewState.extensionPack.name}</>
-              </HeaderRow>
-              <HeaderRow>
-                <LinkIconButton onClick={onOpenDatabaseClick}>
-                  <span slot="start" className="codicon codicon-package"></span>
-                  Open database
-                </LinkIconButton>
-                <LinkIconButton onClick={onOpenExtensionPackClick}>
-                  <span slot="start" className="codicon codicon-package"></span>
-                  Open extension pack
-                </LinkIconButton>
-                {viewState.enableFrameworkMode && (
-                  <LinkIconButton onClick={onSwitchModeClick}>
-                    <span
-                      slot="start"
-                      className="codicon codicon-library"
-                    ></span>
-                    {viewState.mode === Mode.Framework
-                      ? "Model as application"
-                      : "Model as dependency"}
-                  </LinkIconButton>
-                )}
-              </HeaderRow>
-            </HeaderColumn>
-            <HeaderSpacer />
-            <HeaderColumn>
-              <VSCodeCheckbox>Hide modeled APIs</VSCodeCheckbox>
-            </HeaderColumn>
-          </HeaderContainer>
-
-          <EditorContainer>
-            <ButtonsContainer>
-              <VSCodeButton
-                onClick={onSaveAllClick}
-                disabled={modifiedSignatures.size === 0}
-              >
-                Save all
-              </VSCodeButton>
-              {viewState.enableFrameworkMode && (
-                <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
-                  Refresh
-                </VSCodeButton>
-              )}
-              {viewState.mode === Mode.Framework && (
-                <VSCodeButton onClick={onGenerateFromSourceClick}>
-                  Generate
-                </VSCodeButton>
-              )}
-            </ButtonsContainer>
-            <ModeledMethodsList
-              externalApiUsages={externalApiUsages}
-              modeledMethods={modeledMethods}
-              modifiedSignatures={modifiedSignatures}
-              viewState={viewState}
-              onChange={onChange}
-              onSaveModelClick={onSaveModelClick}
-              onGenerateFromLlmClick={onGenerateFromLlmClick}
-              onGenerateFromSourceClick={onGenerateFromSourceClick}
-              onModelDependencyClick={onModelDependencyClick}
-            />
-          </EditorContainer>
-        </>
-      )}
+      <EditorContainer>
+        <ButtonsContainer>
+          <VSCodeButton
+            onClick={onSaveAllClick}
+            disabled={modifiedSignatures.size === 0}
+          >
+            Save all
+          </VSCodeButton>
+          {viewState.enableFrameworkMode && (
+            <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
+              Refresh
+            </VSCodeButton>
+          )}
+          {viewState.mode === Mode.Framework && (
+            <VSCodeButton onClick={onGenerateFromSourceClick}>
+              Generate
+            </VSCodeButton>
+          )}
+        </ButtonsContainer>
+        <ModeledMethodsList
+          externalApiUsages={externalApiUsages}
+          modeledMethods={modeledMethods}
+          modifiedSignatures={modifiedSignatures}
+          viewState={viewState}
+          onChange={onChange}
+          onSaveModelClick={onSaveModelClick}
+          onGenerateFromLlmClick={onGenerateFromLlmClick}
+          onGenerateFromSourceClick={onGenerateFromSourceClick}
+          onModelDependencyClick={onModelDependencyClick}
+        />
+      </EditorContainer>
     </DataExtensionsEditorContainer>
   );
 }

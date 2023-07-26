@@ -204,55 +204,6 @@ describe(compareRepository.name, () => {
       ).toBeLessThan(0);
     });
   });
-
-  describe("when sort key is 'Most recent commit'", () => {
-    const sorter = compareRepository({
-      ...permissiveFilterSortState,
-      sortKey: SortKey.MostRecentCommit,
-    });
-
-    const left = {
-      fullName: "github/galaxy",
-      updatedAt: "2020-01-01T00:00:00Z",
-    };
-    const right = {
-      fullName: "github/world",
-      updatedAt: "2021-01-01T00:00:00Z",
-    };
-
-    it("compares correctly", () => {
-      expect(sorter(left, right)).toBeGreaterThan(0);
-    });
-
-    it("compares the inverse correctly", () => {
-      expect(sorter(right, left)).toBeLessThan(0);
-    });
-
-    it("compares equal values correctly", () => {
-      expect(sorter(left, left)).toBe(0);
-    });
-
-    it("compares equal single values correctly", () => {
-      expect(
-        sorter(left, {
-          ...right,
-          updatedAt: left.updatedAt,
-        }),
-      ).toBeLessThan(0);
-    });
-
-    it("compares missing single values correctly", () => {
-      expect(
-        sorter(
-          {
-            ...left,
-            updatedAt: undefined,
-          },
-          right,
-        ),
-      ).toBeGreaterThan(0);
-    });
-  });
 });
 
 describe(compareWithResults.name, () => {
@@ -295,32 +246,6 @@ describe(compareWithResults.name, () => {
         id: 12,
         fullName: "github/world",
         stargazersCount: 10,
-      },
-    };
-
-    it("compares correctly", () => {
-      expect(sorter(left, right)).toBeGreaterThan(0);
-    });
-  });
-
-  describe("when sort key is 'Most recent commit'", () => {
-    const sorter = compareWithResults({
-      ...permissiveFilterSortState,
-      sortKey: SortKey.MostRecentCommit,
-    });
-
-    const left = {
-      repository: {
-        id: 11,
-        fullName: "github/galaxy",
-        updatedAt: "2020-01-01T00:00:00Z",
-      },
-    };
-    const right = {
-      repository: {
-        id: 12,
-        fullName: "github/world",
-        updatedAt: "2021-01-01T00:00:00Z",
       },
     };
 

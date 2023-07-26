@@ -318,7 +318,6 @@ This requires running a MRVA query and seeing the results view.
    1. Alphabetically
    2. By number of results
    3. By popularity
-   4. By most recent commit
 9. Can filter repos
 10. Shows correct statistics
     1. Total number of results
