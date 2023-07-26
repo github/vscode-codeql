@@ -1,5 +1,4 @@
 import { createMockLogger } from "../../../__mocks__/loggerMock";
-import type { Uri } from "vscode";
 import {
   DatabaseItem,
   DatabaseKind,
@@ -8,24 +7,11 @@ import { file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/query-server/new-messages";
 import { runAutoModelQueries } from "../../../../src/data-extensions-editor/auto-model-codeml-queries";
 import { Mode } from "../../../../src/data-extensions-editor/shared/mode";
-import { mockedObject } from "../../utils/mocking.helpers";
+import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { QueryRunner } from "../../../../src/query-server";
 import * as queryResolver from "../../../../src/local-queries/query-resolver";
 import * as standardQueries from "../../../../src/local-queries/standard-queries";
-
-function createMockUri(path = "/a/b/c/foo"): Uri {
-  return {
-    scheme: "file",
-    authority: "",
-    path,
-    query: "",
-    fragment: "",
-    fsPath: path,
-    with: jest.fn(),
-    toJSON: jest.fn(),
-  };
-}
 
 describe("runAutoModelQueries", () => {
   const qlpack = {
@@ -134,17 +120,17 @@ describe("runAutoModelQueries", () => {
         logger: createMockLogger(),
       }),
       databaseItem: mockedObject<DatabaseItem>({
-        databaseUri: createMockUri("/a/b/c/src.zip"),
+        databaseUri: mockedUri("/a/b/c/src.zip"),
         contents: {
           kind: DatabaseKind.Database,
           name: "foo",
-          datasetUri: createMockUri(),
+          datasetUri: mockedUri(),
         },
         language: "java",
         getSourceLocationPrefix: jest
           .fn()
           .mockResolvedValue("/home/runner/work/my-repo/my-repo"),
-        sourceArchive: createMockUri("/a/b/c/src.zip"),
+        sourceArchive: mockedUri("/a/b/c/src.zip"),
       }),
       queryStorageDir: "/tmp/queries",
       progress: jest.fn(),
