@@ -19,6 +19,8 @@ import { join } from "path";
 import { assertNever } from "../common/helpers-pure";
 
 type AutoModelQueryOptions = {
+  queryTag: string;
+  mode: Mode;
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   databaseItem: DatabaseItem;
@@ -42,21 +44,19 @@ function modeTag(mode: Mode): string {
   }
 }
 
-async function runAutoModelQuery(
-  mode: Mode,
-  queryTag: string,
-  {
-    cliServer,
-    queryRunner,
-    databaseItem,
-    qlpack,
-    sourceInfo,
-    extensionPacks,
-    queryStorageDir,
-    progress,
-    token,
-  }: AutoModelQueryOptions,
-): Promise<Sarif.Log | undefined> {
+async function runAutoModelQuery({
+  queryTag,
+  mode,
+  cliServer,
+  queryRunner,
+  databaseItem,
+  qlpack,
+  sourceInfo,
+  extensionPacks,
+  queryStorageDir,
+  progress,
+  token,
+}: AutoModelQueryOptions): Promise<Sarif.Log | undefined> {
   // First, resolve the query that we want to run.
   // All queries are tagged like this:
   // internal extract automodel <mode> <queryTag>
@@ -200,7 +200,9 @@ export async function runAutoModelQueries({
     message: "Finding candidates and examples",
   });
 
-  const candidates = await runAutoModelQuery(mode, "candidates", {
+  const candidates = await runAutoModelQuery({
+    mode,
+    queryTag: "candidates",
     cliServer,
     queryRunner,
     databaseItem,
