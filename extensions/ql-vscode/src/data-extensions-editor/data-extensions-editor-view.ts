@@ -383,7 +383,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
     let predictedModeledMethods: Record<string, ModeledMethod>;
 
     if (useLlmGenerationV2()) {
-      const usages = await runAutoModelQueries(this.mode, {
+      const usages = await runAutoModelQueries({
+        mode: this.mode,
         cliServer: this.cliServer,
         queryRunner: this.queryRunner,
         queryStorageDir: this.queryStorageDir,

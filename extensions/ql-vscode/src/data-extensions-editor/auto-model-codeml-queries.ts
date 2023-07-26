@@ -18,19 +18,6 @@ import { interpretResultsSarif } from "../query-results";
 import { join } from "path";
 import { assertNever } from "../common/helpers-pure";
 
-type Options = {
-  cliServer: CodeQLCliServer;
-  queryRunner: QueryRunner;
-  databaseItem: DatabaseItem;
-  queryStorageDir: string;
-
-  progress: ProgressCallback;
-};
-
-export type AutoModelQueriesResult = {
-  candidates: Sarif.Log;
-};
-
 type AutoModelQueryOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
@@ -158,10 +145,28 @@ async function runAutoModelQuery(
   return sarif;
 }
 
-export async function runAutoModelQueries(
-  mode: Mode,
-  { cliServer, queryRunner, databaseItem, queryStorageDir, progress }: Options,
-): Promise<AutoModelQueriesResult | undefined> {
+type AutoModelQueriesOptions = {
+  mode: Mode;
+  cliServer: CodeQLCliServer;
+  queryRunner: QueryRunner;
+  databaseItem: DatabaseItem;
+  queryStorageDir: string;
+
+  progress: ProgressCallback;
+};
+
+export type AutoModelQueriesResult = {
+  candidates: Sarif.Log;
+};
+
+export async function runAutoModelQueries({
+  mode,
+  cliServer,
+  queryRunner,
+  databaseItem,
+  queryStorageDir,
+  progress,
+}: AutoModelQueriesOptions): Promise<AutoModelQueriesResult | undefined> {
   // maxStep for this part is 1500
   const maxStep = 1500;
 
