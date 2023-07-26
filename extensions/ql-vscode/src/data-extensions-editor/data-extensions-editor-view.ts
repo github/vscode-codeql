@@ -343,18 +343,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
             )`Failed to generate flow model: ${getErrorMessage(e)}`,
           );
         }
-
-        // To do: don't do this for local dbs!
-        if (addedDatabase) {
-          // After the flow model has been generated, we can remove the temporary database
-          // which we used for generating the flow model.
-          progress({
-            step: 3900,
-            maxStep: 4000,
-            message: "Removing temporary database",
-          });
-          await this.databaseManager.removeDatabaseItem(addedDatabase);
-        }
       },
       { cancellable: false },
     );
