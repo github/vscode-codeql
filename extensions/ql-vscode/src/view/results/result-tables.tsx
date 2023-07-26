@@ -27,7 +27,7 @@ import {
 } from "./result-table-utils";
 import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
-import { basename } from "path";
+import { basename } from "../../common/path";
 
 /**
  * Properties for the `ResultTables` component.
