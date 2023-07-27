@@ -91,6 +91,8 @@ export function DataExtensionsEditor({
     new Set(),
   );
 
+  const [hideModeledApis, setHideModeledApis] = useState(true);
+
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
   >(initialModeledMethods);
@@ -252,6 +254,10 @@ export function DataExtensionsEditor({
     });
   }, [viewState?.mode]);
 
+  const onHideModeledApis = useCallback(() => {
+    setHideModeledApis((oldHideModeledApis) => !oldHideModeledApis);
+  }, []);
+
   if (viewState === undefined || externalApiUsages.length === 0) {
     return <LoadingContainer>Loading...</LoadingContainer>;
   }
@@ -292,7 +298,12 @@ export function DataExtensionsEditor({
         </HeaderColumn>
         <HeaderSpacer />
         <HeaderColumn>
-          <VSCodeCheckbox>Hide modeled APIs</VSCodeCheckbox>
+          <VSCodeCheckbox
+            checked={hideModeledApis}
+            onChange={onHideModeledApis}
+          >
+            Hide modeled APIs
+          </VSCodeCheckbox>
         </HeaderColumn>
       </HeaderContainer>
 
@@ -320,6 +331,7 @@ export function DataExtensionsEditor({
           modeledMethods={modeledMethods}
           modifiedSignatures={modifiedSignatures}
           viewState={viewState}
+          hideModeledApis={hideModeledApis}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}

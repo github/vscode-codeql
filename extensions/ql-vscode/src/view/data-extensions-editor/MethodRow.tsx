@@ -56,6 +56,7 @@ type Props = {
   modeledMethod: ModeledMethod | undefined;
   methodIsUnsaved: boolean;
   mode: Mode;
+  hideModeledApis: boolean;
   onChange: (
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
@@ -63,7 +64,8 @@ type Props = {
 };
 
 export const MethodRow = (props: Props) => {
-  const { externalApiUsage, modeledMethod, methodIsUnsaved } = props;
+  const { externalApiUsage, modeledMethod, methodIsUnsaved, hideModeledApis } =
+    props;
 
   const methodCanBeModeled =
     !externalApiUsage.supported ||
@@ -72,6 +74,8 @@ export const MethodRow = (props: Props) => {
 
   if (methodCanBeModeled) {
     return <ModelableMethodRow {...props} />;
+  } else if (hideModeledApis) {
+    return null;
   } else {
     return <UnmodelableMethodRow {...props} />;
   }
