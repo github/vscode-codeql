@@ -53,6 +53,18 @@ class CommandName extends string {
 }
 
 /**
+ * Matches one of the members of `BuiltInVsCodeCommands` from `extensions/ql-vscode/src/common/commands.ts`.
+ */
+class BuiltInVSCodeCommand extends string {
+  BuiltInVSCodeCommand() {
+    exists(TypeAliasDeclaration tad |
+      tad.getIdentifier().getName() = "BuiltInVsCodeCommands" and
+      tad.getDefinition().(InterfaceTypeExpr).getAMember().getName() = this
+    )
+  }
+}
+
+/**
  * Represents a single usage of a command, either from within code or
  * from the command's definition in package.json
  */
@@ -142,6 +154,6 @@ class CommandUsagePackageJsonCommandPalette extends CommandUsage, JsonObject {
 }
 
 from CommandName c
-where c.getNumberOfUsages() > 1
+where c.getNumberOfUsages() > 1 and not c instanceof BuiltInVSCodeCommand
 select c.getFirstUsage(),
   "The " + c + " command is used from " + c.getNumberOfUsages() + " locations"
