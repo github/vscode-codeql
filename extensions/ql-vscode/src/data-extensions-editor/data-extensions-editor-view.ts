@@ -14,11 +14,7 @@ import {
   FromDataExtensionsEditorMessage,
   ToDataExtensionsEditorMessage,
 } from "../common/interface-types";
-import {
-  ProgressCallback,
-  ProgressUpdate,
-  withProgress,
-} from "../common/vscode/progress";
+import { ProgressCallback, withProgress } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
 import {
   showAndLogExceptionWithTelemetry,
@@ -119,6 +115,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
     switch (msg.t) {
       case "viewLoaded":
         await this.onWebViewLoaded();
+
+        break;
+      case "openDatabase":
+        await this.app.commands.execute(
+          "revealInExplorer",
+          this.databaseItem.getSourceArchiveExplorerUri(),
+        );
 
         break;
       case "openExtensionPack":
@@ -238,255 +241,254 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   protected async loadExternalApiUsages(): Promise<void> {
-    const cancellationTokenSource = new CancellationTokenSource();
+    await withProgress(
+      async (progress) => {
+        try {
+          const cancellationTokenSource = new CancellationTokenSource();
+          const queryResult = await runQuery(
+            this.mode === Mode.Framework
+              ? "frameworkModeQuery"
+              : "applicationModeQuery",
+            {
+              cliServer: this.cliServer,
+              queryRunner: this.queryRunner,
+              databaseItem: this.databaseItem,
+              queryStorageDir: this.queryStorageDir,
+              progress: (update) => progress({ ...update, maxStep: 1500 }),
+              token: cancellationTokenSource.token,
+            },
+          );
+          if (!queryResult) {
+            return;
+          }
 
-    try {
-      const queryResult = await runQuery(
-        this.mode === Mode.Framework
-          ? "frameworkModeQuery"
-          : "applicationModeQuery",
-        {
-          cliServer: this.cliServer,
-          queryRunner: this.queryRunner,
-          databaseItem: this.databaseItem,
-          queryStorageDir: this.queryStorageDir,
-          progress: (progressUpdate: ProgressUpdate) => {
-            void this.showProgress(progressUpdate, 1500);
-          },
-          token: cancellationTokenSource.token,
-        },
-      );
-      if (!queryResult) {
-        await this.clearProgress();
-        return;
-      }
+          progress({
+            message: "Decoding results",
+            step: 1100,
+            maxStep: 1500,
+          });
 
-      await this.showProgress({
-        message: "Decoding results",
-        step: 1100,
-        maxStep: 1500,
-      });
+          const bqrsChunk = await readQueryResults({
+            cliServer: this.cliServer,
+            bqrsPath: queryResult.outputDir.bqrsPath,
+          });
+          if (!bqrsChunk) {
+            return;
+          }
 
-      const bqrsChunk = await readQueryResults({
-        cliServer: this.cliServer,
-        bqrsPath: queryResult.outputDir.bqrsPath,
-      });
-      if (!bqrsChunk) {
-        await this.clearProgress();
-        return;
-      }
+          progress({
+            message: "Finalizing results",
+            step: 1450,
+            maxStep: 1500,
+          });
 
-      await this.showProgress({
-        message: "Finalizing results",
-        step: 1450,
-        maxStep: 1500,
-      });
+          const externalApiUsages = decodeBqrsToExternalApiUsages(bqrsChunk);
 
-      const externalApiUsages = decodeBqrsToExternalApiUsages(bqrsChunk);
-
-      await this.postMessage({
-        t: "setExternalApiUsages",
-        externalApiUsages,
-      });
-
-      await this.clearProgress();
-    } catch (err) {
-      void showAndLogExceptionWithTelemetry(
-        this.app.logger,
-        this.app.telemetry,
-        redactableError(
-          asError(err),
-        )`Failed to load external API usages: ${getErrorMessage(err)}`,
-      );
-    }
+          await this.postMessage({
+            t: "setExternalApiUsages",
+            externalApiUsages,
+          });
+        } catch (err) {
+          void showAndLogExceptionWithTelemetry(
+            this.app.logger,
+            this.app.telemetry,
+            redactableError(
+              asError(err),
+            )`Failed to load external API usages: ${getErrorMessage(err)}`,
+          );
+        }
+      },
+      { cancellable: false },
+    );
   }
 
   protected async generateModeledMethods(): Promise<void> {
-    const tokenSource = new CancellationTokenSource();
+    await withProgress(
+      async (progress) => {
+        const tokenSource = new CancellationTokenSource();
 
-    let addedDatabase: DatabaseItem | undefined;
+        let addedDatabase: DatabaseItem | undefined;
 
-    // In application mode, we need the database of a specific library to generate
-    // the modeled methods. In framework mode, we'll use the current database.
-    if (this.mode === Mode.Application) {
-      addedDatabase = await this.promptImportDatabase((update) =>
-        this.showProgress(update),
-      );
-      if (!addedDatabase) {
-        return;
-      }
-    }
-
-    await this.showProgress({
-      step: 0,
-      maxStep: 4000,
-      message: "Generating modeled methods for library",
-    });
-
-    try {
-      await generateFlowModel({
-        cliServer: this.cliServer,
-        queryRunner: this.queryRunner,
-        queryStorageDir: this.queryStorageDir,
-        databaseItem: addedDatabase ?? this.databaseItem,
-        onResults: async (modeledMethods) => {
-          const modeledMethodsByName: Record<string, ModeledMethod> = {};
-
-          for (const modeledMethod of modeledMethods) {
-            modeledMethodsByName[modeledMethod.signature] = modeledMethod;
+        // In application mode, we need the database of a specific library to generate
+        // the modeled methods. In framework mode, we'll use the current database.
+        if (this.mode === Mode.Application) {
+          addedDatabase = await this.promptImportDatabase(progress);
+          if (!addedDatabase) {
+            return;
           }
+        }
 
-          await this.postMessage({
-            t: "addModeledMethods",
-            modeledMethods: modeledMethodsByName,
+        progress({
+          step: 0,
+          maxStep: 4000,
+          message: "Generating modeled methods for library",
+        });
+
+        try {
+          await generateFlowModel({
+            cliServer: this.cliServer,
+            queryRunner: this.queryRunner,
+            queryStorageDir: this.queryStorageDir,
+            databaseItem: addedDatabase ?? this.databaseItem,
+            onResults: async (modeledMethods) => {
+              const modeledMethodsByName: Record<string, ModeledMethod> = {};
+
+              for (const modeledMethod of modeledMethods) {
+                modeledMethodsByName[modeledMethod.signature] = modeledMethod;
+              }
+
+              await this.postMessage({
+                t: "addModeledMethods",
+                modeledMethods: modeledMethodsByName,
+              });
+            },
+            progress,
+            token: tokenSource.token,
           });
-        },
-        progress: (update) => this.showProgress(update),
-        token: tokenSource.token,
-      });
-    } catch (e: unknown) {
-      void showAndLogExceptionWithTelemetry(
-        this.app.logger,
-        this.app.telemetry,
-        redactableError(
-          asError(e),
-        )`Failed to generate flow model: ${getErrorMessage(e)}`,
-      );
-    }
+        } catch (e: unknown) {
+          void showAndLogExceptionWithTelemetry(
+            this.app.logger,
+            this.app.telemetry,
+            redactableError(
+              asError(e),
+            )`Failed to generate flow model: ${getErrorMessage(e)}`,
+          );
+        }
 
-    if (addedDatabase) {
-      // After the flow model has been generated, we can remove the temporary database
-      // which we used for generating the flow model.
-      await this.showProgress({
-        step: 3900,
-        maxStep: 4000,
-        message: "Removing temporary database",
-      });
-      await this.databaseManager.removeDatabaseItem(addedDatabase);
-    }
-
-    await this.clearProgress();
+        if (addedDatabase) {
+          // After the flow model has been generated, we can remove the temporary database
+          // which we used for generating the flow model.
+          progress({
+            step: 3900,
+            maxStep: 4000,
+            message: "Removing temporary database",
+          });
+          await this.databaseManager.removeDatabaseItem(addedDatabase);
+        }
+      },
+      { cancellable: false },
+    );
   }
 
   private async generateModeledMethodsFromLlm(
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
-    const maxStep = 3000;
+    await withProgress(async (progress) => {
+      const maxStep = 3000;
 
-    await this.showProgress({
-      step: 0,
-      maxStep,
-      message: "Retrieving usages",
+      progress({
+        step: 0,
+        maxStep,
+        message: "Retrieving usages",
+      });
+
+      let predictedModeledMethods: Record<string, ModeledMethod>;
+
+      if (useLlmGenerationV2()) {
+        const usages = await runAutoModelQueries({
+          mode: this.mode,
+          cliServer: this.cliServer,
+          queryRunner: this.queryRunner,
+          queryStorageDir: this.queryStorageDir,
+          databaseItem: this.databaseItem,
+          progress: (update) => progress({ ...update, maxStep }),
+        });
+        if (!usages) {
+          return;
+        }
+
+        progress({
+          step: 1800,
+          maxStep,
+          message: "Creating request",
+        });
+
+        const request = await createAutoModelV2Request(this.mode, usages);
+
+        progress({
+          step: 2000,
+          maxStep,
+          message: "Sending request",
+        });
+
+        const response = await this.callAutoModelApiV2(request);
+        if (!response) {
+          return;
+        }
+
+        progress({
+          step: 2500,
+          maxStep,
+          message: "Parsing response",
+        });
+
+        const models = loadYaml(response.models, {
+          filename: "auto-model.yml",
+        });
+
+        const modeledMethods = loadDataExtensionYaml(models);
+        if (!modeledMethods) {
+          return;
+        }
+
+        predictedModeledMethods = modeledMethods;
+      } else {
+        const usages = await getAutoModelUsages({
+          cliServer: this.cliServer,
+          queryRunner: this.queryRunner,
+          queryStorageDir: this.queryStorageDir,
+          databaseItem: this.databaseItem,
+          progress: (update) => progress({ ...update, maxStep }),
+        });
+
+        progress({
+          step: 1800,
+          maxStep,
+          message: "Creating request",
+        });
+
+        const request = createAutoModelRequest(
+          this.databaseItem.language,
+          externalApiUsages,
+          modeledMethods,
+          usages,
+          this.mode,
+        );
+
+        progress({
+          step: 2000,
+          maxStep,
+          message: "Sending request",
+        });
+
+        const response = await this.callAutoModelApi(request);
+        if (!response) {
+          return;
+        }
+
+        progress({
+          step: 2500,
+          maxStep,
+          message: "Parsing response",
+        });
+
+        predictedModeledMethods = parsePredictedClassifications(
+          response.predicted || [],
+        );
+      }
+
+      progress({
+        step: 2800,
+        maxStep,
+        message: "Applying results",
+      });
+
+      await this.postMessage({
+        t: "addModeledMethods",
+        modeledMethods: predictedModeledMethods,
+      });
     });
-
-    let predictedModeledMethods: Record<string, ModeledMethod>;
-
-    if (useLlmGenerationV2()) {
-      const usages = await runAutoModelQueries({
-        mode: this.mode,
-        cliServer: this.cliServer,
-        queryRunner: this.queryRunner,
-        queryStorageDir: this.queryStorageDir,
-        databaseItem: this.databaseItem,
-        progress: (update) => this.showProgress(update, maxStep),
-      });
-      if (!usages) {
-        return;
-      }
-
-      await this.showProgress({
-        step: 1800,
-        maxStep,
-        message: "Creating request",
-      });
-
-      const request = await createAutoModelV2Request(this.mode, usages);
-
-      await this.showProgress({
-        step: 2000,
-        maxStep,
-        message: "Sending request",
-      });
-
-      const response = await this.callAutoModelApiV2(request);
-      if (!response) {
-        return;
-      }
-
-      await this.showProgress({
-        step: 2500,
-        maxStep,
-        message: "Parsing response",
-      });
-
-      const models = loadYaml(response.models, {
-        filename: "auto-model.yml",
-      });
-
-      const modeledMethods = loadDataExtensionYaml(models);
-      if (!modeledMethods) {
-        return;
-      }
-
-      predictedModeledMethods = modeledMethods;
-    } else {
-      const usages = await getAutoModelUsages({
-        cliServer: this.cliServer,
-        queryRunner: this.queryRunner,
-        queryStorageDir: this.queryStorageDir,
-        databaseItem: this.databaseItem,
-        progress: (update) => this.showProgress(update, maxStep),
-      });
-
-      await this.showProgress({
-        step: 1800,
-        maxStep,
-        message: "Creating request",
-      });
-
-      const request = createAutoModelRequest(
-        this.databaseItem.language,
-        externalApiUsages,
-        modeledMethods,
-        usages,
-        this.mode,
-      );
-
-      await this.showProgress({
-        step: 2000,
-        maxStep,
-        message: "Sending request",
-      });
-
-      const response = await this.callAutoModelApi(request);
-      if (!response) {
-        return;
-      }
-
-      await this.showProgress({
-        step: 2500,
-        maxStep,
-        message: "Parsing response",
-      });
-
-      predictedModeledMethods = parsePredictedClassifications(
-        response.predicted || [],
-      );
-    }
-
-    await this.showProgress({
-      step: 2800,
-      maxStep,
-      message: "Applying results",
-    });
-
-    await this.postMessage({
-      t: "addModeledMethods",
-      modeledMethods: predictedModeledMethods,
-    });
-
-    await this.clearProgress();
   }
 
   private async modelDependency(): Promise<void> {
@@ -547,46 +549,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
     return addedDatabase;
   }
 
-  /*
-   * Progress in this class is a bit weird. Most of the progress is based on running the query.
-   * Query progress is always between 0 and 1000. However, we still have some steps that need
-   * to be done after the query has finished. Therefore, the maximum step is 1500. This captures
-   * that there's 1000 steps of the query progress since that takes the most time, and then
-   * an additional 500 steps for the rest of the work. The progress doesn't need to be 100%
-   * accurate, so this is just a rough estimate.
-   *
-   * For generating the modeled methods for an external library, the max step is 4000. This is
-   * based on the following steps:
-   * - 1000 for the summary model
-   * - 1000 for the sink model
-   * - 1000 for the source model
-   * - 1000 for the neutral model
-   */
-  private async showProgress(update: ProgressUpdate, maxStep?: number) {
-    await this.postMessage({
-      t: "showProgress",
-      step: update.step,
-      maxStep: maxStep ?? update.maxStep,
-      message: update.message,
-    });
-  }
-
-  private async clearProgress() {
-    await this.showProgress({
-      step: 0,
-      maxStep: 0,
-      message: "",
-    });
-  }
-
   private async callAutoModelApi(
     request: ModelRequest,
   ): Promise<ModelResponse | null> {
     try {
       return await autoModel(this.app.credentials, request);
     } catch (e) {
-      await this.clearProgress();
-
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(
           this.app.logger,
@@ -606,8 +574,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
     try {
       return await autoModelV2(this.app.credentials, request);
     } catch (e) {
-      await this.clearProgress();
-
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(
           this.app.logger,

@@ -1,10 +1,11 @@
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ToDataExtensionsEditorMessage } from "../../common/interface-types";
 import {
-  ShowProgressMessage,
-  ToDataExtensionsEditorMessage,
-} from "../../common/interface-types";
-import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
+  VSCodeButton,
+  VSCodeCheckbox,
+  VSCodeTag,
+} from "@vscode/webview-ui-toolkit/react";
 import styled from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
@@ -12,7 +13,6 @@ import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { calculateModeledPercentage } from "../../data-extensions-editor/shared/modeled-percentage";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
-import { ViewTitle } from "../common";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
@@ -30,10 +30,33 @@ const DataExtensionsEditorContainer = styled.div`
   margin-top: 1rem;
 `;
 
-const DetailsContainer = styled.div`
+const HeaderContainer = styled.div`
   display: flex;
+  flex-direction: row;
+  align-items: end;
+`;
+
+const HeaderColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+`;
+
+const HeaderSpacer = styled.div`
+  flex-grow: 1;
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  flex-direction: row;
   gap: 1em;
   align-items: center;
+`;
+
+const ViewTitle = styled.h1`
+  font-size: 2em;
+  font-weight: 500;
+  margin: 0;
 `;
 
 const EditorContainer = styled.div`
@@ -44,17 +67,6 @@ const ButtonsContainer = styled.div`
   display: flex;
   gap: 0.4em;
   margin-bottom: 1rem;
-`;
-
-type ProgressBarProps = {
-  completion: number;
-};
-
-const ProgressBar = styled.div<ProgressBarProps>`
-  height: 10px;
-  width: ${(props) => props.completion * 100}%;
-
-  background-color: var(--vscode-progressBar-background);
 `;
 
 type Props = {
@@ -82,11 +94,6 @@ export function DataExtensionsEditor({
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
   >(initialModeledMethods);
-  const [progress, setProgress] = useState<Omit<ShowProgressMessage, "t">>({
-    step: 0,
-    maxStep: 0,
-    message: "",
-  });
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
@@ -98,9 +105,6 @@ export function DataExtensionsEditor({
             break;
           case "setExternalApiUsages":
             setExternalApiUsages(msg.externalApiUsages);
-            break;
-          case "showProgress":
-            setProgress(msg);
             break;
           case "loadModeledMethods":
             setModeledMethods((oldModeledMethods) => {
@@ -149,8 +153,6 @@ export function DataExtensionsEditor({
     () => calculateModeledPercentage(externalApiUsages),
     [externalApiUsages],
   );
-
-  const unModeledPercentage = 100 - modeledPercentage;
 
   const onChange = useCallback(
     (modelName: string, method: ExternalApiUsage, model: ModeledMethod) => {
@@ -208,14 +210,6 @@ export function DataExtensionsEditor({
     });
   }, []);
 
-  const onGenerateAllFromLlmClick = useCallback(() => {
-    vscode.postMessage({
-      t: "generateExternalApiFromLlm",
-      externalApiUsages,
-      modeledMethods,
-    });
-  }, [externalApiUsages, modeledMethods]);
-
   const onModelDependencyClick = useCallback(() => {
     vscode.postMessage({
       t: "modelDependency",
@@ -236,6 +230,12 @@ export function DataExtensionsEditor({
     [],
   );
 
+  const onOpenDatabaseClick = useCallback(() => {
+    vscode.postMessage({
+      t: "openDatabase",
+    });
+  }, []);
+
   const onOpenExtensionPackClick = useCallback(() => {
     vscode.postMessage({
       t: "openExtensionPack",
@@ -252,91 +252,81 @@ export function DataExtensionsEditor({
     });
   }, [viewState?.mode]);
 
-  if (viewState === undefined) {
+  if (viewState === undefined || externalApiUsages.length === 0) {
     return <LoadingContainer>Loading...</LoadingContainer>;
   }
 
   return (
     <DataExtensionsEditorContainer>
-      {progress.maxStep > 0 && (
-        <p>
-          <ProgressBar completion={progress.step / progress.maxStep} />{" "}
-          {progress.message}
-        </p>
-      )}
-
-      {externalApiUsages.length > 0 && (
-        <>
-          <ViewTitle>
-            {getLanguageDisplayName(viewState.extensionPack.language)}
-          </ViewTitle>
-          <DetailsContainer>
+      <HeaderContainer>
+        <HeaderColumn>
+          <HeaderRow>
+            <ViewTitle>
+              {getLanguageDisplayName(viewState.extensionPack.language)}
+            </ViewTitle>
+            <VSCodeTag>
+              {percentFormatter.format(modeledPercentage / 100)} modeled
+            </VSCodeTag>
+          </HeaderRow>
+          <HeaderRow>
+            <>{viewState.extensionPack.name}</>
+          </HeaderRow>
+          <HeaderRow>
+            <LinkIconButton onClick={onOpenDatabaseClick}>
+              <span slot="start" className="codicon codicon-package"></span>
+              Open database
+            </LinkIconButton>
             <LinkIconButton onClick={onOpenExtensionPackClick}>
               <span slot="start" className="codicon codicon-package"></span>
-              {viewState.extensionPack.name}
+              Open extension pack
             </LinkIconButton>
-            <div>
-              {percentFormatter.format(modeledPercentage / 100)} modeled
-            </div>
-            <div>
-              {percentFormatter.format(unModeledPercentage / 100)} unmodeled
-            </div>
             {viewState.enableFrameworkMode && (
-              <>
-                <div>
-                  Mode:{" "}
-                  {viewState.mode === Mode.Framework
-                    ? "Framework"
-                    : "Application"}
-                </div>
-                <div>
-                  <LinkIconButton onClick={onSwitchModeClick}>
-                    <span
-                      slot="start"
-                      className="codicon codicon-library"
-                    ></span>
-                    Switch mode
-                  </LinkIconButton>
-                </div>
-              </>
-            )}
-          </DetailsContainer>
-
-          <EditorContainer>
-            <ButtonsContainer>
-              <VSCodeButton onClick={onSaveAllClick}>Apply</VSCodeButton>
-              {viewState.enableFrameworkMode && (
-                <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
-                  Refresh
-                </VSCodeButton>
-              )}
-              <VSCodeButton onClick={onGenerateFromSourceClick}>
+              <LinkIconButton onClick={onSwitchModeClick}>
+                <span slot="start" className="codicon codicon-library"></span>
                 {viewState.mode === Mode.Framework
-                  ? "Generate"
-                  : "Download and generate"}
-              </VSCodeButton>
-              {viewState.showLlmButton && (
-                <>
-                  <VSCodeButton onClick={onGenerateAllFromLlmClick}>
-                    Generate using LLM
-                  </VSCodeButton>
-                </>
-              )}
-            </ButtonsContainer>
-            <ModeledMethodsList
-              externalApiUsages={externalApiUsages}
-              modeledMethods={modeledMethods}
-              modifiedSignatures={modifiedSignatures}
-              viewState={viewState}
-              onChange={onChange}
-              onSaveModelClick={onSaveModelClick}
-              onGenerateFromLlmClick={onGenerateFromLlmClick}
-              onGenerateFromSourceClick={onGenerateFromSourceClick}
-              onModelDependencyClick={onModelDependencyClick}
-            />
-          </EditorContainer>
-        </>
-      )}
+                  ? "Model as application"
+                  : "Model as dependency"}
+              </LinkIconButton>
+            )}
+          </HeaderRow>
+        </HeaderColumn>
+        <HeaderSpacer />
+        <HeaderColumn>
+          <VSCodeCheckbox>Hide modeled APIs</VSCodeCheckbox>
+        </HeaderColumn>
+      </HeaderContainer>
+
+      <EditorContainer>
+        <ButtonsContainer>
+          <VSCodeButton
+            onClick={onSaveAllClick}
+            disabled={modifiedSignatures.size === 0}
+          >
+            Save all
+          </VSCodeButton>
+          {viewState.enableFrameworkMode && (
+            <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
+              Refresh
+            </VSCodeButton>
+          )}
+          {viewState.mode === Mode.Framework && (
+            <VSCodeButton onClick={onGenerateFromSourceClick}>
+              Generate
+            </VSCodeButton>
+          )}
+        </ButtonsContainer>
+        <ModeledMethodsList
+          externalApiUsages={externalApiUsages}
+          modeledMethods={modeledMethods}
+          modifiedSignatures={modifiedSignatures}
+          viewState={viewState}
+          onChange={onChange}
+          onSaveModelClick={onSaveModelClick}
+          onGenerateFromLlmClick={onGenerateFromLlmClick}
+          onGenerateFromSourceClick={onGenerateFromSourceClick}
+          onModelDependencyClick={onModelDependencyClick}
+        />
+      </EditorContainer>
     </DataExtensionsEditorContainer>
   );
 }
