@@ -140,7 +140,7 @@ export class VariantAnalysisView
         break;
       case "copyRepositoryList":
         void this.app.commands.execute(
-          "codeQL.copyVariantAnalysisRepoList",
+          "codeQL.copyVariantAnalysisRepoListView",
           this.variantAnalysisId,
           msg.filterSort,
         );

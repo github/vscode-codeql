@@ -714,7 +714,7 @@ describe("QueryHistoryManager", () => {
       const item = variantAnalysisHistory[1];
       await queryHistoryManager.handleCopyRepoList(item);
       expect(executeCommand).toBeCalledWith(
-        "codeQL.copyVariantAnalysisRepoList",
+        "codeQL.copyVariantAnalysisRepoListQueryHistory",
         item.variantAnalysis.id,
       );
     });
