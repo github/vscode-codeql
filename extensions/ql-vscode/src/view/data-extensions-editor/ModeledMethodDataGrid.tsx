@@ -16,6 +16,7 @@ type Props = {
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
   mode: Mode;
+  hideModeledApis: boolean;
   onChange: (
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
@@ -27,6 +28,7 @@ export const ModeledMethodDataGrid = ({
   modeledMethods,
   modifiedSignatures,
   mode,
+  hideModeledApis,
   onChange,
 }: Props) => {
   const sortedExternalApiUsages = useMemo(
@@ -60,6 +62,7 @@ export const ModeledMethodDataGrid = ({
           modeledMethod={modeledMethods[externalApiUsage.signature]}
           methodIsUnsaved={modifiedSignatures.has(externalApiUsage.signature)}
           mode={mode}
+          hideModeledApis={hideModeledApis}
           onChange={onChange}
         />
       ))}

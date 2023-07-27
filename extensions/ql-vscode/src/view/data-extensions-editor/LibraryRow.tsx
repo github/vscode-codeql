@@ -73,6 +73,7 @@ type Props = {
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
   viewState: DataExtensionEditorViewState;
+  hideModeledApis: boolean;
   onChange: (
     modelName: string,
     externalApiUsage: ExternalApiUsage,
@@ -97,6 +98,7 @@ export const LibraryRow = ({
   modeledMethods,
   modifiedSignatures,
   viewState,
+  hideModeledApis,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
@@ -208,6 +210,7 @@ export const LibraryRow = ({
             modeledMethods={modeledMethods}
             modifiedSignatures={modifiedSignatures}
             mode={viewState.mode}
+            hideModeledApis={hideModeledApis}
             onChange={onChangeWithModelName}
           />
           <SectionDivider />
