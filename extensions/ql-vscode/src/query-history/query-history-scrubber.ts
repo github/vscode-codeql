@@ -6,6 +6,7 @@ import { extLogger } from "../common/logging/vscode";
 import { readDirFullPaths } from "../common/files";
 import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryManager } from "./query-history-manager";
+import { getErrorMessage } from "../common/helpers-pure";
 
 const LAST_SCRUB_TIME_KEY = "lastScrubTime";
 
@@ -141,7 +142,7 @@ async function scrubDirectory(
     }
   } catch (err) {
     return {
-      errorMsg: `  Could not delete '${dir}': ${err}`,
+      errorMsg: `  Could not delete '${dir}': ${getErrorMessage(err)}`,
       deleted: false,
     };
   }
@@ -177,7 +178,9 @@ async function getTimestamp(
     return parseInt(timestampText, 10);
   } catch (err) {
     void extLogger.log(
-      `  Could not read timestamp file '${timestampFile}': ${err}`,
+      `  Could not read timestamp file '${timestampFile}': ${getErrorMessage(
+        err,
+      )}`,
     );
     return undefined;
   }
