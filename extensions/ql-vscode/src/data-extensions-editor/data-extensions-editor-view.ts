@@ -36,16 +36,29 @@ import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
 import { autoModel, ModelRequest, ModelResponse } from "./auto-model-api";
 import {
+  autoModelV2,
+  ModelRequest as ModelRequestV2,
+  ModelResponse as ModelResponseV2,
+} from "./auto-model-api-v2";
+import {
   createAutoModelRequest,
   parsePredictedClassifications,
 } from "./auto-model";
-import { enableFrameworkMode, showLlmGeneration } from "../config";
+import {
+  enableFrameworkMode,
+  showLlmGeneration,
+  useLlmGenerationV2,
+} from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { join } from "path";
 import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
+import { runAutoModelQueries } from "./auto-model-codeml-queries";
+import { createAutoModelV2Request } from "./auto-model-v2";
+import { load as loadYaml } from "js-yaml";
+import { loadDataExtensionYaml } from "./yaml";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -361,16 +374,66 @@ export class DataExtensionsEditorView extends AbstractWebview<
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
-    await withProgress(
-      async (progress) => {
-        const maxStep = 3000;
+    await withProgress(async (progress) => {
+      const maxStep = 3000;
+
+      progress({
+        step: 0,
+        maxStep,
+        message: "Retrieving usages",
+      });
+
+      let predictedModeledMethods: Record<string, ModeledMethod>;
+
+      if (useLlmGenerationV2()) {
+        const usages = await runAutoModelQueries({
+          mode: this.mode,
+          cliServer: this.cliServer,
+          queryRunner: this.queryRunner,
+          queryStorageDir: this.queryStorageDir,
+          databaseItem: this.databaseItem,
+          progress: (update) => progress({ ...update, maxStep }),
+        });
+        if (!usages) {
+          return;
+        }
 
         progress({
-          step: 0,
+          step: 1800,
           maxStep,
-          message: "Retrieving usages",
+          message: "Creating request",
         });
 
+        const request = await createAutoModelV2Request(this.mode, usages);
+
+        progress({
+          step: 2000,
+          maxStep,
+          message: "Sending request",
+        });
+
+        const response = await this.callAutoModelApiV2(request);
+        if (!response) {
+          return;
+        }
+
+        progress({
+          step: 2500,
+          maxStep,
+          message: "Parsing response",
+        });
+
+        const models = loadYaml(response.models, {
+          filename: "auto-model.yml",
+        });
+
+        const modeledMethods = loadDataExtensionYaml(models);
+        if (!modeledMethods) {
+          return;
+        }
+
+        predictedModeledMethods = modeledMethods;
+      } else {
         const usages = await getAutoModelUsages({
           cliServer: this.cliServer,
           queryRunner: this.queryRunner,
@@ -410,23 +473,22 @@ export class DataExtensionsEditorView extends AbstractWebview<
           message: "Parsing response",
         });
 
-        const predictedModeledMethods = parsePredictedClassifications(
+        predictedModeledMethods = parsePredictedClassifications(
           response.predicted || [],
         );
+      }
 
-        progress({
-          step: 2800,
-          maxStep,
-          message: "Applying results",
-        });
+      progress({
+        step: 2800,
+        maxStep,
+        message: "Applying results",
+      });
 
-        await this.postMessage({
-          t: "addModeledMethods",
-          modeledMethods: predictedModeledMethods,
-        });
-      },
-      { cancellable: false },
-    );
+      await this.postMessage({
+        t: "addModeledMethods",
+        modeledMethods: predictedModeledMethods,
+      });
+    });
   }
 
   private async modelDependency(): Promise<void> {
@@ -492,6 +554,25 @@ export class DataExtensionsEditorView extends AbstractWebview<
   ): Promise<ModelResponse | null> {
     try {
       return await autoModel(this.app.credentials, request);
+    } catch (e) {
+      if (e instanceof RequestError && e.status === 429) {
+        void showAndLogExceptionWithTelemetry(
+          this.app.logger,
+          this.app.telemetry,
+          redactableError(e)`Rate limit hit, please try again soon.`,
+        );
+        return null;
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  private async callAutoModelApiV2(
+    request: ModelRequestV2,
+  ): Promise<ModelResponseV2 | null> {
+    try {
+      return await autoModelV2(this.app.credentials, request);
     } catch (e) {
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(

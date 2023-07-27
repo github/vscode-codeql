@@ -1,4 +1,4 @@
-import { QuickPickItem, window, Uri } from "vscode";
+import type { QuickPickItem, window, Uri } from "vscode";
 import { DatabaseItem } from "../../../src/databases/local-databases";
 
 export type DeepPartial<T> = T extends object
@@ -40,6 +40,18 @@ export function mockedObject<T extends object>(
         return undefined;
       }
 
+      // The `asymmetricMatch` is accessed by jest to check if the object is a matcher.
+      // We don't want to throw an error when this happens.
+      if (prop === "asymmetricMatch") {
+        return undefined;
+      }
+
+      // The `Symbol.iterator` is accessed by jest to check if the object is iterable.
+      // We don't want to throw an error when this happens.
+      if (prop === Symbol.iterator) {
+        return undefined;
+      }
+
       throw new Error(`Method ${String(prop)} not mocked`);
     },
   });
@@ -49,11 +61,11 @@ export function mockDatabaseItem(
   props: DeepPartial<DatabaseItem> = {},
 ): DatabaseItem {
   return mockedObject<DatabaseItem>({
-    databaseUri: Uri.file("abc"),
+    databaseUri: mockedUri("abc"),
     name: "github/codeql",
     language: "javascript",
     sourceArchive: undefined,
-    resolveSourceFile: jest.fn().mockReturnValue(Uri.file("abc")),
+    resolveSourceFile: jest.fn().mockReturnValue(mockedUri("abc")),
     ...props,
   });
 }
@@ -62,4 +74,17 @@ export function mockedQuickPickItem<T extends QuickPickItem | string>(
   value: T | T[],
 ): Awaited<ReturnType<typeof window.showQuickPick>> {
   return value as Awaited<ReturnType<typeof window.showQuickPick>>;
+}
+
+export function mockedUri(path = "/a/b/c/foo"): Uri {
+  return {
+    scheme: "file",
+    authority: "",
+    path,
+    query: "",
+    fragment: "",
+    fsPath: path,
+    with: jest.fn(),
+    toJSON: jest.fn(),
+  };
 }
