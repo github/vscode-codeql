@@ -204,6 +204,7 @@ function ModelableMethodRow(props: Props) {
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status={modelingStatus} />
+        <MethodClassifications externalApiUsage={externalApiUsage} />
         <ExternalApiUsageName {...props} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
@@ -211,7 +212,6 @@ function ModelableMethodRow(props: Props) {
           </UsagesButton>
         )}
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
-        <MethodClassifications externalApiUsage={externalApiUsage} />
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn={2}>
         <Dropdown
