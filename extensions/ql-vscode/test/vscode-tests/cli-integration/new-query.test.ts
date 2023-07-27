@@ -114,6 +114,9 @@ describeWithCodeQL()("using the new query server", () => {
 
     cliServer.quiet = true;
     if (!(await cliServer.cliConstraints.supportsNewQueryServerForTests())) {
+      console.log(
+        "Skipping new-query tests: the CLI supports only the legacy query server",
+      );
       supportNewQueryServer = false;
     }
     qs = new QueryServerClient(
