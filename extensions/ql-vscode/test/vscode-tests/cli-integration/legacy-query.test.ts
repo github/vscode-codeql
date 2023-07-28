@@ -111,10 +111,19 @@ describeWithCodeQL()("using the legacy query server", () => {
   let qs: qsClient.QueryServerClient;
   let cliServer: cli.CodeQLCliServer;
 
+  let supportNewQueryServer = false;
+
   beforeAll(async () => {
     const extension = await getActivatedExtension();
     cliServer = extension.cliServer;
     cliServer.quiet = true;
+
+    if (await cliServer.cliConstraints.supportsNewQueryServerForTests()) {
+      console.log(
+        "Skipping legacy-query tests: the CLI supports the new query server",
+      );
+      supportNewQueryServer = true;
+    }
 
     qs = new QueryServerClient(
       createMockApp({}),
@@ -145,10 +154,18 @@ describeWithCodeQL()("using the legacy query server", () => {
     const parsedResults = new Checkpoint<void>();
 
     it("should register the database if necessary", async () => {
+      if (supportNewQueryServer) {
+        return;
+      }
+
       await qs.sendRequest(messages.registerDatabases, { databases: [db] });
     });
 
     it(`should be able to compile query ${queryName}`, async () => {
+      if (supportNewQueryServer) {
+        return;
+      }
+
       expect(existsSync(queryTestCase.queryPath)).toBe(true);
       try {
         const qlProgram: messages.QlProgram = {
@@ -188,6 +205,10 @@ describeWithCodeQL()("using the legacy query server", () => {
     });
 
     it(`should be able to run query ${queryName}`, async () => {
+      if (supportNewQueryServer) {
+        return;
+      }
+
       try {
         await compilationSucceeded.done();
         const callbackId = qs.registerCallback((_res) => {
@@ -217,6 +238,10 @@ describeWithCodeQL()("using the legacy query server", () => {
 
     const actualResultSets: ResultSets = {};
     it(`should be able to parse results of query ${queryName}`, async () => {
+      if (supportNewQueryServer) {
+        return;
+      }
+
       await evaluationSucceeded.done();
       const info = await cliServer.bqrsInfo(RESULTS_PATH);
 
@@ -231,6 +256,10 @@ describeWithCodeQL()("using the legacy query server", () => {
     });
 
     it(`should have correct results for query ${queryName}`, async () => {
+      if (supportNewQueryServer) {
+        return;
+      }
+
       await parsedResults.done();
       expect(actualResultSets).not.toEqual({});
       expect(Object.keys(actualResultSets!).sort()).toEqual(
