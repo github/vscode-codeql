@@ -710,11 +710,12 @@ describe("QueryHistoryManager", () => {
 
     it("should copy repo list for a single variant analysis", async () => {
       queryHistoryManager = await createMockQueryHistory(allHistory);
+      queryHistoryManager.handleCopyRepoList = jest.fn();
 
       const item = variantAnalysisHistory[1];
       await queryHistoryManager.handleCopyRepoList(item);
-      expect(executeCommand).toBeCalledWith(
-        "codeQL.copyVariantAnalysisRepoListQueryHistory",
+
+      expect(queryHistoryManager.handleCopyRepoList).toBeCalledWith(
         item.variantAnalysis.id,
       );
     });

@@ -244,10 +244,6 @@ export type VariantAnalysisCommands = {
     scannedRepo: VariantAnalysisScannedRepository,
     variantAnalysisSummary: VariantAnalysis,
   ) => Promise<void>;
-  "codeQL.copyVariantAnalysisRepoListQueryHistory": (
-    variantAnalysisId: number,
-    filterSort?: RepositoriesFilterSortStateWithIds,
-  ) => Promise<void>;
   "codeQL.copyVariantAnalysisRepoListView": (
     variantAnalysisId: number,
     filterSort?: RepositoriesFilterSortStateWithIds,
