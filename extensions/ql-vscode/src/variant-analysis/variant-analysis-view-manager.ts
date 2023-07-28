@@ -32,4 +32,8 @@ export interface VariantAnalysisViewManager<
     variantAnalysisId: number,
     filterSort?: RepositoriesFilterSortStateWithIds,
   ): Promise<void>;
+  copyRepoListToClipboard(
+    variantAnalysisId: number,
+    filterSort?: RepositoriesFilterSortStateWithIds,
+  ): Promise<void>;
 }

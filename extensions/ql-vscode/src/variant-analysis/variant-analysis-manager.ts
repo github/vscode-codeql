@@ -148,8 +148,6 @@ export class VariantAnalysisManager
     return {
       "codeQL.autoDownloadVariantAnalysisResult":
         this.enqueueDownload.bind(this),
-      "codeQL.copyVariantAnalysisRepoListView":
-        this.copyRepoListToClipboard.bind(this),
       "codeQL.loadVariantAnalysisRepoResults": this.loadResults.bind(this),
       "codeQL.monitorNewVariantAnalysis":
         this.monitorVariantAnalysis.bind(this),

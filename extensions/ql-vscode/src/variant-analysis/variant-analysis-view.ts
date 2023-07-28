@@ -139,8 +139,7 @@ export class VariantAnalysisView
         await this.manager.openQueryText(this.variantAnalysisId);
         break;
       case "copyRepositoryList":
-        void this.app.commands.execute(
-          "codeQL.copyVariantAnalysisRepoListView",
+        await this.manager.copyRepoListToClipboard(
           this.variantAnalysisId,
           msg.filterSort,
         );
