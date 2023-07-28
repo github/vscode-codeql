@@ -15,6 +15,7 @@ const ClassificationsContainer = styled.div`
 
 const ClassificationTag = styled(VSCodeTag)`
   font-size: 0.75em;
+  white-space: nowrap;
 `;
 
 type Props = {
