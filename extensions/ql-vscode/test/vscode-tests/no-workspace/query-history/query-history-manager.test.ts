@@ -709,13 +709,13 @@ describe("QueryHistoryManager", () => {
     });
 
     it("should copy repo list for a single variant analysis", async () => {
+      variantAnalysisManagerStub.copyRepoListToClipboard = jest.fn();
       queryHistoryManager = await createMockQueryHistory(allHistory);
-      queryHistoryManager.handleCopyRepoList = jest.fn();
 
       const item = variantAnalysisHistory[1];
       await queryHistoryManager.handleCopyRepoList(item);
 
-      expect(queryHistoryManager.handleCopyRepoList).toBeCalledWith(
+      expect(variantAnalysisManagerStub.copyRepoListToClipboard).toBeCalledWith(
         item.variantAnalysis.id,
       );
     });
