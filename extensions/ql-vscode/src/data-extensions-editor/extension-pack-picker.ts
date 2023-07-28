@@ -43,6 +43,10 @@ export async function pickExtensionPack(
 
   // Get all existing extension packs in the workspace
   const additionalPacks = getOnDiskWorkspaceFolders();
+  // the CLI doesn't check packs in the .github folder, so we need to add it manually
+  if (additionalPacks.length === 1) {
+    additionalPacks.push(`${additionalPacks[0]}/.github`);
+  }
   const extensionPacksInfo = await cliServer.resolveQlpacks(
     additionalPacks,
     true,
