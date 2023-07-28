@@ -15,6 +15,7 @@ type Props = {
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
   viewState: DataExtensionEditorViewState;
+  hideModeledApis: boolean;
   onChange: (
     modelName: string,
     externalApiUsage: ExternalApiUsage,
@@ -41,6 +42,7 @@ export const ModeledMethodsList = ({
   modeledMethods,
   modifiedSignatures,
   viewState,
+  hideModeledApis,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
@@ -83,6 +85,7 @@ export const ModeledMethodsList = ({
           modeledMethods={modeledMethods}
           modifiedSignatures={modifiedSignatures}
           viewState={viewState}
+          hideModeledApis={hideModeledApis}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
