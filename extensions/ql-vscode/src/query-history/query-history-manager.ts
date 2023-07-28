@@ -952,8 +952,7 @@ export class QueryHistoryManager extends DisposableObject {
       return;
     }
 
-    await this.app.commands.execute(
-      "codeQL.copyVariantAnalysisRepoList",
+    await this.variantAnalysisManager.copyRepoListToClipboard(
       item.variantAnalysis.id,
     );
   }

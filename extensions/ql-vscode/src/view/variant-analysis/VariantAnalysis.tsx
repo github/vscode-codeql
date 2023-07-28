@@ -131,6 +131,7 @@ export function VariantAnalysis({
         repositoryIds: selectedRepositoryIds,
       },
     });
+    sendTelemetry("variant-analysis-copy-repository-list");
   }, [filterSortState, selectedRepositoryIds]);
 
   const exportResults = useCallback(() => {
