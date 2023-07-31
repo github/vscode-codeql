@@ -190,12 +190,15 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   private async setViewState(): Promise<void> {
+    const showLlmButton =
+      this.databaseItem.language === "java" && showLlmGeneration();
+
     await this.postMessage({
       t: "setDataExtensionEditorViewState",
       viewState: {
         extensionPack: this.extensionPack,
         enableFrameworkMode: enableFrameworkMode(),
-        showLlmButton: showLlmGeneration(),
+        showLlmButton,
         mode: this.mode,
       },
     });
