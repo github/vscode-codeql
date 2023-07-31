@@ -1,4 +1,4 @@
-import { Uri, window } from "vscode";
+import { Uri, ViewColumn, window, workspace } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
 import { basename, join } from "path";
@@ -74,7 +74,16 @@ async function previewQueryHelp(
     const uri = Uri.file(absolutePathToMd);
     try {
       await cliServer.generateQueryHelp(pathToQhelp, absolutePathToMd);
+      // Open the raw markdown file as well as the rendered file.
+      // This will force the rendered page to refresh if there has been a change to the markdown.
+      await window.showTextDocument(uri, {
+        viewColumn: ViewColumn.Active,
+      });
       await commandManager.execute("markdown.showPreviewToSide", uri);
+      // close the editor we just opened. Users will see a brief flicker of this editor
+      // being opened, but doing so will ensure that the preview is refreshed.
+      await window.showTextDocument(uri);
+      await commandManager.execute("workbench.action.closeActiveEditor");
     } catch (e) {
       const errorMessage = getErrorMessage(e).includes(
         "Generating qhelp in markdown",
