@@ -35,6 +35,61 @@ describe("runQuery", () => {
     }));
   });
 
+  it("should log an error", async () => {
+    const showAndLogExceptionWithTelemetrySpy: jest.SpiedFunction<
+      typeof showAndLogExceptionWithTelemetry
+    > = jest.spyOn(log, "showAndLogExceptionWithTelemetry");
+
+    const logPath = (await file()).path;
+
+    const query = fetchExternalApiQueries[cases[0].language];
+    if (!query) {
+      throw new Error(`No query found for language ${cases[0].language}`);
+    }
+
+    const options = {
+      cliServer: {
+        resolveQlpacks: jest.fn().mockResolvedValue({
+          "my/extensions": "/a/b/c/",
+        }),
+      },
+      queryRunner: {
+        createQueryRun: jest.fn().mockReturnValue({
+          evaluate: jest.fn().mockResolvedValue({
+            resultType: QueryResultType.CANCELLATION,
+          }),
+          outputDir: {
+            logPath,
+          },
+        }),
+        logger: createMockLogger(),
+      },
+      databaseItem: {
+        databaseUri: mockedUri("/a/b/c/src.zip"),
+        contents: {
+          kind: DatabaseKind.Database,
+          name: "foo",
+          datasetUri: mockedUri(),
+        },
+        language: cases[0].language,
+      },
+      queryStorageDir: "/tmp/queries",
+      queryDir: cases[0].queryDir,
+      progress: jest.fn(),
+      token: {
+        isCancellationRequested: false,
+        onCancellationRequested: jest.fn(),
+      },
+    };
+
+    expect(await runQuery(cases[0].queryName, options)).toBeUndefined();
+    expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
+      expect.anything(),
+      undefined,
+      expect.any(RedactableError),
+    );
+  });
+
   test.each(cases)(
     "should run $queryName for $language",
     async ({ language, queryName, queryDir }) => {
