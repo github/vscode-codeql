@@ -4,11 +4,8 @@ import {
 } from "../../../../src/data-extensions-editor/external-api-usage-query";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import { DatabaseKind } from "../../../../src/databases/local-databases";
-import { file } from "tmp-promise";
+import { dirSync, file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/query-server/new-messages";
-import { readdir, readFile } from "fs-extra";
-import { load } from "js-yaml";
-import { dirname, join } from "path";
 import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries";
 import * as log from "../../../../src/common/logging/notifications";
 import { RedactableError } from "../../../../src/common/errors";
@@ -18,7 +15,11 @@ import { Query } from "../../../../src/data-extensions-editor/queries/query";
 import { mockedUri } from "../../utils/mocking.helpers";
 
 describe("runQuery", () => {
-  const cases = Object.keys(fetchExternalApiQueries).flatMap((lang) => {
+  const languages = Object.keys(fetchExternalApiQueries);
+
+  const cases = languages.flatMap((lang) => {
+    const queryDir = dirSync({ unsafeCleanup: true }).name;
+
     const query = fetchExternalApiQueries[lang as QueryLanguage];
     if (!query) {
       return [];
@@ -30,12 +31,13 @@ describe("runQuery", () => {
     return Array.from(keys).map((name) => ({
       language: lang as QueryLanguage,
       queryName: name as keyof Omit<Query, "dependencies">,
+      queryDir,
     }));
   });
 
   test.each(cases)(
     "should run $queryName for $language",
-    async ({ language, queryName }) => {
+    async ({ language, queryName, queryDir }) => {
       const logPath = (await file()).path;
 
       const query = fetchExternalApiQueries[language];
@@ -70,6 +72,7 @@ describe("runQuery", () => {
           language,
         },
         queryStorageDir: "/tmp/queries",
+        queryDir,
         progress: jest.fn(),
         token: {
           isCancellationRequested: false,
@@ -86,7 +89,7 @@ describe("runQuery", () => {
       expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
         "/a/b/c/src.zip",
         {
-          queryPath: expect.stringMatching(/FetchExternalApis\.ql/),
+          queryPath: expect.stringMatching(/FetchExternalApis\S*\.ql/),
           quickEvalPosition: undefined,
           quickEvalCountOnly: false,
         },
@@ -97,44 +100,6 @@ describe("runQuery", () => {
         undefined,
         undefined,
       );
-
-      const queryPath =
-        options.queryRunner.createQueryRun.mock.calls[0][1].queryPath;
-      const queryDirectory = dirname(queryPath);
-
-      const queryFiles = await readdir(queryDirectory);
-      expect(queryFiles.sort()).toEqual(
-        [
-          "codeql-pack.yml",
-          "FetchExternalApis.ql",
-          "AutomodelVsCode.qll",
-        ].sort(),
-      );
-
-      const suiteFileContents = await readFile(
-        join(queryDirectory, "codeql-pack.yml"),
-        "utf8",
-      );
-      const suiteYaml = load(suiteFileContents);
-      expect(suiteYaml).toEqual({
-        name: "codeql/external-api-usage",
-        version: "0.0.0",
-        dependencies: {
-          [`codeql/${language}-all`]: "*",
-        },
-      });
-
-      expect(
-        await readFile(join(queryDirectory, "FetchExternalApis.ql"), "utf8"),
-      ).toEqual(query[queryName]);
-
-      for (const [filename, contents] of Object.entries(
-        query.dependencies ?? {},
-      )) {
-        expect(await readFile(join(queryDirectory, filename), "utf8")).toEqual(
-          contents,
-        );
-      }
     },
   );
 });
