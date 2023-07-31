@@ -162,7 +162,6 @@ export class DataExtensionsEditorModule {
             const qlpackFile = join(queryDir, "codeql-pack.yml");
             await writeFile(qlpackFile, dumpYaml(syntheticQueryPack), "utf8");
 
-            // TODO: test dependency installation
             await this.cliServer.packInstall(queryDir);
 
             const view = new DataExtensionsEditorView(

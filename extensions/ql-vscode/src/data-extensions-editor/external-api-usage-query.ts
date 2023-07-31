@@ -40,8 +40,6 @@ export async function runQuery(
   // For a reference of what this should do in the future, see the previous implementation in
   // https://github.com/github/vscode-codeql/blob/089d3566ef0bc67d9b7cc66e8fd6740b31c1c0b0/extensions/ql-vscode/src/data-extensions-editor/external-api-usage-query.ts#L33-L72
 
-  // TODO: install dependencies
-
   const additionalPacks = getOnDiskWorkspaceFolders();
   const extensionPacks = Object.keys(
     await cliServer.resolveQlpacks(additionalPacks, true),
