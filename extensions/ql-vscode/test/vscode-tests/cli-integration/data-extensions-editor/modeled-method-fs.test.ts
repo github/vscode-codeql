@@ -52,6 +52,14 @@ describe("modeled-method-fs", () => {
   let workspacePath: string;
   let cli: CodeQLCliServer;
 
+  beforeAll(async () => {
+    const extension = await getActivatedExtension();
+    cli = extension.cliServer;
+
+    // The java-all pack needs to be available for codeql resolve extensions to succeed.
+    await cli.packDownload(["codeql/java-all"]);
+  });
+
   beforeEach(async () => {
     // On windows, make sure to use a temp directory that isn't an alias and therefore won't be canonicalised by CodeQL.
     // See https://github.com/github/vscode-codeql/pull/2605 for more context.
