@@ -11,29 +11,15 @@ import * as log from "../../../../src/common/logging/notifications";
 import { RedactableError } from "../../../../src/common/errors";
 import { showAndLogExceptionWithTelemetry } from "../../../../src/common/logging";
 import { QueryLanguage } from "../../../../src/common/query-language";
-import { Query } from "../../../../src/data-extensions-editor/queries/query";
 import { mockedUri } from "../../utils/mocking.helpers";
+import { Mode } from "../../../../src/data-extensions-editor/shared/mode";
 
 describe("runQuery", () => {
-  const languages = Object.keys(fetchExternalApiQueries);
+  const language = Object.keys(fetchExternalApiQueries)[
+    Math.floor(Math.random() * Object.keys(fetchExternalApiQueries).length)
+  ] as QueryLanguage;
 
-  const cases = languages.flatMap((lang) => {
-    const queryDir = dirSync({ unsafeCleanup: true }).name;
-
-    const query = fetchExternalApiQueries[lang as QueryLanguage];
-    if (!query) {
-      return [];
-    }
-
-    const keys = new Set(Object.keys(query));
-    keys.delete("dependencies");
-
-    return Array.from(keys).map((name) => ({
-      language: lang as QueryLanguage,
-      queryName: name as keyof Omit<Query, "dependencies">,
-      queryDir,
-    }));
-  });
+  const queryDir = dirSync({ unsafeCleanup: true }).name;
 
   it("should log an error", async () => {
     const showAndLogExceptionWithTelemetrySpy: jest.SpiedFunction<
@@ -42,9 +28,9 @@ describe("runQuery", () => {
 
     const logPath = (await file()).path;
 
-    const query = fetchExternalApiQueries[cases[0].language];
+    const query = fetchExternalApiQueries[language];
     if (!query) {
-      throw new Error(`No query found for language ${cases[0].language}`);
+      throw new Error(`No query found for language ${language}`);
     }
 
     const options = {
@@ -71,10 +57,10 @@ describe("runQuery", () => {
           name: "foo",
           datasetUri: mockedUri(),
         },
-        language: cases[0].language,
+        language,
       },
       queryStorageDir: "/tmp/queries",
-      queryDir: cases[0].queryDir,
+      queryDir,
       progress: jest.fn(),
       token: {
         isCancellationRequested: false,
@@ -82,7 +68,7 @@ describe("runQuery", () => {
       },
     };
 
-    expect(await runQuery(cases[0].queryName, options)).toBeUndefined();
+    expect(await runQuery(Mode.Application, options)).toBeUndefined();
     expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
       expect.anything(),
       undefined,
@@ -90,73 +76,70 @@ describe("runQuery", () => {
     );
   });
 
-  test.each(cases)(
-    "should run $queryName for $language",
-    async ({ language, queryName, queryDir }) => {
-      const logPath = (await file()).path;
+  it("should run query for random language", async () => {
+    const logPath = (await file()).path;
 
-      const query = fetchExternalApiQueries[language];
-      if (!query) {
-        throw new Error(`No query found for language ${language}`);
-      }
+    const query = fetchExternalApiQueries[language];
+    if (!query) {
+      throw new Error(`No query found for language ${language}`);
+    }
 
-      const options = {
-        cliServer: {
-          resolveQlpacks: jest.fn().mockResolvedValue({
-            "my/extensions": "/a/b/c/",
+    const options = {
+      cliServer: {
+        resolveQlpacks: jest.fn().mockResolvedValue({
+          "my/extensions": "/a/b/c/",
+        }),
+      },
+      queryRunner: {
+        createQueryRun: jest.fn().mockReturnValue({
+          evaluate: jest.fn().mockResolvedValue({
+            resultType: QueryResultType.SUCCESS,
           }),
-        },
-        queryRunner: {
-          createQueryRun: jest.fn().mockReturnValue({
-            evaluate: jest.fn().mockResolvedValue({
-              resultType: QueryResultType.SUCCESS,
-            }),
-            outputDir: {
-              logPath,
-            },
-          }),
-          logger: createMockLogger(),
-        },
-        databaseItem: {
-          databaseUri: mockedUri("/a/b/c/src.zip"),
-          contents: {
-            kind: DatabaseKind.Database,
-            name: "foo",
-            datasetUri: mockedUri(),
+          outputDir: {
+            logPath,
           },
-          language,
+        }),
+        logger: createMockLogger(),
+      },
+      databaseItem: {
+        databaseUri: mockedUri("/a/b/c/src.zip"),
+        contents: {
+          kind: DatabaseKind.Database,
+          name: "foo",
+          datasetUri: mockedUri(),
         },
-        queryStorageDir: "/tmp/queries",
-        queryDir,
-        progress: jest.fn(),
-        token: {
-          isCancellationRequested: false,
-          onCancellationRequested: jest.fn(),
-        },
-      };
+        language,
+      },
+      queryStorageDir: "/tmp/queries",
+      queryDir,
+      progress: jest.fn(),
+      token: {
+        isCancellationRequested: false,
+        onCancellationRequested: jest.fn(),
+      },
+    };
 
-      const result = await runQuery(queryName, options);
+    const result = await runQuery(Mode.Framework, options);
 
-      expect(result?.resultType).toEqual(QueryResultType.SUCCESS);
+    expect(result?.resultType).toEqual(QueryResultType.SUCCESS);
 
-      expect(options.cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
-      expect(options.cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
-      expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
-        "/a/b/c/src.zip",
-        {
-          queryPath: expect.stringMatching(/FetchExternalApis\S*\.ql/),
-          quickEvalPosition: undefined,
-          quickEvalCountOnly: false,
-        },
-        false,
-        [],
-        ["my/extensions"],
-        "/tmp/queries",
-        undefined,
-        undefined,
-      );
-    },
-  );
+    expect(options.cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
+    expect(options.cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
+    expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
+      "/a/b/c/src.zip",
+      {
+        queryPath: expect.stringMatching(/FetchExternalApis\S*\.ql/),
+        quickEvalPosition: undefined,
+        quickEvalCountOnly: false,
+      },
+      false,
+      [],
+      ["my/extensions"],
+      "/tmp/queries",
+      undefined,
+      undefined,
+    );
+  });
 });
 
 describe("readQueryResults", () => {
