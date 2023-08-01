@@ -4,7 +4,7 @@ import { DataExtensionsEditorCommands } from "../common/commands";
 import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
 import { DatabaseManager } from "../databases/local-databases";
-import { ensureDir, writeFile } from "fs-extra";
+import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { App } from "../common/app";
 import { withProgress } from "../common/vscode/progress";
@@ -14,13 +14,12 @@ import {
   showAndLogExceptionWithTelemetry,
 } from "../common/logging";
 import { dir } from "tmp-promise";
-import { dump as dumpYaml } from "js-yaml";
 import { fetchExternalApiQueries } from "./queries";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { extLogger } from "../common/logging/vscode";
 import { isQueryLanguage } from "../common/query-language";
-import { Mode } from "./shared/mode";
+import { setUpPack } from "./external-api-usage-query";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
@@ -110,9 +109,6 @@ export class DataExtensionsEditorModule {
               return;
             }
 
-            // Create new temporary directory for query files and pack dependencies
-            const queryDir = (await dir({ unsafeCleanup: true })).path;
-
             if (!isQueryLanguage(db.language)) {
               void showAndLogExceptionWithTelemetry(
                 extLogger,
@@ -132,36 +128,9 @@ export class DataExtensionsEditorModule {
               return;
             }
 
-            Object.values(Mode).map(async (mode) => {
-              const queryFile = join(
-                queryDir,
-                `FetchExternalApis${
-                  mode.charAt(0).toUpperCase() + mode.slice(1)
-                }Mode.ql`,
-              );
-              await writeFile(queryFile, query[`${mode}ModeQuery`], "utf8");
-            });
-
-            if (query.dependencies) {
-              for (const [filename, contents] of Object.entries(
-                query.dependencies,
-              )) {
-                const dependencyFile = join(queryDir, filename);
-                await writeFile(dependencyFile, contents, "utf8");
-              }
-            }
-
-            const syntheticQueryPack = {
-              name: "codeql/external-api-usage",
-              version: "0.0.0",
-              dependencies: {
-                [`codeql/${db.language}-all`]: "*",
-              },
-            };
-
-            const qlpackFile = join(queryDir, "codeql-pack.yml");
-            await writeFile(qlpackFile, dumpYaml(syntheticQueryPack), "utf8");
-
+            // Create new temporary directory for query files and pack dependencies
+            const queryDir = (await dir({ unsafeCleanup: true })).path;
+            await setUpPack(queryDir, query, db.language);
             await this.cliServer.packInstall(queryDir);
 
             const view = new DataExtensionsEditorView(

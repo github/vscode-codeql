@@ -10,6 +10,11 @@ import { QueryResultType } from "../query-server/new-messages";
 import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { join } from "path";
+import { Mode } from "./shared/mode";
+import { writeFile } from "fs-extra";
+import { Query } from "./queries/query";
+import { QueryLanguage } from "../common/query-language";
+import { dump } from "js-yaml";
 
 type RunQueryOptions = {
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">;
@@ -22,8 +27,40 @@ type RunQueryOptions = {
   token: CancellationToken;
 };
 
+export async function setUpPack(
+  queryDir: string,
+  query: Query,
+  language: QueryLanguage,
+) {
+  Object.values(Mode).map(async (mode) => {
+    const queryFile = join(
+      queryDir,
+      `FetchExternalApis${mode.charAt(0).toUpperCase() + mode.slice(1)}Mode.ql`,
+    );
+    await writeFile(queryFile, query[`${mode}ModeQuery`], "utf8");
+  });
+
+  if (query.dependencies) {
+    for (const [filename, contents] of Object.entries(query.dependencies)) {
+      const dependencyFile = join(queryDir, filename);
+      await writeFile(dependencyFile, contents, "utf8");
+    }
+  }
+
+  const syntheticQueryPack = {
+    name: "codeql/external-api-usage",
+    version: "0.0.0",
+    dependencies: {
+      [`codeql/${language}-all`]: "*",
+    },
+  };
+
+  const qlpackFile = join(queryDir, "codeql-pack.yml");
+  await writeFile(qlpackFile, dump(syntheticQueryPack), "utf8");
+}
+
 export async function runQuery(
-  mode: string,
+  mode: Mode,
   {
     cliServer,
     queryRunner,
