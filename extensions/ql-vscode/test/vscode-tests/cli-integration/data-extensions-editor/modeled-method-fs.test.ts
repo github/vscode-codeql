@@ -56,8 +56,14 @@ describe("modeled-method-fs", () => {
     const extension = await getActivatedExtension();
     cli = extension.cliServer;
 
-    // The java-all pack needs to be available for codeql resolve extensions to succeed.
-    await cli.packDownload(["codeql/java-all"]);
+    // All transitive dependencies must be available for resolve extensions to succeed.
+    const packUsingExtensionsPath = join(
+      __dirname,
+      "../../..",
+      "data-extensions",
+      "pack-using-extensions",
+    );
+    await cli.packInstall(packUsingExtensionsPath);
   });
 
   beforeEach(async () => {
