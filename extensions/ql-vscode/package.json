@@ -1726,6 +1726,7 @@
     "test:vscode-integration:no-workspace": "jest --projects test/vscode-tests/no-workspace",
     "test:vscode-integration:minimal-workspace": "jest --projects test/vscode-tests/minimal-workspace",
     "test:cli-integration": "jest --projects test/vscode-tests/cli-integration --verbose",
+    "clean-test-dir": "find . -type d -name .vscode-test -exec rm -r {} +",
     "update-vscode": "node ./node_modules/vscode/bin/install",
     "format": "prettier --write **/*.{ts,tsx} && eslint . --ext .ts,.tsx --fix",
     "lint": "eslint . --ext .js,.ts,.tsx --max-warnings=0",
