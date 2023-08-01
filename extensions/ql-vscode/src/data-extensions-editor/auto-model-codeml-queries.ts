@@ -26,6 +26,7 @@ type AutoModelQueryOptions = {
   databaseItem: DatabaseItem;
   qlpack: QlPacksForLanguage;
   sourceInfo: SourceInfo | undefined;
+  additionalPacks: string[];
   extensionPacks: string[];
   queryStorageDir: string;
 
@@ -52,6 +53,7 @@ async function runAutoModelQuery({
   databaseItem,
   qlpack,
   sourceInfo,
+  additionalPacks,
   extensionPacks,
   queryStorageDir,
   progress,
@@ -99,7 +101,7 @@ async function runAutoModelQuery({
       quickEvalCountOnly: false,
     },
     false,
-    getOnDiskWorkspaceFolders(),
+    additionalPacks,
     extensionPacks,
     queryStorageDir,
     undefined,
@@ -153,6 +155,7 @@ type AutoModelQueriesOptions = {
   queryStorageDir: string;
 
   progress: ProgressCallback;
+  extraExtensionPacks?: string[];
 };
 
 export type AutoModelQueriesResult = {
@@ -166,6 +169,7 @@ export async function runAutoModelQueries({
   databaseItem,
   queryStorageDir,
   progress,
+  extraExtensionPacks = [],
 }: AutoModelQueriesOptions): Promise<AutoModelQueriesResult | undefined> {
   // maxStep for this part is 1500
   const maxStep = 1500;
@@ -189,7 +193,10 @@ export async function runAutoModelQueries({
           sourceLocationPrefix,
         };
 
-  const additionalPacks = getOnDiskWorkspaceFolders();
+  const additionalPacks = [
+    ...getOnDiskWorkspaceFolders(),
+    ...extraExtensionPacks,
+  ];
   const extensionPacks = Object.keys(
     await cliServer.resolveQlpacks(additionalPacks, true),
   );
@@ -208,6 +215,7 @@ export async function runAutoModelQueries({
     databaseItem,
     qlpack,
     sourceInfo,
+    additionalPacks,
     extensionPacks,
     queryStorageDir,
     progress: (update) => {

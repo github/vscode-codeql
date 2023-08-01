@@ -57,8 +57,13 @@ import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
 import { runAutoModelQueries } from "./auto-model-codeml-queries";
 import { createAutoModelV2Request } from "./auto-model-v2";
-import { load as loadYaml } from "js-yaml";
+import { load as loadYaml, dump as dumpYaml } from "js-yaml";
 import { loadDataExtensionYaml } from "./yaml";
+import { extLogger } from "../common/logging/vscode";
+import { dir } from "tmp-promise";
+import { writeFile, outputFile } from "fs-extra";
+import { autoPickExtensionsDirectory } from "./extensions-workspace-folder";
+import { sign } from "crypto";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -380,6 +385,46 @@ export class DataExtensionsEditorView extends AbstractWebview<
       let predictedModeledMethods: Record<string, ModeledMethod>;
 
       if (useLlmGenerationV2()) {
+        // Generate a qlpack with a filter that only includes the usages we want to model.
+        const packDir = (await dir({ unsafeCleanup: true })).path;
+
+        const syntheticConfigPack = {
+          name: "codeql/automodel-filter",
+          version: "0.0.0",
+          library: true,
+          extensionTargets: {
+            [`codeql/${this.databaseItem.language}-all`]: "*",
+          },
+          dataExtensions: ["filter.yml"],
+        };
+
+        const qlpackFile = join(packDir, "codeql-pack.yml");
+        await outputFile(qlpackFile, dumpYaml(syntheticConfigPack), "utf8");
+
+        // TODO: this filter is just static as an example. We want to generate this from the usages.
+        const filter = {
+          extensions: [
+            {
+              addsTo: {
+                pack: `codeql/${this.databaseItem.language}-queries`,
+                extensible: "automodelCandidateFilter",
+              },
+              data: [
+                ["org.sql2o", "Sql2o", "open", "()"],
+                [
+                  "org.springframework.boot",
+                  "SpringApplication",
+                  "run",
+                  "(Class,String[])",
+                ],
+              ],
+            },
+          ],
+        };
+
+        const filterFile = join(packDir, "filter.yml");
+        await writeFile(filterFile, dumpYaml(filter), "utf8");
+
         const usages = await runAutoModelQueries({
           mode: this.mode,
           cliServer: this.cliServer,
@@ -387,6 +432,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
           queryStorageDir: this.queryStorageDir,
           databaseItem: this.databaseItem,
           progress: (update) => progress({ ...update, maxStep }),
+          extraExtensionPacks: [packDir],
         });
         if (!usages) {
           return;
@@ -397,6 +443,38 @@ export class DataExtensionsEditorView extends AbstractWebview<
           maxStep,
           message: "Creating request",
         });
+
+        // TODO: TEMP LOGGING CODE - START
+        const results = usages.candidates.runs[0].results;
+        void extLogger.log(`CANDIDATES:`);
+        results?.forEach((result) => {
+          const pckage =
+            result.relatedLocations?.[1].physicalLocation?.artifactLocation?.uri?.substring(
+              6,
+            );
+          const tp =
+            result.relatedLocations?.[2].physicalLocation?.artifactLocation?.uri?.substring(
+              6,
+            );
+          const method =
+            result.relatedLocations?.[4].physicalLocation?.artifactLocation?.uri?.substring(
+              6,
+            );
+          let signature =
+            result.relatedLocations?.[5].physicalLocation?.artifactLocation?.uri?.substring(
+              6,
+            );
+          signature = signature && decodeURI(signature);
+          let input =
+            result.relatedLocations?.[6].physicalLocation?.artifactLocation?.uri?.substring(
+              6,
+            );
+          input = input && decodeURI(input);
+          void extLogger.log(
+            `${pckage}.${tp}.${method}${signature} @ ${input}`,
+          );
+        });
+        // TODO: TEMP LOGGING CODE - END
 
         const request = await createAutoModelV2Request(this.mode, usages);
 
