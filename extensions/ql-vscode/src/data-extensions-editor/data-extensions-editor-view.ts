@@ -71,6 +71,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
     private readonly queryStorageDir: string,
+    private readonly queryDir: string,
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
     private mode: Mode = Mode.Application,
@@ -248,19 +249,15 @@ export class DataExtensionsEditorView extends AbstractWebview<
       async (progress) => {
         try {
           const cancellationTokenSource = new CancellationTokenSource();
-          const queryResult = await runQuery(
-            this.mode === Mode.Framework
-              ? "frameworkModeQuery"
-              : "applicationModeQuery",
-            {
-              cliServer: this.cliServer,
-              queryRunner: this.queryRunner,
-              databaseItem: this.databaseItem,
-              queryStorageDir: this.queryStorageDir,
-              progress: (update) => progress({ ...update, maxStep: 1500 }),
-              token: cancellationTokenSource.token,
-            },
-          );
+          const queryResult = await runQuery(this.mode, {
+            cliServer: this.cliServer,
+            queryRunner: this.queryRunner,
+            databaseItem: this.databaseItem,
+            queryStorageDir: this.queryStorageDir,
+            queryDir: this.queryDir,
+            progress: (update) => progress({ ...update, maxStep: 1500 }),
+            token: cancellationTokenSource.token,
+          });
           if (!queryResult) {
             return;
           }
@@ -432,6 +429,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
           cliServer: this.cliServer,
           queryRunner: this.queryRunner,
           queryStorageDir: this.queryStorageDir,
+          queryDir: this.queryDir,
           databaseItem: this.databaseItem,
           progress: (update) => progress({ ...update, maxStep }),
         });
@@ -512,6 +510,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         this.cliServer,
         this.queryRunner,
         this.queryStorageDir,
+        this.queryDir,
         addedDatabase,
         modelFile,
         Mode.Framework,

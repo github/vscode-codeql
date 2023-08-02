@@ -6,12 +6,14 @@ import { QueryRunner } from "../query-server";
 import { DatabaseItem } from "../databases/local-databases";
 import { interpretResultsSarif } from "../query-results";
 import { ProgressCallback } from "../common/vscode/progress";
+import { Mode } from "./shared/mode";
 
 type Options = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   databaseItem: DatabaseItem;
   queryStorageDir: string;
+  queryDir: string;
 
   progress: ProgressCallback;
 };
@@ -23,6 +25,7 @@ export async function getAutoModelUsages({
   queryRunner,
   databaseItem,
   queryStorageDir,
+  queryDir,
   progress,
 }: Options): Promise<UsageSnippetsBySignature> {
   const maxStep = 1500;
@@ -32,11 +35,12 @@ export async function getAutoModelUsages({
   // This will re-run the query that was already run when opening the data extensions editor. This
   // might be unnecessary, but this makes it really easy to get the path to the BQRS file which we
   // need to interpret the results.
-  const queryResult = await runQuery("applicationModeQuery", {
+  const queryResult = await runQuery(Mode.Application, {
     cliServer,
     queryRunner,
     queryStorageDir,
     databaseItem,
+    queryDir,
     progress: (update) =>
       progress({
         maxStep,

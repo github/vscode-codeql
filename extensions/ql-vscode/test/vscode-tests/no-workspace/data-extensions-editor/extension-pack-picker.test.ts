@@ -99,7 +99,10 @@ describe("pickExtensionPack", () => {
       name: "codeql-custom-queries-java",
       index: 0,
     };
-    additionalPacks = [Uri.file(tmpDir).fsPath];
+    additionalPacks = [
+      Uri.file(tmpDir).fsPath,
+      `${Uri.file(tmpDir).fsPath}/.github`,
+    ];
     workspaceFoldersSpy = jest
       .spyOn(workspace, "workspaceFolders", "get")
       .mockReturnValue([workspaceFolder]);

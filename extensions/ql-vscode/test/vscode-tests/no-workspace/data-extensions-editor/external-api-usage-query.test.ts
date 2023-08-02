@@ -1,41 +1,151 @@
 import {
   readQueryResults,
   runQuery,
+  setUpPack,
 } from "../../../../src/data-extensions-editor/external-api-usage-query";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import { DatabaseKind } from "../../../../src/databases/local-databases";
-import { file } from "tmp-promise";
+import { dirSync, file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/query-server/new-messages";
-import { readdir, readFile } from "fs-extra";
-import { load } from "js-yaml";
-import { dirname, join } from "path";
 import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries";
 import * as log from "../../../../src/common/logging/notifications";
 import { RedactableError } from "../../../../src/common/errors";
 import { showAndLogExceptionWithTelemetry } from "../../../../src/common/logging";
 import { QueryLanguage } from "../../../../src/common/query-language";
-import { Query } from "../../../../src/data-extensions-editor/queries/query";
 import { mockedUri } from "../../utils/mocking.helpers";
+import { Mode } from "../../../../src/data-extensions-editor/shared/mode";
+import { readFile, readFileSync, readdir } from "fs-extra";
+import { join } from "path";
+import { load } from "js-yaml";
 
-describe("runQuery", () => {
-  const cases = Object.keys(fetchExternalApiQueries).flatMap((lang) => {
-    const query = fetchExternalApiQueries[lang as QueryLanguage];
-    if (!query) {
-      return [];
-    }
+describe("external api usage query", () => {
+  describe("setUpPack", () => {
+    const languages = Object.keys(fetchExternalApiQueries).flatMap((lang) => {
+      const queryDir = dirSync({ unsafeCleanup: true }).name;
+      const query = fetchExternalApiQueries[lang as QueryLanguage];
+      if (!query) {
+        return [];
+      }
 
-    const keys = new Set(Object.keys(query));
-    keys.delete("dependencies");
+      return { language: lang as QueryLanguage, queryDir, query };
+    });
 
-    return Array.from(keys).map((name) => ({
-      language: lang as QueryLanguage,
-      queryName: name as keyof Omit<Query, "dependencies">,
-    }));
+    test.each(languages)(
+      "should create files for $language",
+      async ({ language, queryDir, query }) => {
+        await setUpPack(queryDir, query, language);
+
+        const queryFiles = await readdir(queryDir);
+        expect(queryFiles.sort()).toEqual(
+          [
+            "codeql-pack.yml",
+            "FetchExternalApisApplicationMode.ql",
+            "FetchExternalApisFrameworkMode.ql",
+            "AutomodelVsCode.qll",
+          ].sort(),
+        );
+
+        const suiteFileContents = await readFile(
+          join(queryDir, "codeql-pack.yml"),
+          "utf8",
+        );
+        const suiteYaml = load(suiteFileContents);
+        expect(suiteYaml).toEqual({
+          name: "codeql/external-api-usage",
+          version: "0.0.0",
+          dependencies: {
+            [`codeql/${language}-all`]: "*",
+          },
+        });
+
+        Object.values(Mode).forEach((mode) => {
+          expect(
+            readFileSync(
+              join(
+                queryDir,
+                `FetchExternalApis${
+                  mode.charAt(0).toUpperCase() + mode.slice(1)
+                }Mode.ql`,
+              ),
+              "utf8",
+            ),
+          ).toEqual(query[`${mode}ModeQuery`]);
+        });
+
+        for (const [filename, contents] of Object.entries(
+          query.dependencies ?? {},
+        )) {
+          expect(await readFile(join(queryDir, filename), "utf8")).toEqual(
+            contents,
+          );
+        }
+      },
+    );
   });
 
-  test.each(cases)(
-    "should run $queryName for $language",
-    async ({ language, queryName }) => {
+  describe("runQuery", () => {
+    const language = Object.keys(fetchExternalApiQueries)[
+      Math.floor(Math.random() * Object.keys(fetchExternalApiQueries).length)
+    ] as QueryLanguage;
+
+    const queryDir = dirSync({ unsafeCleanup: true }).name;
+
+    it("should log an error", async () => {
+      const showAndLogExceptionWithTelemetrySpy: jest.SpiedFunction<
+        typeof showAndLogExceptionWithTelemetry
+      > = jest.spyOn(log, "showAndLogExceptionWithTelemetry");
+
+      const logPath = (await file()).path;
+
+      const query = fetchExternalApiQueries[language];
+      if (!query) {
+        throw new Error(`No query found for language ${language}`);
+      }
+
+      const options = {
+        cliServer: {
+          resolveQlpacks: jest.fn().mockResolvedValue({
+            "my/extensions": "/a/b/c/",
+          }),
+        },
+        queryRunner: {
+          createQueryRun: jest.fn().mockReturnValue({
+            evaluate: jest.fn().mockResolvedValue({
+              resultType: QueryResultType.CANCELLATION,
+            }),
+            outputDir: {
+              logPath,
+            },
+          }),
+          logger: createMockLogger(),
+        },
+        databaseItem: {
+          databaseUri: mockedUri("/a/b/c/src.zip"),
+          contents: {
+            kind: DatabaseKind.Database,
+            name: "foo",
+            datasetUri: mockedUri(),
+          },
+          language,
+        },
+        queryStorageDir: "/tmp/queries",
+        queryDir,
+        progress: jest.fn(),
+        token: {
+          isCancellationRequested: false,
+          onCancellationRequested: jest.fn(),
+        },
+      };
+
+      expect(await runQuery(Mode.Application, options)).toBeUndefined();
+      expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
+        expect.anything(),
+        undefined,
+        expect.any(RedactableError),
+      );
+    });
+
+    it("should run query for random language", async () => {
       const logPath = (await file()).path;
 
       const query = fetchExternalApiQueries[language];
@@ -70,6 +180,7 @@ describe("runQuery", () => {
           language,
         },
         queryStorageDir: "/tmp/queries",
+        queryDir,
         progress: jest.fn(),
         token: {
           isCancellationRequested: false,
@@ -77,7 +188,7 @@ describe("runQuery", () => {
         },
       };
 
-      const result = await runQuery(queryName, options);
+      const result = await runQuery(Mode.Framework, options);
 
       expect(result?.resultType).toEqual(QueryResultType.SUCCESS);
 
@@ -86,7 +197,7 @@ describe("runQuery", () => {
       expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(
         "/a/b/c/src.zip",
         {
-          queryPath: expect.stringMatching(/FetchExternalApis\.ql/),
+          queryPath: expect.stringMatching(/FetchExternalApis\S*\.ql/),
           quickEvalPosition: undefined,
           quickEvalCountOnly: false,
         },
@@ -97,163 +208,125 @@ describe("runQuery", () => {
         undefined,
         undefined,
       );
+    });
+  });
 
-      const queryPath =
-        options.queryRunner.createQueryRun.mock.calls[0][1].queryPath;
-      const queryDirectory = dirname(queryPath);
+  describe("readQueryResults", () => {
+    const options = {
+      cliServer: {
+        bqrsInfo: jest.fn(),
+        bqrsDecode: jest.fn(),
+      },
+      bqrsPath: "/tmp/results.bqrs",
+    };
 
-      const queryFiles = await readdir(queryDirectory);
-      expect(queryFiles.sort()).toEqual(
-        [
-          "codeql-pack.yml",
-          "FetchExternalApis.ql",
-          "AutomodelVsCode.qll",
-        ].sort(),
+    let showAndLogExceptionWithTelemetrySpy: jest.SpiedFunction<
+      typeof showAndLogExceptionWithTelemetry
+    >;
+
+    beforeEach(() => {
+      showAndLogExceptionWithTelemetrySpy = jest.spyOn(
+        log,
+        "showAndLogExceptionWithTelemetry",
       );
+    });
 
-      const suiteFileContents = await readFile(
-        join(queryDirectory, "codeql-pack.yml"),
-        "utf8",
-      );
-      const suiteYaml = load(suiteFileContents);
-      expect(suiteYaml).toEqual({
-        name: "codeql/external-api-usage",
-        version: "0.0.0",
-        dependencies: {
-          [`codeql/${language}-all`]: "*",
-        },
+    it("returns undefined when there are no results", async () => {
+      options.cliServer.bqrsInfo.mockResolvedValue({
+        "result-sets": [],
       });
 
-      expect(
-        await readFile(join(queryDirectory, "FetchExternalApis.ql"), "utf8"),
-      ).toEqual(query[queryName]);
-
-      for (const [filename, contents] of Object.entries(
-        query.dependencies ?? {},
-      )) {
-        expect(await readFile(join(queryDirectory, filename), "utf8")).toEqual(
-          contents,
-        );
-      }
-    },
-  );
-});
-
-describe("readQueryResults", () => {
-  const options = {
-    cliServer: {
-      bqrsInfo: jest.fn(),
-      bqrsDecode: jest.fn(),
-    },
-    bqrsPath: "/tmp/results.bqrs",
-  };
-
-  let showAndLogExceptionWithTelemetrySpy: jest.SpiedFunction<
-    typeof showAndLogExceptionWithTelemetry
-  >;
-
-  beforeEach(() => {
-    showAndLogExceptionWithTelemetrySpy = jest.spyOn(
-      log,
-      "showAndLogExceptionWithTelemetry",
-    );
-  });
-
-  it("returns undefined when there are no results", async () => {
-    options.cliServer.bqrsInfo.mockResolvedValue({
-      "result-sets": [],
+      expect(await readQueryResults(options)).toBeUndefined();
+      expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
+        expect.anything(),
+        undefined,
+        expect.any(RedactableError),
+      );
     });
 
-    expect(await readQueryResults(options)).toBeUndefined();
-    expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
-      expect.anything(),
-      undefined,
-      expect.any(RedactableError),
-    );
-  });
-
-  it("returns undefined when there are multiple result sets", async () => {
-    options.cliServer.bqrsInfo.mockResolvedValue({
-      "result-sets": [
-        {
-          name: "#select",
-          rows: 10,
-          columns: [
-            { name: "usage", kind: "e" },
-            { name: "apiName", kind: "s" },
-            { kind: "s" },
-            { kind: "s" },
-          ],
-        },
-        {
-          name: "#select2",
-          rows: 10,
-          columns: [
-            { name: "usage", kind: "e" },
-            { name: "apiName", kind: "s" },
-            { kind: "s" },
-            { kind: "s" },
-          ],
-        },
-      ],
-    });
-
-    expect(await readQueryResults(options)).toBeUndefined();
-    expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
-      expect.anything(),
-      undefined,
-      expect.any(RedactableError),
-    );
-  });
-
-  it("gets the result set", async () => {
-    options.cliServer.bqrsInfo.mockResolvedValue({
-      "result-sets": [
-        {
-          name: "#select",
-          rows: 10,
-          columns: [
-            { name: "usage", kind: "e" },
-            { name: "apiName", kind: "s" },
-            { kind: "s" },
-            { kind: "s" },
-          ],
-        },
-      ],
-      "compatible-query-kinds": ["Table", "Tree", "Graph"],
-    });
-    const decodedResultSet = {
-      columns: [
-        { name: "usage", kind: "e" },
-        { name: "apiName", kind: "s" },
-        { kind: "s" },
-        { kind: "s" },
-      ],
-      tuples: [
-        [
-          "java.io.PrintStream#println(String)",
-          true,
+    it("returns undefined when there are multiple result sets", async () => {
+      options.cliServer.bqrsInfo.mockResolvedValue({
+        "result-sets": [
           {
-            label: "println(...)",
-            url: {
-              uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
-              startLine: 29,
-              startColumn: 9,
-              endLine: 29,
-              endColumn: 49,
-            },
+            name: "#select",
+            rows: 10,
+            columns: [
+              { name: "usage", kind: "e" },
+              { name: "apiName", kind: "s" },
+              { kind: "s" },
+              { kind: "s" },
+            ],
+          },
+          {
+            name: "#select2",
+            rows: 10,
+            columns: [
+              { name: "usage", kind: "e" },
+              { name: "apiName", kind: "s" },
+              { kind: "s" },
+              { kind: "s" },
+            ],
           },
         ],
-      ],
-    };
-    options.cliServer.bqrsDecode.mockResolvedValue(decodedResultSet);
+      });
 
-    const result = await readQueryResults(options);
-    expect(result).toEqual(decodedResultSet);
-    expect(options.cliServer.bqrsInfo).toHaveBeenCalledWith(options.bqrsPath);
-    expect(options.cliServer.bqrsDecode).toHaveBeenCalledWith(
-      options.bqrsPath,
-      "#select",
-    );
+      expect(await readQueryResults(options)).toBeUndefined();
+      expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
+        expect.anything(),
+        undefined,
+        expect.any(RedactableError),
+      );
+    });
+
+    it("gets the result set", async () => {
+      options.cliServer.bqrsInfo.mockResolvedValue({
+        "result-sets": [
+          {
+            name: "#select",
+            rows: 10,
+            columns: [
+              { name: "usage", kind: "e" },
+              { name: "apiName", kind: "s" },
+              { kind: "s" },
+              { kind: "s" },
+            ],
+          },
+        ],
+        "compatible-query-kinds": ["Table", "Tree", "Graph"],
+      });
+      const decodedResultSet = {
+        columns: [
+          { name: "usage", kind: "e" },
+          { name: "apiName", kind: "s" },
+          { kind: "s" },
+          { kind: "s" },
+        ],
+        tuples: [
+          [
+            "java.io.PrintStream#println(String)",
+            true,
+            {
+              label: "println(...)",
+              url: {
+                uri: "file:/home/runner/work/sql2o-example/sql2o-example/src/main/java/org/example/HelloController.java",
+                startLine: 29,
+                startColumn: 9,
+                endLine: 29,
+                endColumn: 49,
+              },
+            },
+          ],
+        ],
+      };
+      options.cliServer.bqrsDecode.mockResolvedValue(decodedResultSet);
+
+      const result = await readQueryResults(options);
+      expect(result).toEqual(decodedResultSet);
+      expect(options.cliServer.bqrsInfo).toHaveBeenCalledWith(options.bqrsPath);
+      expect(options.cliServer.bqrsDecode).toHaveBeenCalledWith(
+        options.bqrsPath,
+        "#select",
+      );
+    });
   });
 });
