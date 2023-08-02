@@ -70,10 +70,14 @@ export class DataExtensionsEditorModule {
           return;
         }
 
-        if (!SUPPORTED_LANGUAGES.includes(db.language)) {
+        const language = db.language;
+        if (
+          !SUPPORTED_LANGUAGES.includes(language) ||
+          !isQueryLanguage(language)
+        ) {
           void showAndLogErrorMessage(
             this.app.logger,
-            `The data extensions editor is not supported for ${db.language} databases.`,
+            `The data extensions editor is not supported for ${language} databases.`,
           );
           return;
         }
@@ -109,28 +113,19 @@ export class DataExtensionsEditorModule {
               return;
             }
 
-            if (!isQueryLanguage(db.language)) {
-              void showAndLogExceptionWithTelemetry(
-                extLogger,
-                telemetryListener,
-                redactableError`Unsupported database language ${db.language}`,
-              );
-              return;
-            }
-
-            const query = fetchExternalApiQueries[db.language];
+            const query = fetchExternalApiQueries[language];
             if (!query) {
               void showAndLogExceptionWithTelemetry(
                 extLogger,
                 telemetryListener,
-                redactableError`No external API usage query found for language ${db.language}`,
+                redactableError`No external API usage query found for language ${language}`,
               );
               return;
             }
 
             // Create new temporary directory for query files and pack dependencies
             const queryDir = (await dir({ unsafeCleanup: true })).path;
-            await setUpPack(queryDir, query, db.language);
+            await setUpPack(queryDir, query, language);
             await this.cliServer.packInstall(queryDir);
 
             const view = new DataExtensionsEditorView(
