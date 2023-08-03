@@ -14,16 +14,16 @@ import {
 } from "../../../../src/common/time";
 import { mockedObject } from "../../utils/mocking.helpers";
 
-describe("query history scrubber", () => {
-  const now = Date.now();
+const now = Date.now();
+// We don't want our times to align exactly with the hour,
+// so we can better mimic real life
+const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
 
+describe("query history scrubber", () => {
   let deregister: vscode.Disposable | undefined;
   let mockCtx: vscode.ExtensionContext;
   let runCount = 0;
 
-  // We don't want our times to align exactly with the hour,
-  // so we can better mimic real life
-  const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
   const tmpDir = dirSync({
     unsafeCleanup: true,
   });
