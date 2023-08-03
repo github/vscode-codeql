@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.8.9 - 3 August 2023
 
 - Remove "last updated" information and sorting from variant analysis results view. [#2637](https://github.com/github/vscode-codeql/pull/2637)
