@@ -23,11 +23,10 @@ import {
   tableHeaderItemClassName,
   toggleDiagnosticsClassName,
   alertExtrasClassName,
-  openFile,
 } from "./result-table-utils";
 import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
-import { basename } from "../../common/path";
+import { ResultTablesHeader } from "./ResultTablesHeader";
 
 /**
  * Properties for the `ResultTables` component.
@@ -52,7 +51,6 @@ interface ResultTablesProps {
  */
 interface ResultTablesState {
   selectedTable: string; // name of selected result set
-  selectedPage: string; // stringified selected page
   problemsViewSelected: boolean;
 }
 
@@ -138,10 +136,8 @@ export class ResultTables extends React.Component<
       getDefaultResultSet(
         getResultSets(props.rawResultSets, props.interpretation),
       );
-    const selectedPage = `${props.parsedResultSets.pageNumber + 1}`;
     this.state = {
       selectedTable,
-      selectedPage,
       problemsViewSelected: false,
     };
   }
@@ -168,10 +164,7 @@ export class ResultTables extends React.Component<
             getResultSets(props.rawResultSets, props.interpretation),
           );
 
-        return {
-          selectedTable,
-          selectedPage: `${props.parsedResultSets.pageNumber + 1}`,
-        };
+        return { selectedTable };
       });
     }
   }
@@ -245,103 +238,6 @@ export class ResultTables extends React.Component<
     sendTelemetry("local-results-alert-table-page-changed");
   }
 
-  renderPageButtons(): JSX.Element {
-    const { parsedResultSets } = this.props;
-    const selectedTable = this.state.selectedTable;
-
-    // FIXME: The extension, not the view, should be in charge of deciding whether to initially show
-    // a raw or alerts page. We have to conditionally recompute the number of pages here, because
-    // on initial load of query results, resultSets.numPages will have the number of *raw* pages available,
-    // not interpreted pages, because the extension doesn't know the view will default to showing alerts
-    // instead.
-    const numPages = Math.max(
-      selectedTable === ALERTS_TABLE_NAME
-        ? parsedResultSets.numInterpretedPages
-        : parsedResultSets.numPages,
-      1,
-    );
-
-    const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      this.setState({ selectedPage: e.target.value });
-      this.sendResultsPageChangedTelemetry();
-    };
-    const choosePage = (input: string) => {
-      const pageNumber = parseInt(input);
-      if (pageNumber !== undefined && !isNaN(pageNumber)) {
-        const actualPageNumber = Math.max(
-          0,
-          Math.min(pageNumber - 1, numPages - 1),
-        );
-        vscode.postMessage({
-          t: "changePage",
-          pageNumber: actualPageNumber,
-          selectedTable,
-        });
-      }
-    };
-
-    const prevPage = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-      vscode.postMessage({
-        t: "changePage",
-        pageNumber: Math.max(parsedResultSets.pageNumber - 1, 0),
-        selectedTable,
-      });
-      this.sendResultsPageChangedTelemetry();
-    };
-    const nextPage = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-      vscode.postMessage({
-        t: "changePage",
-        pageNumber: Math.min(parsedResultSets.pageNumber + 1, numPages - 1),
-        selectedTable,
-      });
-      this.sendResultsPageChangedTelemetry();
-    };
-
-    const openQuery = () => {
-      openFile(this.props.queryPath);
-      sendTelemetry("local-results-open-query-file");
-    };
-    const fileName = basename(this.props.queryPath);
-
-    return (
-      <span className="vscode-codeql__table-selection-pagination">
-        <button onClick={prevPage}>&#xab;</button>
-        <input
-          type="number"
-          size={3}
-          value={this.state.selectedPage}
-          min="1"
-          max={numPages}
-          onChange={onChange}
-          onBlur={(e) => choosePage(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.keyCode === 13) {
-              choosePage((e.target as HTMLInputElement).value);
-            }
-          }}
-        />
-        <span>/&nbsp;{numPages}</span>
-        <button value=">" onClick={nextPage}>
-          &#xbb;
-        </button>
-        <div className={tableHeaderItemClassName}>{this.props.queryName}</div>
-        <div className={tableHeaderItemClassName}>
-          {/*
-              eslint-disable-next-line
-              jsx-a11y/anchor-is-valid
-            */}
-          <a
-            href="#"
-            onClick={openQuery}
-            className="vscode-codeql__result-table-location-link"
-          >
-            Open {fileName}
-          </a>
-        </div>
-      </span>
-    );
-  }
-
   render(): React.ReactNode {
     const { selectedTable } = this.state;
     const resultSets = getResultSets(
@@ -369,7 +265,10 @@ export class ResultTables extends React.Component<
     ));
     return (
       <div>
-        {this.renderPageButtons()}
+        <ResultTablesHeader
+          {...this.props}
+          selectedTable={this.state.selectedTable}
+        />
         <div className={tableHeaderClassName}></div>
         <div className={tableHeaderClassName}>
           <select value={selectedTable} onChange={this.onTableSelectionChange}>
