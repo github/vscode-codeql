@@ -15,7 +15,7 @@ import {
   ResultSet,
 } from "../../common/interface-types";
 import { EventHandlers as EventHandlerList } from "./event-handler-list";
-import { ResultTables } from "./result-tables";
+import { ResultTables } from "./ResultTables";
 
 import "./resultsView.css";
 import { useCallback, useEffect } from "react";

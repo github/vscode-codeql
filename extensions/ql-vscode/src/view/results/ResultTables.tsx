@@ -14,11 +14,7 @@ import {
   ParsedResultSets,
   IntoResultsViewMsg,
 } from "../../common/interface-types";
-import { AlertTable } from "./alert-table";
-import { Graph } from "./graph";
-import { RawTable } from "./raw-results-table";
 import {
-  ResultTableProps,
   tableHeaderClassName,
   tableHeaderItemClassName,
   toggleDiagnosticsClassName,
@@ -28,6 +24,7 @@ import {
 import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
 import { basename } from "../../common/path";
+import { ResultTable } from "./ResultTable";
 
 /**
  * Properties for the `ResultTables` component.
@@ -430,34 +427,6 @@ export class ResultTables extends React.Component<
     evt.origin === window.origin
       ? this.handleMessage(evt.data as IntoResultsViewMsg)
       : console.error(`Invalid event origin ${origin}`);
-  }
-}
-
-function ResultTable(props: ResultTableProps) {
-  const { resultSet } = props;
-  switch (resultSet.t) {
-    case "RawResultSet":
-      return <RawTable {...props} resultSet={resultSet} />;
-    case "InterpretedResultSet": {
-      const data = resultSet.interpretation.data;
-      switch (data.t) {
-        case "SarifInterpretationData": {
-          const sarifResultSet = {
-            ...resultSet,
-            interpretation: { ...resultSet.interpretation, data },
-          };
-          return <AlertTable {...props} resultSet={sarifResultSet} />;
-        }
-        case "GraphInterpretationData": {
-          return (
-            <Graph
-              graphData={data?.dot[props.offset]}
-              databaseUri={props.databaseUri}
-            />
-          );
-        }
-      }
-    }
   }
 }
 
