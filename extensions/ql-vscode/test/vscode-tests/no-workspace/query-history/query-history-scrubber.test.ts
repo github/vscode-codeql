@@ -21,7 +21,6 @@ const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
 
 describe("query history scrubber", () => {
   let deregister: vscode.Disposable | undefined;
-  let mockCtx: vscode.ExtensionContext;
   let runCount = 0;
 
   const tmpDir = dirSync({
@@ -35,24 +34,6 @@ describe("query history scrubber", () => {
       doNotFake: ["setTimeout"],
       now,
     });
-
-    mockCtx = {
-      globalState: {
-        lastScrubTime: now,
-        get(key: string) {
-          if (key !== "lastScrubTime") {
-            throw new Error(`Unexpected key: ${key}`);
-          }
-          return this.lastScrubTime;
-        },
-        async update(key: string, value: any) {
-          if (key !== "lastScrubTime") {
-            throw new Error(`Unexpected key: ${key}`);
-          }
-          this.lastScrubTime = value;
-        },
-      },
-    } as any as vscode.ExtensionContext;
   });
 
   afterEach(() => {
@@ -63,7 +44,8 @@ describe("query history scrubber", () => {
   });
 
   it("should not throw an error when the query directory does not exist", async () => {
-    registerScrubber("idontexist");
+    const mockCtx = createMockContext();
+    registerScrubber("idontexist", mockCtx);
 
     jest.advanceTimersByTime(ONE_HOUR_IN_MS);
     await wait();
@@ -97,7 +79,7 @@ describe("query history scrubber", () => {
       TWO_HOURS_IN_MS,
       THREE_HOURS_IN_MS,
     );
-    registerScrubber(queryDir);
+    registerScrubber(queryDir, createMockContext());
 
     jest.advanceTimersByTime(TWO_HOURS_IN_MS);
     await wait();
@@ -176,7 +158,27 @@ describe("query history scrubber", () => {
     return `query-${timestamp}`;
   }
 
-  function registerScrubber(dir: string) {
+  function createMockContext(): vscode.ExtensionContext {
+    return {
+      globalState: {
+        lastScrubTime: now,
+        get(key: string) {
+          if (key !== "lastScrubTime") {
+            throw new Error(`Unexpected key: ${key}`);
+          }
+          return this.lastScrubTime;
+        },
+        async update(key: string, value: any) {
+          if (key !== "lastScrubTime") {
+            throw new Error(`Unexpected key: ${key}`);
+          }
+          this.lastScrubTime = value;
+        },
+      },
+    } as any as vscode.ExtensionContext;
+  }
+
+  function registerScrubber(dir: string, ctx: vscode.ExtensionContext) {
     deregister = registerQueryHistoryScrubber(
       ONE_HOUR_IN_MS,
       TWO_HOURS_IN_MS,
@@ -187,7 +189,7 @@ describe("query history scrubber", () => {
           return Promise.resolve();
         },
       }),
-      mockCtx,
+      ctx,
       {
         increment: () => runCount++,
       },
