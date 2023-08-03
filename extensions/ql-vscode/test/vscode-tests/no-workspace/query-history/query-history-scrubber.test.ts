@@ -13,6 +13,7 @@ import {
   TWO_HOURS_IN_MS,
 } from "../../../../src/common/time";
 import { mockedObject } from "../../utils/mocking.helpers";
+import { DirResult } from "tmp";
 
 const now = Date.now();
 // We don't want our times to align exactly with the hour,
@@ -21,12 +22,13 @@ const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
 
 describe("query history scrubber", () => {
   let deregister: vscode.Disposable | undefined;
-
-  const tmpDir = dirSync({
-    unsafeCleanup: true,
-  });
+  let tmpDir: DirResult;
 
   beforeEach(() => {
+    tmpDir = dirSync({
+      unsafeCleanup: true,
+    });
+
     jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
     jest.useFakeTimers({
@@ -40,6 +42,7 @@ describe("query history scrubber", () => {
       deregister.dispose();
       deregister = undefined;
     }
+    tmpDir.removeCallback();
   });
 
   it("should not throw an error when the query directory does not exist", async () => {
