@@ -21,7 +21,6 @@ const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
 
 describe("query history scrubber", () => {
   let deregister: vscode.Disposable | undefined;
-  let runCount = 0;
 
   const tmpDir = dirSync({
     unsafeCleanup: true,
@@ -45,27 +44,27 @@ describe("query history scrubber", () => {
 
   it("should not throw an error when the query directory does not exist", async () => {
     const mockCtx = createMockContext();
-    registerScrubber("idontexist", mockCtx);
+    const runCounter = registerScrubber("idontexist", mockCtx);
 
     jest.advanceTimersByTime(ONE_HOUR_IN_MS);
     await wait();
     // "Should not have called the scrubber"
-    expect(runCount).toBe(0);
+    expect(runCounter).toHaveBeenCalledTimes(0);
 
     jest.advanceTimersByTime(ONE_HOUR_IN_MS - 1);
     await wait();
     // "Should not have called the scrubber"
-    expect(runCount).toBe(0);
+    expect(runCounter).toHaveBeenCalledTimes(0);
 
     jest.advanceTimersByTime(1);
     await wait();
     // "Should have called the scrubber once"
-    expect(runCount).toBe(1);
+    expect(runCounter).toHaveBeenCalledTimes(1);
 
     jest.advanceTimersByTime(TWO_HOURS_IN_MS);
     await wait();
     // "Should have called the scrubber a second time"
-    expect(runCount).toBe(2);
+    expect(runCounter).toHaveBeenCalledTimes(2);
 
     expect((mockCtx.globalState as any).lastScrubTime).toBe(
       now + TWO_HOURS_IN_MS * 2,
@@ -178,7 +177,11 @@ describe("query history scrubber", () => {
     } as any as vscode.ExtensionContext;
   }
 
-  function registerScrubber(dir: string, ctx: vscode.ExtensionContext) {
+  function registerScrubber(
+    dir: string,
+    ctx: vscode.ExtensionContext,
+  ): jest.Mock {
+    const onScrubberRun = jest.fn();
     deregister = registerQueryHistoryScrubber(
       ONE_HOUR_IN_MS,
       TWO_HOURS_IN_MS,
@@ -190,10 +193,9 @@ describe("query history scrubber", () => {
         },
       }),
       ctx,
-      {
-        increment: () => runCount++,
-      },
+      onScrubberRun,
     );
+    return onScrubberRun;
   }
 
   async function wait(ms = 500) {
