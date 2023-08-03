@@ -176,12 +176,6 @@ export class ResultTables extends React.Component<
     }
   }
 
-  untoggleProblemsView() {
-    this.setState({
-      problemsViewSelected: false,
-    });
-  }
-
   private onTableSelectionChange = (
     event: React.ChangeEvent<HTMLSelectElement>,
   ): void => {
