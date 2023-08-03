@@ -1,6 +1,6 @@
 import { join } from "path";
 
-import { sarifParser } from "../../../../src/common/sarif-parser";
+import { sarifParser } from "../../../src/common/sarif-parser";
 
 describe("sarif parser", () => {
   const sarifDir = join(__dirname, "../data/sarif");
