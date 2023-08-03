@@ -10,10 +10,6 @@ import { getErrorMessage } from "../common/helpers-pure";
 
 const LAST_SCRUB_TIME_KEY = "lastScrubTime";
 
-type Counter = {
-  increment: () => void;
-};
-
 /**
  * Registers an interval timer that will periodically check for queries old enought
  * to be deleted.
@@ -37,8 +33,8 @@ export function registerQueryHistoryScrubber(
   qhm: QueryHistoryManager,
   ctx: ExtensionContext,
 
-  // optional counter to keep track of how many times the scrubber has run
-  counter?: Counter,
+  // optional callback to keep track of how many times the scrubber has run
+  onScrubberRun?: () => void,
 ): Disposable {
   const deregister = setInterval(
     scrubQueries,
@@ -48,7 +44,7 @@ export function registerQueryHistoryScrubber(
     queryHistoryDirs,
     qhm,
     ctx,
-    counter,
+    onScrubberRun,
   );
 
   return {
@@ -64,7 +60,7 @@ async function scrubQueries(
   queryHistoryDirs: QueryHistoryDirs,
   qhm: QueryHistoryManager,
   ctx: ExtensionContext,
-  counter?: Counter,
+  onScrubberRun?: () => void,
 ) {
   const lastScrubTime = ctx.globalState.get<number>(LAST_SCRUB_TIME_KEY);
   const now = Date.now();
@@ -76,7 +72,7 @@ async function scrubQueries(
 
     let scrubCount = 0; // total number of directories deleted
     try {
-      counter?.increment();
+      onScrubberRun?.();
       void extLogger.log(
         "Cleaning up query history directories. Removing old entries.",
       );
