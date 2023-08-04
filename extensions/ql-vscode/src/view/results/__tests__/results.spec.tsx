@@ -12,10 +12,7 @@ import { ColumnKindCode } from "../../../common/bqrs-cli-types";
 import { postMessage } from "../../common/post-message";
 
 const exampleSarif = fs.readJSONSync(
-  resolve(
-    __dirname,
-    "../../../../test/vscode-tests/no-workspace/data/sarif/validSarif.sarif",
-  ),
+  resolve(__dirname, "../../../../test/data/sarif/validSarif.sarif"),
 );
 
 describe(ResultsApp.name, () => {
