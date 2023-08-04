@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import { styled } from "styled-components";
 
 export const ViewTitle = styled.h1`
   font-size: 2em;

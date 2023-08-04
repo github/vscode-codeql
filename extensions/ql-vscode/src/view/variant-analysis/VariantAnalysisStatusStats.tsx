@@ -1,5 +1,5 @@
 import * as React from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 import { VSCodeLink } from "@vscode/webview-ui-toolkit/react";
 import { formatDate } from "../../common/date";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";

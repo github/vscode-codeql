@@ -1,5 +1,5 @@
 import * as React from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 

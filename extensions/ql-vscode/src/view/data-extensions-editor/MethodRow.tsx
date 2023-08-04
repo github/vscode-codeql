@@ -5,7 +5,7 @@ import {
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
 import { ChangeEvent, useCallback, useMemo } from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";

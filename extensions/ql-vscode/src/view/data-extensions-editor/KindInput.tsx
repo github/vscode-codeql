@@ -1,6 +1,5 @@
 import * as React from "react";
 import { ChangeEvent, useCallback, useEffect, useMemo } from "react";
-
 import type { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { Dropdown } from "../common/Dropdown";
 
