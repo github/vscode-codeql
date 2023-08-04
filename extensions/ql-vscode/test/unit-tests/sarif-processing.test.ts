@@ -741,11 +741,23 @@ describe("SARIF processing", () => {
 
       const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
 
-      const actualCodeSnippet = result.alerts[0].codeSnippet;
-
       expect(result).toBeTruthy();
       expectNoParsingError(result);
-      expect(actualCodeSnippet).not.toBeUndefined();
+      expect(result.alerts[0].codeSnippet).not.toBeUndefined();
+      expect(result.alerts[0].message.tokens).toStrictEqual([
+        {
+          t: "text",
+          text: "message ",
+        },
+        {
+          t: "text",
+          text: "String",
+        },
+        {
+          t: "text",
+          text: "",
+        },
+      ]);
     });
   });
 
