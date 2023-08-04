@@ -259,6 +259,21 @@ async function createGitHubApiRequest(
     };
   }
 
+  const autoModelMatch = url.match(
+    /\/repos\/github\/codeql\/code-scanning\/codeql\/auto-model/,
+  );
+  if (autoModelMatch) {
+    return {
+      request: {
+        kind: RequestKind.AutoModel,
+      },
+      response: {
+        status,
+        body: JSON.parse(body),
+      },
+    };
+  }
+
   return undefined;
 }
 
