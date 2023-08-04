@@ -1811,7 +1811,6 @@
     "@types/gulp-replace": "^1.1.0",
     "@types/jest": "^29.0.2",
     "@types/js-yaml": "^3.12.5",
-    "@types/jszip": "^3.1.6",
     "@types/nanoid": "^3.0.0",
     "@types/node": "^16.11.25",
     "@types/node-fetch": "^2.5.2",
