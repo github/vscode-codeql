@@ -85,7 +85,7 @@ describe("createAutoModelV2Request", () => {
 });
 
 describe("getCandidates", () => {
-  it("doesnt return methods that are already modelled", () => {
+  it("doesn't return methods that are already modelled", () => {
     const externalApiUsages: ExternalApiUsage[] = [];
     externalApiUsages.push({
       library: "my.jar",
@@ -119,7 +119,8 @@ describe("getCandidates", () => {
     );
     expect(candidates.length).toEqual(0);
   });
-  it("doesnt return methods that are supported from other sources", () => {
+
+  it("doesn't return methods that are supported from other sources", () => {
     const externalApiUsages: ExternalApiUsage[] = [];
     externalApiUsages.push({
       library: "my.jar",
@@ -140,7 +141,8 @@ describe("getCandidates", () => {
     );
     expect(candidates.length).toEqual(0);
   });
-  it("return methods that neither modeled nor supported from other sources", () => {
+
+  it("returns methods that are neither modeled nor supported from other sources", () => {
     const externalApiUsages: ExternalApiUsage[] = [];
     externalApiUsages.push({
       library: "my.jar",
@@ -161,6 +163,7 @@ describe("getCandidates", () => {
     );
     expect(candidates.length).toEqual(1);
   });
+
   it("respects the limit", () => {
     const externalApiUsages: ExternalApiUsage[] = [];
     for (let i = 0; i < 30; i++) {
