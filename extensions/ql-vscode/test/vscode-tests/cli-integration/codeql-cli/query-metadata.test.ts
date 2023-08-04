@@ -3,6 +3,7 @@ import { join, resolve } from "path";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { getActivatedExtension } from "../../global.helper";
 import { tryGetQueryMetadata } from "../../../../src/codeql-cli/query-metadata";
+import { getDataFolderFilePath } from "../utils";
 
 describe("tryGetQueryMetadata", () => {
   const baseDir = resolve(__dirname, "..");
@@ -30,7 +31,7 @@ describe("tryGetQueryMetadata", () => {
     // Query with empty metadata
     const noMetadata = await tryGetQueryMetadata(
       cli,
-      join(baseDir, "data", "simple-query.ql"),
+      getDataFolderFilePath("debugger/simple-query.ql"),
     );
 
     expect(noMetadata).toEqual({});

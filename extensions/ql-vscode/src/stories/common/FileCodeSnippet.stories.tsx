@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { FileCodeSnippet } from "../../view/common";
 
 export default {
   title: "File Code Snippet",
   component: FileCodeSnippet,
-} as ComponentMeta<typeof FileCodeSnippet>;
+} as Meta<typeof FileCodeSnippet>;
 
-const Template: ComponentStory<typeof FileCodeSnippet> = (args) => (
+const Template: StoryFn<typeof FileCodeSnippet> = (args) => (
   <FileCodeSnippet {...args} />
 );
 

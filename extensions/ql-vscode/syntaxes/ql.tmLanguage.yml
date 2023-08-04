@@ -508,7 +508,12 @@ repository:
     match:
       keyword: 'abstract'
     name: storage.modifier.abstract.ql
-  
+
+  additional:
+    match:
+      keyword: 'additional'
+    name: storage.modifier.additional.ql
+
   bindingset:
     match:
       keyword: 'bindingset'
@@ -519,11 +524,16 @@ repository:
       keyword: 'cached'
     name: storage.modifier.cached.ql
   
+  default:
+    match:
+      keyword: 'default'
+    name: storage.modifier.default.ql
+
   deprecated:
     match:
       keyword: 'deprecated'
     name: storage.modifier.deprecated.ql
-    
+
   external:
     match:
       keyword: 'external'
@@ -577,8 +587,10 @@ repository:
   annotation-keyword:
     patterns:
     - include: '#abstract'
+    - include: '#additional'
     - include: '#bindingset'
     - include: '#cached'
+    - include: '#default'
     - include: '#deprecated'
     - include: '#external'
     - include: '#final'

@@ -1,71 +1,44 @@
 import { CoreCompletedQuery, QueryRunner } from "../query-server";
-import { dir } from "tmp-promise";
-import { writeFile } from "fs-extra";
-import { dump as dumpYaml } from "js-yaml";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { extLogger } from "../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry, TeeLogger } from "../common/logging";
-import { isQueryLanguage } from "../common/query-language";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseItem } from "../databases/local-databases";
 import { ProgressCallback } from "../common/vscode/progress";
-import { fetchExternalApiQueries } from "./queries";
 import { QueryResultType } from "../query-server/new-messages";
-import { join } from "path";
 import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
+import { join } from "path";
+import { Mode } from "./shared/mode";
+import { writeFile } from "fs-extra";
 import { Query } from "./queries/query";
+import { QueryLanguage } from "../common/query-language";
+import { dump } from "js-yaml";
 
-export type RunQueryOptions = {
+type RunQueryOptions = {
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">;
   queryRunner: Pick<QueryRunner, "createQueryRun" | "logger">;
   databaseItem: Pick<DatabaseItem, "contents" | "databaseUri" | "language">;
   queryStorageDir: string;
+  queryDir: string;
 
   progress: ProgressCallback;
   token: CancellationToken;
 };
 
-export async function runQuery(
-  queryName: keyof Omit<Query, "dependencies">,
-  {
-    cliServer,
-    queryRunner,
-    databaseItem,
-    queryStorageDir,
-    progress,
-    token,
-  }: RunQueryOptions,
-): Promise<CoreCompletedQuery | undefined> {
-  // The below code is temporary to allow for rapid prototyping of the queries. Once the queries are stabilized, we will
-  // move these queries into the `github/codeql` repository and use them like any other contextual (e.g. AST) queries.
-  // This is intentionally not pretty code, as it will be removed soon.
-  // For a reference of what this should do in the future, see the previous implementation in
-  // https://github.com/github/vscode-codeql/blob/089d3566ef0bc67d9b7cc66e8fd6740b31c1c0b0/extensions/ql-vscode/src/data-extensions-editor/external-api-usage-query.ts#L33-L72
-
-  if (!isQueryLanguage(databaseItem.language)) {
-    void showAndLogExceptionWithTelemetry(
-      extLogger,
-      telemetryListener,
-      redactableError`Unsupported database language ${databaseItem.language}`,
+export async function setUpPack(
+  queryDir: string,
+  query: Query,
+  language: QueryLanguage,
+) {
+  Object.values(Mode).map(async (mode) => {
+    const queryFile = join(
+      queryDir,
+      `FetchExternalApis${mode.charAt(0).toUpperCase() + mode.slice(1)}Mode.ql`,
     );
-    return;
-  }
-
-  const query = fetchExternalApiQueries[databaseItem.language];
-  if (!query) {
-    void showAndLogExceptionWithTelemetry(
-      extLogger,
-      telemetryListener,
-      redactableError`No external API usage query found for language ${databaseItem.language}`,
-    );
-    return;
-  }
-
-  const queryDir = (await dir({ unsafeCleanup: true })).path;
-  const queryFile = join(queryDir, "FetchExternalApis.ql");
-  await writeFile(queryFile, query[queryName], "utf8");
+    await writeFile(queryFile, query[`${mode}ModeQuery`], "utf8");
+  });
 
   if (query.dependencies) {
     for (const [filename, contents] of Object.entries(query.dependencies)) {
@@ -78,16 +51,40 @@ export async function runQuery(
     name: "codeql/external-api-usage",
     version: "0.0.0",
     dependencies: {
-      [`codeql/${databaseItem.language}-all`]: "*",
+      [`codeql/${language}-all`]: "*",
     },
   };
 
   const qlpackFile = join(queryDir, "codeql-pack.yml");
-  await writeFile(qlpackFile, dumpYaml(syntheticQueryPack), "utf8");
+  await writeFile(qlpackFile, dump(syntheticQueryPack), "utf8");
+}
+
+export async function runQuery(
+  mode: Mode,
+  {
+    cliServer,
+    queryRunner,
+    databaseItem,
+    queryStorageDir,
+    queryDir,
+    progress,
+    token,
+  }: RunQueryOptions,
+): Promise<CoreCompletedQuery | undefined> {
+  // The below code is temporary to allow for rapid prototyping of the queries. Once the queries are stabilized, we will
+  // move these queries into the `github/codeql` repository and use them like any other contextual (e.g. AST) queries.
+  // This is intentionally not pretty code, as it will be removed soon.
+  // For a reference of what this should do in the future, see the previous implementation in
+  // https://github.com/github/vscode-codeql/blob/089d3566ef0bc67d9b7cc66e8fd6740b31c1c0b0/extensions/ql-vscode/src/data-extensions-editor/external-api-usage-query.ts#L33-L72
 
   const additionalPacks = getOnDiskWorkspaceFolders();
   const extensionPacks = Object.keys(
     await cliServer.resolveQlpacks(additionalPacks, true),
+  );
+
+  const queryFile = join(
+    queryDir,
+    `FetchExternalApis${mode.charAt(0).toUpperCase() + mode.slice(1)}Mode.ql`,
   );
 
   const queryRun = queryRunner.createQueryRun(
@@ -125,7 +122,7 @@ export async function runQuery(
   return completedQuery;
 }
 
-export type GetResultsOptions = {
+type GetResultsOptions = {
   cliServer: Pick<CodeQLCliServer, "bqrsInfo" | "bqrsDecode">;
   bqrsPath: string;
 };

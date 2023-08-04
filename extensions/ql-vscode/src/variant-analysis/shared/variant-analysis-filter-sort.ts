@@ -1,5 +1,4 @@
 import { Repository, RepositoryWithMetadata } from "./repository";
-import { parseDate } from "../../common/date";
 import { assertNever } from "../../common/helpers-pure";
 
 export enum FilterKey {
@@ -10,7 +9,6 @@ export enum FilterKey {
 export enum SortKey {
   Alphabetically = "alphabetically",
   Popularity = "popularity",
-  MostRecentCommit = "mostRecentCommit",
   NumberOfResults = "numberOfResults",
 }
 
@@ -81,16 +79,6 @@ export function compareRepository(
       }
     }
 
-    // Newest to oldest
-    if (filterSortState?.sortKey === SortKey.MostRecentCommit) {
-      const lastUpdated =
-        (parseDate(right.updatedAt)?.getTime() ?? 0) -
-        (parseDate(left.updatedAt)?.getTime() ?? 0);
-      if (lastUpdated !== 0) {
-        return lastUpdated;
-      }
-    }
-
     // Fall back on name compare. Use en-US because the repository name does not contain
     // special characters due to restrictions in GitHub owner/repository names.
     return left.fullName.localeCompare(right.fullName, "en-US", {
@@ -158,8 +146,8 @@ export function filterAndSortRepositoriesWithResults<
     filterSortState.repositoryIds.length > 0
   ) {
     return repositories
-      .filter((repo) =>
-        filterSortState.repositoryIds?.includes(repo.repository.id),
+      .filter(
+        (repo) => filterSortState.repositoryIds?.includes(repo.repository.id),
       )
       .sort(compareWithResults(filterSortState));
   }

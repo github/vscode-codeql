@@ -27,11 +27,7 @@ import {
   SELECTED_SOURCE_LINE,
   SELECTED_SOURCE_COLUMN,
 } from "./location-finder";
-import {
-  qlpackOfDatabase,
-  resolveQueries,
-  runContextualQuery,
-} from "./query-resolver";
+import { resolveQueries, runContextualQuery } from "./query-resolver";
 import {
   isCanary,
   NO_CACHE_AST_VIEWER,
@@ -39,6 +35,7 @@ import {
 } from "../../config";
 import { CoreCompletedQuery, QueryRunner } from "../../query-server";
 import { AstBuilder } from "../ast-viewer/ast-builder";
+import { qlpackOfDatabase } from "../../local-queries";
 
 /**
  * Runs templated CodeQL queries to find definitions in
@@ -279,7 +276,10 @@ export class TemplatePrintAstProvider {
 export class TemplatePrintCfgProvider {
   private cache: CachedOperation<[Uri, Record<string, string>] | undefined>;
 
-  constructor(private cli: CodeQLCliServer, private dbm: DatabaseManager) {
+  constructor(
+    private cli: CodeQLCliServer,
+    private dbm: DatabaseManager,
+  ) {
     this.cache = new CachedOperation<[Uri, Record<string, string>] | undefined>(
       this.getCfgUri.bind(this),
     );

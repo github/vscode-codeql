@@ -194,11 +194,6 @@ export class QueryServerClient extends DisposableObject {
     args.push("--evaluator-log");
     args.push(structuredLogFile);
 
-    // We hard-code the verbosity level to 5 and minify to false.
-    // This will be the behavior of the per-query structured logging in the CLI after 2.8.3.
-    args.push("--evaluator-log-level");
-    args.push("5");
-
     if (this.config.debug) {
       args.push("--debug", "--tuple-counting");
     }

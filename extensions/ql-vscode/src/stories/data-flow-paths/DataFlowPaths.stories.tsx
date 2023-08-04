@@ -1,15 +1,15 @@
 import * as React from "react";
 
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { DataFlowPaths as DataFlowPathsComponent } from "../../view/data-flow-paths/DataFlowPaths";
 import { createMockDataFlowPaths } from "../../../test/factories/variant-analysis/shared/data-flow-paths";
 export default {
   title: "Data Flow Paths/Data Flow Paths",
   component: DataFlowPathsComponent,
-} as ComponentMeta<typeof DataFlowPathsComponent>;
+} as Meta<typeof DataFlowPathsComponent>;
 
-const Template: ComponentStory<typeof DataFlowPathsComponent> = (args) => (
+const Template: StoryFn<typeof DataFlowPathsComponent> = (args) => (
   <DataFlowPathsComponent {...args} />
 );
 

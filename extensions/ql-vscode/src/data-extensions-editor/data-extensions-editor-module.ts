@@ -9,7 +9,17 @@ import { join } from "path";
 import { App } from "../common/app";
 import { withProgress } from "../common/vscode/progress";
 import { pickExtensionPack } from "./extension-pack-picker";
-import { showAndLogErrorMessage } from "../common/logging";
+import {
+  showAndLogErrorMessage,
+  showAndLogExceptionWithTelemetry,
+} from "../common/logging";
+import { dir } from "tmp-promise";
+import { fetchExternalApiQueries } from "./queries";
+import { telemetryListener } from "../common/vscode/telemetry";
+import { redactableError } from "../common/errors";
+import { extLogger } from "../common/logging/vscode";
+import { isQueryLanguage } from "../common/query-language";
+import { setUpPack } from "./external-api-usage-query";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
@@ -60,10 +70,14 @@ export class DataExtensionsEditorModule {
           return;
         }
 
-        if (!SUPPORTED_LANGUAGES.includes(db.language)) {
+        const language = db.language;
+        if (
+          !SUPPORTED_LANGUAGES.includes(language) ||
+          !isQueryLanguage(language)
+        ) {
           void showAndLogErrorMessage(
             this.app.logger,
-            `The data extensions editor is not supported for ${db.language} databases.`,
+            `The data extensions editor is not supported for ${language} databases.`,
           );
           return;
         }
@@ -74,6 +88,16 @@ export class DataExtensionsEditorModule {
               void showAndLogErrorMessage(
                 this.app.logger,
                 `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_QLPACKS_KIND.format()} or later.`,
+              );
+              return;
+            }
+
+            if (
+              !(await this.cliServer.cliConstraints.supportsResolveExtensions())
+            ) {
+              void showAndLogErrorMessage(
+                this.app.logger,
+                `This feature requires CodeQL CLI version ${CliVersionConstraint.CLI_VERSION_WITH_RESOLVE_EXTENSIONS.format()} or later.`,
               );
               return;
             }
@@ -89,6 +113,21 @@ export class DataExtensionsEditorModule {
               return;
             }
 
+            const query = fetchExternalApiQueries[language];
+            if (!query) {
+              void showAndLogExceptionWithTelemetry(
+                extLogger,
+                telemetryListener,
+                redactableError`No external API usage query found for language ${language}`,
+              );
+              return;
+            }
+
+            // Create new temporary directory for query files and pack dependencies
+            const queryDir = (await dir({ unsafeCleanup: true })).path;
+            await setUpPack(queryDir, query, language);
+            await this.cliServer.packInstall(queryDir);
+
             const view = new DataExtensionsEditorView(
               this.ctx,
               this.app,
@@ -96,6 +135,7 @@ export class DataExtensionsEditorModule {
               this.cliServer,
               this.queryRunner,
               this.queryStorageDir,
+              queryDir,
               db,
               modelFile,
             );

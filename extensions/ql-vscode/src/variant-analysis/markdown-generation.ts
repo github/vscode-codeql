@@ -20,7 +20,7 @@ import type {
 } from "./shared/variant-analysis";
 import type { RepositoryWithMetadata } from "./shared/repository";
 
-export type MarkdownLinkType = "local" | "gist";
+type MarkdownLinkType = "local" | "gist";
 
 export interface MarkdownFile {
   fileName: string;
@@ -33,7 +33,7 @@ export interface RepositorySummary {
   resultCount: number;
 }
 
-export interface VariantAnalysisMarkdown {
+interface VariantAnalysisMarkdown {
   markdownFiles: MarkdownFile[];
   summaries: RepositorySummary[];
 }
@@ -105,7 +105,7 @@ export async function generateVariantAnalysisMarkdown(
   };
 }
 
-export function generateVariantAnalysisMarkdownSummary(
+function generateVariantAnalysisMarkdownSummary(
   query: VariantAnalysis["query"],
   summaries: RepositorySummary[],
   linkType: MarkdownLinkType,
@@ -148,8 +148,7 @@ function generateMarkdownForInterpretedResult(
   lines.push(
     createMarkdownRemoteFileRef(
       interpretedResult.fileLink,
-      interpretedResult.highlightedRegion?.startLine,
-      interpretedResult.highlightedRegion?.endLine,
+      interpretedResult.highlightedRegion,
     ),
   );
   lines.push("");
@@ -250,8 +249,7 @@ function generateMarkdownForAlertMessage(
     } else if (token.t === "location") {
       alertMessage += createMarkdownRemoteFileRef(
         token.location.fileLink,
-        token.location.highlightedRegion?.startLine,
-        token.location.highlightedRegion?.endLine,
+        token.location.highlightedRegion,
         token.text,
       );
     }
@@ -275,8 +273,7 @@ function generateMarkdownForPathResults(
       const threadFlow = codeFlow.threadFlows[i];
       const link = createMarkdownRemoteFileRef(
         threadFlow.fileLink,
-        threadFlow.highlightedRegion?.startLine,
-        threadFlow.highlightedRegion?.endLine,
+        threadFlow.highlightedRegion,
       );
       pathLines.push(`${listNumber}. ${link}`);
 
@@ -359,15 +356,20 @@ function generateMarkdownForRawTableCell(
  * Creates a markdown link to a remote file.
  * If the "link text" is not provided, we use the file path.
  */
-export function createMarkdownRemoteFileRef(
+function createMarkdownRemoteFileRef(
   fileLink: FileLink,
-  startLine?: number,
-  endLine?: number,
+  region?: HighlightedRegion,
   linkText?: string,
 ): string {
   const markdownLink = `[${
     linkText || fileLink.filePath
-  }](${createRemoteFileRef(fileLink, startLine, endLine)})`;
+  }](${createRemoteFileRef(
+    fileLink,
+    region?.startLine,
+    region?.endLine,
+    region?.startColumn,
+    region?.endColumn,
+  )})`;
   return markdownLink;
 }
 

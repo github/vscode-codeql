@@ -140,6 +140,12 @@ export function parsePredictedClassifications(
         input: "",
         output: "",
         provenance: "ai-generated",
+        signature,
+        // predictedBySignature[signature] always has at least element
+        packageName: predictedMethods[0].package,
+        typeName: predictedMethods[0].type,
+        methodName: predictedMethods[0].name,
+        methodParameters: predictedMethods[0].signature,
       };
       continue;
     }
@@ -157,6 +163,11 @@ export function parsePredictedClassifications(
       input: sink.input ?? "",
       output: sink.output ?? "",
       provenance: "ai-generated",
+      signature,
+      packageName: sink.package,
+      typeName: sink.type,
+      methodName: sink.name,
+      methodParameters: sink.signature,
     };
   }
 

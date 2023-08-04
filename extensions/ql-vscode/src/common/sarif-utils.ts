@@ -2,7 +2,7 @@ import * as Sarif from "sarif";
 import type { HighlightedRegion } from "../variant-analysis/shared/analysis-result";
 import { ResolvableLocationValue } from "../common/bqrs-cli-types";
 
-export interface SarifLink {
+interface SarifLink {
   dest: number;
   text: string;
 }
@@ -24,7 +24,7 @@ type ParsedSarifLocation =
   // that, and is appropriate for display in the UI.
   | NoLocation;
 
-export type SarifMessageComponent = string | SarifLink;
+type SarifMessageComponent = string | SarifLink;
 
 /**
  * Unescape "[", "]" and "\\" like in sarif plain text messages
@@ -203,7 +203,7 @@ export function shouldHighlightLine(
  * A line of code split into: plain text before the highlighted section, the highlighted
  * text itself, and plain text after the highlighted section.
  */
-export interface PartiallyHighlightedLine {
+interface PartiallyHighlightedLine {
   plainSection1: string;
   highlightedSection: string;
   plainSection2: string;

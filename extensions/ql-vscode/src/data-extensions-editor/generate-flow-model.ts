@@ -8,16 +8,13 @@ import { extLogger } from "../common/logging/vscode";
 import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import {
-  ModeledMethodType,
-  ModeledMethodWithSignature,
-} from "./modeled-method";
+import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import { redactableError } from "../common/errors";
 import { QueryResultType } from "../query-server/new-messages";
 import { file } from "tmp-promise";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
-import { qlpackOfDatabase } from "../language-support";
+import { qlpackOfDatabase } from "../local-queries";
 import { telemetryListener } from "../common/vscode/telemetry";
 
 type FlowModelOptions = {
@@ -27,7 +24,7 @@ type FlowModelOptions = {
   databaseItem: DatabaseItem;
   progress: ProgressCallback;
   token: CancellationToken;
-  onResults: (results: ModeledMethodWithSignature[]) => void | Promise<void>;
+  onResults: (results: ModeledMethod[]) => void | Promise<void>;
 };
 
 async function resolveQueries(
@@ -79,7 +76,7 @@ async function getModeledMethodsFromFlow(
     progress,
     token,
   }: Omit<FlowModelOptions, "onResults">,
-): Promise<ModeledMethodWithSignature[]> {
+): Promise<ModeledMethod[]> {
   if (queryPath === undefined) {
     void showAndLogExceptionWithTelemetry(
       extLogger,

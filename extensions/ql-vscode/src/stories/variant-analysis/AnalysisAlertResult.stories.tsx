@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import AnalysisAlertResult from "../../view/variant-analysis/AnalysisAlertResult";
 import type { AnalysisAlert } from "../../variant-analysis/shared/analysis-result";
@@ -8,9 +8,9 @@ import type { AnalysisAlert } from "../../variant-analysis/shared/analysis-resul
 export default {
   title: "Variant Analysis/Analysis Alert Result",
   component: AnalysisAlertResult,
-} as ComponentMeta<typeof AnalysisAlertResult>;
+} as Meta<typeof AnalysisAlertResult>;
 
-const Template: ComponentStory<typeof AnalysisAlertResult> = (args) => (
+const Template: StoryFn<typeof AnalysisAlertResult> = (args) => (
   <AnalysisAlertResult {...args} />
 );
 

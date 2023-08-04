@@ -51,7 +51,7 @@ export function createMockApp({
   };
 }
 
-export class MockAppEventEmitter<T> implements AppEventEmitter<T> {
+class MockAppEventEmitter<T> implements AppEventEmitter<T> {
   public event: AppEvent<T>;
 
   constructor() {

@@ -1,5 +1,3 @@
-export const PAGE_SIZE = 1000;
-
 /**
  * The single-character codes used in the bqrs format for the the kind
  * of a result column. This namespace is intentionally not an enum, see
@@ -15,7 +13,7 @@ export namespace ColumnKindCode {
   export const ENTITY = "e";
 }
 
-export type ColumnKind =
+type ColumnKind =
   | typeof ColumnKindCode.FLOAT
   | typeof ColumnKindCode.INTEGER
   | typeof ColumnKindCode.STRING
@@ -46,7 +44,7 @@ export function getResultSetSchema(
   }
   return undefined;
 }
-export interface PaginationInfo {
+interface PaginationInfo {
   "step-size": number;
   offsets: number[];
 }

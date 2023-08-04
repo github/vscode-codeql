@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { CodePaths } from "../../view/common";
 import type { CodeFlow } from "../../variant-analysis/shared/analysis-result";
@@ -9,11 +9,9 @@ export default {
   title: "Code Paths",
   component: CodePaths,
   decorators: [(Story) => <Story />],
-} as ComponentMeta<typeof CodePaths>;
+} as Meta<typeof CodePaths>;
 
-const Template: ComponentStory<typeof CodePaths> = (args) => (
-  <CodePaths {...args} />
-);
+const Template: StoryFn<typeof CodePaths> = (args) => <CodePaths {...args} />;
 
 export const PowerShell = Template.bind({});
 

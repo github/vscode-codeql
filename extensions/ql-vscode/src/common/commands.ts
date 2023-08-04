@@ -4,7 +4,6 @@ import type { AstItem } from "../language-support";
 import type { DbTreeViewItem } from "../databases/ui/db-tree-view-item";
 import type { DatabaseItem } from "../databases/local-databases";
 import type { QueryHistoryInfo } from "../query-history/query-history-info";
-import type { RepositoriesFilterSortStateWithIds } from "../variant-analysis/shared/variant-analysis-filter-sort";
 import type { TestTreeNode } from "../query-testing/test-tree-node";
 import type {
   VariantAnalysis,
@@ -56,10 +55,11 @@ export type ExplorerSelectionCommandFunction<Item> = (
 
 // Builtin commands where the implementation is provided by VS Code and not by this extension.
 // See https://code.visualstudio.com/api/references/commands
-export type BuiltInVsCodeCommands = {
+type BuiltInVsCodeCommands = {
   // The codeQLDatabases.focus command is provided by VS Code because we've registered the custom view
   "codeQLDatabases.focus": () => Promise<void>;
   "markdown.showPreviewToSide": (uri: Uri) => Promise<void>;
+  "workbench.action.closeActiveEditor": () => Promise<void>;
   revealFileInOS: (uri: Uri) => Promise<void>;
   setContext: (
     key: `${"codeql" | "codeQL"}${string}`,
@@ -243,10 +243,6 @@ export type VariantAnalysisCommands = {
   "codeQL.autoDownloadVariantAnalysisResult": (
     scannedRepo: VariantAnalysisScannedRepository,
     variantAnalysisSummary: VariantAnalysis,
-  ) => Promise<void>;
-  "codeQL.copyVariantAnalysisRepoList": (
-    variantAnalysisId: number,
-    filterSort?: RepositoriesFilterSortStateWithIds,
   ) => Promise<void>;
   "codeQL.loadVariantAnalysisRepoResults": (
     variantAnalysisId: number,

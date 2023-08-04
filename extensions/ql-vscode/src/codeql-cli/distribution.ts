@@ -718,7 +718,7 @@ export enum DistributionKind {
   PathEnvironmentVariable,
 }
 
-export interface Distribution {
+interface Distribution {
   codeQlPath: string;
   kind: DistributionKind;
 }
@@ -776,22 +776,22 @@ type DistributionUpdateCheckResult =
   | InvalidLocationResult
   | UpdateAvailableResult;
 
-export interface AlreadyCheckedRecentlyResult {
+interface AlreadyCheckedRecentlyResult {
   kind: DistributionUpdateCheckResultKind.AlreadyCheckedRecentlyResult;
 }
 
-export interface AlreadyUpToDateResult {
+interface AlreadyUpToDateResult {
   kind: DistributionUpdateCheckResultKind.AlreadyUpToDate;
 }
 
 /**
  * The distribution could not be installed or updated because it is not managed by the extension.
  */
-export interface InvalidLocationResult {
+interface InvalidLocationResult {
   kind: DistributionUpdateCheckResultKind.InvalidLocation;
 }
 
-export interface UpdateAvailableResult {
+interface UpdateAvailableResult {
   kind: DistributionUpdateCheckResultKind.UpdateAvailable;
   updatedRelease: Release;
 }
@@ -862,7 +862,7 @@ function warnDeprecatedLauncher() {
 /**
  * A release on GitHub.
  */
-export interface Release {
+interface Release {
   assets: ReleaseAsset[];
 
   /**
@@ -884,7 +884,7 @@ export interface Release {
 /**
  * An asset corresponding to a release on GitHub.
  */
-export interface ReleaseAsset {
+interface ReleaseAsset {
   /**
    * The id associated with the asset on GitHub.
    */
@@ -954,7 +954,10 @@ export interface GithubReleaseAsset {
 }
 
 export class GithubApiError extends Error {
-  constructor(public status: number, public body: string) {
+  constructor(
+    public status: number,
+    public body: string,
+  ) {
     super(`API call failed with status code ${status}, body: ${body}`);
   }
 }

@@ -2,11 +2,23 @@
 
 ## [UNRELEASED]
 
+## 1.8.9 - 3 August 2023
+
+- Remove "last updated" information and sorting from variant analysis results view. [#2637](https://github.com/github/vscode-codeql/pull/2637)
+- Links to code on GitHub now include column numbers as well as line numbers. [#2406](https://github.com/github/vscode-codeql/pull/2406)
+- No longer highlight trailing commas for jump to definition.  [#2615](https://github.com/github/vscode-codeql/pull/2615)
+- Fix a bug where the QHelp preview page was not being refreshed after changes to the underlying `.qhelp` file. [#2660](https://github.com/github/vscode-codeql/pull/2660)
+
+## 1.8.8 - 17 July 2023
+
+- Remove support for CodeQL CLI versions older than 2.9.4. [#2610](https://github.com/github/vscode-codeql/pull/2610)
+- Implement syntax highlighting for the `additional` and `default` keywords. [#2609](https://github.com/github/vscode-codeql/pull/2609)
+
 ## 1.8.7 - 29 June 2023
 
 - Show a run button on the file tab for query files, that will start a local query. This button will only show when a local database is selected in the extension. [#2544](https://github.com/github/vscode-codeql/pull/2544)
-- Add `CodeQL: Quick Evaluation Count` command to generate the count summary statistics of the results set
-  without speding the time to compute locations and strings.
+- Add a `CodeQL: Quick Evaluation Count` command to generate the count summary statistics of the results set
+  without spending the time to compute locations and strings. [#2475](https://github.com/github/vscode-codeql/pull/2475)
 
 ## 1.8.6 - 14 June 2023
 

@@ -72,10 +72,10 @@ export function getHtmlForWebview(
   <head>
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'none'; script-src 'nonce-${nonce}'${
-    allowWasmEval ? " 'wasm-unsafe-eval'" : ""
-  }; font-src ${fontSrc}; style-src ${styleSrc}; connect-src ${
-    webview.cspSource
-  };">
+            allowWasmEval ? " 'wasm-unsafe-eval'" : ""
+          }; font-src ${fontSrc}; style-src ${styleSrc}; connect-src ${
+            webview.cspSource
+          };">
         ${stylesheetsHtmlLines.join(`    ${EOL}`)}
   </head>
   <body>

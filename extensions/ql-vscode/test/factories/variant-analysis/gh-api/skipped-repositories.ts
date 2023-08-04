@@ -15,7 +15,7 @@ export function createMockSkippedRepos(): VariantAnalysisSkippedRepositories {
   };
 }
 
-export function createMockSkippedRepoGroup(): VariantAnalysisSkippedRepositoryGroup {
+function createMockSkippedRepoGroup(): VariantAnalysisSkippedRepositoryGroup {
   return {
     repository_count: 2,
     repositories: [
@@ -25,7 +25,7 @@ export function createMockSkippedRepoGroup(): VariantAnalysisSkippedRepositoryGr
   };
 }
 
-export function createMockNotFoundSkippedRepoGroup(): VariantAnalysisNotFoundRepositoryGroup {
+function createMockNotFoundSkippedRepoGroup(): VariantAnalysisNotFoundRepositoryGroup {
   const repoName1 = `github/${faker.word.sample()}`;
   const repoName2 = `github/${faker.word.sample()}`;
 

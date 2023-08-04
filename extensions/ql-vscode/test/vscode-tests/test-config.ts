@@ -3,6 +3,7 @@ import {
   ConfigurationTarget,
   workspace,
   WorkspaceConfiguration as VSCodeWorkspaceConfiguration,
+  Uri,
 } from "vscode";
 import { readFileSync } from "fs-extra";
 import { join } from "path";
@@ -151,13 +152,38 @@ const packageConfiguration: Record<
   const pkg = JSON.parse(
     readFileSync(join(__dirname, "../../package.json"), "utf-8"),
   );
-  return pkg.contributes.configuration.properties;
+  return {
+    ...pkg.contributes.configuration.properties,
+    // `debug.saveBeforeStart` is a core VS Code setting, but we depend on its value in these tests.
+    // We'll set it here to the value that we expect.
+    "debug.saveBeforeStart": {
+      default: "nonUntitledEditorsInActiveGroup",
+    },
+  };
 })();
 
-export const vsCodeGetConfiguration = workspace.getConfiguration;
 export let vscodeGetConfigurationMock: jest.SpiedFunction<
   typeof workspace.getConfiguration
 >;
+
+function acceptScope(scope: ConfigurationScope | null | undefined): boolean {
+  if (!scope) {
+    return true;
+  }
+
+  if (scope instanceof Uri) {
+    return false;
+  }
+
+  // Reject any scope that has a URI property. That covers `WorkspaceFolder`, `TextDocument`, and any
+  if (scope.uri !== undefined) {
+    return false;
+  }
+
+  // We're left with only `{ languageId }` scopes. We'll ignore the language, since it doesn't matter
+  // for our tests.
+  return true;
+}
 
 export const beforeEachAction = async () => {
   const defaultConfiguration = new DefaultConfiguration(packageConfiguration);
@@ -176,7 +202,7 @@ export const beforeEachAction = async () => {
         section?: string,
         scope?: ConfigurationScope | null,
       ): VSCodeWorkspaceConfiguration => {
-        if (scope) {
+        if (!acceptScope(scope)) {
           throw new Error("Scope is not supported in tests");
         }
 

@@ -10,7 +10,10 @@ export class UserCancellationException extends Error {
    * @param message The error message
    * @param silent If silent is true, then this exception will avoid showing a warning message to the user.
    */
-  constructor(message?: string, public readonly silent = false) {
+  constructor(
+    message?: string,
+    public readonly silent = false,
+  ) {
     super(message);
   }
 }
@@ -35,7 +38,7 @@ export type ProgressCallback = (p: ProgressUpdate) => void;
 // Make certain properties within a type optional
 type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
-export type ProgressOptions = Optional<VSCodeProgressOptions, "location">;
+type ProgressOptions = Optional<VSCodeProgressOptions, "location">;
 
 /**
  * A task that reports progress.

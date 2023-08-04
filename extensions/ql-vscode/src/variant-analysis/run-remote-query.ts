@@ -38,7 +38,7 @@ import { QueryLanguage } from "../common/query-language";
 import { tryGetQueryMetadata } from "../codeql-cli/query-metadata";
 import { askForLanguage, findLanguage } from "../codeql-cli/query-language";
 
-export interface QlPack {
+interface QlPack {
   name: string;
   version: string;
   library?: boolean;
@@ -52,7 +52,7 @@ export interface QlPack {
  */
 const QUERY_PACK_NAME = "codeql-remote/query";
 
-export interface GeneratedQueryPack {
+interface GeneratedQueryPack {
   base64Pack: string;
   language: string;
 }
@@ -240,7 +240,7 @@ function isFileSystemRoot(dir: string): boolean {
   return pathObj.root === dir && pathObj.base === "";
 }
 
-export async function createRemoteQueriesTempDirectory() {
+async function createRemoteQueriesTempDirectory() {
   const remoteQueryDir = await dir({
     dir: tmpDir.name,
     unsafeCleanup: true,
@@ -258,7 +258,7 @@ async function getPackedBundlePath(queryPackDir: string) {
   });
 }
 
-export interface PreparedRemoteQuery {
+interface PreparedRemoteQuery {
   actionBranch: string;
   base64Pack: string;
   repoSelection: RepositorySelection;

@@ -129,10 +129,7 @@ async function runQuery(
     dbDir: dbContents.datasetUri.fsPath,
     workingSet: "default",
   };
-  if (
-    generateEvalLog &&
-    (await qs.cliServer.cliConstraints.supportsPerQueryEvalLog())
-  ) {
+  if (generateEvalLog) {
     await qs.sendRequest(messages.startLog, {
       db: dataset,
       logPath: outputDir.evalLogPath,
@@ -149,10 +146,7 @@ async function runQuery(
     await qs.sendRequest(messages.runQueries, params, token, progress);
   } finally {
     qs.unRegisterCallback(callbackId);
-    if (
-      generateEvalLog &&
-      (await qs.cliServer.cliConstraints.supportsPerQueryEvalLog())
-    ) {
+    if (generateEvalLog) {
       await qs.sendRequest(messages.endLog, {
         db: dataset,
         logPath: outputDir.evalLogPath,

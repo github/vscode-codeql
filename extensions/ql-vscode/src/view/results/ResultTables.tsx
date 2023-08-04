@@ -14,11 +14,7 @@ import {
   ParsedResultSets,
   IntoResultsViewMsg,
 } from "../../common/interface-types";
-import { AlertTable } from "./alert-table";
-import { Graph } from "./graph";
-import { RawTable } from "./raw-results-table";
 import {
-  ResultTableProps,
   tableHeaderClassName,
   tableHeaderItemClassName,
   toggleDiagnosticsClassName,
@@ -27,13 +23,13 @@ import {
 } from "./result-table-utils";
 import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
-
-const FILE_PATH_REGEX = /^(?:.+[\\/])*(.+)$/;
+import { basename } from "../../common/path";
+import { ResultTable } from "./ResultTable";
 
 /**
  * Properties for the `ResultTables` component.
  */
-export interface ResultTablesProps {
+interface ResultTablesProps {
   parsedResultSets: ParsedResultSets;
   rawResultSets: readonly ResultSet[];
   interpretation: Interpretation | undefined;
@@ -177,12 +173,6 @@ export class ResultTables extends React.Component<
     }
   }
 
-  untoggleProblemsView() {
-    this.setState({
-      problemsViewSelected: false,
-    });
-  }
-
   private onTableSelectionChange = (
     event: React.ChangeEvent<HTMLSelectElement>,
   ): void => {
@@ -302,7 +292,7 @@ export class ResultTables extends React.Component<
       openFile(this.props.queryPath);
       sendTelemetry("local-results-open-query-file");
     };
-    const fileName = FILE_PATH_REGEX.exec(this.props.queryPath)?.[1] || "query";
+    const fileName = basename(this.props.queryPath);
 
     return (
       <span className="vscode-codeql__table-selection-pagination">
@@ -437,43 +427,6 @@ export class ResultTables extends React.Component<
     evt.origin === window.origin
       ? this.handleMessage(evt.data as IntoResultsViewMsg)
       : console.error(`Invalid event origin ${origin}`);
-  }
-}
-
-class ResultTable extends React.Component<
-  ResultTableProps,
-  Record<string, never>
-> {
-  constructor(props: ResultTableProps) {
-    super(props);
-  }
-
-  render(): React.ReactNode {
-    const { resultSet } = this.props;
-    switch (resultSet.t) {
-      case "RawResultSet":
-        return <RawTable {...this.props} resultSet={resultSet} />;
-      case "InterpretedResultSet": {
-        const data = resultSet.interpretation.data;
-        switch (data.t) {
-          case "SarifInterpretationData": {
-            const sarifResultSet = {
-              ...resultSet,
-              interpretation: { ...resultSet.interpretation, data },
-            };
-            return <AlertTable {...this.props} resultSet={sarifResultSet} />;
-          }
-          case "GraphInterpretationData": {
-            return (
-              <Graph
-                graphData={data?.dot[this.props.offset]}
-                databaseUri={this.props.databaseUri}
-              />
-            );
-          }
-        }
-      }
-    }
   }
 }
 

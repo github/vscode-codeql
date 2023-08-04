@@ -12,7 +12,7 @@ export interface PipelineInfo {
 /**
  * Location information for a single predicate in the RA.
  */
-export interface PredicateSymbol {
+interface PredicateSymbol {
   /**
    * `PipelineInfo` for each iteration. A non-recursive predicate will have a single iteration `0`.
    */

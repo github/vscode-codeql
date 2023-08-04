@@ -34,9 +34,6 @@ export const RepositoriesSort = ({ value, onChange, className }: Props) => {
         Number of results
       </VSCodeOption>
       <VSCodeOption value={SortKey.Popularity}>Popularity</VSCodeOption>
-      <VSCodeOption value={SortKey.MostRecentCommit}>
-        Most recent commit
-      </VSCodeOption>
     </Dropdown>
   );
 };

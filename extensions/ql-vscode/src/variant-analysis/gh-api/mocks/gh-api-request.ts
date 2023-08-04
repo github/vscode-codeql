@@ -13,11 +13,11 @@ export enum RequestKind {
   CodeSearch = "codeSearch",
 }
 
-export interface BasicErorResponse {
+interface BasicErorResponse {
   message: string;
 }
 
-export interface GetRepoRequest {
+interface GetRepoRequest {
   request: {
     kind: RequestKind.GetRepo;
   };
@@ -27,7 +27,7 @@ export interface GetRepoRequest {
   };
 }
 
-export interface SubmitVariantAnalysisRequest {
+interface SubmitVariantAnalysisRequest {
   request: {
     kind: RequestKind.SubmitVariantAnalysis;
   };
@@ -37,7 +37,7 @@ export interface SubmitVariantAnalysisRequest {
   };
 }
 
-export interface GetVariantAnalysisRequest {
+interface GetVariantAnalysisRequest {
   request: {
     kind: RequestKind.GetVariantAnalysis;
   };
@@ -47,7 +47,7 @@ export interface GetVariantAnalysisRequest {
   };
 }
 
-export interface GetVariantAnalysisRepoRequest {
+interface GetVariantAnalysisRepoRequest {
   request: {
     kind: RequestKind.GetVariantAnalysisRepo;
     repositoryId: number;
@@ -70,7 +70,7 @@ export interface GetVariantAnalysisRepoResultRequest {
   };
 }
 
-export interface CodeSearchRequest {
+interface CodeSearchRequest {
   request: {
     kind: RequestKind.CodeSearch;
     query: string;

@@ -1,4 +1,4 @@
-import { pathExists, stat, remove, readFile } from "fs-extra";
+import { pathExists, remove, readFile } from "fs-extra";
 import { EOL } from "os";
 import { join } from "path";
 import { Disposable, ExtensionContext } from "vscode";
@@ -6,12 +6,9 @@ import { extLogger } from "../common/logging/vscode";
 import { readDirFullPaths } from "../common/files";
 import { QueryHistoryDirs } from "./query-history-dirs";
 import { QueryHistoryManager } from "./query-history-manager";
+import { getErrorMessage } from "../common/helpers-pure";
 
 const LAST_SCRUB_TIME_KEY = "lastScrubTime";
-
-type Counter = {
-  increment: () => void;
-};
 
 /**
  * Registers an interval timer that will periodically check for queries old enought
@@ -36,8 +33,8 @@ export function registerQueryHistoryScrubber(
   qhm: QueryHistoryManager,
   ctx: ExtensionContext,
 
-  // optional counter to keep track of how many times the scrubber has run
-  counter?: Counter,
+  // optional callback to keep track of how many times the scrubber has run
+  onScrubberRun?: () => void,
 ): Disposable {
   const deregister = setInterval(
     scrubQueries,
@@ -47,7 +44,7 @@ export function registerQueryHistoryScrubber(
     queryHistoryDirs,
     qhm,
     ctx,
-    counter,
+    onScrubberRun,
   );
 
   return {
@@ -63,7 +60,7 @@ async function scrubQueries(
   queryHistoryDirs: QueryHistoryDirs,
   qhm: QueryHistoryManager,
   ctx: ExtensionContext,
-  counter?: Counter,
+  onScrubberRun?: () => void,
 ) {
   const lastScrubTime = ctx.globalState.get<number>(LAST_SCRUB_TIME_KEY);
   const now = Date.now();
@@ -75,7 +72,7 @@ async function scrubQueries(
 
     let scrubCount = 0; // total number of directories deleted
     try {
-      counter?.increment();
+      onScrubberRun?.();
       void extLogger.log(
         "Cleaning up query history directories. Removing old entries.",
       );
@@ -132,46 +129,55 @@ async function scrubDirectory(
   errorMsg?: string;
   deleted: boolean;
 }> {
-  const timestampFile = join(dir, "timestamp");
   try {
-    let deleted = true;
-    if (!(await stat(dir)).isDirectory()) {
-      void extLogger.log(`  ${dir} is not a directory. Deleting.`);
+    if (await shouldScrubDirectory(dir, now, maxQueryTime)) {
       await remove(dir);
-    } else if (!(await pathExists(timestampFile))) {
-      void extLogger.log(`  ${dir} has no timestamp file. Deleting.`);
-      await remove(dir);
-    } else if (!(await stat(timestampFile)).isFile()) {
-      void extLogger.log(`  ${timestampFile} is not a file. Deleting.`);
-      await remove(dir);
+      return { deleted: true };
     } else {
-      const timestampText = await readFile(timestampFile, "utf8");
-      const timestamp = parseInt(timestampText, 10);
-
-      if (Number.isNaN(timestamp)) {
-        void extLogger.log(
-          `  ${dir} has invalid timestamp '${timestampText}'. Deleting.`,
-        );
-        await remove(dir);
-      } else if (now - timestamp > maxQueryTime) {
-        void extLogger.log(
-          `  ${dir} is older than ${maxQueryTime / 1000} seconds. Deleting.`,
-        );
-        await remove(dir);
-      } else {
-        void extLogger.log(
-          `  ${dir} is not older than ${maxQueryTime / 1000} seconds. Keeping.`,
-        );
-        deleted = false;
-      }
+      return { deleted: false };
     }
-    return {
-      deleted,
-    };
   } catch (err) {
     return {
-      errorMsg: `  Could not delete '${dir}': ${err}`,
+      errorMsg: `  Could not delete '${dir}': ${getErrorMessage(err)}`,
       deleted: false,
     };
+  }
+}
+
+async function shouldScrubDirectory(
+  dir: string,
+  now: number,
+  maxQueryTime: number,
+): Promise<boolean> {
+  const timestamp = await getTimestamp(join(dir, "timestamp"));
+  if (timestamp === undefined || Number.isNaN(timestamp)) {
+    void extLogger.log(`  ${dir} timestamp is missing or invalid. Deleting.`);
+    return true;
+  } else if (now - timestamp > maxQueryTime) {
+    void extLogger.log(
+      `  ${dir} is older than ${maxQueryTime / 1000} seconds. Deleting.`,
+    );
+    return true;
+  } else {
+    void extLogger.log(
+      `  ${dir} is not older than ${maxQueryTime / 1000} seconds. Keeping.`,
+    );
+    return false;
+  }
+}
+
+async function getTimestamp(
+  timestampFile: string,
+): Promise<number | undefined> {
+  try {
+    const timestampText = await readFile(timestampFile, "utf8");
+    return parseInt(timestampText, 10);
+  } catch (err) {
+    void extLogger.log(
+      `  Could not read timestamp file '${timestampFile}': ${getErrorMessage(
+        err,
+      )}`,
+    );
+    return undefined;
   }
 }

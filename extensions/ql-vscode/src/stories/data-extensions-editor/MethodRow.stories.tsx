@@ -1,15 +1,16 @@
 import * as React from "react";
 
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Meta, StoryFn } from "@storybook/react";
 
 import { MethodRow as MethodRowComponent } from "../../view/data-extensions-editor/MethodRow";
+import { CallClassification } from "../../data-extensions-editor/external-api-usage";
 
 export default {
   title: "Data Extensions Editor/Method Row",
   component: MethodRowComponent,
-} as ComponentMeta<typeof MethodRowComponent>;
+} as Meta<typeof MethodRowComponent>;
 
-const Template: ComponentStory<typeof MethodRowComponent> = (args) => (
+const Template: StoryFn<typeof MethodRowComponent> = (args) => (
   <MethodRowComponent {...args} />
 );
 
@@ -23,6 +24,7 @@ MethodRow.args = {
     methodName: "open",
     methodParameters: "()",
     supported: true,
+    supportedType: "summary",
     usages: [
       {
         label: "open(...)",
@@ -33,6 +35,7 @@ MethodRow.args = {
           endLine: 14,
           endColumn: 35,
         },
+        classification: CallClassification.Source,
       },
       {
         label: "open(...)",
@@ -43,6 +46,7 @@ MethodRow.args = {
           endLine: 25,
           endColumn: 35,
         },
+        classification: CallClassification.Source,
       },
     ],
   },
@@ -52,5 +56,10 @@ MethodRow.args = {
     output: "ReturnValue",
     kind: "taint",
     provenance: "manual",
+    signature: "org.sql2o.Sql2o#open()",
+    packageName: "org.sql2o",
+    typeName: "Sql2o",
+    methodName: "open",
+    methodParameters: "()",
   },
 };

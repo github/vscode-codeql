@@ -13,6 +13,7 @@ import {
   VSCodeDivider,
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
+import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -57,15 +58,6 @@ const ModeledPercentage = styled.span`
   color: var(--vscode-descriptionForeground);
 `;
 
-const TitleButton = styled(VSCodeButton)`
-  background-color: transparent;
-
-  &:hover {
-    pointer: cursor;
-    background-color: var(--vscode-button-secondaryBackground);
-  }
-`;
-
 const ButtonsContainer = styled.div`
   display: flex;
   gap: 0.4em;
@@ -76,24 +68,42 @@ const ButtonsContainer = styled.div`
 
 type Props = {
   title: string;
+  libraryVersion?: string;
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
-  mode: Mode;
-  hasUnsavedChanges: boolean;
+  modifiedSignatures: Set<string>;
+  viewState: DataExtensionEditorViewState;
+  hideModeledApis: boolean;
   onChange: (
     modelName: string,
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
   ) => void;
+  onSaveModelClick: (
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ) => void;
+  onGenerateFromLlmClick: (
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ) => void;
+  onGenerateFromSourceClick: () => void;
+  onModelDependencyClick: () => void;
 };
 
 export const LibraryRow = ({
   title,
+  libraryVersion,
   externalApiUsages,
   modeledMethods,
-  mode,
-  hasUnsavedChanges,
+  modifiedSignatures,
+  viewState,
+  hideModeledApis,
   onChange,
+  onSaveModelClick,
+  onGenerateFromLlmClick,
+  onGenerateFromSourceClick,
+  onModelDependencyClick,
 }: Props) => {
   const modeledPercentage = useMemo(() => {
     return calculateModeledPercentage(externalApiUsages);
@@ -105,20 +115,41 @@ export const LibraryRow = ({
     setExpanded((oldIsExpanded) => !oldIsExpanded);
   }, []);
 
-  const handleModelWithAI = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-  }, []);
+  const handleModelWithAI = useCallback(
+    async (e: React.MouseEvent) => {
+      onGenerateFromLlmClick(externalApiUsages, modeledMethods);
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    [externalApiUsages, modeledMethods, onGenerateFromLlmClick],
+  );
 
-  const handleModelFromSource = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-  }, []);
+  const handleModelFromSource = useCallback(
+    async (e: React.MouseEvent) => {
+      onGenerateFromSourceClick();
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    [onGenerateFromSourceClick],
+  );
 
-  const handleSave = useCallback(async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-  }, []);
+  const handleModelDependency = useCallback(
+    async (e: React.MouseEvent) => {
+      onModelDependencyClick();
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    [onModelDependencyClick],
+  );
+
+  const handleSave = useCallback(
+    async (e: React.MouseEvent) => {
+      onSaveModelClick(externalApiUsages, modeledMethods);
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    [externalApiUsages, modeledMethods, onSaveModelClick],
+  );
 
   const onChangeWithModelName = useCallback(
     (externalApiUsage: ExternalApiUsage, modeledMethod: ModeledMethod) => {
@@ -126,6 +157,12 @@ export const LibraryRow = ({
     },
     [onChange, title],
   );
+
+  const hasUnsavedChanges = useMemo(() => {
+    return externalApiUsages.some((externalApiUsage) =>
+      modifiedSignatures.has(externalApiUsage.signature),
+    );
+  }, [externalApiUsages, modifiedSignatures]);
 
   return (
     <LibraryContainer>
@@ -136,20 +173,34 @@ export const LibraryRow = ({
           <Codicon name="chevron-right" label="Expand" />
         )}
         <NameContainer>
-          <DependencyName>{title}</DependencyName>
+          <DependencyName>
+            {title}
+            {libraryVersion && <>@{libraryVersion}</>}
+          </DependencyName>
           <ModeledPercentage>
             {percentFormatter.format(modeledPercentage / 100)} modeled
           </ModeledPercentage>
           {hasUnsavedChanges ? <VSCodeTag>UNSAVED</VSCodeTag> : null}
         </NameContainer>
-        <TitleButton onClick={handleModelWithAI}>
-          <Codicon name="lightbulb-autofix" label="Model with AI" />
-          &nbsp;Model with AI
-        </TitleButton>
-        <TitleButton onClick={handleModelFromSource}>
-          <Codicon name="code" label="Model from source" />
-          &nbsp;Model from source
-        </TitleButton>
+        {viewState.showLlmButton && (
+          <VSCodeButton appearance="icon" onClick={handleModelWithAI}>
+            <Codicon name="lightbulb-autofix" label="Model with AI" />
+            &nbsp;Model with AI
+          </VSCodeButton>
+        )}
+        {viewState.mode === Mode.Application && (
+          <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
+            <Codicon name="code" label="Model from source" />
+            &nbsp;Model from source
+          </VSCodeButton>
+        )}
+        {viewState.enableFrameworkMode &&
+          viewState.mode === Mode.Application && (
+            <VSCodeButton appearance="icon" onClick={handleModelDependency}>
+              <Codicon name="references" label="Model dependency" />
+              &nbsp;Model dependency
+            </VSCodeButton>
+          )}
       </TitleContainer>
       {isExpanded && (
         <>
@@ -157,7 +208,9 @@ export const LibraryRow = ({
           <ModeledMethodDataGrid
             externalApiUsages={externalApiUsages}
             modeledMethods={modeledMethods}
-            mode={mode}
+            modifiedSignatures={modifiedSignatures}
+            mode={viewState.mode}
+            hideModeledApis={hideModeledApis}
             onChange={onChangeWithModelName}
           />
           <SectionDivider />

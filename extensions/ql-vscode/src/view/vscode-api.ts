@@ -6,7 +6,7 @@ import {
   VariantAnalysisState,
 } from "../common/interface-types";
 
-export interface VsCodeApi {
+interface VsCodeApi {
   /**
    * Post message back to vscode extension.
    */

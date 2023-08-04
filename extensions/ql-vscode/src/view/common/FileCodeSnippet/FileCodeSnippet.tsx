@@ -65,6 +65,8 @@ export const FileCodeSnippet = ({
     fileLink,
     highlightedRegion?.startLine || startingLine,
     highlightedRegion?.endLine || endingLine,
+    highlightedRegion?.startColumn,
+    highlightedRegion?.endColumn,
   );
 
   if (!codeSnippet) {

@@ -14,7 +14,9 @@ import { sortMethods } from "../../data-extensions-editor/shared/sorting";
 type Props = {
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
+  modifiedSignatures: Set<string>;
   mode: Mode;
+  hideModeledApis: boolean;
   onChange: (
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
@@ -24,7 +26,9 @@ type Props = {
 export const ModeledMethodDataGrid = ({
   externalApiUsages,
   modeledMethods,
+  modifiedSignatures,
   mode,
+  hideModeledApis,
   onChange,
 }: Props) => {
   const sortedExternalApiUsages = useMemo(
@@ -33,7 +37,7 @@ export const ModeledMethodDataGrid = ({
   );
 
   return (
-    <VSCodeDataGrid gridTemplateColumns="0.4fr 0.15fr 0.15fr 0.15fr 0.15fr">
+    <VSCodeDataGrid gridTemplateColumns="0.5fr 0.125fr 0.125fr 0.125fr 0.125fr">
       <VSCodeDataGridRow rowType="header">
         <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
           API or method
@@ -56,7 +60,9 @@ export const ModeledMethodDataGrid = ({
           key={externalApiUsage.signature}
           externalApiUsage={externalApiUsage}
           modeledMethod={modeledMethods[externalApiUsage.signature]}
+          methodIsUnsaved={modifiedSignatures.has(externalApiUsage.signature)}
           mode={mode}
+          hideModeledApis={hideModeledApis}
           onChange={onChange}
         />
       ))}

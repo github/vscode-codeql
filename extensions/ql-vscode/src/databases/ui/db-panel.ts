@@ -47,7 +47,7 @@ export interface AddListQuickPickItem extends QuickPickItem {
   databaseKind: DbListKind;
 }
 
-export interface CodeSearchQuickPickItem extends QuickPickItem {
+interface CodeSearchQuickPickItem extends QuickPickItem {
   language: string;
 }
 

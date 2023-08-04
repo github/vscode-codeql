@@ -73,6 +73,8 @@ export const CodeSnippetMessage = ({
                     token.location.fileLink,
                     token.location.highlightedRegion?.startLine,
                     token.location.highlightedRegion?.endLine,
+                    token.location.highlightedRegion?.startColumn,
+                    token.location.highlightedRegion?.endColumn,
                   )}
                 >
                   {token.text}

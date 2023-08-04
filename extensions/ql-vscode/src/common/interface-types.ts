@@ -76,11 +76,9 @@ export type GraphInterpretationData = {
   dot: string[];
 };
 
-export type InterpretationData =
-  | SarifInterpretationData
-  | GraphInterpretationData;
+type InterpretationData = SarifInterpretationData | GraphInterpretationData;
 
-export interface InterpretationT<T> {
+interface InterpretationT<T> {
   sourceLocationPrefix: string;
   numTruncatedResults: number;
   numTotalResults: number;
@@ -106,7 +104,7 @@ export type SortedResultsMap = { [resultSet: string]: SortedResultSetInfo };
  *
  * As a result of receiving this message, listeners might want to display a loading indicator.
  */
-export interface ResultsUpdatingMsg {
+interface ResultsUpdatingMsg {
   t: "resultsUpdating";
 }
 
@@ -114,7 +112,7 @@ export interface ResultsUpdatingMsg {
  * Message to set the initial state of the results view with a new
  * query.
  */
-export interface SetStateMsg {
+interface SetStateMsg {
   t: "setState";
   resultsPath: string;
   origResultsPaths: ResultsPaths;
@@ -143,7 +141,7 @@ export interface SetStateMsg {
  * Message indicating that the results view should display interpreted
  * results.
  */
-export interface ShowInterpretedPageMsg {
+interface ShowInterpretedPageMsg {
   t: "showInterpretedPage";
   interpretation: Interpretation;
   database: DatabaseInfo;
@@ -173,7 +171,7 @@ export interface NavigateMsg {
  * A message indicating that the results view should untoggle the
  * "Show results in Problems view" checkbox.
  */
-export interface UntoggleShowProblemsMsg {
+interface UntoggleShowProblemsMsg {
   t: "untoggleShowProblems";
 }
 
@@ -203,7 +201,7 @@ export type FromResultsViewMsg =
  * Message from the results view to open a database source
  * file at the provided location.
  */
-export interface ViewSourceFileMsg {
+interface ViewSourceFileMsg {
   t: "viewSourceFile";
   loc: ResolvableLocationValue;
   databaseUri: string;
@@ -212,7 +210,7 @@ export interface ViewSourceFileMsg {
 /**
  * Message from the results view to open a file in an editor.
  */
-export interface OpenFileMsg {
+interface OpenFileMsg {
   t: "openFile";
   /* Full path to the file to open. */
   filePath: string;
@@ -274,7 +272,7 @@ export interface RawResultsSortState {
   sortDirection: SortDirection;
 }
 
-export type InterpretedResultsSortColumn = "alert-message";
+type InterpretedResultsSortColumn = "alert-message";
 
 export interface InterpretedResultsSortState {
   sortBy: InterpretedResultsSortColumn;
@@ -318,7 +316,7 @@ export type FromCompareViewMessage =
 /**
  * Message from the compare view to request opening a query.
  */
-export interface OpenQueryMessage {
+interface OpenQueryMessage {
   readonly t: "openQuery";
   readonly kind: "from" | "to";
 }
@@ -406,12 +404,12 @@ export interface ParsedResultSets {
   resultSet: ResultSet;
 }
 
-export interface SetVariantAnalysisMessage {
+interface SetVariantAnalysisMessage {
   t: "setVariantAnalysis";
   variantAnalysis: VariantAnalysis;
 }
 
-export interface SetFilterSortStateMessage {
+interface SetFilterSortStateMessage {
   t: "setFilterSortState";
   filterSortState: RepositoriesFilterSortState;
 }
@@ -420,48 +418,48 @@ export type VariantAnalysisState = {
   variantAnalysisId: number;
 };
 
-export interface SetRepoResultsMessage {
+interface SetRepoResultsMessage {
   t: "setRepoResults";
   repoResults: VariantAnalysisScannedRepositoryResult[];
 }
 
-export interface SetRepoStatesMessage {
+interface SetRepoStatesMessage {
   t: "setRepoStates";
   repoStates: VariantAnalysisScannedRepositoryState[];
 }
 
-export interface RequestRepositoryResultsMessage {
+interface RequestRepositoryResultsMessage {
   t: "requestRepositoryResults";
   repositoryFullName: string;
 }
 
-export interface OpenQueryFileMessage {
+interface OpenQueryFileMessage {
   t: "openQueryFile";
 }
 
-export interface OpenQueryTextMessage {
+interface OpenQueryTextMessage {
   t: "openQueryText";
 }
 
-export interface CopyRepositoryListMessage {
+interface CopyRepositoryListMessage {
   t: "copyRepositoryList";
   filterSort?: RepositoriesFilterSortStateWithIds;
 }
 
-export interface ExportResultsMessage {
+interface ExportResultsMessage {
   t: "exportResults";
   filterSort?: RepositoriesFilterSortStateWithIds;
 }
 
-export interface OpenLogsMessage {
+interface OpenLogsMessage {
   t: "openLogs";
 }
 
-export interface CancelVariantAnalysisMessage {
+interface CancelVariantAnalysisMessage {
   t: "cancelVariantAnalysis";
 }
 
-export interface ShowDataFlowPathsMessage {
+interface ShowDataFlowPathsMessage {
   t: "showDataFlowPaths";
   dataFlowPaths: DataFlowPaths;
 }
@@ -483,7 +481,7 @@ export type FromVariantAnalysisMessage =
   | CancelVariantAnalysisMessage
   | ShowDataFlowPathsMessage;
 
-export interface SetDataFlowPathsMessage {
+interface SetDataFlowPathsMessage {
   t: "setDataFlowPaths";
   dataFlowPaths: DataFlowPaths;
 }
@@ -492,82 +490,82 @@ export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
 
 export type FromDataFlowPathsMessage = CommonFromViewMessages;
 
-export interface SetExtensionPackStateMessage {
+interface SetExtensionPackStateMessage {
   t: "setDataExtensionEditorViewState";
   viewState: DataExtensionEditorViewState;
 }
 
-export interface SetExternalApiUsagesMessage {
+interface SetExternalApiUsagesMessage {
   t: "setExternalApiUsages";
   externalApiUsages: ExternalApiUsage[];
 }
 
-export interface ShowProgressMessage {
-  t: "showProgress";
-  step: number;
-  maxStep: number;
-  message: string;
+interface LoadModeledMethodsMessage {
+  t: "loadModeledMethods";
+  modeledMethods: Record<string, ModeledMethod>;
 }
 
-export interface AddModeledMethodsMessage {
+interface AddModeledMethodsMessage {
   t: "addModeledMethods";
   modeledMethods: Record<string, ModeledMethod>;
-
-  /**
-   * If true, then any existing modeled methods set to "none" will be
-   * overwritten by the new modeled methods. Otherwise, the "none" modeled
-   * methods will not be overwritten, even if the new modeled methods
-   * contain a better model.
-   */
-  overrideNone?: boolean;
 }
 
-export interface SwitchModeMessage {
+interface SwitchModeMessage {
   t: "switchMode";
   mode: Mode;
 }
 
-export interface JumpToUsageMessage {
+interface JumpToUsageMessage {
   t: "jumpToUsage";
   location: ResolvableLocationValue;
 }
 
-export interface OpenExtensionPackMessage {
+interface OpenDatabaseMessage {
+  t: "openDatabase";
+}
+
+interface OpenExtensionPackMessage {
   t: "openExtensionPack";
 }
 
-export interface RefreshExternalApiUsages {
+interface RefreshExternalApiUsages {
   t: "refreshExternalApiUsages";
 }
 
-export interface SaveModeledMethods {
+interface SaveModeledMethods {
   t: "saveModeledMethods";
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
 }
 
-export interface GenerateExternalApiMessage {
+interface GenerateExternalApiMessage {
   t: "generateExternalApi";
 }
 
-export interface GenerateExternalApiFromLlmMessage {
+interface GenerateExternalApiFromLlmMessage {
   t: "generateExternalApiFromLlm";
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
 }
 
+interface ModelDependencyMessage {
+  t: "modelDependency";
+}
+
 export type ToDataExtensionsEditorMessage =
   | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
-  | ShowProgressMessage
+  | LoadModeledMethodsMessage
   | AddModeledMethodsMessage;
 
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
   | SwitchModeMessage
   | RefreshExternalApiUsages
+  | OpenDatabaseMessage
   | OpenExtensionPackMessage
   | JumpToUsageMessage
   | SaveModeledMethods
   | GenerateExternalApiMessage
-  | GenerateExternalApiFromLlmMessage;
+  | GenerateExternalApiFromLlmMessage
+  | ModelDependencyMessage;

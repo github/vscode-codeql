@@ -157,7 +157,7 @@ export async function exportVariantAnalysisResults(
   );
 }
 
-export async function exportVariantAnalysisAnalysisResults(
+async function exportVariantAnalysisAnalysisResults(
   exportedResultsPath: string,
   variantAnalysis: VariantAnalysis,
   analysesResults: AsyncIterable<
@@ -236,7 +236,7 @@ async function determineExportFormat(): Promise<"gist" | "local" | undefined> {
   return undefined;
 }
 
-export async function exportResults(
+async function exportResults(
   exportedResultsPath: string,
   description: string,
   markdownFiles: MarkdownFile[],
@@ -270,7 +270,7 @@ export async function exportResults(
   }
 }
 
-export async function exportToGist(
+async function exportToGist(
   description: string,
   markdownFiles: MarkdownFile[],
   commandManager: AppCommandManager,
@@ -289,10 +289,13 @@ export async function exportToGist(
   }
 
   // Convert markdownFiles to the appropriate format for uploading to gist
-  const gistFiles = markdownFiles.reduce((acc, cur) => {
-    acc[`${cur.fileName}.md`] = { content: cur.content.join("\n") };
-    return acc;
-  }, {} as { [key: string]: { content: string } });
+  const gistFiles = markdownFiles.reduce(
+    (acc, cur) => {
+      acc[`${cur.fileName}.md`] = { content: cur.content.join("\n") };
+      return acc;
+    },
+    {} as { [key: string]: { content: string } },
+  );
 
   const gistUrl = await createGist(credentials, description, gistFiles);
   if (gistUrl) {

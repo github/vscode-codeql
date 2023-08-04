@@ -21,7 +21,7 @@ import {
   RepositoriesFilterSortState,
 } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 
-export type VariantAnalysisHeaderProps = {
+type VariantAnalysisHeaderProps = {
   variantAnalysis: VariantAnalysis;
   repositoryStates?: VariantAnalysisScannedRepositoryState[];
   filterSortState?: RepositoriesFilterSortState;

@@ -1,5 +1,11 @@
-import { Selection, Uri, window, workspace } from "vscode";
-import { join } from "path";
+import {
+  Position,
+  Selection,
+  TextEditor,
+  Uri,
+  window,
+  workspace,
+} from "vscode";
 
 import { DatabaseManager } from "../../../../src/databases/local-databases";
 import {
@@ -13,6 +19,7 @@ import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
 import { AllCommands } from "../../../../src/common/commands";
+import { getDataFolderFilePath } from "../utils";
 
 async function selectForQuickEval(
   path: string,
@@ -20,10 +27,12 @@ async function selectForQuickEval(
   column: number,
   endLine: number,
   endColumn: number,
-): Promise<void> {
+): Promise<TextEditor> {
   const document = await workspace.openTextDocument(path);
   const editor = await window.showTextDocument(document);
   editor.selection = new Selection(line, column, endLine, endColumn);
+
+  return editor;
 }
 
 async function getResultCount(
@@ -42,9 +51,11 @@ describeWithCodeQL()("Debugger", () => {
   let databaseManager: DatabaseManager;
   let cli: CodeQLCliServer;
   const appCommands = createVSCodeCommandManager<AllCommands>();
-  const simpleQueryPath = join(__dirname, "..", "data", "simple-query.ql");
-  const quickEvalQueryPath = join(__dirname, "..", "data", "QuickEvalQuery.ql");
-  const quickEvalLibPath = join(__dirname, "..", "data", "QuickEvalLib.qll");
+  const simpleQueryPath = getDataFolderFilePath("debugger/simple-query.ql");
+  const quickEvalQueryPath = getDataFolderFilePath(
+    "debugger/QuickEvalQuery.ql",
+  );
+  const quickEvalLibPath = getDataFolderFilePath("debugger/QuickEvalLib.qll");
 
   beforeEach(async () => {
     const extension = await getActivatedExtension();
@@ -136,6 +147,34 @@ describeWithCodeQL()("Debugger", () => {
       expect(result.results.queryTarget.quickEvalPosition).toBeDefined();
       expect(await getResultCount(result.results.outputDir, cli)).toBe(8);
       await controller.expectStopped();
+    });
+  });
+
+  it("should save dirty documents before launching a debug session", async () => {
+    await withDebugController(appCommands, async (controller) => {
+      const editor = await selectForQuickEval(quickEvalLibPath, 4, 15, 4, 32);
+      expect(editor.document.isDirty).toBe(false);
+
+      await controller.startDebuggingSelection({
+        query: quickEvalQueryPath, // The query context. This query extends the abstract class.
+      });
+      await controller.expectLaunched();
+
+      // Should have saved the dirty document.
+      expect(editor.document.isDirty).toBe(false);
+
+      await controller.expectSucceeded();
+      await controller.expectStopped();
+
+      await editor.edit((editBuilder) => {
+        editBuilder.insert(new Position(0, 0), "/* another comment */");
+      });
+      expect(editor.document.isDirty).toBe(true);
+
+      await controller.continueDebuggingSelection();
+      await controller.expectSucceeded();
+      await controller.expectStopped();
+      expect(editor.document.isDirty).toBe(false);
     });
   });
 });

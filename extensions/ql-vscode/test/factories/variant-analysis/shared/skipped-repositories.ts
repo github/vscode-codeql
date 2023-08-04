@@ -14,7 +14,7 @@ export function createMockSkippedRepos(): VariantAnalysisSkippedRepositories {
   };
 }
 
-export function createMockSkippedRepoGroup(): VariantAnalysisSkippedRepositoryGroup {
+function createMockSkippedRepoGroup(): VariantAnalysisSkippedRepositoryGroup {
   return {
     repositoryCount: 2,
     repositories: [
@@ -24,7 +24,7 @@ export function createMockSkippedRepoGroup(): VariantAnalysisSkippedRepositoryGr
   };
 }
 
-export function createMockNotFoundRepoGroup(): VariantAnalysisSkippedRepositoryGroup {
+function createMockNotFoundRepoGroup(): VariantAnalysisSkippedRepositoryGroup {
   return {
     repositoryCount: 2,
     repositories: [

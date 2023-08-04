@@ -1,5 +1,6 @@
 import { SummaryEvent } from "./log-summary";
 import { readJsonlFile } from "../common/jsonl-reader";
+import { Disposable } from "../common/disposable-object";
 
 /**
  * Callback interface used to report diagnostics from a log scanner.
@@ -60,13 +61,6 @@ export interface EvaluationLogScannerProvider {
   createScanner(
     problemReporter: EvaluationLogProblemReporter,
   ): EvaluationLogScanner;
-}
-
-/**
- * Same as VSCode's `Disposable`, but avoids a dependency on VS Code.
- */
-export interface Disposable {
-  dispose(): void;
 }
 
 export class EvaluationLogScannerSet {

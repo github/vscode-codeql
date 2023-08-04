@@ -1,6 +1,5 @@
 import * as React from "react";
-import { UrlValue, ResolvableLocationValue } from "../../common/bqrs-cli-types";
-import { isStringLoc, tryGetResolvableLocation } from "../../common/bqrs-utils";
+import { ResolvableLocationValue } from "../../common/bqrs-cli-types";
 import {
   RawResultsSortState,
   QueryMetadata,
@@ -9,7 +8,6 @@ import {
 } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
-import { convertNonPrintableChars } from "../../common/text-utils";
 import { sendTelemetry } from "../common/telemetry";
 
 export interface ResultTableProps {
@@ -39,25 +37,9 @@ export const tableHeaderItemClassName =
   "vscode-codeql__table-selection-header-item";
 export const alertExtrasClassName = `${className}-alert-extras`;
 export const toggleDiagnosticsClassName = `${className}-toggle-diagnostics`;
-export const evenRowClassName = "vscode-codeql__result-table-row--even";
-export const oddRowClassName = "vscode-codeql__result-table-row--odd";
-export const pathRowClassName = "vscode-codeql__result-table-row--path";
+const evenRowClassName = "vscode-codeql__result-table-row--even";
+const oddRowClassName = "vscode-codeql__result-table-row--odd";
 export const selectedRowClassName = "vscode-codeql__result-table-row--selected";
-
-export function jumpToLocationHandler(
-  loc: ResolvableLocationValue,
-  databaseUri: string,
-  callback?: () => void,
-): (e: React.MouseEvent) => void {
-  return (e) => {
-    jumpToLocation(loc, databaseUri);
-    e.preventDefault();
-    e.stopPropagation();
-    if (callback) {
-      callback();
-    }
-  };
-}
 
 export function jumpToLocation(
   loc: ResolvableLocationValue,
@@ -75,47 +57,6 @@ export function openFile(filePath: string): void {
     t: "openFile",
     filePath,
   });
-}
-
-/**
- * Render a location as a link which when clicked displays the original location.
- */
-export function renderLocation(
-  loc?: UrlValue,
-  label?: string,
-  databaseUri?: string,
-  title?: string,
-  callback?: () => void,
-): JSX.Element {
-  const displayLabel = convertNonPrintableChars(label!);
-
-  if (loc === undefined) {
-    return <span>{displayLabel}</span>;
-  } else if (isStringLoc(loc)) {
-    return <a href={loc}>{loc}</a>;
-  }
-
-  const resolvableLoc = tryGetResolvableLocation(loc);
-  if (databaseUri !== undefined && resolvableLoc !== undefined) {
-    return (
-      <>
-        {/*
-            eslint-disable-next-line
-            jsx-a11y/anchor-is-valid,
-          */}
-        <a
-          href="#"
-          className="vscode-codeql__result-table-location-link"
-          title={title}
-          onClick={jumpToLocationHandler(resolvableLoc, databaseUri, callback)}
-        >
-          {displayLabel}
-        </a>
-      </>
-    );
-  } else {
-    return <span title={title}>{displayLabel}</span>;
-  }
 }
 
 /**

@@ -64,11 +64,11 @@ export class Setting {
   }
 }
 
-export interface InspectionResult<T> {
-  globalValue?: T;
-  workspaceValue?: T;
-  workspaceFolderValue?: T;
-}
+const VSCODE_DEBUG_SETTING = new Setting("debug", undefined);
+export const VSCODE_SAVE_BEFORE_START_SETTING = new Setting(
+  "saveBeforeStart",
+  VSCODE_DEBUG_SETTING,
+);
 
 const ROOT_SETTING = new Setting("codeQL");
 
@@ -161,10 +161,6 @@ export const NUMBER_OF_TEST_THREADS_SETTING = new Setting(
   RUNNING_TESTS_SETTING,
 );
 export const MAX_QUERIES = new Setting("maxQueries", RUNNING_QUERIES_SETTING);
-export const AUTOSAVE_SETTING = new Setting(
-  "autoSave",
-  RUNNING_QUERIES_SETTING,
-);
 export const PAGE_SIZE = new Setting("pageSize", RESULTS_DISPLAY_SETTING);
 const CUSTOM_LOG_DIRECTORY_SETTING = new Setting(
   "customLogDirectory",
@@ -590,10 +586,6 @@ export function isIntegrationTestMode() {
   return process.env.INTEGRATION_TEST_MODE === "true";
 }
 
-export function isVariantAnalysisLiveResultsEnabled(): boolean {
-  return true;
-}
-
 // Settings for mocking the GitHub API.
 const MOCK_GH_API_SERVER = new Setting("mockGitHubApiServer", ROOT_SETTING);
 
@@ -657,10 +649,7 @@ export function isCodespacesTemplate() {
 
 const DATABASE_DOWNLOAD_SETTING = new Setting("databaseDownload", ROOT_SETTING);
 
-export const ALLOW_HTTP_SETTING = new Setting(
-  "allowHttp",
-  DATABASE_DOWNLOAD_SETTING,
-);
+const ALLOW_HTTP_SETTING = new Setting("allowHttp", DATABASE_DOWNLOAD_SETTING);
 
 export function allowHttp(): boolean {
   return ALLOW_HTTP_SETTING.getValue<boolean>() || false;
@@ -693,7 +682,7 @@ const AUTOGENERATE_QL_PACKS = new Setting(
 );
 
 const AutogenerateQLPacksValues = ["ask", "never"] as const;
-type AutogenerateQLPacks = typeof AutogenerateQLPacksValues[number];
+type AutogenerateQLPacks = (typeof AutogenerateQLPacksValues)[number];
 
 export function getAutogenerateQlPacks(): AutogenerateQLPacks {
   const value = AUTOGENERATE_QL_PACKS.getValue<AutogenerateQLPacks>();
@@ -715,6 +704,7 @@ export function showQueriesPanel(): boolean {
 
 const DATA_EXTENSIONS = new Setting("dataExtensions", ROOT_SETTING);
 const LLM_GENERATION = new Setting("llmGeneration", DATA_EXTENSIONS);
+const LLM_GENERATION_V2 = new Setting("llmGenerationV2", DATA_EXTENSIONS);
 const FRAMEWORK_MODE = new Setting("frameworkMode", DATA_EXTENSIONS);
 const DISABLE_AUTO_NAME_EXTENSION_PACK = new Setting(
   "disableAutoNameExtensionPack",
@@ -727,6 +717,10 @@ const EXTENSIONS_DIRECTORY = new Setting(
 
 export function showLlmGeneration(): boolean {
   return !!LLM_GENERATION.getValue<boolean>();
+}
+
+export function useLlmGenerationV2(): boolean {
+  return !!LLM_GENERATION_V2.getValue<boolean>();
 }
 
 export function enableFrameworkMode(): boolean {

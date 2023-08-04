@@ -1,5 +1,4 @@
 import {
-  VSCodeCheckbox,
   VSCodeDataGridCell,
   VSCodeDataGridRow,
   VSCodeLink,
@@ -19,6 +18,11 @@ import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../data-extensions-editor/predicates";
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { Dropdown } from "../common/Dropdown";
+import { MethodClassifications } from "./MethodClassifications";
+import {
+  ModelingStatus,
+  ModelingStatusIndicator,
+} from "./ModelingStatusIndicator";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -39,22 +43,48 @@ const ViewLink = styled(VSCodeLink)`
   white-space: nowrap;
 `;
 
+const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
+  { value: "none", label: "Unmodeled" },
+  { value: "source", label: "Source" },
+  { value: "sink", label: "Sink" },
+  { value: "summary", label: "Flow summary" },
+  { value: "neutral", label: "Neutral" },
+];
+
 type Props = {
   externalApiUsage: ExternalApiUsage;
   modeledMethod: ModeledMethod | undefined;
+  methodIsUnsaved: boolean;
   mode: Mode;
+  hideModeledApis: boolean;
   onChange: (
     externalApiUsage: ExternalApiUsage,
     modeledMethod: ModeledMethod,
   ) => void;
 };
 
-export const MethodRow = ({
-  externalApiUsage,
-  modeledMethod,
-  mode,
-  onChange,
-}: Props) => {
+export const MethodRow = (props: Props) => {
+  const { externalApiUsage, modeledMethod, methodIsUnsaved, hideModeledApis } =
+    props;
+
+  const methodCanBeModeled =
+    !externalApiUsage.supported ||
+    (modeledMethod && modeledMethod?.type !== "none") ||
+    methodIsUnsaved;
+
+  if (methodCanBeModeled) {
+    return <ModelableMethodRow {...props} />;
+  } else if (hideModeledApis) {
+    return null;
+  } else {
+    return <UnmodelableMethodRow {...props} />;
+  }
+};
+
+function ModelableMethodRow(props: Props) {
+  const { externalApiUsage, modeledMethod, methodIsUnsaved, mode, onChange } =
+    props;
+
   const argumentsList = useMemo(() => {
     if (externalApiUsage.methodParameters === "()") {
       return [];
@@ -81,6 +111,11 @@ export const MethodRow = ({
         ...modeledMethod,
         type: e.target.value as ModeledMethodType,
         provenance: newProvenance,
+        signature: externalApiUsage.signature,
+        packageName: externalApiUsage.packageName,
+        typeName: externalApiUsage.typeName,
+        methodName: externalApiUsage.methodName,
+        methodParameters: externalApiUsage.methodParameters,
       });
     },
     [onChange, externalApiUsage, modeledMethod, argumentsList],
@@ -129,35 +164,11 @@ export const MethodRow = ({
     [onChange, externalApiUsage, modeledMethod],
   );
 
-  const jumpToUsage = useCallback(() => {
-    vscode.postMessage({
-      t: "jumpToUsage",
-      // In framework mode, the first and only usage is the definition of the method
-      location: externalApiUsage.usages[0].url,
-    });
-  }, [externalApiUsage]);
-
-  const predicate =
-    modeledMethod?.type && modeledMethod.type !== "none"
-      ? extensiblePredicateDefinitions[modeledMethod.type]
-      : undefined;
-
-  const showModelTypeCell =
-    !externalApiUsage.supported ||
-    (modeledMethod && modeledMethod?.type !== "none");
-  const modelTypeOptions = useMemo(
-    () => [
-      { value: "none", label: "Unmodeled" },
-      { value: "source", label: "Source" },
-      { value: "sink", label: "Sink" },
-      { value: "summary", label: "Flow summary" },
-      { value: "neutral", label: "Neutral" },
-    ],
-    [],
+  const jumpToUsage = useCallback(
+    () => sendJumpToUsageMessage(externalApiUsage),
+    [externalApiUsage],
   );
 
-  const showInputCell =
-    modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type);
   const inputOptions = useMemo(
     () => [
       { value: "Argument[this]", label: "Argument[this]" },
@@ -169,8 +180,6 @@ export const MethodRow = ({
     [argumentsList],
   );
 
-  const showOutputCell =
-    modeledMethod?.type && ["source", "summary"].includes(modeledMethod?.type);
   const outputOptions = useMemo(
     () => [
       { value: "ReturnValue", label: "ReturnValue" },
@@ -183,17 +192,24 @@ export const MethodRow = ({
     [argumentsList],
   );
 
+  const showInputCell =
+    modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type);
+  const showOutputCell =
+    modeledMethod?.type && ["source", "summary"].includes(modeledMethod?.type);
+  const predicate =
+    modeledMethod?.type && modeledMethod.type !== "none"
+      ? extensiblePredicateDefinitions[modeledMethod.type]
+      : undefined;
   const showKindCell = predicate?.supportedKinds;
+
+  const modelingStatus = getModelingStatus(modeledMethod, methodIsUnsaved);
 
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
-        <VSCodeCheckbox />
-        <span>
-          {externalApiUsage.packageName}.{externalApiUsage.typeName}.
-          {externalApiUsage.methodName}
-          {externalApiUsage.methodParameters}
-        </span>
+        <ModelingStatusIndicator status={modelingStatus} />
+        <MethodClassifications externalApiUsage={externalApiUsage} />
+        <ExternalApiUsageName {...props} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
             {externalApiUsage.usages.length}
@@ -205,7 +221,6 @@ export const MethodRow = ({
         <Dropdown
           value={modeledMethod?.type ?? "none"}
           options={modelTypeOptions}
-          disabled={!showModelTypeCell}
           onChange={handleTypeInput}
         />
       </VSCodeDataGridCell>
@@ -235,4 +250,66 @@ export const MethodRow = ({
       </VSCodeDataGridCell>
     </VSCodeDataGridRow>
   );
-};
+}
+
+function UnmodelableMethodRow(props: Props) {
+  const { externalApiUsage, mode } = props;
+
+  const jumpToUsage = useCallback(
+    () => sendJumpToUsageMessage(externalApiUsage),
+    [externalApiUsage],
+  );
+
+  return (
+    <VSCodeDataGridRow>
+      <ApiOrMethodCell gridColumn={1}>
+        <ModelingStatusIndicator status="saved" />
+        <ExternalApiUsageName {...props} />
+        {mode === Mode.Application && (
+          <UsagesButton onClick={jumpToUsage}>
+            {externalApiUsage.usages.length}
+          </UsagesButton>
+        )}
+        <ViewLink onClick={jumpToUsage}>View</ViewLink>
+        <MethodClassifications externalApiUsage={externalApiUsage} />
+      </ApiOrMethodCell>
+      <VSCodeDataGridCell gridColumn="span 4">
+        Method already modeled
+      </VSCodeDataGridCell>
+    </VSCodeDataGridRow>
+  );
+}
+
+function ExternalApiUsageName(props: { externalApiUsage: ExternalApiUsage }) {
+  return (
+    <span>
+      {props.externalApiUsage.packageName && (
+        <>{props.externalApiUsage.packageName}.</>
+      )}
+      {props.externalApiUsage.typeName}.{props.externalApiUsage.methodName}
+      {props.externalApiUsage.methodParameters}
+    </span>
+  );
+}
+
+function sendJumpToUsageMessage(externalApiUsage: ExternalApiUsage) {
+  vscode.postMessage({
+    t: "jumpToUsage",
+    // In framework mode, the first and only usage is the definition of the method
+    location: externalApiUsage.usages[0].url,
+  });
+}
+
+function getModelingStatus(
+  modeledMethod: ModeledMethod | undefined,
+  methodIsUnsaved: boolean,
+): ModelingStatus {
+  if (modeledMethod) {
+    if (methodIsUnsaved) {
+      return "unsaved";
+    } else if (modeledMethod.type !== "none") {
+      return "saved";
+    }
+  }
+  return "unmodeled";
+}

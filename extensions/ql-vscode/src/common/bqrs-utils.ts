@@ -142,5 +142,7 @@ export function tryGetRemoteLocation(
     fileLink,
     resolvableLocation.startLine,
     resolvableLocation.endLine,
+    resolvableLocation.startColumn,
+    resolvableLocation.endColumn,
   );
 }

@@ -146,22 +146,11 @@ export class QueryServerClient extends DisposableObject {
 
     args.push("--require-db-registration");
 
-    if (!(await this.cliServer.cliConstraints.supportsPerQueryEvalLog())) {
-      args.push("--old-eval-stats");
-    }
+    const structuredLogFile = `${this.opts.contextStoragePath}/structured-evaluator-log.json`;
+    await ensureFile(structuredLogFile);
 
-    if (await this.cliServer.cliConstraints.supportsStructuredEvalLog()) {
-      const structuredLogFile = `${this.opts.contextStoragePath}/structured-evaluator-log.json`;
-      await ensureFile(structuredLogFile);
-
-      args.push("--evaluator-log");
-      args.push(structuredLogFile);
-
-      // We hard-code the verbosity level to 5 and minify to false.
-      // This will be the behavior of the per-query structured logging in the CLI after 2.8.3.
-      args.push("--evaluator-log-level");
-      args.push("5");
-    }
+    args.push("--evaluator-log");
+    args.push(structuredLogFile);
 
     if (this.config.debug) {
       args.push("--debug", "--tuple-counting");

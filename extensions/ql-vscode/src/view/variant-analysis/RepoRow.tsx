@@ -24,7 +24,6 @@ import {
 import { vscode } from "../vscode-api";
 import { AnalyzedRepoItemContent } from "./AnalyzedRepoItemContent";
 import StarCount from "../common/StarCount";
-import { LastUpdated } from "../common/LastUpdated";
 import { useTelemetryOnChange } from "../common/telemetry";
 import { DeterminateProgressRing } from "../common/DeterminateProgressRing";
 
@@ -297,7 +296,6 @@ export const RepoRow = ({
           <div>
             <StarCount starCount={repository.stargazersCount} />
           </div>
-          <LastUpdated lastUpdated={repository.updatedAt} />
         </MetadataContainer>
       </TitleContainer>
       {isExpanded && expandableContentLoaded && (
