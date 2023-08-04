@@ -94,7 +94,6 @@ export type Response = DebugProtocol.Response & { type: "response" };
 export type InitializeResponse = DebugProtocol.InitializeResponse &
   Response & { command: "initialize" };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface QuickEvalResponse extends Response {}
 
 export type AnyResponse = InitializeResponse | QuickEvalResponse;
