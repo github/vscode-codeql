@@ -1809,7 +1809,6 @@
     "@types/fs-extra": "^11.0.1",
     "@types/gulp": "^4.0.9",
     "@types/gulp-replace": "^1.1.0",
-    "@types/gulp-sourcemaps": "0.0.32",
     "@types/jest": "^29.0.2",
     "@types/js-yaml": "^3.12.5",
     "@types/jszip": "^3.1.6",
