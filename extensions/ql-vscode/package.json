@@ -1807,7 +1807,6 @@
     "@types/d3-graphviz": "^2.6.6",
     "@types/del": "^4.0.0",
     "@types/fs-extra": "^11.0.1",
-    "@types/google-protobuf": "^3.2.7",
     "@types/gulp": "^4.0.9",
     "@types/gulp-replace": "^1.1.0",
     "@types/gulp-sourcemaps": "0.0.32",
