@@ -73,7 +73,9 @@ export function ResultTablesHeader(props: Props) {
 
   const onKeyDownHandler = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      changePage(e.currentTarget.value);
+      if (e.key === "Enter") {
+        changePage(e.currentTarget.value);
+      }
     },
     [changePage],
   );
