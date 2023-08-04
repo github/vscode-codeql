@@ -86,18 +86,19 @@ describe("createAutoModelV2Request", () => {
 
 describe("getCandidates", () => {
   it("doesn't return methods that are already modelled", () => {
-    const externalApiUsages: ExternalApiUsage[] = [];
-    externalApiUsages.push({
-      library: "my.jar",
-      signature: "org.my.A#x()",
-      packageName: "org.my",
-      typeName: "A",
-      methodName: "x",
-      methodParameters: "()",
-      supported: false,
-      supportedType: "none",
-      usages: [],
-    });
+    const externalApiUsages: ExternalApiUsage[] = [
+      {
+        library: "my.jar",
+        signature: "org.my.A#x()",
+        packageName: "org.my",
+        typeName: "A",
+        methodName: "x",
+        methodParameters: "()",
+        supported: false,
+        supportedType: "none",
+        usages: [],
+      },
+    ];
     const modeledMethods: Record<string, ModeledMethod> = {
       "org.my.A#x()": {
         type: "neutral",
@@ -121,18 +122,19 @@ describe("getCandidates", () => {
   });
 
   it("doesn't return methods that are supported from other sources", () => {
-    const externalApiUsages: ExternalApiUsage[] = [];
-    externalApiUsages.push({
-      library: "my.jar",
-      signature: "org.my.A#x()",
-      packageName: "org.my",
-      typeName: "A",
-      methodName: "x",
-      methodParameters: "()",
-      supported: true,
-      supportedType: "none",
-      usages: [],
-    });
+    const externalApiUsages: ExternalApiUsage[] = [
+      {
+        library: "my.jar",
+        signature: "org.my.A#x()",
+        packageName: "org.my",
+        typeName: "A",
+        methodName: "x",
+        methodParameters: "()",
+        supported: true,
+        supportedType: "none",
+        usages: [],
+      },
+    ];
     const modeledMethods = {};
     const candidates = getCandidates(
       Mode.Application,
@@ -170,7 +172,6 @@ describe("getCandidates", () => {
       externalApiUsages.push({
         library: "my.jar",
         signature: `org.my.A#x${i}()`,
-
         packageName: "org.my",
         typeName: "A",
         methodName: `x${i}`,
