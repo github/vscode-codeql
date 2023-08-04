@@ -2,7 +2,7 @@ import * as Sarif from "sarif";
 import type { HighlightedRegion } from "../variant-analysis/shared/analysis-result";
 import { ResolvableLocationValue } from "../common/bqrs-cli-types";
 
-interface SarifLink {
+export interface SarifLink {
   dest: number;
   text: string;
 }
