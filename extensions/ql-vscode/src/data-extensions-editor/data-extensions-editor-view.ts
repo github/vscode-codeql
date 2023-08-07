@@ -47,6 +47,7 @@ import {
 import {
   enableFrameworkMode,
   showLlmGeneration,
+  showModelDetailsView,
   useLlmGenerationV2,
 } from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
@@ -138,7 +139,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "jumpToUsage":
-        await this.jumpToUsage(msg.location);
+        await this.handleJumpToUsage(msg.location);
 
         break;
       case "saveModeledMethods":
@@ -209,6 +210,18 @@ export class DataExtensionsEditorView extends AbstractWebview<
         mode: this.mode,
       },
     });
+  }
+
+  protected async handleJumpToUsage(location: ResolvableLocationValue) {
+    if (showModelDetailsView()) {
+      await this.openModelDetailsView();
+    } else {
+      await this.jumpToUsage(location);
+    }
+  }
+
+  protected async openModelDetailsView() {
+    await this.app.commands.execute("codeQLModelDetails.focus");
   }
 
   protected async jumpToUsage(
