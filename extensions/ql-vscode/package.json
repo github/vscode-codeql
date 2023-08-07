@@ -1655,6 +1655,13 @@
           "title": "CodeQL",
           "icon": "media/logo.svg"
         }
+      ],
+      "panel": [
+        {
+          "id": "codeql-model-details-view",
+          "title": "CodeQL Model Details",
+          "icon": "media/logo.svg"
+        }
       ]
     },
     "views": {
@@ -1685,9 +1692,20 @@
           "name": "Evaluator Log Viewer",
           "when": "config.codeQL.canary"
         }
+      ],
+      "codeql-model-details-view": [
+        {
+          "id": "codeQLModelDetails",
+          "name": "CodeQL Model Details",
+          "when": "config.codeQL.canary && config.codeQL.dataExtensions.modelDetailsView"
+        }
       ]
     },
     "viewsWelcome": [
+      {
+        "view": "codeQLModelDetails",
+        "contents": "Loading..."
+      },
       {
         "view": "codeQLAstViewer",
         "contents": "Run the 'CodeQL: View AST' command on an open source file from a CodeQL database.\n[View AST](command:codeQL.viewAst)"
