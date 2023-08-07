@@ -4,6 +4,63 @@ import { AutoModelQueriesResult } from "./auto-model-codeml-queries";
 import { assertNever } from "../common/helpers-pure";
 import * as Sarif from "sarif";
 import { gzipEncode } from "../common/zlib";
+import { ExternalApiUsage, MethodSignature } from "./external-api-usage";
+import { ModeledMethod } from "./modeled-method";
+import { groupMethods, sortGroupNames, sortMethods } from "./shared/sorting";
+
+// Soft limit on the number of candidates to send to the model.
+// Note that the model may return fewer than this number of candidates.
+const candidateLimit = 20;
+/**
+ * Return the candidates that the model should be run on. This includes limiting the number of
+ * candidates to the candidate limit and filtering out anything that is already modeled and respecting
+ * the order in the UI.
+ * @param mode Whether it is application or framework mode.
+ * @param externalApiUsages all external API usages.
+ * @param modeledMethods the currently modeled methods.
+ * @returns list of modeled methods that are candidates for modeling.
+ */
+export function getCandidates(
+  mode: Mode,
+  externalApiUsages: ExternalApiUsage[],
+  modeledMethods: Record<string, ModeledMethod>,
+): MethodSignature[] {
+  // Sort the same way as the UI so we send the first ones listed in the UI first
+  const grouped = groupMethods(externalApiUsages, mode);
+  const sortedGroupNames = sortGroupNames(grouped);
+  const sortedExternalApiUsages = sortedGroupNames.flatMap((name) =>
+    sortMethods(grouped[name]),
+  );
+
+  const candidates: MethodSignature[] = [];
+
+  for (const externalApiUsage of sortedExternalApiUsages) {
+    const modeledMethod: ModeledMethod = modeledMethods[
+      externalApiUsage.signature
+    ] ?? {
+      type: "none",
+    };
+
+    // If we have reached the max number of candidates then stop
+    if (candidates.length >= candidateLimit) {
+      break;
+    }
+
+    // Anything that is modeled is not a candidate
+    if (modeledMethod.type !== "none") {
+      continue;
+    }
+
+    // A method that is supported is modeled outside of the model file, so it is not a candidate.
+    if (externalApiUsage.supported) {
+      continue;
+    }
+
+    // The rest are candidates
+    candidates.push(externalApiUsage);
+  }
+  return candidates;
+}
 
 /**
  * Encode a SARIF log to the format expected by the server: JSON, GZIP-compressed, base64-encoded

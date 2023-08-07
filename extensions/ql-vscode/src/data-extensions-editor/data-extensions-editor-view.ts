@@ -56,9 +56,10 @@ import { join } from "path";
 import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
 import { runAutoModelQueries } from "./auto-model-codeml-queries";
-import { createAutoModelV2Request } from "./auto-model-v2";
+import { createAutoModelV2Request, getCandidates } from "./auto-model-v2";
 import { load as loadYaml } from "js-yaml";
 import { loadDataExtensionYaml } from "./yaml";
+import { extLogger } from "../common/logging/vscode";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -377,8 +378,22 @@ export class DataExtensionsEditorView extends AbstractWebview<
       let predictedModeledMethods: Record<string, ModeledMethod>;
 
       if (useLlmGenerationV2()) {
+        // Fetch the candidates to send to the model
+        const candidateMethods = getCandidates(
+          this.mode,
+          externalApiUsages,
+          modeledMethods,
+        );
+
+        // If there are no candidates, there is nothing to model and we just return
+        if (candidateMethods.length === 0) {
+          void extLogger.log("No candidates to model. Stopping.");
+          return;
+        }
+
         const usages = await runAutoModelQueries({
           mode: this.mode,
+          candidateMethods,
           cliServer: this.cliServer,
           queryRunner: this.queryRunner,
           queryStorageDir: this.queryStorageDir,
@@ -418,12 +433,33 @@ export class DataExtensionsEditorView extends AbstractWebview<
           filename: "auto-model.yml",
         });
 
-        const modeledMethods = loadDataExtensionYaml(models);
-        if (!modeledMethods) {
+        const loadedMethods = loadDataExtensionYaml(models);
+        if (!loadedMethods) {
           return;
         }
 
-        predictedModeledMethods = modeledMethods;
+        // Any candidate that was part of the response is a negative result
+        // meaning that the canidate is not a sink for the kinds that the LLM is checking for.
+        // For now we model this as a sink neutral method, however this is subject
+        // to discussion.
+        for (const candidate of candidateMethods) {
+          if (!(candidate.signature in loadedMethods)) {
+            loadedMethods[candidate.signature] = {
+              type: "neutral",
+              kind: "sink",
+              input: "",
+              output: "",
+              provenance: "ai-generated",
+              signature: candidate.signature,
+              packageName: candidate.packageName,
+              typeName: candidate.typeName,
+              methodName: candidate.methodName,
+              methodParameters: candidate.methodParameters,
+            };
+          }
+        }
+
+        predictedModeledMethods = loadedMethods;
       } else {
         const usages = await getAutoModelUsages({
           cliServer: this.cliServer,
