@@ -160,15 +160,20 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "generateExternalApiFromLlm":
-        await this.generateModeledMethodsFromLlm(
-          msg.externalApiUsages,
-          msg.modeledMethods,
-        );
-
+        if (useLlmGenerationV2()) {
+          await this.generateModeledMethodsFromLlmV2(
+            msg.externalApiUsages,
+            msg.modeledMethods,
+          );
+        } else {
+          await this.generateModeledMethodsFromLlmV1(
+            msg.externalApiUsages,
+            msg.modeledMethods,
+          );
+        }
         break;
       case "modelDependency":
         await this.modelDependency();
-
         break;
       case "switchMode":
         this.mode = msg.mode;
@@ -362,7 +367,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     );
   }
 
-  private async generateModeledMethodsFromLlm(
+  private async generateModeledMethodsFromLlmV1(
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
@@ -375,136 +380,49 @@ export class DataExtensionsEditorView extends AbstractWebview<
         message: "Retrieving usages",
       });
 
-      let predictedModeledMethods: Record<string, ModeledMethod>;
+      const usages = await getAutoModelUsages({
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        queryStorageDir: this.queryStorageDir,
+        queryDir: this.queryDir,
+        databaseItem: this.databaseItem,
+        progress: (update) => progress({ ...update, maxStep }),
+      });
 
-      if (useLlmGenerationV2()) {
-        // Fetch the candidates to send to the model
-        const candidateMethods = getCandidates(
-          this.mode,
-          externalApiUsages,
-          modeledMethods,
-        );
+      progress({
+        step: 1800,
+        maxStep,
+        message: "Creating request",
+      });
 
-        // If there are no candidates, there is nothing to model and we just return
-        if (candidateMethods.length === 0) {
-          void extLogger.log("No candidates to model. Stopping.");
-          return;
-        }
+      const request = createAutoModelRequest(
+        this.databaseItem.language,
+        externalApiUsages,
+        modeledMethods,
+        usages,
+        this.mode,
+      );
 
-        const usages = await runAutoModelQueries({
-          mode: this.mode,
-          candidateMethods,
-          cliServer: this.cliServer,
-          queryRunner: this.queryRunner,
-          queryStorageDir: this.queryStorageDir,
-          databaseItem: this.databaseItem,
-          progress: (update) => progress({ ...update, maxStep }),
-        });
-        if (!usages) {
-          return;
-        }
+      progress({
+        step: 2000,
+        maxStep,
+        message: "Sending request",
+      });
 
-        progress({
-          step: 1800,
-          maxStep,
-          message: "Creating request",
-        });
-
-        const request = await createAutoModelV2Request(this.mode, usages);
-
-        progress({
-          step: 2000,
-          maxStep,
-          message: "Sending request",
-        });
-
-        const response = await this.callAutoModelApiV2(request);
-        if (!response) {
-          return;
-        }
-
-        progress({
-          step: 2500,
-          maxStep,
-          message: "Parsing response",
-        });
-
-        const models = loadYaml(response.models, {
-          filename: "auto-model.yml",
-        });
-
-        const loadedMethods = loadDataExtensionYaml(models);
-        if (!loadedMethods) {
-          return;
-        }
-
-        // Any candidate that was part of the response is a negative result
-        // meaning that the canidate is not a sink for the kinds that the LLM is checking for.
-        // For now we model this as a sink neutral method, however this is subject
-        // to discussion.
-        for (const candidate of candidateMethods) {
-          if (!(candidate.signature in loadedMethods)) {
-            loadedMethods[candidate.signature] = {
-              type: "neutral",
-              kind: "sink",
-              input: "",
-              output: "",
-              provenance: "ai-generated",
-              signature: candidate.signature,
-              packageName: candidate.packageName,
-              typeName: candidate.typeName,
-              methodName: candidate.methodName,
-              methodParameters: candidate.methodParameters,
-            };
-          }
-        }
-
-        predictedModeledMethods = loadedMethods;
-      } else {
-        const usages = await getAutoModelUsages({
-          cliServer: this.cliServer,
-          queryRunner: this.queryRunner,
-          queryStorageDir: this.queryStorageDir,
-          queryDir: this.queryDir,
-          databaseItem: this.databaseItem,
-          progress: (update) => progress({ ...update, maxStep }),
-        });
-
-        progress({
-          step: 1800,
-          maxStep,
-          message: "Creating request",
-        });
-
-        const request = createAutoModelRequest(
-          this.databaseItem.language,
-          externalApiUsages,
-          modeledMethods,
-          usages,
-          this.mode,
-        );
-
-        progress({
-          step: 2000,
-          maxStep,
-          message: "Sending request",
-        });
-
-        const response = await this.callAutoModelApi(request);
-        if (!response) {
-          return;
-        }
-
-        progress({
-          step: 2500,
-          maxStep,
-          message: "Parsing response",
-        });
-
-        predictedModeledMethods = parsePredictedClassifications(
-          response.predicted || [],
-        );
+      const response = await this.callAutoModelApi(request);
+      if (!response) {
+        return;
       }
+
+      progress({
+        step: 2500,
+        maxStep,
+        message: "Parsing response",
+      });
+
+      const predictedModeledMethods = parsePredictedClassifications(
+        response.predicted || [],
+      );
 
       progress({
         step: 2800,
@@ -515,6 +433,113 @@ export class DataExtensionsEditorView extends AbstractWebview<
       await this.postMessage({
         t: "addModeledMethods",
         modeledMethods: predictedModeledMethods,
+      });
+    });
+  }
+
+  private async generateModeledMethodsFromLlmV2(
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ): Promise<void> {
+    await withProgress(async (progress) => {
+      const maxStep = 3000;
+
+      progress({
+        step: 0,
+        maxStep,
+        message: "Retrieving usages",
+      });
+
+      // Fetch the candidates to send to the model
+      const candidateMethods = getCandidates(
+        this.mode,
+        externalApiUsages,
+        modeledMethods,
+      );
+
+      // If there are no candidates, there is nothing to model and we just return
+      if (candidateMethods.length === 0) {
+        void extLogger.log("No candidates to model. Stopping.");
+        return;
+      }
+
+      const usages = await runAutoModelQueries({
+        mode: this.mode,
+        candidateMethods,
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        queryStorageDir: this.queryStorageDir,
+        databaseItem: this.databaseItem,
+        progress: (update) => progress({ ...update, maxStep }),
+      });
+      if (!usages) {
+        return;
+      }
+
+      progress({
+        step: 1800,
+        maxStep,
+        message: "Creating request",
+      });
+
+      const request = await createAutoModelV2Request(this.mode, usages);
+
+      progress({
+        step: 2000,
+        maxStep,
+        message: "Sending request",
+      });
+
+      const response = await this.callAutoModelApiV2(request);
+      if (!response) {
+        return;
+      }
+
+      progress({
+        step: 2500,
+        maxStep,
+        message: "Parsing response",
+      });
+
+      const models = loadYaml(response.models, {
+        filename: "auto-model.yml",
+      });
+
+      const loadedMethods = loadDataExtensionYaml(models);
+      if (!loadedMethods) {
+        return;
+      }
+
+      // Any candidate that was part of the response is a negative result
+      // meaning that the canidate is not a sink for the kinds that the LLM is checking for.
+      // For now we model this as a sink neutral method, however this is subject
+      // to discussion.
+      for (const candidate of candidateMethods) {
+        if (!(candidate.signature in loadedMethods)) {
+          loadedMethods[candidate.signature] = {
+            type: "neutral",
+            kind: "sink",
+            input: "",
+            output: "",
+            provenance: "ai-generated",
+            signature: candidate.signature,
+            packageName: candidate.packageName,
+            typeName: candidate.typeName,
+            methodName: candidate.methodName,
+            methodParameters: candidate.methodParameters,
+          };
+        }
+      }
+
+      progress({
+        step: 2800,
+        maxStep,
+        message: "Applying results",
+      });
+
+      await this.postMessage({
+        t: "addModeledMethods",
+        modeledMethods: loadedMethods,
       });
     });
   }
