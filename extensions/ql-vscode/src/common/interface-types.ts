@@ -510,6 +510,11 @@ interface AddModeledMethodsMessage {
   modeledMethods: Record<string, ModeledMethod>;
 }
 
+interface SetInProgressMethodsMessage {
+  t: "setInProgressMethods";
+  inProgressMethods: string[];
+}
+
 interface SwitchModeMessage {
   t: "switchMode";
   mode: Mode;
@@ -556,7 +561,8 @@ export type ToDataExtensionsEditorMessage =
   | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
   | LoadModeledMethodsMessage
-  | AddModeledMethodsMessage;
+  | AddModeledMethodsMessage
+  | SetInProgressMethodsMessage;
 
 export type FromDataExtensionsEditorMessage =
   | ViewLoadedMsg
