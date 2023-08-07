@@ -91,6 +91,10 @@ export function DataExtensionsEditor({
     new Set(),
   );
 
+  const [inProgressSignatures, setInProgressSignatures] = useState<Set<string>>(
+    new Set(),
+  );
+
   const [hideModeledApis, setHideModeledApis] = useState(true);
 
   const [modeledMethods, setModeledMethods] = useState<
@@ -134,6 +138,9 @@ export function DataExtensionsEditor({
                   ...Object.keys(msg.modeledMethods),
                 ]),
             );
+            break;
+          case "setInProgressMethods":
+            setInProgressSignatures(new Set(msg.inProgressMethods));
             break;
           default:
             assertNever(msg);
@@ -330,6 +337,7 @@ export function DataExtensionsEditor({
           externalApiUsages={externalApiUsages}
           modeledMethods={modeledMethods}
           modifiedSignatures={modifiedSignatures}
+          inProgressSignatures={inProgressSignatures}
           viewState={viewState}
           hideModeledApis={hideModeledApis}
           onChange={onChange}

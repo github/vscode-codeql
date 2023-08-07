@@ -72,6 +72,7 @@ type Props = {
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
+  inProgressSignatures: Set<string>;
   viewState: DataExtensionEditorViewState;
   hideModeledApis: boolean;
   onChange: (
@@ -97,6 +98,7 @@ export const LibraryRow = ({
   externalApiUsages,
   modeledMethods,
   modifiedSignatures,
+  inProgressSignatures,
   viewState,
   hideModeledApis,
   onChange,
@@ -209,6 +211,7 @@ export const LibraryRow = ({
             externalApiUsages={externalApiUsages}
             modeledMethods={modeledMethods}
             modifiedSignatures={modifiedSignatures}
+            inProgressSignatures={inProgressSignatures}
             mode={viewState.mode}
             hideModeledApis={hideModeledApis}
             onChange={onChangeWithModelName}
