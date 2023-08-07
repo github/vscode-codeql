@@ -3,6 +3,7 @@ import { readdir, readJson, readFile } from "fs-extra";
 import { DefaultBodyType, MockedRequest, rest, RestHandler } from "msw";
 import {
   GitHubApiRequest,
+  isAutoModelRequest,
   isCodeSearchRequest,
   isGetRepoRequest,
   isGetVariantAnalysisRepoRequest,
@@ -27,6 +28,7 @@ export async function createRequestHandlers(
     createGetVariantAnalysisRepoRequestHandler(requests),
     createGetVariantAnalysisRepoResultRequestHandler(requests),
     createCodeSearchRequestHandler(requests),
+    createAutoModelRequestHandler(requests),
   ];
 
   return handlers;
@@ -218,4 +220,31 @@ function createCodeSearchRequestHandler(
       ctx.json(request.response.body),
     );
   });
+}
+
+function createAutoModelRequestHandler(
+  requests: GitHubApiRequest[],
+): RequestHandler {
+  const autoModelRequests = requests.filter(isAutoModelRequest);
+  let requestIndex = 0;
+
+  // During automodeling there can be multiple API requests for each batch
+  // of candidates we want to model. We need to return different responses for each request,
+  // so keep an index of the request and return the appropriate response.
+  return rest.get(
+    `${baseUrl}/code-scanning/codeql/auto-model`,
+    (_req, res, ctx) => {
+      const request = autoModelRequests[requestIndex];
+
+      if (requestIndex < autoModelRequests.length - 1) {
+        // If there are more requests to come, increment the index.
+        requestIndex++;
+      }
+
+      return res(
+        ctx.status(request.response.status),
+        ctx.json(request.response.body),
+      );
+    },
+  );
 }
