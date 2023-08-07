@@ -1658,7 +1658,7 @@
       ],
       "panel": [
         {
-          "id": "codeql-model-details-view",
+          "id": "codeql-model-details",
           "title": "CodeQL Model Details",
           "icon": "media/logo.svg"
         }
@@ -1693,7 +1693,7 @@
           "when": "config.codeQL.canary"
         }
       ],
-      "codeql-model-details-view": [
+      "codeql-model-details": [
         {
           "id": "codeQLModelDetails",
           "name": "CodeQL Model Details",

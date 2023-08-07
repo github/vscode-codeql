@@ -58,6 +58,7 @@ export type ExplorerSelectionCommandFunction<Item> = (
 type BuiltInVsCodeCommands = {
   // The codeQLDatabases.focus command is provided by VS Code because we've registered the custom view
   "codeQLDatabases.focus": () => Promise<void>;
+  "codeQLModelDetails.focus": () => Promise<void>;
   "markdown.showPreviewToSide": (uri: Uri) => Promise<void>;
   "workbench.action.closeActiveEditor": () => Promise<void>;
   revealFileInOS: (uri: Uri) => Promise<void>;
