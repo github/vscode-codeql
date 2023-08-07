@@ -20,10 +20,12 @@ import { redactableError } from "../common/errors";
 import { extLogger } from "../common/logging/vscode";
 import { isQueryLanguage } from "../common/query-language";
 import { setUpPack } from "./external-api-usage-query";
+import { DisposableObject } from "../common/disposable-object";
+import { ModelDetailsPanel } from "./model-details/model-details-panel";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
-export class DataExtensionsEditorModule {
+export class DataExtensionsEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
 
   private constructor(
@@ -34,10 +36,12 @@ export class DataExtensionsEditorModule {
     private readonly queryRunner: QueryRunner,
     baseQueryStorageDir: string,
   ) {
+    super();
     this.queryStorageDir = join(
       baseQueryStorageDir,
       "data-extensions-editor-results",
     );
+    this.push(new ModelDetailsPanel());
   }
 
   public static async initialize(
