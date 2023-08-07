@@ -265,7 +265,7 @@ export async function generateCandidateFilterPack(
     version: "0.0.0",
     library: true,
     extensionTargets: {
-      [`codeql/${language}-all`]: "*",
+      [`codeql/${language}-queries`]: "*",
     },
     dataExtensions: ["filter.yml"],
   };
