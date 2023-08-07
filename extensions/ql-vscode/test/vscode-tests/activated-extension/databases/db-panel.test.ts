@@ -8,15 +8,23 @@ import {
 } from "../../../../src/databases/config/db-config";
 import {
   AddListQuickPickItem,
+  CodeSearchQuickPickItem,
   RemoteDatabaseQuickPickItem,
 } from "../../../../src/databases/ui/db-panel";
 import { DbListKind } from "../../../../src/databases/db-item";
-import { createDbTreeViewItemSystemDefinedList } from "../../../../src/databases/ui/db-tree-view-item";
-import { createRemoteSystemDefinedListDbItem } from "../../../factories/db-item-factories";
+import {
+  createDbTreeViewItemSystemDefinedList,
+  createDbTreeViewItemUserDefinedList,
+} from "../../../../src/databases/ui/db-tree-view-item";
+import {
+  createRemoteSystemDefinedListDbItem,
+  createRemoteUserDefinedListDbItem,
+} from "../../../factories/db-item-factories";
 import { DbConfigStore } from "../../../../src/databases/config/db-config-store";
 import { getActivatedExtension } from "../../global.helper";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
 import { AllCommands } from "../../../../src/common/commands";
+import { MockGitHubApiServer } from "../../../../src/variant-analysis/gh-api/mocks/mock-gh-api-server";
 
 jest.setTimeout(60_000);
 
@@ -112,6 +120,56 @@ describe("Db panel UI commands", () => {
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.owners).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.owners[0]).toBe("owner1");
+  });
+
+  it("should import from code search", async () => {
+    const mockServer = new MockGitHubApiServer();
+    mockServer.startServer();
+
+    await mockServer.loadScenario("code-search-success");
+
+    jest.spyOn(window, "showInputBox").mockResolvedValue("listname");
+    await commandManager.execute(
+      "codeQLVariantAnalysisRepositories.addNewList",
+    );
+
+    const dbTreeViewItem = createDbTreeViewItemUserDefinedList(
+      createRemoteUserDefinedListDbItem(),
+      "listname",
+      [],
+    );
+
+    jest.spyOn(window, "showQuickPick").mockResolvedValue({
+      language: "java",
+    } as CodeSearchQuickPickItem);
+
+    jest
+      .spyOn(window, "showInputBox")
+      .mockResolvedValue("org:github something");
+
+    await commandManager.execute(
+      "codeQLVariantAnalysisRepositories.importFromCodeSearch",
+      dbTreeViewItem,
+    );
+
+    expect(window.showQuickPick).toBeCalledTimes(1);
+    expect(window.showInputBox).toBeCalledTimes(2);
+
+    const dbConfigFilePath = path.join(
+      storagePath,
+      DbConfigStore.databaseConfigFileName,
+    );
+    const dbConfig: DbConfig = await readJson(dbConfigFilePath);
+    expect(dbConfig.databases.variantAnalysis.repositoryLists).toHaveLength(1);
+    expect(dbConfig.databases.variantAnalysis.repositoryLists[0].name).toBe(
+      "listname",
+    );
+    expect(
+      dbConfig.databases.variantAnalysis.repositoryLists[0].repositories,
+    ).toBe([]);
+
+    await mockServer.unloadScenario();
+    mockServer.stopServer();
   });
 
   it("should select db item", async () => {
