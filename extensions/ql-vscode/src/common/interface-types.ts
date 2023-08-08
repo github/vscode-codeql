@@ -17,7 +17,10 @@ import {
 } from "../variant-analysis/shared/variant-analysis-filter-sort";
 import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import { ExternalApiUsage } from "../data-extensions-editor/external-api-usage";
+import {
+  ExternalApiUsage,
+  Usage,
+} from "../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../data-extensions-editor/modeled-method";
 import { DataExtensionEditorViewState } from "../data-extensions-editor/shared/view-state";
 import { Mode } from "../data-extensions-editor/shared/mode";
@@ -522,7 +525,7 @@ interface SwitchModeMessage {
 
 interface JumpToUsageMessage {
   t: "jumpToUsage";
-  location: ResolvableLocationValue;
+  usage: Usage;
 }
 
 interface OpenDatabaseMessage {

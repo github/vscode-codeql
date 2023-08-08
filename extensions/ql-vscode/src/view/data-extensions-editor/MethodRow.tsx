@@ -326,7 +326,7 @@ function sendJumpToUsageMessage(externalApiUsage: ExternalApiUsage) {
   vscode.postMessage({
     t: "jumpToUsage",
     // In framework mode, the first and only usage is the definition of the method
-    location: externalApiUsage.usages[0].url,
+    usage: externalApiUsage.usages[0],
   });
 }
 
