@@ -61,6 +61,17 @@ export class ModelDetailsDataProvider
       return [];
     }
   }
+
+  public resolveCanonicalUsage(usage: Usage): Usage | undefined {
+    for (const externalApiUsage of this.externalApiUsages) {
+      for (const u of externalApiUsage.usages) {
+        if (usagesAreEqual(u, usage)) {
+          return u;
+        }
+      }
+    }
+    return undefined;
+  }
 }
 
 export type ModelDetailsTreeViewItem = ExternalApiUsage | Usage;
@@ -69,4 +80,16 @@ function isExternalApiUsage(
   item: ModelDetailsTreeViewItem,
 ): item is ExternalApiUsage {
   return (item as any).usages !== undefined;
+}
+
+function usagesAreEqual(u1: Usage, u2: Usage): boolean {
+  return (
+    u1.label === u2.label &&
+    u1.classification === u2.classification &&
+    u1.url.uri === u2.url.uri &&
+    u1.url.startLine === u2.url.startLine &&
+    u1.url.startColumn === u2.url.startColumn &&
+    u1.url.endLine === u2.url.endLine &&
+    u1.url.endColumn === u2.url.endColumn
+  );
 }

@@ -30,6 +30,9 @@ export class ModelDetailsPanel extends DisposableObject {
   }
 
   public async revealItem(usage: Usage): Promise<void> {
-    await this.treeView.reveal(usage);
+    const canonicalUsage = this.dataProvider.resolveCanonicalUsage(usage);
+    if (canonicalUsage !== undefined) {
+      await this.treeView.reveal(canonicalUsage);
+    }
   }
 }
