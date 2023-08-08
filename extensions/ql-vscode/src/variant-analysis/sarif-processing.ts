@@ -1,5 +1,6 @@
 import * as sarif from "sarif";
 import {
+  SarifLink,
   parseHighlightedLine,
   parseSarifPlainTextMessage,
   parseSarifRegion,
@@ -14,6 +15,7 @@ import {
   ThreadFlow,
   CodeSnippet,
   HighlightedRegion,
+  AnalysisMessageLocationTokenLocation,
 } from "./shared/analysis-result";
 
 // A line of more than 8k characters is probably generated.
@@ -303,24 +305,47 @@ function getMessage(
     if (typeof messagePart === "string") {
       tokens.push({ t: "text", text: messagePart });
     } else {
-      const relatedLocation = result.relatedLocations!.find(
-        (rl) => rl.id === messagePart.dest,
-      );
-      tokens.push({
-        t: "location",
-        text: messagePart.text,
-        location: {
-          fileLink: {
-            fileLinkPrefix,
-            filePath: relatedLocation!.physicalLocation!.artifactLocation!.uri!,
-          },
-          highlightedRegion: getHighlightedRegion(
-            relatedLocation!.physicalLocation!.region!,
-          ),
-        },
-      });
+      const location = getRelatedLocation(messagePart, result, fileLinkPrefix);
+      if (location === undefined) {
+        tokens.push({ t: "text", text: messagePart.text });
+      } else {
+        tokens.push({
+          t: "location",
+          text: messagePart.text,
+          location,
+        });
+      }
     }
   }
 
   return { tokens };
+}
+
+function getRelatedLocation(
+  messagePart: SarifLink,
+  result: sarif.Result,
+  fileLinkPrefix: string,
+): AnalysisMessageLocationTokenLocation | undefined {
+  const relatedLocation = result.relatedLocations!.find(
+    (rl) => rl.id === messagePart.dest,
+  );
+  if (
+    relatedLocation === undefined ||
+    relatedLocation.physicalLocation?.artifactLocation?.uri === undefined ||
+    relatedLocation.physicalLocation?.artifactLocation?.uri?.startsWith(
+      "file:",
+    ) ||
+    relatedLocation.physicalLocation?.region === undefined
+  ) {
+    return undefined;
+  }
+  return {
+    fileLink: {
+      fileLinkPrefix,
+      filePath: relatedLocation.physicalLocation.artifactLocation.uri,
+    },
+    highlightedRegion: getHighlightedRegion(
+      relatedLocation.physicalLocation.region,
+    ),
+  };
 }

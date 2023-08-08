@@ -720,6 +720,45 @@ describe("SARIF processing", () => {
       expectNoParsingError(result);
       expect(actualCodeSnippet).not.toBeUndefined();
     });
+
+    it("should be able to handle when a location has no uri", () => {
+      const sarif = buildValidSarifLog();
+      sarif.runs![0].results![0].message.text = "message [String](1)";
+      sarif.runs![0].results![0].relatedLocations = [
+        {
+          id: 1,
+          physicalLocation: {
+            artifactLocation: {
+              uri: "file:/modules/java.base/java/lang/String.class",
+              index: 1,
+            },
+          },
+          message: {
+            text: "String",
+          },
+        },
+      ];
+
+      const result = extractAnalysisAlerts(sarif, fakefileLinkPrefix);
+
+      expect(result).toBeTruthy();
+      expectNoParsingError(result);
+      expect(result.alerts[0].codeSnippet).not.toBeUndefined();
+      expect(result.alerts[0].message.tokens).toStrictEqual([
+        {
+          t: "text",
+          text: "message ",
+        },
+        {
+          t: "text",
+          text: "String",
+        },
+        {
+          t: "text",
+          text: "",
+        },
+      ]);
+    });
   });
 
   function expectResultParsingError(msg: string) {
