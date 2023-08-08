@@ -36,11 +36,6 @@ import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
 import { autoModel, ModelRequest, ModelResponse } from "./auto-model-api";
 import {
-  autoModelV2,
-  ModelRequest as ModelRequestV2,
-  ModelResponse as ModelResponseV2,
-} from "./auto-model-api-v2";
-import {
   createAutoModelRequest,
   parsePredictedClassifications,
 } from "./auto-model";
@@ -56,16 +51,14 @@ import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { join } from "path";
 import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
-import { runAutoModelQueries } from "./auto-model-codeml-queries";
-import { createAutoModelV2Request, getCandidates } from "./auto-model-v2";
-import { load as loadYaml } from "js-yaml";
-import { loadDataExtensionYaml } from "./yaml";
-import { extLogger } from "../common/logging/vscode";
+import { AutoModeler } from "./auto-modeler";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
   FromDataExtensionsEditorMessage
 > {
+  private readonly autoModeler: AutoModeler;
+
   public constructor(
     ctx: ExtensionContext,
     private readonly app: App,
@@ -82,6 +75,17 @@ export class DataExtensionsEditorView extends AbstractWebview<
     ) => void,
   ) {
     super(ctx);
+
+    this.autoModeler = new AutoModeler(
+      app,
+      cliServer,
+      queryRunner,
+      queryStorageDir,
+      databaseItem,
+      async (modeledMethods) => {
+        await this.postMessage({ t: "addModeledMethods", modeledMethods });
+      },
+    );
   }
 
   public async openView() {
@@ -458,107 +462,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
-    await withProgress(async (progress) => {
-      const maxStep = 3000;
-
-      progress({
-        step: 0,
-        maxStep,
-        message: "Retrieving usages",
-      });
-
-      // Fetch the candidates to send to the model
-      const candidateMethods = getCandidates(
-        this.mode,
-        externalApiUsages,
-        modeledMethods,
-      );
-
-      // If there are no candidates, there is nothing to model and we just return
-      if (candidateMethods.length === 0) {
-        void extLogger.log("No candidates to model. Stopping.");
-        return;
-      }
-
-      const usages = await runAutoModelQueries({
-        mode: this.mode,
-        candidateMethods,
-        cliServer: this.cliServer,
-        queryRunner: this.queryRunner,
-        queryStorageDir: this.queryStorageDir,
-        databaseItem: this.databaseItem,
-        progress: (update) => progress({ ...update, maxStep }),
-      });
-      if (!usages) {
-        return;
-      }
-
-      progress({
-        step: 1800,
-        maxStep,
-        message: "Creating request",
-      });
-
-      const request = await createAutoModelV2Request(this.mode, usages);
-
-      progress({
-        step: 2000,
-        maxStep,
-        message: "Sending request",
-      });
-
-      const response = await this.callAutoModelApiV2(request);
-      if (!response) {
-        return;
-      }
-
-      progress({
-        step: 2500,
-        maxStep,
-        message: "Parsing response",
-      });
-
-      const models = loadYaml(response.models, {
-        filename: "auto-model.yml",
-      });
-
-      const loadedMethods = loadDataExtensionYaml(models);
-      if (!loadedMethods) {
-        return;
-      }
-
-      // Any candidate that was part of the response is a negative result
-      // meaning that the canidate is not a sink for the kinds that the LLM is checking for.
-      // For now we model this as a sink neutral method, however this is subject
-      // to discussion.
-      for (const candidate of candidateMethods) {
-        if (!(candidate.signature in loadedMethods)) {
-          loadedMethods[candidate.signature] = {
-            type: "neutral",
-            kind: "sink",
-            input: "",
-            output: "",
-            provenance: "ai-generated",
-            signature: candidate.signature,
-            packageName: candidate.packageName,
-            typeName: candidate.typeName,
-            methodName: candidate.methodName,
-            methodParameters: candidate.methodParameters,
-          };
-        }
-      }
-
-      progress({
-        step: 2800,
-        maxStep,
-        message: "Applying results",
-      });
-
-      await this.postMessage({
-        t: "addModeledMethods",
-        modeledMethods: loadedMethods,
-      });
-    });
+    await this.autoModeler.startModeling(
+      externalApiUsages,
+      modeledMethods,
+      this.mode,
+    );
   }
 
   private async modelDependency(): Promise<void> {
@@ -675,25 +583,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
   ): Promise<ModelResponse | null> {
     try {
       return await autoModel(this.app.credentials, request);
-    } catch (e) {
-      if (e instanceof RequestError && e.status === 429) {
-        void showAndLogExceptionWithTelemetry(
-          this.app.logger,
-          this.app.telemetry,
-          redactableError(e)`Rate limit hit, please try again soon.`,
-        );
-        return null;
-      } else {
-        throw e;
-      }
-    }
-  }
-
-  private async callAutoModelApiV2(
-    request: ModelRequestV2,
-  ): Promise<ModelResponseV2 | null> {
-    try {
-      return await autoModelV2(this.app.credentials, request);
     } catch (e) {
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(
