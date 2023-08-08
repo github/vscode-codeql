@@ -31,7 +31,7 @@ import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../common/errors";
 import { readQueryResults, runQuery } from "./external-api-usage-query";
-import { ExternalApiUsage } from "./external-api-usage";
+import { ExternalApiUsage, Usage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
 import { autoModel, ModelRequest, ModelResponse } from "./auto-model-api";
@@ -74,6 +74,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       externalApiUsages: ExternalApiUsage[],
       databaseItem: DatabaseItem,
     ) => void,
+    private readonly revealItemInDetailsPanel: (usage: Usage) => Promise<void>,
   ) {
     super(ctx);
 
@@ -503,6 +504,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         modelFile,
         Mode.Framework,
         this.updateModelDetailsPanelState,
+        this.revealItemInDetailsPanel,
       );
       await view.openView();
     });

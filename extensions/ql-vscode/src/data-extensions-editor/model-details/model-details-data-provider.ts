@@ -63,7 +63,7 @@ export class ModelDetailsDataProvider
   }
 }
 
-type ModelDetailsTreeViewItem = ExternalApiUsage | Usage;
+export type ModelDetailsTreeViewItem = ExternalApiUsage | Usage;
 
 function isExternalApiUsage(
   item: ModelDetailsTreeViewItem,
