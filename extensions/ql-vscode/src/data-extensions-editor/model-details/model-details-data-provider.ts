@@ -43,6 +43,11 @@ export class ModelDetailsDataProvider
       return {
         label: item.label,
         collapsibleState: TreeItemCollapsibleState.None,
+        command: {
+          title: "Show usage",
+          command: "codeQLDataExtensions.jumpToUsageLocation",
+          arguments: [item, this.databaseItem],
+        },
       };
     }
   }
