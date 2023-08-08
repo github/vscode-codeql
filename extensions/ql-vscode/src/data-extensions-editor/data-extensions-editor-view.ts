@@ -76,7 +76,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly queryDir: string,
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
-    private mode: Mode = Mode.Application,
+    private mode: Mode,
+    private readonly onExternalApiUsagesChanged: (
+      externalApiUsages: ExternalApiUsage[],
+    ) => void,
   ) {
     super(ctx);
   }
@@ -307,6 +310,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
             t: "setExternalApiUsages",
             externalApiUsages,
           });
+          this.onExternalApiUsagesChanged(externalApiUsages);
         } catch (err) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
@@ -588,6 +592,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         addedDatabase,
         modelFile,
         Mode.Framework,
+        this.onExternalApiUsagesChanged,
       );
       await view.openView();
     });

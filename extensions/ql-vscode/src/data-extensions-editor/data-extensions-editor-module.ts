@@ -22,11 +22,13 @@ import { isQueryLanguage } from "../common/query-language";
 import { setUpPack } from "./external-api-usage-query";
 import { DisposableObject } from "../common/disposable-object";
 import { ModelDetailsPanel } from "./model-details/model-details-panel";
+import { Mode } from "./shared/mode";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
 export class DataExtensionsEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
+  private readonly modelDetailsPanel: ModelDetailsPanel;
 
   private constructor(
     private readonly ctx: ExtensionContext,
@@ -41,7 +43,7 @@ export class DataExtensionsEditorModule extends DisposableObject {
       baseQueryStorageDir,
       "data-extensions-editor-results",
     );
-    this.push(new ModelDetailsPanel());
+    this.modelDetailsPanel = this.push(new ModelDetailsPanel());
   }
 
   public static async initialize(
@@ -142,6 +144,8 @@ export class DataExtensionsEditorModule extends DisposableObject {
               queryDir,
               db,
               modelFile,
+              Mode.Application,
+              (usages) => this.modelDetailsPanel.setExternalApiUsages(usages),
             );
             await view.openView();
           },

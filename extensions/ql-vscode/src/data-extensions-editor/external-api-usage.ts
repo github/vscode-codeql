@@ -13,7 +13,7 @@ export enum CallClassification {
   Generated = "generated",
 }
 
-type Usage = Call & {
+export type Usage = Call & {
   classification: CallClassification;
 };
 
