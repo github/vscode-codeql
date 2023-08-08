@@ -233,14 +233,14 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
   protected async handleJumpToUsage(usage: Usage) {
     if (showModelDetailsView()) {
-      await this.openModelDetailsView();
+      await this.openModelDetailsView(usage);
     } else {
       await this.jumpToUsage(usage.url);
     }
   }
 
-  protected async openModelDetailsView() {
-    await this.app.commands.execute("codeQLModelDetails.focus");
+  protected async openModelDetailsView(usage: Usage) {
+    await this.revealItemInDetailsPanel(usage);
   }
 
   protected async jumpToUsage(
