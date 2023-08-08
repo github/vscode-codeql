@@ -2,6 +2,7 @@ import { window } from "vscode";
 import { DisposableObject } from "../../common/disposable-object";
 import { ModelDetailsDataProvider } from "./model-details-data-provider";
 import { ExternalApiUsage } from "../external-api-usage";
+import { DatabaseItem } from "../../databases/local-databases";
 
 export class ModelDetailsPanel extends DisposableObject {
   private readonly dataProvider: ModelDetailsDataProvider;
@@ -17,7 +18,10 @@ export class ModelDetailsPanel extends DisposableObject {
     this.push(treeView);
   }
 
-  public setExternalApiUsages(externalApiUsages: ExternalApiUsage[]): void {
-    this.dataProvider.setExternalApiUsages(externalApiUsages);
+  public setState(
+    externalApiUsages: ExternalApiUsage[],
+    databaseItem: DatabaseItem,
+  ): void {
+    this.dataProvider.setState(externalApiUsages, databaseItem);
   }
 }

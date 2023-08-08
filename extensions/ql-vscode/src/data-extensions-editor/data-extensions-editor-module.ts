@@ -147,7 +147,7 @@ export class DataExtensionsEditorModule extends DisposableObject {
               db,
               modelFile,
               Mode.Application,
-              (usages) => this.modelDetailsPanel.setExternalApiUsages(usages),
+              this.modelDetailsPanel.setState.bind(this.modelDetailsPanel),
             );
             await view.openView();
           },
