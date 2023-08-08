@@ -97,8 +97,19 @@ export function tryResolveLocation(
 export async function showResolvableLocation(
   loc: ResolvableLocationValue,
   databaseItem: DatabaseItem,
+  logger: Logger,
 ): Promise<void> {
-  await showLocation(tryResolveLocation(loc, databaseItem));
+  try {
+    await showLocation(tryResolveLocation(loc, databaseItem));
+  } catch (e) {
+    if (e instanceof Error && e.message.match(/File not found/)) {
+      void Window.showErrorMessage(
+        "Original file of this result is not in the database's source archive.",
+      );
+    } else {
+      void logger.log(`Unable to jump to location: ${getErrorMessage(e)}`);
+    }
+  }
 }
 
 export async function showLocation(location?: Location) {
@@ -146,16 +157,6 @@ export async function jumpToLocation(
 ) {
   const databaseItem = databaseManager.findDatabaseItem(Uri.parse(databaseUri));
   if (databaseItem !== undefined) {
-    try {
-      await showResolvableLocation(loc, databaseItem);
-    } catch (e) {
-      if (e instanceof Error && e.message.match(/File not found/)) {
-        void Window.showErrorMessage(
-          "Original file of this result is not in the database's source archive.",
-        );
-      } else {
-        void logger.log(`Unable to jump to location: ${getErrorMessage(e)}`);
-      }
-    }
+    await showResolvableLocation(loc, databaseItem, logger);
   }
 }
