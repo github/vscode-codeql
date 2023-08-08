@@ -227,11 +227,13 @@ export function DataExtensionsEditor({
 
   const onGenerateFromLlmClick = useCallback(
     (
+      dependencyName: string,
       externalApiUsages: ExternalApiUsage[],
       modeledMethods: Record<string, ModeledMethod>,
     ) => {
       vscode.postMessage({
         t: "generateExternalApiFromLlm",
+        dependencyName,
         externalApiUsages,
         modeledMethods,
       });

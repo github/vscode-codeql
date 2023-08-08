@@ -27,6 +27,7 @@ type Props = {
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
   onGenerateFromLlmClick: (
+    dependencyName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;

@@ -29,18 +29,26 @@ export class AutoModeler {
   ) {}
 
   public async startModeling(
+    dependency: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
     mode: Mode,
   ): Promise<void> {
-    await this.modelDependency(externalApiUsages, modeledMethods, mode);
+    await this.modelDependency(
+      dependency,
+      externalApiUsages,
+      modeledMethods,
+      mode,
+    );
   }
 
   private async modelDependency(
+    dependency: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
     mode: Mode,
   ): Promise<void> {
+    void extLogger.log(`Modeling dependency ${dependency}`);
     await withProgress(async (progress) => {
       const maxStep = 3000;
 
