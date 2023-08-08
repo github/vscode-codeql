@@ -62,6 +62,16 @@ export class ModelDetailsDataProvider
     }
   }
 
+  getParent(
+    item: ModelDetailsTreeViewItem,
+  ): ModelDetailsTreeViewItem | undefined {
+    if (isExternalApiUsage(item)) {
+      return undefined;
+    } else {
+      return this.externalApiUsages.find((e) => e.usages.includes(item));
+    }
+  }
+
   public resolveCanonicalUsage(usage: Usage): Usage | undefined {
     for (const externalApiUsage of this.externalApiUsages) {
       for (const u of externalApiUsage.usages) {
