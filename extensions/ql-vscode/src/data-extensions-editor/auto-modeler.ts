@@ -16,6 +16,11 @@ import { QueryRunner } from "../query-server";
 import { DatabaseItem } from "../databases/local-databases";
 import { Mode } from "./shared/mode";
 
+// Limit the number of candidates we send to the model in each request
+// to avoid long requests.
+// Note that the model may return fewer than this number of candidates.
+const candidateBatchSize = 20;
+
 export class AutoModeler {
   constructor(
     private readonly app: App,
@@ -23,6 +28,9 @@ export class AutoModeler {
     private readonly queryRunner: QueryRunner,
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
+    private readonly setInProgressMethods: (
+      inProgressMethods: string[],
+    ) => Promise<void>,
     private readonly addModeledMethods: (
       modeledMethods: Record<string, ModeledMethod>,
     ) => Promise<void>,
@@ -52,26 +60,52 @@ export class AutoModeler {
     await withProgress(async (progress) => {
       const maxStep = 3000;
 
-      progress({
-        step: 0,
-        maxStep,
-        message: "Retrieving usages",
-      });
-
       // Fetch the candidates to send to the model
-      const candidateMethods = getCandidates(
+      const allCandidateMethods = getCandidates(
         mode,
         externalApiUsages,
         modeledMethods,
       );
 
       // If there are no candidates, there is nothing to model and we just return
-      if (candidateMethods.length === 0) {
+      if (allCandidateMethods.length === 0) {
         void extLogger.log("No candidates to model. Stopping.");
         return;
       }
 
-      await this.modelCandidates(candidateMethods, mode, progress, maxStep);
+      // Find number of slices to make
+      const batchNumber = Math.ceil(
+        allCandidateMethods.length / candidateBatchSize,
+      );
+      try {
+        for (let i = 0; i < batchNumber; i++) {
+          const start = i * candidateBatchSize;
+          const end = start + candidateBatchSize;
+          const candidatesToProcess = allCandidateMethods.slice(start, end);
+
+          await this.setInProgressMethods(
+            candidatesToProcess.map((c) => c.signature),
+          );
+
+          progress({
+            step: 1800 + i * 100,
+            maxStep,
+            message: `Automodeling candidates, batch ${
+              i + 1
+            } of ${batchNumber}`,
+          });
+
+          await this.modelCandidates(
+            candidatesToProcess,
+            mode,
+            progress,
+            maxStep,
+          );
+        }
+      } finally {
+        // Clear out in progress methods
+        await this.setInProgressMethods([]);
+      }
     });
   }
 

@@ -82,6 +82,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
       queryRunner,
       queryStorageDir,
       databaseItem,
+      async (inProgressMethods) => {
+        await this.postMessage({
+          t: "setInProgressMethods",
+          inProgressMethods,
+        });
+      },
       async (modeledMethods) => {
         await this.postMessage({ t: "addModeledMethods", modeledMethods });
       },

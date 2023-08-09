@@ -165,28 +165,4 @@ describe("getCandidates", () => {
     );
     expect(candidates.length).toEqual(1);
   });
-
-  it("respects the limit", () => {
-    const externalApiUsages: ExternalApiUsage[] = [];
-    for (let i = 0; i < 30; i++) {
-      externalApiUsages.push({
-        library: "my.jar",
-        signature: `org.my.A#x${i}()`,
-        packageName: "org.my",
-        typeName: "A",
-        methodName: `x${i}`,
-        methodParameters: "()",
-        supported: false,
-        supportedType: "none",
-        usages: [],
-      });
-    }
-    const modeledMethods = {};
-    const candidates = getCandidates(
-      Mode.Application,
-      externalApiUsages,
-      modeledMethods,
-    );
-    expect(candidates.length).toEqual(20);
-  });
 });
