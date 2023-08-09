@@ -231,8 +231,8 @@ function createAutoModelRequestHandler(
   // During automodeling there can be multiple API requests for each batch
   // of candidates we want to model. We need to return different responses for each request,
   // so keep an index of the request and return the appropriate response.
-  return rest.get(
-    `${baseUrl}/code-scanning/codeql/auto-model`,
+  return rest.post(
+    `${baseUrl}/repos/github/codeql/code-scanning/codeql/auto-model`,
     (_req, res, ctx) => {
       const request = autoModelRequests[requestIndex];
 
