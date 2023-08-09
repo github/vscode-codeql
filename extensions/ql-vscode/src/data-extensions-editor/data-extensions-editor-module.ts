@@ -156,7 +156,7 @@ export class DataExtensionsEditorModule extends DisposableObject {
           },
         );
       },
-      "codeQLDataExtensions.jumpToUsageLocation": async (
+      "codeQLDataExtensionsEditor.jumpToUsageLocation": async (
         usage: Usage,
         databaseItem: DatabaseItem,
       ) => {

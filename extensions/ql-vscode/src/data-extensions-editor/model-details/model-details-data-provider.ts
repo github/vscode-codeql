@@ -45,7 +45,7 @@ export class ModelDetailsDataProvider
         collapsibleState: TreeItemCollapsibleState.None,
         command: {
           title: "Show usage",
-          command: "codeQLDataExtensions.jumpToUsageLocation",
+          command: "codeQLDataExtensionsEditor.jumpToUsageLocation",
           arguments: [item, this.databaseItem],
         },
       };

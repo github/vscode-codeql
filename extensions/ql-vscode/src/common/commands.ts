@@ -305,7 +305,7 @@ export type PackagingCommands = {
 
 export type DataExtensionsEditorCommands = {
   "codeQL.openDataExtensionsEditor": () => Promise<void>;
-  "codeQLDataExtensions.jumpToUsageLocation": (
+  "codeQLDataExtensionsEditor.jumpToUsageLocation": (
     usage: Usage,
     databaseItem: DatabaseItem,
   ) => Promise<void>;
