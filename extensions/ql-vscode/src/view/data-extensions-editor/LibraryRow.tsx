@@ -85,6 +85,7 @@ type Props = {
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
   onGenerateFromLlmClick: (
+    dependencyName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
@@ -119,11 +120,11 @@ export const LibraryRow = ({
 
   const handleModelWithAI = useCallback(
     async (e: React.MouseEvent) => {
-      onGenerateFromLlmClick(externalApiUsages, modeledMethods);
+      onGenerateFromLlmClick(title, externalApiUsages, modeledMethods);
       e.stopPropagation();
       e.preventDefault();
     },
-    [externalApiUsages, modeledMethods, onGenerateFromLlmClick],
+    [title, externalApiUsages, modeledMethods, onGenerateFromLlmClick],
   );
 
   const handleModelFromSource = useCallback(
