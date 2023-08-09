@@ -70,8 +70,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
     private mode: Mode,
-    private readonly onExternalApiUsagesChanged: (
+    private readonly updateModelDetailsPanelState: (
       externalApiUsages: ExternalApiUsage[],
+      databaseItem: DatabaseItem,
     ) => void,
   ) {
     super(ctx);
@@ -235,21 +236,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
   protected async jumpToUsage(
     location: ResolvableLocationValue,
   ): Promise<void> {
-    try {
-      await showResolvableLocation(location, this.databaseItem);
-    } catch (e) {
-      if (e instanceof Error) {
-        if (e.message.match(/File not found/)) {
-          void window.showErrorMessage(
-            "Original file of this result is not in the database's source archive.",
-          );
-        } else {
-          void this.app.logger.log(`Unable to handleMsgFromView: ${e.message}`);
-        }
-      } else {
-        void this.app.logger.log(`Unable to handleMsgFromView: ${e}`);
-      }
-    }
+    await showResolvableLocation(location, this.databaseItem, this.app.logger);
   }
 
   protected async loadExistingModeledMethods(): Promise<void> {
@@ -315,7 +302,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
             t: "setExternalApiUsages",
             externalApiUsages,
           });
-          this.onExternalApiUsagesChanged(externalApiUsages);
+          this.updateModelDetailsPanelState(
+            externalApiUsages,
+            this.databaseItem,
+          );
         } catch (err) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
@@ -503,7 +493,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         addedDatabase,
         modelFile,
         Mode.Framework,
-        this.onExternalApiUsagesChanged,
+        this.updateModelDetailsPanelState,
       );
       await view.openView();
     });

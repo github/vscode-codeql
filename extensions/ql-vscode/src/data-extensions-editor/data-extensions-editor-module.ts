@@ -3,7 +3,7 @@ import { DataExtensionsEditorView } from "./data-extensions-editor-view";
 import { DataExtensionsEditorCommands } from "../common/commands";
 import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
-import { DatabaseManager } from "../databases/local-databases";
+import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { App } from "../common/app";
@@ -23,6 +23,8 @@ import { setUpPack } from "./external-api-usage-query";
 import { DisposableObject } from "../common/disposable-object";
 import { ModelDetailsPanel } from "./model-details/model-details-panel";
 import { Mode } from "./shared/mode";
+import { showResolvableLocation } from "../databases/local-databases/locations";
+import { Usage } from "./external-api-usage";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
@@ -145,7 +147,7 @@ export class DataExtensionsEditorModule extends DisposableObject {
               db,
               modelFile,
               Mode.Application,
-              (usages) => this.modelDetailsPanel.setExternalApiUsages(usages),
+              this.modelDetailsPanel.setState.bind(this.modelDetailsPanel),
             );
             await view.openView();
           },
@@ -153,6 +155,12 @@ export class DataExtensionsEditorModule extends DisposableObject {
             title: "Opening Data Extensions Editor",
           },
         );
+      },
+      "codeQLDataExtensionsEditor.jumpToUsageLocation": async (
+        usage: Usage,
+        databaseItem: DatabaseItem,
+      ) => {
+        await showResolvableLocation(usage.url, databaseItem, this.app.logger);
       },
     };
   }
