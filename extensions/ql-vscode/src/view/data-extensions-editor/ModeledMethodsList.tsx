@@ -31,6 +31,7 @@ type Props = {
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
+  onStopGenerateFromLlmClick: (dependencyName: string) => void;
   onGenerateFromSourceClick: () => void;
   onModelDependencyClick: () => void;
 };
@@ -49,6 +50,7 @@ export const ModeledMethodsList = ({
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
+  onStopGenerateFromLlmClick,
   onGenerateFromSourceClick,
   onModelDependencyClick,
 }: Props) => {
@@ -93,6 +95,7 @@ export const ModeledMethodsList = ({
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
+          onStopGenerateFromLlmClick={onStopGenerateFromLlmClick}
           onGenerateFromSourceClick={onGenerateFromSourceClick}
           onModelDependencyClick={onModelDependencyClick}
         />

@@ -554,6 +554,11 @@ interface GenerateExternalApiFromLlmMessage {
   modeledMethods: Record<string, ModeledMethod>;
 }
 
+interface StopGeneratingExternalApiFromLlmMessage {
+  t: "stopGeneratingExternalApiFromLlm";
+  dependencyName: string;
+}
+
 interface ModelDependencyMessage {
   t: "modelDependency";
 }
@@ -575,4 +580,5 @@ export type FromDataExtensionsEditorMessage =
   | SaveModeledMethods
   | GenerateExternalApiMessage
   | GenerateExternalApiFromLlmMessage
+  | StopGeneratingExternalApiFromLlmMessage
   | ModelDependencyMessage;

@@ -89,6 +89,7 @@ type Props = {
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
+  onStopGenerateFromLlmClick: (dependencyName: string) => void;
   onGenerateFromSourceClick: () => void;
   onModelDependencyClick: () => void;
 };
@@ -105,6 +106,7 @@ export const LibraryRow = ({
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
+  onStopGenerateFromLlmClick,
   onGenerateFromSourceClick,
   onModelDependencyClick,
 }: Props) => {
@@ -125,6 +127,15 @@ export const LibraryRow = ({
       e.preventDefault();
     },
     [title, externalApiUsages, modeledMethods, onGenerateFromLlmClick],
+  );
+
+  const handleStopModelWithAI = useCallback(
+    async (e: React.MouseEvent) => {
+      onStopGenerateFromLlmClick(title);
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    [title, onStopGenerateFromLlmClick],
   );
 
   const handleModelFromSource = useCallback(
@@ -167,6 +178,12 @@ export const LibraryRow = ({
     );
   }, [externalApiUsages, modifiedSignatures]);
 
+  const canStopAutoModeling = useMemo(() => {
+    return externalApiUsages.some((externalApiUsage) =>
+      inProgressSignatures.has(externalApiUsage.signature),
+    );
+  }, [externalApiUsages, inProgressSignatures]);
+
   return (
     <LibraryContainer>
       <TitleContainer onClick={toggleExpanded} aria-expanded={isExpanded}>
@@ -185,10 +202,16 @@ export const LibraryRow = ({
           </ModeledPercentage>
           {hasUnsavedChanges ? <VSCodeTag>UNSAVED</VSCodeTag> : null}
         </NameContainer>
-        {viewState.showLlmButton && (
+        {viewState.showLlmButton && !canStopAutoModeling && (
           <VSCodeButton appearance="icon" onClick={handleModelWithAI}>
             <Codicon name="lightbulb-autofix" label="Model with AI" />
             &nbsp;Model with AI
+          </VSCodeButton>
+        )}
+        {viewState.showLlmButton && canStopAutoModeling && (
+          <VSCodeButton appearance="icon" onClick={handleStopModelWithAI}>
+            <Codicon name="debug-stop" label="Stop model with AI" />
+            &nbsp;Stop
           </VSCodeButton>
         )}
         {viewState.mode === Mode.Application && (

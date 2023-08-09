@@ -187,6 +187,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
           );
         }
         break;
+      case "stopGeneratingExternalApiFromLlm":
+        await this.autoModeler.stopModeling(msg.dependencyName);
+        break;
       case "modelDependency":
         await this.modelDependency();
         break;
