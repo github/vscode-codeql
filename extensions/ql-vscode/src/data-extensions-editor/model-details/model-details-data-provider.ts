@@ -1,6 +1,8 @@
 import {
   Event,
   EventEmitter,
+  ThemeColor,
+  ThemeIcon,
   TreeDataProvider,
   TreeItem,
   TreeItemCollapsibleState,
@@ -38,6 +40,7 @@ export class ModelDetailsDataProvider
       return {
         label: item.signature,
         collapsibleState: TreeItemCollapsibleState.Collapsed,
+        iconPath: new ThemeIcon("symbol-method"),
       };
     } else {
       return {
@@ -48,6 +51,7 @@ export class ModelDetailsDataProvider
           command: "codeQLDataExtensionsEditor.jumpToUsageLocation",
           arguments: [item, this.databaseItem],
         },
+        iconPath: new ThemeIcon("error", new ThemeColor("errorForeground")),
       };
     }
   }
