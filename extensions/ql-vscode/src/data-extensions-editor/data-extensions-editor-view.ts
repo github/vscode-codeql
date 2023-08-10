@@ -73,7 +73,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly updateModelDetailsPanelState: (
       externalApiUsages: ExternalApiUsage[],
       databaseItem: DatabaseItem,
-    ) => void,
+    ) => Promise<void>,
   ) {
     super(ctx);
 
@@ -302,7 +302,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
             t: "setExternalApiUsages",
             externalApiUsages,
           });
-          this.updateModelDetailsPanelState(
+          await this.updateModelDetailsPanelState(
             externalApiUsages,
             this.databaseItem,
           );
