@@ -47,10 +47,6 @@ describe("Db panel UI commands", () => {
     );
   });
 
-  beforeAll(async () => {
-    await sleep(5000);
-  });
-
   it("should add new remote db list", async () => {
     // Add db list
     jest.spyOn(window, "showInputBox").mockResolvedValue("my-list-1");
