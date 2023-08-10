@@ -42,34 +42,34 @@ export class AutoModeler {
   }
 
   public async startModeling(
-    dependency: string,
+    packageName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
     mode: Mode,
   ): Promise<void> {
-    if (this.jobs.has(dependency)) {
+    if (this.jobs.has(packageName)) {
       return;
     }
 
     const cancellationTokenSource = new CancellationTokenSource();
-    this.jobs.set(dependency, cancellationTokenSource);
+    this.jobs.set(packageName, cancellationTokenSource);
 
     try {
-      await this.modelDependency(
-        dependency,
+      await this.modelPackage(
+        packageName,
         externalApiUsages,
         modeledMethods,
         mode,
         cancellationTokenSource,
       );
     } finally {
-      this.jobs.delete(dependency);
+      this.jobs.delete(packageName);
     }
   }
 
-  public async stopModeling(dependency: string): Promise<void> {
-    void extLogger.log(`Stopping modeling for dependency ${dependency}`);
-    const cancellationTokenSource = this.jobs.get(dependency);
+  public async stopModeling(packageName: string): Promise<void> {
+    void extLogger.log(`Stopping modeling for package ${packageName}`);
+    const cancellationTokenSource = this.jobs.get(packageName);
     if (cancellationTokenSource) {
       cancellationTokenSource.cancel();
     }
@@ -81,14 +81,14 @@ export class AutoModeler {
     }
   }
 
-  private async modelDependency(
-    dependency: string,
+  private async modelPackage(
+    packageName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
     mode: Mode,
     cancellationTokenSource: CancellationTokenSource,
   ): Promise<void> {
-    void extLogger.log(`Modeling dependency ${dependency}`);
+    void extLogger.log(`Modeling package ${packageName}`);
     await withProgress(async (progress) => {
       const maxStep = 3000;
 

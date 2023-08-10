@@ -177,7 +177,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       case "generateExternalApiFromLlm":
         if (useLlmGenerationV2()) {
           await this.generateModeledMethodsFromLlmV2(
-            msg.dependencyName,
+            msg.packageName,
             msg.externalApiUsages,
             msg.modeledMethods,
           );
@@ -189,7 +189,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         }
         break;
       case "stopGeneratingExternalApiFromLlm":
-        await this.autoModeler.stopModeling(msg.dependencyName);
+        await this.autoModeler.stopModeling(msg.packageName);
         break;
       case "modelDependency":
         await this.modelDependency();
@@ -459,12 +459,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   private async generateModeledMethodsFromLlmV2(
-    dependency: string,
+    packageName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
     await this.autoModeler.startModeling(
-      dependency,
+      packageName,
       externalApiUsages,
       modeledMethods,
       this.mode,

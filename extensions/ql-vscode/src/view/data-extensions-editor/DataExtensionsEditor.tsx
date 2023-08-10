@@ -227,13 +227,13 @@ export function DataExtensionsEditor({
 
   const onGenerateFromLlmClick = useCallback(
     (
-      dependencyName: string,
+      packageName: string,
       externalApiUsages: ExternalApiUsage[],
       modeledMethods: Record<string, ModeledMethod>,
     ) => {
       vscode.postMessage({
         t: "generateExternalApiFromLlm",
-        dependencyName,
+        packageName,
         externalApiUsages,
         modeledMethods,
       });
@@ -241,10 +241,10 @@ export function DataExtensionsEditor({
     [],
   );
 
-  const onStopGenerateFromLlmClick = useCallback((dependencyName: string) => {
+  const onStopGenerateFromLlmClick = useCallback((packageName: string) => {
     vscode.postMessage({
       t: "stopGeneratingExternalApiFromLlm",
-      dependencyName,
+      packageName,
     });
   }, []);
 
