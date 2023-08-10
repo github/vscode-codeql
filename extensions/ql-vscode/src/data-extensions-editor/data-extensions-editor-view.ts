@@ -234,9 +234,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
   protected async handleJumpToUsage(usage: Usage) {
     if (showModelDetailsView()) {
       await this.openModelDetailsView(usage);
-    } else {
-      await this.jumpToUsage(usage.url);
     }
+    await this.jumpToUsage(usage.url);
   }
 
   protected async openModelDetailsView(usage: Usage) {
