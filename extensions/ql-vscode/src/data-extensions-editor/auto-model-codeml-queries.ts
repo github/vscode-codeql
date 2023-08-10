@@ -177,9 +177,6 @@ export async function runAutoModelQueries({
   progress,
   cancellationTokenSource,
 }: AutoModelQueriesOptions): Promise<AutoModelQueriesResult | undefined> {
-  // maxStep for this part is 1500
-  const maxStep = 1500;
-
   const qlpack = await qlpackOfDatabase(cliServer, databaseItem);
 
   // CodeQL needs to have access to the database to be able to retrieve the
@@ -208,12 +205,6 @@ export async function runAutoModelQueries({
     await cliServer.resolveQlpacks(additionalPacks, true),
   );
 
-  progress({
-    step: 0,
-    maxStep,
-    message: "Finding candidates and examples",
-  });
-
   const candidates = await runAutoModelQuery({
     mode,
     queryTag: "candidates",
@@ -225,13 +216,7 @@ export async function runAutoModelQueries({
     additionalPacks,
     extensionPacks,
     queryStorageDir,
-    progress: (update) => {
-      progress({
-        step: update.step,
-        maxStep,
-        message: "Finding candidates and examples",
-      });
-    },
+    progress,
     token: cancellationTokenSource.token,
   });
 
