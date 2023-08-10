@@ -549,14 +549,14 @@ interface GenerateExternalApiMessage {
 
 interface GenerateExternalApiFromLlmMessage {
   t: "generateExternalApiFromLlm";
-  dependencyName: string;
+  packageName: string;
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
 }
 
 interface StopGeneratingExternalApiFromLlmMessage {
   t: "stopGeneratingExternalApiFromLlm";
-  dependencyName: string;
+  packageName: string;
 }
 
 interface ModelDependencyMessage {

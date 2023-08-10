@@ -27,11 +27,11 @@ type Props = {
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
   onGenerateFromLlmClick: (
-    dependencyName: string,
+    packageName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
-  onStopGenerateFromLlmClick: (dependencyName: string) => void;
+  onStopGenerateFromLlmClick: (packageName: string) => void;
   onGenerateFromSourceClick: () => void;
   onModelDependencyClick: () => void;
 };
