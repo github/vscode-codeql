@@ -9,12 +9,13 @@ import {
   sortGroupNames,
 } from "../../data-extensions-editor/shared/sorting";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
+import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
-  inProgressSignatures: Set<string>;
+  inProgressMethods: InProgressMethods;
   viewState: DataExtensionEditorViewState;
   hideModeledApis: boolean;
   onChange: (
@@ -44,7 +45,7 @@ export const ModeledMethodsList = ({
   externalApiUsages,
   modeledMethods,
   modifiedSignatures,
-  inProgressSignatures,
+  inProgressMethods,
   viewState,
   hideModeledApis,
   onChange,
@@ -89,7 +90,7 @@ export const ModeledMethodsList = ({
           externalApiUsages={grouped[libraryName]}
           modeledMethods={modeledMethods}
           modifiedSignatures={modifiedSignatures}
-          inProgressSignatures={inProgressSignatures}
+          inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledApis={hideModeledApis}
           onChange={onChange}

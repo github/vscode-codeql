@@ -10,12 +10,14 @@ import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { useMemo } from "react";
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { sortMethods } from "../../data-extensions-editor/shared/sorting";
+import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
 
 type Props = {
+  packageName: string;
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
-  inProgressSignatures: Set<string>;
+  inProgressMethods: InProgressMethods;
   mode: Mode;
   hideModeledApis: boolean;
   onChange: (
@@ -25,10 +27,11 @@ type Props = {
 };
 
 export const ModeledMethodDataGrid = ({
+  packageName,
   externalApiUsages,
   modeledMethods,
   modifiedSignatures,
-  inProgressSignatures,
+  inProgressMethods,
   mode,
   hideModeledApis,
   onChange,
@@ -63,7 +66,8 @@ export const ModeledMethodDataGrid = ({
           externalApiUsage={externalApiUsage}
           modeledMethod={modeledMethods[externalApiUsage.signature]}
           methodIsUnsaved={modifiedSignatures.has(externalApiUsage.signature)}
-          modelingInProgress={inProgressSignatures.has(
+          modelingInProgress={inProgressMethods.hasMethod(
+            packageName,
             externalApiUsage.signature,
           )}
           mode={mode}
