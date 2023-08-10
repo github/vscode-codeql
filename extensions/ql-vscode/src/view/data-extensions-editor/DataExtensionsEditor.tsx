@@ -141,15 +141,12 @@ export function DataExtensionsEditor({
             );
             break;
           case "setInProgressMethods":
-            setInProgressMethods((oldInProgressMethods) => {
-              const methods =
-                InProgressMethods.fromExisting(oldInProgressMethods);
-              methods.setPackageMethods(
+            setInProgressMethods((oldInProgressMethods) =>
+              oldInProgressMethods.setPackageMethods(
                 msg.packageName,
                 new Set(msg.inProgressMethods),
-              );
-              return methods;
-            });
+              ),
+            );
             break;
           default:
             assertNever(msg);
