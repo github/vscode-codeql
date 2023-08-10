@@ -26,7 +26,6 @@ import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
 import { generateFlowModel } from "./generate-flow-model";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
-import { ResolvableLocationValue } from "../common/bqrs-cli-types";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../common/errors";
@@ -233,19 +232,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
   protected async handleJumpToUsage(usage: Usage) {
     if (showModelDetailsView()) {
-      await this.openModelDetailsView(usage);
+      await this.revealItemInDetailsPanel(usage);
     }
-    await this.jumpToUsage(usage.url);
-  }
-
-  protected async openModelDetailsView(usage: Usage) {
-    await this.revealItemInDetailsPanel(usage);
-  }
-
-  protected async jumpToUsage(
-    location: ResolvableLocationValue,
-  ): Promise<void> {
-    await showResolvableLocation(location, this.databaseItem, this.app.logger);
+    await showResolvableLocation(usage.url, this.databaseItem, this.app.logger);
   }
 
   protected async loadExistingModeledMethods(): Promise<void> {
