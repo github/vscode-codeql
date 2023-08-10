@@ -8,9 +8,6 @@ import { ExternalApiUsage, MethodSignature } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { groupMethods, sortGroupNames, sortMethods } from "./shared/sorting";
 
-// Soft limit on the number of candidates to send to the model.
-// Note that the model may return fewer than this number of candidates.
-const candidateLimit = 20;
 /**
  * Return the candidates that the model should be run on. This includes limiting the number of
  * candidates to the candidate limit and filtering out anything that is already modeled and respecting
@@ -40,11 +37,6 @@ export function getCandidates(
     ] ?? {
       type: "none",
     };
-
-    // If we have reached the max number of candidates then stop
-    if (candidates.length >= candidateLimit) {
-      break;
-    }
 
     // Anything that is modeled is not a candidate
     if (modeledMethod.type !== "none") {

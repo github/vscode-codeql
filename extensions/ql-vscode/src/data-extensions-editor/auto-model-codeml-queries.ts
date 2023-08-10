@@ -160,6 +160,7 @@ type AutoModelQueriesOptions = {
   queryStorageDir: string;
 
   progress: ProgressCallback;
+  cancellationTokenSource: CancellationTokenSource;
 };
 
 export type AutoModelQueriesResult = {
@@ -174,11 +175,10 @@ export async function runAutoModelQueries({
   databaseItem,
   queryStorageDir,
   progress,
+  cancellationTokenSource,
 }: AutoModelQueriesOptions): Promise<AutoModelQueriesResult | undefined> {
   // maxStep for this part is 1500
   const maxStep = 1500;
-
-  const cancellationTokenSource = new CancellationTokenSource();
 
   const qlpack = await qlpackOfDatabase(cliServer, databaseItem);
 

@@ -241,6 +241,13 @@ export function DataExtensionsEditor({
     [],
   );
 
+  const onStopGenerateFromLlmClick = useCallback((dependencyName: string) => {
+    vscode.postMessage({
+      t: "stopGeneratingExternalApiFromLlm",
+      dependencyName,
+    });
+  }, []);
+
   const onOpenDatabaseClick = useCallback(() => {
     vscode.postMessage({
       t: "openDatabase",
@@ -345,6 +352,7 @@ export function DataExtensionsEditor({
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
+          onStopGenerateFromLlmClick={onStopGenerateFromLlmClick}
           onGenerateFromSourceClick={onGenerateFromSourceClick}
           onModelDependencyClick={onModelDependencyClick}
         />

@@ -15,18 +15,31 @@ import { CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
 import { DatabaseItem } from "../databases/local-databases";
 import { Mode } from "./shared/mode";
+import { CancellationTokenSource } from "vscode";
+
+// Limit the number of candidates we send to the model in each request
+// to avoid long requests.
+// Note that the model may return fewer than this number of candidates.
+const candidateBatchSize = 20;
 
 export class AutoModeler {
+  private readonly jobs: Map<string, CancellationTokenSource>;
+
   constructor(
     private readonly app: App,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
+    private readonly setInProgressMethods: (
+      inProgressMethods: string[],
+    ) => Promise<void>,
     private readonly addModeledMethods: (
       modeledMethods: Record<string, ModeledMethod>,
     ) => Promise<void>,
-  ) {}
+  ) {
+    this.jobs = new Map<string, CancellationTokenSource>();
+  }
 
   public async startModeling(
     dependency: string,
@@ -34,12 +47,38 @@ export class AutoModeler {
     modeledMethods: Record<string, ModeledMethod>,
     mode: Mode,
   ): Promise<void> {
-    await this.modelDependency(
-      dependency,
-      externalApiUsages,
-      modeledMethods,
-      mode,
-    );
+    if (this.jobs.has(dependency)) {
+      return;
+    }
+
+    const cancellationTokenSource = new CancellationTokenSource();
+    this.jobs.set(dependency, cancellationTokenSource);
+
+    try {
+      await this.modelDependency(
+        dependency,
+        externalApiUsages,
+        modeledMethods,
+        mode,
+        cancellationTokenSource,
+      );
+    } finally {
+      this.jobs.delete(dependency);
+    }
+  }
+
+  public async stopModeling(dependency: string): Promise<void> {
+    void extLogger.log(`Stopping modeling for dependency ${dependency}`);
+    const cancellationTokenSource = this.jobs.get(dependency);
+    if (cancellationTokenSource) {
+      cancellationTokenSource.cancel();
+    }
+  }
+
+  public async stopAllModeling(): Promise<void> {
+    for (const cancellationTokenSource of this.jobs.values()) {
+      cancellationTokenSource.cancel();
+    }
   }
 
   private async modelDependency(
@@ -47,31 +86,63 @@ export class AutoModeler {
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
     mode: Mode,
+    cancellationTokenSource: CancellationTokenSource,
   ): Promise<void> {
     void extLogger.log(`Modeling dependency ${dependency}`);
     await withProgress(async (progress) => {
       const maxStep = 3000;
 
-      progress({
-        step: 0,
-        maxStep,
-        message: "Retrieving usages",
-      });
-
       // Fetch the candidates to send to the model
-      const candidateMethods = getCandidates(
+      const allCandidateMethods = getCandidates(
         mode,
         externalApiUsages,
         modeledMethods,
       );
 
       // If there are no candidates, there is nothing to model and we just return
-      if (candidateMethods.length === 0) {
+      if (allCandidateMethods.length === 0) {
         void extLogger.log("No candidates to model. Stopping.");
         return;
       }
 
-      await this.modelCandidates(candidateMethods, mode, progress, maxStep);
+      // Find number of slices to make
+      const batchNumber = Math.ceil(
+        allCandidateMethods.length / candidateBatchSize,
+      );
+      try {
+        for (let i = 0; i < batchNumber; i++) {
+          if (cancellationTokenSource.token.isCancellationRequested) {
+            break;
+          }
+
+          const start = i * candidateBatchSize;
+          const end = start + candidateBatchSize;
+          const candidatesToProcess = allCandidateMethods.slice(start, end);
+
+          await this.setInProgressMethods(
+            candidatesToProcess.map((c) => c.signature),
+          );
+
+          progress({
+            step: 1800 + i * 100,
+            maxStep,
+            message: `Automodeling candidates, batch ${
+              i + 1
+            } of ${batchNumber}`,
+          });
+
+          await this.modelCandidates(
+            candidatesToProcess,
+            mode,
+            progress,
+            maxStep,
+            cancellationTokenSource,
+          );
+        }
+      } finally {
+        // Clear out in progress methods
+        await this.setInProgressMethods([]);
+      }
     });
   }
 
@@ -80,6 +151,7 @@ export class AutoModeler {
     mode: Mode,
     progress: ProgressCallback,
     maxStep: number,
+    cancellationTokenSource: CancellationTokenSource,
   ): Promise<void> {
     const usages = await runAutoModelQueries({
       mode,
@@ -89,6 +161,7 @@ export class AutoModeler {
       queryStorageDir: this.queryStorageDir,
       databaseItem: this.databaseItem,
       progress: (update) => progress({ ...update, maxStep }),
+      cancellationTokenSource,
     });
     if (!usages) {
       return;

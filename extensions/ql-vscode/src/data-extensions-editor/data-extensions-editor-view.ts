@@ -83,6 +83,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
       queryRunner,
       queryStorageDir,
       databaseItem,
+      async (inProgressMethods) => {
+        await this.postMessage({
+          t: "setInProgressMethods",
+          inProgressMethods,
+        });
+      },
       async (modeledMethods) => {
         await this.postMessage({ t: "addModeledMethods", modeledMethods });
       },
@@ -181,6 +187,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
             msg.modeledMethods,
           );
         }
+        break;
+      case "stopGeneratingExternalApiFromLlm":
+        await this.autoModeler.stopModeling(msg.dependencyName);
         break;
       case "modelDependency":
         await this.modelDependency();
