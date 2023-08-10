@@ -3,10 +3,10 @@ import { ModeledMethod } from "./modeled-method";
 import { extLogger } from "../common/logging/vscode";
 import { load as loadYaml } from "js-yaml";
 import { ProgressCallback, withProgress } from "../common/vscode/progress";
-import { createAutoModelV2Request, getCandidates } from "./auto-model-v2";
+import { createAutoModelRequest, getCandidates } from "./auto-model";
 import { runAutoModelQueries } from "./auto-model-codeml-queries";
 import { loadDataExtensionYaml } from "./yaml";
-import { ModelRequest, ModelResponse, autoModelV2 } from "./auto-model-api-v2";
+import { ModelRequest, ModelResponse, autoModel } from "./auto-model-api";
 import { RequestError } from "@octokit/request-error";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { redactableError } from "../common/errors";
@@ -183,7 +183,7 @@ export class AutoModeler {
       return;
     }
 
-    const request = await createAutoModelV2Request(mode, usages);
+    const request = await createAutoModelRequest(mode, usages);
 
     void extLogger.log("Calling auto-model API");
 
@@ -229,7 +229,7 @@ export class AutoModeler {
     request: ModelRequest,
   ): Promise<ModelResponse | null> {
     try {
-      return await autoModelV2(this.app.credentials, request);
+      return await autoModel(this.app.credentials, request);
     } catch (e) {
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(

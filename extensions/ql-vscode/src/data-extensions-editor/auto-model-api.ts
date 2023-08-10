@@ -17,7 +17,7 @@ export interface ModelResponse {
   models: string;
 }
 
-export async function autoModelV2(
+export async function autoModel(
   credentials: Credentials,
   request: ModelRequest,
 ): Promise<ModelResponse> {

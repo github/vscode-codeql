@@ -1,17 +1,17 @@
 import {
-  createAutoModelV2Request,
+  createAutoModelRequest,
   encodeSarif,
   getCandidates,
-} from "../../../src/data-extensions-editor/auto-model-v2";
+} from "../../../src/data-extensions-editor/auto-model";
 import { Mode } from "../../../src/data-extensions-editor/shared/mode";
-import { AutomodelMode } from "../../../src/data-extensions-editor/auto-model-api-v2";
+import { AutomodelMode } from "../../../src/data-extensions-editor/auto-model-api";
 import { AutoModelQueriesResult } from "../../../src/data-extensions-editor/auto-model-codeml-queries";
 import * as sarif from "sarif";
 import { gzipDecode } from "../../../src/common/zlib";
 import { ExternalApiUsage } from "../../../src/data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../../src/data-extensions-editor/modeled-method";
 
-describe("createAutoModelV2Request", () => {
+describe("createAutoModelRequest", () => {
   const createSarifLog = (queryId: string): sarif.Log => {
     return {
       version: "2.1.0",
@@ -68,14 +68,14 @@ describe("createAutoModelV2Request", () => {
   };
 
   it("creates a matching request", async () => {
-    expect(await createAutoModelV2Request(Mode.Application, result)).toEqual({
+    expect(await createAutoModelRequest(Mode.Application, result)).toEqual({
       mode: AutomodelMode.Application,
       candidates: await encodeSarif(result.candidates),
     });
   });
 
   it("can decode the SARIF", async () => {
-    const request = await createAutoModelV2Request(Mode.Application, result);
+    const request = await createAutoModelRequest(Mode.Application, result);
     const decoded = Buffer.from(request.candidates, "base64");
     const decompressed = await gzipDecode(decoded);
     const json = decompressed.toString("utf-8");

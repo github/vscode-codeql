@@ -1,4 +1,4 @@
-import { AutomodelMode, ModelRequest } from "./auto-model-api-v2";
+import { AutomodelMode, ModelRequest } from "./auto-model-api";
 import { Mode } from "./shared/mode";
 import { AutoModelQueriesResult } from "./auto-model-codeml-queries";
 import { assertNever } from "../common/helpers-pure";
@@ -66,7 +66,7 @@ export async function encodeSarif(log: Sarif.Log): Promise<string> {
   return compressed.toString("base64");
 }
 
-export async function createAutoModelV2Request(
+export async function createAutoModelRequest(
   mode: Mode,
   result: AutoModelQueriesResult,
 ): Promise<ModelRequest> {

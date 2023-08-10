@@ -168,7 +168,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "generateExternalApiFromLlm":
-        await this.generateModeledMethodsFromLlmV2(
+        await this.generateModeledMethodsFromLlm(
           msg.packageName,
           msg.externalApiUsages,
           msg.modeledMethods,
@@ -374,7 +374,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     );
   }
 
-  private async generateModeledMethodsFromLlmV2(
+  private async generateModeledMethodsFromLlm(
     packageName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
