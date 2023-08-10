@@ -38,13 +38,13 @@ export class ModelDetailsDataProvider
   getTreeItem(item: ModelDetailsTreeViewItem): TreeItem {
     if (isExternalApiUsage(item)) {
       return {
-        label: item.signature,
+        label: `${item.packageName}.${item.typeName}.${item.methodName}${item.methodParameters}`,
         collapsibleState: TreeItemCollapsibleState.Collapsed,
         iconPath: new ThemeIcon("symbol-method"),
       };
     } else {
       return {
-        label: item.label,
+        label: `Unmodeled ${item.label} at ${item.url.uri} [${item.url.startLine}, ${item.url.endLine}]`,
         collapsibleState: TreeItemCollapsibleState.None,
         command: {
           title: "Show usage",
