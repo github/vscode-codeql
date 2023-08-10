@@ -1881,7 +1881,7 @@
     "markdownlint-cli2-formatter-pretty": "^0.0.4",
     "mini-css-extract-plugin": "^2.6.1",
     "npm-run-all": "^4.1.5",
-    "patch-package": "^7.0.0",
+    "patch-package": "^8.0.0",
     "prettier": "^3.0.0",
     "storybook": "^7.1.0",
     "tar-stream": "^3.0.0",
