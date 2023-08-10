@@ -32,6 +32,7 @@ export class AutoModeler {
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
     private readonly setInProgressMethods: (
+      packageName: string,
       inProgressMethods: string[],
     ) => Promise<void>,
     private readonly addModeledMethods: (
@@ -120,6 +121,7 @@ export class AutoModeler {
           const candidatesToProcess = allCandidateMethods.slice(start, end);
 
           await this.setInProgressMethods(
+            packageName,
             candidatesToProcess.map((c) => c.signature),
           );
 
@@ -141,7 +143,7 @@ export class AutoModeler {
         }
       } finally {
         // Clear out in progress methods
-        await this.setInProgressMethods([]);
+        await this.setInProgressMethods(packageName, []);
       }
     });
   }

@@ -512,6 +512,7 @@ interface AddModeledMethodsMessage {
 
 interface SetInProgressMethodsMessage {
   t: "setInProgressMethods";
+  packageName: string;
   inProgressMethods: string[];
 }
 

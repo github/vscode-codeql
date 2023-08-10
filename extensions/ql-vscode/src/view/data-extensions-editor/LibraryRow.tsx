@@ -14,6 +14,7 @@ import {
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
+import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -72,7 +73,7 @@ type Props = {
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
-  inProgressSignatures: Set<string>;
+  inProgressMethods: InProgressMethods;
   viewState: DataExtensionEditorViewState;
   hideModeledApis: boolean;
   onChange: (
@@ -100,7 +101,7 @@ export const LibraryRow = ({
   externalApiUsages,
   modeledMethods,
   modifiedSignatures,
-  inProgressSignatures,
+  inProgressMethods,
   viewState,
   hideModeledApis,
   onChange,
@@ -180,9 +181,9 @@ export const LibraryRow = ({
 
   const canStopAutoModeling = useMemo(() => {
     return externalApiUsages.some((externalApiUsage) =>
-      inProgressSignatures.has(externalApiUsage.signature),
+      inProgressMethods.hasMethod(title, externalApiUsage.signature),
     );
-  }, [externalApiUsages, inProgressSignatures]);
+  }, [externalApiUsages, title, inProgressMethods]);
 
   return (
     <LibraryContainer>
@@ -232,10 +233,11 @@ export const LibraryRow = ({
         <>
           <SectionDivider />
           <ModeledMethodDataGrid
+            packageName={title}
             externalApiUsages={externalApiUsages}
             modeledMethods={modeledMethods}
             modifiedSignatures={modifiedSignatures}
-            inProgressSignatures={inProgressSignatures}
+            inProgressMethods={inProgressMethods}
             mode={viewState.mode}
             hideModeledApis={hideModeledApis}
             onChange={onChangeWithModelName}
