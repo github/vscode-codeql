@@ -22,7 +22,13 @@ import { CancellationTokenSource } from "vscode";
 // Note that the model may return fewer than this number of candidates.
 const candidateBatchSize = 20;
 
+/**
+ * The auto-modeler holds state around auto-modeling jobs and allows
+ * starting and stopping them.
+ */
 export class AutoModeler {
+  // Keep track of auto-modeling jobs that are in progress
+  // so that we can stop them.
   private readonly jobs: Map<string, CancellationTokenSource>;
 
   constructor(
@@ -42,6 +48,14 @@ export class AutoModeler {
     this.jobs = new Map<string, CancellationTokenSource>();
   }
 
+  /**
+   * Models the given package's external API usages, except
+   * the ones that are already modeled.
+   * @param packageName The name of the package to model.
+   * @param externalApiUsages The external API usages.
+   * @param modeledMethods The currently modeled methods.
+   * @param mode The mode we are modeling in.
+   */
   public async startModeling(
     packageName: string,
     externalApiUsages: ExternalApiUsage[],
@@ -68,6 +82,10 @@ export class AutoModeler {
     }
   }
 
+  /**
+   * Stops modeling the given package.
+   * @param packageName The name of the package to stop modeling.
+   */
   public async stopModeling(packageName: string): Promise<void> {
     void extLogger.log(`Stopping modeling for package ${packageName}`);
     const cancellationTokenSource = this.jobs.get(packageName);
@@ -76,6 +94,9 @@ export class AutoModeler {
     }
   }
 
+  /**
+   * Stops all in-progress modeling jobs.
+   */
   public async stopAllModeling(): Promise<void> {
     for (const cancellationTokenSource of this.jobs.values()) {
       cancellationTokenSource.cancel();
@@ -91,8 +112,6 @@ export class AutoModeler {
   ): Promise<void> {
     void extLogger.log(`Modeling package ${packageName}`);
     await withProgress(async (progress) => {
-      const maxStep = 3000;
-
       // Fetch the candidates to send to the model
       const allCandidateMethods = getCandidates(
         mode,
@@ -112,6 +131,7 @@ export class AutoModeler {
       );
       try {
         for (let i = 0; i < batchNumber; i++) {
+          // Check if we should stop
           if (cancellationTokenSource.token.isCancellationRequested) {
             break;
           }
@@ -120,24 +140,17 @@ export class AutoModeler {
           const end = start + candidateBatchSize;
           const candidatesToProcess = allCandidateMethods.slice(start, end);
 
+          // Let the UI know which candidates we are modeling
           await this.setInProgressMethods(
             packageName,
             candidatesToProcess.map((c) => c.signature),
           );
 
-          progress({
-            step: 1800 + i * 100,
-            maxStep,
-            message: `Automodeling candidates, batch ${
-              i + 1
-            } of ${batchNumber}`,
-          });
-
+          // Kick off the process to model the slice of candidates
           await this.modelCandidates(
             candidatesToProcess,
             mode,
             progress,
-            maxStep,
             cancellationTokenSource,
           );
         }
@@ -152,9 +165,10 @@ export class AutoModeler {
     candidateMethods: MethodSignature[],
     mode: Mode,
     progress: ProgressCallback,
-    maxStep: number,
     cancellationTokenSource: CancellationTokenSource,
   ): Promise<void> {
+    void extLogger.log("Executing auto-model queries");
+
     const usages = await runAutoModelQueries({
       mode,
       candidateMethods,
@@ -162,37 +176,21 @@ export class AutoModeler {
       queryRunner: this.queryRunner,
       queryStorageDir: this.queryStorageDir,
       databaseItem: this.databaseItem,
-      progress: (update) => progress({ ...update, maxStep }),
+      progress: (update) => progress({ ...update }),
       cancellationTokenSource,
     });
     if (!usages) {
       return;
     }
 
-    progress({
-      step: 1800,
-      maxStep,
-      message: "Creating request",
-    });
-
     const request = await createAutoModelV2Request(mode, usages);
 
-    progress({
-      step: 2000,
-      maxStep,
-      message: "Sending request",
-    });
+    void extLogger.log("Calling auto-model API");
 
     const response = await this.callAutoModelApi(request);
     if (!response) {
       return;
     }
-
-    progress({
-      step: 2500,
-      maxStep,
-      message: "Parsing response",
-    });
 
     const models = loadYaml(response.models, {
       filename: "auto-model.yml",
@@ -223,12 +221,6 @@ export class AutoModeler {
         };
       }
     }
-
-    progress({
-      step: 2800,
-      maxStep,
-      message: "Applying results",
-    });
 
     await this.addModeledMethods(loadedMethods);
   }
