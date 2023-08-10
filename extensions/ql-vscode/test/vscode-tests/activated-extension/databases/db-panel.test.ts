@@ -31,6 +31,11 @@ import { createDbConfig } from "../../../factories/db-config-factories";
 jest.setTimeout(60_000);
 
 describe("Db panel UI commands", () => {
+  // This test has some serious problems:
+  // a) it runs twice: we couldn't find out why
+  // b) all tests use the same dbConfig file, hence the tests depend on ORDER and have to use the same list name!
+  // c) since we use a file watcher to update the config we sometimes need to wait (sleep) before accessing the config again
+  // d) we depend on highlighted list items when adding a repo to a list. If there's not enough time in between, a test might think a list is highlighted that doesn't exist anymore
   let storagePath: string;
   let dbConfigFilePath: string;
   const commandManager = createVSCodeCommandManager<AllCommands>();
@@ -55,7 +60,6 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.repositoryLists).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.repositoryLists[0].name).toBe(
@@ -74,7 +78,6 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.local.lists).toHaveLength(1);
     expect(dbConfig.databases.local.lists[0].name).toBe("my-list-1");
@@ -92,7 +95,6 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.repositories).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.repositories[0]).toBe(
@@ -112,7 +114,6 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.owners).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.owners[0]).toBe("owner1");
@@ -141,6 +142,9 @@ describe("Db panel UI commands", () => {
   });
 
   it("should import from code search", async () => {
+    // This name is important, since other tests depend on only one list being present during the second suite run.
+    // See comment above.
+    // ;(
     const listName = "my-list-1";
     const mockServer = new MockGitHubApiServer();
     mockServer.startServer();
