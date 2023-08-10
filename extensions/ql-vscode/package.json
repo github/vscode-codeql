@@ -1804,7 +1804,7 @@
     "@babel/preset-typescript": "^7.21.4",
     "@faker-js/faker": "^8.0.2",
     "@github/markdownlint-github": "^0.3.0",
-    "@octokit/plugin-throttling": "^5.0.1",
+    "@octokit/plugin-throttling": "^7.0.0",
     "@storybook/addon-actions": "^7.1.0",
     "@storybook/addon-essentials": "^7.1.0",
     "@storybook/addon-interactions": "^7.1.0",
