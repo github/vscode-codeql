@@ -1,6 +1,6 @@
-import { window } from "vscode";
+import { authentication, window } from "vscode";
 
-import { readJson } from "fs-extra";
+import { readJson, writeJson } from "fs-extra";
 import * as path from "path";
 import {
   DbConfig,
@@ -25,11 +25,14 @@ import { getActivatedExtension } from "../../global.helper";
 import { createVSCodeCommandManager } from "../../../../src/common/vscode/commands";
 import { AllCommands } from "../../../../src/common/commands";
 import { MockGitHubApiServer } from "../../../../src/variant-analysis/gh-api/mocks/mock-gh-api-server";
+import { sleep } from "../../../../src/common/time";
+import { createDbConfig } from "../../../factories/db-config-factories";
 
 jest.setTimeout(60_000);
 
 describe("Db panel UI commands", () => {
   let storagePath: string;
+  let dbConfigFilePath: string;
   const commandManager = createVSCodeCommandManager<AllCommands>();
 
   beforeEach(async () => {
@@ -37,6 +40,15 @@ describe("Db panel UI commands", () => {
 
     storagePath =
       extension.ctx.storageUri?.fsPath || extension.ctx.globalStorageUri.fsPath;
+
+    dbConfigFilePath = path.join(
+      storagePath,
+      DbConfigStore.databaseConfigFileName,
+    );
+  });
+
+  beforeAll(async () => {
+    await sleep(5000);
   });
 
   it("should add new remote db list", async () => {
@@ -47,10 +59,7 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
+
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.repositoryLists).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.repositoryLists[0].name).toBe(
@@ -69,10 +78,7 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
+
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.local.lists).toHaveLength(1);
     expect(dbConfig.databases.local.lists[0].name).toBe("my-list-1");
@@ -90,10 +96,7 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
+
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.repositories).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.repositories[0]).toBe(
@@ -113,63 +116,10 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
+
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.databases.variantAnalysis.owners).toHaveLength(1);
     expect(dbConfig.databases.variantAnalysis.owners[0]).toBe("owner1");
-  });
-
-  it("should import from code search", async () => {
-    const mockServer = new MockGitHubApiServer();
-    mockServer.startServer();
-
-    await mockServer.loadScenario("code-search-success");
-
-    jest.spyOn(window, "showInputBox").mockResolvedValue("listname");
-    await commandManager.execute(
-      "codeQLVariantAnalysisRepositories.addNewList",
-    );
-
-    const dbTreeViewItem = createDbTreeViewItemUserDefinedList(
-      createRemoteUserDefinedListDbItem(),
-      "listname",
-      [],
-    );
-
-    jest.spyOn(window, "showQuickPick").mockResolvedValue({
-      language: "java",
-    } as CodeSearchQuickPickItem);
-
-    jest
-      .spyOn(window, "showInputBox")
-      .mockResolvedValue("org:github something");
-
-    await commandManager.execute(
-      "codeQLVariantAnalysisRepositories.importFromCodeSearch",
-      dbTreeViewItem,
-    );
-
-    expect(window.showQuickPick).toBeCalledTimes(1);
-    expect(window.showInputBox).toBeCalledTimes(2);
-
-    const dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
-    const dbConfig: DbConfig = await readJson(dbConfigFilePath);
-    expect(dbConfig.databases.variantAnalysis.repositoryLists).toHaveLength(1);
-    expect(dbConfig.databases.variantAnalysis.repositoryLists[0].name).toBe(
-      "listname",
-    );
-    expect(
-      dbConfig.databases.variantAnalysis.repositoryLists[0].repositories,
-    ).toBe([]);
-
-    await mockServer.unloadScenario();
-    mockServer.stopServer();
   });
 
   it("should select db item", async () => {
@@ -186,15 +136,90 @@ describe("Db panel UI commands", () => {
     );
 
     // Check db config
-    const dbConfigFilePath = path.join(
-      storagePath,
-      DbConfigStore.databaseConfigFileName,
-    );
     const dbConfig: DbConfig = await readJson(dbConfigFilePath);
     expect(dbConfig.selected).toBeDefined();
     expect(dbConfig.selected).toEqual({
       kind: SelectedDbItemKind.VariantAnalysisSystemDefinedList,
       listName,
     });
+  });
+
+  it("should import from code search", async () => {
+    const listName = "my-list-1";
+    const mockServer = new MockGitHubApiServer();
+    mockServer.startServer();
+
+    await mockServer.loadScenario("code-search-success");
+
+    jest.spyOn(authentication, "getSession").mockResolvedValue({
+      id: "test",
+      accessToken: "test-token",
+      scopes: [],
+      account: {
+        id: "test",
+        label: "test",
+      },
+    });
+
+    const dbConfigPreparation: DbConfig = createDbConfig({
+      remoteLists: [
+        {
+          name: listName,
+          repositories: [],
+        },
+      ],
+    });
+
+    await writeJson(dbConfigFilePath, dbConfigPreparation);
+    await sleep(5000);
+
+    const dbTreeViewItem = createDbTreeViewItemUserDefinedList(
+      createRemoteUserDefinedListDbItem({ listName }),
+      listName,
+      [],
+    );
+
+    jest.spyOn(window, "showQuickPick").mockResolvedValue({
+      language: "java",
+    } as CodeSearchQuickPickItem);
+
+    jest
+      .spyOn(window, "showInputBox")
+      .mockResolvedValue("org:github something");
+
+    await commandManager.execute(
+      "codeQLVariantAnalysisRepositories.importFromCodeSearch",
+      dbTreeViewItem,
+    );
+
+    await sleep(200);
+
+    expect(window.showQuickPick).toBeCalledTimes(1);
+    expect(window.showInputBox).toBeCalledTimes(1);
+
+    const dbConfig: DbConfig = await readJson(dbConfigFilePath);
+    expect(dbConfig.databases.variantAnalysis.repositoryLists).toHaveLength(1);
+    expect(dbConfig.databases.variantAnalysis.repositoryLists[0].name).toBe(
+      listName,
+    );
+    expect(
+      dbConfig.databases.variantAnalysis.repositoryLists[0].repositories,
+    ).toEqual([
+      "dotnet/aspnetcore",
+      "dotnet/efcore",
+      "dotnet/machinelearning",
+      "dotnet/roslyn",
+      "dotnet/maui",
+      "dotnet/msbuild",
+      "dotnet/Microsoft.Maui.Graphics",
+      "dotnet/dotnet",
+      "dotnet/BenchmarkDotNet",
+      "dotnet/runtime",
+      "dotnet/core",
+      "dotnet/Microsoft.Maui.Graphics.Controls",
+    ]);
+
+    await mockServer.unloadScenario();
+    mockServer.stopServer();
   });
 });
