@@ -91,11 +91,14 @@ interface CodeSearchRequest {
 interface AutoModelRequest {
   request: {
     kind: RequestKind.AutoModel;
+    body?: {
+      candidates: string;
+    };
   };
   response: {
     status: number;
     body?: {
-      candidates: string;
+      models: string;
     };
     message?: string;
   };
