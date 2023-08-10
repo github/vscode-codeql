@@ -26,7 +26,7 @@ export class ModelDetailsPanel extends DisposableObject {
     this.dataProvider.setState(externalApiUsages, databaseItem);
     this.treeView.badge = {
       value: externalApiUsages.length,
-      tooltip: "Number of unmodeled external APIs",
+      tooltip: "Number of external APIs",
     };
   }
 }

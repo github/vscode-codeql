@@ -44,7 +44,7 @@ export class ModelDetailsDataProvider
       };
     } else {
       return {
-        label: `Unmodeled ${item.label} at ${item.url.uri} [${item.url.startLine}, ${item.url.endLine}]`,
+        label: `${item.label} at ${item.url.uri} [${item.url.startLine}, ${item.url.endLine}]`,
         collapsibleState: TreeItemCollapsibleState.None,
         command: {
           title: "Show usage",
