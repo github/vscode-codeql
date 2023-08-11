@@ -307,6 +307,14 @@ export class ResultTables extends React.Component<
     }
   }
 
+  private vscodeMessageHandler(evt: MessageEvent) {
+    // sanitize origin
+    const origin = evt.origin.replace(/\n|\r/g, "");
+    evt.origin === window.origin
+      ? this.handleMessage(evt.data as IntoResultsViewMsg)
+      : console.error(`Invalid event origin ${origin}`);
+  }
+
   // TODO: Duplicated from results.tsx consider a way to
   // avoid this duplication
   componentDidMount(): void {
@@ -318,14 +326,6 @@ export class ResultTables extends React.Component<
     if (this.vscodeMessageHandler) {
       window.removeEventListener("message", this.vscodeMessageHandler);
     }
-  }
-
-  private vscodeMessageHandler(evt: MessageEvent) {
-    // sanitize origin
-    const origin = evt.origin.replace(/\n|\r/g, "");
-    evt.origin === window.origin
-      ? this.handleMessage(evt.data as IntoResultsViewMsg)
-      : console.error(`Invalid event origin ${origin}`);
   }
 }
 
