@@ -24,7 +24,7 @@ import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
 import { ResultTable } from "./ResultTable";
 import { ResultTablesHeader } from "./ResultTablesHeader";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 /**
  * Properties for the `ResultTables` component.
@@ -134,7 +134,7 @@ export function ResultTables(props: ResultTablesProps) {
   );
   const [problemsViewSelected, setProblemsViewSelected] = React.useState(false);
 
-  const handleMessage = (msg: IntoResultsViewMsg): void => {
+  const handleMessage = useCallback((msg: IntoResultsViewMsg): void => {
     switch (msg.t) {
       case "untoggleShowProblems":
         setProblemsViewSelected(false);
@@ -143,7 +143,7 @@ export function ResultTables(props: ResultTablesProps) {
       default:
       // noop
     }
-  };
+  }, []);
 
   const vscodeMessageHandler = (evt: MessageEvent): void => {
     // sanitize origin
