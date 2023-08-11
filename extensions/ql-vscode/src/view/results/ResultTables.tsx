@@ -242,7 +242,10 @@ export function ResultTables(props: ResultTablesProps) {
 
   const offset = parsedResultSets.pageNumber * parsedResultSets.pageSize;
 
-  const resultSets = getResultSets(rawResultSets, interpretation);
+  const resultSets = useMemo(
+    () => getResultSets(rawResultSets, interpretation),
+    [interpretation, rawResultSets],
+  );
   const resultSetNames = getResultSetNames(interpretation, parsedResultSets);
 
   const resultSet = resultSets.find(
