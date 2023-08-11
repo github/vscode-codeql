@@ -72,7 +72,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly updateModelDetailsPanelState: (
       externalApiUsages: ExternalApiUsage[],
       databaseItem: DatabaseItem,
-    ) => void,
+    ) => Promise<void>,
     private readonly revealItemInDetailsPanel: (usage: Usage) => Promise<void>,
   ) {
     super(ctx);
@@ -83,9 +83,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
       queryRunner,
       queryStorageDir,
       databaseItem,
-      async (inProgressMethods) => {
+      async (packageName, inProgressMethods) => {
         await this.postMessage({
           t: "setInProgressMethods",
+          packageName,
           inProgressMethods,
         });
       },
@@ -300,7 +301,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
             t: "setExternalApiUsages",
             externalApiUsages,
           });
-          this.updateModelDetailsPanelState(
+          await this.updateModelDetailsPanelState(
             externalApiUsages,
             this.databaseItem,
           );

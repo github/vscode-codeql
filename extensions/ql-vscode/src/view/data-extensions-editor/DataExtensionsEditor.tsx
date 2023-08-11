@@ -17,6 +17,7 @@ import { DataExtensionEditorViewState } from "../../data-extensions-editor/share
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../data-extensions-editor/shared/mode";
+import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
 import { getLanguageDisplayName } from "../../common/query-language";
 
 const LoadingContainer = styled.div`
@@ -91,8 +92,8 @@ export function DataExtensionsEditor({
     new Set(),
   );
 
-  const [inProgressSignatures, setInProgressSignatures] = useState<Set<string>>(
-    new Set(),
+  const [inProgressMethods, setInProgressMethods] = useState<InProgressMethods>(
+    new InProgressMethods(),
   );
 
   const [hideModeledApis, setHideModeledApis] = useState(true);
@@ -140,7 +141,15 @@ export function DataExtensionsEditor({
             );
             break;
           case "setInProgressMethods":
-            setInProgressSignatures(new Set(msg.inProgressMethods));
+            setInProgressMethods((oldInProgressMethods) => {
+              const methods =
+                InProgressMethods.fromExisting(oldInProgressMethods);
+              methods.setPackageMethods(
+                msg.packageName,
+                new Set(msg.inProgressMethods),
+              );
+              return methods;
+            });
             break;
           default:
             assertNever(msg);
@@ -346,7 +355,7 @@ export function DataExtensionsEditor({
           externalApiUsages={externalApiUsages}
           modeledMethods={modeledMethods}
           modifiedSignatures={modifiedSignatures}
-          inProgressSignatures={inProgressSignatures}
+          inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledApis={hideModeledApis}
           onChange={onChange}
