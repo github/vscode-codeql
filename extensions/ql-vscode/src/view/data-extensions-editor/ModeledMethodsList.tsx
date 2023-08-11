@@ -9,11 +9,13 @@ import {
   sortGroupNames,
 } from "../../data-extensions-editor/shared/sorting";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
+import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
+  inProgressMethods: InProgressMethods;
   viewState: DataExtensionEditorViewState;
   hideModeledApis: boolean;
   onChange: (
@@ -26,9 +28,11 @@ type Props = {
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
   onGenerateFromLlmClick: (
+    packageName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
+  onStopGenerateFromLlmClick: (packageName: string) => void;
   onGenerateFromSourceClick: () => void;
   onModelDependencyClick: () => void;
 };
@@ -41,11 +45,13 @@ export const ModeledMethodsList = ({
   externalApiUsages,
   modeledMethods,
   modifiedSignatures,
+  inProgressMethods,
   viewState,
   hideModeledApis,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
+  onStopGenerateFromLlmClick,
   onGenerateFromSourceClick,
   onModelDependencyClick,
 }: Props) => {
@@ -84,11 +90,13 @@ export const ModeledMethodsList = ({
           externalApiUsages={grouped[libraryName]}
           modeledMethods={modeledMethods}
           modifiedSignatures={modifiedSignatures}
+          inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledApis={hideModeledApis}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
+          onStopGenerateFromLlmClick={onStopGenerateFromLlmClick}
           onGenerateFromSourceClick={onGenerateFromSourceClick}
           onModelDependencyClick={onModelDependencyClick}
         />

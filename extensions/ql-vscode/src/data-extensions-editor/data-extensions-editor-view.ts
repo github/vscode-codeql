@@ -36,17 +36,13 @@ import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
 import { autoModel, ModelRequest, ModelResponse } from "./auto-model-api";
 import {
-  autoModelV2,
-  ModelRequest as ModelRequestV2,
-  ModelResponse as ModelResponseV2,
-} from "./auto-model-api-v2";
-import {
   createAutoModelRequest,
   parsePredictedClassifications,
 } from "./auto-model";
 import {
   enableFrameworkMode,
   showLlmGeneration,
+  showModelDetailsView,
   useLlmGenerationV2,
 } from "../config";
 import { getAutoModelUsages } from "./auto-model-usages-query";
@@ -55,15 +51,14 @@ import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { join } from "path";
 import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
-import { runAutoModelQueries } from "./auto-model-codeml-queries";
-import { createAutoModelV2Request } from "./auto-model-v2";
-import { load as loadYaml } from "js-yaml";
-import { loadDataExtensionYaml } from "./yaml";
+import { AutoModeler } from "./auto-modeler";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
   FromDataExtensionsEditorMessage
 > {
+  private readonly autoModeler: AutoModeler;
+
   public constructor(
     ctx: ExtensionContext,
     private readonly app: App,
@@ -74,9 +69,31 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly queryDir: string,
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
-    private mode: Mode = Mode.Application,
+    private mode: Mode,
+    private readonly updateModelDetailsPanelState: (
+      externalApiUsages: ExternalApiUsage[],
+      databaseItem: DatabaseItem,
+    ) => Promise<void>,
   ) {
     super(ctx);
+
+    this.autoModeler = new AutoModeler(
+      app,
+      cliServer,
+      queryRunner,
+      queryStorageDir,
+      databaseItem,
+      async (packageName, inProgressMethods) => {
+        await this.postMessage({
+          t: "setInProgressMethods",
+          packageName,
+          inProgressMethods,
+        });
+      },
+      async (modeledMethods) => {
+        await this.postMessage({ t: "addModeledMethods", modeledMethods });
+      },
+    );
   }
 
   public async openView() {
@@ -137,7 +154,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "jumpToUsage":
-        await this.jumpToUsage(msg.location);
+        await this.handleJumpToUsage(msg.location);
 
         break;
       case "saveModeledMethods":
@@ -159,15 +176,24 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "generateExternalApiFromLlm":
-        await this.generateModeledMethodsFromLlm(
-          msg.externalApiUsages,
-          msg.modeledMethods,
-        );
-
+        if (useLlmGenerationV2()) {
+          await this.generateModeledMethodsFromLlmV2(
+            msg.packageName,
+            msg.externalApiUsages,
+            msg.modeledMethods,
+          );
+        } else {
+          await this.generateModeledMethodsFromLlmV1(
+            msg.externalApiUsages,
+            msg.modeledMethods,
+          );
+        }
+        break;
+      case "stopGeneratingExternalApiFromLlm":
+        await this.autoModeler.stopModeling(msg.packageName);
         break;
       case "modelDependency":
         await this.modelDependency();
-
         break;
       case "switchMode":
         this.mode = msg.mode;
@@ -205,24 +231,22 @@ export class DataExtensionsEditorView extends AbstractWebview<
     });
   }
 
+  protected async handleJumpToUsage(location: ResolvableLocationValue) {
+    if (showModelDetailsView()) {
+      await this.openModelDetailsView();
+    } else {
+      await this.jumpToUsage(location);
+    }
+  }
+
+  protected async openModelDetailsView() {
+    await this.app.commands.execute("codeQLModelDetails.focus");
+  }
+
   protected async jumpToUsage(
     location: ResolvableLocationValue,
   ): Promise<void> {
-    try {
-      await showResolvableLocation(location, this.databaseItem);
-    } catch (e) {
-      if (e instanceof Error) {
-        if (e.message.match(/File not found/)) {
-          void window.showErrorMessage(
-            "Original file of this result is not in the database's source archive.",
-          );
-        } else {
-          void this.app.logger.log(`Unable to handleMsgFromView: ${e.message}`);
-        }
-      } else {
-        void this.app.logger.log(`Unable to handleMsgFromView: ${e}`);
-      }
-    }
+    await showResolvableLocation(location, this.databaseItem, this.app.logger);
   }
 
   protected async loadExistingModeledMethods(): Promise<void> {
@@ -288,6 +312,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
             t: "setExternalApiUsages",
             externalApiUsages,
           });
+          await this.updateModelDetailsPanelState(
+            externalApiUsages,
+            this.databaseItem,
+          );
         } catch (err) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
@@ -361,7 +389,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     );
   }
 
-  private async generateModeledMethodsFromLlm(
+  private async generateModeledMethodsFromLlmV1(
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
@@ -374,101 +402,49 @@ export class DataExtensionsEditorView extends AbstractWebview<
         message: "Retrieving usages",
       });
 
-      let predictedModeledMethods: Record<string, ModeledMethod>;
+      const usages = await getAutoModelUsages({
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        queryStorageDir: this.queryStorageDir,
+        queryDir: this.queryDir,
+        databaseItem: this.databaseItem,
+        progress: (update) => progress({ ...update, maxStep }),
+      });
 
-      if (useLlmGenerationV2()) {
-        const usages = await runAutoModelQueries({
-          mode: this.mode,
-          cliServer: this.cliServer,
-          queryRunner: this.queryRunner,
-          queryStorageDir: this.queryStorageDir,
-          databaseItem: this.databaseItem,
-          progress: (update) => progress({ ...update, maxStep }),
-        });
-        if (!usages) {
-          return;
-        }
+      progress({
+        step: 1800,
+        maxStep,
+        message: "Creating request",
+      });
 
-        progress({
-          step: 1800,
-          maxStep,
-          message: "Creating request",
-        });
+      const request = createAutoModelRequest(
+        this.databaseItem.language,
+        externalApiUsages,
+        modeledMethods,
+        usages,
+        this.mode,
+      );
 
-        const request = await createAutoModelV2Request(this.mode, usages);
+      progress({
+        step: 2000,
+        maxStep,
+        message: "Sending request",
+      });
 
-        progress({
-          step: 2000,
-          maxStep,
-          message: "Sending request",
-        });
-
-        const response = await this.callAutoModelApiV2(request);
-        if (!response) {
-          return;
-        }
-
-        progress({
-          step: 2500,
-          maxStep,
-          message: "Parsing response",
-        });
-
-        const models = loadYaml(response.models, {
-          filename: "auto-model.yml",
-        });
-
-        const modeledMethods = loadDataExtensionYaml(models);
-        if (!modeledMethods) {
-          return;
-        }
-
-        predictedModeledMethods = modeledMethods;
-      } else {
-        const usages = await getAutoModelUsages({
-          cliServer: this.cliServer,
-          queryRunner: this.queryRunner,
-          queryStorageDir: this.queryStorageDir,
-          queryDir: this.queryDir,
-          databaseItem: this.databaseItem,
-          progress: (update) => progress({ ...update, maxStep }),
-        });
-
-        progress({
-          step: 1800,
-          maxStep,
-          message: "Creating request",
-        });
-
-        const request = createAutoModelRequest(
-          this.databaseItem.language,
-          externalApiUsages,
-          modeledMethods,
-          usages,
-          this.mode,
-        );
-
-        progress({
-          step: 2000,
-          maxStep,
-          message: "Sending request",
-        });
-
-        const response = await this.callAutoModelApi(request);
-        if (!response) {
-          return;
-        }
-
-        progress({
-          step: 2500,
-          maxStep,
-          message: "Parsing response",
-        });
-
-        predictedModeledMethods = parsePredictedClassifications(
-          response.predicted || [],
-        );
+      const response = await this.callAutoModelApi(request);
+      if (!response) {
+        return;
       }
+
+      progress({
+        step: 2500,
+        maxStep,
+        message: "Parsing response",
+      });
+
+      const predictedModeledMethods = parsePredictedClassifications(
+        response.predicted || [],
+      );
 
       progress({
         step: 2800,
@@ -481,6 +457,19 @@ export class DataExtensionsEditorView extends AbstractWebview<
         modeledMethods: predictedModeledMethods,
       });
     });
+  }
+
+  private async generateModeledMethodsFromLlmV2(
+    packageName: string,
+    externalApiUsages: ExternalApiUsage[],
+    modeledMethods: Record<string, ModeledMethod>,
+  ): Promise<void> {
+    await this.autoModeler.startModeling(
+      packageName,
+      externalApiUsages,
+      modeledMethods,
+      this.mode,
+    );
   }
 
   private async modelDependency(): Promise<void> {
@@ -514,6 +503,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         addedDatabase,
         modelFile,
         Mode.Framework,
+        this.updateModelDetailsPanelState,
       );
       await view.openView();
     });
@@ -596,25 +586,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
   ): Promise<ModelResponse | null> {
     try {
       return await autoModel(this.app.credentials, request);
-    } catch (e) {
-      if (e instanceof RequestError && e.status === 429) {
-        void showAndLogExceptionWithTelemetry(
-          this.app.logger,
-          this.app.telemetry,
-          redactableError(e)`Rate limit hit, please try again soon.`,
-        );
-        return null;
-      } else {
-        throw e;
-      }
-    }
-  }
-
-  private async callAutoModelApiV2(
-    request: ModelRequestV2,
-  ): Promise<ModelResponseV2 | null> {
-    try {
-      return await autoModelV2(this.app.credentials, request);
     } catch (e) {
       if (e instanceof RequestError && e.status === 429) {
         void showAndLogExceptionWithTelemetry(

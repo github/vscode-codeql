@@ -63,10 +63,12 @@ interface AnalysisMessageTextToken {
 export interface AnalysisMessageLocationToken {
   t: "location";
   text: string;
-  location: {
-    fileLink: FileLink;
-    highlightedRegion?: HighlightedRegion;
-  };
+  location: AnalysisMessageLocationTokenLocation;
+}
+
+export interface AnalysisMessageLocationTokenLocation {
+  fileLink: FileLink;
+  highlightedRegion?: HighlightedRegion;
 }
 
 export type ResultSeverity = "Recommendation" | "Warning" | "Error";

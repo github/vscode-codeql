@@ -12,6 +12,7 @@ import type {
 } from "../variant-analysis/shared/variant-analysis";
 import type { QLDebugConfiguration } from "../debugger/debug-configuration";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
+import type { Usage } from "../data-extensions-editor/external-api-usage";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from a context menu on a TreeView with
@@ -58,7 +59,9 @@ export type ExplorerSelectionCommandFunction<Item> = (
 type BuiltInVsCodeCommands = {
   // The codeQLDatabases.focus command is provided by VS Code because we've registered the custom view
   "codeQLDatabases.focus": () => Promise<void>;
+  "codeQLModelDetails.focus": () => Promise<void>;
   "markdown.showPreviewToSide": (uri: Uri) => Promise<void>;
+  "workbench.action.closeActiveEditor": () => Promise<void>;
   revealFileInOS: (uri: Uri) => Promise<void>;
   setContext: (
     key: `${"codeql" | "codeQL"}${string}`,
@@ -302,6 +305,10 @@ export type PackagingCommands = {
 
 export type DataExtensionsEditorCommands = {
   "codeQL.openDataExtensionsEditor": () => Promise<void>;
+  "codeQLDataExtensionsEditor.jumpToUsageLocation": (
+    usage: Usage,
+    databaseItem: DatabaseItem,
+  ) => Promise<void>;
 };
 
 export type EvalLogViewerCommands = {

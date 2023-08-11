@@ -6,7 +6,7 @@ import {
   VSCodeCheckbox,
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { assertNever } from "../../common/helpers-pure";
@@ -17,6 +17,7 @@ import { DataExtensionEditorViewState } from "../../data-extensions-editor/share
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../data-extensions-editor/shared/mode";
+import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
 import { getLanguageDisplayName } from "../../common/query-language";
 
 const LoadingContainer = styled.div`
@@ -91,6 +92,10 @@ export function DataExtensionsEditor({
     new Set(),
   );
 
+  const [inProgressMethods, setInProgressMethods] = useState<InProgressMethods>(
+    new InProgressMethods(),
+  );
+
   const [hideModeledApis, setHideModeledApis] = useState(true);
 
   const [modeledMethods, setModeledMethods] = useState<
@@ -134,6 +139,17 @@ export function DataExtensionsEditor({
                   ...Object.keys(msg.modeledMethods),
                 ]),
             );
+            break;
+          case "setInProgressMethods":
+            setInProgressMethods((oldInProgressMethods) => {
+              const methods =
+                InProgressMethods.fromExisting(oldInProgressMethods);
+              methods.setPackageMethods(
+                msg.packageName,
+                new Set(msg.inProgressMethods),
+              );
+              return methods;
+            });
             break;
           default:
             assertNever(msg);
@@ -220,17 +236,26 @@ export function DataExtensionsEditor({
 
   const onGenerateFromLlmClick = useCallback(
     (
+      packageName: string,
       externalApiUsages: ExternalApiUsage[],
       modeledMethods: Record<string, ModeledMethod>,
     ) => {
       vscode.postMessage({
         t: "generateExternalApiFromLlm",
+        packageName,
         externalApiUsages,
         modeledMethods,
       });
     },
     [],
   );
+
+  const onStopGenerateFromLlmClick = useCallback((packageName: string) => {
+    vscode.postMessage({
+      t: "stopGeneratingExternalApiFromLlm",
+      packageName,
+    });
+  }, []);
 
   const onOpenDatabaseClick = useCallback(() => {
     vscode.postMessage({
@@ -330,11 +355,13 @@ export function DataExtensionsEditor({
           externalApiUsages={externalApiUsages}
           modeledMethods={modeledMethods}
           modifiedSignatures={modifiedSignatures}
+          inProgressMethods={inProgressMethods}
           viewState={viewState}
           hideModeledApis={hideModeledApis}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
+          onStopGenerateFromLlmClick={onStopGenerateFromLlmClick}
           onGenerateFromSourceClick={onGenerateFromSourceClick}
           onModelDependencyClick={onModelDependencyClick}
         />

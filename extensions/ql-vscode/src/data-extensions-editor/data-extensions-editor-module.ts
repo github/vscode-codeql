@@ -3,7 +3,7 @@ import { DataExtensionsEditorView } from "./data-extensions-editor-view";
 import { DataExtensionsEditorCommands } from "../common/commands";
 import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
-import { DatabaseManager } from "../databases/local-databases";
+import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { ensureDir } from "fs-extra";
 import { join } from "path";
 import { App } from "../common/app";
@@ -20,11 +20,17 @@ import { redactableError } from "../common/errors";
 import { extLogger } from "../common/logging/vscode";
 import { isQueryLanguage } from "../common/query-language";
 import { setUpPack } from "./external-api-usage-query";
+import { DisposableObject } from "../common/disposable-object";
+import { ModelDetailsPanel } from "./model-details/model-details-panel";
+import { Mode } from "./shared/mode";
+import { showResolvableLocation } from "../databases/local-databases/locations";
+import { Usage } from "./external-api-usage";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
-export class DataExtensionsEditorModule {
+export class DataExtensionsEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
+  private readonly modelDetailsPanel: ModelDetailsPanel;
 
   private constructor(
     private readonly ctx: ExtensionContext,
@@ -34,10 +40,12 @@ export class DataExtensionsEditorModule {
     private readonly queryRunner: QueryRunner,
     baseQueryStorageDir: string,
   ) {
+    super();
     this.queryStorageDir = join(
       baseQueryStorageDir,
       "data-extensions-editor-results",
     );
+    this.modelDetailsPanel = this.push(new ModelDetailsPanel(cliServer));
   }
 
   public static async initialize(
@@ -138,6 +146,8 @@ export class DataExtensionsEditorModule {
               queryDir,
               db,
               modelFile,
+              Mode.Application,
+              this.modelDetailsPanel.setState.bind(this.modelDetailsPanel),
             );
             await view.openView();
           },
@@ -145,6 +155,12 @@ export class DataExtensionsEditorModule {
             title: "Opening Data Extensions Editor",
           },
         );
+      },
+      "codeQLDataExtensionsEditor.jumpToUsageLocation": async (
+        usage: Usage,
+        databaseItem: DatabaseItem,
+      ) => {
+        await showResolvableLocation(usage.url, databaseItem, this.app.logger);
       },
     };
   }

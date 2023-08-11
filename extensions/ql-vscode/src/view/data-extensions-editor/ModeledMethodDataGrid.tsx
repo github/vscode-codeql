@@ -10,11 +10,14 @@ import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { useMemo } from "react";
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { sortMethods } from "../../data-extensions-editor/shared/sorting";
+import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
 
 type Props = {
+  packageName: string;
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
+  inProgressMethods: InProgressMethods;
   mode: Mode;
   hideModeledApis: boolean;
   onChange: (
@@ -24,9 +27,11 @@ type Props = {
 };
 
 export const ModeledMethodDataGrid = ({
+  packageName,
   externalApiUsages,
   modeledMethods,
   modifiedSignatures,
+  inProgressMethods,
   mode,
   hideModeledApis,
   onChange,
@@ -37,7 +42,7 @@ export const ModeledMethodDataGrid = ({
   );
 
   return (
-    <VSCodeDataGrid gridTemplateColumns="0.5fr 0.125fr 0.125fr 0.125fr 0.125fr">
+    <VSCodeDataGrid gridTemplateColumns="0.5fr 0.125fr 0.125fr 0.125fr 0.125fr 0.125fr">
       <VSCodeDataGridRow rowType="header">
         <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
           API or method
@@ -61,6 +66,10 @@ export const ModeledMethodDataGrid = ({
           externalApiUsage={externalApiUsage}
           modeledMethod={modeledMethods[externalApiUsage.signature]}
           methodIsUnsaved={modifiedSignatures.has(externalApiUsage.signature)}
+          modelingInProgress={inProgressMethods.hasMethod(
+            packageName,
+            externalApiUsage.signature,
+          )}
           mode={mode}
           hideModeledApis={hideModeledApis}
           onChange={onChange}

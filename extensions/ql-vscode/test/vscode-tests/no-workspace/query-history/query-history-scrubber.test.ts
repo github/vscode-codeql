@@ -13,46 +13,28 @@ import {
   TWO_HOURS_IN_MS,
 } from "../../../../src/common/time";
 import { mockedObject } from "../../utils/mocking.helpers";
+import { DirResult } from "tmp";
+
+const now = Date.now();
+// We don't want our times to align exactly with the hour,
+// so we can better mimic real life
+const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
 
 describe("query history scrubber", () => {
-  const now = Date.now();
-
   let deregister: vscode.Disposable | undefined;
-  let mockCtx: vscode.ExtensionContext;
-  let runCount = 0;
-
-  // We don't want our times to align exactly with the hour,
-  // so we can better mimic real life
-  const LESS_THAN_ONE_DAY = ONE_DAY_IN_MS - 1000;
-  const tmpDir = dirSync({
-    unsafeCleanup: true,
-  });
+  let tmpDir: DirResult;
 
   beforeEach(() => {
+    tmpDir = dirSync({
+      unsafeCleanup: true,
+    });
+
     jest.spyOn(extLogger, "log").mockResolvedValue(undefined);
 
     jest.useFakeTimers({
       doNotFake: ["setTimeout"],
       now,
     });
-
-    mockCtx = {
-      globalState: {
-        lastScrubTime: now,
-        get(key: string) {
-          if (key !== "lastScrubTime") {
-            throw new Error(`Unexpected key: ${key}`);
-          }
-          return this.lastScrubTime;
-        },
-        async update(key: string, value: any) {
-          if (key !== "lastScrubTime") {
-            throw new Error(`Unexpected key: ${key}`);
-          }
-          this.lastScrubTime = value;
-        },
-      },
-    } as any as vscode.ExtensionContext;
   });
 
   afterEach(() => {
@@ -60,30 +42,32 @@ describe("query history scrubber", () => {
       deregister.dispose();
       deregister = undefined;
     }
+    tmpDir.removeCallback();
   });
 
   it("should not throw an error when the query directory does not exist", async () => {
-    registerScrubber("idontexist");
+    const mockCtx = createMockContext();
+    const runCounter = registerScrubber("idontexist", mockCtx);
 
     jest.advanceTimersByTime(ONE_HOUR_IN_MS);
     await wait();
     // "Should not have called the scrubber"
-    expect(runCount).toBe(0);
+    expect(runCounter).toHaveBeenCalledTimes(0);
 
     jest.advanceTimersByTime(ONE_HOUR_IN_MS - 1);
     await wait();
     // "Should not have called the scrubber"
-    expect(runCount).toBe(0);
+    expect(runCounter).toHaveBeenCalledTimes(0);
 
     jest.advanceTimersByTime(1);
     await wait();
     // "Should have called the scrubber once"
-    expect(runCount).toBe(1);
+    expect(runCounter).toHaveBeenCalledTimes(1);
 
     jest.advanceTimersByTime(TWO_HOURS_IN_MS);
     await wait();
     // "Should have called the scrubber a second time"
-    expect(runCount).toBe(2);
+    expect(runCounter).toHaveBeenCalledTimes(2);
 
     expect((mockCtx.globalState as any).lastScrubTime).toBe(
       now + TWO_HOURS_IN_MS * 2,
@@ -97,7 +81,7 @@ describe("query history scrubber", () => {
       TWO_HOURS_IN_MS,
       THREE_HOURS_IN_MS,
     );
-    registerScrubber(queryDir);
+    registerScrubber(queryDir, createMockContext());
 
     jest.advanceTimersByTime(TWO_HOURS_IN_MS);
     await wait();
@@ -176,7 +160,31 @@ describe("query history scrubber", () => {
     return `query-${timestamp}`;
   }
 
-  function registerScrubber(dir: string) {
+  function createMockContext(): vscode.ExtensionContext {
+    return {
+      globalState: {
+        lastScrubTime: now,
+        get(key: string) {
+          if (key !== "lastScrubTime") {
+            throw new Error(`Unexpected key: ${key}`);
+          }
+          return this.lastScrubTime;
+        },
+        async update(key: string, value: any) {
+          if (key !== "lastScrubTime") {
+            throw new Error(`Unexpected key: ${key}`);
+          }
+          this.lastScrubTime = value;
+        },
+      },
+    } as any as vscode.ExtensionContext;
+  }
+
+  function registerScrubber(
+    dir: string,
+    ctx: vscode.ExtensionContext,
+  ): jest.Mock {
+    const onScrubberRun = jest.fn();
     deregister = registerQueryHistoryScrubber(
       ONE_HOUR_IN_MS,
       TWO_HOURS_IN_MS,
@@ -187,11 +195,10 @@ describe("query history scrubber", () => {
           return Promise.resolve();
         },
       }),
-      mockCtx,
-      {
-        increment: () => runCount++,
-      },
+      ctx,
+      onScrubberRun,
     );
+    return onScrubberRun;
   }
 
   async function wait(ms = 500) {

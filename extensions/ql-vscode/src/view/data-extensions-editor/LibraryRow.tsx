@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useCallback, useMemo, useState } from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
 import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
 import { ModeledMethodDataGrid } from "./ModeledMethodDataGrid";
@@ -14,6 +14,7 @@ import {
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
+import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
 
 const LibraryContainer = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -72,6 +73,7 @@ type Props = {
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
+  inProgressMethods: InProgressMethods;
   viewState: DataExtensionEditorViewState;
   hideModeledApis: boolean;
   onChange: (
@@ -84,9 +86,11 @@ type Props = {
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
   onGenerateFromLlmClick: (
+    dependencyName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
+  onStopGenerateFromLlmClick: (dependencyName: string) => void;
   onGenerateFromSourceClick: () => void;
   onModelDependencyClick: () => void;
 };
@@ -97,11 +101,13 @@ export const LibraryRow = ({
   externalApiUsages,
   modeledMethods,
   modifiedSignatures,
+  inProgressMethods,
   viewState,
   hideModeledApis,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
+  onStopGenerateFromLlmClick,
   onGenerateFromSourceClick,
   onModelDependencyClick,
 }: Props) => {
@@ -117,11 +123,20 @@ export const LibraryRow = ({
 
   const handleModelWithAI = useCallback(
     async (e: React.MouseEvent) => {
-      onGenerateFromLlmClick(externalApiUsages, modeledMethods);
+      onGenerateFromLlmClick(title, externalApiUsages, modeledMethods);
       e.stopPropagation();
       e.preventDefault();
     },
-    [externalApiUsages, modeledMethods, onGenerateFromLlmClick],
+    [title, externalApiUsages, modeledMethods, onGenerateFromLlmClick],
+  );
+
+  const handleStopModelWithAI = useCallback(
+    async (e: React.MouseEvent) => {
+      onStopGenerateFromLlmClick(title);
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    [title, onStopGenerateFromLlmClick],
   );
 
   const handleModelFromSource = useCallback(
@@ -164,6 +179,12 @@ export const LibraryRow = ({
     );
   }, [externalApiUsages, modifiedSignatures]);
 
+  const canStopAutoModeling = useMemo(() => {
+    return externalApiUsages.some((externalApiUsage) =>
+      inProgressMethods.hasMethod(title, externalApiUsage.signature),
+    );
+  }, [externalApiUsages, title, inProgressMethods]);
+
   return (
     <LibraryContainer>
       <TitleContainer onClick={toggleExpanded} aria-expanded={isExpanded}>
@@ -182,10 +203,16 @@ export const LibraryRow = ({
           </ModeledPercentage>
           {hasUnsavedChanges ? <VSCodeTag>UNSAVED</VSCodeTag> : null}
         </NameContainer>
-        {viewState.showLlmButton && (
+        {viewState.showLlmButton && !canStopAutoModeling && (
           <VSCodeButton appearance="icon" onClick={handleModelWithAI}>
             <Codicon name="lightbulb-autofix" label="Model with AI" />
             &nbsp;Model with AI
+          </VSCodeButton>
+        )}
+        {viewState.showLlmButton && canStopAutoModeling && (
+          <VSCodeButton appearance="icon" onClick={handleStopModelWithAI}>
+            <Codicon name="debug-stop" label="Stop model with AI" />
+            &nbsp;Stop
           </VSCodeButton>
         )}
         {viewState.mode === Mode.Application && (
@@ -206,9 +233,11 @@ export const LibraryRow = ({
         <>
           <SectionDivider />
           <ModeledMethodDataGrid
+            packageName={title}
             externalApiUsages={externalApiUsages}
             modeledMethods={modeledMethods}
             modifiedSignatures={modifiedSignatures}
+            inProgressMethods={inProgressMethods}
             mode={viewState.mode}
             hideModeledApis={hideModeledApis}
             onChange={onChangeWithModelName}

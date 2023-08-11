@@ -5,7 +5,7 @@ import {
   ExternalApiUsage,
 } from "../../data-extensions-editor/external-api-usage";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 
 const ClassificationsContainer = styled.div`
   display: inline-flex;

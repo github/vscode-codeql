@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useMemo } from "react";
-import styled from "styled-components";
+import { styled } from "styled-components";
 import { VariantAnalysisStatus } from "../../variant-analysis/shared/variant-analysis";
 import { StatItem } from "./StatItem";
 import { formatDecimal } from "../../common/number";

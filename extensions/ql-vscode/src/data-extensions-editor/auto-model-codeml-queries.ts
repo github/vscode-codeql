@@ -17,6 +17,10 @@ import { redactableError } from "../common/errors";
 import { interpretResultsSarif } from "../query-results";
 import { join } from "path";
 import { assertNever } from "../common/helpers-pure";
+import { dir } from "tmp-promise";
+import { writeFile, outputFile } from "fs-extra";
+import { dump as dumpYaml } from "js-yaml";
+import { MethodSignature } from "./external-api-usage";
 
 type AutoModelQueryOptions = {
   queryTag: string;
@@ -26,6 +30,7 @@ type AutoModelQueryOptions = {
   databaseItem: DatabaseItem;
   qlpack: QlPacksForLanguage;
   sourceInfo: SourceInfo | undefined;
+  additionalPacks: string[];
   extensionPacks: string[];
   queryStorageDir: string;
 
@@ -52,6 +57,7 @@ async function runAutoModelQuery({
   databaseItem,
   qlpack,
   sourceInfo,
+  additionalPacks,
   extensionPacks,
   queryStorageDir,
   progress,
@@ -99,7 +105,7 @@ async function runAutoModelQuery({
       quickEvalCountOnly: false,
     },
     false,
-    getOnDiskWorkspaceFolders(),
+    additionalPacks,
     extensionPacks,
     queryStorageDir,
     undefined,
@@ -147,12 +153,14 @@ async function runAutoModelQuery({
 
 type AutoModelQueriesOptions = {
   mode: Mode;
+  candidateMethods: MethodSignature[];
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   databaseItem: DatabaseItem;
   queryStorageDir: string;
 
   progress: ProgressCallback;
+  cancellationTokenSource: CancellationTokenSource;
 };
 
 export type AutoModelQueriesResult = {
@@ -161,17 +169,14 @@ export type AutoModelQueriesResult = {
 
 export async function runAutoModelQueries({
   mode,
+  candidateMethods,
   cliServer,
   queryRunner,
   databaseItem,
   queryStorageDir,
   progress,
+  cancellationTokenSource,
 }: AutoModelQueriesOptions): Promise<AutoModelQueriesResult | undefined> {
-  // maxStep for this part is 1500
-  const maxStep = 1500;
-
-  const cancellationTokenSource = new CancellationTokenSource();
-
   const qlpack = await qlpackOfDatabase(cliServer, databaseItem);
 
   // CodeQL needs to have access to the database to be able to retrieve the
@@ -189,16 +194,16 @@ export async function runAutoModelQueries({
           sourceLocationPrefix,
         };
 
-  const additionalPacks = getOnDiskWorkspaceFolders();
+  // Generate a pack containing the candidate filters
+  const filterPackDir = await generateCandidateFilterPack(
+    databaseItem.language,
+    candidateMethods,
+  );
+
+  const additionalPacks = [...getOnDiskWorkspaceFolders(), filterPackDir];
   const extensionPacks = Object.keys(
     await cliServer.resolveQlpacks(additionalPacks, true),
   );
-
-  progress({
-    step: 0,
-    maxStep,
-    message: "Finding candidates and examples",
-  });
 
   const candidates = await runAutoModelQuery({
     mode,
@@ -208,15 +213,10 @@ export async function runAutoModelQueries({
     databaseItem,
     qlpack,
     sourceInfo,
+    additionalPacks,
     extensionPacks,
     queryStorageDir,
-    progress: (update) => {
-      progress({
-        step: update.step,
-        maxStep,
-        message: "Finding candidates and examples",
-      });
-    },
+    progress,
     token: cancellationTokenSource.token,
   });
 
@@ -227,4 +227,60 @@ export async function runAutoModelQueries({
   return {
     candidates,
   };
+}
+
+/**
+ * generateCandidateFilterPack will create a temporary extension pack.
+ * This pack will contain a filter that will restrict the automodel queries
+ * to the specified candidate methods only.
+ * This is done using the `extensible` predicate "automodelCandidateFilter".
+ * @param language
+ * @param candidateMethods
+ * @returns
+ */
+export async function generateCandidateFilterPack(
+  language: string,
+  candidateMethods: MethodSignature[],
+): Promise<string> {
+  // Pack resides in a temporary directory, to not pollute the workspace.
+  const packDir = (await dir({ unsafeCleanup: true })).path;
+
+  const syntheticConfigPack = {
+    name: "codeql/automodel-filter",
+    version: "0.0.0",
+    library: true,
+    extensionTargets: {
+      [`codeql/${language}-queries`]: "*",
+    },
+    dataExtensions: ["filter.yml"],
+  };
+
+  const qlpackFile = join(packDir, "codeql-pack.yml");
+  await outputFile(qlpackFile, dumpYaml(syntheticConfigPack), "utf8");
+
+  // The predicate has the following defintion:
+  // extensible predicate automodelCandidateFilter(string package, string type, string name, string signature)
+  const dataRows = candidateMethods.map((method) => [
+    method.packageName,
+    method.typeName,
+    method.methodName,
+    method.methodParameters,
+  ]);
+
+  const filter = {
+    extensions: [
+      {
+        addsTo: {
+          pack: `codeql/${language}-queries`,
+          extensible: "automodelCandidateFilter",
+        },
+        data: dataRows,
+      },
+    ],
+  };
+
+  const filterFile = join(packDir, "filter.yml");
+  await writeFile(filterFile, dumpYaml(filter), "utf8");
+
+  return packDir;
 }

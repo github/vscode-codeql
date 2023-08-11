@@ -279,10 +279,7 @@ describe(VariantAnalysisResultsManager.name, () => {
           await fs.outputJson(
             join(repoTaskStorageDirectory, "results/results.sarif"),
             await fs.readJson(
-              resolve(
-                __dirname,
-                "../../no-workspace/data/sarif/validSarif.sarif",
-              ),
+              resolve(__dirname, "../../../data/sarif/validSarif.sarif"),
             ),
           );
         });

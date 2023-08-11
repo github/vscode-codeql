@@ -1655,6 +1655,13 @@
           "title": "CodeQL",
           "icon": "media/logo.svg"
         }
+      ],
+      "panel": [
+        {
+          "id": "codeql-model-details",
+          "title": "CodeQL Model Details",
+          "icon": "media/logo.svg"
+        }
       ]
     },
     "views": {
@@ -1685,9 +1692,20 @@
           "name": "Evaluator Log Viewer",
           "when": "config.codeQL.canary"
         }
+      ],
+      "codeql-model-details": [
+        {
+          "id": "codeQLModelDetails",
+          "name": "CodeQL Model Details",
+          "when": "config.codeQL.canary && config.codeQL.dataExtensions.modelDetailsView"
+        }
       ]
     },
     "viewsWelcome": [
+      {
+        "view": "codeQLModelDetails",
+        "contents": "Loading..."
+      },
       {
         "view": "codeQLAstViewer",
         "contents": "Run the 'CodeQL: View AST' command on an open source file from a CodeQL database.\n[View AST](command:codeQL.viewAst)"
@@ -1756,8 +1774,6 @@
     "fs-extra": "^11.1.1",
     "immutable": "^4.0.0",
     "js-yaml": "^4.1.0",
-    "minimatch": "^9.0.0",
-    "minimist": "^1.2.6",
     "msw": "^1.2.0",
     "nanoid": "^3.2.0",
     "node-fetch": "^2.6.7",
@@ -1767,10 +1783,8 @@
     "semver": "^7.5.2",
     "source-map": "^0.7.4",
     "source-map-support": "^0.5.21",
-    "stream": "^0.0.2",
-    "stream-chain": "^2.2.4",
     "stream-json": "^1.7.3",
-    "styled-components": "^5.3.3",
+    "styled-components": "^6.0.2",
     "tmp": "^0.1.0",
     "tmp-promise": "^3.0.2",
     "tree-kill": "^1.2.2",
@@ -1811,13 +1825,10 @@
     "@types/d3-graphviz": "^2.6.6",
     "@types/del": "^4.0.0",
     "@types/fs-extra": "^11.0.1",
-    "@types/google-protobuf": "^3.2.7",
     "@types/gulp": "^4.0.9",
     "@types/gulp-replace": "^1.1.0",
-    "@types/gulp-sourcemaps": "0.0.32",
     "@types/jest": "^29.0.2",
     "@types/js-yaml": "^3.12.5",
-    "@types/jszip": "^3.1.6",
     "@types/nanoid": "^3.0.0",
     "@types/node": "^16.11.25",
     "@types/node-fetch": "^2.5.2",
@@ -1825,7 +1836,6 @@
     "@types/react-dom": "^18.0.11",
     "@types/sarif": "^2.1.2",
     "@types/semver": "^7.2.0",
-    "@types/stream-chain": "^2.0.1",
     "@types/stream-json": "^1.7.1",
     "@types/styled-components": "^5.1.11",
     "@types/tar-stream": "^2.2.2",
@@ -1835,19 +1845,19 @@
     "@types/vscode": "^1.67.0",
     "@types/webpack": "^5.28.0",
     "@types/webpack-env": "^1.18.0",
-    "@typescript-eslint/eslint-plugin": "^5.38.0",
-    "@typescript-eslint/parser": "^5.38.0",
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
+    "@typescript-eslint/parser": "^6.2.1",
     "@vscode/test-electron": "^2.2.0",
     "@vscode/vsce": "^2.19.0",
     "ansi-colors": "^4.1.1",
     "applicationinsights": "^2.3.5",
-    "cosmiconfig": "^7.1.0",
+    "cosmiconfig": "^8.2.0",
     "cross-env": "^7.0.3",
     "css-loader": "^6.8.1",
     "del": "^6.0.0",
     "esbuild": "^0.15.15",
     "eslint": "^8.23.1",
-    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-etc": "^2.0.2",
     "eslint-plugin-github": "^4.4.1",
     "eslint-plugin-jest-dom": "^5.0.1",
@@ -1871,7 +1881,7 @@
     "markdownlint-cli2-formatter-pretty": "^0.0.4",
     "mini-css-extract-plugin": "^2.6.1",
     "npm-run-all": "^4.1.5",
-    "patch-package": "^7.0.0",
+    "patch-package": "^8.0.0",
     "prettier": "^3.0.0",
     "storybook": "^7.1.0",
     "tar-stream": "^3.0.0",
@@ -1880,8 +1890,7 @@
     "ts-json-schema-generator": "^1.1.2",
     "ts-loader": "^9.4.2",
     "ts-node": "^10.7.0",
-    "ts-protoc-gen": "^0.9.0",
-    "ts-unused-exports": "^9.0.5",
+    "ts-unused-exports": "^10.0.0",
     "typescript": "^5.0.2",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.1"
