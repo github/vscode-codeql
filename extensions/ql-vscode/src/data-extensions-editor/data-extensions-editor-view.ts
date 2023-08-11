@@ -236,6 +236,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
 
         break;
+      case "hideModeledApis":
+        // do something
+        break;
       default:
         assertNever(msg);
     }
