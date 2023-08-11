@@ -182,17 +182,18 @@ export function ResultTables(props: ResultTablesProps) {
     }
   }, [parsedResultSets, interpretation, rawResultSets, selectedTable]);
 
-  const onTableSelectionChange = (
-    event: React.ChangeEvent<HTMLSelectElement>,
-  ): void => {
-    const selectedTable = event.target.value;
-    vscode.postMessage({
-      t: "changePage",
-      pageNumber: 0,
-      selectedTable,
-    });
-    sendTelemetry("local-results-table-selection");
-  };
+  const onTableSelectionChange = useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement>): void => {
+      const selectedTable = event.target.value;
+      vscode.postMessage({
+        t: "changePage",
+        pageNumber: 0,
+        selectedTable,
+      });
+      sendTelemetry("local-results-table-selection");
+    },
+    [],
+  );
 
   const alertTableExtras = (): JSX.Element | undefined => {
     const handleCheckboxChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
