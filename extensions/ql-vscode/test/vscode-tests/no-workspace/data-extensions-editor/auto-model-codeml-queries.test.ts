@@ -19,6 +19,7 @@ import { MethodSignature } from "../../../../src/data-extensions-editor/external
 import { join } from "path";
 import { exists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
+import { CancellationTokenSource } from "vscode-jsonrpc";
 
 describe("runAutoModelQueries", () => {
   const qlpack = {
@@ -142,6 +143,7 @@ describe("runAutoModelQueries", () => {
       }),
       queryStorageDir: "/tmp/queries",
       progress: jest.fn(),
+      cancellationTokenSource: new CancellationTokenSource(),
     };
 
     const result = await runAutoModelQueries(options);

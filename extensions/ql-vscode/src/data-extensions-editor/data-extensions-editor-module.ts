@@ -45,7 +45,7 @@ export class DataExtensionsEditorModule extends DisposableObject {
       baseQueryStorageDir,
       "data-extensions-editor-results",
     );
-    this.modelDetailsPanel = this.push(new ModelDetailsPanel());
+    this.modelDetailsPanel = this.push(new ModelDetailsPanel(cliServer));
   }
 
   public static async initialize(

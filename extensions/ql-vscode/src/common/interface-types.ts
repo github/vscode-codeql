@@ -512,6 +512,7 @@ interface AddModeledMethodsMessage {
 
 interface SetInProgressMethodsMessage {
   t: "setInProgressMethods";
+  packageName: string;
   inProgressMethods: string[];
 }
 
@@ -549,9 +550,14 @@ interface GenerateExternalApiMessage {
 
 interface GenerateExternalApiFromLlmMessage {
   t: "generateExternalApiFromLlm";
-  dependencyName: string;
+  packageName: string;
   externalApiUsages: ExternalApiUsage[];
   modeledMethods: Record<string, ModeledMethod>;
+}
+
+interface StopGeneratingExternalApiFromLlmMessage {
+  t: "stopGeneratingExternalApiFromLlm";
+  packageName: string;
 }
 
 interface ModelDependencyMessage {
@@ -575,4 +581,5 @@ export type FromDataExtensionsEditorMessage =
   | SaveModeledMethods
   | GenerateExternalApiMessage
   | GenerateExternalApiFromLlmMessage
+  | StopGeneratingExternalApiFromLlmMessage
   | ModelDependencyMessage;

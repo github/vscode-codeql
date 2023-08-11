@@ -1,0 +1,11 @@
+{
+  "request": {
+    "kind": "autoModel"
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "models": "extensions:\n- addsTo: {extensible: sinkModel, pack: codeql/java-all}\n  data:\n  - [javax.servlet, MultipartConfigElement, true, MultipartConfigElement, (String),\n    '', 'Argument[0]', request-forgery, ai-generated]\n"
+    }
+  }
+}
