@@ -195,25 +195,28 @@ export function ResultTables(props: ResultTablesProps) {
     [],
   );
 
-  const handleCheckboxChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked === problemsViewSelected) {
-      // no change
-      return;
-    }
-    setProblemsViewSelected(e.target.checked);
-    if (e.target.checked) {
-      sendTelemetry("local-results-show-results-in-problems-view");
-    }
-    if (resultsPath !== undefined) {
-      vscode.postMessage({
-        t: "toggleDiagnostics",
-        origResultsPaths,
-        databaseUri: database.databaseUri,
-        visible: e.target.checked,
-        metadata,
-      });
-    }
-  };
+  const handleCheckboxChanged = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.checked === problemsViewSelected) {
+        // no change
+        return;
+      }
+      setProblemsViewSelected(e.target.checked);
+      if (e.target.checked) {
+        sendTelemetry("local-results-show-results-in-problems-view");
+      }
+      if (resultsPath !== undefined) {
+        vscode.postMessage({
+          t: "toggleDiagnostics",
+          origResultsPaths,
+          databaseUri: database.databaseUri,
+          visible: e.target.checked,
+          metadata,
+        });
+      }
+    },
+    [database, metadata, origResultsPaths, problemsViewSelected, resultsPath],
+  );
 
   const alertTableExtras = (): JSX.Element | undefined => {
     return (
