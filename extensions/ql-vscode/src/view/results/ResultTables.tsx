@@ -219,6 +219,9 @@ export function ResultTables(props: ResultTablesProps) {
   );
 
   const alertTableExtras = (): JSX.Element | undefined => {
+    if (selectedTable !== ALERTS_TABLE_NAME) {
+      return undefined;
+    }
     return (
       <div className={alertExtrasClassName}>
         <div className={toggleDiagnosticsClassName}>
@@ -266,7 +269,7 @@ export function ResultTables(props: ResultTablesProps) {
           {resultSetOptions}
         </select>
         {numberOfResults}
-        {selectedTable === ALERTS_TABLE_NAME ? alertTableExtras() : undefined}
+        {alertTableExtras()}
         {isLoadingNewResults ? (
           <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>
             Updating results…
