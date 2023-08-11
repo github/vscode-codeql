@@ -164,7 +164,7 @@ export function ResultTables(props: ResultTablesProps) {
     return () => {
       window.removeEventListener("message", vscodeMessageHandler);
     };
-  }, []);
+  }, [vscodeMessageHandler]);
 
   useEffect(() => {
     const resultSetExists =
@@ -180,7 +180,7 @@ export function ResultTables(props: ResultTablesProps) {
           getDefaultResultSet(getResultSets(rawResultSets, interpretation)),
       );
     }
-  });
+  }, [parsedResultSets, interpretation, rawResultSets, selectedTable]);
 
   const onTableSelectionChange = (
     event: React.ChangeEvent<HTMLSelectElement>,
