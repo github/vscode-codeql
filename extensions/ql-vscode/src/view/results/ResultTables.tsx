@@ -248,8 +248,10 @@ export function ResultTables(props: ResultTablesProps) {
   );
   const resultSetNames = getResultSetNames(interpretation, parsedResultSets);
 
-  const resultSet = resultSets.find(
-    (resultSet) => resultSet.schema.name === selectedTable,
+  const resultSet = useMemo(
+    () =>
+      resultSets.find((resultSet) => resultSet.schema.name === selectedTable),
+    [resultSets, selectedTable],
   );
   const nonemptyRawResults = resultSets.some(
     (resultSet) => resultSet.t === "RawResultSet" && resultSet.rows.length > 0,
