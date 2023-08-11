@@ -259,10 +259,6 @@ export class ResultTables extends React.Component<
     return parsedResultSets.pageNumber * parsedResultSets.pageSize;
   }
 
-  sendResultsPageChangedTelemetry() {
-    sendTelemetry("local-results-alert-table-page-changed");
-  }
-
   render(): React.ReactNode {
     const { selectedTable } = this.state;
     const resultSets = getResultSets(
