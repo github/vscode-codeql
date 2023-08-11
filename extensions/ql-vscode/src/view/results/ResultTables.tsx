@@ -139,6 +139,40 @@ export class ResultTables extends React.Component<
     };
   }
 
+  handleMessage(msg: IntoResultsViewMsg): void {
+    switch (msg.t) {
+      case "untoggleShowProblems":
+        this.setState({
+          problemsViewSelected: false,
+        });
+        break;
+
+      default:
+      // noop
+    }
+  }
+
+  private vscodeMessageHandler(evt: MessageEvent) {
+    // sanitize origin
+    const origin = evt.origin.replace(/\n|\r/g, "");
+    evt.origin === window.origin
+      ? this.handleMessage(evt.data as IntoResultsViewMsg)
+      : console.error(`Invalid event origin ${origin}`);
+  }
+
+  // TODO: Duplicated from results.tsx consider a way to
+  // avoid this duplication
+  componentDidMount(): void {
+    this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
+    window.addEventListener("message", this.vscodeMessageHandler);
+  }
+
+  componentWillUnmount(): void {
+    if (this.vscodeMessageHandler) {
+      window.removeEventListener("message", this.vscodeMessageHandler);
+    }
+  }
+
   componentDidUpdate(
     prevProps: Readonly<ResultTablesProps>,
     prevState: Readonly<ResultTablesState>,
@@ -292,40 +326,6 @@ export class ResultTables extends React.Component<
         )}
       </div>
     );
-  }
-
-  handleMessage(msg: IntoResultsViewMsg): void {
-    switch (msg.t) {
-      case "untoggleShowProblems":
-        this.setState({
-          problemsViewSelected: false,
-        });
-        break;
-
-      default:
-      // noop
-    }
-  }
-
-  private vscodeMessageHandler(evt: MessageEvent) {
-    // sanitize origin
-    const origin = evt.origin.replace(/\n|\r/g, "");
-    evt.origin === window.origin
-      ? this.handleMessage(evt.data as IntoResultsViewMsg)
-      : console.error(`Invalid event origin ${origin}`);
-  }
-
-  // TODO: Duplicated from results.tsx consider a way to
-  // avoid this duplication
-  componentDidMount(): void {
-    this.vscodeMessageHandler = this.vscodeMessageHandler.bind(this);
-    window.addEventListener("message", this.vscodeMessageHandler);
-  }
-
-  componentWillUnmount(): void {
-    if (this.vscodeMessageHandler) {
-      window.removeEventListener("message", this.vscodeMessageHandler);
-    }
   }
 }
 
