@@ -5,7 +5,6 @@ import {
   ViewColumn,
   window,
 } from "vscode";
-import { RequestError } from "@octokit/request-error";
 import {
   AbstractWebview,
   WebviewPanelConfig,
@@ -33,18 +32,11 @@ import { readQueryResults, runQuery } from "./external-api-usage-query";
 import { ExternalApiUsage, Usage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
-import { autoModel, ModelRequest, ModelResponse } from "./auto-model-api";
-import {
-  createAutoModelRequest,
-  parsePredictedClassifications,
-} from "./auto-model";
 import {
   enableFrameworkMode,
   showLlmGeneration,
   showModelDetailsView,
-  useLlmGenerationV2,
 } from "../config";
-import { getAutoModelUsages } from "./auto-model-usages-query";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { join } from "path";
@@ -176,18 +168,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "generateExternalApiFromLlm":
-        if (useLlmGenerationV2()) {
-          await this.generateModeledMethodsFromLlmV2(
-            msg.packageName,
-            msg.externalApiUsages,
-            msg.modeledMethods,
-          );
-        } else {
-          await this.generateModeledMethodsFromLlmV1(
-            msg.externalApiUsages,
-            msg.modeledMethods,
-          );
-        }
+        await this.generateModeledMethodsFromLlm(
+          msg.packageName,
+          msg.externalApiUsages,
+          msg.modeledMethods,
+        );
         break;
       case "stopGeneratingExternalApiFromLlm":
         await this.autoModeler.stopModeling(msg.packageName);
@@ -378,77 +363,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     );
   }
 
-  private async generateModeledMethodsFromLlmV1(
-    externalApiUsages: ExternalApiUsage[],
-    modeledMethods: Record<string, ModeledMethod>,
-  ): Promise<void> {
-    await withProgress(async (progress) => {
-      const maxStep = 3000;
-
-      progress({
-        step: 0,
-        maxStep,
-        message: "Retrieving usages",
-      });
-
-      const usages = await getAutoModelUsages({
-        cliServer: this.cliServer,
-        queryRunner: this.queryRunner,
-        queryStorageDir: this.queryStorageDir,
-        queryDir: this.queryDir,
-        databaseItem: this.databaseItem,
-        progress: (update) => progress({ ...update, maxStep }),
-      });
-
-      progress({
-        step: 1800,
-        maxStep,
-        message: "Creating request",
-      });
-
-      const request = createAutoModelRequest(
-        this.databaseItem.language,
-        externalApiUsages,
-        modeledMethods,
-        usages,
-        this.mode,
-      );
-
-      progress({
-        step: 2000,
-        maxStep,
-        message: "Sending request",
-      });
-
-      const response = await this.callAutoModelApi(request);
-      if (!response) {
-        return;
-      }
-
-      progress({
-        step: 2500,
-        maxStep,
-        message: "Parsing response",
-      });
-
-      const predictedModeledMethods = parsePredictedClassifications(
-        response.predicted || [],
-      );
-
-      progress({
-        step: 2800,
-        maxStep,
-        message: "Applying results",
-      });
-
-      await this.postMessage({
-        t: "addModeledMethods",
-        modeledMethods: predictedModeledMethods,
-      });
-    });
-  }
-
-  private async generateModeledMethodsFromLlmV2(
+  private async generateModeledMethodsFromLlm(
     packageName: string,
     externalApiUsages: ExternalApiUsage[],
     modeledMethods: Record<string, ModeledMethod>,
@@ -569,24 +484,5 @@ export class DataExtensionsEditorView extends AbstractWebview<
     }
 
     return addedDatabase;
-  }
-
-  private async callAutoModelApi(
-    request: ModelRequest,
-  ): Promise<ModelResponse | null> {
-    try {
-      return await autoModel(this.app.credentials, request);
-    } catch (e) {
-      if (e instanceof RequestError && e.status === 429) {
-        void showAndLogExceptionWithTelemetry(
-          this.app.logger,
-          this.app.telemetry,
-          redactableError(e)`Rate limit hit, please try again soon.`,
-        );
-        return null;
-      } else {
-        throw e;
-      }
-    }
   }
 }

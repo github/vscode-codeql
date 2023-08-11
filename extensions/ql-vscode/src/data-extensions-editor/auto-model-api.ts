@@ -1,40 +1,20 @@
 import { Credentials } from "../common/authentication";
 import { OctokitResponse } from "@octokit/types";
 
-export enum ClassificationType {
-  Unknown = "CLASSIFICATION_TYPE_UNKNOWN",
-  Neutral = "CLASSIFICATION_TYPE_NEUTRAL",
-  Source = "CLASSIFICATION_TYPE_SOURCE",
-  Sink = "CLASSIFICATION_TYPE_SINK",
-  Summary = "CLASSIFICATION_TYPE_SUMMARY",
-}
-
-export interface Classification {
-  type: ClassificationType;
-  kind: string;
-  explanation: string;
-}
-
-export interface Method {
-  package: string;
-  type: string;
-  name: string;
-  signature: string;
-  usages: string[];
-  classification?: Classification;
-  input?: string;
-  output?: string;
+export enum AutomodelMode {
+  Unspecified = "AUTOMODEL_MODE_UNSPECIFIED",
+  Framework = "AUTOMODEL_MODE_FRAMEWORK",
+  Application = "AUTOMODEL_MODE_APPLICATION",
 }
 
 export interface ModelRequest {
-  language: string;
-  candidates: Method[];
-  samples: Method[];
+  mode: AutomodelMode;
+  // Base64-encoded GZIP-compressed SARIF log
+  candidates: string;
 }
 
 export interface ModelResponse {
-  language: string;
-  predicted?: Method[];
+  models: string;
 }
 
 export async function autoModel(

@@ -704,7 +704,6 @@ export function showQueriesPanel(): boolean {
 
 const DATA_EXTENSIONS = new Setting("dataExtensions", ROOT_SETTING);
 const LLM_GENERATION = new Setting("llmGeneration", DATA_EXTENSIONS);
-const LLM_GENERATION_V2 = new Setting("llmGenerationV2", DATA_EXTENSIONS);
 const FRAMEWORK_MODE = new Setting("frameworkMode", DATA_EXTENSIONS);
 const DISABLE_AUTO_NAME_EXTENSION_PACK = new Setting(
   "disableAutoNameExtensionPack",
@@ -722,10 +721,6 @@ export function showModelDetailsView(): boolean {
 
 export function showLlmGeneration(): boolean {
   return !!LLM_GENERATION.getValue<boolean>();
-}
-
-export function useLlmGenerationV2(): boolean {
-  return !!LLM_GENERATION_V2.getValue<boolean>();
 }
 
 export function enableFrameworkMode(): boolean {
