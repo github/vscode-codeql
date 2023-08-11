@@ -24,7 +24,7 @@ import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
 import { ResultTable } from "./ResultTable";
 import { ResultTablesHeader } from "./ResultTablesHeader";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 /**
  * Properties for the `ResultTables` component.
@@ -218,7 +218,7 @@ export function ResultTables(props: ResultTablesProps) {
     [database, metadata, origResultsPaths, problemsViewSelected, resultsPath],
   );
 
-  const alertTableExtras = (): JSX.Element | undefined => {
+  const alertTableExtras = useMemo((): JSX.Element | undefined => {
     if (selectedTable !== ALERTS_TABLE_NAME) {
       return undefined;
     }
@@ -238,7 +238,7 @@ export function ResultTables(props: ResultTablesProps) {
         </div>
       </div>
     );
-  };
+  }, [handleCheckboxChanged, problemsViewSelected, selectedTable]);
 
   const getOffset = (): number => {
     return parsedResultSets.pageNumber * parsedResultSets.pageSize;
@@ -269,7 +269,7 @@ export function ResultTables(props: ResultTablesProps) {
           {resultSetOptions}
         </select>
         {numberOfResults}
-        {alertTableExtras()}
+        {alertTableExtras}
         {isLoadingNewResults ? (
           <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>
             Updating results…
