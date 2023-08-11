@@ -240,9 +240,7 @@ export function ResultTables(props: ResultTablesProps) {
     );
   }, [handleCheckboxChanged, problemsViewSelected, selectedTable]);
 
-  const getOffset = (): number => {
-    return parsedResultSets.pageNumber * parsedResultSets.pageSize;
-  };
+  const offset = parsedResultSets.pageNumber * parsedResultSets.pageSize;
 
   const resultSets = getResultSets(rawResultSets, interpretation);
   const resultSetNames = getResultSetNames(interpretation, parsedResultSets);
@@ -288,7 +286,7 @@ export function ResultTables(props: ResultTablesProps) {
             setSelectedTable(SELECT_TABLE_NAME);
             sendTelemetry("local-results-show-raw-results");
           }}
-          offset={getOffset()}
+          offset={offset}
         />
       )}
     </div>
