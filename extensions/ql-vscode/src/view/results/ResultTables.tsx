@@ -145,13 +145,16 @@ export function ResultTables(props: ResultTablesProps) {
     }
   }, []);
 
-  const vscodeMessageHandler = (evt: MessageEvent): void => {
-    // sanitize origin
-    const origin = evt.origin.replace(/\n|\r/g, "");
-    evt.origin === window.origin
-      ? handleMessage(evt.data as IntoResultsViewMsg)
-      : console.error(`Invalid event origin ${origin}`);
-  };
+  const vscodeMessageHandler = useCallback(
+    (evt: MessageEvent): void => {
+      // sanitize origin
+      const origin = evt.origin.replace(/\n|\r/g, "");
+      evt.origin === window.origin
+        ? handleMessage(evt.data as IntoResultsViewMsg)
+        : console.error(`Invalid event origin ${origin}`);
+    },
+    [handleMessage],
+  );
 
   // TODO: Duplicated from results.tsx consider a way to
   // avoid this duplication
