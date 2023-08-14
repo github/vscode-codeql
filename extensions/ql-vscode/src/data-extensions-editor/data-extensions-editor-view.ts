@@ -3,6 +3,7 @@ import {
   ExtensionContext,
   Uri,
   ViewColumn,
+  WebviewPanel,
   window,
 } from "vscode";
 import {
@@ -48,6 +49,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
   FromDataExtensionsEditorMessage
 > {
+  private static mostRecentlyActivePanel: WebviewPanel | undefined = undefined;
+
   private readonly autoModeler: AutoModeler;
 
   private externalApiUsages: ExternalApiUsage[];
@@ -95,7 +98,27 @@ export class DataExtensionsEditorView extends AbstractWebview<
     const panel = await this.getPanel();
     panel.reveal(undefined, true);
 
+    panel.onDidChangeViewState(async () => {
+      if (await this.isTheMostRecentlyActivePanel()) {
+        await this.updateModelDetailsPanelState(
+          this.externalApiUsages,
+          this.databaseItem,
+        );
+      }
+    });
+
     await this.waitForPanelLoaded();
+  }
+
+  private async isTheMostRecentlyActivePanel(): Promise<boolean> {
+    const panel = await this.getPanel();
+
+    if (panel.active) {
+      DataExtensionsEditorView.mostRecentlyActivePanel = panel;
+      return true;
+    } else {
+      return panel === DataExtensionsEditorView.mostRecentlyActivePanel;
+    }
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
@@ -289,10 +312,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
             t: "setExternalApiUsages",
             externalApiUsages: this.externalApiUsages,
           });
-          await this.updateModelDetailsPanelState(
-            this.externalApiUsages,
-            this.databaseItem,
-          );
+          if (await this.isTheMostRecentlyActivePanel()) {
+            await this.updateModelDetailsPanelState(
+              this.externalApiUsages,
+              this.databaseItem,
+            );
+          }
         } catch (err) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
