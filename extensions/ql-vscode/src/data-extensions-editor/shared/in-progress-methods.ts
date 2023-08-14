@@ -19,10 +19,7 @@ export class InProgressMethods {
     packageName: string,
     methods: Set<string>,
   ): InProgressMethods {
-    const newMethodMap = new Map<string, Set<string>>();
-    this.methodMap.forEach((value, key) => {
-      newMethodMap.set(key, new Set<string>(value));
-    });
+    const newMethodMap = new Map<string, Set<string>>(this.methodMap);
     newMethodMap.set(packageName, methods);
     return new InProgressMethods(newMethodMap);
   }
