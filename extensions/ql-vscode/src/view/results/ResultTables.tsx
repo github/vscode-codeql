@@ -14,17 +14,14 @@ import {
   ParsedResultSets,
   IntoResultsViewMsg,
 } from "../../common/interface-types";
-import {
-  tableHeaderClassName,
-  toggleDiagnosticsClassName,
-  alertExtrasClassName,
-} from "./result-table-utils";
+import { tableHeaderClassName } from "./result-table-utils";
 import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
 import { ResultTable } from "./ResultTable";
 import { ResultTablesHeader } from "./ResultTablesHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ResultCount } from "./ResultCount";
+import { ProblemsViewCheckbox } from "./ProblemsViewCheckbox";
 
 /**
  * Properties for the `ResultTables` component.
@@ -200,28 +197,6 @@ export function ResultTables(props: ResultTablesProps) {
     [database, metadata, origResultsPaths, problemsViewSelected, resultsPath],
   );
 
-  const alertTableExtras = useMemo((): JSX.Element | undefined => {
-    if (selectedTable !== ALERTS_TABLE_NAME) {
-      return undefined;
-    }
-    return (
-      <div className={alertExtrasClassName}>
-        <div className={toggleDiagnosticsClassName}>
-          <input
-            type="checkbox"
-            id="toggle-diagnostics"
-            name="toggle-diagnostics"
-            onChange={handleCheckboxChanged}
-            checked={problemsViewSelected}
-          />
-          <label htmlFor="toggle-diagnostics">
-            Show results in Problems view
-          </label>
-        </div>
-      </div>
-    );
-  }, [handleCheckboxChanged, problemsViewSelected, selectedTable]);
-
   const offset = parsedResultSets.pageNumber * parsedResultSets.pageSize;
 
   const resultSets = useMemo(
@@ -253,7 +228,11 @@ export function ResultTables(props: ResultTablesProps) {
           {resultSetOptions}
         </select>
         <ResultCount resultSet={resultSet} />
-        {alertTableExtras}
+        <ProblemsViewCheckbox
+          selectedTable={selectedTable}
+          problemsViewSelected={problemsViewSelected}
+          handleCheckboxChanged={handleCheckboxChanged}
+        />
         {isLoadingNewResults ? (
           <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>
             Updating results…
