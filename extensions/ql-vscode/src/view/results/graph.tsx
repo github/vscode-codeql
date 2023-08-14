@@ -52,9 +52,11 @@ export function Graph({ graphData, databaseUri }: GraphProps) {
             });
           }
         }
-
         if ("fill" in d.attributes) {
-          d.attributes.fill = d.tag === "text" ? color : backgroundColor;
+          d.attributes.fill = backgroundColor;
+        }
+        if (d.tag === "text") {
+          d.attributes.fill = color;
         }
         if ("stroke" in d.attributes) {
           // There is no proper way to identify the element containing the graph (which we
