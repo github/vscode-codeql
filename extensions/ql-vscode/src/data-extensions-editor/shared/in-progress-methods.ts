@@ -1,16 +1,27 @@
 /**
  * A class that keeps track of which methods are in progress for each package.
+ *
+ * This class is immutable and therefore is safe to be used in a react useState hook.
  */
 export class InProgressMethods {
   // A map of in-progress method signatures for each package.
-  private readonly methodMap: Map<string, Set<string>>;
+  private readonly methodMap: ReadonlyMap<string, Set<string>>;
 
-  constructor() {
-    this.methodMap = new Map<string, Set<string>>();
+  constructor(methodMap?: ReadonlyMap<string, Set<string>>) {
+    this.methodMap = methodMap ?? new Map<string, Set<string>>();
   }
 
-  public setPackageMethods(packageName: string, methods: Set<string>): void {
-    this.methodMap.set(packageName, methods);
+  /**
+   * Sets the in-progress methods for the given package.
+   * Returns a new InProgressMethods instance.
+   */
+  public setPackageMethods(
+    packageName: string,
+    methods: Set<string>,
+  ): InProgressMethods {
+    const newMethodMap = new Map<string, Set<string>>(this.methodMap);
+    newMethodMap.set(packageName, methods);
+    return new InProgressMethods(newMethodMap);
   }
 
   public hasMethod(packageName: string, method: string): boolean {
@@ -19,13 +30,5 @@ export class InProgressMethods {
       return methods.has(method);
     }
     return false;
-  }
-
-  public static fromExisting(methods: InProgressMethods): InProgressMethods {
-    const newInProgressMethods = new InProgressMethods();
-    methods.methodMap.forEach((value, key) => {
-      newInProgressMethods.methodMap.set(key, new Set<string>(value));
-    });
-    return newInProgressMethods;
   }
 }
