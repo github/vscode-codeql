@@ -50,6 +50,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
 > {
   private readonly autoModeler: AutoModeler;
 
+  private externalApiUsages: ExternalApiUsage[];
+
   public constructor(
     ctx: ExtensionContext,
     private readonly app: App,
@@ -86,6 +88,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.postMessage({ t: "addModeledMethods", modeledMethods });
       },
     );
+    this.externalApiUsages = [];
   }
 
   public async openView() {
@@ -280,14 +283,14 @@ export class DataExtensionsEditorView extends AbstractWebview<
             maxStep: 1500,
           });
 
-          const externalApiUsages = decodeBqrsToExternalApiUsages(bqrsChunk);
+          this.externalApiUsages = decodeBqrsToExternalApiUsages(bqrsChunk);
 
           await this.postMessage({
             t: "setExternalApiUsages",
-            externalApiUsages,
+            externalApiUsages: this.externalApiUsages,
           });
           await this.updateModelDetailsPanelState(
-            externalApiUsages,
+            this.externalApiUsages,
             this.databaseItem,
           );
         } catch (err) {
