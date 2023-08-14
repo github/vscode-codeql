@@ -42,7 +42,7 @@ export const ModeledMethodDataGrid = ({
   );
 
   return (
-    <VSCodeDataGrid gridTemplateColumns="0.5fr 0.125fr 0.125fr 0.125fr 0.125fr 0.125fr">
+    <VSCodeDataGrid gridTemplateColumns="0.5fr 0.125fr 0.125fr 0.125fr 0.125fr">
       <VSCodeDataGridRow rowType="header">
         <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
           API or method
