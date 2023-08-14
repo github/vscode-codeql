@@ -16,7 +16,6 @@ import {
 } from "../../common/interface-types";
 import {
   tableHeaderClassName,
-  tableHeaderItemClassName,
   toggleDiagnosticsClassName,
   alertExtrasClassName,
 } from "./result-table-utils";
@@ -25,6 +24,7 @@ import { sendTelemetry } from "../common/telemetry";
 import { ResultTable } from "./ResultTable";
 import { ResultTablesHeader } from "./ResultTablesHeader";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ResultCount } from "./ResultCount";
 
 /**
  * Properties for the `ResultTables` component.
@@ -46,24 +46,6 @@ interface ResultTablesProps {
 
 const UPDATING_RESULTS_TEXT_CLASS_NAME =
   "vscode-codeql__result-tables-updating-text";
-
-function getResultCount(resultSet: ResultSet): number {
-  switch (resultSet.t) {
-    case "RawResultSet":
-      return resultSet.schema.rows;
-    case "InterpretedResultSet":
-      return resultSet.interpretation.numTotalResults;
-  }
-}
-
-function renderResultCountString(resultSet: ResultSet): JSX.Element {
-  const resultCount = getResultCount(resultSet);
-  return (
-    <span className={tableHeaderItemClassName}>
-      {resultCount} {resultCount === 1 ? "result" : "results"}
-    </span>
-  );
-}
 
 function getInterpretedTableName(interpretation: Interpretation): string {
   return interpretation.data.t === "GraphInterpretationData"
@@ -256,7 +238,6 @@ export function ResultTables(props: ResultTablesProps) {
   const nonemptyRawResults = resultSets.some(
     (resultSet) => resultSet.t === "RawResultSet" && resultSet.rows.length > 0,
   );
-  const numberOfResults = resultSet && renderResultCountString(resultSet);
 
   const resultSetOptions = resultSetNames.map((name) => (
     <option key={name} value={name}>
@@ -271,7 +252,7 @@ export function ResultTables(props: ResultTablesProps) {
         <select value={selectedTable} onChange={onTableSelectionChange}>
           {resultSetOptions}
         </select>
-        {numberOfResults}
+        <ResultCount resultSet={resultSet} />
         {alertTableExtras}
         {isLoadingNewResults ? (
           <span className={UPDATING_RESULTS_TEXT_CLASS_NAME}>
