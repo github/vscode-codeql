@@ -24,7 +24,7 @@ import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
 import { ResultTable } from "./ResultTable";
 import { ResultTablesHeader } from "./ResultTablesHeader";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 /**
  * Properties for the `ResultTables` component.
@@ -128,11 +128,11 @@ export function ResultTables(props: ResultTablesProps) {
     sortStates,
   } = props;
 
-  const [selectedTable, setSelectedTable] = React.useState(
+  const [selectedTable, setSelectedTable] = useState(
     parsedResultSets.selectedTable ||
       getDefaultResultSet(getResultSets(rawResultSets, interpretation)),
   );
-  const [problemsViewSelected, setProblemsViewSelected] = React.useState(false);
+  const [problemsViewSelected, setProblemsViewSelected] = useState(false);
 
   const handleMessage = useCallback((msg: IntoResultsViewMsg): void => {
     switch (msg.t) {
