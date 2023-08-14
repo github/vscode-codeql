@@ -25,7 +25,7 @@ index 1ac28d5..f91f216 100644
          await super.setup();
          await (0, load_pnp_1.default)();
 diff --git a/node_modules/jest-runner-vscode/dist/child/runner.js b/node_modules/jest-runner-vscode/dist/child/runner.js
-index 0663c5c..4991663 100644
+index 0663c5c..bdf4a8b 100644
 --- a/node_modules/jest-runner-vscode/dist/child/runner.js
 +++ b/node_modules/jest-runner-vscode/dist/child/runner.js
 @@ -18,10 +18,13 @@ async function run() {
@@ -43,6 +43,16 @@ index 0663c5c..4991663 100644
          const options = JSON.parse(PARENT_JEST_OPTIONS);
          const jestOptions = [
              ...options.args,
+@@ -39,6 +42,9 @@ async function run() {
+             ...(argv.projects?.map(project => path_1.default.resolve(project)) || []),
+             options.workspacePath,
+         ]);
++        const testPaths = new Set(argv._.map(testPath => path_1.default.resolve(testPath)));
++        argv._ = [...testPaths];
++
+         await (0, core_1.runCLI)(argv, [...projects]);
+     }
+     catch (error) {
 diff --git a/node_modules/jest-runner-vscode/dist/public-types.d.ts b/node_modules/jest-runner-vscode/dist/public-types.d.ts
 index 57716e5..d8614af 100644
 --- a/node_modules/jest-runner-vscode/dist/public-types.d.ts
