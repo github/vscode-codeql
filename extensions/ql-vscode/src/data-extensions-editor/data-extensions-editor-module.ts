@@ -148,6 +148,7 @@ export class DataExtensionsEditorModule extends DisposableObject {
               modelFile,
               Mode.Application,
               this.modelDetailsPanel.setState.bind(this.modelDetailsPanel),
+              this.modelDetailsPanel.revealItem.bind(this.modelDetailsPanel),
             );
             await view.openView();
           },

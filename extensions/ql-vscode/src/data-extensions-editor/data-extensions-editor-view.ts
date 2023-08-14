@@ -25,12 +25,11 @@ import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
 import { generateFlowModel } from "./generate-flow-model";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
-import { ResolvableLocationValue } from "../common/bqrs-cli-types";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../common/errors";
 import { readQueryResults, runQuery } from "./external-api-usage-query";
-import { ExternalApiUsage } from "./external-api-usage";
+import { ExternalApiUsage, Usage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
 import {
@@ -66,6 +65,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       externalApiUsages: ExternalApiUsage[],
       databaseItem: DatabaseItem,
     ) => Promise<void>,
+    private readonly revealItemInDetailsPanel: (usage: Usage) => Promise<void>,
   ) {
     super(ctx);
 
@@ -146,7 +146,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "jumpToUsage":
-        await this.handleJumpToUsage(msg.location);
+        await this.handleJumpToUsage(msg.usage);
 
         break;
       case "saveModeledMethods":
@@ -216,22 +216,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
     });
   }
 
-  protected async handleJumpToUsage(location: ResolvableLocationValue) {
+  protected async handleJumpToUsage(usage: Usage) {
     if (showModelDetailsView()) {
-      await this.openModelDetailsView();
-    } else {
-      await this.jumpToUsage(location);
+      await this.revealItemInDetailsPanel(usage);
     }
-  }
-
-  protected async openModelDetailsView() {
-    await this.app.commands.execute("codeQLModelDetails.focus");
-  }
-
-  protected async jumpToUsage(
-    location: ResolvableLocationValue,
-  ): Promise<void> {
-    await showResolvableLocation(location, this.databaseItem, this.app.logger);
+    await showResolvableLocation(usage.url, this.databaseItem, this.app.logger);
   }
 
   protected async loadExistingModeledMethods(): Promise<void> {
@@ -419,6 +408,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         modelFile,
         Mode.Framework,
         this.updateModelDetailsPanelState,
+        this.revealItemInDetailsPanel,
       );
       await view.openView();
     });

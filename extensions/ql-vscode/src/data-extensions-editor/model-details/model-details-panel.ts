@@ -1,13 +1,16 @@
 import { TreeView, window } from "vscode";
 import { DisposableObject } from "../../common/disposable-object";
-import { ModelDetailsDataProvider } from "./model-details-data-provider";
-import { DatabaseItem } from "../../databases/local-databases";
+import {
+  ModelDetailsDataProvider,
+  ModelDetailsTreeViewItem,
+} from "./model-details-data-provider";
 import { ExternalApiUsage, Usage } from "../external-api-usage";
+import { DatabaseItem } from "../../databases/local-databases";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 
 export class ModelDetailsPanel extends DisposableObject {
   private readonly dataProvider: ModelDetailsDataProvider;
-  private readonly treeView: TreeView<ExternalApiUsage | Usage>;
+  private readonly treeView: TreeView<ModelDetailsTreeViewItem>;
 
   public constructor(cliServer: CodeQLCliServer) {
     super();
@@ -29,5 +32,12 @@ export class ModelDetailsPanel extends DisposableObject {
       value: externalApiUsages.length,
       tooltip: "Number of external APIs",
     };
+  }
+
+  public async revealItem(usage: Usage): Promise<void> {
+    const canonicalUsage = this.dataProvider.resolveCanonicalUsage(usage);
+    if (canonicalUsage !== undefined) {
+      await this.treeView.reveal(canonicalUsage);
+    }
   }
 }
