@@ -114,11 +114,35 @@ export class DataExtensionsEditorView extends AbstractWebview<
       }
     });
 
-    panel.onDidDispose(async () => {
+    panel.onDidDispose(() => {
       this.handleViewWasDisposed(this);
+      // onDidDispose is called after the tab has been closed,
+      // so we want to check if there are any others still open.
+      void this.app.commands.execute(
+        "setContext",
+        "codeql.dataExtensionsEditorOpen",
+        this.isADataExtensionsEditorOpen(),
+      );
     });
 
     await this.waitForPanelLoaded();
+
+    void this.app.commands.execute(
+      "setContext",
+      "codeql.dataExtensionsEditorOpen",
+      true,
+    );
+  }
+
+  private isADataExtensionsEditorOpen(): boolean {
+    return window.tabGroups.all.some((tabGroup) =>
+      tabGroup.tabs.some((tab) => {
+        const viewType: string | undefined = (tab.input as any)?.viewType;
+        // The viewType has a prefix, such as "mainThreadWebview-", but if the
+        // suffix matches that should be enough to identify the view.
+        return viewType && viewType.endsWith("data-extensions-editor");
+      }),
+    );
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
