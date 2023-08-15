@@ -69,7 +69,7 @@ class InMemoryConfiguration implements WorkspaceConfiguration {
 class DefaultConfiguration implements WorkspaceConfiguration {
   private readonly values: Record<string, unknown> = {};
 
-  public constructor(configurations: Record<string, { default: unknown }>) {
+  public constructor(configurations: PackageConfiguration) {
     for (const [section, config] of Object.entries(configurations)) {
       setIn(this.values, section, config.default);
     }
@@ -138,29 +138,44 @@ class ChainedInMemoryConfiguration {
   }
 }
 
+type PackageConfiguration = Record<
+  string,
+  {
+    default: unknown;
+  }
+>;
+
 // Public configuration keys are the ones defined in the package.json.
 // These keys are documented in the settings page. Other keys are
 // internal and not documented.
-const packageConfiguration: Record<
-  string,
-  {
-    default: any | undefined;
-  }
-> = (function initConfigurationKeys() {
-  // Note we are using synchronous file reads here. This is fine because
-  // we are in tests.
-  const pkg = JSON.parse(
-    readFileSync(join(__dirname, "../../package.json"), "utf-8"),
-  );
-  return {
-    ...pkg.contributes.configuration.properties,
-    // `debug.saveBeforeStart` is a core VS Code setting, but we depend on its value in these tests.
-    // We'll set it here to the value that we expect.
-    "debug.saveBeforeStart": {
-      default: "nonUntitledEditorsInActiveGroup",
-    },
-  };
-})();
+const packageConfiguration: PackageConfiguration =
+  (function initConfigurationKeys() {
+    // Note we are using synchronous file reads here. This is fine because
+    // we are in tests.
+    const pkg = JSON.parse(
+      readFileSync(join(__dirname, "../../package.json"), "utf-8"),
+    );
+
+    const properties: PackageConfiguration = {
+      // `debug.saveBeforeStart` is a core VS Code setting, but we depend on its value in these tests.
+      // We'll set it here to the value that we expect.
+      "debug.saveBeforeStart": {
+        default: "nonUntitledEditorsInActiveGroup",
+      },
+    };
+    if (!Array.isArray(pkg.contributes.configuration)) {
+      throw new Error("Expected package.json configuration to be an array");
+    }
+    for (const configuration of pkg.contributes.configuration) {
+      if (configuration.properties) {
+        for (const [key, value] of Object.entries(configuration.properties)) {
+          properties[key] = value as any;
+        }
+      }
+    }
+
+    return properties;
+  })();
 
 export let vscodeGetConfigurationMock: jest.SpiedFunction<
   typeof workspace.getConfiguration
