@@ -134,6 +134,7 @@ import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";
 import { NewQueryRunner, QueryRunner, QueryServerClient } from "./query-server";
 import { QueriesModule } from "./queries-panel/queries-module";
+import { OpenReferencedFileCodeLensProvider } from "./local-queries/open-referenced-file-code-lens-provider";
 
 /**
  * extension.ts
@@ -332,10 +333,17 @@ export async function activate(
 
   const app = new ExtensionApp(ctx);
 
-  const codelensProvider = new QuickEvalCodeLensProvider();
+  const quickEvalCodeLensProvider = new QuickEvalCodeLensProvider();
   languages.registerCodeLensProvider(
     { scheme: "file", language: "ql" },
-    codelensProvider,
+    quickEvalCodeLensProvider,
+  );
+
+  const openReferencedFileCodeLensProvider =
+    new OpenReferencedFileCodeLensProvider();
+  languages.registerCodeLensProvider(
+    { scheme: "file", pattern: "**/*.qlref" },
+    openReferencedFileCodeLensProvider,
   );
 
   ctx.subscriptions.push(distributionConfigListener);

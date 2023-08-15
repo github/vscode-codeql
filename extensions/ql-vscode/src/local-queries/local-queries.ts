@@ -8,6 +8,7 @@ import {
   CancellationTokenSource,
   QuickPickItem,
   Range,
+  TabInputText,
   Uri,
   window,
 } from "vscode";
@@ -300,20 +301,18 @@ export class LocalQueries extends DisposableObject {
   }
 
   /**
-   * Gets the current active query.
-   *
-   * For now, the "active query" is just whatever query is in the active text editor. Once we have a
-   * proper "queries" panel, we can provide a way to select the current query there.
+   * Gets the current active query. This is the query that is open in the active tab.
    */
   public async getCurrentQuery(allowLibraryFiles: boolean): Promise<string> {
-    const editor = window.activeTextEditor;
-    if (editor === undefined) {
+    const input = window.tabGroups.activeTabGroup.activeTab?.input;
+
+    if (input === undefined || !isTabInputText(input)) {
       throw new Error(
         "No query was selected. Please select a query and try again.",
       );
     }
 
-    return validateQueryUri(editor.document.uri, allowLibraryFiles);
+    return validateQueryUri(input.uri, allowLibraryFiles);
   }
 
   private async createSkeletonQuery(): Promise<void> {
@@ -580,4 +579,8 @@ export class LocalQueries extends DisposableObject {
       ? Object.keys(await this.cliServer.resolveQlpacks(additionalPacks, true))
       : [];
   }
+}
+
+function isTabInputText(input: any): input is TabInputText {
+  return input?.uri !== undefined;
 }

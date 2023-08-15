@@ -34,16 +34,27 @@ export class ModelDetailsDataProvider
     return this.onDidChangeTreeDataEmitter.event;
   }
 
+  /**
+   * Update the data displayed in the tree view.
+   *
+   * Will only trigger an update if the data has changed. This relies on
+   * object identity, so be sure to not mutate the data passed to this
+   * method and instead always pass new objects/arrays.
+   */
   public async setState(
     externalApiUsages: ExternalApiUsage[],
     databaseItem: DatabaseItem,
   ): Promise<void> {
-    this.externalApiUsages = externalApiUsages;
-    this.databaseItem = databaseItem;
-    this.sourceLocationPrefix = await this.databaseItem.getSourceLocationPrefix(
-      this.cliServer,
-    );
-    this.onDidChangeTreeDataEmitter.fire();
+    if (
+      this.externalApiUsages !== externalApiUsages ||
+      this.databaseItem !== databaseItem
+    ) {
+      this.externalApiUsages = externalApiUsages;
+      this.databaseItem = databaseItem;
+      this.sourceLocationPrefix =
+        await this.databaseItem.getSourceLocationPrefix(this.cliServer);
+      this.onDidChangeTreeDataEmitter.fire();
+    }
   }
 
   getTreeItem(item: ModelDetailsTreeViewItem): TreeItem {
