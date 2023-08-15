@@ -32,6 +32,9 @@ export class DataExtensionsEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
   private readonly modelDetailsPanel: ModelDetailsPanel;
 
+  private mostRecentlyActiveView: DataExtensionsEditorView | undefined =
+    undefined;
+
   private constructor(
     private readonly ctx: ExtensionContext,
     private readonly app: App,
@@ -46,6 +49,20 @@ export class DataExtensionsEditorModule extends DisposableObject {
       "data-extensions-editor-results",
     );
     this.modelDetailsPanel = this.push(new ModelDetailsPanel(cliServer));
+  }
+
+  private handleViewBecameActive(view: DataExtensionsEditorView): void {
+    this.mostRecentlyActiveView = view;
+  }
+
+  private handleViewWasDisposed(view: DataExtensionsEditorView): void {
+    if (this.mostRecentlyActiveView === view) {
+      this.mostRecentlyActiveView = undefined;
+    }
+  }
+
+  private isMostRecentlyActiveView(view: DataExtensionsEditorView): boolean {
+    return this.mostRecentlyActiveView === view;
   }
 
   public static async initialize(
@@ -149,6 +166,9 @@ export class DataExtensionsEditorModule extends DisposableObject {
               Mode.Application,
               this.modelDetailsPanel.setState.bind(this.modelDetailsPanel),
               this.modelDetailsPanel.revealItem.bind(this.modelDetailsPanel),
+              this.handleViewBecameActive.bind(this),
+              this.handleViewWasDisposed.bind(this),
+              this.isMostRecentlyActiveView.bind(this),
             );
             await view.openView();
           },

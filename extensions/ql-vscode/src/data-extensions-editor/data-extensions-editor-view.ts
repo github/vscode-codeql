@@ -3,7 +3,6 @@ import {
   ExtensionContext,
   Uri,
   ViewColumn,
-  WebviewPanel,
   window,
 } from "vscode";
 import {
@@ -49,8 +48,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
   FromDataExtensionsEditorMessage
 > {
-  private static mostRecentlyActivePanel: WebviewPanel | undefined = undefined;
-
   private readonly autoModeler: AutoModeler;
 
   private externalApiUsages: ExternalApiUsage[];
@@ -71,6 +68,15 @@ export class DataExtensionsEditorView extends AbstractWebview<
       databaseItem: DatabaseItem,
     ) => Promise<void>,
     private readonly revealItemInDetailsPanel: (usage: Usage) => Promise<void>,
+    private readonly handleViewBecameActive: (
+      view: DataExtensionsEditorView,
+    ) => void,
+    private readonly handleViewWasDisposed: (
+      view: DataExtensionsEditorView,
+    ) => void,
+    private readonly isMostRecentlyActiveView: (
+      view: DataExtensionsEditorView,
+    ) => boolean,
   ) {
     super(ctx);
 
@@ -100,7 +106,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
     panel.onDidChangeViewState(async () => {
       if (panel.active) {
-        await this.onPanelBecameActive();
+        this.handleViewBecameActive(this);
         await this.updateModelDetailsPanelState(
           this.externalApiUsages,
           this.databaseItem,
@@ -109,27 +115,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
     });
 
     panel.onDidDispose(async () => {
-      await this.onPanelWasDisposed();
+      this.handleViewWasDisposed(this);
     });
 
     await this.waitForPanelLoaded();
-  }
-
-  private async onPanelBecameActive(): Promise<void> {
-    const panel = await this.getPanel();
-    DataExtensionsEditorView.mostRecentlyActivePanel = panel;
-  }
-
-  private async onPanelWasDisposed(): Promise<void> {
-    const panel = await this.getPanel();
-    if (panel === DataExtensionsEditorView.mostRecentlyActivePanel) {
-      DataExtensionsEditorView.mostRecentlyActivePanel = undefined;
-    }
-  }
-
-  private async isTheMostRecentlyActivePanel(): Promise<boolean> {
-    const panel = await this.getPanel();
-    return panel === DataExtensionsEditorView.mostRecentlyActivePanel;
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
@@ -323,7 +312,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
             t: "setExternalApiUsages",
             externalApiUsages: this.externalApiUsages,
           });
-          if (await this.isTheMostRecentlyActivePanel()) {
+          if (this.isMostRecentlyActiveView(this)) {
             await this.updateModelDetailsPanelState(
               this.externalApiUsages,
               this.databaseItem,
@@ -448,6 +437,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
         Mode.Framework,
         this.updateModelDetailsPanelState,
         this.revealItemInDetailsPanel,
+        this.handleViewBecameActive,
+        this.handleViewWasDisposed,
+        this.isMostRecentlyActiveView,
       );
       await view.openView();
     });
