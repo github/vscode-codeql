@@ -22,7 +22,7 @@ describe("ModelDetailsDataProvider", () => {
 
       await dataProvider.setState(externalApiUsages, dbItem);
 
-      expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(0);
+      expect(onDidChangeTreeDataListener).not.toHaveBeenCalled();
     });
 
     it("should emit onDidChangeTreeData event when externalApiUsages has changed", async () => {
