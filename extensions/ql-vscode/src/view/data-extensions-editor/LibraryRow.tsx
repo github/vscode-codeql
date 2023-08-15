@@ -115,7 +115,7 @@ export const LibraryRow = ({
     return calculateModeledPercentage(externalApiUsages);
   }, [externalApiUsages]);
 
-  const [isExpanded, setExpanded] = useState(modeledPercentage < 100);
+  const [isExpanded, setExpanded] = useState(false);
 
   const toggleExpanded = useCallback(async () => {
     setExpanded((oldIsExpanded) => !oldIsExpanded);
