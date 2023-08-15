@@ -21,9 +21,8 @@ import { sendTelemetry } from "../common/telemetry";
 import { AlertTableHeader } from "./AlertTableHeader";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { SarifLocation } from "./locations/SarifLocation";
-import { EmptyQueryResultsMessage } from "./EmptyQueryResultsMessage";
-import TextButton from "../common/TextButton";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
+import { AlertTableNoResults } from "./AlertTableNoResults";
 
 type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -70,22 +69,6 @@ export class AlertTable extends React.Component<
     e.preventDefault();
   }
 
-  renderNoResults(): JSX.Element {
-    if (this.props.nonemptyRawResults) {
-      return (
-        <span>
-          No Alerts. See{" "}
-          <TextButton onClick={this.props.showRawResults}>
-            raw results
-          </TextButton>
-          .
-        </span>
-      );
-    } else {
-      return <EmptyQueryResultsMessage />;
-    }
-  }
-
   render(): JSX.Element {
     const { databaseUri, resultSet } = this.props;
 
@@ -112,7 +95,7 @@ export class AlertTable extends React.Component<
     };
 
     if (!resultSet.interpretation.data.runs?.[0]?.results?.length) {
-      return this.renderNoResults();
+      return <AlertTableNoResults {...this.props} />;
     }
 
     resultSet.interpretation.data.runs[0].results.forEach(
