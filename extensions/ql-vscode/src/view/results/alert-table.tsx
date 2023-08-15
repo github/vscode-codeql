@@ -7,7 +7,6 @@ import {
   ResultTableProps,
   selectableZebraStripe,
   jumpToLocation,
-  emptyQueryResultsMessage,
 } from "./result-table-utils";
 import { onNavigation } from "./results";
 import {
@@ -22,6 +21,7 @@ import { sendTelemetry } from "../common/telemetry";
 import { AlertTableHeader } from "./alert-table-header";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { SarifLocation } from "./locations/SarifLocation";
+import { EmptyQueryResultsMessage } from "./EmptyQueryResultsMessage";
 
 type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -84,7 +84,7 @@ export class AlertTable extends React.Component<
         </span>
       );
     } else {
-      return emptyQueryResultsMessage();
+      return <EmptyQueryResultsMessage />;
     }
   }
 
