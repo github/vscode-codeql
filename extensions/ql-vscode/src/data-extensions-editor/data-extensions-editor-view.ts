@@ -108,12 +108,23 @@ export class DataExtensionsEditorView extends AbstractWebview<
       }
     });
 
+    panel.onDidDispose(async () => {
+      await this.onPanelWasDisposed();
+    });
+
     await this.waitForPanelLoaded();
   }
 
   private async onPanelBecameActive(): Promise<void> {
     const panel = await this.getPanel();
     DataExtensionsEditorView.mostRecentlyActivePanel = panel;
+  }
+
+  private async onPanelWasDisposed(): Promise<void> {
+    const panel = await this.getPanel();
+    if (panel === DataExtensionsEditorView.mostRecentlyActivePanel) {
+      DataExtensionsEditorView.mostRecentlyActivePanel = undefined;
+    }
   }
 
   private async isTheMostRecentlyActivePanel(): Promise<boolean> {
