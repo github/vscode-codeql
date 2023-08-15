@@ -19,7 +19,7 @@ import {
 import { parseSarifLocation, isNoLocation } from "../../common/sarif-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
-import { AlertTableHeader } from "./alert-table-header";
+import { AlertTableHeader } from "./AlertTableHeader";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { SarifLocation } from "./locations/SarifLocation";
 
