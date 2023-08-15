@@ -8,7 +8,7 @@ describe("ModelDetailsDataProvider", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
 
   describe("setState", () => {
-    it("should emit onDidChangeTreeData event when state has changed", async () => {
+    it("should not emit onDidChangeTreeData event when state has not changed", async () => {
       const externalApiUsages: ExternalApiUsage[] = [];
       const dbItem = mockedObject<DatabaseItem>({
         getSourceLocationPrefix: () => "test",
