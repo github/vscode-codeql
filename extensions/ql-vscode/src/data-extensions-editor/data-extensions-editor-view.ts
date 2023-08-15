@@ -99,7 +99,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
     panel.reveal(undefined, true);
 
     panel.onDidChangeViewState(async () => {
-      if (await this.isTheMostRecentlyActivePanel()) {
+      if (panel.active) {
+        await this.onPanelBecameActive();
         await this.updateModelDetailsPanelState(
           this.externalApiUsages,
           this.databaseItem,
@@ -110,15 +111,14 @@ export class DataExtensionsEditorView extends AbstractWebview<
     await this.waitForPanelLoaded();
   }
 
+  private async onPanelBecameActive(): Promise<void> {
+    const panel = await this.getPanel();
+    DataExtensionsEditorView.mostRecentlyActivePanel = panel;
+  }
+
   private async isTheMostRecentlyActivePanel(): Promise<boolean> {
     const panel = await this.getPanel();
-
-    if (panel.active) {
-      DataExtensionsEditorView.mostRecentlyActivePanel = panel;
-      return true;
-    } else {
-      return panel === DataExtensionsEditorView.mostRecentlyActivePanel;
-    }
+    return panel === DataExtensionsEditorView.mostRecentlyActivePanel;
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
