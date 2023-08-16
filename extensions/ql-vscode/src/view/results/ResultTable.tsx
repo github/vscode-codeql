@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AlertTable } from "./alert-table";
+import { AlertTable } from "./AlertTable";
 import { Graph } from "./graph";
 import { RawTable } from "./raw-results-table";
 import { ResultTableProps } from "./result-table-utils";
