@@ -37,29 +37,6 @@ export function AlertTablePathNodeRow(props: Props) {
     pathIndex,
     pathNodeIndex,
   };
-  const msg =
-    step.location !== undefined && step.location.message !== undefined ? (
-      <SarifLocation
-        text={step.location.message.text}
-        loc={step.location}
-        sourceLocationPrefix={sourceLocationPrefix}
-        databaseUri={databaseUri}
-        onClick={updateSelectionCallback(pathNodeKey)}
-      />
-    ) : (
-      "[no location]"
-    );
-  const additionalMsg =
-    step.location !== undefined ? (
-      <SarifLocation
-        loc={step.location}
-        sourceLocationPrefix={sourceLocationPrefix}
-        databaseUri={databaseUri}
-        onClick={updateSelectionCallback(pathNodeKey)}
-      />
-    ) : (
-      ""
-    );
   const isSelected = Keys.equalsNotUndefined(selectedItem, pathNodeKey);
   const stepIndex = pathNodeIndex + 1; // Convert to 1-based
   const zebraIndex = resultIndex + stepIndex;
@@ -83,7 +60,19 @@ export function AlertTablePathNodeRow(props: Props) {
       >
         {stepIndex}
       </td>
-      <td {...selectableZebraStripe(isSelected, zebraIndex)}>{msg} </td>
+      <td {...selectableZebraStripe(isSelected, zebraIndex)}>
+        {step.location && step.location.message ? (
+          <SarifLocation
+            text={step.location.message.text}
+            loc={step.location}
+            sourceLocationPrefix={sourceLocationPrefix}
+            databaseUri={databaseUri}
+            onClick={updateSelectionCallback(pathNodeKey)}
+          />
+        ) : (
+          "[no location]"
+        )}
+      </td>
       <td
         {...selectableZebraStripe(
           isSelected,
@@ -91,7 +80,14 @@ export function AlertTablePathNodeRow(props: Props) {
           "vscode-codeql__location-cell",
         )}
       >
-        {additionalMsg}
+        {step.location && (
+          <SarifLocation
+            loc={step.location}
+            sourceLocationPrefix={sourceLocationPrefix}
+            databaseUri={databaseUri}
+            onClick={updateSelectionCallback(pathNodeKey)}
+          />
+        )}
       </td>
     </tr>
   );
