@@ -49,45 +49,39 @@ export function AlertTablePathRow(props: Props) {
     pathKey,
     selectedItem,
   );
-  const pathRow = (
-    <tr
-      ref={scroller.ref(isPathSpecificallySelected)}
-      {...selectableZebraStripe(isPathSpecificallySelected, resultIndex)}
-    >
-      <td className="vscode-codeql__icon-cell">
-        <span className="vscode-codeql__vertical-rule"></span>
-      </td>
-      <AlertTableDropdownIndicatorCell
-        expanded={currentPathExpanded}
-        onClick={handleDropdownClick}
-      />
-      <td className="vscode-codeql__text-center" colSpan={3}>
-        Path
-      </td>
-    </tr>
-  );
-
-  const pathNodeRows =
-    currentPathExpanded &&
-    path.locations.map((step, pathNodeIndex) => (
-      <AlertTablePathNodeRow
-        key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}
-        step={step}
-        pathNodeIndex={pathNodeIndex}
-        pathIndex={pathIndex}
-        resultIndex={resultIndex}
-        selectedItem={selectedItem}
-        databaseUri={databaseUri}
-        sourceLocationPrefix={sourceLocationPrefix}
-        updateSelectionCallback={updateSelectionCallback}
-        scroller={scroller}
-      />
-    ));
 
   return (
     <>
-      {pathRow}
-      {pathNodeRows}
+      <tr
+        ref={scroller.ref(isPathSpecificallySelected)}
+        {...selectableZebraStripe(isPathSpecificallySelected, resultIndex)}
+      >
+        <td className="vscode-codeql__icon-cell">
+          <span className="vscode-codeql__vertical-rule"></span>
+        </td>
+        <AlertTableDropdownIndicatorCell
+          expanded={currentPathExpanded}
+          onClick={handleDropdownClick}
+        />
+        <td className="vscode-codeql__text-center" colSpan={3}>
+          Path
+        </td>
+      </tr>
+      {currentPathExpanded &&
+        path.locations.map((step, pathNodeIndex) => (
+          <AlertTablePathNodeRow
+            key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}
+            step={step}
+            pathNodeIndex={pathNodeIndex}
+            pathIndex={pathIndex}
+            resultIndex={resultIndex}
+            selectedItem={selectedItem}
+            databaseUri={databaseUri}
+            sourceLocationPrefix={sourceLocationPrefix}
+            updateSelectionCallback={updateSelectionCallback}
+            scroller={scroller}
+          />
+        ))}
     </>
   );
 }
