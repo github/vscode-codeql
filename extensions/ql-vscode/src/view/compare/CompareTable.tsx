@@ -7,10 +7,18 @@ import { ResultRow } from "../../common/bqrs-cli-types";
 import RawTableRow from "../results/RawTableRow";
 import { vscode } from "../vscode-api";
 import { sendTelemetry } from "../common/telemetry";
+import TextButton from "../common/TextButton";
+import { styled } from "styled-components";
 
 interface Props {
   comparison: SetComparisonsMessage;
 }
+
+const OpenButton = styled(TextButton)`
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+`;
 
 export default function CompareTable(props: Props) {
   const comparison = props.comparison;
@@ -46,32 +54,14 @@ export default function CompareTable(props: Props) {
       <thead>
         <tr>
           <td>
-            {/*
-              eslint-disable-next-line
-              jsx-a11y/anchor-is-valid,
-              jsx-a11y/click-events-have-key-events,
-              jsx-a11y/no-static-element-interactions
-            */}
-            <a
-              onClick={() => openQuery("from")}
-              className="vscode-codeql__compare-open"
-            >
+            <OpenButton onClick={() => openQuery("from")}>
               {comparison.stats.fromQuery?.name}
-            </a>
+            </OpenButton>
           </td>
           <td>
-            {/*
-              eslint-disable-next-line
-              jsx-a11y/anchor-is-valid,
-              jsx-a11y/click-events-have-key-events,
-              jsx-a11y/no-static-element-interactions
-            */}
-            <a
-              onClick={() => openQuery("to")}
-              className="vscode-codeql__compare-open"
-            >
+            <OpenButton onClick={() => openQuery("to")}>
               {comparison.stats.toQuery?.name}
-            </a>
+            </OpenButton>
           </td>
         </tr>
         <tr>

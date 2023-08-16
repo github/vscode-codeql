@@ -8,19 +8,21 @@ const StyledButton = styled.button<{ size: Size }>`
   color: var(--vscode-textLink-foreground);
   border: none;
   cursor: pointer;
-  font-size: ${(props) => props.size};
+  font-size: ${(props) => props.size ?? "1em"};
 `;
 
 const TextButton = ({
   size,
   onClick,
+  className,
   children,
 }: {
-  size: Size;
+  size?: Size;
   onClick: () => void;
+  className?: string;
   children: React.ReactNode;
 }) => (
-  <StyledButton size={size} onClick={onClick}>
+  <StyledButton size={size} onClick={onClick} className={className}>
     {children}
   </StyledButton>
 );
