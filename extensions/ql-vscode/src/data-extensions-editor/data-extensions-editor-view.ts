@@ -50,6 +50,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
 > {
   private readonly autoModeler: AutoModeler;
 
+  private externalApiUsages: ExternalApiUsage[];
+
   public constructor(
     ctx: ExtensionContext,
     private readonly app: App,
@@ -66,6 +68,15 @@ export class DataExtensionsEditorView extends AbstractWebview<
       databaseItem: DatabaseItem,
     ) => Promise<void>,
     private readonly revealItemInDetailsPanel: (usage: Usage) => Promise<void>,
+    private readonly handleViewBecameActive: (
+      view: DataExtensionsEditorView,
+    ) => void,
+    private readonly handleViewWasDisposed: (
+      view: DataExtensionsEditorView,
+    ) => void,
+    private readonly isMostRecentlyActiveView: (
+      view: DataExtensionsEditorView,
+    ) => boolean,
   ) {
     super(ctx);
 
@@ -86,11 +97,26 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.postMessage({ t: "addModeledMethods", modeledMethods });
       },
     );
+    this.externalApiUsages = [];
   }
 
   public async openView() {
     const panel = await this.getPanel();
     panel.reveal(undefined, true);
+
+    panel.onDidChangeViewState(async () => {
+      if (panel.active) {
+        this.handleViewBecameActive(this);
+        await this.updateModelDetailsPanelState(
+          this.externalApiUsages,
+          this.databaseItem,
+        );
+      }
+    });
+
+    panel.onDidDispose(async () => {
+      this.handleViewWasDisposed(this);
+    });
 
     await this.waitForPanelLoaded();
   }
@@ -280,16 +306,18 @@ export class DataExtensionsEditorView extends AbstractWebview<
             maxStep: 1500,
           });
 
-          const externalApiUsages = decodeBqrsToExternalApiUsages(bqrsChunk);
+          this.externalApiUsages = decodeBqrsToExternalApiUsages(bqrsChunk);
 
           await this.postMessage({
             t: "setExternalApiUsages",
-            externalApiUsages,
+            externalApiUsages: this.externalApiUsages,
           });
-          await this.updateModelDetailsPanelState(
-            externalApiUsages,
-            this.databaseItem,
-          );
+          if (this.isMostRecentlyActiveView(this)) {
+            await this.updateModelDetailsPanelState(
+              this.externalApiUsages,
+              this.databaseItem,
+            );
+          }
         } catch (err) {
           void showAndLogExceptionWithTelemetry(
             this.app.logger,
@@ -409,6 +437,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
         Mode.Framework,
         this.updateModelDetailsPanelState,
         this.revealItemInDetailsPanel,
+        this.handleViewBecameActive,
+        this.handleViewWasDisposed,
+        this.isMostRecentlyActiveView,
       );
       await view.openView();
     });
