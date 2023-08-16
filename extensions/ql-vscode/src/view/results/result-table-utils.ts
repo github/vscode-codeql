@@ -1,4 +1,3 @@
-import * as React from "react";
 import { ResolvableLocationValue } from "../../common/bqrs-cli-types";
 import {
   RawResultsSortState,
@@ -8,7 +7,6 @@ import {
 } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
-import { sendTelemetry } from "../common/telemetry";
 
 export interface ResultTableProps {
   resultSet: ResultSet;
@@ -106,26 +104,4 @@ export function nextSortDirection(
     default:
       return assertNever(direction);
   }
-}
-
-function sendCodeQLLanguageGuidesTelemetry() {
-  sendTelemetry("codeql-language-guides-link");
-}
-
-export function emptyQueryResultsMessage(): JSX.Element {
-  return (
-    <div className="vscode-codeql__empty-query-message">
-      <span>
-        This query returned no results. If this isn&apos;t what you were
-        expecting, and for effective query-writing tips, check out the{" "}
-        <a
-          href="https://codeql.github.com/docs/codeql-language-guides/"
-          onClick={sendCodeQLLanguageGuidesTelemetry}
-        >
-          CodeQL language guides
-        </a>
-        .
-      </span>
-    </div>
-  );
 }

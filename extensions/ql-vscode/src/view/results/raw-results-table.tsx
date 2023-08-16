@@ -1,10 +1,6 @@
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  className,
-  emptyQueryResultsMessage,
-  jumpToLocation,
-} from "./result-table-utils";
+import { className, jumpToLocation } from "./result-table-utils";
 import {
   RAW_RESULTS_LIMIT,
   RawResultsSortState,
@@ -20,6 +16,7 @@ import { tryGetResolvableLocation } from "../../common/bqrs-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 import { assertNever } from "../../common/helpers-pure";
+import { EmptyQueryResultsMessage } from "./EmptyQueryResultsMessage";
 
 type RawTableProps = {
   databaseUri: string;
@@ -130,7 +127,7 @@ export function RawTable({
   }, [resultSet]);
 
   if (dataRows.length === 0) {
-    return emptyQueryResultsMessage();
+    return <EmptyQueryResultsMessage />;
   }
 
   const tableRows = dataRows.map((row: ResultRow, rowIndex: number) => (
