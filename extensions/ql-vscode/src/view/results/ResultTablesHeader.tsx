@@ -8,6 +8,8 @@ import {
   ParsedResultSets,
 } from "../../common/interface-types";
 import { basename } from "../../common/path";
+import { styled } from "styled-components";
+import TextButton from "../common/TextButton";
 
 interface Props {
   queryName: string;
@@ -15,6 +17,10 @@ interface Props {
   parsedResultSets: ParsedResultSets;
   selectedTable: string;
 }
+
+const OpenQueryLink = styled(TextButton)`
+  text-decoration: none;
+`;
 
 export function ResultTablesHeader(props: Props) {
   const { queryPath, queryName, parsedResultSets, selectedTable } = props;
@@ -122,17 +128,9 @@ export function ResultTablesHeader(props: Props) {
       </button>
       <div className={tableHeaderItemClassName}>{queryName}</div>
       <div className={tableHeaderItemClassName}>
-        {/*
-            eslint-disable-next-line
-            jsx-a11y/anchor-is-valid
-          */}
-        <a
-          href="#"
-          onClick={openQueryHandler}
-          className="vscode-codeql__result-table-location-link"
-        >
+        <OpenQueryLink onClick={openQueryHandler}>
           Open {basename(queryPath)}
-        </a>
+        </OpenQueryLink>
       </div>
     </span>
   );

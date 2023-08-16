@@ -9,20 +9,28 @@ const StyledButton = styled.button<{ size: Size }>`
   border: none;
   cursor: pointer;
   font-size: ${(props) => props.size ?? "1em"};
+  padding: 0;
 `;
 
 const TextButton = ({
   size,
   onClick,
   className,
+  title,
   children,
 }: {
   size?: Size;
   onClick: () => void;
   className?: string;
+  title?: string;
   children: React.ReactNode;
 }) => (
-  <StyledButton size={size} onClick={onClick} className={className}>
+  <StyledButton
+    size={size}
+    onClick={onClick}
+    className={className}
+    title={title}
+  >
     {children}
   </StyledButton>
 );

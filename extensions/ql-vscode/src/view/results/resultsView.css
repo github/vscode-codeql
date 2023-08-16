@@ -129,10 +129,6 @@
   text-align: left;
 }
 
-.vscode-codeql__result-table-location-link {
-  text-decoration: none;
-}
-
 select {
   background-color: var(--vscode-dropdown-background);
   color: var(--vscode-dropdown-foreground);
