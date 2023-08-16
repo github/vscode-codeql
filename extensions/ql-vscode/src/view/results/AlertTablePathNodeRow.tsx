@@ -4,6 +4,7 @@ import * as Keys from "./result-keys";
 import { SarifLocation } from "./locations/SarifLocation";
 import { selectableZebraStripe } from "./result-table-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
+import { useMemo } from "react";
 
 interface Props {
   step: Sarif.ThreadFlowLocation;
@@ -32,11 +33,19 @@ export function AlertTablePathNodeRow(props: Props) {
     scroller,
   } = props;
 
-  const pathNodeKey: Keys.PathNode = {
-    resultIndex,
-    pathIndex,
-    pathNodeIndex,
-  };
+  const pathNodeKey: Keys.PathNode = useMemo(
+    () => ({
+      resultIndex,
+      pathIndex,
+      pathNodeIndex,
+    }),
+    [pathIndex, pathNodeIndex, resultIndex],
+  );
+  const handleSarifLocationClicked = useMemo(
+    () => updateSelectionCallback(pathNodeKey),
+    [pathNodeKey, updateSelectionCallback],
+  );
+
   const isSelected = Keys.equalsNotUndefined(selectedItem, pathNodeKey);
   const stepIndex = pathNodeIndex + 1; // Convert to 1-based
   const zebraIndex = resultIndex + stepIndex;
@@ -67,7 +76,7 @@ export function AlertTablePathNodeRow(props: Props) {
             loc={step.location}
             sourceLocationPrefix={sourceLocationPrefix}
             databaseUri={databaseUri}
-            onClick={updateSelectionCallback(pathNodeKey)}
+            onClick={handleSarifLocationClicked}
           />
         ) : (
           "[no location]"
@@ -85,7 +94,7 @@ export function AlertTablePathNodeRow(props: Props) {
             loc={step.location}
             sourceLocationPrefix={sourceLocationPrefix}
             databaseUri={databaseUri}
-            onClick={updateSelectionCallback(pathNodeKey)}
+            onClick={handleSarifLocationClicked}
           />
         )}
       </td>
