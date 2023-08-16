@@ -42,6 +42,10 @@ export function AlertTableResultRow(props: Props) {
     [resultIndex],
   );
 
+  const handleSarifLocationClicked = useMemo(
+    () => updateSelectionCallback(resultKey),
+    [resultKey, updateSelectionCallback],
+  );
   const handleDropdownClick = useMemo(() => {
     const indices =
       Keys.getAllPaths(result).length === 1
@@ -83,7 +87,7 @@ export function AlertTableResultRow(props: Props) {
             loc={result.locations[0]}
             sourceLocationPrefix={sourceLocationPrefix}
             databaseUri={databaseUri}
-            onClick={updateSelectionCallback(resultKey)}
+            onClick={handleSarifLocationClicked}
           />
         )}
       </td>
