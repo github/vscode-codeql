@@ -18,7 +18,6 @@ import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 import { AlertTableHeader } from "./AlertTableHeader";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
-import { SarifLocation } from "./locations/SarifLocation";
 import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
 import { AlertTablePathRow } from "./AlertTablePathRow";
@@ -118,18 +117,6 @@ export class AlertTable extends React.Component<
           const currentResultExpanded = this.state.expanded.has(
             Keys.keyToString(resultKey),
           );
-          const location = result.locations !== undefined &&
-            result.locations.length > 0 && (
-              <SarifLocation
-                loc={result.locations[0]}
-                sourceLocationPrefix={sourceLocationPrefix}
-                databaseUri={databaseUri}
-                onClick={updateSelectionCallback(resultKey)}
-              />
-            );
-          const locationCells = (
-            <td className="vscode-codeql__location-cell">{location}</td>
-          );
 
           return (
             <>
@@ -138,10 +125,12 @@ export class AlertTable extends React.Component<
                 resultIndex={resultIndex}
                 currentResultExpanded={currentResultExpanded}
                 selectedItem={this.state.selectedItem}
+                databaseUri={databaseUri}
+                sourceLocationPrefix={sourceLocationPrefix}
+                updateSelectionCallback={updateSelectionCallback}
                 toggler={toggler}
                 scroller={this.scroller}
                 msg={msg}
-                locationCells={locationCells}
               />
               {currentResultExpanded &&
                 result.codeFlows &&
