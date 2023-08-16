@@ -19,7 +19,6 @@ import { sendTelemetry } from "../common/telemetry";
 import { AlertTableHeader } from "./AlertTableHeader";
 import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
-import { AlertTablePathRow } from "./AlertTablePathRow";
 import { AlertTableResultRow } from "./AlertTableResultRow";
 
 type AlertTableProps = ResultTableProps & {
@@ -97,47 +96,20 @@ export class AlertTable extends React.Component<
 
     const rows: JSX.Element[] =
       resultSet.interpretation.data.runs[0].results.map(
-        (result, resultIndex) => {
-          const resultKey: Keys.Result = { resultIndex };
-          const currentResultExpanded = this.state.expanded.has(
-            Keys.keyToString(resultKey),
-          );
-
-          return (
-            <>
-              <AlertTableResultRow
-                result={result}
-                resultIndex={resultIndex}
-                currentResultExpanded={currentResultExpanded}
-                selectedItem={this.state.selectedItem}
-                databaseUri={databaseUri}
-                sourceLocationPrefix={sourceLocationPrefix}
-                updateSelectionCallback={updateSelectionCallback}
-                toggler={toggler}
-                scroller={this.scroller}
-              />
-              {currentResultExpanded &&
-                result.codeFlows &&
-                Keys.getAllPaths(result).map((path, pathIndex) => (
-                  <AlertTablePathRow
-                    key={`${resultIndex}-${pathIndex}`}
-                    path={path}
-                    pathIndex={pathIndex}
-                    resultIndex={resultIndex}
-                    currentPathExpanded={this.state.expanded.has(
-                      Keys.keyToString({ resultIndex, pathIndex }),
-                    )}
-                    selectedItem={this.state.selectedItem}
-                    databaseUri={databaseUri}
-                    sourceLocationPrefix={sourceLocationPrefix}
-                    updateSelectionCallback={updateSelectionCallback}
-                    toggler={toggler}
-                    scroller={this.scroller}
-                  />
-                ))}
-            </>
-          );
-        },
+        (result, resultIndex) => (
+          <AlertTableResultRow
+            key={resultIndex}
+            result={result}
+            resultIndex={resultIndex}
+            expanded={this.state.expanded}
+            selectedItem={this.state.selectedItem}
+            databaseUri={databaseUri}
+            sourceLocationPrefix={sourceLocationPrefix}
+            updateSelectionCallback={updateSelectionCallback}
+            toggler={toggler}
+            scroller={this.scroller}
+          />
+        ),
       );
 
     return (

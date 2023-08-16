@@ -8,11 +8,12 @@ import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCe
 import { useMemo } from "react";
 import { SarifLocation } from "./locations/SarifLocation";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
+import { AlertTablePathRow } from "./AlertTablePathRow";
 
 interface Props {
   result: Sarif.Result;
   resultIndex: number;
-  currentResultExpanded: boolean;
+  expanded: Set<string>;
   selectedItem: undefined | Keys.ResultKey;
   databaseUri: string;
   sourceLocationPrefix: string;
@@ -27,7 +28,7 @@ export function AlertTableResultRow(props: Props) {
   const {
     result,
     resultIndex,
-    currentResultExpanded,
+    expanded,
     selectedItem,
     databaseUri,
     sourceLocationPrefix,
@@ -73,37 +74,58 @@ export function AlertTableResultRow(props: Props) {
       />
     );
 
+  const currentResultExpanded = expanded.has(Keys.keyToString(resultKey));
   return (
-    <tr
-      ref={scroller.ref(resultRowIsSelected)}
-      {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
-      key={resultIndex}
-    >
-      {result.codeFlows === undefined ? (
-        <>
-          <td className="vscode-codeql__icon-cell">{info}</td>
-          <td colSpan={3}>{msg}</td>
-        </>
-      ) : (
-        <>
-          <AlertTableDropdownIndicatorCell
-            expanded={currentResultExpanded}
-            onClick={handleDropdownClick}
-          />
-          <td className="vscode-codeql__icon-cell">{listUnordered}</td>
-          <td colSpan={2}>{msg}</td>
-        </>
-      )}
-      <td className="vscode-codeql__location-cell">
-        {result.locations && result.locations.length > 0 && (
-          <SarifLocation
-            loc={result.locations[0]}
-            sourceLocationPrefix={sourceLocationPrefix}
-            databaseUri={databaseUri}
-            onClick={handleSarifLocationClicked}
-          />
+    <>
+      <tr
+        ref={scroller.ref(resultRowIsSelected)}
+        {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
+      >
+        {result.codeFlows === undefined ? (
+          <>
+            <td className="vscode-codeql__icon-cell">{info}</td>
+            <td colSpan={3}>{msg}</td>
+          </>
+        ) : (
+          <>
+            <AlertTableDropdownIndicatorCell
+              expanded={currentResultExpanded}
+              onClick={handleDropdownClick}
+            />
+            <td className="vscode-codeql__icon-cell">{listUnordered}</td>
+            <td colSpan={2}>{msg}</td>
+          </>
         )}
-      </td>
-    </tr>
+        <td className="vscode-codeql__location-cell">
+          {result.locations && result.locations.length > 0 && (
+            <SarifLocation
+              loc={result.locations[0]}
+              sourceLocationPrefix={sourceLocationPrefix}
+              databaseUri={databaseUri}
+              onClick={handleSarifLocationClicked}
+            />
+          )}
+        </td>
+      </tr>
+      {currentResultExpanded &&
+        result.codeFlows &&
+        Keys.getAllPaths(result).map((path, pathIndex) => (
+          <AlertTablePathRow
+            key={`${resultIndex}-${pathIndex}`}
+            path={path}
+            pathIndex={pathIndex}
+            resultIndex={resultIndex}
+            currentPathExpanded={expanded.has(
+              Keys.keyToString({ resultIndex, pathIndex }),
+            )}
+            selectedItem={selectedItem}
+            databaseUri={databaseUri}
+            sourceLocationPrefix={sourceLocationPrefix}
+            updateSelectionCallback={updateSelectionCallback}
+            toggler={toggler}
+            scroller={scroller}
+          />
+        ))}
+    </>
   );
 }
