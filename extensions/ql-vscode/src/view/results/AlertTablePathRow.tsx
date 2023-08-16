@@ -5,6 +5,7 @@ import { selectableZebraStripe } from "./result-table-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { AlertTablePathNodeRow } from "./AlertTablePathNodeRow";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
+import { useMemo } from "react";
 
 interface Props {
   path: Sarif.ThreadFlow;
@@ -35,7 +36,14 @@ export function AlertTablePathRow(props: Props) {
     scroller,
   } = props;
 
-  const pathKey = { resultIndex, pathIndex };
+  const pathKey = useMemo(
+    () => ({ resultIndex, pathIndex }),
+    [pathIndex, resultIndex],
+  );
+  const handleDropdownClick = useMemo(
+    () => toggler([pathKey]),
+    [pathKey, toggler],
+  );
 
   const isPathSpecificallySelected = Keys.equalsNotUndefined(
     pathKey,
@@ -51,7 +59,7 @@ export function AlertTablePathRow(props: Props) {
       </td>
       <AlertTableDropdownIndicatorCell
         expanded={currentPathExpanded}
-        onClick={toggler([pathKey])}
+        onClick={handleDropdownClick}
       />
       <td className="vscode-codeql__text-center" colSpan={3}>
         Path
