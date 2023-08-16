@@ -5,6 +5,7 @@ import { listUnordered } from "./octicons";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { selectableZebraStripe } from "./result-table-utils";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
+import { useMemo } from "react";
 
 interface Props {
   result: Sarif.Result;
@@ -29,15 +30,16 @@ export function AlertTableResultRow(props: Props) {
     locationCells,
   } = props;
 
-  const resultKey: Keys.Result = { resultIndex };
-
-  const paths: Sarif.ThreadFlow[] = Keys.getAllPaths(result);
-  const indices =
-    paths.length === 1
-      ? [resultKey, { ...resultKey, pathIndex: 0 }]
-      : /* if there's exactly one path, auto-expand
-         * the path when expanding the result */
-        [resultKey];
+  const handleDropdownClick = useMemo(() => {
+    const resultKey: Keys.Result = { resultIndex };
+    const indices =
+      Keys.getAllPaths(result).length === 1
+        ? [resultKey, { ...resultKey, pathIndex: 0 }]
+        : /* if there's exactly one path, auto-expand
+           * the path when expanding the result */
+          [resultKey];
+    return toggler(indices);
+  }, [result, resultIndex, toggler]);
 
   const resultRowIsSelected =
     selectedItem?.resultIndex === resultIndex &&
@@ -51,7 +53,7 @@ export function AlertTableResultRow(props: Props) {
     >
       <AlertTableDropdownIndicatorCell
         expanded={currentResultExpanded}
-        onClick={toggler(indices)}
+        onClick={handleDropdownClick}
       />
       <td className="vscode-codeql__icon-cell">{listUnordered}</td>
       <td colSpan={2}>{msg}</td>
