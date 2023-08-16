@@ -94,29 +94,26 @@ export class AlertTable extends React.Component<
       return <AlertTableNoResults {...this.props} />;
     }
 
-    const rows: JSX.Element[] =
-      resultSet.interpretation.data.runs[0].results.map(
-        (result, resultIndex) => (
-          <AlertTableResultRow
-            key={resultIndex}
-            result={result}
-            resultIndex={resultIndex}
-            expanded={this.state.expanded}
-            selectedItem={this.state.selectedItem}
-            databaseUri={databaseUri}
-            sourceLocationPrefix={sourceLocationPrefix}
-            updateSelectionCallback={updateSelectionCallback}
-            toggler={toggler}
-            scroller={this.scroller}
-          />
-        ),
-      );
-
     return (
       <table className={className}>
         <AlertTableHeader sortState={resultSet.interpretation.data.sortState} />
         <tbody>
-          {rows}
+          {resultSet.interpretation.data.runs[0].results.map(
+            (result, resultIndex) => (
+              <AlertTableResultRow
+                key={resultIndex}
+                result={result}
+                resultIndex={resultIndex}
+                expanded={this.state.expanded}
+                selectedItem={this.state.selectedItem}
+                databaseUri={databaseUri}
+                sourceLocationPrefix={sourceLocationPrefix}
+                updateSelectionCallback={updateSelectionCallback}
+                toggler={toggler}
+                scroller={this.scroller}
+              />
+            ),
+          )}
           <AlertTableTruncatedMessage
             numTruncatedResults={numTruncatedResults}
           />
