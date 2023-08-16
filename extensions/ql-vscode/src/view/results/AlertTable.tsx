@@ -151,45 +151,36 @@ export class AlertTable extends React.Component<
               </tr>
             );
           } else {
-            const paths: Sarif.ThreadFlow[] = Keys.getAllPaths(result);
-
-            const resultRow = (
-              <AlertTableResultRow
-                result={result}
-                resultIndex={resultIndex}
-                currentResultExpanded={currentResultExpanded}
-                selectedItem={selectedItem}
-                toggler={toggler}
-                scroller={this.scroller}
-                msg={msg}
-                locationCells={locationCells}
-              />
-            );
-
-            const pathRows =
-              currentResultExpanded &&
-              paths.map((path, pathIndex) => (
-                <AlertTablePathRow
-                  key={`${resultIndex}-${pathIndex}`}
-                  path={path}
-                  pathIndex={pathIndex}
-                  resultIndex={resultIndex}
-                  currentPathExpanded={this.state.expanded.has(
-                    Keys.keyToString({ resultIndex, pathIndex }),
-                  )}
-                  selectedItem={selectedItem}
-                  databaseUri={databaseUri}
-                  sourceLocationPrefix={sourceLocationPrefix}
-                  updateSelectionCallback={updateSelectionCallback}
-                  toggler={toggler}
-                  scroller={this.scroller}
-                />
-              ));
-
             return (
               <>
-                {resultRow}
-                {pathRows}
+                <AlertTableResultRow
+                  result={result}
+                  resultIndex={resultIndex}
+                  currentResultExpanded={currentResultExpanded}
+                  selectedItem={selectedItem}
+                  toggler={toggler}
+                  scroller={this.scroller}
+                  msg={msg}
+                  locationCells={locationCells}
+                />
+                {currentResultExpanded &&
+                  Keys.getAllPaths(result).map((path, pathIndex) => (
+                    <AlertTablePathRow
+                      key={`${resultIndex}-${pathIndex}`}
+                      path={path}
+                      pathIndex={pathIndex}
+                      resultIndex={resultIndex}
+                      currentPathExpanded={this.state.expanded.has(
+                        Keys.keyToString({ resultIndex, pathIndex }),
+                      )}
+                      selectedItem={selectedItem}
+                      databaseUri={databaseUri}
+                      sourceLocationPrefix={sourceLocationPrefix}
+                      updateSelectionCallback={updateSelectionCallback}
+                      toggler={toggler}
+                      scroller={this.scroller}
+                    />
+                  ))}
               </>
             );
           }
