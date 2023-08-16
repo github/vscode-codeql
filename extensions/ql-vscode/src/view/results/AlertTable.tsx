@@ -24,7 +24,7 @@ import { SarifLocation } from "./locations/SarifLocation";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
-import { AlertTablePathNodeRow } from "./AlertTablePathNodeRow";
+import { AlertTablePathRow } from "./AlertTablePathRow";
 
 type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -178,61 +178,23 @@ export class AlertTable extends React.Component<
 
             const pathRows =
               currentResultExpanded &&
-              paths.map((path, pathIndex) => {
-                const pathKey = { resultIndex, pathIndex };
-                const currentPathExpanded = this.state.expanded.has(
-                  Keys.keyToString(pathKey),
-                );
-                const isPathSpecificallySelected = Keys.equalsNotUndefined(
-                  pathKey,
-                  selectedItem,
-                );
-                const pathRow = (
-                  <tr
-                    ref={this.scroller.ref(isPathSpecificallySelected)}
-                    {...selectableZebraStripe(
-                      isPathSpecificallySelected,
-                      resultIndex,
-                    )}
-                    key={`${resultIndex}-${pathIndex}`}
-                  >
-                    <td className="vscode-codeql__icon-cell">
-                      <span className="vscode-codeql__vertical-rule"></span>
-                    </td>
-                    <AlertTableDropdownIndicatorCell
-                      expanded={currentPathExpanded}
-                      onClick={toggler([pathKey])}
-                    />
-                    <td className="vscode-codeql__text-center" colSpan={3}>
-                      Path
-                    </td>
-                  </tr>
-                );
-
-                const pathNodeRows =
-                  currentPathExpanded &&
-                  path.locations.map((step, pathNodeIndex) => (
-                    <AlertTablePathNodeRow
-                      key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}
-                      step={step}
-                      pathNodeIndex={pathNodeIndex}
-                      pathIndex={pathIndex}
-                      resultIndex={resultIndex}
-                      selectedItem={selectedItem}
-                      databaseUri={databaseUri}
-                      sourceLocationPrefix={sourceLocationPrefix}
-                      updateSelectionCallback={updateSelectionCallback}
-                      scroller={this.scroller}
-                    />
-                  ));
-
-                return (
-                  <>
-                    {pathRow}
-                    {pathNodeRows}
-                  </>
-                );
-              });
+              paths.map((path, pathIndex) => (
+                <AlertTablePathRow
+                  key={`${resultIndex}-${pathIndex}`}
+                  path={path}
+                  pathIndex={pathIndex}
+                  resultIndex={resultIndex}
+                  currentPathExpanded={this.state.expanded.has(
+                    Keys.keyToString({ resultIndex, pathIndex }),
+                  )}
+                  selectedItem={selectedItem}
+                  databaseUri={databaseUri}
+                  sourceLocationPrefix={sourceLocationPrefix}
+                  updateSelectionCallback={updateSelectionCallback}
+                  toggler={toggler}
+                  scroller={this.scroller}
+                />
+              ));
 
             return (
               <>
