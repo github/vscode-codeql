@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
-import { info, listUnordered } from "./octicons";
+import { info } from "./octicons";
 import {
   className,
   ResultTableProps,
@@ -21,10 +21,10 @@ import { sendTelemetry } from "../common/telemetry";
 import { AlertTableHeader } from "./AlertTableHeader";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { SarifLocation } from "./locations/SarifLocation";
-import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
 import { AlertTablePathRow } from "./AlertTablePathRow";
+import { AlertTableResultRow } from "./AlertTableResultRow";
 
 type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -153,27 +153,17 @@ export class AlertTable extends React.Component<
           } else {
             const paths: Sarif.ThreadFlow[] = Keys.getAllPaths(result);
 
-            const indices =
-              paths.length === 1
-                ? [resultKey, { ...resultKey, pathIndex: 0 }]
-                : /* if there's exactly one path, auto-expand
-                   * the path when expanding the result */
-                  [resultKey];
-
             const resultRow = (
-              <tr
-                ref={this.scroller.ref(resultRowIsSelected)}
-                {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
-                key={resultIndex}
-              >
-                <AlertTableDropdownIndicatorCell
-                  expanded={currentResultExpanded}
-                  onClick={toggler(indices)}
-                />
-                <td className="vscode-codeql__icon-cell">{listUnordered}</td>
-                <td colSpan={2}>{msg}</td>
-                {locationCells}
-              </tr>
+              <AlertTableResultRow
+                result={result}
+                resultIndex={resultIndex}
+                currentResultExpanded={currentResultExpanded}
+                selectedItem={selectedItem}
+                toggler={toggler}
+                scroller={this.scroller}
+                msg={msg}
+                locationCells={locationCells}
+              />
             );
 
             const pathRows =
