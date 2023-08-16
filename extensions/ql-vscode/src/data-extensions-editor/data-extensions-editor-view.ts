@@ -64,8 +64,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly extensionPack: ExtensionPack,
     private mode: Mode,
     private readonly updateModelDetailsPanelState: (
-      externalApiUsages: ExternalApiUsage[],
-      databaseItem: DatabaseItem,
+      externalApiUsages?: ExternalApiUsage[],
+      databaseItem?: DatabaseItem,
+      hideModeledApis?: boolean,
     ) => Promise<void>,
     private readonly revealItemInDetailsPanel: (usage: Usage) => Promise<void>,
     private readonly handleViewBecameActive: (
@@ -237,7 +238,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "hideModeledApis":
-        // do something
+        await this.updateModelDetailsPanelState(
+          undefined,
+          undefined,
+          msg.hideModeledApis,
+        );
         break;
       default:
         assertNever(msg);

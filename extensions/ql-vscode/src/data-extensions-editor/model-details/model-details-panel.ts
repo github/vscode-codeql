@@ -24,14 +24,21 @@ export class ModelDetailsPanel extends DisposableObject {
   }
 
   public async setState(
-    externalApiUsages: ExternalApiUsage[],
-    databaseItem: DatabaseItem,
+    externalApiUsages?: ExternalApiUsage[],
+    databaseItem?: DatabaseItem,
+    hideModeledApis?: boolean,
   ): Promise<void> {
-    await this.dataProvider.setState(externalApiUsages, databaseItem);
-    this.treeView.badge = {
-      value: externalApiUsages.length,
-      tooltip: "Number of external APIs",
-    };
+    await this.dataProvider.setState(
+      externalApiUsages,
+      databaseItem,
+      hideModeledApis,
+    );
+    if (externalApiUsages) {
+      this.treeView.badge = {
+        value: externalApiUsages.length,
+        tooltip: "Number of external APIs",
+      };
+    }
   }
 
   public async revealItem(usage: Usage): Promise<void> {
