@@ -1,11 +1,9 @@
 import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
-import { info } from "./octicons";
 import {
   className,
   ResultTableProps,
-  selectableZebraStripe,
   jumpToLocation,
 } from "./result-table-utils";
 import { onNavigation } from "./ResultsApp";
@@ -133,57 +131,39 @@ export class AlertTable extends React.Component<
             <td className="vscode-codeql__location-cell">{location}</td>
           );
 
-          const selectedItem = this.state.selectedItem;
-          const resultRowIsSelected =
-            selectedItem?.resultIndex === resultIndex &&
-            selectedItem.pathIndex === undefined;
-
-          if (result.codeFlows === undefined) {
-            return (
-              <tr
-                ref={this.scroller.ref(resultRowIsSelected)}
-                key={resultIndex}
-                {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
-              >
-                <td className="vscode-codeql__icon-cell">{info}</td>
-                <td colSpan={3}>{msg}</td>
-                {locationCells}
-              </tr>
-            );
-          } else {
-            return (
-              <>
-                <AlertTableResultRow
-                  result={result}
-                  resultIndex={resultIndex}
-                  currentResultExpanded={currentResultExpanded}
-                  selectedItem={selectedItem}
-                  toggler={toggler}
-                  scroller={this.scroller}
-                  msg={msg}
-                  locationCells={locationCells}
-                />
-                {currentResultExpanded &&
-                  Keys.getAllPaths(result).map((path, pathIndex) => (
-                    <AlertTablePathRow
-                      key={`${resultIndex}-${pathIndex}`}
-                      path={path}
-                      pathIndex={pathIndex}
-                      resultIndex={resultIndex}
-                      currentPathExpanded={this.state.expanded.has(
-                        Keys.keyToString({ resultIndex, pathIndex }),
-                      )}
-                      selectedItem={selectedItem}
-                      databaseUri={databaseUri}
-                      sourceLocationPrefix={sourceLocationPrefix}
-                      updateSelectionCallback={updateSelectionCallback}
-                      toggler={toggler}
-                      scroller={this.scroller}
-                    />
-                  ))}
-              </>
-            );
-          }
+          return (
+            <>
+              <AlertTableResultRow
+                result={result}
+                resultIndex={resultIndex}
+                currentResultExpanded={currentResultExpanded}
+                selectedItem={this.state.selectedItem}
+                toggler={toggler}
+                scroller={this.scroller}
+                msg={msg}
+                locationCells={locationCells}
+              />
+              {currentResultExpanded &&
+                result.codeFlows &&
+                Keys.getAllPaths(result).map((path, pathIndex) => (
+                  <AlertTablePathRow
+                    key={`${resultIndex}-${pathIndex}`}
+                    path={path}
+                    pathIndex={pathIndex}
+                    resultIndex={resultIndex}
+                    currentPathExpanded={this.state.expanded.has(
+                      Keys.keyToString({ resultIndex, pathIndex }),
+                    )}
+                    selectedItem={this.state.selectedItem}
+                    databaseUri={databaseUri}
+                    sourceLocationPrefix={sourceLocationPrefix}
+                    updateSelectionCallback={updateSelectionCallback}
+                    toggler={toggler}
+                    scroller={this.scroller}
+                  />
+                ))}
+            </>
+          );
         },
       );
 

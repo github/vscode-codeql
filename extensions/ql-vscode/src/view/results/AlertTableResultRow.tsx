@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
-import { listUnordered } from "./octicons";
+import { info, listUnordered } from "./octicons";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { selectableZebraStripe } from "./result-table-utils";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
@@ -51,12 +51,21 @@ export function AlertTableResultRow(props: Props) {
       {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
       key={resultIndex}
     >
-      <AlertTableDropdownIndicatorCell
-        expanded={currentResultExpanded}
-        onClick={handleDropdownClick}
-      />
-      <td className="vscode-codeql__icon-cell">{listUnordered}</td>
-      <td colSpan={2}>{msg}</td>
+      {result.codeFlows === undefined ? (
+        <>
+          <td className="vscode-codeql__icon-cell">{info}</td>
+          <td colSpan={3}>{msg}</td>
+        </>
+      ) : (
+        <>
+          <AlertTableDropdownIndicatorCell
+            expanded={currentResultExpanded}
+            onClick={handleDropdownClick}
+          />
+          <td className="vscode-codeql__icon-cell">{listUnordered}</td>
+          <td colSpan={2}>{msg}</td>
+        </>
+      )}
       {locationCells}
     </tr>
   );
