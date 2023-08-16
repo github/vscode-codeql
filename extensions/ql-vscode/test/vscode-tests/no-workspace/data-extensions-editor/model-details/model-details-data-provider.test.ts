@@ -62,5 +62,19 @@ describe("ModelDetailsDataProvider", () => {
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
     });
+
+    it("should emit onDidChangeTreeData event when hideModeledApis has changed", async () => {
+      const hideModeledApis = false;
+
+      const dataProvider = new ModelDetailsDataProvider(mockCliServer);
+      await dataProvider.setState(undefined, undefined, hideModeledApis);
+
+      const onDidChangeTreeDataListener = jest.fn();
+      dataProvider.onDidChangeTreeData(onDidChangeTreeDataListener);
+
+      await dataProvider.setState(undefined, undefined, !hideModeledApis);
+
+      expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
+    });
   });
 });

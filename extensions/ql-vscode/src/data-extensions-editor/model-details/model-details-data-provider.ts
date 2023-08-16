@@ -58,11 +58,15 @@ export class ModelDetailsDataProvider
       this.databaseItem = databaseItem;
       this.sourceLocationPrefix =
         await this.databaseItem.getSourceLocationPrefix(this.cliServer);
+      this.onDidChangeTreeDataEmitter.fire();
     }
-    if (hideModeledApis !== undefined) {
+    if (
+      hideModeledApis !== undefined &&
+      hideModeledApis !== this.hideModeledApis
+    ) {
       this.hideModeledApis = hideModeledApis;
+      this.onDidChangeTreeDataEmitter.fire();
     }
-    this.onDidChangeTreeDataEmitter.fire();
   }
 
   getTreeItem(item: ModelDetailsTreeViewItem): TreeItem {
