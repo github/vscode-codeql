@@ -23,6 +23,7 @@ import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations
 import { SarifLocation } from "./locations/SarifLocation";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 import { AlertTableNoResults } from "./AlertTableNoResults";
+import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
 
 type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -295,21 +296,15 @@ export class AlertTable extends React.Component<
       },
     );
 
-    if (numTruncatedResults > 0) {
-      rows.push(
-        <tr key="truncatd-message">
-          <td colSpan={5} style={{ textAlign: "center", fontStyle: "italic" }}>
-            Too many results to show at once. {numTruncatedResults} result(s)
-            omitted.
-          </td>
-        </tr>,
-      );
-    }
-
     return (
       <table className={className}>
         <AlertTableHeader sortState={resultSet.interpretation.data.sortState} />
-        <tbody>{rows}</tbody>
+        <tbody>
+          {rows}
+          <AlertTableTruncatedMessage
+            numTruncatedResults={numTruncatedResults}
+          />
+        </tbody>
       </table>
     );
   }
