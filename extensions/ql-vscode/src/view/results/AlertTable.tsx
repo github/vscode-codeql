@@ -73,7 +73,6 @@ export class AlertTable extends React.Component<
   render(): JSX.Element {
     const { databaseUri, resultSet } = this.props;
 
-    const rows: JSX.Element[] = [];
     const { numTruncatedResults, sourceLocationPrefix } =
       resultSet.interpretation;
 
@@ -99,202 +98,211 @@ export class AlertTable extends React.Component<
       return <AlertTableNoResults {...this.props} />;
     }
 
-    resultSet.interpretation.data.runs[0].results.forEach(
-      (result, resultIndex) => {
-        const resultKey: Keys.Result = { resultIndex };
-        const text = result.message.text || "[no text]";
-        const msg =
-          result.relatedLocations === undefined ? (
-            <span key="0">{text}</span>
-          ) : (
-            <SarifMessageWithLocations
-              msg={text}
-              relatedLocations={result.relatedLocations}
-              sourceLocationPrefix={sourceLocationPrefix}
-              databaseUri={databaseUri}
-              onClick={updateSelectionCallback(resultKey)}
-            />
-          );
-
-        const currentResultExpanded = this.state.expanded.has(
-          Keys.keyToString(resultKey),
-        );
-        const location = result.locations !== undefined &&
-          result.locations.length > 0 && (
-            <SarifLocation
-              loc={result.locations[0]}
-              sourceLocationPrefix={sourceLocationPrefix}
-              databaseUri={databaseUri}
-              onClick={updateSelectionCallback(resultKey)}
-            />
-          );
-        const locationCells = (
-          <td className="vscode-codeql__location-cell">{location}</td>
-        );
-
-        const selectedItem = this.state.selectedItem;
-        const resultRowIsSelected =
-          selectedItem?.resultIndex === resultIndex &&
-          selectedItem.pathIndex === undefined;
-
-        if (result.codeFlows === undefined) {
-          rows.push(
-            <tr
-              ref={this.scroller.ref(resultRowIsSelected)}
-              key={resultIndex}
-              {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
-            >
-              <td className="vscode-codeql__icon-cell">{info}</td>
-              <td colSpan={3}>{msg}</td>
-              {locationCells}
-            </tr>,
-          );
-        } else {
-          const paths: Sarif.ThreadFlow[] = Keys.getAllPaths(result);
-
-          const indices =
-            paths.length === 1
-              ? [resultKey, { ...resultKey, pathIndex: 0 }]
-              : /* if there's exactly one path, auto-expand
-                 * the path when expanding the result */
-                [resultKey];
-
-          rows.push(
-            <tr
-              ref={this.scroller.ref(resultRowIsSelected)}
-              {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
-              key={resultIndex}
-            >
-              <AlertTableDropdownIndicatorCell
-                expanded={currentResultExpanded}
-                onClick={toggler(indices)}
+    const rows: JSX.Element[] =
+      resultSet.interpretation.data.runs[0].results.map(
+        (result, resultIndex) => {
+          const resultKey: Keys.Result = { resultIndex };
+          const text = result.message.text || "[no text]";
+          const msg =
+            result.relatedLocations === undefined ? (
+              <span key="0">{text}</span>
+            ) : (
+              <SarifMessageWithLocations
+                msg={text}
+                relatedLocations={result.relatedLocations}
+                sourceLocationPrefix={sourceLocationPrefix}
+                databaseUri={databaseUri}
+                onClick={updateSelectionCallback(resultKey)}
               />
-              <td className="vscode-codeql__icon-cell">{listUnordered}</td>
-              <td colSpan={2}>{msg}</td>
-              {locationCells}
-            </tr>,
+            );
+
+          const currentResultExpanded = this.state.expanded.has(
+            Keys.keyToString(resultKey),
+          );
+          const location = result.locations !== undefined &&
+            result.locations.length > 0 && (
+              <SarifLocation
+                loc={result.locations[0]}
+                sourceLocationPrefix={sourceLocationPrefix}
+                databaseUri={databaseUri}
+                onClick={updateSelectionCallback(resultKey)}
+              />
+            );
+          const locationCells = (
+            <td className="vscode-codeql__location-cell">{location}</td>
           );
 
-          paths.forEach((path, pathIndex) => {
-            const pathKey = { resultIndex, pathIndex };
-            const currentPathExpanded = this.state.expanded.has(
-              Keys.keyToString(pathKey),
-            );
-            if (currentResultExpanded) {
-              const isPathSpecificallySelected = Keys.equalsNotUndefined(
-                pathKey,
-                selectedItem,
-              );
-              rows.push(
-                <tr
-                  ref={this.scroller.ref(isPathSpecificallySelected)}
-                  {...selectableZebraStripe(
-                    isPathSpecificallySelected,
-                    resultIndex,
-                  )}
-                  key={`${resultIndex}-${pathIndex}`}
-                >
-                  <td className="vscode-codeql__icon-cell">
-                    <span className="vscode-codeql__vertical-rule"></span>
-                  </td>
-                  <AlertTableDropdownIndicatorCell
-                    expanded={currentPathExpanded}
-                    onClick={toggler([pathKey])}
-                  />
-                  <td className="vscode-codeql__text-center" colSpan={3}>
-                    Path
-                  </td>
-                </tr>,
-              );
-            }
+          const selectedItem = this.state.selectedItem;
+          const resultRowIsSelected =
+            selectedItem?.resultIndex === resultIndex &&
+            selectedItem.pathIndex === undefined;
 
-            if (currentResultExpanded && currentPathExpanded) {
-              const pathNodes = path.locations;
-              for (
-                let pathNodeIndex = 0;
-                pathNodeIndex < pathNodes.length;
-                ++pathNodeIndex
-              ) {
-                const pathNodeKey: Keys.PathNode = {
-                  ...pathKey,
-                  pathNodeIndex,
-                };
-                const step = pathNodes[pathNodeIndex];
-                const msg =
-                  step.location !== undefined &&
-                  step.location.message !== undefined ? (
-                    <SarifLocation
-                      text={step.location.message.text}
-                      loc={step.location}
-                      sourceLocationPrefix={sourceLocationPrefix}
-                      databaseUri={databaseUri}
-                      onClick={updateSelectionCallback(pathNodeKey)}
-                    />
-                  ) : (
-                    "[no location]"
-                  );
-                const additionalMsg =
-                  step.location !== undefined ? (
-                    <SarifLocation
-                      loc={step.location}
-                      sourceLocationPrefix={sourceLocationPrefix}
-                      databaseUri={databaseUri}
-                      onClick={updateSelectionCallback(pathNodeKey)}
-                    />
-                  ) : (
-                    ""
-                  );
-                const isSelected = Keys.equalsNotUndefined(
-                  this.state.selectedItem,
-                  pathNodeKey,
+          if (result.codeFlows === undefined) {
+            return (
+              <tr
+                ref={this.scroller.ref(resultRowIsSelected)}
+                key={resultIndex}
+                {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
+              >
+                <td className="vscode-codeql__icon-cell">{info}</td>
+                <td colSpan={3}>{msg}</td>
+                {locationCells}
+              </tr>
+            );
+          } else {
+            const paths: Sarif.ThreadFlow[] = Keys.getAllPaths(result);
+
+            const indices =
+              paths.length === 1
+                ? [resultKey, { ...resultKey, pathIndex: 0 }]
+                : /* if there's exactly one path, auto-expand
+                   * the path when expanding the result */
+                  [resultKey];
+
+            const resultRow = (
+              <tr
+                ref={this.scroller.ref(resultRowIsSelected)}
+                {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
+                key={resultIndex}
+              >
+                <AlertTableDropdownIndicatorCell
+                  expanded={currentResultExpanded}
+                  onClick={toggler(indices)}
+                />
+                <td className="vscode-codeql__icon-cell">{listUnordered}</td>
+                <td colSpan={2}>{msg}</td>
+                {locationCells}
+              </tr>
+            );
+
+            const pathRows =
+              currentResultExpanded &&
+              paths.map((path, pathIndex) => {
+                const pathKey = { resultIndex, pathIndex };
+                const currentPathExpanded = this.state.expanded.has(
+                  Keys.keyToString(pathKey),
                 );
-                const stepIndex = pathNodeIndex + 1; // Convert to 1-based
-                const zebraIndex = resultIndex + stepIndex;
-                rows.push(
+                const isPathSpecificallySelected = Keys.equalsNotUndefined(
+                  pathKey,
+                  selectedItem,
+                );
+                const pathRow = (
                   <tr
-                    ref={this.scroller.ref(isSelected)}
-                    className={
-                      isSelected
-                        ? "vscode-codeql__selected-path-node"
-                        : undefined
-                    }
-                    key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}
+                    ref={this.scroller.ref(isPathSpecificallySelected)}
+                    {...selectableZebraStripe(
+                      isPathSpecificallySelected,
+                      resultIndex,
+                    )}
+                    key={`${resultIndex}-${pathIndex}`}
                   >
                     <td className="vscode-codeql__icon-cell">
                       <span className="vscode-codeql__vertical-rule"></span>
                     </td>
-                    <td className="vscode-codeql__icon-cell">
-                      <span className="vscode-codeql__vertical-rule"></span>
+                    <AlertTableDropdownIndicatorCell
+                      expanded={currentPathExpanded}
+                      onClick={toggler([pathKey])}
+                    />
+                    <td className="vscode-codeql__text-center" colSpan={3}>
+                      Path
                     </td>
-                    <td
-                      {...selectableZebraStripe(
-                        isSelected,
-                        zebraIndex,
-                        "vscode-codeql__path-index-cell",
-                      )}
-                    >
-                      {stepIndex}
-                    </td>
-                    <td {...selectableZebraStripe(isSelected, zebraIndex)}>
-                      {msg}{" "}
-                    </td>
-                    <td
-                      {...selectableZebraStripe(
-                        isSelected,
-                        zebraIndex,
-                        "vscode-codeql__location-cell",
-                      )}
-                    >
-                      {additionalMsg}
-                    </td>
-                  </tr>,
+                  </tr>
                 );
-              }
-            }
-          });
-        }
-      },
-    );
+
+                const pathNodeRows =
+                  currentPathExpanded &&
+                  path.locations.map((step, pathNodeIndex) => {
+                    const pathNodeKey: Keys.PathNode = {
+                      ...pathKey,
+                      pathNodeIndex,
+                    };
+                    const msg =
+                      step.location !== undefined &&
+                      step.location.message !== undefined ? (
+                        <SarifLocation
+                          text={step.location.message.text}
+                          loc={step.location}
+                          sourceLocationPrefix={sourceLocationPrefix}
+                          databaseUri={databaseUri}
+                          onClick={updateSelectionCallback(pathNodeKey)}
+                        />
+                      ) : (
+                        "[no location]"
+                      );
+                    const additionalMsg =
+                      step.location !== undefined ? (
+                        <SarifLocation
+                          loc={step.location}
+                          sourceLocationPrefix={sourceLocationPrefix}
+                          databaseUri={databaseUri}
+                          onClick={updateSelectionCallback(pathNodeKey)}
+                        />
+                      ) : (
+                        ""
+                      );
+                    const isSelected = Keys.equalsNotUndefined(
+                      this.state.selectedItem,
+                      pathNodeKey,
+                    );
+                    const stepIndex = pathNodeIndex + 1; // Convert to 1-based
+                    const zebraIndex = resultIndex + stepIndex;
+                    return (
+                      <tr
+                        ref={this.scroller.ref(isSelected)}
+                        className={
+                          isSelected
+                            ? "vscode-codeql__selected-path-node"
+                            : undefined
+                        }
+                        key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}
+                      >
+                        <td className="vscode-codeql__icon-cell">
+                          <span className="vscode-codeql__vertical-rule"></span>
+                        </td>
+                        <td className="vscode-codeql__icon-cell">
+                          <span className="vscode-codeql__vertical-rule"></span>
+                        </td>
+                        <td
+                          {...selectableZebraStripe(
+                            isSelected,
+                            zebraIndex,
+                            "vscode-codeql__path-index-cell",
+                          )}
+                        >
+                          {stepIndex}
+                        </td>
+                        <td {...selectableZebraStripe(isSelected, zebraIndex)}>
+                          {msg}{" "}
+                        </td>
+                        <td
+                          {...selectableZebraStripe(
+                            isSelected,
+                            zebraIndex,
+                            "vscode-codeql__location-cell",
+                          )}
+                        >
+                          {additionalMsg}
+                        </td>
+                      </tr>
+                    );
+                  });
+
+                return (
+                  <>
+                    {pathRow}
+                    {pathNodeRows}
+                  </>
+                );
+              });
+
+            return (
+              <>
+                {resultRow}
+                {pathRows}
+              </>
+            );
+          }
+        },
+      );
 
     return (
       <table className={className}>
