@@ -24,6 +24,7 @@ import { SarifLocation } from "./locations/SarifLocation";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
+import { AlertTablePathNodeRow } from "./AlertTablePathNodeRow";
 
 type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -210,81 +211,20 @@ export class AlertTable extends React.Component<
 
                 const pathNodeRows =
                   currentPathExpanded &&
-                  path.locations.map((step, pathNodeIndex) => {
-                    const pathNodeKey: Keys.PathNode = {
-                      ...pathKey,
-                      pathNodeIndex,
-                    };
-                    const msg =
-                      step.location !== undefined &&
-                      step.location.message !== undefined ? (
-                        <SarifLocation
-                          text={step.location.message.text}
-                          loc={step.location}
-                          sourceLocationPrefix={sourceLocationPrefix}
-                          databaseUri={databaseUri}
-                          onClick={updateSelectionCallback(pathNodeKey)}
-                        />
-                      ) : (
-                        "[no location]"
-                      );
-                    const additionalMsg =
-                      step.location !== undefined ? (
-                        <SarifLocation
-                          loc={step.location}
-                          sourceLocationPrefix={sourceLocationPrefix}
-                          databaseUri={databaseUri}
-                          onClick={updateSelectionCallback(pathNodeKey)}
-                        />
-                      ) : (
-                        ""
-                      );
-                    const isSelected = Keys.equalsNotUndefined(
-                      this.state.selectedItem,
-                      pathNodeKey,
-                    );
-                    const stepIndex = pathNodeIndex + 1; // Convert to 1-based
-                    const zebraIndex = resultIndex + stepIndex;
-                    return (
-                      <tr
-                        ref={this.scroller.ref(isSelected)}
-                        className={
-                          isSelected
-                            ? "vscode-codeql__selected-path-node"
-                            : undefined
-                        }
-                        key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}
-                      >
-                        <td className="vscode-codeql__icon-cell">
-                          <span className="vscode-codeql__vertical-rule"></span>
-                        </td>
-                        <td className="vscode-codeql__icon-cell">
-                          <span className="vscode-codeql__vertical-rule"></span>
-                        </td>
-                        <td
-                          {...selectableZebraStripe(
-                            isSelected,
-                            zebraIndex,
-                            "vscode-codeql__path-index-cell",
-                          )}
-                        >
-                          {stepIndex}
-                        </td>
-                        <td {...selectableZebraStripe(isSelected, zebraIndex)}>
-                          {msg}{" "}
-                        </td>
-                        <td
-                          {...selectableZebraStripe(
-                            isSelected,
-                            zebraIndex,
-                            "vscode-codeql__location-cell",
-                          )}
-                        >
-                          {additionalMsg}
-                        </td>
-                      </tr>
-                    );
-                  });
+                  path.locations.map((step, pathNodeIndex) => (
+                    <AlertTablePathNodeRow
+                      key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}
+                      step={step}
+                      pathNodeIndex={pathNodeIndex}
+                      pathIndex={pathIndex}
+                      resultIndex={resultIndex}
+                      selectedItem={selectedItem}
+                      databaseUri={databaseUri}
+                      sourceLocationPrefix={sourceLocationPrefix}
+                      updateSelectionCallback={updateSelectionCallback}
+                      scroller={this.scroller}
+                    />
+                  ));
 
                 return (
                   <>
