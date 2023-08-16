@@ -7,6 +7,7 @@ import { selectableZebraStripe } from "./result-table-utils";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 import { useMemo } from "react";
 import { SarifLocation } from "./locations/SarifLocation";
+import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 
 interface Props {
   result: Sarif.Result;
@@ -20,7 +21,6 @@ interface Props {
   ) => () => void;
   toggler: (keys: Keys.ResultKey[]) => (e: React.MouseEvent) => void;
   scroller: ScrollIntoViewHelper;
-  msg: JSX.Element;
 }
 
 export function AlertTableResultRow(props: Props) {
@@ -34,7 +34,6 @@ export function AlertTableResultRow(props: Props) {
     updateSelectionCallback,
     toggler,
     scroller,
-    msg,
   } = props;
 
   const resultKey: Keys.Result = useMemo(
@@ -59,6 +58,20 @@ export function AlertTableResultRow(props: Props) {
   const resultRowIsSelected =
     selectedItem?.resultIndex === resultIndex &&
     selectedItem.pathIndex === undefined;
+
+  const text = result.message.text || "[no text]";
+  const msg =
+    result.relatedLocations === undefined ? (
+      <span key="0">{text}</span>
+    ) : (
+      <SarifMessageWithLocations
+        msg={text}
+        relatedLocations={result.relatedLocations}
+        sourceLocationPrefix={sourceLocationPrefix}
+        databaseUri={databaseUri}
+        onClick={handleSarifLocationClicked}
+      />
+    );
 
   return (
     <tr

@@ -17,7 +17,6 @@ import { parseSarifLocation, isNoLocation } from "../../common/sarif-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 import { AlertTableHeader } from "./AlertTableHeader";
-import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
 import { AlertTablePathRow } from "./AlertTablePathRow";
@@ -100,20 +99,6 @@ export class AlertTable extends React.Component<
       resultSet.interpretation.data.runs[0].results.map(
         (result, resultIndex) => {
           const resultKey: Keys.Result = { resultIndex };
-          const text = result.message.text || "[no text]";
-          const msg =
-            result.relatedLocations === undefined ? (
-              <span key="0">{text}</span>
-            ) : (
-              <SarifMessageWithLocations
-                msg={text}
-                relatedLocations={result.relatedLocations}
-                sourceLocationPrefix={sourceLocationPrefix}
-                databaseUri={databaseUri}
-                onClick={updateSelectionCallback(resultKey)}
-              />
-            );
-
           const currentResultExpanded = this.state.expanded.has(
             Keys.keyToString(resultKey),
           );
@@ -130,7 +115,6 @@ export class AlertTable extends React.Component<
                 updateSelectionCallback={updateSelectionCallback}
                 toggler={toggler}
                 scroller={this.scroller}
-                msg={msg}
               />
               {currentResultExpanded &&
                 result.codeFlows &&
