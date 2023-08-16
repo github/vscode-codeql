@@ -84,12 +84,6 @@ export class AlertTable extends React.Component<
       };
     };
 
-    const toggler: (keys: Keys.ResultKey[]) => (e: React.MouseEvent) => void = (
-      indices,
-    ) => {
-      return (e) => this.toggle(e, indices);
-    };
-
     if (!resultSet.interpretation.data.runs?.[0]?.results?.length) {
       return <AlertTableNoResults {...this.props} />;
     }
@@ -109,7 +103,7 @@ export class AlertTable extends React.Component<
                 databaseUri={databaseUri}
                 sourceLocationPrefix={sourceLocationPrefix}
                 updateSelectionCallback={updateSelectionCallback}
-                toggler={toggler}
+                toggleExpanded={this.toggle.bind(this)}
                 scroller={this.scroller}
               />
             ),

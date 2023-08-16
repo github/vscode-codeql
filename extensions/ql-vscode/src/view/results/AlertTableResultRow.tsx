@@ -20,7 +20,7 @@ interface Props {
   updateSelectionCallback: (
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => () => void;
-  toggler: (keys: Keys.ResultKey[]) => (e: React.MouseEvent) => void;
+  toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
   scroller: ScrollIntoViewHelper;
 }
 
@@ -33,7 +33,7 @@ export function AlertTableResultRow(props: Props) {
     databaseUri,
     sourceLocationPrefix,
     updateSelectionCallback,
-    toggler,
+    toggleExpanded,
     scroller,
   } = props;
 
@@ -53,8 +53,8 @@ export function AlertTableResultRow(props: Props) {
         : /* if there's exactly one path, auto-expand
            * the path when expanding the result */
           [resultKey];
-    return toggler(indices);
-  }, [result, resultKey, toggler]);
+    return (e: React.MouseEvent) => toggleExpanded(e, indices);
+  }, [result, resultKey, toggleExpanded]);
 
   const resultRowIsSelected =
     selectedItem?.resultIndex === resultIndex &&
@@ -122,7 +122,7 @@ export function AlertTableResultRow(props: Props) {
             databaseUri={databaseUri}
             sourceLocationPrefix={sourceLocationPrefix}
             updateSelectionCallback={updateSelectionCallback}
-            toggler={toggler}
+            toggleExpanded={toggleExpanded}
             scroller={scroller}
           />
         ))}

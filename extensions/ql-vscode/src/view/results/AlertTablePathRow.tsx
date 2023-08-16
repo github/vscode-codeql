@@ -18,7 +18,7 @@ interface Props {
   updateSelectionCallback: (
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => () => void;
-  toggler: (keys: Keys.ResultKey[]) => (e: React.MouseEvent) => void;
+  toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
   scroller: ScrollIntoViewHelper;
 }
 
@@ -32,7 +32,7 @@ export function AlertTablePathRow(props: Props) {
     databaseUri,
     sourceLocationPrefix,
     updateSelectionCallback,
-    toggler,
+    toggleExpanded,
     scroller,
   } = props;
 
@@ -41,8 +41,8 @@ export function AlertTablePathRow(props: Props) {
     [pathIndex, resultIndex],
   );
   const handleDropdownClick = useMemo(
-    () => toggler([pathKey]),
-    [pathKey, toggler],
+    () => (e: React.MouseEvent) => toggleExpanded(e, [pathKey]),
+    [pathKey, toggleExpanded],
   );
 
   const isPathSpecificallySelected = Keys.equalsNotUndefined(
