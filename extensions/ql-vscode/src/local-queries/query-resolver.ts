@@ -13,6 +13,7 @@ import { redactableError } from "../common/errors";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
 import { telemetryListener } from "../common/vscode/telemetry";
+import { get } from "http";
 
 export async function qlpackOfDatabase(
   cli: Pick<CodeQLCliServer, "resolveQlpacks">,
@@ -44,6 +45,7 @@ async function resolveQueriesFromPacks(
   cli: CodeQLCliServer,
   qlpacks: string[],
   constraints: QueryConstraints,
+  extraPacks: string[] = [],
 ): Promise<string[]> {
   const suiteFile = (
     await file({
@@ -66,10 +68,9 @@ async function resolveQueriesFromPacks(
     "utf8",
   );
 
-  return await cli.resolveQueriesInSuite(
-    suiteFile,
-    getOnDiskWorkspaceFolders(),
-  );
+  const additionalPacks = [...getOnDiskWorkspaceFolders(), ...extraPacks];
+
+  return await cli.resolveQueriesInSuite(suiteFile, additionalPacks);
 }
 
 /**
@@ -83,22 +84,25 @@ async function resolveQueriesFromPacks(
  */
 export async function resolveQueries(
   cli: CodeQLCliServer,
-  qlpacks: QlPacksForLanguage,
+  qlpacks: QlPacksForLanguage | undefined,
   name: string,
   constraints: QueryConstraints,
+  extraPacks: string[] = [],
+  packsToSearch: string[] = [],
 ): Promise<string[]> {
-  const packsToSearch: string[] = [];
-
   // The CLI can handle both library packs and query packs, so search both packs in order.
-  packsToSearch.push(qlpacks.dbschemePack);
-  if (qlpacks.queryPack !== undefined) {
-    packsToSearch.push(qlpacks.queryPack);
+  if (qlpacks !== undefined) {
+    packsToSearch.push(qlpacks.dbschemePack);
+    if (qlpacks.queryPack !== undefined) {
+      packsToSearch.push(qlpacks.queryPack);
+    }
   }
 
   const queries = await resolveQueriesFromPacks(
     cli,
     packsToSearch,
     constraints,
+    extraPacks,
   );
   if (queries.length > 0) {
     return queries;

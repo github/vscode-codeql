@@ -28,7 +28,6 @@ type AutoModelQueryOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   databaseItem: DatabaseItem;
-  qlpack: QlPacksForLanguage;
   sourceInfo: SourceInfo | undefined;
   additionalPacks: string[];
   extensionPacks: string[];
@@ -55,7 +54,6 @@ async function runAutoModelQuery({
   cliServer,
   queryRunner,
   databaseItem,
-  qlpack,
   sourceInfo,
   additionalPacks,
   extensionPacks,
@@ -69,12 +67,14 @@ async function runAutoModelQuery({
   // Example: internal extract automodel framework-mode candidates
   const queries = await resolveQueries(
     cliServer,
-    qlpack,
+    undefined,
     `Extract automodel ${queryTag}`,
     {
       kind: "problem",
       "tags contain all": ["automodel", modeTag(mode), ...queryTag.split(" ")],
     },
+    additionalPacks,
+    [`codeql/${databaseItem.language}-queries`],
   );
   if (queries.length > 1) {
     throw new Error(
@@ -157,6 +157,7 @@ type AutoModelQueriesOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   databaseItem: DatabaseItem;
+  queryDir: string;
   queryStorageDir: string;
 
   progress: ProgressCallback;
@@ -173,12 +174,11 @@ export async function runAutoModelQueries({
   cliServer,
   queryRunner,
   databaseItem,
+  queryDir,
   queryStorageDir,
   progress,
   cancellationTokenSource,
 }: AutoModelQueriesOptions): Promise<AutoModelQueriesResult | undefined> {
-  const qlpack = await qlpackOfDatabase(cliServer, databaseItem);
-
   // CodeQL needs to have access to the database to be able to retrieve the
   // snippets from it. The source location prefix is used to determine the
   // base path of the database.
@@ -200,7 +200,11 @@ export async function runAutoModelQueries({
     candidateMethods,
   );
 
-  const additionalPacks = [...getOnDiskWorkspaceFolders(), filterPackDir];
+  const additionalPacks = [
+    ...getOnDiskWorkspaceFolders(),
+    queryDir,
+    filterPackDir,
+  ];
   const extensionPacks = Object.keys(
     await cliServer.resolveQlpacks(additionalPacks, true),
   );
@@ -211,7 +215,6 @@ export async function runAutoModelQueries({
     cliServer,
     queryRunner,
     databaseItem,
-    qlpack,
     sourceInfo,
     additionalPacks,
     extensionPacks,

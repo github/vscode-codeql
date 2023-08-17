@@ -51,7 +51,7 @@ export async function setUpPack(
     name: "codeql/external-api-usage",
     version: "0.0.0",
     dependencies: {
-      [`codeql/${language}-all`]: "*",
+      [`codeql/${language}-all`]: "*", // TODO: update with autmodel pack
     },
   };
 

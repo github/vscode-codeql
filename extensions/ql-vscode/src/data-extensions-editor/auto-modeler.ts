@@ -35,6 +35,7 @@ export class AutoModeler {
     private readonly app: App,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
+    private readonly queryDir: string,
     private readonly queryStorageDir: string,
     private readonly databaseItem: DatabaseItem,
     private readonly setInProgressMethods: (
@@ -174,6 +175,7 @@ export class AutoModeler {
       candidateMethods,
       cliServer: this.cliServer,
       queryRunner: this.queryRunner,
+      queryDir: this.queryDir,
       queryStorageDir: this.queryStorageDir,
       databaseItem: this.databaseItem,
       progress: (update) => progress({ ...update }),

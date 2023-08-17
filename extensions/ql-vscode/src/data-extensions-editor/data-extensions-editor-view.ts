@@ -84,6 +84,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       app,
       cliServer,
       queryRunner,
+      queryDir,
       queryStorageDir,
       databaseItem,
       async (packageName, inProgressMethods) => {
