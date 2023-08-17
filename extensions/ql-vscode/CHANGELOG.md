@@ -2,9 +2,10 @@
 
 ## [UNRELEASED]
 
+- Group the extension settings, so that they're easier to find in the Settings UI. [#2706](https://github.com/github/vscode-codeql/pull/2706)
+
 ## 1.8.10 - 15 August 2023
 
-- Group the extension settings, so that they're easier to find in the Settings UI. [#2706](https://github.com/github/vscode-codeql/pull/2706)
 - Add a code lens to make the `CodeQL: Open Referenced File` command more discoverable. Click the "Open referenced file" prompt in a `.qlref` file to jump to the referenced `.ql` file. [#2704](https://github.com/github/vscode-codeql/pull/2704)
 
 ## 1.8.9 - 3 August 2023
