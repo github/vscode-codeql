@@ -49,8 +49,8 @@ export class ModelDetailsDataProvider
     hideModeledApis?: boolean,
   ): Promise<void> {
     if (
-      externalApiUsages &&
-      databaseItem &&
+      externalApiUsages !== undefined &&
+      databaseItem !== undefined &&
       (this.externalApiUsages !== externalApiUsages ||
         this.databaseItem !== databaseItem)
     ) {

@@ -33,7 +33,7 @@ export class ModelDetailsPanel extends DisposableObject {
       databaseItem,
       hideModeledApis,
     );
-    if (externalApiUsages) {
+    if (externalApiUsages !== undefined) {
       this.treeView.badge = {
         value: externalApiUsages.length,
         tooltip: "Number of external APIs",

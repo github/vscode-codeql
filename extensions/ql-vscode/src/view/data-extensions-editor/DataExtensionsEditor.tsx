@@ -101,6 +101,13 @@ export function DataExtensionsEditor({
     INITIAL_HIDE_MODELED_APIS_VALUE,
   );
 
+  useEffect(() => {
+    vscode.postMessage({
+      t: "hideModeledApis",
+      hideModeledApis,
+    });
+  }, [hideModeledApis]);
+
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
   >(initialModeledMethods);
@@ -281,12 +288,7 @@ export function DataExtensionsEditor({
 
   const onHideModeledApis = useCallback(() => {
     setHideModeledApis((oldHideModeledApis) => !oldHideModeledApis);
-
-    vscode.postMessage({
-      t: "hideModeledApis",
-      hideModeledApis: !hideModeledApis,
-    });
-  }, [hideModeledApis]);
+  }, []);
 
   if (viewState === undefined || externalApiUsages.length === 0) {
     return <LoadingContainer>Loading...</LoadingContainer>;
