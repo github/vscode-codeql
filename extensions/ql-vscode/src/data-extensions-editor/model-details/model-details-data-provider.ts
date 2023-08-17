@@ -13,7 +13,7 @@ import { ExternalApiUsage, Usage } from "../external-api-usage";
 import { DatabaseItem } from "../../databases/local-databases";
 import { relative } from "path";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { INITIAL_HIDE_MODELED_APIS_VALUE } from "../shared/initial-hide-modeled-apis-value";
+import { INITIAL_HIDE_MODELED_APIS_VALUE } from "../shared/hide-modeled-apis";
 
 export class ModelDetailsDataProvider
   extends DisposableObject

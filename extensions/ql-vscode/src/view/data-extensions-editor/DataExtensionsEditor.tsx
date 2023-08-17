@@ -19,7 +19,7 @@ import { percentFormatter } from "./formatters";
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
 import { getLanguageDisplayName } from "../../common/query-language";
-import { INITIAL_HIDE_MODELED_APIS_VALUE } from "../../data-extensions-editor/shared/initial-hide-modeled-apis-value";
+import { INITIAL_HIDE_MODELED_APIS_VALUE } from "../../data-extensions-editor/shared/hide-modeled-apis";
 
 const LoadingContainer = styled.div`
   text-align: center;
