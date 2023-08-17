@@ -44,27 +44,21 @@ export class ModelDetailsDataProvider
    * method and instead always pass new objects/arrays.
    */
   public async setState(
-    externalApiUsages?: ExternalApiUsage[],
-    databaseItem?: DatabaseItem,
-    hideModeledApis?: boolean,
+    externalApiUsages: ExternalApiUsage[],
+    databaseItem: DatabaseItem,
+    hideModeledApis: boolean,
   ): Promise<void> {
     if (
-      externalApiUsages !== undefined &&
-      databaseItem !== undefined &&
-      (this.externalApiUsages !== externalApiUsages ||
-        this.databaseItem !== databaseItem)
+      this.externalApiUsages !== externalApiUsages ||
+      this.databaseItem !== databaseItem ||
+      this.hideModeledApis !== hideModeledApis
     ) {
       this.externalApiUsages = externalApiUsages;
       this.databaseItem = databaseItem;
       this.sourceLocationPrefix =
         await this.databaseItem.getSourceLocationPrefix(this.cliServer);
-      this.onDidChangeTreeDataEmitter.fire();
-    }
-    if (
-      hideModeledApis !== undefined &&
-      hideModeledApis !== this.hideModeledApis
-    ) {
       this.hideModeledApis = hideModeledApis;
+
       this.onDidChangeTreeDataEmitter.fire();
     }
   }

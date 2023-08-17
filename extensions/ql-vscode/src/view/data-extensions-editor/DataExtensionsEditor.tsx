@@ -75,12 +75,14 @@ type Props = {
   initialViewState?: DataExtensionEditorViewState;
   initialExternalApiUsages?: ExternalApiUsage[];
   initialModeledMethods?: Record<string, ModeledMethod>;
+  initialHideModeledApis?: boolean;
 };
 
 export function DataExtensionsEditor({
   initialViewState,
   initialExternalApiUsages = [],
   initialModeledMethods = {},
+  initialHideModeledApis = INITIAL_HIDE_MODELED_APIS_VALUE,
 }: Props): JSX.Element {
   const [viewState, setViewState] = useState<
     DataExtensionEditorViewState | undefined
@@ -98,7 +100,7 @@ export function DataExtensionsEditor({
   );
 
   const [hideModeledApis, setHideModeledApis] = useState(
-    INITIAL_HIDE_MODELED_APIS_VALUE,
+    initialHideModeledApis,
   );
 
   useEffect(() => {

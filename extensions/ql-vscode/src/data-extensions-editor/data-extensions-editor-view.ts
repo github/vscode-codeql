@@ -43,6 +43,7 @@ import { join } from "path";
 import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
 import { AutoModeler } from "./auto-modeler";
+import { INITIAL_HIDE_MODELED_APIS_VALUE } from "./shared/hide-modeled-apis";
 
 export class DataExtensionsEditorView extends AbstractWebview<
   ToDataExtensionsEditorMessage,
@@ -51,6 +52,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
   private readonly autoModeler: AutoModeler;
 
   private externalApiUsages: ExternalApiUsage[];
+  private hideModeledApis: boolean;
 
   public constructor(
     ctx: ExtensionContext,
@@ -64,9 +66,9 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly extensionPack: ExtensionPack,
     private mode: Mode,
     private readonly updateModelDetailsPanelState: (
-      externalApiUsages?: ExternalApiUsage[],
-      databaseItem?: DatabaseItem,
-      hideModeledApis?: boolean,
+      externalApiUsages: ExternalApiUsage[],
+      databaseItem: DatabaseItem,
+      hideModeledApis: boolean,
     ) => Promise<void>,
     private readonly revealItemInDetailsPanel: (usage: Usage) => Promise<void>,
     private readonly handleViewBecameActive: (
@@ -99,6 +101,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       },
     );
     this.externalApiUsages = [];
+    this.hideModeledApis = INITIAL_HIDE_MODELED_APIS_VALUE;
   }
 
   public async openView() {
@@ -111,6 +114,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         await this.updateModelDetailsPanelState(
           this.externalApiUsages,
           this.databaseItem,
+          this.hideModeledApis,
         );
       }
     });
@@ -239,8 +243,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
         break;
       case "hideModeledApis":
         await this.updateModelDetailsPanelState(
-          undefined,
-          undefined,
+          this.externalApiUsages,
+          this.databaseItem,
           msg.hideModeledApis,
         );
         break;
@@ -348,6 +352,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
             await this.updateModelDetailsPanelState(
               this.externalApiUsages,
               this.databaseItem,
+              this.hideModeledApis,
             );
           }
         } catch (err) {
