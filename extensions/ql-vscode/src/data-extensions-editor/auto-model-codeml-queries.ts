@@ -1,19 +1,11 @@
 import { CodeQLCliServer, SourceInfo } from "../codeql-cli/cli";
-import { QueryRunner } from "../query-server";
+import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { DatabaseItem } from "../databases/local-databases";
 import { ProgressCallback } from "../common/vscode/progress";
 import * as Sarif from "sarif";
 import { qlpackOfDatabase, resolveQueries } from "../local-queries";
-import { extLogger } from "../common/logging/vscode";
 import { Mode } from "./shared/mode";
-import { QlPacksForLanguage } from "../databases/qlpack";
-import { createLockFileForStandardQuery } from "../local-queries/standard-queries";
-import { CancellationToken, CancellationTokenSource } from "vscode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
-import { showAndLogExceptionWithTelemetry, TeeLogger } from "../common/logging";
-import { QueryResultType } from "../query-server/new-messages";
-import { telemetryListener } from "../common/vscode/telemetry";
-import { redactableError } from "../common/errors";
 import { interpretResultsSarif } from "../query-results";
 import { join } from "path";
 import { assertNever } from "../common/helpers-pure";
@@ -21,22 +13,9 @@ import { dir } from "tmp-promise";
 import { writeFile, outputFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
 import { MethodSignature } from "./external-api-usage";
-
-type AutoModelQueryOptions = {
-  queryTag: string;
-  mode: Mode;
-  cliServer: CodeQLCliServer;
-  queryRunner: QueryRunner;
-  databaseItem: DatabaseItem;
-  qlpack: QlPacksForLanguage;
-  sourceInfo: SourceInfo | undefined;
-  additionalPacks: string[];
-  extensionPacks: string[];
-  queryStorageDir: string;
-
-  progress: ProgressCallback;
-  token: CancellationToken;
-};
+import { runQuery } from "../local-queries/query-runner";
+import { QueryMetadata } from "../common/interface-types";
+import { CancellationTokenSource } from "vscode";
 
 function modeTag(mode: Mode): string {
   switch (mode) {
@@ -49,20 +28,111 @@ function modeTag(mode: Mode): string {
   }
 }
 
-async function runAutoModelQuery({
-  queryTag,
+type AutoModelQueriesOptions = {
+  mode: Mode;
+  candidateMethods: MethodSignature[];
+  cliServer: CodeQLCliServer;
+  queryRunner: QueryRunner;
+  databaseItem: DatabaseItem;
+  queryStorageDir: string;
+
+  progress: ProgressCallback;
+  cancellationTokenSource: CancellationTokenSource;
+};
+
+export type AutoModelQueriesResult = {
+  candidates: Sarif.Log;
+};
+
+// TODO: give this a nice method doc
+export async function runAutoModelQueries({
   mode,
+  candidateMethods,
   cliServer,
   queryRunner,
   databaseItem,
-  qlpack,
-  sourceInfo,
-  additionalPacks,
-  extensionPacks,
   queryStorageDir,
   progress,
-  token,
-}: AutoModelQueryOptions): Promise<Sarif.Log | undefined> {
+  cancellationTokenSource,
+}: AutoModelQueriesOptions): Promise<AutoModelQueriesResult | undefined> {
+  // First, resolve the query that we want to run.
+  const queryPath = await resolveAutomodelQueries(
+    cliServer,
+    databaseItem,
+    "candidates",
+    mode,
+  );
+
+  // Generate a pack containing the candidate filters
+  const filterPackDir = await generateCandidateFilterPack(
+    databaseItem.language,
+    candidateMethods,
+  );
+
+  const additionalPacks = [...getOnDiskWorkspaceFolders(), filterPackDir];
+  // TODO: can we remove extensionPacks from the runQuery method?
+  const extensionPacks = Object.keys(
+    await cliServer.resolveQlpacks(additionalPacks, true),
+  );
+
+  // Run the actual query
+  const completedQuery = await runQuery(
+    cliServer,
+    queryRunner,
+    databaseItem,
+    queryPath,
+    queryStorageDir,
+    additionalPacks,
+    extensionPacks,
+    progress,
+    cancellationTokenSource.token,
+  );
+
+  if (!completedQuery) {
+    return undefined;
+  }
+
+  // Get metadata for the query. This is required to interpret the results. We already know the kind is problem
+  // (because of the constraint in resolveQueries), so we don't need any more checks on the metadata.
+  const metadata = await cliServer.resolveMetadata(queryPath);
+
+  // CodeQL needs to have access to the database to be able to retrieve the
+  // snippets from it. The source location prefix is used to determine the
+  // base path of the database.
+  const sourceLocationPrefix = await databaseItem.getSourceLocationPrefix(
+    cliServer,
+  );
+  const sourceArchiveUri = databaseItem.sourceArchive;
+  const sourceInfo =
+    sourceArchiveUri === undefined
+      ? undefined
+      : {
+          sourceArchive: sourceArchiveUri.fsPath,
+          sourceLocationPrefix,
+        };
+
+  const candidates = await interpretAutomodelResults(
+    cliServer,
+    "candidates",
+    completedQuery,
+    queryStorageDir,
+    metadata,
+    sourceInfo,
+  );
+
+  return {
+    candidates,
+  };
+}
+
+async function resolveAutomodelQueries(
+  cliServer: CodeQLCliServer,
+  databaseItem: DatabaseItem,
+  queryTag: string,
+  mode: Mode,
+): Promise<string> {
+  const qlpack = await qlpackOfDatabase(cliServer, databaseItem);
+
   // First, resolve the query that we want to run.
   // All queries are tagged like this:
   // internal extract automodel <mode> <queryTag>
@@ -87,146 +157,7 @@ async function runAutoModelQuery({
     );
   }
 
-  const queryPath = queries[0];
-  const { cleanup: cleanupLockFile } = await createLockFileForStandardQuery(
-    cliServer,
-    queryPath,
-  );
-
-  // Get metadata for the query. This is required to interpret the results. We already know the kind is problem
-  // (because of the constraint in resolveQueries), so we don't need any more checks on the metadata.
-  const metadata = await cliServer.resolveMetadata(queryPath);
-
-  const queryRun = queryRunner.createQueryRun(
-    databaseItem.databaseUri.fsPath,
-    {
-      queryPath,
-      quickEvalPosition: undefined,
-      quickEvalCountOnly: false,
-    },
-    false,
-    additionalPacks,
-    extensionPacks,
-    queryStorageDir,
-    undefined,
-    undefined,
-  );
-
-  const completedQuery = await queryRun.evaluate(
-    progress,
-    token,
-    new TeeLogger(queryRunner.logger, queryRun.outputDir.logPath),
-  );
-
-  await cleanupLockFile?.();
-
-  if (completedQuery.resultType !== QueryResultType.SUCCESS) {
-    void showAndLogExceptionWithTelemetry(
-      extLogger,
-      telemetryListener,
-      redactableError`Auto-model query ${queryTag} failed: ${
-        completedQuery.message ?? "No message"
-      }`,
-    );
-    return;
-  }
-
-  const interpretedResultsPath = join(
-    queryStorageDir,
-    `interpreted-results-${queryTag.replaceAll(" ", "-")}-${queryRun.id}.sarif`,
-  );
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- We only need the actual SARIF data, not the extra fields added by SarifInterpretationData
-  const { t, sortState, ...sarif } = await interpretResultsSarif(
-    cliServer,
-    metadata,
-    {
-      resultsPath: completedQuery.outputDir.bqrsPath,
-      interpretedResultsPath,
-    },
-    sourceInfo,
-    ["--sarif-add-snippets"],
-  );
-
-  return sarif;
-}
-
-type AutoModelQueriesOptions = {
-  mode: Mode;
-  candidateMethods: MethodSignature[];
-  cliServer: CodeQLCliServer;
-  queryRunner: QueryRunner;
-  databaseItem: DatabaseItem;
-  queryStorageDir: string;
-
-  progress: ProgressCallback;
-  cancellationTokenSource: CancellationTokenSource;
-};
-
-export type AutoModelQueriesResult = {
-  candidates: Sarif.Log;
-};
-
-export async function runAutoModelQueries({
-  mode,
-  candidateMethods,
-  cliServer,
-  queryRunner,
-  databaseItem,
-  queryStorageDir,
-  progress,
-  cancellationTokenSource,
-}: AutoModelQueriesOptions): Promise<AutoModelQueriesResult | undefined> {
-  const qlpack = await qlpackOfDatabase(cliServer, databaseItem);
-
-  // CodeQL needs to have access to the database to be able to retrieve the
-  // snippets from it. The source location prefix is used to determine the
-  // base path of the database.
-  const sourceLocationPrefix = await databaseItem.getSourceLocationPrefix(
-    cliServer,
-  );
-  const sourceArchiveUri = databaseItem.sourceArchive;
-  const sourceInfo =
-    sourceArchiveUri === undefined
-      ? undefined
-      : {
-          sourceArchive: sourceArchiveUri.fsPath,
-          sourceLocationPrefix,
-        };
-
-  // Generate a pack containing the candidate filters
-  const filterPackDir = await generateCandidateFilterPack(
-    databaseItem.language,
-    candidateMethods,
-  );
-
-  const additionalPacks = [...getOnDiskWorkspaceFolders(), filterPackDir];
-  const extensionPacks = Object.keys(
-    await cliServer.resolveQlpacks(additionalPacks, true),
-  );
-
-  const candidates = await runAutoModelQuery({
-    mode,
-    queryTag: "candidates",
-    cliServer,
-    queryRunner,
-    databaseItem,
-    qlpack,
-    sourceInfo,
-    additionalPacks,
-    extensionPacks,
-    queryStorageDir,
-    progress,
-    token: cancellationTokenSource.token,
-  });
-
-  if (!candidates) {
-    return undefined;
-  }
-
-  return {
-    candidates,
-  };
+  return queries[0];
 }
 
 /**
@@ -238,7 +169,7 @@ export async function runAutoModelQueries({
  * @param candidateMethods
  * @returns
  */
-export async function generateCandidateFilterPack(
+async function generateCandidateFilterPack(
   language: string,
   candidateMethods: MethodSignature[],
 ): Promise<string> {
@@ -283,4 +214,35 @@ export async function generateCandidateFilterPack(
   await writeFile(filterFile, dumpYaml(filter), "utf8");
 
   return packDir;
+}
+
+async function interpretAutomodelResults(
+  cliServer: CodeQLCliServer,
+  queryTag: string, // TODO: is this really needed or can we just use the id only?
+  completedQuery: CoreCompletedQuery,
+  queryStorageDir: string, // TODO: is this really needed or could we just use completedQuery.outputDir
+  metadata: QueryMetadata,
+  sourceInfo: SourceInfo | undefined,
+): Promise<Sarif.Log> {
+  completedQuery;
+  const interpretedResultsPath = join(
+    queryStorageDir,
+    `interpreted-results-${queryTag.replaceAll(" ", "-")}-${
+      completedQuery.id // TODO: is this ok?
+    }.sarif`,
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- We only need the actual SARIF data, not the extra fields added by SarifInterpretationData
+  const { t, sortState, ...sarif } = await interpretResultsSarif(
+    cliServer,
+    metadata,
+    {
+      resultsPath: completedQuery.outputDir.bqrsPath,
+      interpretedResultsPath,
+    },
+    sourceInfo,
+    ["--sarif-add-snippets"],
+  );
+
+  return sarif;
 }
