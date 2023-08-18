@@ -1,4 +1,5 @@
 import * as React from "react";
+import TextButton from "../common/TextButton";
 import { chevronDown, chevronRight } from "./octicons";
 
 type Props = {
@@ -10,12 +11,8 @@ export function AlertTableDropdownIndicatorCell({ expanded, onClick }: Props) {
   const indicator = expanded ? chevronDown : chevronRight;
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-    <td
-      className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell"
-      onMouseDown={onClick}
-    >
-      {indicator}
+    <td className="vscode-codeql__icon-cell">
+      <TextButton onClick={onClick}>{indicator}</TextButton>
     </td>
   );
 }
