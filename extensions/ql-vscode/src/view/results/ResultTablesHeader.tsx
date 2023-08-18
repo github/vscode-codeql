@@ -18,6 +18,43 @@ interface Props {
   selectedTable: string;
 }
 
+const Container = styled.span`
+  display: flex;
+  padding: 0.5em 0;
+  align-items: center;
+  top: 0;
+  background-color: var(--vscode-editorGutter-background);
+  position: sticky;
+  z-index: 1;
+`;
+
+const PaginationButton = styled.button`
+  padding: 0.3rem;
+  margin: 0.2rem;
+  border: 0;
+  font-size: large;
+  color: var(--vscode-editor-foreground);
+  background-color: var(--vscode-editorGutter-background);
+  cursor: pointer;
+  opacity: 0.8;
+
+  &:hover {
+    opacity: 1;
+  }
+`;
+
+const PageNumberInput = styled.input`
+  border-radius: 0;
+  padding: 0.3rem;
+  margin: 0.2rem;
+  width: 2rem;
+  color: var(--vscode-editor-foreground);
+  border: 0;
+  border-bottom: 1px solid var(--vscode-editor-foreground);
+  background-color: var(--vscode-editorGutter-background);
+  outline: none;
+`;
+
 const OpenQueryLink = styled(TextButton)`
   text-decoration: none;
 `;
@@ -110,9 +147,9 @@ export function ResultTablesHeader(props: Props) {
   }, [queryPath]);
 
   return (
-    <span className="vscode-codeql__table-selection-pagination">
-      <button onClick={prevPageHandler}>&#xab;</button>
-      <input
+    <Container>
+      <PaginationButton onClick={prevPageHandler}>&#xab;</PaginationButton>
+      <PageNumberInput
         type="number"
         size={3}
         value={selectedPage}
@@ -123,16 +160,16 @@ export function ResultTablesHeader(props: Props) {
         onKeyDown={onKeyDownHandler}
       />
       <span>/&nbsp;{numPages}</span>
-      <button value=">" onClick={nextPageHandler}>
+      <PaginationButton value=">" onClick={nextPageHandler}>
         &#xbb;
-      </button>
+      </PaginationButton>
       <div className={tableHeaderItemClassName}>{queryName}</div>
       <div className={tableHeaderItemClassName}>
         <OpenQueryLink onClick={openQueryHandler}>
           Open {basename(queryPath)}
         </OpenQueryLink>
       </div>
-    </span>
+    </Container>
   );
 }
 

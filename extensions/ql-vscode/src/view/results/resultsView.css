@@ -11,51 +11,12 @@
   justify-content: space-between;
 }
 
-.vscode-codeql__table-selection-pagination {
-  display: flex;
-  padding: 0.5em 0;
-  align-items: center;
-  top: 0;
-  background-color: var(--vscode-editorGutter-background);
-  position: sticky;
-  z-index: 1;
-}
-
 .vscode-codeql__table-selection-header-item {
   padding-left: 2em;
 }
 
 .vscode-codeql__table-selection-header select {
   border: 0;
-}
-
-.vscode-codeql__table-selection-pagination button {
-  padding: 0.3rem;
-  margin: 0.2rem;
-  border: 0;
-  font-size: large;
-  color: var(--vscode-editor-foreground);
-  background-color: var(--vscode-editorGutter-background);
-  cursor: pointer;
-  opacity: 0.8;
-}
-
-.vscode-codeql__table-selection-pagination button:hover {
-  opacity: 1;
-}
-
-.vscode-codeql__table-selection-pagination input[type="number"] {
-  border-radius: 0;
-  padding: 0.3rem;
-  margin: 0.2rem;
-  width: 2rem;
-  border-radius: 0;
-  color: var(--vscode-editor-foreground);
-  border: 0;
-  border-bottom: 1px solid var(--vscode-editor-foreground);
-  background-color: var(--vscode-editorGutter-background);
-  border-radius: 0;
-  outline: none;
 }
 
 .vscode-codeql__result-table-alert-extras {
@@ -243,4 +204,8 @@ td.vscode-codeql__path-index-cell {
   max-width: 80%;
   font-size: 14px;
   text-align: center;
+}
+
+.vscode-codeql__result-table-location-link {
+  text-decoration: none;
 }
