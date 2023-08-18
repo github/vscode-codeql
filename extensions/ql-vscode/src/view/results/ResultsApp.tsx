@@ -21,7 +21,7 @@ import "./resultsView.css";
 import { useCallback, useEffect } from "react";
 
 /**
- * results.tsx
+ * ResultsApp.tsx
  * -----------
  *
  * Displaying query results.

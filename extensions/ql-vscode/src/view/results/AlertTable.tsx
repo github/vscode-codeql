@@ -8,7 +8,7 @@ import {
   selectableZebraStripe,
   jumpToLocation,
 } from "./result-table-utils";
-import { onNavigation } from "./results";
+import { onNavigation } from "./ResultsApp";
 import {
   InterpretedResultSet,
   NavigateMsg,
