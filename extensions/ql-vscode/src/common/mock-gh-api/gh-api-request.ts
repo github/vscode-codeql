@@ -1,5 +1,8 @@
-import { Repository } from "../repository";
-import { VariantAnalysis, VariantAnalysisRepoTask } from "../variant-analysis";
+import { Repository } from "../../variant-analysis/gh-api/repository";
+import {
+  VariantAnalysis,
+  VariantAnalysisRepoTask,
+} from "../../variant-analysis/gh-api/variant-analysis";
 
 // Types that represent requests/responses from the GitHub API
 // that we need to mock.
