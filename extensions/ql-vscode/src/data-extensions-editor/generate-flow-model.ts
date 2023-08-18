@@ -11,10 +11,7 @@ import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import { redactableError } from "../common/errors";
 import { QueryResultType } from "../query-server/new-messages";
-import { file } from "tmp-promise";
-import { writeFile } from "fs-extra";
-import { dump } from "js-yaml";
-import { qlpackOfDatabase } from "../local-queries";
+import { qlpackOfDatabase, resolveQueries } from "../local-queries";
 import { telemetryListener } from "../common/vscode/telemetry";
 
 type FlowModelOptions = {
@@ -27,41 +24,15 @@ type FlowModelOptions = {
   onResults: (results: ModeledMethod[]) => void | Promise<void>;
 };
 
-async function resolveQueries(
+async function resolveFlowQueries(
   cliServer: CodeQLCliServer,
   databaseItem: DatabaseItem,
 ): Promise<string[]> {
   const qlpacks = await qlpackOfDatabase(cliServer, databaseItem);
 
-  const packsToSearch: string[] = [];
-
-  // The CLI can handle both library packs and query packs, so search both packs in order.
-  packsToSearch.push(qlpacks.dbschemePack);
-  if (qlpacks.queryPack !== undefined) {
-    packsToSearch.push(qlpacks.queryPack);
-  }
-
-  const suiteFile = (
-    await file({
-      postfix: ".qls",
-    })
-  ).path;
-  const suiteYaml = [];
-  for (const qlpack of packsToSearch) {
-    suiteYaml.push({
-      from: qlpack,
-      queries: ".",
-      include: {
-        "tags contain": "modelgenerator",
-      },
-    });
-  }
-  await writeFile(suiteFile, dump(suiteYaml), "utf8");
-
-  return await cliServer.resolveQueriesInSuite(
-    suiteFile,
-    getOnDiskWorkspaceFolders(),
-  );
+  return await resolveQueries(cliServer, qlpacks, "flow model generator", {
+    "tags contain": ["modelgenerator"], // TODO: should this be a single string and not an array?
+  });
 }
 
 async function getModeledMethodsFromFlow(
@@ -159,7 +130,10 @@ export async function generateFlowModel({
   onResults,
   ...options
 }: FlowModelOptions) {
-  const queries = await resolveQueries(options.cliServer, options.databaseItem);
+  const queries = await resolveFlowQueries(
+    options.cliServer,
+    options.databaseItem,
+  );
 
   const queriesByBasename: Record<string, string> = {};
   for (const query of queries) {
