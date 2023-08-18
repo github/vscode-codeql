@@ -182,215 +182,281 @@
         "path": "./snippets.json"
       }
     ],
-    "configuration": {
-      "type": "object",
-      "title": "CodeQL",
-      "properties": {
-        "codeQL.cli.executablePath": {
-          "scope": "machine-overridable",
-          "type": "string",
-          "default": "",
-          "markdownDescription": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.exe` on Windows. If empty, the extension will look for a CodeQL executable on your shell PATH, or if CodeQL is not on your PATH, download and manage its own CodeQL executable (note: if you later introduce CodeQL on your PATH, the extension will prefer a CodeQL executable it has downloaded itself)."
-        },
-        "codeQL.runningQueries.numberOfThreads": {
-          "type": "integer",
-          "default": 1,
-          "minimum": 0,
-          "maximum": 1024,
-          "description": "Number of threads for running queries."
-        },
-        "codeQL.runningQueries.saveCache": {
-          "type": "boolean",
-          "default": false,
-          "scope": "window",
-          "description": "Aggressively save intermediate results to the disk cache. This may speed up subsequent queries if they are similar. Be aware that using this option will greatly increase disk usage and initial evaluation time."
-        },
-        "codeQL.runningQueries.cacheSize": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "default": null,
-          "minimum": 1024,
-          "description": "Maximum size of the disk cache (in MB). Leave blank to allow the evaluator to automatically adjust the size of the disk cache based on the size of the codebase and the complexity of the queries being executed."
-        },
-        "codeQL.runningQueries.timeout": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "default": null,
-          "minimum": 0,
-          "maximum": 2147483647,
-          "description": "Timeout (in seconds) for running queries. Leave blank or set to zero for no timeout."
-        },
-        "codeQL.runningQueries.memory": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "default": null,
-          "minimum": 1024,
-          "description": "Memory (in MB) to use for running queries. Leave blank for CodeQL to choose a suitable value based on your system's available memory."
-        },
-        "codeQL.runningQueries.debug": {
-          "type": "boolean",
-          "default": false,
-          "description": "Enable debug logging and tuple counting when running CodeQL queries. This information is useful for debugging query performance."
-        },
-        "codeQL.runningQueries.maxPaths": {
-          "type": "integer",
-          "default": 4,
-          "minimum": 1,
-          "maximum": 256,
-          "markdownDescription": "Max number of paths to display for each alert found by a path query (`@kind path-problem`)."
-        },
-        "codeQL.runningQueries.autoSave": {
-          "type": "boolean",
-          "description": "Enable automatically saving a modified query file when running a query.",
-          "markdownDeprecationMessage": "This property is deprecated and no longer has any effect. To control automatic saving of documents before running queries, use the `debug.saveBeforeStart` setting."
-        },
-        "codeQL.runningQueries.maxQueries": {
-          "type": "integer",
-          "default": 20,
-          "description": "Max number of simultaneous queries to run using the 'CodeQL: Run Queries' command."
-        },
-        "codeQL.runningQueries.customLogDirectory": {
-          "type": [
-            "string",
-            null
-          ],
-          "default": null,
-          "description": "Path to a directory where the CodeQL extension should store query server logs. If empty, the extension stores logs in a temporary workspace folder and deletes the contents after each run.",
-          "markdownDeprecationMessage": "This property is deprecated and no longer has any effect. All query logs are stored in the query history folder next to the query results."
-        },
-        "codeQL.runningQueries.quickEvalCodelens": {
-          "type": "boolean",
-          "default": true,
-          "description": "Enable the 'Quick Evaluation' CodeLens."
-        },
-        "codeQL.runningQueries.useExtensionPacks": {
-          "type": "string",
-          "default": "none",
-          "enum": [
-            "none",
-            "all"
-          ],
-          "enumDescriptions": [
-            "Do not use extension packs.",
-            "Use all extension packs found in the workspace."
-          ],
-          "description": "Choose whether or not to run queries using extension packs. Requires CodeQL CLI v2.12.3 or later."
-        },
-        "codeQL.resultsDisplay.pageSize": {
-          "type": "integer",
-          "default": 200,
-          "description": "Max number of query results to display per page in the results view."
-        },
-        "codeQL.queryHistory.format": {
-          "type": "string",
-          "default": "%q on %d - %s %r [%t]",
-          "markdownDescription": "Default string for how to label query history items.\n* %t is the time of the query\n* %q is the human-readable query name\n* %f is the query file name\n* %d is the database name\n* %r is the number of results\n* %s is a status string"
-        },
-        "codeQL.queryHistory.ttl": {
-          "type": "number",
-          "default": 30,
-          "description": "Number of days to retain queries in the query history before being automatically deleted.",
-          "scope": "machine"
-        },
-        "codeQL.runningTests.additionalTestArguments": {
-          "scope": "window",
-          "type": "array",
-          "default": [],
-          "markdownDescription": "Additional command line arguments to pass to the CLI when [running tests](https://codeql.github.com/docs/codeql-cli/manual/test-run/). This setting should be an array of strings, each containing an argument to be passed."
-        },
-        "codeQL.runningTests.numberOfThreads": {
-          "scope": "window",
-          "type": "integer",
-          "default": 1,
-          "minimum": 0,
-          "maximum": 1024,
-          "description": "Number of threads for running CodeQL tests."
-        },
-        "codeQL.telemetry.enableTelemetry": {
-          "type": "boolean",
-          "default": false,
-          "scope": "application",
-          "markdownDescription": "Specifies whether to send CodeQL usage telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent to GitHub. For more information, see the [telemetry documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code)"
-        },
-        "codeQL.telemetry.logTelemetry": {
-          "type": "boolean",
-          "default": false,
-          "scope": "application",
-          "description": "Specifies whether or not to write telemetry events to the extension log."
-        },
-        "codeQL.variantAnalysis.controllerRepo": {
-          "type": "string",
-          "default": "",
-          "pattern": "^$|^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+/[a-zA-Z0-9-_]+$",
-          "patternErrorMessage": "Please enter a valid GitHub repository",
-          "markdownDescription": "[For internal use only] The name of the GitHub repository in which the GitHub Actions workflow is run when using the \"Run Variant Analysis\" command. The repository should be of the form `<owner>/<repo>`)."
-        },
-        "codeQL.variantAnalysis.defaultResultsFilter": {
-          "type": "string",
-          "default": "all",
-          "enum": [
-            "all",
-            "withResults"
-          ],
-          "enumDescriptions": [
-            "Show all repositories in the results view.",
-            "Show only repositories with results in the results view."
-          ],
-          "description": "The default filter to apply to the variant analysis results view."
-        },
-        "codeQL.variantAnalysis.defaultResultsSort": {
-          "type": "string",
-          "default": "numberOfResults",
-          "enum": [
-            "alphabetically",
-            "popularity",
-            "numberOfResults"
-          ],
-          "enumDescriptions": [
-            "Sort repositories alphabetically in the results view.",
-            "Sort repositories by popularity in the results view.",
-            "Sort repositories by number of results in the results view."
-          ],
-          "description": "The default sorting order for repositories in the variant analysis results view."
-        },
-        "codeQL.logInsights.joinOrderWarningThreshold": {
-          "type": "number",
-          "default": 50,
-          "scope": "window",
-          "minimum": 0,
-          "description": "Report a warning for any join order whose metric exceeds this value."
-        },
-        "codeQL.databaseDownload.allowHttp": {
-          "type": "boolean",
-          "default": false,
-          "description": "Allow database to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
-        },
-        "codeQL.createQuery.qlPackLocation": {
-          "type": "string",
-          "patternErrorMessage": "Please enter a valid folder",
-          "markdownDescription": "The name of the folder where we want to create queries and QL packs via the \"CodeQL: Create Query\" command. The folder should exist."
-        },
-        "codeQL.createQuery.autogenerateQlPacks": {
-          "type": "string",
-          "default": "ask",
-          "enum": [
-            "ask",
-            "never"
-          ],
-          "enumDescriptions": [
-            "Ask to create a QL pack when a new CodeQL database is added.",
-            "Never create a QL pack when a new CodeQL database is added."
-          ],
-          "description": "Ask the user to generate a QL pack when a new CodeQL database is downloaded."
+    "configuration": [
+      {
+        "type": "object",
+        "title": "CLI",
+        "order": 0,
+        "properties": {
+          "codeQL.cli.executablePath": {
+            "scope": "machine-overridable",
+            "type": "string",
+            "default": "",
+            "markdownDescription": "Path to the CodeQL executable that should be used by the CodeQL extension. The executable is named `codeql` on Linux/Mac and `codeql.exe` on Windows. If empty, the extension will look for a CodeQL executable on your shell PATH, or if CodeQL is not on your PATH, download and manage its own CodeQL executable (note: if you later introduce CodeQL on your PATH, the extension will prefer a CodeQL executable it has downloaded itself)."
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Running queries",
+        "order": 1,
+        "properties": {
+          "codeQL.runningQueries.numberOfThreads": {
+            "type": "integer",
+            "default": 1,
+            "minimum": 0,
+            "maximum": 1024,
+            "description": "Number of threads for running queries."
+          },
+          "codeQL.runningQueries.saveCache": {
+            "type": "boolean",
+            "default": false,
+            "scope": "window",
+            "description": "Aggressively save intermediate results to the disk cache. This may speed up subsequent queries if they are similar. Be aware that using this option will greatly increase disk usage and initial evaluation time."
+          },
+          "codeQL.runningQueries.cacheSize": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "default": null,
+            "minimum": 1024,
+            "description": "Maximum size of the disk cache (in MB). Leave blank to allow the evaluator to automatically adjust the size of the disk cache based on the size of the codebase and the complexity of the queries being executed."
+          },
+          "codeQL.runningQueries.timeout": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "default": null,
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "Timeout (in seconds) for running queries. Leave blank or set to zero for no timeout."
+          },
+          "codeQL.runningQueries.memory": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "default": null,
+            "minimum": 1024,
+            "description": "Memory (in MB) to use for running queries. Leave blank for CodeQL to choose a suitable value based on your system's available memory."
+          },
+          "codeQL.runningQueries.debug": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable debug logging and tuple counting when running CodeQL queries. This information is useful for debugging query performance."
+          },
+          "codeQL.runningQueries.maxPaths": {
+            "type": "integer",
+            "default": 4,
+            "minimum": 1,
+            "maximum": 256,
+            "markdownDescription": "Max number of paths to display for each alert found by a path query (`@kind path-problem`)."
+          },
+          "codeQL.runningQueries.autoSave": {
+            "type": "boolean",
+            "description": "Enable automatically saving a modified query file when running a query.",
+            "markdownDeprecationMessage": "This property is deprecated and no longer has any effect. To control automatic saving of documents before running queries, use the `debug.saveBeforeStart` setting."
+          },
+          "codeQL.runningQueries.maxQueries": {
+            "type": "integer",
+            "default": 20,
+            "description": "Max number of simultaneous queries to run using the 'CodeQL: Run Queries' command."
+          },
+          "codeQL.runningQueries.customLogDirectory": {
+            "type": [
+              "string",
+              null
+            ],
+            "default": null,
+            "description": "Path to a directory where the CodeQL extension should store query server logs. If empty, the extension stores logs in a temporary workspace folder and deletes the contents after each run.",
+            "markdownDeprecationMessage": "This property is deprecated and no longer has any effect. All query logs are stored in the query history folder next to the query results."
+          },
+          "codeQL.runningQueries.quickEvalCodelens": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable the 'Quick Evaluation' CodeLens."
+          },
+          "codeQL.runningQueries.useExtensionPacks": {
+            "type": "string",
+            "default": "none",
+            "enum": [
+              "none",
+              "all"
+            ],
+            "enumDescriptions": [
+              "Do not use extension packs.",
+              "Use all extension packs found in the workspace."
+            ],
+            "description": "Choose whether or not to run queries using extension packs. Requires CodeQL CLI v2.12.3 or later."
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Results",
+        "order": 2,
+        "properties": {
+          "codeQL.resultsDisplay.pageSize": {
+            "type": "integer",
+            "default": 200,
+            "description": "Max number of query results to display per page in the results view."
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Query history",
+        "order": 3,
+        "properties": {
+          "codeQL.queryHistory.format": {
+            "type": "string",
+            "default": "%q on %d - %s %r [%t]",
+            "markdownDescription": "Default string for how to label query history items.\n* %t is the time of the query\n* %q is the human-readable query name\n* %f is the query file name\n* %d is the database name\n* %r is the number of results\n* %s is a status string"
+          },
+          "codeQL.queryHistory.ttl": {
+            "type": "number",
+            "default": 30,
+            "description": "Number of days to retain queries in the query history before being automatically deleted.",
+            "scope": "machine"
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Running tests",
+        "order": 4,
+        "properties": {
+          "codeQL.runningTests.additionalTestArguments": {
+            "scope": "window",
+            "type": "array",
+            "default": [],
+            "markdownDescription": "Additional command line arguments to pass to the CLI when [running tests](https://codeql.github.com/docs/codeql-cli/manual/test-run/). This setting should be an array of strings, each containing an argument to be passed."
+          },
+          "codeQL.runningTests.numberOfThreads": {
+            "scope": "window",
+            "type": "integer",
+            "default": 1,
+            "minimum": 0,
+            "maximum": 1024,
+            "description": "Number of threads for running CodeQL tests."
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Variant analysis",
+        "order": 5,
+        "properties": {
+          "codeQL.variantAnalysis.controllerRepo": {
+            "type": "string",
+            "default": "",
+            "pattern": "^$|^(?:[a-zA-Z0-9]+-)*[a-zA-Z0-9]+/[a-zA-Z0-9-_]+$",
+            "patternErrorMessage": "Please enter a valid GitHub repository",
+            "markdownDescription": "[For internal use only] The name of the GitHub repository in which the GitHub Actions workflow is run when using the \"Run Variant Analysis\" command. The repository should be of the form `<owner>/<repo>`)."
+          },
+          "codeQL.variantAnalysis.defaultResultsFilter": {
+            "type": "string",
+            "default": "all",
+            "enum": [
+              "all",
+              "withResults"
+            ],
+            "enumDescriptions": [
+              "Show all repositories in the results view.",
+              "Show only repositories with results in the results view."
+            ],
+            "description": "The default filter to apply to the variant analysis results view."
+          },
+          "codeQL.variantAnalysis.defaultResultsSort": {
+            "type": "string",
+            "default": "numberOfResults",
+            "enum": [
+              "alphabetically",
+              "popularity",
+              "numberOfResults"
+            ],
+            "enumDescriptions": [
+              "Sort repositories alphabetically in the results view.",
+              "Sort repositories by popularity in the results view.",
+              "Sort repositories by number of results in the results view."
+            ],
+            "description": "The default sorting order for repositories in the variant analysis results view."
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Downloading databases",
+        "order": 6,
+        "properties": {
+          "codeQL.databaseDownload.allowHttp": {
+            "type": "boolean",
+            "default": false,
+            "description": "Allow database to be downloaded via HTTP. Warning: enabling this option will allow downloading from insecure servers."
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Creating queries",
+        "order": 7,
+        "properties": {
+          "codeQL.createQuery.qlPackLocation": {
+            "type": "string",
+            "patternErrorMessage": "Please enter a valid folder",
+            "markdownDescription": "The name of the folder where we want to create queries and QL packs via the \"CodeQL: Create Query\" command. The folder should exist."
+          },
+          "codeQL.createQuery.autogenerateQlPacks": {
+            "type": "string",
+            "default": "ask",
+            "enum": [
+              "ask",
+              "never"
+            ],
+            "enumDescriptions": [
+              "Ask to create a QL pack when a new CodeQL database is added.",
+              "Never create a QL pack when a new CodeQL database is added."
+            ],
+            "description": "Ask the user to generate a QL pack when a new CodeQL database is downloaded."
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Log insights",
+        "order": 8,
+        "properties": {
+          "codeQL.logInsights.joinOrderWarningThreshold": {
+            "type": "number",
+            "default": 50,
+            "scope": "window",
+            "minimum": 0,
+            "description": "Report a warning for any join order whose metric exceeds this value."
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Telemetry",
+        "order": 9,
+        "properties": {
+          "codeQL.telemetry.enableTelemetry": {
+            "type": "boolean",
+            "default": false,
+            "scope": "application",
+            "markdownDescription": "Specifies whether to send CodeQL usage telemetry. This setting AND the global `#telemetry.enableTelemetry#` setting must be checked for telemetry to be sent to GitHub. For more information, see the [telemetry documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code)"
+          },
+          "codeQL.telemetry.logTelemetry": {
+            "type": "boolean",
+            "default": false,
+            "scope": "application",
+            "description": "Specifies whether or not to write telemetry events to the extension log."
+          }
         }
       }
-    },
+    ],
     "commands": [
       {
         "command": "codeQL.authenticateToGitHub",
@@ -1876,7 +1942,7 @@
     "jest": "^29.0.3",
     "jest-environment-jsdom": "^29.0.3",
     "jest-runner-vscode": "^3.0.1",
-    "lint-staged": "^13.2.0",
+    "lint-staged": "^14.0.0",
     "markdownlint-cli2": "^0.6.0",
     "markdownlint-cli2-formatter-pretty": "^0.0.4",
     "mini-css-extract-plugin": "^2.6.1",

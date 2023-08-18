@@ -135,7 +135,7 @@ export function ResultTables(props: ResultTablesProps) {
     [handleMessage],
   );
 
-  // TODO: Duplicated from results.tsx consider a way to
+  // TODO: Duplicated from ResultsApp.tsx consider a way to
   // avoid this duplication
   useEffect(() => {
     window.addEventListener("message", vscodeMessageHandler);
