@@ -45,7 +45,7 @@ export function AlertTable(props: AlertTableProps) {
    * first item, open all the rest as well. This mimics vscode's file
    * explorer tree view behavior.
    */
-  const toggle = (e: React.MouseEvent, keys: Keys.ResultKey[]) => {
+  const toggle = useCallback((e: React.MouseEvent, keys: Keys.ResultKey[]) => {
     const keyStrings = keys.map(Keys.keyToString);
     setExpanded((previousExpanded) => {
       const expanded = new Set(previousExpanded);
@@ -63,7 +63,7 @@ export function AlertTable(props: AlertTableProps) {
     });
     e.stopPropagation();
     e.preventDefault();
-  };
+  }, []);
 
   const getNewSelection = (
     key: Keys.ResultKey | undefined,
