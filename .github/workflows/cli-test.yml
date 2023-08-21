@@ -3,6 +3,11 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *'
+  push:
+    paths:
+      - extensions/ql-vscode/src/codeql-cli/**
+      - extensions/ql-vscode/src/language-support/**
+      - extensions/ql-vscode/src/query-server/**
 
 jobs:
   find-nightly:
