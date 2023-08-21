@@ -20,37 +20,34 @@ import { AlertTableHeader } from "./AlertTableHeader";
 import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
 import { AlertTableResultRow } from "./AlertTableResultRow";
+import { useEffect, useRef, useState } from "react";
 
 type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
 };
-interface AlertTableState {
-  expanded: Set<string>;
-  selectedItem: undefined | Keys.ResultKey;
-}
 
-export class AlertTable extends React.Component<
-  AlertTableProps,
-  AlertTableState
-> {
-  private scroller = new ScrollIntoViewHelper();
-
-  constructor(props: AlertTableProps) {
-    super(props);
-    this.state = { expanded: new Set<string>(), selectedItem: undefined };
-    this.handleNavigationEvent = this.handleNavigationEvent.bind(this);
+export function AlertTable(props: AlertTableProps) {
+  const scroller = useRef<ScrollIntoViewHelper | undefined>(undefined);
+  if (scroller.current === undefined) {
+    scroller.current = new ScrollIntoViewHelper();
   }
+  useEffect(() => scroller.current?.update());
+
+  const [expanded, setExpanded] = useState<Set<string>>(new Set<string>());
+  const [selectedItem, setSelectedItem] = useState<Keys.ResultKey | undefined>(
+    undefined,
+  );
 
   /**
    * Given a list of `keys`, toggle the first, and if we 'open' the
    * first item, open all the rest as well. This mimics vscode's file
    * explorer tree view behavior.
    */
-  toggle(e: React.MouseEvent, keys: Keys.ResultKey[]) {
+  const toggle = (e: React.MouseEvent, keys: Keys.ResultKey[]) => {
     const keyStrings = keys.map(Keys.keyToString);
-    this.setState((previousState) => {
-      const expanded = new Set(previousState.expanded);
-      if (previousState.expanded.has(keyStrings[0])) {
+    setExpanded((previousExpanded) => {
+      const expanded = new Set(previousExpanded);
+      if (previousExpanded.has(keyStrings[0])) {
         expanded.delete(keyStrings[0]);
       } else {
         for (const str of keyStrings) {
@@ -60,16 +57,16 @@ export class AlertTable extends React.Component<
       if (expanded) {
         sendTelemetry("local-results-alert-table-path-expanded");
       }
-      return { expanded };
+      return expanded;
     });
     e.stopPropagation();
     e.preventDefault();
-  }
+  };
 
-  private getNewSelection(
+  const getNewSelection = (
     key: Keys.ResultKey | undefined,
     direction: NavigationDirection,
-  ): Keys.ResultKey {
+  ): Keys.ResultKey => {
     if (key === undefined) {
       return { resultIndex: 0 };
     }
@@ -107,129 +104,111 @@ export class AlertTable extends React.Component<
           return key;
         }
     }
-  }
+  };
 
-  private handleNavigationEvent(event: NavigateMsg) {
-    this.setState((prevState) => {
-      const key = this.getNewSelection(prevState.selectedItem, event.direction);
-      const data = this.props.resultSet.interpretation.data;
+  const handleNavigationEvent = (event: NavigateMsg) => {
+    const key = getNewSelection(selectedItem, event.direction);
+    const data = props.resultSet.interpretation.data;
 
-      // Check if the selected node actually exists (bounds check) and get its location if relevant
-      let jumpLocation: Sarif.Location | undefined;
-      if (key.pathNodeIndex !== undefined) {
-        jumpLocation = Keys.getPathNode(data, key);
-        if (jumpLocation === undefined) {
-          return prevState; // Result does not exist
-        }
-      } else if (key.pathIndex !== undefined) {
-        if (Keys.getPath(data, key) === undefined) {
-          return prevState; // Path does not exist
-        }
-        jumpLocation = undefined; // When selecting a 'path', don't jump anywhere.
-      } else {
-        jumpLocation = Keys.getResult(data, key)?.locations?.[0];
-        if (jumpLocation === undefined) {
-          return prevState; // Path step does not exist.
-        }
+    // Check if the selected node actually exists (bounds check) and get its location if relevant
+    let jumpLocation: Sarif.Location | undefined;
+    if (key.pathNodeIndex !== undefined) {
+      jumpLocation = Keys.getPathNode(data, key);
+      if (jumpLocation === undefined) {
+        return; // Result does not exist
       }
-      if (jumpLocation !== undefined) {
-        const parsedLocation = parseSarifLocation(
-          jumpLocation,
-          this.props.resultSet.interpretation.sourceLocationPrefix,
-        );
-        if (!isNoLocation(parsedLocation)) {
-          jumpToLocation(parsedLocation, this.props.databaseUri);
-        }
+    } else if (key.pathIndex !== undefined) {
+      if (Keys.getPath(data, key) === undefined) {
+        return; // Path does not exist
       }
-
-      const expanded = new Set(prevState.expanded);
-      if (event.direction === NavigationDirection.right) {
-        // When stepping right, expand to ensure the selected node is visible
-        expanded.add(Keys.keyToString({ resultIndex: key.resultIndex }));
-        if (key.pathIndex !== undefined) {
-          expanded.add(
-            Keys.keyToString({
-              resultIndex: key.resultIndex,
-              pathIndex: key.pathIndex,
-            }),
-          );
-        }
-      } else if (event.direction === NavigationDirection.left) {
-        // When stepping left, collapse immediately
-        expanded.delete(Keys.keyToString(key));
-      } else {
-        // When stepping up or down, collapse the previous node
-        if (prevState.selectedItem !== undefined) {
-          expanded.delete(Keys.keyToString(prevState.selectedItem));
-        }
+      jumpLocation = undefined; // When selecting a 'path', don't jump anywhere.
+    } else {
+      jumpLocation = Keys.getResult(data, key)?.locations?.[0];
+      if (jumpLocation === undefined) {
+        return; // Path step does not exist.
       }
-      this.scroller.scrollIntoViewOnNextUpdate();
-      return {
-        ...prevState,
-        expanded,
-        selectedItem: key,
-      };
-    });
-  }
-
-  componentDidUpdate() {
-    this.scroller.update();
-  }
-
-  componentDidMount() {
-    this.scroller.update();
-    onNavigation.addListener(this.handleNavigationEvent);
-  }
-
-  componentWillUnmount() {
-    onNavigation.removeListener(this.handleNavigationEvent);
-  }
-
-  render(): JSX.Element {
-    const { databaseUri, resultSet } = this.props;
-
-    const { numTruncatedResults, sourceLocationPrefix } =
-      resultSet.interpretation;
-
-    const updateSelectionCallback = (
-      resultKey: Keys.PathNode | Keys.Result | undefined,
-    ) => {
-      this.setState((previousState) => ({
-        ...previousState,
-        selectedItem: resultKey,
-      }));
-      sendTelemetry("local-results-alert-table-path-selected");
-    };
-
-    if (!resultSet.interpretation.data.runs?.[0]?.results?.length) {
-      return <AlertTableNoResults {...this.props} />;
+    }
+    if (jumpLocation !== undefined) {
+      const parsedLocation = parseSarifLocation(
+        jumpLocation,
+        props.resultSet.interpretation.sourceLocationPrefix,
+      );
+      if (!isNoLocation(parsedLocation)) {
+        jumpToLocation(parsedLocation, props.databaseUri);
+      }
     }
 
-    return (
-      <table className={className}>
-        <AlertTableHeader sortState={resultSet.interpretation.data.sortState} />
-        <tbody>
-          {resultSet.interpretation.data.runs[0].results.map(
-            (result, resultIndex) => (
-              <AlertTableResultRow
-                key={resultIndex}
-                result={result}
-                resultIndex={resultIndex}
-                expanded={this.state.expanded}
-                selectedItem={this.state.selectedItem}
-                databaseUri={databaseUri}
-                sourceLocationPrefix={sourceLocationPrefix}
-                updateSelectionCallback={updateSelectionCallback}
-                toggleExpanded={this.toggle.bind(this)}
-                scroller={this.scroller}
-              />
-            ),
-          )}
-          <AlertTableTruncatedMessage
-            numTruncatedResults={numTruncatedResults}
-          />
-        </tbody>
-      </table>
-    );
+    const newExpanded = new Set(expanded);
+    if (event.direction === NavigationDirection.right) {
+      // When stepping right, expand to ensure the selected node is visible
+      newExpanded.add(Keys.keyToString({ resultIndex: key.resultIndex }));
+      if (key.pathIndex !== undefined) {
+        newExpanded.add(
+          Keys.keyToString({
+            resultIndex: key.resultIndex,
+            pathIndex: key.pathIndex,
+          }),
+        );
+      }
+    } else if (event.direction === NavigationDirection.left) {
+      // When stepping left, collapse immediately
+      newExpanded.delete(Keys.keyToString(key));
+    } else {
+      // When stepping up or down, collapse the previous node
+      if (selectedItem !== undefined) {
+        newExpanded.delete(Keys.keyToString(selectedItem));
+      }
+    }
+    scroller.current?.scrollIntoViewOnNextUpdate();
+    setExpanded(newExpanded);
+    setSelectedItem(key);
+  };
+
+  useEffect(() => {
+    onNavigation.addListener(handleNavigationEvent);
+    return () => {
+      onNavigation.removeListener(handleNavigationEvent);
+    };
+  }, []);
+
+  const { databaseUri, resultSet } = props;
+
+  const { numTruncatedResults, sourceLocationPrefix } =
+    resultSet.interpretation;
+
+  const updateSelectionCallback = (
+    resultKey: Keys.PathNode | Keys.Result | undefined,
+  ) => {
+    setSelectedItem(resultKey);
+    sendTelemetry("local-results-alert-table-path-selected");
+  };
+
+  if (!resultSet.interpretation.data.runs?.[0]?.results?.length) {
+    return <AlertTableNoResults {...props} />;
   }
+
+  return (
+    <table className={className}>
+      <AlertTableHeader sortState={resultSet.interpretation.data.sortState} />
+      <tbody>
+        {resultSet.interpretation.data.runs[0].results.map(
+          (result, resultIndex) => (
+            <AlertTableResultRow
+              key={resultIndex}
+              result={result}
+              resultIndex={resultIndex}
+              expanded={expanded}
+              selectedItem={selectedItem}
+              databaseUri={databaseUri}
+              sourceLocationPrefix={sourceLocationPrefix}
+              updateSelectionCallback={updateSelectionCallback}
+              toggleExpanded={toggle}
+              scroller={scroller.current}
+            />
+          ),
+        )}
+        <AlertTableTruncatedMessage numTruncatedResults={numTruncatedResults} />
+      </tbody>
+    </table>
+  );
 }

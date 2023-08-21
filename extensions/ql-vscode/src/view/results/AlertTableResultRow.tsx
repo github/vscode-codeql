@@ -21,7 +21,7 @@ interface Props {
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => void;
   toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
-  scroller: ScrollIntoViewHelper;
+  scroller?: ScrollIntoViewHelper;
 }
 
 export function AlertTableResultRow(props: Props) {
@@ -81,7 +81,7 @@ export function AlertTableResultRow(props: Props) {
   return (
     <>
       <tr
-        ref={scroller.ref(resultRowIsSelected)}
+        ref={scroller?.ref(resultRowIsSelected)}
         {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
       >
         {result.codeFlows === undefined ? (

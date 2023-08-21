@@ -19,7 +19,7 @@ interface Props {
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => void;
   toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
-  scroller: ScrollIntoViewHelper;
+  scroller?: ScrollIntoViewHelper;
 }
 
 export function AlertTablePathRow(props: Props) {
@@ -50,7 +50,7 @@ export function AlertTablePathRow(props: Props) {
   return (
     <>
       <tr
-        ref={scroller.ref(isPathSpecificallySelected)}
+        ref={scroller?.ref(isPathSpecificallySelected)}
         {...selectableZebraStripe(isPathSpecificallySelected, resultIndex)}
       >
         <td className="vscode-codeql__icon-cell">
