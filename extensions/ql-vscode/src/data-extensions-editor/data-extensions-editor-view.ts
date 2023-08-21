@@ -242,10 +242,11 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
         break;
       case "hideModeledApis":
+        this.hideModeledApis = msg.hideModeledApis;
         await this.updateModelDetailsPanelState(
           this.externalApiUsages,
           this.databaseItem,
-          msg.hideModeledApis,
+          this.hideModeledApis,
         );
         break;
       default:
