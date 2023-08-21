@@ -2,11 +2,11 @@ import { join, resolve } from "path";
 import { pathExists } from "fs-extra";
 import { setupServer, SetupServer } from "msw/node";
 
-import { DisposableObject } from "../../../common/disposable-object";
+import { DisposableObject } from "../disposable-object";
 
 import { Recorder } from "./recorder";
 import { createRequestHandlers } from "./request-handlers";
-import { getDirectoryNamesInsidePath } from "../../../common/files";
+import { getDirectoryNamesInsidePath } from "../files";
 
 /**
  * Enables mocking of the GitHub API server via HTTP interception, using msw.
@@ -129,11 +129,11 @@ export class MockGitHubApiServer extends DisposableObject {
 
   public async getDefaultScenariosPath(): Promise<string | undefined> {
     // This should be the directory where package.json is located
-    const rootDirectory = resolve(__dirname, "../../../..");
+    const rootDirectory = resolve(__dirname, "../../..");
 
     const scenariosPath = resolve(
       rootDirectory,
-      "src/variant-analysis/gh-api/mocks/scenarios",
+      "src/common/mock-gh-api/scenarios",
     );
     if (await pathExists(scenariosPath)) {
       return scenariosPath;

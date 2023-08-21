@@ -131,10 +131,6 @@ td.vscode-codeql__icon-cell {
   width: 24px;
 }
 
-td.vscode-codeql__dropdown-cell:hover {
-  cursor: pointer;
-}
-
 td.vscode-codeql__path-index-cell {
   text-align: right;
 }

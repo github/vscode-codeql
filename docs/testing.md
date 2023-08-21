@@ -133,4 +133,4 @@ Once the scenario has been recorded, it's often useful to remove some of the req
 
 ### Scenario data location
 
-Pre-recorded scenarios are stored in `./src/variant-analysis/github-api/mocks/scenarios`. However, it's possible to configure the location, by setting the `codeQL.mockGitHubApiServer.scenariosPath` configuration property in the VS Code user settings.
+Pre-recorded scenarios are stored in `./src/common/mock-gh-api/scenarios`. However, it's possible to configure the location, by setting the `codeQL.mockGitHubApiServer.scenariosPath` configuration property in the VS Code user settings.

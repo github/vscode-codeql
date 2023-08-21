@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
-import { chevronDown, chevronRight, info, listUnordered } from "./octicons";
+import { info, listUnordered } from "./octicons";
 import {
   className,
   ResultTableProps,
@@ -23,6 +23,7 @@ import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations
 import { SarifLocation } from "./locations/SarifLocation";
 import { EmptyQueryResultsMessage } from "./EmptyQueryResultsMessage";
 import TextButton from "../common/TextButton";
+import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 
 type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -134,7 +135,6 @@ export class AlertTable extends React.Component<
         const currentResultExpanded = this.state.expanded.has(
           Keys.keyToString(resultKey),
         );
-        const indicator = currentResultExpanded ? chevronDown : chevronRight;
         const location = result.locations !== undefined &&
           result.locations.length > 0 && (
             <SarifLocation
@@ -181,16 +181,10 @@ export class AlertTable extends React.Component<
               {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
               key={resultIndex}
             >
-              {/*
-                  eslint-disable-next-line
-                  jsx-a11y/no-noninteractive-element-interactions
-                */}
-              <td
-                className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell"
-                onMouseDown={toggler(indices)}
-              >
-                {indicator}
-              </td>
+              <AlertTableDropdownIndicatorCell
+                expanded={currentResultExpanded}
+                onClick={toggler(indices)}
+              />
               <td className="vscode-codeql__icon-cell">{listUnordered}</td>
               <td colSpan={2}>{msg}</td>
               {locationCells}
@@ -203,9 +197,6 @@ export class AlertTable extends React.Component<
               Keys.keyToString(pathKey),
             );
             if (currentResultExpanded) {
-              const indicator = currentPathExpanded
-                ? chevronDown
-                : chevronRight;
               const isPathSpecificallySelected = Keys.equalsNotUndefined(
                 pathKey,
                 selectedItem,
@@ -222,16 +213,10 @@ export class AlertTable extends React.Component<
                   <td className="vscode-codeql__icon-cell">
                     <span className="vscode-codeql__vertical-rule"></span>
                   </td>
-                  {/*
-                      eslint-disable-next-line
-                      jsx-a11y/no-noninteractive-element-interactions
-                    */}
-                  <td
-                    className="vscode-codeql__icon-cell vscode-codeql__dropdown-cell"
-                    onMouseDown={toggler([pathKey])}
-                  >
-                    {indicator}
-                  </td>
+                  <AlertTableDropdownIndicatorCell
+                    expanded={currentPathExpanded}
+                    onClick={toggler([pathKey])}
+                  />
                   <td className="vscode-codeql__text-center" colSpan={3}>
                     Path
                   </td>

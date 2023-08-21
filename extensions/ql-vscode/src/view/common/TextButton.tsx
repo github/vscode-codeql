@@ -20,7 +20,7 @@ const TextButton = ({
   children,
 }: {
   size?: Size;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   className?: string;
   title?: string;
   children: React.ReactNode;

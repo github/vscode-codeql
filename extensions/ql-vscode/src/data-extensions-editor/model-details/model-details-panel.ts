@@ -26,10 +26,18 @@ export class ModelDetailsPanel extends DisposableObject {
   public async setState(
     externalApiUsages: ExternalApiUsage[],
     databaseItem: DatabaseItem,
+    hideModeledApis: boolean,
   ): Promise<void> {
-    await this.dataProvider.setState(externalApiUsages, databaseItem);
+    await this.dataProvider.setState(
+      externalApiUsages,
+      databaseItem,
+      hideModeledApis,
+    );
+    const numOfApis = hideModeledApis
+      ? externalApiUsages.filter((api) => !api.supported).length
+      : externalApiUsages.length;
     this.treeView.badge = {
-      value: externalApiUsages.length,
+      value: numOfApis,
       tooltip: "Number of external APIs",
     };
   }

@@ -22,7 +22,7 @@ const scenarioName = process.argv[2];
 const extensionDirectory = resolve(__dirname, "..");
 const scenariosDirectory = resolve(
   extensionDirectory,
-  "src/variant-analysis/gh-api/mocks/scenarios",
+  "src/common/mock-gh-api/scenarios",
 );
 const scenarioDirectory = resolve(scenariosDirectory, scenarioName);
 

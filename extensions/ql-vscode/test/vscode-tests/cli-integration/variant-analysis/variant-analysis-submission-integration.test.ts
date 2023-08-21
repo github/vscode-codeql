@@ -8,7 +8,7 @@ import {
   workspace,
 } from "vscode";
 
-import { MockGitHubApiServer } from "../../../../src/variant-analysis/gh-api/mocks/mock-gh-api-server";
+import { MockGitHubApiServer } from "../../../../src/common/mock-gh-api/mock-gh-api-server";
 import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { setRemoteControllerRepo } from "../../../../src/config";
 import { getActivatedExtension } from "../../global.helper";
@@ -60,7 +60,7 @@ describe("Variant Analysis Submission Integration", () => {
 
   describe("Successful scenario", () => {
     beforeEach(async () => {
-      await mockServer.loadScenario("problem-query-success");
+      await mockServer.loadScenario("mrva-problem-query-success");
     });
 
     it("opens the variant analysis view", async () => {
@@ -80,7 +80,7 @@ describe("Variant Analysis Submission Integration", () => {
 
   describe("Missing controller repo", () => {
     beforeEach(async () => {
-      await mockServer.loadScenario("missing-controller-repo");
+      await mockServer.loadScenario("mrva-missing-controller-repo");
     });
 
     it("shows the error message", async () => {
@@ -99,7 +99,7 @@ describe("Variant Analysis Submission Integration", () => {
 
   describe("Submission failure", () => {
     beforeEach(async () => {
-      await mockServer.loadScenario("submission-failure");
+      await mockServer.loadScenario("mrva-submission-failure");
     });
 
     it("shows the error message", async () => {

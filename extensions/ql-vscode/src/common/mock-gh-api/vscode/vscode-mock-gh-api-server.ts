@@ -5,10 +5,10 @@ import {
   getMockGitHubApiServerScenariosPath,
   MockGitHubApiConfigListener,
 } from "../../../config";
-import { DisposableObject } from "../../../common/disposable-object";
-import { MockGitHubApiServer } from "./mock-gh-api-server";
-import { MockGitHubApiServerCommands } from "../../../common/commands";
-import { App, AppMode } from "../../../common/app";
+import { DisposableObject } from "../../disposable-object";
+import { MockGitHubApiServer } from "../mock-gh-api-server";
+import { MockGitHubApiServerCommands } from "../../commands";
+import { App, AppMode } from "../../app";
 import path from "path";
 
 /**
@@ -222,7 +222,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
     if (this.app.mode === AppMode.Development) {
       const developmentScenariosPath = path.join(
         this.app.extensionPath,
-        "src/variant-analysis/gh-api/mocks/scenarios",
+        "src/common/mock-gh-api/scenarios",
       );
       if (await pathExists(developmentScenariosPath)) {
         return developmentScenariosPath;
