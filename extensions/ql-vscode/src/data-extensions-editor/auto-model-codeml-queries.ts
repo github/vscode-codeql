@@ -166,7 +166,7 @@ async function resolveAutomodelQueries(
  * @param candidateMethods
  * @returns
  */
-async function generateCandidateFilterPack(
+export async function generateCandidateFilterPack(
   language: string,
   candidateMethods: MethodSignature[],
 ): Promise<string> {

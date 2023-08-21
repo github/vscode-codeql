@@ -129,7 +129,10 @@ type GetResultsOptions = {
   bqrsPath: string;
 };
 
-async function readQueryResults({ cliServer, bqrsPath }: GetResultsOptions) {
+export async function readQueryResults({
+  cliServer,
+  bqrsPath,
+}: GetResultsOptions) {
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
     void showAndLogExceptionWithTelemetry(
