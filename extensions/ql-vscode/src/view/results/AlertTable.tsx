@@ -20,7 +20,7 @@ import { AlertTableHeader } from "./AlertTableHeader";
 import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
 import { AlertTableResultRow } from "./AlertTableResultRow";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -108,70 +108,73 @@ export function AlertTable(props: AlertTableProps) {
     }
   };
 
-  const handleNavigationEvent = (event: NavigateMsg) => {
-    const key = getNewSelection(selectedItem, event.direction);
-    const data = resultSet.interpretation.data;
+  const handleNavigationEvent = useCallback(
+    (event: NavigateMsg) => {
+      const key = getNewSelection(selectedItem, event.direction);
+      const data = resultSet.interpretation.data;
 
-    // Check if the selected node actually exists (bounds check) and get its location if relevant
-    let jumpLocation: Sarif.Location | undefined;
-    if (key.pathNodeIndex !== undefined) {
-      jumpLocation = Keys.getPathNode(data, key);
-      if (jumpLocation === undefined) {
-        return; // Result does not exist
+      // Check if the selected node actually exists (bounds check) and get its location if relevant
+      let jumpLocation: Sarif.Location | undefined;
+      if (key.pathNodeIndex !== undefined) {
+        jumpLocation = Keys.getPathNode(data, key);
+        if (jumpLocation === undefined) {
+          return; // Result does not exist
+        }
+      } else if (key.pathIndex !== undefined) {
+        if (Keys.getPath(data, key) === undefined) {
+          return; // Path does not exist
+        }
+        jumpLocation = undefined; // When selecting a 'path', don't jump anywhere.
+      } else {
+        jumpLocation = Keys.getResult(data, key)?.locations?.[0];
+        if (jumpLocation === undefined) {
+          return; // Path step does not exist.
+        }
       }
-    } else if (key.pathIndex !== undefined) {
-      if (Keys.getPath(data, key) === undefined) {
-        return; // Path does not exist
-      }
-      jumpLocation = undefined; // When selecting a 'path', don't jump anywhere.
-    } else {
-      jumpLocation = Keys.getResult(data, key)?.locations?.[0];
-      if (jumpLocation === undefined) {
-        return; // Path step does not exist.
-      }
-    }
-    if (jumpLocation !== undefined) {
-      const parsedLocation = parseSarifLocation(
-        jumpLocation,
-        resultSet.interpretation.sourceLocationPrefix,
-      );
-      if (!isNoLocation(parsedLocation)) {
-        jumpToLocation(parsedLocation, databaseUri);
-      }
-    }
-
-    const newExpanded = new Set(expanded);
-    if (event.direction === NavigationDirection.right) {
-      // When stepping right, expand to ensure the selected node is visible
-      newExpanded.add(Keys.keyToString({ resultIndex: key.resultIndex }));
-      if (key.pathIndex !== undefined) {
-        newExpanded.add(
-          Keys.keyToString({
-            resultIndex: key.resultIndex,
-            pathIndex: key.pathIndex,
-          }),
+      if (jumpLocation !== undefined) {
+        const parsedLocation = parseSarifLocation(
+          jumpLocation,
+          resultSet.interpretation.sourceLocationPrefix,
         );
+        if (!isNoLocation(parsedLocation)) {
+          jumpToLocation(parsedLocation, databaseUri);
+        }
       }
-    } else if (event.direction === NavigationDirection.left) {
-      // When stepping left, collapse immediately
-      newExpanded.delete(Keys.keyToString(key));
-    } else {
-      // When stepping up or down, collapse the previous node
-      if (selectedItem !== undefined) {
-        newExpanded.delete(Keys.keyToString(selectedItem));
+
+      const newExpanded = new Set(expanded);
+      if (event.direction === NavigationDirection.right) {
+        // When stepping right, expand to ensure the selected node is visible
+        newExpanded.add(Keys.keyToString({ resultIndex: key.resultIndex }));
+        if (key.pathIndex !== undefined) {
+          newExpanded.add(
+            Keys.keyToString({
+              resultIndex: key.resultIndex,
+              pathIndex: key.pathIndex,
+            }),
+          );
+        }
+      } else if (event.direction === NavigationDirection.left) {
+        // When stepping left, collapse immediately
+        newExpanded.delete(Keys.keyToString(key));
+      } else {
+        // When stepping up or down, collapse the previous node
+        if (selectedItem !== undefined) {
+          newExpanded.delete(Keys.keyToString(selectedItem));
+        }
       }
-    }
-    scroller.current?.scrollIntoViewOnNextUpdate();
-    setExpanded(newExpanded);
-    setSelectedItem(key);
-  };
+      scroller.current?.scrollIntoViewOnNextUpdate();
+      setExpanded(newExpanded);
+      setSelectedItem(key);
+    },
+    [databaseUri, expanded, resultSet, selectedItem],
+  );
 
   useEffect(() => {
     onNavigation.addListener(handleNavigationEvent);
     return () => {
       onNavigation.removeListener(handleNavigationEvent);
     };
-  }, []);
+  }, [handleNavigationEvent]);
 
   const { numTruncatedResults, sourceLocationPrefix } =
     resultSet.interpretation;
