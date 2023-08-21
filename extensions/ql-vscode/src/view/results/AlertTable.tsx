@@ -66,54 +66,6 @@ export class AlertTable extends React.Component<
     e.preventDefault();
   }
 
-  render(): JSX.Element {
-    const { databaseUri, resultSet } = this.props;
-
-    const { numTruncatedResults, sourceLocationPrefix } =
-      resultSet.interpretation;
-
-    const updateSelectionCallback = (
-      resultKey: Keys.PathNode | Keys.Result | undefined,
-    ) => {
-      this.setState((previousState) => ({
-        ...previousState,
-        selectedItem: resultKey,
-      }));
-      sendTelemetry("local-results-alert-table-path-selected");
-    };
-
-    if (!resultSet.interpretation.data.runs?.[0]?.results?.length) {
-      return <AlertTableNoResults {...this.props} />;
-    }
-
-    return (
-      <table className={className}>
-        <AlertTableHeader sortState={resultSet.interpretation.data.sortState} />
-        <tbody>
-          {resultSet.interpretation.data.runs[0].results.map(
-            (result, resultIndex) => (
-              <AlertTableResultRow
-                key={resultIndex}
-                result={result}
-                resultIndex={resultIndex}
-                expanded={this.state.expanded}
-                selectedItem={this.state.selectedItem}
-                databaseUri={databaseUri}
-                sourceLocationPrefix={sourceLocationPrefix}
-                updateSelectionCallback={updateSelectionCallback}
-                toggleExpanded={this.toggle.bind(this)}
-                scroller={this.scroller}
-              />
-            ),
-          )}
-          <AlertTableTruncatedMessage
-            numTruncatedResults={numTruncatedResults}
-          />
-        </tbody>
-      </table>
-    );
-  }
-
   private getNewSelection(
     key: Keys.ResultKey | undefined,
     direction: NavigationDirection,
@@ -231,5 +183,53 @@ export class AlertTable extends React.Component<
 
   componentWillUnmount() {
     onNavigation.removeListener(this.handleNavigationEvent);
+  }
+
+  render(): JSX.Element {
+    const { databaseUri, resultSet } = this.props;
+
+    const { numTruncatedResults, sourceLocationPrefix } =
+      resultSet.interpretation;
+
+    const updateSelectionCallback = (
+      resultKey: Keys.PathNode | Keys.Result | undefined,
+    ) => {
+      this.setState((previousState) => ({
+        ...previousState,
+        selectedItem: resultKey,
+      }));
+      sendTelemetry("local-results-alert-table-path-selected");
+    };
+
+    if (!resultSet.interpretation.data.runs?.[0]?.results?.length) {
+      return <AlertTableNoResults {...this.props} />;
+    }
+
+    return (
+      <table className={className}>
+        <AlertTableHeader sortState={resultSet.interpretation.data.sortState} />
+        <tbody>
+          {resultSet.interpretation.data.runs[0].results.map(
+            (result, resultIndex) => (
+              <AlertTableResultRow
+                key={resultIndex}
+                result={result}
+                resultIndex={resultIndex}
+                expanded={this.state.expanded}
+                selectedItem={this.state.selectedItem}
+                databaseUri={databaseUri}
+                sourceLocationPrefix={sourceLocationPrefix}
+                updateSelectionCallback={updateSelectionCallback}
+                toggleExpanded={this.toggle.bind(this)}
+                scroller={this.scroller}
+              />
+            ),
+          )}
+          <AlertTableTruncatedMessage
+            numTruncatedResults={numTruncatedResults}
+          />
+        </tbody>
+      </table>
+    );
   }
 }
