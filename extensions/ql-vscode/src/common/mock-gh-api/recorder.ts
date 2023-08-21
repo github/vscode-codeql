@@ -8,7 +8,7 @@ import { IsomorphicResponse } from "@mswjs/interceptors";
 import { Headers } from "headers-polyfill";
 import fetch from "node-fetch";
 
-import { DisposableObject } from "../../../common/disposable-object";
+import { DisposableObject } from "../disposable-object";
 
 import {
   GetVariantAnalysisRepoResultRequest,
