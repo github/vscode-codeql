@@ -53,22 +53,6 @@ jobs:
           name: vscode-codeql-extension
           path: artifacts
 
-  find-nightly:
-    name: Find Nightly Release
-    runs-on: ubuntu-latest
-    outputs:
-      url: ${{ steps.get-url.outputs.nightly-url }}
-    steps:
-      - name: Get Nightly Release URL
-        id: get-url
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        shell: bash
-        # This workflow step gets an unstable testing version of the CodeQL CLI. It should not be used outside of these tests.
-        run: |
-          LATEST=`gh api repos/dsp-testing/codeql-cli-nightlies/releases --jq '.[].tag_name' --method GET --raw-field 'per_page=1'`
-          echo "nightly-url=https://github.com/dsp-testing/codeql-cli-nightlies/releases/download/$LATEST" >> "$GITHUB_OUTPUT"
-
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -198,31 +182,32 @@ jobs:
         run: |
           npm run test:vscode-integration
 
-  set-matrix:
-    name: Set Matrix for cli-test
+  get-latest-cli-version:
+    name: Get latest CLI version
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set the variables
-        id: set-variables
-        run: echo "cli-versions=$(cat ./extensions/ql-vscode/supported_cli_versions.json | jq -rc)" >> $GITHUB_OUTPUT
+      - name: Set the variable
+        id: set-variable
+        run: |
+          echo "cli-version=$(cat ./extensions/ql-vscode/supported_cli_versions.json | jq -rc '.[0]')" >> $GITHUB_OUTPUT
+          echo "$cli-version"
     outputs:
-      cli-versions: ${{ steps.set-variables.outputs.cli-versions }}
+      cli-version: ${{ steps.set-variable.outputs.cli-version }}
 
   cli-test:
     name: CLI Test
     runs-on: ${{ matrix.os }}
-    needs: [find-nightly, set-matrix]
+    needs: [get-latest-cli-version]
     timeout-minutes: 30
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        version: ${{ fromJson(needs.set-matrix.outputs.cli-versions) }}
+        version: ['${{ needs.get-latest-cli-version.outputs.cli-version }}']
       fail-fast: false
     env:
-      CLI_VERSION: ${{ matrix.version }}
-      NIGHTLY_URL: ${{ needs.find-nightly.outputs.url }}
+      CLI_VERSION: ${{ needs.get-latest-cli-version.outputs.cli-version }}
       TEST_CODEQL_PATH: '${{ github.workspace }}/codeql'
 
     steps:
@@ -247,23 +232,11 @@ jobs:
           npm run build
         shell: bash
 
-      - name: Decide on ref of CodeQL repo
-        id: choose-ref
-        shell: bash
-        run: |
-          if [[ "${{ matrix.version }}" == "nightly" ]]
-          then
-            REF="codeql-cli/latest"
-          else
-            REF="codeql-cli/${{ matrix.version }}"
-          fi
-          echo "ref=$REF" >> "$GITHUB_OUTPUT"
-
       - name: Checkout QL
         uses: actions/checkout@v3
         with:
           repository: github/codeql
-          ref: ${{ steps.choose-ref.outputs.ref }}
+          ref: 'codeql-cli/${{ needs.get-latest-cli-version.outputs.cli-version }}'
           path: codeql
 
       - name: Run CLI tests (Linux)
