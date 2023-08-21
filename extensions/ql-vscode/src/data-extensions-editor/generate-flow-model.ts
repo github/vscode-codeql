@@ -31,7 +31,7 @@ async function resolveFlowQueries(
   const qlpacks = await qlpackOfDatabase(cliServer, databaseItem);
 
   return await resolveQueries(cliServer, qlpacks, "flow model generator", {
-    "tags contain": ["modelgenerator"], // TODO: should this be a single string and not an array?
+    "tags contain": ["modelgenerator"],
   });
 }
 

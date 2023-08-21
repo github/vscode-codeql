@@ -13,7 +13,7 @@ import { dir } from "tmp-promise";
 import { writeFile, outputFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
 import { MethodSignature } from "./external-api-usage";
-import { runQuery } from "../local-queries/query-runner";
+import { runQuery } from "../local-queries/run-query";
 import { QueryMetadata } from "../common/interface-types";
 import { CancellationTokenSource } from "vscode";
 
@@ -44,7 +44,6 @@ export type AutoModelQueriesResult = {
   candidates: Sarif.Log;
 };
 
-// TODO: give this a nice method doc
 export async function runAutoModelQueries({
   mode,
   candidateMethods,
@@ -76,7 +75,7 @@ export async function runAutoModelQueries({
   );
 
   // Run the actual query
-  const completedQuery = await runQuery(
+  const completedQuery = await runQuery({
     cliServer,
     queryRunner,
     databaseItem,
@@ -85,8 +84,8 @@ export async function runAutoModelQueries({
     additionalPacks,
     extensionPacks,
     progress,
-    cancellationTokenSource.token,
-  );
+    token: cancellationTokenSource.token,
+  });
 
   if (!completedQuery) {
     return undefined;
@@ -113,9 +112,7 @@ export async function runAutoModelQueries({
 
   const candidates = await interpretAutomodelResults(
     cliServer,
-    "candidates",
     completedQuery,
-    queryStorageDir,
     metadata,
     sourceInfo,
   );
@@ -218,18 +215,13 @@ async function generateCandidateFilterPack(
 
 async function interpretAutomodelResults(
   cliServer: CodeQLCliServer,
-  queryTag: string, // TODO: is this really needed or can we just use the id only?
   completedQuery: CoreCompletedQuery,
-  queryStorageDir: string, // TODO: is this really needed or could we just use completedQuery.outputDir
   metadata: QueryMetadata,
   sourceInfo: SourceInfo | undefined,
 ): Promise<Sarif.Log> {
-  completedQuery;
   const interpretedResultsPath = join(
-    queryStorageDir,
-    `interpreted-results-${queryTag.replaceAll(" ", "-")}-${
-      completedQuery.id // TODO: is this ok?
-    }.sarif`,
+    completedQuery.outputDir.querySaveDir,
+    "results.sarif",
   );
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- We only need the actual SARIF data, not the extra fields added by SarifInterpretationData
