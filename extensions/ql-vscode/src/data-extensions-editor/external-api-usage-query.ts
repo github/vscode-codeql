@@ -11,10 +11,9 @@ import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { join } from "path";
 import { Mode } from "./shared/mode";
-import { writeFile } from "fs-extra";
-import { Query } from "./queries/query";
 import { QueryLanguage } from "../common/query-language";
-import { dump } from "js-yaml";
+import { fetchExternalApiQueries } from "./queries";
+import { writeFile } from "fs-extra";
 
 type RunQueryOptions = {
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">;
@@ -27,36 +26,34 @@ type RunQueryOptions = {
   token: CancellationToken;
 };
 
-export async function setUpPack(
+export async function prepareExternalApiQuery(
   queryDir: string,
-  query: Query,
   language: QueryLanguage,
-) {
-  Object.values(Mode).map(async (mode) => {
-    const queryFile = join(
-      queryDir,
-      `FetchExternalApis${mode.charAt(0).toUpperCase() + mode.slice(1)}Mode.ql`,
+): Promise<boolean> {
+  // Resolve the query that we want to run.
+  const query = fetchExternalApiQueries[language];
+  if (!query) {
+    void showAndLogExceptionWithTelemetry(
+      extLogger,
+      telemetryListener,
+      redactableError`No external API usage query found for language ${language}`,
     );
+    return false;
+  }
+  // Create the query file.
+  Object.values(Mode).map(async (mode) => {
+    const queryFile = join(queryDir, queryNameFromMode(mode));
     await writeFile(queryFile, query[`${mode}ModeQuery`], "utf8");
   });
 
+  // Create any dependencies
   if (query.dependencies) {
     for (const [filename, contents] of Object.entries(query.dependencies)) {
       const dependencyFile = join(queryDir, filename);
       await writeFile(dependencyFile, contents, "utf8");
     }
   }
-
-  const syntheticQueryPack = {
-    name: "codeql/external-api-usage",
-    version: "0.0.0",
-    dependencies: {
-      [`codeql/${language}-all`]: "*",
-    },
-  };
-
-  const qlpackFile = join(queryDir, "codeql-pack.yml");
-  await writeFile(qlpackFile, dump(syntheticQueryPack), "utf8");
+  return true;
 }
 
 export async function runQuery(
@@ -82,10 +79,7 @@ export async function runQuery(
     await cliServer.resolveQlpacks(additionalPacks, true),
   );
 
-  const queryFile = join(
-    queryDir,
-    `FetchExternalApis${mode.charAt(0).toUpperCase() + mode.slice(1)}Mode.ql`,
-  );
+  const queryFile = join(queryDir, queryNameFromMode(mode));
 
   const queryRun = queryRunner.createQueryRun(
     databaseItem.databaseUri.fsPath,
@@ -144,4 +138,10 @@ export async function readQueryResults({
   const resultSet = bqrsInfo["result-sets"][0];
 
   return cliServer.bqrsDecode(bqrsPath, resultSet.name);
+}
+
+function queryNameFromMode(mode: Mode): string {
+  return `FetchExternalApis${
+    mode.charAt(0).toUpperCase() + mode.slice(1)
+  }Mode.ql`;
 }
