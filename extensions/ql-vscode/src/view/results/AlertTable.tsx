@@ -114,6 +114,49 @@ export class AlertTable extends React.Component<
     );
   }
 
+  private getNewSelection(
+    key: Keys.ResultKey | undefined,
+    direction: NavigationDirection,
+  ): Keys.ResultKey {
+    if (key === undefined) {
+      return { resultIndex: 0 };
+    }
+    const { resultIndex, pathIndex, pathNodeIndex } = key;
+    switch (direction) {
+      case NavigationDirection.up:
+      case NavigationDirection.down: {
+        const delta = direction === NavigationDirection.up ? -1 : 1;
+        if (key.pathNodeIndex !== undefined) {
+          return {
+            resultIndex,
+            pathIndex: key.pathIndex,
+            pathNodeIndex: key.pathNodeIndex + delta,
+          };
+        } else if (pathIndex !== undefined) {
+          return { resultIndex, pathIndex: pathIndex + delta };
+        } else {
+          return { resultIndex: resultIndex + delta };
+        }
+      }
+      case NavigationDirection.left:
+        if (key.pathNodeIndex !== undefined) {
+          return { resultIndex, pathIndex: key.pathIndex };
+        } else if (pathIndex !== undefined) {
+          return { resultIndex };
+        } else {
+          return key;
+        }
+      case NavigationDirection.right:
+        if (pathIndex === undefined) {
+          return { resultIndex, pathIndex: 0 };
+        } else if (pathNodeIndex === undefined) {
+          return { resultIndex, pathIndex, pathNodeIndex: 0 };
+        } else {
+          return key;
+        }
+    }
+  }
+
   private handleNavigationEvent(event: NavigateMsg) {
     this.setState((prevState) => {
       const key = this.getNewSelection(prevState.selectedItem, event.direction);
@@ -175,49 +218,6 @@ export class AlertTable extends React.Component<
         selectedItem: key,
       };
     });
-  }
-
-  private getNewSelection(
-    key: Keys.ResultKey | undefined,
-    direction: NavigationDirection,
-  ): Keys.ResultKey {
-    if (key === undefined) {
-      return { resultIndex: 0 };
-    }
-    const { resultIndex, pathIndex, pathNodeIndex } = key;
-    switch (direction) {
-      case NavigationDirection.up:
-      case NavigationDirection.down: {
-        const delta = direction === NavigationDirection.up ? -1 : 1;
-        if (key.pathNodeIndex !== undefined) {
-          return {
-            resultIndex,
-            pathIndex: key.pathIndex,
-            pathNodeIndex: key.pathNodeIndex + delta,
-          };
-        } else if (pathIndex !== undefined) {
-          return { resultIndex, pathIndex: pathIndex + delta };
-        } else {
-          return { resultIndex: resultIndex + delta };
-        }
-      }
-      case NavigationDirection.left:
-        if (key.pathNodeIndex !== undefined) {
-          return { resultIndex, pathIndex: key.pathIndex };
-        } else if (pathIndex !== undefined) {
-          return { resultIndex };
-        } else {
-          return key;
-        }
-      case NavigationDirection.right:
-        if (pathIndex === undefined) {
-          return { resultIndex, pathIndex: 0 };
-        } else if (pathNodeIndex === undefined) {
-          return { resultIndex, pathIndex, pathNodeIndex: 0 };
-        } else {
-          return key;
-        }
-    }
   }
 
   componentDidUpdate() {
