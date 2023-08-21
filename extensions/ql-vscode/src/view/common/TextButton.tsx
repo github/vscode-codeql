@@ -15,13 +15,22 @@ const StyledButton = styled.button<{ size: Size }>`
 const TextButton = ({
   size,
   onClick,
+  className,
+  title,
   children,
 }: {
   size?: Size;
   onClick: (e: React.MouseEvent) => void;
+  className?: string;
+  title?: string;
   children: React.ReactNode;
 }) => (
-  <StyledButton size={size} onClick={onClick}>
+  <StyledButton
+    size={size}
+    onClick={onClick}
+    className={className}
+    title={title}
+  >
     {children}
   </StyledButton>
 );

@@ -22,6 +22,7 @@ import { AlertTableHeader } from "./AlertTableHeader";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { SarifLocation } from "./locations/SarifLocation";
 import { EmptyQueryResultsMessage } from "./EmptyQueryResultsMessage";
+import TextButton from "../common/TextButton";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 
 type AlertTableProps = ResultTableProps & {
@@ -74,13 +75,9 @@ export class AlertTable extends React.Component<
       return (
         <span>
           No Alerts. See{" "}
-          {/*
-              eslint-disable-next-line
-              jsx-a11y/anchor-is-valid,
-            */}
-          <a href="#" onClick={this.props.showRawResults}>
+          <TextButton onClick={this.props.showRawResults}>
             raw results
-          </a>
+          </TextButton>
           .
         </span>
       );

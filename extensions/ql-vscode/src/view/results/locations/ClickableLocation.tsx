@@ -2,6 +2,8 @@ import * as React from "react";
 import { useCallback } from "react";
 import { ResolvableLocationValue } from "../../../common/bqrs-cli-types";
 import { jumpToLocation } from "../result-table-utils";
+import TextButton from "../../common/TextButton";
+import { styled } from "styled-components";
 
 interface Props {
   loc: ResolvableLocationValue;
@@ -10,6 +12,10 @@ interface Props {
   title?: string;
   onClick?: () => void;
 }
+
+const Link = styled(TextButton)`
+  text-decoration: none;
+`;
 
 /**
  * A clickable location link.
@@ -31,20 +37,5 @@ export function ClickableLocation({
     [loc, databaseUri, onClick],
   );
 
-  return (
-    <>
-      {/*
-          eslint-disable-next-line
-          jsx-a11y/anchor-is-valid,
-        */}
-      <a
-        href="#"
-        className="vscode-codeql__result-table-location-link"
-        title={title}
-        onClick={handleClick}
-      >
-        {label}
-      </a>
-    </>
-  );
+  return <Link onClick={handleClick}>{label}</Link>;
 }
