@@ -19,6 +19,7 @@ import { percentFormatter } from "./formatters";
 import { Mode } from "../../data-extensions-editor/shared/mode";
 import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
 import { getLanguageDisplayName } from "../../common/query-language";
+import { INITIAL_HIDE_MODELED_APIS_VALUE } from "../../data-extensions-editor/shared/hide-modeled-apis";
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -74,12 +75,14 @@ type Props = {
   initialViewState?: DataExtensionEditorViewState;
   initialExternalApiUsages?: ExternalApiUsage[];
   initialModeledMethods?: Record<string, ModeledMethod>;
+  initialHideModeledApis?: boolean;
 };
 
 export function DataExtensionsEditor({
   initialViewState,
   initialExternalApiUsages = [],
   initialModeledMethods = {},
+  initialHideModeledApis = INITIAL_HIDE_MODELED_APIS_VALUE,
 }: Props): JSX.Element {
   const [viewState, setViewState] = useState<
     DataExtensionEditorViewState | undefined
@@ -96,7 +99,16 @@ export function DataExtensionsEditor({
     new InProgressMethods(),
   );
 
-  const [hideModeledApis, setHideModeledApis] = useState(true);
+  const [hideModeledApis, setHideModeledApis] = useState(
+    initialHideModeledApis,
+  );
+
+  useEffect(() => {
+    vscode.postMessage({
+      t: "hideModeledApis",
+      hideModeledApis,
+    });
+  }, [hideModeledApis]);
 
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>

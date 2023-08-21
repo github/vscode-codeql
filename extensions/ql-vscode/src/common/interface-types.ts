@@ -567,6 +567,11 @@ interface ModelDependencyMessage {
   t: "modelDependency";
 }
 
+interface HideModeledApisMessage {
+  t: "hideModeledApis";
+  hideModeledApis: boolean;
+}
+
 export type ToDataExtensionsEditorMessage =
   | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
@@ -585,4 +590,5 @@ export type FromDataExtensionsEditorMessage =
   | GenerateExternalApiMessage
   | GenerateExternalApiFromLlmMessage
   | StopGeneratingExternalApiFromLlmMessage
-  | ModelDependencyMessage;
+  | ModelDependencyMessage
+  | HideModeledApisMessage;

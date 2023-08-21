@@ -13,6 +13,7 @@ import { ExternalApiUsage, Usage } from "../external-api-usage";
 import { DatabaseItem } from "../../databases/local-databases";
 import { relative } from "path";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
+import { INITIAL_HIDE_MODELED_APIS_VALUE } from "../shared/hide-modeled-apis";
 
 export class ModelDetailsDataProvider
   extends DisposableObject
@@ -21,6 +22,7 @@ export class ModelDetailsDataProvider
   private externalApiUsages: ExternalApiUsage[] = [];
   private databaseItem: DatabaseItem | undefined = undefined;
   private sourceLocationPrefix: string | undefined = undefined;
+  private hideModeledApis: boolean = INITIAL_HIDE_MODELED_APIS_VALUE;
 
   private readonly onDidChangeTreeDataEmitter = this.push(
     new EventEmitter<void>(),
@@ -44,15 +46,19 @@ export class ModelDetailsDataProvider
   public async setState(
     externalApiUsages: ExternalApiUsage[],
     databaseItem: DatabaseItem,
+    hideModeledApis: boolean,
   ): Promise<void> {
     if (
       this.externalApiUsages !== externalApiUsages ||
-      this.databaseItem !== databaseItem
+      this.databaseItem !== databaseItem ||
+      this.hideModeledApis !== hideModeledApis
     ) {
       this.externalApiUsages = externalApiUsages;
       this.databaseItem = databaseItem;
       this.sourceLocationPrefix =
         await this.databaseItem.getSourceLocationPrefix(this.cliServer);
+      this.hideModeledApis = hideModeledApis;
+
       this.onDidChangeTreeDataEmitter.fire();
     }
   }
@@ -92,7 +98,11 @@ export class ModelDetailsDataProvider
 
   getChildren(item?: ModelDetailsTreeViewItem): ModelDetailsTreeViewItem[] {
     if (item === undefined) {
-      return this.externalApiUsages;
+      if (this.hideModeledApis) {
+        return this.externalApiUsages.filter((api) => !api.supported);
+      } else {
+        return this.externalApiUsages;
+      }
     } else if (isExternalApiUsage(item)) {
       return item.usages;
     } else {
