@@ -29,9 +29,6 @@ export function AlertTablePathRow(props: Props) {
     resultIndex,
     currentPathExpanded,
     selectedItem,
-    databaseUri,
-    sourceLocationPrefix,
-    updateSelectionCallback,
     toggleExpanded,
     scroller,
   } = props;
@@ -71,15 +68,9 @@ export function AlertTablePathRow(props: Props) {
         path.locations.map((step, pathNodeIndex) => (
           <AlertTablePathNodeRow
             key={`${resultIndex}-${pathIndex}-${pathNodeIndex}`}
+            {...props}
             step={step}
             pathNodeIndex={pathNodeIndex}
-            pathIndex={pathIndex}
-            resultIndex={resultIndex}
-            selectedItem={selectedItem}
-            databaseUri={databaseUri}
-            sourceLocationPrefix={sourceLocationPrefix}
-            updateSelectionCallback={updateSelectionCallback}
-            scroller={scroller}
           />
         ))}
     </>

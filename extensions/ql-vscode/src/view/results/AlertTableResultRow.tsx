@@ -112,18 +112,12 @@ export function AlertTableResultRow(props: Props) {
         Keys.getAllPaths(result).map((path, pathIndex) => (
           <AlertTablePathRow
             key={`${resultIndex}-${pathIndex}`}
+            {...props}
             path={path}
             pathIndex={pathIndex}
-            resultIndex={resultIndex}
             currentPathExpanded={expanded.has(
               Keys.keyToString({ resultIndex, pathIndex }),
             )}
-            selectedItem={selectedItem}
-            databaseUri={databaseUri}
-            sourceLocationPrefix={sourceLocationPrefix}
-            updateSelectionCallback={updateSelectionCallback}
-            toggleExpanded={toggleExpanded}
-            scroller={scroller}
           />
         ))}
     </>
