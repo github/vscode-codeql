@@ -1763,7 +1763,7 @@
         {
           "id": "codeQLModelDetails",
           "name": "CodeQL Model Details",
-          "when": "config.codeQL.canary && config.codeQL.dataExtensions.modelDetailsView && codeql.dataExtensionsEditorOpen"
+          "when": "config.codeQL.canary && codeql.dataExtensionsEditorOpen"
         }
       ]
     },
