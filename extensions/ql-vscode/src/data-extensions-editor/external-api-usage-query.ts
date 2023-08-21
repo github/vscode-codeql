@@ -1,12 +1,11 @@
-import { CoreCompletedQuery, QueryRunner } from "../query-server";
+import { QueryRunner } from "../query-server";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { extLogger } from "../common/logging/vscode";
-import { showAndLogExceptionWithTelemetry, TeeLogger } from "../common/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { CancellationToken } from "vscode";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { DatabaseItem } from "../databases/local-databases";
 import { ProgressCallback } from "../common/vscode/progress";
-import { QueryResultType } from "../query-server/new-messages";
 import { redactableError } from "../common/errors";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { join } from "path";
@@ -14,11 +13,14 @@ import { Mode } from "./shared/mode";
 import { QueryLanguage } from "../common/query-language";
 import { fetchExternalApiQueries } from "./queries";
 import { writeFile } from "fs-extra";
+import { ExternalApiUsage } from "./external-api-usage";
+import { runQuery } from "../local-queries/run-query";
+import { decodeBqrsToExternalApiUsages } from "./bqrs";
 
 type RunQueryOptions = {
-  cliServer: Pick<CodeQLCliServer, "resolveQlpacks">;
-  queryRunner: Pick<QueryRunner, "createQueryRun" | "logger">;
-  databaseItem: Pick<DatabaseItem, "contents" | "databaseUri" | "language">;
+  cliServer: CodeQLCliServer;
+  queryRunner: QueryRunner;
+  databaseItem: DatabaseItem;
   queryStorageDir: string;
   queryDir: string;
 
@@ -56,7 +58,7 @@ export async function prepareExternalApiQuery(
   return true;
 }
 
-export async function runQuery(
+export async function runExternalApiQueries(
   mode: Mode,
   {
     cliServer,
@@ -67,7 +69,7 @@ export async function runQuery(
     progress,
     token,
   }: RunQueryOptions,
-): Promise<CoreCompletedQuery | undefined> {
+): Promise<ExternalApiUsage[] | undefined> {
   // The below code is temporary to allow for rapid prototyping of the queries. Once the queries are stabilized, we will
   // move these queries into the `github/codeql` repository and use them like any other contextual (e.g. AST) queries.
   // This is intentionally not pretty code, as it will be removed soon.
@@ -79,41 +81,47 @@ export async function runQuery(
     await cliServer.resolveQlpacks(additionalPacks, true),
   );
 
-  const queryFile = join(queryDir, queryNameFromMode(mode));
+  const queryPath = join(queryDir, queryNameFromMode(mode));
 
-  const queryRun = queryRunner.createQueryRun(
-    databaseItem.databaseUri.fsPath,
-    {
-      queryPath: queryFile,
-      quickEvalPosition: undefined,
-      quickEvalCountOnly: false,
-    },
-    false,
-    getOnDiskWorkspaceFolders(),
-    extensionPacks,
+  // Run the actual query
+  const completedQuery = await runQuery({
+    cliServer,
+    queryRunner,
+    databaseItem,
+    queryPath,
     queryStorageDir,
-    undefined,
-    undefined,
-  );
-
-  const completedQuery = await queryRun.evaluate(
+    additionalPacks,
+    extensionPacks,
     progress,
     token,
-    new TeeLogger(queryRunner.logger, queryRun.outputDir.logPath),
-  );
+  });
 
-  if (completedQuery.resultType !== QueryResultType.SUCCESS) {
-    void showAndLogExceptionWithTelemetry(
-      extLogger,
-      telemetryListener,
-      redactableError`External API usage query failed: ${
-        completedQuery.message ?? "No message"
-      }`,
-    );
+  if (!completedQuery) {
     return;
   }
 
-  return completedQuery;
+  // Read the results and covert to internal representation
+  progress({
+    message: "Decoding results",
+    step: 1100,
+    maxStep: 1500,
+  });
+
+  const bqrsChunk = await readQueryResults({
+    cliServer,
+    bqrsPath: completedQuery.outputDir.bqrsPath,
+  });
+  if (!bqrsChunk) {
+    return;
+  }
+
+  progress({
+    message: "Finalizing results",
+    step: 1450,
+    maxStep: 1500,
+  });
+
+  return decodeBqrsToExternalApiUsages(bqrsChunk);
 }
 
 type GetResultsOptions = {
@@ -121,10 +129,7 @@ type GetResultsOptions = {
   bqrsPath: string;
 };
 
-export async function readQueryResults({
-  cliServer,
-  bqrsPath,
-}: GetResultsOptions) {
+async function readQueryResults({ cliServer, bqrsPath }: GetResultsOptions) {
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
     void showAndLogExceptionWithTelemetry(
