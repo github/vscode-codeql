@@ -32,11 +32,7 @@ import { readQueryResults, runQuery } from "./external-api-usage-query";
 import { ExternalApiUsage, Usage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
-import {
-  enableFrameworkMode,
-  showLlmGeneration,
-  showModelDetailsView,
-} from "../config";
+import { enableFrameworkMode, showLlmGeneration } from "../config";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { join } from "path";
@@ -280,9 +276,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   protected async handleJumpToUsage(usage: Usage) {
-    if (showModelDetailsView()) {
-      await this.revealItemInDetailsPanel(usage);
-    }
+    await this.revealItemInDetailsPanel(usage);
     await showResolvableLocation(usage.url, this.databaseItem, this.app.logger);
   }
 

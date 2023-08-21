@@ -713,11 +713,6 @@ const EXTENSIONS_DIRECTORY = new Setting(
   "extensionsDirectory",
   DATA_EXTENSIONS,
 );
-const MODEL_DETAILS_VIEW = new Setting("modelDetailsView", DATA_EXTENSIONS);
-
-export function showModelDetailsView(): boolean {
-  return !!MODEL_DETAILS_VIEW.getValue<boolean>();
-}
 
 export function showLlmGeneration(): boolean {
   return !!LLM_GENERATION.getValue<boolean>();
