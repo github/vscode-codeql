@@ -204,7 +204,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        version: ['${{ needs.get-latest-cli-version.outputs.cli-version }}']
       fail-fast: false
     env:
       CLI_VERSION: ${{ needs.get-latest-cli-version.outputs.cli-version }}
