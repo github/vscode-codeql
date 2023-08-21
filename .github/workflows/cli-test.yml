@@ -3,9 +3,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *'
-  push:
-    branches:
-      - charisk/split-out-cli-tests
 
 jobs:
   find-nightly:
