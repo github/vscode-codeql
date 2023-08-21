@@ -3,7 +3,6 @@ import { CoreCompletedQuery, QueryRunner } from "../query-server";
 import { DatabaseItem } from "../databases/local-databases";
 import { ProgressCallback } from "../common/vscode/progress";
 import * as Sarif from "sarif";
-import { qlpackOfDatabase, resolveQueries } from "../local-queries";
 import { Mode } from "./shared/mode";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { interpretResultsSarif } from "../query-results";
@@ -16,6 +15,7 @@ import { MethodSignature } from "./external-api-usage";
 import { runQuery } from "../local-queries/run-query";
 import { QueryMetadata } from "../common/interface-types";
 import { CancellationTokenSource } from "vscode";
+import { resolveQueries } from "../local-queries";
 
 function modeTag(mode: Mode): string {
   switch (mode) {
@@ -127,7 +127,7 @@ async function resolveAutomodelQuery(
   queryTag: string,
   mode: Mode,
 ): Promise<string> {
-  const qlpack = await qlpackOfDatabase(cliServer, databaseItem);
+  const packsToSearch = [`codeql/${databaseItem.language}-queries`];
 
   // First, resolve the query that we want to run.
   // All queries are tagged like this:
@@ -135,7 +135,7 @@ async function resolveAutomodelQuery(
   // Example: internal extract automodel framework-mode candidates
   const queries = await resolveQueries(
     cliServer,
-    qlpack,
+    packsToSearch,
     `Extract automodel ${queryTag}`,
     {
       kind: "problem",

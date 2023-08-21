@@ -23,11 +23,6 @@ import { CancellationTokenSource } from "vscode-jsonrpc";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
 
 describe("runAutoModelQueries", () => {
-  const qlpack = {
-    dbschemePack: "dbschemePack",
-    dbschemePackIsLibraryPack: false,
-  };
-
   let resolveQueriesSpy: jest.SpiedFunction<
     typeof queryResolver.resolveQueries
   >;
@@ -36,23 +31,23 @@ describe("runAutoModelQueries", () => {
   >;
 
   beforeEach(() => {
-    jest.spyOn(queryResolver, "qlpackOfDatabase").mockResolvedValue(qlpack);
-
     resolveQueriesSpy = jest
       .spyOn(queryResolver, "resolveQueries")
-      .mockImplementation(async (_cliServer, _qlPack, _name, constraints) => {
-        if (constraints["tags contain all"]?.includes("candidates")) {
-          return ["/a/b/c/ql/candidates.ql"];
-        }
-        if (constraints["tags contain all"]?.includes("positive")) {
-          return ["/a/b/c/ql/positive-examples.ql"];
-        }
-        if (constraints["tags contain all"]?.includes("negative")) {
-          return ["/a/b/c/ql/negative-examples.ql"];
-        }
+      .mockImplementation(
+        async (_cliServer, _packsToSearch, _name, constraints) => {
+          if (constraints["tags contain all"]?.includes("candidates")) {
+            return ["/a/b/c/ql/candidates.ql"];
+          }
+          if (constraints["tags contain all"]?.includes("positive")) {
+            return ["/a/b/c/ql/positive-examples.ql"];
+          }
+          if (constraints["tags contain all"]?.includes("negative")) {
+            return ["/a/b/c/ql/negative-examples.ql"];
+          }
 
-        return [];
-      });
+          return [];
+        },
+      );
 
     createLockFileForStandardQuerySpy = jest
       .spyOn(standardQueries, "createLockFileForStandardQuery")
@@ -154,7 +149,7 @@ describe("runAutoModelQueries", () => {
     expect(resolveQueriesSpy).toHaveBeenCalledTimes(1);
     expect(resolveQueriesSpy).toHaveBeenCalledWith(
       options.cliServer,
-      qlpack,
+      ["codeql/java-queries"],
       "Extract automodel candidates",
       {
         kind: "problem",
