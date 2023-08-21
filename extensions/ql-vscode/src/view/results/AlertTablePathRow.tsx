@@ -5,7 +5,7 @@ import { selectableZebraStripe } from "./result-table-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { AlertTablePathNodeRow } from "./AlertTablePathNodeRow";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 interface Props {
   path: Sarif.ThreadFlow;
@@ -37,8 +37,8 @@ export function AlertTablePathRow(props: Props) {
     () => ({ resultIndex, pathIndex }),
     [pathIndex, resultIndex],
   );
-  const handleDropdownClick = useMemo(
-    () => (e: React.MouseEvent) => toggleExpanded(e, [pathKey]),
+  const handleDropdownClick = useCallback(
+    (e: React.MouseEvent) => toggleExpanded(e, [pathKey]),
     [pathKey, toggleExpanded],
   );
 

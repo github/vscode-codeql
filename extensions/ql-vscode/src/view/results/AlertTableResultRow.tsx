@@ -5,7 +5,7 @@ import { info, listUnordered } from "./octicons";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { selectableZebraStripe } from "./result-table-utils";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { SarifLocation } from "./locations/SarifLocation";
 import { SarifMessageWithLocations } from "./locations/SarifMessageWithLocations";
 import { AlertTablePathRow } from "./AlertTablePathRow";
@@ -46,15 +46,18 @@ export function AlertTableResultRow(props: Props) {
     () => updateSelectionCallback(resultKey),
     [resultKey, updateSelectionCallback],
   );
-  const handleDropdownClick = useMemo(() => {
-    const indices =
-      Keys.getAllPaths(result).length === 1
-        ? [resultKey, { ...resultKey, pathIndex: 0 }]
-        : /* if there's exactly one path, auto-expand
-           * the path when expanding the result */
-          [resultKey];
-    return (e: React.MouseEvent) => toggleExpanded(e, indices);
-  }, [result, resultKey, toggleExpanded]);
+  const handleDropdownClick = useCallback(
+    (e: React.MouseEvent) => {
+      const indices =
+        Keys.getAllPaths(result).length === 1
+          ? [resultKey, { ...resultKey, pathIndex: 0 }]
+          : /* if there's exactly one path, auto-expand
+             * the path when expanding the result */
+            [resultKey];
+      toggleExpanded(e, indices);
+    },
+    [result, resultKey, toggleExpanded],
+  );
 
   const resultRowIsSelected =
     selectedItem?.resultIndex === resultIndex &&
