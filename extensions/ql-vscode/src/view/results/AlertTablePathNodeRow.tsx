@@ -4,7 +4,7 @@ import * as Keys from "./result-keys";
 import { SarifLocation } from "./locations/SarifLocation";
 import { selectableZebraStripe } from "./result-table-utils";
 import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 interface Props {
   step: Sarif.ThreadFlowLocation;
@@ -16,7 +16,7 @@ interface Props {
   sourceLocationPrefix: string;
   updateSelectionCallback: (
     resultKey: Keys.PathNode | Keys.Result | undefined,
-  ) => () => void;
+  ) => void;
   scroller: ScrollIntoViewHelper;
 }
 
@@ -41,7 +41,7 @@ export function AlertTablePathNodeRow(props: Props) {
     }),
     [pathIndex, pathNodeIndex, resultIndex],
   );
-  const handleSarifLocationClicked = useMemo(
+  const handleSarifLocationClicked = useCallback(
     () => updateSelectionCallback(pathNodeKey),
     [pathNodeKey, updateSelectionCallback],
   );

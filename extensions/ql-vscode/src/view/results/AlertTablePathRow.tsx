@@ -17,7 +17,7 @@ interface Props {
   sourceLocationPrefix: string;
   updateSelectionCallback: (
     resultKey: Keys.PathNode | Keys.Result | undefined,
-  ) => () => void;
+  ) => void;
   toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
   scroller: ScrollIntoViewHelper;
 }

@@ -75,13 +75,11 @@ export class AlertTable extends React.Component<
     const updateSelectionCallback = (
       resultKey: Keys.PathNode | Keys.Result | undefined,
     ) => {
-      return () => {
-        this.setState((previousState) => ({
-          ...previousState,
-          selectedItem: resultKey,
-        }));
-        sendTelemetry("local-results-alert-table-path-selected");
-      };
+      this.setState((previousState) => ({
+        ...previousState,
+        selectedItem: resultKey,
+      }));
+      sendTelemetry("local-results-alert-table-path-selected");
     };
 
     if (!resultSet.interpretation.data.runs?.[0]?.results?.length) {
