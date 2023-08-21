@@ -179,12 +179,13 @@ export function AlertTable(props: AlertTableProps) {
   const { numTruncatedResults, sourceLocationPrefix } =
     resultSet.interpretation;
 
-  const updateSelectionCallback = (
-    resultKey: Keys.PathNode | Keys.Result | undefined,
-  ) => {
-    setSelectedItem(resultKey);
-    sendTelemetry("local-results-alert-table-path-selected");
-  };
+  const updateSelectionCallback = useCallback(
+    (resultKey: Keys.PathNode | Keys.Result | undefined) => {
+      setSelectedItem(resultKey);
+      sendTelemetry("local-results-alert-table-path-selected");
+    },
+    [],
+  );
 
   if (!resultSet.interpretation.data.runs?.[0]?.results?.length) {
     return <AlertTableNoResults {...props} />;
