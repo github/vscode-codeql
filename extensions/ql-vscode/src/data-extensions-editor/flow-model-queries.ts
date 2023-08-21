@@ -3,16 +3,16 @@ import { DatabaseItem } from "../databases/local-databases";
 import { basename } from "path";
 import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { showAndLogExceptionWithTelemetry, TeeLogger } from "../common/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
 import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import { redactableError } from "../common/errors";
-import { QueryResultType } from "../query-server/new-messages";
 import { qlpackOfDatabase, resolveQueries } from "../local-queries";
 import { telemetryListener } from "../common/vscode/telemetry";
+import { runQuery } from "../local-queries/run-query";
 
 type FlowModelOptions = {
   cliServer: CodeQLCliServer;
@@ -23,6 +23,61 @@ type FlowModelOptions = {
   token: CancellationToken;
   onResults: (results: ModeledMethod[]) => void | Promise<void>;
 };
+
+export async function runFlowModelQueries({
+  onResults,
+  ...options
+}: FlowModelOptions) {
+  const queries = await resolveFlowQueries(
+    options.cliServer,
+    options.databaseItem,
+  );
+
+  const queriesByBasename: Record<string, string> = {};
+  for (const query of queries) {
+    queriesByBasename[basename(query)] = query;
+  }
+
+  const summaryResults = await runSingleFlowQuery(
+    "summary",
+    queriesByBasename["CaptureSummaryModels.ql"],
+    0,
+    options,
+  );
+  if (summaryResults) {
+    await onResults(summaryResults);
+  }
+
+  const sinkResults = await runSingleFlowQuery(
+    "sink",
+    queriesByBasename["CaptureSinkModels.ql"],
+    1,
+    options,
+  );
+  if (sinkResults) {
+    await onResults(sinkResults);
+  }
+
+  const sourceResults = await runSingleFlowQuery(
+    "source",
+    queriesByBasename["CaptureSourceModels.ql"],
+    2,
+    options,
+  );
+  if (sourceResults) {
+    await onResults(sourceResults);
+  }
+
+  const neutralResults = await runSingleFlowQuery(
+    "neutral",
+    queriesByBasename["CaptureNeutralModels.ql"],
+    3,
+    options,
+  );
+  if (neutralResults) {
+    await onResults(neutralResults);
+  }
+}
 
 async function resolveFlowQueries(
   cliServer: CodeQLCliServer,
@@ -35,7 +90,7 @@ async function resolveFlowQueries(
   });
 }
 
-async function getModeledMethodsFromFlow(
+async function runSingleFlowQuery(
   type: Exclude<ModeledMethodType, "none">,
   queryPath: string | undefined,
   queryStep: number,
@@ -48,6 +103,7 @@ async function getModeledMethodsFromFlow(
     token,
   }: Omit<FlowModelOptions, "onResults">,
 ): Promise<ModeledMethod[]> {
+  // Check that the right query was found
   if (queryPath === undefined) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
@@ -57,45 +113,32 @@ async function getModeledMethodsFromFlow(
     return [];
   }
 
-  const definition = extensiblePredicateDefinitions[type];
-
-  const queryRun = queryRunner.createQueryRun(
-    databaseItem.databaseUri.fsPath,
-    {
-      queryPath,
-      quickEvalPosition: undefined,
-      quickEvalCountOnly: false,
-    },
-    false,
-    getOnDiskWorkspaceFolders(),
-    undefined,
+  // Run the query
+  const completedQuery = await runQuery({
+    cliServer,
+    queryRunner,
+    databaseItem,
+    queryPath,
     queryStorageDir,
-    undefined,
-    undefined,
-  );
-
-  const queryResult = await queryRun.evaluate(
-    ({ step, message }) =>
+    additionalPacks: getOnDiskWorkspaceFolders(),
+    extensionPacks: undefined,
+    progress: ({ step, message }) =>
       progress({
         message: `Generating ${type} model: ${message}`,
         step: queryStep * 1000 + step,
         maxStep: 4000,
       }),
     token,
-    new TeeLogger(queryRunner.logger, queryRun.outputDir.logPath),
-  );
-  if (queryResult.resultType !== QueryResultType.SUCCESS) {
-    void showAndLogExceptionWithTelemetry(
-      extLogger,
-      telemetryListener,
-      redactableError`Failed to run ${basename(queryPath)} query: ${
-        queryResult.message ?? "No message"
-      }`,
-    );
+  });
+
+  if (!completedQuery) {
     return [];
   }
 
-  const bqrsPath = queryResult.outputDir.bqrsPath;
+  // Interpret the results
+  const definition = extensiblePredicateDefinitions[type];
+
+  const bqrsPath = completedQuery.outputDir.bqrsPath;
 
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
@@ -124,59 +167,4 @@ async function getModeledMethodsFromFlow(
         return definition.readModeledMethod(row.split(";"));
       })
   );
-}
-
-export async function generateFlowModel({
-  onResults,
-  ...options
-}: FlowModelOptions) {
-  const queries = await resolveFlowQueries(
-    options.cliServer,
-    options.databaseItem,
-  );
-
-  const queriesByBasename: Record<string, string> = {};
-  for (const query of queries) {
-    queriesByBasename[basename(query)] = query;
-  }
-
-  const summaryResults = await getModeledMethodsFromFlow(
-    "summary",
-    queriesByBasename["CaptureSummaryModels.ql"],
-    0,
-    options,
-  );
-  if (summaryResults) {
-    await onResults(summaryResults);
-  }
-
-  const sinkResults = await getModeledMethodsFromFlow(
-    "sink",
-    queriesByBasename["CaptureSinkModels.ql"],
-    1,
-    options,
-  );
-  if (sinkResults) {
-    await onResults(sinkResults);
-  }
-
-  const sourceResults = await getModeledMethodsFromFlow(
-    "source",
-    queriesByBasename["CaptureSourceModels.ql"],
-    2,
-    options,
-  );
-  if (sourceResults) {
-    await onResults(sourceResults);
-  }
-
-  const neutralResults = await getModeledMethodsFromFlow(
-    "neutral",
-    queriesByBasename["CaptureNeutralModels.ql"],
-    3,
-    options,
-  );
-  if (neutralResults) {
-    await onResults(neutralResults);
-  }
 }

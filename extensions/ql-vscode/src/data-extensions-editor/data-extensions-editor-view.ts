@@ -22,7 +22,7 @@ import {
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
-import { generateFlowModel } from "./generate-flow-model";
+import { runFlowModelQueries } from "./flow-model-queries";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
 import { showResolvableLocation } from "../databases/local-databases/locations";
@@ -381,7 +381,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         });
 
         try {
-          await generateFlowModel({
+          await runFlowModelQueries({
             cliServer: this.cliServer,
             queryRunner: this.queryRunner,
             queryStorageDir: this.queryStorageDir,

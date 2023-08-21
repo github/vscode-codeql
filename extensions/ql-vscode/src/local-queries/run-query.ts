@@ -20,7 +20,7 @@ type RunQueriesOptions = {
   queryPath: string;
   queryStorageDir: string;
   additionalPacks: string[];
-  extensionPacks: string[];
+  extensionPacks: string[] | undefined;
   progress: ProgressCallback;
   token: CancellationToken;
 };
