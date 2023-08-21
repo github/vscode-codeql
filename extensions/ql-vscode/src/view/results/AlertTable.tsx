@@ -27,6 +27,8 @@ type AlertTableProps = ResultTableProps & {
 };
 
 export function AlertTable(props: AlertTableProps) {
+  const { databaseUri, resultSet } = props;
+
   const scroller = useRef<ScrollIntoViewHelper | undefined>(undefined);
   if (scroller.current === undefined) {
     scroller.current = new ScrollIntoViewHelper();
@@ -108,7 +110,7 @@ export function AlertTable(props: AlertTableProps) {
 
   const handleNavigationEvent = (event: NavigateMsg) => {
     const key = getNewSelection(selectedItem, event.direction);
-    const data = props.resultSet.interpretation.data;
+    const data = resultSet.interpretation.data;
 
     // Check if the selected node actually exists (bounds check) and get its location if relevant
     let jumpLocation: Sarif.Location | undefined;
@@ -131,10 +133,10 @@ export function AlertTable(props: AlertTableProps) {
     if (jumpLocation !== undefined) {
       const parsedLocation = parseSarifLocation(
         jumpLocation,
-        props.resultSet.interpretation.sourceLocationPrefix,
+        resultSet.interpretation.sourceLocationPrefix,
       );
       if (!isNoLocation(parsedLocation)) {
-        jumpToLocation(parsedLocation, props.databaseUri);
+        jumpToLocation(parsedLocation, databaseUri);
       }
     }
 
@@ -170,8 +172,6 @@ export function AlertTable(props: AlertTableProps) {
       onNavigation.removeListener(handleNavigationEvent);
     };
   }, []);
-
-  const { databaseUri, resultSet } = props;
 
   const { numTruncatedResults, sourceLocationPrefix } =
     resultSet.interpretation;
