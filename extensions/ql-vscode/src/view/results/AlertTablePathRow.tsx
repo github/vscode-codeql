@@ -2,7 +2,6 @@ import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
 import { selectableZebraStripe } from "./result-table-utils";
-import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { AlertTablePathNodeRow } from "./AlertTablePathNodeRow";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 import { useCallback, useMemo } from "react";
@@ -13,13 +12,13 @@ interface Props {
   resultIndex: number;
   currentPathExpanded: boolean;
   selectedItem: undefined | Keys.ResultKey;
+  selectedItemRef: React.RefObject<any>;
   databaseUri: string;
   sourceLocationPrefix: string;
   updateSelectionCallback: (
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => void;
   toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
-  scroller?: ScrollIntoViewHelper;
 }
 
 export function AlertTablePathRow(props: Props) {
@@ -29,8 +28,8 @@ export function AlertTablePathRow(props: Props) {
     resultIndex,
     currentPathExpanded,
     selectedItem,
+    selectedItemRef,
     toggleExpanded,
-    scroller,
   } = props;
 
   const pathKey = useMemo(
@@ -50,7 +49,7 @@ export function AlertTablePathRow(props: Props) {
   return (
     <>
       <tr
-        ref={scroller?.ref(isPathSpecificallySelected)}
+        ref={isPathSpecificallySelected ? selectedItemRef : undefined}
         {...selectableZebraStripe(isPathSpecificallySelected, resultIndex)}
       >
         <td className="vscode-codeql__icon-cell">

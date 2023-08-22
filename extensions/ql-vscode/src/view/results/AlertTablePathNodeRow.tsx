@@ -3,7 +3,6 @@ import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
 import { SarifLocation } from "./locations/SarifLocation";
 import { selectableZebraStripe } from "./result-table-utils";
-import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { useCallback, useMemo } from "react";
 
 interface Props {
@@ -12,12 +11,12 @@ interface Props {
   pathIndex: number;
   resultIndex: number;
   selectedItem: undefined | Keys.ResultKey;
+  selectedItemRef: React.RefObject<any>;
   databaseUri: string;
   sourceLocationPrefix: string;
   updateSelectionCallback: (
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => void;
-  scroller?: ScrollIntoViewHelper;
 }
 
 export function AlertTablePathNodeRow(props: Props) {
@@ -27,10 +26,10 @@ export function AlertTablePathNodeRow(props: Props) {
     pathIndex,
     resultIndex,
     selectedItem,
+    selectedItemRef,
     databaseUri,
     sourceLocationPrefix,
     updateSelectionCallback,
-    scroller,
   } = props;
 
   const pathNodeKey: Keys.PathNode = useMemo(
@@ -51,7 +50,7 @@ export function AlertTablePathNodeRow(props: Props) {
   const zebraIndex = resultIndex + stepIndex;
   return (
     <tr
-      ref={scroller?.ref(isSelected)}
+      ref={isSelected ? selectedItemRef : undefined}
       className={isSelected ? "vscode-codeql__selected-path-node" : undefined}
     >
       <td className="vscode-codeql__icon-cell">

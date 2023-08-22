@@ -2,7 +2,6 @@ import * as React from "react";
 import * as Sarif from "sarif";
 import * as Keys from "./result-keys";
 import { info, listUnordered } from "./octicons";
-import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { selectableZebraStripe } from "./result-table-utils";
 import { AlertTableDropdownIndicatorCell } from "./AlertTableDropdownIndicatorCell";
 import { useCallback, useMemo } from "react";
@@ -15,13 +14,13 @@ interface Props {
   resultIndex: number;
   expanded: Set<string>;
   selectedItem: undefined | Keys.ResultKey;
+  selectedItemRef: React.RefObject<any>;
   databaseUri: string;
   sourceLocationPrefix: string;
   updateSelectionCallback: (
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => void;
   toggleExpanded: (e: React.MouseEvent, keys: Keys.ResultKey[]) => void;
-  scroller?: ScrollIntoViewHelper;
 }
 
 export function AlertTableResultRow(props: Props) {
@@ -30,11 +29,11 @@ export function AlertTableResultRow(props: Props) {
     resultIndex,
     expanded,
     selectedItem,
+    selectedItemRef,
     databaseUri,
     sourceLocationPrefix,
     updateSelectionCallback,
     toggleExpanded,
-    scroller,
   } = props;
 
   const resultKey: Keys.Result = useMemo(
@@ -81,7 +80,7 @@ export function AlertTableResultRow(props: Props) {
   return (
     <>
       <tr
-        ref={scroller?.ref(resultRowIsSelected)}
+        ref={resultRowIsSelected ? selectedItemRef : undefined}
         {...selectableZebraStripe(resultRowIsSelected, resultIndex)}
       >
         {result.codeFlows === undefined ? (
