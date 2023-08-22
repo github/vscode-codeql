@@ -19,7 +19,7 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { extLogger } from "../common/logging/vscode";
 import { isQueryLanguage } from "../common/query-language";
-import { setUpPack } from "./external-api-usage-query";
+import { setUpPack } from "./external-api-usage-queries";
 import { DisposableObject } from "../common/disposable-object";
 import { ModelDetailsPanel } from "./model-details/model-details-panel";
 import { Mode } from "./shared/mode";

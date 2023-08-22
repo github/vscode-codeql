@@ -22,13 +22,13 @@ import {
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { asError, assertNever, getErrorMessage } from "../common/helpers-pure";
-import { generateFlowModel } from "./generate-flow-model";
+import { generateFlowModel } from "./flow-model-queries";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../common/errors";
-import { readQueryResults, runQuery } from "./external-api-usage-query";
+import { readQueryResults, runQuery } from "./external-api-usage-queries";
 import { ExternalApiUsage, Usage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
