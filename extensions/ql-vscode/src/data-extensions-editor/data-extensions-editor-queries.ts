@@ -40,6 +40,7 @@ export async function setUpPack(
 
   // Install the other needed query packs
   await cliServer.packDownload([`codeql/${language}-queries`]);
+  await cliServer.packDownload([`codeql/${language}-automodel-queries`]);
 
   return true;
 }
