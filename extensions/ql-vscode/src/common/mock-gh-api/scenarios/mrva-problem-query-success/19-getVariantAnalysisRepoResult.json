@@ -5,7 +5,7 @@
   },
   "response": {
     "status": 200,
-    "body": "file:20-getVariantAnalysisRepoResult.body.zip",
+    "body": "file:19-getVariantAnalysisRepoResult.body.zip",
     "contentType": "application/zip"
   }
 }

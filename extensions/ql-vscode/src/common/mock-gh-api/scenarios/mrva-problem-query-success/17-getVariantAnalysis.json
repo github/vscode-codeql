@@ -94,7 +94,7 @@
         "site_admin": true
       },
       "query_language": "javascript",
-      "query_pack_url": "https://objects-origin.githubusercontent.com/codeql-query-console/variant_analyses/146/query_pack?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=queryconsoleprod%2F20221026%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221026T124705Z&X-Amz-Expires=3600&X-Amz-Signature=dae9aa87c393b62ad6f84fd280c731fcd8e4551917920bf978eac5dd6102caec&X-Amz-SignedHeaders=host",
+      "query_pack_url": "https://objects-origin.githubusercontent.com/codeql-query-console/variant_analyses/146/query_pack?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=queryconsoleprod%2F20221026%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221026T124726Z&X-Amz-Expires=3600&X-Amz-Signature=6698289315bd8d8378a17784ba0be9955e6e9161497137c4ccb29b1d2a3f3587&X-Amz-SignedHeaders=host",
       "created_at": "2022-10-26T12:45:12Z",
       "updated_at": "2022-10-26T12:45:15Z",
       "actions_workflow_run_id": 3329095282,
@@ -122,7 +122,9 @@
             "stargazers_count": 192,
             "updated_at": "2022-03-17T08:34:30Z"
           },
-          "analysis_status": "in_progress"
+          "analysis_status": "succeeded",
+          "artifact_size_in_bytes": 156706,
+          "result_count": 8
         },
         {
           "repository": {
