@@ -22,22 +22,6 @@ import { writeFile, outputFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
 import { MethodSignature } from "./external-api-usage";
 
-type AutoModelQueryOptions = {
-  queryTag: string;
-  mode: Mode;
-  cliServer: CodeQLCliServer;
-  queryRunner: QueryRunner;
-  databaseItem: DatabaseItem;
-  qlpack: QlPacksForLanguage;
-  sourceInfo: SourceInfo | undefined;
-  additionalPacks: string[];
-  extensionPacks: string[];
-  queryStorageDir: string;
-
-  progress: ProgressCallback;
-  token: CancellationToken;
-};
-
 function modeTag(mode: Mode): string {
   switch (mode) {
     case Mode.Application:
@@ -47,108 +31,6 @@ function modeTag(mode: Mode): string {
     default:
       assertNever(mode);
   }
-}
-
-async function runAutoModelQuery({
-  queryTag,
-  mode,
-  cliServer,
-  queryRunner,
-  databaseItem,
-  qlpack,
-  sourceInfo,
-  additionalPacks,
-  extensionPacks,
-  queryStorageDir,
-  progress,
-  token,
-}: AutoModelQueryOptions): Promise<Sarif.Log | undefined> {
-  // First, resolve the query that we want to run.
-  // All queries are tagged like this:
-  // internal extract automodel <mode> <queryTag>
-  // Example: internal extract automodel framework-mode candidates
-  const queries = await resolveQueries(
-    cliServer,
-    qlpack,
-    `Extract automodel ${queryTag}`,
-    {
-      kind: "problem",
-      "tags contain all": ["automodel", modeTag(mode), ...queryTag.split(" ")],
-    },
-  );
-  if (queries.length > 1) {
-    throw new Error(
-      `Found multiple auto model queries for ${mode} ${queryTag}. Can't continue`,
-    );
-  }
-  if (queries.length === 0) {
-    throw new Error(
-      `Did not found any auto model queries for ${mode} ${queryTag}. Can't continue`,
-    );
-  }
-
-  const queryPath = queries[0];
-  const { cleanup: cleanupLockFile } = await createLockFileForStandardQuery(
-    cliServer,
-    queryPath,
-  );
-
-  // Get metadata for the query. This is required to interpret the results. We already know the kind is problem
-  // (because of the constraint in resolveQueries), so we don't need any more checks on the metadata.
-  const metadata = await cliServer.resolveMetadata(queryPath);
-
-  const queryRun = queryRunner.createQueryRun(
-    databaseItem.databaseUri.fsPath,
-    {
-      queryPath,
-      quickEvalPosition: undefined,
-      quickEvalCountOnly: false,
-    },
-    false,
-    additionalPacks,
-    extensionPacks,
-    queryStorageDir,
-    undefined,
-    undefined,
-  );
-
-  const completedQuery = await queryRun.evaluate(
-    progress,
-    token,
-    new TeeLogger(queryRunner.logger, queryRun.outputDir.logPath),
-  );
-
-  await cleanupLockFile?.();
-
-  if (completedQuery.resultType !== QueryResultType.SUCCESS) {
-    void showAndLogExceptionWithTelemetry(
-      extLogger,
-      telemetryListener,
-      redactableError`Auto-model query ${queryTag} failed: ${
-        completedQuery.message ?? "No message"
-      }`,
-    );
-    return;
-  }
-
-  const interpretedResultsPath = join(
-    queryStorageDir,
-    `interpreted-results-${queryTag.replaceAll(" ", "-")}-${queryRun.id}.sarif`,
-  );
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- We only need the actual SARIF data, not the extra fields added by SarifInterpretationData
-  const { t, sortState, ...sarif } = await interpretResultsSarif(
-    cliServer,
-    metadata,
-    {
-      resultsPath: completedQuery.outputDir.bqrsPath,
-      interpretedResultsPath,
-    },
-    sourceInfo,
-    ["--sarif-add-snippets"],
-  );
-
-  return sarif;
 }
 
 type AutoModelQueriesOptions = {
@@ -283,4 +165,122 @@ export async function generateCandidateFilterPack(
   await writeFile(filterFile, dumpYaml(filter), "utf8");
 
   return packDir;
+}
+
+type AutoModelQueryOptions = {
+  queryTag: string;
+  mode: Mode;
+  cliServer: CodeQLCliServer;
+  queryRunner: QueryRunner;
+  databaseItem: DatabaseItem;
+  qlpack: QlPacksForLanguage;
+  sourceInfo: SourceInfo | undefined;
+  additionalPacks: string[];
+  extensionPacks: string[];
+  queryStorageDir: string;
+
+  progress: ProgressCallback;
+  token: CancellationToken;
+};
+
+async function runAutoModelQuery({
+  queryTag,
+  mode,
+  cliServer,
+  queryRunner,
+  databaseItem,
+  qlpack,
+  sourceInfo,
+  additionalPacks,
+  extensionPacks,
+  queryStorageDir,
+  progress,
+  token,
+}: AutoModelQueryOptions): Promise<Sarif.Log | undefined> {
+  // First, resolve the query that we want to run.
+  // All queries are tagged like this:
+  // internal extract automodel <mode> <queryTag>
+  // Example: internal extract automodel framework-mode candidates
+  const queries = await resolveQueries(
+    cliServer,
+    qlpack,
+    `Extract automodel ${queryTag}`,
+    {
+      kind: "problem",
+      "tags contain all": ["automodel", modeTag(mode), ...queryTag.split(" ")],
+    },
+  );
+  if (queries.length > 1) {
+    throw new Error(
+      `Found multiple auto model queries for ${mode} ${queryTag}. Can't continue`,
+    );
+  }
+  if (queries.length === 0) {
+    throw new Error(
+      `Did not found any auto model queries for ${mode} ${queryTag}. Can't continue`,
+    );
+  }
+
+  const queryPath = queries[0];
+  const { cleanup: cleanupLockFile } = await createLockFileForStandardQuery(
+    cliServer,
+    queryPath,
+  );
+
+  // Get metadata for the query. This is required to interpret the results. We already know the kind is problem
+  // (because of the constraint in resolveQueries), so we don't need any more checks on the metadata.
+  const metadata = await cliServer.resolveMetadata(queryPath);
+
+  const queryRun = queryRunner.createQueryRun(
+    databaseItem.databaseUri.fsPath,
+    {
+      queryPath,
+      quickEvalPosition: undefined,
+      quickEvalCountOnly: false,
+    },
+    false,
+    additionalPacks,
+    extensionPacks,
+    queryStorageDir,
+    undefined,
+    undefined,
+  );
+
+  const completedQuery = await queryRun.evaluate(
+    progress,
+    token,
+    new TeeLogger(queryRunner.logger, queryRun.outputDir.logPath),
+  );
+
+  await cleanupLockFile?.();
+
+  if (completedQuery.resultType !== QueryResultType.SUCCESS) {
+    void showAndLogExceptionWithTelemetry(
+      extLogger,
+      telemetryListener,
+      redactableError`Auto-model query ${queryTag} failed: ${
+        completedQuery.message ?? "No message"
+      }`,
+    );
+    return;
+  }
+
+  const interpretedResultsPath = join(
+    queryStorageDir,
+    `interpreted-results-${queryTag.replaceAll(" ", "-")}-${queryRun.id}.sarif`,
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- We only need the actual SARIF data, not the extra fields added by SarifInterpretationData
+  const { t, sortState, ...sarif } = await interpretResultsSarif(
+    cliServer,
+    metadata,
+    {
+      resultsPath: completedQuery.outputDir.bqrsPath,
+      interpretedResultsPath,
+    },
+    sourceInfo,
+    ["--sarif-add-snippets"],
+  );
+
+  return sarif;
 }
