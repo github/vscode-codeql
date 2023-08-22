@@ -27,18 +27,21 @@ type FlowModelOptions = {
   onResults: (results: ModeledMethod[]) => void | Promise<void>;
 };
 
-export async function generateFlowModel({
+export async function runFlowModelQueries({
   onResults,
   ...options
 }: FlowModelOptions) {
-  const queries = await resolveQueries(options.cliServer, options.databaseItem);
+  const queries = await resolveFlowQueries(
+    options.cliServer,
+    options.databaseItem,
+  );
 
   const queriesByBasename: Record<string, string> = {};
   for (const query of queries) {
     queriesByBasename[basename(query)] = query;
   }
 
-  const summaryResults = await getModeledMethodsFromFlow(
+  const summaryResults = await runSingleFlowQuery(
     "summary",
     queriesByBasename["CaptureSummaryModels.ql"],
     0,
@@ -48,7 +51,7 @@ export async function generateFlowModel({
     await onResults(summaryResults);
   }
 
-  const sinkResults = await getModeledMethodsFromFlow(
+  const sinkResults = await runSingleFlowQuery(
     "sink",
     queriesByBasename["CaptureSinkModels.ql"],
     1,
@@ -58,7 +61,7 @@ export async function generateFlowModel({
     await onResults(sinkResults);
   }
 
-  const sourceResults = await getModeledMethodsFromFlow(
+  const sourceResults = await runSingleFlowQuery(
     "source",
     queriesByBasename["CaptureSourceModels.ql"],
     2,
@@ -68,7 +71,7 @@ export async function generateFlowModel({
     await onResults(sourceResults);
   }
 
-  const neutralResults = await getModeledMethodsFromFlow(
+  const neutralResults = await runSingleFlowQuery(
     "neutral",
     queriesByBasename["CaptureNeutralModels.ql"],
     3,
@@ -79,7 +82,7 @@ export async function generateFlowModel({
   }
 }
 
-async function resolveQueries(
+async function resolveFlowQueries(
   cliServer: CodeQLCliServer,
   databaseItem: DatabaseItem,
 ): Promise<string[]> {
@@ -116,7 +119,7 @@ async function resolveQueries(
   );
 }
 
-async function getModeledMethodsFromFlow(
+async function runSingleFlowQuery(
   type: Exclude<ModeledMethodType, "none">,
   queryPath: string | undefined,
   queryStep: number,
