@@ -3,19 +3,16 @@ import { DatabaseItem } from "../databases/local-databases";
 import { basename } from "path";
 import { QueryRunner } from "../query-server";
 import { CodeQLCliServer } from "../codeql-cli/cli";
-import { showAndLogExceptionWithTelemetry, TeeLogger } from "../common/logging";
+import { showAndLogExceptionWithTelemetry } from "../common/logging";
 import { extLogger } from "../common/logging/vscode";
 import { extensiblePredicateDefinitions } from "./predicates";
 import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import { redactableError } from "../common/errors";
-import { QueryResultType } from "../query-server/new-messages";
-import { file } from "tmp-promise";
-import { writeFile } from "fs-extra";
-import { dump } from "js-yaml";
-import { qlpackOfDatabase } from "../local-queries";
+import { qlpackOfDatabase, resolveQueries } from "../local-queries";
 import { telemetryListener } from "../common/vscode/telemetry";
+import { runQuery } from "../local-queries/run-query";
 
 type FlowModelOptions = {
   cliServer: CodeQLCliServer;
@@ -88,35 +85,9 @@ async function resolveFlowQueries(
 ): Promise<string[]> {
   const qlpacks = await qlpackOfDatabase(cliServer, databaseItem);
 
-  const packsToSearch: string[] = [];
-
-  // The CLI can handle both library packs and query packs, so search both packs in order.
-  packsToSearch.push(qlpacks.dbschemePack);
-  if (qlpacks.queryPack !== undefined) {
-    packsToSearch.push(qlpacks.queryPack);
-  }
-
-  const suiteFile = (
-    await file({
-      postfix: ".qls",
-    })
-  ).path;
-  const suiteYaml = [];
-  for (const qlpack of packsToSearch) {
-    suiteYaml.push({
-      from: qlpack,
-      queries: ".",
-      include: {
-        "tags contain": "modelgenerator",
-      },
-    });
-  }
-  await writeFile(suiteFile, dump(suiteYaml), "utf8");
-
-  return await cliServer.resolveQueriesInSuite(
-    suiteFile,
-    getOnDiskWorkspaceFolders(),
-  );
+  return await resolveQueries(cliServer, qlpacks, "flow model generator", {
+    "tags contain": ["modelgenerator"],
+  });
 }
 
 async function runSingleFlowQuery(
@@ -132,6 +103,7 @@ async function runSingleFlowQuery(
     token,
   }: Omit<FlowModelOptions, "onResults">,
 ): Promise<ModeledMethod[]> {
+  // Check that the right query was found
   if (queryPath === undefined) {
     void showAndLogExceptionWithTelemetry(
       extLogger,
@@ -141,45 +113,32 @@ async function runSingleFlowQuery(
     return [];
   }
 
-  const definition = extensiblePredicateDefinitions[type];
-
-  const queryRun = queryRunner.createQueryRun(
-    databaseItem.databaseUri.fsPath,
-    {
-      queryPath,
-      quickEvalPosition: undefined,
-      quickEvalCountOnly: false,
-    },
-    false,
-    getOnDiskWorkspaceFolders(),
-    undefined,
+  // Run the query
+  const completedQuery = await runQuery({
+    cliServer,
+    queryRunner,
+    databaseItem,
+    queryPath,
     queryStorageDir,
-    undefined,
-    undefined,
-  );
-
-  const queryResult = await queryRun.evaluate(
-    ({ step, message }) =>
+    additionalPacks: getOnDiskWorkspaceFolders(),
+    extensionPacks: undefined,
+    progress: ({ step, message }) =>
       progress({
         message: `Generating ${type} model: ${message}`,
         step: queryStep * 1000 + step,
         maxStep: 4000,
       }),
     token,
-    new TeeLogger(queryRunner.logger, queryRun.outputDir.logPath),
-  );
-  if (queryResult.resultType !== QueryResultType.SUCCESS) {
-    void showAndLogExceptionWithTelemetry(
-      extLogger,
-      telemetryListener,
-      redactableError`Failed to run ${basename(queryPath)} query: ${
-        queryResult.message ?? "No message"
-      }`,
-    );
+  });
+
+  if (!completedQuery) {
     return [];
   }
 
-  const bqrsPath = queryResult.outputDir.bqrsPath;
+  // Interpret the results
+  const definition = extensiblePredicateDefinitions[type];
+
+  const bqrsPath = completedQuery.outputDir.bqrsPath;
 
   const bqrsInfo = await cliServer.bqrsInfo(bqrsPath);
   if (bqrsInfo["result-sets"].length !== 1) {
