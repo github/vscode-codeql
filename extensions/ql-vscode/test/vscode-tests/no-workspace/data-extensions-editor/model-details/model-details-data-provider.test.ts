@@ -6,6 +6,11 @@ import { mockedObject } from "../../../utils/mocking.helpers";
 
 describe("ModelDetailsDataProvider", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
+  let dataProvider: ModelDetailsDataProvider;
+
+  beforeEach(() => {
+    dataProvider = new ModelDetailsDataProvider(mockCliServer);
+  });
 
   describe("setState", () => {
     const hideModeledApis: boolean = false;
@@ -15,7 +20,6 @@ describe("ModelDetailsDataProvider", () => {
     });
 
     it("should not emit onDidChangeTreeData event when state has not changed", async () => {
-      const dataProvider = new ModelDetailsDataProvider(mockCliServer);
       await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
 
       const onDidChangeTreeDataListener = jest.fn();
@@ -29,7 +33,6 @@ describe("ModelDetailsDataProvider", () => {
     it("should emit onDidChangeTreeData event when externalApiUsages has changed", async () => {
       const externalApiUsages2: ExternalApiUsage[] = [];
 
-      const dataProvider = new ModelDetailsDataProvider(mockCliServer);
       await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
 
       const onDidChangeTreeDataListener = jest.fn();
@@ -45,7 +48,6 @@ describe("ModelDetailsDataProvider", () => {
         getSourceLocationPrefix: () => "test",
       });
 
-      const dataProvider = new ModelDetailsDataProvider(mockCliServer);
       await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
 
       const onDidChangeTreeDataListener = jest.fn();
@@ -57,7 +59,6 @@ describe("ModelDetailsDataProvider", () => {
     });
 
     it("should emit onDidChangeTreeData event when hideModeledApis has changed", async () => {
-      const dataProvider = new ModelDetailsDataProvider(mockCliServer);
       await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
 
       const onDidChangeTreeDataListener = jest.fn();
@@ -74,7 +75,6 @@ describe("ModelDetailsDataProvider", () => {
       });
       const externalApiUsages2: ExternalApiUsage[] = [];
 
-      const dataProvider = new ModelDetailsDataProvider(mockCliServer);
       await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
 
       const onDidChangeTreeDataListener = jest.fn();
