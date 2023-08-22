@@ -231,7 +231,11 @@ export function isRepoScanSuccessful(
 export function repoHasDownloadableArtifact(
   repo: VariantAnalysisScannedRepository,
 ): boolean {
-  return repo.analysisStatus === VariantAnalysisRepoStatus.Succeeded;
+  return (
+    repo.analysisStatus === VariantAnalysisRepoStatus.Succeeded &&
+    repo.resultCount !== undefined &&
+    repo.resultCount > 0
+  );
 }
 
 /**
