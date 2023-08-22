@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- When running variant analyses, don't download artifacts for repositories with no results. [#2736](https://github.com/github/vscode-codeql/pull/2736)
 - Group the extension settings, so that they're easier to find in the Settings UI. [#2706](https://github.com/github/vscode-codeql/pull/2706)
 
 ## 1.8.10 - 15 August 2023
