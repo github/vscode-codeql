@@ -3,7 +3,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *'
-  push:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - extensions/ql-vscode/src/codeql-cli/**
       - extensions/ql-vscode/src/language-support/**
