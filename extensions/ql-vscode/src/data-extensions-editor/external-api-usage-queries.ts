@@ -56,7 +56,7 @@ export async function prepareExternalApiQuery(
   return true;
 }
 
-export async function runQuery(
+export async function runExternalApiQueries(
   mode: Mode,
   {
     cliServer,

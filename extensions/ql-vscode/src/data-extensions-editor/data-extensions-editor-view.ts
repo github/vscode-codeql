@@ -28,7 +28,10 @@ import { App } from "../common/app";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../common/errors";
-import { readQueryResults, runQuery } from "./external-api-usage-queries";
+import {
+  readQueryResults,
+  runExternalApiQueries,
+} from "./external-api-usage-queries";
 import { ExternalApiUsage, Usage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
@@ -304,7 +307,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       async (progress) => {
         try {
           const cancellationTokenSource = new CancellationTokenSource();
-          const queryResult = await runQuery(this.mode, {
+          const queryResult = await runExternalApiQueries(this.mode, {
             cliServer: this.cliServer,
             queryRunner: this.queryRunner,
             databaseItem: this.databaseItem,
