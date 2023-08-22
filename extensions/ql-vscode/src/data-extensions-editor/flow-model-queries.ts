@@ -27,6 +27,58 @@ type FlowModelOptions = {
   onResults: (results: ModeledMethod[]) => void | Promise<void>;
 };
 
+export async function generateFlowModel({
+  onResults,
+  ...options
+}: FlowModelOptions) {
+  const queries = await resolveQueries(options.cliServer, options.databaseItem);
+
+  const queriesByBasename: Record<string, string> = {};
+  for (const query of queries) {
+    queriesByBasename[basename(query)] = query;
+  }
+
+  const summaryResults = await getModeledMethodsFromFlow(
+    "summary",
+    queriesByBasename["CaptureSummaryModels.ql"],
+    0,
+    options,
+  );
+  if (summaryResults) {
+    await onResults(summaryResults);
+  }
+
+  const sinkResults = await getModeledMethodsFromFlow(
+    "sink",
+    queriesByBasename["CaptureSinkModels.ql"],
+    1,
+    options,
+  );
+  if (sinkResults) {
+    await onResults(sinkResults);
+  }
+
+  const sourceResults = await getModeledMethodsFromFlow(
+    "source",
+    queriesByBasename["CaptureSourceModels.ql"],
+    2,
+    options,
+  );
+  if (sourceResults) {
+    await onResults(sourceResults);
+  }
+
+  const neutralResults = await getModeledMethodsFromFlow(
+    "neutral",
+    queriesByBasename["CaptureNeutralModels.ql"],
+    3,
+    options,
+  );
+  if (neutralResults) {
+    await onResults(neutralResults);
+  }
+}
+
 async function resolveQueries(
   cliServer: CodeQLCliServer,
   databaseItem: DatabaseItem,
@@ -153,56 +205,4 @@ async function getModeledMethodsFromFlow(
         return definition.readModeledMethod(row.split(";"));
       })
   );
-}
-
-export async function generateFlowModel({
-  onResults,
-  ...options
-}: FlowModelOptions) {
-  const queries = await resolveQueries(options.cliServer, options.databaseItem);
-
-  const queriesByBasename: Record<string, string> = {};
-  for (const query of queries) {
-    queriesByBasename[basename(query)] = query;
-  }
-
-  const summaryResults = await getModeledMethodsFromFlow(
-    "summary",
-    queriesByBasename["CaptureSummaryModels.ql"],
-    0,
-    options,
-  );
-  if (summaryResults) {
-    await onResults(summaryResults);
-  }
-
-  const sinkResults = await getModeledMethodsFromFlow(
-    "sink",
-    queriesByBasename["CaptureSinkModels.ql"],
-    1,
-    options,
-  );
-  if (sinkResults) {
-    await onResults(sinkResults);
-  }
-
-  const sourceResults = await getModeledMethodsFromFlow(
-    "source",
-    queriesByBasename["CaptureSourceModels.ql"],
-    2,
-    options,
-  );
-  if (sourceResults) {
-    await onResults(sourceResults);
-  }
-
-  const neutralResults = await getModeledMethodsFromFlow(
-    "neutral",
-    queriesByBasename["CaptureNeutralModels.ql"],
-    3,
-    options,
-  );
-  if (neutralResults) {
-    await onResults(neutralResults);
-  }
 }
