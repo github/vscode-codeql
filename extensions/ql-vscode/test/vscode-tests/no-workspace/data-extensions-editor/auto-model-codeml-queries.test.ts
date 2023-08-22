@@ -20,6 +20,7 @@ import { join } from "path";
 import { exists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { CancellationTokenSource } from "vscode-jsonrpc";
+import { QueryOutputDir } from "../../../../src/run-queries-shared";
 
 describe("runAutoModelQueries", () => {
   const qlpack = {
@@ -59,12 +60,8 @@ describe("runAutoModelQueries", () => {
   });
 
   it("should run the query and return the results", async () => {
-    const logPath = (await file()).path;
-    const bqrsPath = (await file()).path;
-    const outputDir = {
-      logPath,
-      bqrsPath,
-    };
+    const queryStorageDir = (await file()).path;
+    const outputDir = new QueryOutputDir(join(queryStorageDir, "1"));
 
     const options = {
       mode: Mode.Application,
