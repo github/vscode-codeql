@@ -1,5 +1,6 @@
 # Releasing (write access required)
 
+1. Run the ["Run CLI tests" workflow](https://github.com/github/vscode-codeql/actions/workflows/cli-test.yml) and make sure the tests are green. If there were no merges between the time the workflow ran (it runs daily), and the release, you can skip this step.  
 1. Double-check the `CHANGELOG.md` contains all desired change comments and has the version to be released with date at the top.
     * Go through all recent PRs and make sure they are properly accounted for.
     * Make sure all changelog entries have links back to their PR(s) if appropriate.
