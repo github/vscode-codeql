@@ -11,7 +11,7 @@ import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { basename } from "path";
 
-type RunQueriesOptions = {
+type RunQueryOptions = {
   cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   databaseItem: DatabaseItem;
@@ -33,7 +33,7 @@ export async function runQuery({
   extensionPacks,
   progress,
   token,
-}: RunQueriesOptions): Promise<CoreCompletedQuery | undefined> {
+}: RunQueryOptions): Promise<CoreCompletedQuery | undefined> {
   // Create a lock file for the query. This is required to resolve dependencies and library path for the query.
   const { cleanup: cleanupLockFile } = await createLockFileForStandardQuery(
     cliServer,

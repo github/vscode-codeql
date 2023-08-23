@@ -55,7 +55,7 @@ export async function runAutoModelQueries({
   cancellationTokenSource,
 }: AutoModelQueriesOptions): Promise<AutoModelQueriesResult | undefined> {
   // First, resolve the query that we want to run.
-  const queryPath = await resolveAutomodelQueries(
+  const queryPath = await resolveAutomodelQuery(
     cliServer,
     databaseItem,
     "candidates",
@@ -121,7 +121,7 @@ export async function runAutoModelQueries({
   };
 }
 
-async function resolveAutomodelQueries(
+async function resolveAutomodelQuery(
   cliServer: CodeQLCliServer,
   databaseItem: DatabaseItem,
   queryTag: string,
@@ -223,8 +223,7 @@ async function interpretAutomodelResults(
     "results.sarif",
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- We only need the actual SARIF data, not the extra fields added by SarifInterpretationData
-  const { t, sortState, ...sarif } = await interpretResultsSarif(
+  const { ...sarif } = await interpretResultsSarif(
     cliServer,
     metadata,
     {
