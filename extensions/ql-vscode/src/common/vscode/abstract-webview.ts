@@ -11,13 +11,13 @@ import { join } from "path";
 
 import { DisposableObject, DisposeHandler } from "../disposable-object";
 import { tmpDir } from "../../tmp-dir";
-import { getHtmlForWebview, WebviewMessage, WebviewView } from "./webview-html";
+import { getHtmlForWebview, WebviewMessage, WebviewKind } from "./webview-html";
 
 export type WebviewPanelConfig = {
   viewId: string;
   title: string;
   viewColumn: ViewColumn;
-  view: WebviewView;
+  view: WebviewKind;
   preserveFocus?: boolean;
   iconPath?: Uri | { dark: Uri; light: Uri };
   additionalOptions?: WebviewPanelOptions & WebviewOptions;

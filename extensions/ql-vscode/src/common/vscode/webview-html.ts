@@ -2,7 +2,7 @@ import { ExtensionContext, Uri, Webview } from "vscode";
 import { randomBytes } from "crypto";
 import { EOL } from "os";
 
-export type WebviewView =
+export type WebviewKind =
   | "results"
   | "compare"
   | "variant-analysis"
@@ -20,7 +20,7 @@ export interface WebviewMessage {
 export function getHtmlForWebview(
   ctx: ExtensionContext,
   webview: Webview,
-  view: WebviewView,
+  view: WebviewKind,
   {
     allowInlineStyles,
     allowWasmEval,
