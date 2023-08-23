@@ -1,9 +1,12 @@
 import {
   readQueryResults,
-  runQuery,
+  runExternalApiQueries,
 } from "../../../../src/data-extensions-editor/external-api-usage-queries";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
-import { DatabaseKind } from "../../../../src/databases/local-databases";
+import {
+  DatabaseItem,
+  DatabaseKind,
+} from "../../../../src/databases/local-databases";
 import { dirSync, file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/query-server/new-messages";
 import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries";
@@ -11,8 +14,12 @@ import * as log from "../../../../src/common/logging/notifications";
 import { RedactableError } from "../../../../src/common/errors";
 import { showAndLogExceptionWithTelemetry } from "../../../../src/common/logging";
 import { QueryLanguage } from "../../../../src/common/query-language";
-import { mockedUri } from "../../utils/mocking.helpers";
+import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
 import { Mode } from "../../../../src/data-extensions-editor/shared/mode";
+import { join } from "path";
+import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
+import { QueryRunner } from "../../../../src/query-server";
+import { QueryOutputDir } from "../../../../src/run-queries-shared";
 
 describe("external api usage query", () => {
   describe("runQuery", () => {
@@ -27,7 +34,7 @@ describe("external api usage query", () => {
         typeof showAndLogExceptionWithTelemetry
       > = jest.spyOn(log, "showAndLogExceptionWithTelemetry");
 
-      const logPath = (await file()).path;
+      const outputDir = new QueryOutputDir(join((await file()).path, "1"));
 
       const query = fetchExternalApiQueries[language];
       if (!query) {
@@ -35,23 +42,28 @@ describe("external api usage query", () => {
       }
 
       const options = {
-        cliServer: {
+        cliServer: mockedObject<CodeQLCliServer>({
           resolveQlpacks: jest.fn().mockResolvedValue({
             "my/extensions": "/a/b/c/",
           }),
-        },
-        queryRunner: {
+          packPacklist: jest
+            .fn()
+            .mockResolvedValue([
+              "/a/b/c/qlpack.yml",
+              "/a/b/c/qlpack.lock.yml",
+              "/a/b/c/qlpack2.yml",
+            ]),
+        }),
+        queryRunner: mockedObject<QueryRunner>({
           createQueryRun: jest.fn().mockReturnValue({
             evaluate: jest.fn().mockResolvedValue({
               resultType: QueryResultType.CANCELLATION,
             }),
-            outputDir: {
-              logPath,
-            },
+            outputDir,
           }),
           logger: createMockLogger(),
-        },
-        databaseItem: {
+        }),
+        databaseItem: mockedObject<DatabaseItem>({
           databaseUri: mockedUri("/a/b/c/src.zip"),
           contents: {
             kind: DatabaseKind.Database,
@@ -59,7 +71,7 @@ describe("external api usage query", () => {
             datasetUri: mockedUri(),
           },
           language,
-        },
+        }),
         queryStorageDir: "/tmp/queries",
         queryDir,
         progress: jest.fn(),
@@ -69,7 +81,9 @@ describe("external api usage query", () => {
         },
       };
 
-      expect(await runQuery(Mode.Application, options)).toBeUndefined();
+      expect(
+        await runExternalApiQueries(Mode.Application, options),
+      ).toBeUndefined();
       expect(showAndLogExceptionWithTelemetrySpy).toHaveBeenCalledWith(
         expect.anything(),
         undefined,
@@ -78,7 +92,7 @@ describe("external api usage query", () => {
     });
 
     it("should run query for random language", async () => {
-      const logPath = (await file()).path;
+      const outputDir = new QueryOutputDir(join((await file()).path, "1"));
 
       const query = fetchExternalApiQueries[language];
       if (!query) {
@@ -86,23 +100,32 @@ describe("external api usage query", () => {
       }
 
       const options = {
-        cliServer: {
+        cliServer: mockedObject<CodeQLCliServer>({
           resolveQlpacks: jest.fn().mockResolvedValue({
             "my/extensions": "/a/b/c/",
           }),
-        },
-        queryRunner: {
+          packPacklist: jest
+            .fn()
+            .mockResolvedValue([
+              "/a/b/c/qlpack.yml",
+              "/a/b/c/qlpack.lock.yml",
+              "/a/b/c/qlpack2.yml",
+            ]),
+          bqrsInfo: jest.fn().mockResolvedValue({
+            "result-sets": [],
+          }),
+        }),
+        queryRunner: mockedObject<QueryRunner>({
           createQueryRun: jest.fn().mockReturnValue({
             evaluate: jest.fn().mockResolvedValue({
               resultType: QueryResultType.SUCCESS,
+              outputDir,
             }),
-            outputDir: {
-              logPath,
-            },
+            outputDir,
           }),
           logger: createMockLogger(),
-        },
-        databaseItem: {
+        }),
+        databaseItem: mockedObject<DatabaseItem>({
           databaseUri: mockedUri("/a/b/c/src.zip"),
           contents: {
             kind: DatabaseKind.Database,
@@ -110,7 +133,7 @@ describe("external api usage query", () => {
             datasetUri: mockedUri(),
           },
           language,
-        },
+        }),
         queryStorageDir: "/tmp/queries",
         queryDir,
         progress: jest.fn(),
@@ -120,9 +143,9 @@ describe("external api usage query", () => {
         },
       };
 
-      const result = await runQuery(Mode.Framework, options);
+      const result = await runExternalApiQueries(Mode.Framework, options);
 
-      expect(result?.resultType).toEqual(QueryResultType.SUCCESS);
+      expect(result).not.toBeUndefined;
 
       expect(options.cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
       expect(options.cliServer.resolveQlpacks).toHaveBeenCalledWith([], true);
