@@ -1,13 +1,11 @@
 import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
-import {
-  ExternalApiUsage,
-  Usage,
-} from "../../../../../src/data-extensions-editor/external-api-usage";
-import {
-  ModelDetailsDataProvider,
-  ModelDetailsTreeViewItem,
-} from "../../../../../src/data-extensions-editor/model-details/model-details-data-provider";
+import { ExternalApiUsage } from "../../../../../src/data-extensions-editor/external-api-usage";
+import { ModelDetailsDataProvider } from "../../../../../src/data-extensions-editor/model-details/model-details-data-provider";
 import { DatabaseItem } from "../../../../../src/databases/local-databases";
+import {
+  createExternalApiUsage,
+  createUsage,
+} from "../../../../factories/data-extension/external-api-factories";
 import { mockedObject } from "../../../utils/mocking.helpers";
 
 describe("ModelDetailsDataProvider", () => {
@@ -97,26 +95,31 @@ describe("ModelDetailsDataProvider", () => {
   });
 
   describe("getChildren", () => {
+    const supportedExternalApiUsage = createExternalApiUsage({
+      supported: true,
+    });
+
+    const unsupportedExternalApiUsage = createExternalApiUsage({
+      supported: false,
+    });
+
     const externalApiUsages: ExternalApiUsage[] = [
-      mockedObject<ExternalApiUsage>({ supported: true }),
-      mockedObject<ExternalApiUsage>({ supported: false }),
+      supportedExternalApiUsage,
+      unsupportedExternalApiUsage,
     ];
     const dbItem = mockedObject<DatabaseItem>({
       getSourceLocationPrefix: () => "test",
     });
 
+    const usage = createUsage({});
+
     it("should return [] if item is a usage", async () => {
-      const item = { usages: undefined } as unknown as ModelDetailsTreeViewItem;
-      expect(dataProvider.getChildren(item)).toEqual([]);
+      expect(dataProvider.getChildren(usage)).toEqual([]);
     });
 
     it("should return usages if item is external api usage", async () => {
-      const usage = mockedObject<Usage>({});
-      const item = mockedObject<ExternalApiUsage>({
-        usages: [usage],
-      });
-
-      expect(dataProvider.getChildren(item)).toEqual([usage]);
+      const externalApiUsage = createExternalApiUsage({ usages: [usage] });
+      expect(dataProvider.getChildren(externalApiUsage)).toEqual([usage]);
     });
 
     it("should show all externalApiUsages if hideModeledApis is false and item is undefined", async () => {

@@ -1,34 +1,23 @@
 import { window, TreeView } from "vscode";
 import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
-import {
-  CallClassification,
-  ExternalApiUsage,
-} from "../../../../../src/data-extensions-editor/external-api-usage";
+import { ExternalApiUsage } from "../../../../../src/data-extensions-editor/external-api-usage";
 import { ModelDetailsPanel } from "../../../../../src/data-extensions-editor/model-details/model-details-panel";
 import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import { mockedObject } from "../../../utils/mocking.helpers";
+import {
+  createExternalApiUsage,
+  createUsage,
+} from "../../../../factories/data-extension/external-api-factories";
 
 describe("ModelDetailsPanel", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
+  const dbItem = mockedObject<DatabaseItem>({
+    getSourceLocationPrefix: () => "test",
+  });
 
   describe("setState", () => {
     const hideModeledApis: boolean = false;
-    const externalApiUsages: ExternalApiUsage[] = [
-      {
-        library: "test",
-        supported: false,
-        supportedType: "none",
-        usages: [],
-        signature: "test",
-        packageName: "test",
-        typeName: "test",
-        methodName: "test",
-        methodParameters: "test",
-      },
-    ];
-    const dbItem = mockedObject<DatabaseItem>({
-      getSourceLocationPrefix: () => "test",
-    });
+    const externalApiUsages: ExternalApiUsage[] = [createExternalApiUsage()];
 
     it("should update the tree view with the correct batch number", async () => {
       const mockTreeView = {
@@ -47,20 +36,7 @@ describe("ModelDetailsPanel", () => {
     let mockTreeView: TreeView<unknown>;
 
     const hideModeledApis: boolean = false;
-    const dbItem = mockedObject<DatabaseItem>({
-      getSourceLocationPrefix: () => "test",
-    });
-    const usage = {
-      classification: "unknown" as CallClassification,
-      label: "test",
-      url: {
-        uri: "test",
-        startLine: 1,
-        startColumn: 1,
-        endLine: 1,
-        endColumn: 1,
-      },
-    };
+    const usage = createUsage();
 
     beforeEach(() => {
       mockTreeView = {
@@ -70,11 +46,11 @@ describe("ModelDetailsPanel", () => {
     });
 
     it("should reveal the correct item in the tree view", async () => {
-      const externalApiUsages = mockedObject<ExternalApiUsage[]>([
-        {
+      const externalApiUsages = [
+        createExternalApiUsage({
           usages: [usage],
-        },
-      ]);
+        }),
+      ];
 
       const panel = new ModelDetailsPanel(mockCliServer);
       await panel.setState(externalApiUsages, dbItem, hideModeledApis);
@@ -85,8 +61,7 @@ describe("ModelDetailsPanel", () => {
     });
 
     it("should do nothing if usage cannot be found", async () => {
-      const externalApiUsages = mockedObject<ExternalApiUsage[]>([]);
-
+      const externalApiUsages = [createExternalApiUsage({})];
       const panel = new ModelDetailsPanel(mockCliServer);
       await panel.setState(externalApiUsages, dbItem, hideModeledApis);
 
