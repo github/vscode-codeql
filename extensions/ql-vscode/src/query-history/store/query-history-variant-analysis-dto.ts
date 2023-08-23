@@ -23,6 +23,7 @@ export interface VariantAnalysisDto {
     filePath: string;
     language: QueryLanguageDto;
     text: string;
+    kind?: string;
   };
   databases: {
     repositories?: string[];

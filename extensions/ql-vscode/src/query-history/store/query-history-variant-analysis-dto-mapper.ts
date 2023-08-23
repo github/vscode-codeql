@@ -55,6 +55,7 @@ function mapVariantAnalysisToDomainModel(
       filePath: variantAnalysis.query.filePath,
       language: mapQueryLanguageToDomainModel(variantAnalysis.query.language),
       text: variantAnalysis.query.text,
+      kind: variantAnalysis.query.kind,
     },
     databases: {
       repositories: variantAnalysis.databases.repositories,
