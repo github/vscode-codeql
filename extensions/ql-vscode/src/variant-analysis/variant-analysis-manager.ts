@@ -245,6 +245,7 @@ export class VariantAnalysisManager
         pack: base64Pack,
         language: variantAnalysisLanguage,
         text: queryText,
+        kind: queryMetadata?.kind,
       },
       databases: {
         repositories: repoSelection.repositories,

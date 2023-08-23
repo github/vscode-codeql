@@ -32,6 +32,7 @@ export function processVariantAnalysis(
         filePath: submission.query.filePath,
         language: submission.query.language,
         text: submission.query.text,
+        kind: submission.query.kind,
       },
       databases: submission.databases,
       executionStartTime: submission.startTime,
