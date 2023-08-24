@@ -1,7 +1,7 @@
 import { window, TreeView } from "vscode";
 import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { ExternalApiUsage } from "../../../../../src/data-extensions-editor/external-api-usage";
-import { ModelDetailsPanel } from "../../../../../src/data-extensions-editor/model-details/model-details-panel";
+import { ModelDetailsPanel } from "../../../../../src/data-extensions-editor/model-details/methods-usage-panel";
 import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import { mockedObject } from "../../../utils/mocking.helpers";
 import {
