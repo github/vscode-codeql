@@ -15,6 +15,7 @@ import { createMockRepositoryWithMetadata } from "../../../../test/factories/var
 import { createMockScannedRepo } from "../../../../test/factories/variant-analysis/shared/scanned-repositories";
 import { SortKey } from "../../../variant-analysis/shared/variant-analysis-filter-sort";
 import { permissiveFilterSortState } from "../../../../test/unit-tests/variant-analysis-filter-sort.test";
+import { ResultFormat } from "../../../variant-analysis/shared/variant-analysis-result-format";
 
 describe(VariantAnalysisAnalyzedRepos.name, () => {
   const defaultVariantAnalysis = createMockVariantAnalysis({
@@ -99,6 +100,7 @@ describe(VariantAnalysisAnalyzedRepos.name, () => {
     return reactRender(
       <VariantAnalysisAnalyzedRepos
         variantAnalysis={defaultVariantAnalysis}
+        resultFormat={ResultFormat.Alerts}
         {...props}
       />,
     );

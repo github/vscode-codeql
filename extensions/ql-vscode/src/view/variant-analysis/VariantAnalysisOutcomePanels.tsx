@@ -136,6 +136,7 @@ export const VariantAnalysisOutcomePanels = ({
           repositoryStates={repositoryStates}
           repositoryResults={repositoryResults}
           filterSortState={filterSortState}
+          resultFormat={resultFormat}
           selectedRepositoryIds={selectedRepositoryIds}
           setSelectedRepositoryIds={setSelectedRepositoryIds}
         />
@@ -185,6 +186,7 @@ export const VariantAnalysisOutcomePanels = ({
               repositoryStates={repositoryStates}
               repositoryResults={repositoryResults}
               filterSortState={filterSortState}
+              resultFormat={resultFormat}
               selectedRepositoryIds={selectedRepositoryIds}
               setSelectedRepositoryIds={setSelectedRepositoryIds}
             />
