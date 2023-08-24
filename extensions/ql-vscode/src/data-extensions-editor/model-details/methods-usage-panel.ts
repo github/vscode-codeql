@@ -3,7 +3,7 @@ import { DisposableObject } from "../../common/disposable-object";
 import {
   ModelDetailsDataProvider,
   ModelDetailsTreeViewItem,
-} from "./model-details-data-provider";
+} from "./methods-usage-data-provider";
 import { ExternalApiUsage, Usage } from "../external-api-usage";
 import { DatabaseItem } from "../../databases/local-databases";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
