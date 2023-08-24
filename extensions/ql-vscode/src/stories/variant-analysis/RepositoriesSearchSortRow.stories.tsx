@@ -5,6 +5,7 @@ import { Meta } from "@storybook/react";
 
 import { RepositoriesSearchSortRow as RepositoriesSearchSortRowComponent } from "../../view/variant-analysis/RepositoriesSearchSortRow";
 import { defaultFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
+import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
 
 export default {
   title: "Variant Analysis/Repositories Search and Sort Row",
@@ -19,9 +20,20 @@ export default {
 } as Meta<typeof RepositoriesSearchSortRowComponent>;
 
 export const RepositoriesSearchSortRow = () => {
-  const [value, setValue] = useState(defaultFilterSortState);
+  const [filterSortValue, setFilterSortValue] = useState(
+    defaultFilterSortState,
+  );
+
+  const [resultFormatValue, setResultFormatValue] = useState(
+    ResultFormat.Alerts,
+  );
 
   return (
-    <RepositoriesSearchSortRowComponent value={value} onChange={setValue} />
+    <RepositoriesSearchSortRowComponent
+      filterSortValue={filterSortValue}
+      resultFormatValue={resultFormatValue}
+      onFilterSortChange={setFilterSortValue}
+      onResultFormatChange={setResultFormatValue}
+    />
   );
 };

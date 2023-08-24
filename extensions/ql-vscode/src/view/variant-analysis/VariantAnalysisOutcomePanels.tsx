@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { styled } from "styled-components";
 import {
   VSCodeBadge,
@@ -20,6 +20,7 @@ import { VariantAnalysisSkippedRepositoriesTab } from "./VariantAnalysisSkippedR
 import { RepositoriesFilterSortState } from "../../variant-analysis/shared/variant-analysis-filter-sort";
 import { RepositoriesSearchSortRow } from "./RepositoriesSearchSortRow";
 import { FailureReasonAlert } from "./FailureReasonAlert";
+import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
 
 export type VariantAnalysisOutcomePanelProps = {
   variantAnalysis: VariantAnalysis;
@@ -70,6 +71,7 @@ export const VariantAnalysisOutcomePanels = ({
   const accessMismatchRepositoryCount =
     variantAnalysis.skippedRepos?.accessMismatchRepos?.repositoryCount ?? 0;
 
+  const [resultFormat, setResultFormat] = useState(ResultFormat.Alerts);
   const warnings = (
     <WarningsContainer>
       {variantAnalysis.status === VariantAnalysisStatus.Canceled && (
@@ -123,8 +125,10 @@ export const VariantAnalysisOutcomePanels = ({
       <>
         {warnings}
         <RepositoriesSearchSortRow
-          value={filterSortState}
-          onChange={setFilterSortState}
+          filterSortValue={filterSortState}
+          resultFormatValue={resultFormat}
+          onFilterSortChange={setFilterSortState}
+          onResultFormatChange={setResultFormat}
         />
         <VariantAnalysisAnalyzedRepos
           variantAnalysis={variantAnalysis}
@@ -142,8 +146,10 @@ export const VariantAnalysisOutcomePanels = ({
     <>
       {warnings}
       <RepositoriesSearchSortRow
-        value={filterSortState}
-        onChange={setFilterSortState}
+        filterSortValue={filterSortState}
+        resultFormatValue={resultFormat}
+        onFilterSortChange={setFilterSortState}
+        onResultFormatChange={setResultFormat}
       />
       <VSCodePanels>
         {scannedReposCount > 0 && (
