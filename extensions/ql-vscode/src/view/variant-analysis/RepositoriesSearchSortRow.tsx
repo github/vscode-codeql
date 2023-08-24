@@ -17,6 +17,7 @@ type Props = {
   resultFormatValue: ResultFormat;
   onFilterSortChange: Dispatch<SetStateAction<RepositoriesFilterSortState>>;
   onResultFormatChange: Dispatch<SetStateAction<ResultFormat>>;
+  variantAnalysisQueryKind: string | undefined;
 };
 
 const Container = styled.div`
@@ -43,11 +44,21 @@ const RepositoriesResultFormatColumn = styled(RepositoriesResultFormat)`
   flex: 1;
 `;
 
+function showResultFormatColumn(
+  variantAnalysisQueryKind: string | undefined,
+): boolean {
+  return (
+    variantAnalysisQueryKind === "problem" ||
+    variantAnalysisQueryKind === "path-problem"
+  );
+}
+
 export const RepositoriesSearchSortRow = ({
   filterSortValue,
   resultFormatValue,
   onFilterSortChange,
   onResultFormatChange,
+  variantAnalysisQueryKind,
 }: Props) => {
   const handleSearchValueChange = useCallback(
     (searchValue: string) => {
@@ -100,10 +111,12 @@ export const RepositoriesSearchSortRow = ({
         value={filterSortValue.sortKey}
         onChange={handleSortKeyChange}
       />
-      <RepositoriesResultFormatColumn
-        value={resultFormatValue}
-        onChange={handleResultFormatChange}
-      />
+      {showResultFormatColumn(variantAnalysisQueryKind) && (
+        <RepositoriesResultFormatColumn
+          value={resultFormatValue}
+          onChange={handleResultFormatChange}
+        />
+      )}
     </Container>
   );
 };

@@ -28,12 +28,15 @@ export const RepositoriesSearchSortRow = () => {
     ResultFormat.Alerts,
   );
 
+  const variantAnalysisQueryKind = "problem";
+
   return (
     <RepositoriesSearchSortRowComponent
       filterSortValue={filterSortValue}
       resultFormatValue={resultFormatValue}
       onFilterSortChange={setFilterSortValue}
       onResultFormatChange={setResultFormatValue}
+      variantAnalysisQueryKind={variantAnalysisQueryKind}
     />
   );
 };

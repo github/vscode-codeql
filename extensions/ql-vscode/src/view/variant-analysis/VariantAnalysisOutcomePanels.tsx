@@ -129,6 +129,7 @@ export const VariantAnalysisOutcomePanels = ({
           resultFormatValue={resultFormat}
           onFilterSortChange={setFilterSortState}
           onResultFormatChange={setResultFormat}
+          variantAnalysisQueryKind={variantAnalysis.query.kind}
         />
         <VariantAnalysisAnalyzedRepos
           variantAnalysis={variantAnalysis}
@@ -150,6 +151,7 @@ export const VariantAnalysisOutcomePanels = ({
         resultFormatValue={resultFormat}
         onFilterSortChange={setFilterSortState}
         onResultFormatChange={setResultFormat}
+        variantAnalysisQueryKind={variantAnalysis.query.kind}
       />
       <VSCodePanels>
         {scannedReposCount > 0 && (
