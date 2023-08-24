@@ -1724,8 +1724,8 @@
       ],
       "panel": [
         {
-          "id": "codeql-model-details",
-          "title": "CodeQL Model Details",
+          "id": "codeql-methods-usage",
+          "title": "CodeQL Methods Usage",
           "icon": "media/logo.svg"
         }
       ]
@@ -1759,17 +1759,17 @@
           "when": "config.codeQL.canary"
         }
       ],
-      "codeql-model-details": [
+      "codeql-methods-usage": [
         {
-          "id": "codeQLModelDetails",
-          "name": "CodeQL Model Details",
+          "id": "codeQLMethodsUsage",
+          "name": "CodeQL Methods Usage",
           "when": "config.codeQL.canary && codeql.dataExtensionsEditorOpen"
         }
       ]
     },
     "viewsWelcome": [
       {
-        "view": "codeQLModelDetails",
+        "view": "codeQLMethodsUsage",
         "contents": "Loading..."
       },
       {
