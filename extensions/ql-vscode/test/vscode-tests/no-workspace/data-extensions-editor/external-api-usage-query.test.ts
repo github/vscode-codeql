@@ -2,7 +2,7 @@ import {
   readQueryResults,
   runQuery,
   setUpPack,
-} from "../../../../src/data-extensions-editor/external-api-usage-query";
+} from "../../../../src/data-extensions-editor/external-api-usage-queries";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import { DatabaseKind } from "../../../../src/databases/local-databases";
 import { dirSync, file } from "tmp-promise";

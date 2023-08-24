@@ -17,7 +17,7 @@ interface Props {
   updateSelectionCallback: (
     resultKey: Keys.PathNode | Keys.Result | undefined,
   ) => void;
-  scroller: ScrollIntoViewHelper;
+  scroller?: ScrollIntoViewHelper;
 }
 
 export function AlertTablePathNodeRow(props: Props) {
@@ -51,7 +51,7 @@ export function AlertTablePathNodeRow(props: Props) {
   const zebraIndex = resultIndex + stepIndex;
   return (
     <tr
-      ref={scroller.ref(isSelected)}
+      ref={scroller?.ref(isSelected)}
       className={isSelected ? "vscode-codeql__selected-path-node" : undefined}
     >
       <td className="vscode-codeql__icon-cell">

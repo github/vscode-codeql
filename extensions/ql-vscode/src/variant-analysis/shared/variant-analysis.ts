@@ -10,6 +10,7 @@ export interface VariantAnalysis {
     filePath: string;
     language: QueryLanguage;
     text: string;
+    kind?: string;
   };
   databases: {
     repositories?: string[];
@@ -138,6 +139,7 @@ export interface VariantAnalysisSubmission {
     filePath: string;
     language: QueryLanguage;
     text: string;
+    kind?: string;
 
     // Base64 encoded query pack.
     pack: string;
@@ -231,7 +233,11 @@ export function isRepoScanSuccessful(
 export function repoHasDownloadableArtifact(
   repo: VariantAnalysisScannedRepository,
 ): boolean {
-  return repo.analysisStatus === VariantAnalysisRepoStatus.Succeeded;
+  return (
+    repo.analysisStatus === VariantAnalysisRepoStatus.Succeeded &&
+    repo.resultCount !== undefined &&
+    repo.resultCount > 0
+  );
 }
 
 /**

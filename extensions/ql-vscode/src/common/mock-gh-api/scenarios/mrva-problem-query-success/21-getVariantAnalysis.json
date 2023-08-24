@@ -94,7 +94,7 @@
         "site_admin": true
       },
       "query_language": "javascript",
-      "query_pack_url": "https://objects-origin.githubusercontent.com/codeql-query-console/variant_analyses/146/query_pack?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=queryconsoleprod%2F20221026%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221026T124732Z&X-Amz-Expires=3600&X-Amz-Signature=ad791eb1a754f473a50454616e9bd04663dfed60a5c84f2c61f27ced47ee25d0&X-Amz-SignedHeaders=host",
+      "query_pack_url": "https://objects-origin.githubusercontent.com/codeql-query-console/variant_analyses/146/query_pack?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=queryconsoleprod%2F20221026%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20221026T124759Z&X-Amz-Expires=3600&X-Amz-Signature=5b0be34c426152c37e3d4c761bf576a07c9d4bb6222f32c438e02605600f0394&X-Amz-SignedHeaders=host",
       "created_at": "2022-10-26T12:45:12Z",
       "updated_at": "2022-10-26T12:45:15Z",
       "actions_workflow_run_id": 3329095282,
