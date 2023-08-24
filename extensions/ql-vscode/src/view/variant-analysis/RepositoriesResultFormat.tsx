@@ -33,8 +33,12 @@ export const RepositoriesResultFormat = ({
   return (
     <Dropdown value={value} onInput={handleInput} className={className}>
       <Codicon name="table" label="Result format..." slot="indicator" />
-      <VSCodeOption value={ResultFormat.Alerts}>Alerts</VSCodeOption>
-      <VSCodeOption value={ResultFormat.RawResults}>Raw results</VSCodeOption>
+      <VSCodeOption value={ResultFormat.Alerts}>
+        {ResultFormat.Alerts}
+      </VSCodeOption>
+      <VSCodeOption value={ResultFormat.RawResults}>
+        {ResultFormat.RawResults}
+      </VSCodeOption>
     </Dropdown>
   );
 };
