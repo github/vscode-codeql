@@ -1,6 +1,6 @@
 import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { ExternalApiUsage } from "../../../../../src/data-extensions-editor/external-api-usage";
-import { ModelDetailsDataProvider } from "../../../../../src/data-extensions-editor/model-details/methods-usage-data-provider";
+import { ModelDetailsDataProvider } from "../../../../../src/data-extensions-editor/methods-usage/methods-usage-data-provider";
 import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import {
   createExternalApiUsage,

@@ -17,7 +17,7 @@ export class ModelDetailsPanel extends DisposableObject {
 
     this.dataProvider = new ModelDetailsDataProvider(cliServer);
 
-    this.treeView = window.createTreeView("codeQLModelDetails", {
+    this.treeView = window.createTreeView("codeQLMethodsUsage", {
       treeDataProvider: this.dataProvider,
     });
     this.push(this.treeView);

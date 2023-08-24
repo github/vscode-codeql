@@ -21,7 +21,7 @@ import { extLogger } from "../common/logging/vscode";
 import { isQueryLanguage } from "../common/query-language";
 import { setUpPack } from "./external-api-usage-queries";
 import { DisposableObject } from "../common/disposable-object";
-import { ModelDetailsPanel } from "./model-details/methods-usage-panel";
+import { ModelDetailsPanel } from "./methods-usage/methods-usage-panel";
 import { Mode } from "./shared/mode";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { Usage } from "./external-api-usage";
