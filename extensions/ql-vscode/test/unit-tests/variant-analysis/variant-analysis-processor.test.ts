@@ -51,6 +51,7 @@ describe(processVariantAnalysis.name, () => {
         language: QueryLanguage.Javascript,
         name: "query-name",
         text: mockSubmission.query.text,
+        kind: "table",
       },
       databases: {
         repositories: ["1", "2", "3"],
