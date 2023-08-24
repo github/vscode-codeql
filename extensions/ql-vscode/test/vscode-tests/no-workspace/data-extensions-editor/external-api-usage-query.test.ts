@@ -1,7 +1,6 @@
 import {
   readQueryResults,
   runQuery,
-  setUpPack,
 } from "../../../../src/data-extensions-editor/external-api-usage-queries";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import { DatabaseKind } from "../../../../src/databases/local-databases";
@@ -17,6 +16,7 @@ import { Mode } from "../../../../src/data-extensions-editor/shared/mode";
 import { readFile, readFileSync, readdir } from "fs-extra";
 import { join } from "path";
 import { load } from "js-yaml";
+import { setUpPack } from "../../../../src/data-extensions-editor/data-extensions-editor-queries";
 
 describe("external api usage query", () => {
   describe("setUpPack", () => {
@@ -33,7 +33,7 @@ describe("external api usage query", () => {
     test.each(languages)(
       "should create files for $language",
       async ({ language, queryDir, query }) => {
-        await setUpPack(queryDir, query, language);
+        await setUpPack(queryDir, language);
 
         const queryFiles = await readdir(queryDir);
         expect(queryFiles.sort()).toEqual(
