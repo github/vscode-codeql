@@ -17,7 +17,7 @@ describe("ModelDetailsDataProvider", () => {
   });
 
   describe("setState", () => {
-    const hideModeledApis: boolean = false;
+    const hideModeledApis = false;
     const externalApiUsages: ExternalApiUsage[] = [];
     const dbItem = mockedObject<DatabaseItem>({
       getSourceLocationPrefix: () => "test",
@@ -122,14 +122,14 @@ describe("ModelDetailsDataProvider", () => {
       expect(dataProvider.getChildren(externalApiUsage)).toEqual([usage]);
     });
 
-    it("should show all externalApiUsages if hideModeledApis is false and item is undefined", async () => {
-      const hideModeledApis: boolean = false;
+    it("should show all externalApiUsages if hideModeledApis is false and looking at the root", async () => {
+      const hideModeledApis = false;
       await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
       expect(dataProvider.getChildren().length).toEqual(2);
     });
 
-    it("should filter externalApiUsages if hideModeledApis is true and item is undefined", async () => {
-      const hideModeledApis: boolean = true;
+    it("should filter externalApiUsages if hideModeledApis is true and looking at the root", async () => {
+      const hideModeledApis = true;
       await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
       expect(dataProvider.getChildren().length).toEqual(1);
     });

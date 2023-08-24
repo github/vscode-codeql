@@ -16,7 +16,7 @@ describe("ModelDetailsPanel", () => {
   });
 
   describe("setState", () => {
-    const hideModeledApis: boolean = false;
+    const hideModeledApis = false;
     const externalApiUsages: ExternalApiUsage[] = [createExternalApiUsage()];
 
     it("should update the tree view with the correct batch number", async () => {
