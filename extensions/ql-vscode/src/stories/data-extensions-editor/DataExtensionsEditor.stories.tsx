@@ -7,7 +7,7 @@ import { DataExtensionsEditor as DataExtensionsEditorComponent } from "../../vie
 import { CallClassification } from "../../data-extensions-editor/external-api-usage";
 
 export default {
-  title: "Data Extensions Editor/Data Extensions Editor",
+  title: "CodeQL Model Editor/CodeQL Model Editor",
   component: DataExtensionsEditorComponent,
 } as Meta<typeof DataExtensionsEditorComponent>;
 
