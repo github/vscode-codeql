@@ -199,34 +199,35 @@ export class VariantAnalysisResultsManager extends DisposableObject {
     );
     const sarifPath = join(resultsDirectory, "results.sarif");
     const bqrsPath = join(resultsDirectory, "results.bqrs");
+
+    let interpretedResults: AnalysisAlert[] | undefined;
+    let rawResults: AnalysisRawResults | undefined;
+
     if (await pathExists(sarifPath)) {
-      const interpretedResults = await this.readSarifResults(
+      interpretedResults = await this.readSarifResults(
         sarifPath,
         fileLinkPrefix,
       );
-
-      return {
-        variantAnalysisId,
-        repositoryId: repoTask.repository.id,
-        interpretedResults,
-      };
     }
 
     if (await pathExists(bqrsPath)) {
-      const rawResults = await this.readBqrsResults(
+      rawResults = await this.readBqrsResults(
         bqrsPath,
         fileLinkPrefix,
         repoTask.sourceLocationPrefix,
       );
-
-      return {
-        variantAnalysisId,
-        repositoryId: repoTask.repository.id,
-        rawResults,
-      };
     }
 
-    throw new Error("Missing results file");
+    if (!interpretedResults && !rawResults) {
+      throw new Error("Missing results file");
+    }
+
+    return {
+      variantAnalysisId,
+      repositoryId: repoTask.repository.id,
+      interpretedResults,
+      rawResults,
+    };
   }
 
   public async isVariantAnalysisRepoDownloaded(
