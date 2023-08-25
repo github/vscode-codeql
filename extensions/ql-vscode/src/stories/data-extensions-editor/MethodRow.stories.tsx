@@ -6,7 +6,7 @@ import { MethodRow as MethodRowComponent } from "../../view/data-extensions-edit
 import { CallClassification } from "../../data-extensions-editor/external-api-usage";
 
 export default {
-  title: "Data Extensions Editor/Method Row",
+  title: "CodeQL Model Editor/Method Row",
   component: MethodRowComponent,
 } as Meta<typeof MethodRowComponent>;
 

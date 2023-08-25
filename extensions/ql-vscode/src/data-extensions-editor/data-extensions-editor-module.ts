@@ -96,7 +96,7 @@ export class DataExtensionsEditorModule extends DisposableObject {
         ) {
           void showAndLogErrorMessage(
             this.app.logger,
-            `The data extensions editor is not supported for ${language} databases.`,
+            `The CodeQL Model Editor is not supported for ${language} databases.`,
           );
           return;
         }
@@ -160,7 +160,7 @@ export class DataExtensionsEditorModule extends DisposableObject {
             await view.openView();
           },
           {
-            title: "Opening Data Extensions Editor",
+            title: "Opening CodeQL Model Editor",
           },
         );
       },

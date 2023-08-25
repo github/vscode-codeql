@@ -944,7 +944,7 @@
       },
       {
         "command": "codeQL.openDataExtensionsEditor",
-        "title": "CodeQL: Open Data Extensions Editor"
+        "title": "CodeQL: Open CodeQL Model Editor"
       },
       {
         "command": "codeQL.mockGitHubApiServer.startRecording",
