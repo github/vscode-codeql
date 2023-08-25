@@ -9,15 +9,15 @@ import { ChangeEvent, useCallback, useMemo } from "react";
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 
-import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
+import { ExternalApiUsage } from "../../model-editor/external-api-usage";
 import {
   ModeledMethod,
   ModeledMethodType,
   Provenance,
-} from "../../data-extensions-editor/modeled-method";
+} from "../../model-editor/modeled-method";
 import { KindInput } from "./KindInput";
-import { extensiblePredicateDefinitions } from "../../data-extensions-editor/predicates";
-import { Mode } from "../../data-extensions-editor/shared/mode";
+import { extensiblePredicateDefinitions } from "../../model-editor/predicates";
+import { Mode } from "../../model-editor/shared/mode";
 import { Dropdown } from "../common/Dropdown";
 import { MethodClassifications } from "./MethodClassifications";
 import {

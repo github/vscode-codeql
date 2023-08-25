@@ -5,12 +5,12 @@ import {
   VSCodeDataGridRow,
 } from "@vscode/webview-ui-toolkit/react";
 import { MethodRow } from "./MethodRow";
-import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
-import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
+import { ExternalApiUsage } from "../../model-editor/external-api-usage";
+import { ModeledMethod } from "../../model-editor/modeled-method";
 import { useMemo } from "react";
-import { Mode } from "../../data-extensions-editor/shared/mode";
-import { sortMethods } from "../../data-extensions-editor/shared/sorting";
-import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
+import { Mode } from "../../model-editor/shared/mode";
+import { sortMethods } from "../../model-editor/shared/sorting";
+import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 
 type Props = {
   packageName: string;

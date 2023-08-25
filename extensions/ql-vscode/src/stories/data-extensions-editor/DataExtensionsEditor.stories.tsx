@@ -2,9 +2,9 @@ import * as React from "react";
 
 import { Meta, StoryFn } from "@storybook/react";
 
-import { Mode } from "../../data-extensions-editor/shared/mode";
+import { Mode } from "../../model-editor/shared/mode";
 import { DataExtensionsEditor as DataExtensionsEditorComponent } from "../../view/data-extensions-editor/DataExtensionsEditor";
-import { CallClassification } from "../../data-extensions-editor/external-api-usage";
+import { CallClassification } from "../../model-editor/external-api-usage";
 
 export default {
   title: "CodeQL Model Editor/CodeQL Model Editor",

@@ -17,13 +17,10 @@ import {
 } from "../variant-analysis/shared/variant-analysis-filter-sort";
 import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import {
-  ExternalApiUsage,
-  Usage,
-} from "../data-extensions-editor/external-api-usage";
-import { ModeledMethod } from "../data-extensions-editor/modeled-method";
-import { DataExtensionEditorViewState } from "../data-extensions-editor/shared/view-state";
-import { Mode } from "../data-extensions-editor/shared/mode";
+import { ExternalApiUsage, Usage } from "../model-editor/external-api-usage";
+import { ModeledMethod } from "../model-editor/modeled-method";
+import { DataExtensionEditorViewState } from "../model-editor/shared/view-state";
+import { Mode } from "../model-editor/shared/mode";
 
 /**
  * This module contains types and code that are shared between

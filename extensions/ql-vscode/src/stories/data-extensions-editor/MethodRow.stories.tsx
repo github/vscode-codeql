@@ -3,7 +3,7 @@ import * as React from "react";
 import { Meta, StoryFn } from "@storybook/react";
 
 import { MethodRow as MethodRowComponent } from "../../view/data-extensions-editor/MethodRow";
-import { CallClassification } from "../../data-extensions-editor/external-api-usage";
+import { CallClassification } from "../../model-editor/external-api-usage";
 
 export default {
   title: "CodeQL Model Editor/Method Row",
