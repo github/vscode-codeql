@@ -61,12 +61,12 @@ export class DataExtensionsEditorView extends AbstractWebview<
     private readonly databaseItem: DatabaseItem,
     private readonly extensionPack: ExtensionPack,
     private mode: Mode,
-    private readonly updateModelDetailsPanelState: (
+    private readonly updateMethodsUsagePanelState: (
       externalApiUsages: ExternalApiUsage[],
       databaseItem: DatabaseItem,
       hideModeledApis: boolean,
     ) => Promise<void>,
-    private readonly revealItemInDetailsPanel: (usage: Usage) => Promise<void>,
+    private readonly revealItemInUsagePanel: (usage: Usage) => Promise<void>,
     private readonly handleViewBecameActive: (
       view: DataExtensionsEditorView,
     ) => void,
@@ -107,7 +107,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     panel.onDidChangeViewState(async () => {
       if (panel.active) {
         this.handleViewBecameActive(this);
-        await this.updateModelDetailsPanelState(
+        await this.updateMethodsUsagePanelState(
           this.externalApiUsages,
           this.databaseItem,
           this.hideModeledApis,
@@ -239,7 +239,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         break;
       case "hideModeledApis":
         this.hideModeledApis = msg.hideModeledApis;
-        await this.updateModelDetailsPanelState(
+        await this.updateMethodsUsagePanelState(
           this.externalApiUsages,
           this.databaseItem,
           this.hideModeledApis,
@@ -276,7 +276,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
   }
 
   protected async handleJumpToUsage(usage: Usage) {
-    await this.revealItemInDetailsPanel(usage);
+    await this.revealItemInUsagePanel(usage);
     await showResolvableLocation(usage.url, this.databaseItem, this.app.logger);
   }
 
@@ -344,7 +344,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
             externalApiUsages: this.externalApiUsages,
           });
           if (this.isMostRecentlyActiveView(this)) {
-            await this.updateModelDetailsPanelState(
+            await this.updateMethodsUsagePanelState(
               this.externalApiUsages,
               this.databaseItem,
               this.hideModeledApis,
@@ -467,8 +467,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
         addedDatabase,
         modelFile,
         Mode.Framework,
-        this.updateModelDetailsPanelState,
-        this.revealItemInDetailsPanel,
+        this.updateMethodsUsagePanelState,
+        this.revealItemInUsagePanel,
         this.handleViewBecameActive,
         this.handleViewWasDisposed,
         this.isMostRecentlyActiveView,

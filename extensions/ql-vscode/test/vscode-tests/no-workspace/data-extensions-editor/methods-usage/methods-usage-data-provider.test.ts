@@ -1,6 +1,6 @@
 import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { ExternalApiUsage } from "../../../../../src/data-extensions-editor/external-api-usage";
-import { ModelDetailsDataProvider } from "../../../../../src/data-extensions-editor/methods-usage/methods-usage-data-provider";
+import { MethodsUsageDataProvider } from "../../../../../src/data-extensions-editor/methods-usage/methods-usage-data-provider";
 import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import {
   createExternalApiUsage,
@@ -8,12 +8,12 @@ import {
 } from "../../../../factories/data-extension/external-api-factories";
 import { mockedObject } from "../../../utils/mocking.helpers";
 
-describe("ModelDetailsDataProvider", () => {
+describe("MethodsUsageDataProvider", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
-  let dataProvider: ModelDetailsDataProvider;
+  let dataProvider: MethodsUsageDataProvider;
 
   beforeEach(() => {
-    dataProvider = new ModelDetailsDataProvider(mockCliServer);
+    dataProvider = new MethodsUsageDataProvider(mockCliServer);
   });
 
   describe("setState", () => {
