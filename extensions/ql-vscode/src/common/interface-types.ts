@@ -592,3 +592,7 @@ export type FromDataExtensionsEditorMessage =
   | StopGeneratingExternalApiFromLlmMessage
   | ModelDependencyMessage
   | HideModeledApisMessage;
+
+export type FromMethodModelingMessage =
+  | TelemetryMessage
+  | UnhandledErrorMessage;
