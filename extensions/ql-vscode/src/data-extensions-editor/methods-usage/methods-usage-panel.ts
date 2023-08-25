@@ -1,21 +1,21 @@
 import { TreeView, window } from "vscode";
 import { DisposableObject } from "../../common/disposable-object";
 import {
-  ModelDetailsDataProvider,
-  ModelDetailsTreeViewItem,
+  MethodsUsageDataProvider,
+  MethodsUsageTreeViewItem,
 } from "./methods-usage-data-provider";
 import { ExternalApiUsage, Usage } from "../external-api-usage";
 import { DatabaseItem } from "../../databases/local-databases";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 
-export class ModelDetailsPanel extends DisposableObject {
-  private readonly dataProvider: ModelDetailsDataProvider;
-  private readonly treeView: TreeView<ModelDetailsTreeViewItem>;
+export class MethodsUsagePanel extends DisposableObject {
+  private readonly dataProvider: MethodsUsageDataProvider;
+  private readonly treeView: TreeView<MethodsUsageTreeViewItem>;
 
   public constructor(cliServer: CodeQLCliServer) {
     super();
 
-    this.dataProvider = new ModelDetailsDataProvider(cliServer);
+    this.dataProvider = new MethodsUsageDataProvider(cliServer);
 
     this.treeView = window.createTreeView("codeQLMethodsUsage", {
       treeDataProvider: this.dataProvider,

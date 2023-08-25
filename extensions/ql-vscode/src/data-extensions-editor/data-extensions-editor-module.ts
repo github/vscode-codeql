@@ -14,7 +14,7 @@ import { dir } from "tmp-promise";
 
 import { isQueryLanguage } from "../common/query-language";
 import { DisposableObject } from "../common/disposable-object";
-import { ModelDetailsPanel } from "./methods-usage/methods-usage-panel";
+import { MethodsUsagePanel } from "./methods-usage/methods-usage-panel";
 import { Mode } from "./shared/mode";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { Usage } from "./external-api-usage";
@@ -24,7 +24,7 @@ const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
 export class DataExtensionsEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
-  private readonly modelDetailsPanel: ModelDetailsPanel;
+  private readonly methodsUsagePanel: MethodsUsagePanel;
 
   private mostRecentlyActiveView: DataExtensionsEditorView | undefined =
     undefined;
@@ -42,7 +42,7 @@ export class DataExtensionsEditorModule extends DisposableObject {
       baseQueryStorageDir,
       "data-extensions-editor-results",
     );
-    this.modelDetailsPanel = this.push(new ModelDetailsPanel(cliServer));
+    this.methodsUsagePanel = this.push(new MethodsUsagePanel(cliServer));
   }
 
   private handleViewBecameActive(view: DataExtensionsEditorView): void {
@@ -151,8 +151,8 @@ export class DataExtensionsEditorModule extends DisposableObject {
               db,
               modelFile,
               Mode.Application,
-              this.modelDetailsPanel.setState.bind(this.modelDetailsPanel),
-              this.modelDetailsPanel.revealItem.bind(this.modelDetailsPanel),
+              this.methodsUsagePanel.setState.bind(this.methodsUsagePanel),
+              this.methodsUsagePanel.revealItem.bind(this.methodsUsagePanel),
               this.handleViewBecameActive.bind(this),
               this.handleViewWasDisposed.bind(this),
               this.isMostRecentlyActiveView.bind(this),

@@ -15,9 +15,9 @@ import { relative } from "path";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { INITIAL_HIDE_MODELED_APIS_VALUE } from "../shared/hide-modeled-apis";
 
-export class ModelDetailsDataProvider
+export class MethodsUsageDataProvider
   extends DisposableObject
-  implements TreeDataProvider<ModelDetailsTreeViewItem>
+  implements TreeDataProvider<MethodsUsageTreeViewItem>
 {
   private externalApiUsages: ExternalApiUsage[] = [];
   private databaseItem: DatabaseItem | undefined = undefined;
@@ -63,7 +63,7 @@ export class ModelDetailsDataProvider
     }
   }
 
-  getTreeItem(item: ModelDetailsTreeViewItem): TreeItem {
+  getTreeItem(item: MethodsUsageTreeViewItem): TreeItem {
     if (isExternalApiUsage(item)) {
       return {
         label: `${item.packageName}.${item.typeName}.${item.methodName}${item.methodParameters}`,
@@ -96,7 +96,7 @@ export class ModelDetailsDataProvider
     }
   }
 
-  getChildren(item?: ModelDetailsTreeViewItem): ModelDetailsTreeViewItem[] {
+  getChildren(item?: MethodsUsageTreeViewItem): MethodsUsageTreeViewItem[] {
     if (item === undefined) {
       if (this.hideModeledApis) {
         return this.externalApiUsages.filter((api) => !api.supported);
@@ -111,8 +111,8 @@ export class ModelDetailsDataProvider
   }
 
   getParent(
-    item: ModelDetailsTreeViewItem,
-  ): ModelDetailsTreeViewItem | undefined {
+    item: MethodsUsageTreeViewItem,
+  ): MethodsUsageTreeViewItem | undefined {
     if (isExternalApiUsage(item)) {
       return undefined;
     } else {
@@ -132,10 +132,10 @@ export class ModelDetailsDataProvider
   }
 }
 
-export type ModelDetailsTreeViewItem = ExternalApiUsage | Usage;
+export type MethodsUsageTreeViewItem = ExternalApiUsage | Usage;
 
 function isExternalApiUsage(
-  item: ModelDetailsTreeViewItem,
+  item: MethodsUsageTreeViewItem,
 ): item is ExternalApiUsage {
   return (item as any).usages !== undefined;
 }

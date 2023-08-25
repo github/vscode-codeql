@@ -1,7 +1,7 @@
 import { window, TreeView } from "vscode";
 import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
 import { ExternalApiUsage } from "../../../../../src/data-extensions-editor/external-api-usage";
-import { ModelDetailsPanel } from "../../../../../src/data-extensions-editor/methods-usage/methods-usage-panel";
+import { MethodsUsagePanel } from "../../../../../src/data-extensions-editor/methods-usage/methods-usage-panel";
 import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import { mockedObject } from "../../../utils/mocking.helpers";
 import {
@@ -9,7 +9,7 @@ import {
   createUsage,
 } from "../../../../factories/data-extension/external-api-factories";
 
-describe("ModelDetailsPanel", () => {
+describe("MethodsUsagePanel", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
   const dbItem = mockedObject<DatabaseItem>({
     getSourceLocationPrefix: () => "test",
@@ -25,7 +25,7 @@ describe("ModelDetailsPanel", () => {
       } as TreeView<unknown>;
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
 
-      const panel = new ModelDetailsPanel(mockCliServer);
+      const panel = new MethodsUsagePanel(mockCliServer);
       await panel.setState(externalApiUsages, dbItem, hideModeledApis);
 
       expect(mockTreeView.badge?.value).toBe(1);
@@ -52,7 +52,7 @@ describe("ModelDetailsPanel", () => {
         }),
       ];
 
-      const panel = new ModelDetailsPanel(mockCliServer);
+      const panel = new MethodsUsagePanel(mockCliServer);
       await panel.setState(externalApiUsages, dbItem, hideModeledApis);
 
       await panel.revealItem(usage);
@@ -62,7 +62,7 @@ describe("ModelDetailsPanel", () => {
 
     it("should do nothing if usage cannot be found", async () => {
       const externalApiUsages = [createExternalApiUsage({})];
-      const panel = new ModelDetailsPanel(mockCliServer);
+      const panel = new MethodsUsagePanel(mockCliServer);
       await panel.setState(externalApiUsages, dbItem, hideModeledApis);
 
       await panel.revealItem(usage);
