@@ -9,22 +9,16 @@ import { join } from "path";
 import { App } from "../common/app";
 import { withProgress } from "../common/vscode/progress";
 import { pickExtensionPack } from "./extension-pack-picker";
-import {
-  showAndLogErrorMessage,
-  showAndLogExceptionWithTelemetry,
-} from "../common/logging";
+import { showAndLogErrorMessage } from "../common/logging";
 import { dir } from "tmp-promise";
-import { fetchExternalApiQueries } from "./queries";
-import { telemetryListener } from "../common/vscode/telemetry";
-import { redactableError } from "../common/errors";
-import { extLogger } from "../common/logging/vscode";
+
 import { isQueryLanguage } from "../common/query-language";
-import { setUpPack } from "./external-api-usage-queries";
 import { DisposableObject } from "../common/disposable-object";
 import { ModelDetailsPanel } from "./methods-usage/methods-usage-panel";
 import { Mode } from "./shared/mode";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { Usage } from "./external-api-usage";
+import { setUpPack } from "./data-extensions-editor-queries";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
@@ -138,19 +132,12 @@ export class DataExtensionsEditorModule extends DisposableObject {
               return;
             }
 
-            const query = fetchExternalApiQueries[language];
-            if (!query) {
-              void showAndLogExceptionWithTelemetry(
-                extLogger,
-                telemetryListener,
-                redactableError`No external API usage query found for language ${language}`,
-              );
-              return;
-            }
-
             // Create new temporary directory for query files and pack dependencies
             const queryDir = (await dir({ unsafeCleanup: true })).path;
-            await setUpPack(queryDir, query, language);
+            const success = await setUpPack(queryDir, language);
+            if (!success) {
+              return;
+            }
             await this.cliServer.packInstall(queryDir);
 
             const view = new DataExtensionsEditorView(
