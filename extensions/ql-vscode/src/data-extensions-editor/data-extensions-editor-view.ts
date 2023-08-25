@@ -26,9 +26,8 @@ import { runFlowModelQueries } from "./flow-model-queries";
 import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
 import { showResolvableLocation } from "../databases/local-databases/locations";
-import { decodeBqrsToExternalApiUsages } from "./bqrs";
 import { redactableError } from "../common/errors";
-import { readQueryResults, runQuery } from "./external-api-usage-queries";
+import { runExternalApiQueries } from "./external-api-usage-queries";
 import { ExternalApiUsage, Usage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
@@ -304,7 +303,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       async (progress) => {
         try {
           const cancellationTokenSource = new CancellationTokenSource();
-          const queryResult = await runQuery(this.mode, {
+          const queryResult = await runExternalApiQueries(this.mode, {
             cliServer: this.cliServer,
             queryRunner: this.queryRunner,
             databaseItem: this.databaseItem,
@@ -316,28 +315,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
           if (!queryResult) {
             return;
           }
-
-          progress({
-            message: "Decoding results",
-            step: 1100,
-            maxStep: 1500,
-          });
-
-          const bqrsChunk = await readQueryResults({
-            cliServer: this.cliServer,
-            bqrsPath: queryResult.outputDir.bqrsPath,
-          });
-          if (!bqrsChunk) {
-            return;
-          }
-
-          progress({
-            message: "Finalizing results",
-            step: 1450,
-            maxStep: 1500,
-          });
-
-          this.externalApiUsages = decodeBqrsToExternalApiUsages(bqrsChunk);
+          this.externalApiUsages = queryResult;
 
           await this.postMessage({
             t: "setExternalApiUsages",
