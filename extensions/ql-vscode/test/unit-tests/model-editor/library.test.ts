@@ -1,4 +1,4 @@
-import { parseLibraryFilename } from "../../../src/data-extensions-editor/library";
+import { parseLibraryFilename } from "../../../src/model-editor/library";
 
 describe("parseLibraryFilename", () => {
   const testCases = [

@@ -2,8 +2,8 @@ import {
   Usage,
   ExternalApiUsage,
   CallClassification,
-} from "../../../src/data-extensions-editor/external-api-usage";
-import { ModeledMethodType } from "../../../src/data-extensions-editor/modeled-method";
+} from "../../../src/model-editor/external-api-usage";
+import { ModeledMethodType } from "../../../src/model-editor/modeled-method";
 import { ResolvableLocationValue } from "../../../src/common/bqrs-cli-types";
 
 export function createExternalApiUsage({

@@ -3,7 +3,7 @@ import {
   formatPackName,
   parsePackName,
   validatePackName,
-} from "../../../src/data-extensions-editor/extension-pack-name";
+} from "../../../src/model-editor/extension-pack-name";
 
 describe("autoNameExtensionPack", () => {
   const testCases: Array<{

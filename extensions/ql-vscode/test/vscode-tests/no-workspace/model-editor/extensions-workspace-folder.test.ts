@@ -1,7 +1,7 @@
 import { Uri, workspace, WorkspaceFolder } from "vscode";
 import { dir, DirectoryResult } from "tmp-promise";
 import { join } from "path";
-import { autoPickExtensionsDirectory } from "../../../../src/data-extensions-editor/extensions-workspace-folder";
+import { autoPickExtensionsDirectory } from "../../../../src/model-editor/extensions-workspace-folder";
 import * as files from "../../../../src/common/files";
 import { mkdirp } from "fs-extra";
 

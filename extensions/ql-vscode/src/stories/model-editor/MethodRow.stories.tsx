@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { Meta, StoryFn } from "@storybook/react";
 
-import { MethodRow as MethodRowComponent } from "../../view/data-extensions-editor/MethodRow";
+import { MethodRow as MethodRowComponent } from "../../view/model-editor/MethodRow";
 import { CallClassification } from "../../model-editor/external-api-usage";
 
 export default {

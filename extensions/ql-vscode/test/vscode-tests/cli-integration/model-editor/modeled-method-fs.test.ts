@@ -6,8 +6,8 @@ import { mkdirSync, writeFileSync } from "fs";
 import {
   listModelFiles,
   loadModeledMethods,
-} from "../../../../src/data-extensions-editor/modeled-method-fs";
-import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
+} from "../../../../src/model-editor/modeled-method-fs";
+import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
 import { join } from "path";
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { homedir } from "os";
