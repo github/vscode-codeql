@@ -11,6 +11,7 @@ import {
   VariantAnalysisScannedRepositoryDownloadStatus,
 } from "../../variant-analysis/shared/variant-analysis";
 import { Alert } from "../common";
+import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
 
 const ContentContainer = styled.div`
   display: flex;
@@ -37,12 +38,28 @@ const RawResultsContainer = styled.div`
   margin-top: 0.5em;
 `;
 
+function chooseResultFormat(
+  interpretedResults: AnalysisAlert[] | undefined,
+  rawResults: AnalysisRawResults | undefined,
+  resultFormat: ResultFormat,
+): ResultFormat | undefined {
+  if (interpretedResults && resultFormat === ResultFormat.Alerts) {
+    return ResultFormat.Alerts;
+  } else if (rawResults) {
+    return ResultFormat.RawResults;
+  } else {
+    return undefined;
+  }
+}
+
 export type AnalyzedRepoItemContentProps = {
   status?: VariantAnalysisRepoStatus;
   downloadStatus?: VariantAnalysisScannedRepositoryDownloadStatus;
 
   interpretedResults?: AnalysisAlert[];
   rawResults?: AnalysisRawResults;
+
+  resultFormat: ResultFormat;
 };
 
 export const AnalyzedRepoItemContent = ({
@@ -50,7 +67,13 @@ export const AnalyzedRepoItemContent = ({
   downloadStatus,
   interpretedResults,
   rawResults,
+  resultFormat,
 }: AnalyzedRepoItemContentProps) => {
+  const chosenResultFormat = chooseResultFormat(
+    interpretedResults,
+    rawResults,
+    resultFormat,
+  );
   return (
     <ContentContainer>
       {status === VariantAnalysisRepoStatus.Failed && (
@@ -90,7 +113,7 @@ export const AnalyzedRepoItemContent = ({
           />
         </AlertContainer>
       )}
-      {interpretedResults && (
+      {interpretedResults && chosenResultFormat === ResultFormat.Alerts && (
         <InterpretedResultsContainer>
           {interpretedResults.map((r, i) => (
             <InterpretedResultItem key={i}>
@@ -99,7 +122,7 @@ export const AnalyzedRepoItemContent = ({
           ))}
         </InterpretedResultsContainer>
       )}
-      {rawResults && (
+      {rawResults && chosenResultFormat === ResultFormat.RawResults && (
         <RawResultsContainer>
           <RawResultsTable
             schema={rawResults.schema}

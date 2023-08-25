@@ -2,6 +2,7 @@
 
 ## [UNRELEASED]
 
+- Update how variant analysis results are displayed. For queries with ["path-problem" or "problem" `@kind`](https://codeql.github.com/docs/writing-codeql-queries/metadata-for-codeql-queries/#metadata-properties), you can choose to display the results as rendered alerts or as a table of raw results. For queries with any other `@kind`, the results are displayed as a table. [#2745](https://github.com/github/vscode-codeql/pull/2745) & [#2749](https://github.com/github/vscode-codeql/pull/2749)
 - When running variant analyses, don't download artifacts for repositories with no results. [#2736](https://github.com/github/vscode-codeql/pull/2736)
 - Group the extension settings, so that they're easier to find in the Settings UI. [#2706](https://github.com/github/vscode-codeql/pull/2706)
 

@@ -11,6 +11,7 @@ import {
   filterAndSortRepositoriesWithResultsByName,
   RepositoriesFilterSortState,
 } from "../../variant-analysis/shared/variant-analysis-filter-sort";
+import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
 
 const Container = styled.div`
   display: flex;
@@ -26,6 +27,8 @@ export type VariantAnalysisAnalyzedReposProps = {
 
   filterSortState?: RepositoriesFilterSortState;
 
+  resultFormat: ResultFormat;
+
   selectedRepositoryIds?: number[];
   setSelectedRepositoryIds?: Dispatch<SetStateAction<number[]>>;
 };
@@ -35,6 +38,7 @@ export const VariantAnalysisAnalyzedRepos = ({
   repositoryStates,
   repositoryResults,
   filterSortState,
+  resultFormat,
   selectedRepositoryIds,
   setSelectedRepositoryIds,
 }: VariantAnalysisAnalyzedReposProps) => {
@@ -93,6 +97,7 @@ export const VariantAnalysisAnalyzedRepos = ({
             resultCount={repository.resultCount}
             interpretedResults={results?.interpretedResults}
             rawResults={results?.rawResults}
+            resultFormat={resultFormat}
             selected={selectedRepositoryIds?.includes(repository.repository.id)}
             onSelectedChange={onSelectedChange}
           />

@@ -8,12 +8,14 @@ import {
   AnalyzedRepoItemContent,
   AnalyzedRepoItemContentProps,
 } from "../AnalyzedRepoItemContent";
+import { ResultFormat } from "../../../variant-analysis/shared/variant-analysis-result-format";
 
 describe(AnalyzedRepoItemContent.name, () => {
   const render = (props: Partial<AnalyzedRepoItemContentProps> = {}) => {
     return reactRender(
       <AnalyzedRepoItemContent
         status={VariantAnalysisRepoStatus.Succeeded}
+        resultFormat={ResultFormat.Alerts}
         {...props}
       />,
     );
