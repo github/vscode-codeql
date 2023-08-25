@@ -1765,6 +1765,14 @@
           "name": "CodeQL Methods Usage",
           "when": "config.codeQL.canary && codeql.dataExtensionsEditorOpen"
         }
+      ],
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "codeQLMethodModeling",
+          "name": "CodeQL Method Modeling",
+          "when": "config.codeQL.canary && config.codeQL.modelEditor.methodModelingView && codeql.dataExtensionsEditorOpen"
+        }
       ]
     },
     "viewsWelcome": [

@@ -19,6 +19,7 @@ import { Mode } from "./shared/mode";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { Usage } from "./external-api-usage";
 import { setUpPack } from "./data-extensions-editor-queries";
+import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
@@ -43,6 +44,7 @@ export class DataExtensionsEditorModule extends DisposableObject {
       "data-extensions-editor-results",
     );
     this.methodsUsagePanel = this.push(new MethodsUsagePanel(cliServer));
+    this.push(new MethodModelingPanel(ctx));
   }
 
   private handleViewBecameActive(view: DataExtensionsEditorView): void {
