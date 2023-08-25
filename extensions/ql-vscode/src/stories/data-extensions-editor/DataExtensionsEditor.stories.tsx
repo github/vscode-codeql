@@ -28,7 +28,6 @@ DataExtensionsEditor.args = {
       extensionTargets: {},
       dataExtensions: [],
     },
-    enableFrameworkMode: true,
     showLlmButton: true,
     mode: Mode.Application,
   },

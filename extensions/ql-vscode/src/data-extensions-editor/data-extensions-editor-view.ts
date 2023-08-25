@@ -32,7 +32,7 @@ import { readQueryResults, runQuery } from "./external-api-usage-queries";
 import { ExternalApiUsage, Usage } from "./external-api-usage";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
-import { enableFrameworkMode, showLlmGeneration } from "../config";
+import { showLlmGeneration } from "../config";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { join } from "path";
@@ -268,7 +268,6 @@ export class DataExtensionsEditorView extends AbstractWebview<
       t: "setDataExtensionEditorViewState",
       viewState: {
         extensionPack: this.extensionPack,
-        enableFrameworkMode: enableFrameworkMode(),
         showLlmButton,
         mode: this.mode,
       },

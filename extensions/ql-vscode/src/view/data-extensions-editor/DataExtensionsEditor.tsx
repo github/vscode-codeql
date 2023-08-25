@@ -320,14 +320,12 @@ export function DataExtensionsEditor({
               <span slot="start" className="codicon codicon-package"></span>
               Open extension pack
             </LinkIconButton>
-            {viewState.enableFrameworkMode && (
-              <LinkIconButton onClick={onSwitchModeClick}>
-                <span slot="start" className="codicon codicon-library"></span>
-                {viewState.mode === Mode.Framework
-                  ? "Model as application"
-                  : "Model as dependency"}
-              </LinkIconButton>
-            )}
+            <LinkIconButton onClick={onSwitchModeClick}>
+              <span slot="start" className="codicon codicon-library"></span>
+              {viewState.mode === Mode.Framework
+                ? "Model as application"
+                : "Model as dependency"}
+            </LinkIconButton>
           </HeaderRow>
         </HeaderColumn>
         <HeaderSpacer />
@@ -349,11 +347,9 @@ export function DataExtensionsEditor({
           >
             Save all
           </VSCodeButton>
-          {viewState.enableFrameworkMode && (
-            <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
-              Refresh
-            </VSCodeButton>
-          )}
+          <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
+            Refresh
+          </VSCodeButton>
           {viewState.mode === Mode.Framework && (
             <VSCodeButton onClick={onGenerateFromSourceClick}>
               Generate
