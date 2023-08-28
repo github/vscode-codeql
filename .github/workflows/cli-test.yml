@@ -6,9 +6,11 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
+      - .github/workflows/cli-test.yml
       - extensions/ql-vscode/src/codeql-cli/**
       - extensions/ql-vscode/src/language-support/**
       - extensions/ql-vscode/src/query-server/**
+      - extensions/ql-vscode/supported_cli_versions.json
 
 jobs:
   find-nightly:
@@ -47,7 +49,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        version: ${{ fromJson(needs.set-matrix.outputs.cli-versions) }} 
+        version: ${{ fromJson(needs.set-matrix.outputs.cli-versions) }}
       fail-fast: false
     env:
       CLI_VERSION: ${{ matrix.version }}
