@@ -3,6 +3,7 @@ import { QueryLanguage } from "../common/query-language";
 import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { prepareExternalApiQuery } from "./external-api-usage-queries";
+import { CodeQLCliServer } from "../codeql-cli/cli";
 
 /**
  * setUpPack sets up a directory to use for the data extension editor queries.
@@ -11,6 +12,7 @@ import { prepareExternalApiQuery } from "./external-api-usage-queries";
  * @returns true if the setup was successful, false otherwise.
  */
 export async function setUpPack(
+  cliServer: CodeQLCliServer,
   queryDir: string,
   language: QueryLanguage,
 ): Promise<boolean> {
@@ -23,7 +25,7 @@ export async function setUpPack(
     return false;
   }
 
-  // Set up a synthetic query pack to resolve dependencies.
+  // Set up a synthetic pack so that the query can be resolved later.
   const syntheticQueryPack = {
     name: "codeql/external-api-usage",
     version: "0.0.0",
@@ -34,5 +36,10 @@ export async function setUpPack(
 
   const qlpackFile = join(queryDir, "codeql-pack.yml");
   await writeFile(qlpackFile, dump(syntheticQueryPack), "utf8");
+  await cliServer.packInstall(queryDir);
+
+  // Install the other needed query packs
+  await cliServer.packDownload([`codeql/${language}-queries`]);
+
   return true;
 }

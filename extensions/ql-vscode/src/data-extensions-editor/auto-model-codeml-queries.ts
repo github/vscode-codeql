@@ -84,6 +84,7 @@ export async function runAutoModelQueries({
     extensionPacks,
     progress,
     token: cancellationTokenSource.token,
+    createLockFile: false,
   });
 
   if (!completedQuery) {

@@ -21,6 +21,7 @@ type RunQueryOptions = {
   extensionPacks: string[] | undefined;
   progress: ProgressCallback;
   token: CancellationToken;
+  createLockFile: boolean;
 };
 
 export async function runQuery({
@@ -33,12 +34,17 @@ export async function runQuery({
   extensionPacks,
   progress,
   token,
+  createLockFile,
 }: RunQueryOptions): Promise<CoreCompletedQuery | undefined> {
-  // Create a lock file for the query. This is required to resolve dependencies and library path for the query.
-  const { cleanup: cleanupLockFile } = await createLockFileForStandardQuery(
-    cliServer,
-    queryPath,
-  );
+  let cleanupLockFile: (() => Promise<void>) | undefined = undefined;
+  if (createLockFile) {
+    // Create a lock file for the query. This is required to resolve dependencies and library path for the query.
+    const { cleanup } = await createLockFileForStandardQuery(
+      cliServer,
+      queryPath,
+    );
+    cleanupLockFile = cleanup;
+  }
 
   // Create a query run to execute
   const queryRun = queryRunner.createQueryRun(

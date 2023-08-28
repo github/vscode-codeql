@@ -134,11 +134,10 @@ export class DataExtensionsEditorModule extends DisposableObject {
 
             // Create new temporary directory for query files and pack dependencies
             const queryDir = (await dir({ unsafeCleanup: true })).path;
-            const success = await setUpPack(queryDir, language);
+            const success = await setUpPack(this.cliServer, queryDir, language);
             if (!success) {
               return;
             }
-            await this.cliServer.packInstall(queryDir);
 
             const view = new DataExtensionsEditorView(
               this.ctx,

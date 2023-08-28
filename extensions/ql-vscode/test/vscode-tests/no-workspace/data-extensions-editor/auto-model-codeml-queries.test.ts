@@ -14,7 +14,6 @@ import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { QueryRunner } from "../../../../src/query-server";
 import * as queryResolver from "../../../../src/local-queries/query-resolver";
-import * as standardQueries from "../../../../src/local-queries/standard-queries";
 import { MethodSignature } from "../../../../src/data-extensions-editor/external-api-usage";
 import { join } from "path";
 import { exists, readFile } from "fs-extra";
@@ -26,10 +25,6 @@ describe("runAutoModelQueries", () => {
   let resolveQueriesSpy: jest.SpiedFunction<
     typeof queryResolver.resolveQueries
   >;
-  let createLockFileForStandardQuerySpy: jest.SpiedFunction<
-    typeof standardQueries.createLockFileForStandardQuery
-  >;
-
   beforeEach(() => {
     resolveQueriesSpy = jest
       .spyOn(queryResolver, "resolveQueries")
@@ -48,10 +43,6 @@ describe("runAutoModelQueries", () => {
           return [];
         },
       );
-
-    createLockFileForStandardQuerySpy = jest
-      .spyOn(standardQueries, "createLockFileForStandardQuery")
-      .mockResolvedValue({});
   });
 
   it("should run the query and return the results", async () => {
@@ -155,11 +146,6 @@ describe("runAutoModelQueries", () => {
         kind: "problem",
         "tags contain all": ["automodel", "application-mode", "candidates"],
       },
-    );
-    expect(createLockFileForStandardQuerySpy).toHaveBeenCalledTimes(1);
-    expect(createLockFileForStandardQuerySpy).toHaveBeenCalledWith(
-      options.cliServer,
-      "/a/b/c/ql/candidates.ql",
     );
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledTimes(1);
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(

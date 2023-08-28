@@ -134,6 +134,7 @@ async function runSingleFlowQuery(
         maxStep: 4000,
       }),
     token,
+    createLockFile: false,
   });
 
   if (!completedQuery) {
