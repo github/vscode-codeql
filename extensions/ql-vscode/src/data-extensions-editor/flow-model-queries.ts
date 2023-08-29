@@ -10,9 +10,9 @@ import { ProgressCallback } from "../common/vscode/progress";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import { redactableError } from "../common/errors";
-import { qlpackOfDatabase, resolveQueries } from "../local-queries";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { runQuery } from "../local-queries/run-query";
+import { resolveQueries } from "../local-queries";
 
 type FlowModelOptions = {
   cliServer: CodeQLCliServer;
@@ -83,11 +83,16 @@ async function resolveFlowQueries(
   cliServer: CodeQLCliServer,
   databaseItem: DatabaseItem,
 ): Promise<string[]> {
-  const qlpacks = await qlpackOfDatabase(cliServer, databaseItem);
+  const packsToSearch = [`codeql/${databaseItem.language}-queries`];
 
-  return await resolveQueries(cliServer, qlpacks, "flow model generator", {
-    "tags contain": ["modelgenerator"],
-  });
+  return await resolveQueries(
+    cliServer,
+    packsToSearch,
+    "flow model generator",
+    {
+      "tags contain": ["modelgenerator"],
+    },
+  );
 }
 
 async function runSingleFlowQuery(
@@ -129,6 +134,7 @@ async function runSingleFlowQuery(
         maxStep: 4000,
       }),
     token,
+    createLockFile: false,
   });
 
   if (!completedQuery) {

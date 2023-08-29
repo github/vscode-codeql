@@ -8,7 +8,7 @@ import {
 } from "./key-type";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 import { DatabaseItem } from "../../databases/local-databases";
-import { resolveQueries as resolveLocalQueries } from "../../local-queries/query-resolver";
+import { resolveQueriesByLanguagePack as resolveLocalQueries } from "../../local-queries/query-resolver";
 import { extLogger } from "../../common/logging/vscode";
 import { TeeLogger } from "../../common/logging";
 import { CancellationToken } from "vscode";

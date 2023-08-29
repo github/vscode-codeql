@@ -14,7 +14,6 @@ import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { QueryRunner } from "../../../../src/query-server";
 import * as queryResolver from "../../../../src/local-queries/query-resolver";
-import * as standardQueries from "../../../../src/local-queries/standard-queries";
 import { MethodSignature } from "../../../../src/data-extensions-editor/external-api-usage";
 import { join } from "path";
 import { exists, readFile } from "fs-extra";
@@ -23,40 +22,27 @@ import { CancellationTokenSource } from "vscode-jsonrpc";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
 
 describe("runAutoModelQueries", () => {
-  const qlpack = {
-    dbschemePack: "dbschemePack",
-    dbschemePackIsLibraryPack: false,
-  };
-
   let resolveQueriesSpy: jest.SpiedFunction<
     typeof queryResolver.resolveQueries
   >;
-  let createLockFileForStandardQuerySpy: jest.SpiedFunction<
-    typeof standardQueries.createLockFileForStandardQuery
-  >;
-
   beforeEach(() => {
-    jest.spyOn(queryResolver, "qlpackOfDatabase").mockResolvedValue(qlpack);
-
     resolveQueriesSpy = jest
       .spyOn(queryResolver, "resolveQueries")
-      .mockImplementation(async (_cliServer, _qlPack, _name, constraints) => {
-        if (constraints["tags contain all"]?.includes("candidates")) {
-          return ["/a/b/c/ql/candidates.ql"];
-        }
-        if (constraints["tags contain all"]?.includes("positive")) {
-          return ["/a/b/c/ql/positive-examples.ql"];
-        }
-        if (constraints["tags contain all"]?.includes("negative")) {
-          return ["/a/b/c/ql/negative-examples.ql"];
-        }
+      .mockImplementation(
+        async (_cliServer, _packsToSearch, _name, constraints) => {
+          if (constraints["tags contain all"]?.includes("candidates")) {
+            return ["/a/b/c/ql/candidates.ql"];
+          }
+          if (constraints["tags contain all"]?.includes("positive")) {
+            return ["/a/b/c/ql/positive-examples.ql"];
+          }
+          if (constraints["tags contain all"]?.includes("negative")) {
+            return ["/a/b/c/ql/negative-examples.ql"];
+          }
 
-        return [];
-      });
-
-    createLockFileForStandardQuerySpy = jest
-      .spyOn(standardQueries, "createLockFileForStandardQuery")
-      .mockResolvedValue({});
+          return [];
+        },
+      );
   });
 
   it("should run the query and return the results", async () => {
@@ -154,17 +140,12 @@ describe("runAutoModelQueries", () => {
     expect(resolveQueriesSpy).toHaveBeenCalledTimes(1);
     expect(resolveQueriesSpy).toHaveBeenCalledWith(
       options.cliServer,
-      qlpack,
+      ["codeql/java-queries"],
       "Extract automodel candidates",
       {
         kind: "problem",
         "tags contain all": ["automodel", "application-mode", "candidates"],
       },
-    );
-    expect(createLockFileForStandardQuerySpy).toHaveBeenCalledTimes(1);
-    expect(createLockFileForStandardQuerySpy).toHaveBeenCalledWith(
-      options.cliServer,
-      "/a/b/c/ql/candidates.ql",
     );
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledTimes(1);
     expect(options.queryRunner.createQueryRun).toHaveBeenCalledWith(

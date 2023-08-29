@@ -6,8 +6,15 @@ import { dirSync } from "tmp-promise";
 import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries";
 import { QueryLanguage } from "../../../../src/common/query-language";
 import { Mode } from "../../../../src/data-extensions-editor/shared/mode";
+import { mockedObject } from "../../utils/mocking.helpers";
+import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 
 describe("setUpPack", () => {
+  const cliServer = mockedObject<CodeQLCliServer>({
+    packDownload: jest.fn(),
+    packInstall: jest.fn(),
+  });
+
   const languages = Object.keys(fetchExternalApiQueries).flatMap((lang) => {
     const queryDir = dirSync({ unsafeCleanup: true }).name;
     const query = fetchExternalApiQueries[lang as QueryLanguage];
@@ -21,7 +28,7 @@ describe("setUpPack", () => {
   test.each(languages)(
     "should create files for $language",
     async ({ language, queryDir, query }) => {
-      await setUpPack(queryDir, language);
+      await setUpPack(cliServer, queryDir, language);
 
       const queryFiles = await readdir(queryDir);
       expect(queryFiles.sort()).toEqual(

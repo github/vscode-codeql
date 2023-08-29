@@ -72,16 +72,7 @@ async function resolveQueriesFromPacks(
   );
 }
 
-/**
- * Finds the queries with the specified kind and tags in a QLPack.
- *
- * @param cli The CLI instance to use.
- * @param qlpacks The list of packs to search.
- * @param name The name of the query to use in error messages.
- * @param constraints Constraints on the queries to search for.
- * @returns The found queries from the first pack in which any matching queries were found.
- */
-export async function resolveQueries(
+export async function resolveQueriesByLanguagePack(
   cli: CodeQLCliServer,
   qlpacks: QlPacksForLanguage,
   name: string,
@@ -95,6 +86,24 @@ export async function resolveQueries(
     packsToSearch.push(qlpacks.queryPack);
   }
 
+  return resolveQueries(cli, packsToSearch, name, constraints);
+}
+
+/**
+ * Finds the queries with the specified kind and tags in a QLPack.
+ *
+ * @param cli The CLI instance to use.
+ * @param packsToSearch The list of packs to search.
+ * @param name The name of the query to use in error messages.
+ * @param constraints Constraints on the queries to search for.
+ * @returns The found queries from the first pack in which any matching queries were found.
+ */
+export async function resolveQueries(
+  cli: CodeQLCliServer,
+  packsToSearch: string[],
+  name: string,
+  constraints: QueryConstraints,
+): Promise<string[]> {
   const queries = await resolveQueriesFromPacks(
     cli,
     packsToSearch,

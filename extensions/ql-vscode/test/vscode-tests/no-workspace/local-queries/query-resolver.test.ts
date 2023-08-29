@@ -1,6 +1,6 @@
 import {
   qlpackOfDatabase,
-  resolveQueries,
+  resolveQueriesByLanguagePack,
 } from "../../../../src/local-queries";
 import { mockDatabaseItem, mockedObject } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
@@ -69,7 +69,7 @@ describe("resolveQueries", () => {
 
   it("should resolve a query", async () => {
     resolveQueriesInSuite.mockReturnValue(["a", "b"]);
-    const result = await resolveQueries(
+    const result = await resolveQueriesByLanguagePack(
       mockCli,
       { dbschemePack: "my-qlpack", dbschemePackIsLibraryPack: false },
       "my query",
@@ -103,7 +103,7 @@ describe("resolveQueries", () => {
     resolveQueriesInSuite.mockReturnValue([]);
 
     await expect(
-      resolveQueries(
+      resolveQueriesByLanguagePack(
         mockCli,
         { dbschemePack: "my-qlpack", dbschemePackIsLibraryPack: false },
         "my query",
