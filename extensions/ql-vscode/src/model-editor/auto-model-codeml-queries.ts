@@ -128,7 +128,7 @@ async function resolveAutomodelQuery(
   queryTag: string,
   mode: Mode,
 ): Promise<string> {
-  const packsToSearch = [`codeql/${databaseItem.language}-queries`];
+  const packsToSearch = [`codeql/${databaseItem.language}-automodel-queries`];
 
   // First, resolve the query that we want to run.
   // All queries are tagged like this:
@@ -178,7 +178,7 @@ export async function generateCandidateFilterPack(
     version: "0.0.0",
     library: true,
     extensionTargets: {
-      [`codeql/${language}-queries`]: "*",
+      [`codeql/${language}-automodel-queries`]: "*",
     },
     dataExtensions: ["filter.yml"],
   };
@@ -199,7 +199,7 @@ export async function generateCandidateFilterPack(
     extensions: [
       {
         addsTo: {
-          pack: `codeql/${language}-queries`,
+          pack: `codeql/${language}-automodel-queries`,
           extensible: "automodelCandidateFilter",
         },
         data: dataRows,

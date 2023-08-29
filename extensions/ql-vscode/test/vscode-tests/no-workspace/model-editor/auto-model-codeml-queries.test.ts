@@ -140,7 +140,7 @@ describe("runAutoModelQueries", () => {
     expect(resolveQueriesSpy).toHaveBeenCalledTimes(1);
     expect(resolveQueriesSpy).toHaveBeenCalledWith(
       options.cliServer,
-      ["codeql/java-queries"],
+      ["codeql/java-automodel-queries"],
       "Extract automodel candidates",
       {
         kind: "problem",
@@ -188,7 +188,7 @@ describe("generateCandidateFilterPack", () => {
     expect(extensions).toBeInstanceOf(Array);
     expect(extensions).toHaveLength(1);
     const extension = extensions[0];
-    expect(extension.addsTo.pack).toEqual("codeql/java-queries");
+    expect(extension.addsTo.pack).toEqual("codeql/java-automodel-queries");
     expect(extension.addsTo.extensible).toEqual("automodelCandidateFilter");
     expect(extension.data).toBeInstanceOf(Array);
     expect(extension.data).toHaveLength(1);
