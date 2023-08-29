@@ -147,7 +147,12 @@ class CallableMethod extends Callable {
 
   /** Holds if this API is a known neutral. */
   pragma[nomagic]
-  predicate isNeutral() { this instanceof FlowSummaryImpl::Public::NeutralCallable }
+  predicate isNeutral() {
+    exists(string namespace, string type, string name, string signature, string kind, string provenance |
+      neutralModel(namespace, type, name, signature, kind, provenance) and
+      this = interpretElement(namespace, type, false, name, signature, "")
+    )
+  }
 
   /**
    * Holds if this API is supported by existing CodeQL libraries, that is, it is either a
