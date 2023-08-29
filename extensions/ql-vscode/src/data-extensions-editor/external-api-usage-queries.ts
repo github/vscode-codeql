@@ -94,7 +94,7 @@ export async function runExternalApiQueries(
     extensionPacks,
     progress,
     token,
-    // We need to create a lock file, becuase the query is inside our own pack
+    // We need to create a lock file, because the query is inside our own pack
     createLockFile: true,
   });
 
