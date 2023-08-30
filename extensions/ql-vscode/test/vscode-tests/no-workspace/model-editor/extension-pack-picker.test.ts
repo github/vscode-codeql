@@ -16,8 +16,8 @@ import { QlpacksInfo } from "../../../../src/codeql-cli/cli";
 
 import * as config from "../../../../src/config";
 
-import { pickExtensionPack } from "../../../../src/data-extensions-editor/extension-pack-picker";
-import { ExtensionPack } from "../../../../src/data-extensions-editor/shared/extension-pack";
+import { pickExtensionPack } from "../../../../src/model-editor/extension-pack-picker";
+import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import { vscodeGetConfigurationMock } from "../../test-config";
 

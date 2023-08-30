@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import {
   CallClassification,
   ExternalApiUsage,
-} from "../../data-extensions-editor/external-api-usage";
+} from "../../model-editor/external-api-usage";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { styled } from "styled-components";
 

@@ -8,13 +8,13 @@ import { QueryResultType } from "../../../../src/query-server/new-messages";
 import {
   generateCandidateFilterPack,
   runAutoModelQueries,
-} from "../../../../src/data-extensions-editor/auto-model-codeml-queries";
-import { Mode } from "../../../../src/data-extensions-editor/shared/mode";
+} from "../../../../src/model-editor/auto-model-codeml-queries";
+import { Mode } from "../../../../src/model-editor/shared/mode";
 import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { QueryRunner } from "../../../../src/query-server";
 import * as queryResolver from "../../../../src/local-queries/query-resolver";
-import { MethodSignature } from "../../../../src/data-extensions-editor/external-api-usage";
+import { MethodSignature } from "../../../../src/model-editor/external-api-usage";
 import { join } from "path";
 import { exists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";

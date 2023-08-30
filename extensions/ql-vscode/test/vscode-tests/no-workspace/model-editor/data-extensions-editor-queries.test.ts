@@ -1,11 +1,11 @@
 import { readFile, readFileSync, readdir } from "fs-extra";
 import { join } from "path";
 import { load } from "js-yaml";
-import { setUpPack } from "../../../../src/data-extensions-editor/data-extensions-editor-queries";
+import { setUpPack } from "../../../../src/model-editor/data-extensions-editor-queries";
 import { dirSync } from "tmp-promise";
-import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries";
+import { fetchExternalApiQueries } from "../../../../src/model-editor/queries";
 import { QueryLanguage } from "../../../../src/common/query-language";
-import { Mode } from "../../../../src/data-extensions-editor/shared/mode";
+import { Mode } from "../../../../src/model-editor/shared/mode";
 import { mockedObject } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 

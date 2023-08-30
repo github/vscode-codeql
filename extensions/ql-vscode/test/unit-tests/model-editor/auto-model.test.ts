@@ -2,14 +2,14 @@ import {
   createAutoModelRequest,
   encodeSarif,
   getCandidates,
-} from "../../../src/data-extensions-editor/auto-model";
-import { Mode } from "../../../src/data-extensions-editor/shared/mode";
-import { AutomodelMode } from "../../../src/data-extensions-editor/auto-model-api";
-import { AutoModelQueriesResult } from "../../../src/data-extensions-editor/auto-model-codeml-queries";
+} from "../../../src/model-editor/auto-model";
+import { Mode } from "../../../src/model-editor/shared/mode";
+import { AutomodelMode } from "../../../src/model-editor/auto-model-api";
+import { AutoModelQueriesResult } from "../../../src/model-editor/auto-model-codeml-queries";
 import * as sarif from "sarif";
 import { gzipDecode } from "../../../src/common/zlib";
-import { ExternalApiUsage } from "../../../src/data-extensions-editor/external-api-usage";
-import { ModeledMethod } from "../../../src/data-extensions-editor/modeled-method";
+import { ExternalApiUsage } from "../../../src/model-editor/external-api-usage";
+import { ModeledMethod } from "../../../src/model-editor/modeled-method";
 
 describe("createAutoModelRequest", () => {
   const createSarifLog = (queryId: string): sarif.Log => {

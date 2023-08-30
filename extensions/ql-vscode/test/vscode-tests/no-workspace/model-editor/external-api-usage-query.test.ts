@@ -1,7 +1,7 @@
 import {
   readQueryResults,
   runExternalApiQueries,
-} from "../../../../src/data-extensions-editor/external-api-usage-queries";
+} from "../../../../src/model-editor/external-api-usage-queries";
 import { createMockLogger } from "../../../__mocks__/loggerMock";
 import {
   DatabaseItem,
@@ -9,13 +9,13 @@ import {
 } from "../../../../src/databases/local-databases";
 import { dirSync, file } from "tmp-promise";
 import { QueryResultType } from "../../../../src/query-server/new-messages";
-import { fetchExternalApiQueries } from "../../../../src/data-extensions-editor/queries";
+import { fetchExternalApiQueries } from "../../../../src/model-editor/queries";
 import * as log from "../../../../src/common/logging/notifications";
 import { RedactableError } from "../../../../src/common/errors";
 import { showAndLogExceptionWithTelemetry } from "../../../../src/common/logging";
 import { QueryLanguage } from "../../../../src/common/query-language";
 import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
-import { Mode } from "../../../../src/data-extensions-editor/shared/mode";
+import { Mode } from "../../../../src/model-editor/shared/mode";
 import { join } from "path";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { QueryRunner } from "../../../../src/query-server";

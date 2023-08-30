@@ -4,8 +4,8 @@ import {
   createDataExtensionYamlsForFrameworkMode,
   createFilenameForLibrary,
   loadDataExtensionYaml,
-} from "../../../src/data-extensions-editor/yaml";
-import { CallClassification } from "../../../src/data-extensions-editor/external-api-usage";
+} from "../../../src/model-editor/yaml";
+import { CallClassification } from "../../../src/model-editor/external-api-usage";
 
 describe("createDataExtensionYaml", () => {
   it("creates the correct YAML file", () => {

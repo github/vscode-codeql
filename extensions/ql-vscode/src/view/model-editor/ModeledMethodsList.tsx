@@ -1,15 +1,15 @@
 import * as React from "react";
 import { useMemo } from "react";
-import { ExternalApiUsage } from "../../data-extensions-editor/external-api-usage";
-import { ModeledMethod } from "../../data-extensions-editor/modeled-method";
+import { ExternalApiUsage } from "../../model-editor/external-api-usage";
+import { ModeledMethod } from "../../model-editor/modeled-method";
 import { LibraryRow } from "./LibraryRow";
-import { Mode } from "../../data-extensions-editor/shared/mode";
+import { Mode } from "../../model-editor/shared/mode";
 import {
   groupMethods,
   sortGroupNames,
-} from "../../data-extensions-editor/shared/sorting";
-import { DataExtensionEditorViewState } from "../../data-extensions-editor/shared/view-state";
-import { InProgressMethods } from "../../data-extensions-editor/shared/in-progress-methods";
+} from "../../model-editor/shared/sorting";
+import { DataExtensionEditorViewState } from "../../model-editor/shared/view-state";
+import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 
 type Props = {
   externalApiUsages: ExternalApiUsage[];
