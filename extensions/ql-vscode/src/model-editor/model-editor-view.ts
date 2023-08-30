@@ -147,13 +147,13 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
     return {
-      viewId: "data-extensions-editor",
+      viewId: "model-editor",
       title: `Modeling ${getLanguageDisplayName(
         this.extensionPack.language,
       )} (${this.extensionPack.name})`,
       viewColumn: ViewColumn.Active,
       preserveFocus: true,
-      view: "data-extensions-editor",
+      view: "model-editor",
       iconPath: {
         dark: Uri.file(
           join(this.ctx.extensionPath, "media/dark/symbol-misc.svg"),

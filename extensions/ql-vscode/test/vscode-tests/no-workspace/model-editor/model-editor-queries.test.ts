@@ -1,7 +1,7 @@
 import { readFile, readFileSync, readdir } from "fs-extra";
 import { join } from "path";
 import { load } from "js-yaml";
-import { setUpPack } from "../../../../src/model-editor/data-extensions-editor-queries";
+import { setUpPack } from "../../../../src/model-editor/model-editor-queries";
 import { dirSync } from "tmp-promise";
 import { fetchExternalApiQueries } from "../../../../src/model-editor/queries";
 import { QueryLanguage } from "../../../../src/common/query-language";

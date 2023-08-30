@@ -7,7 +7,7 @@ export type WebviewKind =
   | "compare"
   | "variant-analysis"
   | "data-flow-paths"
-  | "data-extensions-editor"
+  | "model-editor"
   | "method-modeling";
 
 export interface WebviewMessage {
