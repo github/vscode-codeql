@@ -136,7 +136,7 @@ export class ModelEditorView extends AbstractWebview<
         const viewType: string | undefined = (tab.input as any)?.viewType;
         // The viewType has a prefix, such as "mainThreadWebview-", but if the
         // suffix matches that should be enough to identify the view.
-        return viewType && viewType.endsWith("data-extensions-editor");
+        return viewType && viewType.endsWith("model-editor");
       }),
     );
   }

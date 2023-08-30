@@ -38,10 +38,7 @@ export class ModelEditorModule extends DisposableObject {
     baseQueryStorageDir: string,
   ) {
     super();
-    this.queryStorageDir = join(
-      baseQueryStorageDir,
-      "data-extensions-editor-results",
-    );
+    this.queryStorageDir = join(baseQueryStorageDir, "model-editor-results");
     this.methodsUsagePanel = this.push(new MethodsUsagePanel(cliServer));
     this.push(new MethodModelingPanel(ctx));
   }
