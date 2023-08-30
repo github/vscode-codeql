@@ -2,6 +2,7 @@ import * as React from "react";
 import { useEffect } from "react";
 import { MethodModeling } from "./MethodModeling";
 import { ModelingStatus } from "../model-editor/ModelingStatusIndicator";
+import { ExternalApiUsage } from "../../model-editor/external-api-usage";
 
 export function MethodModelingView(): JSX.Element {
   useEffect(() => {
@@ -22,5 +23,22 @@ export function MethodModelingView(): JSX.Element {
   }, []);
 
   const modelingStatus: ModelingStatus = "saved";
-  return <MethodModeling modelingStatus={modelingStatus} />;
+  const externalApiUsage: ExternalApiUsage = {
+    library: "sql2o",
+    libraryVersion: "1.6.0",
+    signature: "org.sql2o.Connection#createQuery(String)",
+    packageName: "org.sql2o",
+    typeName: "Connection",
+    methodName: "createQuery",
+    methodParameters: "(String)",
+    supported: true,
+    supportedType: "summary",
+    usages: [],
+  };
+  return (
+    <MethodModeling
+      modelingStatus={modelingStatus}
+      externalApiUsage={externalApiUsage}
+    />
+  );
 }
