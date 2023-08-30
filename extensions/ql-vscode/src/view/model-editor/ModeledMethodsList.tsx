@@ -8,7 +8,7 @@ import {
   groupMethods,
   sortGroupNames,
 } from "../../model-editor/shared/sorting";
-import { DataExtensionEditorViewState } from "../../model-editor/shared/view-state";
+import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 
 type Props = {
@@ -16,7 +16,7 @@ type Props = {
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
-  viewState: DataExtensionEditorViewState;
+  viewState: ModelEditorViewState;
   hideModeledApis: boolean;
   onChange: (
     modelName: string,

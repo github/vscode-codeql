@@ -13,7 +13,7 @@ import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { calculateModeledPercentage } from "../../model-editor/shared/modeled-percentage";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
-import { DataExtensionEditorViewState } from "../../model-editor/shared/view-state";
+import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../model-editor/shared/mode";
@@ -72,7 +72,7 @@ const ButtonsContainer = styled.div`
 `;
 
 type Props = {
-  initialViewState?: DataExtensionEditorViewState;
+  initialViewState?: ModelEditorViewState;
   initialExternalApiUsages?: ExternalApiUsage[];
   initialModeledMethods?: Record<string, ModeledMethod>;
   initialHideModeledApis?: boolean;
@@ -84,9 +84,9 @@ export function DataExtensionsEditor({
   initialModeledMethods = {},
   initialHideModeledApis = INITIAL_HIDE_MODELED_APIS_VALUE,
 }: Props): JSX.Element {
-  const [viewState, setViewState] = useState<
-    DataExtensionEditorViewState | undefined
-  >(initialViewState);
+  const [viewState, setViewState] = useState<ModelEditorViewState | undefined>(
+    initialViewState,
+  );
 
   const [externalApiUsages, setExternalApiUsages] = useState<
     ExternalApiUsage[]
@@ -119,7 +119,7 @@ export function DataExtensionsEditor({
       if (evt.origin === window.origin) {
         const msg: ToDataExtensionsEditorMessage = evt.data;
         switch (msg.t) {
-          case "setDataExtensionEditorViewState":
+          case "setModelEditorViewState":
             setViewState(msg.viewState);
             break;
           case "setExternalApiUsages":

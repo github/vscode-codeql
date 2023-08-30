@@ -264,7 +264,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       this.databaseItem.language === "java" && showLlmGeneration();
 
     await this.postMessage({
-      t: "setDataExtensionEditorViewState",
+      t: "setModelEditorViewState",
       viewState: {
         extensionPack: this.extensionPack,
         showLlmButton,
