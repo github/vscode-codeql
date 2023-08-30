@@ -6,7 +6,7 @@ describe(MethodModeling.name, () => {
   const render = (props: MethodModelingProps) =>
     reactRender(<MethodModeling {...props} />);
 
-  it("renders method modeling panel", () => {
+  it("renders method name", () => {
     render({ modelingStatus: "saved" });
 
     expect(screen.getByText("that.dependency.THENAME")).toBeInTheDocument();

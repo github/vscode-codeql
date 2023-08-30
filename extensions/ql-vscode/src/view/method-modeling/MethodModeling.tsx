@@ -16,7 +16,7 @@ const Title = styled.div`
   font-size: 1.2em;
 `;
 
-const DependencyBox = styled.div`
+const DependencyContainer = styled.div`
   display: flex;
   justify-content: space-between;
 `;
@@ -34,10 +34,10 @@ export const MethodModeling = (props: MethodModelingProps) => {
   return (
     <Container>
       <Title>API or Method</Title>
-      <DependencyBox>
+      <DependencyContainer>
         <DependencyName>that.dependency.THENAME</DependencyName>
         <ModelingStatusIndicator status={modelingStatus} />
-      </DependencyBox>
+      </DependencyContainer>
     </Container>
   );
 };

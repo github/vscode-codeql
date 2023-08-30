@@ -22,5 +22,5 @@ export function MethodModelingView(): JSX.Element {
   }, []);
 
   const modelingStatus: ModelingStatus = "saved";
-  return <MethodModeling {...{ modelingStatus }} />;
+  return <MethodModeling modelingStatus={modelingStatus} />;
 }
