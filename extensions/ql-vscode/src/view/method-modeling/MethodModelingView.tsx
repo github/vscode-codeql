@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useEffect } from "react";
 import { MethodModeling } from "./MethodModeling";
+import { ModelingStatus } from "../model-editor/ModelingStatusIndicator";
 
 export function MethodModelingView(): JSX.Element {
   useEffect(() => {
@@ -20,5 +21,6 @@ export function MethodModelingView(): JSX.Element {
     };
   }, []);
 
-  return <MethodModeling />;
+  const modelingStatus: ModelingStatus = "saved";
+  return <MethodModeling modelingStatus={modelingStatus} />;
 }
