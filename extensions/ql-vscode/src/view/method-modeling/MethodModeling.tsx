@@ -1,6 +1,6 @@
 import * as React from "react";
-import { ModelingStatusIndicator } from "../data-extensions-editor/ModelingStatusIndicator";
 import { styled } from "styled-components";
+import { ModelingStatusIndicator } from "../model-editor/ModelingStatusIndicator";
 
 const Container = styled.div`
   background-color: var(--vscode-peekViewResult-background);
