@@ -90,6 +90,7 @@ export class LocalQueries extends DisposableObject {
         this.runQueriesFromQueriesPanel.bind(this),
       "codeQLQueries.runLocalQueriesFromPanel":
         this.runQueriesFromQueriesPanel.bind(this),
+      "codeQLQueries.createQuery": this.createSkeletonQuery.bind(this),
       "codeQL.runLocalQueryFromFileTab": this.runQuery.bind(this),
       "codeQL.runQueries": createMultiSelectionCommand(
         this.runQueries.bind(this),

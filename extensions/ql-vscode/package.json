@@ -598,6 +598,11 @@
         "title": "Run against variant analysis repositories"
       },
       {
+        "command": "codeQLQueries.createQuery",
+        "title": "Create query",
+        "icon": "$(new-file)"
+      },
+      {
         "command": "codeQLVariantAnalysisRepositories.openConfigFile",
         "title": "Open database configuration file",
         "icon": "$(json)"
@@ -1007,6 +1012,11 @@
           "group": "navigation"
         },
         {
+          "command": "codeQLQueries.createQuery",
+          "when": "view == codeQLQueries",
+          "group": "navigation"
+        },
+        {
           "command": "codeQLQueryHistory.sortByName",
           "when": "view == codeQLQueryHistory",
           "group": "1_queryHistory@0"
@@ -1288,6 +1298,10 @@
         },
         {
           "command": "codeQLQueries.runLocalQueriesFromPanel",
+          "when": "false"
+        },
+        {
+          "command": "codeQLQueries.createQuery",
           "when": "false"
         },
         {
