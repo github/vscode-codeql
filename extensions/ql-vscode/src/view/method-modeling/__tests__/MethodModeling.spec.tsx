@@ -1,12 +1,13 @@
 import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
-import { MethodModeling } from "../MethodModeling";
+import { MethodModeling, MethodModelingProps } from "../MethodModeling";
 
 describe(MethodModeling.name, () => {
-  const render = () => reactRender(<MethodModeling />);
+  const render = (props: MethodModelingProps) =>
+    reactRender(<MethodModeling {...props} />);
 
-  it("renders data flow paths", () => {
-    render();
+  it("renders method modeling panel", () => {
+    render({ modelingStatus: "saved" });
 
     expect(screen.getByText("that.dependency.THENAME")).toBeInTheDocument();
   });

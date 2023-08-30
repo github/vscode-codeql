@@ -1,6 +1,9 @@
 import * as React from "react";
 import { styled } from "styled-components";
-import { ModelingStatusIndicator } from "../model-editor/ModelingStatusIndicator";
+import {
+  ModelingStatus,
+  ModelingStatusIndicator,
+} from "../model-editor/ModelingStatusIndicator";
 
 const Container = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -22,13 +25,18 @@ const DependencyName = styled.span`
   font-family: var(--vscode-editor-font-family);
 `;
 
-export const MethodModeling = (): JSX.Element => {
+export type MethodModelingProps = {
+  modelingStatus: ModelingStatus;
+};
+
+export const MethodModeling = (props: MethodModelingProps) => {
+  const { modelingStatus } = props;
   return (
     <Container>
       <Title>API or Method</Title>
       <DependencyBox>
         <DependencyName>that.dependency.THENAME</DependencyName>
-        <ModelingStatusIndicator status="unmodeled" />
+        <ModelingStatusIndicator status={modelingStatus} />
       </DependencyBox>
     </Container>
   );
