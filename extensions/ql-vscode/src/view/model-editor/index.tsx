@@ -1,6 +1,6 @@
 import * as React from "react";
 import { WebviewDefinition } from "../webview-definition";
-import { DataExtensionsEditor } from "./DataExtensionsEditor";
+import { DataExtensionsEditor } from "./ModelEditor";
 
 const definition: WebviewDefinition = {
   component: <DataExtensionsEditor />,
