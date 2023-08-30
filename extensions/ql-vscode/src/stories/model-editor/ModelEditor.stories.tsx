@@ -3,7 +3,7 @@ import * as React from "react";
 import { Meta, StoryFn } from "@storybook/react";
 
 import { Mode } from "../../model-editor/shared/mode";
-import { DataExtensionsEditor as DataExtensionsEditorComponent } from "../../view/model-editor/DataExtensionsEditor";
+import { DataExtensionsEditor as DataExtensionsEditorComponent } from "../../view/model-editor/ModelEditor";
 import { CallClassification } from "../../model-editor/external-api-usage";
 
 export default {
