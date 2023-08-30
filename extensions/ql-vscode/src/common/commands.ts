@@ -302,7 +302,7 @@ export type PackagingCommands = {
   "codeQL.downloadPacks": () => Promise<void>;
 };
 
-export type DataExtensionsEditorCommands = {
+export type ModelEditorCommands = {
   "codeQL.openDataExtensionsEditor": () => Promise<void>;
   "codeQLDataExtensionsEditor.jumpToUsageLocation": (
     usage: Usage,
@@ -347,7 +347,7 @@ export type AllExtensionCommands = BaseCommands &
   AstCfgCommands &
   AstViewerCommands &
   PackagingCommands &
-  DataExtensionsEditorCommands &
+  ModelEditorCommands &
   EvalLogViewerCommands &
   SummaryLanguageSupportCommands &
   Partial<TestUICommands> &

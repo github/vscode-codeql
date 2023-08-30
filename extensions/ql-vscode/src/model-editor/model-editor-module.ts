@@ -1,6 +1,6 @@
 import { ExtensionContext } from "vscode";
-import { DataExtensionsEditorView } from "./model-editor-view";
-import { DataExtensionsEditorCommands } from "../common/commands";
+import { ModelEditorView } from "./model-editor-view";
+import { ModelEditorCommands } from "../common/commands";
 import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
 import { DatabaseItem, DatabaseManager } from "../databases/local-databases";
@@ -23,12 +23,11 @@ import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 
-export class DataExtensionsEditorModule extends DisposableObject {
+export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
   private readonly methodsUsagePanel: MethodsUsagePanel;
 
-  private mostRecentlyActiveView: DataExtensionsEditorView | undefined =
-    undefined;
+  private mostRecentlyActiveView: ModelEditorView | undefined = undefined;
 
   private constructor(
     private readonly ctx: ExtensionContext,
@@ -47,17 +46,17 @@ export class DataExtensionsEditorModule extends DisposableObject {
     this.push(new MethodModelingPanel(ctx));
   }
 
-  private handleViewBecameActive(view: DataExtensionsEditorView): void {
+  private handleViewBecameActive(view: ModelEditorView): void {
     this.mostRecentlyActiveView = view;
   }
 
-  private handleViewWasDisposed(view: DataExtensionsEditorView): void {
+  private handleViewWasDisposed(view: ModelEditorView): void {
     if (this.mostRecentlyActiveView === view) {
       this.mostRecentlyActiveView = undefined;
     }
   }
 
-  private isMostRecentlyActiveView(view: DataExtensionsEditorView): boolean {
+  private isMostRecentlyActiveView(view: ModelEditorView): boolean {
     return this.mostRecentlyActiveView === view;
   }
 
@@ -68,8 +67,8 @@ export class DataExtensionsEditorModule extends DisposableObject {
     cliServer: CodeQLCliServer,
     queryRunner: QueryRunner,
     queryStorageDir: string,
-  ): Promise<DataExtensionsEditorModule> {
-    const dataExtensionsEditorModule = new DataExtensionsEditorModule(
+  ): Promise<ModelEditorModule> {
+    const modelEditorModule = new ModelEditorModule(
       ctx,
       app,
       databaseManager,
@@ -78,11 +77,11 @@ export class DataExtensionsEditorModule extends DisposableObject {
       queryStorageDir,
     );
 
-    await dataExtensionsEditorModule.initialize();
-    return dataExtensionsEditorModule;
+    await modelEditorModule.initialize();
+    return modelEditorModule;
   }
 
-  public getCommands(): DataExtensionsEditorCommands {
+  public getCommands(): ModelEditorCommands {
     return {
       "codeQL.openDataExtensionsEditor": async () => {
         const db = this.databaseManager.currentDatabaseItem;
@@ -141,7 +140,7 @@ export class DataExtensionsEditorModule extends DisposableObject {
               return;
             }
 
-            const view = new DataExtensionsEditorView(
+            const view = new ModelEditorView(
               this.ctx,
               this.app,
               this.databaseManager,

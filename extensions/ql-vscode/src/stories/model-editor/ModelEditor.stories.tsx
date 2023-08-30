@@ -3,20 +3,20 @@ import * as React from "react";
 import { Meta, StoryFn } from "@storybook/react";
 
 import { Mode } from "../../model-editor/shared/mode";
-import { DataExtensionsEditor as DataExtensionsEditorComponent } from "../../view/model-editor/ModelEditor";
+import { ModelEditor as ModelEditorComponent } from "../../view/model-editor/ModelEditor";
 import { CallClassification } from "../../model-editor/external-api-usage";
 
 export default {
   title: "CodeQL Model Editor/CodeQL Model Editor",
-  component: DataExtensionsEditorComponent,
-} as Meta<typeof DataExtensionsEditorComponent>;
+  component: ModelEditorComponent,
+} as Meta<typeof ModelEditorComponent>;
 
-const Template: StoryFn<typeof DataExtensionsEditorComponent> = (args) => (
-  <DataExtensionsEditorComponent {...args} />
+const Template: StoryFn<typeof ModelEditorComponent> = (args) => (
+  <ModelEditorComponent {...args} />
 );
 
-export const DataExtensionsEditor = Template.bind({});
-DataExtensionsEditor.args = {
+export const ModelEditor = Template.bind({});
+ModelEditor.args = {
   initialViewState: {
     extensionPack: {
       path: "/home/user/vscode-codeql-starter/codeql-custom-queries-java/sql2o",

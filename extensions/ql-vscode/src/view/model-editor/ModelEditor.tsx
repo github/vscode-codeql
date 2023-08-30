@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ToDataExtensionsEditorMessage } from "../../common/interface-types";
+import { ToModelEditorMessage } from "../../common/interface-types";
 import {
   VSCodeButton,
   VSCodeCheckbox,
@@ -28,7 +28,7 @@ const LoadingContainer = styled.div`
   font-weight: 600;
 `;
 
-const DataExtensionsEditorContainer = styled.div`
+const ModelEditorContainer = styled.div`
   margin-top: 1rem;
 `;
 
@@ -78,7 +78,7 @@ type Props = {
   initialHideModeledApis?: boolean;
 };
 
-export function DataExtensionsEditor({
+export function ModelEditor({
   initialViewState,
   initialExternalApiUsages = [],
   initialModeledMethods = {},
@@ -117,7 +117,7 @@ export function DataExtensionsEditor({
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
-        const msg: ToDataExtensionsEditorMessage = evt.data;
+        const msg: ToModelEditorMessage = evt.data;
         switch (msg.t) {
           case "setModelEditorViewState":
             setViewState(msg.viewState);
@@ -297,7 +297,7 @@ export function DataExtensionsEditor({
   }
 
   return (
-    <DataExtensionsEditorContainer>
+    <ModelEditorContainer>
       <HeaderContainer>
         <HeaderColumn>
           <HeaderRow>
@@ -371,6 +371,6 @@ export function DataExtensionsEditor({
           onModelDependencyClick={onModelDependencyClick}
         />
       </EditorContainer>
-    </DataExtensionsEditorContainer>
+    </ModelEditorContainer>
   );
 }

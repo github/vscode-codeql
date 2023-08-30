@@ -569,14 +569,14 @@ interface HideModeledApisMessage {
   hideModeledApis: boolean;
 }
 
-export type ToDataExtensionsEditorMessage =
+export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
   | LoadModeledMethodsMessage
   | AddModeledMethodsMessage
   | SetInProgressMethodsMessage;
 
-export type FromDataExtensionsEditorMessage =
+export type FromModelEditorMessage =
   | ViewLoadedMsg
   | SwitchModeMessage
   | RefreshExternalApiUsages
