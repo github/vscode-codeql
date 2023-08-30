@@ -1652,7 +1652,7 @@
         },
         {
           "command": "codeQL.createQuery",
-          "when": "config.codeQL.codespacesTemplate"
+          "when": "config.codeQL.codespacesTemplate || config.codeQL.canary && config.codeQL.queriesPanel"
         },
         {
           "command": "codeQLTests.acceptOutputContextTestItem",
