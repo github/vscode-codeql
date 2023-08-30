@@ -128,7 +128,7 @@ import { getAstCfgCommands } from "./language-support/ast-viewer/ast-cfg-command
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
-import { DataExtensionsEditorModule } from "./model-editor/data-extensions-editor-module";
+import { DataExtensionsEditorModule } from "./model-editor/model-editor-module";
 import { TestManager } from "./query-testing/test-manager";
 import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";

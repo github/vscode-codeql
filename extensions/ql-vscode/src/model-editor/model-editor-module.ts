@@ -1,5 +1,5 @@
 import { ExtensionContext } from "vscode";
-import { DataExtensionsEditorView } from "./data-extensions-editor-view";
+import { DataExtensionsEditorView } from "./model-editor-view";
 import { DataExtensionsEditorCommands } from "../common/commands";
 import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
 import { QueryRunner } from "../query-server";
@@ -18,7 +18,7 @@ import { MethodsUsagePanel } from "./methods-usage/methods-usage-panel";
 import { Mode } from "./shared/mode";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { Usage } from "./external-api-usage";
-import { setUpPack } from "./data-extensions-editor-queries";
+import { setUpPack } from "./model-editor-queries";
 import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
 
 const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
