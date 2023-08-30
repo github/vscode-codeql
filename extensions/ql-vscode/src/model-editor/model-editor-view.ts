@@ -116,7 +116,7 @@ export class ModelEditorView extends AbstractWebview<
       // so we want to check if there are any others still open.
       void this.app.commands.execute(
         "setContext",
-        "codeql.dataExtensionsEditorOpen",
+        "codeql.modelEditorOpen",
         this.isAModelEditorOpen(),
       );
     });
@@ -125,7 +125,7 @@ export class ModelEditorView extends AbstractWebview<
 
     void this.app.commands.execute(
       "setContext",
-      "codeql.dataExtensionsEditorOpen",
+      "codeql.modelEditorOpen",
       true,
     );
   }

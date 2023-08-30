@@ -303,8 +303,8 @@ export type PackagingCommands = {
 };
 
 export type ModelEditorCommands = {
-  "codeQL.openDataExtensionsEditor": () => Promise<void>;
-  "codeQLDataExtensionsEditor.jumpToUsageLocation": (
+  "codeQL.openModelEditor": () => Promise<void>;
+  "codeQLModelEditor.jumpToUsageLocation": (
     usage: Usage,
     databaseItem: DatabaseItem,
   ) => Promise<void>;

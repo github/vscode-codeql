@@ -83,7 +83,7 @@ export class ModelEditorModule extends DisposableObject {
 
   public getCommands(): ModelEditorCommands {
     return {
-      "codeQL.openDataExtensionsEditor": async () => {
+      "codeQL.openModelEditor": async () => {
         const db = this.databaseManager.currentDatabaseItem;
         if (!db) {
           void showAndLogErrorMessage(this.app.logger, "No database selected");
@@ -164,7 +164,7 @@ export class ModelEditorModule extends DisposableObject {
           },
         );
       },
-      "codeQLDataExtensionsEditor.jumpToUsageLocation": async (
+      "codeQLModelEditor.jumpToUsageLocation": async (
         usage: Usage,
         databaseItem: DatabaseItem,
       ) => {
