@@ -164,7 +164,7 @@ describe("pickExtensionPack", () => {
         section?: string,
         scope?: ConfigurationScope | null,
       ): VSCodeWorkspaceConfiguration => {
-        expect(section).toEqual("codeQL.dataExtensions");
+        expect(section).toEqual("codeQL.model");
         expect((scope as any)?.languageId).toEqual("java");
 
         return {
@@ -205,7 +205,7 @@ describe("pickExtensionPack", () => {
         section?: string,
         scope?: ConfigurationScope | null,
       ): VSCodeWorkspaceConfiguration => {
-        expect(section).toEqual("codeQL.dataExtensions");
+        expect(section).toEqual("codeQL.model");
         expect((scope as any)?.languageId).toEqual("java");
 
         return {
@@ -311,7 +311,7 @@ describe("pickExtensionPack", () => {
         section?: string,
         scope?: ConfigurationScope | null,
       ): VSCodeWorkspaceConfiguration => {
-        expect(section).toEqual("codeQL.dataExtensions");
+        expect(section).toEqual("codeQL.model");
         expect((scope as any)?.languageId).toEqual("java");
 
         return {

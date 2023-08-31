@@ -1416,7 +1416,7 @@
         },
         {
           "command": "codeQL.openModelEditor",
-          "when": "config.codeQL.canary && config.codeQL.dataExtensions.editor"
+          "when": "config.codeQL.canary && config.codeQL.model.editor"
         },
         {
           "command": "codeQLQueries.runLocalQueryContextMenu",
