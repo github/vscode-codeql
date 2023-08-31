@@ -128,7 +128,7 @@ import { getAstCfgCommands } from "./language-support/ast-viewer/ast-cfg-command
 import { App } from "./common/app";
 import { registerCommandWithErrorHandling } from "./common/vscode/commands";
 import { DebuggerUI } from "./debugger/debugger-ui";
-import { DataExtensionsEditorModule } from "./data-extensions-editor/data-extensions-editor-module";
+import { ModelEditorModule } from "./model-editor/model-editor-module";
 import { TestManager } from "./query-testing/test-manager";
 import { TestRunner } from "./query-testing/test-runner";
 import { TestManagerBase } from "./query-testing/test-manager-base";
@@ -934,15 +934,14 @@ async function activateWithInstalledDistribution(
   const debuggerUI = new DebuggerUI(app, localQueries, dbm);
   ctx.subscriptions.push(debuggerUI);
 
-  const dataExtensionsEditorModule =
-    await DataExtensionsEditorModule.initialize(
-      ctx,
-      app,
-      dbm,
-      cliServer,
-      qs,
-      tmpDir.name,
-    );
+  const modelEditorModule = await ModelEditorModule.initialize(
+    ctx,
+    app,
+    dbm,
+    cliServer,
+    qs,
+    tmpDir.name,
+  );
 
   void extLogger.log("Initializing QLTest interface.");
 
@@ -1015,7 +1014,7 @@ async function activateWithInstalledDistribution(
     ...getPackagingCommands({
       cliServer,
     }),
-    ...dataExtensionsEditorModule.getCommands(),
+    ...modelEditorModule.getCommands(),
     ...evalLogViewer.getCommands(),
     ...summaryLanguageSupport.getCommands(),
     ...testUiCommands,

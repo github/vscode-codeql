@@ -45,7 +45,7 @@ describe("commands declared in package.json", () => {
       command.match(/^codeQLAstViewer\./) ||
       command.match(/^codeQLEvalLogViewer\./) ||
       command.match(/^codeQLTests\./) ||
-      command.match(/^codeQLDataExtensionsEditor\./)
+      command.match(/^codeQLModelEditor\./)
     ) {
       scopedCmds.add(command);
       expect(title).toBeDefined();

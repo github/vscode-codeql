@@ -943,8 +943,8 @@
         "enablement": "codeql.hasQLSource"
       },
       {
-        "command": "codeQL.openDataExtensionsEditor",
-        "title": "CodeQL: Open Data Extensions Editor"
+        "command": "codeQL.openModelEditor",
+        "title": "CodeQL: Open CodeQL Model Editor"
       },
       {
         "command": "codeQL.mockGitHubApiServer.startRecording",
@@ -1415,7 +1415,7 @@
           "when": "false"
         },
         {
-          "command": "codeQL.openDataExtensionsEditor",
+          "command": "codeQL.openModelEditor",
           "when": "config.codeQL.canary && config.codeQL.dataExtensions.editor"
         },
         {
@@ -1652,7 +1652,7 @@
         },
         {
           "command": "codeQL.createQuery",
-          "when": "config.codeQL.codespacesTemplate"
+          "when": "config.codeQL.codespacesTemplate || config.codeQL.canary && config.codeQL.queriesPanel"
         },
         {
           "command": "codeQLTests.acceptOutputContextTestItem",
@@ -1724,8 +1724,8 @@
       ],
       "panel": [
         {
-          "id": "codeql-model-details",
-          "title": "CodeQL Model Details",
+          "id": "codeql-methods-usage",
+          "title": "CodeQL Methods Usage",
           "icon": "media/logo.svg"
         }
       ]
@@ -1759,17 +1759,25 @@
           "when": "config.codeQL.canary"
         }
       ],
-      "codeql-model-details": [
+      "codeql-methods-usage": [
         {
-          "id": "codeQLModelDetails",
-          "name": "CodeQL Model Details",
-          "when": "config.codeQL.canary && codeql.dataExtensionsEditorOpen"
+          "id": "codeQLMethodsUsage",
+          "name": "CodeQL Methods Usage",
+          "when": "config.codeQL.canary && codeql.modelEditorOpen"
+        }
+      ],
+      "explorer": [
+        {
+          "type": "webview",
+          "id": "codeQLMethodModeling",
+          "name": "CodeQL Method Modeling",
+          "when": "config.codeQL.canary && config.codeQL.modelEditor.methodModelingView && codeql.modelEditorOpen"
         }
       ]
     },
     "viewsWelcome": [
       {
-        "view": "codeQLModelDetails",
+        "view": "codeQLMethodsUsage",
         "contents": "Loading..."
       },
       {

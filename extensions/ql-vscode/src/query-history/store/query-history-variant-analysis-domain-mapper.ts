@@ -55,6 +55,7 @@ function mapVariantAnalysisDtoToDto(
       filePath: variantAnalysis.query.filePath,
       language: mapQueryLanguageToDto(variantAnalysis.query.language),
       text: variantAnalysis.query.text,
+      kind: variantAnalysis.query.kind,
     },
     databases: {
       repositories: variantAnalysis.databases.repositories,

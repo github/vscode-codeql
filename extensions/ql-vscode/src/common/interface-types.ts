@@ -17,13 +17,10 @@ import {
 } from "../variant-analysis/shared/variant-analysis-filter-sort";
 import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import {
-  ExternalApiUsage,
-  Usage,
-} from "../data-extensions-editor/external-api-usage";
-import { ModeledMethod } from "../data-extensions-editor/modeled-method";
-import { DataExtensionEditorViewState } from "../data-extensions-editor/shared/view-state";
-import { Mode } from "../data-extensions-editor/shared/mode";
+import { ExternalApiUsage, Usage } from "../model-editor/external-api-usage";
+import { ModeledMethod } from "../model-editor/modeled-method";
+import { ModelEditorViewState } from "../model-editor/shared/view-state";
+import { Mode } from "../model-editor/shared/mode";
 
 /**
  * This module contains types and code that are shared between
@@ -494,8 +491,8 @@ export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
 export type FromDataFlowPathsMessage = CommonFromViewMessages;
 
 interface SetExtensionPackStateMessage {
-  t: "setDataExtensionEditorViewState";
-  viewState: DataExtensionEditorViewState;
+  t: "setModelEditorViewState";
+  viewState: ModelEditorViewState;
 }
 
 interface SetExternalApiUsagesMessage {
@@ -572,14 +569,14 @@ interface HideModeledApisMessage {
   hideModeledApis: boolean;
 }
 
-export type ToDataExtensionsEditorMessage =
+export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
   | LoadModeledMethodsMessage
   | AddModeledMethodsMessage
   | SetInProgressMethodsMessage;
 
-export type FromDataExtensionsEditorMessage =
+export type FromModelEditorMessage =
   | ViewLoadedMsg
   | SwitchModeMessage
   | RefreshExternalApiUsages
@@ -592,3 +589,7 @@ export type FromDataExtensionsEditorMessage =
   | StopGeneratingExternalApiFromLlmMessage
   | ModelDependencyMessage
   | HideModeledApisMessage;
+
+export type FromMethodModelingMessage =
+  | TelemetryMessage
+  | UnhandledErrorMessage;

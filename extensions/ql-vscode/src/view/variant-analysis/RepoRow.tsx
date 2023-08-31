@@ -26,6 +26,7 @@ import { AnalyzedRepoItemContent } from "./AnalyzedRepoItemContent";
 import StarCount from "../common/StarCount";
 import { useTelemetryOnChange } from "../common/telemetry";
 import { DeterminateProgressRing } from "../common/DeterminateProgressRing";
+import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
 
 // This will ensure that these icons have a className which we can use in the TitleContainer
 const ExpandCollapseCodicon = styled(Codicon)``;
@@ -98,6 +99,8 @@ export type RepoRowProps = {
   interpretedResults?: AnalysisAlert[];
   rawResults?: AnalysisRawResults;
 
+  resultFormat?: ResultFormat;
+
   selected?: boolean;
   onSelectedChange?: (repositoryId: number, selected: boolean) => void;
 };
@@ -168,6 +171,7 @@ export const RepoRow = ({
   resultCount,
   interpretedResults,
   rawResults,
+  resultFormat = ResultFormat.Alerts,
   selected,
   onSelectedChange,
 }: RepoRowProps) => {
@@ -304,6 +308,7 @@ export const RepoRow = ({
           downloadStatus={downloadState?.downloadStatus}
           interpretedResults={interpretedResults}
           rawResults={rawResults}
+          resultFormat={resultFormat}
         />
       )}
     </div>

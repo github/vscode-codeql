@@ -12,6 +12,7 @@ export function createMockSubmission(): VariantAnalysisSubmission {
       filePath: "query-file-path",
       language: QueryLanguage.Javascript,
       text: "query-text",
+      kind: "table",
       pack: "base64-encoded-string",
     },
     databases: {

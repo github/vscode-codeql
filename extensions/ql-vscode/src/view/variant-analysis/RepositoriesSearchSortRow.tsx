@@ -9,10 +9,15 @@ import {
 import { RepositoriesSearch } from "./RepositoriesSearch";
 import { RepositoriesSort } from "./RepositoriesSort";
 import { RepositoriesFilter } from "./RepositoriesFilter";
+import { RepositoriesResultFormat } from "./RepositoriesResultFormat";
+import { ResultFormat } from "../../variant-analysis/shared/variant-analysis-result-format";
 
 type Props = {
-  value: RepositoriesFilterSortState;
-  onChange: Dispatch<SetStateAction<RepositoriesFilterSortState>>;
+  filterSortValue: RepositoriesFilterSortState;
+  resultFormatValue: ResultFormat;
+  onFilterSortChange: Dispatch<SetStateAction<RepositoriesFilterSortState>>;
+  onResultFormatChange: Dispatch<SetStateAction<ResultFormat>>;
+  variantAnalysisQueryKind: string | undefined;
 };
 
 const Container = styled.div`
@@ -35,51 +40,83 @@ const RepositoriesSortColumn = styled(RepositoriesSort)`
   flex: 1;
 `;
 
-export const RepositoriesSearchSortRow = ({ value, onChange }: Props) => {
+const RepositoriesResultFormatColumn = styled(RepositoriesResultFormat)`
+  flex: 1;
+`;
+
+function showResultFormatColumn(
+  variantAnalysisQueryKind: string | undefined,
+): boolean {
+  return (
+    variantAnalysisQueryKind === "problem" ||
+    variantAnalysisQueryKind === "path-problem"
+  );
+}
+
+export const RepositoriesSearchSortRow = ({
+  filterSortValue,
+  resultFormatValue,
+  onFilterSortChange,
+  onResultFormatChange,
+  variantAnalysisQueryKind,
+}: Props) => {
   const handleSearchValueChange = useCallback(
     (searchValue: string) => {
-      onChange((oldValue) => ({
+      onFilterSortChange((oldValue) => ({
         ...oldValue,
         searchValue,
       }));
     },
-    [onChange],
+    [onFilterSortChange],
   );
 
   const handleFilterKeyChange = useCallback(
     (filterKey: FilterKey) => {
-      onChange((oldValue) => ({
+      onFilterSortChange((oldValue) => ({
         ...oldValue,
         filterKey,
       }));
     },
-    [onChange],
+    [onFilterSortChange],
   );
 
   const handleSortKeyChange = useCallback(
     (sortKey: SortKey) => {
-      onChange((oldValue) => ({
+      onFilterSortChange((oldValue) => ({
         ...oldValue,
         sortKey,
       }));
     },
-    [onChange],
+    [onFilterSortChange],
+  );
+
+  const handleResultFormatChange = useCallback(
+    (resultFormat: ResultFormat) => {
+      onResultFormatChange(resultFormat);
+    },
+    [onResultFormatChange],
   );
 
   return (
     <Container>
       <RepositoriesSearchColumn
-        value={value.searchValue}
+        value={filterSortValue.searchValue}
         onChange={handleSearchValueChange}
       />
       <RepositoriesFilterColumn
-        value={value.filterKey}
+        value={filterSortValue.filterKey}
         onChange={handleFilterKeyChange}
       />
       <RepositoriesSortColumn
-        value={value.sortKey}
+        value={filterSortValue.sortKey}
         onChange={handleSortKeyChange}
       />
+      {showResultFormatColumn(variantAnalysisQueryKind) && (
+        <RepositoriesResultFormatColumn
+          value={resultFormatValue}
+          onChange={handleResultFormatChange}
+        />
+      )}
     </Container>
   );
 };

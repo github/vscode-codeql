@@ -12,7 +12,7 @@ import type {
 } from "../variant-analysis/shared/variant-analysis";
 import type { QLDebugConfiguration } from "../debugger/debug-configuration";
 import type { QueryTreeViewItem } from "../queries-panel/query-tree-view-item";
-import type { Usage } from "../data-extensions-editor/external-api-usage";
+import type { Usage } from "../model-editor/external-api-usage";
 
 // A command function matching the signature that VS Code calls when
 // a command is invoked from a context menu on a TreeView with
@@ -302,9 +302,9 @@ export type PackagingCommands = {
   "codeQL.downloadPacks": () => Promise<void>;
 };
 
-export type DataExtensionsEditorCommands = {
-  "codeQL.openDataExtensionsEditor": () => Promise<void>;
-  "codeQLDataExtensionsEditor.jumpToUsageLocation": (
+export type ModelEditorCommands = {
+  "codeQL.openModelEditor": () => Promise<void>;
+  "codeQLModelEditor.jumpToUsageLocation": (
     usage: Usage,
     databaseItem: DatabaseItem,
   ) => Promise<void>;
@@ -347,7 +347,7 @@ export type AllExtensionCommands = BaseCommands &
   AstCfgCommands &
   AstViewerCommands &
   PackagingCommands &
-  DataExtensionsEditorCommands &
+  ModelEditorCommands &
   EvalLogViewerCommands &
   SummaryLanguageSupportCommands &
   Partial<TestUICommands> &
