@@ -149,7 +149,7 @@ export class ModelEditorModule extends DisposableObject {
               modelFile,
               Mode.Application,
               this.methodsUsagePanel.setState.bind(this.methodsUsagePanel),
-              this.methodsUsagePanel.revealItem.bind(this.methodsUsagePanel),
+              this.showMethod.bind(this),
               this.handleViewBecameActive.bind(this),
               this.handleViewWasDisposed.bind(this),
               this.isMostRecentlyActiveView.bind(this),
@@ -172,5 +172,9 @@ export class ModelEditorModule extends DisposableObject {
 
   private async initialize(): Promise<void> {
     await ensureDir(this.queryStorageDir);
+  }
+
+  private async showMethod(usage: Usage): Promise<void> {
+    await this.methodsUsagePanel.revealItem(usage);
   }
 }
