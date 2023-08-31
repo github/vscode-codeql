@@ -13,10 +13,10 @@ import RawTableRow from "./RawTableRow";
 import { ResultRow } from "../../common/bqrs-cli-types";
 import { onNavigation } from "./ResultsApp";
 import { tryGetResolvableLocation } from "../../common/bqrs-utils";
-import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 import { assertNever } from "../../common/helpers-pure";
 import { EmptyQueryResultsMessage } from "./EmptyQueryResultsMessage";
+import { useScrollIntoView } from "./useScrollIntoView";
 
 type RawTableProps = {
   databaseUri: string;
@@ -38,11 +38,8 @@ export function RawTable({
 }: RawTableProps) {
   const [selectedItem, setSelectedItem] = useState<TableItem | undefined>();
 
-  const scroller = useRef<ScrollIntoViewHelper | undefined>(undefined);
-  if (scroller.current === undefined) {
-    scroller.current = new ScrollIntoViewHelper();
-  }
-  useEffect(() => scroller.current?.update());
+  const selectedItemRef = useRef<any>();
+  useScrollIntoView(selectedItem, selectedItemRef);
 
   const setSelection = useCallback((row: number, column: number): void => {
     setSelectedItem({ row, column });
@@ -76,11 +73,10 @@ export function RawTable({
             jumpToLocation(location, databaseUri);
           }
         }
-        scroller.current?.scrollIntoViewOnNextUpdate();
         return { row: nextRow, column: nextColumn };
       });
     },
-    [databaseUri, resultSet, scroller],
+    [databaseUri, resultSet],
   );
 
   const handleNavigationEvent = useCallback(
@@ -140,7 +136,7 @@ export function RawTable({
         selectedItem?.row === rowIndex ? selectedItem?.column : undefined
       }
       onSelected={setSelection}
-      scroller={scroller.current}
+      selectedItemRef={selectedItemRef}
     />
   ));
 

@@ -14,13 +14,13 @@ import {
   SarifInterpretationData,
 } from "../../common/interface-types";
 import { parseSarifLocation, isNoLocation } from "../../common/sarif-utils";
-import { ScrollIntoViewHelper } from "./scroll-into-view-helper";
 import { sendTelemetry } from "../common/telemetry";
 import { AlertTableHeader } from "./AlertTableHeader";
 import { AlertTableNoResults } from "./AlertTableNoResults";
 import { AlertTableTruncatedMessage } from "./AlertTableTruncatedMessage";
 import { AlertTableResultRow } from "./AlertTableResultRow";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useScrollIntoView } from "./useScrollIntoView";
 
 type AlertTableProps = ResultTableProps & {
   resultSet: InterpretedResultSet<SarifInterpretationData>;
@@ -29,16 +29,13 @@ type AlertTableProps = ResultTableProps & {
 export function AlertTable(props: AlertTableProps) {
   const { databaseUri, resultSet } = props;
 
-  const scroller = useRef<ScrollIntoViewHelper | undefined>(undefined);
-  if (scroller.current === undefined) {
-    scroller.current = new ScrollIntoViewHelper();
-  }
-  useEffect(() => scroller.current?.update());
-
   const [expanded, setExpanded] = useState<Set<string>>(new Set<string>());
   const [selectedItem, setSelectedItem] = useState<Keys.ResultKey | undefined>(
     undefined,
   );
+
+  const selectedItemRef = useRef<any>();
+  useScrollIntoView(selectedItem, selectedItemRef);
 
   /**
    * Given a list of `keys`, toggle the first, and if we 'open' the
@@ -162,7 +159,6 @@ export function AlertTable(props: AlertTableProps) {
           newExpanded.delete(Keys.keyToString(selectedItem));
         }
       }
-      scroller.current?.scrollIntoViewOnNextUpdate();
       setExpanded(newExpanded);
       setSelectedItem(key);
     },
@@ -203,11 +199,11 @@ export function AlertTable(props: AlertTableProps) {
               resultIndex={resultIndex}
               expanded={expanded}
               selectedItem={selectedItem}
+              selectedItemRef={selectedItemRef}
               databaseUri={databaseUri}
               sourceLocationPrefix={sourceLocationPrefix}
               updateSelectionCallback={updateSelectionCallback}
               toggleExpanded={toggle}
-              scroller={scroller.current}
             />
           ),
         )}
