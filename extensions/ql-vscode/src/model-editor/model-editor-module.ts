@@ -101,7 +101,7 @@ export class ModelEditorModule extends DisposableObject {
         }
 
         return withProgress(
-          async (progress, token) => {
+          async (progress) => {
             if (!(await this.cliServer.cliConstraints.supportsQlpacksKind())) {
               void showAndLogErrorMessage(
                 this.app.logger,
@@ -125,7 +125,6 @@ export class ModelEditorModule extends DisposableObject {
               db,
               this.app.logger,
               progress,
-              token,
             );
             if (!modelFile) {
               return;
