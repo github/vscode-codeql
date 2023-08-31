@@ -399,7 +399,7 @@ describe("SkeletonQueryWizard", () => {
 
       await wizard.determineStoragePath();
 
-      expect(updateValueSpy).toHaveBeenCalledWith(storagePath, 1);
+      expect(updateValueSpy).toHaveBeenCalledWith(storagePath, 2);
     });
 
     describe("when the user is using the codespace template", () => {

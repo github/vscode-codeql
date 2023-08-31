@@ -670,7 +670,7 @@ export function getQlPackLocation(): string | undefined {
 }
 
 export async function setQlPackLocation(folder: string | undefined) {
-  await QL_PACK_LOCATION.updateValue(folder, ConfigurationTarget.Global);
+  await QL_PACK_LOCATION.updateValue(folder, ConfigurationTarget.Workspace);
 }
 
 /**
@@ -690,7 +690,10 @@ export function getAutogenerateQlPacks(): AutogenerateQLPacks {
 }
 
 export async function setAutogenerateQlPacks(choice: AutogenerateQLPacks) {
-  await AUTOGENERATE_QL_PACKS.updateValue(choice, ConfigurationTarget.Global);
+  await AUTOGENERATE_QL_PACKS.updateValue(
+    choice,
+    ConfigurationTarget.Workspace,
+  );
 }
 
 /**
