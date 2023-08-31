@@ -25,6 +25,7 @@ import {
   ModelingStatusIndicator,
 } from "./ModelingStatusIndicator";
 import { InProgressDropdown } from "./InProgressDropdown";
+import { ExternalApiUsageName } from "./ExternalApiUsageName";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -218,7 +219,7 @@ function ModelableMethodRow(props: Props) {
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status={modelingStatus} />
         <MethodClassifications externalApiUsage={externalApiUsage} />
-        <ExternalApiUsageName {...props} />
+        <ExternalApiUsageName {...props.externalApiUsage} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
             {externalApiUsage.usages.length}
@@ -294,7 +295,7 @@ function UnmodelableMethodRow(props: Props) {
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status="saved" />
-        <ExternalApiUsageName {...props} />
+        <ExternalApiUsageName {...props.externalApiUsage} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
             {externalApiUsage.usages.length}
@@ -307,18 +308,6 @@ function UnmodelableMethodRow(props: Props) {
         Method already modeled
       </VSCodeDataGridCell>
     </VSCodeDataGridRow>
-  );
-}
-
-function ExternalApiUsageName(props: { externalApiUsage: ExternalApiUsage }) {
-  return (
-    <span>
-      {props.externalApiUsage.packageName && (
-        <>{props.externalApiUsage.packageName}.</>
-      )}
-      {props.externalApiUsage.typeName}.{props.externalApiUsage.methodName}
-      {props.externalApiUsage.methodParameters}
-    </span>
   );
 }
 

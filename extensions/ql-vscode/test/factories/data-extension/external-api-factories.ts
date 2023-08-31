@@ -7,15 +7,15 @@ import { ModeledMethodType } from "../../../src/model-editor/modeled-method";
 import { ResolvableLocationValue } from "../../../src/common/bqrs-cli-types";
 
 export function createExternalApiUsage({
-  library = "test",
+  library = "sql2o-1.6.0.jar",
   supported = true,
-  supportedType = "none" as ModeledMethodType,
+  supportedType = "summary" as ModeledMethodType,
   usages = [],
-  signature = "test",
-  packageName = "test",
-  typeName = "test",
-  methodName = "test",
-  methodParameters = "test",
+  signature = "org.sql2o.Sql2o#open()",
+  packageName = "org.sql2o",
+  typeName = "Sql2o",
+  methodName = "open",
+  methodParameters = "()",
 }: {
   library?: string;
   supported?: boolean;
