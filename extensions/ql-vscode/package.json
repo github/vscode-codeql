@@ -949,7 +949,7 @@
       },
       {
         "command": "codeQL.openModelEditor",
-        "title": "CodeQL: Open CodeQL Model Editor"
+        "title": "CodeQL: Open CodeQL Model Editor (Beta)"
       },
       {
         "command": "codeQL.mockGitHubApiServer.startRecording",
