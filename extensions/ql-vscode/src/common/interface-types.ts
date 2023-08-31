@@ -19,7 +19,7 @@ import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
 import { ExternalApiUsage, Usage } from "../model-editor/external-api-usage";
 import { ModeledMethod } from "../model-editor/modeled-method";
-import { DataExtensionEditorViewState } from "../model-editor/shared/view-state";
+import { ModelEditorViewState } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
 
 /**
@@ -491,8 +491,8 @@ export type ToDataFlowPathsMessage = SetDataFlowPathsMessage;
 export type FromDataFlowPathsMessage = CommonFromViewMessages;
 
 interface SetExtensionPackStateMessage {
-  t: "setDataExtensionEditorViewState";
-  viewState: DataExtensionEditorViewState;
+  t: "setModelEditorViewState";
+  viewState: ModelEditorViewState;
 }
 
 interface SetExternalApiUsagesMessage {
@@ -569,14 +569,14 @@ interface HideModeledApisMessage {
   hideModeledApis: boolean;
 }
 
-export type ToDataExtensionsEditorMessage =
+export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
   | SetExternalApiUsagesMessage
   | LoadModeledMethodsMessage
   | AddModeledMethodsMessage
   | SetInProgressMethodsMessage;
 
-export type FromDataExtensionsEditorMessage =
+export type FromModelEditorMessage =
   | ViewLoadedMsg
   | SwitchModeMessage
   | RefreshExternalApiUsages

@@ -943,7 +943,7 @@
         "enablement": "codeql.hasQLSource"
       },
       {
-        "command": "codeQL.openDataExtensionsEditor",
+        "command": "codeQL.openModelEditor",
         "title": "CodeQL: Open CodeQL Model Editor"
       },
       {
@@ -1415,7 +1415,7 @@
           "when": "false"
         },
         {
-          "command": "codeQL.openDataExtensionsEditor",
+          "command": "codeQL.openModelEditor",
           "when": "config.codeQL.canary && config.codeQL.dataExtensions.editor"
         },
         {
@@ -1763,7 +1763,7 @@
         {
           "id": "codeQLMethodsUsage",
           "name": "CodeQL Methods Usage",
-          "when": "config.codeQL.canary && codeql.dataExtensionsEditorOpen"
+          "when": "config.codeQL.canary && codeql.modelEditorOpen"
         }
       ],
       "explorer": [
@@ -1771,7 +1771,7 @@
           "type": "webview",
           "id": "codeQLMethodModeling",
           "name": "CodeQL Method Modeling",
-          "when": "config.codeQL.canary && config.codeQL.modelEditor.methodModelingView && codeql.dataExtensionsEditorOpen"
+          "when": "config.codeQL.canary && config.codeQL.modelEditor.methodModelingView && codeql.modelEditorOpen"
         }
       ]
     },

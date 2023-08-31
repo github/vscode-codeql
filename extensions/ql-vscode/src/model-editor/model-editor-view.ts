@@ -10,8 +10,8 @@ import {
   WebviewPanelConfig,
 } from "../common/vscode/abstract-webview";
 import {
-  FromDataExtensionsEditorMessage,
-  ToDataExtensionsEditorMessage,
+  FromModelEditorMessage,
+  ToModelEditorMessage,
 } from "../common/interface-types";
 import { ProgressCallback, withProgress } from "../common/vscode/progress";
 import { QueryRunner } from "../query-server";
@@ -40,9 +40,9 @@ import { getLanguageDisplayName } from "../common/query-language";
 import { AutoModeler } from "./auto-modeler";
 import { INITIAL_HIDE_MODELED_APIS_VALUE } from "./shared/hide-modeled-apis";
 
-export class DataExtensionsEditorView extends AbstractWebview<
-  ToDataExtensionsEditorMessage,
-  FromDataExtensionsEditorMessage
+export class ModelEditorView extends AbstractWebview<
+  ToModelEditorMessage,
+  FromModelEditorMessage
 > {
   private readonly autoModeler: AutoModeler;
 
@@ -66,14 +66,10 @@ export class DataExtensionsEditorView extends AbstractWebview<
       hideModeledApis: boolean,
     ) => Promise<void>,
     private readonly revealItemInUsagePanel: (usage: Usage) => Promise<void>,
-    private readonly handleViewBecameActive: (
-      view: DataExtensionsEditorView,
-    ) => void,
-    private readonly handleViewWasDisposed: (
-      view: DataExtensionsEditorView,
-    ) => void,
+    private readonly handleViewBecameActive: (view: ModelEditorView) => void,
+    private readonly handleViewWasDisposed: (view: ModelEditorView) => void,
     private readonly isMostRecentlyActiveView: (
-      view: DataExtensionsEditorView,
+      view: ModelEditorView,
     ) => boolean,
   ) {
     super(ctx);
@@ -120,8 +116,8 @@ export class DataExtensionsEditorView extends AbstractWebview<
       // so we want to check if there are any others still open.
       void this.app.commands.execute(
         "setContext",
-        "codeql.dataExtensionsEditorOpen",
-        this.isADataExtensionsEditorOpen(),
+        "codeql.modelEditorOpen",
+        this.isAModelEditorOpen(),
       );
     });
 
@@ -129,18 +125,18 @@ export class DataExtensionsEditorView extends AbstractWebview<
 
     void this.app.commands.execute(
       "setContext",
-      "codeql.dataExtensionsEditorOpen",
+      "codeql.modelEditorOpen",
       true,
     );
   }
 
-  private isADataExtensionsEditorOpen(): boolean {
+  private isAModelEditorOpen(): boolean {
     return window.tabGroups.all.some((tabGroup) =>
       tabGroup.tabs.some((tab) => {
         const viewType: string | undefined = (tab.input as any)?.viewType;
         // The viewType has a prefix, such as "mainThreadWebview-", but if the
         // suffix matches that should be enough to identify the view.
-        return viewType && viewType.endsWith("data-extensions-editor");
+        return viewType && viewType.endsWith("model-editor");
       }),
     );
   }
@@ -169,9 +165,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
     // Nothing to do here
   }
 
-  protected async onMessage(
-    msg: FromDataExtensionsEditorMessage,
-  ): Promise<void> {
+  protected async onMessage(msg: FromModelEditorMessage): Promise<void> {
     switch (msg.t) {
       case "viewLoaded":
         await this.onWebViewLoaded();
@@ -264,7 +258,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
       this.databaseItem.language === "java" && showLlmGeneration();
 
     await this.postMessage({
-      t: "setDataExtensionEditorViewState",
+      t: "setModelEditorViewState",
       viewState: {
         extensionPack: this.extensionPack,
         showLlmButton,
@@ -433,7 +427,7 @@ export class DataExtensionsEditorView extends AbstractWebview<
         return;
       }
 
-      const view = new DataExtensionsEditorView(
+      const view = new ModelEditorView(
         this.ctx,
         this.app,
         this.databaseManager,

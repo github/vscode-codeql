@@ -79,7 +79,7 @@ export class MethodsUsageDataProvider
         collapsibleState: TreeItemCollapsibleState.None,
         command: {
           title: "Show usage",
-          command: "codeQLDataExtensionsEditor.jumpToUsageLocation",
+          command: "codeQLModelEditor.jumpToUsageLocation",
           arguments: [item, this.databaseItem],
         },
         iconPath: new ThemeIcon("error", new ThemeColor("errorForeground")),

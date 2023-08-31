@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ToDataExtensionsEditorMessage } from "../../common/interface-types";
+import { ToModelEditorMessage } from "../../common/interface-types";
 import {
   VSCodeButton,
   VSCodeCheckbox,
@@ -13,7 +13,7 @@ import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
 import { calculateModeledPercentage } from "../../model-editor/shared/modeled-percentage";
 import { LinkIconButton } from "../variant-analysis/LinkIconButton";
-import { DataExtensionEditorViewState } from "../../model-editor/shared/view-state";
+import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { ModeledMethodsList } from "./ModeledMethodsList";
 import { percentFormatter } from "./formatters";
 import { Mode } from "../../model-editor/shared/mode";
@@ -28,7 +28,7 @@ const LoadingContainer = styled.div`
   font-weight: 600;
 `;
 
-const DataExtensionsEditorContainer = styled.div`
+const ModelEditorContainer = styled.div`
   margin-top: 1rem;
 `;
 
@@ -72,21 +72,21 @@ const ButtonsContainer = styled.div`
 `;
 
 type Props = {
-  initialViewState?: DataExtensionEditorViewState;
+  initialViewState?: ModelEditorViewState;
   initialExternalApiUsages?: ExternalApiUsage[];
   initialModeledMethods?: Record<string, ModeledMethod>;
   initialHideModeledApis?: boolean;
 };
 
-export function DataExtensionsEditor({
+export function ModelEditor({
   initialViewState,
   initialExternalApiUsages = [],
   initialModeledMethods = {},
   initialHideModeledApis = INITIAL_HIDE_MODELED_APIS_VALUE,
 }: Props): JSX.Element {
-  const [viewState, setViewState] = useState<
-    DataExtensionEditorViewState | undefined
-  >(initialViewState);
+  const [viewState, setViewState] = useState<ModelEditorViewState | undefined>(
+    initialViewState,
+  );
 
   const [externalApiUsages, setExternalApiUsages] = useState<
     ExternalApiUsage[]
@@ -117,9 +117,9 @@ export function DataExtensionsEditor({
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
       if (evt.origin === window.origin) {
-        const msg: ToDataExtensionsEditorMessage = evt.data;
+        const msg: ToModelEditorMessage = evt.data;
         switch (msg.t) {
-          case "setDataExtensionEditorViewState":
+          case "setModelEditorViewState":
             setViewState(msg.viewState);
             break;
           case "setExternalApiUsages":
@@ -297,7 +297,7 @@ export function DataExtensionsEditor({
   }
 
   return (
-    <DataExtensionsEditorContainer>
+    <ModelEditorContainer>
       <HeaderContainer>
         <HeaderColumn>
           <HeaderRow>
@@ -371,6 +371,6 @@ export function DataExtensionsEditor({
           onModelDependencyClick={onModelDependencyClick}
         />
       </EditorContainer>
-    </DataExtensionsEditorContainer>
+    </ModelEditorContainer>
   );
 }
