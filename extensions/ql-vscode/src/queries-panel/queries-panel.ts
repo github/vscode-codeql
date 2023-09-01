@@ -12,6 +12,14 @@ export class QueriesPanel extends DisposableObject {
     const treeView = window.createTreeView("codeQLQueries", {
       treeDataProvider: dataProvider,
     });
+    dataProvider.onDidChangeTreeData(() => {
+      if (dataProvider.getChildren().length === 0) {
+        treeView.message =
+          "We didn't find any CodeQL queries in this workspace. Create one to get started.";
+      } else {
+        treeView.message = undefined;
+      }
+    });
     this.push(treeView);
   }
 }

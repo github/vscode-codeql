@@ -3,7 +3,6 @@ import {
   QueryTreeViewItem,
   createQueryTreeFileItem,
   createQueryTreeFolderItem,
-  createQueryTreeTextItem,
 } from "./query-tree-view-item";
 import { DisposableObject } from "../common/disposable-object";
 import { FileTreeNode } from "../common/file-tree-nodes";
@@ -40,10 +39,8 @@ export class QueryTreeDataProvider
 
   private createTree(): QueryTreeViewItem[] {
     const queryTree = this.queryDiscoverer.buildQueryTree();
-    if (queryTree === undefined) {
+    if (queryTree === undefined || queryTree.length === 0) {
       return [];
-    } else if (queryTree.length === 0) {
-      return [this.noQueriesTreeViewItem()];
     } else {
       return queryTree.map(this.convertFileTreeNode.bind(this));
     }
@@ -65,12 +62,6 @@ export class QueryTreeDataProvider
         fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),
       );
     }
-  }
-
-  private noQueriesTreeViewItem(): QueryTreeViewItem {
-    return createQueryTreeTextItem(
-      "This workspace doesn't contain any CodeQL queries at the moment.",
-    );
   }
 
   /**

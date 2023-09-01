@@ -7,7 +7,6 @@ import { QueryTreeDataProvider } from "../../../../src/queries-panel/query-tree-
 import {
   createQueryTreeFileItem,
   createQueryTreeFolderItem,
-  createQueryTreeTextItem,
 } from "../../../../src/queries-panel/query-tree-view-item";
 
 describe("QueryTreeDataProvider", () => {
@@ -21,17 +20,13 @@ describe("QueryTreeDataProvider", () => {
       expect(dataProvider.getChildren()).toEqual([]);
     });
 
-    it("returns an explanatory message when there are no queries", async () => {
+    it("returns empty array when there are no queries", async () => {
       const dataProvider = new QueryTreeDataProvider({
         buildQueryTree: () => [],
         onDidChangeQueries: jest.fn(),
       });
 
-      expect(dataProvider.getChildren()).toEqual([
-        createQueryTreeTextItem(
-          "This workspace doesn't contain any CodeQL queries at the moment.",
-        ),
-      ]);
+      expect(dataProvider.getChildren()).toEqual([]);
     });
 
     it("converts FileTreeNode to QueryTreeViewItem", async () => {
