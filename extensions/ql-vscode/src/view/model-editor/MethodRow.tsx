@@ -25,7 +25,7 @@ import {
   ModelingStatusIndicator,
 } from "./ModelingStatusIndicator";
 import { InProgressDropdown } from "./InProgressDropdown";
-import { ExternalApiUsageName } from "./ExternalApiUsageName";
+import { MethodName } from "./MethodName";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -214,7 +214,7 @@ function ModelableMethodRow(props: Props) {
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status={modelingStatus} />
         <MethodClassifications method={method} />
-        <ExternalApiUsageName {...props.method} />
+        <MethodName {...props.method} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
             {method.usages.length}
@@ -290,7 +290,7 @@ function UnmodelableMethodRow(props: Props) {
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status="saved" />
-        <ExternalApiUsageName {...props.method} />
+        <MethodName {...props.method} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
             {method.usages.length}

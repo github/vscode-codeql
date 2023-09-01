@@ -6,7 +6,7 @@ const Name = styled.span`
   font-family: var(--vscode-editor-font-family);
 `;
 
-export const ExternalApiUsageName = (method: Method): JSX.Element => {
+export const MethodName = (method: Method): JSX.Element => {
   return (
     <Name>
       {method.packageName && <>{method.packageName}.</>}

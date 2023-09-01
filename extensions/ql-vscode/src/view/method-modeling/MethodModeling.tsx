@@ -5,7 +5,7 @@ import {
   ModelingStatusIndicator,
 } from "../model-editor/ModelingStatusIndicator";
 import { Method } from "../../model-editor/method";
-import { ExternalApiUsageName } from "../model-editor/ExternalApiUsageName";
+import { MethodName } from "../model-editor/MethodName";
 
 const Container = styled.div`
   background-color: var(--vscode-peekViewResult-background);
@@ -36,7 +36,7 @@ export const MethodModeling = ({
     <Container>
       <Title>API or Method</Title>
       <DependencyContainer>
-        <ExternalApiUsageName {...method} />
+        <MethodName {...method} />
         <ModelingStatusIndicator status={modelingStatus} />
       </DependencyContainer>
     </Container>
