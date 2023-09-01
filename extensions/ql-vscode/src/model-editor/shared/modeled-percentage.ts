@@ -7,8 +7,8 @@ export function calculateModeledPercentage(
     return 0;
   }
 
-  const modeledExternalApiUsages = methods.filter((m) => m.supported);
+  const modeledMethods = methods.filter((m) => m.supported);
 
-  const modeledRatio = modeledExternalApiUsages.length / methods.length;
+  const modeledRatio = modeledMethods.length / methods.length;
   return modeledRatio * 100;
 }

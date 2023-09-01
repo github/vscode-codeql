@@ -25,13 +25,13 @@ export function getCandidates(
   // Sort the same way as the UI so we send the first ones listed in the UI first
   const grouped = groupMethods(methods, mode);
   const sortedGroupNames = sortGroupNames(grouped);
-  const sortedExternalApiUsages = sortedGroupNames.flatMap((name) =>
+  const sortedMethods = sortedGroupNames.flatMap((name) =>
     sortMethods(grouped[name]),
   );
 
   const candidates: MethodSignature[] = [];
 
-  for (const method of sortedExternalApiUsages) {
+  for (const method of sortedMethods) {
     const modeledMethod: ModeledMethod = modeledMethods[method.signature] ?? {
       type: "none",
     };

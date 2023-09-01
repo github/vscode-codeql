@@ -26,9 +26,9 @@ export function sortGroupNames(methods: Record<string, Method[]>): string[] {
 }
 
 export function sortMethods(methods: Method[]): Method[] {
-  const sortedExternalApiUsages = [...methods];
-  sortedExternalApiUsages.sort((a, b) => compareMethod(a, b));
-  return sortedExternalApiUsages;
+  const sortedMethods = [...methods];
+  sortedMethods.sort((a, b) => compareMethod(a, b));
+  return sortedMethods;
 }
 
 function compareGroups(
