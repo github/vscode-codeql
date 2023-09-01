@@ -226,7 +226,7 @@ async function autoCreateExtensionPack(
   extensionPacksInfo: QlpacksInfo,
   logger: NotificationLogger,
 ): Promise<ExtensionPack | undefined> {
-  // Get the `codeQL.dataExtensions.extensionsDirectory` setting for the language
+  // Get the `codeQL.model.extensionsDirectory` setting for the language
   const userExtensionsDirectory = getExtensionsDirectory(language);
 
   // If the setting is not set, automatically pick a suitable directory
