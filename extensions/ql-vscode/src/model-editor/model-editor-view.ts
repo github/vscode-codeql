@@ -65,7 +65,10 @@ export class ModelEditorView extends AbstractWebview<
       databaseItem: DatabaseItem,
       hideModeledApis: boolean,
     ) => Promise<void>,
-    private readonly showMethod: (usage: Usage) => Promise<void>,
+    private readonly showMethod: (
+      method: ExternalApiUsage,
+      usage: Usage,
+    ) => Promise<void>,
     private readonly handleViewBecameActive: (view: ModelEditorView) => void,
     private readonly handleViewWasDisposed: (view: ModelEditorView) => void,
     private readonly isMostRecentlyActiveView: (
@@ -190,7 +193,7 @@ export class ModelEditorView extends AbstractWebview<
 
         break;
       case "jumpToUsage":
-        await this.handleJumpToUsage(msg.usage);
+        await this.handleJumpToUsage(msg.method, msg.usage);
 
         break;
       case "saveModeledMethods":
@@ -267,8 +270,8 @@ export class ModelEditorView extends AbstractWebview<
     });
   }
 
-  protected async handleJumpToUsage(usage: Usage) {
-    await this.showMethod(usage);
+  protected async handleJumpToUsage(method: ExternalApiUsage, usage: Usage) {
+    await this.showMethod(method, usage);
     await showResolvableLocation(usage.url, this.databaseItem, this.app.logger);
   }
 

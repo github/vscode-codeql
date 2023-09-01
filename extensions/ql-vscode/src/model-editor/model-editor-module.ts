@@ -175,23 +175,11 @@ export class ModelEditorModule extends DisposableObject {
     await ensureDir(this.queryStorageDir);
   }
 
-  private async showMethod(usage: Usage): Promise<void> {
+  private async showMethod(
+    method: ExternalApiUsage,
+    usage: Usage,
+  ): Promise<void> {
     await this.methodsUsagePanel.revealItem(usage);
-
-    // For now, just construct a dummy method and show it in the method modeling panel
-    // because the method isn't easily accessible yet.
-    const method: ExternalApiUsage = {
-      library: "sql2o",
-      libraryVersion: "1.6.0",
-      signature: "org.sql2o.Connection#createQuery(String)",
-      packageName: "org.sql2o",
-      typeName: "Connection",
-      methodName: "createQuery",
-      methodParameters: "(String)",
-      supported: true,
-      supportedType: "summary",
-      usages: [],
-    };
     await this.methodModelingPanel.setMethod(method);
   }
 }
