@@ -9,7 +9,7 @@ import { ChangeEvent, useCallback, useMemo } from "react";
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 
-import { ExternalApiUsage } from "../../model-editor/external-api-usage";
+import { Method } from "../../model-editor/method";
 import {
   ModeledMethod,
   ModeledMethodType,
@@ -61,24 +61,20 @@ const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
 ];
 
 type Props = {
-  externalApiUsage: ExternalApiUsage;
+  method: Method;
   modeledMethod: ModeledMethod | undefined;
   methodIsUnsaved: boolean;
   modelingInProgress: boolean;
   mode: Mode;
   hideModeledApis: boolean;
-  onChange: (
-    externalApiUsage: ExternalApiUsage,
-    modeledMethod: ModeledMethod,
-  ) => void;
+  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
 };
 
 export const MethodRow = (props: Props) => {
-  const { externalApiUsage, modeledMethod, methodIsUnsaved, hideModeledApis } =
-    props;
+  const { method, modeledMethod, methodIsUnsaved, hideModeledApis } = props;
 
   const methodCanBeModeled =
-    !externalApiUsage.supported ||
+    !method.supported ||
     (modeledMethod && modeledMethod?.type !== "none") ||
     methodIsUnsaved;
 
@@ -92,17 +88,16 @@ export const MethodRow = (props: Props) => {
 };
 
 function ModelableMethodRow(props: Props) {
-  const { externalApiUsage, modeledMethod, methodIsUnsaved, mode, onChange } =
-    props;
+  const { method, modeledMethod, methodIsUnsaved, mode, onChange } = props;
 
   const argumentsList = useMemo(() => {
-    if (externalApiUsage.methodParameters === "()") {
+    if (method.methodParameters === "()") {
       return [];
     }
-    return externalApiUsage.methodParameters
-      .substring(1, externalApiUsage.methodParameters.length - 1)
+    return method.methodParameters
+      .substring(1, method.methodParameters.length - 1)
       .split(",");
-  }, [externalApiUsage.methodParameters]);
+  }, [method.methodParameters]);
 
   const handleTypeInput = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
@@ -113,7 +108,7 @@ function ModelableMethodRow(props: Props) {
         newProvenance = "ai-manual";
       }
 
-      onChange(externalApiUsage, {
+      onChange(method, {
         // If there are no arguments, we will default to "Argument[this]"
         input: argumentsList.length === 0 ? "Argument[this]" : "Argument[0]",
         output: "ReturnType",
@@ -121,14 +116,14 @@ function ModelableMethodRow(props: Props) {
         ...modeledMethod,
         type: e.target.value as ModeledMethodType,
         provenance: newProvenance,
-        signature: externalApiUsage.signature,
-        packageName: externalApiUsage.packageName,
-        typeName: externalApiUsage.typeName,
-        methodName: externalApiUsage.methodName,
-        methodParameters: externalApiUsage.methodParameters,
+        signature: method.signature,
+        packageName: method.packageName,
+        typeName: method.typeName,
+        methodName: method.methodName,
+        methodParameters: method.methodParameters,
       });
     },
-    [onChange, externalApiUsage, modeledMethod, argumentsList],
+    [onChange, method, modeledMethod, argumentsList],
   );
   const handleInputInput = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
@@ -138,12 +133,12 @@ function ModelableMethodRow(props: Props) {
 
       const target = e.target as HTMLSelectElement;
 
-      onChange(externalApiUsage, {
+      onChange(method, {
         ...modeledMethod,
         input: target.value as ModeledMethod["input"],
       });
     },
-    [onChange, externalApiUsage, modeledMethod],
+    [onChange, method, modeledMethod],
   );
   const handleOutputInput = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
@@ -153,12 +148,12 @@ function ModelableMethodRow(props: Props) {
 
       const target = e.target as HTMLSelectElement;
 
-      onChange(externalApiUsage, {
+      onChange(method, {
         ...modeledMethod,
         output: target.value as ModeledMethod["output"],
       });
     },
-    [onChange, externalApiUsage, modeledMethod],
+    [onChange, method, modeledMethod],
   );
   const handleKindChange = useCallback(
     (kind: string) => {
@@ -166,17 +161,17 @@ function ModelableMethodRow(props: Props) {
         return;
       }
 
-      onChange(externalApiUsage, {
+      onChange(method, {
         ...modeledMethod,
         kind,
       });
     },
-    [onChange, externalApiUsage, modeledMethod],
+    [onChange, method, modeledMethod],
   );
 
   const jumpToUsage = useCallback(
-    () => sendJumpToUsageMessage(externalApiUsage),
-    [externalApiUsage],
+    () => sendJumpToUsageMessage(method),
+    [method],
   );
 
   const inputOptions = useMemo(
@@ -218,11 +213,11 @@ function ModelableMethodRow(props: Props) {
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status={modelingStatus} />
-        <MethodClassifications externalApiUsage={externalApiUsage} />
-        <ExternalApiUsageName {...props.externalApiUsage} />
+        <MethodClassifications method={method} />
+        <ExternalApiUsageName {...props.method} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
-            {externalApiUsage.usages.length}
+            {method.usages.length}
           </UsagesButton>
         )}
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
@@ -284,25 +279,25 @@ function ModelableMethodRow(props: Props) {
 }
 
 function UnmodelableMethodRow(props: Props) {
-  const { externalApiUsage, mode } = props;
+  const { method, mode } = props;
 
   const jumpToUsage = useCallback(
-    () => sendJumpToUsageMessage(externalApiUsage),
-    [externalApiUsage],
+    () => sendJumpToUsageMessage(method),
+    [method],
   );
 
   return (
     <VSCodeDataGridRow>
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status="saved" />
-        <ExternalApiUsageName {...props.externalApiUsage} />
+        <ExternalApiUsageName {...props.method} />
         {mode === Mode.Application && (
           <UsagesButton onClick={jumpToUsage}>
-            {externalApiUsage.usages.length}
+            {method.usages.length}
           </UsagesButton>
         )}
         <ViewLink onClick={jumpToUsage}>View</ViewLink>
-        <MethodClassifications externalApiUsage={externalApiUsage} />
+        <MethodClassifications method={method} />
       </ApiOrMethodCell>
       <VSCodeDataGridCell gridColumn="span 4">
         Method already modeled
@@ -311,12 +306,12 @@ function UnmodelableMethodRow(props: Props) {
   );
 }
 
-function sendJumpToUsageMessage(externalApiUsage: ExternalApiUsage) {
+function sendJumpToUsageMessage(method: Method) {
   vscode.postMessage({
     t: "jumpToUsage",
-    method: externalApiUsage,
+    method,
     // In framework mode, the first and only usage is the definition of the method
-    usage: externalApiUsage.usages[0],
+    usage: method.usages[0],
   });
 }
 

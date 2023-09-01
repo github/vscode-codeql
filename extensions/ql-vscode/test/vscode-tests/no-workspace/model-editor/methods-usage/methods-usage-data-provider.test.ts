@@ -1,11 +1,11 @@
 import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
-import { ExternalApiUsage } from "../../../../../src/model-editor/external-api-usage";
+import { Method } from "../../../../../src/model-editor/method";
 import { MethodsUsageDataProvider } from "../../../../../src/model-editor/methods-usage/methods-usage-data-provider";
 import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import {
-  createExternalApiUsage,
+  createMethod,
   createUsage,
-} from "../../../../factories/data-extension/external-api-factories";
+} from "../../../../factories/data-extension/method-factories";
 import { mockedObject } from "../../../utils/mocking.helpers";
 
 describe("MethodsUsageDataProvider", () => {
@@ -18,31 +18,31 @@ describe("MethodsUsageDataProvider", () => {
 
   describe("setState", () => {
     const hideModeledApis = false;
-    const externalApiUsages: ExternalApiUsage[] = [];
+    const methods: Method[] = [];
     const dbItem = mockedObject<DatabaseItem>({
       getSourceLocationPrefix: () => "test",
     });
 
     it("should not emit onDidChangeTreeData event when state has not changed", async () => {
-      await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledApis);
 
       const onDidChangeTreeDataListener = jest.fn();
       dataProvider.onDidChangeTreeData(onDidChangeTreeDataListener);
 
-      await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledApis);
 
       expect(onDidChangeTreeDataListener).not.toHaveBeenCalled();
     });
 
-    it("should emit onDidChangeTreeData event when externalApiUsages has changed", async () => {
-      const externalApiUsages2: ExternalApiUsage[] = [];
+    it("should emit onDidChangeTreeData event when methods has changed", async () => {
+      const methods2: Method[] = [];
 
-      await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledApis);
 
       const onDidChangeTreeDataListener = jest.fn();
       dataProvider.onDidChangeTreeData(onDidChangeTreeDataListener);
 
-      await dataProvider.setState(externalApiUsages2, dbItem, hideModeledApis);
+      await dataProvider.setState(methods2, dbItem, hideModeledApis);
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
     });
@@ -52,23 +52,23 @@ describe("MethodsUsageDataProvider", () => {
         getSourceLocationPrefix: () => "test",
       });
 
-      await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledApis);
 
       const onDidChangeTreeDataListener = jest.fn();
       dataProvider.onDidChangeTreeData(onDidChangeTreeDataListener);
 
-      await dataProvider.setState(externalApiUsages, dbItem2, hideModeledApis);
+      await dataProvider.setState(methods, dbItem2, hideModeledApis);
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
     });
 
     it("should emit onDidChangeTreeData event when hideModeledApis has changed", async () => {
-      await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledApis);
 
       const onDidChangeTreeDataListener = jest.fn();
       dataProvider.onDidChangeTreeData(onDidChangeTreeDataListener);
 
-      await dataProvider.setState(externalApiUsages, dbItem, !hideModeledApis);
+      await dataProvider.setState(methods, dbItem, !hideModeledApis);
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
     });
@@ -77,36 +77,29 @@ describe("MethodsUsageDataProvider", () => {
       const dbItem2 = mockedObject<DatabaseItem>({
         getSourceLocationPrefix: () => "test",
       });
-      const externalApiUsages2: ExternalApiUsage[] = [];
+      const methods2: Method[] = [];
 
-      await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledApis);
 
       const onDidChangeTreeDataListener = jest.fn();
       dataProvider.onDidChangeTreeData(onDidChangeTreeDataListener);
 
-      await dataProvider.setState(
-        externalApiUsages2,
-        dbItem2,
-        !hideModeledApis,
-      );
+      await dataProvider.setState(methods2, dbItem2, !hideModeledApis);
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
     });
   });
 
   describe("getChildren", () => {
-    const supportedExternalApiUsage = createExternalApiUsage({
+    const supportedMethod = createMethod({
       supported: true,
     });
 
-    const unsupportedExternalApiUsage = createExternalApiUsage({
+    const unsupportedMethod = createMethod({
       supported: false,
     });
 
-    const externalApiUsages: ExternalApiUsage[] = [
-      supportedExternalApiUsage,
-      unsupportedExternalApiUsage,
-    ];
+    const methods: Method[] = [supportedMethod, unsupportedMethod];
     const dbItem = mockedObject<DatabaseItem>({
       getSourceLocationPrefix: () => "test",
     });
@@ -118,19 +111,19 @@ describe("MethodsUsageDataProvider", () => {
     });
 
     it("should return usages if item is external api usage", async () => {
-      const externalApiUsage = createExternalApiUsage({ usages: [usage] });
-      expect(dataProvider.getChildren(externalApiUsage)).toEqual([usage]);
+      const method = createMethod({ usages: [usage] });
+      expect(dataProvider.getChildren(method)).toEqual([usage]);
     });
 
-    it("should show all externalApiUsages if hideModeledApis is false and looking at the root", async () => {
+    it("should show all methods if hideModeledApis is false and looking at the root", async () => {
       const hideModeledApis = false;
-      await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledApis);
       expect(dataProvider.getChildren().length).toEqual(2);
     });
 
-    it("should filter externalApiUsages if hideModeledApis is true and looking at the root", async () => {
+    it("should filter methods if hideModeledApis is true and looking at the root", async () => {
       const hideModeledApis = true;
-      await dataProvider.setState(externalApiUsages, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledApis);
       expect(dataProvider.getChildren().length).toEqual(1);
     });
   });

@@ -3,7 +3,7 @@ import * as React from "react";
 import { Meta, StoryFn } from "@storybook/react";
 
 import { ExternalApiUsageName as ExternalApiUsageNameComponent } from "../../view/model-editor/ExternalApiUsageName";
-import { createExternalApiUsage } from "../../../test/factories/data-extension/external-api-factories";
+import { createMethod } from "../../../test/factories/data-extension/method-factories";
 
 export default {
   title: "CodeQL Model Editor/External API Usage Name",
@@ -15,4 +15,4 @@ const Template: StoryFn<typeof ExternalApiUsageNameComponent> = (args) => (
 );
 
 export const ExternalApiUsageName = Template.bind({});
-ExternalApiUsageName.args = createExternalApiUsage();
+ExternalApiUsageName.args = createMethod();

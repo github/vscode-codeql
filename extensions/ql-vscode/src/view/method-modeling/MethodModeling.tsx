@@ -4,7 +4,7 @@ import {
   ModelingStatus,
   ModelingStatusIndicator,
 } from "../model-editor/ModelingStatusIndicator";
-import { ExternalApiUsage } from "../../model-editor/external-api-usage";
+import { Method } from "../../model-editor/method";
 import { ExternalApiUsageName } from "../model-editor/ExternalApiUsageName";
 
 const Container = styled.div`
@@ -25,18 +25,18 @@ const DependencyContainer = styled.div`
 
 export type MethodModelingProps = {
   modelingStatus: ModelingStatus;
-  externalApiUsage: ExternalApiUsage;
+  method: Method;
 };
 
 export const MethodModeling = ({
   modelingStatus,
-  externalApiUsage,
+  method,
 }: MethodModelingProps): JSX.Element => {
   return (
     <Container>
       <Title>API or Method</Title>
       <DependencyContainer>
-        <ExternalApiUsageName {...externalApiUsage} />
+        <ExternalApiUsageName {...method} />
         <ModelingStatusIndicator status={modelingStatus} />
       </DependencyContainer>
     </Container>

@@ -6,7 +6,7 @@ import { telemetryListener } from "../../common/vscode/telemetry";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging/notifications";
 import { extLogger } from "../../common/logging/vscode/loggers";
 import { redactableError } from "../../common/errors";
-import { ExternalApiUsage } from "../external-api-usage";
+import { Method } from "../method";
 
 export class MethodModelingViewProvider implements WebviewViewProvider {
   public static readonly viewType = "codeQLMethodModeling";
@@ -46,7 +46,7 @@ export class MethodModelingViewProvider implements WebviewViewProvider {
     this.webviewView = webviewView;
   }
 
-  public async setMethod(method: ExternalApiUsage): Promise<void> {
+  public async setMethod(method: Method): Promise<void> {
     if (this.webviewView) {
       await this.webviewView.webview.postMessage({
         t: "setMethod",

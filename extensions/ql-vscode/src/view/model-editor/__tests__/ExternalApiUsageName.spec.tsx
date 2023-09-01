@@ -1,15 +1,15 @@
 import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { ExternalApiUsageName } from "../ExternalApiUsageName";
-import { ExternalApiUsage } from "../../../model-editor/external-api-usage";
-import { createExternalApiUsage } from "../../../../test/factories/data-extension/external-api-factories";
+import { Method } from "../../../model-editor/method";
+import { createMethod } from "../../../../test/factories/data-extension/method-factories";
 
 describe(ExternalApiUsageName.name, () => {
-  const render = (props: ExternalApiUsage) =>
+  const render = (props: Method) =>
     reactRender(<ExternalApiUsageName {...props} />);
 
   it("renders method name", () => {
-    const apiUsage = createExternalApiUsage();
+    const apiUsage = createMethod();
     render(apiUsage);
 
     const name = `${apiUsage.packageName}.${apiUsage.typeName}.${apiUsage.methodName}${apiUsage.methodParameters}`;

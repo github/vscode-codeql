@@ -4,7 +4,7 @@ import { Meta, StoryFn } from "@storybook/react";
 
 import { Mode } from "../../model-editor/shared/mode";
 import { ModelEditor as ModelEditorComponent } from "../../view/model-editor/ModelEditor";
-import { CallClassification } from "../../model-editor/external-api-usage";
+import { CallClassification } from "../../model-editor/method";
 
 export default {
   title: "CodeQL Model Editor/CodeQL Model Editor",
@@ -31,7 +31,7 @@ ModelEditor.args = {
     showLlmButton: true,
     mode: Mode.Application,
   },
-  initialExternalApiUsages: [
+  initialMethods: [
     {
       library: "sql2o",
       libraryVersion: "1.6.0",

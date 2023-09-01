@@ -1,7 +1,7 @@
 import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { MethodModeling, MethodModelingProps } from "../MethodModeling";
-import { createExternalApiUsage } from "../../../../test/factories/data-extension/external-api-factories";
+import { createMethod } from "../../../../test/factories/data-extension/method-factories";
 
 describe(MethodModeling.name, () => {
   const render = (props: MethodModelingProps) =>
@@ -10,7 +10,7 @@ describe(MethodModeling.name, () => {
   it("renders method modeling panel", () => {
     render({
       modelingStatus: "saved",
-      externalApiUsage: createExternalApiUsage(),
+      method: createMethod(),
     });
 
     expect(screen.getByText("API or Method")).toBeInTheDocument();

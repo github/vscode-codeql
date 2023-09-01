@@ -17,7 +17,7 @@ import {
 } from "../variant-analysis/shared/variant-analysis-filter-sort";
 import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import { ExternalApiUsage, Usage } from "../model-editor/external-api-usage";
+import { Method, Usage } from "../model-editor/method";
 import { ModeledMethod } from "../model-editor/modeled-method";
 import { ModelEditorViewState } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
@@ -497,7 +497,7 @@ interface SetExtensionPackStateMessage {
 
 interface SetExternalApiUsagesMessage {
   t: "setExternalApiUsages";
-  externalApiUsages: ExternalApiUsage[];
+  externalApiUsages: Method[];
 }
 
 interface LoadModeledMethodsMessage {
@@ -523,7 +523,7 @@ interface SwitchModeMessage {
 
 interface JumpToUsageMessage {
   t: "jumpToUsage";
-  method: ExternalApiUsage;
+  method: Method;
   usage: Usage;
 }
 
@@ -541,7 +541,7 @@ interface RefreshExternalApiUsages {
 
 interface SaveModeledMethods {
   t: "saveModeledMethods";
-  externalApiUsages: ExternalApiUsage[];
+  externalApiUsages: Method[];
   modeledMethods: Record<string, ModeledMethod>;
 }
 
@@ -552,7 +552,7 @@ interface GenerateExternalApiMessage {
 interface GenerateExternalApiFromLlmMessage {
   t: "generateExternalApiFromLlm";
   packageName: string;
-  externalApiUsages: ExternalApiUsage[];
+  externalApiUsages: Method[];
   modeledMethods: Record<string, ModeledMethod>;
 }
 
@@ -597,7 +597,7 @@ export type FromMethodModelingMessage =
 
 interface SetMethodMessage {
   t: "setMethod";
-  method: ExternalApiUsage;
+  method: Method;
 }
 
 export type ToMethodModelingMessage = SetMethodMessage;

@@ -39,7 +39,7 @@ export interface MethodSignature {
   methodParameters: string;
 }
 
-export interface ExternalApiUsage extends MethodSignature {
+export interface Method extends MethodSignature {
   /**
    * Contains the name of the library containing the method declaration, e.g. `sql2o-1.6.0.jar` or `System.Runtime.dll`
    */

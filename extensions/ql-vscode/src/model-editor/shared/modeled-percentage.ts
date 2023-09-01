@@ -1,15 +1,14 @@
-import { ExternalApiUsage } from "../external-api-usage";
+import { Method } from "../method";
 
 export function calculateModeledPercentage(
-  externalApiUsages: Array<Pick<ExternalApiUsage, "supported">>,
+  methods: Array<Pick<Method, "supported">>,
 ): number {
-  if (externalApiUsages.length === 0) {
+  if (methods.length === 0) {
     return 0;
   }
 
-  const modeledExternalApiUsages = externalApiUsages.filter((m) => m.supported);
+  const modeledExternalApiUsages = methods.filter((m) => m.supported);
 
-  const modeledRatio =
-    modeledExternalApiUsages.length / externalApiUsages.length;
+  const modeledRatio = modeledExternalApiUsages.length / methods.length;
   return modeledRatio * 100;
 }

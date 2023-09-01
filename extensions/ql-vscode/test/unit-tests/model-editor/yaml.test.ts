@@ -5,7 +5,7 @@ import {
   createFilenameForLibrary,
   loadDataExtensionYaml,
 } from "../../../src/model-editor/yaml";
-import { CallClassification } from "../../../src/model-editor/external-api-usage";
+import { CallClassification } from "../../../src/model-editor/method";
 
 describe("createDataExtensionYaml", () => {
   it("creates the correct YAML file", () => {

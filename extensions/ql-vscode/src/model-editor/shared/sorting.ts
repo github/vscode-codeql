@@ -1,47 +1,40 @@
-import { ExternalApiUsage } from "../external-api-usage";
+import { Method } from "../method";
 import { Mode } from "./mode";
 import { calculateModeledPercentage } from "./modeled-percentage";
 
 export function groupMethods(
-  externalApiUsages: ExternalApiUsage[],
+  methods: Method[],
   mode: Mode,
-): Record<string, ExternalApiUsage[]> {
-  const groupedByLibrary: Record<string, ExternalApiUsage[]> = {};
+): Record<string, Method[]> {
+  const groupedByLibrary: Record<string, Method[]> = {};
 
-  for (const externalApiUsage of externalApiUsages) {
+  for (const method of methods) {
     // Group by package if using framework mode
-    const key =
-      mode === Mode.Framework
-        ? externalApiUsage.packageName
-        : externalApiUsage.library;
+    const key = mode === Mode.Framework ? method.packageName : method.library;
 
     groupedByLibrary[key] ??= [];
-    groupedByLibrary[key].push(externalApiUsage);
+    groupedByLibrary[key].push(method);
   }
 
   return groupedByLibrary;
 }
 
-export function sortGroupNames(
-  methods: Record<string, ExternalApiUsage[]>,
-): string[] {
+export function sortGroupNames(methods: Record<string, Method[]>): string[] {
   return Object.keys(methods).sort((a, b) =>
     compareGroups(methods[a], a, methods[b], b),
   );
 }
 
-export function sortMethods(
-  externalApiUsages: ExternalApiUsage[],
-): ExternalApiUsage[] {
-  const sortedExternalApiUsages = [...externalApiUsages];
+export function sortMethods(methods: Method[]): Method[] {
+  const sortedExternalApiUsages = [...methods];
   sortedExternalApiUsages.sort((a, b) => compareMethod(a, b));
   return sortedExternalApiUsages;
 }
 
 function compareGroups(
-  a: ExternalApiUsage[],
+  a: Method[],
   aName: string,
-  b: ExternalApiUsage[],
+  b: Method[],
   bName: string,
 ): number {
   const supportedPercentageA = calculateModeledPercentage(a);
@@ -75,7 +68,7 @@ function compareGroups(
   return numberOfUsagesB - numberOfUsagesA;
 }
 
-function compareMethod(a: ExternalApiUsage, b: ExternalApiUsage): number {
+function compareMethod(a: Method, b: Method): number {
   // Sort first by supported, putting unmodeled methods first.
   if (a.supported && !b.supported) {
     return 1;

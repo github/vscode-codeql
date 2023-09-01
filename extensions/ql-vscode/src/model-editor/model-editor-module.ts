@@ -17,7 +17,7 @@ import { DisposableObject } from "../common/disposable-object";
 import { MethodsUsagePanel } from "./methods-usage/methods-usage-panel";
 import { Mode } from "./shared/mode";
 import { showResolvableLocation } from "../databases/local-databases/locations";
-import { ExternalApiUsage, Usage } from "./external-api-usage";
+import { Method, Usage } from "./method";
 import { setUpPack } from "./model-editor-queries";
 import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
 
@@ -175,10 +175,7 @@ export class ModelEditorModule extends DisposableObject {
     await ensureDir(this.queryStorageDir);
   }
 
-  private async showMethod(
-    method: ExternalApiUsage,
-    usage: Usage,
-  ): Promise<void> {
+  private async showMethod(method: Method, usage: Usage): Promise<void> {
     await this.methodsUsagePanel.revealItem(usage);
     await this.methodModelingPanel.setMethod(method);
   }
