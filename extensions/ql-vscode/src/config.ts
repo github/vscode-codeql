@@ -705,16 +705,13 @@ export function showQueriesPanel(): boolean {
   return !!QUERIES_PANEL.getValue<boolean>();
 }
 
-const DATA_EXTENSIONS = new Setting("dataExtensions", ROOT_SETTING);
-const LLM_GENERATION = new Setting("llmGeneration", DATA_EXTENSIONS);
+const MODEL_SETTING = new Setting("model", ROOT_SETTING);
+const LLM_GENERATION = new Setting("llmGeneration", MODEL_SETTING);
 const DISABLE_AUTO_NAME_EXTENSION_PACK = new Setting(
   "disableAutoNameExtensionPack",
-  DATA_EXTENSIONS,
+  MODEL_SETTING,
 );
-const EXTENSIONS_DIRECTORY = new Setting(
-  "extensionsDirectory",
-  DATA_EXTENSIONS,
-);
+const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
 
 export function showLlmGeneration(): boolean {
   return !!LLM_GENERATION.getValue<boolean>();
