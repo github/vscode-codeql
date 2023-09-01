@@ -1,25 +1,32 @@
 import { DisposableObject } from "../common/disposable-object";
-import { QueryTreeDataProvider } from "./query-tree-data-provider";
-import { QueryDiscovery } from "./query-discovery";
+import {
+  QueryDiscoverer,
+  QueryTreeDataProvider,
+} from "./query-tree-data-provider";
 import { window } from "vscode";
 
 export class QueriesPanel extends DisposableObject {
-  public constructor(queryDiscovery: QueryDiscovery) {
+  private readonly dataProvider: QueryTreeDataProvider;
+  public constructor(queryDiscoverer: QueryDiscoverer) {
     super();
 
-    const dataProvider = new QueryTreeDataProvider(queryDiscovery);
+    this.dataProvider = new QueryTreeDataProvider(queryDiscoverer);
 
     const treeView = window.createTreeView("codeQLQueries", {
-      treeDataProvider: dataProvider,
+      treeDataProvider: this.dataProvider,
     });
-    dataProvider.onDidChangeTreeData(() => {
-      if (dataProvider.getChildren().length === 0) {
-        treeView.message =
-          "We didn't find any CodeQL queries in this workspace. Create one to get started.";
-      } else {
-        treeView.message = undefined;
-      }
+
+    this.dataProvider.onDidChangeTreeData(() => {
+      treeView.message = this.getMessage();
     });
     this.push(treeView);
+  }
+
+  public getMessage(): string | undefined {
+    if (this.dataProvider.getChildren().length === 0) {
+      return "We didn't find any CodeQL queries in this workspace. Create one to get started.";
+    } else {
+      return undefined;
+    }
   }
 }
