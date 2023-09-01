@@ -14,6 +14,8 @@ export function MethodModelingView(): JSX.Element {
         const msg: ToMethodModelingMessage = evt.data;
         if (msg.t === "setMethod") {
           setMethod(msg.method);
+        } else {
+          assertNever(msg.t);
         }
       } else {
         // sanitize origin
