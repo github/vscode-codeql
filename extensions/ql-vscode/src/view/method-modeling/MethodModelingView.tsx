@@ -4,6 +4,7 @@ import { MethodModeling } from "./MethodModeling";
 import { ModelingStatus } from "../model-editor/ModelingStatusIndicator";
 import { ExternalApiUsage } from "../../model-editor/external-api-usage";
 import { ToMethodModelingMessage } from "../../common/interface-types";
+import { assertNever } from "../../common/helpers-pure";
 
 export function MethodModelingView(): JSX.Element {
   const [method, setMethod] = useState<ExternalApiUsage | undefined>(undefined);
