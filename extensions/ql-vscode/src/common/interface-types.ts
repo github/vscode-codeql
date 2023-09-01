@@ -523,6 +523,7 @@ interface SwitchModeMessage {
 
 interface JumpToUsageMessage {
   t: "jumpToUsage";
+  method: ExternalApiUsage;
   usage: Usage;
 }
 

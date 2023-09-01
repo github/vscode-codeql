@@ -71,6 +71,7 @@ export class MethodsUsageDataProvider
         iconPath: new ThemeIcon("symbol-method"),
       };
     } else {
+      const method = this.getParent(item);
       return {
         label: item.label,
         description: `${this.relativePathWithinDatabase(item.url.uri)} [${
@@ -80,7 +81,7 @@ export class MethodsUsageDataProvider
         command: {
           title: "Show usage",
           command: "codeQLModelEditor.jumpToUsageLocation",
-          arguments: [item, this.databaseItem],
+          arguments: [method, item, this.databaseItem],
         },
         iconPath: new ThemeIcon("error", new ThemeColor("errorForeground")),
       };

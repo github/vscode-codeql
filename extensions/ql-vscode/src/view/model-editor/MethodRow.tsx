@@ -314,6 +314,7 @@ function UnmodelableMethodRow(props: Props) {
 function sendJumpToUsageMessage(externalApiUsage: ExternalApiUsage) {
   vscode.postMessage({
     t: "jumpToUsage",
+    method: externalApiUsage,
     // In framework mode, the first and only usage is the definition of the method
     usage: externalApiUsage.usages[0],
   });
