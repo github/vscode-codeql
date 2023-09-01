@@ -39,9 +39,9 @@ describe("MethodsUsagePanel", () => {
     const usage = createUsage();
 
     beforeEach(() => {
-      mockTreeView = {
+      mockTreeView = mockedObject<TreeView<unknown>>({
         reveal: jest.fn(),
-      } as unknown as TreeView<unknown>;
+      });
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
     });
 
