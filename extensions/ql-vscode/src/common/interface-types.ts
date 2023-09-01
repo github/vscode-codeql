@@ -593,3 +593,10 @@ export type FromModelEditorMessage =
 export type FromMethodModelingMessage =
   | TelemetryMessage
   | UnhandledErrorMessage;
+
+interface SetMethodMessage {
+  t: "setMethod";
+  method: ExternalApiUsage;
+}
+
+export type ToMethodModelingMessage = SetMethodMessage;

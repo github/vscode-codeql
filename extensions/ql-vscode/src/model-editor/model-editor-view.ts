@@ -65,7 +65,7 @@ export class ModelEditorView extends AbstractWebview<
       databaseItem: DatabaseItem,
       hideModeledApis: boolean,
     ) => Promise<void>,
-    private readonly revealItemInUsagePanel: (usage: Usage) => Promise<void>,
+    private readonly showMethod: (usage: Usage) => Promise<void>,
     private readonly handleViewBecameActive: (view: ModelEditorView) => void,
     private readonly handleViewWasDisposed: (view: ModelEditorView) => void,
     private readonly isMostRecentlyActiveView: (
@@ -268,7 +268,7 @@ export class ModelEditorView extends AbstractWebview<
   }
 
   protected async handleJumpToUsage(usage: Usage) {
-    await this.revealItemInUsagePanel(usage);
+    await this.showMethod(usage);
     await showResolvableLocation(usage.url, this.databaseItem, this.app.logger);
   }
 
@@ -439,7 +439,7 @@ export class ModelEditorView extends AbstractWebview<
         modelFile,
         Mode.Framework,
         this.updateMethodsUsagePanelState,
-        this.revealItemInUsagePanel,
+        this.showMethod,
         this.handleViewBecameActive,
         this.handleViewWasDisposed,
         this.isMostRecentlyActiveView,

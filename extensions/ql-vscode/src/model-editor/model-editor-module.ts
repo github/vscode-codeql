@@ -17,7 +17,7 @@ import { DisposableObject } from "../common/disposable-object";
 import { MethodsUsagePanel } from "./methods-usage/methods-usage-panel";
 import { Mode } from "./shared/mode";
 import { showResolvableLocation } from "../databases/local-databases/locations";
-import { Usage } from "./external-api-usage";
+import { ExternalApiUsage, Usage } from "./external-api-usage";
 import { setUpPack } from "./model-editor-queries";
 import { MethodModelingPanel } from "./method-modeling/method-modeling-panel";
 
@@ -26,6 +26,7 @@ const SUPPORTED_LANGUAGES: string[] = ["java", "csharp"];
 export class ModelEditorModule extends DisposableObject {
   private readonly queryStorageDir: string;
   private readonly methodsUsagePanel: MethodsUsagePanel;
+  private readonly methodModelingPanel: MethodModelingPanel;
 
   private mostRecentlyActiveView: ModelEditorView | undefined = undefined;
 
@@ -40,7 +41,7 @@ export class ModelEditorModule extends DisposableObject {
     super();
     this.queryStorageDir = join(baseQueryStorageDir, "model-editor-results");
     this.methodsUsagePanel = this.push(new MethodsUsagePanel(cliServer));
-    this.push(new MethodModelingPanel(ctx));
+    this.methodModelingPanel = this.push(new MethodModelingPanel(ctx));
   }
 
   private handleViewBecameActive(view: ModelEditorView): void {
@@ -149,7 +150,7 @@ export class ModelEditorModule extends DisposableObject {
               modelFile,
               Mode.Application,
               this.methodsUsagePanel.setState.bind(this.methodsUsagePanel),
-              this.methodsUsagePanel.revealItem.bind(this.methodsUsagePanel),
+              this.showMethod.bind(this),
               this.handleViewBecameActive.bind(this),
               this.handleViewWasDisposed.bind(this),
               this.isMostRecentlyActiveView.bind(this),
@@ -172,5 +173,25 @@ export class ModelEditorModule extends DisposableObject {
 
   private async initialize(): Promise<void> {
     await ensureDir(this.queryStorageDir);
+  }
+
+  private async showMethod(usage: Usage): Promise<void> {
+    await this.methodsUsagePanel.revealItem(usage);
+
+    // For now, just construct a dummy method and show it in the method modeling panel
+    // because the method isn't easily accessible yet.
+    const method: ExternalApiUsage = {
+      library: "sql2o",
+      libraryVersion: "1.6.0",
+      signature: "org.sql2o.Connection#createQuery(String)",
+      packageName: "org.sql2o",
+      typeName: "Connection",
+      methodName: "createQuery",
+      methodParameters: "(String)",
+      supported: true,
+      supportedType: "summary",
+      usages: [],
+    };
+    await this.methodModelingPanel.setMethod(method);
   }
 }
