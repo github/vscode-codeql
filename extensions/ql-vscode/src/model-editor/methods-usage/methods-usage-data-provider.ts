@@ -71,7 +71,6 @@ export class MethodsUsageDataProvider
         iconPath: new ThemeIcon("symbol-method"),
       };
     } else {
-      const method = this.getParent(item);
       return {
         label: item.label,
         description: `${this.relativePathWithinDatabase(item.url.uri)} [${
@@ -81,7 +80,7 @@ export class MethodsUsageDataProvider
         command: {
           title: "Show usage",
           command: "codeQLModelEditor.jumpToUsageLocation",
-          arguments: [method, item, this.databaseItem],
+          arguments: [item.method, item, this.databaseItem],
         },
         iconPath: new ThemeIcon("error", new ThemeColor("errorForeground")),
       };
@@ -105,7 +104,7 @@ export class MethodsUsageDataProvider
         return this.externalApiUsages;
       }
     } else if (isExternalApiUsage(item)) {
-      return item.usages;
+      return item.usages.map((u) => ({ ...u, method: item }));
     } else {
       return [];
     }
@@ -117,15 +116,15 @@ export class MethodsUsageDataProvider
     if (isExternalApiUsage(item)) {
       return undefined;
     } else {
-      return this.externalApiUsages.find((e) => e.usages.includes(item));
+      return item.method;
     }
   }
 
-  public resolveCanonicalUsage(usage: Usage): Usage | undefined {
+  public resolveCanonicalUsage(usage: Usage): UsageWithMethod | undefined {
     for (const externalApiUsage of this.externalApiUsages) {
       for (const u of externalApiUsage.usages) {
         if (usagesAreEqual(u, usage)) {
-          return u;
+          return { ...u, method: externalApiUsage };
         }
       }
     }
@@ -133,7 +132,8 @@ export class MethodsUsageDataProvider
   }
 }
 
-export type MethodsUsageTreeViewItem = ExternalApiUsage | Usage;
+type UsageWithMethod = Usage & { method: ExternalApiUsage };
+export type MethodsUsageTreeViewItem = ExternalApiUsage | UsageWithMethod;
 
 function isExternalApiUsage(
   item: MethodsUsageTreeViewItem,
