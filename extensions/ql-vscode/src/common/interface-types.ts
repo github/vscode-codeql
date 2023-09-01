@@ -495,9 +495,9 @@ interface SetExtensionPackStateMessage {
   viewState: ModelEditorViewState;
 }
 
-interface SetExternalApiUsagesMessage {
-  t: "setExternalApiUsages";
-  externalApiUsages: Method[];
+interface SetMethodsMessage {
+  t: "setMethods";
+  methods: Method[];
 }
 
 interface LoadModeledMethodsMessage {
@@ -535,29 +535,29 @@ interface OpenExtensionPackMessage {
   t: "openExtensionPack";
 }
 
-interface RefreshExternalApiUsages {
-  t: "refreshExternalApiUsages";
+interface RefreshMethods {
+  t: "refreshMethods";
 }
 
 interface SaveModeledMethods {
   t: "saveModeledMethods";
-  externalApiUsages: Method[];
+  methods: Method[];
   modeledMethods: Record<string, ModeledMethod>;
 }
 
-interface GenerateExternalApiMessage {
-  t: "generateExternalApi";
+interface GenerateMethodMessage {
+  t: "generateMethod";
 }
 
-interface GenerateExternalApiFromLlmMessage {
-  t: "generateExternalApiFromLlm";
+interface GenerateMethodsFromLlmMessage {
+  t: "generateMethodsFromLlm";
   packageName: string;
-  externalApiUsages: Method[];
+  methods: Method[];
   modeledMethods: Record<string, ModeledMethod>;
 }
 
-interface StopGeneratingExternalApiFromLlmMessage {
-  t: "stopGeneratingExternalApiFromLlm";
+interface StopGeneratingMethodsFromLlmMessage {
+  t: "stopGeneratingMethodsFromLlm";
   packageName: string;
 }
 
@@ -572,7 +572,7 @@ interface HideModeledApisMessage {
 
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
-  | SetExternalApiUsagesMessage
+  | SetMethodsMessage
   | LoadModeledMethodsMessage
   | AddModeledMethodsMessage
   | SetInProgressMethodsMessage;
@@ -580,14 +580,14 @@ export type ToModelEditorMessage =
 export type FromModelEditorMessage =
   | ViewLoadedMsg
   | SwitchModeMessage
-  | RefreshExternalApiUsages
+  | RefreshMethods
   | OpenDatabaseMessage
   | OpenExtensionPackMessage
   | JumpToUsageMessage
   | SaveModeledMethods
-  | GenerateExternalApiMessage
-  | GenerateExternalApiFromLlmMessage
-  | StopGeneratingExternalApiFromLlmMessage
+  | GenerateMethodMessage
+  | GenerateMethodsFromLlmMessage
+  | StopGeneratingMethodsFromLlmMessage
   | ModelDependencyMessage
   | HideModeledApisMessage;
 

@@ -120,8 +120,8 @@ export function ModelEditor({
           case "setModelEditorViewState":
             setViewState(msg.viewState);
             break;
-          case "setExternalApiUsages":
-            setMethods(msg.externalApiUsages);
+          case "setMethods":
+            setMethods(msg.methods);
             break;
           case "loadModeledMethods":
             setModeledMethods((oldModeledMethods) => {
@@ -195,14 +195,14 @@ export function ModelEditor({
 
   const onRefreshClick = useCallback(() => {
     vscode.postMessage({
-      t: "refreshExternalApiUsages",
+      t: "refreshMethods",
     });
   }, []);
 
   const onSaveAllClick = useCallback(() => {
     vscode.postMessage({
       t: "saveModeledMethods",
-      externalApiUsages: methods,
+      methods,
       modeledMethods,
     });
     setModifiedSignatures(new Set());
@@ -212,7 +212,7 @@ export function ModelEditor({
     (methods: Method[], modeledMethods: Record<string, ModeledMethod>) => {
       vscode.postMessage({
         t: "saveModeledMethods",
-        externalApiUsages: methods,
+        methods,
         modeledMethods,
       });
       setModifiedSignatures((oldModifiedSignatures) => {
@@ -228,7 +228,7 @@ export function ModelEditor({
 
   const onGenerateFromSourceClick = useCallback(() => {
     vscode.postMessage({
-      t: "generateExternalApi",
+      t: "generateMethod",
     });
   }, []);
 
@@ -245,9 +245,9 @@ export function ModelEditor({
       modeledMethods: Record<string, ModeledMethod>,
     ) => {
       vscode.postMessage({
-        t: "generateExternalApiFromLlm",
+        t: "generateMethodsFromLlm",
         packageName,
-        externalApiUsages: methods,
+        methods,
         modeledMethods,
       });
     },
@@ -256,7 +256,7 @@ export function ModelEditor({
 
   const onStopGenerateFromLlmClick = useCallback((packageName: string) => {
     vscode.postMessage({
-      t: "stopGeneratingExternalApiFromLlm",
+      t: "stopGeneratingMethodsFromLlm",
       packageName,
     });
   }, []);

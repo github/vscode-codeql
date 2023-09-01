@@ -188,7 +188,7 @@ export class ModelEditorView extends AbstractWebview<
         );
 
         break;
-      case "refreshExternalApiUsages":
+      case "refreshMethods":
         await this.loadExternalApiUsages();
 
         break;
@@ -201,7 +201,7 @@ export class ModelEditorView extends AbstractWebview<
           this.extensionPack,
           this.databaseItem.name,
           this.databaseItem.language,
-          msg.externalApiUsages,
+          msg.methods,
           msg.modeledMethods,
           this.mode,
           this.cliServer,
@@ -210,18 +210,18 @@ export class ModelEditorView extends AbstractWebview<
         await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
 
         break;
-      case "generateExternalApi":
+      case "generateMethod":
         await this.generateModeledMethods();
 
         break;
-      case "generateExternalApiFromLlm":
+      case "generateMethodsFromLlm":
         await this.generateModeledMethodsFromLlm(
           msg.packageName,
-          msg.externalApiUsages,
+          msg.methods,
           msg.modeledMethods,
         );
         break;
-      case "stopGeneratingExternalApiFromLlm":
+      case "stopGeneratingMethodsFromLlm":
         await this.autoModeler.stopModeling(msg.packageName);
         break;
       case "modelDependency":
@@ -314,8 +314,8 @@ export class ModelEditorView extends AbstractWebview<
           this.methods = queryResult;
 
           await this.postMessage({
-            t: "setExternalApiUsages",
-            externalApiUsages: this.methods,
+            t: "setMethods",
+            methods: this.methods,
           });
           if (this.isMostRecentlyActiveView(this)) {
             await this.updateMethodsUsagePanelState(
