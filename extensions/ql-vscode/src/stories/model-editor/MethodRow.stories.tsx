@@ -3,10 +3,7 @@ import * as React from "react";
 import { Meta, StoryFn } from "@storybook/react";
 
 import { MethodRow as MethodRowComponent } from "../../view/model-editor/MethodRow";
-import {
-  CallClassification,
-  ExternalApiUsage,
-} from "../../model-editor/external-api-usage";
+import { CallClassification, Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { VSCodeDataGrid } from "@vscode/webview-ui-toolkit/react";
 import { GRID_TEMPLATE_COLUMNS } from "../../view/model-editor/ModeledMethodDataGrid";
@@ -22,7 +19,7 @@ const Template: StoryFn<typeof MethodRowComponent> = (args) => (
   </VSCodeDataGrid>
 );
 
-const externalApiUsage: ExternalApiUsage = {
+const method: Method = {
   library: "sql2o-1.6.0.jar",
   signature: "org.sql2o.Sql2o#open()",
   packageName: "org.sql2o",
@@ -71,36 +68,36 @@ const modeledMethod: ModeledMethod = {
 
 export const Unmodeled = Template.bind({});
 Unmodeled.args = {
-  externalApiUsage,
+  method,
   modeledMethod: undefined,
 };
 
 export const Source = Template.bind({});
 Source.args = {
-  externalApiUsage,
+  method,
   modeledMethod: { ...modeledMethod, type: "source" },
 };
 
 export const Sink = Template.bind({});
 Sink.args = {
-  externalApiUsage,
+  method,
   modeledMethod: { ...modeledMethod, type: "sink" },
 };
 
 export const Summary = Template.bind({});
 Summary.args = {
-  externalApiUsage,
+  method,
   modeledMethod: { ...modeledMethod, type: "summary" },
 };
 
 export const Neutral = Template.bind({});
 Neutral.args = {
-  externalApiUsage,
+  method,
   modeledMethod: { ...modeledMethod, type: "neutral" },
 };
 
 export const AlreadyModeled = Template.bind({});
 AlreadyModeled.args = {
-  externalApiUsage: { ...externalApiUsage, supported: true },
+  method: { ...method, supported: true },
   modeledMethod: undefined,
 };

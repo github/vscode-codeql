@@ -5,7 +5,7 @@ import {
   VSCodeDataGridRow,
 } from "@vscode/webview-ui-toolkit/react";
 import { MethodRow } from "./MethodRow";
-import { ExternalApiUsage } from "../../model-editor/external-api-usage";
+import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { useMemo } from "react";
 import { Mode } from "../../model-editor/shared/mode";
@@ -16,21 +16,18 @@ export const GRID_TEMPLATE_COLUMNS = "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
 
 type Props = {
   packageName: string;
-  externalApiUsages: ExternalApiUsage[];
+  methods: Method[];
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
   mode: Mode;
   hideModeledApis: boolean;
-  onChange: (
-    externalApiUsage: ExternalApiUsage,
-    modeledMethod: ModeledMethod,
-  ) => void;
+  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
 };
 
 export const ModeledMethodDataGrid = ({
   packageName,
-  externalApiUsages,
+  methods,
   modeledMethods,
   modifiedSignatures,
   inProgressMethods,
@@ -38,10 +35,7 @@ export const ModeledMethodDataGrid = ({
   hideModeledApis,
   onChange,
 }: Props) => {
-  const sortedExternalApiUsages = useMemo(
-    () => sortMethods(externalApiUsages),
-    [externalApiUsages],
-  );
+  const sortedMethods = useMemo(() => sortMethods(methods), [methods]);
 
   return (
     <VSCodeDataGrid gridTemplateColumns={GRID_TEMPLATE_COLUMNS}>
@@ -62,15 +56,15 @@ export const ModeledMethodDataGrid = ({
           Kind
         </VSCodeDataGridCell>
       </VSCodeDataGridRow>
-      {sortedExternalApiUsages.map((externalApiUsage) => (
+      {sortedMethods.map((method) => (
         <MethodRow
-          key={externalApiUsage.signature}
-          externalApiUsage={externalApiUsage}
-          modeledMethod={modeledMethods[externalApiUsage.signature]}
-          methodIsUnsaved={modifiedSignatures.has(externalApiUsage.signature)}
+          key={method.signature}
+          method={method}
+          modeledMethod={modeledMethods[method.signature]}
+          methodIsUnsaved={modifiedSignatures.has(method.signature)}
           modelingInProgress={inProgressMethods.hasMethod(
             packageName,
-            externalApiUsage.signature,
+            method.signature,
           )}
           mode={mode}
           hideModeledApis={hideModeledApis}

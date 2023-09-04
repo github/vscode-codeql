@@ -1,5 +1,5 @@
 import { outputFile, readFile } from "fs-extra";
-import { ExternalApiUsage } from "./external-api-usage";
+import { Method } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { Mode } from "./shared/mode";
 import { createDataExtensionYamls, loadDataExtensionYaml } from "./yaml";
@@ -15,7 +15,7 @@ export async function saveModeledMethods(
   extensionPack: ExtensionPack,
   databaseName: string,
   language: string,
-  externalApiUsages: ExternalApiUsage[],
+  methods: Method[],
   modeledMethods: Record<string, ModeledMethod>,
   mode: Mode,
   cliServer: CodeQLCliServer,
@@ -30,7 +30,7 @@ export async function saveModeledMethods(
   const yamls = createDataExtensionYamls(
     databaseName,
     language,
-    externalApiUsages,
+    methods,
     modeledMethods,
     existingModeledMethods,
     mode,

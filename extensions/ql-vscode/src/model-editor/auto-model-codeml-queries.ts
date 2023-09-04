@@ -11,7 +11,7 @@ import { assertNever } from "../common/helpers-pure";
 import { dir } from "tmp-promise";
 import { writeFile, outputFile } from "fs-extra";
 import { dump as dumpYaml } from "js-yaml";
-import { MethodSignature } from "./external-api-usage";
+import { MethodSignature } from "./method";
 import { runQuery } from "../local-queries/run-query";
 import { QueryMetadata } from "../common/interface-types";
 import { CancellationTokenSource } from "vscode";

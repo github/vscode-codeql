@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useCallback, useMemo, useState } from "react";
 import { styled } from "styled-components";
-import { ExternalApiUsage } from "../../model-editor/external-api-usage";
+import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { ModeledMethodDataGrid } from "./ModeledMethodDataGrid";
 import { calculateModeledPercentage } from "../../model-editor/shared/modeled-percentage";
@@ -70,7 +70,7 @@ const ButtonsContainer = styled.div`
 type Props = {
   title: string;
   libraryVersion?: string;
-  externalApiUsages: ExternalApiUsage[];
+  methods: Method[];
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
@@ -78,16 +78,16 @@ type Props = {
   hideModeledApis: boolean;
   onChange: (
     modelName: string,
-    externalApiUsage: ExternalApiUsage,
+    method: Method,
     modeledMethod: ModeledMethod,
   ) => void;
   onSaveModelClick: (
-    externalApiUsages: ExternalApiUsage[],
+    methods: Method[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
   onGenerateFromLlmClick: (
     dependencyName: string,
-    externalApiUsages: ExternalApiUsage[],
+    methods: Method[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
   onStopGenerateFromLlmClick: (dependencyName: string) => void;
@@ -98,7 +98,7 @@ type Props = {
 export const LibraryRow = ({
   title,
   libraryVersion,
-  externalApiUsages,
+  methods,
   modeledMethods,
   modifiedSignatures,
   inProgressMethods,
@@ -112,8 +112,8 @@ export const LibraryRow = ({
   onModelDependencyClick,
 }: Props) => {
   const modeledPercentage = useMemo(() => {
-    return calculateModeledPercentage(externalApiUsages);
-  }, [externalApiUsages]);
+    return calculateModeledPercentage(methods);
+  }, [methods]);
 
   const [isExpanded, setExpanded] = useState(false);
 
@@ -123,11 +123,11 @@ export const LibraryRow = ({
 
   const handleModelWithAI = useCallback(
     async (e: React.MouseEvent) => {
-      onGenerateFromLlmClick(title, externalApiUsages, modeledMethods);
+      onGenerateFromLlmClick(title, methods, modeledMethods);
       e.stopPropagation();
       e.preventDefault();
     },
-    [title, externalApiUsages, modeledMethods, onGenerateFromLlmClick],
+    [title, methods, modeledMethods, onGenerateFromLlmClick],
   );
 
   const handleStopModelWithAI = useCallback(
@@ -159,31 +159,29 @@ export const LibraryRow = ({
 
   const handleSave = useCallback(
     async (e: React.MouseEvent) => {
-      onSaveModelClick(externalApiUsages, modeledMethods);
+      onSaveModelClick(methods, modeledMethods);
       e.stopPropagation();
       e.preventDefault();
     },
-    [externalApiUsages, modeledMethods, onSaveModelClick],
+    [methods, modeledMethods, onSaveModelClick],
   );
 
   const onChangeWithModelName = useCallback(
-    (externalApiUsage: ExternalApiUsage, modeledMethod: ModeledMethod) => {
-      onChange(title, externalApiUsage, modeledMethod);
+    (method: Method, modeledMethod: ModeledMethod) => {
+      onChange(title, method, modeledMethod);
     },
     [onChange, title],
   );
 
   const hasUnsavedChanges = useMemo(() => {
-    return externalApiUsages.some((externalApiUsage) =>
-      modifiedSignatures.has(externalApiUsage.signature),
-    );
-  }, [externalApiUsages, modifiedSignatures]);
+    return methods.some((method) => modifiedSignatures.has(method.signature));
+  }, [methods, modifiedSignatures]);
 
   const canStopAutoModeling = useMemo(() => {
-    return externalApiUsages.some((externalApiUsage) =>
-      inProgressMethods.hasMethod(title, externalApiUsage.signature),
+    return methods.some((method) =>
+      inProgressMethods.hasMethod(title, method.signature),
     );
-  }, [externalApiUsages, title, inProgressMethods]);
+  }, [methods, title, inProgressMethods]);
 
   return (
     <LibraryContainer>
@@ -233,7 +231,7 @@ export const LibraryRow = ({
           <SectionDivider />
           <ModeledMethodDataGrid
             packageName={title}
-            externalApiUsages={externalApiUsages}
+            methods={methods}
             modeledMethods={modeledMethods}
             modifiedSignatures={modifiedSignatures}
             inProgressMethods={inProgressMethods}

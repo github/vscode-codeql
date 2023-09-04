@@ -1,7 +1,7 @@
 import { ExtensionContext, window } from "vscode";
 import { DisposableObject } from "../../common/disposable-object";
 import { MethodModelingViewProvider } from "./method-modeling-view-provider";
-import { ExternalApiUsage } from "../external-api-usage";
+import { Method } from "../method";
 
 export class MethodModelingPanel extends DisposableObject {
   private readonly provider: MethodModelingViewProvider;
@@ -18,7 +18,7 @@ export class MethodModelingPanel extends DisposableObject {
     );
   }
 
-  public async setMethod(method: ExternalApiUsage): Promise<void> {
+  public async setMethod(method: Method): Promise<void> {
     await this.provider.setMethod(method);
   }
 }

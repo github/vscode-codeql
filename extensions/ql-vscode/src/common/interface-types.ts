@@ -17,7 +17,7 @@ import {
 } from "../variant-analysis/shared/variant-analysis-filter-sort";
 import { ErrorLike } from "../common/errors";
 import { DataFlowPaths } from "../variant-analysis/shared/data-flow-paths";
-import { ExternalApiUsage, Usage } from "../model-editor/external-api-usage";
+import { Method, Usage } from "../model-editor/method";
 import { ModeledMethod } from "../model-editor/modeled-method";
 import { ModelEditorViewState } from "../model-editor/shared/view-state";
 import { Mode } from "../model-editor/shared/mode";
@@ -495,9 +495,9 @@ interface SetExtensionPackStateMessage {
   viewState: ModelEditorViewState;
 }
 
-interface SetExternalApiUsagesMessage {
-  t: "setExternalApiUsages";
-  externalApiUsages: ExternalApiUsage[];
+interface SetMethodsMessage {
+  t: "setMethods";
+  methods: Method[];
 }
 
 interface LoadModeledMethodsMessage {
@@ -523,7 +523,7 @@ interface SwitchModeMessage {
 
 interface JumpToUsageMessage {
   t: "jumpToUsage";
-  method: ExternalApiUsage;
+  method: Method;
   usage: Usage;
 }
 
@@ -535,29 +535,29 @@ interface OpenExtensionPackMessage {
   t: "openExtensionPack";
 }
 
-interface RefreshExternalApiUsages {
-  t: "refreshExternalApiUsages";
+interface RefreshMethods {
+  t: "refreshMethods";
 }
 
 interface SaveModeledMethods {
   t: "saveModeledMethods";
-  externalApiUsages: ExternalApiUsage[];
+  methods: Method[];
   modeledMethods: Record<string, ModeledMethod>;
 }
 
-interface GenerateExternalApiMessage {
-  t: "generateExternalApi";
+interface GenerateMethodMessage {
+  t: "generateMethod";
 }
 
-interface GenerateExternalApiFromLlmMessage {
-  t: "generateExternalApiFromLlm";
+interface GenerateMethodsFromLlmMessage {
+  t: "generateMethodsFromLlm";
   packageName: string;
-  externalApiUsages: ExternalApiUsage[];
+  methods: Method[];
   modeledMethods: Record<string, ModeledMethod>;
 }
 
-interface StopGeneratingExternalApiFromLlmMessage {
-  t: "stopGeneratingExternalApiFromLlm";
+interface StopGeneratingMethodsFromLlmMessage {
+  t: "stopGeneratingMethodsFromLlm";
   packageName: string;
 }
 
@@ -572,7 +572,7 @@ interface HideModeledApisMessage {
 
 export type ToModelEditorMessage =
   | SetExtensionPackStateMessage
-  | SetExternalApiUsagesMessage
+  | SetMethodsMessage
   | LoadModeledMethodsMessage
   | AddModeledMethodsMessage
   | SetInProgressMethodsMessage;
@@ -580,14 +580,14 @@ export type ToModelEditorMessage =
 export type FromModelEditorMessage =
   | ViewLoadedMsg
   | SwitchModeMessage
-  | RefreshExternalApiUsages
+  | RefreshMethods
   | OpenDatabaseMessage
   | OpenExtensionPackMessage
   | JumpToUsageMessage
   | SaveModeledMethods
-  | GenerateExternalApiMessage
-  | GenerateExternalApiFromLlmMessage
-  | StopGeneratingExternalApiFromLlmMessage
+  | GenerateMethodMessage
+  | GenerateMethodsFromLlmMessage
+  | StopGeneratingMethodsFromLlmMessage
   | ModelDependencyMessage
   | HideModeledApisMessage;
 
@@ -597,7 +597,7 @@ export type FromMethodModelingMessage =
 
 interface SetMethodMessage {
   t: "setMethod";
-  method: ExternalApiUsage;
+  method: Method;
 }
 
 export type ToMethodModelingMessage = SetMethodMessage;

@@ -28,7 +28,7 @@ import { App } from "../common/app";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { redactableError } from "../common/errors";
 import { runExternalApiQueries } from "./external-api-usage-queries";
-import { ExternalApiUsage, Usage } from "./external-api-usage";
+import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
 import { showLlmGeneration } from "../config";
@@ -46,7 +46,7 @@ export class ModelEditorView extends AbstractWebview<
 > {
   private readonly autoModeler: AutoModeler;
 
-  private externalApiUsages: ExternalApiUsage[];
+  private methods: Method[];
   private hideModeledApis: boolean;
 
   public constructor(
@@ -61,12 +61,12 @@ export class ModelEditorView extends AbstractWebview<
     private readonly extensionPack: ExtensionPack,
     private mode: Mode,
     private readonly updateMethodsUsagePanelState: (
-      externalApiUsages: ExternalApiUsage[],
+      methods: Method[],
       databaseItem: DatabaseItem,
       hideModeledApis: boolean,
     ) => Promise<void>,
     private readonly showMethod: (
-      method: ExternalApiUsage,
+      method: Method,
       usage: Usage,
     ) => Promise<void>,
     private readonly handleViewBecameActive: (view: ModelEditorView) => void,
@@ -94,7 +94,7 @@ export class ModelEditorView extends AbstractWebview<
         await this.postMessage({ t: "addModeledMethods", modeledMethods });
       },
     );
-    this.externalApiUsages = [];
+    this.methods = [];
     this.hideModeledApis = INITIAL_HIDE_MODELED_APIS_VALUE;
   }
 
@@ -106,7 +106,7 @@ export class ModelEditorView extends AbstractWebview<
       if (panel.active) {
         this.handleViewBecameActive(this);
         await this.updateMethodsUsagePanelState(
-          this.externalApiUsages,
+          this.methods,
           this.databaseItem,
           this.hideModeledApis,
         );
@@ -188,7 +188,7 @@ export class ModelEditorView extends AbstractWebview<
         );
 
         break;
-      case "refreshExternalApiUsages":
+      case "refreshMethods":
         await this.loadExternalApiUsages();
 
         break;
@@ -201,7 +201,7 @@ export class ModelEditorView extends AbstractWebview<
           this.extensionPack,
           this.databaseItem.name,
           this.databaseItem.language,
-          msg.externalApiUsages,
+          msg.methods,
           msg.modeledMethods,
           this.mode,
           this.cliServer,
@@ -210,18 +210,18 @@ export class ModelEditorView extends AbstractWebview<
         await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
 
         break;
-      case "generateExternalApi":
+      case "generateMethod":
         await this.generateModeledMethods();
 
         break;
-      case "generateExternalApiFromLlm":
+      case "generateMethodsFromLlm":
         await this.generateModeledMethodsFromLlm(
           msg.packageName,
-          msg.externalApiUsages,
+          msg.methods,
           msg.modeledMethods,
         );
         break;
-      case "stopGeneratingExternalApiFromLlm":
+      case "stopGeneratingMethodsFromLlm":
         await this.autoModeler.stopModeling(msg.packageName);
         break;
       case "modelDependency":
@@ -236,7 +236,7 @@ export class ModelEditorView extends AbstractWebview<
       case "hideModeledApis":
         this.hideModeledApis = msg.hideModeledApis;
         await this.updateMethodsUsagePanelState(
-          this.externalApiUsages,
+          this.methods,
           this.databaseItem,
           this.hideModeledApis,
         );
@@ -270,7 +270,7 @@ export class ModelEditorView extends AbstractWebview<
     });
   }
 
-  protected async handleJumpToUsage(method: ExternalApiUsage, usage: Usage) {
+  protected async handleJumpToUsage(method: Method, usage: Usage) {
     await this.showMethod(method, usage);
     await showResolvableLocation(usage.url, this.databaseItem, this.app.logger);
   }
@@ -311,15 +311,15 @@ export class ModelEditorView extends AbstractWebview<
           if (!queryResult) {
             return;
           }
-          this.externalApiUsages = queryResult;
+          this.methods = queryResult;
 
           await this.postMessage({
-            t: "setExternalApiUsages",
-            externalApiUsages: this.externalApiUsages,
+            t: "setMethods",
+            methods: this.methods,
           });
           if (this.isMostRecentlyActiveView(this)) {
             await this.updateMethodsUsagePanelState(
-              this.externalApiUsages,
+              this.methods,
               this.databaseItem,
               this.hideModeledApis,
             );
@@ -399,12 +399,12 @@ export class ModelEditorView extends AbstractWebview<
 
   private async generateModeledMethodsFromLlm(
     packageName: string,
-    externalApiUsages: ExternalApiUsage[],
+    methods: Method[],
     modeledMethods: Record<string, ModeledMethod>,
   ): Promise<void> {
     await this.autoModeler.startModeling(
       packageName,
-      externalApiUsages,
+      methods,
       modeledMethods,
       this.mode,
     );

@@ -1,16 +1,12 @@
 import { DecodedBqrsChunk } from "../common/bqrs-cli-types";
-import {
-  Call,
-  CallClassification,
-  ExternalApiUsage,
-} from "./external-api-usage";
+import { Call, CallClassification, Method } from "./method";
 import { ModeledMethodType } from "./modeled-method";
 import { parseLibraryFilename } from "./library";
 
 export function decodeBqrsToExternalApiUsages(
   chunk: DecodedBqrsChunk,
-): ExternalApiUsage[] {
-  const methodsByApiName = new Map<string, ExternalApiUsage>();
+): Method[] {
+  const methodsByApiName = new Map<string, Method>();
 
   chunk?.tuples.forEach((tuple) => {
     const usage = tuple[0] as Call;

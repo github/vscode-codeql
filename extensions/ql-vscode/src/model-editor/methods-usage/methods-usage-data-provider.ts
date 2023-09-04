@@ -9,7 +9,7 @@ import {
   Uri,
 } from "vscode";
 import { DisposableObject } from "../../common/disposable-object";
-import { ExternalApiUsage, Usage } from "../external-api-usage";
+import { Method, Usage } from "../method";
 import { DatabaseItem } from "../../databases/local-databases";
 import { relative } from "path";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
@@ -19,7 +19,7 @@ export class MethodsUsageDataProvider
   extends DisposableObject
   implements TreeDataProvider<MethodsUsageTreeViewItem>
 {
-  private externalApiUsages: ExternalApiUsage[] = [];
+  private methods: Method[] = [];
   private databaseItem: DatabaseItem | undefined = undefined;
   private sourceLocationPrefix: string | undefined = undefined;
   private hideModeledApis: boolean = INITIAL_HIDE_MODELED_APIS_VALUE;
@@ -44,16 +44,16 @@ export class MethodsUsageDataProvider
    * method and instead always pass new objects/arrays.
    */
   public async setState(
-    externalApiUsages: ExternalApiUsage[],
+    methods: Method[],
     databaseItem: DatabaseItem,
     hideModeledApis: boolean,
   ): Promise<void> {
     if (
-      this.externalApiUsages !== externalApiUsages ||
+      this.methods !== methods ||
       this.databaseItem !== databaseItem ||
       this.hideModeledApis !== hideModeledApis
     ) {
-      this.externalApiUsages = externalApiUsages;
+      this.methods = methods;
       this.databaseItem = databaseItem;
       this.sourceLocationPrefix =
         await this.databaseItem.getSourceLocationPrefix(this.cliServer);
@@ -100,9 +100,9 @@ export class MethodsUsageDataProvider
   getChildren(item?: MethodsUsageTreeViewItem): MethodsUsageTreeViewItem[] {
     if (item === undefined) {
       if (this.hideModeledApis) {
-        return this.externalApiUsages.filter((api) => !api.supported);
+        return this.methods.filter((api) => !api.supported);
       } else {
-        return this.externalApiUsages;
+        return this.methods;
       }
     } else if (isExternalApiUsage(item)) {
       return item.usages;
@@ -117,13 +117,13 @@ export class MethodsUsageDataProvider
     if (isExternalApiUsage(item)) {
       return undefined;
     } else {
-      return this.externalApiUsages.find((e) => e.usages.includes(item));
+      return this.methods.find((e) => e.usages.includes(item));
     }
   }
 
   public resolveCanonicalUsage(usage: Usage): Usage | undefined {
-    for (const externalApiUsage of this.externalApiUsages) {
-      for (const u of externalApiUsage.usages) {
+    for (const method of this.methods) {
+      for (const u of method.usages) {
         if (usagesAreEqual(u, usage)) {
           return u;
         }
@@ -133,11 +133,9 @@ export class MethodsUsageDataProvider
   }
 }
 
-export type MethodsUsageTreeViewItem = ExternalApiUsage | Usage;
+export type MethodsUsageTreeViewItem = Method | Usage;
 
-function isExternalApiUsage(
-  item: MethodsUsageTreeViewItem,
-): item is ExternalApiUsage {
+function isExternalApiUsage(item: MethodsUsageTreeViewItem): item is Method {
   return (item as any).usages !== undefined;
 }
 
