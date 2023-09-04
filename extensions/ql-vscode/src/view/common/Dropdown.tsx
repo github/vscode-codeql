@@ -9,7 +9,7 @@ const StyledDropdown = styled.select<{ disabled?: boolean }>`
   height: calc(var(--input-height) * 1px);
   background: var(--vscode-dropdown-background);
   color: var(--vscode-foreground);
-  border: none;
+  border-width: 0 5px 0 0;
   padding: 2px 6px 2px 8px;
   opacity: ${(props) =>
     props.disabled ? "var(--disabled-opacity)" : "inherit"};
