@@ -39,7 +39,3 @@ export function createQueryTreeFileItem(
   };
   return item;
 }
-
-export function createQueryTreeTextItem(text: string): QueryTreeViewItem {
-  return new QueryTreeViewItem(text, undefined, []);
-}

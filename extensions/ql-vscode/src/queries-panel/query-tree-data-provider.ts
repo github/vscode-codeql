@@ -3,10 +3,10 @@ import {
   QueryTreeViewItem,
   createQueryTreeFileItem,
   createQueryTreeFolderItem,
-  createQueryTreeTextItem,
 } from "./query-tree-view-item";
 import { DisposableObject } from "../common/disposable-object";
 import { FileTreeNode } from "../common/file-tree-nodes";
+import { App } from "../common/app";
 
 export interface QueryDiscoverer {
   readonly buildQueryTree: () => Array<FileTreeNode<string>> | undefined;
@@ -23,7 +23,10 @@ export class QueryTreeDataProvider
     new EventEmitter<void>(),
   );
 
-  public constructor(private readonly queryDiscoverer: QueryDiscoverer) {
+  public constructor(
+    private readonly queryDiscoverer: QueryDiscoverer,
+    private readonly app: App,
+  ) {
     super();
 
     queryDiscoverer.onDidChangeQueries(() => {
@@ -43,8 +46,11 @@ export class QueryTreeDataProvider
     if (queryTree === undefined) {
       return [];
     } else if (queryTree.length === 0) {
-      return [this.noQueriesTreeViewItem()];
+      void this.app.commands.execute("setContext", "codeQL.noQueries", true);
+      // Returning an empty tree here will show the welcome view
+      return [];
     } else {
+      void this.app.commands.execute("setContext", "codeQL.noQueries", false);
       return queryTree.map(this.convertFileTreeNode.bind(this));
     }
   }
@@ -65,12 +71,6 @@ export class QueryTreeDataProvider
         fileTreeDirectory.children.map(this.convertFileTreeNode.bind(this)),
       );
     }
-  }
-
-  private noQueriesTreeViewItem(): QueryTreeViewItem {
-    return createQueryTreeTextItem(
-      "This workspace doesn't contain any CodeQL queries at the moment.",
-    );
   }
 
   /**
