@@ -7,7 +7,7 @@ import {
   VSCodeTag,
 } from "@vscode/webview-ui-toolkit/react";
 import { styled } from "styled-components";
-import { ExternalApiUsage } from "../../model-editor/external-api-usage";
+import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { assertNever } from "../../common/helpers-pure";
 import { vscode } from "../vscode-api";
@@ -73,14 +73,14 @@ const ButtonsContainer = styled.div`
 
 type Props = {
   initialViewState?: ModelEditorViewState;
-  initialExternalApiUsages?: ExternalApiUsage[];
+  initialMethods?: Method[];
   initialModeledMethods?: Record<string, ModeledMethod>;
   initialHideModeledApis?: boolean;
 };
 
 export function ModelEditor({
   initialViewState,
-  initialExternalApiUsages = [],
+  initialMethods = [],
   initialModeledMethods = {},
   initialHideModeledApis = INITIAL_HIDE_MODELED_APIS_VALUE,
 }: Props): JSX.Element {
@@ -88,9 +88,7 @@ export function ModelEditor({
     initialViewState,
   );
 
-  const [externalApiUsages, setExternalApiUsages] = useState<
-    ExternalApiUsage[]
-  >(initialExternalApiUsages);
+  const [methods, setMethods] = useState<Method[]>(initialMethods);
   const [modifiedSignatures, setModifiedSignatures] = useState<Set<string>>(
     new Set(),
   );
@@ -122,8 +120,8 @@ export function ModelEditor({
           case "setModelEditorViewState":
             setViewState(msg.viewState);
             break;
-          case "setExternalApiUsages":
-            setExternalApiUsages(msg.externalApiUsages);
+          case "setMethods":
+            setMethods(msg.methods);
             break;
           case "loadModeledMethods":
             setModeledMethods((oldModeledMethods) => {
@@ -177,12 +175,12 @@ export function ModelEditor({
   }, []);
 
   const modeledPercentage = useMemo(
-    () => calculateModeledPercentage(externalApiUsages),
-    [externalApiUsages],
+    () => calculateModeledPercentage(methods),
+    [methods],
   );
 
   const onChange = useCallback(
-    (modelName: string, method: ExternalApiUsage, model: ModeledMethod) => {
+    (modelName: string, method: Method, model: ModeledMethod) => {
       setModeledMethods((oldModeledMethods) => ({
         ...oldModeledMethods,
         [method.signature]: model,
@@ -197,33 +195,30 @@ export function ModelEditor({
 
   const onRefreshClick = useCallback(() => {
     vscode.postMessage({
-      t: "refreshExternalApiUsages",
+      t: "refreshMethods",
     });
   }, []);
 
   const onSaveAllClick = useCallback(() => {
     vscode.postMessage({
       t: "saveModeledMethods",
-      externalApiUsages,
+      methods,
       modeledMethods,
     });
     setModifiedSignatures(new Set());
-  }, [externalApiUsages, modeledMethods]);
+  }, [methods, modeledMethods]);
 
   const onSaveModelClick = useCallback(
-    (
-      externalApiUsages: ExternalApiUsage[],
-      modeledMethods: Record<string, ModeledMethod>,
-    ) => {
+    (methods: Method[], modeledMethods: Record<string, ModeledMethod>) => {
       vscode.postMessage({
         t: "saveModeledMethods",
-        externalApiUsages,
+        methods,
         modeledMethods,
       });
       setModifiedSignatures((oldModifiedSignatures) => {
         const newModifiedSignatures = new Set([...oldModifiedSignatures]);
-        for (const externalApiUsage of externalApiUsages) {
-          newModifiedSignatures.delete(externalApiUsage.signature);
+        for (const method of methods) {
+          newModifiedSignatures.delete(method.signature);
         }
         return newModifiedSignatures;
       });
@@ -233,7 +228,7 @@ export function ModelEditor({
 
   const onGenerateFromSourceClick = useCallback(() => {
     vscode.postMessage({
-      t: "generateExternalApi",
+      t: "generateMethod",
     });
   }, []);
 
@@ -246,13 +241,13 @@ export function ModelEditor({
   const onGenerateFromLlmClick = useCallback(
     (
       packageName: string,
-      externalApiUsages: ExternalApiUsage[],
+      methods: Method[],
       modeledMethods: Record<string, ModeledMethod>,
     ) => {
       vscode.postMessage({
-        t: "generateExternalApiFromLlm",
+        t: "generateMethodsFromLlm",
         packageName,
-        externalApiUsages,
+        methods,
         modeledMethods,
       });
     },
@@ -261,7 +256,7 @@ export function ModelEditor({
 
   const onStopGenerateFromLlmClick = useCallback((packageName: string) => {
     vscode.postMessage({
-      t: "stopGeneratingExternalApiFromLlm",
+      t: "stopGeneratingMethodsFromLlm",
       packageName,
     });
   }, []);
@@ -292,7 +287,7 @@ export function ModelEditor({
     setHideModeledApis((oldHideModeledApis) => !oldHideModeledApis);
   }, []);
 
-  if (viewState === undefined || externalApiUsages.length === 0) {
+  if (viewState === undefined || methods.length === 0) {
     return <LoadingContainer>Loading...</LoadingContainer>;
   }
 
@@ -357,7 +352,7 @@ export function ModelEditor({
           )}
         </ButtonsContainer>
         <ModeledMethodsList
-          externalApiUsages={externalApiUsages}
+          methods={methods}
           modeledMethods={modeledMethods}
           modifiedSignatures={modifiedSignatures}
           inProgressMethods={inProgressMethods}

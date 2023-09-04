@@ -1,13 +1,13 @@
 import { window, TreeView } from "vscode";
 import { CodeQLCliServer } from "../../../../../src/codeql-cli/cli";
-import { ExternalApiUsage } from "../../../../../src/model-editor/external-api-usage";
+import { Method } from "../../../../../src/model-editor/method";
 import { MethodsUsagePanel } from "../../../../../src/model-editor/methods-usage/methods-usage-panel";
 import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import { mockedObject } from "../../../utils/mocking.helpers";
 import {
-  createExternalApiUsage,
+  createMethod,
   createUsage,
-} from "../../../../factories/data-extension/external-api-factories";
+} from "../../../../factories/data-extension/method-factories";
 
 describe("MethodsUsagePanel", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
@@ -17,7 +17,7 @@ describe("MethodsUsagePanel", () => {
 
   describe("setState", () => {
     const hideModeledApis = false;
-    const externalApiUsages: ExternalApiUsage[] = [createExternalApiUsage()];
+    const methods: Method[] = [createMethod()];
 
     it("should update the tree view with the correct batch number", async () => {
       const mockTreeView = {
@@ -26,7 +26,7 @@ describe("MethodsUsagePanel", () => {
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
 
       const panel = new MethodsUsagePanel(mockCliServer);
-      await panel.setState(externalApiUsages, dbItem, hideModeledApis);
+      await panel.setState(methods, dbItem, hideModeledApis);
 
       expect(mockTreeView.badge?.value).toBe(1);
     });
@@ -46,14 +46,14 @@ describe("MethodsUsagePanel", () => {
     });
 
     it("should reveal the correct item in the tree view", async () => {
-      const externalApiUsages = [
-        createExternalApiUsage({
+      const methods = [
+        createMethod({
           usages: [usage],
         }),
       ];
 
       const panel = new MethodsUsagePanel(mockCliServer);
-      await panel.setState(externalApiUsages, dbItem, hideModeledApis);
+      await panel.setState(methods, dbItem, hideModeledApis);
 
       await panel.revealItem(usage);
 
@@ -61,9 +61,9 @@ describe("MethodsUsagePanel", () => {
     });
 
     it("should do nothing if usage cannot be found", async () => {
-      const externalApiUsages = [createExternalApiUsage({})];
+      const methods = [createMethod({})];
       const panel = new MethodsUsagePanel(mockCliServer);
-      await panel.setState(externalApiUsages, dbItem, hideModeledApis);
+      await panel.setState(methods, dbItem, hideModeledApis);
 
       await panel.revealItem(usage);
 

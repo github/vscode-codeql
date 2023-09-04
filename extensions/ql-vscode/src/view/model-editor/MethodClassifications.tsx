@@ -1,9 +1,6 @@
 import * as React from "react";
 import { useMemo } from "react";
-import {
-  CallClassification,
-  ExternalApiUsage,
-} from "../../model-editor/external-api-usage";
+import { CallClassification, Method } from "../../model-editor/method";
 import { VSCodeTag } from "@vscode/webview-ui-toolkit/react";
 import { styled } from "styled-components";
 
@@ -19,18 +16,18 @@ const ClassificationTag = styled(VSCodeTag)`
 `;
 
 type Props = {
-  externalApiUsage: ExternalApiUsage;
+  method: Method;
 };
 
-export const MethodClassifications = ({ externalApiUsage }: Props) => {
+export const MethodClassifications = ({ method }: Props) => {
   const allUsageClassifications = useMemo(
     () =>
       new Set(
-        externalApiUsage.usages.map((usage) => {
+        method.usages.map((usage) => {
           return usage.classification;
         }),
       ),
-    [externalApiUsage.usages],
+    [method.usages],
   );
 
   const inSource = allUsageClassifications.has(CallClassification.Source);

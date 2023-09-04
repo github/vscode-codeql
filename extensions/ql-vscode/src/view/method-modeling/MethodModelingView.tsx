@@ -2,12 +2,12 @@ import * as React from "react";
 import { useEffect, useState } from "react";
 import { MethodModeling } from "./MethodModeling";
 import { ModelingStatus } from "../model-editor/ModelingStatusIndicator";
-import { ExternalApiUsage } from "../../model-editor/external-api-usage";
+import { Method } from "../../model-editor/method";
 import { ToMethodModelingMessage } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
 
 export function MethodModelingView(): JSX.Element {
-  const [method, setMethod] = useState<ExternalApiUsage | undefined>(undefined);
+  const [method, setMethod] = useState<Method | undefined>(undefined);
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
@@ -36,7 +36,5 @@ export function MethodModelingView(): JSX.Element {
   }
 
   const modelingStatus: ModelingStatus = "saved";
-  return (
-    <MethodModeling modelingStatus={modelingStatus} externalApiUsage={method} />
-  );
+  return <MethodModeling modelingStatus={modelingStatus} method={method} />;
 }

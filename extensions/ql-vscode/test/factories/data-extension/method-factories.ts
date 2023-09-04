@@ -1,12 +1,12 @@
 import {
   Usage,
-  ExternalApiUsage,
+  Method,
   CallClassification,
-} from "../../../src/model-editor/external-api-usage";
+} from "../../../src/model-editor/method";
 import { ModeledMethodType } from "../../../src/model-editor/modeled-method";
 import { ResolvableLocationValue } from "../../../src/common/bqrs-cli-types";
 
-export function createExternalApiUsage({
+export function createMethod({
   library = "sql2o-1.6.0.jar",
   supported = true,
   supportedType = "summary" as ModeledMethodType,
@@ -26,7 +26,7 @@ export function createExternalApiUsage({
   typeName?: string;
   methodName?: string;
   methodParameters?: string;
-} = {}): ExternalApiUsage {
+} = {}): Method {
   return {
     library,
     supported,

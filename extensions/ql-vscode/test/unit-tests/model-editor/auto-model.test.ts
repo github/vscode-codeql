@@ -8,7 +8,7 @@ import { AutomodelMode } from "../../../src/model-editor/auto-model-api";
 import { AutoModelQueriesResult } from "../../../src/model-editor/auto-model-codeml-queries";
 import * as sarif from "sarif";
 import { gzipDecode } from "../../../src/common/zlib";
-import { ExternalApiUsage } from "../../../src/model-editor/external-api-usage";
+import { Method } from "../../../src/model-editor/method";
 import { ModeledMethod } from "../../../src/model-editor/modeled-method";
 
 describe("createAutoModelRequest", () => {
@@ -86,7 +86,7 @@ describe("createAutoModelRequest", () => {
 
 describe("getCandidates", () => {
   it("doesn't return methods that are already modelled", () => {
-    const externalApiUsages: ExternalApiUsage[] = [
+    const methods: Method[] = [
       {
         library: "my.jar",
         signature: "org.my.A#x()",
@@ -113,16 +113,12 @@ describe("getCandidates", () => {
         methodParameters: "()",
       },
     };
-    const candidates = getCandidates(
-      Mode.Application,
-      externalApiUsages,
-      modeledMethods,
-    );
+    const candidates = getCandidates(Mode.Application, methods, modeledMethods);
     expect(candidates.length).toEqual(0);
   });
 
   it("doesn't return methods that are supported from other sources", () => {
-    const externalApiUsages: ExternalApiUsage[] = [
+    const methods: Method[] = [
       {
         library: "my.jar",
         signature: "org.my.A#x()",
@@ -136,17 +132,13 @@ describe("getCandidates", () => {
       },
     ];
     const modeledMethods = {};
-    const candidates = getCandidates(
-      Mode.Application,
-      externalApiUsages,
-      modeledMethods,
-    );
+    const candidates = getCandidates(Mode.Application, methods, modeledMethods);
     expect(candidates.length).toEqual(0);
   });
 
   it("returns methods that are neither modeled nor supported from other sources", () => {
-    const externalApiUsages: ExternalApiUsage[] = [];
-    externalApiUsages.push({
+    const methods: Method[] = [];
+    methods.push({
       library: "my.jar",
       signature: "org.my.A#x()",
       packageName: "org.my",
@@ -158,11 +150,7 @@ describe("getCandidates", () => {
       usages: [],
     });
     const modeledMethods = {};
-    const candidates = getCandidates(
-      Mode.Application,
-      externalApiUsages,
-      modeledMethods,
-    );
+    const candidates = getCandidates(Mode.Application, methods, modeledMethods);
     expect(candidates.length).toEqual(1);
   });
 });

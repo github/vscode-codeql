@@ -1,4 +1,4 @@
-import { ExternalApiUsage, MethodSignature } from "./external-api-usage";
+import { Method, MethodSignature } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { extLogger } from "../common/logging/vscode";
 import { load as loadYaml } from "js-yaml";
@@ -52,13 +52,13 @@ export class AutoModeler {
    * Models the given package's external API usages, except
    * the ones that are already modeled.
    * @param packageName The name of the package to model.
-   * @param externalApiUsages The external API usages.
+   * @param methods The methods.
    * @param modeledMethods The currently modeled methods.
    * @param mode The mode we are modeling in.
    */
   public async startModeling(
     packageName: string,
-    externalApiUsages: ExternalApiUsage[],
+    methods: Method[],
     modeledMethods: Record<string, ModeledMethod>,
     mode: Mode,
   ): Promise<void> {
@@ -72,7 +72,7 @@ export class AutoModeler {
     try {
       await this.modelPackage(
         packageName,
-        externalApiUsages,
+        methods,
         modeledMethods,
         mode,
         cancellationTokenSource,
@@ -105,7 +105,7 @@ export class AutoModeler {
 
   private async modelPackage(
     packageName: string,
-    externalApiUsages: ExternalApiUsage[],
+    methods: Method[],
     modeledMethods: Record<string, ModeledMethod>,
     mode: Mode,
     cancellationTokenSource: CancellationTokenSource,
@@ -113,11 +113,7 @@ export class AutoModeler {
     void extLogger.log(`Modeling package ${packageName}`);
     await withProgress(async (progress) => {
       // Fetch the candidates to send to the model
-      const allCandidateMethods = getCandidates(
-        mode,
-        externalApiUsages,
-        modeledMethods,
-      );
+      const allCandidateMethods = getCandidates(mode, methods, modeledMethods);
 
       // If there are no candidates, there is nothing to model and we just return
       if (allCandidateMethods.length === 0) {

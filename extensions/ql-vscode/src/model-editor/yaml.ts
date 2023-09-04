@@ -1,6 +1,6 @@
 import Ajv from "ajv";
 
-import { ExternalApiUsage } from "./external-api-usage";
+import { Method } from "./method";
 import { ModeledMethod, ModeledMethodType } from "./modeled-method";
 import {
   ExtensiblePredicateDefinition,
@@ -71,7 +71,7 @@ ${extensions.join("\n")}`;
 export function createDataExtensionYamls(
   databaseName: string,
   language: string,
-  externalApiUsages: ExternalApiUsage[],
+  methods: Method[],
   newModeledMethods: Record<string, ModeledMethod>,
   existingModeledMethods: Record<string, Record<string, ModeledMethod>>,
   mode: Mode,
@@ -80,7 +80,7 @@ export function createDataExtensionYamls(
     case Mode.Application:
       return createDataExtensionYamlsForApplicationMode(
         language,
-        externalApiUsages,
+        methods,
         newModeledMethods,
         existingModeledMethods,
       );
@@ -88,7 +88,7 @@ export function createDataExtensionYamls(
       return createDataExtensionYamlsForFrameworkMode(
         databaseName,
         language,
-        externalApiUsages,
+        methods,
         newModeledMethods,
         existingModeledMethods,
       );
@@ -99,7 +99,7 @@ export function createDataExtensionYamls(
 
 export function createDataExtensionYamlsForApplicationMode(
   language: string,
-  externalApiUsages: ExternalApiUsage[],
+  methods: Method[],
   newModeledMethods: Record<string, ModeledMethod>,
   existingModeledMethods: Record<string, Record<string, ModeledMethod>>,
 ): Record<string, string> {
@@ -111,11 +111,9 @@ export function createDataExtensionYamlsForApplicationMode(
   // We only want to generate a yaml file when it's a known external API usage
   // and there are new modeled methods for it. This avoids us overwriting other
   // files that may contain data we don't know about.
-  for (const externalApiUsage of externalApiUsages) {
-    if (externalApiUsage.signature in newModeledMethods) {
-      methodsByLibraryFilename[
-        createFilenameForLibrary(externalApiUsage.library)
-      ] = {};
+  for (const method of methods) {
+    if (method.signature in newModeledMethods) {
+      methodsByLibraryFilename[createFilenameForLibrary(method.library)] = {};
     }
   }
 
@@ -130,11 +128,11 @@ export function createDataExtensionYamlsForApplicationMode(
 
   // Add the new modeled methods, potentially overwriting existing modeled methods
   // but not removing existing modeled methods that are not in the new set.
-  for (const externalApiUsage of externalApiUsages) {
-    const method = newModeledMethods[externalApiUsage.signature];
-    if (method) {
-      const filename = createFilenameForLibrary(externalApiUsage.library);
-      methodsByLibraryFilename[filename][method.signature] = method;
+  for (const method of methods) {
+    const newMethod = newModeledMethods[method.signature];
+    if (newMethod) {
+      const filename = createFilenameForLibrary(method.library);
+      methodsByLibraryFilename[filename][newMethod.signature] = newMethod;
     }
   }
 
@@ -153,7 +151,7 @@ export function createDataExtensionYamlsForApplicationMode(
 export function createDataExtensionYamlsForFrameworkMode(
   databaseName: string,
   language: string,
-  externalApiUsages: ExternalApiUsage[],
+  unmodeledMethods: Method[],
   newModeledMethods: Record<string, ModeledMethod>,
   existingModeledMethods: Record<string, Record<string, ModeledMethod>>,
   prefix = "models/",
@@ -177,8 +175,8 @@ export function createDataExtensionYamlsForFrameworkMode(
 
   // Add the new modeled methods, potentially overwriting existing modeled methods
   // but not removing existing modeled methods that are not in the new set.
-  for (const externalApiUsage of externalApiUsages) {
-    const modeledMethod = newModeledMethods[externalApiUsage.signature];
+  for (const method of unmodeledMethods) {
+    const modeledMethod = newModeledMethods[method.signature];
     if (modeledMethod) {
       methods[modeledMethod.signature] = modeledMethod;
     }

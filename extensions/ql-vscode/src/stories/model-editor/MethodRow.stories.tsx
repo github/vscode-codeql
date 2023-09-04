@@ -3,7 +3,7 @@ import * as React from "react";
 import { Meta, StoryFn } from "@storybook/react";
 
 import { MethodRow as MethodRowComponent } from "../../view/model-editor/MethodRow";
-import { CallClassification } from "../../model-editor/external-api-usage";
+import { CallClassification } from "../../model-editor/method";
 
 export default {
   title: "CodeQL Model Editor/Method Row",
@@ -16,7 +16,7 @@ const Template: StoryFn<typeof MethodRowComponent> = (args) => (
 
 export const MethodRow = Template.bind({});
 MethodRow.args = {
-  externalApiUsage: {
+  method: {
     library: "sql2o-1.6.0.jar",
     signature: "org.sql2o.Sql2o#open()",
     packageName: "org.sql2o",

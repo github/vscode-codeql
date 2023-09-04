@@ -1,4 +1,4 @@
-import { MethodSignature } from "./external-api-usage";
+import { MethodSignature } from "./method";
 
 export type ModeledMethodType =
   | "none"

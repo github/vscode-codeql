@@ -13,7 +13,7 @@ import { Mode } from "./shared/mode";
 import { writeFile } from "fs-extra";
 import { QueryLanguage } from "../common/query-language";
 import { fetchExternalApiQueries } from "./queries";
-import { ExternalApiUsage } from "./external-api-usage";
+import { Method } from "./method";
 import { runQuery } from "../local-queries/run-query";
 import { decodeBqrsToExternalApiUsages } from "./bqrs";
 
@@ -69,7 +69,7 @@ export async function runExternalApiQueries(
     progress,
     token,
   }: RunQueryOptions,
-): Promise<ExternalApiUsage[] | undefined> {
+): Promise<Method[] | undefined> {
   // The below code is temporary to allow for rapid prototyping of the queries. Once the queries are stabilized, we will
   // move these queries into the `github/codeql` repository and use them like any other contextual (e.g. AST) queries.
   // This is intentionally not pretty code, as it will be removed soon.

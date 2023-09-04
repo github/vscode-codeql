@@ -4,7 +4,7 @@ import {
   MethodsUsageDataProvider,
   MethodsUsageTreeViewItem,
 } from "./methods-usage-data-provider";
-import { ExternalApiUsage, Usage } from "../external-api-usage";
+import { Method, Usage } from "../method";
 import { DatabaseItem } from "../../databases/local-databases";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
 
@@ -24,18 +24,14 @@ export class MethodsUsagePanel extends DisposableObject {
   }
 
   public async setState(
-    externalApiUsages: ExternalApiUsage[],
+    methods: Method[],
     databaseItem: DatabaseItem,
     hideModeledApis: boolean,
   ): Promise<void> {
-    await this.dataProvider.setState(
-      externalApiUsages,
-      databaseItem,
-      hideModeledApis,
-    );
+    await this.dataProvider.setState(methods, databaseItem, hideModeledApis);
     const numOfApis = hideModeledApis
-      ? externalApiUsages.filter((api) => !api.supported).length
-      : externalApiUsages.length;
+      ? methods.filter((api) => !api.supported).length
+      : methods.length;
     this.treeView.badge = {
       value: numOfApis,
       tooltip: "Number of external APIs",

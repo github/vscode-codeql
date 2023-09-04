@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useMemo } from "react";
-import { ExternalApiUsage } from "../../model-editor/external-api-usage";
+import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { LibraryRow } from "./LibraryRow";
 import { Mode } from "../../model-editor/shared/mode";
@@ -12,7 +12,7 @@ import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 
 type Props = {
-  externalApiUsages: ExternalApiUsage[];
+  methods: Method[];
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
@@ -20,16 +20,16 @@ type Props = {
   hideModeledApis: boolean;
   onChange: (
     modelName: string,
-    externalApiUsage: ExternalApiUsage,
+    method: Method,
     modeledMethod: ModeledMethod,
   ) => void;
   onSaveModelClick: (
-    externalApiUsages: ExternalApiUsage[],
+    methods: Method[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
   onGenerateFromLlmClick: (
     packageName: string,
-    externalApiUsages: ExternalApiUsage[],
+    methods: Method[],
     modeledMethods: Record<string, ModeledMethod>,
   ) => void;
   onStopGenerateFromLlmClick: (packageName: string) => void;
@@ -42,7 +42,7 @@ const libraryNameOverrides: Record<string, string> = {
 };
 
 export const ModeledMethodsList = ({
-  externalApiUsages,
+  methods,
   modeledMethods,
   modifiedSignatures,
   inProgressMethods,
@@ -56,8 +56,8 @@ export const ModeledMethodsList = ({
   onModelDependencyClick,
 }: Props) => {
   const grouped = useMemo(
-    () => groupMethods(externalApiUsages, viewState.mode),
-    [externalApiUsages, viewState.mode],
+    () => groupMethods(methods, viewState.mode),
+    [methods, viewState.mode],
   );
 
   const libraryVersions = useMemo(() => {
@@ -67,8 +67,8 @@ export const ModeledMethodsList = ({
 
     const libraryVersions: Record<string, string> = {};
 
-    for (const externalApiUsage of externalApiUsages) {
-      const { library, libraryVersion } = externalApiUsage;
+    for (const method of methods) {
+      const { library, libraryVersion } = method;
 
       if (library && libraryVersion) {
         libraryVersions[library] = libraryVersion;
@@ -76,7 +76,7 @@ export const ModeledMethodsList = ({
     }
 
     return libraryVersions;
-  }, [externalApiUsages, viewState.mode]);
+  }, [methods, viewState.mode]);
 
   const sortedGroupNames = useMemo(() => sortGroupNames(grouped), [grouped]);
 
@@ -87,7 +87,7 @@ export const ModeledMethodsList = ({
           key={libraryName}
           title={libraryNameOverrides[libraryName] ?? libraryName}
           libraryVersion={libraryVersions[libraryName]}
-          externalApiUsages={grouped[libraryName]}
+          methods={grouped[libraryName]}
           modeledMethods={modeledMethods}
           modifiedSignatures={modifiedSignatures}
           inProgressMethods={inProgressMethods}

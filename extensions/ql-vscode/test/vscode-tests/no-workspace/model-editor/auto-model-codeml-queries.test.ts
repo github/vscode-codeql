@@ -14,7 +14,7 @@ import { mockedObject, mockedUri } from "../../utils/mocking.helpers";
 import { CodeQLCliServer } from "../../../../src/codeql-cli/cli";
 import { QueryRunner } from "../../../../src/query-server";
 import * as queryResolver from "../../../../src/local-queries/query-resolver";
-import { MethodSignature } from "../../../../src/model-editor/external-api-usage";
+import { MethodSignature } from "../../../../src/model-editor/method";
 import { join } from "path";
 import { exists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
