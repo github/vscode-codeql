@@ -170,6 +170,14 @@ repository:
     match: '\]'
     name: punctuation.squarebracket.close.ql
 
+  open-angle:
+    match: '<'
+    name: punctuation.anglebracket.open.ql
+
+  close-angle:
+    match: '>'
+    name: punctuation.anglebracket.close.ql
+
   operator-or-punctuation:
     patterns:
     - include: '#relational-operator'
@@ -186,6 +194,8 @@ repository:
     - include: '#close-brace'
     - include: '#open-bracket'
     - include: '#close-bracket'
+    - include: '#open-angle'
+    - include: '#close-angle'
 
 # Keywords
   dont-care:
@@ -651,6 +661,15 @@ repository:
     - include: '#non-context-sensitive'
     - include: '#annotation'
 
+  instantiation-arguments:
+    beginPattern: '#open-angle'
+    end: '#close-angle'
+    patterns:
+    - include: '#potential-instantiation'
+
+  potential-instantiation:
+    matches: '(?#simple-id) (?#instantiation-arguments)?'
+
   # An `import` directive. Note that we parse the optional `as` clause as a separate top-level
   # directive, because otherwise it's too hard to figure out where the `import` directive ends.
   import-directive:
@@ -664,7 +683,7 @@ repository:
     name: meta.block.import-directive.ql
     patterns:
     - include: '#non-context-sensitive'
-    - match: '(?#simple-id)'
+    - match: '(?#potential-instantiation)'
       name: entity.name.type.namespace.ql
 
   # The end pattern for an `as` clause, whether on an `import` directive, in an aggregate, or on a
@@ -702,7 +721,6 @@ repository:
     - include: '#non-context-sensitive'
     - match: '(?#simple-id)|(?#at-lower-id)'
       name: entity.name.type.ql
-
 
   # A `module` declaration, whether a module definition or an alias declaration.
   module-declaration:
