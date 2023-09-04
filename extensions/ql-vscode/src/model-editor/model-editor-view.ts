@@ -39,6 +39,7 @@ import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
 import { AutoModeler } from "./auto-modeler";
 import { INITIAL_HIDE_MODELED_APIS_VALUE } from "./shared/hide-modeled-apis";
+import { telemetryListener } from "../common/vscode/telemetry";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -190,10 +191,14 @@ export class ModelEditorView extends AbstractWebview<
         break;
       case "refreshMethods":
         await this.loadExternalApiUsages();
+        void telemetryListener?.sendUIInteraction(
+          "model-editor-refresh-methods",
+        );
 
         break;
       case "jumpToUsage":
         await this.handleJumpToUsage(msg.method, msg.usage);
+        void telemetryListener?.sendUIInteraction("model-editor-jump-to-usage");
 
         break;
       case "saveModeledMethods":
@@ -208,10 +213,16 @@ export class ModelEditorView extends AbstractWebview<
           this.app.logger,
         );
         await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
+        void telemetryListener?.sendUIInteraction(
+          "model-editor-save-modeled-methods",
+        );
 
         break;
       case "generateMethod":
         await this.generateModeledMethods();
+        void telemetryListener?.sendUIInteraction(
+          "model-editor-generate-modeled-methods",
+        );
 
         break;
       case "generateMethodsFromLlm":
@@ -220,17 +231,26 @@ export class ModelEditorView extends AbstractWebview<
           msg.methods,
           msg.modeledMethods,
         );
+        void telemetryListener?.sendUIInteraction(
+          "model-editor-generate-methods-from-llm",
+        );
         break;
       case "stopGeneratingMethodsFromLlm":
         await this.autoModeler.stopModeling(msg.packageName);
+        void telemetryListener?.sendUIInteraction(
+          "model-editor-stop-generating-methods-from-llm",
+        );
         break;
       case "modelDependency":
         await this.modelDependency();
+        void telemetryListener?.sendUIInteraction(
+          "model-editor-model-dependency",
+        );
         break;
       case "switchMode":
         this.mode = msg.mode;
-
         await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
+        void telemetryListener?.sendUIInteraction("model-editor-switch-modes");
 
         break;
       case "hideModeledApis":
@@ -239,6 +259,9 @@ export class ModelEditorView extends AbstractWebview<
           this.methods,
           this.databaseItem,
           this.hideModeledApis,
+        );
+        void telemetryListener?.sendUIInteraction(
+          "model-editor-hide-modeled-apis",
         );
         break;
       default:
