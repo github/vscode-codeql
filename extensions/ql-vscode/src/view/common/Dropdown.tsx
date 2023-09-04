@@ -2,6 +2,8 @@ import * as React from "react";
 import { ChangeEvent } from "react";
 import { styled } from "styled-components";
 
+const DISABLED_VALUE = "-";
+
 const StyledDropdown = styled.select`
   width: 100%;
   height: calc(var(--input-height) * 1px);
@@ -31,18 +33,20 @@ type Props = {
 export function Dropdown({ value, options, disabled, onChange }: Props) {
   return (
     <StyledDropdown
-      value={disabled ? undefined : value}
+      value={disabled ? DISABLED_VALUE : value}
       disabled={disabled}
       onChange={onChange}
     >
-      {!disabled && (
-        <>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </>
+      {disabled ? (
+        <option key={DISABLED_VALUE} value={DISABLED_VALUE}>
+          {DISABLED_VALUE}
+        </option>
+      ) : (
+        options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))
       )}
     </StyledDropdown>
   );
