@@ -4,13 +4,15 @@ import { styled } from "styled-components";
 
 const DISABLED_VALUE = "-";
 
-const StyledDropdown = styled.select`
+const StyledDropdown = styled.select<{ disabled?: boolean }>`
   width: 100%;
   height: calc(var(--input-height) * 1px);
   background: var(--vscode-dropdown-background);
   color: var(--vscode-foreground);
   border: none;
   padding: 2px 6px 2px 8px;
+  opacity: ${(props) =>
+    props.disabled ? "var(--disabled-opacity)" : "inherit"};
 `;
 
 type Props = {
