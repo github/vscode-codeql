@@ -20,7 +20,7 @@ type Props = {
   options: Array<{ value: string; label: string }>;
   disabled?: boolean;
   disabledPlaceholder?: string;
-  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+  onChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
 };
 
 /**
