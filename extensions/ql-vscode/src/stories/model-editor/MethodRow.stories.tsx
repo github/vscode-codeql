@@ -101,3 +101,10 @@ AlreadyModeled.args = {
   method: { ...method, supported: true },
   modeledMethod: undefined,
 };
+
+export const ModelingInProgress = Template.bind({});
+ModelingInProgress.args = {
+  method,
+  modeledMethod,
+  modelingInProgress: true,
+};
