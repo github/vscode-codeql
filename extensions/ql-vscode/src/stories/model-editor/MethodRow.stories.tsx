@@ -4,6 +4,8 @@ import { Meta, StoryFn } from "@storybook/react";
 
 import { MethodRow as MethodRowComponent } from "../../view/model-editor/MethodRow";
 import { CallClassification } from "../../model-editor/external-api-usage";
+import { VSCodeDataGrid } from "@vscode/webview-ui-toolkit/react";
+import { GRID_TEMPLATE_COLUMNS } from "../../view/model-editor/ModeledMethodDataGrid";
 
 export default {
   title: "CodeQL Model Editor/Method Row",
@@ -11,7 +13,9 @@ export default {
 } as Meta<typeof MethodRowComponent>;
 
 const Template: StoryFn<typeof MethodRowComponent> = (args) => (
-  <MethodRowComponent {...args} />
+  <VSCodeDataGrid gridTemplateColumns={GRID_TEMPLATE_COLUMNS}>
+    <MethodRowComponent {...args} />
+  </VSCodeDataGrid>
 );
 
 export const MethodRow = Template.bind({});

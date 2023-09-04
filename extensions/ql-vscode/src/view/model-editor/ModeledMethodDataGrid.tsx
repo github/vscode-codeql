@@ -12,6 +12,8 @@ import { Mode } from "../../model-editor/shared/mode";
 import { sortMethods } from "../../model-editor/shared/sorting";
 import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 
+export const GRID_TEMPLATE_COLUMNS = "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
+
 type Props = {
   packageName: string;
   externalApiUsages: ExternalApiUsage[];
@@ -42,7 +44,7 @@ export const ModeledMethodDataGrid = ({
   );
 
   return (
-    <VSCodeDataGrid gridTemplateColumns="0.5fr 0.125fr 0.125fr 0.125fr 0.125fr">
+    <VSCodeDataGrid gridTemplateColumns={GRID_TEMPLATE_COLUMNS}>
       <VSCodeDataGridRow rowType="header">
         <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
           API or method
