@@ -230,9 +230,9 @@ export class ModelEditorView extends AbstractWebview<
               this.setViewState(),
               this.loadExternalApiUsages((update) =>
                 progress({
+                  ...update,
                   step: update.step + 500,
                   maxStep: 500 + externalApiQueriesProgressMaxStep,
-                  message: `Reloading models: ${update.message}`,
                 }),
               ),
             ]);
@@ -363,7 +363,11 @@ export class ModelEditorView extends AbstractWebview<
         databaseItem: this.databaseItem,
         queryStorageDir: this.queryStorageDir,
         queryDir: this.queryDir,
-        progress,
+        progress: (update) =>
+          progress({
+            ...update,
+            message: `Loading models: ${update.message}`,
+          }),
         token: cancellationTokenSource.token,
       });
       if (!queryResult) {
