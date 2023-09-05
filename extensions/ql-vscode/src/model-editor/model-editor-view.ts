@@ -27,7 +27,10 @@ import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { redactableError } from "../common/errors";
-import { runExternalApiQueries } from "./external-api-usage-queries";
+import {
+  externalApiQueriesProgressMaxStep,
+  runExternalApiQueries,
+} from "./external-api-usage-queries";
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
@@ -205,22 +208,39 @@ export class ModelEditorView extends AbstractWebview<
 
         break;
       case "saveModeledMethods":
-        await saveModeledMethods(
-          this.extensionPack,
-          this.databaseItem.name,
-          this.databaseItem.language,
-          msg.methods,
-          msg.modeledMethods,
-          this.mode,
-          this.cliServer,
-          this.app.logger,
-        );
-        await Promise.all([
-          this.setViewState(),
-          withProgress((progress) => this.loadExternalApiUsages(progress), {
+        await withProgress(
+          async (progress) => {
+            progress({
+              step: 1,
+              maxStep: 500 + externalApiQueriesProgressMaxStep,
+              message: "Writing model files",
+            });
+            await saveModeledMethods(
+              this.extensionPack,
+              this.databaseItem.name,
+              this.databaseItem.language,
+              msg.methods,
+              msg.modeledMethods,
+              this.mode,
+              this.cliServer,
+              this.app.logger,
+            );
+
+            await Promise.all([
+              this.setViewState(),
+              this.loadExternalApiUsages((update) =>
+                progress({
+                  step: update.step + 500,
+                  maxStep: 500 + externalApiQueriesProgressMaxStep,
+                  message: `Reloading models: ${update.message}`,
+                }),
+              ),
+            ]);
+          },
+          {
             cancellable: false,
-          }),
-        ]);
+          },
+        );
         void telemetryListener?.sendUIInteraction(
           "model-editor-save-modeled-methods",
         );
