@@ -1,4 +1,5 @@
 import { calculateModeledPercentage } from "../../../../src/model-editor/shared/modeled-percentage";
+import { createMethod } from "../../../factories/data-extension/method-factories";
 
 describe("calculateModeledPercentage", () => {
   it("when there are no external API usages", () => {
@@ -8,44 +9,28 @@ describe("calculateModeledPercentage", () => {
   it("when there are is 1 modeled external API usage", () => {
     expect(
       calculateModeledPercentage([
-        {
+        createMethod({
           supported: true,
-        },
+        }),
       ]),
     ).toBe(100);
   });
 
   it("when there are is 1 unmodeled external API usage", () => {
     expect(
-      calculateModeledPercentage([
-        {
-          supported: false,
-        },
-      ]),
+      calculateModeledPercentage([createMethod({ supported: false })]),
     ).toBe(0);
   });
 
   it("when there are multiple modeled and unmodeled external API usage", () => {
     expect(
       calculateModeledPercentage([
-        {
-          supported: false,
-        },
-        {
-          supported: true,
-        },
-        {
-          supported: false,
-        },
-        {
-          supported: false,
-        },
-        {
-          supported: true,
-        },
-        {
-          supported: false,
-        },
+        createMethod({ supported: false }),
+        createMethod({ supported: true }),
+        createMethod({ supported: false }),
+        createMethod({ supported: false }),
+        createMethod({ supported: true }),
+        createMethod({ supported: false }),
       ]),
     ).toBeCloseTo(33.33);
   });
