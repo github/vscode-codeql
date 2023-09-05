@@ -2,13 +2,17 @@ import * as React from "react";
 import { ChangeEvent } from "react";
 import { styled } from "styled-components";
 
-const StyledDropdown = styled.select`
+const DISABLED_VALUE = "-";
+
+const StyledDropdown = styled.select<{ disabled?: boolean }>`
   width: 100%;
   height: calc(var(--input-height) * 1px);
   background: var(--vscode-dropdown-background);
   color: var(--vscode-foreground);
-  border: none;
+  border-width: 0 5px 0 0;
   padding: 2px 6px 2px 8px;
+  opacity: ${(props) =>
+    props.disabled ? "var(--disabled-opacity)" : "inherit"};
 `;
 
 type Props = {
@@ -31,18 +35,20 @@ type Props = {
 export function Dropdown({ value, options, disabled, onChange }: Props) {
   return (
     <StyledDropdown
-      value={disabled ? undefined : value}
+      value={disabled ? DISABLED_VALUE : value}
       disabled={disabled}
       onChange={onChange}
     >
-      {!disabled && (
-        <>
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </>
+      {disabled ? (
+        <option key={DISABLED_VALUE} value={DISABLED_VALUE}>
+          {DISABLED_VALUE}
+        </option>
+      ) : (
+        options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))
       )}
     </StyledDropdown>
   );
