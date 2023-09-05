@@ -92,7 +92,7 @@ export async function runExternalApiQueries(
     queryStorageDir,
     additionalPacks,
     extensionPacks,
-    progress,
+    progress: (update) => progress({ ...update, maxStep: 1500 }),
     token,
     // We need to create a lock file, because the query is inside our own pack
     createLockFile: true,

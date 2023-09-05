@@ -343,7 +343,7 @@ export class ModelEditorView extends AbstractWebview<
         databaseItem: this.databaseItem,
         queryStorageDir: this.queryStorageDir,
         queryDir: this.queryDir,
-        progress: (update) => progress({ ...update, maxStep: 1500 }),
+        progress,
         token: cancellationTokenSource.token,
       });
       if (!queryResult) {
