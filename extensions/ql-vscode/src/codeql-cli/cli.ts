@@ -123,6 +123,15 @@ export type ResolveExtensionsResult = {
   };
 };
 
+export type GenerateExtensiblePredicateMetadataResult = {
+  // There are other properties in this object, but they are
+  // not relevant for its use in the extension, so we omit them.
+  extensible_predicates: Array<{
+    // pack relative path
+    path: string;
+  }>;
+};
+
 /**
  * The expected output of `codeql resolve qlref`.
  */
@@ -1458,6 +1467,17 @@ export class CodeQLCliServer implements Disposable {
     );
   }
 
+  async generateExtensiblePredicateMetadata(
+    packRoot: string,
+  ): Promise<GenerateExtensiblePredicateMetadataResult> {
+    return await this.runJsonCodeQlCliCommand(
+      ["generate", "extensible-predicate-metadata"],
+      [packRoot],
+      "Generating extensible predicate metadata",
+      { addFormat: false },
+    );
+  }
+
   public async getVersion() {
     if (!this._version) {
       try {
@@ -1831,6 +1851,14 @@ export class CliVersionConstraint {
   public static CLI_VERSION_WITH_QUICK_EVAL_COUNT = new SemVer("2.13.3");
 
   /**
+   * CLI version where the `generate extensible-predicate-metadata`
+   * command was implemented.
+   */
+  public static CLI_VERSION_WITH_EXTENSIBLE_PREDICATE_METADATA = new SemVer(
+    "2.14.3",
+  );
+
+  /**
    * CLI version where the langauge server supports visisbility change notifications.
    */
   public static CLI_VERSION_WITH_VISIBILITY_NOTIFICATIONS = new SemVer(
@@ -1914,6 +1942,12 @@ export class CliVersionConstraint {
   async supportsQuickEvalCount() {
     return this.isVersionAtLeast(
       CliVersionConstraint.CLI_VERSION_WITH_QUICK_EVAL_COUNT,
+    );
+  }
+
+  async supportsGenerateExtensiblePredicateMetadata() {
+    return this.isVersionAtLeast(
+      CliVersionConstraint.CLI_VERSION_WITH_EXTENSIBLE_PREDICATE_METADATA,
     );
   }
 }
