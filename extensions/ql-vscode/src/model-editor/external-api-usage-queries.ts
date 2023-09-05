@@ -58,6 +58,8 @@ export async function prepareExternalApiQuery(
   return true;
 }
 
+export const externalApiQueriesProgressMaxStep = 1500;
+
 export async function runExternalApiQueries(
   mode: Mode,
   {
@@ -92,7 +94,8 @@ export async function runExternalApiQueries(
     queryStorageDir,
     additionalPacks,
     extensionPacks,
-    progress: (update) => progress({ ...update, maxStep: 1500 }),
+    progress: (update) =>
+      progress({ ...update, maxStep: externalApiQueriesProgressMaxStep }),
     token,
     // We need to create a lock file, because the query is inside our own pack
     createLockFile: true,
@@ -106,7 +109,7 @@ export async function runExternalApiQueries(
   progress({
     message: "Decoding results",
     step: 1100,
-    maxStep: 1500,
+    maxStep: externalApiQueriesProgressMaxStep,
   });
 
   const bqrsChunk = await readQueryResults({
@@ -120,7 +123,7 @@ export async function runExternalApiQueries(
   progress({
     message: "Finalizing results",
     step: 1450,
-    maxStep: 1500,
+    maxStep: externalApiQueriesProgressMaxStep,
   });
 
   return decodeBqrsToExternalApiUsages(bqrsChunk);
