@@ -319,7 +319,10 @@ describe("Variant Analysis Manager", () => {
       filesThatExist,
       qlxFilesThatExist,
       filesThatDoNotExist,
-      dependenciesToCheck = ["codeql/java-all"],
+
+      // A subset of dependencies that we expect should be in the qlpack file.
+      // The first dependency is assumed to be the core library.
+      dependenciesToCheck = ["codeql/javascript-all"],
       checkVersion = true,
     }: {
       queryPath: string;
@@ -382,10 +385,13 @@ describe("Variant Analysis Manager", () => {
       if (checkVersion) {
         expect(qlpackContents.version).toEqual("0.0.0");
       }
-      expect(qlpackContents.dependencies?.["codeql/javascript-all"]).toEqual(
-        "*",
-      );
 
+      // Assume the first dependency to check is the core library.
+      if (dependenciesToCheck.length > 0) {
+        expect(qlpackContents.dependencies?.[dependenciesToCheck[0]]).toEqual(
+          "*",
+        );
+      }
       const qlpackLockContents = load(
         packFS.fileContents("codeql-pack.lock.yml").toString("utf-8"),
       );
