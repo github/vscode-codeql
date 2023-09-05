@@ -7,56 +7,71 @@ import { QueryTreeDataProvider } from "../../../../src/queries-panel/query-tree-
 import {
   createQueryTreeFileItem,
   createQueryTreeFolderItem,
-  createQueryTreeTextItem,
 } from "../../../../src/queries-panel/query-tree-view-item";
+import { createMockApp } from "../../../__mocks__/appMock";
+import { createMockCommandManager } from "../../../__mocks__/commandsMock";
 
 describe("QueryTreeDataProvider", () => {
   describe("getChildren", () => {
     it("returns empty array when discovery has not yet happened", async () => {
-      const dataProvider = new QueryTreeDataProvider({
-        buildQueryTree: () => undefined,
-        onDidChangeQueries: jest.fn(),
-      });
+      const dataProvider = new QueryTreeDataProvider(
+        {
+          buildQueryTree: () => undefined,
+          onDidChangeQueries: jest.fn(),
+        },
+        createMockApp({}),
+      );
 
       expect(dataProvider.getChildren()).toEqual([]);
     });
 
-    it("returns an explanatory message when there are no queries", async () => {
-      const dataProvider = new QueryTreeDataProvider({
-        buildQueryTree: () => [],
-        onDidChangeQueries: jest.fn(),
-      });
+    it("set 'noQueries' context value when there are no queries", async () => {
+      const executeCommand = jest.fn();
 
-      expect(dataProvider.getChildren()).toEqual([
-        createQueryTreeTextItem(
-          "This workspace doesn't contain any CodeQL queries at the moment.",
-        ),
-      ]);
+      const dataProvider = new QueryTreeDataProvider(
+        {
+          buildQueryTree: () => [],
+          onDidChangeQueries: jest.fn(),
+        },
+        createMockApp({
+          commands: createMockCommandManager({ executeCommand }),
+        }),
+      );
+
+      expect(dataProvider.getChildren()).toEqual([]);
+      expect(executeCommand).toBeCalledWith(
+        "setContext",
+        "codeQL.noQueries",
+        true,
+      );
     });
 
     it("converts FileTreeNode to QueryTreeViewItem", async () => {
-      const dataProvider = new QueryTreeDataProvider({
-        buildQueryTree: () => [
-          new FileTreeDirectory<string>("dir1", "dir1", env, [
-            new FileTreeDirectory<string>("dir1/dir2", "dir2", env, [
-              new FileTreeLeaf<string>(
-                "dir1/dir2/file1",
-                "file1",
-                "javascript",
-              ),
-              new FileTreeLeaf<string>(
-                "dir1/dir2/file2",
-                "file2",
-                "javascript",
-              ),
+      const dataProvider = new QueryTreeDataProvider(
+        {
+          buildQueryTree: () => [
+            new FileTreeDirectory<string>("dir1", "dir1", env, [
+              new FileTreeDirectory<string>("dir1/dir2", "dir2", env, [
+                new FileTreeLeaf<string>(
+                  "dir1/dir2/file1",
+                  "file1",
+                  "javascript",
+                ),
+                new FileTreeLeaf<string>(
+                  "dir1/dir2/file2",
+                  "file2",
+                  "javascript",
+                ),
+              ]),
             ]),
-          ]),
-          new FileTreeDirectory<string>("dir3", "dir3", env, [
-            new FileTreeLeaf<string>("dir3/file3", "file3", "javascript"),
-          ]),
-        ],
-        onDidChangeQueries: jest.fn(),
-      });
+            new FileTreeDirectory<string>("dir3", "dir3", env, [
+              new FileTreeLeaf<string>("dir3/file3", "file3", "javascript"),
+            ]),
+          ],
+          onDidChangeQueries: jest.fn(),
+        },
+        createMockApp({}),
+      );
 
       expect(dataProvider.getChildren()).toEqual([
         createQueryTreeFolderItem("dir1", "dir1", [
@@ -85,7 +100,14 @@ describe("QueryTreeDataProvider", () => {
         onDidChangeQueries: onDidChangeQueriesEmitter.event,
       };
 
-      const dataProvider = new QueryTreeDataProvider(queryDiscoverer);
+      const executeCommand = jest.fn();
+
+      const dataProvider = new QueryTreeDataProvider(
+        queryDiscoverer,
+        createMockApp({
+          commands: createMockCommandManager({ executeCommand }),
+        }),
+      );
       expect(dataProvider.getChildren().length).toEqual(1);
 
       queryTree.push(
@@ -96,6 +118,11 @@ describe("QueryTreeDataProvider", () => {
       onDidChangeQueriesEmitter.fire();
 
       expect(dataProvider.getChildren().length).toEqual(2);
+      expect(executeCommand).toBeCalledWith(
+        "setContext",
+        "codeQL.noQueries",
+        false,
+      );
     });
   });
 });

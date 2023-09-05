@@ -1804,7 +1804,8 @@
       },
       {
         "view": "codeQLQueries",
-        "contents": "Looking for queries..."
+        "contents": "We didn't find any CodeQL queries in this workspace. [Create one to get started](command:codeQLQueries.createQuery).",
+        "when": "codeQL.noQueries"
       },
       {
         "view": "codeQLDatabases",

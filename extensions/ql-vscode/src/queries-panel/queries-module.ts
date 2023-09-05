@@ -44,7 +44,7 @@ export class QueriesModule extends DisposableObject {
     this.push(queryDiscovery);
     void queryDiscovery.initialRefresh();
 
-    this.queriesPanel = new QueriesPanel(queryDiscovery);
+    this.queriesPanel = new QueriesPanel(queryDiscovery, app);
     this.push(this.queriesPanel);
   }
 }
