@@ -27,7 +27,10 @@ import { promptImportGithubDatabase } from "../databases/database-fetcher";
 import { App } from "../common/app";
 import { showResolvableLocation } from "../databases/local-databases/locations";
 import { redactableError } from "../common/errors";
-import { runExternalApiQueries } from "./external-api-usage-queries";
+import {
+  externalApiQueriesProgressMaxStep,
+  runExternalApiQueries,
+} from "./external-api-usage-queries";
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
@@ -190,7 +193,10 @@ export class ModelEditorView extends AbstractWebview<
 
         break;
       case "refreshMethods":
-        await this.loadExternalApiUsages();
+        await withProgress((progress) => this.loadExternalApiUsages(progress), {
+          cancellable: false,
+        });
+
         void telemetryListener?.sendUIInteraction(
           "model-editor-refresh-methods",
         );
@@ -202,17 +208,39 @@ export class ModelEditorView extends AbstractWebview<
 
         break;
       case "saveModeledMethods":
-        await saveModeledMethods(
-          this.extensionPack,
-          this.databaseItem.name,
-          this.databaseItem.language,
-          msg.methods,
-          msg.modeledMethods,
-          this.mode,
-          this.cliServer,
-          this.app.logger,
+        await withProgress(
+          async (progress) => {
+            progress({
+              step: 1,
+              maxStep: 500 + externalApiQueriesProgressMaxStep,
+              message: "Writing model files",
+            });
+            await saveModeledMethods(
+              this.extensionPack,
+              this.databaseItem.name,
+              this.databaseItem.language,
+              msg.methods,
+              msg.modeledMethods,
+              this.mode,
+              this.cliServer,
+              this.app.logger,
+            );
+
+            await Promise.all([
+              this.setViewState(),
+              this.loadExternalApiUsages((update) =>
+                progress({
+                  ...update,
+                  step: update.step + 500,
+                  maxStep: 500 + externalApiQueriesProgressMaxStep,
+                }),
+              ),
+            ]);
+          },
+          {
+            cancellable: false,
+          },
         );
-        await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
         void telemetryListener?.sendUIInteraction(
           "model-editor-save-modeled-methods",
         );
@@ -249,7 +277,12 @@ export class ModelEditorView extends AbstractWebview<
         break;
       case "switchMode":
         this.mode = msg.mode;
-        await Promise.all([this.setViewState(), this.loadExternalApiUsages()]);
+        await Promise.all([
+          this.setViewState(),
+          withProgress((progress) => this.loadExternalApiUsages(progress), {
+            cancellable: false,
+          }),
+        ]);
         void telemetryListener?.sendUIInteraction("model-editor-switch-modes");
 
         break;
@@ -274,7 +307,9 @@ export class ModelEditorView extends AbstractWebview<
 
     await Promise.all([
       this.setViewState(),
-      this.loadExternalApiUsages(),
+      withProgress((progress) => this.loadExternalApiUsages(progress), {
+        cancellable: false,
+      }),
       this.loadExistingModeledMethods(),
     ]);
   }
@@ -317,48 +352,49 @@ export class ModelEditorView extends AbstractWebview<
     }
   }
 
-  protected async loadExternalApiUsages(): Promise<void> {
-    await withProgress(
-      async (progress) => {
-        try {
-          const cancellationTokenSource = new CancellationTokenSource();
-          const queryResult = await runExternalApiQueries(this.mode, {
-            cliServer: this.cliServer,
-            queryRunner: this.queryRunner,
-            databaseItem: this.databaseItem,
-            queryStorageDir: this.queryStorageDir,
-            queryDir: this.queryDir,
-            progress: (update) => progress({ ...update, maxStep: 1500 }),
-            token: cancellationTokenSource.token,
-          });
-          if (!queryResult) {
-            return;
-          }
-          this.methods = queryResult;
+  protected async loadExternalApiUsages(
+    progress: ProgressCallback,
+  ): Promise<void> {
+    try {
+      const cancellationTokenSource = new CancellationTokenSource();
+      const queryResult = await runExternalApiQueries(this.mode, {
+        cliServer: this.cliServer,
+        queryRunner: this.queryRunner,
+        databaseItem: this.databaseItem,
+        queryStorageDir: this.queryStorageDir,
+        queryDir: this.queryDir,
+        progress: (update) =>
+          progress({
+            ...update,
+            message: `Loading models: ${update.message}`,
+          }),
+        token: cancellationTokenSource.token,
+      });
+      if (!queryResult) {
+        return;
+      }
+      this.methods = queryResult;
 
-          await this.postMessage({
-            t: "setMethods",
-            methods: this.methods,
-          });
-          if (this.isMostRecentlyActiveView(this)) {
-            await this.updateMethodsUsagePanelState(
-              this.methods,
-              this.databaseItem,
-              this.hideModeledApis,
-            );
-          }
-        } catch (err) {
-          void showAndLogExceptionWithTelemetry(
-            this.app.logger,
-            this.app.telemetry,
-            redactableError(
-              asError(err),
-            )`Failed to load external API usages: ${getErrorMessage(err)}`,
-          );
-        }
-      },
-      { cancellable: false },
-    );
+      await this.postMessage({
+        t: "setMethods",
+        methods: this.methods,
+      });
+      if (this.isMostRecentlyActiveView(this)) {
+        await this.updateMethodsUsagePanelState(
+          this.methods,
+          this.databaseItem,
+          this.hideModeledApis,
+        );
+      }
+    } catch (err) {
+      void showAndLogExceptionWithTelemetry(
+        this.app.logger,
+        this.app.telemetry,
+        redactableError(
+          asError(err),
+        )`Failed to load external API usages: ${getErrorMessage(err)}`,
+      );
+    }
   }
 
   protected async generateModeledMethods(): Promise<void> {

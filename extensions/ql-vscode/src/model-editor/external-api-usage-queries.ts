@@ -58,6 +58,8 @@ export async function prepareExternalApiQuery(
   return true;
 }
 
+export const externalApiQueriesProgressMaxStep = 2000;
+
 export async function runExternalApiQueries(
   mode: Mode,
   {
@@ -76,6 +78,11 @@ export async function runExternalApiQueries(
   // For a reference of what this should do in the future, see the previous implementation in
   // https://github.com/github/vscode-codeql/blob/089d3566ef0bc67d9b7cc66e8fd6740b31c1c0b0/extensions/ql-vscode/src/data-extensions-editor/external-api-usage-query.ts#L33-L72
 
+  progress({
+    message: "Resolving QL packs",
+    step: 1,
+    maxStep: externalApiQueriesProgressMaxStep,
+  });
   const additionalPacks = getOnDiskWorkspaceFolders();
   const extensionPacks = Object.keys(
     await cliServer.resolveQlpacks(additionalPacks, true),
@@ -92,7 +99,12 @@ export async function runExternalApiQueries(
     queryStorageDir,
     additionalPacks,
     extensionPacks,
-    progress,
+    progress: (update) =>
+      progress({
+        step: update.step + 500,
+        maxStep: externalApiQueriesProgressMaxStep,
+        message: update.message,
+      }),
     token,
     // We need to create a lock file, because the query is inside our own pack
     createLockFile: true,
@@ -105,8 +117,8 @@ export async function runExternalApiQueries(
   // Read the results and covert to internal representation
   progress({
     message: "Decoding results",
-    step: 1100,
-    maxStep: 1500,
+    step: 1600,
+    maxStep: externalApiQueriesProgressMaxStep,
   });
 
   const bqrsChunk = await readQueryResults({
@@ -119,8 +131,8 @@ export async function runExternalApiQueries(
 
   progress({
     message: "Finalizing results",
-    step: 1450,
-    maxStep: 1500,
+    step: 1950,
+    maxStep: externalApiQueriesProgressMaxStep,
   });
 
   return decodeBqrsToExternalApiUsages(bqrsChunk);
