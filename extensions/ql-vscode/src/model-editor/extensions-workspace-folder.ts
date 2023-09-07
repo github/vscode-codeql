@@ -1,4 +1,4 @@
-import { FileType, Uri, window, workspace, WorkspaceFolder } from "vscode";
+import { FileType, Uri, workspace, WorkspaceFolder } from "vscode";
 import { getOnDiskWorkspaceFoldersObjects } from "../common/vscode/workspace-folders";
 import { extLogger } from "../common/logging/vscode";
 import { tmpdir } from "../common/files";
@@ -199,26 +199,4 @@ export async function autoPickExtensionsDirectory(): Promise<Uri | undefined> {
   }
 
   return extensionsUri;
-}
-
-export async function askForWorkspaceFolder(): Promise<
-  WorkspaceFolder | undefined
-> {
-  const workspaceFolders = getOnDiskWorkspaceFoldersObjects();
-  const workspaceFolderOptions = workspaceFolders.map((folder) => ({
-    label: folder.name,
-    detail: folder.uri.fsPath,
-    folder,
-  }));
-
-  // We're not using window.showWorkspaceFolderPick because that also includes the database source folders while
-  // we only want to include on-disk workspace folders.
-  const workspaceFolder = await window.showQuickPick(workspaceFolderOptions, {
-    title: "Select workspace folder to create extension pack in",
-  });
-  if (!workspaceFolder) {
-    return undefined;
-  }
-
-  return workspaceFolder.folder;
 }

@@ -707,18 +707,10 @@ export function showQueriesPanel(): boolean {
 
 const MODEL_SETTING = new Setting("model", ROOT_SETTING);
 const LLM_GENERATION = new Setting("llmGeneration", MODEL_SETTING);
-const DISABLE_AUTO_NAME_EXTENSION_PACK = new Setting(
-  "disableAutoNameExtensionPack",
-  MODEL_SETTING,
-);
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
 
 export function showLlmGeneration(): boolean {
   return !!LLM_GENERATION.getValue<boolean>();
-}
-
-export function disableAutoNameExtensionPack(): boolean {
-  return !!DISABLE_AUTO_NAME_EXTENSION_PACK.getValue<boolean>();
 }
 
 export function getExtensionsDirectory(languageId: string): string | undefined {
