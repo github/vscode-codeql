@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.8.11 - 7 September 2023
 
 - Update how variant analysis results are displayed. For queries with ["path-problem" or "problem" `@kind`](https://codeql.github.com/docs/writing-codeql-queries/metadata-for-codeql-queries/#metadata-properties), you can choose to display the results as rendered alerts or as a table of raw results. For queries with any other `@kind`, the results are displayed as a table. [#2745](https://github.com/github/vscode-codeql/pull/2745) & [#2749](https://github.com/github/vscode-codeql/pull/2749)
