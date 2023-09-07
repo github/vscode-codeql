@@ -19,7 +19,8 @@ type Props = {
   value: string | undefined;
   options: Array<{ value: string; label: string }>;
   disabled?: boolean;
-  onChange: (event: ChangeEvent<HTMLSelectElement>) => void;
+  disabledPlaceholder?: string;
+  onChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
 };
 
 /**
@@ -32,16 +33,23 @@ type Props = {
  * See https://github.com/github/vscode-codeql/pull/2582#issuecomment-1622164429
  * for more info on the problem and other potential solutions.
  */
-export function Dropdown({ value, options, disabled, onChange }: Props) {
+export function Dropdown({
+  value,
+  options,
+  disabled,
+  disabledPlaceholder,
+  onChange,
+}: Props) {
+  const disabledValue = disabledPlaceholder ?? DISABLED_VALUE;
   return (
     <StyledDropdown
-      value={disabled ? DISABLED_VALUE : value}
+      value={disabled ? disabledValue : value}
       disabled={disabled}
       onChange={onChange}
     >
       {disabled ? (
-        <option key={DISABLED_VALUE} value={DISABLED_VALUE}>
-          {DISABLED_VALUE}
+        <option key={disabledValue} value={disabledValue}>
+          {disabledValue}
         </option>
       ) : (
         options.map((option) => (
