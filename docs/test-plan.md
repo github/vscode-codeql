@@ -150,7 +150,7 @@ Note: this is still behind feature flags.
 #### Test Case 1: Opening the model editor
 
 1. Download the `dsp-testing/sql2o-example` database from GitHub.
-2. Open the Model editor with Cmd+P "Open CodeQL Model Editor".
+2. Open the Model Editor with the "CodeQL: Open CodeQL Model Editor" command from the command palette.
    - Check that the editor loads and shows methods to model.
    - Check that methods are grouped per library.
    - Check that the "Open database" link works.
