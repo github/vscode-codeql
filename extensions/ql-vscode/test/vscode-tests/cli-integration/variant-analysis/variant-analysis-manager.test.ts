@@ -2,7 +2,7 @@ import { CancellationTokenSource, commands, Uri, window } from "vscode";
 import { extLogger } from "../../../../src/common/logging/vscode";
 import { setRemoteControllerRepo } from "../../../../src/config";
 import * as ghApiClient from "../../../../src/variant-analysis/gh-api/gh-api-client";
-import { join } from "path";
+import { isAbsolute, join } from "path";
 
 import { VariantAnalysisManager } from "../../../../src/variant-analysis/variant-analysis-manager";
 import {
@@ -275,13 +275,55 @@ describe("Variant Analysis Manager", () => {
       });
     });
 
+    // Test running core java queries to ensure that we can compile queries in packs
+    // that contain queries with extensible predicates
+    it("should run a remote query that is part of the java pack", async () => {
+      if (
+        !(await cli.cliConstraints.supportsGenerateExtensiblePredicateMetadata())
+      ) {
+        console.log(
+          `Skipping test because generating extensible predicate metadata was only introduced in CLI version ${CliVersionConstraint.CLI_VERSION_WITH_EXTENSIBLE_PREDICATE_METADATA}.`,
+        );
+        return;
+      }
+
+      if (!process.env.TEST_CODEQL_PATH) {
+        fail(
+          "TEST_CODEQL_PATH environment variable not set. It should point to the absolute path to a checkout of the codeql repository.",
+        );
+      }
+
+      const queryToRun =
+        "Security/CWE/CWE-020/ExternalAPIsUsedWithUntrustedData.ql";
+      const extraQuery = "Telemetry/ExtractorInformation.ql";
+
+      await doVariantAnalysisTest({
+        queryPath: join(
+          process.env.TEST_CODEQL_PATH,
+          "java/ql/src",
+          queryToRun,
+        ),
+        expectedPackName: "codeql/java-queries",
+        filesThatExist: [queryToRun, extraQuery],
+        filesThatDoNotExist: [],
+        qlxFilesThatExist: [],
+        dependenciesToCheck: ["codeql/java-all"],
+        // Don't check the version since it will be the same version
+        checkVersion: false,
+      });
+    });
+
     async function doVariantAnalysisTest({
       queryPath,
       expectedPackName,
       filesThatExist,
       qlxFilesThatExist,
       filesThatDoNotExist,
+
+      // A subset of dependencies that we expect should be in the qlpack file.
+      // The first dependency is assumed to be the core library.
       dependenciesToCheck = ["codeql/javascript-all"],
+      checkVersion = true,
     }: {
       queryPath: string;
       expectedPackName: string;
@@ -289,6 +331,7 @@ describe("Variant Analysis Manager", () => {
       qlxFilesThatExist: string[];
       filesThatDoNotExist: string[];
       dependenciesToCheck?: string[];
+      checkVersion?: boolean;
     }) {
       const fileUri = getFile(queryPath);
       await variantAnalysisManager.runVariantAnalysis(
@@ -339,11 +382,16 @@ describe("Variant Analysis Manager", () => {
         packFS.fileContents(packFileName).toString("utf-8"),
       );
       expect(qlpackContents.name).toEqual(expectedPackName);
-      expect(qlpackContents.version).toEqual("0.0.0");
-      expect(qlpackContents.dependencies?.["codeql/javascript-all"]).toEqual(
-        "*",
-      );
+      if (checkVersion) {
+        expect(qlpackContents.version).toEqual("0.0.0");
+      }
 
+      // Assume the first dependency to check is the core library.
+      if (dependenciesToCheck.length > 0) {
+        expect(qlpackContents.dependencies?.[dependenciesToCheck[0]]).toEqual(
+          "*",
+        );
+      }
       const qlpackLockContents = load(
         packFS.fileContents("codeql-pack.lock.yml").toString("utf-8"),
       );
@@ -357,7 +405,11 @@ describe("Variant Analysis Manager", () => {
     }
 
     function getFile(file: string): Uri {
-      return Uri.file(join(baseDir, file));
+      if (isAbsolute(file)) {
+        return Uri.file(file);
+      } else {
+        return Uri.file(join(baseDir, file));
+      }
     }
   });
 });
