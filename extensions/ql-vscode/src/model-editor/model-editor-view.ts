@@ -277,7 +277,12 @@ export class ModelEditorView extends AbstractWebview<
         break;
       case "switchMode":
         this.mode = msg.mode;
+        this.methods = [];
         await Promise.all([
+          this.postMessage({
+            t: "setMethods",
+            methods: this.methods,
+          }),
           this.setViewState(),
           withProgress((progress) => this.loadExternalApiUsages(progress), {
             cancellable: false,
