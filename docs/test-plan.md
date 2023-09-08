@@ -60,7 +60,7 @@ choose to go through some of the Optional Test Cases.
    - Check that the results table is rendered
    - Check that result locations can be clicked on
 
-#### Test case 3: Can use AST viewer
+#### Test case 4: Can use AST viewer
 
 1. Click on any code location from a previous query to open a source file from a database
 2. Open the AST viewing panel and click "View AST"
@@ -142,6 +142,43 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 - Check that the query is canceled and the query history item is updated.
 - Check that the workflow run is also canceled.
 - Check that any available results are visible in VS Code.
+
+### CodeQL Model Editor
+
+Note the tests here require the feature flag: `codeQL.model.editor`
+
+#### Test Case 1: Opening the model editor
+
+1. Download the `sofastack/sofa-jraft` java database from GitHub.
+2. Open the Model Editor with the "CodeQL: Open CodeQL Model Editor" command from the command palette.
+   - Check that the editor loads and shows methods to model.
+   - Check that methods are grouped per library (e.g. `rocksdbjni@7.7.3` or `asm@6.0`)
+   - Check that the "Open database" link works.
+
+#### Test Case 2: Model methods
+
+1. Expand one of the libraries.
+   - Change the model type and check that the other dropdowns change.
+2. Save the modeled methods.
+3. Click "Open extension pack"
+   - Check that the file explorer opens a directory with a "models" directory
+4. Open the ".model.yml" file corresponding to the library that was changed.
+   - Check that the file contrains the entries that was modeled.
+
+#### Test Case 3: Model with AI
+
+Note that this test requires the feature flag: `codeQL.model.llmGeneration`
+
+1. Click "Model with AI".
+   - Check that rows change to "Thinking".
+   - Check that results come back and rows get filled out.
+
+#### Test Case 4: Model as dependency
+
+1. Click "Model as dependency"
+   - Check that grouping are now per package (e.g. `com.alipay.sofa.rraft.option` or `com.google.protobuf`)
+2. Click "Generate".
+   - Check that rows are filled out.
 
 ### General
 
