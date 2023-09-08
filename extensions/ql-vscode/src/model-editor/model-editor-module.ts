@@ -102,6 +102,8 @@ export class ModelEditorModule extends DisposableObject {
 
         return withProgress(
           async (progress) => {
+            const maxStep = 4;
+
             if (!(await this.cliServer.cliConstraints.supportsQlpacksKind())) {
               void showAndLogErrorMessage(
                 this.app.logger,
@@ -125,10 +127,17 @@ export class ModelEditorModule extends DisposableObject {
               db,
               this.app.logger,
               progress,
+              maxStep,
             );
             if (!modelFile) {
               return;
             }
+
+            progress({
+              message: "Installing dependencies...",
+              step: 3,
+              maxStep,
+            });
 
             // Create new temporary directory for query files and pack dependencies
             const queryDir = (await dir({ unsafeCleanup: true })).path;
@@ -136,6 +145,12 @@ export class ModelEditorModule extends DisposableObject {
             if (!success) {
               return;
             }
+
+            progress({
+              message: "Opening editor...",
+              step: 4,
+              maxStep,
+            });
 
             const view = new ModelEditorView(
               this.ctx,

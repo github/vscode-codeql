@@ -34,6 +34,7 @@ describe("pickExtensionPack", () => {
   let workspaceFolder: WorkspaceFolder;
 
   const logger = createMockLogger();
+  const maxStep = 4;
 
   beforeEach(async () => {
     tmpDir = (
@@ -98,7 +99,13 @@ describe("pickExtensionPack", () => {
     const cliServer = mockCliServer(qlPacks);
 
     expect(
-      await pickExtensionPack(cliServer, databaseItem, logger, progress),
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        maxStep,
+      ),
     ).toEqual(autoExtensionPack);
     expect(cliServer.resolveQlpacks).toHaveBeenCalledTimes(1);
     expect(cliServer.resolveQlpacks).toHaveBeenCalledWith(
@@ -173,7 +180,13 @@ describe("pickExtensionPack", () => {
     const cliServer = mockCliServer({});
 
     expect(
-      await pickExtensionPack(cliServer, databaseItem, logger, progress),
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        maxStep,
+      ),
     ).toEqual({
       path: newPackDir,
       yamlPath: join(newPackDir, "codeql-pack.yml"),
@@ -241,7 +254,13 @@ describe("pickExtensionPack", () => {
     const cliServer = mockCliServer({});
 
     expect(
-      await pickExtensionPack(cliServer, databaseItem, logger, progress),
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        maxStep,
+      ),
     ).toEqual({
       path: newPackDir,
       yamlPath: join(newPackDir, "codeql-pack.yml"),
@@ -277,7 +296,13 @@ describe("pickExtensionPack", () => {
     });
 
     expect(
-      await pickExtensionPack(cliServer, databaseItem, logger, progress),
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        maxStep,
+      ),
     ).toEqual(undefined);
     expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
     expect(logger.showErrorMessage).toHaveBeenCalledWith(
@@ -296,7 +321,13 @@ describe("pickExtensionPack", () => {
     });
 
     expect(
-      await pickExtensionPack(cliServer, databaseItem, logger, progress),
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        maxStep,
+      ),
     ).toEqual(undefined);
     expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
     expect(logger.showErrorMessage).toHaveBeenCalledWith(
@@ -317,7 +348,13 @@ describe("pickExtensionPack", () => {
     await outputFile(join(tmpDir.path, "codeql-pack.yml"), dumpYaml("java"));
 
     expect(
-      await pickExtensionPack(cliServer, databaseItem, logger, progress),
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        maxStep,
+      ),
     ).toEqual(undefined);
     expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
     expect(logger.showErrorMessage).toHaveBeenCalledWith(
@@ -348,7 +385,13 @@ describe("pickExtensionPack", () => {
     );
 
     expect(
-      await pickExtensionPack(cliServer, databaseItem, logger, progress),
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        maxStep,
+      ),
     ).toEqual(undefined);
     expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
     expect(logger.showErrorMessage).toHaveBeenCalledWith(
@@ -382,7 +425,13 @@ describe("pickExtensionPack", () => {
     );
 
     expect(
-      await pickExtensionPack(cliServer, databaseItem, logger, progress),
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        maxStep,
+      ),
     ).toEqual(undefined);
     expect(logger.showErrorMessage).toHaveBeenCalledTimes(1);
     expect(logger.showErrorMessage).toHaveBeenCalledWith(
@@ -433,7 +482,13 @@ describe("pickExtensionPack", () => {
     };
 
     expect(
-      await pickExtensionPack(cliServer, databaseItem, logger, progress),
+      await pickExtensionPack(
+        cliServer,
+        databaseItem,
+        logger,
+        progress,
+        maxStep,
+      ),
     ).toEqual(extensionPack);
   });
 });

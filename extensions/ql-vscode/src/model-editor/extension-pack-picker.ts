@@ -18,13 +18,12 @@ import {
 } from "./extension-pack-name";
 import { autoPickExtensionsDirectory } from "./extensions-workspace-folder";
 
-const maxStep = 3;
-
 export async function pickExtensionPack(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
   databaseItem: Pick<DatabaseItem, "name" | "language">,
   logger: NotificationLogger,
   progress: ProgressCallback,
+  maxStep: number,
 ): Promise<ExtensionPack | undefined> {
   progress({
     message: "Resolving extension packs...",

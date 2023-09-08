@@ -75,7 +75,6 @@ export async function runAutoModelQueries({
 
   // Run the actual query
   const completedQuery = await runQuery({
-    cliServer,
     queryRunner,
     databaseItem,
     queryPath,
@@ -84,7 +83,6 @@ export async function runAutoModelQueries({
     extensionPacks,
     progress,
     token: cancellationTokenSource.token,
-    createLockFile: false,
   });
 
   if (!completedQuery) {
