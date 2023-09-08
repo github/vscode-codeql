@@ -35,7 +35,25 @@ export const ModeledMethodDataGrid = ({
   hideModeledApis,
   onChange,
 }: Props) => {
-  const sortedMethods = useMemo(() => sortMethods(methods), [methods]);
+  const methodsWithModelability: Array<{
+    method: Method;
+    methodCanBeModeled: boolean;
+  }> = useMemo(() => {
+    const methodsWithModelability = [];
+    for (const method of sortMethods(methods)) {
+      const modeledMethod = modeledMethods[method.signature];
+      const methodIsUnsaved = modifiedSignatures.has(method.signature);
+      const methodCanBeModeled =
+        !method.supported ||
+        (modeledMethod && modeledMethod?.type !== "none") ||
+        methodIsUnsaved;
+
+      if (methodCanBeModeled || !hideModeledApis) {
+        methodsWithModelability.push({ method, methodCanBeModeled });
+      }
+    }
+    return methodsWithModelability;
+  }, [hideModeledApis, methods, modeledMethods, modifiedSignatures]);
 
   return (
     <VSCodeDataGrid gridTemplateColumns={GRID_TEMPLATE_COLUMNS}>
@@ -56,10 +74,11 @@ export const ModeledMethodDataGrid = ({
           Kind
         </VSCodeDataGridCell>
       </VSCodeDataGridRow>
-      {sortedMethods.map((method) => (
+      {methodsWithModelability.map(({ method, methodCanBeModeled }) => (
         <MethodRow
           key={method.signature}
           method={method}
+          methodCanBeModeled={methodCanBeModeled}
           modeledMethod={modeledMethods[method.signature]}
           methodIsUnsaved={modifiedSignatures.has(method.signature)}
           modelingInProgress={inProgressMethods.hasMethod(
@@ -67,7 +86,6 @@ export const ModeledMethodDataGrid = ({
             method.signature,
           )}
           mode={mode}
-          hideModeledApis={hideModeledApis}
           onChange={onChange}
         />
       ))}

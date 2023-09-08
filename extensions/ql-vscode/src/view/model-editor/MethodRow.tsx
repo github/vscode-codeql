@@ -62,26 +62,17 @@ const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
 
 type Props = {
   method: Method;
+  methodCanBeModeled: boolean;
   modeledMethod: ModeledMethod | undefined;
   methodIsUnsaved: boolean;
   modelingInProgress: boolean;
   mode: Mode;
-  hideModeledApis: boolean;
   onChange: (method: Method, modeledMethod: ModeledMethod) => void;
 };
 
 export const MethodRow = (props: Props) => {
-  const { method, modeledMethod, methodIsUnsaved, hideModeledApis } = props;
-
-  const methodCanBeModeled =
-    !method.supported ||
-    (modeledMethod && modeledMethod?.type !== "none") ||
-    methodIsUnsaved;
-
-  if (methodCanBeModeled) {
+  if (props.methodCanBeModeled) {
     return <ModelableMethodRow {...props} />;
-  } else if (hideModeledApis) {
-    return null;
   } else {
     return <UnmodelableMethodRow {...props} />;
   }
