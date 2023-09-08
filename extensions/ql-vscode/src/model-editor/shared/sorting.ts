@@ -76,6 +76,13 @@ function compareMethod(a: Method, b: Method): number {
   if (!a.supported && b.supported) {
     return -1;
   }
+
   // Then sort by number of usages descending
-  return b.usages.length - a.usages.length;
+  const usageDifference = b.usages.length - a.usages.length;
+  if (usageDifference !== 0) {
+    return usageDifference;
+  }
+
+  // Then sort by method signature ascending
+  return a.signature.localeCompare(b.signature);
 }
