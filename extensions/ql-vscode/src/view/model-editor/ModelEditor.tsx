@@ -281,6 +281,7 @@ export function ModelEditor({
       t: "switchMode",
       mode: newMode,
     });
+    setMethods([]);
   }, [viewState?.mode]);
 
   const onHideModeledApis = useCallback(() => {
