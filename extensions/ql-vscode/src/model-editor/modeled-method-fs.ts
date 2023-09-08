@@ -13,7 +13,6 @@ import { pathsEqual } from "../common/files";
 
 export async function saveModeledMethods(
   extensionPack: ExtensionPack,
-  databaseName: string,
   language: string,
   methods: Method[],
   modeledMethods: Record<string, ModeledMethod>,
@@ -28,7 +27,6 @@ export async function saveModeledMethods(
   );
 
   const yamls = createDataExtensionYamls(
-    databaseName,
     language,
     methods,
     modeledMethods,

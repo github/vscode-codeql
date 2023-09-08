@@ -37,7 +37,7 @@ export function autoNameExtensionPack(
   };
 }
 
-export function sanitizeExtensionPackName(name: string) {
+function sanitizeExtensionPackName(name: string) {
   // Lowercase everything
   name = name.toLowerCase();
 
