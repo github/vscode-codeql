@@ -7,7 +7,7 @@
 - Increase the required version of VS Code to 1.82.0. [#2877](https://github.com/github/vscode-codeql/pull/2877)
 - Fix a bug where the query server was restarted twice after configuration changes. [#2884](https://github.com/github/vscode-codeql/pull/2884).
 - Add support for the `telemetry.telemetryLevel` setting. For more information, see the [telemetry documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code). [#2824](https://github.com/github/vscode-codeql/pull/2824).
-- Fixed syntax highlighting directly after import statements with instantiation arguments.
+- Fix syntax highlighting directly after import statements with instantiation arguments. [#2792](https://github.com/github/vscode-codeql/pull/2792)
 
 ## 1.9.1 - 29 September 2023
 
