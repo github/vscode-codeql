@@ -3,6 +3,7 @@ import {
   createDataExtensionYamlsForApplicationMode,
   createDataExtensionYamlsForFrameworkMode,
   createFilenameForLibrary,
+  createFilenameForPackage,
   loadDataExtensionYaml,
 } from "../../../src/model-editor/yaml";
 import { CallClassification } from "../../../src/model-editor/method";
@@ -598,7 +599,6 @@ describe("createDataExtensionYamlsForApplicationMode", () => {
 describe("createDataExtensionYamlsForFrameworkMode", () => {
   it("creates the correct YAML files when there are no existing modeled methods", () => {
     const yaml = createDataExtensionYamlsForFrameworkMode(
-      "github/sql2o",
       "java",
       [
         {
@@ -723,7 +723,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
     );
 
     expect(yaml).toEqual({
-      "models/sql2o.model.yml": `extensions:
+      "models/org.sql2o.model.yml": `extensions:
   - addsTo:
       pack: codeql/java-all
       extensible: sourceModel
@@ -751,7 +751,6 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
 
   it("creates the correct YAML files when there are existing modeled methods", () => {
     const yaml = createDataExtensionYamlsForFrameworkMode(
-      "github/sql2o",
       "java",
       [
         {
@@ -873,7 +872,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
         },
       },
       {
-        "models/sql2o.model.yml": {
+        "models/org.sql2o.model.yml": {
           "org.sql2o.Connection#createQuery(String)": {
             type: "neutral",
             input: "",
@@ -917,7 +916,7 @@ describe("createDataExtensionYamlsForFrameworkMode", () => {
     );
 
     expect(yaml).toEqual({
-      "models/sql2o.model.yml": `extensions:
+      "models/org.sql2o.model.yml": `extensions:
   - addsTo:
       pack: codeql/java-all
       extensible: sourceModel
@@ -1041,6 +1040,43 @@ describe("createFilenameForLibrary", () => {
     "returns $filename if library name is $library",
     ({ library, filename }) => {
       expect(createFilenameForLibrary(library)).toEqual(filename);
+    },
+  );
+});
+
+describe("createFilenameForPackage", () => {
+  const testCases = [
+    {
+      library: "System.Net.Http.Headers",
+      filename: "models/System.Net.Http.Headers.model.yml",
+    },
+    {
+      library: "System.Security.Cryptography.X509Certificates",
+      filename:
+        "models/System.Security.Cryptography.X509Certificates.model.yml",
+    },
+    {
+      library: "com.google.common.io",
+      filename: "models/com.google.common.io.model.yml",
+    },
+    {
+      library: "hudson.cli",
+      filename: "models/hudson.cli.model.yml",
+    },
+    {
+      library: "java.util",
+      filename: "models/java.util.model.yml",
+    },
+    {
+      library: "org.apache.commons.io",
+      filename: "models/org.apache.commons.io.model.yml",
+    },
+  ];
+
+  test.each(testCases)(
+    "returns $filename if package name is $library",
+    ({ library, filename }) => {
+      expect(createFilenameForPackage(library)).toEqual(filename);
     },
   );
 });

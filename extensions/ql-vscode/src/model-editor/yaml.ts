@@ -8,7 +8,6 @@ import {
 } from "./predicates";
 
 import * as dataSchemaJson from "./data-schema.json";
-import { sanitizeExtensionPackName } from "./extension-pack-name";
 import { Mode } from "./shared/mode";
 import { assertNever } from "../common/helpers-pure";
 
@@ -69,7 +68,6 @@ ${extensions.join("\n")}`;
 }
 
 export function createDataExtensionYamls(
-  databaseName: string,
   language: string,
   methods: Method[],
   newModeledMethods: Record<string, ModeledMethod>,
@@ -86,7 +84,6 @@ export function createDataExtensionYamls(
       );
     case Mode.Framework:
       return createDataExtensionYamlsForFrameworkMode(
-        databaseName,
         language,
         methods,
         newModeledMethods,
@@ -97,31 +94,29 @@ export function createDataExtensionYamls(
   }
 }
 
-export function createDataExtensionYamlsForApplicationMode(
+function createDataExtensionYamlsByGrouping(
   language: string,
   methods: Method[],
   newModeledMethods: Record<string, ModeledMethod>,
   existingModeledMethods: Record<string, Record<string, ModeledMethod>>,
+  createFilename: (method: Method) => string,
 ): Record<string, string> {
-  const methodsByLibraryFilename: Record<
-    string,
-    Record<string, ModeledMethod>
-  > = {};
+  const methodsByFilename: Record<string, Record<string, ModeledMethod>> = {};
 
   // We only want to generate a yaml file when it's a known external API usage
   // and there are new modeled methods for it. This avoids us overwriting other
   // files that may contain data we don't know about.
   for (const method of methods) {
     if (method.signature in newModeledMethods) {
-      methodsByLibraryFilename[createFilenameForLibrary(method.library)] = {};
+      methodsByFilename[createFilename(method)] = {};
     }
   }
 
-  // First populate methodsByLibraryFilename with any existing modeled methods.
+  // First populate methodsByFilename with any existing modeled methods.
   for (const [filename, methods] of Object.entries(existingModeledMethods)) {
-    if (filename in methodsByLibraryFilename) {
+    if (filename in methodsByFilename) {
       for (const [signature, method] of Object.entries(methods)) {
-        methodsByLibraryFilename[filename][signature] = method;
+        methodsByFilename[filename][signature] = method;
       }
     }
   }
@@ -131,14 +126,14 @@ export function createDataExtensionYamlsForApplicationMode(
   for (const method of methods) {
     const newMethod = newModeledMethods[method.signature];
     if (newMethod) {
-      const filename = createFilenameForLibrary(method.library);
-      methodsByLibraryFilename[filename][newMethod.signature] = newMethod;
+      const filename = createFilename(method);
+      methodsByFilename[filename][newMethod.signature] = newMethod;
     }
   }
 
   const result: Record<string, string> = {};
 
-  for (const [filename, methods] of Object.entries(methodsByLibraryFilename)) {
+  for (const [filename, methods] of Object.entries(methodsByFilename)) {
     result[filename] = createDataExtensionYaml(
       language,
       Object.values(methods),
@@ -148,43 +143,34 @@ export function createDataExtensionYamlsForApplicationMode(
   return result;
 }
 
-export function createDataExtensionYamlsForFrameworkMode(
-  databaseName: string,
+export function createDataExtensionYamlsForApplicationMode(
   language: string,
-  unmodeledMethods: Method[],
+  methods: Method[],
   newModeledMethods: Record<string, ModeledMethod>,
   existingModeledMethods: Record<string, Record<string, ModeledMethod>>,
-  prefix = "models/",
-  suffix = ".model",
 ): Record<string, string> {
-  const parts = databaseName.split("/");
-  const libraryName = parts
-    .slice(1)
-    .map((part) => sanitizeExtensionPackName(part))
-    .join("-");
-  const filename = `${prefix}${libraryName}${suffix}.yml`;
+  return createDataExtensionYamlsByGrouping(
+    language,
+    methods,
+    newModeledMethods,
+    existingModeledMethods,
+    (method) => createFilenameForLibrary(method.library),
+  );
+}
 
-  const methods: Record<string, ModeledMethod> = {};
-
-  // First populate methodsByLibraryFilename with any existing modeled methods.
-  for (const [signature, method] of Object.entries(
-    existingModeledMethods[filename] || {},
-  )) {
-    methods[signature] = method;
-  }
-
-  // Add the new modeled methods, potentially overwriting existing modeled methods
-  // but not removing existing modeled methods that are not in the new set.
-  for (const method of unmodeledMethods) {
-    const modeledMethod = newModeledMethods[method.signature];
-    if (modeledMethod) {
-      methods[modeledMethod.signature] = modeledMethod;
-    }
-  }
-
-  return {
-    [filename]: createDataExtensionYaml(language, Object.values(methods)),
-  };
+export function createDataExtensionYamlsForFrameworkMode(
+  language: string,
+  methods: Method[],
+  newModeledMethods: Record<string, ModeledMethod>,
+  existingModeledMethods: Record<string, Record<string, ModeledMethod>>,
+): Record<string, string> {
+  return createDataExtensionYamlsByGrouping(
+    language,
+    methods,
+    newModeledMethods,
+    existingModeledMethods,
+    (method) => createFilenameForPackage(method.packageName),
+  );
 }
 
 export function createFilenameForLibrary(
@@ -212,6 +198,17 @@ export function createFilenameForLibrary(
   libraryName = libraryName.replaceAll(/\.{2,}/g, ".");
 
   return `${prefix}${libraryName}${suffix}.yml`;
+}
+
+export function createFilenameForPackage(
+  packageName: string,
+  prefix = "models/",
+  suffix = ".model",
+) {
+  // A package name is e.g. `com.google.common.io` or `System.Net.Http.Headers`
+  // We want to place these into `models/com.google.common.io.model.yml` and
+  // `models/System.Net.Http.Headers.model.yml` respectively.
+  return `${prefix}${packageName}${suffix}.yml`;
 }
 
 export function loadDataExtensionYaml(

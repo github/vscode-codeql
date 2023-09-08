@@ -217,7 +217,6 @@ export class ModelEditorView extends AbstractWebview<
             });
             await saveModeledMethods(
               this.extensionPack,
-              this.databaseItem.name,
               this.databaseItem.language,
               msg.methods,
               msg.modeledMethods,
