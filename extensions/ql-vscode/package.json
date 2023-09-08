@@ -1747,13 +1747,13 @@
     "views": {
       "ql-container": [
         {
+          "id": "codeQLDatabases",
+          "name": "Databases"
+        },
+        {
           "id": "codeQLQueries",
           "name": "Queries",
           "when": "config.codeQL.canary && config.codeQL.queriesPanel"
-        },
-        {
-          "id": "codeQLDatabases",
-          "name": "Databases"
         },
         {
           "id": "codeQLVariantAnalysisRepositories",
