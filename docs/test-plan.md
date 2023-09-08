@@ -145,8 +145,7 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 
 ### CodeQL Model Editor
 
-Note the tests here require the feature flag:
-- `codeQL.model.editor`
+Note the tests here require the feature flag: `codeQL.model.editor`
 
 #### Test Case 1: Opening the model editor
 
@@ -168,8 +167,7 @@ Note the tests here require the feature flag:
 
 #### Test Case 3: Model with AI
 
-Note that this test requires the feature flag:
-- `codeQL.model.llmGeneration`
+Note that this test requires the feature flag: `codeQL.model.llmGeneration`
 
 1. Click "Model with AI".
    - Check that rows change to "Thinking".
