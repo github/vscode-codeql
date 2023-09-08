@@ -145,25 +145,31 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 
 ### CodeQL Model Editor
 
-Note: this is still behind feature flags.
+Note the tests here require the feature flag:
+- `codeQL.model.editor`
 
 #### Test Case 1: Opening the model editor
 
-1. Download the `dsp-testing/sql2o-example` database from GitHub.
+1. Download the `sofastack/sofa-jraft` java database from GitHub.
 2. Open the Model Editor with the "CodeQL: Open CodeQL Model Editor" command from the command palette.
    - Check that the editor loads and shows methods to model.
-   - Check that methods are grouped per library.
+   - Check that methods are grouped per library (e.g. `rocksdbjni@7.7.3` or `asm@6.0`)
    - Check that the "Open database" link works.
-   - Check that the "Open extension pack" link works.
 
 #### Test Case 2: Model methods
 
-1. Expand one of the packages
+1. Expand one of the libraries.
    - Change the model type and check that the other dropdowns change.
 2. Save the modeled methods.
-   - Check that the model `yml` file has the entries that was modeled.
+3. Click "Open extension pack"
+   - Check that the file explorer opens a directory with a "models" directory
+4. Open the ".model.yml" file corresponding to the library that was changed.
+   - Check that the file contrains the entries that was modeled.
 
 #### Test Case 3: Model with AI
+
+Note that this test requires the feature flag:
+- `codeQL.model.llmGeneration`
 
 1. Click "Model with AI".
    - Check that rows change to "Thinking".
@@ -172,7 +178,7 @@ Note: this is still behind feature flags.
 #### Test Case 4: Model as dependency
 
 1. Click "Model as dependency"
-   - Check that grouping are now per package.
+   - Check that grouping are now per package (e.g. `com.alipay.sofa.rraft.option` or `com.google.protobuf`)
 2. Click "Generate".
    - Check that rows are filled out.
 
