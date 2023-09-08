@@ -92,7 +92,6 @@ export async function runExternalApiQueries(
 
   // Run the actual query
   const completedQuery = await runQuery({
-    cliServer,
     queryRunner,
     databaseItem,
     queryPath,
@@ -106,7 +105,6 @@ export async function runExternalApiQueries(
         message: update.message,
       }),
     token,
-    createLockFile: false,
   });
 
   if (!completedQuery) {

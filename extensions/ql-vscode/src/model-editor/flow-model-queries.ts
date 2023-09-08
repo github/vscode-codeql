@@ -120,7 +120,6 @@ async function runSingleFlowQuery(
 
   // Run the query
   const completedQuery = await runQuery({
-    cliServer,
     queryRunner,
     databaseItem,
     queryPath,
@@ -134,7 +133,6 @@ async function runSingleFlowQuery(
         maxStep: 4000,
       }),
     token,
-    createLockFile: false,
   });
 
   if (!completedQuery) {

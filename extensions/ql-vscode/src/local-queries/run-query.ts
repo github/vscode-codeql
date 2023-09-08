@@ -1,9 +1,7 @@
 import { CancellationToken } from "vscode";
-import { CodeQLCliServer } from "../codeql-cli/cli";
 import { ProgressCallback } from "../common/vscode/progress";
 import { DatabaseItem } from "../databases/local-databases";
 import { CoreCompletedQuery, QueryRunner } from "../query-server";
-import { createLockFileForStandardQuery } from "./standard-queries";
 import { TeeLogger, showAndLogExceptionWithTelemetry } from "../common/logging";
 import { QueryResultType } from "../query-server/new-messages";
 import { extLogger } from "../common/logging/vscode";
@@ -12,7 +10,6 @@ import { redactableError } from "../common/errors";
 import { basename } from "path";
 
 type RunQueryOptions = {
-  cliServer: CodeQLCliServer;
   queryRunner: QueryRunner;
   databaseItem: DatabaseItem;
   queryPath: string;
@@ -21,11 +18,9 @@ type RunQueryOptions = {
   extensionPacks: string[] | undefined;
   progress: ProgressCallback;
   token: CancellationToken;
-  createLockFile: boolean;
 };
 
 export async function runQuery({
-  cliServer,
   queryRunner,
   databaseItem,
   queryPath,
@@ -34,18 +29,7 @@ export async function runQuery({
   extensionPacks,
   progress,
   token,
-  createLockFile,
 }: RunQueryOptions): Promise<CoreCompletedQuery | undefined> {
-  let cleanupLockFile: (() => Promise<void>) | undefined = undefined;
-  if (createLockFile) {
-    // Create a lock file for the query. This is required to resolve dependencies and library path for the query.
-    const { cleanup } = await createLockFileForStandardQuery(
-      cliServer,
-      queryPath,
-    );
-    cleanupLockFile = cleanup;
-  }
-
   // Create a query run to execute
   const queryRun = queryRunner.createQueryRun(
     databaseItem.databaseUri.fsPath,
@@ -67,8 +51,6 @@ export async function runQuery({
     token,
     new TeeLogger(queryRunner.logger, queryRun.outputDir.logPath),
   );
-
-  await cleanupLockFile?.();
 
   if (completedQuery.resultType !== QueryResultType.SUCCESS) {
     void showAndLogExceptionWithTelemetry(
