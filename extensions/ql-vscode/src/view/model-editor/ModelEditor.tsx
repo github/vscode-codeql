@@ -345,11 +345,12 @@ export function ModelEditor({
           <VSCodeButton appearance="secondary" onClick={onRefreshClick}>
             Refresh
           </VSCodeButton>
-          {viewState.mode === Mode.Framework && (
-            <VSCodeButton onClick={onGenerateFromSourceClick}>
-              Generate
-            </VSCodeButton>
-          )}
+          {viewState.showFlowGeneration &&
+            viewState.mode === Mode.Framework && (
+              <VSCodeButton onClick={onGenerateFromSourceClick}>
+                Generate
+              </VSCodeButton>
+            )}
         </ButtonsContainer>
         <ModeledMethodsList
           methods={methods}
