@@ -483,6 +483,7 @@ export class ModelEditorView extends AbstractWebview<
         addedDatabase,
         this.app.logger,
         progress,
+        3,
       );
       if (!modelFile) {
         return;
