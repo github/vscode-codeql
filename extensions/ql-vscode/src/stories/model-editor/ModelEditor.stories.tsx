@@ -28,6 +28,7 @@ ModelEditor.args = {
       extensionTargets: {},
       dataExtensions: [],
     },
+    showFlowGeneration: true,
     showLlmButton: true,
     mode: Mode.Application,
   },

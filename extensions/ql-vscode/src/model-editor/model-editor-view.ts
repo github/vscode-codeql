@@ -34,7 +34,7 @@ import {
 import { Method, Usage } from "./method";
 import { ModeledMethod } from "./modeled-method";
 import { ExtensionPack } from "./shared/extension-pack";
-import { showLlmGeneration } from "../config";
+import { showFlowGeneration, showLlmGeneration } from "../config";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
 import { join } from "path";
@@ -322,6 +322,7 @@ export class ModelEditorView extends AbstractWebview<
       t: "setModelEditorViewState",
       viewState: {
         extensionPack: this.extensionPack,
+        showFlowGeneration: showFlowGeneration(),
         showLlmButton,
         mode: this.mode,
       },

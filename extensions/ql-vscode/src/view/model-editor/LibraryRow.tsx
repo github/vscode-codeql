@@ -213,12 +213,13 @@ export const LibraryRow = ({
             &nbsp;Stop
           </VSCodeButton>
         )}
-        {viewState.mode === Mode.Application && (
-          <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
-            <Codicon name="code" label="Model from source" />
-            &nbsp;Model from source
-          </VSCodeButton>
-        )}
+        {viewState.showFlowGeneration &&
+          viewState.mode === Mode.Application && (
+            <VSCodeButton appearance="icon" onClick={handleModelFromSource}>
+              <Codicon name="code" label="Model from source" />
+              &nbsp;Model from source
+            </VSCodeButton>
+          )}
         {viewState.mode === Mode.Application && (
           <VSCodeButton appearance="icon" onClick={handleModelDependency}>
             <Codicon name="references" label="Model dependency" />

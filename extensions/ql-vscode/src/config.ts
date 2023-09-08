@@ -706,8 +706,13 @@ export function showQueriesPanel(): boolean {
 }
 
 const MODEL_SETTING = new Setting("model", ROOT_SETTING);
+const FLOW_GENERATION = new Setting("flowGeneration", MODEL_SETTING);
 const LLM_GENERATION = new Setting("llmGeneration", MODEL_SETTING);
 const EXTENSIONS_DIRECTORY = new Setting("extensionsDirectory", MODEL_SETTING);
+
+export function showFlowGeneration(): boolean {
+  return !!FLOW_GENERATION.getValue<boolean>();
+}
 
 export function showLlmGeneration(): boolean {
   return !!LLM_GENERATION.getValue<boolean>();
