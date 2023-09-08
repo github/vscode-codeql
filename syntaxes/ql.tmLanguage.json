@@ -108,6 +108,14 @@
       "match": "(?x)\\]",
       "name": "punctuation.squarebracket.close.ql"
     },
+    "open-angle": {
+      "match": "(?x)<",
+      "name": "punctuation.anglebracket.open.ql"
+    },
+    "close-angle": {
+      "match": "(?x)>",
+      "name": "punctuation.anglebracket.close.ql"
+    },
     "operator-or-punctuation": {
       "patterns": [
         {
@@ -151,6 +159,12 @@
         },
         {
           "include": "#close-bracket"
+        },
+        {
+          "include": "#open-angle"
+        },
+        {
+          "include": "#close-angle"
         }
       ]
     },
@@ -723,6 +737,27 @@
         }
       ]
     },
+    "instantiation-arguments": {
+      "end": "(?x)#close-angle",
+      "patterns": [
+        {
+          "include": "#potential-instantiation"
+        }
+      ],
+      "begin": "(?x)((?:<))",
+      "beginCaptures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#open-angle"
+            }
+          ]
+        }
+      }
+    },
+    "potential-instantiation": {
+      "matches": "(?#simple-id) (?#instantiation-arguments)?"
+    },
     "import-directive": {
       "end": "(?x)(?:\\b [A-Za-z][0-9A-Za-z_]* (?:(?!(?:[0-9A-Za-z_])))) (?!\\s*(\\.|\\:\\:))",
       "endCaptures": {
@@ -736,7 +771,7 @@
           "include": "#non-context-sensitive"
         },
         {
-          "match": "(?x)(?:\\b [A-Za-z][0-9A-Za-z_]* (?:(?!(?:[0-9A-Za-z_]))))",
+          "match": "(?x)(?:)",
           "name": "entity.name.type.namespace.ql"
         }
       ],
