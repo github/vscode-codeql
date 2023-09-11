@@ -55,40 +55,46 @@ export const ModeledMethodDataGrid = ({
     return methodsWithModelability;
   }, [hideModeledApis, methods, modeledMethods, modifiedSignatures]);
 
+  const someMethodsAreVisible = methodsWithModelability.length > 0;
+
   return (
     <VSCodeDataGrid gridTemplateColumns={GRID_TEMPLATE_COLUMNS}>
-      <VSCodeDataGridRow rowType="header">
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
-          API or method
-        </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
-          Model type
-        </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
-          Input
-        </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
-          Output
-        </VSCodeDataGridCell>
-        <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
-          Kind
-        </VSCodeDataGridCell>
-      </VSCodeDataGridRow>
-      {methodsWithModelability.map(({ method, methodCanBeModeled }) => (
-        <MethodRow
-          key={method.signature}
-          method={method}
-          methodCanBeModeled={methodCanBeModeled}
-          modeledMethod={modeledMethods[method.signature]}
-          methodIsUnsaved={modifiedSignatures.has(method.signature)}
-          modelingInProgress={inProgressMethods.hasMethod(
-            packageName,
-            method.signature,
-          )}
-          mode={mode}
-          onChange={onChange}
-        />
-      ))}
+      {someMethodsAreVisible && (
+        <>
+          <VSCodeDataGridRow rowType="header">
+            <VSCodeDataGridCell cellType="columnheader" gridColumn={1}>
+              API or method
+            </VSCodeDataGridCell>
+            <VSCodeDataGridCell cellType="columnheader" gridColumn={2}>
+              Model type
+            </VSCodeDataGridCell>
+            <VSCodeDataGridCell cellType="columnheader" gridColumn={3}>
+              Input
+            </VSCodeDataGridCell>
+            <VSCodeDataGridCell cellType="columnheader" gridColumn={4}>
+              Output
+            </VSCodeDataGridCell>
+            <VSCodeDataGridCell cellType="columnheader" gridColumn={5}>
+              Kind
+            </VSCodeDataGridCell>
+          </VSCodeDataGridRow>
+          {methodsWithModelability.map(({ method, methodCanBeModeled }) => (
+            <MethodRow
+              key={method.signature}
+              method={method}
+              methodCanBeModeled={methodCanBeModeled}
+              modeledMethod={modeledMethods[method.signature]}
+              methodIsUnsaved={modifiedSignatures.has(method.signature)}
+              modelingInProgress={inProgressMethods.hasMethod(
+                packageName,
+                method.signature,
+              )}
+              mode={mode}
+              onChange={onChange}
+            />
+          ))}
+        </>
+      )}
     </VSCodeDataGrid>
   );
 };
