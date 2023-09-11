@@ -409,7 +409,7 @@ export class DbPanel extends DisposableObject {
       return;
     }
 
-    void window.withProgress(
+    await window.withProgress(
       {
         location: ProgressLocation.Notification,
         title: "Searching for repositories... This might take a while",
