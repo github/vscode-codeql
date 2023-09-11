@@ -742,7 +742,7 @@ describe("local databases", () => {
             mockDbItem.databaseUri,
             makeSelected,
             nameOverride,
-            isTutorialDatabase,
+            { isTutorialDatabase },
           );
 
           expect(createSkeletonPacksSpy).toBeCalledTimes(0);
