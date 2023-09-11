@@ -1,5 +1,7 @@
 # CodeQL for Visual Studio Code: Changelog
 
+## [UNRELEASED]
+
 ## 1.8.12 - 11 September 2023
 
 - Fix a bug where variant analysis queries would fail for queries in the `codeql/java-queries` query pack. [#2786](https://github.com/github/vscode-codeql/pull/2786)
