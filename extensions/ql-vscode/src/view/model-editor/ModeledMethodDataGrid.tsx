@@ -11,6 +11,7 @@ import { useMemo } from "react";
 import { Mode } from "../../model-editor/shared/mode";
 import { sortMethods } from "../../model-editor/shared/sorting";
 import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
+import { HiddenMethodsRow } from "./HiddenMethodsRow";
 
 export const GRID_TEMPLATE_COLUMNS = "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
 
@@ -35,11 +36,12 @@ export const ModeledMethodDataGrid = ({
   hideModeledApis,
   onChange,
 }: Props) => {
-  const methodsWithModelability: Array<{
-    method: Method;
-    methodCanBeModeled: boolean;
-  }> = useMemo(() => {
+  const [methodsWithModelability, numHiddenMethods]: [
+    Array<{ method: Method; methodCanBeModeled: boolean }>,
+    number,
+  ] = useMemo(() => {
     const methodsWithModelability = [];
+    let numHiddenMethods = 0;
     for (const method of sortMethods(methods)) {
       const modeledMethod = modeledMethods[method.signature];
       const methodIsUnsaved = modifiedSignatures.has(method.signature);
@@ -50,9 +52,11 @@ export const ModeledMethodDataGrid = ({
 
       if (methodCanBeModeled || !hideModeledApis) {
         methodsWithModelability.push({ method, methodCanBeModeled });
+      } else {
+        numHiddenMethods += 1;
       }
     }
-    return methodsWithModelability;
+    return [methodsWithModelability, numHiddenMethods];
   }, [hideModeledApis, methods, modeledMethods, modifiedSignatures]);
 
   const someMethodsAreVisible = methodsWithModelability.length > 0;
@@ -95,6 +99,10 @@ export const ModeledMethodDataGrid = ({
           ))}
         </>
       )}
+      <HiddenMethodsRow
+        numHiddenMethods={numHiddenMethods}
+        someMethodsAreVisible={someMethodsAreVisible}
+      />
     </VSCodeDataGrid>
   );
 };
