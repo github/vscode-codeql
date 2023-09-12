@@ -13,7 +13,7 @@ import { Method, Usage } from "../method";
 import { DatabaseItem } from "../../databases/local-databases";
 import { relative } from "path";
 import { CodeQLCliServer } from "../../codeql-cli/cli";
-import { INITIAL_HIDE_MODELED_APIS_VALUE } from "../shared/hide-modeled-apis";
+import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../shared/hide-modeled-methods";
 
 export class MethodsUsageDataProvider
   extends DisposableObject
@@ -22,7 +22,7 @@ export class MethodsUsageDataProvider
   private methods: Method[] = [];
   private databaseItem: DatabaseItem | undefined = undefined;
   private sourceLocationPrefix: string | undefined = undefined;
-  private hideModeledApis: boolean = INITIAL_HIDE_MODELED_APIS_VALUE;
+  private hideModeledMethods: boolean = INITIAL_HIDE_MODELED_METHODS_VALUE;
 
   private readonly onDidChangeTreeDataEmitter = this.push(
     new EventEmitter<void>(),
@@ -46,18 +46,18 @@ export class MethodsUsageDataProvider
   public async setState(
     methods: Method[],
     databaseItem: DatabaseItem,
-    hideModeledApis: boolean,
+    hideModeledMethods: boolean,
   ): Promise<void> {
     if (
       this.methods !== methods ||
       this.databaseItem !== databaseItem ||
-      this.hideModeledApis !== hideModeledApis
+      this.hideModeledMethods !== hideModeledMethods
     ) {
       this.methods = methods;
       this.databaseItem = databaseItem;
       this.sourceLocationPrefix =
         await this.databaseItem.getSourceLocationPrefix(this.cliServer);
-      this.hideModeledApis = hideModeledApis;
+      this.hideModeledMethods = hideModeledMethods;
 
       this.onDidChangeTreeDataEmitter.fire();
     }
@@ -99,7 +99,7 @@ export class MethodsUsageDataProvider
 
   getChildren(item?: MethodsUsageTreeViewItem): MethodsUsageTreeViewItem[] {
     if (item === undefined) {
-      if (this.hideModeledApis) {
+      if (this.hideModeledMethods) {
         return this.methods.filter((api) => !api.supported);
       } else {
         return this.methods;

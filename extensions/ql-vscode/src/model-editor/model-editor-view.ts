@@ -41,7 +41,7 @@ import { join } from "path";
 import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
 import { AutoModeler } from "./auto-modeler";
-import { INITIAL_HIDE_MODELED_APIS_VALUE } from "./shared/hide-modeled-apis";
+import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 import { telemetryListener } from "../common/vscode/telemetry";
 
 export class ModelEditorView extends AbstractWebview<
@@ -51,7 +51,7 @@ export class ModelEditorView extends AbstractWebview<
   private readonly autoModeler: AutoModeler;
 
   private methods: Method[];
-  private hideModeledApis: boolean;
+  private hideModeledMethods: boolean;
 
   public constructor(
     ctx: ExtensionContext,
@@ -67,7 +67,7 @@ export class ModelEditorView extends AbstractWebview<
     private readonly updateMethodsUsagePanelState: (
       methods: Method[],
       databaseItem: DatabaseItem,
-      hideModeledApis: boolean,
+      hideModeledMethods: boolean,
     ) => Promise<void>,
     private readonly showMethod: (
       method: Method,
@@ -99,7 +99,7 @@ export class ModelEditorView extends AbstractWebview<
       },
     );
     this.methods = [];
-    this.hideModeledApis = INITIAL_HIDE_MODELED_APIS_VALUE;
+    this.hideModeledMethods = INITIAL_HIDE_MODELED_METHODS_VALUE;
   }
 
   public async openView() {
@@ -112,7 +112,7 @@ export class ModelEditorView extends AbstractWebview<
         await this.updateMethodsUsagePanelState(
           this.methods,
           this.databaseItem,
-          this.hideModeledApis,
+          this.hideModeledMethods,
         );
       }
     });
@@ -290,15 +290,15 @@ export class ModelEditorView extends AbstractWebview<
         void telemetryListener?.sendUIInteraction("model-editor-switch-modes");
 
         break;
-      case "hideModeledApis":
-        this.hideModeledApis = msg.hideModeledApis;
+      case "hideModeledMethods":
+        this.hideModeledMethods = msg.hideModeledMethods;
         await this.updateMethodsUsagePanelState(
           this.methods,
           this.databaseItem,
-          this.hideModeledApis,
+          this.hideModeledMethods,
         );
         void telemetryListener?.sendUIInteraction(
-          "model-editor-hide-modeled-apis",
+          "model-editor-hide-modeled-methods",
         );
         break;
       default:
@@ -386,7 +386,7 @@ export class ModelEditorView extends AbstractWebview<
         await this.updateMethodsUsagePanelState(
           this.methods,
           this.databaseItem,
-          this.hideModeledApis,
+          this.hideModeledMethods,
         );
       }
     } catch (err) {

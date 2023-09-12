@@ -17,7 +17,7 @@ type Props = {
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
   viewState: ModelEditorViewState;
-  hideModeledApis: boolean;
+  hideModeledMethods: boolean;
   onChange: (
     modelName: string,
     method: Method,
@@ -47,7 +47,7 @@ export const ModeledMethodsList = ({
   modifiedSignatures,
   inProgressMethods,
   viewState,
-  hideModeledApis,
+  hideModeledMethods,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
@@ -92,7 +92,7 @@ export const ModeledMethodsList = ({
           modifiedSignatures={modifiedSignatures}
           inProgressMethods={inProgressMethods}
           viewState={viewState}
-          hideModeledApis={hideModeledApis}
+          hideModeledMethods={hideModeledMethods}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}

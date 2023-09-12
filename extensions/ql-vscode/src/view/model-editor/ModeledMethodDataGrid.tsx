@@ -22,7 +22,7 @@ type Props = {
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
   mode: Mode;
-  hideModeledApis: boolean;
+  hideModeledMethods: boolean;
   onChange: (method: Method, modeledMethod: ModeledMethod) => void;
 };
 
@@ -33,7 +33,7 @@ export const ModeledMethodDataGrid = ({
   modifiedSignatures,
   inProgressMethods,
   mode,
-  hideModeledApis,
+  hideModeledMethods,
   onChange,
 }: Props) => {
   const [methodsWithModelability, numHiddenMethods]: [
@@ -50,14 +50,14 @@ export const ModeledMethodDataGrid = ({
         (modeledMethod && modeledMethod?.type !== "none") ||
         methodIsUnsaved;
 
-      if (methodCanBeModeled || !hideModeledApis) {
+      if (methodCanBeModeled || !hideModeledMethods) {
         methodsWithModelability.push({ method, methodCanBeModeled });
       } else {
         numHiddenMethods += 1;
       }
     }
     return [methodsWithModelability, numHiddenMethods];
-  }, [hideModeledApis, methods, modeledMethods, modifiedSignatures]);
+  }, [hideModeledMethods, methods, modeledMethods, modifiedSignatures]);
 
   const someMethodsAreVisible = methodsWithModelability.length > 0;
 

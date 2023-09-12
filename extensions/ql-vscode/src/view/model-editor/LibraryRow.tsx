@@ -75,7 +75,7 @@ type Props = {
   modifiedSignatures: Set<string>;
   inProgressMethods: InProgressMethods;
   viewState: ModelEditorViewState;
-  hideModeledApis: boolean;
+  hideModeledMethods: boolean;
   onChange: (
     modelName: string,
     method: Method,
@@ -103,7 +103,7 @@ export const LibraryRow = ({
   modifiedSignatures,
   inProgressMethods,
   viewState,
-  hideModeledApis,
+  hideModeledMethods,
   onChange,
   onSaveModelClick,
   onGenerateFromLlmClick,
@@ -237,7 +237,7 @@ export const LibraryRow = ({
             modifiedSignatures={modifiedSignatures}
             inProgressMethods={inProgressMethods}
             mode={viewState.mode}
-            hideModeledApis={hideModeledApis}
+            hideModeledMethods={hideModeledMethods}
             onChange={onChangeWithModelName}
           />
           <SectionDivider />

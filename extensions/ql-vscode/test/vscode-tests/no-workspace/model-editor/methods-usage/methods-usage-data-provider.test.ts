@@ -17,19 +17,19 @@ describe("MethodsUsageDataProvider", () => {
   });
 
   describe("setState", () => {
-    const hideModeledApis = false;
+    const hideModeledMethods = false;
     const methods: Method[] = [];
     const dbItem = mockedObject<DatabaseItem>({
       getSourceLocationPrefix: () => "test",
     });
 
     it("should not emit onDidChangeTreeData event when state has not changed", async () => {
-      await dataProvider.setState(methods, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledMethods);
 
       const onDidChangeTreeDataListener = jest.fn();
       dataProvider.onDidChangeTreeData(onDidChangeTreeDataListener);
 
-      await dataProvider.setState(methods, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledMethods);
 
       expect(onDidChangeTreeDataListener).not.toHaveBeenCalled();
     });
@@ -37,12 +37,12 @@ describe("MethodsUsageDataProvider", () => {
     it("should emit onDidChangeTreeData event when methods has changed", async () => {
       const methods2: Method[] = [];
 
-      await dataProvider.setState(methods, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledMethods);
 
       const onDidChangeTreeDataListener = jest.fn();
       dataProvider.onDidChangeTreeData(onDidChangeTreeDataListener);
 
-      await dataProvider.setState(methods2, dbItem, hideModeledApis);
+      await dataProvider.setState(methods2, dbItem, hideModeledMethods);
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
     });
@@ -52,23 +52,23 @@ describe("MethodsUsageDataProvider", () => {
         getSourceLocationPrefix: () => "test",
       });
 
-      await dataProvider.setState(methods, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledMethods);
 
       const onDidChangeTreeDataListener = jest.fn();
       dataProvider.onDidChangeTreeData(onDidChangeTreeDataListener);
 
-      await dataProvider.setState(methods, dbItem2, hideModeledApis);
+      await dataProvider.setState(methods, dbItem2, hideModeledMethods);
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
     });
 
-    it("should emit onDidChangeTreeData event when hideModeledApis has changed", async () => {
-      await dataProvider.setState(methods, dbItem, hideModeledApis);
+    it("should emit onDidChangeTreeData event when hideModeledMethods has changed", async () => {
+      await dataProvider.setState(methods, dbItem, hideModeledMethods);
 
       const onDidChangeTreeDataListener = jest.fn();
       dataProvider.onDidChangeTreeData(onDidChangeTreeDataListener);
 
-      await dataProvider.setState(methods, dbItem, !hideModeledApis);
+      await dataProvider.setState(methods, dbItem, !hideModeledMethods);
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
     });
@@ -79,12 +79,12 @@ describe("MethodsUsageDataProvider", () => {
       });
       const methods2: Method[] = [];
 
-      await dataProvider.setState(methods, dbItem, hideModeledApis);
+      await dataProvider.setState(methods, dbItem, hideModeledMethods);
 
       const onDidChangeTreeDataListener = jest.fn();
       dataProvider.onDidChangeTreeData(onDidChangeTreeDataListener);
 
-      await dataProvider.setState(methods2, dbItem2, !hideModeledApis);
+      await dataProvider.setState(methods2, dbItem2, !hideModeledMethods);
 
       expect(onDidChangeTreeDataListener).toHaveBeenCalledTimes(1);
     });
@@ -115,15 +115,15 @@ describe("MethodsUsageDataProvider", () => {
       expect(dataProvider.getChildren(method)).toEqual([usage]);
     });
 
-    it("should show all methods if hideModeledApis is false and looking at the root", async () => {
-      const hideModeledApis = false;
-      await dataProvider.setState(methods, dbItem, hideModeledApis);
+    it("should show all methods if hideModeledMethods is false and looking at the root", async () => {
+      const hideModeledMethods = false;
+      await dataProvider.setState(methods, dbItem, hideModeledMethods);
       expect(dataProvider.getChildren().length).toEqual(2);
     });
 
-    it("should filter methods if hideModeledApis is true and looking at the root", async () => {
-      const hideModeledApis = true;
-      await dataProvider.setState(methods, dbItem, hideModeledApis);
+    it("should filter methods if hideModeledMethods is true and looking at the root", async () => {
+      const hideModeledMethods = true;
+      await dataProvider.setState(methods, dbItem, hideModeledMethods);
       expect(dataProvider.getChildren().length).toEqual(1);
     });
   });
