@@ -565,9 +565,9 @@ interface ModelDependencyMessage {
   t: "modelDependency";
 }
 
-interface HideModeledApisMessage {
-  t: "hideModeledApis";
-  hideModeledApis: boolean;
+interface HideModeledMethodsMessage {
+  t: "hideModeledMethods";
+  hideModeledMethods: boolean;
 }
 
 export type ToModelEditorMessage =
@@ -589,7 +589,7 @@ export type FromModelEditorMessage =
   | GenerateMethodsFromLlmMessage
   | StopGeneratingMethodsFromLlmMessage
   | ModelDependencyMessage
-  | HideModeledApisMessage;
+  | HideModeledMethodsMessage;
 
 export type FromMethodModelingMessage =
   | TelemetryMessage

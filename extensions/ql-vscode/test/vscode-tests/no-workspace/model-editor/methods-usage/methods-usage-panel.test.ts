@@ -16,7 +16,7 @@ describe("MethodsUsagePanel", () => {
   });
 
   describe("setState", () => {
-    const hideModeledApis = false;
+    const hideModeledMethods = false;
     const methods: Method[] = [createMethod()];
 
     it("should update the tree view with the correct batch number", async () => {
@@ -26,7 +26,7 @@ describe("MethodsUsagePanel", () => {
       jest.spyOn(window, "createTreeView").mockReturnValue(mockTreeView);
 
       const panel = new MethodsUsagePanel(mockCliServer);
-      await panel.setState(methods, dbItem, hideModeledApis);
+      await panel.setState(methods, dbItem, hideModeledMethods);
 
       expect(mockTreeView.badge?.value).toBe(1);
     });
@@ -35,7 +35,7 @@ describe("MethodsUsagePanel", () => {
   describe("revealItem", () => {
     let mockTreeView: TreeView<unknown>;
 
-    const hideModeledApis: boolean = false;
+    const hideModeledMethods: boolean = false;
     const usage = createUsage();
 
     beforeEach(() => {
@@ -53,7 +53,7 @@ describe("MethodsUsagePanel", () => {
       ];
 
       const panel = new MethodsUsagePanel(mockCliServer);
-      await panel.setState(methods, dbItem, hideModeledApis);
+      await panel.setState(methods, dbItem, hideModeledMethods);
 
       await panel.revealItem(usage);
 
@@ -63,7 +63,7 @@ describe("MethodsUsagePanel", () => {
     it("should do nothing if usage cannot be found", async () => {
       const methods = [createMethod({})];
       const panel = new MethodsUsagePanel(mockCliServer);
-      await panel.setState(methods, dbItem, hideModeledApis);
+      await panel.setState(methods, dbItem, hideModeledMethods);
 
       await panel.revealItem(usage);
 

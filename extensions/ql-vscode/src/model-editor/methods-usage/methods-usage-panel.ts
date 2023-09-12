@@ -26,10 +26,10 @@ export class MethodsUsagePanel extends DisposableObject {
   public async setState(
     methods: Method[],
     databaseItem: DatabaseItem,
-    hideModeledApis: boolean,
+    hideModeledMethods: boolean,
   ): Promise<void> {
-    await this.dataProvider.setState(methods, databaseItem, hideModeledApis);
-    const numOfApis = hideModeledApis
+    await this.dataProvider.setState(methods, databaseItem, hideModeledMethods);
+    const numOfApis = hideModeledMethods
       ? methods.filter((api) => !api.supported).length
       : methods.length;
     this.treeView.badge = {

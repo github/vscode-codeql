@@ -19,7 +19,7 @@ import { percentFormatter } from "./formatters";
 import { Mode } from "../../model-editor/shared/mode";
 import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 import { getLanguageDisplayName } from "../../common/query-language";
-import { INITIAL_HIDE_MODELED_APIS_VALUE } from "../../model-editor/shared/hide-modeled-apis";
+import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "../../model-editor/shared/hide-modeled-methods";
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -75,14 +75,14 @@ type Props = {
   initialViewState?: ModelEditorViewState;
   initialMethods?: Method[];
   initialModeledMethods?: Record<string, ModeledMethod>;
-  initialHideModeledApis?: boolean;
+  initialHideModeledMethods?: boolean;
 };
 
 export function ModelEditor({
   initialViewState,
   initialMethods = [],
   initialModeledMethods = {},
-  initialHideModeledApis = INITIAL_HIDE_MODELED_APIS_VALUE,
+  initialHideModeledMethods = INITIAL_HIDE_MODELED_METHODS_VALUE,
 }: Props): JSX.Element {
   const [viewState, setViewState] = useState<ModelEditorViewState | undefined>(
     initialViewState,
@@ -97,16 +97,16 @@ export function ModelEditor({
     new InProgressMethods(),
   );
 
-  const [hideModeledApis, setHideModeledApis] = useState(
-    initialHideModeledApis,
+  const [hideModeledMethods, setHideModeledMethods] = useState(
+    initialHideModeledMethods,
   );
 
   useEffect(() => {
     vscode.postMessage({
-      t: "hideModeledApis",
-      hideModeledApis,
+      t: "hideModeledMethods",
+      hideModeledMethods,
     });
-  }, [hideModeledApis]);
+  }, [hideModeledMethods]);
 
   const [modeledMethods, setModeledMethods] = useState<
     Record<string, ModeledMethod>
@@ -283,8 +283,8 @@ export function ModelEditor({
     });
   }, [viewState?.mode]);
 
-  const onHideModeledApis = useCallback(() => {
-    setHideModeledApis((oldHideModeledApis) => !oldHideModeledApis);
+  const onHideModeledMethods = useCallback(() => {
+    setHideModeledMethods((oldHideModeledMethods) => !oldHideModeledMethods);
   }, []);
 
   if (viewState === undefined || methods.length === 0) {
@@ -326,8 +326,8 @@ export function ModelEditor({
         <HeaderSpacer />
         <HeaderColumn>
           <VSCodeCheckbox
-            checked={hideModeledApis}
-            onChange={onHideModeledApis}
+            checked={hideModeledMethods}
+            onChange={onHideModeledMethods}
           >
             Hide modeled APIs
           </VSCodeCheckbox>
@@ -358,7 +358,7 @@ export function ModelEditor({
           modifiedSignatures={modifiedSignatures}
           inProgressMethods={inProgressMethods}
           viewState={viewState}
-          hideModeledApis={hideModeledApis}
+          hideModeledMethods={hideModeledMethods}
           onChange={onChange}
           onSaveModelClick={onSaveModelClick}
           onGenerateFromLlmClick={onGenerateFromLlmClick}
