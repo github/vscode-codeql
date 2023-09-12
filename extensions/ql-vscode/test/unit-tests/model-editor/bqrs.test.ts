@@ -233,7 +233,7 @@ describe("decodeBqrsToMethods", () => {
   it("extracts methods", () => {
     // Even though there are a number of methods with the same number of usages, the order returned should be stable:
     // - Iterating over a map (as done by .values()) is guaranteed to be in insertion order
-    // - Sorting the array of usages is guaranteed to be a stable sort
+    // - Sorting the array of methods is guaranteed to be a stable sort
     expect(decodeBqrsToMethods(chunk)).toEqual([
       {
         library: "rt",
