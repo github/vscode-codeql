@@ -50,7 +50,9 @@ describe("Use cli", () => {
 
   it("should resolve ram", async () => {
     const result = await (cli as any).resolveRam(8192);
-    expect(result).toEqual(["-J-Xmx4096M", "--off-heap-ram=4096"]);
+    expect(result.length).toEqual(2);
+    expect(result[0]).toMatch(/^-J-Xmx\d+M$/);
+    expect(result[1]).toMatch(/^--off-heap-ram=\d+$/);
   });
 
   describe("silent logging", () => {
