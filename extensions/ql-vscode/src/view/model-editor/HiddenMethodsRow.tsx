@@ -4,6 +4,7 @@ import {
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
 import { styled } from "styled-components";
+import { pluralize } from "../../common/word";
 
 const HiddenMethodsCell = styled(VSCodeDataGridCell)`
   text-align: center;
@@ -26,7 +27,8 @@ export function HiddenMethodsRow({
     <VSCodeDataGridRow>
       <HiddenMethodsCell gridColumn="span 5">
         {someMethodsAreVisible && "And "}
-        {numHiddenMethods} methods modeled in other CodeQL packs
+        {pluralize(numHiddenMethods, "method", "methods")} modeled in other
+        CodeQL packs
       </HiddenMethodsCell>
     </VSCodeDataGridRow>
   );
