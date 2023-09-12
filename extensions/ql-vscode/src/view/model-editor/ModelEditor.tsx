@@ -329,7 +329,7 @@ export function ModelEditor({
             checked={hideModeledApis}
             onChange={onHideModeledApis}
           >
-            Hide modeled APIs
+            Hide modeled methods
           </VSCodeCheckbox>
         </HeaderColumn>
       </HeaderContainer>
