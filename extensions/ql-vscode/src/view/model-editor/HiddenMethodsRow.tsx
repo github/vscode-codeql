@@ -14,16 +14,19 @@ interface Props {
   someMethodsAreVisible: boolean;
 }
 
-export function HiddenMethodsRow(props: Props) {
-  if (props.numHiddenMethods === 0) {
+export function HiddenMethodsRow({
+  numHiddenMethods,
+  someMethodsAreVisible,
+}: Props) {
+  if (numHiddenMethods === 0) {
     return null;
   }
 
   return (
     <VSCodeDataGridRow>
       <HiddenMethodsCell gridColumn="span 5">
-        {props.someMethodsAreVisible && "And "}
-        {props.numHiddenMethods} methods modeled in other CodeQL packs
+        {someMethodsAreVisible && "And "}
+        {numHiddenMethods} methods modeled in other CodeQL packs
       </HiddenMethodsCell>
     </VSCodeDataGridRow>
   );

@@ -71,7 +71,9 @@ type Props = {
 };
 
 export const MethodRow = (props: Props) => {
-  if (props.methodCanBeModeled) {
+  const { methodCanBeModeled } = props;
+
+  if (methodCanBeModeled) {
     return <ModelableMethodRow {...props} />;
   } else {
     return <UnmodelableMethodRow {...props} />;
