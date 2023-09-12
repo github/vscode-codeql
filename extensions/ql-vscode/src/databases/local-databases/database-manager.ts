@@ -71,6 +71,14 @@ function eventFired<T>(
   });
 }
 
+type OpenDatabaseOptions = {
+  isTutorialDatabase?: boolean;
+  /**
+   * Whether to add a workspace folder containing the source archive to the workspace. Default is true.
+   */
+  addSourceArchiveFolder?: boolean;
+};
+
 export class DatabaseManager extends DisposableObject {
   private readonly _onDidChangeDatabaseItem = this.push(
     new vscode.EventEmitter<DatabaseChangedEvent>(),
@@ -107,7 +115,10 @@ export class DatabaseManager extends DisposableObject {
     uri: vscode.Uri,
     makeSelected = true,
     displayName?: string,
-    isTutorialDatabase?: boolean,
+    {
+      isTutorialDatabase = false,
+      addSourceArchiveFolder = true,
+    }: OpenDatabaseOptions = {},
   ): Promise<DatabaseItem> {
     const databaseItem = await this.createDatabaseItem(uri, displayName);
 
@@ -115,6 +126,7 @@ export class DatabaseManager extends DisposableObject {
       databaseItem,
       makeSelected,
       isTutorialDatabase,
+      addSourceArchiveFolder,
     );
   }
 
@@ -128,6 +140,7 @@ export class DatabaseManager extends DisposableObject {
     databaseItem: DatabaseItemImpl,
     makeSelected: boolean,
     isTutorialDatabase?: boolean,
+    addSourceArchiveFolder = true,
   ): Promise<DatabaseItem> {
     const existingItem = this.findDatabaseItem(databaseItem.databaseUri);
     if (existingItem !== undefined) {
@@ -141,7 +154,9 @@ export class DatabaseManager extends DisposableObject {
     if (makeSelected) {
       await this.setCurrentDatabaseItem(databaseItem);
     }
-    await this.addDatabaseSourceArchiveFolder(databaseItem);
+    if (addSourceArchiveFolder) {
+      await this.addDatabaseSourceArchiveFolder(databaseItem);
+    }
 
     if (isCodespacesTemplate() && !isTutorialDatabase) {
       await this.createSkeletonPacks(databaseItem);

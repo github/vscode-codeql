@@ -329,13 +329,14 @@ export class DatabaseUI extends DisposableObject {
             if (databaseItem === undefined) {
               const makeSelected = true;
               const nameOverride = "CodeQL Tutorial Database";
-              const isTutorialDatabase = true;
 
               await this.databaseManager.openDatabase(
                 uri,
                 makeSelected,
                 nameOverride,
-                isTutorialDatabase,
+                {
+                  isTutorialDatabase: true,
+                },
               );
             }
             await this.handleTourDependencies();

@@ -87,6 +87,7 @@ export async function promptImportInternetDatabase(
  * @param cli the CodeQL CLI server
  * @param language the language to download. If undefined, the user will be prompted to choose a language.
  * @param makeSelected make the new database selected in the databases panel (default: true)
+ * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
  */
 export async function promptImportGithubDatabase(
   commandManager: AppCommandManager,
@@ -97,6 +98,7 @@ export async function promptImportGithubDatabase(
   cli?: CodeQLCliServer,
   language?: string,
   makeSelected = true,
+  addSourceArchiveFolder = true,
 ): Promise<DatabaseItem | undefined> {
   const githubRepo = await askForGitHubRepo(progress);
   if (!githubRepo) {
@@ -112,6 +114,7 @@ export async function promptImportGithubDatabase(
     cli,
     language,
     makeSelected,
+    addSourceArchiveFolder,
   );
 
   if (databaseItem) {
@@ -163,6 +166,7 @@ export async function askForGitHubRepo(
  * @param cli the CodeQL CLI server
  * @param language the language to download. If undefined, the user will be prompted to choose a language.
  * @param makeSelected make the new database selected in the databases panel (default: true)
+ * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
  **/
 export async function downloadGitHubDatabase(
   githubRepo: string,
@@ -173,6 +177,7 @@ export async function downloadGitHubDatabase(
   cli?: CodeQLCliServer,
   language?: string,
   makeSelected = true,
+  addSourceArchiveFolder = true,
 ): Promise<DatabaseItem | undefined> {
   const nwo = getNwoFromGitHubUrl(githubRepo) || githubRepo;
   if (!isValidGitHubNwo(nwo)) {
@@ -218,6 +223,7 @@ export async function downloadGitHubDatabase(
     progress,
     cli,
     makeSelected,
+    addSourceArchiveFolder,
   );
 }
 
@@ -277,6 +283,7 @@ export async function importArchiveDatabase(
  * @param nameOverride a name for the database that overrides the default
  * @param progress callback to send progress messages to
  * @param makeSelected make the new database selected in the databases panel (default: true)
+ * @param addSourceArchiveFolder whether to add a workspace folder containing the source archive to the workspace
  */
 async function databaseArchiveFetcher(
   databaseUrl: string,
@@ -287,6 +294,7 @@ async function databaseArchiveFetcher(
   progress: ProgressCallback,
   cli?: CodeQLCliServer,
   makeSelected = true,
+  addSourceArchiveFolder = true,
 ): Promise<DatabaseItem> {
   progress({
     message: "Getting database",
@@ -329,6 +337,9 @@ async function databaseArchiveFetcher(
       Uri.file(dbPath),
       makeSelected,
       nameOverride,
+      {
+        addSourceArchiveFolder,
+      },
     );
     return item;
   } else {
