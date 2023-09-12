@@ -193,7 +193,7 @@ export class ModelEditorView extends AbstractWebview<
 
         break;
       case "refreshMethods":
-        await withProgress((progress) => this.loadExternalApiUsages(progress), {
+        await withProgress((progress) => this.loadMethods(progress), {
           cancellable: false,
         });
 
@@ -227,7 +227,7 @@ export class ModelEditorView extends AbstractWebview<
 
             await Promise.all([
               this.setViewState(),
-              this.loadExternalApiUsages((update) =>
+              this.loadMethods((update) =>
                 progress({
                   ...update,
                   step: update.step + 500,
@@ -283,7 +283,7 @@ export class ModelEditorView extends AbstractWebview<
             methods: this.methods,
           }),
           this.setViewState(),
-          withProgress((progress) => this.loadExternalApiUsages(progress), {
+          withProgress((progress) => this.loadMethods(progress), {
             cancellable: false,
           }),
         ]);
@@ -311,7 +311,7 @@ export class ModelEditorView extends AbstractWebview<
 
     await Promise.all([
       this.setViewState(),
-      withProgress((progress) => this.loadExternalApiUsages(progress), {
+      withProgress((progress) => this.loadMethods(progress), {
         cancellable: false,
       }),
       this.loadExistingModeledMethods(),
@@ -357,9 +357,7 @@ export class ModelEditorView extends AbstractWebview<
     }
   }
 
-  protected async loadExternalApiUsages(
-    progress: ProgressCallback,
-  ): Promise<void> {
+  protected async loadMethods(progress: ProgressCallback): Promise<void> {
     try {
       const cancellationTokenSource = new CancellationTokenSource();
       const queryResult = await runExternalApiQueries(this.mode, {

@@ -1,8 +1,8 @@
-import { decodeBqrsToExternalApiUsages } from "../../../src/model-editor/bqrs";
+import { decodeBqrsToMethods } from "../../../src/model-editor/bqrs";
 import { DecodedBqrsChunk } from "../../../src/common/bqrs-cli-types";
 import { CallClassification } from "../../../src/model-editor/method";
 
-describe("decodeBqrsToExternalApiUsages", () => {
+describe("decodeBqrsToMethods", () => {
   const chunk: DecodedBqrsChunk = {
     columns: [
       { name: "usage", kind: "Entity" },
@@ -230,11 +230,11 @@ describe("decodeBqrsToExternalApiUsages", () => {
     ],
   };
 
-  it("extracts api usages", () => {
-    // Even though there are a number of usages with the same number of usages, the order returned should be stable:
+  it("extracts methods", () => {
+    // Even though there are a number of methods with the same number of usages, the order returned should be stable:
     // - Iterating over a map (as done by .values()) is guaranteed to be in insertion order
-    // - Sorting the array of usages is guaranteed to be a stable sort
-    expect(decodeBqrsToExternalApiUsages(chunk)).toEqual([
+    // - Sorting the array of methods is guaranteed to be a stable sort
+    expect(decodeBqrsToMethods(chunk)).toEqual([
       {
         library: "rt",
         libraryVersion: undefined,

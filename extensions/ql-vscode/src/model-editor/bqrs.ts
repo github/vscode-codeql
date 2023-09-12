@@ -3,9 +3,7 @@ import { Call, CallClassification, Method } from "./method";
 import { ModeledMethodType } from "./modeled-method";
 import { parseLibraryFilename } from "./library";
 
-export function decodeBqrsToExternalApiUsages(
-  chunk: DecodedBqrsChunk,
-): Method[] {
+export function decodeBqrsToMethods(chunk: DecodedBqrsChunk): Method[] {
   const methodsByApiName = new Map<string, Method>();
 
   chunk?.tuples.forEach((tuple) => {
