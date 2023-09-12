@@ -298,7 +298,7 @@ export class ModelEditorView extends AbstractWebview<
           this.hideModeledMethods,
         );
         void telemetryListener?.sendUIInteraction(
-          "model-editor-hide-modeled-apis",
+          "model-editor-hide-modeled-methods",
         );
         break;
       default:
