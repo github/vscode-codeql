@@ -15,7 +15,7 @@ import { QueryLanguage } from "../common/query-language";
 import { fetchExternalApiQueries } from "./queries";
 import { Method } from "./method";
 import { runQuery } from "../local-queries/run-query";
-import { decodeBqrsToExternalApiUsages } from "./bqrs";
+import { decodeBqrsToMethods } from "./bqrs";
 
 type RunQueryOptions = {
   cliServer: CodeQLCliServer;
@@ -132,7 +132,7 @@ export async function runExternalApiQueries(
     maxStep: externalApiQueriesProgressMaxStep,
   });
 
-  return decodeBqrsToExternalApiUsages(bqrsChunk);
+  return decodeBqrsToMethods(bqrsChunk);
 }
 
 type GetResultsOptions = {
