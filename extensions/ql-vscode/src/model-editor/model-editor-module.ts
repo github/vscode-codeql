@@ -177,9 +177,11 @@ export class ModelEditorModule extends DisposableObject {
         );
       },
       "codeQLModelEditor.jumpToUsageLocation": async (
+        method: Method,
         usage: Usage,
         databaseItem: DatabaseItem,
       ) => {
+        await this.methodModelingPanel.setMethod(method);
         await showResolvableLocation(usage.url, databaseItem, this.app.logger);
       },
     };
