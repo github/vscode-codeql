@@ -81,7 +81,7 @@ export class MethodsUsageDataProvider
         command: {
           title: "Show usage",
           command: "codeQLModelEditor.jumpToUsageLocation",
-          arguments: [method, item, this.databaseItem],
+          arguments: [item, this.databaseItem, method],
         },
         iconPath: new ThemeIcon("error", new ThemeColor("errorForeground")),
       };
