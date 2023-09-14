@@ -1,7 +1,7 @@
 /**
  * A class that keeps track of which methods are in progress for each package.
  *
- * This class is immutable and therefore is safe to be used in a react useState hook.
+ * This class is immutable and therefore is safe to be used in a React useState hook.
  */
 export class InProgressMethods {
   // A map of in-progress method signatures for each package.

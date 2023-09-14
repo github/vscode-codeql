@@ -67,7 +67,7 @@ const ButtonsContainer = styled.div`
   margin-right: 1rem;
 `;
 
-type Props = {
+export type LibraryRowProps = {
   title: string;
   libraryVersion?: string;
   methods: Method[];
@@ -110,7 +110,7 @@ export const LibraryRow = ({
   onStopGenerateFromLlmClick,
   onGenerateFromSourceClick,
   onModelDependencyClick,
-}: Props) => {
+}: LibraryRowProps) => {
   const modeledPercentage = useMemo(() => {
     return calculateModeledPercentage(methods);
   }, [methods]);
