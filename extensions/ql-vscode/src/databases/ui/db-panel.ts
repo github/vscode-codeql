@@ -423,7 +423,6 @@ export class DbPanel extends DisposableObject {
           progress,
           token,
           this.app.credentials,
-          this.app.logger,
         );
 
         token.onCancellationRequested(() => {
