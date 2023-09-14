@@ -21,6 +21,8 @@ type Props = {
   disabled?: boolean;
   disabledPlaceholder?: string;
   onChange?: (event: ChangeEvent<HTMLSelectElement>) => void;
+
+  "aria-label"?: string;
 };
 
 /**
@@ -39,6 +41,7 @@ export function Dropdown({
   disabled,
   disabledPlaceholder,
   onChange,
+  ...props
 }: Props) {
   const disabledValue = disabledPlaceholder ?? DISABLED_VALUE;
   return (
@@ -46,6 +49,7 @@ export function Dropdown({
       value={disabled ? disabledValue : value}
       disabled={disabled}
       onChange={onChange}
+      {...props}
     >
       {disabled ? (
         <option key={disabledValue} value={disabledValue}>
