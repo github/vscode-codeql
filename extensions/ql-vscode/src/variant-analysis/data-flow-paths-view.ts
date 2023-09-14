@@ -1,4 +1,4 @@
-import { ExtensionContext, ViewColumn } from "vscode";
+import { ViewColumn } from "vscode";
 import {
   AbstractWebview,
   WebviewPanelConfig,
@@ -10,6 +10,7 @@ import {
   ToDataFlowPathsMessage,
 } from "../common/interface-types";
 import { DataFlowPaths } from "./shared/data-flow-paths";
+import { App } from "../common/app";
 import { redactableError } from "../common/errors";
 import { extLogger } from "../common/logging/vscode";
 import { showAndLogExceptionWithTelemetry } from "../common/logging";
@@ -20,8 +21,8 @@ export class DataFlowPathsView extends AbstractWebview<
 > {
   public static readonly viewType = "codeQL.dataFlowPaths";
 
-  public constructor(ctx: ExtensionContext) {
-    super(ctx);
+  public constructor(app: App) {
+    super(app);
   }
 
   public async showDataFlows(dataFlowPaths: DataFlowPaths) {

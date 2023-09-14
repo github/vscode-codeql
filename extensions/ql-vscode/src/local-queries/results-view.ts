@@ -74,6 +74,7 @@ import { HistoryItemLabelProvider } from "../query-history/history-item-label-pr
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
 import { ResultsViewCommands } from "../common/commands";
+import { App } from "../common/app";
 
 /**
  * results-view.ts
@@ -168,13 +169,13 @@ export class ResultsView extends AbstractWebview<
   );
 
   constructor(
-    public ctx: vscode.ExtensionContext,
+    app: App,
     private databaseManager: DatabaseManager,
     public cliServer: CodeQLCliServer,
     public logger: Logger,
     private labelProvider: HistoryItemLabelProvider,
   ) {
-    super(ctx);
+    super(app);
     this.push(this._diagnosticCollection);
     this.push(
       vscode.window.onDidChangeTextEditorSelection(

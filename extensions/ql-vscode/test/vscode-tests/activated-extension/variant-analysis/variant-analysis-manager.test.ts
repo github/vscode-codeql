@@ -76,7 +76,6 @@ describe("Variant Analysis Manager", () => {
       extLogger,
     );
     variantAnalysisManager = new VariantAnalysisManager(
-      extension.ctx,
       app,
       cli,
       storagePath,

@@ -396,10 +396,7 @@ export async function activate(
     ),
   );
 
-  const variantAnalysisViewSerializer = new VariantAnalysisViewSerializer(
-    ctx,
-    app,
-  );
+  const variantAnalysisViewSerializer = new VariantAnalysisViewSerializer(app);
   Window.registerWebviewPanelSerializer(
     VariantAnalysisView.viewType,
     variantAnalysisViewSerializer,
@@ -813,7 +810,7 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing results panel interface.");
   const localQueryResultsView = new ResultsView(
-    ctx,
+    app,
     dbm,
     cliServer,
     queryServerLogger,
@@ -836,7 +833,6 @@ async function activateWithInstalledDistribution(
   );
 
   const variantAnalysisManager = new VariantAnalysisManager(
-    ctx,
     app,
     cliServer,
     variantAnalysisStorageDir,
@@ -888,7 +884,7 @@ async function activateWithInstalledDistribution(
 
   void extLogger.log("Initializing compare view.");
   const compareView = new CompareView(
-    ctx,
+    app,
     dbm,
     cliServer,
     queryServerLogger,
@@ -935,7 +931,6 @@ async function activateWithInstalledDistribution(
   ctx.subscriptions.push(debuggerUI);
 
   const modelEditorModule = await ModelEditorModule.initialize(
-    ctx,
     app,
     dbm,
     cliServer,

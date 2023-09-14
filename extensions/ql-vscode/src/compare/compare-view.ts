@@ -1,4 +1,4 @@
-import { ExtensionContext, ViewColumn } from "vscode";
+import { ViewColumn } from "vscode";
 
 import {
   FromCompareViewMessage,
@@ -25,6 +25,7 @@ import {
 } from "../common/vscode/abstract-webview";
 import { telemetryListener } from "../common/vscode/telemetry";
 import { redactableError } from "../common/errors";
+import { App } from "../common/app";
 
 interface ComparePair {
   from: CompletedLocalQueryInfo;
@@ -38,7 +39,7 @@ export class CompareView extends AbstractWebview<
   private comparePair: ComparePair | undefined;
 
   constructor(
-    ctx: ExtensionContext,
+    app: App,
     private databaseManager: DatabaseManager,
     private cliServer: CodeQLCliServer,
     private logger: Logger,
@@ -47,7 +48,7 @@ export class CompareView extends AbstractWebview<
       item: CompletedLocalQueryInfo,
     ) => Promise<void>,
   ) {
-    super(ctx);
+    super(app);
   }
 
   async showResults(

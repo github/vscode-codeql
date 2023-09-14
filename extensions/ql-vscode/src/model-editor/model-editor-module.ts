@@ -1,4 +1,3 @@
-import { ExtensionContext } from "vscode";
 import { ModelEditorView } from "./model-editor-view";
 import { ModelEditorCommands } from "../common/commands";
 import { CliVersionConstraint, CodeQLCliServer } from "../codeql-cli/cli";
@@ -31,7 +30,6 @@ export class ModelEditorModule extends DisposableObject {
   private mostRecentlyActiveView: ModelEditorView | undefined = undefined;
 
   private constructor(
-    private readonly ctx: ExtensionContext,
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
@@ -41,7 +39,7 @@ export class ModelEditorModule extends DisposableObject {
     super();
     this.queryStorageDir = join(baseQueryStorageDir, "model-editor-results");
     this.methodsUsagePanel = this.push(new MethodsUsagePanel(cliServer));
-    this.methodModelingPanel = this.push(new MethodModelingPanel(ctx));
+    this.methodModelingPanel = this.push(new MethodModelingPanel(app));
   }
 
   private handleViewBecameActive(view: ModelEditorView): void {
@@ -59,7 +57,6 @@ export class ModelEditorModule extends DisposableObject {
   }
 
   public static async initialize(
-    ctx: ExtensionContext,
     app: App,
     databaseManager: DatabaseManager,
     cliServer: CodeQLCliServer,
@@ -67,7 +64,6 @@ export class ModelEditorModule extends DisposableObject {
     queryStorageDir: string,
   ): Promise<ModelEditorModule> {
     const modelEditorModule = new ModelEditorModule(
-      ctx,
       app,
       databaseManager,
       cliServer,
@@ -153,7 +149,6 @@ export class ModelEditorModule extends DisposableObject {
             });
 
             const view = new ModelEditorView(
-              this.ctx,
               this.app,
               this.databaseManager,
               this.cliServer,
