@@ -11,7 +11,7 @@ import {
 import { ModelEditorViewState } from "../../model-editor/shared/view-state";
 import { InProgressMethods } from "../../model-editor/shared/in-progress-methods";
 
-type Props = {
+export type ModeledMethodsListProps = {
   methods: Method[];
   modeledMethods: Record<string, ModeledMethod>;
   modifiedSignatures: Set<string>;
@@ -54,7 +54,7 @@ export const ModeledMethodsList = ({
   onStopGenerateFromLlmClick,
   onGenerateFromSourceClick,
   onModelDependencyClick,
-}: Props) => {
+}: ModeledMethodsListProps) => {
   const grouped = useMemo(
     () => groupMethods(methods, viewState.mode),
     [methods, viewState.mode],
