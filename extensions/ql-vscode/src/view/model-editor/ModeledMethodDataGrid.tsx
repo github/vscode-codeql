@@ -15,7 +15,7 @@ import { HiddenMethodsRow } from "./HiddenMethodsRow";
 
 export const GRID_TEMPLATE_COLUMNS = "0.5fr 0.125fr 0.125fr 0.125fr 0.125fr";
 
-type Props = {
+export type ModeledMethodDataGridProps = {
   packageName: string;
   methods: Method[];
   modeledMethods: Record<string, ModeledMethod>;
@@ -35,7 +35,7 @@ export const ModeledMethodDataGrid = ({
   mode,
   hideModeledMethods,
   onChange,
-}: Props) => {
+}: ModeledMethodDataGridProps) => {
   const [methodsWithModelability, numHiddenMethods]: [
     Array<{ method: Method; methodCanBeModeled: boolean }>,
     number,

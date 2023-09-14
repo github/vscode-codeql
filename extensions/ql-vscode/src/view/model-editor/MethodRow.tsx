@@ -203,7 +203,7 @@ function ModelableMethodRow(props: Props) {
   const modelingStatus = getModelingStatus(modeledMethod, methodIsUnsaved);
 
   return (
-    <VSCodeDataGridRow>
+    <VSCodeDataGridRow data-testid="modelable-method-row">
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status={modelingStatus} />
         <MethodClassifications method={method} />
@@ -280,7 +280,7 @@ function UnmodelableMethodRow(props: Props) {
   );
 
   return (
-    <VSCodeDataGridRow>
+    <VSCodeDataGridRow data-testid="unmodelable-method-row">
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status="saved" />
         <MethodName {...props.method} />
