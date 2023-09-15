@@ -13,6 +13,7 @@ import {
   LOG_TELEMETRY,
   isIntegrationTestMode,
   isCanary,
+  GLOBAL_TELEMETRY_LEVEL,
 } from "../../config";
 import * as appInsights from "applicationinsights";
 import { extLogger } from "../logging/vscode";
@@ -93,7 +94,8 @@ export class ExtensionTelemetryListener
   ): Promise<void> {
     if (
       e.affectsConfiguration("codeQL.telemetry.enableTelemetry") ||
-      e.affectsConfiguration("telemetry.enableTelemetry")
+      e.affectsConfiguration("telemetry.enableTelemetry") ||
+      e.affectsConfiguration("telemetry.telemetryLevel")
     ) {
       await this.initialize();
     }
@@ -224,7 +226,7 @@ export class ExtensionTelemetryListener
       // if global telemetry is disabled, avoid showing the dialog or making any changes
       let result = undefined;
       if (
-        GLOBAL_ENABLE_TELEMETRY.getValue() &&
+        isGlobalTelemetryEnabled() &&
         // Avoid showing the dialog if we are in integration test mode.
         !isIntegrationTestMode()
       ) {
@@ -296,4 +298,22 @@ export async function initializeTelemetry(
   void telemetryListener.initialize();
   ctx.subscriptions.push(telemetryListener);
   return telemetryListener;
+}
+
+function isGlobalTelemetryEnabled(): boolean {
+  // If "enableTelemetry" is set to false, no telemetry will be sent regardless of the value of "telemetryLevel"
+  const enableTelemetry: boolean | undefined =
+    GLOBAL_ENABLE_TELEMETRY.getValue();
+  if (enableTelemetry === false) {
+    return false;
+  }
+
+  // If a value for "telemetry.telemetryLevel" is provided, then use that
+  const telemetryLevel: string | undefined = GLOBAL_TELEMETRY_LEVEL.getValue();
+  if (telemetryLevel !== undefined) {
+    return telemetryLevel === "error" || telemetryLevel === "on";
+  }
+
+  // Otherwise fall back to the deprecated "telemetry.enableTelemetry" setting
+  return !!enableTelemetry;
 }

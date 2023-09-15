@@ -86,6 +86,10 @@ export const GLOBAL_ENABLE_TELEMETRY = new Setting(
   "enableTelemetry",
   GLOBAL_TELEMETRY_SETTING,
 );
+export const GLOBAL_TELEMETRY_LEVEL = new Setting(
+  "telemetryLevel",
+  GLOBAL_TELEMETRY_SETTING,
+);
 
 // Distribution configuration
 const DISTRIBUTION_SETTING = new Setting("cli", ROOT_SETTING);
