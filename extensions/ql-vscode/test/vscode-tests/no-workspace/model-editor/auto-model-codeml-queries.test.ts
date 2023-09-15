@@ -16,7 +16,7 @@ import { QueryRunner } from "../../../../src/query-server";
 import * as queryResolver from "../../../../src/local-queries/query-resolver";
 import { MethodSignature } from "../../../../src/model-editor/method";
 import { join } from "path";
-import { exists, readFile } from "fs-extra";
+import { pathExists, readFile } from "fs-extra";
 import { load as loadYaml } from "js-yaml";
 import { CancellationTokenSource } from "vscode-jsonrpc";
 import { QueryOutputDir } from "../../../../src/run-queries-shared";
@@ -176,12 +176,15 @@ describe("generateCandidateFilterPack", () => {
         methodParameters: "()",
       },
     ];
-    const packDir = await generateCandidateFilterPack("java", candidateMethods);
+    const { packDir, cleanup } = await generateCandidateFilterPack(
+      "java",
+      candidateMethods,
+    );
     expect(packDir).not.toBeUndefined();
     const qlpackFile = join(packDir, "codeql-pack.yml");
-    expect(await exists(qlpackFile)).toBe(true);
+    expect(await pathExists(qlpackFile)).toBe(true);
     const filterFile = join(packDir, "filter.yml");
-    expect(await exists(filterFile)).toBe(true);
+    expect(await pathExists(filterFile)).toBe(true);
     // Read the contents of filterFile and parse as yaml
     const yaml = await loadYaml(await readFile(filterFile, "utf8"));
     const extensions = yaml.extensions;
@@ -193,5 +196,8 @@ describe("generateCandidateFilterPack", () => {
     expect(extension.data).toBeInstanceOf(Array);
     expect(extension.data).toHaveLength(1);
     expect(extension.data[0]).toEqual(["org.my", "A", "x", "()"]);
+
+    await cleanup();
+    expect(await pathExists(packDir)).toBe(false);
   });
 });
