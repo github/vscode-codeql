@@ -60,8 +60,6 @@ export class ExtensionTelemetryListener
   extends ConfigListener
   implements AppTelemetry
 {
-  static relevantSettings = [ENABLE_TELEMETRY, CANARY_FEATURES];
-
   private reporter?: TelemetryReporter;
 
   private cliVersionStr = NOT_SET_CLI_VERSION;
