@@ -93,9 +93,9 @@ export class ExtensionTelemetryListener
     e: ConfigurationChangeEvent,
   ): Promise<void> {
     if (
-      e.affectsConfiguration("codeQL.telemetry.enableTelemetry") ||
-      e.affectsConfiguration("telemetry.enableTelemetry") ||
-      e.affectsConfiguration("telemetry.telemetryLevel")
+      e.affectsConfiguration(ENABLE_TELEMETRY.qualifiedName) ||
+      e.affectsConfiguration(GLOBAL_ENABLE_TELEMETRY.qualifiedName) ||
+      e.affectsConfiguration(GLOBAL_TELEMETRY_LEVEL.qualifiedName)
     ) {
       await this.initialize();
     }
@@ -104,7 +104,7 @@ export class ExtensionTelemetryListener
     // Re-request if codeQL.canary is being set to `true` and telemetry
     // is not currently enabled.
     if (
-      e.affectsConfiguration("codeQL.canary") &&
+      e.affectsConfiguration(CANARY_FEATURES.qualifiedName) &&
       CANARY_FEATURES.getValue() &&
       !ENABLE_TELEMETRY.getValue()
     ) {
