@@ -30,6 +30,11 @@ export interface MethodSignature {
    * e.g. `org.sql2o.Connection#createQuery(String)`
    */
   signature: string;
+  /**
+   * The package name in Java, or the namespace in C#, e.g. `org.sql2o` or `System.Net.Http.Headers`.
+   *
+   * If the class is not in a package, the value should be an empty string.
+   */
   packageName: string;
   typeName: string;
   methodName: string;

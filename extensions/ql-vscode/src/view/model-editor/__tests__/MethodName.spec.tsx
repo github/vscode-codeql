@@ -14,4 +14,13 @@ describe(MethodName.name, () => {
     const name = `${method.packageName}.${method.typeName}.${method.methodName}${method.methodParameters}`;
     expect(screen.getByText(name)).toBeInTheDocument();
   });
+
+  it("renders method name without package name", () => {
+    const method = createMethod();
+    method.packageName = "";
+    render(method);
+
+    const name = `${method.typeName}.${method.methodName}${method.methodParameters}`;
+    expect(screen.getByText(name)).toBeInTheDocument();
+  });
 });
