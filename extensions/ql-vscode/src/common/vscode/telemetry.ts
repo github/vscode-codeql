@@ -309,7 +309,7 @@ function isGlobalTelemetryEnabled(): boolean {
   // If a value for "telemetry.telemetryLevel" is provided, then use that
   const telemetryLevel: string | undefined = GLOBAL_TELEMETRY_LEVEL.getValue();
   if (telemetryLevel !== undefined) {
-    return telemetryLevel === "error" || telemetryLevel === "on";
+    return telemetryLevel !== "off";
   }
 
   // Otherwise fall back to the deprecated "telemetry.enableTelemetry" setting
