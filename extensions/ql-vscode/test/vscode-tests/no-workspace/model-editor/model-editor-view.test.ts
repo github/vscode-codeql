@@ -56,7 +56,12 @@ describe("ModelEditorView", () => {
     );
   });
 
-  it("sets up the view", async () => {
+  it("restores the view", async () => {
+    // This tests using restoreView because that's much easier to mock than using openView. For openView, we would
+    // need to mock `vscode.window.createWebviewPanel`, while for restoreView we only need to mock a given WebviewPanel.
+    //
+    // The thing we're testing inside this test is whether getPanelConfig returns the correct configuration, so there
+    // should be no differences between openView/getPanel and restoreView for that.
     const panel = mockedObject<WebviewPanel>({
       onDidDispose: jest.fn(),
       webview: {
