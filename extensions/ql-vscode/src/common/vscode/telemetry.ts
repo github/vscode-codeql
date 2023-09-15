@@ -214,7 +214,7 @@ export class ExtensionTelemetryListener
       properties.stack = error.stack;
     }
 
-    this.reporter.sendTelemetryEvent("error", properties, {});
+    this.reporter.sendTelemetryErrorEvent("error", properties, {});
   }
 
   /**
