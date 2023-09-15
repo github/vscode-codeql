@@ -2,7 +2,7 @@
 
 ## [UNRELEASED]
 
-- Release the [CodeQL model editor](https://codeql.github.com/docs/codeql/codeql-for-visual-studio-code/using-the-codeql-model-editor) to create CodeQL model packs for Java frameworks. Open the editor using the "CodeQL: Open CodeQL Model Editor (Beta)" command.
+- Release the [CodeQL model editor](https://codeql.github.com/docs/codeql/codeql-for-visual-studio-code/using-the-codeql-model-editor) to create CodeQL model packs for Java frameworks. Open the editor using the "CodeQL: Open CodeQL Model Editor (Beta)" command. [#2823](https://github.com/github/vscode-codeql/pull/2823)
 
 ## 1.8.12 - 11 September 2023
 
