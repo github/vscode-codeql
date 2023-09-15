@@ -1,10 +1,4 @@
-import {
-  CancellationTokenSource,
-  ExtensionContext,
-  Uri,
-  ViewColumn,
-  window,
-} from "vscode";
+import { CancellationTokenSource, Uri, ViewColumn, window } from "vscode";
 import {
   AbstractWebview,
   WebviewPanelConfig,
@@ -37,7 +31,6 @@ import { ExtensionPack } from "./shared/extension-pack";
 import { showFlowGeneration, showLlmGeneration } from "../config";
 import { Mode } from "./shared/mode";
 import { loadModeledMethods, saveModeledMethods } from "./modeled-method-fs";
-import { join } from "path";
 import { pickExtensionPack } from "./extension-pack-picker";
 import { getLanguageDisplayName } from "../common/query-language";
 import { AutoModeler } from "./auto-modeler";
@@ -54,8 +47,7 @@ export class ModelEditorView extends AbstractWebview<
   private hideModeledMethods: boolean;
 
   public constructor(
-    ctx: ExtensionContext,
-    private readonly app: App,
+    protected readonly app: App,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
@@ -79,7 +71,7 @@ export class ModelEditorView extends AbstractWebview<
       view: ModelEditorView,
     ) => boolean,
   ) {
-    super(ctx);
+    super(app);
 
     this.autoModeler = new AutoModeler(
       app,
@@ -158,11 +150,13 @@ export class ModelEditorView extends AbstractWebview<
       preserveFocus: true,
       view: "model-editor",
       iconPath: {
-        dark: Uri.file(
-          join(this.ctx.extensionPath, "media/dark/symbol-misc.svg"),
+        dark: Uri.joinPath(
+          Uri.file(this.app.extensionPath),
+          "media/dark/symbol-misc.svg",
         ),
-        light: Uri.file(
-          join(this.ctx.extensionPath, "media/light/symbol-misc.svg"),
+        light: Uri.joinPath(
+          Uri.file(this.app.extensionPath),
+          "media/light/symbol-misc.svg",
         ),
       },
     };
@@ -493,7 +487,6 @@ export class ModelEditorView extends AbstractWebview<
       }
 
       const view = new ModelEditorView(
-        this.ctx,
         this.app,
         this.databaseManager,
         this.cliServer,

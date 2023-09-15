@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
-import { WebviewViewProvider } from "vscode";
+import { Uri, WebviewViewProvider } from "vscode";
 import { getHtmlForWebview } from "../../common/vscode/webview-html";
 import { FromMethodModelingMessage } from "../../common/interface-types";
 import { telemetryListener } from "../../common/vscode/telemetry";
 import { showAndLogExceptionWithTelemetry } from "../../common/logging/notifications";
 import { extLogger } from "../../common/logging/vscode/loggers";
+import { App } from "../../common/app";
 import { redactableError } from "../../common/errors";
 import { Method } from "../method";
 
@@ -13,7 +14,7 @@ export class MethodModelingViewProvider implements WebviewViewProvider {
 
   private webviewView: vscode.WebviewView | undefined = undefined;
 
-  constructor(private readonly context: vscode.ExtensionContext) {}
+  constructor(private readonly app: App) {}
 
   /**
    * This is called when a view first becomes visible. This may happen when the view is
@@ -26,11 +27,11 @@ export class MethodModelingViewProvider implements WebviewViewProvider {
   ) {
     webviewView.webview.options = {
       enableScripts: true,
-      localResourceRoots: [this.context.extensionUri],
+      localResourceRoots: [Uri.file(this.app.extensionPath)],
     };
 
     const html = getHtmlForWebview(
-      this.context,
+      this.app,
       webviewView.webview,
       "method-modeling",
       {

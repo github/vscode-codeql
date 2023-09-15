@@ -10,7 +10,6 @@ import {
   CancellationToken,
   env,
   EventEmitter,
-  ExtensionContext,
   Uri,
   ViewColumn,
   window as Window,
@@ -116,7 +115,6 @@ export class VariantAnalysisManager
   >();
 
   constructor(
-    private readonly ctx: ExtensionContext,
     private readonly app: App,
     private readonly cliServer: CodeQLCliServer,
     private readonly storagePath: string,
@@ -347,9 +345,7 @@ export class VariantAnalysisManager
     }
     if (!this.views.has(variantAnalysisId)) {
       // The view will register itself with the manager, so we don't need to do anything here.
-      this.track(
-        new VariantAnalysisView(this.ctx, this.app, variantAnalysisId, this),
-      );
+      this.track(new VariantAnalysisView(this.app, variantAnalysisId, this));
     }
 
     const variantAnalysisView = this.views.get(variantAnalysisId)!;

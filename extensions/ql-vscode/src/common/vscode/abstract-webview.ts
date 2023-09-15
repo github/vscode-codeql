@@ -1,6 +1,5 @@
 import {
   WebviewPanel,
-  ExtensionContext,
   window as Window,
   ViewColumn,
   Uri,
@@ -9,6 +8,7 @@ import {
 } from "vscode";
 import { join } from "path";
 
+import { App } from "../app";
 import { DisposableObject, DisposeHandler } from "../disposable-object";
 import { tmpDir } from "../../tmp-dir";
 import { getHtmlForWebview, WebviewMessage, WebviewKind } from "./webview-html";
@@ -34,7 +34,7 @@ export abstract class AbstractWebview<
 
   private panelResolves?: Array<(panel: WebviewPanel) => void>;
 
-  constructor(protected readonly ctx: ExtensionContext) {
+  constructor(protected readonly app: App) {
     super();
   }
 
@@ -50,8 +50,6 @@ export abstract class AbstractWebview<
 
   protected async getPanel(): Promise<WebviewPanel> {
     if (this.panel === undefined) {
-      const { ctx } = this;
-
       // This is an async method, so in theory this method can be called concurrently. To ensure that we don't
       // create two panels, we use a promise that resolves when the panel is created. This way, if the panel is
       // being created, the promise will resolve when it is done.
@@ -81,7 +79,7 @@ export abstract class AbstractWebview<
           localResourceRoots: [
             ...(config.additionalOptions?.localResourceRoots ?? []),
             Uri.file(tmpDir.name),
-            Uri.file(join(ctx.extensionPath, "out")),
+            Uri.file(join(this.app.extensionPath, "out")),
           ],
         },
       );
@@ -99,19 +97,15 @@ export abstract class AbstractWebview<
 
   protected setupPanel(panel: WebviewPanel, config: WebviewPanelConfig): void {
     this.push(
-      panel.onDidDispose(
-        () => {
-          this.panel = undefined;
-          this.panelLoaded = false;
-          this.onPanelDispose();
-        },
-        null,
-        this.ctx.subscriptions,
-      ),
+      panel.onDidDispose(() => {
+        this.panel = undefined;
+        this.panelLoaded = false;
+        this.onPanelDispose();
+      }, null),
     );
 
     panel.webview.html = getHtmlForWebview(
-      this.ctx,
+      this.app,
       panel.webview,
       config.view,
       {
@@ -123,7 +117,6 @@ export abstract class AbstractWebview<
       panel.webview.onDidReceiveMessage(
         async (e) => this.onMessage(e),
         undefined,
-        this.ctx.subscriptions,
       ),
     );
   }

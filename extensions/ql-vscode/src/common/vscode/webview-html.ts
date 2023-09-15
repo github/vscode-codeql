@@ -1,6 +1,7 @@
-import { ExtensionContext, Uri, Webview } from "vscode";
+import { Uri, Webview } from "vscode";
 import { randomBytes } from "crypto";
 import { EOL } from "os";
+import { App } from "../app";
 
 export type WebviewKind =
   | "results"
@@ -19,7 +20,7 @@ export interface WebviewMessage {
  * Uses a content security policy that only loads the given script.
  */
 export function getHtmlForWebview(
-  ctx: ExtensionContext,
+  app: App,
   webview: Webview,
   view: WebviewKind,
   {
@@ -33,10 +34,13 @@ export function getHtmlForWebview(
     allowWasmEval: false,
   },
 ): string {
-  const scriptUriOnDisk = Uri.file(ctx.asAbsolutePath("out/webview.js"));
+  const scriptUriOnDisk = Uri.joinPath(
+    Uri.file(app.extensionPath),
+    "out/webview.js",
+  );
 
   const stylesheetUrisOnDisk = [
-    Uri.file(ctx.asAbsolutePath("out/webview.css")),
+    Uri.joinPath(Uri.file(app.extensionPath), "out/webview.css"),
   ];
 
   // Convert the on-disk URIs into webview URIs.

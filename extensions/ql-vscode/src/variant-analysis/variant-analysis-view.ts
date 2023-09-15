@@ -1,4 +1,4 @@
-import { ExtensionContext, ViewColumn } from "vscode";
+import { ViewColumn } from "vscode";
 import {
   AbstractWebview,
   WebviewPanelConfig,
@@ -39,16 +39,15 @@ export class VariantAnalysisView
   private readonly dataFlowPathsView: DataFlowPathsView;
 
   public constructor(
-    ctx: ExtensionContext,
-    private readonly app: App,
+    protected readonly app: App,
     public readonly variantAnalysisId: number,
     private readonly manager: VariantAnalysisViewManager<VariantAnalysisView>,
   ) {
-    super(ctx);
+    super(app);
 
     manager.registerView(this);
 
-    this.dataFlowPathsView = new DataFlowPathsView(ctx);
+    this.dataFlowPathsView = new DataFlowPathsView(app);
   }
 
   public async openView() {
