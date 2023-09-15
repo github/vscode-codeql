@@ -136,9 +136,12 @@ export class ModelEditorModule extends DisposableObject {
             });
 
             // Create new temporary directory for query files and pack dependencies
-            const queryDir = (await dir({ unsafeCleanup: true })).path;
+            const { path: queryDir, cleanup: cleanupQueryDir } = await dir({
+              unsafeCleanup: true,
+            });
             const success = await setUpPack(this.cliServer, queryDir, language);
             if (!success) {
+              await cleanupQueryDir();
               return;
             }
 
@@ -161,9 +164,20 @@ export class ModelEditorModule extends DisposableObject {
               this.methodsUsagePanel.setState.bind(this.methodsUsagePanel),
               this.showMethod.bind(this),
               this.handleViewBecameActive.bind(this),
-              this.handleViewWasDisposed.bind(this),
+              (view) => {
+                this.handleViewWasDisposed(view);
+                void cleanupQueryDir();
+              },
               this.isMostRecentlyActiveView.bind(this),
             );
+
+            this.push(view);
+            this.push({
+              dispose(): void {
+                void cleanupQueryDir();
+              },
+            });
+
             await view.openView();
           },
           {

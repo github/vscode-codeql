@@ -63,10 +63,8 @@ export async function runAutoModelQueries({
   );
 
   // Generate a pack containing the candidate filters
-  const filterPackDir = await generateCandidateFilterPack(
-    databaseItem.language,
-    candidateMethods,
-  );
+  const { packDir: filterPackDir, cleanup: cleanupFilterPack } =
+    await generateCandidateFilterPack(databaseItem.language, candidateMethods);
 
   const additionalPacks = [...getOnDiskWorkspaceFolders(), filterPackDir];
   const extensionPacks = Object.keys(
@@ -84,6 +82,8 @@ export async function runAutoModelQueries({
     progress,
     token: cancellationTokenSource.token,
   });
+
+  await cleanupFilterPack();
 
   if (!completedQuery) {
     return undefined;
@@ -155,6 +155,11 @@ async function resolveAutomodelQuery(
   return queries[0];
 }
 
+type CandidateFilterPackResult = {
+  packDir: string;
+  cleanup: () => Promise<void>;
+};
+
 /**
  * generateCandidateFilterPack will create a temporary extension pack.
  * This pack will contain a filter that will restrict the automodel queries
@@ -167,9 +172,9 @@ async function resolveAutomodelQuery(
 export async function generateCandidateFilterPack(
   language: string,
   candidateMethods: MethodSignature[],
-): Promise<string> {
+): Promise<CandidateFilterPackResult> {
   // Pack resides in a temporary directory, to not pollute the workspace.
-  const packDir = (await dir({ unsafeCleanup: true })).path;
+  const { path: packDir, cleanup } = await dir({ unsafeCleanup: true });
 
   const syntheticConfigPack = {
     name: "codeql/automodel-filter",
@@ -208,7 +213,10 @@ export async function generateCandidateFilterPack(
   const filterFile = join(packDir, "filter.yml");
   await writeFile(filterFile, dumpYaml(filter), "utf8");
 
-  return packDir;
+  return {
+    packDir,
+    cleanup,
+  };
 }
 
 async function interpretAutomodelResults(
