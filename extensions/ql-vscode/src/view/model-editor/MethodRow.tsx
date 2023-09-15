@@ -60,7 +60,7 @@ const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
   { value: "neutral", label: "Neutral" },
 ];
 
-type Props = {
+export type MethodRowProps = {
   method: Method;
   methodCanBeModeled: boolean;
   modeledMethod: ModeledMethod | undefined;
@@ -70,7 +70,7 @@ type Props = {
   onChange: (method: Method, modeledMethod: ModeledMethod) => void;
 };
 
-export const MethodRow = (props: Props) => {
+export const MethodRow = (props: MethodRowProps) => {
   const { methodCanBeModeled } = props;
 
   if (methodCanBeModeled) {
@@ -80,7 +80,7 @@ export const MethodRow = (props: Props) => {
   }
 };
 
-function ModelableMethodRow(props: Props) {
+function ModelableMethodRow(props: MethodRowProps) {
   const { method, modeledMethod, methodIsUnsaved, mode, onChange } = props;
 
   const argumentsList = useMemo(() => {
@@ -203,7 +203,7 @@ function ModelableMethodRow(props: Props) {
   const modelingStatus = getModelingStatus(modeledMethod, methodIsUnsaved);
 
   return (
-    <VSCodeDataGridRow>
+    <VSCodeDataGridRow data-testid="modelable-method-row">
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status={modelingStatus} />
         <MethodClassifications method={method} />
@@ -239,6 +239,7 @@ function ModelableMethodRow(props: Props) {
               value={modeledMethod?.type ?? "none"}
               options={modelTypeOptions}
               onChange={handleTypeInput}
+              aria-label="Model type"
             />
           </VSCodeDataGridCell>
           <VSCodeDataGridCell gridColumn={3}>
@@ -247,6 +248,7 @@ function ModelableMethodRow(props: Props) {
               options={inputOptions}
               disabled={!showInputCell}
               onChange={handleInputInput}
+              aria-label="Input"
             />
           </VSCodeDataGridCell>
           <VSCodeDataGridCell gridColumn={4}>
@@ -255,6 +257,7 @@ function ModelableMethodRow(props: Props) {
               options={outputOptions}
               disabled={!showOutputCell}
               onChange={handleOutputInput}
+              aria-label="Output"
             />
           </VSCodeDataGridCell>
           <VSCodeDataGridCell gridColumn={5}>
@@ -263,6 +266,7 @@ function ModelableMethodRow(props: Props) {
               value={modeledMethod?.kind}
               disabled={!showKindCell}
               onChange={handleKindChange}
+              aria-label="Kind"
             />
           </VSCodeDataGridCell>
         </>
@@ -271,7 +275,7 @@ function ModelableMethodRow(props: Props) {
   );
 }
 
-function UnmodelableMethodRow(props: Props) {
+function UnmodelableMethodRow(props: MethodRowProps) {
   const { method, mode } = props;
 
   const jumpToUsage = useCallback(
@@ -280,7 +284,7 @@ function UnmodelableMethodRow(props: Props) {
   );
 
   return (
-    <VSCodeDataGridRow>
+    <VSCodeDataGridRow data-testid="unmodelable-method-row">
       <ApiOrMethodCell gridColumn={1}>
         <ModelingStatusIndicator status="saved" />
         <MethodName {...props.method} />

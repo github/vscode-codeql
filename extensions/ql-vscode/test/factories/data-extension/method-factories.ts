@@ -3,40 +3,21 @@ import {
   Method,
   CallClassification,
 } from "../../../src/model-editor/method";
-import { ModeledMethodType } from "../../../src/model-editor/modeled-method";
 import { ResolvableLocationValue } from "../../../src/common/bqrs-cli-types";
 
-export function createMethod({
-  library = "sql2o-1.6.0.jar",
-  supported = true,
-  supportedType = "summary" as ModeledMethodType,
-  usages = [],
-  signature = "org.sql2o.Sql2o#open()",
-  packageName = "org.sql2o",
-  typeName = "Sql2o",
-  methodName = "open",
-  methodParameters = "()",
-}: {
-  library?: string;
-  supported?: boolean;
-  supportedType?: ModeledMethodType;
-  usages?: Usage[];
-  signature?: string;
-  packageName?: string;
-  typeName?: string;
-  methodName?: string;
-  methodParameters?: string;
-} = {}): Method {
+export function createMethod(data: Partial<Method> = {}): Method {
   return {
-    library,
-    supported,
-    supportedType,
-    usages,
-    signature,
-    packageName,
-    typeName,
-    methodName,
-    methodParameters,
+    library: "sql2o",
+    libraryVersion: "1.6.0",
+    supported: true,
+    supportedType: "summary",
+    usages: [],
+    signature: "org.sql2o.Sql2o#open()",
+    packageName: "org.sql2o",
+    typeName: "Sql2o",
+    methodName: "open",
+    methodParameters: "()",
+    ...data,
   };
 }
 

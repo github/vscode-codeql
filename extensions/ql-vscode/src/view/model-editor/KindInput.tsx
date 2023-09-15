@@ -9,9 +9,17 @@ type Props = {
   value: ModeledMethod["kind"] | undefined;
   disabled?: boolean;
   onChange: (value: ModeledMethod["kind"]) => void;
+
+  "aria-label"?: string;
 };
 
-export const KindInput = ({ kinds, value, disabled, onChange }: Props) => {
+export const KindInput = ({
+  kinds,
+  value,
+  disabled,
+  onChange,
+  ...props
+}: Props) => {
   const options = useMemo(
     () => kinds.map((kind) => ({ value: kind, label: kind })),
     [kinds],
@@ -42,6 +50,7 @@ export const KindInput = ({ kinds, value, disabled, onChange }: Props) => {
       options={options}
       disabled={disabled}
       onChange={handleInput}
+      {...props}
     />
   );
 };
