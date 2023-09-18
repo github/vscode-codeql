@@ -547,9 +547,7 @@ export class CodeQLCliServer implements Disposable {
         yield JSON.parse(event) as EventType;
       } catch (err) {
         throw new Error(
-          `Parsing output of ${description} failed: ${
-            (err as any).stderr || getErrorMessage(err)
-          }`,
+          `Parsing output of ${description} failed: ${getErrorMessage(err)}`,
         );
       }
     }
@@ -647,9 +645,7 @@ export class CodeQLCliServer implements Disposable {
       return JSON.parse(result) as OutputType;
     } catch (err) {
       throw new Error(
-        `Parsing output of ${description} failed: ${
-          (err as any).stderr || getErrorMessage(err)
-        }`,
+        `Parsing output of ${description} failed: ${getErrorMessage(err)}`,
       );
     }
   }

@@ -54,9 +54,7 @@ export async function sarifParser(
     });
   } catch (e) {
     throw new Error(
-      `Parsing output of interpretation failed: ${
-        (e as any).stderr || getErrorMessage(e)
-      }`,
+      `Parsing output of interpretation failed: ${getErrorMessage(e)}`,
     );
   }
 }
