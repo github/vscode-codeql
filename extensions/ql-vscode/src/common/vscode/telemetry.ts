@@ -10,11 +10,9 @@ import {
   ConfigListener,
   CANARY_FEATURES,
   ENABLE_TELEMETRY,
-  GLOBAL_ENABLE_TELEMETRY,
   LOG_TELEMETRY,
   isIntegrationTestMode,
   isCanary,
-  GLOBAL_TELEMETRY_LEVEL,
 } from "../../config";
 import * as appInsights from "applicationinsights";
 import { extLogger } from "../logging/vscode";
@@ -72,6 +70,10 @@ export class ExtensionTelemetryListener
     private readonly ctx: ExtensionContext,
   ) {
     super();
+
+    env.onDidChangeTelemetryEnabled(async () => {
+      await this.initialize();
+    });
   }
 
   /**
@@ -91,11 +93,7 @@ export class ExtensionTelemetryListener
   async handleDidChangeConfiguration(
     e: ConfigurationChangeEvent,
   ): Promise<void> {
-    if (
-      e.affectsConfiguration(ENABLE_TELEMETRY.qualifiedName) ||
-      e.affectsConfiguration(GLOBAL_ENABLE_TELEMETRY.qualifiedName) ||
-      e.affectsConfiguration(GLOBAL_TELEMETRY_LEVEL.qualifiedName)
-    ) {
+    if (e.affectsConfiguration(ENABLE_TELEMETRY.qualifiedName)) {
       await this.initialize();
     }
 
