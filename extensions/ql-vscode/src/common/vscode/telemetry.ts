@@ -3,6 +3,7 @@ import {
   Extension,
   ExtensionContext,
   ConfigurationChangeEvent,
+  env,
 } from "vscode";
 import TelemetryReporter from "vscode-extension-telemetry";
 import {
@@ -224,7 +225,7 @@ export class ExtensionTelemetryListener
       // if global telemetry is disabled, avoid showing the dialog or making any changes
       let result = undefined;
       if (
-        isGlobalTelemetryEnabled() &&
+        env.isTelemetryEnabled &&
         // Avoid showing the dialog if we are in integration test mode.
         !isIntegrationTestMode()
       ) {
@@ -296,22 +297,4 @@ export async function initializeTelemetry(
   void telemetryListener.initialize();
   ctx.subscriptions.push(telemetryListener);
   return telemetryListener;
-}
-
-function isGlobalTelemetryEnabled(): boolean {
-  // If "enableTelemetry" is set to false, no telemetry will be sent regardless of the value of "telemetryLevel"
-  const enableTelemetry: boolean | undefined =
-    GLOBAL_ENABLE_TELEMETRY.getValue();
-  if (enableTelemetry === false) {
-    return false;
-  }
-
-  // If a value for "telemetry.telemetryLevel" is provided, then use that
-  const telemetryLevel: string | undefined = GLOBAL_TELEMETRY_LEVEL.getValue();
-  if (telemetryLevel !== undefined) {
-    return telemetryLevel !== "off";
-  }
-
-  // Otherwise fall back to the deprecated "telemetry.enableTelemetry" setting
-  return !!enableTelemetry;
 }
