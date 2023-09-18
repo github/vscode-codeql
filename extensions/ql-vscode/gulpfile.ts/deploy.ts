@@ -46,13 +46,31 @@ async function copyPackage(
   );
 }
 
+interface packageJson {
+  name: string;
+  version: string;
+}
+
+async function readPackageJson(packageJsonPath: string): Promise<packageJson> {
+  const packageJson: packageJson = JSON.parse(
+    await readFile(packageJsonPath, "utf8"),
+  );
+
+  if (!packageJson.name) {
+    throw new Error(`${packageJsonPath} is missing the 'name' field`);
+  }
+  if (!packageJson.version) {
+    throw new Error(`${packageJsonPath} is missing the 'version' field`);
+  }
+
+  return packageJson;
+}
+
 export async function deployPackage(
   packageJsonPath: string,
 ): Promise<DeployedPackage> {
   try {
-    const packageJson: any = JSON.parse(
-      await readFile(packageJsonPath, "utf8"),
-    );
+    const packageJson = await readPackageJson(packageJsonPath);
 
     const distDir = join(__dirname, "../../../dist");
     await mkdirs(distDir);
