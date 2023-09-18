@@ -19,6 +19,7 @@ import {
 } from "./distribution";
 import {
   assertNever,
+  getChildProcessErrorMessage,
   getErrorMessage,
   getErrorStack,
 } from "../common/helpers-pure";
@@ -1643,7 +1644,7 @@ export async function runCodeQlCliCommand(
     return result.stdout;
   } catch (err) {
     throw new Error(
-      `${description} failed: ${(err as any).stderr || getErrorMessage(err)}`,
+      `${description} failed: ${getChildProcessErrorMessage(err)}`,
     );
   }
 }
