@@ -446,13 +446,20 @@
             "type": "boolean",
             "default": false,
             "scope": "application",
-            "markdownDescription": "Specifies whether to send CodeQL usage telemetry. This setting AND the one of the global telemetry settings (`#telemetry.enableTelemetry#` or `#telemetry.telemetryLevel#`) must be enabled for telemetry to be sent to GitHub. For more information, see the [telemetry documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code)"
+            "markdownDescription": "Specifies whether to send CodeQL usage telemetry. This setting AND the one of the global telemetry settings (`#telemetry.enableTelemetry#` or `#telemetry.telemetryLevel#`) must be enabled for telemetry to be sent to GitHub. For more information, see the [telemetry documentation](https://codeql.github.com/docs/codeql-for-visual-studio-code/about-telemetry-in-codeql-for-visual-studio-code)",
+            "tags": [
+              "telemetry",
+              "usesOnlineServices"
+            ]
           },
           "codeQL.telemetry.logTelemetry": {
             "type": "boolean",
             "default": false,
             "scope": "application",
-            "description": "Specifies whether or not to write telemetry events to the extension log."
+            "description": "Specifies whether or not to write telemetry events to the extension log.",
+            "tags": [
+              "telemetry"
+            ]
           }
         }
       }
