@@ -47,12 +47,10 @@ async function copyPackage(
   );
 }
 
-export async function deployPackage(
-  packageJsonPath: string,
-): Promise<DeployedPackage> {
+export async function deployPackage(): Promise<DeployedPackage> {
   try {
     const packageJson: typeof packageJsonType = JSON.parse(
-      await readFile(packageJsonPath, "utf8"),
+      await readFile(resolve(__dirname, "../package.json"), "utf8"),
     );
 
     const distDir = join(__dirname, "../../../dist");
