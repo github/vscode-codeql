@@ -6,6 +6,7 @@ import { exit } from "process";
 function ignoreFile(file: string): boolean {
   return (
     containsPath("gulpfile.ts", file) ||
+    containsPath(".storybook", file) ||
     containsPath(join("src", "stories"), file) ||
     pathsEqual(
       join("test", "vscode-tests", "jest-runner-installed-extensions.ts"),

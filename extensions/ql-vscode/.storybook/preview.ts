@@ -5,7 +5,15 @@ import { action } from "@storybook/addon-actions";
 // Allow all stories/components to use Codicons
 import "@vscode/codicons/dist/codicon.css";
 
-(window as any).acquireVsCodeApi = () => ({
+import type { VsCodeApi } from "../src/view/vscode-api";
+
+declare global {
+  interface Window {
+    acquireVsCodeApi: () => VsCodeApi;
+  }
+}
+
+window.acquireVsCodeApi = () => ({
   postMessage: action("post-vscode-message"),
   setState: action("set-vscode-state"),
 });
