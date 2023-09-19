@@ -30,9 +30,6 @@ describe("telemetry reporting", () => {
   let sendTelemetryEventSpy: jest.SpiedFunction<
     typeof TelemetryReporter.prototype.sendTelemetryEvent
   >;
-  let sendTelemetryExceptionSpy: jest.SpiedFunction<
-    typeof TelemetryReporter.prototype.sendTelemetryException
-  >;
   let disposeSpy: jest.SpiedFunction<
     typeof TelemetryReporter.prototype.dispose
   >;
@@ -55,9 +52,6 @@ describe("telemetry reporting", () => {
 
       sendTelemetryEventSpy = jest
         .spyOn(TelemetryReporter.prototype, "sendTelemetryEvent")
-        .mockReturnValue(undefined);
-      sendTelemetryExceptionSpy = jest
-        .spyOn(TelemetryReporter.prototype, "sendTelemetryException")
         .mockReturnValue(undefined);
       disposeSpy = jest
         .spyOn(TelemetryReporter.prototype, "dispose")
@@ -198,8 +192,6 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 1234 },
     );
-
-    expect(sendTelemetryExceptionSpy).not.toBeCalled();
   });
 
   it("should send a command usage event with an error", async () => {
@@ -221,8 +213,6 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 1234 },
     );
-
-    expect(sendTelemetryExceptionSpy).not.toBeCalled();
   });
 
   it("should send a command usage event with a cli version", async () => {
@@ -245,8 +235,6 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 1234 },
     );
-
-    expect(sendTelemetryExceptionSpy).not.toBeCalled();
 
     // Verify that if the cli version is not set, then the telemetry falls back to "not-set"
     sendTelemetryEventSpy.mockClear();
@@ -278,7 +266,6 @@ describe("telemetry reporting", () => {
     telemetryListener.sendCommandUsage("command-id", 1234, new Error());
 
     expect(sendTelemetryEventSpy).not.toBeCalled();
-    expect(sendTelemetryExceptionSpy).not.toBeCalled();
   });
 
   it("should send an event when telemetry is re-enabled", async () => {
