@@ -104,7 +104,7 @@ function ModelableMethodRow(props: MethodRowProps) {
       onChange(method, {
         // If there are no arguments, we will default to "Argument[this]"
         input: argumentsList.length === 0 ? "Argument[this]" : "Argument[0]",
-        output: "ReturnType",
+        output: "ReturnValue",
         kind: "value",
         ...modeledMethod,
         type: e.target.value as ModeledMethodType,
