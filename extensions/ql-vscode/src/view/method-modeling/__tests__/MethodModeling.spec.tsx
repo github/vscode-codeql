@@ -8,11 +8,15 @@ describe(MethodModeling.name, () => {
     reactRender(<MethodModeling {...props} />);
 
   it("renders method modeling panel", () => {
+    const method = createMethod();
+
     render({
       modelingStatus: "saved",
-      method: createMethod(),
+      method,
     });
 
-    expect(screen.getByText("API or Method")).toBeInTheDocument();
+    expect(
+      screen.getByText(`${method.packageName}@${method.libraryVersion}`),
+    ).toBeInTheDocument();
   });
 });
