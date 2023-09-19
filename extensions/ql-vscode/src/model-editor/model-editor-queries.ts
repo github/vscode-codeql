@@ -4,6 +4,7 @@ import { writeFile } from "fs-extra";
 import { dump } from "js-yaml";
 import { prepareExternalApiQuery } from "./external-api-usage-queries";
 import { CodeQLCliServer } from "../codeql-cli/cli";
+import { showLlmGeneration } from "../config";
 
 /**
  * setUpPack sets up a directory to use for the data extension editor queries.
@@ -40,7 +41,10 @@ export async function setUpPack(
 
   // Install the other needed query packs
   await cliServer.packDownload([`codeql/${language}-queries`]);
-  await cliServer.packDownload([`codeql/${language}-automodel-queries`]);
+
+  if (language === "java" && showLlmGeneration()) {
+    await cliServer.packDownload([`codeql/${language}-automodel-queries`]);
+  }
 
   return true;
 }
