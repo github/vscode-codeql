@@ -30,7 +30,6 @@ export class MockGitHubApiServer extends DisposableObject {
       return;
     }
 
-    this.server.listen({ onUnhandledRequest: "bypass" });
     this._isListening = true;
   }
 
@@ -55,6 +54,7 @@ export class MockGitHubApiServer extends DisposableObject {
     const handlers = await createRequestHandlers(scenarioPath);
     this.server.resetHandlers();
     this.server.use(...handlers);
+    this.server.listen({ onUnhandledRequest: "bypass" });
   }
 
   public async saveScenario(
