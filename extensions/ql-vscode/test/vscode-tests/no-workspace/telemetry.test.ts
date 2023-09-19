@@ -30,6 +30,9 @@ describe("telemetry reporting", () => {
   let sendTelemetryEventSpy: jest.SpiedFunction<
     typeof TelemetryReporter.prototype.sendTelemetryEvent
   >;
+  let sendTelemetryErrorEventSpy: jest.SpiedFunction<
+    typeof TelemetryReporter.prototype.sendTelemetryErrorEvent
+  >;
   let disposeSpy: jest.SpiedFunction<
     typeof TelemetryReporter.prototype.dispose
   >;
@@ -52,6 +55,9 @@ describe("telemetry reporting", () => {
 
       sendTelemetryEventSpy = jest
         .spyOn(TelemetryReporter.prototype, "sendTelemetryEvent")
+        .mockReturnValue(undefined);
+      sendTelemetryErrorEventSpy = jest
+        .spyOn(TelemetryReporter.prototype, "sendTelemetryErrorEvent")
         .mockReturnValue(undefined);
       disposeSpy = jest
         .spyOn(TelemetryReporter.prototype, "dispose")
@@ -192,6 +198,7 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 1234 },
     );
+    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
   });
 
   it("should send a command usage event with an error", async () => {
@@ -213,6 +220,7 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 1234 },
     );
+    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
   });
 
   it("should send a command usage event with a cli version", async () => {
@@ -235,6 +243,7 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 1234 },
     );
+    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
 
     // Verify that if the cli version is not set, then the telemetry falls back to "not-set"
     sendTelemetryEventSpy.mockClear();
@@ -256,6 +265,7 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 5678 },
     );
+    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
   });
 
   it("should avoid sending an event when telemetry is disabled", async () => {
@@ -266,6 +276,7 @@ describe("telemetry reporting", () => {
     telemetryListener.sendCommandUsage("command-id", 1234, new Error());
 
     expect(sendTelemetryEventSpy).not.toBeCalled();
+    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
   });
 
   it("should send an event when telemetry is re-enabled", async () => {
@@ -285,6 +296,7 @@ describe("telemetry reporting", () => {
       },
       { executionTime: 1234 },
     );
+    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
   });
 
   it("should filter undesired properties from telemetry payload", async () => {
@@ -442,6 +454,7 @@ describe("telemetry reporting", () => {
       },
       {},
     );
+    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
   });
 
   it("should send a ui-interaction telementry event with a cli version", async () => {
@@ -459,6 +472,7 @@ describe("telemetry reporting", () => {
       },
       {},
     );
+    expect(sendTelemetryErrorEventSpy).not.toBeCalled();
   });
 
   it("should send an error telementry event", async () => {
@@ -466,7 +480,8 @@ describe("telemetry reporting", () => {
 
     telemetryListener.sendError(redactableError`test`);
 
-    expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+    expect(sendTelemetryEventSpy).not.toBeCalled();
+    expect(sendTelemetryErrorEventSpy).toHaveBeenCalledWith(
       "error",
       {
         message: "test",
@@ -484,7 +499,8 @@ describe("telemetry reporting", () => {
 
     telemetryListener.sendError(redactableError`test`);
 
-    expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+    expect(sendTelemetryEventSpy).not.toBeCalled();
+    expect(sendTelemetryErrorEventSpy).toHaveBeenCalledWith(
       "error",
       {
         message: "test",
@@ -503,7 +519,8 @@ describe("telemetry reporting", () => {
       redactableError`test message with secret information: ${42} and more ${"secret"} parts`,
     );
 
-    expect(sendTelemetryEventSpy).toHaveBeenCalledWith(
+    expect(sendTelemetryEventSpy).not.toBeCalled();
+    expect(sendTelemetryErrorEventSpy).toHaveBeenCalledWith(
       "error",
       {
         message:
