@@ -1,11 +1,8 @@
 import { ensureDir, writeFile } from "fs-extra";
 import { join } from "path";
 
-import { MockedRequest } from "msw";
 import { SetupServer } from "msw/node";
-import { IsomorphicResponse } from "@mswjs/interceptors";
 
-import { Headers } from "headers-polyfill";
 import fetch from "node-fetch";
 
 import { DisposableObject } from "../disposable-object";
@@ -17,7 +14,7 @@ import {
 } from "./gh-api-request";
 
 export class Recorder extends DisposableObject {
-  private readonly allRequests = new Map<string, MockedRequest>();
+  private readonly allRequests = new Map<string, Request>();
   private currentRecordedScenario: GitHubApiRequest[] = [];
 
   private _isRecording = false;
@@ -112,16 +109,17 @@ export class Recorder extends DisposableObject {
     return scenarioDirectory;
   }
 
-  private onRequestStart(request: MockedRequest): void {
+  private onRequestStart(request: Request, requestId: string): void {
     if (request.headers.has("x-vscode-codeql-msw-bypass")) {
       return;
     }
 
-    this.allRequests.set(request.id, request);
+    this.allRequests.set(requestId, request);
   }
 
   private async onResponseBypass(
-    response: IsomorphicResponse,
+    response: Response,
+    _: Request,
     requestId: string,
   ): Promise<void> {
     const request = this.allRequests.get(requestId);
@@ -137,7 +135,7 @@ export class Recorder extends DisposableObject {
     const gitHubApiRequest = await createGitHubApiRequest(
       request.url.toString(),
       response.status,
-      response.body,
+      response.body?.toString() || "",
       response.headers,
     );
     if (!gitHubApiRequest) {
@@ -152,7 +150,7 @@ async function createGitHubApiRequest(
   url: string,
   status: number,
   body: string,
-  headers: Headers,
+  headers: globalThis.Headers,
 ): Promise<GitHubApiRequest | undefined> {
   if (!url) {
     return undefined;
