@@ -2085,7 +2085,7 @@
     "fs-extra": "^11.1.1",
     "immutable": "^4.0.0",
     "js-yaml": "^4.1.0",
-    "msw": "^1.2.0",
+    "msw": "^0.0.0-fetch.rc-19",
     "nanoid": "^3.2.0",
     "node-fetch": "^2.6.7",
     "p-queue": "^6.0.0",
