@@ -13,7 +13,6 @@ import { response as variantAnalysisRepoJson_response } from "../../../../src/co
 import { testCredentialsWithRealOctokit } from "../../../factories/authentication";
 
 const mockServer = new MockGitHubApiServer();
-beforeAll(() => mockServer.startServer());
 afterEach(() => mockServer.unloadScenario());
 afterAll(() => mockServer.stopServer());
 

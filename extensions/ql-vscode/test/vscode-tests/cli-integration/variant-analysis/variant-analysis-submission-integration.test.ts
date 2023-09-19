@@ -16,7 +16,6 @@ import { createVSCodeCommandManager } from "../../../../src/common/vscode/comman
 import { AllCommands } from "../../../../src/common/commands";
 
 const mockServer = new MockGitHubApiServer();
-beforeAll(() => mockServer.startServer());
 afterEach(() => mockServer.unloadScenario());
 afterAll(() => mockServer.stopServer());
 

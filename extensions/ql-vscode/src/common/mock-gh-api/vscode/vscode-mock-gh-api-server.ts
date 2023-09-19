@@ -42,10 +42,6 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
     };
   }
 
-  public async startServer(): Promise<void> {
-    this.server.startServer();
-  }
-
   public async stopServer(): Promise<void> {
     this.server.stopServer();
 
@@ -256,9 +252,7 @@ export class VSCodeMockGitHubApiServer extends DisposableObject {
   }
 
   private async onConfigChange(): Promise<void> {
-    if (this.config.mockServerEnabled && !this.server.isListening) {
-      await this.startServer();
-    } else if (!this.config.mockServerEnabled && this.server.isListening) {
+    if (!this.config.mockServerEnabled) {
       await this.stopServer();
     }
   }
