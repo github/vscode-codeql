@@ -67,3 +67,26 @@ export function asError(e: unknown): Error {
 
   return e instanceof Error ? e : new Error(String(e));
 }
+
+/**
+ * Get error message when the error may have come from a method from the `child_process` module.
+ */
+export function getChildProcessErrorMessage(e: unknown): string {
+  return isChildProcessError(e) ? e.stderr : getErrorMessage(e);
+}
+
+/**
+ * Error thrown from methods from the `child_process` module.
+ */
+interface ChildProcessError {
+  readonly stderr: string;
+}
+
+function isChildProcessError(e: unknown): e is ChildProcessError {
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    "stderr" in e &&
+    typeof e.stderr === "string"
+  );
+}
