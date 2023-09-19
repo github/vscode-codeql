@@ -9,6 +9,7 @@ import {
 } from "fs-extra";
 import { resolve, join } from "path";
 import { isDevBuild } from "./dev";
+import type * as packageJsonType from "../package.json";
 
 export interface DeployedPackage {
   distPath: string;
@@ -46,12 +47,10 @@ async function copyPackage(
   );
 }
 
-export async function deployPackage(
-  packageJsonPath: string,
-): Promise<DeployedPackage> {
+export async function deployPackage(): Promise<DeployedPackage> {
   try {
-    const packageJson: any = JSON.parse(
-      await readFile(packageJsonPath, "utf8"),
+    const packageJson: typeof packageJsonType = JSON.parse(
+      await readFile(resolve(__dirname, "../package.json"), "utf8"),
     );
 
     const distDir = join(__dirname, "../../../dist");

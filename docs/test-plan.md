@@ -145,8 +145,6 @@ Run one of the above MRVAs, but cancel it from within VS Code:
 
 ### CodeQL Model Editor
 
-Note the tests here require the feature flag: `codeQL.model.editor`
-
 #### Test Case 1: Opening the model editor
 
 1. Download the `sofastack/sofa-jraft` java database from GitHub.

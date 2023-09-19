@@ -3,9 +3,7 @@ import { deployPackage } from "./deploy";
 import { spawn } from "child-process-promise";
 
 export async function packageExtension(): Promise<void> {
-  const deployedPackage = await deployPackage(
-    resolve(__dirname, "../package.json"),
-  );
+  const deployedPackage = await deployPackage();
   console.log(
     `Packaging extension '${deployedPackage.name}@${deployedPackage.version}'...`,
   );
