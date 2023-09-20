@@ -3,7 +3,7 @@ import * as React from "react";
 import { Meta, StoryFn } from "@storybook/react";
 
 import { MethodModeling as MethodModelingComponent } from "../../view/method-modeling/MethodModeling";
-import { createMethod } from "../../../test/factories/data-extension/method-factories";
+import { createMethod } from "../../../test/factories/model-editor/method-factories";
 export default {
   title: "Method Modeling/Method Modeling",
   component: MethodModelingComponent,
