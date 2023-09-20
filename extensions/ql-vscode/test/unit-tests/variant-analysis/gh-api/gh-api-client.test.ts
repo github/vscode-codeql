@@ -21,7 +21,7 @@ const controllerRepoId = variantAnalysisJson_response.body.controller_repo.id;
 const variantAnalysisId = variantAnalysisJson_response.body.id;
 const repoTaskId = variantAnalysisRepoJson_response.body.repository.id;
 
-describe.skip("submitVariantAnalysis", () => {
+describe("submitVariantAnalysis", () => {
   it("returns the submitted variant analysis", async () => {
     await mockServer.loadScenario("mrva-problem-query-success");
 
@@ -35,7 +35,7 @@ describe.skip("submitVariantAnalysis", () => {
   });
 });
 
-describe.skip("getVariantAnalysis", () => {
+describe("getVariantAnalysis", () => {
   it("returns the variant analysis", async () => {
     await mockServer.loadScenario("mrva-problem-query-success");
 
@@ -50,7 +50,7 @@ describe.skip("getVariantAnalysis", () => {
   });
 });
 
-describe.skip("getVariantAnalysisRepo", () => {
+describe("getVariantAnalysisRepo", () => {
   it("returns the variant analysis repo task", async () => {
     await mockServer.loadScenario("mrva-problem-query-success");
 
@@ -66,7 +66,7 @@ describe.skip("getVariantAnalysisRepo", () => {
   });
 });
 
-describe.skip("getRepositoryFromNwo", () => {
+describe("getRepositoryFromNwo", () => {
   it("returns the repository", async () => {
     await mockServer.loadScenario("mrva-problem-query-success");
 
