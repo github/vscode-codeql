@@ -8,19 +8,26 @@ import { Method } from "../../model-editor/method";
 import { MethodName } from "../model-editor/MethodName";
 
 const Container = styled.div`
-  background-color: var(--vscode-peekViewResult-background);
   padding: 0.3rem;
   margin-bottom: 1rem;
+  width: 100%;
 `;
 
 const Title = styled.div`
   padding-bottom: 0.3rem;
-  font-size: 1.2em;
+  font-size: 0.7rem;
+  text-transform: uppercase;
 `;
 
 const DependencyContainer = styled.div`
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5em;
+  background-color: var(--vscode-textBlockQuote-background);
+  border-radius: 0.3rem;
+  border-color: var(--vscode-textBlockQuote-border);
+  padding: 0.5rem;
 `;
 
 export type MethodModelingProps = {
@@ -34,10 +41,13 @@ export const MethodModeling = ({
 }: MethodModelingProps): JSX.Element => {
   return (
     <Container>
-      <Title>API or Method</Title>
+      <Title>
+        {method.packageName}
+        {method.libraryVersion && <>@{method.libraryVersion}</>}
+      </Title>
       <DependencyContainer>
-        <MethodName {...method} />
         <ModelingStatusIndicator status={modelingStatus} />
+        <MethodName {...method} />
       </DependencyContainer>
     </Container>
   );

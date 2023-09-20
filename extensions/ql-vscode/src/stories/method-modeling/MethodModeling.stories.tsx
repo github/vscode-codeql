@@ -3,6 +3,7 @@ import * as React from "react";
 import { Meta, StoryFn } from "@storybook/react";
 
 import { MethodModeling as MethodModelingComponent } from "../../view/method-modeling/MethodModeling";
+import { createMethod } from "../../../test/factories/data-extension/method-factories";
 export default {
   title: "Method Modeling/Method Modeling",
   component: MethodModelingComponent,
@@ -12,11 +13,23 @@ const Template: StoryFn<typeof MethodModelingComponent> = (args) => (
   <MethodModelingComponent {...args} />
 );
 
+const method = createMethod();
+
 export const MethodUnmodeled = Template.bind({});
-MethodUnmodeled.args = { modelingStatus: "unmodeled" };
+MethodUnmodeled.args = {
+  method,
+  modelingStatus: "unmodeled",
+};
 
 export const MethodModeled = Template.bind({});
-MethodModeled.args = { modelingStatus: "unsaved" };
+MethodModeled.args = {
+  method,
+
+  modelingStatus: "unsaved",
+};
 
 export const MethodSaved = Template.bind({});
-MethodSaved.args = { modelingStatus: "saved" };
+MethodSaved.args = {
+  method,
+  modelingStatus: "saved",
+};
