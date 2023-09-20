@@ -92,7 +92,7 @@ function ModelableMethodRow(props: MethodRowProps) {
 
       onChange(method, {
         ...modeledMethod,
-        output: target.value as ModeledMethod["output"],
+        output: target.value,
       });
     },
     [onChange, method, modeledMethod],
