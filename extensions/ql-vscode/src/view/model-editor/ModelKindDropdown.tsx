@@ -13,7 +13,7 @@ type Props = {
   "aria-label"?: string;
 };
 
-export const KindInput = ({
+export const ModelKindDropdown = ({
   kinds,
   value,
   disabled,

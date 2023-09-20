@@ -11,7 +11,7 @@ import { vscode } from "../vscode-api";
 
 import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
-import { KindInput } from "./KindInput";
+import { ModelKindDropdown } from "./ModelKindDropdown";
 import { extensiblePredicateDefinitions } from "../../model-editor/predicates";
 import { Mode } from "../../model-editor/shared/mode";
 import { MethodClassifications } from "./MethodClassifications";
@@ -154,7 +154,7 @@ function ModelableMethodRow(props: MethodRowProps) {
             />
           </VSCodeDataGridCell>
           <VSCodeDataGridCell gridColumn={5}>
-            <KindInput
+            <ModelKindDropdown
               kinds={predicate?.supportedKinds || []}
               value={modeledMethod?.kind}
               disabled={!showKindCell}

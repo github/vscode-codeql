@@ -1,9 +1,9 @@
 import * as React from "react";
 import { render, screen } from "@testing-library/react";
-import { KindInput } from "../KindInput";
+import { ModelKindDropdown } from "../ModelKindDropdown";
 import userEvent from "@testing-library/user-event";
 
-describe(KindInput.name, () => {
+describe(ModelKindDropdown.name, () => {
   const onChange = jest.fn();
 
   beforeEach(() => {
@@ -12,7 +12,7 @@ describe(KindInput.name, () => {
 
   it("allows changing the kind", async () => {
     render(
-      <KindInput
+      <ModelKindDropdown
         kinds={["local", "remote"]}
         value="local"
         onChange={onChange}
@@ -26,7 +26,7 @@ describe(KindInput.name, () => {
 
   it("resets the kind when changing the supported kinds", () => {
     const { rerender } = render(
-      <KindInput
+      <ModelKindDropdown
         kinds={["local", "remote"]}
         value={"local"}
         onChange={onChange}
@@ -37,7 +37,7 @@ describe(KindInput.name, () => {
     expect(onChange).not.toHaveBeenCalled();
 
     rerender(
-      <KindInput
+      <ModelKindDropdown
         kinds={["sql-injection", "log-injection", "url-redirection"]}
         value="local"
         onChange={onChange}
@@ -49,7 +49,7 @@ describe(KindInput.name, () => {
 
   it("sets the kind when value is undefined", () => {
     render(
-      <KindInput
+      <ModelKindDropdown
         kinds={["local", "remote"]}
         value={undefined}
         onChange={onChange}
