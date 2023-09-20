@@ -21,12 +21,10 @@ export type Provenance =
 
 export interface ModeledMethod extends MethodSignature {
   type: ModeledMethodType;
-  input: ModeledMethodInput;
-  output: ModeledMethodOutput;
+  input: string;
+  output: string;
   kind: ModeledMethodKind;
   provenance: Provenance;
 }
 
 export type ModeledMethodKind = string;
-export type ModeledMethodInput = string;
-export type ModeledMethodOutput = string;
