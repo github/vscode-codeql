@@ -23,6 +23,7 @@ import {
 import { InProgressDropdown } from "./InProgressDropdown";
 import { MethodName } from "./MethodName";
 import { ModelTypeDropdown } from "./ModelTypeDropdown";
+import { ModelInputDropdown } from "./ModelInputDropdown";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -81,21 +82,6 @@ function ModelableMethodRow(props: MethodRowProps) {
       .split(",");
   }, [method.methodParameters]);
 
-  const handleInputInput = useCallback(
-    (e: ChangeEvent<HTMLSelectElement>) => {
-      if (!modeledMethod) {
-        return;
-      }
-
-      const target = e.target as HTMLSelectElement;
-
-      onChange(method, {
-        ...modeledMethod,
-        input: target.value,
-      });
-    },
-    [onChange, method, modeledMethod],
-  );
   const handleOutputInput = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       if (!modeledMethod) {
@@ -130,17 +116,6 @@ function ModelableMethodRow(props: MethodRowProps) {
     [method],
   );
 
-  const inputOptions = useMemo(
-    () => [
-      { value: "Argument[this]", label: "Argument[this]" },
-      ...argumentsList.map((argument, index) => ({
-        value: `Argument[${index}]`,
-        label: `Argument[${index}]: ${argument}`,
-      })),
-    ],
-    [argumentsList],
-  );
-
   const outputOptions = useMemo(
     () => [
       { value: "ReturnValue", label: "ReturnValue" },
@@ -153,8 +128,6 @@ function ModelableMethodRow(props: MethodRowProps) {
     [argumentsList],
   );
 
-  const showInputCell =
-    modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type);
   const showOutputCell =
     modeledMethod?.type && ["source", "summary"].includes(modeledMethod?.type);
   const predicate =
@@ -205,12 +178,10 @@ function ModelableMethodRow(props: MethodRowProps) {
             />
           </VSCodeDataGridCell>
           <VSCodeDataGridCell gridColumn={3}>
-            <Dropdown
-              value={modeledMethod?.input}
-              options={inputOptions}
-              disabled={!showInputCell}
-              onChange={handleInputInput}
-              aria-label="Input"
+            <ModelInputDropdown
+              method={method}
+              modeledMethod={modeledMethod}
+              onChange={onChange}
             />
           </VSCodeDataGridCell>
           <VSCodeDataGridCell gridColumn={4}>
