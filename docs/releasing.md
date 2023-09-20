@@ -11,10 +11,7 @@
       * New telemetry events are added.
       * Deprecation or removal of commands.
       * Accumulation of many changes, none of which are individually big enough to warrant a minor bump, but which together are. This does not include changes which are purely internal to the extension, such as refactoring, or which are only available behind a feature flag.
-1. Double-check that the node version we're using matches the one used for VS Code. You can find this info by seleting "About Visual Studio Code" from the top menu. If it doesn't match, you will then need to update the node version in the following files:
-    * `.nvmrc` - this will enable `nvm` to automatically switch to the correct node version when you're in the project folder
-    * `.github/workflows/main.yml` - all the "node-version: '[VERSION]'" settings
-    * `.github/workflows/release.yml` - the "node-version: '[VERSION]'" setting
+1. Double-check that the node version we're using matches the one used for VS Code. See the [Node.js version instructions](./node-version.md) for more information.
 1. Double-check that the extension `package.json` and `package-lock.json` have the version you intend to release. If you are doing a patch release (as opposed to minor or major version) this should already be correct.
 1. Create a PR for this release:
     * This PR will contain any missing bits from steps 1, 2 and 3. Most of the time, this will just be updating `CHANGELOG.md` with today's date.
