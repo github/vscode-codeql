@@ -4,7 +4,7 @@ import {
   render as reactRender,
   screen,
 } from "@testing-library/react";
-import { createMethod } from "../../../../test/factories/data-extension/method-factories";
+import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 import { Mode } from "../../../model-editor/shared/mode";
 import { MethodRow, MethodRowProps } from "../MethodRow";
 import { ModeledMethod } from "../../../model-editor/modeled-method";

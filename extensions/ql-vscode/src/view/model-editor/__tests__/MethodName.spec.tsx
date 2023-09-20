@@ -2,7 +2,7 @@ import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { MethodName } from "../MethodName";
 import { Method } from "../../../model-editor/method";
-import { createMethod } from "../../../../test/factories/data-extension/method-factories";
+import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 
 describe(MethodName.name, () => {
   const render = (props: Method) => reactRender(<MethodName {...props} />);

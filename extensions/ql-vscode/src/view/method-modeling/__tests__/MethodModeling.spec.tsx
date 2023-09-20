@@ -1,7 +1,7 @@
 import * as React from "react";
 import { render as reactRender, screen } from "@testing-library/react";
 import { MethodModeling, MethodModelingProps } from "../MethodModeling";
-import { createMethod } from "../../../../test/factories/data-extension/method-factories";
+import { createMethod } from "../../../../test/factories/model-editor/method-factories";
 
 describe(MethodModeling.name, () => {
   const render = (props: MethodModelingProps) =>

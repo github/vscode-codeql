@@ -5,7 +5,7 @@ import { DatabaseItem } from "../../../../../src/databases/local-databases";
 import {
   createMethod,
   createUsage,
-} from "../../../../factories/data-extension/method-factories";
+} from "../../../../factories/model-editor/method-factories";
 import { mockedObject } from "../../../utils/mocking.helpers";
 
 describe("MethodsUsageDataProvider", () => {

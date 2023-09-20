@@ -57,3 +57,11 @@ export interface Method extends MethodSignature {
   supportedType: ModeledMethodType;
   usages: Usage[];
 }
+
+export function getArgumentsList(methodParameters: string): string[] {
+  if (methodParameters === "()") {
+    return [];
+  }
+
+  return methodParameters.substring(1, methodParameters.length - 1).split(",");
+}

@@ -7,7 +7,7 @@ import { mockedObject } from "../../../utils/mocking.helpers";
 import {
   createMethod,
   createUsage,
-} from "../../../../factories/data-extension/method-factories";
+} from "../../../../factories/model-editor/method-factories";
 
 describe("MethodsUsagePanel", () => {
   const mockCliServer = mockedObject<CodeQLCliServer>({});
