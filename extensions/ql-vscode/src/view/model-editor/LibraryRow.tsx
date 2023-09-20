@@ -76,11 +76,7 @@ export type LibraryRowProps = {
   inProgressMethods: InProgressMethods;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
-  onChange: (
-    modelName: string,
-    method: Method,
-    modeledMethod: ModeledMethod,
-  ) => void;
+  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
   onSaveModelClick: (
     methods: Method[],
     modeledMethods: Record<string, ModeledMethod>,
@@ -166,13 +162,6 @@ export const LibraryRow = ({
     [methods, modeledMethods, onSaveModelClick],
   );
 
-  const onChangeWithModelName = useCallback(
-    (method: Method, modeledMethod: ModeledMethod) => {
-      onChange(title, method, modeledMethod);
-    },
-    [onChange, title],
-  );
-
   const hasUnsavedChanges = useMemo(() => {
     return methods.some((method) => modifiedSignatures.has(method.signature));
   }, [methods, modifiedSignatures]);
@@ -238,7 +227,7 @@ export const LibraryRow = ({
             inProgressMethods={inProgressMethods}
             mode={viewState.mode}
             hideModeledMethods={hideModeledMethods}
-            onChange={onChangeWithModelName}
+            onChange={onChange}
           />
           <SectionDivider />
           <ButtonsContainer>

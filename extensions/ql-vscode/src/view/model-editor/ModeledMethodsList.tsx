@@ -18,11 +18,7 @@ export type ModeledMethodsListProps = {
   inProgressMethods: InProgressMethods;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
-  onChange: (
-    modelName: string,
-    method: Method,
-    modeledMethod: ModeledMethod,
-  ) => void;
+  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
   onSaveModelClick: (
     methods: Method[],
     modeledMethods: Record<string, ModeledMethod>,
