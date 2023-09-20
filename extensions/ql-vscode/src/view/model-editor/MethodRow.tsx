@@ -5,7 +5,7 @@ import {
   VSCodeProgressRing,
 } from "@vscode/webview-ui-toolkit/react";
 import * as React from "react";
-import { ChangeEvent, useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 
@@ -14,7 +14,6 @@ import { ModeledMethod } from "../../model-editor/modeled-method";
 import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../model-editor/predicates";
 import { Mode } from "../../model-editor/shared/mode";
-import { Dropdown } from "../common/Dropdown";
 import { MethodClassifications } from "./MethodClassifications";
 import {
   ModelingStatus,
@@ -24,6 +23,7 @@ import { InProgressDropdown } from "./InProgressDropdown";
 import { MethodName } from "./MethodName";
 import { ModelTypeDropdown } from "./ModelTypeDropdown";
 import { ModelInputDropdown } from "./ModelInputDropdown";
+import { ModelOutputDropdown } from "./ModelOutputDropdown";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -73,30 +73,6 @@ export const MethodRow = (props: MethodRowProps) => {
 function ModelableMethodRow(props: MethodRowProps) {
   const { method, modeledMethod, methodIsUnsaved, mode, onChange } = props;
 
-  const argumentsList = useMemo(() => {
-    if (method.methodParameters === "()") {
-      return [];
-    }
-    return method.methodParameters
-      .substring(1, method.methodParameters.length - 1)
-      .split(",");
-  }, [method.methodParameters]);
-
-  const handleOutputInput = useCallback(
-    (e: ChangeEvent<HTMLSelectElement>) => {
-      if (!modeledMethod) {
-        return;
-      }
-
-      const target = e.target as HTMLSelectElement;
-
-      onChange(method, {
-        ...modeledMethod,
-        output: target.value,
-      });
-    },
-    [onChange, method, modeledMethod],
-  );
   const handleKindChange = useCallback(
     (kind: string) => {
       if (!modeledMethod) {
@@ -116,20 +92,6 @@ function ModelableMethodRow(props: MethodRowProps) {
     [method],
   );
 
-  const outputOptions = useMemo(
-    () => [
-      { value: "ReturnValue", label: "ReturnValue" },
-      { value: "Argument[this]", label: "Argument[this]" },
-      ...argumentsList.map((argument, index) => ({
-        value: `Argument[${index}]`,
-        label: `Argument[${index}]: ${argument}`,
-      })),
-    ],
-    [argumentsList],
-  );
-
-  const showOutputCell =
-    modeledMethod?.type && ["source", "summary"].includes(modeledMethod?.type);
   const predicate =
     modeledMethod?.type && modeledMethod.type !== "none"
       ? extensiblePredicateDefinitions[modeledMethod.type]
@@ -185,12 +147,10 @@ function ModelableMethodRow(props: MethodRowProps) {
             />
           </VSCodeDataGridCell>
           <VSCodeDataGridCell gridColumn={4}>
-            <Dropdown
-              value={modeledMethod?.output}
-              options={outputOptions}
-              disabled={!showOutputCell}
-              onChange={handleOutputInput}
-              aria-label="Output"
+            <ModelOutputDropdown
+              method={method}
+              modeledMethod={modeledMethod}
+              onChange={onChange}
             />
           </VSCodeDataGridCell>
           <VSCodeDataGridCell gridColumn={5}>
