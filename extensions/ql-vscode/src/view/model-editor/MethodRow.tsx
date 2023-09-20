@@ -10,10 +10,7 @@ import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 
 import { Method } from "../../model-editor/method";
-import {
-  ModeledMethod,
-  ModeledMethodKind,
-} from "../../model-editor/modeled-method";
+import { ModeledMethod } from "../../model-editor/modeled-method";
 import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../model-editor/predicates";
 import { Mode } from "../../model-editor/shared/mode";
@@ -94,7 +91,7 @@ function ModelableMethodRow(props: MethodRowProps) {
 
       onChange(method, {
         ...modeledMethod,
-        input: target.value as ModeledMethodKind,
+        input: target.value,
       });
     },
     [onChange, method, modeledMethod],
@@ -109,7 +106,7 @@ function ModelableMethodRow(props: MethodRowProps) {
 
       onChange(method, {
         ...modeledMethod,
-        output: target.value as ModeledMethodKind,
+        output: target.value,
       });
     },
     [onChange, method, modeledMethod],
