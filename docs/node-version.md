@@ -20,3 +20,9 @@ The following files will need to be updated:
 - `extensions/ql-vscode/.nvmrc` - this will enable nvm to automatically switch to the correct node version when you're in the project folder
 - `extensions/ql-vscode/package-lock.json` - the "engines.node: '[VERSION]'" setting
 - `extensions/ql-vscode/package.json` - the "engines.node: '[VERSION]'" setting
+
+## Node.js version used in tests
+
+Unit tests will use whatever version of Node.js is installed locally. In CI this will be the version specified in the workflow.
+
+Integration tests download a copy of VS Code and then will use whatever version of Node.js is provided by VS Code. Our integration tests are currently pinned to an older version of VS Code. See [VS Code version used in tests](./vscode-version.md#vs-code-version-used-in-tests) for more information.
