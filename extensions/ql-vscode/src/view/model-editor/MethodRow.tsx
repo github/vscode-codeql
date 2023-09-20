@@ -10,11 +10,7 @@ import { styled } from "styled-components";
 import { vscode } from "../vscode-api";
 
 import { Method } from "../../model-editor/method";
-import {
-  ModeledMethod,
-  ModeledMethodType,
-  Provenance,
-} from "../../model-editor/modeled-method";
+import { ModeledMethod } from "../../model-editor/modeled-method";
 import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../model-editor/predicates";
 import { Mode } from "../../model-editor/shared/mode";
@@ -26,6 +22,7 @@ import {
 } from "./ModelingStatusIndicator";
 import { InProgressDropdown } from "./InProgressDropdown";
 import { MethodName } from "./MethodName";
+import { ModelTypeDropdown } from "./ModelTypeDropdown";
 
 const ApiOrMethodCell = styled(VSCodeDataGridCell)`
   display: flex;
@@ -51,14 +48,6 @@ const ProgressRing = styled(VSCodeProgressRing)`
   height: 16px;
   margin-left: auto;
 `;
-
-const modelTypeOptions: Array<{ value: ModeledMethodType; label: string }> = [
-  { value: "none", label: "Unmodeled" },
-  { value: "source", label: "Source" },
-  { value: "sink", label: "Sink" },
-  { value: "summary", label: "Flow summary" },
-  { value: "neutral", label: "Neutral" },
-];
 
 export type MethodRowProps = {
   method: Method;
@@ -92,32 +81,6 @@ function ModelableMethodRow(props: MethodRowProps) {
       .split(",");
   }, [method.methodParameters]);
 
-  const handleTypeInput = useCallback(
-    (e: ChangeEvent<HTMLSelectElement>) => {
-      let newProvenance: Provenance = "manual";
-      if (modeledMethod?.provenance === "df-generated") {
-        newProvenance = "df-manual";
-      } else if (modeledMethod?.provenance === "ai-generated") {
-        newProvenance = "ai-manual";
-      }
-
-      onChange(method, {
-        // If there are no arguments, we will default to "Argument[this]"
-        input: argumentsList.length === 0 ? "Argument[this]" : "Argument[0]",
-        output: "ReturnValue",
-        kind: "value",
-        ...modeledMethod,
-        type: e.target.value as ModeledMethodType,
-        provenance: newProvenance,
-        signature: method.signature,
-        packageName: method.packageName,
-        typeName: method.typeName,
-        methodName: method.methodName,
-        methodParameters: method.methodParameters,
-      });
-    },
-    [onChange, method, modeledMethod, argumentsList],
-  );
   const handleInputInput = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       if (!modeledMethod) {
@@ -235,11 +198,10 @@ function ModelableMethodRow(props: MethodRowProps) {
       {!props.modelingInProgress && (
         <>
           <VSCodeDataGridCell gridColumn={2}>
-            <Dropdown
-              value={modeledMethod?.type ?? "none"}
-              options={modelTypeOptions}
-              onChange={handleTypeInput}
-              aria-label="Model type"
+            <ModelTypeDropdown
+              method={method}
+              modeledMethod={modeledMethod}
+              onChange={onChange}
             />
           </VSCodeDataGridCell>
           <VSCodeDataGridCell gridColumn={3}>
