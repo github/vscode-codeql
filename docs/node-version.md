@@ -14,6 +14,7 @@ You can find this info by seleting "About Visual Studio Code" from the top menu.
 ## Updating the Node.js version
 
 The following files will need to be updated:
+
 - `.github/workflows/cli-test.yml` - the "node-version: '[VERSION]'" setting
 - `.github/workflows/main.yml` - all the "node-version: '[VERSION]'" settings
 - `.github/workflows/release.yml` - the "node-version: '[VERSION]'" setting

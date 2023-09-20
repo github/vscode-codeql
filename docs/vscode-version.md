@@ -16,6 +16,7 @@ The CodeQL for VS Code extension specifies the versions of VS Code that it is co
 
 Generally we should aim to support as wide a range of VS Code versions as we can, so unless there is a reason to do so we do not update the minimum VS Code version requirement.
 Reasons for updating the minimum VS Code version include:
+
 - A new feature is included in VS Code. We may want to ensure that it is available to use so we do not have to provide an alternative code path.
 - A breaking change has happened in VS Code, and it is not possible to support both new and old versions.
 
@@ -27,6 +28,6 @@ To provide a good experience to users, it is recommented to update the `MIN_VERS
 
 ## VS Code version used in tests
 
-Our integration tests are currently pinned to use an older version of VS Code due to https://github.com/github/vscode-codeql/issues/2402.
+Our integration tests are currently pinned to use an older version of VS Code due to <https://github.com/github/vscode-codeql/issues/2402>.
 This version is specified in [`jest-runner-vscode.config.base.js`](https://github.com/github/vscode-codeql/blob/d93f2b67c84e79737b0ce4bb74e31558b5f5166e/extensions/ql-vscode/test/vscode-tests/jest-runner-vscode.config.base.js#L17).
 Until this is resolved this will limit us updating our minimum supported version of VS Code.
