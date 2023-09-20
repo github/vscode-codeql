@@ -9,7 +9,7 @@ We should make sure the CodeQL for VS Code extension works with the Node.js vers
 
 You can find this info by seleting "About Visual Studio Code" from the top menu.
 
-![about-vscode](images/about-vscodeaba.png)
+![about-vscode](images/about-vscode.png)
 
 ## Updating the Node.js version
 
