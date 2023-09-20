@@ -29,7 +29,7 @@ export const KindInput = ({
     (e: ChangeEvent<HTMLSelectElement>) => {
       const target = e.target as HTMLSelectElement;
 
-      onChange(target.value as ModeledMethodKind);
+      onChange(target.value);
     },
     [onChange],
   );
