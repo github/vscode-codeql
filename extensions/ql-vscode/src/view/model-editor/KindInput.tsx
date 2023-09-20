@@ -1,14 +1,14 @@
 import * as React from "react";
 import { ChangeEvent, useCallback, useEffect, useMemo } from "react";
-import type { ModeledMethod } from "../../model-editor/modeled-method";
+import type { ModeledMethodKind } from "../../model-editor/modeled-method";
 import { Dropdown } from "../common/Dropdown";
 
 type Props = {
-  kinds: Array<ModeledMethod["kind"]>;
+  kinds: ModeledMethodKind[];
 
-  value: ModeledMethod["kind"] | undefined;
+  value: ModeledMethodKind | undefined;
   disabled?: boolean;
-  onChange: (value: ModeledMethod["kind"]) => void;
+  onChange: (value: ModeledMethodKind) => void;
 
   "aria-label"?: string;
 };
@@ -29,7 +29,7 @@ export const KindInput = ({
     (e: ChangeEvent<HTMLSelectElement>) => {
       const target = e.target as HTMLSelectElement;
 
-      onChange(target.value as ModeledMethod["kind"]);
+      onChange(target.value as ModeledMethodKind);
     },
     [onChange],
   );

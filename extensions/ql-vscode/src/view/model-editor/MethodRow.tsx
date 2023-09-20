@@ -12,6 +12,7 @@ import { vscode } from "../vscode-api";
 import { Method } from "../../model-editor/method";
 import {
   ModeledMethod,
+  ModeledMethodKind,
   ModeledMethodType,
   Provenance,
 } from "../../model-editor/modeled-method";
@@ -128,7 +129,7 @@ function ModelableMethodRow(props: MethodRowProps) {
 
       onChange(method, {
         ...modeledMethod,
-        input: target.value as ModeledMethod["input"],
+        input: target.value as ModeledMethodKind,
       });
     },
     [onChange, method, modeledMethod],
@@ -143,7 +144,7 @@ function ModelableMethodRow(props: MethodRowProps) {
 
       onChange(method, {
         ...modeledMethod,
-        output: target.value as ModeledMethod["output"],
+        output: target.value as ModeledMethodKind,
       });
     },
     [onChange, method, modeledMethod],
