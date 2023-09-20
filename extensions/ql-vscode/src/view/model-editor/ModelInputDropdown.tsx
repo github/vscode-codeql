@@ -34,7 +34,7 @@ export const ModelInputDropdown = ({
   const enabled = useMemo(
     () =>
       modeledMethod?.type && ["sink", "summary"].includes(modeledMethod?.type),
-    [modeledMethod],
+    [modeledMethod?.type],
   );
 
   const handleChange = useCallback(
@@ -47,7 +47,7 @@ export const ModelInputDropdown = ({
 
       onChange(method, {
         ...modeledMethod,
-        input: target.value as ModeledMethod["input"],
+        input: target.value,
       });
     },
     [onChange, method, modeledMethod],
