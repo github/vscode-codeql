@@ -13,8 +13,6 @@ import { Method } from "../../model-editor/method";
 import {
   ModeledMethod,
   ModeledMethodKind,
-  ModeledMethodType,
-  Provenance,
 } from "../../model-editor/modeled-method";
 import { KindInput } from "./KindInput";
 import { extensiblePredicateDefinitions } from "../../model-editor/predicates";
