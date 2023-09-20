@@ -12,7 +12,6 @@ import { vscode } from "../vscode-api";
 import { Method } from "../../model-editor/method";
 import { ModeledMethod } from "../../model-editor/modeled-method";
 import { ModelKindDropdown } from "./ModelKindDropdown";
-import { extensiblePredicateDefinitions } from "../../model-editor/predicates";
 import { Mode } from "../../model-editor/shared/mode";
 import { MethodClassifications } from "./MethodClassifications";
 import {
@@ -73,30 +72,10 @@ export const MethodRow = (props: MethodRowProps) => {
 function ModelableMethodRow(props: MethodRowProps) {
   const { method, modeledMethod, methodIsUnsaved, mode, onChange } = props;
 
-  const handleKindChange = useCallback(
-    (kind: string) => {
-      if (!modeledMethod) {
-        return;
-      }
-
-      onChange(method, {
-        ...modeledMethod,
-        kind,
-      });
-    },
-    [onChange, method, modeledMethod],
-  );
-
   const jumpToUsage = useCallback(
     () => sendJumpToUsageMessage(method),
     [method],
   );
-
-  const predicate =
-    modeledMethod?.type && modeledMethod.type !== "none"
-      ? extensiblePredicateDefinitions[modeledMethod.type]
-      : undefined;
-  const showKindCell = predicate?.supportedKinds;
 
   const modelingStatus = getModelingStatus(modeledMethod, methodIsUnsaved);
 
@@ -155,11 +134,9 @@ function ModelableMethodRow(props: MethodRowProps) {
           </VSCodeDataGridCell>
           <VSCodeDataGridCell gridColumn={5}>
             <ModelKindDropdown
-              kinds={predicate?.supportedKinds || []}
-              value={modeledMethod?.kind}
-              disabled={!showKindCell}
-              onChange={handleKindChange}
-              aria-label="Kind"
+              method={method}
+              modeledMethod={modeledMethod}
+              onChange={onChange}
             />
           </VSCodeDataGridCell>
         </>

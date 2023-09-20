@@ -1,56 +1,84 @@
 import * as React from "react";
 import { ChangeEvent, useCallback, useEffect, useMemo } from "react";
-import type { ModeledMethodKind } from "../../model-editor/modeled-method";
+import type {
+  ModeledMethod,
+  ModeledMethodKind,
+} from "../../model-editor/modeled-method";
 import { Dropdown } from "../common/Dropdown";
+import { Method } from "../../model-editor/method";
+import { extensiblePredicateDefinitions } from "../../model-editor/predicates";
 
 type Props = {
-  kinds: ModeledMethodKind[];
-
-  value: ModeledMethodKind | undefined;
-  disabled?: boolean;
-  onChange: (value: ModeledMethodKind) => void;
-
-  "aria-label"?: string;
+  method: Method;
+  modeledMethod: ModeledMethod | undefined;
+  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelKindDropdown = ({
-  kinds,
-  value,
-  disabled,
+  method,
+  modeledMethod,
   onChange,
-  ...props
 }: Props) => {
+  const predicate = useMemo(() => {
+    return modeledMethod?.type && modeledMethod.type !== "none"
+      ? extensiblePredicateDefinitions[modeledMethod.type]
+      : undefined;
+  }, [modeledMethod?.type]);
+
+  const kinds = useMemo(() => predicate?.supportedKinds || [], [predicate]);
+
+  const disabled = useMemo(
+    () => !predicate?.supportedKinds,
+    [predicate?.supportedKinds],
+  );
+
   const options = useMemo(
     () => kinds.map((kind) => ({ value: kind, label: kind })),
     [kinds],
   );
 
-  const handleInput = useCallback(
+  const onChangeKind = useCallback(
+    (kind: ModeledMethodKind) => {
+      if (!modeledMethod) {
+        return;
+      }
+
+      onChange(method, {
+        ...modeledMethod,
+        kind,
+      });
+    },
+    [method, modeledMethod, onChange],
+  );
+
+  const handleChange = useCallback(
     (e: ChangeEvent<HTMLSelectElement>) => {
       const target = e.target as HTMLSelectElement;
+      const kind = target.value;
 
-      onChange(target.value);
+      onChangeKind(kind);
     },
-    [onChange],
+    [onChangeKind],
   );
 
   useEffect(() => {
+    const value = modeledMethod?.kind;
     if (value === undefined && kinds.length > 0) {
-      onChange(kinds[0]);
+      onChangeKind(kinds[0]);
     }
 
     if (value !== undefined && !kinds.includes(value)) {
-      onChange(kinds[0]);
+      onChangeKind(kinds[0]);
     }
-  }, [value, kinds, onChange]);
+  }, [modeledMethod?.kind, kinds, onChangeKind]);
 
   return (
     <Dropdown
-      value={value}
+      value={modeledMethod?.kind}
       options={options}
       disabled={disabled}
-      onChange={handleInput}
-      {...props}
+      onChange={handleChange}
+      aria-label="Kind"
     />
   );
 };
