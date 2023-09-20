@@ -46,7 +46,6 @@ export const ModelTypeDropdown = ({
         input: argumentsList.length === 0 ? "Argument[this]" : "Argument[0]",
         output: "ReturnValue",
         kind: "value",
-        ...modeledMethod,
         type: e.target.value as ModeledMethodType,
         provenance: newProvenance,
         signature: method.signature,
