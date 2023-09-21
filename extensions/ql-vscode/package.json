@@ -1879,7 +1879,7 @@
     "unzipper": "^0.10.5",
     "vscode-extension-telemetry": "^0.1.6",
     "vscode-jsonrpc": "^8.0.2",
-    "vscode-languageclient": "^8.0.2",
+    "vscode-languageclient": "^9.0.0",
     "vscode-test-adapter-api": "^1.7.0",
     "vscode-test-adapter-util": "^0.7.0",
     "zip-a-folder": "^2.0.0"
