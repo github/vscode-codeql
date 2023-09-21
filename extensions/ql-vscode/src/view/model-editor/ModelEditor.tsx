@@ -179,19 +179,16 @@ export function ModelEditor({
     [methods],
   );
 
-  const onChange = useCallback(
-    (modelName: string, method: Method, model: ModeledMethod) => {
-      setModeledMethods((oldModeledMethods) => ({
-        ...oldModeledMethods,
-        [method.signature]: model,
-      }));
-      setModifiedSignatures(
-        (oldModifiedSignatures) =>
-          new Set([...oldModifiedSignatures, method.signature]),
-      );
-    },
-    [],
-  );
+  const onChange = useCallback((method: Method, model: ModeledMethod) => {
+    setModeledMethods((oldModeledMethods) => ({
+      ...oldModeledMethods,
+      [method.signature]: model,
+    }));
+    setModifiedSignatures(
+      (oldModifiedSignatures) =>
+        new Set([...oldModifiedSignatures, method.signature]),
+    );
+  }, []);
 
   const onRefreshClick = useCallback(() => {
     vscode.postMessage({
