@@ -32,7 +32,9 @@ describe(MethodModelingInputs.name, () => {
     // Check that all the dropdowns are rendered.
     const comboboxes = screen.getAllByRole("combobox");
     expect(comboboxes.length).toBe(4);
-    const modelTypeDropdown = comboboxes[0];
+    const modelTypeDropdown = screen.getByRole("combobox", {
+      name: "Model type",
+    });
     expect(modelTypeDropdown).toHaveValue("sink");
     const modelTypeOptions = modelTypeDropdown.querySelectorAll("option");
     expect(modelTypeOptions.length).toBe(5);
@@ -45,8 +47,9 @@ describe(MethodModelingInputs.name, () => {
       onChange,
     });
 
-    const comboboxes = screen.getAllByRole("combobox");
-    const modelTypeDropdown = comboboxes[0];
+    const modelTypeDropdown = screen.getByRole("combobox", {
+      name: "Model type",
+    });
 
     await userEvent.selectOptions(modelTypeDropdown, "source");
 
@@ -77,11 +80,18 @@ describe(MethodModelingInputs.name, () => {
       />,
     );
 
-    const comboboxes = screen.getAllByRole("combobox");
-    const modelTypeDropdown = comboboxes[0];
-    const modelInputDropdown = comboboxes[1];
-    const modelOutputDropdown = comboboxes[2];
-    const modelKindDropdown = comboboxes[3];
+    const modelTypeDropdown = screen.getByRole("combobox", {
+      name: "Model type",
+    });
+    const modelInputDropdown = screen.getByRole("combobox", {
+      name: "Input",
+    });
+    const modelOutputDropdown = screen.getByRole("combobox", {
+      name: "Output",
+    });
+    const modelKindDropdown = screen.getByRole("combobox", {
+      name: "Kind",
+    });
 
     expect(modelTypeDropdown).toHaveValue("source");
     expect(modelInputDropdown).toHaveValue("-");
