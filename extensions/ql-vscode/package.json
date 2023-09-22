@@ -1784,7 +1784,7 @@
           "type": "webview",
           "id": "codeQLMethodModeling",
           "name": "CodeQL Method Modeling",
-          "when": "config.codeQL.canary && config.codeQL.model.methodModelingView && codeql.modelEditorOpen"
+          "when": "config.codeQL.canary && config.codeQL.model.methodModelingView && codeql.modelEditorOpen && !codeql.modelEditorActive"
         }
       ]
     },

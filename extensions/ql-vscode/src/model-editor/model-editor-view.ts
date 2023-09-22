@@ -106,6 +106,9 @@ export class ModelEditorView extends AbstractWebview<
           this.databaseItem,
           this.hideModeledMethods,
         );
+        await this.markModelEditorAsActive();
+      } else {
+        await this.updateModelEditorActiveContext();
       }
     });
 
@@ -129,6 +132,22 @@ export class ModelEditorView extends AbstractWebview<
     );
   }
 
+  private async markModelEditorAsActive(): Promise<void> {
+    void this.app.commands.execute(
+      "setContext",
+      "codeql.modelEditorActive",
+      true,
+    );
+  }
+
+  private async updateModelEditorActiveContext(): Promise<void> {
+    await this.app.commands.execute(
+      "setContext",
+      "codeql.modelEditorActive",
+      this.isAModelEditorActive(),
+    );
+  }
+
   private isAModelEditorOpen(): boolean {
     return window.tabGroups.all.some((tabGroup) =>
       tabGroup.tabs.some((tab) => {
@@ -136,6 +155,17 @@ export class ModelEditorView extends AbstractWebview<
         // The viewType has a prefix, such as "mainThreadWebview-", but if the
         // suffix matches that should be enough to identify the view.
         return viewType && viewType.endsWith("model-editor");
+      }),
+    );
+  }
+
+  private isAModelEditorActive(): boolean {
+    return window.tabGroups.all.some((tabGroup) =>
+      tabGroup.tabs.some((tab) => {
+        const viewType: string | undefined = (tab.input as any)?.viewType;
+        // The viewType has a prefix, such as "mainThreadWebview-", but if the
+        // suffix matches that should be enough to identify the view.
+        return viewType && viewType.endsWith("model-editor") && tab.isActive;
       }),
     );
   }
