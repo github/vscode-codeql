@@ -5,9 +5,14 @@ import { ModelingStatus } from "../model-editor/ModelingStatusIndicator";
 import { Method } from "../../model-editor/method";
 import { ToMethodModelingMessage } from "../../common/interface-types";
 import { assertNever } from "../../common/helpers-pure";
+import { ModeledMethod } from "../../model-editor/modeled-method";
 
 export function MethodModelingView(): JSX.Element {
   const [method, setMethod] = useState<Method | undefined>(undefined);
+
+  const [modeledMethod, setModeledMethod] = React.useState<
+    ModeledMethod | undefined
+  >(undefined);
 
   useEffect(() => {
     const listener = (evt: MessageEvent) => {
@@ -36,5 +41,19 @@ export function MethodModelingView(): JSX.Element {
   }
 
   const modelingStatus: ModelingStatus = "saved";
-  return <MethodModeling modelingStatus={modelingStatus} method={method} />;
+
+  // For now we just store the updated method in the state but soon
+  // we'll need to send it back to the other views.
+  const onChange = (method: Method, modeledMethod: ModeledMethod) => {
+    setModeledMethod(modeledMethod);
+  };
+
+  return (
+    <MethodModeling
+      modelingStatus={modelingStatus}
+      method={method}
+      modeledMethod={modeledMethod}
+      onChange={onChange}
+    />
+  );
 }
