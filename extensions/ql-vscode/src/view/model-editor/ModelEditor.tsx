@@ -179,14 +179,14 @@ export function ModelEditor({
     [methods],
   );
 
-  const onChange = useCallback((method: Method, model: ModeledMethod) => {
+  const onChange = useCallback((model: ModeledMethod) => {
     setModeledMethods((oldModeledMethods) => ({
       ...oldModeledMethods,
-      [method.signature]: model,
+      [model.signature]: model,
     }));
     setModifiedSignatures(
       (oldModifiedSignatures) =>
-        new Set([...oldModifiedSignatures, method.signature]),
+        new Set([...oldModifiedSignatures, model.signature]),
     );
   }, []);
 

@@ -7,7 +7,6 @@ import { createMethod } from "../../../test/factories/model-editor/method-factor
 import { createModeledMethod } from "../../../test/factories/model-editor/modeled-method-factories";
 import { useState } from "react";
 import { ModeledMethod } from "../../model-editor/modeled-method";
-import { Method } from "../../model-editor/method";
 
 export default {
   title: "Method Modeling/Method Modeling Inputs",
@@ -26,7 +25,7 @@ const Template: StoryFn<typeof MethodModelingInputsComponent> = (args) => {
     args.modeledMethod,
   );
 
-  const onChange = (method: Method, modeledMethod: ModeledMethod) => {
+  const onChange = (modeledMethod: ModeledMethod) => {
     setModeledMethod(modeledMethod);
   };
 

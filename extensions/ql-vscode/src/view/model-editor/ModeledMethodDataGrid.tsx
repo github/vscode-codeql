@@ -23,7 +23,7 @@ export type ModeledMethodDataGridProps = {
   inProgressMethods: InProgressMethods;
   mode: Mode;
   hideModeledMethods: boolean;
-  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
+  onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModeledMethodDataGrid = ({

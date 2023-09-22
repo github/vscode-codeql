@@ -36,7 +36,7 @@ export type MethodModelingProps = {
   modelingStatus: ModelingStatus;
   method: Method;
   modeledMethod: ModeledMethod | undefined;
-  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
+  onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const MethodModeling = ({

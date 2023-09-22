@@ -44,7 +44,7 @@ export function MethodModelingView(): JSX.Element {
 
   // For now we just store the updated method in the state but soon
   // we'll need to send it back to the other views.
-  const onChange = (method: Method, modeledMethod: ModeledMethod) => {
+  const onChange = (modeledMethod: ModeledMethod) => {
     setModeledMethod(modeledMethod);
   };
 

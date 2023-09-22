@@ -76,7 +76,7 @@ export type LibraryRowProps = {
   inProgressMethods: InProgressMethods;
   viewState: ModelEditorViewState;
   hideModeledMethods: boolean;
-  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
+  onChange: (modeledMethod: ModeledMethod) => void;
   onSaveModelClick: (
     methods: Method[],
     modeledMethods: Record<string, ModeledMethod>,

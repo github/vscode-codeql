@@ -11,7 +11,7 @@ import { extensiblePredicateDefinitions } from "../../model-editor/predicates";
 type Props = {
   method: Method;
   modeledMethod: ModeledMethod | undefined;
-  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
+  onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelKindDropdown = ({
@@ -43,12 +43,12 @@ export const ModelKindDropdown = ({
         return;
       }
 
-      onChange(method, {
+      onChange({
         ...modeledMethod,
         kind,
       });
     },
-    [method, modeledMethod, onChange],
+    [modeledMethod, onChange],
   );
 
   const handleChange = useCallback(
