@@ -11,7 +11,11 @@ const Container = styled.div`
   padding-top: 0.5rem;
 `;
 
-const Label = styled.span`
+const Input = styled.label`
+  padding-top: 0.5rem;
+`;
+
+const Name = styled.span`
   display: block;
   padding-bottom: 0.3rem;
 `;
@@ -36,20 +40,28 @@ export const MethodModelingInputs = ({
   return (
     <>
       <Container>
-        <Label>Model Type</Label>
-        <ModelTypeDropdown {...inputProps} />
+        <Input>
+          <Name>Model Type</Name>
+          <ModelTypeDropdown {...inputProps} />
+        </Input>
       </Container>
       <Container>
-        <Label>Input</Label>
-        <ModelInputDropdown {...inputProps} />
+        <Input>
+          <Name>Input</Name>
+          <ModelInputDropdown {...inputProps} />
+        </Input>
       </Container>
       <Container>
-        <Label>Output</Label>
-        <ModelOutputDropdown {...inputProps} />
+        <Input>
+          <Name>Output</Name>
+          <ModelOutputDropdown {...inputProps} />
+        </Input>
       </Container>
       <Container>
-        <Label>Kind</Label>
-        <ModelKindDropdown {...inputProps} />
+        <Input>
+          <Name>Kind</Name>
+          <ModelKindDropdown {...inputProps} />
+        </Input>
       </Container>
     </>
   );
