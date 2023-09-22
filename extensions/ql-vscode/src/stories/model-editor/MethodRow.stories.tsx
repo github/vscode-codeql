@@ -27,7 +27,7 @@ const method: Method = {
   methodName: "open",
   methodParameters: "()",
   supported: false,
-  supportedType: "summary",
+  supportedType: "none",
   usages: [
     {
       label: "open(...)",
@@ -70,30 +70,35 @@ export const Unmodeled = Template.bind({});
 Unmodeled.args = {
   method,
   modeledMethod: undefined,
+  methodCanBeModeled: true,
 };
 
 export const Source = Template.bind({});
 Source.args = {
   method,
   modeledMethod: { ...modeledMethod, type: "source" },
+  methodCanBeModeled: true,
 };
 
 export const Sink = Template.bind({});
 Sink.args = {
   method,
   modeledMethod: { ...modeledMethod, type: "sink" },
+  methodCanBeModeled: true,
 };
 
 export const Summary = Template.bind({});
 Summary.args = {
   method,
   modeledMethod: { ...modeledMethod, type: "summary" },
+  methodCanBeModeled: true,
 };
 
 export const Neutral = Template.bind({});
 Neutral.args = {
   method,
   modeledMethod: { ...modeledMethod, type: "neutral" },
+  methodCanBeModeled: true,
 };
 
 export const AlreadyModeled = Template.bind({});
@@ -107,4 +112,5 @@ ModelingInProgress.args = {
   method,
   modeledMethod,
   modelingInProgress: true,
+  methodCanBeModeled: true,
 };
