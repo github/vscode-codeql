@@ -11,9 +11,7 @@ const Container = styled.div`
   padding-top: 0.5rem;
 `;
 
-const Input = styled.label`
-  padding-top: 0.5rem;
-`;
+const Input = styled.label``;
 
 const Name = styled.span`
   display: block;
