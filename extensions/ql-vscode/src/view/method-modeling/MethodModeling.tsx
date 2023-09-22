@@ -6,6 +6,8 @@ import {
 } from "../model-editor/ModelingStatusIndicator";
 import { Method } from "../../model-editor/method";
 import { MethodName } from "../model-editor/MethodName";
+import { ModeledMethod } from "../../model-editor/modeled-method";
+import { MethodModelingInputs } from "./MethodModelingInputs";
 
 const Container = styled.div`
   padding: 0.3rem;
@@ -33,11 +35,15 @@ const DependencyContainer = styled.div`
 export type MethodModelingProps = {
   modelingStatus: ModelingStatus;
   method: Method;
+  modeledMethod: ModeledMethod | undefined;
+  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
 };
 
 export const MethodModeling = ({
   modelingStatus,
+  modeledMethod,
   method,
+  onChange,
 }: MethodModelingProps): JSX.Element => {
   return (
     <Container>
@@ -49,6 +55,11 @@ export const MethodModeling = ({
         <ModelingStatusIndicator status={modelingStatus} />
         <MethodName {...method} />
       </DependencyContainer>
+      <MethodModelingInputs
+        method={method}
+        modeledMethod={modeledMethod}
+        onChange={onChange}
+      />
     </Container>
   );
 };
