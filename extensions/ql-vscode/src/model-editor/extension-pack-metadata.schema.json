@@ -31,12 +31,7 @@
           }
         }
       },
-      "required": [
-        "name",
-        "version",
-        "dataExtensions",
-        "extensionTargets"
-      ]
+      "required": ["name", "version", "dataExtensions", "extensionTargets"]
     }
   }
 }

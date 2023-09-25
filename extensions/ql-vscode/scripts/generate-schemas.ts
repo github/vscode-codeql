@@ -1,6 +1,7 @@
 import { createGenerator } from "ts-json-schema-generator";
 import { join, resolve } from "path";
-import { outputJSON } from "fs-extra";
+import { outputFile } from "fs-extra";
+import { format, resolveConfig } from "prettier";
 
 const extensionDirectory = resolve(__dirname, "..");
 
@@ -37,21 +38,32 @@ const schemas = [
   },
 ];
 
-async function generateSchemas() {
-  for (const schemaDefinition of schemas) {
-    const schema = createGenerator({
-      path: schemaDefinition.path,
-      tsconfig: resolve(extensionDirectory, "tsconfig.json"),
-      type: schemaDefinition.type,
-      skipTypeCheck: true,
-      topRef: true,
-      additionalProperties: true,
-    }).createSchema(schemaDefinition.type);
+async function generateSchema(
+  schemaDefinition: (typeof schemas)[number],
+): Promise<void> {
+  const schema = createGenerator({
+    path: schemaDefinition.path,
+    tsconfig: resolve(extensionDirectory, "tsconfig.json"),
+    type: schemaDefinition.type,
+    skipTypeCheck: true,
+    topRef: true,
+    additionalProperties: true,
+  }).createSchema(schemaDefinition.type);
 
-    await outputJSON(schemaDefinition.schemaPath, schema, {
-      spaces: 2,
-    });
-  }
+  const schemaJson = JSON.stringify(schema, null, 2);
+
+  const prettierOptions = await resolveConfig(schemaDefinition.schemaPath);
+
+  const formattedSchemaJson = await format(schemaJson, {
+    ...prettierOptions,
+    filepath: schemaDefinition.schemaPath,
+  });
+
+  await outputFile(schemaDefinition.schemaPath, formattedSchemaJson);
+}
+
+async function generateSchemas() {
+  await Promise.all(schemas.map(generateSchema));
 }
 
 generateSchemas().catch((e: unknown) => {
