@@ -31,6 +31,7 @@ import { mockedQuickPickItem } from "../../utils/mocking.helpers";
 import { QueryLanguage } from "../../../../src/common/query-language";
 import { readBundledPack } from "../../utils/bundled-pack-helpers";
 import { load } from "js-yaml";
+import { ExtensionPackMetadata } from "../../../../src/model-editor/extension-pack-metadata";
 
 describe("Variant Analysis Manager", () => {
   let cli: CodeQLCliServer;
@@ -379,7 +380,9 @@ describe("Variant Analysis Manager", () => {
         : "codeql-pack.yml";
       const qlpackContents = load(
         packFS.fileContents(packFileName).toString("utf-8"),
-      );
+      ) as ExtensionPackMetadata & {
+        dependencies: Record<string, string>;
+      };
       expect(qlpackContents.name).toEqual(expectedPackName);
       if (checkVersion) {
         expect(qlpackContents.version).toEqual("0.0.0");
@@ -393,7 +396,9 @@ describe("Variant Analysis Manager", () => {
       }
       const qlpackLockContents = load(
         packFS.fileContents("codeql-pack.lock.yml").toString("utf-8"),
-      );
+      ) as {
+        dependencies: Record<string, string>;
+      };
 
       const actualLockKeys = Object.keys(qlpackLockContents.dependencies);
 

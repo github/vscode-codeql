@@ -89,7 +89,9 @@ export async function fixWorkspaceReferences(
 ): Promise<Record<string, string> | undefined> {
   if (!(await cli.cliConstraints.supportsWorkspaceReferences())) {
     // remove the workspace references from the qlpack
-    const qlpack = load(readFileSync(qlpackFileWithWorkspaceRefs, "utf8"));
+    const qlpack = load(readFileSync(qlpackFileWithWorkspaceRefs, "utf8")) as {
+      dependencies: Record<string, string>;
+    };
     const originalDeps = { ...qlpack.dependencies };
     removeWorkspaceRefs(qlpack);
     writeFileSync(qlpackFileWithWorkspaceRefs, dump(qlpack));
@@ -113,7 +115,9 @@ export async function restoreWorkspaceReferences(
   if (!originalDeps) {
     return;
   }
-  const qlpack = load(readFileSync(qlpackFileWithWorkspaceRefs, "utf8"));
+  const qlpack = load(readFileSync(qlpackFileWithWorkspaceRefs, "utf8")) as {
+    dependencies: Record<string, string>;
+  };
   qlpack.dependencies = originalDeps;
   writeFileSync(qlpackFileWithWorkspaceRefs, dump(qlpack));
 }

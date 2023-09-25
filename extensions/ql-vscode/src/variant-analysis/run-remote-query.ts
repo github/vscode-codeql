@@ -541,7 +541,9 @@ async function getControllerRepoFromApi(
   }
 }
 
-export function removeWorkspaceRefs(qlpack: QlPack) {
+export function removeWorkspaceRefs(qlpack: {
+  dependencies: Record<string, string>;
+}) {
   for (const [key, value] of Object.entries(qlpack.dependencies || {})) {
     if (value === "${workspace}") {
       qlpack.dependencies[key] = "*";
