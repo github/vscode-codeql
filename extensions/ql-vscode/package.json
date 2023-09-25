@@ -754,6 +754,42 @@
         "title": "Add Database Source to Workspace"
       },
       {
+        "command": "codeQLDatabases.displayAllLanguages",
+        "title": "All languages"
+      },
+      {
+        "command": "codeQLDatabases.displayCpp",
+        "title": "C/C++"
+      },
+      {
+        "command": "codeQLDatabases.displayCsharp",
+        "title": "C#"
+      },
+      {
+        "command": "codeQLDatabases.displayGo",
+        "title": "Go"
+      },
+      {
+        "command": "codeQLDatabases.displayJava",
+        "title": "Java/Kotlin"
+      },
+      {
+        "command": "codeQLDatabases.displayJavascript",
+        "title": "JavaScript/TypeScript"
+      },
+      {
+        "command": "codeQLDatabases.displayPython",
+        "title": "Python"
+      },
+      {
+        "command": "codeQLDatabases.displayRuby",
+        "title": "Ruby"
+      },
+      {
+        "command": "codeQLDatabases.displaySwift",
+        "title": "Swift"
+      },
+      {
         "command": "codeQL.chooseDatabaseFolder",
         "title": "CodeQL: Choose Database from Folder"
       },
@@ -1002,6 +1038,11 @@
           "command": "codeQLDatabases.sortByDateAdded",
           "when": "view == codeQLDatabases",
           "group": "1_databases@1"
+        },
+        {
+          "submenu": "codeQLDatabases.languages",
+          "when": "view == codeQLDatabases && config.codeQL.canary",
+          "group": "2_databases@0"
         },
         {
           "command": "codeQLQueries.createQuery",
@@ -1524,6 +1565,42 @@
           "when": "false"
         },
         {
+          "command": "codeQLDatabases.displayAllLanguages",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayCpp",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayCsharp",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayGo",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayJava",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayJavascript",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayPython",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displayRuby",
+          "when": "false"
+        },
+        {
+          "command": "codeQLDatabases.displaySwift",
+          "when": "false"
+        },
+        {
           "command": "codeQLQueryHistory.openQueryContextMenu",
           "when": "false"
         },
@@ -1717,8 +1794,43 @@
           "command": "codeQL.gotoQLContextEditor",
           "when": "editorLangId == ql-summary && config.codeQL.canary"
         }
+      ],
+      "codeQLDatabases.languages": [
+        {
+          "command": "codeQLDatabases.displayAllLanguages"
+        },
+        {
+          "command": "codeQLDatabases.displayCpp"
+        },
+        {
+          "command": "codeQLDatabases.displayCsharp"
+        },
+        {
+          "command": "codeQLDatabases.displayGo"
+        },
+        {
+          "command": "codeQLDatabases.displayJava"
+        },
+        {
+          "command": "codeQLDatabases.displayJavascript"
+        },
+        {
+          "command": "codeQLDatabases.displayPython"
+        },
+        {
+          "command": "codeQLDatabases.displayRuby"
+        },
+        {
+          "command": "codeQLDatabases.displaySwift"
+        }
       ]
     },
+    "submenus": [
+      {
+        "id": "codeQLDatabases.languages",
+        "label": "Languages"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
