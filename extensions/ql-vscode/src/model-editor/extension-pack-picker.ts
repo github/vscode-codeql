@@ -2,6 +2,7 @@ import { join } from "path";
 import { outputFile, pathExists, readFile } from "fs-extra";
 import { dump as dumpYaml, load as loadYaml } from "js-yaml";
 import { Uri } from "vscode";
+import Ajv from "ajv";
 import { CodeQLCliServer } from "../codeql-cli/cli";
 import { getOnDiskWorkspaceFolders } from "../common/vscode/workspace-folders";
 import { ProgressCallback } from "../common/vscode/progress";
@@ -17,6 +18,12 @@ import {
   formatPackName,
 } from "./extension-pack-name";
 import { autoPickExtensionsDirectory } from "./extensions-workspace-folder";
+
+import { ExtensionPackMetadata } from "./extension-pack-metadata";
+import * as extensionPackMetadataSchemaJson from "./extension-pack-metadata.schema.json";
+
+const ajv = new Ajv({ allErrors: true });
+const extensionPackValidate = ajv.compile(extensionPackMetadataSchemaJson);
 
 export async function pickExtensionPack(
   cliServer: Pick<CodeQLCliServer, "resolveQlpacks">,
@@ -170,6 +177,22 @@ async function writeExtensionPack(
   return extensionPack;
 }
 
+function validateExtensionPack(
+  extensionPack: unknown,
+): extensionPack is ExtensionPackMetadata {
+  extensionPackValidate(extensionPack);
+
+  if (extensionPackValidate.errors) {
+    throw new Error(
+      `Invalid extension pack YAML: ${extensionPackValidate.errors
+        .map((error) => `${error.instancePath} ${error.message}`)
+        .join(", ")}`,
+    );
+  }
+
+  return true;
+}
+
 async function readExtensionPack(
   path: string,
   language: string,
@@ -186,6 +209,10 @@ async function readExtensionPack(
   });
   if (typeof qlpack !== "object" || qlpack === null) {
     throw new Error(`Could not parse ${qlpackPath}`);
+  }
+
+  if (!validateExtensionPack(qlpack)) {
+    throw new Error(`Could not validate ${qlpackPath}`);
   }
 
   const dataExtensionValue = qlpack.dataExtensions;

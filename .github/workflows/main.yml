@@ -99,6 +99,42 @@ jobs:
         run: |
           npm run find-deadcode
 
+  generated:
+    name: Check generated code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '16.17.1'
+          cache: 'npm'
+          cache-dependency-path: extensions/ql-vscode/package-lock.json
+
+      - name: Install dependencies
+        working-directory: extensions/ql-vscode
+        run: |
+          npm ci
+        shell: bash
+
+      - name: Check that repo is clean
+        run: |
+          git diff --exit-code
+          git diff --exit-code --cached
+
+      - name: Generate code
+        working-directory: extensions/ql-vscode
+        run: |
+          npm run generate
+
+      - name: Check for changes
+        run: |
+          git diff --exit-code
+          git diff --exit-code --cached
+
   unit-test:
     name: Unit Test
     runs-on: ${{ matrix.os }}
