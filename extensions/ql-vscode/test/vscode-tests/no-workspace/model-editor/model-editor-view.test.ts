@@ -8,9 +8,11 @@ import { createMockApp } from "../../../__mocks__/appMock";
 import { mockEmptyDatabaseManager } from "../query-testing/test-runner-helpers";
 import { QueryRunner } from "../../../../src/query-server";
 import { ExtensionPack } from "../../../../src/model-editor/shared/extension-pack";
+import { ModelingStore } from "../../../../src/model-editor/modeling-store";
 
 describe("ModelEditorView", () => {
   const app = createMockApp({});
+  const modelingStore = mockedObject<ModelingStore>({});
   const databaseManager = mockEmptyDatabaseManager();
   const cliServer = mockedObject<CodeQLCliServer>({});
   const queryRunner = mockedObject<QueryRunner>({});
@@ -40,6 +42,7 @@ describe("ModelEditorView", () => {
   beforeEach(() => {
     view = new ModelEditorView(
       app,
+      modelingStore,
       databaseManager,
       cliServer,
       queryRunner,

@@ -43,6 +43,7 @@ import { getLanguageDisplayName } from "../common/query-language";
 import { AutoModeler } from "./auto-modeler";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 import { telemetryListener } from "../common/vscode/telemetry";
+import { ModelingStore } from "./modeling-store";
 
 export class ModelEditorView extends AbstractWebview<
   ToModelEditorMessage,
@@ -55,6 +56,7 @@ export class ModelEditorView extends AbstractWebview<
 
   public constructor(
     protected readonly app: App,
+    private readonly modelingStore: ModelingStore,
     private readonly databaseManager: DatabaseManager,
     private readonly cliServer: CodeQLCliServer,
     private readonly queryRunner: QueryRunner,
@@ -79,6 +81,8 @@ export class ModelEditorView extends AbstractWebview<
     ) => boolean,
   ) {
     super(app);
+
+    this.modelingStore.initializeStateForDb(databaseItem);
 
     this.autoModeler = new AutoModeler(
       app,
@@ -527,6 +531,7 @@ export class ModelEditorView extends AbstractWebview<
 
       const view = new ModelEditorView(
         this.app,
+        this.modelingStore,
         this.databaseManager,
         this.cliServer,
         this.queryRunner,
