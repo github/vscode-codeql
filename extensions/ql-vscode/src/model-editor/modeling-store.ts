@@ -3,12 +3,15 @@ import { DisposableObject } from "../common/disposable-object";
 import { AppEvent, AppEventEmitter } from "../common/events";
 import { DatabaseItem } from "../databases/local-databases";
 import { Method } from "./method";
+import { ModeledMethod } from "./modeled-method";
 import { INITIAL_HIDE_MODELED_METHODS_VALUE } from "./shared/hide-modeled-methods";
 
 interface DbModelingState {
   databaseItem: DatabaseItem;
   methods: Method[];
   hideModeledMethods: boolean;
+  modeledMethods: Record<string, ModeledMethod>;
+  modifiedMethodSignatures: Set<string>;
 }
 
 interface MethodsChangedEvent {
@@ -22,11 +25,25 @@ interface HideModeledMethodsChangedEvent {
   isActiveDb: boolean;
 }
 
+interface ModeledMethodsChangedEvent {
+  modeledMethods: Record<string, ModeledMethod>;
+  dbUri: string;
+  isActiveDb: boolean;
+}
+
+interface ModifiedMethodsChangedEvent {
+  modifiedMethods: Set<string>;
+  dbUri: string;
+  isActiveDb: boolean;
+}
+
 export class ModelingStore extends DisposableObject {
   public readonly onActiveDbChanged: AppEvent<void>;
   public readonly onDbClosed: AppEvent<string>;
   public readonly onMethodsChanged: AppEvent<MethodsChangedEvent>;
   public readonly onHideModeledMethodsChanged: AppEvent<HideModeledMethodsChangedEvent>;
+  public readonly onModeledMethodsChanged: AppEvent<ModeledMethodsChangedEvent>;
+  public readonly onModifiedMethodsChanged: AppEvent<ModifiedMethodsChangedEvent>;
 
   private readonly state: Map<string, DbModelingState>;
   private activeDb: string | undefined;
@@ -35,6 +52,8 @@ export class ModelingStore extends DisposableObject {
   private readonly onDbClosedEventEmitter: AppEventEmitter<string>;
   private readonly onMethodsChangedEventEmitter: AppEventEmitter<MethodsChangedEvent>;
   private readonly onHideModeledMethodsChangedEventEmitter: AppEventEmitter<HideModeledMethodsChangedEvent>;
+  private readonly onModeledMethodsChangedEventEmitter: AppEventEmitter<ModeledMethodsChangedEvent>;
+  private readonly onModifiedMethodsChangedEventEmitter: AppEventEmitter<ModifiedMethodsChangedEvent>;
 
   constructor(app: App) {
     super();
@@ -61,6 +80,18 @@ export class ModelingStore extends DisposableObject {
     );
     this.onHideModeledMethodsChanged =
       this.onHideModeledMethodsChangedEventEmitter.event;
+
+    this.onModeledMethodsChangedEventEmitter = this.push(
+      app.createEventEmitter<ModeledMethodsChangedEvent>(),
+    );
+    this.onModeledMethodsChanged =
+      this.onModeledMethodsChangedEventEmitter.event;
+
+    this.onModifiedMethodsChangedEventEmitter = this.push(
+      app.createEventEmitter<ModifiedMethodsChangedEvent>(),
+    );
+    this.onModifiedMethodsChanged =
+      this.onModifiedMethodsChangedEventEmitter.event;
   }
 
   public initializeStateForDb(databaseItem: DatabaseItem) {
@@ -69,6 +100,8 @@ export class ModelingStore extends DisposableObject {
       databaseItem,
       methods: [],
       hideModeledMethods: INITIAL_HIDE_MODELED_METHODS_VALUE,
+      modeledMethods: {},
+      modifiedMethodSignatures: new Set<string>(),
     });
   }
 
@@ -126,6 +159,100 @@ export class ModelingStore extends DisposableObject {
     this.onHideModeledMethodsChangedEventEmitter.fire({
       hideModeledMethods,
       isActiveDb: dbUri === this.activeDb,
+    });
+  }
+
+  public addModeledMethods(
+    dbItem: DatabaseItem,
+    methods: Record<string, ModeledMethod>,
+  ) {
+    const state = this.getState(dbItem);
+
+    const newModeledMethods = {
+      ...methods,
+      ...Object.fromEntries(
+        Object.entries(state.modeledMethods).filter(
+          ([_, value]) => value.type !== "none",
+        ),
+      ),
+    };
+
+    this.onModeledMethodsChangedEventEmitter.fire({
+      modeledMethods: newModeledMethods,
+      dbUri: dbItem.databaseUri.toString(),
+      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+    });
+  }
+
+  public setModeledMethods(
+    dbItem: DatabaseItem,
+    methods: Record<string, ModeledMethod>,
+  ) {
+    const state = this.getState(dbItem);
+    state.modeledMethods = methods;
+
+    this.onModeledMethodsChangedEventEmitter.fire({
+      modeledMethods: methods,
+      dbUri: dbItem.databaseUri.toString(),
+      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+    });
+  }
+
+  public updateModeledMethod(dbItem: DatabaseItem, method: ModeledMethod) {
+    const state = this.getState(dbItem);
+    const methods = { ...state.modeledMethods, [method.signature]: method };
+    this.setModeledMethods(dbItem, methods);
+  }
+
+  public setModifiedMethods(
+    dbItem: DatabaseItem,
+    methodSignatures: Set<string>,
+  ) {
+    const state = this.getState(dbItem);
+    state.modifiedMethodSignatures = methodSignatures;
+
+    this.onModifiedMethodsChangedEventEmitter.fire({
+      modifiedMethods: state.modifiedMethodSignatures,
+      dbUri: dbItem.databaseUri.toString(),
+      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+    });
+  }
+
+  public addModifiedMethods(
+    dbItem: DatabaseItem,
+    methodSignatures: Set<string>,
+  ) {
+    const state = this.getState(dbItem);
+
+    methodSignatures.forEach((signature) => {
+      state.modifiedMethodSignatures.add(signature);
+    });
+
+    this.onModifiedMethodsChangedEventEmitter.fire({
+      modifiedMethods: state.modifiedMethodSignatures,
+      dbUri: dbItem.databaseUri.toString(),
+      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
+    });
+  }
+
+  public addModifiedMethod(dbItem: DatabaseItem, methodSignature: string) {
+    this.addModifiedMethods(dbItem, new Set<string>([methodSignature]));
+  }
+
+  public removeModifiedMethods(
+    dbItem: DatabaseItem,
+    methodSignatures: string[],
+  ) {
+    const state = this.getState(dbItem);
+
+    methodSignatures.forEach((signature) => {
+      state.modifiedMethodSignatures.delete(signature);
+    });
+
+    this.onModifiedMethodsChangedEventEmitter.fire({
+      modifiedMethods: state.modifiedMethodSignatures,
+      dbUri: dbItem.databaseUri.toString(),
+      isActiveDb: dbItem.databaseUri.toString() === this.activeDb,
     });
   }
 
