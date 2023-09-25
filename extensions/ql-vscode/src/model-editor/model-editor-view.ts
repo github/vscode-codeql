@@ -1,5 +1,6 @@
 import {
   CancellationTokenSource,
+  Tab,
   TabInputWebview,
   Uri,
   ViewColumn,
@@ -156,28 +157,26 @@ export class ModelEditorView extends AbstractWebview<
 
   private isAModelEditorOpen(): boolean {
     return window.tabGroups.all.some((tabGroup) =>
-      tabGroup.tabs.some((tab) => {
-        const viewType =
-          tab.input instanceof TabInputWebview ? tab.input.viewType : undefined;
-
-        // The viewType has a prefix, such as "mainThreadWebview-", but if the
-        // suffix matches that should be enough to identify the view.
-        return viewType && viewType.endsWith("model-editor");
-      }),
+      tabGroup.tabs.some((tab) => this.isTabModelEditorView(tab)),
     );
   }
 
   private isAModelEditorActive(): boolean {
     return window.tabGroups.all.some((tabGroup) =>
-      tabGroup.tabs.some((tab) => {
-        const viewType =
-          tab.input instanceof TabInputWebview ? tab.input.viewType : undefined;
-
-        // The viewType has a prefix, such as "mainThreadWebview-", but if the
-        // suffix matches that should be enough to identify the view.
-        return viewType && viewType.endsWith("model-editor") && tab.isActive;
-      }),
+      tabGroup.tabs.some(
+        (tab) => this.isTabModelEditorView(tab) && tab.isActive,
+      ),
     );
+  }
+
+  private isTabModelEditorView(tab: Tab): boolean {
+    if (!(tab.input instanceof TabInputWebview)) {
+      return false;
+    }
+
+    // The viewType has a prefix, such as "mainThreadWebview-", but if the
+    // suffix matches that should be enough to identify the view.
+    return tab.input.viewType.endsWith("model-editor");
   }
 
   protected async getPanelConfig(): Promise<WebviewPanelConfig> {
