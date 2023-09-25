@@ -1,4 +1,5 @@
-import { writeFile, promises } from "fs-extra";
+import { createReadStream, writeFile } from "fs-extra";
+import { LINE_ENDINGS, splitStreamAtSeparators } from "../common/split-stream";
 
 /**
  * Location information for a single pipeline invocation in the RA.
@@ -64,59 +65,64 @@ export async function generateSummarySymbolsFile(
 async function generateSummarySymbols(
   summaryPath: string,
 ): Promise<SummarySymbols> {
-  const summary = await promises.readFile(summaryPath, {
+  const stream = createReadStream(summaryPath, {
     encoding: "utf-8",
   });
-  const symbols: SummarySymbols = {
-    predicates: {},
-  };
+  try {
+    const lines = splitStreamAtSeparators(stream, LINE_ENDINGS);
 
-  const lines = summary.split(/\r?\n/);
-  let lineNumber = 0;
-  while (lineNumber < lines.length) {
-    const startLineNumber = lineNumber;
-    lineNumber++;
-    const startLine = lines[startLineNumber];
-    const nonRecursiveMatch = startLine.match(NON_RECURSIVE_TUPLE_COUNT_REGEXP);
-    let predicateName: string | undefined = undefined;
+    const symbols: SummarySymbols = {
+      predicates: {},
+    };
+
+    let lineNumber = 0;
+    let raStartLine = 0;
     let iteration = 0;
-    if (nonRecursiveMatch) {
-      predicateName = nonRecursiveMatch.groups!.predicateName;
-    } else {
-      const recursiveMatch = startLine.match(RECURSIVE_TUPLE_COUNT_REGEXP);
-      if (recursiveMatch?.groups) {
-        predicateName = recursiveMatch.groups.predicateName;
-        iteration = parseInt(recursiveMatch.groups.iteration);
-      }
-    }
-
-    if (predicateName !== undefined) {
-      const raStartLine = lineNumber;
-      let raEndLine: number | undefined = undefined;
-      while (lineNumber < lines.length && raEndLine === undefined) {
-        const raLine = lines[lineNumber];
-        const returnMatch = raLine.match(RETURN_REGEXP);
+    let predicateName: string | undefined = undefined;
+    let startLine = 0;
+    for await (const line of lines) {
+      if (predicateName === undefined) {
+        // Looking for the start of the predicate.
+        const nonRecursiveMatch = line.match(NON_RECURSIVE_TUPLE_COUNT_REGEXP);
+        if (nonRecursiveMatch) {
+          iteration = 0;
+          predicateName = nonRecursiveMatch.groups!.predicateName;
+        } else {
+          const recursiveMatch = line.match(RECURSIVE_TUPLE_COUNT_REGEXP);
+          if (recursiveMatch?.groups) {
+            predicateName = recursiveMatch.groups.predicateName;
+            iteration = parseInt(recursiveMatch.groups.iteration);
+          }
+        }
+        if (predicateName !== undefined) {
+          startLine = lineNumber;
+          raStartLine = lineNumber + 1;
+        }
+      } else {
+        const returnMatch = line.match(RETURN_REGEXP);
         if (returnMatch) {
-          raEndLine = lineNumber;
-        }
-        lineNumber++;
-      }
-      if (raEndLine !== undefined) {
-        let symbol = symbols.predicates[predicateName];
-        if (symbol === undefined) {
-          symbol = {
-            iterations: {},
+          let symbol = symbols.predicates[predicateName];
+          if (symbol === undefined) {
+            symbol = {
+              iterations: {},
+            };
+            symbols.predicates[predicateName] = symbol;
+          }
+          symbol.iterations[iteration] = {
+            startLine,
+            raStartLine,
+            raEndLine: lineNumber,
           };
-          symbols.predicates[predicateName] = symbol;
-        }
-        symbol.iterations[iteration] = {
-          startLine: lineNumber,
-          raStartLine,
-          raEndLine,
-        };
-      }
-    }
-  }
 
-  return symbols;
+          predicateName = undefined;
+        }
+      }
+
+      lineNumber++;
+    }
+
+    return symbols;
+  } finally {
+    stream.close();
+  }
 }
