@@ -771,19 +771,11 @@
       },
       {
         "command": "codeQLDatabases.sortByName",
-        "title": "Sort by Name",
-        "icon": {
-          "light": "media/light/sort-alpha.svg",
-          "dark": "media/dark/sort-alpha.svg"
-        }
+        "title": "Sort by Name"
       },
       {
         "command": "codeQLDatabases.sortByDateAdded",
-        "title": "Sort by Date Added",
-        "icon": {
-          "light": "media/light/sort-date.svg",
-          "dark": "media/dark/sort-date.svg"
-        }
+        "title": "Sort by Date Added"
       },
       {
         "command": "codeQL.checkForUpdatesToCLI",
@@ -982,16 +974,6 @@
       ],
       "view/title": [
         {
-          "command": "codeQLDatabases.sortByName",
-          "when": "view == codeQLDatabases",
-          "group": "navigation"
-        },
-        {
-          "command": "codeQLDatabases.sortByDateAdded",
-          "when": "view == codeQLDatabases",
-          "group": "navigation"
-        },
-        {
           "command": "codeQLDatabases.chooseDatabaseFolder",
           "when": "view == codeQLDatabases",
           "group": "navigation"
@@ -1010,6 +992,16 @@
           "command": "codeQLDatabases.chooseDatabaseGithub",
           "when": "view == codeQLDatabases",
           "group": "navigation"
+        },
+        {
+          "command": "codeQLDatabases.sortByName",
+          "when": "view == codeQLDatabases",
+          "group": "1_databases@0"
+        },
+        {
+          "command": "codeQLDatabases.sortByDateAdded",
+          "when": "view == codeQLDatabases",
+          "group": "1_databases@1"
         },
         {
           "command": "codeQLQueries.createQuery",
