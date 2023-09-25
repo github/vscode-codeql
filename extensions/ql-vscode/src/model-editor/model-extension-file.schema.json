@@ -8,44 +8,35 @@
         "extensions": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/ModelExtension"
+            "type": "object",
+            "properties": {
+              "addsTo": {
+                "type": "object",
+                "properties": {
+                  "pack": {
+                    "type": "string"
+                  },
+                  "extensible": {
+                    "type": "string"
+                  }
+                },
+                "required": ["pack", "extensible"]
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/DataTuple"
+                  }
+                }
+              }
+            },
+            "required": ["addsTo", "data"]
           }
         }
       },
       "required": ["extensions"]
-    },
-    "ModelExtension": {
-      "type": "object",
-      "properties": {
-        "addsTo": {
-          "$ref": "#/definitions/ExtensibleReference"
-        },
-        "data": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/DataRow"
-          }
-        }
-      },
-      "required": ["addsTo", "data"]
-    },
-    "ExtensibleReference": {
-      "type": "object",
-      "properties": {
-        "pack": {
-          "type": "string"
-        },
-        "extensible": {
-          "type": "string"
-        }
-      },
-      "required": ["pack", "extensible"]
-    },
-    "DataRow": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/DataTuple"
-      }
     },
     "DataTuple": {
       "type": ["boolean", "number", "string"]

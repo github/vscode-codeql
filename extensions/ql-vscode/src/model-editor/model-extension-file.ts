@@ -1,13 +1,13 @@
-export type ExtensibleReference = {
+type ExtensibleReference = {
   pack: string;
   extensible: string;
 };
 
 export type DataTuple = boolean | number | string;
 
-export type DataRow = DataTuple[];
+type DataRow = DataTuple[];
 
-export type ModelExtension = {
+type ModelExtension = {
   addsTo: ExtensibleReference;
   data: DataRow[];
 };
