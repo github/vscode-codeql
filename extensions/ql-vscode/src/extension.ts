@@ -299,12 +299,12 @@ const shouldUpdateOnNextActivationKey = "shouldUpdateOnNextActivation";
 
 const codeQlVersionRange = DEFAULT_DISTRIBUTION_VERSION_RANGE;
 
-// This is the minimum version of vscode that we _want_ to support. We want to update the language server library, but that
-// requires 1.67 or later. If we change the minimum version in the package.json, then anyone on an older version of vscode
+// This is the minimum version of vscode that we _want_ to support. We want to update to Node 18, but that
+// requires 1.82 or later. If we change the minimum version in the package.json, then anyone on an older version of vscode will
 // silently be unable to upgrade. So, the solution is to first bump the minimum version here and release. Then
 // bump the version in the package.json and release again. This way, anyone on an older version of vscode will get a warning
 // before silently being refused to upgrade.
-const MIN_VERSION = "1.67.0";
+const MIN_VERSION = "1.82.0";
 
 /**
  * Returns the CodeQLExtensionInterface, or an empty object if the interface is not
