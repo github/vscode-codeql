@@ -675,9 +675,9 @@
               "begin": "(?x)(?<=/\\*\\*)([^*]|\\*(?!/))*$",
               "while": "(?x)(^|\\G)\\s*([^*]|\\*(?!/))(?=([^*]|[*](?!/))*$)",
               "patterns": [
-                
-                
-                
+
+
+
                 {
                   "match": "(?x)\\G\\s* (@\\S+)",
                   "name": "keyword.tag.ql"
@@ -737,11 +737,18 @@
         }
       ]
     },
-    "instantiation-arguments": {
-      "end": "(?x)#close-angle",
+    "instantiation-args": {
+      "name": "meta.type.parameters.ql",
       "patterns": [
         {
-          "include": "#potential-instantiation"
+          "include": "#instantiation-args"
+        },
+        {
+          "include": "#non-context-sensitive"
+        },
+        {
+          "match": "(?x)(?:\\b [A-Za-z][0-9A-Za-z_]* (?:(?!(?:[0-9A-Za-z_]))))",
+          "name": "entity.name.type.namespace.ql"
         }
       ],
       "begin": "(?x)((?:<))",
@@ -753,25 +760,30 @@
             }
           ]
         }
+      },
+      "end": "(?x)((?:>))",
+      "endCaptures": {
+        "1": {
+          "patterns": [
+            {
+              "include": "#close-angle"
+            }
+          ]
+        }
       }
     },
-    "potential-instantiation": {
-      "matches": "(?#simple-id) (?#instantiation-arguments)?"
-    },
     "import-directive": {
-      "end": "(?x)(?:\\b [A-Za-z][0-9A-Za-z_]* (?:(?!(?:[0-9A-Za-z_])))) (?!\\s*(\\.|\\:\\:))",
-      "endCaptures": {
-        "0": {
-          "name": "entity.name.type.namespace.ql"
-        }
-      },
+      "end": "(?x)(?<!\\bimport)(?<=(?:\\>)|[A-Za-z0-9_]) (?!\\s*(\\.|\\:\\:|\\,|(?:<)))",
       "name": "meta.block.import-directive.ql",
       "patterns": [
+        {
+          "include": "#instantiation-args"
+        },
         {
           "include": "#non-context-sensitive"
         },
         {
-          "match": "(?x)(?:)",
+          "match": "(?x)(?:\\b [A-Za-z][0-9A-Za-z_]* (?:(?!(?:[0-9A-Za-z_]))))",
           "name": "entity.name.type.namespace.ql"
         }
       ],
