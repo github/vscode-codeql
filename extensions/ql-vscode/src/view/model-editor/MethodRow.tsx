@@ -56,7 +56,7 @@ export type MethodRowProps = {
   methodIsUnsaved: boolean;
   modelingInProgress: boolean;
   mode: Mode;
-  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
+  onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const MethodRow = (props: MethodRowProps) => {

@@ -7,7 +7,7 @@ import { Method, getArgumentsList } from "../../model-editor/method";
 type Props = {
   method: Method;
   modeledMethod: ModeledMethod | undefined;
-  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
+  onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelInputDropdown = ({
@@ -45,12 +45,12 @@ export const ModelInputDropdown = ({
 
       const target = e.target as HTMLSelectElement;
 
-      onChange(method, {
+      onChange({
         ...modeledMethod,
         input: target.value,
       });
     },
-    [onChange, method, modeledMethod],
+    [onChange, modeledMethod],
   );
 
   return (

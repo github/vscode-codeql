@@ -19,7 +19,7 @@ const options: Array<{ value: ModeledMethodType; label: string }> = [
 type Props = {
   method: Method;
   modeledMethod: ModeledMethod | undefined;
-  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
+  onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const ModelTypeDropdown = ({
@@ -54,7 +54,7 @@ export const ModelTypeDropdown = ({
         methodName: method.methodName,
         methodParameters: method.methodParameters,
       };
-      onChange(method, updatedModeledMethod);
+      onChange(updatedModeledMethod);
     },
     [onChange, method, modeledMethod, argumentsList],
   );

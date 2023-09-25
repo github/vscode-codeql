@@ -54,7 +54,6 @@ describe(MethodModelingInputs.name, () => {
     await userEvent.selectOptions(modelTypeDropdown, "source");
 
     expect(onChange).toHaveBeenCalledWith(
-      method,
       expect.objectContaining({
         type: "source",
       }),

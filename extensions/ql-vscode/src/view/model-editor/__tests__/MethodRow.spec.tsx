@@ -66,7 +66,7 @@ describe(MethodRow.name, () => {
     );
 
     expect(onChange).toHaveBeenCalledTimes(1);
-    expect(onChange).toHaveBeenCalledWith(method, {
+    expect(onChange).toHaveBeenCalledWith({
       ...modeledMethod,
       kind: "value",
     });

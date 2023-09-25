@@ -21,7 +21,7 @@ const Name = styled.span`
 export type MethodModelingInputsProps = {
   method: Method;
   modeledMethod: ModeledMethod | undefined;
-  onChange: (method: Method, modeledMethod: ModeledMethod) => void;
+  onChange: (modeledMethod: ModeledMethod) => void;
 };
 
 export const MethodModelingInputs = ({

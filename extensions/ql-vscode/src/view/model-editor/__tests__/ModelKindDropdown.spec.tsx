@@ -30,7 +30,6 @@ describe(ModelKindDropdown.name, () => {
     expect(screen.getByRole("combobox")).toHaveValue("local");
     await userEvent.selectOptions(screen.getByRole("combobox"), "remote");
     expect(onChange).toHaveBeenCalledWith(
-      method,
       expect.objectContaining({
         kind: "remote",
       }),
@@ -87,7 +86,6 @@ describe(ModelKindDropdown.name, () => {
 
     expect(screen.getByRole("combobox")).toHaveValue("local");
     expect(onChange).toHaveBeenCalledWith(
-      method,
       expect.objectContaining({
         kind: "local",
       }),
