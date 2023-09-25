@@ -29,8 +29,6 @@ export class ModelEditorModule extends DisposableObject {
   private readonly methodsUsagePanel: MethodsUsagePanel;
   private readonly methodModelingPanel: MethodModelingPanel;
 
-  private mostRecentlyActiveView: ModelEditorView | undefined = undefined;
-
   private constructor(
     private readonly app: App,
     private readonly databaseManager: DatabaseManager,
@@ -41,22 +39,10 @@ export class ModelEditorModule extends DisposableObject {
     super();
     this.queryStorageDir = join(baseQueryStorageDir, "model-editor-results");
     this.modelingStore = new ModelingStore(app);
-    this.methodsUsagePanel = this.push(new MethodsUsagePanel(cliServer));
+    this.methodsUsagePanel = this.push(
+      new MethodsUsagePanel(this.modelingStore, cliServer),
+    );
     this.methodModelingPanel = this.push(new MethodModelingPanel(app));
-  }
-
-  private handleViewBecameActive(view: ModelEditorView): void {
-    this.mostRecentlyActiveView = view;
-  }
-
-  private handleViewWasDisposed(view: ModelEditorView): void {
-    if (this.mostRecentlyActiveView === view) {
-      this.mostRecentlyActiveView = undefined;
-    }
-  }
-
-  private isMostRecentlyActiveView(view: ModelEditorView): boolean {
-    return this.mostRecentlyActiveView === view;
   }
 
   public static async initialize(
@@ -165,15 +151,14 @@ export class ModelEditorModule extends DisposableObject {
               db,
               modelFile,
               Mode.Application,
-              this.methodsUsagePanel.setState.bind(this.methodsUsagePanel),
               this.showMethod.bind(this),
-              this.handleViewBecameActive.bind(this),
-              (view) => {
-                this.handleViewWasDisposed(view);
-                void cleanupQueryDir();
-              },
-              this.isMostRecentlyActiveView.bind(this),
             );
+
+            this.modelingStore.onDbClosed(async (dbUri) => {
+              if (dbUri === db.databaseUri.toString()) {
+                await cleanupQueryDir();
+              }
+            });
 
             this.push(view);
             this.push({
