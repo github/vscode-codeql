@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/ModelExtensionFile",
+  "definitions": {
+    "ModelExtensionFile": {
+      "type": "object",
+      "properties": {
+        "extensions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ModelExtension"
+          }
+        }
+      },
+      "required": ["extensions"]
+    },
+    "ModelExtension": {
+      "type": "object",
+      "properties": {
+        "addsTo": {
+          "$ref": "#/definitions/ExtensibleReference"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DataRow"
+          }
+        }
+      },
+      "required": ["addsTo", "data"]
+    },
+    "ExtensibleReference": {
+      "type": "object",
+      "properties": {
+        "pack": {
+          "type": "string"
+        },
+        "extensible": {
+          "type": "string"
+        }
+      },
+      "required": ["pack", "extensible"]
+    },
+    "DataRow": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/DataTuple"
+      }
+    },
+    "DataTuple": {
+      "type": ["boolean", "number", "string"]
+    }
+  }
+}

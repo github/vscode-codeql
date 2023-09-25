@@ -7,12 +7,13 @@ import {
   extensiblePredicateDefinitions,
 } from "./predicates";
 
-import * as dataSchemaJson from "./data-schema.json";
+import * as modelExtensionFileSchema from "./model-extension-file.schema.json";
 import { Mode } from "./shared/mode";
 import { assertNever } from "../common/helpers-pure";
+import { ModelExtensionFile } from "./model-extension-file";
 
-const ajv = new Ajv({ allErrors: true });
-const dataSchemaValidate = ajv.compile(dataSchemaJson);
+const ajv = new Ajv({ allErrors: true, allowUnionTypes: true });
+const modelExtensionFileSchemaValidate = ajv.compile(modelExtensionFileSchema);
 
 function createDataProperty(
   methods: ModeledMethod[],
@@ -211,23 +212,28 @@ export function createFilenameForPackage(
   return `${prefix}${packageName}${suffix}.yml`;
 }
 
-export function loadDataExtensionYaml(
-  data: any,
-): Record<string, ModeledMethod> | undefined {
-  dataSchemaValidate(data);
+function validateModelExtensionFile(data: unknown): data is ModelExtensionFile {
+  modelExtensionFileSchemaValidate(data);
 
-  if (dataSchemaValidate.errors) {
+  if (modelExtensionFileSchemaValidate.errors) {
     throw new Error(
-      `Invalid data extension YAML: ${dataSchemaValidate.errors
+      `Invalid data extension YAML: ${modelExtensionFileSchemaValidate.errors
         .map((error) => `${error.instancePath} ${error.message}`)
         .join(", ")}`,
     );
   }
 
-  const extensions = data.extensions;
-  if (!Array.isArray(extensions)) {
+  return true;
+}
+
+export function loadDataExtensionYaml(
+  data: unknown,
+): Record<string, ModeledMethod> | undefined {
+  if (!validateModelExtensionFile(data)) {
     return undefined;
   }
+
+  const extensions = data.extensions;
 
   const modeledMethods: Record<string, ModeledMethod> = {};
 

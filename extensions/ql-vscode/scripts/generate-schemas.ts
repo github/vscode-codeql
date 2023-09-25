@@ -20,6 +20,21 @@ const schemas = [
       "extension-pack-metadata.schema.json",
     ),
   },
+  {
+    path: join(
+      extensionDirectory,
+      "src",
+      "model-editor",
+      "model-extension-file.ts",
+    ),
+    type: "ModelExtensionFile",
+    schemaPath: join(
+      extensionDirectory,
+      "src",
+      "model-editor",
+      "model-extension-file.schema.json",
+    ),
+  },
 ];
 
 async function generateSchemas() {

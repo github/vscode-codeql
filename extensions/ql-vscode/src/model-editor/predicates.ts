@@ -1,16 +1,15 @@
 import { ModeledMethod, ModeledMethodType, Provenance } from "./modeled-method";
+import { DataTuple } from "./model-extension-file";
 
 export type ExtensiblePredicateDefinition = {
   extensiblePredicate: string;
-  generateMethodDefinition: (method: ModeledMethod) => Tuple[];
-  readModeledMethod: (row: Tuple[]) => ModeledMethod;
+  generateMethodDefinition: (method: ModeledMethod) => DataTuple[];
+  readModeledMethod: (row: DataTuple[]) => ModeledMethod;
 
   supportedKinds?: string[];
 };
 
-type Tuple = boolean | number | string;
-
-function readRowToMethod(row: Tuple[]): string {
+function readRowToMethod(row: DataTuple[]): string {
   return `${row[0]}.${row[1]}#${row[3]}${row[4]}`;
 }
 
