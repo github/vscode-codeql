@@ -1,4 +1,10 @@
-import { CancellationTokenSource, Uri, ViewColumn, window } from "vscode";
+import {
+  CancellationTokenSource,
+  TabInputWebview,
+  Uri,
+  ViewColumn,
+  window,
+} from "vscode";
 import {
   AbstractWebview,
   WebviewPanelConfig,
@@ -151,7 +157,9 @@ export class ModelEditorView extends AbstractWebview<
   private isAModelEditorOpen(): boolean {
     return window.tabGroups.all.some((tabGroup) =>
       tabGroup.tabs.some((tab) => {
-        const viewType: string | undefined = (tab.input as any)?.viewType;
+        const viewType =
+          tab.input instanceof TabInputWebview ? tab.input.viewType : undefined;
+
         // The viewType has a prefix, such as "mainThreadWebview-", but if the
         // suffix matches that should be enough to identify the view.
         return viewType && viewType.endsWith("model-editor");
@@ -162,7 +170,9 @@ export class ModelEditorView extends AbstractWebview<
   private isAModelEditorActive(): boolean {
     return window.tabGroups.all.some((tabGroup) =>
       tabGroup.tabs.some((tab) => {
-        const viewType: string | undefined = (tab.input as any)?.viewType;
+        const viewType =
+          tab.input instanceof TabInputWebview ? tab.input.viewType : undefined;
+
         // The viewType has a prefix, such as "mainThreadWebview-", but if the
         // suffix matches that should be enough to identify the view.
         return viewType && viewType.endsWith("model-editor") && tab.isActive;
