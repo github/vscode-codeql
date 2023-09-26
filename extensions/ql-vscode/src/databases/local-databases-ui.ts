@@ -60,17 +60,7 @@ enum SortOrder {
   DateAddedDesc = "DateAddedDesc",
 }
 
-enum LanguageFilter {
-  All = "All",
-  Cpp = QueryLanguage.Cpp,
-  CSharp = QueryLanguage.CSharp,
-  Go = QueryLanguage.Go,
-  Java = QueryLanguage.Java,
-  Javascript = QueryLanguage.Javascript,
-  Python = QueryLanguage.Python,
-  Ruby = QueryLanguage.Ruby,
-  Swift = QueryLanguage.Swift,
-}
+type LanguageFilter = QueryLanguage | "All";
 
 /**
  * Tree data provider for the databases view.
@@ -80,7 +70,7 @@ class DatabaseTreeDataProvider
   implements TreeDataProvider<DatabaseItem>
 {
   private _sortOrder = SortOrder.NameAsc;
-  private _languageFilter = LanguageFilter.All;
+  private _languageFilter = "All" as LanguageFilter;
 
   private readonly _onDidChangeTreeData = this.push(
     new EventEmitter<DatabaseItem | undefined>(),
@@ -147,7 +137,7 @@ class DatabaseTreeDataProvider
     if (element === undefined) {
       // Filter items by language
       const displayItems = this.databaseManager.databaseItems.filter((item) => {
-        if (this.languageFilter === LanguageFilter.All) {
+        if (this.languageFilter === "All") {
           return true;
         } else {
           return item.language === this.languageFilter;
@@ -279,38 +269,38 @@ export class DatabaseUI extends DisposableObject {
       "codeQLDatabases.sortByName": this.handleSortByName.bind(this),
       "codeQLDatabases.sortByDateAdded": this.handleSortByDateAdded.bind(this),
       "codeQLDatabases.displayAllLanguages":
-        this.handleChangeLanguageFilter.bind(this, LanguageFilter.All),
+        this.handleChangeLanguageFilter.bind(this, "All"),
       "codeQLDatabases.displayCpp": this.handleChangeLanguageFilter.bind(
         this,
-        LanguageFilter.Cpp,
+        QueryLanguage.Cpp,
       ),
       "codeQLDatabases.displayCsharp": this.handleChangeLanguageFilter.bind(
         this,
-        LanguageFilter.CSharp,
+        QueryLanguage.CSharp,
       ),
       "codeQLDatabases.displayGo": this.handleChangeLanguageFilter.bind(
         this,
-        LanguageFilter.Go,
+        QueryLanguage.Go,
       ),
       "codeQLDatabases.displayJava": this.handleChangeLanguageFilter.bind(
         this,
-        LanguageFilter.Java,
+        QueryLanguage.Java,
       ),
       "codeQLDatabases.displayJavascript": this.handleChangeLanguageFilter.bind(
         this,
-        LanguageFilter.Javascript,
+        QueryLanguage.Javascript,
       ),
       "codeQLDatabases.displayPython": this.handleChangeLanguageFilter.bind(
         this,
-        LanguageFilter.Python,
+        QueryLanguage.Python,
       ),
       "codeQLDatabases.displayRuby": this.handleChangeLanguageFilter.bind(
         this,
-        LanguageFilter.Ruby,
+        QueryLanguage.Ruby,
       ),
       "codeQLDatabases.displaySwift": this.handleChangeLanguageFilter.bind(
         this,
-        LanguageFilter.Swift,
+        QueryLanguage.Swift,
       ),
       "codeQLDatabases.removeDatabase": createMultiSelectionCommand(
         this.handleRemoveDatabase.bind(this),
