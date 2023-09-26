@@ -101,7 +101,7 @@ export class ModelingStore extends DisposableObject {
       methods: [],
       hideModeledMethods: INITIAL_HIDE_MODELED_METHODS_VALUE,
       modeledMethods: {},
-      modifiedMethodSignatures: new Set<string>(),
+      modifiedMethodSignatures: new Set(),
     });
   }
 
